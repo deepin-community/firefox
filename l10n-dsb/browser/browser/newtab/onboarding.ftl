@@ -344,3 +344,19 @@ onboarding-mobile-download-security-and-privacy-subtitle = Gaž sćo synchroniz�
 # Gratitude screen
 onboarding-gratitude-security-and-privacy-title = { -brand-short-name } za wami stoj
 onboarding-gratitude-security-and-privacy-subtitle = Wjeliki źěk, až { -brand-short-name } wužywaśo, kótaryž se wót załožby Mozilla Foundation spěchujo. Z wašeju pomocu źěłamy na tom, internet wěsćejšy a pśistupnjejšy za kuždego cyniś.
+
+## New user time and familiarity survey strings
+
+onboarding-new-user-time-based-survey-title = Kak dłujko { -brand-short-name } južo wužywaśo?
+onboarding-new-user-familiarity-based-survey-title = Kak se z { -brand-short-name } wuznajośo?
+onboarding-new-user-survey-subtitle = Waše měnjenja { -brand-short-name } samo pólěpšuju.
+# When translating "brand new" it means completely new.
+onboarding-new-user-survey-time-based-option-1 = Som cele nowy
+onboarding-new-user-survey-time-based-option-2 = Mjenjej ako 1 mjasec
+onboarding-new-user-survey-time-based-option-3 = Wěcej ako 1 mjasec, pšawidłownje
+onboarding-new-user-survey-time-based-option-4 = Wěcej ako 1 mjasec, pśi góžbje
+# When translating "brand new" it means completely new.
+onboarding-new-user-survey-familiarity-based-option-1 = Som cele nowy
+onboarding-new-user-survey-familiarity-based-option-2 = Som jen wužywał južo někotare raze
+onboarding-new-user-survey-familiarity-based-option-3 = Znajom jen wjelgin derje
+onboarding-new-user-survey-familiarity-based-option-4 = Som jen wužywał w zajźonosći, ale jo južo chyla

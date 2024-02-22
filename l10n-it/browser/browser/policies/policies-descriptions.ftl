@@ -14,6 +14,8 @@ policy-3rdparty = Imposta criteri a cui le estensioni basate su tecnologia WebEx
 
 policy-AllowedDomainsForApps = Definisce i domini con cui è consentito accedere a Google Workspace.
 
+policy-AllowFileSelectionDialogs = Attiva le finestre di dialogo per la selezione di file.
+
 policy-AppAutoUpdate = Attiva o disattiva aggiornamenti automatici dell’applicazione.
 
 policy-AppUpdatePin = Impedisce l’aggiornamento di { -brand-short-name } a una versione superiore a quella indicata.
@@ -222,8 +224,3 @@ policy-UseSystemPrintDialog = Stampa utilizzando la finestra di dialogo di siste
 policy-WebsiteFilter = Impedisci l’accesso a determinati siti web. Consulta la documentazione per ulteriori dettagli sul formato da utilizzare.
 
 policy-Windows10SSO = Permetti l’utilizzo di Windows single sign-on per account Microsoft, account aziendale o dell’istituto di istruzione.
-
-
-
-
-

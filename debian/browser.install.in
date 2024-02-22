@@ -78,8 +78,6 @@ usr/lib/@browser@/glxtest
 %if MOZ_ENABLE_V4L2
 usr/lib/@browser@/v4l2test
 %endif
-%if MOZ_ENABLE_VAAPI
 usr/lib/@browser@/vaapitest
-%endif
 
 debian/@browser@-symbolic.svg usr/share/icons/hicolor/symbolic/apps

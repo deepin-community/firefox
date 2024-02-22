@@ -149,8 +149,12 @@ firefoxview-opentabs-focus-tab =
     .title = Перемкнутись на цю вкладку
 firefoxview-show-more = Показати ще
 firefoxview-show-less = Показати менше
+firefoxview-show-all = Показати все
 firefoxview-search-text-box-clear-button =
     .title = Очистити
+# Placeholder for the input field to search in recent browsing ("search" is a verb).
+firefoxview-search-text-box-recentbrowsing =
+    .placeholder = Пошук
 # Placeholder for the input field to search in history ("search" is a verb).
 firefoxview-search-text-box-history =
     .placeholder = Шукати в історії
@@ -207,7 +211,7 @@ firefoxview-view-more-browsing-history = Переглянути більше і�
 
 firefoxview-history-empty-header = Поверніться до відвіданих місць
 firefoxview-history-empty-description = Під час перегляду тут з'являтимуться відвідані вами сторінки.
-firefoxview-history-empty-description-two = Захист вашої приватності — основа нашої діяльності. Ось чому ви можете контролювати дії, які запам'ятовує { -brand-short-name }, у своїх <a data-l10n-name="history-settings-url">налаштуваннях історії</a>.
+firefoxview-history-empty-description-two = Захист вашої приватності – основа нашої діяльності. Ось чому ви можете контролювати дії, які запам'ятовує { -brand-short-name }, у своїх <a data-l10n-name="history-settings-url">налаштуваннях історії</a>.
 
 ##
 
@@ -218,7 +222,7 @@ firefoxview-choose-browser-button = Вибрати браузер
 ## Message displayed in Firefox View when the user has chosen to never remember History
 
 firefoxview-dont-remember-history-empty-header = Немає елементів для показу
-firefoxview-dont-remember-history-empty-description = Захист вашої приватності — основа нашої діяльності. Ось чому ви можете контролювати діяльність, яку запам'ятовує { -brand-short-name }.
+firefoxview-dont-remember-history-empty-description = Захист вашої приватності – основа нашої діяльності. Ось чому ви можете контролювати діяльність, яку запам'ятовує { -brand-short-name }.
 firefoxview-dont-remember-history-empty-description-two = На основі поточних налаштувань, { -brand-short-name } не зберігає ваші дії під час перегляду. <a data-l10n-name="history-settings-url-two">Змініть налаштування</a>, щоб історія зберігалась.
 
 ##

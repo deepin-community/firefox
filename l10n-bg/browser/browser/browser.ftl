@@ -279,6 +279,7 @@ quickactions-cmd-plugins = приставки
 # Opens the print dialog
 quickactions-print2 = Отпечатване
 quickactions-cmd-print = печат, отпечатване
+quickactions-cmd-savepdf = pdf
 # Opens a new private browsing window
 quickactions-private2 = Поверителен прозорец
 quickactions-cmd-private = поверително разглеждане
@@ -481,6 +482,9 @@ enable-devtools-popup-description2 = За да използвате клавиш
 
 ## URL Bar
 
+# This string is used as an accessible name to the "X" button that cancels a custom search mode (i.e. exits the Amazon.com search mode).
+urlbar-search-mode-indicator-close =
+    .aria-label = Затваряне
 # This placeholder is used when not in search mode and the user's default search
 # engine is unknown.
 urlbar-placeholder =
@@ -870,6 +874,9 @@ tabs-toolbar-list-all-tabs =
 # <img data-l10n-name="icon"/> will be replaced by the application menu icon
 restore-session-startup-suggestion-message = <strong>Отваряне на последните раздели?</strong> Можете да възстановите предишната си сесия от менюто на приложението { -brand-short-name } <img data-l10n-name="icon"/>, раздел „История“.
 restore-session-startup-suggestion-button = Покажете ми как
+
+## Infobar shown when the user tries to open a file picker and file pickers are blocked by enterprise policy
+
 
 ## Mozilla data reporting notification (Telemetry, Firefox Health Report, etc)
 

@@ -25,3 +25,10 @@ more-from-moz-learn-more-link = Pro saper plus
 more-from-moz-firefox-relay-title = { -relay-brand-name }
 more-from-moz-firefox-relay-description = Protege tu cassa de entrata e tu identitate con mascas de e-mail gratuite.
 more-from-moz-firefox-relay-button = Obtene { -relay-brand-short-name }
+
+## These strings are for the Mozilla Monitor card in about:preferences moreFromMozilla page
+
+more-from-moz-mozilla-monitor-title = { -mozmonitor-brand-name }
+more-from-moz-mozilla-monitor-us-description = Automaticamente reprende tu informationes personal exponite.
+more-from-moz-mozilla-monitor-global-description = Obtene avisos quando tu datos ha essite in un violation.
+more-from-moz-mozilla-monitor-button = Obtene { -monitor-brand-short-name }

@@ -203,6 +203,9 @@ containers-remove-alert-msg =
     }
 containers-remove-ok-button = להסיר מגירה זו
 containers-remove-cancel-button = לא להסיר מגירה זו
+settings-tabs-show-image-in-preview =
+    .label = הצגת תצוגה מקדימה בעת ריחוף על לשונית
+    .accessKey = ת
 
 ## General Section - Language & Appearance
 
@@ -794,10 +797,10 @@ sync-engine-creditcards =
     .label = כרטיסי אשראי
     .tooltiptext = שמות, מספרים ותאריכי תפוגה (שולחן עבודה בלבד)
     .accesskey = א
-sync-engine-payment-methods =
+sync-engine-payment-methods2 =
     .label = אמצעי תשלום
-    .tooltiptext = שמות, מספרי כרטיס ותאריכי תפוגה (למחשבים שולחניים בלבד)
-    .accesskey = א
+    .tooltiptext = שמות, כרטיסי מספרים ותאריכי תפוגה
+    .accesskey = ל
 sync-engine-addons =
     .label = תוספות
     .tooltiptext = הרחבות וערכות נושא עבור Firefox שולחני
@@ -844,18 +847,35 @@ pane-privacy-logins-and-passwords-header = כניסות וססמאות
 forms-ask-to-save-logins =
     .label = הצגת בקשה לשמירת פרטי כניסה וססמאות לאתרים
     .accesskey = צ
+
+## Privacy Section - Passwords
+
+# "Logins" is the former term for "Passwords". Users should find password settings
+# by searching for the former term "logins". It's not displayed in the UI.
+pane-privacy-passwords-header = ססמאות
+    .searchkeywords = כניסות
+# Checkbox to control whether UI is shown to users to save or fill logins/passwords.
+forms-ask-to-save-passwords =
+    .label = לבקש לשמור ססמאות
+    .accesskey = ל
 forms-exceptions =
     .label = חריגות…
     .accesskey = ר
 forms-generate-passwords =
     .label = הצעה ויצירת ססמאות חזקות
     .accesskey = ס
+forms-suggest-passwords =
+    .label = קבלת הצעה לססמה חזקה
+    .accesskey = ת
 forms-breach-alerts =
     .label = הצגת התרעות על ססמאות עבור אתרים שנפרצו
     .accesskey = ס
 forms-breach-alerts-learn-more-link = מידע נוסף
 preferences-relay-integration-checkbox =
     .label = הצעת מסיכות דוא״ל של { -relay-brand-name } כדי להגן על כתובת הדוא״ל שלך
+preferences-relay-integration-checkbox2 =
+    .label = הצעת מסיכות דוא״ל של { -relay-brand-name } כדי להגן על כתובת הדוא״ל שלך
+    .accesskey = ת
 relay-integration-learn-more-link = מידע נוסף
 # Checkbox which controls filling saved logins into fields automatically when they appear, in some cases without user interaction.
 forms-fill-logins-and-passwords =
@@ -864,6 +884,13 @@ forms-fill-logins-and-passwords =
 forms-saved-logins =
     .label = כניסות שמורות…
     .accesskey = כ
+# Checkbox which controls filling saved logins into fields automatically when they appear, in some cases without user interaction.
+forms-fill-usernames-and-passwords =
+    .label = מילוי שמות משתמשים וססמאות באופן אוטומטי
+    .accesskey = מ
+forms-saved-passwords =
+    .label = ססמאות שמורות
+    .accesskey = ס
 forms-primary-pw-use =
     .label = שימוש בססמה ראשית
     .accesskey = ש
@@ -884,6 +911,7 @@ forms-primary-pw-former-name = { "" }
 forms-primary-pw-fips-title = מצבך כרגע הוא FIPS. ‏FIPS דורש ססמה ראשית לא־ריקה.
 forms-master-pw-fips-desc = שינוי הססמה נכשל
 forms-windows-sso-learn-more-link = מידע נוסף
+windows-passkey-settings-label = ניהול passkeys בהגדרות המערכת
 
 ## OS Authentication dialog
 
@@ -895,6 +923,28 @@ primary-password-os-auth-dialog-message-win = כדי ליצור ססמה ראש�
 # notes are only valid for English. Please test in your locale.
 primary-password-os-auth-dialog-message-macosx = ליצור ססמה ראשית
 master-password-os-auth-dialog-caption = { -brand-full-name }
+
+## Privacy section - Autofill
+
+pane-privacy-autofill-header = מילוי אוטומטי
+autofill-addresses-checkbox = שמירה ומילוי כתובות
+    .accesskey = ש
+autofill-saved-addresses-button = כתובות שמורות
+    .accesskey = כ
+autofill-payment-methods-checkbox-message = שמירה ומילוי אמצעי תשלום
+    .accesskey = מ
+autofill-payment-methods-checkbox-submessage = כולל כרטיסי אשראי וכרטיסי חיוב
+    .accesskey = כ
+autofill-saved-payment-methods-button = אמצעי תשלום שמורים
+    .accesskey = א
+autofill-reauth-checkbox =
+    { PLATFORM() ->
+        [macos] לדרוש אימות של macOS כדי למלא ולערוך אמצעי תשלום.
+        [windows] לדרוש אימות של Windows כדי למלא ולערוך אמצעי תשלום.
+        [linux] לדרוש אימות של Linux כדי למלא ולערוך אמצעי תשלום.
+       *[other] לדרוש אימות כדי למלא ולערוך אמצעי תשלום.
+    }
+    .accesskey = ל
 
 ## Privacy Section - History
 
@@ -950,6 +1000,7 @@ sitedata-delete-on-close =
     .label = מחיקת עוגיות ונתוני אתרים עם סגירת { -brand-short-name }
     .accesskey = ח
 sitedata-delete-on-close-private-browsing = במצב גלישה פרטית קבועה, עוגיות ונתוני אתרים ינוקו תמיד כש־{ -brand-short-name } נסגר.
+sitedata-delete-on-close-private-browsing2 = בהתאם להגדרות ההיסטוריה שלך, { -brand-short-name } מוחק עוגיות ונתוני אתרים מההפעלה שלך בעת סגירת הדפדפן.
 sitedata-allow-cookies-option =
     .label = קבלת עוגיות ונתוני אתרים
     .accesskey = ק
@@ -984,10 +1035,18 @@ sitedata-cookies-exceptions =
 
 ## Privacy Section - Cookie Banner Handling
 
+cookie-banner-handling-header = צמצום כרזות עוגיות
+cookie-banner-handling-description = ‏{ -brand-short-name } מנסה באופן אוטומטי לדחות בקשות עוגיות בכרזות עוגיות באתרים נתמכים.
 
 ## Privacy Section - Cookie Banner Blocking
 
+cookie-banner-blocker-header = חוסם כרזות עוגיות
+cookie-banner-blocker-description = כשאתר שואל האם הוא יכול להשתמש בעוגיות במצב גלישה פרטית, { -brand-short-name } מסרב עבורך באופן אוטומטי. רק באתרים נתמכים.
 cookie-banner-learn-more = מידע נוסף
+forms-handle-cookie-banners =
+    .label = צמצום כרזות עוגיות
+cookie-banner-blocker-checkbox-label =
+    .label = סירוב אוטומטי לכרזות עוגיות
 
 ## Privacy Section - Address Bar
 

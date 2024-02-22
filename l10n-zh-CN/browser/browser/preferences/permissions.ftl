@@ -16,7 +16,7 @@ permissions-disable-etp =
     .label = 添加例外
     .accesskey = E
 permissions-session =
-    .label = 在这次浏览期间允许
+    .label = 此次浏览期间允许
     .accesskey = S
 permissions-allow =
     .label = 允许
@@ -60,7 +60,7 @@ permissions-capabilities-listitem-allow =
 permissions-capabilities-listitem-block =
     .value = 阻止
 permissions-capabilities-listitem-allow-session =
-    .value = 在这次浏览期间允许
+    .value = 此次浏览期间允许
 permissions-capabilities-listitem-off =
     .value = 关闭
 permissions-capabilities-listitem-off-temporarily =
@@ -83,7 +83,7 @@ permissions-exceptions-manage-etp-desc = 您可以指定为哪些网站关闭增
 permissions-exceptions-cookie-window2 =
     .title = 例外 - Cookie 和网站数据
     .style = { permissions-window2.style }
-permissions-exceptions-cookie-desc = 您可以指定一律允许或不允许哪些网站使用 Cookie 和网站数据。请输入所要指定的完整网址，然后点击“阻止”、“在这次浏览期间允许”或“允许”。
+permissions-exceptions-cookie-desc = 您可以指定一律允许或不允许哪些网站使用 Cookie 和网站数据。请输入所要指定的完整网址，然后点击“阻止”、“此次浏览期间允许”或“允许”。
 
 ## Exceptions - HTTPS-Only Mode
 
@@ -106,6 +106,13 @@ permissions-exceptions-saved-logins-window2 =
     .title = 例外 - 已保存的登录信息
     .style = { permissions-window2.style }
 permissions-exceptions-saved-logins-desc = 下列网站的登录信息将不被保存
+
+## Exceptions - Saved Passwords
+
+permissions-exceptions-saved-passwords-window =
+    .title = 例外 - 保存的密码
+    .style = { permissions-window2.style }
+permissions-exceptions-saved-passwords-desc = { -brand-short-name } 将不会保存这些网站的密码。
 
 ## Exceptions - Add-ons
 

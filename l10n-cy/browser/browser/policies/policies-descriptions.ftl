@@ -12,6 +12,7 @@
 
 policy-3rdparty = Gosodwch bolisïau y gall WebExtensions gael mynediad atyn nhw trwy chrome.storage.managed.
 policy-AllowedDomainsForApps = Diffinio parthau sy'n cael eu caniatáu i gael mynediad at Google Workpace.
+policy-AllowFileSelectionDialogs = Caniatáu deialogau dewis ffeiliau.
 policy-AppAutoUpdate = Galluogi neu analluogi diweddaru rhaglen yn awtomatig.
 policy-AppUpdatePin = Rhwystro { -brand-short-name } rhag cael ei ddiweddaru y tu hwnt i'r fersiwn penodedig.
 policy-AppUpdateURL = Gosod URL diweddaru ap cyfaddas.
@@ -41,7 +42,7 @@ policy-DisableFirefoxAccounts = Analluogi gwasanaethau'n seiliedig ar { -fxaccou
 policy-DisableFirefoxScreenshots = Analluogi nodwedd Firefox Screenshots.
 policy-DisableFirefoxStudies = Rhwystro { -brand-short-name } rhag rhedeg astudiaethau.
 policy-DisableForgetButton = Rhwystro mynediad at y botwm Anghofio.
-policy-DisableFormHistory = Peidio cofio chwilio a hanes ffurflenni.
+policy-DisableFormHistory = Peidio â chofio chwilio a hanes ffurflenni.
 policy-DisablePrimaryPasswordCreation = Os yn wir, nid oes modd creu Prif Cyfrinair.
 policy-DisablePasswordReveal = Peidiwch â gadael i gyfrineiriau gael eu datgelu mewn mewngofnodi sydd wedi'u cadw.
 policy-DisablePocket2 = Analluogi'r nodwedd i gadw tudalennau gwe i { -pocket-brand-name }.

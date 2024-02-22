@@ -4,22 +4,28 @@
 
 sanitize-prefs2 =
     .title = Impostazioni per la cancellazione della cronologia
-    .style = min-width: 34em
+    .style = min-width: 38em
 
 sanitize-prefs-style =
-    .style = width: 17em
+    .style = width: 21em
+
+sanitize-dialog-title2 =
+    .title = Elimina dati di navigazione e cookie
+    .style = min-width: 40em
 
 sanitize-dialog-title =
     .title = Cancella cronologia recente
-    .style = min-width: 34em
+    .style = min-width: 38em
 
 # When "Time range to clear" is set to "Everything", this message is used for the
 # title instead of dialog-title.
 sanitize-dialog-title-everything =
     .title = Cancella tutta la cronologia
-    .style = min-width: 34em
+    .style = min-width: 38em
 
 clear-data-settings-label = Alla chiusura di { -brand-short-name } eliminare automaticamente
+
+sanitize-on-shutdown-description = Elimina automaticamente tutti gli elementi selezionati alla chiusura di { -brand-short-name }.
 
 ## clear-time-duration-prefix is followed by a dropdown list, with
 ## values localized using clear-time-duration-value-* messages.
@@ -32,6 +38,10 @@ clear-data-settings-label = Alla chiusura di { -brand-short-name } eliminare aut
 clear-time-duration-prefix =
     .value = Intervallo di tempo da cancellare:{ " " }
     .accesskey = n
+
+clear-time-duration-prefix2 =
+    .value = Periodo:
+    .accesskey = P
 
 clear-time-duration-value-last-hour =
     .label = ultima ora
@@ -60,9 +70,32 @@ item-history-and-downloads =
     .label = Cronologia navigazione e download
     .accesskey = z
 
+item-browsing-and-search =
+    .label = Siti visitati, moduli salvati e ricerche
+    .accesskey = S
+
+item-history-form-data-downloads =
+    .label = Cronologia
+    .accesskey = C
+
+item-history-form-data-downloads-description = Elimina cronologia dei siti visitati e dei file scaricati, informazioni per la compilazione automatica dei moduli, ricerche
+
 item-cookies =
     .label = Cookie
     .accesskey = o
+
+# Variables:
+#   $amount (Number) - Amount of site data currently stored on disk
+#   $unit (String) - Abbreviation of the unit that $amount is in, e.g. MB"
+item-cookies-site-data-with-size =
+    .label = Cookie e dati dei siti web ({ $amount } { $unit })
+    .accesskey = o
+
+item-cookies-site-data =
+    .label = Cookie e dati dei siti web
+    .accesskey = o
+
+item-cookies-site-data-description = Potrebbe disconnetterti dai siti o svuotare eventuali carrelli in sospeso.
 
 item-active-logins =
     .label = Accessi effettuati
@@ -72,9 +105,38 @@ item-cache =
     .label = Cache
     .accesskey = h
 
+# Variables:
+#   $amount (Number) - Amount of cached data
+#   $unit (String) - Abbreviation of the unit that $amount is in, e.g. "MB"
+item-cached-content-with-size =
+    .label = File e pagine salvati temporaneamente nella cache ({ $amount } { $unit })
+    .accesskey = h
+
+item-cached-content =
+    .label = Cache temporanea per file e pagine
+    .accesskey = h
+
+item-cached-content-description = Rimuove elementi utilizzati per velocizzare il caricamento delle pagine
+
 item-form-search-history =
     .label = Moduli e ricerche
     .accesskey = M
+
+item-site-prefs =
+    .label = Impostazioni dei siti
+    .accesskey = I
+
+item-site-prefs-description = Reimposta i permessi e le preferenze dei siti alle impostazioni originali
+
+# Variables:
+#   $count (Number) - Number of downloads recorded
+item-download-history-with-size =
+    .label = Elenco dei file scaricati ({ $count } file)
+    .accesskey = E
+
+item-download-history =
+    .label = Elenco dei file scaricati
+    .accesskey = E
 
 data-section-label = Dati
 
@@ -94,6 +156,12 @@ window-close =
 sanitize-button-ok =
     .label = Cancella adesso
 
+sanitize-button-ok2 =
+    .label = Cancella
+
+sanitize-button-ok-on-shutdown =
+    .label = Salva modifiche
+
 # The label for the default button between the user clicking it and the window
 # closing.  Indicates the items are being cleared.
 sanitize-button-clearing =
@@ -108,4 +176,6 @@ sanitize-everything-warning = Tutta la cronologia verrà eliminata.
 # Recent History dialog, provided that the user has modified the default set of
 # history items to clear.
 sanitize-selected-warning = Tutti gli elementi selezionati verranno eliminati.
+
+
 

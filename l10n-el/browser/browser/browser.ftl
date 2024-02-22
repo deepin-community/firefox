@@ -488,6 +488,9 @@ enable-devtools-popup-description2 = Για να χρησιμοποιήσετε 
 
 ## URL Bar
 
+# This string is used as an accessible name to the "X" button that cancels a custom search mode (i.e. exits the Amazon.com search mode).
+urlbar-search-mode-indicator-close =
+    .aria-label = Κλείσιμο
 # This placeholder is used when not in search mode and the user's default search
 # engine is unknown.
 urlbar-placeholder =
@@ -510,15 +513,15 @@ urlbar-placeholder-search-mode-other-engine =
     .aria-label = Αναζήτηση { $name }
 # This placeholder is used when searching bookmarks.
 urlbar-placeholder-search-mode-other-bookmarks =
-    .placeholder = Εισάγετε όρους αναζήτησης
+    .placeholder = Εισαγάγετε όρους αναζήτησης
     .aria-label = Αναζήτηση σελιδοδεικτών
 # This placeholder is used when searching history.
 urlbar-placeholder-search-mode-other-history =
-    .placeholder = Εισάγετε όρους αναζήτησης
+    .placeholder = Εισαγάγετε όρους αναζήτησης
     .aria-label = Αναζήτηση ιστορικού
 # This placeholder is used when searching open tabs.
 urlbar-placeholder-search-mode-other-tabs =
-    .placeholder = Εισάγετε όρους αναζήτησης
+    .placeholder = Εισαγάγετε όρους αναζήτησης
     .aria-label = Αναζήτηση καρτελών
 # This placeholder is used when searching quick actions.
 urlbar-placeholder-search-mode-other-actions =
@@ -564,6 +567,11 @@ urlbar-result-action-search-w-engine = Αναζήτηση με { $engine }
 urlbar-result-action-sponsored = Χορηγία
 urlbar-result-action-switch-tab = Εναλλαγή σε καρτέλα
 urlbar-result-action-visit = Επίσκεψη
+# "Switch to tab with container" is used when the target tab is located in a
+# different container.
+# Variables
+# $container (String): the name of the target container
+urlbar-result-action-switch-tab-with-container = Εναλλαγή σε καρτέλα · <span>{ $container }</span>
 # Allows the user to visit a URL that was previously copied to the clipboard.
 urlbar-result-action-visit-from-clipboard = Επίσκεψη από το πρόχειρο
 # Directs a user to press the Tab key to perform a search with the specified
@@ -888,6 +896,10 @@ tabs-toolbar-list-all-tabs =
 restore-session-startup-suggestion-message = <strong>Άνοιγμα προηγούμενων καρτελών;</strong> Μπορείτε να ανακτήσετε την προηγούμενη συνεδρία σας από το μενού εφαρμογής του { -brand-short-name } <img data-l10n-name="icon"/>, στην ενότητα «Ιστορικό».
 restore-session-startup-suggestion-button = Εμφάνιση οδηγιών
 
+## Infobar shown when the user tries to open a file picker and file pickers are blocked by enterprise policy
+
+filepicker-blocked-infobar = Η εταιρεία σας έχει αποκλείσει την πρόσβαση σε τοπικά αρχεία αυτού του υπολογιστή
+
 ## Mozilla data reporting notification (Telemetry, Firefox Health Report, etc)
 
 data-reporting-notification-message = Το { -brand-short-name } στέλνει αυτόματα μερικά δεδομένα στη { -vendor-short-name }, έτσι ώστε να μπορέσουμε να βελτιώσουμε την εμπειρία σας.
@@ -982,8 +994,8 @@ popup-warning-button =
         }
     .accesskey =
         { PLATFORM() ->
-            [windows] λ
-           *[other] ρ
+            [windows] Ε
+           *[other] Π
         }
 # Variables:
 #   $popupURI (String): the URI for the pop-up window

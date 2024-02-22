@@ -335,3 +335,28 @@ onboarding-device-migration-primary-button-label = Eñepyrũ tembiapo
 
 ## The following screens have been updated to use security and privacy focused strings:
 
+# Easy setup screen
+onboarding-easy-setup-security-and-privacy-title = Rovy’ã eimére tekorosãme
+onboarding-easy-setup-security-and-privacy-subtitle = Ore kundahára oykeko atyguasu viru’ỹgua oipytyvõ omboykévo umi mba’apohaguasu ani nde rapykueho ñanduti rupive.
+# Mobile download screen
+onboarding-mobile-download-security-and-privacy-title = Eime papapýpe ehasávo ambue mba’e’okápe
+onboarding-mobile-download-security-and-privacy-subtitle = Embojuehepaite vove, { -brand-short-name } embopapapy umi ñe’ẽñemi, techaukaha ha hetave. Avei, eguerukuaa tendayke ambue mba’e’oka guive.
+# Gratitude screen
+onboarding-gratitude-security-and-privacy-title = { -brand-short-name } oĩ tapiaite nendive
+onboarding-gratitude-security-and-privacy-subtitle = Aguyje eiporu haguére { -brand-short-name }, oykekóva Fundación Mozilla. Nepytyvõ rupive, romba’apo Ñanduti hekorosã ha ijuruja hag̃ua opavavetépe g̃uarã.
+
+## New user time and familiarity survey strings
+
+onboarding-new-user-time-based-survey-title = ¿Mboy árama eiporuhague { -brand-short-name }?
+onboarding-new-user-familiarity-based-survey-title = Eikuaápa mba’éicha ojeporu { -brand-short-name }
+onboarding-new-user-survey-subtitle = Ne remiandu orepytyvõ { -brand-short-name } oikoporãvévo.
+# When translating "brand new" it means completely new.
+onboarding-new-user-survey-time-based-option-1 = Che pyahu ápe
+onboarding-new-user-survey-time-based-option-2 = 1 jasy mboyve
+onboarding-new-user-survey-time-based-option-3 = Ahasáma 1 jasy, aimehague
+onboarding-new-user-survey-time-based-option-4 = Ahasáma 1 jasy, naĩmeméi
+# When translating "brand new" it means completely new.
+onboarding-new-user-survey-familiarity-based-option-1 = Che pyahu ápe
+onboarding-new-user-survey-familiarity-based-option-2 = Aiporu’imíkuri
+onboarding-new-user-survey-familiarity-based-option-3 = Aikuaaporã mba’épa
+onboarding-new-user-survey-familiarity-based-option-4 = Aiporuva’kue yma, aréma upehague

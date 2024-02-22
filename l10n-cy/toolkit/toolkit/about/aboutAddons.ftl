@@ -217,6 +217,9 @@ shortcuts-no-addons = Nid oes gennych unrhyw estyniadau wedi'u galluogi.
 shortcuts-no-commands = Nid oes gan yr estyniadau canlynol lwybrau byr:
 shortcuts-input =
     .placeholder = Teipiwch llwybr byr
+# Accessible name for a trashcan icon button that removes an existent shortcut
+shortcuts-remove-button =
+    .aria-label = Dileu llwybr byr
 shortcuts-browserAction2 = Cychwyn botwm bar offer
 shortcuts-pageAction = Cychwyn gweithred tudalen
 shortcuts-sidebarAction = Toglo'r bar ochr
@@ -262,7 +265,7 @@ header-back-button =
 discopane-intro =
     Mae estyniadau a themâu yn debyg i apiau ar gyfer eich porwr, ac maen nhw'n gadael i chi
     diogelu cyfrineiriau, llwytho fideos i lawr, dod o hyd i gytundebau, rhwystro hysbysebion blin, newid
-    golwg eich porwr a llawer mwy. Mae'r rhaglenni meddalwedd bach hyn fel arfer yn cael eu datblygu gan drydydd parti. Dyma detholiad y mae { -brand-product-name }<a data-l10n-name="learn-more-trigger">
+    golwg eich porwr a llawer mwy. Mae'r rhaglenni meddalwedd bach hyn fel arfer yn cael eu datblygu gan drydydd partïon. Dyma detholiad y mae { -brand-product-name } <a data-l10n-name="learn-more-trigger">
     yn eu hargymell </a> am ddiogelwch, perfformiad, a swyddogaethau gwell.
 # Notice to make user aware that the recommendations are personalized.
 discopane-notice-recommendations =
@@ -404,7 +407,7 @@ addon-detail-quarantined-domains-label = Rhedeg ar wefannau gyda chyfyngiadau
 addon-detail-quarantined-domains-help = Pan yn cael ei ganiatáu, bydd gan yr estyniad fynediad i wefannau sy'n cael eu cyfyngu gan { -vendor-short-name }. Caniatewch dim ond os ydych chi'n ymddiried yn yr estyniad hwn.
 # Used as label and tooltip text on the radio inputs associated to the quarantined domains UI controls.
 addon-detail-quarantined-domains-allow = Caniatáu
-addon-detail-quarantined-domains-disallow = Peidio Caniatáu
+addon-detail-quarantined-domains-disallow = Peidio â Chaniatáu
 # aria-label associated to the quarantined domains exempt row to help screen readers to announce the group.
 addon-detail-group-label-quarantined-domains =
     .aria-label = { addon-detail-quarantined-domains-label }

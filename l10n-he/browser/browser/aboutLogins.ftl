@@ -29,6 +29,8 @@ about-logins-menu-menuitem-import-from-another-browser = ייבוא מדפדפן
 about-logins-menu-menuitem-import-from-a-file = ייבוא מקובץ…
 about-logins-menu-menuitem-export-logins = ייצוא כניסות…
 about-logins-menu-menuitem-remove-all-logins = הסרת כל הכניסות…
+about-logins-menu-menuitem-export-logins2 = ייצוא ססמאות…
+about-logins-menu-menuitem-remove-all-logins2 = הסרת כל הססמאות…
 menu-menuitem-preferences =
     { PLATFORM() ->
         [windows] אפשרויות
@@ -105,20 +107,25 @@ about-logins-login-intro-heading-logged-out2 = תהית איפה הכניסות 
 about-logins-login-intro-heading-logged-in = לא נמצאו כניסות מסונכרנות.
 login-intro-description = אם שמרת את הכניסות שלך ל־{ -brand-product-name } במכשיר אחר, כך ניתן לקבל אותן כאן:
 login-intro-instructions-fxa = יש ליצור חשבון או להתחבר ל{ -fxaccount-brand-name(case: "the") } שלך במכשיר שבו שמורות הכניסות שלך.
+about-logins-login-intro-heading-message = שמירת הססמאות שלך במקום בטוח
+login-intro-description2 = כל הססמאות הנשמרות ב־{ -brand-product-name } הינן מוצפנות. בנוסף, אנו עוקבים אחר דליפות נתונים מאתרים ומתריעים בפניך אם הושפעת מהן. <a data-l10n-name="breach-alert-link">מידע נוסף</a>
 login-intro-instructions-fxa2 = יש ליצור חשבון או להתחבר לחשבון שלך במכשיר שבו שמורות הכניסות שלך.
 login-intro-instructions-fxa-settings = יש לעבור להגדרות > סנכרון > הפעלת סנכרון… > יש לבחור בתיבת הסימון של כניסות וססמאות.
 login-intro-instructions-fxa-passwords-help = יש לבקר ב<a data-l10n-name="passwords-help-link">תמיכה עבור ססמאות</a> לקבלת עזרה נוספת.
 about-logins-intro-browser-only-import = אם הכניסות שלך שמורות בדפדפן אחר, באפשרותך <a data-l10n-name="import-link">לייבא אותם אל תוך { -brand-product-name }</a>
 about-logins-intro-import2 = אם הכניסות שלך שמורות מחוץ ל־{ -brand-product-name }, באפשרותך <a data-l10n-name="import-browser-link">לייבא אותם מדפדפן אחר</a> או <a data-l10n-name="import-file-link">מקובץ</a>
+about-logins-intro-import3 = יש ללחוץ על כפתור סמל הפלוס למעלה כדי להוסיף ססמה כעת. באפשרותך גם <a data-l10n-name="import-browser-link">לייבא ססמאות מדפדפן אחר</a> או <a data-l10n-name="import-file-link">מקובץ</a>.
 
 ## Login
 
 login-item-new-login-title = יצירת כניסה חדשה
+# Header for adding a password
+about-logins-login-item-new-login-title = הוספת ססמה
 login-item-edit-button = עריכה
 about-logins-login-item-remove-button = הסרה
 login-item-origin-label = כתובת אתר
 login-item-tooltip-message = יש לוודא שערך זה תואם לכתובת המדויקת של האתר אליו מתחברים.
-about-logins-origin-tooltip = יש לוודא שערך זה תואם לכתובת המדויקת של האתר אליו מתחברים.
+about-logins-origin-tooltip2 = יש להכניס את הכתובת המלאה ולוודא שהיא תואמת בדיוק לאתר שבו מתחברים לחשבון.
 # Variables
 #   $webTitle (String) - Website title of the password being changed.
 about-logins-edit-password-tooltip = לא לשכוח לשמור את הססמה הנוכחית שלך עבור אתר זה. שינוי הססמה כאן אינו משנה אותה אצל { $webTitle }.
@@ -136,6 +143,7 @@ login-item-password-reveal-checkbox =
 login-item-copy-password-button-text = העתקה
 login-item-copied-password-button-text = הועתק!
 login-item-save-changes-button = שמירת שינויים
+about-logins-login-item-save-changes-button = שמירה
 login-item-save-new-button = שמירה
 login-item-cancel-button = ביטול
 
@@ -163,6 +171,11 @@ about-logins-edit-login-os-auth-dialog-message-win = כדי לערוך את הכ
 # This message can be seen when attempting to edit a login in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-edit-login-os-auth-dialog-message-macosx = לערוך את הכניסה השמורה
+# This message can be seen when attempting to edit a login in about:logins on Windows.
+about-logins-edit-login-os-auth-dialog-message2-win = כדי לערוך את הססמה שלך, יש להזין את פרטי הכניסה שלך ל־Windows. פעולה זאת מסייעת בהגנה על אבטחת החשבונות שלך.
+# This message can be seen when attempting to edit a login in about:logins
+# On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
+about-logins-edit-login-os-auth-dialog-message2-macosx = לערוך את הססמה השמורה
 # This message can be seen when attempting to reveal a password in about:logins on Windows.
 about-logins-reveal-password-os-auth-dialog-message-win = כדי להציג את הססמה שלך, יש להזין את פרטי הכניסה שלך ל־Windows. פעולה זאת מסייעת בהגנה על אבטחת החשבונות שלך.
 # This message can be seen when attempting to reveal a password in about:logins
@@ -178,6 +191,11 @@ about-logins-export-password-os-auth-dialog-message-win = כדי לייצא את
 # This message can be seen when attempting to export a password in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-export-password-os-auth-dialog-message-macosx = לייצא את הכניסות והססמאות השמורות
+# This message can be seen when attempting to export a password in about:logins on Windows.
+about-logins-export-password-os-auth-dialog-message2-win = כדי לייצא את הססמאות שלך, יש להזין את פרטי הכניסה שלך ל־Windows. פעולה זאת מסייעת בהגנה על אבטחת החשבונות שלך.
+# This message can be seen when attempting to export a password in about:logins
+# On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
+about-logins-export-password-os-auth-dialog-message2-macosx = לייצא את הססמאות השמורות
 
 ## Primary Password notification
 
@@ -193,6 +211,10 @@ confirmation-dialog-dismiss-button =
     .title = ביטול
 about-logins-confirm-remove-dialog-title = להסיר כניסה זו?
 confirm-delete-dialog-message = לא ניתן לבטל פעולה זו.
+# Title for modal to confirm the removal of one saved password
+about-logins-confirm-delete-dialog-title = להסיר ססמה?
+# Message for modal to confirm the removal of one saved password
+about-logins-confirm-delete-dialog-message = אין באפשרותך לבטל פעולה זו.
 about-logins-confirm-remove-dialog-confirm-button = הסרה
 
 ## Variables
@@ -237,12 +259,47 @@ about-logins-confirm-remove-all-sync-dialog-message2 =
         [1] פעולה זו תסיר את הכניסה ששמרת ב־{ -brand-short-name } בכל המכשירים המסונכרנים לחשבון שלך. יוסרו גם ההתרעות על הדליפות שמופיעות כאן. לא יהיה באפשרותך לבטל פעולה זו.
        *[other] פעולה זו תסיר את כל הכניסות ששמרת ב־{ -brand-short-name } בכל המכשירים המסונכרנים לחשבון שלך. יוסרו גם ההתרעות על הדליפות שמופיעות כאן. לא יהיה באפשרותך לבטל פעולה זו.
     }
+# Checkbox for modal to confirm the removal of saved passwords
+about-logins-confirm-remove-all-dialog-checkbox-label2 =
+    { $count ->
+        [1] כן, להסיר את הססמה
+       *[other] כן, להסיר את הססמאות
+    }
+# Title for modal to confirm the removal of all saved passwords when user is NOT synced
+about-logins-confirm-remove-all-dialog-title2 =
+    { $count ->
+        [one] להסיר ססמה אחת?
+       *[other] Remove all { $count } passwords?
+    }
+# Message for modal to confirm the removal of saved passwords when user is NOT synced
+about-logins-confirm-remove-all-dialog-message2 =
+    { $count ->
+        [1] פעולה זו תסיר את הססמה שנשמרה ב־{ -brand-short-name } וכל ההתרעות על דליפות נתונים מאתרים. לא ניתן לבטל פעולה זו.
+       *[other] פעולה זו תסיר את הססמאות שנשמרו ב־{ -brand-short-name } וכל ההתרעות על דליפות נתונים מאתרים. לא ניתן לבטל פעולה זו.
+    }
+# Title for modal to confirm the removal of all saved passwords when user IS SYNCED
+about-logins-confirm-remove-all-sync-dialog-title2 =
+    { $count ->
+        [one] להסיר ססמה אחת מכל המכשירים?
+       *[other] Remove all { $count } passwords from all devices?
+    }
+# Message for modal to confirm the removal of saved passwords when user IS synced.
+about-logins-confirm-remove-all-sync-dialog-message3 =
+    { $count ->
+        [1] פעולה זו תסיר את הססמה שנשמרה ב־{ -brand-short-name } בכל המכשירים המסונכרים שלך, לרבות כל ההתרעות על דליפות נתונים מאתרים שמופיעות כאן. לא ניתן לבטל פעולה זו.
+       *[other] פעולה זו תסיר את כל הססמאות שנשמרו ב־{ -brand-short-name } בכל המכשירים המסונכרים שלך, לרבות כל ההתרעות על דליפות נתונים מאתרים שמופיעות כאן. לא ניתן לבטל פעולה זו.
+    }
 
 ##
 
 about-logins-confirm-export-dialog-title = ייצוא כניסות וססמאות
 about-logins-confirm-export-dialog-message = הססמאות שלך יישמרו כטקסט קריא (למשל BadP@ssw0rd) כך שכל מי שיכול לפתוח את הקובץ המיוצא, יוכל גם לצפות בו.
 about-logins-confirm-export-dialog-confirm-button = ייצוא…
+about-logins-confirm-export-dialog-title2 = הערה לגבי ייצוא ססמאות
+about-logins-confirm-export-dialog-message2 =
+    בעת הייצוא, הססמאות שלך נשמרות בקובץ עם טקסט קריא.
+    לאחר סיום השימוש בקובץ, אנו ממליצים למחוק אותו כדי שאחרים שמשתמשים במכשיר הזה לא יוכלו לראות את הססמאות שלך.
+about-logins-confirm-export-dialog-confirm-button2 = המשך עם הייצוא
 about-logins-alert-import-title = הייבוא הושלם
 about-logins-alert-import-message = הצגת סיכום מפורט על הייבוא
 confirm-discard-changes-dialog-title = האם להתעלם מהשינויים שלא נשמרו?
@@ -284,6 +341,11 @@ about-logins-export-file-picker-title = ייצוא קובץ כניסות
 # The default file name shown in the file picker when exporting saved logins.
 # This must end in .csv
 about-logins-export-file-picker-default-filename = logins.csv
+# Title of the file picker dialog
+about-logins-export-file-picker-title2 = ייצוא ססמאות מ־{ -brand-short-name }
+# The default file name shown in the file picker when exporting saved logins.
+# This must end in .csv
+about-logins-export-file-picker-default-filename2 = ססמאות.csv
 about-logins-export-file-picker-export-button = ייצוא
 # A description for the .csv file format that may be shown as the file type
 # filter by the operating system.

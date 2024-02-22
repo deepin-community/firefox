@@ -507,6 +507,9 @@ enable-devtools-popup-description2 = I ddefnyddio'r llwybr byr F12, agorwch DevT
 
 ## URL Bar
 
+# This string is used as an accessible name to the "X" button that cancels a custom search mode (i.e. exits the Amazon.com search mode).
+urlbar-search-mode-indicator-close =
+    .aria-label = Cau
 # This placeholder is used when not in search mode and the user's default search
 # engine is unknown.
 urlbar-placeholder =
@@ -583,6 +586,11 @@ urlbar-result-action-search-w-engine = Chwilio gyda { $engine }
 urlbar-result-action-sponsored = Noddwyd
 urlbar-result-action-switch-tab = Newid i'r Tab
 urlbar-result-action-visit = Ymweld â
+# "Switch to tab with container" is used when the target tab is located in a
+# different container.
+# Variables
+# $container (String): the name of the target container
+urlbar-result-action-switch-tab-with-container = Newid i Tab · <span>{ $container }</span>
 # Allows the user to visit a URL that was previously copied to the clipboard.
 urlbar-result-action-visit-from-clipboard = Ymweld o'ch clipfwrdd
 # Directs a user to press the Tab key to perform a search with the specified
@@ -906,6 +914,10 @@ tabs-toolbar-list-all-tabs =
 # <img data-l10n-name="icon"/> will be replaced by the application menu icon
 restore-session-startup-suggestion-message = <strong>Eisiau agor tabiau blaenorol?</strong> Gallwch adfer eich sesiwn flaenorol o ddewislen ap { -brand-short-name } <img data-l10n-name = "icon" />, o dan Hanes.
 restore-session-startup-suggestion-button = Dangos sut mae gwneud
+
+## Infobar shown when the user tries to open a file picker and file pickers are blocked by enterprise policy
+
+filepicker-blocked-infobar = Mae eich sefydliad wedi rhwystro mynediad i ffeiliau lleol ar y cyfrifiadur hwn
 
 ## Mozilla data reporting notification (Telemetry, Firefox Health Report, etc)
 

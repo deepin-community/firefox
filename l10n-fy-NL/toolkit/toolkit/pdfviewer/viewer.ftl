@@ -301,8 +301,9 @@ pdfjs-editor-ink-button-label = Tekenje
 pdfjs-editor-stamp-button =
     .title = Ofbyldingen tafoegje of bewurkje
 pdfjs-editor-stamp-button-label = Ofbyldingen tafoegje of bewurkje
-pdfjs-editor-remove-button =
-    .title = Fuortsmite
+pdfjs-editor-highlight-button =
+    .title = Markearje
+pdfjs-editor-highlight-button-label = Markearje
 
 ## Remove button for the various kind of editor.
 
@@ -312,6 +313,8 @@ pdfjs-editor-remove-freetext-button =
     .title = Tekst fuortsmite
 pdfjs-editor-remove-stamp-button =
     .title = Ofbylding fuortsmite
+pdfjs-editor-remove-highlight-button =
+    .title = Markearring fuortsmite
 
 ##
 
@@ -324,6 +327,10 @@ pdfjs-editor-ink-opacity-input = Transparânsje
 pdfjs-editor-stamp-add-image-button =
     .title = Ofbylding tafoegje
 pdfjs-editor-stamp-add-image-button-label = Ofbylding tafoegje
+# This refers to the thickness of the line used for free highlighting (not bound to text)
+pdfjs-editor-free-highlight-thickness-input = Tsjokte
+pdfjs-editor-free-highlight-thickness-title =
+    .title = Tsjokte wizigje by aksintuearring fan oare items as tekst
 pdfjs-free-text =
     .aria-label = Tekstbewurker
 pdfjs-free-text-default-content = Begjin mei typen…
@@ -361,3 +368,22 @@ pdfjs-editor-resizer-label-bottom-right = Rjochterûnderhoek – formaat wizigje
 pdfjs-editor-resizer-label-bottom-middle = Midden ûnder – formaat wizigje
 pdfjs-editor-resizer-label-bottom-left = Linkerûnderhoek – formaat wizigje
 pdfjs-editor-resizer-label-middle-left = Links midden – formaat wizigje
+
+## Color picker
+
+# This means "Color used to highlight text"
+pdfjs-editor-highlight-colorpicker-label = Markearringskleur
+pdfjs-editor-colorpicker-button =
+    .title = Kleur wizigje
+pdfjs-editor-colorpicker-dropdown =
+    .aria-label = Kleurkarren
+pdfjs-editor-colorpicker-yellow =
+    .title = Giel
+pdfjs-editor-colorpicker-green =
+    .title = Grien
+pdfjs-editor-colorpicker-blue =
+    .title = Blau
+pdfjs-editor-colorpicker-pink =
+    .title = Roze
+pdfjs-editor-colorpicker-red =
+    .title = Read

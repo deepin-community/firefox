@@ -301,8 +301,9 @@ pdfjs-editor-ink-button-label = Dibujar
 pdfjs-editor-stamp-button =
     .title = Agregar o editar imágenes
 pdfjs-editor-stamp-button-label = Agregar o editar imágenes
-pdfjs-editor-remove-button =
-    .title = Eliminar
+pdfjs-editor-highlight-button =
+    .title = Resaltar
+pdfjs-editor-highlight-button-label = Resaltar
 
 ## Remove button for the various kind of editor.
 
@@ -312,6 +313,8 @@ pdfjs-editor-remove-freetext-button =
     .title = Eliminar texto
 pdfjs-editor-remove-stamp-button =
     .title = Eliminar imagen
+pdfjs-editor-remove-highlight-button =
+    .title = Eliminar resaltado
 
 ##
 
@@ -324,6 +327,10 @@ pdfjs-editor-ink-opacity-input = Opacidad
 pdfjs-editor-stamp-add-image-button =
     .title = Agregar una imagen
 pdfjs-editor-stamp-add-image-button-label = Agregar una imagen
+# This refers to the thickness of the line used for free highlighting (not bound to text)
+pdfjs-editor-free-highlight-thickness-input = Grosor
+pdfjs-editor-free-highlight-thickness-title =
+    .title = Cambiar el grosor al resaltar elementos que no sean texto
 pdfjs-free-text =
     .aria-label = Editor de texto
 pdfjs-free-text-default-content = Empezar a tipear…
@@ -361,3 +368,22 @@ pdfjs-editor-resizer-label-bottom-right = Esquina inferior derecha — cambiar e
 pdfjs-editor-resizer-label-bottom-middle = Abajo en el medio — cambiar el tamaño
 pdfjs-editor-resizer-label-bottom-left = Esquina inferior izquierda — cambiar el tamaño
 pdfjs-editor-resizer-label-middle-left = Al centro a la izquierda — cambiar el tamaño
+
+## Color picker
+
+# This means "Color used to highlight text"
+pdfjs-editor-highlight-colorpicker-label = Color de resaltado
+pdfjs-editor-colorpicker-button =
+    .title = Cambiar el color
+pdfjs-editor-colorpicker-dropdown =
+    .aria-label = Opciones de color
+pdfjs-editor-colorpicker-yellow =
+    .title = Amarillo
+pdfjs-editor-colorpicker-green =
+    .title = Verde
+pdfjs-editor-colorpicker-blue =
+    .title = Azul
+pdfjs-editor-colorpicker-pink =
+    .title = Rosado
+pdfjs-editor-colorpicker-red =
+    .title = Rojo

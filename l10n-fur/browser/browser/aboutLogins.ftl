@@ -29,6 +29,8 @@ about-logins-menu-menuitem-import-from-another-browser = Impuarte di un altri na
 about-logins-menu-menuitem-import-from-a-file = Impuarte di un file…
 about-logins-menu-menuitem-export-logins = Espuarte credenziâls…
 about-logins-menu-menuitem-remove-all-logins = Gjave dutis lis credenziâls…
+about-logins-menu-menuitem-export-logins2 = Espuarte passwords…
+about-logins-menu-menuitem-remove-all-logins2 = Gjave dutis lis passwords…
 menu-menuitem-preferences =
     { PLATFORM() ->
         [windows] Opzions
@@ -105,20 +107,25 @@ about-logins-login-intro-heading-logged-out2 = Stâstu cirint lis tôs credenzi�
 about-logins-login-intro-heading-logged-in = Nissune credenziâl sincronizade cjatade.
 login-intro-description = Se tu âs salvât lis tôs credenziâls su { -brand-product-name } suntun altri dispositîf, chi al spieghe cemût otignîlis achì:
 login-intro-instructions-fxa = Cree o jentre sul to { -fxaccount-brand-name } sul dispositîf dulà che tu âs salvadis lis tôs credenziâls.
+about-logins-login-intro-heading-message = Salve lis tôs passwords intun puest sigûr
+login-intro-description2 = Dutis lis passwords che tu salvis in { -brand-product-name } a vegnin cifradis. Sore, o tignìn di voli lis violazions di dâts e ti visìn se tu sês stât cjapât dentri. <a data-l10n-name="breach-alert-link">Scuvierç di plui</a>
 login-intro-instructions-fxa2 = Cree o jentre tal to account sul dispositîf dulà che tu âs salvât lis tôs credenziâls.
 login-intro-instructions-fxa-settings = Va su Impostazions > Sincronizazion > Ative la sincronizazion… e selezione la casele Credenziâls e passwords.
 login-intro-instructions-fxa-passwords-help = Visite il <a data-l10n-name="passwords-help-link">supuart pes password</a> par vê plui jutori.
 about-logins-intro-browser-only-import = Se lis tôs credenziâls di acès a son salvadis intun altri navigadôr, tu puedis <a data-l10n-name="import-link">impuartâlis in { -brand-product-name } </a>
 about-logins-intro-import2 = Se lis tôs credenziâls a son stadis salvadis fûr di { -brand-product-name }, tu puedis <a data-l10n-name="import-browser-link">impuartâlis di un altri navigadôr</a> opûr <a data-l10n-name="import-file-link">di un file</a>
+about-logins-intro-import3 = Selezione il boton cul simbul “+” par zontâ une password. Tu puedis ancje <a data-l10n-name="import-browser-link">impuartâ lis passwords di un altri navigadôr</a> o <a data-l10n-name="import-file-link">di un file</a>.
 
 ## Login
 
 login-item-new-login-title = Cree gnove credenziâl
+# Header for adding a password
+about-logins-login-item-new-login-title = Zonte password
 login-item-edit-button = Modifiche
 about-logins-login-item-remove-button = Gjave
 login-item-origin-label = Direzion sît web
 login-item-tooltip-message = Siguriti che cheste e corispuindi ae direzion esate dal sît web dulà che tu stâs jentrant.
-about-logins-origin-tooltip = Siguriti che cheste direzion e corispuindi a chê esate dal sît web dulà che tu stâs jentrant.
+about-logins-origin-tooltip2 = Inserìs la direzion complete e controle che e corispuindi in mût esat cun chê doprade pal acès.
 # Variables
 #   $webTitle (String) - Website title of the password being changed.
 about-logins-edit-password-tooltip = Siguriti di salvâ la password atuâl par chest sît. La modifiche de password achì no cambiarà chê in { $webTitle }.
@@ -136,6 +143,7 @@ login-item-password-reveal-checkbox =
 login-item-copy-password-button-text = Copie
 login-item-copied-password-button-text = Copiât!
 login-item-save-changes-button = Salve modifichis
+about-logins-login-item-save-changes-button = Salve
 login-item-save-new-button = Salve
 login-item-cancel-button = Anule
 
@@ -163,6 +171,11 @@ about-logins-edit-login-os-auth-dialog-message-win = Par modificâ la tô creden
 # This message can be seen when attempting to edit a login in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-edit-login-os-auth-dialog-message-macosx = modificâ lis credenziâls salvadis
+# This message can be seen when attempting to edit a login in about:logins on Windows.
+about-logins-edit-login-os-auth-dialog-message2-win = Par modificâ la password, inserìs lis credenziâls di acès a Windows. Chest al jude a garantî la sigurece dai tiei accounts.
+# This message can be seen when attempting to edit a login in about:logins
+# On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
+about-logins-edit-login-os-auth-dialog-message2-macosx = modificâ la password salvade
 # This message can be seen when attempting to reveal a password in about:logins on Windows.
 about-logins-reveal-password-os-auth-dialog-message-win = Par visualizâ la tô password, inserìs lis tôs credenziâls di acès di Windows. Chest al jude a protezi la sigurece dai tiei accounts.
 # This message can be seen when attempting to reveal a password in about:logins
@@ -178,6 +191,11 @@ about-logins-export-password-os-auth-dialog-message-win = Par espuartâ lis tôs
 # This message can be seen when attempting to export a password in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-export-password-os-auth-dialog-message-macosx = espuartâ lis credenziâls e lis passwords salvadis
+# This message can be seen when attempting to export a password in about:logins on Windows.
+about-logins-export-password-os-auth-dialog-message2-win = Par espuartâ lis passwords, inserìs lis tôs credenziâls di acès a Windows. Chest al jude a garantî la sigurece dai tiei accounts.
+# This message can be seen when attempting to export a password in about:logins
+# On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
+about-logins-export-password-os-auth-dialog-message2-macosx = espuartâ lis passwords salvadis
 
 ## Primary Password notification
 
@@ -193,6 +211,10 @@ confirmation-dialog-dismiss-button =
     .title = Anule
 about-logins-confirm-remove-dialog-title = Gjavâ cheste credenziâl?
 confirm-delete-dialog-message = No si pues tornâ indaûr di cheste azion.
+# Title for modal to confirm the removal of one saved password
+about-logins-confirm-delete-dialog-title = Gjavâ la password?
+# Message for modal to confirm the removal of one saved password
+about-logins-confirm-delete-dialog-message = Nol sarà pussibil tornâ indaûr di cheste azion.
 about-logins-confirm-remove-dialog-confirm-button = Gjave
 
 ## Variables
@@ -238,12 +260,50 @@ about-logins-confirm-remove-all-sync-dialog-message2 =
         [one] Cheste operazion e gjavarà la credenziâl salvade su { -brand-short-name } su ducj i dispositîfs sincronizâts cul to account. Chest al gjavarà ancje i avîs di violazion. No tu podarâs tornâ indaûr di cheste azion.
        *[other] Cheste operazion e gjavarà dutis lis credenziâls salvadis su { -brand-short-name } su ducj i dispositîfs sincronizâts cul to account. Chest al gjavarà ancje i avîs di violazion. No tu podarâs tornâ indaûr di cheste azion.
     }
+# Checkbox for modal to confirm the removal of saved passwords
+about-logins-confirm-remove-all-dialog-checkbox-label2 =
+    { $count ->
+        [1] Sì, gjave la password
+        [one] Sì, gjave la password
+       *[other] Sì, gjave lis passwords
+    }
+# Title for modal to confirm the removal of all saved passwords when user is NOT synced
+about-logins-confirm-remove-all-dialog-title2 =
+    { $count ->
+        [one] Gjavâ { $count } password?
+       *[other] Gjavâ dutis e { $count } lis passwords?
+    }
+# Message for modal to confirm the removal of saved passwords when user is NOT synced
+about-logins-confirm-remove-all-dialog-message2 =
+    { $count ->
+        [1] Cheste operazion e gjavarà la password salvade su { -brand-short-name } e ducj i avîs di violazions. Nol sarà pussibil tornâ indaûr di cheste azion.
+        [one] Cheste operazion e gjavarà la password salvade su { -brand-short-name } e ducj i avîs di violazions. Nol sarà pussibil tornâ indaûr di cheste azion.
+       *[other] Cheste operazion e gjavarà lis passwords salvadis su { -brand-short-name } e ducj i avîs di violazions. Nol sarà pussibil tornâ indaûr di cheste azion.
+    }
+# Title for modal to confirm the removal of all saved passwords when user IS SYNCED
+about-logins-confirm-remove-all-sync-dialog-title2 =
+    { $count ->
+        [one] Gjavâ { $count } password su ducj i dispositîfs?
+       *[other] Gjavâ dutis e { $count } lis passwords su ducj i dispositîfs?
+    }
+# Message for modal to confirm the removal of saved passwords when user IS synced.
+about-logins-confirm-remove-all-sync-dialog-message3 =
+    { $count ->
+        [1] Cheste operazion e gjavarà la password salvade in { -brand-short-name } su ducj i dispositîfs sincronizâts. A vignaran gjavâts ancje ducj i avîs di violazions che a vegnin fûr achì. Nol sarà pussibil tornâ indaûr di cheste azion.
+        [one] Cheste operazion e gjavarà la password salvade in { -brand-short-name } su ducj i dispositîfs sincronizâts. A vignaran gjavâts ancje ducj i avîs di violazions che a vegnin fûr achì. Nol sarà pussibil tornâ indaûr di cheste azion.
+       *[other] Cheste operazion e gjavarà dutis lis passwords salvadis in { -brand-short-name } su ducj i dispositîfs sincronizâts. A vignaran gjavâts ancje ducj i avîs di violazions che a vegnin fûr achì. Nol sarà pussibil tornâ indaûr di cheste azion.
+    }
 
 ##
 
 about-logins-confirm-export-dialog-title = Espuarte credenziâls e passwords
 about-logins-confirm-export-dialog-message = Si salvarà lis tôs passwords tant che test leibil (p.e. BadP@ssw0rd) si che duncje chei che a puedin vierzilu a rivaran a viodilis.
 about-logins-confirm-export-dialog-confirm-button = Espuarte…
+about-logins-confirm-export-dialog-title2 = Une note relative ae esportazion di passwords
+about-logins-confirm-export-dialog-message2 =
+    Il procès di esportazion al salve lis passwords suntun file cun test che si rive a lei.
+    Ti conseìn di eliminâ il file dopo che tu lu âs doprât, in mût di impedî a altris personis, che a doprin chest dispositîf, di viodi lis tôs passwords.
+about-logins-confirm-export-dialog-confirm-button2 = Continue cu la esportazion
 about-logins-alert-import-title = Importazion completade
 about-logins-alert-import-message = Viôt la sintesi detaiade de importazion
 confirm-discard-changes-dialog-title = Scartâ lis modifichis no salvadis?
@@ -285,6 +345,11 @@ about-logins-export-file-picker-title = Esportazion file des credenziâls
 # The default file name shown in the file picker when exporting saved logins.
 # This must end in .csv
 about-logins-export-file-picker-default-filename = credenziâls.csv
+# Title of the file picker dialog
+about-logins-export-file-picker-title2 = Espuarte passwords di { -brand-short-name }
+# The default file name shown in the file picker when exporting saved logins.
+# This must end in .csv
+about-logins-export-file-picker-default-filename2 = passwords.csv
 about-logins-export-file-picker-export-button = Espuarte
 # A description for the .csv file format that may be shown as the file type
 # filter by the operating system.

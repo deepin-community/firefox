@@ -390,7 +390,7 @@ identity-description-active-blocked2 = { -brand-short-name } 已拦截此页面�
 identity-description-passive-loaded = 您的连接并不私密，您提供给此网站的信息可能会被其他人看到。
 identity-description-passive-loaded-insecure2 = 此网站包含不安全的内容（例如图像）。
 identity-description-passive-loaded-mixed2 = 尽管 { -brand-short-name } 已拦截部分内容，但页面上仍有内容不安全（例如图像）。
-identity-description-active-loaded = 此网站包含的内容不安全（例如脚本），并且您至它的连接非私密。
+identity-description-active-loaded = 此网站包含不安全内容（例如脚本），并且您至它的连接非私密。
 identity-description-active-loaded-insecure = 您提供给此网站的信息（例如密码、聊天消息、信用卡等）可能会被其他人看到。
 identity-disable-mixed-content-blocking =
     .label = 暂时解除保护
@@ -484,6 +484,9 @@ enable-devtools-popup-description2 = 要使用 F12 快捷键，请先由“浏�
 
 ## URL Bar
 
+# This string is used as an accessible name to the "X" button that cancels a custom search mode (i.e. exits the Amazon.com search mode).
+urlbar-search-mode-indicator-close =
+    .aria-label = 关闭
 # This placeholder is used when not in search mode and the user's default search
 # engine is unknown.
 urlbar-placeholder =
@@ -560,6 +563,11 @@ urlbar-result-action-search-w-engine = 使用 { $engine } 搜索
 urlbar-result-action-sponsored = 赞助推广
 urlbar-result-action-switch-tab = 切换到标签页
 urlbar-result-action-visit = 访问
+# "Switch to tab with container" is used when the target tab is located in a
+# different container.
+# Variables
+# $container (String): the name of the target container
+urlbar-result-action-switch-tab-with-container = 切换到标签页 · <span>{ $container }</span>
 # Allows the user to visit a URL that was previously copied to the clipboard.
 urlbar-result-action-visit-from-clipboard = 访问剪贴板中的网址
 # Directs a user to press the Tab key to perform a search with the specified
@@ -618,7 +626,7 @@ urlbar-group-quickactions =
 # Variables
 #  $engine (String): the name of the search engine used to search.
 urlbar-group-recent-searches =
-    .label = 最近的搜索
+    .label = 近期搜索
 
 ## Reader View toolbar buttons
 
@@ -883,6 +891,10 @@ tabs-toolbar-list-all-tabs =
 # <img data-l10n-name="icon"/> will be replaced by the application menu icon
 restore-session-startup-suggestion-message = <strong>想打开先前的标签页？</strong>您可以从 { -brand-short-name } 应用程序菜单 <img data-l10n-name="icon"/> 中的“历史”恢复先前的浏览状态。
 restore-session-startup-suggestion-button = 怎么做
+
+## Infobar shown when the user tries to open a file picker and file pickers are blocked by enterprise policy
+
+filepicker-blocked-infobar = 您的组织已阻止此计算机访问本地文件
 
 ## Mozilla data reporting notification (Telemetry, Firefox Health Report, etc)
 

@@ -273,6 +273,7 @@ quickactions-cmd-plugins = පේනු
 # Opens the print dialog
 quickactions-print2 = මුද්‍රණ පිටුව
 quickactions-cmd-print = මුද්‍රණය
+quickactions-cmd-savepdf = pdf
 # Opens a new private browsing window
 quickactions-private2 = නව පෞද්. කවුළුව
 quickactions-cmd-private = පෞද්. පිරික්සුම
@@ -472,6 +473,9 @@ sharing-warning-disable-for-session =
 
 ## URL Bar
 
+# This string is used as an accessible name to the "X" button that cancels a custom search mode (i.e. exits the Amazon.com search mode).
+urlbar-search-mode-indicator-close =
+    .aria-label = වසන්න
 # This placeholder is used when not in search mode and the user's default search
 # engine is unknown.
 urlbar-placeholder =
@@ -600,6 +604,11 @@ urlbar-group-search-suggestions =
 # A label shown above Quick Actions in the urlbar results.
 urlbar-group-quickactions =
     .label = ඉක්මන් ක්‍රියාමාර්ග
+# A label shown above the recent searches group in the urlbar results.
+# Variables
+#  $engine (String): the name of the search engine used to search.
+urlbar-group-recent-searches =
+    .label = මෑත සෙවුම්
 
 ## Reader View toolbar buttons
 
@@ -879,6 +888,19 @@ unified-extensions-button-quarantined =
     .tooltiptext =
         දිගු
         ඇතැම් දිගු සඳහා ඉඩ නොදේ
+
+## Private browsing reset button
+
+reset-pbm-panel-always-ask-checkbox =
+    .label = සැමවිට අසන්න
+    .accesskey = A
+reset-pbm-panel-cancel-button =
+    .label = අවලංගු
+    .accesskey = C
+reset-pbm-panel-confirm-button =
+    .label = වාරයේ දත්ත මකන්න
+    .accesskey = D
+reset-pbm-panel-complete = පෞද්. වාරයේ දත්ත මැකිණි
 
 ## Autorefresh blocker
 

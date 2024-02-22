@@ -107,6 +107,13 @@ permissions-exceptions-saved-logins-window2 =
     .style = { permissions-window2.style }
 permissions-exceptions-saved-logins-desc = Pśizjawjenja za slědujuce sedła njebudu se składowaś
 
+## Exceptions - Saved Passwords
+
+permissions-exceptions-saved-passwords-window =
+    .title = Wuwześa - skłaźone gronidła
+    .style = { permissions-window2.style }
+permissions-exceptions-saved-passwords-desc = { -brand-short-name } njebuźo gronidła sedłow składowaś, kótarež su how nalicone.
+
 ## Exceptions - Add-ons
 
 permissions-exceptions-addons-window2 =

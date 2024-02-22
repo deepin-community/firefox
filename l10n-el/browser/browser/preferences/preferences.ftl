@@ -203,6 +203,9 @@ containers-remove-alert-msg =
     }
 containers-remove-ok-button = Αφαίρεση θεματικής ενότητας
 containers-remove-cancel-button = Διατήρηση θεματικής ενότητας
+settings-tabs-show-image-in-preview =
+    .label = Εμφάνιση προεπισκόπησης εικόνας όταν τοποθετείτε τον δείκτη του ποντικιού σε μια καρτέλα
+    .accessKey = μ
 
 ## General Section - Language & Appearance
 
@@ -304,7 +307,7 @@ download-always-ask-where =
     .label = Να γίνεται πάντα ερώτηση για την τοποθεσία αποθήκευσης αρχείων
     .accesskey = α
 applications-header = Εφαρμογές
-applications-description = Επιλέξτε πώς διαχειρίζεται το { -brand-short-name } τα ληφθέντα αρχεία από το διαδίκτυο ή τις εφαρμογές που χρησιμοποιείτε κατά την περιήγηση.
+applications-description = Επιλέξτε πώς θα χειρίζεται το { -brand-short-name } τα αρχεία λήψης από το διαδίκτυο ή τις εφαρμογές που χρησιμοποιείτε κατά την περιήγηση.
 applications-filter =
     .placeholder = Αναζήτηση τύπων αρχείων ή εφαρμογών
 applications-type-column =
@@ -325,7 +328,7 @@ applications-use-app =
 # Variables:
 #   $app-name (String) - Name of an application (e.g Adobe Acrobat)
 applications-use-app-default =
-    .label = Χρήση { $app-name } (προεπιλογή)
+    .label = Χρήση «{ $app-name }» (προεπιλογή)
 applications-use-os-default =
     .label =
         { PLATFORM() ->
@@ -383,8 +386,8 @@ applications-save-for-new-types =
     .label = Αποθήκευση αρχείων
     .accesskey = Α
 applications-ask-before-handling =
-    .label = Να γίνεται ερώτηση για το άνοιγμα ή την αποθήκευση αρχείων
-    .accesskey = γ
+    .label = Ερώτηση για το εάν θα γίνεται άνοιγμα ή αποθήκευση των αρχείων
+    .accesskey = Ε
 drm-content-header = Περιεχόμενο διαχείρισης ψηφιακών δικαιωμάτων (DRM)
 play-drm-content =
     .label = Αναπαραγωγή περιεχομένου με έλεγχο DRM
@@ -416,7 +419,7 @@ update-application-use-service =
     .label = Χρήση υπηρεσίας παρασκηνίου για την εγκατάσταση ενημερώσεων
     .accesskey = υ
 update-application-suppress-prompts =
-    .label = Εμφάνιση λιγότερων ειδοποιήσεων ενημέρωσης
+    .label = Εμφάνιση λιγότερων ειδοποιήσεων για ενημερώσεις
     .accesskey = λ
 update-setting-write-failure-title2 = Σφάλμα αποθήκευσης ρυθμίσεων ενημερώσεων
 # Variables:
@@ -424,11 +427,11 @@ update-setting-write-failure-title2 = Σφάλμα αποθήκευσης ρυθ
 # The newlines between the main text and the line containing the path is
 # intentional so the path is easier to identify.
 update-setting-write-failure-message2 =
-    Το { -brand-short-name } αντιμετώπισε σφάλμα και δεν αποθήκευσε αυτή την αλλαγή. Σημειώστε ότι η αλλαγή αυτής της επιλογής ενημερώσεων απαιτεί δικαίωμα εγγραφής στο παρακάτω αρχείο. Εσείς ή κάποιος διαχειριστής συστήματος ενδέχεται να μπορέσει να επιλύσει το σφάλμα, χορηγώντας στην ομάδα "Χρήστες" τον πλήρη έλεγχο για αυτό το αρχείο.
+    Το { -brand-short-name } αντιμετώπισε σφάλμα και δεν αποθήκευσε αυτήν την αλλαγή. Σημειώστε ότι η αλλαγή αυτής της επιλογής ενημερώσεων απαιτεί δικαίωμα εγγραφής στο παρακάτω αρχείο. Εσείς ή κάποιος διαχειριστής συστήματος ενδέχεται να μπορέσει να επιλύσει το σφάλμα, χορηγώντας στην ομάδα "Χρήστες" τον πλήρη έλεγχο για αυτό το αρχείο.
     
     Δεν ήταν δυνατή η εγγραφή στο αρχείο: { $path }
 update-in-progress-title = Ενημέρωση σε εξέλιξη
-update-in-progress-message = Θέλετε το { -brand-short-name } να συνεχίσει με αυτή την ενημέρωση;
+update-in-progress-message = Θέλετε το { -brand-short-name } να συνεχίσει με αυτήν την ενημέρωση;
 update-in-progress-ok-button = &Απόρριψη
 # Continue is the cancel button so pressing escape or using a platform standard
 # method of closing the UI will not discard the update.
@@ -629,7 +632,7 @@ search-show-search-term-option =
 # "ahead" refers to location (appearing most proximate to), not time
 # (appearing before).
 search-show-suggestions-above-history-option =
-    .label = Εμφάνιση προτάσεων αναζήτησης πριν το ιστορικό περιήγησης στα αποτελέσματα γραμμής διευθύνσεων
+    .label = Εμφάνιση προτάσεων αναζήτησης πριν από το ιστορικό περιήγησης στα αποτελέσματα γραμμής διευθύνσεων
 search-show-suggestions-private-windows =
     .label = Εμφάνιση προτάσεων αναζήτησης σε ιδιωτικά παράθυρα
 suggestions-addressbar-settings-generic2 = Αλλαγή ρυθμίσεων για άλλες προτάσεις της γραμμής διευθύνσεων
@@ -762,7 +765,7 @@ sync-change-options =
 
 sync-choose-what-to-sync-dialog3 =
     .title = Επιλέξτε στοιχεία για συγχρονισμό
-    .style = min-width: 36em;
+    .style = min-width: 37em;
     .buttonlabelaccept = Αποθήκευση αλλαγών
     .buttonaccesskeyaccept = π
     .buttonlabelextra2 = Αποσύνδεση…
@@ -794,10 +797,10 @@ sync-engine-creditcards =
     .label = Πιστωτικές κάρτες
     .tooltiptext = Ονόματα, αριθμοί και ημερομηνίες λήξης (μόνο για υπολογιστές)
     .accesskey = Π
-sync-engine-payment-methods =
+sync-engine-payment-methods2 =
     .label = Μέθοδοι πληρωμής
-    .tooltiptext = Ονόματα, αριθμοί καρτών και ημερομηνίες λήξης (μόνο για υπολογιστές)
-    .accesskey = π
+    .tooltiptext = Ονόματα, αριθμοί καρτών και ημερομηνίες λήξης
+    .accesskey = δ
 sync-engine-addons =
     .label = Πρόσθετα
     .tooltiptext = Επεκτάσεις και θέματα για το Firefox για υπολογιστές
@@ -844,18 +847,35 @@ pane-privacy-logins-and-passwords-header = Συνδέσεις και κωδικ�
 forms-ask-to-save-logins =
     .label = Ερώτηση για αποθήκευση στοιχείων σύνδεσης για ιστοτόπους
     .accesskey = ρ
+
+## Privacy Section - Passwords
+
+# "Logins" is the former term for "Passwords". Users should find password settings
+# by searching for the former term "logins". It's not displayed in the UI.
+pane-privacy-passwords-header = Κωδικοί πρόσβασης
+    .searchkeywords = συνδέσεις
+# Checkbox to control whether UI is shown to users to save or fill logins/passwords.
+forms-ask-to-save-passwords =
+    .label = Ερώτηση για αποθήκευση κωδικών πρόσβασης
+    .accesskey = Ε
 forms-exceptions =
     .label = Εξαιρέσεις…
     .accesskey = ξ
 forms-generate-passwords =
     .label = Πρόταση και δημιουργία ισχυρών κωδικών πρόσβασης
     .accesskey = ρ
+forms-suggest-passwords =
+    .label = Πρόταση ισχυρών κωδικών πρόσβασης
+    .accesskey = Π
 forms-breach-alerts =
     .label = Εμφάνιση ειδοποιήσεων για κωδικούς πρόσβασης από παραβιασμένους ιστοτόπους
     .accesskey = μ
 forms-breach-alerts-learn-more-link = Μάθετε περισσότερα
 preferences-relay-integration-checkbox =
     .label = Πρόταση μασκών email του { -relay-brand-name } για την προστασία της διεύθυνσης email σας
+preferences-relay-integration-checkbox2 =
+    .label = Πρόταση μασκών email του { -relay-brand-name } για την προστασία της διεύθυνσης email σας
+    .accesskey = ρ
 relay-integration-learn-more-link = Μάθετε περισσότερα
 # Checkbox which controls filling saved logins into fields automatically when they appear, in some cases without user interaction.
 forms-fill-logins-and-passwords =
@@ -864,6 +884,13 @@ forms-fill-logins-and-passwords =
 forms-saved-logins =
     .label = Αποθηκευμένες συνδέσεις…
     .accesskey = π
+# Checkbox which controls filling saved logins into fields automatically when they appear, in some cases without user interaction.
+forms-fill-usernames-and-passwords =
+    .label = Αυτόματη συμπλήρωση ονομάτων χρήστη και κωδικών πρόσβασης
+    .accesskey = υ
+forms-saved-passwords =
+    .label = Αποθηκευμένοι κωδικοί πρόσβασης
+    .accesskey = θ
 forms-primary-pw-use =
     .label = Χρήση κύριου κωδικού πρόσβασης
     .accesskey = Χ
@@ -887,17 +914,40 @@ forms-windows-sso =
     .label = Να επιτρέπεται η καθολική σύνδεση των Windows για λογαριασμούς Microsoft, εργασίας και σχολείου.
 forms-windows-sso-learn-more-link = Μάθετε περισσότερα
 forms-windows-sso-desc = Διαχειριστείτε τους λογαριασμούς σας στις ρυθμίσεις συσκευής
+windows-passkey-settings-label = Διαχείριση κλειδιών πρόσβασης στις ρυθμίσεις συστήματος
 
 ## OS Authentication dialog
 
 # This message can be seen by trying to add a Primary Password.
-primary-password-os-auth-dialog-message-win = Για να δημιουργήσετε έναν κύριο κωδικό πρόσβασης, εισάγετε τα διαπιστευτήρια των Windows σας. Αυτό θα συμβάλλει στην ασφάλεια των λογαριασμών σας.
+primary-password-os-auth-dialog-message-win = Για να δημιουργήσετε έναν κύριο κωδικό πρόσβασης, εισαγάγετε τα διαπιστευτήρια σύνδεσης των Windows. Αυτό συμβάλλει στην προστασία των λογαριασμών σας.
 # This message can be seen by trying to add a Primary Password.
 # The macOS strings are preceded by the operating system with "Firefox is trying to "
 # and includes subtitle of "Enter password for the user "xxx" to allow this." These
 # notes are only valid for English. Please test in your locale.
 primary-password-os-auth-dialog-message-macosx = δημιουργήσει κύριο κωδικό πρόσβασης
 master-password-os-auth-dialog-caption = { -brand-full-name }
+
+## Privacy section - Autofill
+
+pane-privacy-autofill-header = Αυτόματη συμπλήρωση
+autofill-addresses-checkbox = Αποθήκευση και συμπλήρωση διευθύνσεων
+    .accesskey = π
+autofill-saved-addresses-button = Αποθηκευμένες διευθύνσεις
+    .accesskey = Α
+autofill-payment-methods-checkbox-message = Αποθήκευση και συμπλήρωση μεθόδων πληρωμής
+    .accesskey = μ
+autofill-payment-methods-checkbox-submessage = Περιλαμβάνει πιστωτικές και χρεωστικές κάρτες
+    .accesskey = Π
+autofill-saved-payment-methods-button = Αποθηκευμένες μέθοδοι πληρωμής
+    .accesskey = κ
+autofill-reauth-checkbox =
+    { PLATFORM() ->
+        [macos] Απαίτηση ελέγχου ταυτότητας από το macOS για τη συμπλήρωση και την επεξεργασία των μεθόδων πληρωμής.
+        [windows] Απαίτηση ελέγχου ταυτότητας από τα Windows για τη συμπλήρωση και την επεξεργασία των μεθόδων πληρωμής.
+        [linux] Απαίτηση ελέγχου ταυτότητας από το Linux για τη συμπλήρωση και την επεξεργασία των μεθόδων πληρωμής.
+       *[other] Απαίτηση ελέγχου ταυτότητας για τη συμπλήρωση και την επεξεργασία των μεθόδων πληρωμής.
+    }
+    .accesskey = ο
 
 ## Privacy Section - History
 
@@ -947,7 +997,7 @@ sitedata-total-size-calculating = Υπολογισμός μεγέθους δεδ
 # Variables:
 #   $value (number) - Value of the unit (for example: 4.6, 500)
 #   $unit (string) - Name of the unit (for example: "bytes", "KB")
-sitedata-total-size = Αυτή τη στιγμή, τα αποθηκευμένα cookie, τα δεδομένα ιστοτόπων και η κρυφή μνήμη καταλαμβάνουν { $value } { $unit } χώρου στον δίσκο.
+sitedata-total-size = Αυτήν τη στιγμή, τα αποθηκευμένα cookie, τα δεδομένα ιστοτόπων και η κρυφή μνήμη καταλαμβάνουν { $value } { $unit } χώρου στον δίσκο.
 sitedata-learn-more = Μάθετε περισσότερα
 sitedata-delete-on-close =
     .label = Διαγραφή cookie και δεδομένων ιστοτόπων όταν κλείνει το { -brand-short-name }
@@ -1003,31 +1053,31 @@ cookie-banner-blocker-checkbox-label =
 ## Privacy Section - Address Bar
 
 addressbar-header = Γραμμή διευθύνσεων
-addressbar-suggest = Κατά τη χρήση της γραμμής διευθύνσεων, να γίνεται πρόταση
+addressbar-suggest = Κατά τη χρήση της γραμμής διευθύνσεων, να γίνονται προτάσεις από
 addressbar-locbar-history-option =
-    .label = Ιστορικού περιήγησης
+    .label = Ιστορικό περιήγησης
     .accesskey = Ι
 addressbar-locbar-bookmarks-option =
-    .label = Σελιδοδεικτών
-    .accesskey = δ
+    .label = Σελιδοδείκτες
+    .accesskey = κ
 addressbar-locbar-clipboard-option =
     .label = Πρόχειρο
     .accesskey = Π
 addressbar-locbar-openpage-option =
-    .label = Ανοικτών καρτελών
-    .accesskey = Ο
+    .label = Ανοικτές καρτέλες
+    .accesskey = ν
 # Shortcuts refers to the shortcut tiles on the new tab page, previously known as top sites. Translation should be consistent.
 addressbar-locbar-shortcuts-option =
-    .label = Συντομεύσεων
+    .label = Συντομεύσεις
     .accesskey = Σ
 addressbar-locbar-topsites-option =
-    .label = Κορυφαίων ιστοτόπων
+    .label = Κορυφαίους ιστοτόπους
     .accesskey = Κ
 addressbar-locbar-engines-option =
-    .label = Μηχανών αναζήτησης
+    .label = Μηχανές αναζήτησης
     .accesskey = α
 addressbar-locbar-quickactions-option =
-    .label = Γρήγορων ενεργειών
+    .label = Γρήγορες ενέργειες
     .accesskey = Γ
 addressbar-locbar-showrecentsearches-option =
     .label = Εμφάνιση πρόσφατων αναζητήσεων
@@ -1076,8 +1126,8 @@ content-blocking-all-cookies = Όλα τα cookie
 content-blocking-unvisited-cookies = Cookie από ιστοτόπους που δεν έχετε επισκεφτεί
 content-blocking-all-windows-tracking-content = Περιεχόμενο καταγραφής σε όλα τα παράθυρα
 content-blocking-all-cross-site-cookies = Όλα τα cookie μεταξύ ιστοτόπων
-content-blocking-cryptominers = Cryptominers
-content-blocking-fingerprinters = Fingerprinters
+content-blocking-cryptominers = Cryptominer
+content-blocking-fingerprinters = Fingerprinter
 # The known fingerprinters are those that are known for collecting browser fingerprints from user devices. And
 # the suspected fingerprinters are those that we are uncertain about browser fingerprinting activities. But they could
 # possibly acquire browser fingerprints because of the behavior on accessing APIs that expose browser fingerprints.
@@ -1173,7 +1223,7 @@ permissions-notification-pause =
     .accesskey = ε
 permissions-autoplay = Αυτόματη αναπαραγωγή
 permissions-autoplay-settings =
-    .label = Ρυθμίσεις...
+    .label = Ρυθμίσεις…
     .accesskey = θ
 permissions-block-popups =
     .label = Φραγή αναδυόμενων παραθύρων

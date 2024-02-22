@@ -18,7 +18,7 @@ migration-wizard-selection-option-without-profile = { $sourceBrowser }
 # Variables:
 #  $sourceBrowser (String): the name of the browser to import from.
 #  $profileName (String): the name of the user profile to import from.
-migration-wizard-selection-option-with-profile = { $sourceBrowser } — { $profileName }
+migration-wizard-selection-option-with-profile = { $sourceBrowser } – { $profileName }
 
 # Each migrator is expected to include a display name string, and that display
 # name string should have a key with "migration-wizard-migrator-display-name-"
@@ -81,7 +81,7 @@ migration-history-option-label = Історія перегляду
 migration-extensions-option-label = Розширення
 migration-form-autofill-option-label = Дані автозаповнення форм
 migration-payment-methods-option-label = Способи оплати
-migration-cookies-option-label = Куки
+migration-cookies-option-label = Файли cookie
 migration-session-option-label = Вікна та вкладки
 migration-otherdata-option-label = Інші дані
 migration-passwords-from-file-progress-header = Імпортувати паролі з файлу

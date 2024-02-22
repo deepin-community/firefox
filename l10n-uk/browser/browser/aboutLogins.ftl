@@ -29,6 +29,8 @@ about-logins-menu-menuitem-import-from-another-browser = Імпортувати 
 about-logins-menu-menuitem-import-from-a-file = Імпортувати з файлу…
 about-logins-menu-menuitem-export-logins = Експортувати паролі…
 about-logins-menu-menuitem-remove-all-logins = Видалити всі паролі…
+about-logins-menu-menuitem-export-logins2 = Експортувати паролі…
+about-logins-menu-menuitem-remove-all-logins2 = Вилучити всі паролі…
 menu-menuitem-preferences =
     { PLATFORM() ->
         [windows] Налаштування
@@ -110,20 +112,25 @@ about-logins-login-intro-heading-logged-out2 = Шукаєте збережені
 about-logins-login-intro-heading-logged-in = Не знайдено синхронізованих паролів.
 login-intro-description = Якщо ви зберегли паролі в { -brand-product-name } на іншому пристрої, ось як отримати їх тут:
 login-intro-instructions-fxa = Зареєструйтеся чи увійдіть до свого { -fxaccount-brand-name(case: "gen") } на пристрої, де збережено ваші паролі
+about-logins-login-intro-heading-message = Зберігайте свої паролі в безпечному місці
+login-intro-description2 = Усі паролі, які ви зберігаєте в { -brand-product-name }, зашифровані. Крім того, ми спостерігаємо за витоками даних і сповіщаємо, якщо це стосується вас. <a data-l10n-name="breach-alert-link">Докладніше</a>
 login-intro-instructions-fxa2 = Зареєструйтеся чи ввійдіть до облікового запису на пристрої, де збережено паролі.
 login-intro-instructions-fxa-settings = Перейдіть до Налаштування > Синхронізація > Увімкнути синхронізацію… Позначте паролі.
 login-intro-instructions-fxa-passwords-help = Перейдіть до <a data-l10n-name="passwords-help-link">підтримки щодо паролів</a>, щоб отримати допомогу.
 about-logins-intro-browser-only-import = Якщо ваші паролі збережено в іншому браузері, ви можете <a data-l10n-name="import-link">імпортувати їх у { -brand-product-name }</a>
 about-logins-intro-import2 = Якщо ваші паролі зберігаються не в { -brand-product-name }, ви можете <a data-l10n-name="import-browser-link">імпортувати їх з іншого браузера</a> або <a data-l10n-name="import-file-link">з файлу</a>
+about-logins-intro-import3 = Виберіть кнопку зі знаком плюс, щоб додати пароль зараз. Ви також можете <a data-l10n-name="import-browser-link">імпортувати паролі з іншого браузера</a> або <a data-l10n-name="import-file-link">з файлу</a>.
 
 ## Login
 
 login-item-new-login-title = Створити новий запис
+# Header for adding a password
+about-logins-login-item-new-login-title = Додати пароль
 login-item-edit-button = Змінити
 about-logins-login-item-remove-button = Вилучити
 login-item-origin-label = Адреса вебсайту
 login-item-tooltip-message = Переконайтесь, що це точно відповідає адресі вебсайту, на який ви входите.
-about-logins-origin-tooltip = Переконайтеся у правильності адреси вебсайту, на який ви входите.
+about-logins-origin-tooltip2 = Введіть повну адресу та переконайтеся, що вона точно збігається з адресою для входу.
 # Variables
 #   $webTitle (String) - Website title of the password being changed.
 about-logins-edit-password-tooltip = Обов'язково збережіть поточний пароль для цього сайту. Змінивши пароль тут, ви не змінюєте його для { $webTitle }.
@@ -141,6 +148,7 @@ login-item-password-reveal-checkbox =
 login-item-copy-password-button-text = Копіювати
 login-item-copied-password-button-text = Скопійовано!
 login-item-save-changes-button = Зберегти зміни
+about-logins-login-item-save-changes-button = Зберегти
 login-item-save-new-button = Зберегти
 login-item-cancel-button = Скасувати
 
@@ -168,6 +176,11 @@ about-logins-edit-login-os-auth-dialog-message-win = Щоб змінити за�
 # This message can be seen when attempting to edit a login in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-edit-login-os-auth-dialog-message-macosx = редагувати збережений пароль
+# This message can be seen when attempting to edit a login in about:logins on Windows.
+about-logins-edit-login-os-auth-dialog-message2-win = Щоб змінити пароль, введіть свої облікові дані для входу у Windows. Це допомагає захистити ваші збережені паролі.
+# This message can be seen when attempting to edit a login in about:logins
+# On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
+about-logins-edit-login-os-auth-dialog-message2-macosx = змінити збережений пароль
 # This message can be seen when attempting to reveal a password in about:logins on Windows.
 about-logins-reveal-password-os-auth-dialog-message-win = Щоб переглянути пароль, введіть свої облікові дані входу для Windows. Це допомагає захистити ваші збережені паролі.
 # This message can be seen when attempting to reveal a password in about:logins
@@ -183,6 +196,11 @@ about-logins-export-password-os-auth-dialog-message-win = Щоб експорт�
 # This message can be seen when attempting to export a password in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-export-password-os-auth-dialog-message-macosx = експортувати збережені паролі
+# This message can be seen when attempting to export a password in about:logins on Windows.
+about-logins-export-password-os-auth-dialog-message2-win = Щоб експортувати ваші паролі, введіть свої облікові дані для входу у Windows. Це допомагає захистити ваші збережені паролі.
+# This message can be seen when attempting to export a password in about:logins
+# On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
+about-logins-export-password-os-auth-dialog-message2-macosx = експортувати збережені паролі
 
 ## Primary Password notification
 
@@ -198,6 +216,10 @@ confirmation-dialog-dismiss-button =
     .title = Скасувати
 about-logins-confirm-remove-dialog-title = Вилучити цей запис?
 confirm-delete-dialog-message = Це незворотна дія.
+# Title for modal to confirm the removal of one saved password
+about-logins-confirm-delete-dialog-title = Вилучити пароль?
+# Message for modal to confirm the removal of one saved password
+about-logins-confirm-delete-dialog-message = Ви не зможете скасувати цю дію.
 about-logins-confirm-remove-dialog-confirm-button = Вилучити
 
 ## Variables
@@ -248,12 +270,49 @@ about-logins-confirm-remove-all-sync-dialog-message2 =
         [few] Це призведе до вилучення всіх збережених у { -brand-short-name } паролів з усіх пристроїв, синхронізованих з вашим обліковим записом. Це також вилучить попередження про витоки, які з'являються тут. Ви не зможете скасувати цю дію.
        *[many] Це призведе до вилучення всіх збережених у { -brand-short-name } паролів з усіх пристроїв, синхронізованих з вашим обліковим записом. Це також вилучить попередження про витоки, які з'являються тут. Ви не зможете скасувати цю дію.
     }
+# Checkbox for modal to confirm the removal of saved passwords
+about-logins-confirm-remove-all-dialog-checkbox-label2 =
+    { $count ->
+        [1] Так, вилучити пароль
+       *[other] Так, вилучити паролі
+    }
+# Title for modal to confirm the removal of all saved passwords when user is NOT synced
+about-logins-confirm-remove-all-dialog-title2 =
+    { $count ->
+        [one] Вилучити { $count } пароль?
+        [few] Вилучити { $count } паролі?
+       *[many] Вилучити { $count } паролів?
+    }
+# Message for modal to confirm the removal of saved passwords when user is NOT synced
+about-logins-confirm-remove-all-dialog-message2 =
+    { $count ->
+        [1] Ця дія призведе до вилучення пароля, збереженого в { -brand-short-name }, а також до вилучення сповіщень про витоки даних. Це незворотна дія.
+       *[other] Ця дія призведе до вилучення паролів, збережених у { -brand-short-name }, а також до вилучення сповіщень про витоки даних. Це незворотна дія.
+    }
+# Title for modal to confirm the removal of all saved passwords when user IS SYNCED
+about-logins-confirm-remove-all-sync-dialog-title2 =
+    { $count ->
+        [one] Вилучити { $count } пароль на всіх пристроях?
+        [few] Вилучити { $count } паролі на всіх пристроях?
+       *[many] Вилучити { $count } паролів на всіх пристроях?
+    }
+# Message for modal to confirm the removal of saved passwords when user IS synced.
+about-logins-confirm-remove-all-sync-dialog-message3 =
+    { $count ->
+        [1] Ця дія призведе до вилучення паролів, збережених у { -brand-short-name }, на всіх синхронізованих пристроях, а також до вилучення сповіщень про витоки даних. Це незворотна дія.
+       *[other] Ця дія призведе до вилучення паролів, збережених у { -brand-short-name }, на всіх синхронізованих пристроях, а також до вилучення сповіщень про витоки даних. Це незворотна дія.
+    }
 
 ##
 
 about-logins-confirm-export-dialog-title = Експортувати паролі
 about-logins-confirm-export-dialog-message = Ваші паролі буде збережено у вигляді звичайного тексту (наприклад, BadP@ssw0rd), тож кожен, хто може відкрити експортований файл, зможе їх переглянути.
 about-logins-confirm-export-dialog-confirm-button = Експорт…
+about-logins-confirm-export-dialog-title2 = Примітка щодо експортування паролів
+about-logins-confirm-export-dialog-message2 =
+    Під час експортування ваші паролі зберігаються у файлі у форматі звичайного тексту.
+    Після використання файлу рекомендуємо видалити його, щоб інші користувачі цього пристрою не могли побачити ваші паролі.
+about-logins-confirm-export-dialog-confirm-button2 = Продовжити експорт
 about-logins-alert-import-title = Імпорт завершено
 about-logins-alert-import-message = Переглянути детальний підсумок імпорту
 confirm-discard-changes-dialog-title = Відхилити незбережені зміни?
@@ -295,6 +354,11 @@ about-logins-export-file-picker-title = Файл експорту паролів
 # The default file name shown in the file picker when exporting saved logins.
 # This must end in .csv
 about-logins-export-file-picker-default-filename = паролі.csv
+# Title of the file picker dialog
+about-logins-export-file-picker-title2 = Експортувати паролі з { -brand-short-name }
+# The default file name shown in the file picker when exporting saved logins.
+# This must end in .csv
+about-logins-export-file-picker-default-filename2 = passwords.csv
 about-logins-export-file-picker-export-button = Експорт
 # A description for the .csv file format that may be shown as the file type
 # filter by the operating system.

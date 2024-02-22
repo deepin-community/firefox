@@ -26,7 +26,7 @@ fxviewtabrow-just-now-timestamp = Newydd ddigwydd
 
 fxviewtabrow-delete = Dileu
     .accesskey = D
-fxviewtabrow-forget-about-this-site = Anghofiwch am y wefan hon…
+fxviewtabrow-forget-about-this-site = Anghofio'r Wefan Hon…
     .accesskey = A
 fxviewtabrow-open-in-window = Agor mewn Ffenestr Newydd
     .accesskey = F
@@ -55,3 +55,11 @@ fxviewtabrow-send-tab = Anfon Tab i Ddyfais
 #   $tabTitle (string) - Title of the tab to which the context menu is associated
 fxviewtabrow-options-menu-button =
     .title = Dewisiadau ar gyfer { $tabTitle }
+# Variables:
+#   $tabTitle (string) - Title of tab being muted
+fxviewtabrow-mute-tab-button =
+    .title = Tewi { $tabTitle }
+# Variables:
+#   $tabTitle (string) - Title of tab being unmuted
+fxviewtabrow-unmute-tab-button =
+    .title = Dad-dewi { $tabTitle }

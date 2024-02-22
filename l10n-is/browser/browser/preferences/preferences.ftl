@@ -203,6 +203,9 @@ containers-remove-alert-msg =
     }
 containers-remove-ok-button = Fjarlægja þetta sérefni
 containers-remove-cancel-button = Ekki fjarlægja þetta sérefni
+settings-tabs-show-image-in-preview =
+    .label = Sýna forskoðun mynda þegar þú lætur bendilinn svífa yfir flipa
+    .accessKey = h
 
 ## General Section - Language & Appearance
 
@@ -794,10 +797,10 @@ sync-engine-creditcards =
     .label = Greiðslukort
     .tooltiptext = Nöfn, númer og gildistími (aðeins á borðtölvu)
     .accesskey = G
-sync-engine-payment-methods =
+sync-engine-payment-methods2 =
     .label = Greiðslumátar
-    .tooltiptext = Nöfn, kortanúmer og gildistími (einungis á borðtölvum)
-    .accesskey = G
+    .tooltiptext = Nöfn, kortanúmer og gildistími
+    .accesskey = N
 sync-engine-addons =
     .label = Viðbætur
     .tooltiptext = Forritsaukar og þemu fyrir Firefox á borðtölvu
@@ -844,18 +847,35 @@ pane-privacy-logins-and-passwords-header = Innskráning og lykilorð
 forms-ask-to-save-logins =
     .label = Biðja um að vista innskráningar og lykilorð fyrir vefsíður
     .accesskey = r
+
+## Privacy Section - Passwords
+
+# "Logins" is the former term for "Passwords". Users should find password settings
+# by searching for the former term "logins". It's not displayed in the UI.
+pane-privacy-passwords-header = Lykilorð
+    .searchkeywords = innskráningar
+# Checkbox to control whether UI is shown to users to save or fill logins/passwords.
+forms-ask-to-save-passwords =
+    .label = Spyrja hvort eigi að vista lykilorð
+    .accesskey = a
 forms-exceptions =
     .label = Undanþágur…
     .accesskey = n
 forms-generate-passwords =
     .label = Leggja til og mynda sterk lykilorð
     .accesskey = u
+forms-suggest-passwords =
+    .label = Stinga upp á sterkum lykilorðum
+    .accesskey = S
 forms-breach-alerts =
     .label = Birta tilkynningar um lykilorð fyrir vefsvæði sem hafa orðið fyrir gagnaránum
     .accesskey = B
 forms-breach-alerts-learn-more-link = Frekari upplýsingar
 preferences-relay-integration-checkbox =
     .label = Stinga upp á { -relay-brand-name } tölvupósthulum til að vernda póstfangið þitt
+preferences-relay-integration-checkbox2 =
+    .label = Stinga upp á { -relay-brand-name } tölvupósthulum til að vernda póstfangið þitt
+    .accesskey = r
 relay-integration-learn-more-link = Kanna nánar
 # Checkbox which controls filling saved logins into fields automatically when they appear, in some cases without user interaction.
 forms-fill-logins-and-passwords =
@@ -864,6 +884,13 @@ forms-fill-logins-and-passwords =
 forms-saved-logins =
     .label = Vistaðar innskráningar…
     .accesskey = V
+# Checkbox which controls filling saved logins into fields automatically when they appear, in some cases without user interaction.
+forms-fill-usernames-and-passwords =
+    .label = Fylla út notendanöfn og lykilorð sjálfkrafa
+    .accesskey = F
+forms-saved-passwords =
+    .label = Vistuð lykilorð
+    .accesskey = i
 forms-primary-pw-use =
     .label = Nota aðallykilorð
     .accesskey = o
@@ -887,6 +914,7 @@ forms-windows-sso =
     .label = Leyfa eins-skiptis Windows-innskráningu fyrir Microsoft, vinnu og skólareikninga
 forms-windows-sso-learn-more-link = Frekari upplýsingar
 forms-windows-sso-desc = Sýslaðu með reikninga í stillingum tækisins
+windows-passkey-settings-label = Sýsla með lykilorð í stillingum kerfisins
 
 ## OS Authentication dialog
 
@@ -898,6 +926,28 @@ primary-password-os-auth-dialog-message-win = Til að búa til aðallykilorð sk
 # notes are only valid for English. Please test in your locale.
 primary-password-os-auth-dialog-message-macosx = búa til aðallykilorð
 master-password-os-auth-dialog-caption = { -brand-full-name }
+
+## Privacy section - Autofill
+
+pane-privacy-autofill-header = Sjálfvirk útfylling
+autofill-addresses-checkbox = Vista og fylla út í heimilisföng
+    .accesskey = a
+autofill-saved-addresses-button = Vistuð heimilisföng
+    .accesskey = s
+autofill-payment-methods-checkbox-message = Vista og fylla út greiðslumáta
+    .accesskey = m
+autofill-payment-methods-checkbox-submessage = Inniheldur kredit- og debetkort
+    .accesskey = I
+autofill-saved-payment-methods-button = Vistaðir greiðslumátar
+    .accesskey = V
+autofill-reauth-checkbox =
+    { PLATFORM() ->
+        [macos] Krefjast macOS-auðkenningar til að fylla út og breyta greiðslumáta.
+        [windows] Krefjast Windows-auðkenningar til að fylla út og breyta greiðslumáta.
+        [linux] Krefjast Linux-auðkenningar til að fylla út og breyta greiðslumáta.
+       *[other] Krefjast auðkenningar til að fylla út og breyta greiðslumáta.
+    }
+    .accesskey = K
 
 ## Privacy Section - History
 
@@ -953,6 +1003,7 @@ sitedata-delete-on-close =
     .label = Eyða vefkökum og síðugögnum þegar { -brand-short-name } er lokað
     .accesskey = k
 sitedata-delete-on-close-private-browsing = Þegar huliðsvafur er alltaf virkt, munu vefkökum og vefsvæðagögnum ávallt verða eytt þegar { -brand-short-name } er lokað.
+sitedata-delete-on-close-private-browsing2 = Byggt á stillingum vafurferilsins þíns, eyðir { -brand-short-name } vefkökum og gögnum vefsvæða úr lotunni þinni þegar þú lokar vafranum.
 sitedata-allow-cookies-option =
     .label = Samþykkja vefkökur og síðugögn
     .accesskey = A

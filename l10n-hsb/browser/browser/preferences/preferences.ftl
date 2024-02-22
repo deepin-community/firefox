@@ -209,6 +209,9 @@ containers-remove-alert-msg =
     }
 containers-remove-ok-button = Tutón kontejner wotstronić
 containers-remove-cancel-button = Tutón kontejner njewotstronić
+settings-tabs-show-image-in-preview =
+    .label = Wobrazowy přehlad pokazać, hdyž sće nad rajtarkom
+    .accessKey = h
 
 ## General Section - Language & Appearance
 
@@ -802,10 +805,10 @@ sync-engine-creditcards =
     .label = Kreditne karty
     .tooltiptext = Mjena, ličby a datumy spadnjenja (jenož desktop)
     .accesskey = K
-sync-engine-payment-methods =
+sync-engine-payment-methods2 =
     .label = Płaćenske metody
-    .tooltiptext = Mjena, kartowe čisła a datumy spadnjenja (jenož desktop)
-    .accesskey = n
+    .tooltiptext = Mjena, kartowe čisła a datumy spadnjenja
+    .accesskey = m
 sync-engine-addons =
     .label = Přidatki
     .tooltiptext = Rozšěrjenja a drasty za desktopowy Firefox
@@ -852,18 +855,35 @@ pane-privacy-logins-and-passwords-header = Přizjewjenja a hesła
 forms-ask-to-save-logins =
     .label = Prašeć so, hač so maja přizjewjenja a hesła składować
     .accesskey = r
+
+## Privacy Section - Passwords
+
+# "Logins" is the former term for "Passwords". Users should find password settings
+# by searching for the former term "logins". It's not displayed in the UI.
+pane-privacy-passwords-header = Hesła
+    .searchkeywords = přizjewjenja
+# Checkbox to control whether UI is shown to users to save or fill logins/passwords.
+forms-ask-to-save-passwords =
+    .label = Prašeć so, hač so maja hesła składować
+    .accesskey = P
 forms-exceptions =
     .label = Wuwzaća…
     .accesskey = u
 forms-generate-passwords =
     .label = Mócne hesła wutworić a namjetować
     .accesskey = h
+forms-suggest-passwords =
+    .label = Sylne hesła namjetować
+    .accesskey = S
 forms-breach-alerts =
     .label = Warnowanja za hesła přez datowu dźěru potrjechenych websydłow
     .accesskey = z
 forms-breach-alerts-learn-more-link = Dalše informacije
 preferences-relay-integration-checkbox =
     .label = E-mejlowe maski { -relay-brand-name } namjetować, zo by so e-mejlowa adresa škitała
+preferences-relay-integration-checkbox2 =
+    .label = E-mejlowe maski { -relay-brand-name } namjetować, zo by so e-mejlowa adresa škitała
+    .accesskey = E
 relay-integration-learn-more-link = Dalše informacije
 # Checkbox which controls filling saved logins into fields automatically when they appear, in some cases without user interaction.
 forms-fill-logins-and-passwords =
@@ -871,6 +891,13 @@ forms-fill-logins-and-passwords =
     .accesskey = z
 forms-saved-logins =
     .label = Składowane přizjewjenja…
+    .accesskey = S
+# Checkbox which controls filling saved logins into fields automatically when they appear, in some cases without user interaction.
+forms-fill-usernames-and-passwords =
+    .label = Wužiwarske mjena a hesła awtomatisce wupjelnić
+    .accesskey = u
+forms-saved-passwords =
+    .label = Składowane hesła
     .accesskey = S
 forms-primary-pw-use =
     .label = Hłowne hesło wužiwać
@@ -895,6 +922,7 @@ forms-windows-sso =
     .label = Jednotne přizjewjenje za konta Microsoft, dźěłowe konta a šulske konta zmóžnić
 forms-windows-sso-learn-more-link = Dalše informacije
 forms-windows-sso-desc = Konta we wašich gratowych nastajenjach rjadować
+windows-passkey-settings-label = Hesłowe kluče w systemowych nastajenjach rjadować
 
 ## OS Authentication dialog
 
@@ -906,6 +934,28 @@ primary-password-os-auth-dialog-message-win = Zapodajće swoje přizjewjenske da
 # notes are only valid for English. Please test in your locale.
 primary-password-os-auth-dialog-message-macosx = Hłowne hesło wutworić
 master-password-os-auth-dialog-caption = { -brand-full-name }
+
+## Privacy section - Autofill
+
+pane-privacy-autofill-header = Awtomatisce wupjelnić
+autofill-addresses-checkbox = Adresy składować a wupjelnić
+    .accesskey = A
+autofill-saved-addresses-button = Składowane adresy
+    .accesskey = k
+autofill-payment-methods-checkbox-message = Płaćenske metody składować a wupjelnić
+    .accesskey = m
+autofill-payment-methods-checkbox-submessage = Zapřijima kreditne a debetowe karty
+    .accesskey = Z
+autofill-saved-payment-methods-button = Składowane płaćenske metody
+    .accesskey = d
+autofill-reauth-checkbox =
+    { PLATFORM() ->
+        [macos] Awtentifikaciju macOS za wupjelnjenje a wobdźěłowanje płaćenskich metodow žadać.
+        [windows] Awtentifikaciju Windows za wupjelnjenje a wobdźěłowanje płaćenskich metodow žadać.
+        [linux] Awtentifikaciju Linux za wupjelnjenje a wobdźěłowanje płaćenskich metodow žadać.
+       *[other] Awtentifikaciju za wupjelnjenje a wobdźěłowanje płaćenskich metodow žadać.
+    }
+    .accesskey = A
 
 ## Privacy Section - History
 
@@ -961,6 +1011,7 @@ sitedata-delete-on-close =
     .label = Placki a sydłowe daty zhašeć, hdyž so { -brand-short-name } začinja
     .accesskey = s
 sitedata-delete-on-close-private-browsing = W stajnym priwatnym modusu so placki a sydłowe daty přeco zhašeja, hdyž so { -brand-short-name } začinja.
+sitedata-delete-on-close-private-browsing2 = Na zakładźe wašich nastajenjow { -brand-short-name } placki a sydłowe daty z wašeho posedźenja zhaša, hdyž wobhladowak začinjeće.
 sitedata-allow-cookies-option =
     .label = Placki a sydłowe daty akceptować
     .accesskey = P

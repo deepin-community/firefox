@@ -491,6 +491,9 @@ enable-devtools-popup-description2 = Til að nota F12 flýtileiðina skaltu fyrs
 
 ## URL Bar
 
+# This string is used as an accessible name to the "X" button that cancels a custom search mode (i.e. exits the Amazon.com search mode).
+urlbar-search-mode-indicator-close =
+    .aria-label = Loka
 # This placeholder is used when not in search mode and the user's default search
 # engine is unknown.
 urlbar-placeholder =
@@ -567,6 +570,11 @@ urlbar-result-action-search-w-engine = Leita með { $engine }
 urlbar-result-action-sponsored = Kostað
 urlbar-result-action-switch-tab = Fara á flipa
 urlbar-result-action-visit = Heimsækja
+# "Switch to tab with container" is used when the target tab is located in a
+# different container.
+# Variables
+# $container (String): the name of the target container
+urlbar-result-action-switch-tab-with-container = Skipta á flipann · <span>{ $container }</span>
 # Allows the user to visit a URL that was previously copied to the clipboard.
 urlbar-result-action-visit-from-clipboard = Heimsækja af klippispjaldinu
 # Directs a user to press the Tab key to perform a search with the specified
@@ -890,6 +898,10 @@ tabs-toolbar-list-all-tabs =
 # <img data-l10n-name="icon"/> will be replaced by the application menu icon
 restore-session-startup-suggestion-message = <strong>Opna fyrri flipa?</strong> Þú getur endurheimt fyrri lotu þína úr { -brand-short-name } forritavalmyndinni <img data-l10n-name="icon"/>, undir Ferill-færslunni.
 restore-session-startup-suggestion-button = Sýna mér hvernig
+
+## Infobar shown when the user tries to open a file picker and file pickers are blocked by enterprise policy
+
+filepicker-blocked-infobar = Stofnunin/fyrirtækið þitt hefur lokað fyrir aðgang að staðbundnum skrám á þessari tölvu
 
 ## Mozilla data reporting notification (Telemetry, Firefox Health Report, etc)
 

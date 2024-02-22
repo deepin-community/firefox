@@ -344,3 +344,19 @@ onboarding-mobile-download-security-and-privacy-subtitle = Når du har aktiveret
 # Gratitude screen
 onboarding-gratitude-security-and-privacy-title = { -brand-short-name } passer på dig
 onboarding-gratitude-security-and-privacy-subtitle = Tak for at du bruger { -brand-short-name }, støttet af Mozilla Foundation. Med din hjælp arbejder vi på at gøre internettet sikrere og mere tilgængeligt for alle.
+
+## New user time and familiarity survey strings
+
+onboarding-new-user-time-based-survey-title = Hvor længe har du anvendt { -brand-short-name }?
+onboarding-new-user-familiarity-based-survey-title = Hvor godt kender du { -brand-short-name }?
+onboarding-new-user-survey-subtitle = Din feedback er med til at gøre { -brand-short-name } endnu bedre.
+# When translating "brand new" it means completely new.
+onboarding-new-user-survey-time-based-option-1 = Jeg er helt ny
+onboarding-new-user-survey-time-based-option-2 = Mindre end 1 måned
+onboarding-new-user-survey-time-based-option-3 = Mere end 1 måned, regelmæssigt
+onboarding-new-user-survey-time-based-option-4 = Mere end 1 måned, lejlighedsvis
+# When translating "brand new" it means completely new.
+onboarding-new-user-survey-familiarity-based-option-1 = Jeg er helt ny
+onboarding-new-user-survey-familiarity-based-option-2 = Jeg har brugt den en del
+onboarding-new-user-survey-familiarity-based-option-3 = Jeg er kender den meget godt
+onboarding-new-user-survey-familiarity-based-option-4 = Jeg har brugt den før, men det er et stykke tid siden

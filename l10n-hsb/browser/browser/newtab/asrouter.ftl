@@ -212,6 +212,9 @@ cfr-cbh-dismiss-button = Nic nětko
     .accesskey = N
 cookie-banner-blocker-cfr-header = { -brand-short-name } je runje placki za was zablokował
 cookie-banner-blocker-cfr-body = Awtomatisce wotpokazujemy wjele plackowych wuskakowacych woknow, zo bychmy sydłam poćežili, wam slědować.
+cookie-banner-blocker-onboarding-header = { -brand-short-name } je runje plackowy chorhoj za was wotpokazał
+cookie-banner-blocker-onboarding-body = Mjenje wotwjedźenjow, mjenje plackow, kotrež was na sydle přesćěhuja.
+cookie-banner-blocker-onboarding-learn-more = Dalše informacije
 
 ## These strings are used in the Fox doodle Pin/set default spotlights
 
@@ -241,10 +244,6 @@ fxa-sync-cfr-secondary = Pozdźišo dopomnić
 
 ## Device Migration FxA Spotlight
 
-device-migration-fxa-spotlight-header = StaršI grat wužiwać?
-device-migration-fxa-spotlight-body = Zawěsćće swoje daty, zo njebyšće wažne informacije kaž zapołožki a hesła zhubił — předewšěm, jeli k nowemu gratej přeńdźeće.
-device-migration-fxa-spotlight-primary-button = Kak móžu swoje daty zawěsćić
-device-migration-fxa-spotlight-link = Pozdźišo dopomnić
 device-migration-fxa-spotlight-heavy-user-header = Njezabywajće swoje daty zawěsćić
 device-migration-fxa-spotlight-heavy-user-body = Zawěsćće, zo so wažne informacije – na přikład zapołožki a hesła – aktualizuja a na wšěch wašich gratach škitaja.
 device-migration-fxa-spotlight-heavy-user-primary-button = Prěnje kroki
@@ -252,7 +251,7 @@ device-migration-fxa-spotlight-older-device-header = Dušiny měr, wot { -brand-
 device-migration-fxa-spotlight-older-device-body = Konto waše wažne informacije aktualizuje a na kóždym graće škita, z kotrymž zwjazujeće.
 device-migration-fxa-spotlight-older-device-primary-button = Konto załožić
 device-migration-fxa-spotlight-getting-new-device-header-2 = Nowy grat we wašim přichodźe?
-device-migration-fxa-spotlight-getting-new-device-body = Zawěsćće nětko swoje daty, zo byšće přihotowany był, hdyž waš grat dóńdźe.
+device-migration-fxa-spotlight-getting-new-device-body-2 = Slědujće mało jednorym krokam, zo byšće swoje zapołožki, historiju a hesła sobu wzał, hdyž na nowym graće započinaće.
 device-migration-fxa-spotlight-getting-new-device-primary-button = Kak móžu swoje daty zawěsćić
 
 ## Set as Default PDF Reader Infobar
@@ -279,3 +278,14 @@ launch-on-login-infobar-reject-button = Nic nětko
 launch-on-login-infobar-final-message = <strong>{ -brand-short-name } ma so kóždy raz wočinić, hdyž swój ličak znowa startujeće?</strong> Zo byšće swoje startowe nastajenja rjadował, pytajće za „Startować“ w nastajenjach.
 launch-on-login-infobar-final-reject-button = Ně, dźakuju so
     .accesskey = N
+
+## Tail Fox Set Default Spotlight
+
+# This title is displayed together with the picture of a running fox with a long tail.
+# In English, this is a figure of speech meaning 'stop something from following you'.
+# If the localization of this message is challenging, consider using a simplified
+# alternative as a reference for translation: 'Keep unwanted trackers away'.
+tail-fox-spotlight-title = Wotdźeržće wobćežne přesćěhowaki
+tail-fox-spotlight-subtitle = Rozžohnujće z wobćežnymi wabjenskimi přesćěhowakami a zažiwće so do wěsćišeho, spěšneho internetneho dožiwjenja.
+tail-fox-spotlight-primary-button = Moje wotkazy z { -brand-short-name } wočinić
+tail-fox-spotlight-secondary-button = Nic nětko

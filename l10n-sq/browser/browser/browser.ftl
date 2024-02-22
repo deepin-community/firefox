@@ -163,7 +163,7 @@ urlbar-persistent-storage-blocked =
 urlbar-popup-blocked =
     .tooltiptext = I keni bllokuar flluskat për këtë sajt.
 urlbar-autoplay-media-blocked =
-    .tooltiptext = E keni bllokuar vetëluajtje mediash me tinguj tuaj për këtë sajt.
+    .tooltiptext = Keni bllokuar vetëluajtje mediash me tinguj për këtë sajt.
 urlbar-canvas-blocked =
     .tooltiptext = Për këtë sajt e keni bllokuar përftimin e të dhënave të kanavacës.
 urlbar-midi-blocked =
@@ -488,6 +488,9 @@ enable-devtools-popup-description2 = Që të përdorni shkurtoren F12, së pari 
 
 ## URL Bar
 
+# This string is used as an accessible name to the "X" button that cancels a custom search mode (i.e. exits the Amazon.com search mode).
+urlbar-search-mode-indicator-close =
+    .aria-label = Mbylleni
 # This placeholder is used when not in search mode and the user's default search
 # engine is unknown.
 urlbar-placeholder =
@@ -564,6 +567,11 @@ urlbar-result-action-search-w-engine = Kërko me { $engine }
 urlbar-result-action-sponsored = E sponsorizuar
 urlbar-result-action-switch-tab = Kalo te Skeda
 urlbar-result-action-visit = Vizitojeni
+# "Switch to tab with container" is used when the target tab is located in a
+# different container.
+# Variables
+# $container (String): the name of the target container
+urlbar-result-action-switch-tab-with-container = Kaloni te Skeda · <span>{ $container }</span>
 # Allows the user to visit a URL that was previously copied to the clipboard.
 urlbar-result-action-visit-from-clipboard = Vizitojeni që nga e papastra
 # Directs a user to press the Tab key to perform a search with the specified

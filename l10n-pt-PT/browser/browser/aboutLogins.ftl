@@ -9,6 +9,12 @@ about-logins-login-filter =
     .key = F
 create-new-login-button =
     .title = Criar nova credencial
+about-logins-page-title-name = Palavras-passe
+about-logins-login-filter2 =
+    .placeholder = Procurar palavras-passe
+    .key = F
+create-login-button =
+    .title = Adicionar palavra-passe
 fxaccounts-sign-in-text = Obtenha as suas palavras-passe nos seus outros dispositivos
 fxaccounts-sign-in-sync-button = Iniciar sessão para sincronizar
 fxaccounts-avatar-button =
@@ -23,6 +29,8 @@ about-logins-menu-menuitem-import-from-another-browser = Importar de outro naveg
 about-logins-menu-menuitem-import-from-a-file = Importar de um ficheiro:
 about-logins-menu-menuitem-export-logins = Exportar credenciais…
 about-logins-menu-menuitem-remove-all-logins = Remover todas as credenciais…
+about-logins-menu-menuitem-export-logins2 = Exportar palavras-passe…
+about-logins-menu-menuitem-remove-all-logins2 = Remover todas as palavras-passe…
 menu-menuitem-preferences =
     { PLATFORM() ->
         [windows] Opções
@@ -59,11 +67,14 @@ about-logins-login-list-alerts-option = Alertas
 login-list-last-changed-option = Última modificação
 login-list-last-used-option = Última utilização
 login-list-intro-title = Não foram encontradas credenciais
+login-list-intro-title2 = Nenhuma palavra-passe guardada
 login-list-intro-description = Quando guarda uma palavra-passe no { -brand-product-name }, esta será apresentada aqui.
 about-logins-login-list-empty-search-title = Não foram encontradas credenciais
+about-logins-login-list-empty-search-title2 = Não foram encontradas palavras-passe
 about-logins-login-list-empty-search-description = Não foram encontrados resultados que correspondam à sua pesquisa.
 login-list-item-title-new-login = Nova credencial
 login-list-item-subtitle-new-login = Introduza as suas credenciais
+login-list-item-title-new-login2 = Adicionar palavra-passe
 login-list-item-subtitle-missing-username = (sem nome de utilizador)
 about-logins-list-item-breach-icon =
     .title = Site invadido
@@ -82,6 +93,7 @@ about-logins-login-intro-heading-logged-out2 = À procura das suas credenciais g
 about-logins-login-intro-heading-logged-in = Não foram encontradas credenciais sincronizadas.
 login-intro-description = Se guardou as suas credenciais para o { -brand-product-name } num dispositivo diferente, eis como as obter aqui:
 login-intro-instructions-fxa = Crie ou inicie a sessão na sua { -fxaccount-brand-name } no dispositivo onde as suas credenciais estão guardadas
+about-logins-login-intro-heading-message = Guarde as suas palavras-passe num local seguro
 login-intro-instructions-fxa2 = Crie ou inicie a sessão na sua conta no dispositivo onde as suas credenciais estão guardadas.
 login-intro-instructions-fxa-settings = Aceda a Definições > Sincronizar > Ativar sincronização... Marque a caixa de seleção Credenciais e palavras-passe.
 login-intro-instructions-fxa-passwords-help = Visite <a data-l10n-name="passwords-help-link">apoio para as palavras-passe</a> para mais ajuda.
@@ -91,6 +103,8 @@ about-logins-intro-import2 = Se as suas credenciais são guardadas fora do { -br
 ## Login
 
 login-item-new-login-title = Criar nova credencial
+# Header for adding a password
+about-logins-login-item-new-login-title = Adicionar palavra-passe
 login-item-edit-button = Editar
 about-logins-login-item-remove-button = Remover
 login-item-origin-label = Endereço do site
@@ -108,6 +122,7 @@ login-item-password-reveal-checkbox =
 login-item-copy-password-button-text = Copiar
 login-item-copied-password-button-text = Copiada!
 login-item-save-changes-button = Guardar alterações
+about-logins-login-item-save-changes-button = Guardar
 login-item-save-new-button = Guardar
 login-item-cancel-button = Cancelar
 
@@ -135,6 +150,9 @@ about-logins-edit-login-os-auth-dialog-message-win = Para editar a sua credencia
 # This message can be seen when attempting to edit a login in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-edit-login-os-auth-dialog-message-macosx = editar a credencial guardada
+# This message can be seen when attempting to edit a login in about:logins
+# On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
+about-logins-edit-login-os-auth-dialog-message2-macosx = editar a palavra-passe guardada
 # This message can be seen when attempting to reveal a password in about:logins on Windows.
 about-logins-reveal-password-os-auth-dialog-message-win = Para ver a sua palavra-passe, introduza as suas credenciais de autenticação do Windows. Isto ajuda a proteger a segurança das suas contas.
 # This message can be seen when attempting to reveal a password in about:logins
@@ -150,6 +168,9 @@ about-logins-export-password-os-auth-dialog-message-win = Para exportas as suas 
 # This message can be seen when attempting to export a password in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-export-password-os-auth-dialog-message-macosx = exportar credenciais e palavras-passe guardadas
+# This message can be seen when attempting to export a password in about:logins
+# On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
+about-logins-export-password-os-auth-dialog-message2-macosx = exportar palavras-passe guardadas
 
 ## Primary Password notification
 
@@ -165,6 +186,10 @@ confirmation-dialog-dismiss-button =
     .title = Cancelar
 about-logins-confirm-remove-dialog-title = Remover esta credencial?
 confirm-delete-dialog-message = Esta ação não pode ser anulada.
+# Title for modal to confirm the removal of one saved password
+about-logins-confirm-delete-dialog-title = Remover palavra-passe
+# Message for modal to confirm the removal of one saved password
+about-logins-confirm-delete-dialog-message = Não pode desfazer esta ação.
 about-logins-confirm-remove-dialog-confirm-button = Remover
 
 ## Variables
@@ -201,18 +226,13 @@ about-logins-confirm-remove-all-sync-dialog-message =
         [1] Isto irá remover a credencial que guardou no { -brand-short-name } em todos os seus dispositivos onde sincronizou a sua { -fxaccount-brand-name }. Isto irá também remover quaisquer alertas de violação de dados que sejam apresentados aqui. Não poderá anular esta ação.
        *[other] Isto irá remover todas as credenciais que guardou no { -brand-short-name } em todos os seus dispositivos onde sincronizou a sua { -fxaccount-brand-name }. Isto irá também remover quaisquer alertas de violação de dados que sejam apresentados aqui. Não poderá anular esta ação.
     }
-about-logins-confirm-remove-all-sync-dialog-message2 =
-    { $count ->
-        [1] Isto irá remover a credencial que guardou no { -brand-short-name } em todos os dispositivos sincronizados com a sua conta. Isto também irá remover quaisquer alertas de violação de dados que sejam apresentados aqui. Não poderá anular esta ação.
-        [one] Isto irá remover a credencial que guardou no { -brand-short-name } em todos os dispositivos sincronizados com a sua conta. Isto também irá remover quaisquer alertas de violação de dados que sejam apresentados aqui. Não poderá anular esta ação.
-       *[other] Isto irá remover todas as credenciais que guardou no { -brand-short-name } em todos os dispositivos sincronizados com a sua conta. Isto também irá remover quaisquer alertas de violação de dados que sejam apresentados aqui. Não poderá anular esta ação.
-    }
 
 ##
 
 about-logins-confirm-export-dialog-title = Exportar credenciais e palavras-passe
 about-logins-confirm-export-dialog-message = As suas palavras-passe serão guardadas como texto legível (por exemplo, BadP@ssw0rd) para que qualquer pessoa que possa abrir o ficheiro exportado as possa visualizar.
 about-logins-confirm-export-dialog-confirm-button = Exportar…
+about-logins-confirm-export-dialog-confirm-button2 = Continuar com a exportação
 about-logins-alert-import-title = Importação concluída
 about-logins-alert-import-message = Ver resumo detalhado da importação
 confirm-discard-changes-dialog-title = Descartar alterações não guardadas?
@@ -254,6 +274,9 @@ about-logins-export-file-picker-title = Exportar ficheiro de credenciais
 # The default file name shown in the file picker when exporting saved logins.
 # This must end in .csv
 about-logins-export-file-picker-default-filename = credenciais.csv
+# The default file name shown in the file picker when exporting saved logins.
+# This must end in .csv
+about-logins-export-file-picker-default-filename2 = passwords.csv
 about-logins-export-file-picker-export-button = Exportar
 # A description for the .csv file format that may be shown as the file type
 # filter by the operating system.

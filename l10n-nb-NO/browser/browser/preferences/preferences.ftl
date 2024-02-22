@@ -203,6 +203,9 @@ containers-remove-alert-msg =
     }
 containers-remove-ok-button = Fjern denne beholderen?
 containers-remove-cancel-button = Ikke fjern denne beholderen
+settings-tabs-show-image-in-preview =
+    .label = Vis en forhåndsvisning av et bilde når du holder musepekeren på en fane
+    .accessKey = f
 
 ## General Section - Language & Appearance
 
@@ -794,9 +797,9 @@ sync-engine-creditcards =
     .label = Betalingskort
     .tooltiptext = Navn, numre og forfallsdato (bare datamaskin)
     .accesskey = K
-sync-engine-payment-methods =
+sync-engine-payment-methods2 =
     .label = Betalingsmetoder
-    .tooltiptext = Navn, kortnumre og utløpsdatoer (kun datamaskin)
+    .tooltiptext = Navn, kortnummer og utløpsdatoer
     .accesskey = n
 sync-engine-addons =
     .label = Utvidelser
@@ -844,18 +847,35 @@ pane-privacy-logins-and-passwords-header = Innlogginger og passord
 forms-ask-to-save-logins =
     .label = Spør om å lagre brukernavn og passord for nettsteder
     .accesskey = r
+
+## Privacy Section - Passwords
+
+# "Logins" is the former term for "Passwords". Users should find password settings
+# by searching for the former term "logins". It's not displayed in the UI.
+pane-privacy-passwords-header = Passord
+    .searchkeywords = innlogginger
+# Checkbox to control whether UI is shown to users to save or fill logins/passwords.
+forms-ask-to-save-passwords =
+    .label = Spør om å lagre passord
+    .accesskey = S
 forms-exceptions =
     .label = Unntak …
     .accesskey = n
 forms-generate-passwords =
     .label = Foreslå og generer sterke passord
     .accesskey = o
+forms-suggest-passwords =
+    .label = Foreslå sterkt passord …
+    .accesskey = F
 forms-breach-alerts =
     .label = Vis varsler om passord for datalekkasjer på nettsteder
     .accesskey = p
 forms-breach-alerts-learn-more-link = Les mer
 preferences-relay-integration-checkbox =
     .label = Foreslå { -relay-brand-name } e-postalias for å beskytte e-postadressen din
+preferences-relay-integration-checkbox2 =
+    .label = Foreslå { -relay-brand-name } e-postalias for å beskytte e-postadressen din
+    .accesskey = F
 relay-integration-learn-more-link = Les mer
 # Checkbox which controls filling saved logins into fields automatically when they appear, in some cases without user interaction.
 forms-fill-logins-and-passwords =
@@ -863,6 +883,13 @@ forms-fill-logins-and-passwords =
     .accesskey = i
 forms-saved-logins =
     .label = Lagrede innlogginger …
+    .accesskey = L
+# Checkbox which controls filling saved logins into fields automatically when they appear, in some cases without user interaction.
+forms-fill-usernames-and-passwords =
+    .label = Fyll ut brukernavn og passord automatisk
+    .accesskey = F
+forms-saved-passwords =
+    .label = Lagrede passord
     .accesskey = L
 forms-primary-pw-use =
     .label = Bruk et hovedpassord
@@ -887,6 +914,7 @@ forms-windows-sso =
     .label = Tillat Windows enkel pålogging for Microsoft, arbeids- og skolekontoer
 forms-windows-sso-learn-more-link = Les mer
 forms-windows-sso-desc = Behandle kontoer i dine enhetensinnstillinger
+windows-passkey-settings-label = Behandle passnøkkel i systeminnstillingene
 
 ## OS Authentication dialog
 
@@ -898,6 +926,28 @@ primary-password-os-auth-dialog-message-win = Skriv inn innloggingsinformasjonen
 # notes are only valid for English. Please test in your locale.
 primary-password-os-auth-dialog-message-macosx = opprett et hovedpassord
 master-password-os-auth-dialog-caption = { -brand-full-name }
+
+## Privacy section - Autofill
+
+pane-privacy-autofill-header = Autofyll
+autofill-addresses-checkbox = Lagre og fyll ut adresser
+    .accesskey = L
+autofill-saved-addresses-button = Lagrede adresser
+    .accesskey = L
+autofill-payment-methods-checkbox-message = Lagre og fyll inn betalingsmetoder
+    .accesskey = L
+autofill-payment-methods-checkbox-submessage = Inkluderer kreditt- og debetkort
+    .accesskey = I
+autofill-saved-payment-methods-button = Lagrede betalingsmetoder
+    .accesskey = e
+autofill-reauth-checkbox =
+    { PLATFORM() ->
+        [macos] Krev macOS-autentisering for å fylle ut og redigere betalingsmetoder.
+        [windows] Krev Windows-autentisering for å fylle ut og redigere betalingsmetoder.
+        [linux] Krev Linux-autentisering for å fylle ut og redigere betalingsmetoder.
+       *[other] Krev autentisering for å fylle ut og redigere betalingsmetoder.
+    }
+    .accesskey = a
 
 ## Privacy Section - History
 

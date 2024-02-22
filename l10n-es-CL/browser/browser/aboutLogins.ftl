@@ -29,6 +29,8 @@ about-logins-menu-menuitem-import-from-another-browser = Importar desde otro nav
 about-logins-menu-menuitem-import-from-a-file = Importar desde un archivo…
 about-logins-menu-menuitem-export-logins = Exportar credenciales…
 about-logins-menu-menuitem-remove-all-logins = Eliminar todos las credenciales…
+about-logins-menu-menuitem-export-logins2 = Exportar contraseñas…
+about-logins-menu-menuitem-remove-all-logins2 = Eliminar todas las contraseñas…
 menu-menuitem-preferences =
     { PLATFORM() ->
         [windows] Opciones
@@ -106,20 +108,25 @@ about-logins-login-intro-heading-logged-out2 = ¿Buscas tus credenciales guardad
 about-logins-login-intro-heading-logged-in = No se encontraron credenciales sincronizadas.
 login-intro-description = Si guardaste tus credenciales en { -brand-product-name } en un dispositivo diferente, estas son las instrucciones para que puedas tenerlas también aquí:
 login-intro-instructions-fxa = Crea o conéctate a tu { -fxaccount-brand-name } en el dispositivo en que tienes guardadas tus credenciales
+about-logins-login-intro-heading-message = Guarda tus contraseñas en un lugar seguro
+login-intro-description2 = Todas las contraseñas que guardes en { -brand-product-name } quedan cifradas. Además, estamos atentos a las filtraciones y te avisamos si estuvieras afectado. <a data-l10n-name="breach-alert-link">Más información</a>
 login-intro-instructions-fxa2 = Crea o conéctate a tu cuenta en el dispositivo en que tienes guardadas tus credenciales
 login-intro-instructions-fxa-settings = Ve a Ajustes > Sincronizar > Activar la sincronización… Selecciona las casillas de Credenciales y contraseñas.
 login-intro-instructions-fxa-passwords-help = Visita la página de <a data-l10n-name="passwords-help-link">asistencia para contraseñas</a> para obtener más ayuda.
 about-logins-intro-browser-only-import = Si tus credenciales están guardadas en otro navegador, puedes <a data-l10n-name="import-link">importarlas a { -brand-product-name }</a>
 about-logins-intro-import2 = Si tus credenciales se guardan fuera de { -brand-product-name }, puedes <a data-l10n-name="import-browser-link">importarlas desde otro navegador</a> o <a data-l10n-name="import-file-link">desde un archivo</a>
+about-logins-intro-import3 = Selecciona el botón del signo más que está arriba para añadir una contraseña ahora. También puedes <a data-l10n-name="import-browser-link">importar contraseñas desde otro navegador</a> o <a data-l10n-name="import-file-link">desde un archivo</a>.
 
 ## Login
 
 login-item-new-login-title = crear una nueva credencial
+# Header for adding a password
+about-logins-login-item-new-login-title = Añadir contraseña
 login-item-edit-button = Editar
 about-logins-login-item-remove-button = Eliminar
 login-item-origin-label = Dirección del sitio web
 login-item-tooltip-message = Asegúrate de que coincide con la dirección exacta del sitio web al que te conectas.
-about-logins-origin-tooltip = Asegúrate de que coincide con la dirección exacta del sitio web al que te conectas.
+about-logins-origin-tooltip2 = Ingresa la dirección completa y asegúrate de que coincida exactamente con el lugar donde te conectas.
 # Variables
 #   $webTitle (String) - Website title of the password being changed.
 about-logins-edit-password-tooltip = Asegúrate de guardar tu contraseña actual para este sitio. Cambiar la contraseña aquí no la cambia con { $webTitle }.
@@ -137,6 +144,7 @@ login-item-password-reveal-checkbox =
 login-item-copy-password-button-text = Copiar
 login-item-copied-password-button-text = ¡Copiado!
 login-item-save-changes-button = Guardar cambios
+about-logins-login-item-save-changes-button = Guardar
 login-item-save-new-button = Guardar
 login-item-cancel-button = Cancelar
 
@@ -164,6 +172,11 @@ about-logins-edit-login-os-auth-dialog-message-win = Para editar tu credencial, 
 # This message can be seen when attempting to edit a login in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-edit-login-os-auth-dialog-message-macosx = editar la credencial guardada
+# This message can be seen when attempting to edit a login in about:logins on Windows.
+about-logins-edit-login-os-auth-dialog-message2-win = Para editar tu contraseña, ingresa tus credenciales de inicio de sesión de Windows. Esto ayuda a proteger la seguridad de tus cuentas.
+# This message can be seen when attempting to edit a login in about:logins
+# On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
+about-logins-edit-login-os-auth-dialog-message2-macosx = editar la contraseña guardada
 # This message can be seen when attempting to reveal a password in about:logins on Windows.
 about-logins-reveal-password-os-auth-dialog-message-win = Para ver tu contraseña, ingresa tus credenciales de inicio de sesión de Windows. Esto ayuda a proteger la seguridad de tus cuentas.
 # This message can be seen when attempting to reveal a password in about:logins
@@ -179,6 +192,11 @@ about-logins-export-password-os-auth-dialog-message-win = Para exportar tus cred
 # This message can be seen when attempting to export a password in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-export-password-os-auth-dialog-message-macosx = exportar credenciales y contraseñas guardadas
+# This message can be seen when attempting to export a password in about:logins on Windows.
+about-logins-export-password-os-auth-dialog-message2-win = Para exportar tus contraseñas, ingresa tus credenciales de inicio de sesión de Windows. Esto ayuda a proteger la seguridad de tus cuentas.
+# This message can be seen when attempting to export a password in about:logins
+# On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
+about-logins-export-password-os-auth-dialog-message2-macosx = exportar contraseñas guardadas
 
 ## Primary Password notification
 
@@ -194,6 +212,10 @@ confirmation-dialog-dismiss-button =
     .title = Cancelar
 about-logins-confirm-remove-dialog-title = ¿Eliminar esta credencial?
 confirm-delete-dialog-message = Esta acción no puede revertirse.
+# Title for modal to confirm the removal of one saved password
+about-logins-confirm-delete-dialog-title = ¿Eliminar contraseña?
+# Message for modal to confirm the removal of one saved password
+about-logins-confirm-delete-dialog-message = No puedes deshacer esta acción.
 about-logins-confirm-remove-dialog-confirm-button = Eliminar
 
 ## Variables
@@ -239,12 +261,50 @@ about-logins-confirm-remove-all-sync-dialog-message2 =
         [one] Esto eliminará la credencial que has guardado en { -brand-short-name } en todos los dispositivos sincronizados con tu cuenta. Esto también eliminará las alertas de filtraciones que aparecen aquí. No podrás deshacer esta acción.
        *[other] Esto eliminará todas las credenciales que has guardado en { -brand-short-name } en todos los dispositivos sincronizados con tu cuenta. Esto también eliminará las alertas de filtraciones que aparecen aquí. No podrás deshacer esta acción.
     }
+# Checkbox for modal to confirm the removal of saved passwords
+about-logins-confirm-remove-all-dialog-checkbox-label2 =
+    { $count ->
+        [1] Sí, eliminar contraseña
+        [one] Sí, eliminar contraseña
+       *[other] Sí, eliminar contraseñas
+    }
+# Title for modal to confirm the removal of all saved passwords when user is NOT synced
+about-logins-confirm-remove-all-dialog-title2 =
+    { $count ->
+        [one] ¿Eliminar { $count } contraseña?
+       *[other] ¿Eliminar todas las { $count } contraseñas?
+    }
+# Message for modal to confirm the removal of saved passwords when user is NOT synced
+about-logins-confirm-remove-all-dialog-message2 =
+    { $count ->
+        [1] Esto eliminará la contraseña guardada en { -brand-short-name } y cualquier alerta de filtración. No sé puede deshacer esta acción.
+        [one] Esto eliminará la contraseña guardada en { -brand-short-name } y cualquier alerta de filtración. No sé puede deshacer esta acción.
+       *[other] Esto eliminará las contraseñas guardadas en { -brand-short-name } y cualquier alerta de filtración. No sé puede deshacer esta acción.
+    }
+# Title for modal to confirm the removal of all saved passwords when user IS SYNCED
+about-logins-confirm-remove-all-sync-dialog-title2 =
+    { $count ->
+        [one] ¿Eliminar { $count } contraseña de todos los dispositivos?
+       *[other] ¿Eliminar todas las { $count } contraseñas de todos los dispositivos?
+    }
+# Message for modal to confirm the removal of saved passwords when user IS synced.
+about-logins-confirm-remove-all-sync-dialog-message3 =
+    { $count ->
+        [1] Esto eliminará la contraseña guardada en { -brand-short-name } en todos tus dispositivos sincronizados. Esto también eliminará cualquier alerta de filtración que aparezca aquí. No puedes deshacer esta acción.
+        [one] Esto eliminará la contraseña guardada en { -brand-short-name } en todos tus dispositivos sincronizados. Esto también eliminará cualquier alerta de filtración que aparezca aquí. No puedes deshacer esta acción.
+       *[other] Esto eliminará todas las contraseñas guardadas en { -brand-short-name } en todos tus dispositivos sincronizados. Esto también eliminará cualquier alerta de filtración que aparezca aquí. No puedes deshacer esta acción.
+    }
 
 ##
 
 about-logins-confirm-export-dialog-title = Exportar credenciales y contraseñas
 about-logins-confirm-export-dialog-message = Tus contraseñas serán guardadas como texto legible (por ejemplo, BadP@ssw0rd) por lo que cualquiera que pueda abrir el archivo exportado podrá verlas.
 about-logins-confirm-export-dialog-confirm-button = Exportar…
+about-logins-confirm-export-dialog-title2 = Una nota sobre la exportación de contraseñas
+about-logins-confirm-export-dialog-message2 =
+    Cuando exportas, tus contraseñas se guardan en un archivo como texto legible.
+    Cuando hayas terminado de usar el archivo, te recomendamos eliminarlo para que otras personas que usen este dispositivo no puedan ver tus contraseñas.
+about-logins-confirm-export-dialog-confirm-button2 = Continuar con la exportación
 about-logins-alert-import-title = Importación terminada
 about-logins-alert-import-message = Ver resumen de importación detallado
 confirm-discard-changes-dialog-title = ¿Descartar cambios sin guardar?
@@ -286,6 +346,11 @@ about-logins-export-file-picker-title = Exportar archivo de credenciales…
 # The default file name shown in the file picker when exporting saved logins.
 # This must end in .csv
 about-logins-export-file-picker-default-filename = logins.csv
+# Title of the file picker dialog
+about-logins-export-file-picker-title2 = Exportar contraseñas desde { -brand-short-name }
+# The default file name shown in the file picker when exporting saved logins.
+# This must end in .csv
+about-logins-export-file-picker-default-filename2 = passwords.csv
 about-logins-export-file-picker-export-button = Exportar
 # A description for the .csv file format that may be shown as the file type
 # filter by the operating system.

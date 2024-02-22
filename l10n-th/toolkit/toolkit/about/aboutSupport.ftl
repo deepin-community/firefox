@@ -185,6 +185,21 @@ media-codec-support-codec-name = ชื่อตัวแปลงสัญญ�
 media-codec-support-supported = รองรับ
 media-codec-support-unsupported = ไม่รองรับ
 media-codec-support-error = ข้อมูลการรองรับโคเดกไม่พร้อมใช้ โปรดลองอีกครั้งหลังจากเล่นไฟล์สื่อแล้ว
+media-codec-support-lack-of-extension = ติดตั้งส่วนขยาย
+
+## Media Content Decryption Modules (CDM)
+## See EME Spec for more explanation for following technical terms
+## https://w3c.github.io/encrypted-media/
+
+media-content-decryption-modules-title = ข้อมูลโมดูลถอดรหัสเนื้อหา
+media-key-system-name = ชื่อระบบคีย์
+media-video-robustness = ความคงทนของข้อมูลภาพ
+media-audio-robustness = ความคงทนของข้อมูลเสียง
+media-cdm-capabilities = ความสามารถ
+# Clear Lead isn't defined in the spec, which means the the first few seconds
+# are not encrypted. It allows playback to start without having to wait for
+# license response, improving video start time and user experience.
+media-cdm-clear-lead = ส่วนนำที่ไม่เข้ารหัส (Clear Lead)
 
 ##
 

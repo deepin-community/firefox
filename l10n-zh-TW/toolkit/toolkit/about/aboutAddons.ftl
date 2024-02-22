@@ -215,6 +215,9 @@ shortcuts-no-addons = 您並未啟用任何擴充套件。
 shortcuts-no-commands = 下列擴充套件沒有快速鍵:
 shortcuts-input =
     .placeholder = 輸入快速鍵
+# Accessible name for a trashcan icon button that removes an existent shortcut
+shortcuts-remove-button =
+    .aria-label = 移除捷徑
 shortcuts-browserAction2 = 開啟工具列按鈕
 shortcuts-pageAction = 啟用頁面操作
 shortcuts-sidebarAction = 切換側邊欄
@@ -381,7 +384,7 @@ addon-detail-group-label-private-browsing =
 # Used as a description for the option to allow or block an add-on on quarantined domains.
 addon-detail-quarantined-domains-label = 可於受限網站運作
 # Used as help text part of the quarantined domains UI controls row.
-addon-detail-quarantined-domains-help = 允許後，擴充套件將能夠存取受 { -vendor-short-name } 限制的網站。請只有在信任此擴充套件時岑允許。
+addon-detail-quarantined-domains-help = 允許後，擴充套件將能夠存取受 { -vendor-short-name } 限制的網站。請只有在信任此擴充套件時才允許。
 # Used as label and tooltip text on the radio inputs associated to the quarantined domains UI controls.
 addon-detail-quarantined-domains-allow = 允許
 addon-detail-quarantined-domains-disallow = 不允許

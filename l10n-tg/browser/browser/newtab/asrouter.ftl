@@ -205,6 +205,9 @@ cfr-cbh-dismiss-button = Ҳоло не
     .accesskey = Ҳ
 cookie-banner-blocker-cfr-header = «{ -brand-short-name }» дар ҳоли ҳозир барои шумо кукиҳоро манъ кард
 cookie-banner-blocker-cfr-body = Мо бисёр равзанаҳои зоҳиршавандаро ба таври худкор рад мекунем, то ки барои сомонаҳо пайгирии шуморо душвор созем.
+cookie-banner-blocker-onboarding-header = «{ -brand-short-name }» дар ҳоли ҳозир барои шумо баннери кукиро рад кард
+cookie-banner-blocker-onboarding-body = Камтар ҳалалҳо ва камтар кукиҳое, ки шуморо дар ин сомона пайгирӣ мекунанд.
+cookie-banner-blocker-onboarding-learn-more = Маълумоти бештар
 
 ## These strings are used in the Fox doodle Pin/set default spotlights
 
@@ -234,10 +237,6 @@ fxa-sync-cfr-secondary = Баъдтар ёдоварӣ кунед
 
 ## Device Migration FxA Spotlight
 
-device-migration-fxa-spotlight-header = Аз дастгоҳи куҳна истифода мебаред?
-device-migration-fxa-spotlight-body = Барои мутмаин шудан, ки шумо маълумоти муҳимро ба монанди хатбаракҳо ва ниҳонвожаҳо гум намекунед, нусхаи эҳтиётии маълумоти худро таҳия намоед, хусусан агар шумо ба дастгоҳи нав гузаронед.
-device-migration-fxa-spotlight-primary-button = Тарзи таҳия кардани нусхаи эҳтиётии маълумоти ман
-device-migration-fxa-spotlight-link = Баъдтар ёдоварӣ кунед
 device-migration-fxa-spotlight-heavy-user-header = Фаромӯш накунед, ки нусхаи эҳтиётии маълумоти худро таҳия намоед
 device-migration-fxa-spotlight-heavy-user-body = Мутмаин шавед, ки маълумоти муҳим — ба монанди хатбаракҳо ва ниҳонвожаҳо — дар ҳамаи дастгоҳҳои шумо нав ва ҳафз карда шавад.
 device-migration-fxa-spotlight-heavy-user-primary-button = Оғози кор
@@ -245,7 +244,7 @@ device-migration-fxa-spotlight-older-device-header = Оромии дил аз «
 device-migration-fxa-spotlight-older-device-body = Ҳисобе маълумоти муҳими шуморо дар ҳар дастгоҳе, ки шумо пайваст мекунед, нав ва ҳифзшуда нигоҳ медорад.
 device-migration-fxa-spotlight-older-device-primary-button = Эҷод кардани ҳисоб
 device-migration-fxa-spotlight-getting-new-device-header-2 = Шумо мехоҳед, ки дар оянда аз дастгоҳи дигари нав истифода баред?
-device-migration-fxa-spotlight-getting-new-device-body = Ҳозир нусхаи эҳтиётии маълумоти худро таҳия кунед, то вақте ки дастгоҳи нави шумо меояд, шумо омода мешавед.
+device-migration-fxa-spotlight-getting-new-device-body-2 = Ҳангоми оғози кор бо дастгоҳи нав шумо метавонед бо иҷро кардани якчанд қадами одӣ ҳамаи хатбаракҳо, таърих ва ниҳонвожаҳои худро ба браузери нав бурда расонед.
 device-migration-fxa-spotlight-getting-new-device-primary-button = Тарзи таҳия кардани нусхаи эҳтиётии маълумоти ман
 
 ## Set as Default PDF Reader Infobar
@@ -272,3 +271,8 @@ launch-on-login-infobar-reject-button = Ҳоло не
 launch-on-login-infobar-final-message = <strong>Ҳар вақте ки шумо компютери худро аз нав оғоз мекунед, «{ -brand-short-name }»-ро мекушоед?</strong> Барои идора кардани хусусиятҳои «Оғози кор», калидвожаи «Оғози кор»-ро дар танзимот ҷустуҷӯ намоед.
 launch-on-login-infobar-final-reject-button = Не, ташаккур
     .accesskey = Н
+
+## Tail Fox Set Default Spotlight
+
+tail-fox-spotlight-primary-button = Кушодани пайвандҳои ман ба воситаи «{ -brand-short-name }»
+tail-fox-spotlight-secondary-button = Ҳоло не

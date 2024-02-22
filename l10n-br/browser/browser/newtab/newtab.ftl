@@ -208,7 +208,7 @@ newtab-empty-section-topstories = Aet oc'h betek penn. Distroit diwezhatoc'h evi
 newtab-discovery-empty-section-topstories-header = Echuet eo ganeoc'h!
 newtab-discovery-empty-section-topstories-content = Distroit amañ diwezhatoc'h evit lenn pennadoù all.
 newtab-discovery-empty-section-topstories-try-again-button = Klaskit en-dro
-newtab-discovery-empty-section-topstories-loading = O kargañ...
+newtab-discovery-empty-section-topstories-loading = O kargañ…
 # Displays when a layout in a section took too long to fetch articles.
 newtab-discovery-empty-section-topstories-timed-out = Chaous! N'eo ket bet karget ar gevrenn en he fezh.
 
@@ -218,7 +218,7 @@ newtab-discovery-empty-section-topstories-timed-out = Chaous! N'eo ket bet karge
 newtab-pocket-read-more = Danvezioù brudet:
 newtab-pocket-new-topics-title = Fellout a ra deoc’h kaout pennadoù ouzhpenn? Sellit ouzh ar sujedoù brudet e { -pocket-brand-name }
 newtab-pocket-more-recommendations = Erbedadennoù ouzhpenn
-newtab-pocket-learn-more = Gouzout hiroc'h
+newtab-pocket-learn-more = Gouzout hiroc’h
 newtab-pocket-cta-button = Staliañ { -pocket-brand-name }
 newtab-pocket-cta-text = Enrollit pennadoù a-zoare e { -pocket-brand-name } ha magit ho spered gant lennadennoù boemus.
 newtab-pocket-pocket-firefox-family = { -pocket-brand-name } a zo ul lodenn eus familh { -brand-product-name }

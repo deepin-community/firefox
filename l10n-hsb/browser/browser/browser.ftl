@@ -499,6 +499,9 @@ enable-devtools-popup-description2 = Zo byšće tastu F12 wužiwał, wočińće 
 
 ## URL Bar
 
+# This string is used as an accessible name to the "X" button that cancels a custom search mode (i.e. exits the Amazon.com search mode).
+urlbar-search-mode-indicator-close =
+    .aria-label = Začinić
 # This placeholder is used when not in search mode and the user's default search
 # engine is unknown.
 urlbar-placeholder =
@@ -575,6 +578,11 @@ urlbar-result-action-search-w-engine = Z { $engine } pytać
 urlbar-result-action-sponsored = Sponserowany
 urlbar-result-action-switch-tab = K rajtarkej přeńć
 urlbar-result-action-visit = Wopytać
+# "Switch to tab with container" is used when the target tab is located in a
+# different container.
+# Variables
+# $container (String): the name of the target container
+urlbar-result-action-switch-tab-with-container = K rajtarkej přeńć · <span>{ $container }</span>
 # Allows the user to visit a URL that was previously copied to the clipboard.
 urlbar-result-action-visit-from-clipboard = Z mjezyskłada wopytać
 # Directs a user to press the Tab key to perform a search with the specified
@@ -898,6 +906,10 @@ tabs-toolbar-list-all-tabs =
 # <img data-l10n-name="icon"/> will be replaced by the application menu icon
 restore-session-startup-suggestion-message = <strong>Chceće předchadne rajtarki wočinić?</strong> Móžeće swoje předchadne posedźenje z nałoženskeho menija { -brand-short-name } <img data-l10n-name="icon"/> pod Historija wobnowić.
 restore-session-startup-suggestion-button = Pokazajće kak
+
+## Infobar shown when the user tries to open a file picker and file pickers are blocked by enterprise policy
+
+filepicker-blocked-infobar = Waša organizacija je přistup k lokalnym datajam na tutym ličaku zablokowała.
 
 ## Mozilla data reporting notification (Telemetry, Firefox Health Report, etc)
 

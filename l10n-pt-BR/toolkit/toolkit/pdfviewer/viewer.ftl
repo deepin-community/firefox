@@ -301,8 +301,9 @@ pdfjs-editor-ink-button-label = Desenho
 pdfjs-editor-stamp-button =
     .title = Adicionar ou editar imagens
 pdfjs-editor-stamp-button-label = Adicionar ou editar imagens
-pdfjs-editor-remove-button =
-    .title = Remover
+pdfjs-editor-highlight-button =
+    .title = Destaque
+pdfjs-editor-highlight-button-label = Destaque
 
 ## Remove button for the various kind of editor.
 
@@ -312,6 +313,8 @@ pdfjs-editor-remove-freetext-button =
     .title = Remover texto
 pdfjs-editor-remove-stamp-button =
     .title = Remover imagem
+pdfjs-editor-remove-highlight-button =
+    .title = Remover destaque
 
 ##
 
@@ -324,6 +327,10 @@ pdfjs-editor-ink-opacity-input = Opacidade
 pdfjs-editor-stamp-add-image-button =
     .title = Adicionar imagem
 pdfjs-editor-stamp-add-image-button-label = Adicionar imagem
+# This refers to the thickness of the line used for free highlighting (not bound to text)
+pdfjs-editor-free-highlight-thickness-input = Espessura
+pdfjs-editor-free-highlight-thickness-title =
+    .title = Mudar espessura ao destacar itens que não são texto
 pdfjs-free-text =
     .aria-label = Editor de texto
 pdfjs-free-text-default-content = Comece digitando…
@@ -361,3 +368,22 @@ pdfjs-editor-resizer-label-bottom-right = Canto inferior direito — redimension
 pdfjs-editor-resizer-label-bottom-middle = No centro da base — redimensionar
 pdfjs-editor-resizer-label-bottom-left = Canto inferior esquerdo — redimensionar
 pdfjs-editor-resizer-label-middle-left = No meio à esquerda — redimensionar
+
+## Color picker
+
+# This means "Color used to highlight text"
+pdfjs-editor-highlight-colorpicker-label = Cor de destaque
+pdfjs-editor-colorpicker-button =
+    .title = Mudar cor
+pdfjs-editor-colorpicker-dropdown =
+    .aria-label = Opções de cores
+pdfjs-editor-colorpicker-yellow =
+    .title = Amarelo
+pdfjs-editor-colorpicker-green =
+    .title = Verde
+pdfjs-editor-colorpicker-blue =
+    .title = Azul
+pdfjs-editor-colorpicker-pink =
+    .title = Rosa
+pdfjs-editor-colorpicker-red =
+    .title = Vermelho

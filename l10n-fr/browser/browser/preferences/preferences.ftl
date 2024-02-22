@@ -203,6 +203,9 @@ containers-remove-alert-msg =
     }
 containers-remove-ok-button = Supprimer ce conteneur
 containers-remove-cancel-button = Ne pas supprimer ce conteneur
+settings-tabs-show-image-in-preview =
+    .label = Afficher un aperçu au survol des onglets
+    .accessKey = A
 
 ## General Section - Language & Appearance
 
@@ -794,10 +797,10 @@ sync-engine-creditcards =
     .label = Cartes bancaires
     .tooltiptext = Noms, numéros et dates d’expiration (uniquement sur ordinateur)
     .accesskey = C
-sync-engine-payment-methods =
+sync-engine-payment-methods2 =
     .label = Moyens de paiement
-    .tooltiptext = Noms, numéros de cartes et dates d’expiration (ordinateur uniquement)
-    .accesskey = o
+    .tooltiptext = Noms, numéros de cartes et date d’expiration
+    .accesskey = n
 sync-engine-addons =
     .label = Modules complémentaires
     .tooltiptext = Extensions et thèmes pour Firefox sur ordinateur
@@ -844,18 +847,35 @@ pane-privacy-logins-and-passwords-header = Identifiants et mots de passe
 forms-ask-to-save-logins =
     .label = Proposer d’enregistrer les identifiants et les mots de passe pour les sites web
     .accesskey = r
+
+## Privacy Section - Passwords
+
+# "Logins" is the former term for "Passwords". Users should find password settings
+# by searching for the former term "logins". It's not displayed in the UI.
+pane-privacy-passwords-header = Mots de passe
+    .searchkeywords = identifiants
+# Checkbox to control whether UI is shown to users to save or fill logins/passwords.
+forms-ask-to-save-passwords =
+    .label = Proposer d’enregistrer les mots de passe
+    .accesskey = P
 forms-exceptions =
     .label = Exceptions…
     .accesskey = x
 forms-generate-passwords =
     .label = Suggérer et créer des mots de passe robustes
     .accesskey = u
+forms-suggest-passwords =
+    .label = Suggérer des mots de passe compliqués…
+    .accesskey = S
 forms-breach-alerts =
     .label = Afficher des alertes pour les mots de passe de sites concernés par des fuites de données
     .accesskey = A
 forms-breach-alerts-learn-more-link = En savoir plus
 preferences-relay-integration-checkbox =
     .label = Proposer des alias de messagerie { -relay-brand-name } pour protéger votre adresse e-mail
+preferences-relay-integration-checkbox2 =
+    .label = Proposer des alias de messagerie { -relay-brand-name } pour protéger votre adresse e-mail
+    .accesskey = r
 relay-integration-learn-more-link = En savoir plus
 # Checkbox which controls filling saved logins into fields automatically when they appear, in some cases without user interaction.
 forms-fill-logins-and-passwords =
@@ -864,6 +884,13 @@ forms-fill-logins-and-passwords =
 forms-saved-logins =
     .label = Identifiants enregistrés…
     .accesskey = I
+# Checkbox which controls filling saved logins into fields automatically when they appear, in some cases without user interaction.
+forms-fill-usernames-and-passwords =
+    .label = Remplir automatiquement les noms d’utilisateur et mots de passe
+    .accesskey = R
+forms-saved-passwords =
+    .label = Mots de passe enregistrés
+    .accesskey = e
 forms-primary-pw-use =
     .label = Utiliser un mot de passe principal
     .accesskey = U
@@ -887,6 +914,7 @@ forms-windows-sso =
     .label = Autoriser l’authentification unique de Windows pour les comptes Microsoft, professionnels et scolaires.
 forms-windows-sso-learn-more-link = En savoir plus
 forms-windows-sso-desc = Gérez les comptes dans les paramètres de votre appareil
+windows-passkey-settings-label = Gérer les clés d’accès dans les paramètres système
 
 ## OS Authentication dialog
 
@@ -898,6 +926,28 @@ primary-password-os-auth-dialog-message-win = Pour créer un mot de passe princi
 # notes are only valid for English. Please test in your locale.
 primary-password-os-auth-dialog-message-macosx = créer un mot de passe principal
 master-password-os-auth-dialog-caption = { -brand-full-name }
+
+## Privacy section - Autofill
+
+pane-privacy-autofill-header = Remplissage automatique
+autofill-addresses-checkbox = Enregistrer et remplir automatiquement les adresses
+    .accesskey = n
+autofill-saved-addresses-button = Adresses enregistrées
+    .accesskey = e
+autofill-payment-methods-checkbox-message = Enregistrer et renseigner les moyens de paiement
+    .accesskey = m
+autofill-payment-methods-checkbox-submessage = Comprend les cartes bancaires
+    .accesskey = C
+autofill-saved-payment-methods-button = Moyens de paiement enregistrés
+    .accesskey = M
+autofill-reauth-checkbox =
+    { PLATFORM() ->
+        [macos] Exiger l’authentification macOS pour remplir ou modifier les moyens de paiement.
+        [windows] Exiger l’authentification Windows pour remplir ou modifier les moyens de paiement.
+        [linux] Exiger l’authentification Linux pour remplir ou modifier les moyens de paiement.
+       *[other] Exiger une authentification pour remplir ou modifier les moyens de paiement.
+    }
+    .accesskey = p
 
 ## Privacy Section - History
 
@@ -953,6 +1003,7 @@ sitedata-delete-on-close =
     .label = Supprimer les cookies et les données des sites à la fermeture de { -brand-short-name }
     .accesskey = S
 sitedata-delete-on-close-private-browsing = En mode de navigation privée permanent, les cookies et les données de site sont toujours effacés à la fermeture de { -brand-short-name }.
+sitedata-delete-on-close-private-browsing2 = En fonction de vos paramètres d’historique, { -brand-short-name } supprime les cookies et les données de site de votre session lorsque vous fermez le navigateur.
 sitedata-allow-cookies-option =
     .label = Accepter les cookies et les données de site
     .accesskey = A

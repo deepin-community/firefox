@@ -29,6 +29,8 @@ about-logins-menu-menuitem-import-from-another-browser = Importar dad in auter n
 about-logins-menu-menuitem-import-from-a-file = Importar dad ina datoteca…
 about-logins-menu-menuitem-export-logins = Exportar infurmaziuns d'annunzia…
 about-logins-menu-menuitem-remove-all-logins = Allontanar tut las datas d'annunzia…
+about-logins-menu-menuitem-export-logins2 = Exportar ils pleds-clav…
+about-logins-menu-menuitem-remove-all-logins2 = Allontanar tut ils pleds-clav…
 menu-menuitem-preferences =
     { PLATFORM() ->
         [windows] Preferenzas
@@ -105,20 +107,25 @@ about-logins-login-intro-heading-logged-out2 = Tschertgas ti tias infurmaziuns d
 about-logins-login-intro-heading-logged-in = Chattà naginas infurmaziuns d'annunzia sincronisadas.
 login-intro-description = Sche ti has memorisà tias infurmaziuns d'annunzia en { -brand-product-name } sin in auter apparat, vegns ti a savair qua co acceder ad ellas:
 login-intro-instructions-fxa = Acceda al u creescha in { -fxaccount-brand-name(capitalization: "sentence") } cun l'apparat nua che las infurmaziuns d'annunzia èn memorisadas
+about-logins-login-intro-heading-message = Memorisescha tes pleds-clav en in lieu segir
+login-intro-description2 = Tut ils pleds-clav che ti memoriseschas en { -brand-product-name } èn criptads. En pli observain nus las sperditas da datas e t’avertin sche ti es pertutgà. <a data-l10n-name="breach-alert-link">Ulteriuras infurmaziuns</a>
 login-intro-instructions-fxa2 = Creescha in conto u acceda a tes conto cun l'apparat sin il qual tias infurmaziuns d'annunzia èn memorisadas.
 login-intro-instructions-fxa-settings = Acceder a Parameters > Sync > Activar la sincronisaziun… Activar la chaschetta da controlla Infurmaziuns d'annunzia e pleds-clav.
 login-intro-instructions-fxa-passwords-help = Visita il <a data-l10n-name="passwords-help-link">support per pleds-clav</a> per ulteriur agid.
 about-logins-intro-browser-only-import = En cas che las infurmaziuns d'annunzia èn memorisadas en in auter navigatur, èsi pussaivel da las <a data-l10n-name="import-link">importar en { -brand-product-name }</a>
 about-logins-intro-import2 = Sche tias infurmaziuns d'annunzia èn memorisadas ordaifer { -brand-product-name }, pos ti <a data-l10n-name="import-browser-link">las importar dad in auter navigatur</a> u <a data-l10n-name="import-file-link">dad ina datoteca</a>
+about-logins-intro-import3 = Tscherna il buttun cun il plus sutvart per agiuntar ussa in pled-clav. Ti pos era <a data-l10n-name="import-browser-link">importar pleds-clav dad in auter navigatur</a> u <a data-l10n-name="import-file-link">dad ina datoteca</a>.
 
 ## Login
 
 login-item-new-login-title = Creescha ina nova infurmaziun d'annunzia
+# Header for adding a password
+about-logins-login-item-new-login-title = Agiuntar in pled-clav
 login-item-edit-button = Modifitgar
 about-logins-login-item-remove-button = Allontanar
 login-item-origin-label = Adressa da la website
 login-item-tooltip-message = Controllescha che quai correspunda exact a l'adressa da la website a la quala ti t'annunzias.
-about-logins-origin-tooltip = Controllescha che quai correspunda exact a l'adressa da la website a la quala ti t'annunzias.
+about-logins-origin-tooltip2 = Endatescha l'adressa cumpletta e fa la segira ch'ella correspunda exactamain a l'adressa da la quala ti t'annunzias.
 # Variables
 #   $webTitle (String) - Website title of the password being changed.
 about-logins-edit-password-tooltip = Fa la segira che ti memoriseschas tes pled-clav actual per questa website. Cun midar qua il pled-clav na sa mida il pled-clav da { $webTitle } betg.
@@ -136,6 +143,7 @@ login-item-password-reveal-checkbox =
 login-item-copy-password-button-text = Copiar
 login-item-copied-password-button-text = Copià!
 login-item-save-changes-button = Memorisar las midadas
+about-logins-login-item-save-changes-button = Memorisar
 login-item-save-new-button = Memorisar
 login-item-cancel-button = Interrumper
 
@@ -163,6 +171,11 @@ about-logins-edit-login-os-auth-dialog-message-win = Per modifitgar tia infurmaz
 # This message can be seen when attempting to edit a login in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-edit-login-os-auth-dialog-message-macosx = modifitgar l'infurmaziun d'annunzia memorisada
+# This message can be seen when attempting to edit a login in about:logins on Windows.
+about-logins-edit-login-os-auth-dialog-message2-win = Per modifitgar tes pled-clav, endatescha tias datas d'annunzia per Windows. Quai gida a garantir la segirezza da tes contos.
+# This message can be seen when attempting to edit a login in about:logins
+# On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
+about-logins-edit-login-os-auth-dialog-message2-macosx = modifitgar il pled-clav memorisà
 # This message can be seen when attempting to reveal a password in about:logins on Windows.
 about-logins-reveal-password-os-auth-dialog-message-win = Per mussar tes pled-clav, endatescha tias datas d'annunzia per Windows. Quai gida a garantir la segirezza da tes contos.
 # This message can be seen when attempting to reveal a password in about:logins
@@ -178,6 +191,11 @@ about-logins-export-password-os-auth-dialog-message-win = Per exportar tias infu
 # This message can be seen when attempting to export a password in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-export-password-os-auth-dialog-message-macosx = exportar las infurmaziuns d'annunzia memorisadas ed ils pleds-clav
+# This message can be seen when attempting to export a password in about:logins on Windows.
+about-logins-export-password-os-auth-dialog-message2-win = Per exportar tes pleds-clav, endatescha tias datas d'annunzia per Windows. Quai gida a garantir la segirezza da tes contos.
+# This message can be seen when attempting to export a password in about:logins
+# On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
+about-logins-export-password-os-auth-dialog-message2-macosx = exportar ils pleds-clav memorisads
 
 ## Primary Password notification
 
@@ -193,6 +211,10 @@ confirmation-dialog-dismiss-button =
     .title = Interrumper
 about-logins-confirm-remove-dialog-title = Allontanar questas infurmaziuns d'annunzia?
 confirm-delete-dialog-message = Questa acziun na po betg vegnir revocada.
+# Title for modal to confirm the removal of one saved password
+about-logins-confirm-delete-dialog-title = Allontanar il pled-clav?
+# Message for modal to confirm the removal of one saved password
+about-logins-confirm-delete-dialog-message = I n'è betg pussaivel da revocar questa acziun.
 about-logins-confirm-remove-dialog-confirm-button = Allontanar
 
 ## Variables
@@ -234,12 +256,47 @@ about-logins-confirm-remove-all-sync-dialog-message2 =
         [1] Uschia vegn allontanà l'infurmaziun d'annunzia che ti has memorisà en { -brand-short-name } sin tut ils apparats sincronisads cun tes conto. Era avertiments da sperditas da datas che cumparan qua vegnan allontanadas. Ti na vegns betg a pudair revocar questa acziun.
        *[other] Uschia vegnan allontanadas las infurmaziuns d'annunzia che ti has memorisà en { -brand-short-name } sin tut ils apparats sincronisads cun tes conto. Era avertiments da sperditas da datas che cumparan qua vegnan allontanadas. Ti na vegns betg a pudair revocar questa acziun.
     }
+# Checkbox for modal to confirm the removal of saved passwords
+about-logins-confirm-remove-all-dialog-checkbox-label2 =
+    { $count ->
+        [1] Gea, allontanar il pled-clav
+       *[other] Gea, allontanar ils pleds-clav
+    }
+# Title for modal to confirm the removal of all saved passwords when user is NOT synced
+about-logins-confirm-remove-all-dialog-title2 =
+    { $count ->
+        [one] Allontanar { $count } pled-clav?
+       *[other] Allontanar ils { $count } pleds-clav?
+    }
+# Message for modal to confirm the removal of saved passwords when user is NOT synced
+about-logins-confirm-remove-all-dialog-message2 =
+    { $count ->
+        [1] Uschia vegn allontanà il pled-clav memorisà en { -brand-short-name } e tut ils avertiments da sperditas da datas. Questa acziun na po betg vegnir revocada.
+       *[other] Uschia vegnan allontanads ils pleds-clav memorisads en { -brand-short-name } e tut ils avertiments da sperditas da datas. Questa acziun na po betg vegnir revocada.
+    }
+# Title for modal to confirm the removal of all saved passwords when user IS SYNCED
+about-logins-confirm-remove-all-sync-dialog-title2 =
+    { $count ->
+        [one] Allontanar { $count } pled-clav da tut ils apparats?
+       *[other] Allontanar ils { $count } pleds-clav da tut ils apparats?
+    }
+# Message for modal to confirm the removal of saved passwords when user IS synced.
+about-logins-confirm-remove-all-sync-dialog-message3 =
+    { $count ->
+        [1] Uschia vegn allontanà il pled-clav memorisà en { -brand-short-name } sin tut tes apparats sincronisads. Era avertiments da sperditas da datas che cumparan qua vegnan allontanadas. Ti na pos betg revocar questa acziun.
+       *[other] Uschia vegnan allontanads ils pleds-clav memorisads en { -brand-short-name } sin tut tes apparats sincronisads. Era avertiments da sperditas da datas che cumparan qua vegnan allontanadas. Ti na pos betg revocar questa acziun.
+    }
 
 ##
 
 about-logins-confirm-export-dialog-title = Exportar infurmaziuns d'annunzia e pleds-clav
 about-logins-confirm-export-dialog-message = Tes pleds-clav vegnan memorisads sco text legibel (p.ex. «M@lPledc1av»), uschia che mintgin che po avrir la datoteca exportada als po vesair.
 about-logins-confirm-export-dialog-confirm-button = Exportar…
+about-logins-confirm-export-dialog-title2 = In avis en connex cun l’export da pleds-clav
+about-logins-confirm-export-dialog-message2 =
+    Sche ti exporteschas tes pleds-clav, vegnan els memorisads en ina datoteca da text senza criptadi.
+    Sche ti na dovras betg pli la datoteca, ta recumandain nus da la stizzar per che autras persunas che dovran quest apparat, na vesian betg tes pleds-clav.
+about-logins-confirm-export-dialog-confirm-button2 = Cuntinuar cun l’export
 about-logins-alert-import-title = L'import è cumplet
 about-logins-alert-import-message = Mussar ina resumaziun detagliada da l'import
 confirm-discard-changes-dialog-title = Ignorar las modificaziuns betg memorisadas?
@@ -281,6 +338,11 @@ about-logins-export-file-picker-title = Exportar la datoteca da las infurmaziuns
 # The default file name shown in the file picker when exporting saved logins.
 # This must end in .csv
 about-logins-export-file-picker-default-filename = datas-annunzia.csv
+# Title of the file picker dialog
+about-logins-export-file-picker-title2 = Exportar pleds-clav da { -brand-short-name }
+# The default file name shown in the file picker when exporting saved logins.
+# This must end in .csv
+about-logins-export-file-picker-default-filename2 = pleds-clav.csv
 about-logins-export-file-picker-export-button = Exportar
 # A description for the .csv file format that may be shown as the file type
 # filter by the operating system.

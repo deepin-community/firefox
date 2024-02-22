@@ -89,7 +89,7 @@ firefoxview-pickup-tabs-badge = Gweithgaredd diwethaf
 # Variables:
 #   $targetURI (string) - URL that will be opened in the new tab
 firefoxview-tabs-list-tab-button =
-    .title = Agor { $targetURI } mewn tab newydd
+    .title = Agorwch { $targetURI } mewn tab newydd
 firefoxview-try-colorways-button = Rhowch gynnig ar gyfuniadau lliw
 firefoxview-change-colorway-button = Newid y llwybr lliw
 # Variables:
@@ -149,11 +149,15 @@ firefoxview-opentabs-focus-tab =
     .title = Symud i'r tab hwn
 firefoxview-show-more = Dangos rhagor
 firefoxview-show-less = Dangos llai
+firefoxview-show-all = Dangos y cyfan
 firefoxview-search-text-box-clear-button =
     .title = Clirio
+# Placeholder for the input field to search in recent browsing ("search" is a verb).
+firefoxview-search-text-box-recentbrowsing =
+    .placeholder = Chwilio
 # Placeholder for the input field to search in history ("search" is a verb).
 firefoxview-search-text-box-history =
-    .placeholder = Hanes chwilio
+    .placeholder = Chwilio hanes
 # Placeholder for the input field to search in recently closed tabs ("search" is a verb).
 firefoxview-search-text-box-recentlyclosed =
     .placeholder = Chwilio tabiau a gaewyd yn ddiweddar

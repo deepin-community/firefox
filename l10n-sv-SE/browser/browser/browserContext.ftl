@@ -78,6 +78,12 @@ toolbar-button-fxaccount =
     .label = { -fxaccount-brand-name }
     .tooltiptext = { -fxaccount-brand-name }
 
+## Account toolbar Button
+
+toolbar-button-account =
+    .label = Konto
+    .tooltiptext = Konto
+
 ## Save Page
 
 main-context-menu-page-save =
@@ -291,6 +297,7 @@ main-context-menu-send-to-device =
 main-context-menu-use-saved-login =
     .label = Använd sparad inloggning
     .accesskey = A
+# Displayed when there are saved passwords and the user clicks inside a username or password field
 main-context-menu-use-saved-password =
     .label = Använd sparat lösenord
     .accesskey = A
@@ -305,6 +312,9 @@ main-context-menu-suggest-strong-password =
     .accesskey = F
 main-context-menu-manage-logins2 =
     .label = Hantera inloggningar
+    .accesskey = H
+main-context-menu-manage-passwords =
+    .label = Hantera lösenord
     .accesskey = H
 main-context-menu-keyword =
     .label = Lägg till ett nyckelord för denna sökning…

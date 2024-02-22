@@ -205,6 +205,9 @@ cfr-cbh-dismiss-button = Ei nyt
     .accesskey = N
 cookie-banner-blocker-cfr-header = { -brand-short-name } esti juuri evästeet
 cookie-banner-blocker-cfr-body = Estämme automaattisesti monet evästeiden ponnahdusilmoitukset, jotta sivustojen on vaikea seurata sinua.
+cookie-banner-blocker-onboarding-header = { -brand-short-name } kieltäytyi juuri evästeilmoituksesta puolestasi
+cookie-banner-blocker-onboarding-body = Vähemmän häiriötekijöitä, vähemmän sinua tällä sivustolla seuraavia evästeitä.
+cookie-banner-blocker-onboarding-learn-more = Lue lisää
 
 ## These strings are used in the Fox doodle Pin/set default spotlights
 
@@ -234,10 +237,6 @@ fxa-sync-cfr-secondary = Muistuta myöhemmin
 
 ## Device Migration FxA Spotlight
 
-device-migration-fxa-spotlight-header = Käytätkö vanhempaa laitetta?
-device-migration-fxa-spotlight-body = Varmuuskopioi tietosi varmistaaksesi, ettet menetä tärkeitä tietoja, kuten kirjanmerkkejä ja salasanoja – varsinkin jos vaihdat uuteen laitteeseen.
-device-migration-fxa-spotlight-primary-button = Kuinka varmuuskopioida omat tiedot
-device-migration-fxa-spotlight-link = Muistuta myöhemmin
 device-migration-fxa-spotlight-heavy-user-header = Älä unohda varmuuskopioida tietojasi
 device-migration-fxa-spotlight-heavy-user-body = Varmista, että tärkeät tiedot, kuten kirjanmerkit ja salasanat, päivitetään ja suojataan kaikilla laitteillasi.
 device-migration-fxa-spotlight-heavy-user-primary-button = Aloitetaan
@@ -245,7 +244,7 @@ device-migration-fxa-spotlight-older-device-header = Mielenrauhaa { -brand-produ
 device-migration-fxa-spotlight-older-device-body = Tili pitää tärkeät tietosi ajan tasalla ja suojattuina kaikissa yhdistetyissä laitteissa.
 device-migration-fxa-spotlight-older-device-primary-button = Luo tili
 device-migration-fxa-spotlight-getting-new-device-header-2 = Uusi laite tulevaisuudessa?
-device-migration-fxa-spotlight-getting-new-device-body = Varmuuskopioi tietosi nyt, jotta olet valmis, kun laitteesi saapuu.
+device-migration-fxa-spotlight-getting-new-device-body-2 = Noudata muutamia yksinkertaisia ohjeita tuodaksesi kirjanmerkkisi, historiasi ja salasanasi, kun aloitat uuden laitteen käytön.
 device-migration-fxa-spotlight-getting-new-device-primary-button = Kuinka varmuuskopioida omat tiedot
 
 ## Set as Default PDF Reader Infobar
@@ -272,3 +271,14 @@ launch-on-login-infobar-reject-button = Ei nyt
 launch-on-login-infobar-final-message = <strong>Avataanko { -brand-short-name } aina, kun käynnistät tietokoneen uudelleen?</strong> Voit hallita käynnistysasetuksia etsimällä asetuksista “käynnistys”.
 launch-on-login-infobar-final-reject-button = Ei kiitos
     .accesskey = E
+
+## Tail Fox Set Default Spotlight
+
+# This title is displayed together with the picture of a running fox with a long tail.
+# In English, this is a figure of speech meaning 'stop something from following you'.
+# If the localization of this message is challenging, consider using a simplified
+# alternative as a reference for translation: 'Keep unwanted trackers away'.
+tail-fox-spotlight-title = Pidä ärsyttävät seuraimet kaukana
+tail-fox-spotlight-subtitle = Sano hyvästit ärsyttäville mainosseuraimille ja asetu turvallisempaan, nopeampaan Internet-kokemukseen.
+tail-fox-spotlight-primary-button = Avaa linkit { -brand-short-name }illa
+tail-fox-spotlight-secondary-button = Ei nyt

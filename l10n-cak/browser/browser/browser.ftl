@@ -487,6 +487,9 @@ enable-devtools-popup-description2 = Richin nokisäx ri F12 chojokem, nab'ey taj
 
 ## URL Bar
 
+# This string is used as an accessible name to the "X" button that cancels a custom search mode (i.e. exits the Amazon.com search mode).
+urlbar-search-mode-indicator-close =
+    .aria-label = Titz'apïx
 # This placeholder is used when not in search mode and the user's default search
 # engine is unknown.
 urlbar-placeholder =
@@ -884,6 +887,9 @@ tabs-toolbar-list-all-tabs =
 restore-session-startup-suggestion-message = <strong> ¿La yejaq taq ruwi' xe'ik'o yan?</strong> Yatikïr natzolij ri amolojri'ïl pa ri rucha'ob'äl choköy{ -brand-short-name } <img data-l10n-name="icon"/>, pa Natab'äl.
 restore-session-startup-suggestion-button = Tik'ut achi'el
 
+## Infobar shown when the user tries to open a file picker and file pickers are blocked by enterprise policy
+
+
 ## Mozilla data reporting notification (Telemetry, Firefox Health Report, etc)
 
 data-reporting-notification-message = { -brand-short-name } pa ruyonil yerutäq pa { -vendor-short-name } jujun taq tzij, ruma ri' yojtikïr niqutzilaj ri asamaj.
@@ -919,6 +925,9 @@ unified-extensions-button-quarantined =
 
 ## Private browsing reset button
 
+reset-pbm-panel-always-ask-checkbox =
+    .label = Junelïk tik'utüx chwe
+    .accesskey = J
 reset-pbm-panel-cancel-button =
     .label = Tiq'at
     .accesskey = q

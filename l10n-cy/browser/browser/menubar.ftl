@@ -154,11 +154,11 @@ menu-view-full-zoom =
     .label = Chwyddo
     .accesskey = h
 menu-view-full-zoom-enlarge =
-    .label = Chwyddo Mewn
-    .accesskey = M
+    .label = Cynyddu
+    .accesskey = C
 menu-view-full-zoom-reduce =
-    .label = Chwyddo Allan
-    .accesskey = A
+    .label = Lleihau
+    .accesskey = L
 menu-view-full-zoom-actual-size =
     .label = Maint Gwirioneddol
     .accesskey = M
@@ -232,7 +232,7 @@ menu-history-undo-window-menu =
     .label = Ffenestri wedi eu Cau yn Ddiweddar
 # "Search" is a verb, as in "Search in History"
 menu-history-search =
-    .label = Hanes Chwilio
+    .label = Chwilio'ch Hanes
 
 ## Bookmarks Menu
 

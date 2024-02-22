@@ -152,12 +152,12 @@ profiler-popup-capture-button =
 profiler-popup-start-shortcut =
     { PLATFORM() ->
         [macos] ⌃⇧1
-       *[other] Ctrl+Shift+1
+       *[other] Reol+Pennlizh+1
     }
 profiler-popup-capture-shortcut =
     { PLATFORM() ->
         [macos] ⌃⇧2
-       *[other] Ctrl+Shift+2
+       *[other] Reol+Pennlizh+2
     }
 
 ## Profiler presets
@@ -242,7 +242,7 @@ appmenu-help-exit-troubleshoot-mode =
 ## are mutually exclusive, so it's possible to use the same accesskey for both.
 
 appmenu-help-report-deceptive-site =
-    .label = Danevelliñ al lec'hienn dagus…
+    .label = Danevelliñ ul lec’hienn dagus…
     .accesskey = d
 appmenu-help-not-deceptive =
     .label = N'eo ket ul lec’hienn dagus…

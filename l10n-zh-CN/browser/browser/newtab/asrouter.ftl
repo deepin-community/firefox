@@ -203,6 +203,9 @@ cfr-cbh-dismiss-button = 暂时不要
     .accesskey = N
 cookie-banner-blocker-cfr-header = { -brand-short-name } 刚刚为您拦截了 Cookie
 cookie-banner-blocker-cfr-body = 我们会自动拒绝许多 Cookie 弹窗，让网站难以跟踪您。
+cookie-banner-blocker-onboarding-header = { -brand-short-name } 刚刚为您拒绝了 Cookie 横幅的请求
+cookie-banner-blocker-onboarding-body = 在此网站上专注浏览，少受 Cookie 跟踪。
+cookie-banner-blocker-onboarding-learn-more = 详细了解
 
 ## These strings are used in the Fox doodle Pin/set default spotlights
 
@@ -218,7 +221,7 @@ fox-doodle-pin-secondary = 暂时不要
 
 ## These strings are used in the Set Firefox as Default PDF Handler for Existing Users experiment
 
-set-default-pdf-handler-headline = <strong>您的 PDF 文件现在可以在 { -brand-short-name } 中打开。</strong>请直接在您的浏览器中编辑或签署表格。要更改，请在设置中搜索“PDF”。
+set-default-pdf-handler-headline = <strong>现在起，您的 PDF 文件将在 { -brand-short-name } 中打开。</strong>您可以直接在浏览器中编辑或签署表单。若要更改，请在设置中搜索“PDF”。
 set-default-pdf-handler-primary = 明白了
 
 ## FxA sync CFR
@@ -232,10 +235,6 @@ fxa-sync-cfr-secondary = 稍后提醒我
 
 ## Device Migration FxA Spotlight
 
-device-migration-fxa-spotlight-header = 使用的是旧设备？
-device-migration-fxa-spotlight-body = 备份您的数据，以确保书签和密码等重要数据安全无虞。在换到新设备前更是如此。
-device-migration-fxa-spotlight-primary-button = 如何备份数据
-device-migration-fxa-spotlight-link = 稍后提醒我
 device-migration-fxa-spotlight-heavy-user-header = 不要忘记备份数据
 device-migration-fxa-spotlight-heavy-user-body = 将书签和密码等重要信息跨设备安全保存，并随时更新。
 device-migration-fxa-spotlight-heavy-user-primary-button = 开始使用
@@ -243,7 +242,7 @@ device-migration-fxa-spotlight-older-device-header = { -brand-product-name } 为
 device-migration-fxa-spotlight-older-device-body = 登录账户，将重要信息跨设备安全保存并随时更新。
 device-migration-fxa-spotlight-older-device-primary-button = 创建账户
 device-migration-fxa-spotlight-getting-new-device-header-2 = 打算换新设备？
-device-migration-fxa-spotlight-getting-new-device-body = 立即备份数据，新设备到货后就能直接上手使用。
+device-migration-fxa-spotlight-getting-new-device-body-2 = 只需简单几步，即可将您的书签、历史记录、密码同步至新设备。
 device-migration-fxa-spotlight-getting-new-device-primary-button = 如何备份数据
 
 ## Set as Default PDF Reader Infobar
@@ -270,3 +269,14 @@ launch-on-login-infobar-reject-button = 暂时不要
 launch-on-login-infobar-final-message = <strong>想在重启电脑后自动打开 { -brand-short-name } 吗？</strong>在设置中搜索“启动”即可管理启动首选项。
 launch-on-login-infobar-final-reject-button = 不了，谢谢
     .accesskey = N
+
+## Tail Fox Set Default Spotlight
+
+# This title is displayed together with the picture of a running fox with a long tail.
+# In English, this is a figure of speech meaning 'stop something from following you'.
+# If the localization of this message is challenging, consider using a simplified
+# alternative as a reference for translation: 'Keep unwanted trackers away'.
+tail-fox-spotlight-title = 甩掉讨厌的跟踪器
+tail-fox-spotlight-subtitle = 甩掉广告跟踪器，上网安全又快速。
+tail-fox-spotlight-primary-button = 用 { -brand-short-name } 打开我的链接
+tail-fox-spotlight-secondary-button = 暂时不要

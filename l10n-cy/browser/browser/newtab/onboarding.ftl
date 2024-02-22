@@ -169,7 +169,7 @@ mr2022-onboarding-easy-setup-primary-button-label = Cadw a pharhau
 # Set Default action checkbox label used on new user onboarding first screen
 mr2022-onboarding-easy-setup-set-default-checkbox-label = Gosod { -brand-short-name } fel y porwr rhagosodedig
 # Import action checkbox label used on new user onboarding first screen
-mr2022-onboarding-easy-setup-import-checkbox-label = Mewnforio o'r porwr blaenorol
+mr2022-onboarding-easy-setup-import-checkbox-label = Mewnforiwch o'r porwr blaenorol
 
 ## MR2022 New User Pin Firefox screen strings
 
@@ -344,3 +344,19 @@ onboarding-mobile-download-security-and-privacy-subtitle = Pan fyddwch wedi'ch c
 # Gratitude screen
 onboarding-gratitude-security-and-privacy-title = Mae { -brand-short-name } yn eich cefnogi
 onboarding-gratitude-security-and-privacy-subtitle = Diolch am ddefnyddio { -brand-short-name }, gan y Mozilla Foundation. Gyda'ch cefnogaeth chi, rydyn ni'n gweithio i wneud y rhyngrwyd yn fwy agored, hygyrch, ac yn well i bawb.
+
+## New user time and familiarity survey strings
+
+onboarding-new-user-time-based-survey-title = Ers pryd ydych chi wedi bod yn defnyddio { -brand-short-name }?
+onboarding-new-user-familiarity-based-survey-title = Pa mor gyfarwydd ydych chi â { -brand-short-name }?
+onboarding-new-user-survey-subtitle = Mae eich adborth yn helpu i wneud { -brand-short-name } yn well fyth.
+# When translating "brand new" it means completely new.
+onboarding-new-user-survey-time-based-option-1 = Rwy'n hollol newydd
+onboarding-new-user-survey-time-based-option-2 = Llai nag 1 mis
+onboarding-new-user-survey-time-based-option-3 = Mwy nag 1 mis, yn rheolaidd
+onboarding-new-user-survey-time-based-option-4 = Mwy nag 1 mis, yn achlysurol
+# When translating "brand new" it means completely new.
+onboarding-new-user-survey-familiarity-based-option-1 = Rwy'n hollol newydd
+onboarding-new-user-survey-familiarity-based-option-2 = Rwy wedi ei ddefnyddio rhywfaint
+onboarding-new-user-survey-familiarity-based-option-3 = Rwy'n gyfarwydd iawn ag ef
+onboarding-new-user-survey-familiarity-based-option-4 = Rwy wedi ei ddefnyddio yn y gorffennol, ond dim ers tro

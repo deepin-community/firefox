@@ -2,7 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-report-broken-site-mainview-title = Adrodd ar Wefan wedi Torri
+report-broken-site-mainview-title = Adrodd ar wefan wedi torri
 report-broken-site-panel-header =
     .label = Adrodd ar wefan wedi torri
     .title = Adrodd ar wefan wedi torri
@@ -39,3 +39,5 @@ report-broken-site-panel-report-sent-header =
     .label = Mae eich adroddiad wedi'i anfon
     .title = Mae eich adroddiad wedi'i anfon
 report-broken-site-panel-report-sent-text = Diolch am helpu { -brand-product-name } i wneud y we yn fwy agored, hygyrch, ac yn well i bawb.
+report-broken-site-panel-invalid-url-label = Rhowch URL dilys
+report-broken-site-panel-missing-reason-label = Dewiswch reswm

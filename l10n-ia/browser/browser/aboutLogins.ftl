@@ -29,6 +29,8 @@ about-logins-menu-menuitem-import-from-another-browser = Importar de un altere n
 about-logins-menu-menuitem-import-from-a-file = Importar de un file…
 about-logins-menu-menuitem-export-logins = Exportar credentiales…
 about-logins-menu-menuitem-remove-all-logins = Remover tote le credentiales…
+about-logins-menu-menuitem-export-logins2 = Exportar contrasignos…
+about-logins-menu-menuitem-remove-all-logins2 = Remover tote le contrasignos…
 menu-menuitem-preferences =
     { PLATFORM() ->
         [windows] Optiones
@@ -105,20 +107,25 @@ about-logins-login-intro-heading-logged-out2 = Cerca tu le credentiales que tu h
 about-logins-login-intro-heading-logged-in = Nulle credentiales synchronisate trovate.
 login-intro-description = Si tu ha salvate tu credentiales in { -brand-product-name } sur un altere apparato, ecce como render los disponibile hic:
 login-intro-instructions-fxa = Aperi session o crea un { -fxaccount-brand-name } sur le apparato ubi se trova tu credentiales.
+about-logins-login-intro-heading-message = Salva tu contrasignos a un loco secur
+login-intro-description2 = Tote contrasignos que tu salva in { -brand-product-name } es cryptate. In ultra, nos survelia pro violationes e te avisa si tu es afficite. <a data-l10n-name="breach-alert-link">Pro saper plus</a>
 login-intro-instructions-fxa2 = Crea o identifica te in tu conto sur le apparato ubi tu credentiales es salvate.
 login-intro-instructions-fxa-settings = Va a Parametros > Sync > Activar synchronisation… Selige le quadrato ‘Contos e contrasignos’.
 login-intro-instructions-fxa-passwords-help = Visita <a data-l10n-name="passwords-help-link">supporto pro contrasignos</a> pro adjuta ulterior.
 about-logins-intro-browser-only-import = Si tu credentiales es salvate in un altere navigator, tu pote <a data-l10n-name="import-link">importar los in { -brand-product-name }</a>
 about-logins-intro-import2 = Si tu credentiales es salvate foras de { -brand-product-name }, tu pote <a data-l10n-name="import-browser-link">importar los ab un altere navigator</a> o <a data-l10n-name="import-file-link">ab un file</a>
+about-logins-intro-import3 = Elige le button del signo plus supra pro adder un contrasigno ora. Tu alsi pote <a data-l10n-name="import-browser-link">importar contrasignos ab un altere navigator</a> o <a data-l10n-name="import-file-link">ab un file</a>.
 
 ## Login
 
 login-item-new-login-title = Crear nove credentiales
+# Header for adding a password
+about-logins-login-item-new-login-title = Adder contrasigno
 login-item-edit-button = Modificar
 about-logins-login-item-remove-button = Remover
 login-item-origin-label = Adresse web
 login-item-tooltip-message = Verifica que isto concorda con le adresse exacte del sito web ubi tu aperi session.
-about-logins-origin-tooltip = Verifica que isto concorda con le adresse exacte del sito web ubi tu aperi session.
+about-logins-origin-tooltip2 = Insere le adresse complete e cura que illo corresponde exactemente a illo de tu accesso.
 # Variables
 #   $webTitle (String) - Website title of the password being changed.
 about-logins-edit-password-tooltip = Verifica que tu reserva tu contrasigno actual pro iste sito. Cambiar le contrasigno ci non lo cambia in { $webTitle }.
@@ -136,6 +143,7 @@ login-item-password-reveal-checkbox =
 login-item-copy-password-button-text = Copiar
 login-item-copied-password-button-text = Copiate!
 login-item-save-changes-button = Salvar le cambiamentos
+about-logins-login-item-save-changes-button = Salvar
 login-item-save-new-button = Salvar
 login-item-cancel-button = Cancellar
 
@@ -163,6 +171,11 @@ about-logins-edit-login-os-auth-dialog-message-win = Pro modificar le conto, ins
 # This message can be seen when attempting to edit a login in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-edit-login-os-auth-dialog-message-macosx = verifica le credentiales salvate
+# This message can be seen when attempting to edit a login in about:logins on Windows.
+about-logins-edit-login-os-auth-dialog-message2-win = Pro modificar tu contrasigno, insere tu credentiales de accesso a Windows. Isto adjuta a proteger le securitate de tu contos.
+# This message can be seen when attempting to edit a login in about:logins
+# On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
+about-logins-edit-login-os-auth-dialog-message2-macosx = modificar le contrasigno salvate
 # This message can be seen when attempting to reveal a password in about:logins on Windows.
 about-logins-reveal-password-os-auth-dialog-message-win = Pro vider le contrasigno, insere tu credentiales de accesso a Windows. Isto adjuta a proteger le securitate de tu contos.
 # This message can be seen when attempting to reveal a password in about:logins
@@ -178,6 +191,11 @@ about-logins-export-password-os-auth-dialog-message-win = Pro exportar tu creden
 # This message can be seen when attempting to export a password in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-export-password-os-auth-dialog-message-macosx = exporta credentiales e contrasignos salvate
+# This message can be seen when attempting to export a password in about:logins on Windows.
+about-logins-export-password-os-auth-dialog-message2-win = Pro exportar le contrasigno, insere tu credentiales de accesso a Windows. Isto adjuta a proteger le securitate de tu contos.
+# This message can be seen when attempting to export a password in about:logins
+# On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
+about-logins-export-password-os-auth-dialog-message2-macosx = exportar le contrasignos salvate
 
 ## Primary Password notification
 
@@ -193,6 +211,10 @@ confirmation-dialog-dismiss-button =
     .title = Cancellar
 about-logins-confirm-remove-dialog-title = Remover iste credentiales?
 confirm-delete-dialog-message = Iste action es irreversibile.
+# Title for modal to confirm the removal of one saved password
+about-logins-confirm-delete-dialog-title = Remover de contrasigno?
+# Message for modal to confirm the removal of one saved password
+about-logins-confirm-delete-dialog-message = Tu non potera disfacer iste action.
 about-logins-confirm-remove-dialog-confirm-button = Remover
 
 ## Variables
@@ -233,12 +255,47 @@ about-logins-confirm-remove-all-sync-dialog-message2 =
         [1] Isto removera le credentiales que tu ha salvate pro { -brand-short-name } sur tote le apparatos synchronisate a tu conto. Isto removera etiam le alertas de violation que appare hic. Tu non potera disfacer iste action.
        *[other] Isto removera le credentiales que tu ha salvate pro { -brand-short-name } sur tote le apparatos synchronisate a tu conto. Isto removera etiam le alertas de violation que appare hic. Tu non potera disfacer iste action.
     }
+# Checkbox for modal to confirm the removal of saved passwords
+about-logins-confirm-remove-all-dialog-checkbox-label2 =
+    { $count ->
+        [1] Si, remover le contrasigno
+       *[other] Si, remover le contrasignos
+    }
+# Title for modal to confirm the removal of all saved passwords when user is NOT synced
+about-logins-confirm-remove-all-dialog-title2 =
+    { $count ->
+        [one] Remover { $count } contrasigno?
+       *[other] Remover { $count } contrasignos?
+    }
+# Message for modal to confirm the removal of saved passwords when user is NOT synced
+about-logins-confirm-remove-all-dialog-message2 =
+    { $count ->
+        [1] Isto removera le  contrasigno salvate in { -brand-short-name } e tote le alertas de violation. Tu non potera disfacer iste action.
+       *[other] Isto removera le  contrasigno salvate in { -brand-short-name } e tote le alertas de violation. Tu non potera disfacer iste action.
+    }
+# Title for modal to confirm the removal of all saved passwords when user IS SYNCED
+about-logins-confirm-remove-all-sync-dialog-title2 =
+    { $count ->
+        [one] Remover { $count } contrasigno ex tote le apparatos?
+       *[other] Remover { $count } contrasignos ex tote le apparatos?
+    }
+# Message for modal to confirm the removal of saved passwords when user IS synced.
+about-logins-confirm-remove-all-sync-dialog-message3 =
+    { $count ->
+        [1] Isto removera le contrasignos salvate in { -brand-short-name } sur tote tu apparatos synchronisate. Isto removera alsi tote le alertas de violation que appare hic. Tu non potera disfacer iste action.
+       *[other] Isto removera tote le contrasignos salvate in { -brand-short-name } sur tote tu apparatos synchronisate. Isto removera alsi tote le alertas de violation que appare hic. Tu non potera disfacer iste action.
+    }
 
 ##
 
 about-logins-confirm-export-dialog-title = Exportar credentiales e contrasignos
 about-logins-confirm-export-dialog-message = Tu contrasignos sera salvate como texto legibile (e.g., "P@ssw0rd123"), assi quicunque pote aperir le file exportate, pote vider los.
 about-logins-confirm-export-dialog-confirm-button = Exportar…
+about-logins-confirm-export-dialog-title2 = Un nota circa exportar contrasignos
+about-logins-confirm-export-dialog-message2 =
+    Quando tu exporta, tu contrasignos es salvate in un file con texto legibile.
+    Quando tu ha finite de usar le file, nos consilia de deler lo assi alteres qui usa iste apparato non pote vider tu contrasignos.
+about-logins-confirm-export-dialog-confirm-button2 = Continuar con le exportation
 about-logins-alert-import-title = Importation complete
 about-logins-alert-import-message = Vider un summario detaliate del importation
 confirm-discard-changes-dialog-title = Abandonar le modificationes non salvate?
@@ -280,6 +337,11 @@ about-logins-export-file-picker-title = Exportar file de credentiales
 # The default file name shown in the file picker when exporting saved logins.
 # This must end in .csv
 about-logins-export-file-picker-default-filename = credenziales.csv
+# Title of the file picker dialog
+about-logins-export-file-picker-title2 = Exportar contrasignos ab { -brand-short-name }
+# The default file name shown in the file picker when exporting saved logins.
+# This must end in .csv
+about-logins-export-file-picker-default-filename2 = passwords.csv
 about-logins-export-file-picker-export-button = Exportar
 # A description for the .csv file format that may be shown as the file type
 # filter by the operating system.

@@ -351,6 +351,7 @@ identity-connection-secure = Jeikekatu
 identity-connection-failure = Jeike oiko’ỹva
 identity-connection-internal = Kóva { -brand-short-name } jeroviáva; kuatiarogue.
 identity-connection-file = Ko kuatiarogue oñeñongatu mohendahápe.
+identity-connection-associated = Ko kuatiarogue oñemyanyhẽ ambue kuatiarogue guive.
 identity-extension-page = Ko kuatiarogue oñemyanyhẽ jepysokue guive.
 identity-active-blocked = { -brand-short-name } ojokóma ko kuatiarogue pehẽ ijerovia’ỹha.
 identity-custom-root = Jeike ohechapyréva mboajepyre me’ẽha Mozilla omoneĩ’ỹva.
@@ -370,7 +371,7 @@ identity-https-only-dropdown-off-temporarily =
 identity-https-only-info-turn-on2 = Emyandy HTTPS ayvu añoite ko tendápe g̃uarã eipotáramo { -brand-short-name } ombohekopyahu nde jeike ikatu vove.
 identity-https-only-info-turn-off2 = Pe tenda ndoikoporãirõ, ikatu emboguese pe HTTPS ayvu añoite emyanyhẽjey hag̃ua eiporúvo HTTP jeike hekorosã’ỹva.
 identity-https-only-info-turn-on3 = Emyandy HTTPS rekopyahurã ko tendápe g̃uarã eipotáramo { -brand-short-name } ombohekopyahu nde jeike ikatu vove.
-identity-https-only-info-turn-off3 = Pe tenda ndoikoporãirõ, ikatu emboguese HTTPS rekopyahurã emyanyhẽjey hag̃ua pe tenda eiporúvo HTTP hekorosã’ỹva.
+identity-https-only-info-turn-off3 = Pe tenda ndoikoporãirõ, ikatu emboguese HTTPS rekopyahurã emyanyhẽjey hag̃ua tenda eiporúvo HTTP hekorosã’ỹva.
 identity-https-only-info-no-upgrade = Ndaikatúi embohekopyahu jeike HTTP guive.
 identity-permissions-storage-access-header = Kookie tenda ojuasáva
 identity-permissions-storage-access-hint = Ko’ãva ikatu oiporu kookie ha tenda ojuasáva mba’ekuaarã eime aja ko tendápe.
@@ -385,7 +386,7 @@ identity-description-custom-root2 = Mozilla nomoneĩri ko mboajepyre me’ẽhá
 identity-remove-cert-exception =
     .label = Emongue oĩ’ỹva
     .accesskey = R
-identity-description-insecure = Nde jeike ko tendápe naiñemíri. Marandu remondóva ikatu ohecha ambue tapicha (ñe’ẽñemíramo, ñe’ẽmondo, kuatia’atã ñemurã ha ambue).
+identity-description-insecure = Nde jeike ko tendápe naiñemíri. Marandu remondóva ikatu ohecha ambue tapicha (ñe’ẽñemíramo, ñe’ẽmondo, kuatia’atã ñemurã ha ambueve).
 identity-description-insecure-login-forms = Pe marandu tembiapo ñepyrũ pegua emoingéva ko kuatiaroguépe nahekorosãi ha ikatu noĩporãmbái.
 identity-description-weak-cipher-intro = Nde jeike ko ñanduti rendápe oiporu ñangarekoha ikangýva ha naiñemíri.
 identity-description-weak-cipher-risk = Ambue tapichakuéra ikatu ohecha nemarandu térã omoambue ñanduti kuatiarogue reko.
@@ -396,7 +397,7 @@ identity-description-passive-loaded-mixed2 = { -brand-short-name } ojokóramo je
 identity-description-active-loaded = Ko ñanduti renda oguereko hetepy ndaijeroviapáiva (guiõramo) ha nde jeike pype naiñemíri.
 identity-description-active-loaded-insecure = Marandu remondóva ko kuatiaroguépe ikatu ohecha ambue tapicha (ñe’ẽñemíramo, ñe’ẽmondo, kuatia’atã ñemurã ha ambue).
 identity-disable-mixed-content-blocking =
-    .label = Emonge ñemo’ã sapy’aite
+    .label = Emboyke ñemo’ã sapy’aite
     .accesskey = D
 identity-enable-mixed-content-blocking =
     .label = Ñemo’ã myandy
@@ -490,6 +491,9 @@ enable-devtools-popup-description2 = Eiporútarõ mbopya’eha F12, embojurujara
 
 ## URL Bar
 
+# This string is used as an accessible name to the "X" button that cancels a custom search mode (i.e. exits the Amazon.com search mode).
+urlbar-search-mode-indicator-close =
+    .aria-label = Mboty
 # This placeholder is used when not in search mode and the user's default search
 # engine is unknown.
 urlbar-placeholder =

@@ -19,7 +19,7 @@ settings-page-title = Настройки
 # Do not translate.
 search-input-box2 =
     .style = width: 15.4em
-    .placeholder = Търсене на настройки
+    .placeholder = Търсене в настройките
 managed-notice = Настройките на вашия браузър се управляват от вашата организация.
 category-list =
     .aria-label = Категории
@@ -120,6 +120,11 @@ startup-restore-warn-on-quit =
     .label = Предупреждаване при затваряне на четеца
 disable-extension =
     .label = Изключване на разширението
+preferences-data-migration-header = Внасяне на данни от друг четец
+preferences-data-migration-description = Внасяне на отметки, пароли, история и данни за автоматично попълване в { -brand-short-name }.
+preferences-data-migration-button =
+    .label = Внасяне на данни
+    .accesskey = н
 tabs-group-header = Раздели
 ctrl-tab-recently-used-order =
     .label = Ctrl+Tab обикаля разделите в реда на използване
@@ -142,7 +147,7 @@ warn-on-open-many-tabs =
     .label = Предупреждаване, ако отваряне на няколко раздела може да забави { -brand-short-name }
     .accesskey = а
 switch-to-new-tabs =
-    .label = При отваряне на препратка, изображение или медия в нов раздел, той става активен
+    .label = При отваряне на препратка, изображение или медия в нов раздел, превключване към него
     .accesskey = т
 show-tabs-in-taskbar =
     .label = Преглед на разделите в лентата със задачите на Windows
@@ -204,6 +209,7 @@ preferences-web-appearance-choice-input-dark =
 # to adapt to your language, but should not be changed.
 preferences-web-appearance-footer = Управлявайте темите на { -brand-short-name } в <a data-l10n-name="themes-link">Управление на добавки</a>
 preferences-colors-header = Цветове
+preferences-colors-description = Заменете цветовете по подразбиране на { -brand-short-name } за текст, фонове на страници и препратки.
 preferences-colors-manage-button =
     .label = Управление на цветове…
     .accesskey = ц
@@ -224,7 +230,7 @@ preferences-default-zoom = Мащабиране по подразбиране
 preferences-default-zoom-value =
     .label = { $percentage }%
 preferences-zoom-text-only =
-    .label = Само на текст
+    .label = Само на текста
     .accesskey = т
 language-header = Език
 choose-language-description = Избор на език при показване на многоезични страници
@@ -435,6 +441,9 @@ browsing-use-smooth-scrolling =
 browsing-gtk-use-non-overlay-scrollbars =
     .label = Лентите за превъртане да са винаги видими
     .accesskey = Л
+browsing-always-underline-links =
+    .label = Препратките да са винаги подчертани
+    .accesskey = п
 browsing-use-onscreen-keyboard =
     .label = Показване на клавиатура за докосване, при необходимост
     .accesskey = д
@@ -449,7 +458,7 @@ browsing-picture-in-picture-toggle-enabled =
     .accesskey = к
 browsing-picture-in-picture-learn-more = Научете повече
 browsing-media-control =
-    .label = Управлявайте медията чрез клавиатура, слушалки или виртуално устройство
+    .label = Управление на медия чрез клавиатура, слушалки или виртуално устройство
     .accesskey = У
 browsing-media-control-learn-more = Научете повече
 browsing-cfr-recommendations =
@@ -562,8 +571,8 @@ search-engine-default-header = Стандартна търсеща машина
 search-engine-default-desc-2 = Това е вашата търсачка по подразбиране в адресната лента и в лентата за търсене. Можете да я променяте по всяко време.
 search-engine-default-private-desc-2 = Изберете друга търсачка по подразбиране само при поверително разглеждане
 search-separate-default-engine =
-    .label = Използвайте тази търсачка при поверително разглеждане
-    .accesskey = И
+    .label = Използване на същата търсачка и при поверително разглеждане
+    .accesskey = с
 search-suggestions-header = Предложения при търсене
 search-suggestions-desc = Изберете как да се показват предложенията от търсещи машини.
 search-suggestions-option =
@@ -778,6 +787,9 @@ pane-privacy-logins-and-passwords-header = Регистрации и парол�
 forms-ask-to-save-logins =
     .label = Питане при запазване имена и пароли за вход в страниците
     .accesskey = т
+
+## Privacy Section - Passwords
+
 forms-exceptions =
     .label = Изключения…
     .accesskey = к
@@ -827,6 +839,9 @@ forms-windows-sso-desc = Управление на профили в настр�
 # notes are only valid for English. Please test in your locale.
 primary-password-os-auth-dialog-message-macosx = създаде основна парола
 master-password-os-auth-dialog-caption = { -brand-full-name }
+
+## Privacy section - Autofill
+
 
 ## Privacy Section - History
 
@@ -979,7 +994,10 @@ content-blocking-fingerprinters = Снемане на цифров отпеча�
 
 # The tcp-rollout strings are no longer used for the rollout but for tcp-by-default in the standard section
 
+# "Contains" here means "isolates", "limits".
+content-blocking-etp-standard-tcp-rollout-description = Цялостната защита на бисквитките изолира бисквитките само до страницата на която сте, така че механизмите за проследяване да не могат да ви проследят в различни сайтове.
 content-blocking-etp-standard-tcp-rollout-learn-more = Научете повече
+content-blocking-etp-standard-tcp-title = Включва цялостна защита на бисквитките, най-мощната ни поверителна функция
 content-blocking-warning-title = Внимание!
 content-blocking-warning-learn-how = Научете как
 content-blocking-reload-description = За да бъдат приложени промените, разделите трябва да бъдат презаредени.

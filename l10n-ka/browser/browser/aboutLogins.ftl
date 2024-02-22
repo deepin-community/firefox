@@ -9,6 +9,12 @@ about-logins-login-filter =
     .key = F
 create-new-login-button =
     .title = ახალი ანგარიშის მონაცემები
+about-logins-page-title-name = პაროლები
+about-logins-login-filter2 =
+    .placeholder = პაროლების ძიება
+    .key = F
+create-login-button =
+    .title = პაროლის დამატება
 fxaccounts-sign-in-text = გადმოიტანეთ პაროლები სხვა მოწყობილობებიდან
 fxaccounts-sign-in-sync-button = სინქრონიზაციაში შესვლა
 fxaccounts-avatar-button =
@@ -23,6 +29,8 @@ about-logins-menu-menuitem-import-from-another-browser = გადმოტა�
 about-logins-menu-menuitem-import-from-a-file = ფაილიდან გადმოტანა…
 about-logins-menu-menuitem-export-logins = მონაცემების გატანა…
 about-logins-menu-menuitem-remove-all-logins = ყველა ანგარიშის მოცილება…
+about-logins-menu-menuitem-export-logins2 = პაროლების გატანა...
+about-logins-menu-menuitem-remove-all-logins2 = ყველა პაროლის მოცილება…
 menu-menuitem-preferences =
     { PLATFORM() ->
         [windows] პარამეტრები
@@ -49,6 +57,21 @@ login-list-filtered-count =
         [one] { $count } სულ { $total } ანგარიშიდან
        *[other] { $count } სულ { $total } ანგარიშიდან
     }
+# Variables
+#   $count (number) - Number of logins
+login-list-count2 =
+    { $count ->
+        [one] { $count } პაროლი
+       *[other] { $count } პაროლი
+    }
+# Variables
+#   $count (number) - Number of filtered logins
+#   $total (number) - Total number of logins
+login-list-filtered-count2 =
+    { $total ->
+        [one] { $count } სულ { $total } პაროლიდან
+       *[other] { $count } სულ { $total } პაროლიდან
+    }
 login-list-sort-label-text = დალაგება:
 login-list-name-option = სახელი (ა-ჰ)
 login-list-name-reverse-option = სახელი (ჰ-ა)
@@ -58,11 +81,14 @@ about-logins-login-list-alerts-option = ცნობები
 login-list-last-changed-option = ბოლოს ჩასწორებული
 login-list-last-used-option = ბოლოს გამოყენებული
 login-list-intro-title = მონაცემები ვერ მოიძებნა
+login-list-intro-title2 = პაროლები არ შენახულა
 login-list-intro-description = როცა პაროლს შეინახავს { -brand-product-name }, გამოჩნდება აქ.
 about-logins-login-list-empty-search-title = მონაცემები ვერ მოიძებნა
+about-logins-login-list-empty-search-title2 = პაროლები ვერ მოიძებნა
 about-logins-login-list-empty-search-description = ძიების შესაბამისი შედეგები ვერ მოიძებნა.
 login-list-item-title-new-login = ანგარიშის ახალი მონაცემები
 login-list-item-subtitle-new-login = შეიყვანეთ თქვენი მონაცემები
+login-list-item-title-new-login2 = პაროლის დამატება
 login-list-item-subtitle-missing-username = (მომხმარებლის სახელის გარეშე)
 about-logins-list-item-breach-icon =
     .title = იერიშმიტანილი საიტი
@@ -81,19 +107,29 @@ about-logins-login-intro-heading-logged-out2 = ეძებთ შენახ�
 about-logins-login-intro-heading-logged-in = დასინქრონებული ანგარიშები ვერ მოიძებნა.
 login-intro-description = თუ თქვენს მონაცემებს { -brand-product-name } სხვა მოწყობილობაზე ინახავს, ნახეთ როგორ უნდა გადმოიტანოთ აქ:
 login-intro-instructions-fxa = შედით ან შექმენით { -fxaccount-brand-name } იმ მოწყობილობიდან, რომელზეც თქვენი ანგარიშები ინახება.
+about-logins-login-intro-heading-message = შეინახეთ პაროლები უსაფრთხო ადგილას
+login-intro-description2 = თქვენ მიერ შენახულ ყველა პაროლს { -brand-product-name } შიფრავს. ამასთანავე, მუდმივად თვალს ვადევნებთ მონაცემების მიტაცების შემთხვევებს და გაცნობებთ, თუ თქვენც შეგეხებათ. <a data-l10n-name="breach-alert-link">ვრცლად</a>
 login-intro-instructions-fxa2 = შედით ან შექმენით ანგარიში იმ მოწყობილობიდან, რომელზეც შესვლის მონაცემები ინახება.
 login-intro-instructions-fxa-settings = გადადით პარამეტრებში > სინქრონიზაცია > სინქრონიზაციის ჩართვა… აირჩიეთ ანგარიშები და პაროლები.
 login-intro-instructions-fxa-passwords-help = იხილეთ <a data-l10n-name="passwords-help-link">პაროლების მხარდაჭერის გვერდი</a> დახმარების მისაღებად.
 about-logins-intro-browser-only-import = თუ თქვენი ანგარიშების მონაცემები, სხვა ბრაუზერშია, შეგიძლიათ <a data-l10n-name="import-link">გადმოიტანოთ და შეინახავს { -brand-product-name }</a>
 about-logins-intro-import2 = თუ თქვენი ანგარიში მონაცემებს { -brand-product-name } არ ინახავდა, შეგიძლიათ <a data-l10n-name="import-browser-link">გადმოიტანოთ სხვა ბრაუზერიდან</a> ან <a data-l10n-name="import-file-link">პირდაპირ ფაილიდან</a>
+about-logins-intro-import3 = აირჩიეთ ზემოთ მიმატების ნიშანი პაროლის ახლავე დასამატებლად. აგრეთვე შეგიძლიათ <a data-l10n-name="import-browser-link">გადმოიტანოთ პაროლები სხვა ბრაუზერიდან</a> ან შემოიტანოთ <a data-l10n-name="import-file-link">ფაილიდან</a>.
 
 ## Login
 
 login-item-new-login-title = ანგარიშის ახალი მონაცემები
+# Header for adding a password
+about-logins-login-item-new-login-title = პაროლის დამატება
 login-item-edit-button = ჩასწორება
 about-logins-login-item-remove-button = მოცილება
 login-item-origin-label = საიტის მისამართი
 login-item-tooltip-message = დარწმუნდით, რომ ზუსტად ემთხვევა იმ ვებსაიტის მისამართს, რომელზეც ხართ შესული.
+about-logins-origin-tooltip2 = მიუთითეთ სრული მისამართი და დარწმუნდით, რომ ზუსტად ემთხვევა იმ საიტს, რომლის ანგარიშზეც შეხვედით.
+# Variables
+#   $webTitle (String) - Website title of the password being changed.
+about-logins-edit-password-tooltip = დარწმუნდით, რომ თქვენს მიმდინარე პაროლს ინახავთ ამ საიტისთვის. პაროლის აქ შეცვლით, არ შეცვლის მას { $webTitle }.
+about-logins-add-password-tooltip = დარწმუნდით, რომ ამ საიტზე თქვენს მიმდინარე პაროლს ინახავთ.
 login-item-origin =
     .placeholder = https://www.example.com
 login-item-username-label = მომხმარებლის სახელი
@@ -107,6 +143,7 @@ login-item-password-reveal-checkbox =
 login-item-copy-password-button-text = ასლი
 login-item-copied-password-button-text = ასლი აღებულია!
 login-item-save-changes-button = ცვლილებების შენახვა
+about-logins-login-item-save-changes-button = შენახვა
 login-item-save-new-button = შენახვა
 login-item-cancel-button = გაუქმება
 
@@ -134,6 +171,11 @@ about-logins-edit-login-os-auth-dialog-message-win = მონაცემებ
 # This message can be seen when attempting to edit a login in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-edit-login-os-auth-dialog-message-macosx = შენახული მონაცემის ჩასწორებას
+# This message can be seen when attempting to edit a login in about:logins on Windows.
+about-logins-edit-login-os-auth-dialog-message2-win = პაროლის ჩასასწორებლად, დაამოწმეთ Windows-ანგარიში. ეს დაგეხმარებათ, უკეთ დაიცვათ თქვენი ანგარიშების მონაცემები.
+# This message can be seen when attempting to edit a login in about:logins
+# On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
+about-logins-edit-login-os-auth-dialog-message2-macosx = შენახული პაროლის ჩასწორებას
 # This message can be seen when attempting to reveal a password in about:logins on Windows.
 about-logins-reveal-password-os-auth-dialog-message-win = პაროლის სანახავად, დაამოწმეთ Windows-ანგარიში. ეს დაგეხმარებათ დაიცვათ თქვენი ანგარიშების უსაფრთხოება.
 # This message can be seen when attempting to reveal a password in about:logins
@@ -149,6 +191,11 @@ about-logins-export-password-os-auth-dialog-message-win = მონაცემ�
 # This message can be seen when attempting to export a password in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-export-password-os-auth-dialog-message-macosx = ანგარიშების მონაცემებისა და პაროლების გატანა
+# This message can be seen when attempting to export a password in about:logins on Windows.
+about-logins-export-password-os-auth-dialog-message2-win = პაროლის გასატანად დაამოწმეთ Windows-ანგარიში. ეს დაგეხმარებათ, უკეთ დაიცვათ თქვენი ანგარიშების მონაცემები.
+# This message can be seen when attempting to export a password in about:logins
+# On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
+about-logins-export-password-os-auth-dialog-message2-macosx = შენახული პაროლების გატანას
 
 ## Primary Password notification
 
@@ -164,6 +211,10 @@ confirmation-dialog-dismiss-button =
     .title = გაუქმება
 about-logins-confirm-remove-dialog-title = გსურთ ამ მონაცემების მოცილება?
 confirm-delete-dialog-message = ეს ქმედება შეუქცევადია.
+# Title for modal to confirm the removal of one saved password
+about-logins-confirm-delete-dialog-title = წაიშალოს პაროლი?
+# Message for modal to confirm the removal of one saved password
+about-logins-confirm-delete-dialog-message = ეს ქმედება შეუქცევადია.
 about-logins-confirm-remove-dialog-confirm-button = მოცილება
 
 ## Variables
@@ -207,12 +258,47 @@ about-logins-confirm-remove-all-sync-dialog-message2 =
         [1] შედეგად წაიშლება შესვლის მონაცემები, რომელთაც ინახავს { -brand-short-name } და ასინქრონებს ყველა მოწყობილობაზე თქვენი ანგარიშით. აგრეთვე მოცილდება მიტაცებებზე შეტყობინებებიც. ეს ქმედება შეუქცევადია.
        *[other] შედეგად წაიშლება შესვლის ყველა მონაცემი, რომელთაც ინახავს { -brand-short-name } და ასინქრონებს ყველა მოწყობილობაზე თქვენი ანგარიშით. აგრეთვე მოცილდება მიტაცებებზე შეტყობინებებიც. ეს ქმედება შეუქცევადია.
     }
+# Checkbox for modal to confirm the removal of saved passwords
+about-logins-confirm-remove-all-dialog-checkbox-label2 =
+    { $count ->
+        [1] დიახ, წაიშალოს პაროლი
+       *[other] დიახ, წაიშალოს პაროლები
+    }
+# Title for modal to confirm the removal of all saved passwords when user is NOT synced
+about-logins-confirm-remove-all-dialog-title2 =
+    { $count ->
+        [one] წაიშალოს { $count } პაროლი?
+       *[other] წაიშალოს { $count } პაროლი?
+    }
+# Message for modal to confirm the removal of saved passwords when user is NOT synced
+about-logins-confirm-remove-all-dialog-message2 =
+    { $count ->
+        [one] შედეგად წაიშლება პაროლი, რომელსაც ინახავს { -brand-short-name } და მიტაცების შესახებ შეტყობინებები. ეს ქმედება შეუქცევადია.
+       *[other] შედეგად წაიშლება პაროლები, რომელთაც ინახავს { -brand-short-name } და მიტაცების შესახებ შეტყობინებები. ეს ქმედება შეუქცევადია.
+    }
+# Title for modal to confirm the removal of all saved passwords when user IS SYNCED
+about-logins-confirm-remove-all-sync-dialog-title2 =
+    { $count ->
+        [one] წაიშალოს { $count } პაროლი ყველა მოწყობილობიდან?
+       *[other] წაიშალოს { $count } პაროლი ყველა მოწყობილობიდან?
+    }
+# Message for modal to confirm the removal of saved passwords when user IS synced.
+about-logins-confirm-remove-all-sync-dialog-message3 =
+    { $count ->
+        [one] შედეგად წაიშლება პაროლი, რომელსაც ინახავს { -brand-short-name } ყველა დასინქრონებულ მოწყობილობაზე. აგრეთვე მოცილდება მიტაცების შესახებ შეტყობინებები. ეს ქმედება შეუქცევადია.
+       *[other] შედეგად წაიშლება პაროლები, რომელთაც ინახავს { -brand-short-name } ყველა დასინქრონებულ მოწყობილობაზე. აგრეთვე მოცილდება მიტაცების შესახებ შეტყობინებები. ეს ქმედება შეუქცევადია.
+    }
 
 ##
 
 about-logins-confirm-export-dialog-title = მონაცემებისა და პაროლების გატანა
 about-logins-confirm-export-dialog-message = თქვენი პაროლები შეინახება წასაკითხ ტექსტად (მაგ. BadP@ssw0rd) ასე რომ, ნებისმიერს შეეძლება მათი ნახვა, თუ გატანილ ფაილს გახსნის.
 about-logins-confirm-export-dialog-confirm-button = გატანა…
+about-logins-confirm-export-dialog-title2 = შენიშვნა პაროლების გატანის შესახებ
+about-logins-confirm-export-dialog-message2 =
+    გატანისას თქვენი პაროლები ინახება ფაილში ადვილად ამოსაკითხი ტექსტით.
+    როგორც კი ფაილის გამოყენებას დაასრულებთ, გირჩევთ წაშალოთ, რომ ამ მოწყობილობით სხვა მოსარგებლეებმა ვერ ნახონ თქვენი პაროლები.
+about-logins-confirm-export-dialog-confirm-button2 = განაგრძეთ გატანა
 about-logins-alert-import-title = გადმოტანა დასრულდა
 about-logins-alert-import-message = იხილეთ სრულად გადმოტანის შესახებ
 confirm-discard-changes-dialog-title = გაუქმდეს შეუნახავი ცვლილებები?
@@ -254,6 +340,11 @@ about-logins-export-file-picker-title = მონაცემების ფა
 # The default file name shown in the file picker when exporting saved logins.
 # This must end in .csv
 about-logins-export-file-picker-default-filename = logins.csv
+# Title of the file picker dialog
+about-logins-export-file-picker-title2 = პაროლებს გაიტანს { -brand-short-name }
+# The default file name shown in the file picker when exporting saved logins.
+# This must end in .csv
+about-logins-export-file-picker-default-filename2 = passwords.csv
 about-logins-export-file-picker-export-button = გატანა
 # A description for the .csv file format that may be shown as the file type
 # filter by the operating system.
@@ -267,6 +358,8 @@ about-logins-export-file-picker-csv-filter-title =
 
 # Title of the file picker dialog
 about-logins-import-file-picker-title = მონაცემების ფაილის გადმოტანა
+# Title of the file picker dialog
+about-logins-import-file-picker-title2 = პაროლებს შეიტანს { -brand-short-name }
 about-logins-import-file-picker-import-button = გადმოტანა
 # A description for the .csv file format that may be shown as the file type
 # filter by the operating system.
@@ -300,13 +393,28 @@ about-logins-import-dialog-items-modified =
     }
 about-logins-import-dialog-items-no-change =
     { $count ->
-        [one] <span>აღმოჩენილია იგივე ანგარიშები:</span> <span data-l10n-name="count">{ $count }</span> <span data-l10n-name="meta">(nicht importiert)</span>
-       *[other] <span>აღმოჩენილია იგივე ანგარიშები:</span> <span data-l10n-name="count">{ $count }</span> <span data-l10n-name="meta">(nicht importiert)</span>
+        [one] <span>აღმოჩენილია იგივე ანგარიში:</span> <span data-l10n-name="count">{ $count }</span> <span data-l10n-name="meta">(ვერ გადმოიტანა)</span>
+       *[other] <span>აღმოჩენილია იგივე ანგარიშები:</span> <span data-l10n-name="count">{ $count }</span> <span data-l10n-name="meta">(ვერ გადმოიტანა)</span>
+    }
+about-logins-import-dialog-items-added2 =
+    { $count ->
+        [one] <span>ახალი პაროლი დაემატა:</span> <span data-l10n-name="count">{ $count }</span>
+       *[other] <span>ახალი პაროლები დაემატა:</span> <span data-l10n-name="count">{ $count }</span>
+    }
+about-logins-import-dialog-items-modified2 =
+    { $count ->
+        [one] <span>არსებული ჩანაწერი განახლდა:</span> <span data-l10n-name="count">{ $count }</span>
+       *[other] <span>არსებული ჩანაწერები განახლდა:</span> <span data-l10n-name="count">{ $count }</span>
+    }
+about-logins-import-dialog-items-no-change2 =
+    { $count ->
+        [one] <span>აღმოჩენილია იგივე ჩანაწერი:</span> <span data-l10n-name="count">{ $count }</span> <span data-l10n-name="meta">(ვერ გადმოიტანა)</span>
+       *[other] <span>აღმოჩენილია იგივე ჩანაწერები:</span> <span data-l10n-name="count">{ $count }</span> <span data-l10n-name="meta">(ვერ გადმოიტანა)</span>
     }
 about-logins-import-dialog-items-error =
     { $count ->
-        [one] <span>შეცდომები:</span> <span data-l10n-name="count">{ $count }</span> <span data-l10n-name="meta">(ვერ გადმოვიდა)</span>
-       *[other] <span>შეცდომები:</span> <span data-l10n-name="count">{ $count }</span> <span data-l10n-name="meta">(ვერ გადმოვიდა)</span>
+        [one] <span>შეცდომები:</span> <span data-l10n-name="count">{ $count }</span> <span data-l10n-name="meta">(ვერ გადმოიტანა)</span>
+       *[other] <span>შეცდომები:</span> <span data-l10n-name="count">{ $count }</span> <span data-l10n-name="meta">(ვერ გადმოიტანა)</span>
     }
 about-logins-import-dialog-done = მზადაა
 about-logins-import-dialog-error-title = გადმოტანის შეცდომა
@@ -324,6 +432,7 @@ about-logins-import-dialog-error-try-import-again = გადმოტანი�
 about-logins-import-dialog-error-cancel = გაუქმება
 about-logins-import-report-title = გადმოტანის შეჯამება
 about-logins-import-report-description = გადმოტანილი ანგარიშები და პაროლები – { -brand-short-name }
+about-logins-import-report-description2 = პაროლების შეტანას ასრულებს { -brand-short-name }.
 #
 # Variables:
 #  $number (number) - The number of the row
@@ -331,6 +440,9 @@ about-logins-import-report-row-index = რიგი { $number }
 about-logins-import-report-row-description-no-change = გამეორებული: ზუსტად ემთხვევა არსებულ ანგარიშს
 about-logins-import-report-row-description-modified = არსებული ანგარიში განახლდა
 about-logins-import-report-row-description-added = ახალი ანგარიში დაემატა
+about-logins-import-report-row-description-no-change2 = გამეორებული: ზუსტად ემთხვევა არსებულ ჩანაწერს
+about-logins-import-report-row-description-modified2 = არსებული ჩანაწერი განახლდა
+about-logins-import-report-row-description-added2 = ახალი პაროლი დაემატა
 about-logins-import-report-row-description-error = შეცდომა: ველი აკლია
 
 ##
@@ -356,13 +468,28 @@ about-logins-import-report-modified =
     }
 about-logins-import-report-no-change =
     { $count ->
-        [one] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">ანგარიში მეორდება</div> <div data-l10n-name="not-imported">(არ გადმოტანილა)</div>
-       *[other] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">ანგარიში მეორდება</div> <div data-l10n-name="not-imported">(არ გადმოტანილა)</div>
+        [one] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">ანგარიში მეორდება</div> <div data-l10n-name="not-imported">(ვერ გადმოიტანა)</div>
+       *[other] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">ანგარიშები მეორდება</div> <div data-l10n-name="not-imported">(ვერ გადმოიტანა)</div>
+    }
+about-logins-import-report-added2 =
+    { $count ->
+        [one] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">ახალი პაროლი დაემატა</div>
+       *[other] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">ახალი პაროლები დაემატა</div>
+    }
+about-logins-import-report-modified2 =
+    { $count ->
+        [one] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">არსებული ჩანაწერი განახლდა</div>
+       *[other] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">არსებული ჩანაწერები განახლდა</div>
+    }
+about-logins-import-report-no-change2 =
+    { $count ->
+        [one] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">ჩანაწერი მეორდება</div> <div data-l10n-name="not-imported">(ვერ გადმოიტანა)</div>
+       *[other] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">ჩანაწერები მეორდება</div> <div data-l10n-name="not-imported">(ვერ გადმოიტანა)</div>
     }
 about-logins-import-report-error =
     { $count ->
-        [one] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">შეცდომებითაა</div> <div data-l10n-name="not-imported">(არ გადმოტანილა)</div>
-       *[other] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">შეცდომებითაა</div> <div data-l10n-name="not-imported">(არ გადმოტანილა)</div>
+        [one] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">შეცდომებითაა</div> <div data-l10n-name="not-imported">(ვერ გადმოიტანა)</div>
+       *[other] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">შეცდომებითაა</div> <div data-l10n-name="not-imported">(ვერ გადმოიტანა)</div>
     }
 
 ## Logins import report page

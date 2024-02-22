@@ -78,6 +78,12 @@ toolbar-button-fxaccount =
     .label = { -fxaccount-brand-name }
     .tooltiptext = { -fxaccount-brand-name }
 
+## Account toolbar Button
+
+toolbar-button-account =
+    .label = Hesap
+    .tooltiptext = Hesap
+
 ## Save Page
 
 main-context-menu-page-save =
@@ -291,6 +297,7 @@ main-context-menu-send-to-device =
 main-context-menu-use-saved-login =
     .label = Kayıtlı hesabı kullan
     .accesskey = u
+# Displayed when there are saved passwords and the user clicks inside a username or password field
 main-context-menu-use-saved-password =
     .label = Kayıtlı parolayı kullan
     .accesskey = u
@@ -306,6 +313,9 @@ main-context-menu-suggest-strong-password =
 main-context-menu-manage-logins2 =
     .label = Hesapları yönet
     .accesskey = H
+main-context-menu-manage-passwords =
+    .label = Parolaları yönet
+    .accesskey = P
 main-context-menu-keyword =
     .label = Bu arama için anahtar kelime ekle…
     .accesskey = k

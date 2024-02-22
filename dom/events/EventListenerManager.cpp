@@ -9,6 +9,7 @@
 
 #include "js/ColumnNumber.h"  // JS::ColumnNumberOneOrigin
 #include "js/loader/LoadedScript.h"
+#include "js/loader/ScriptFetchOptions.h"
 #include "mozilla/BasicEvents.h"
 #include "mozilla/BinarySearch.h"
 #include "mozilla/CycleCollectedJSRuntime.h"
@@ -1046,7 +1047,7 @@ nsresult EventListenerManager::SetEventHandler(nsAtom* aName,
           true,    // aParserCreated (true because attribute event handler)
           aElement,
           nullptr,  // nsICSPEventListener
-          aBody, lineNum, columnNum.zeroOriginValue(), &allowsInlineScript);
+          aBody, lineNum, columnNum.oneOriginValue(), &allowsInlineScript);
       NS_ENSURE_SUCCESS(rv, rv);
 
       // return early if CSP wants us to block inline scripts

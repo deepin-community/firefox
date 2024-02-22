@@ -489,6 +489,9 @@ enable-devtools-popup-description2 = Par doprâ la scurte F12, prime vierç DevT
 
 ## URL Bar
 
+# This string is used as an accessible name to the "X" button that cancels a custom search mode (i.e. exits the Amazon.com search mode).
+urlbar-search-mode-indicator-close =
+    .aria-label = Siere
 # This placeholder is used when not in search mode and the user's default search
 # engine is unknown.
 urlbar-placeholder =
@@ -565,6 +568,11 @@ urlbar-result-action-search-w-engine = Cîr cun { $engine }
 urlbar-result-action-sponsored = Sponsorizât
 urlbar-result-action-switch-tab = Passe ae schede
 urlbar-result-action-visit = Visite
+# "Switch to tab with container" is used when the target tab is located in a
+# different container.
+# Variables
+# $container (String): the name of the target container
+urlbar-result-action-switch-tab-with-container = Passe ae schede · <span>{ $container }</span>
 # Allows the user to visit a URL that was previously copied to the clipboard.
 urlbar-result-action-visit-from-clipboard = Vierç direzion da lis notis
 # Directs a user to press the Tab key to perform a search with the specified
@@ -888,6 +896,10 @@ tabs-toolbar-list-all-tabs =
 # <img data-l10n-name="icon"/> will be replaced by the application menu icon
 restore-session-startup-suggestion-message = <strong>Vierzi lis schedis precedentis?</strong> Tu puedis ripristinâ la tô session di prime dal menù aplicazion <img data-l10n-name="icon"/> di { -brand-short-name }, sot di Cronologjie.
 restore-session-startup-suggestion-button = Mostrimi cemût
+
+## Infobar shown when the user tries to open a file picker and file pickers are blocked by enterprise policy
+
+filepicker-blocked-infobar = La tô organizazion e à blocât l’acès ai files locâi di chest computer
 
 ## Mozilla data reporting notification (Telemetry, Firefox Health Report, etc)
 

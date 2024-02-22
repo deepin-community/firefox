@@ -271,7 +271,7 @@ quickactions-cmd-extensions = rozšíření
 quickactions-inspector2 = Otevřít nástroje pro vývojáře
 quickactions-cmd-inspector = průzkumník, nástroje pro vývojáře, devtools
 # Opens about:logins
-quickactions-logins2 = Správa přihlašovacích údajů
+quickactions-logins2 = Správa hesel
 quickactions-cmd-logins = přihlašovací údaje, hesla
 # Opens about:addons page in the plugins section
 quickactions-plugins = Správa zásuvných modulů
@@ -549,6 +549,9 @@ enable-devtools-popup-description2 = Pokud chcete používat zkratku F12, otevř
 
 ## URL Bar
 
+# This string is used as an accessible name to the "X" button that cancels a custom search mode (i.e. exits the Amazon.com search mode).
+urlbar-search-mode-indicator-close =
+    .aria-label = Zavřít
 # This placeholder is used when not in search mode and the user's default search
 # engine is unknown.
 urlbar-placeholder =
@@ -625,6 +628,11 @@ urlbar-result-action-search-w-engine = Vyhledat pomocí { $engine }
 urlbar-result-action-sponsored = Sponzorováno
 urlbar-result-action-switch-tab = Přepnout na panel
 urlbar-result-action-visit = Navštívit
+# "Switch to tab with container" is used when the target tab is located in a
+# different container.
+# Variables
+# $container (String): the name of the target container
+urlbar-result-action-switch-tab-with-container = Přepnout na panel · <span>{ $container }</span>
 # Allows the user to visit a URL that was previously copied to the clipboard.
 urlbar-result-action-visit-from-clipboard = Použít adresu ze schránky
 # Directs a user to press the Tab key to perform a search with the specified
@@ -831,7 +839,7 @@ toolbar-button-email-link =
     .label = Poslat odkaz e-mailem
     .tooltiptext = Odešle odkaz na aktuální stránku
 toolbar-button-logins =
-    .label = Přihlašovací údaje
+    .label = Hesla
     .tooltiptext = Zobrazení a správa vašich uložených hesel
 # Variables:
 #  $shortcut (String): keyboard shortcut to save a copy of the page
@@ -960,6 +968,10 @@ restore-session-startup-suggestion-message =
        *[no-cases] <strong>Chcete otevřít předchozí panely?</strong> Předchozí relaci aplikace { -brand-short-name } můžete obnovit z nabídky <img data-l10n-name="icon"/> v části Historie.
     }
 restore-session-startup-suggestion-button = Jak na to
+
+## Infobar shown when the user tries to open a file picker and file pickers are blocked by enterprise policy
+
+filepicker-blocked-infobar = Vaše organizace zablokovala přístup k místním souborům v tomto počítači.
 
 ## Mozilla data reporting notification (Telemetry, Firefox Health Report, etc)
 

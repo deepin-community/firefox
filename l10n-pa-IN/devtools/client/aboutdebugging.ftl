@@ -87,6 +87,8 @@ about-debugging-refresh-usb-devices-button = ਡਿਵਾਈਸ ਤਾਜ਼ਾ 
 about-debugging-setup-title = ਸੈਟਅੱਪ
 # Introduction text in the Setup page to explain how to configure remote debugging.
 about-debugging-setup-intro = ਜਿਸ ਕਨੈਕਸ਼ਨ ਢੰਗ ਨਾਲ ਤੁਸੀਂ ਆਪਣੇ ਡਿਵਾਈਸ ਨੂੰ ਰਿਮੋਟ ਤੋਂ ਡੀਬੱਗ ਕਰਨਾ ਚਾਹੁੰਦੇ ਹੋ, ਉਸ ਦੀ ਸੰਰਚਨਾ ਕਰੋ।
+# Explanatory text in the Setup page about what the 'This Firefox' page is for
+about-debugging-setup-this-firefox2 = <a>{ about-debugging-this-firefox-runtime-name }</a> ਨੂੰ { -brand-shorter-name } ਦੇ ਇਸ ਵਰਜ਼ਨ ਲਈ ਇਕਸਟੈਨਸ਼ਨਾਂ ਅਤੇ ਸਰਵਿਸ ਵਰਕਰਾਂ ਨੂੰ ਡੀਬੱਗ ਕਰਨ ਲਈ ਵਰਤੋਂ।
 # Title of the heading Connect section of the Setup page.
 about-debugging-setup-connect-heading = ਡਿਵਾਈਸ ਕਨੈਕਟ ਕਰੋ
 # USB section of the Setup page
@@ -108,7 +110,7 @@ about-debugging-setup-usb-step-enable-dev-menu2 = ਆਪਣੇ ਐਂਡਰਾ�
 # USB section step by step guide
 about-debugging-setup-usb-step-enable-debug2 = ਐਂਡਰਾਇਡ ਡਿਵੈਲਪਰ ਮੀਨੂ ਵਿੱਚ USB ਡੀਬਗਿੰਗ ਨੂੰ ਸਮਰੱਥ ਬਣਾਓ।
 # USB section step by step guide
-about-debugging-setup-usb-step-enable-debug-firefox2 = ਐਂਡਰਾਇਡ ਡਿਵਾਈਸ ਤੇ ਫਾਇਰਫਾਕਸ ਵਿਚ USB ਡੀਬੱਗਿੰਗ ਨੂੰ ਸਮਰੱਥ ਬਣਾਓ।
+about-debugging-setup-usb-step-enable-debug-firefox2 = Android ਡਿਵਾਈਸ ਉੱਤੇ Firefox ਵਿੱਚ USB ਡੀਬੱਗਿੰਗ ਨੂੰ ਸਮਰੱਥ ਬਣਾਓ।
 # USB section step by step guide
 about-debugging-setup-usb-step-plug-device = ਐਂਡਰਾਈਡ ਡਿਵਾਈਸ ਨੂੰ ਆਪਣੇ ਕੰਪਿਊਟਰ ਨਾਲ ਕਨੈਕਟ ਕਰੋ।
 # Text shown in the USB section of the setup page with a link to troubleshoot connection errors.
@@ -132,6 +134,10 @@ about-debugging-network-locations-host-input-label = ਹੋਸਟ
 # Text of a button displayed next to existing network locations in the Connect page.
 # Clicking on it removes the network location from the list.
 about-debugging-network-locations-remove-button = ਹਟਾਓ
+# Text used as error message if the format of the input value was invalid in the network locations form of the Setup page.
+# Variables:
+#   $host-value (string) - The input value submitted by the user in the network locations form
+about-debugging-network-location-form-invalid = “{ $host-value }” ਗਲਤ ਹੋਸਟ ਹੈ। ਆਸ ਮੁਤਾਬਕ ਫਾਰਮੈਟ “hostname:portnumber” ਹੈ।
 # Text used as error message if the input value was already registered in the network locations form of the Setup page.
 # Variables:
 #   $host-value (string) - The input value submitted by the user in the network locations form
@@ -172,6 +178,10 @@ about-debugging-runtime-processes =
 # Label of the button opening the performance profiler panel in runtime pages for remote
 # runtimes.
 about-debugging-runtime-profile-button2 = ਪਰੋਫਾਈਲ ਕਾਰਗੁਜ਼ਾਰੀ
+# This string is displayed in the runtime page if the current configuration of the
+# target runtime is incompatible with service workers. "Learn more" points to:
+# https://firefox-source-docs.mozilla.org/devtools-user/about_colon_debugging/index.html#service-workers-not-compatible
+about-debugging-runtime-service-workers-not-compatible = ਤੁਹਾਡੀ ਬਰਾਊਜ਼ਰ ਸੰਰਚਨਾ ਸਰਵਿਸ ਵਰਕਰਾਂ ਨਾਲ ਅਨੁਕੂਲ ਨਹੀਂ ਹੈ। <a>ਹੋਰ ਜਾਣੋ</a>
 # Displayed for runtime info in runtime pages.
 # { $name } is brand name such as "Firefox Nightly"
 # { $version } is version such as "64.0a1"

@@ -205,6 +205,14 @@ media-codec-support-lack-of-extension = Nainstalovat rozšíření
 ## https://w3c.github.io/encrypted-media/
 
 media-content-decryption-modules-title = Informace o modulech pro dešifrování obsahu
+media-key-system-name = Název systémového klíče
+media-video-robustness = Odolnost videa
+media-audio-robustness = Odolnost zvuku
+media-cdm-capabilities = Schopnosti
+# Clear Lead isn't defined in the spec, which means the the first few seconds
+# are not encrypted. It allows playback to start without having to wait for
+# license response, improving video start time and user experience.
+media-cdm-clear-lead = Nešifrovaný úvod (Clear Lead)
 
 ##
 

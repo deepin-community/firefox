@@ -203,6 +203,9 @@ containers-remove-alert-msg =
     }
 containers-remove-ok-button = Ta bort denna behållare
 containers-remove-cancel-button = Ta inte bort denna behållare
+settings-tabs-show-image-in-preview =
+    .label = Visa en förhandsgranskning av bilden när du håller muspekaren på en flik
+    .accessKey = V
 
 ## General Section - Language & Appearance
 
@@ -794,9 +797,9 @@ sync-engine-creditcards =
     .label = Kreditkort
     .tooltiptext = Namn, nummer och utgångsdatum (endast skrivbord)
     .accesskey = K
-sync-engine-payment-methods =
+sync-engine-payment-methods2 =
     .label = Betalningsmetoder
-    .tooltiptext = Namn, kortnummer och utgångsdatum (endast dator)
+    .tooltiptext = Namn, kortnummer och utgångsdatum
     .accesskey = B
 sync-engine-addons =
     .label = Tillägg
@@ -844,18 +847,35 @@ pane-privacy-logins-and-passwords-header = Inloggningar & lösenord
 forms-ask-to-save-logins =
     .label = Fråga för att spara inloggningar och lösenord för webbplatser
     .accesskey = F
+
+## Privacy Section - Passwords
+
+# "Logins" is the former term for "Passwords". Users should find password settings
+# by searching for the former term "logins". It's not displayed in the UI.
+pane-privacy-passwords-header = Lösenord
+    .searchkeywords = inloggningar
+# Checkbox to control whether UI is shown to users to save or fill logins/passwords.
+forms-ask-to-save-passwords =
+    .label = Fråga om att få spara lösenord
+    .accesskey = F
 forms-exceptions =
     .label = Undantag…
     .accesskey = d
 forms-generate-passwords =
     .label = Föreslå och skapa starka lösenord
     .accesskey = r
+forms-suggest-passwords =
+    .label = Föreslå starka lösenord
+    .accesskey = F
 forms-breach-alerts =
     .label = Visa varningar om lösenord för webbplatser med intrång
     .accesskey = V
 forms-breach-alerts-learn-more-link = Läs mer
 preferences-relay-integration-checkbox =
     .label = Föreslå { -relay-brand-name } e-postalias för att skydda din e-postadress
+preferences-relay-integration-checkbox2 =
+    .label = Föreslå { -relay-brand-name } e-postalias för att skydda din e-postadress
+    .accesskey = r
 relay-integration-learn-more-link = Läs mer
 # Checkbox which controls filling saved logins into fields automatically when they appear, in some cases without user interaction.
 forms-fill-logins-and-passwords =
@@ -864,6 +884,13 @@ forms-fill-logins-and-passwords =
 forms-saved-logins =
     .label = Sparade inloggningar…
     .accesskey = l
+# Checkbox which controls filling saved logins into fields automatically when they appear, in some cases without user interaction.
+forms-fill-usernames-and-passwords =
+    .label = Fyll i användarnamn och lösenord automatiskt
+    .accesskey = F
+forms-saved-passwords =
+    .label = Sparade lösenord
+    .accesskey = d
 forms-primary-pw-use =
     .label = Använd ett huvudlösenord
     .accesskey = A
@@ -887,6 +914,7 @@ forms-windows-sso =
     .label = Tillåt Windows enkel inloggning för Microsoft-, arbets- och skolkonton.
 forms-windows-sso-learn-more-link = Läs mer
 forms-windows-sso-desc = Hantera konton i dina enhetsinställningar
+windows-passkey-settings-label = Hantera lösenordsnycklar i systeminställningar
 
 ## OS Authentication dialog
 
@@ -898,6 +926,28 @@ primary-password-os-auth-dialog-message-win = För att skapa ett huvudlösenord 
 # notes are only valid for English. Please test in your locale.
 primary-password-os-auth-dialog-message-macosx = skapa ett huvudlösenord
 master-password-os-auth-dialog-caption = { -brand-full-name }
+
+## Privacy section - Autofill
+
+pane-privacy-autofill-header = Autofyll
+autofill-addresses-checkbox = Spara och fyll i adresser
+    .accesskey = a
+autofill-saved-addresses-button = Sparade adresser
+    .accesskey = S
+autofill-payment-methods-checkbox-message = Spara och fyll betalningsmetoder
+    .accesskey = m
+autofill-payment-methods-checkbox-submessage = Inkluderar kredit- och betalkort
+    .accesskey = n
+autofill-saved-payment-methods-button = Sparade betalningsmetoder
+    .accesskey = e
+autofill-reauth-checkbox =
+    { PLATFORM() ->
+        [macos] Kräv macOS-autentisering för att fylla och redigera betalningsmetoder.
+        [windows] Kräv Windows-autentisering för att fylla och redigera betalningsmetoder.
+        [linux] Kräv Linux-autentisering för att fylla och redigera betalningsmetoder.
+       *[other] Kräv autentisering för att fylla och redigera betalningsmetoder.
+    }
+    .accesskey = v
 
 ## Privacy Section - History
 
@@ -953,6 +1003,7 @@ sitedata-delete-on-close =
     .label = Ta bort kakor och webbplatsdata när { -brand-short-name } stängs
     .accesskey = k
 sitedata-delete-on-close-private-browsing = I permanent privat surfläge raderas alltid kakor och webbplatsdata när { -brand-short-name } är stängd.
+sitedata-delete-on-close-private-browsing2 = Baserat på dina historikinställningar, raderar { -brand-short-name } kakor och webbplatsdata från din session när du stänger webbläsaren.
 sitedata-allow-cookies-option =
     .label = Tillåt kakor och webbplatsdata
     .accesskey = T

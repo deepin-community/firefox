@@ -206,6 +206,9 @@ cfr-cbh-dismiss-button = Ekki núna
     .accesskey = n
 cookie-banner-blocker-cfr-header = { -brand-short-name } var að loka á vefkökur fyrir þig
 cookie-banner-blocker-cfr-body = Við höfnum sjálfkrafa mörgum vefkökugluggum til að gera vefsvæðum erfiðara fyrir að rekja ferðir þínar.
+cookie-banner-blocker-onboarding-header = { -brand-short-name } var að loka á vefkökuborða fyrir þig
+cookie-banner-blocker-onboarding-body = Minni truflanir, færri vefkökur sem rekja ferðir þínar á þessu vefsvæði.
+cookie-banner-blocker-onboarding-learn-more = Fræðast meira
 
 ## These strings are used in the Fox doodle Pin/set default spotlights
 
@@ -235,10 +238,6 @@ fxa-sync-cfr-secondary = Minna mig á seinna
 
 ## Device Migration FxA Spotlight
 
-device-migration-fxa-spotlight-header = Notarðu eldra tæki?
-device-migration-fxa-spotlight-body = Taktu öryggisafrit af gögnunum þínum til að tryggja að þú glatir ekki mikilvægum upplýsingum, eins og bókamerkjum og lykilorðum - sérstaklega ef þú skiptir yfir í nýtt tæki.
-device-migration-fxa-spotlight-primary-button = Hvernig á að taka öryggisafrit af gögnunum mínum
-device-migration-fxa-spotlight-link = Minna mig á seinna
 device-migration-fxa-spotlight-heavy-user-header = Ekki gleyma að taka öryggisafrit af gögnunum þínum
 device-migration-fxa-spotlight-heavy-user-body = Gakktu úr skugga um að mikilvægar upplýsingar - eins og bókamerki og lykilorð - séu uppfærðar og verndaðar í öllum tækjunum þínum.
 device-migration-fxa-spotlight-heavy-user-primary-button = Hefjast handa
@@ -246,7 +245,7 @@ device-migration-fxa-spotlight-older-device-header = Hugarró, frá { -brand-pro
 device-migration-fxa-spotlight-older-device-body = Reikningur heldur mikilvægum upplýsingum uppfærðum og vernduðum á hverju því tæki sem þú tengir.
 device-migration-fxa-spotlight-older-device-primary-button = Búa til reikning
 device-migration-fxa-spotlight-getting-new-device-header-2 = Nýtt tæki í framtíðinni?
-device-migration-fxa-spotlight-getting-new-device-body = Taktu öryggisafrit af gögnunum þínum núna, svo þú sért til í tuskið þegar tækið þitt kemur.
+device-migration-fxa-spotlight-getting-new-device-body-2 = Fylgdu nokkrum einföldum skrefum til að hafa bókamerkin þín, feril og lykilorð með þér þegar þú byrjar á nýju tæki.
 device-migration-fxa-spotlight-getting-new-device-primary-button = Hvernig tek ég öryggisafrit af gögnunum mínum
 
 ## Set as Default PDF Reader Infobar
@@ -273,3 +272,14 @@ launch-on-login-infobar-reject-button = Ekki núna
 launch-on-login-infobar-final-message = <strong>Opna { -brand-short-name } í hvert sinn sem þú endurræsir tölvuna þína?</strong> Til að stjórna ræsingunni hjá þér skaltu leita að „startup“ í stillingunum.
 launch-on-login-infobar-final-reject-button = Nei takk
     .accesskey = N
+
+## Tail Fox Set Default Spotlight
+
+# This title is displayed together with the picture of a running fox with a long tail.
+# In English, this is a figure of speech meaning 'stop something from following you'.
+# If the localization of this message is challenging, consider using a simplified
+# alternative as a reference for translation: 'Keep unwanted trackers away'.
+tail-fox-spotlight-title = Haltu leiðinlegum rekjurum frá slóðinni þinni
+tail-fox-spotlight-subtitle = Segðu bless við pirrandi auglýsingarekjara og fáðu öruggari, hraðvirkari internetupplifun.
+tail-fox-spotlight-primary-button = Opna tenglana mína með { -brand-short-name }
+tail-fox-spotlight-secondary-button = Ekki núna

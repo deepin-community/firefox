@@ -171,6 +171,20 @@ webrtc-allow-share-camera-and-audio-capture = Consentire a { $origin } di utiliz
 webrtc-allow-share-screen-and-microphone = Consentire a { $origin } di utilizzare il microfono e visualizzare lo schermo?
 webrtc-allow-share-screen-and-audio-capture = Consentire a { $origin } di ascoltare l’audio di questa scheda e visualizzare lo schermo?
 
+## Special phrasing for sharing devices when the origin is a file url.
+
+webrtc-allow-share-audio-capture-with-file = Consentire a questo file locale di ascoltare l’audio di questa scheda?
+webrtc-allow-share-camera-with-file = Consentire a questo file locale di utilizzare la fotocamera?
+webrtc-allow-share-microphone-with-file = Consentire a questo file locale di utilizzare il microfono?
+webrtc-allow-share-screen-with-file = Consentire a questo file locale di visualizzare lo schermo?
+# "Speakers" is used in a general sense that might include headphones or
+# another audio output connection.
+webrtc-allow-share-speaker-with-file = Consentire a questo file locale di utilizzare altri altoparlanti?
+webrtc-allow-share-camera-and-microphone-with-file = Consentire a questo file locale di utilizzare la fotocamera e il microfono?
+webrtc-allow-share-camera-and-audio-capture-with-file = Consentire a questo file locale di utilizzare la fotocamera e ascoltare l’audio di questa scheda?
+webrtc-allow-share-screen-and-microphone-with-file = Consentire a questo file locale di utilizzare il microfono e visualizzare lo schermo?
+webrtc-allow-share-screen-and-audio-capture-with-file = Consentire a questo file locale di ascoltare l’audio di questa scheda e visualizzare lo schermo?
+
 ## Variables:
 ##   $origin (String): the first party origin.
 ##   $thirdParty (String): the third party origin.
@@ -231,3 +245,4 @@ webrtc-mute-notifications-checkbox = Disattiva notifiche dai siti web durante la
 webrtc-reason-for-no-permanent-allow-screen = { -brand-short-name } non è in grado di consentire accesso in modo permanente allo schermo.
 webrtc-reason-for-no-permanent-allow-audio = { -brand-short-name } non è in grado di consentire accesso in modo permanente all’audio della scheda senza chiedere quale scheda condividere.
 webrtc-reason-for-no-permanent-allow-insecure = La connessione con il sito non è sicura. Per motivi di sicurezza { -brand-short-name } consentirà l’accesso solo per questa sessione.
+

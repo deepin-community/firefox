@@ -61,7 +61,7 @@ app-basics-launcher-process-status = Processo launcher
 app-basics-multi-process-support = Finestre multiprocesso
 app-basics-fission-support = Finestre Fission
 app-basics-remote-processes-count = Processi remoti
-app-basics-enterprise-policies = Criteri a livello aziendale
+app-basics-enterprise-policies = Criteri aziendali
 app-basics-location-service-key-google = Chiave servizio Google Location
 app-basics-safebrowsing-key-google = Chiave servizio Google Safebrowsing
 app-basics-key-mozilla = Chiave per georilevazione di Mozilla
@@ -190,6 +190,7 @@ media-cdm-capabilities = Funzionalità
 # are not encrypted. It allows playback to start without having to wait for
 # license response, improving video start time and user experience.
 media-cdm-clear-lead = Avvio in chiaro
+media-hdcp-22-compatible = Compatibilità HDCP 2.2
 
 ##
 
@@ -276,6 +277,7 @@ try-newer-driver = Bloccato a causa della versione dei driver della scheda grafi
 clear-type-parameters = Parametri ClearType
 
 compositing = Composizione
+support-font-determination = Informazioni di debug per visibilità caratteri
 hardware-h264 = Decodifica hardware H264
 main-thread-no-omtc = thread principale, no OMTC
 yes = Sì

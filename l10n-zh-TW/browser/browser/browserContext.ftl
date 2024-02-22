@@ -78,6 +78,12 @@ toolbar-button-fxaccount =
     .label = { -fxaccount-brand-name }
     .tooltiptext = { -fxaccount-brand-name }
 
+## Account toolbar Button
+
+toolbar-button-account =
+    .label = 帳號
+    .tooltiptext = 帳號
+
 ## Save Page
 
 main-context-menu-page-save =
@@ -291,6 +297,7 @@ main-context-menu-send-to-device =
 main-context-menu-use-saved-login =
     .label = 使用已存的登入資訊
     .accesskey = o
+# Displayed when there are saved passwords and the user clicks inside a username or password field
 main-context-menu-use-saved-password =
     .label = 使用已存的密碼
     .accesskey = o
@@ -305,6 +312,9 @@ main-context-menu-suggest-strong-password =
     .accesskey = S
 main-context-menu-manage-logins2 =
     .label = 管理登入資訊
+    .accesskey = M
+main-context-menu-manage-passwords =
+    .label = 管理密碼
     .accesskey = M
 main-context-menu-keyword =
     .label = 設為用關鍵字搜尋…

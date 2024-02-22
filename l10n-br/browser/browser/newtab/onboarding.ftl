@@ -126,9 +126,9 @@ mr2-onboarding-start-browsing-button-label = Kregiñ da verdeiñ
 onboarding-live-language-header = Dibabit ho yezh
 mr2022-onboarding-live-language-text = { -brand-short-name } a gomz ho yezh
 mr2022-language-mismatch-subtitle = A-drugarez d'hor c'humuniezh eo bet troet { -brand-short-name } en ouzhpenn 90 yezh. Ho reizhiad a implij { $systemLanguage } war a seblant, ha { -brand-short-name } a implij { $appLanguage }.
-onboarding-live-language-button-label-downloading = O pellgargañ ar pakad yezh evit { $negotiatedLanguage }...
-onboarding-live-language-waiting-button = O tapout ar yezhoù hegerz...
-onboarding-live-language-installing = O staliañ ar pakad yezh { $negotiatedLanguage }...
+onboarding-live-language-button-label-downloading = O pellgargañ ar pakad yezh evit { $negotiatedLanguage }…
+onboarding-live-language-waiting-button = O tapout ar yezhoù hegerz…
+onboarding-live-language-installing = O staliañ ar pakad yezh { $negotiatedLanguage }…
 mr2022-onboarding-live-language-switch-to = Mont e { $negotiatedLanguage }
 mr2022-onboarding-live-language-continue-in = Kenderc'hel en { $appLanguage }
 onboarding-live-language-secondary-cancel-download = Nullañ
@@ -247,19 +247,40 @@ mr2022-upgrade-onboarding-pin-private-window-subtitle = Toupin ha roll istor ebe
 
 ## MR2022 Privacy Segmentation screen strings
 
+mr2022-onboarding-privacy-segmentation-title = Atav e toujomp d’ho puhez prevez
+mr2022-onboarding-privacy-segmentation-button-primary-label = Ober gant alioù { -brand-product-name }
+mr2022-onboarding-privacy-segmentation-button-secondary-label = Diskouez an titouroù dre ar munud
 
 ## MR2022 Multistage Gratitude screen strings
 
+mr2022-onboarding-gratitude-title = Emaoc’h o sikour ac’hanomp da sevel ur genrouedad welloc’h
+mr2022-onboarding-gratitude-primary-button-label = Gwelout petra a zo nevez
+mr2022-onboarding-gratitude-secondary-button-label = Kregiñ gant ar merdeiñ
 
 ## Onboarding spotlight for infrequent users
 
+onboarding-infrequent-import-title = Grit evel ma vefec’h er gêr
+onboarding-infrequent-import-primary-button = Enporzhiañ e-barzh { -brand-short-name }
 
 ## MR2022 Illustration alt tags
 ## Descriptive tags for illustrations used by screen readers and other assistive tech
 
+mr2022-onboarding-default-image-alt =
+    .aria-label = Un den o vriata logo { -brand-product-name }
 
 ## Device migration onboarding
 
+onboarding-device-migration-title = Donemat en-dro!
+onboarding-device-migration-primary-button-label = Kennaskañ
 
 ## The following screens have been updated to use security and privacy focused strings:
 
+# Easy setup screen
+onboarding-easy-setup-security-and-privacy-title = Ho surentez a zo talvoudus deomp
+# Gratitude screen
+onboarding-gratitude-security-and-privacy-title = { -brand-short-name } a souten ac’hanoc’h bepred
+
+## New user time and familiarity survey strings
+
+onboarding-new-user-time-based-survey-title = Pegeit zo emaoc’h oc’h implij { -brand-short-name }?
+onboarding-new-user-survey-time-based-option-2 = Nebeutoc’h eget 1 miz

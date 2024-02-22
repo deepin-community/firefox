@@ -100,6 +100,9 @@ about-webrtc-debug-mode-off-state-label = Mopotĩha reko ñepyrũ
 about-webrtc-debug-mode-on-state-label = Mopotĩha reko jejoko
 about-webrtc-enable-logging-label = Embojuruja WebRTC mboheraguapy ypygua
 about-webrtc-stats-heading = Tembiapo rehegua papapy
+about-webrtc-peerconnections-section-heading = RTCPeerConnection papapykuaa
+about-webrtc-peerconnections-section-show-msg = Ehechauka RTCPeerConnection papapykuaa
+about-webrtc-peerconnections-section-hide-msg = Emokañy RTCPeerConnection papapykuaa
 about-webrtc-stats-clear = Tembiasakue ñembogue
 about-webrtc-log-heading = Jeike rehegua haipy
 about-webrtc-log-clear = Jeikehague ñembogue
@@ -194,6 +197,17 @@ about-webrtc-configuration-element-provided = Me’ẽha
 about-webrtc-configuration-element-not-provided = Me’ẽ’ỹva
 # The options set by the user in about:config that could impact a WebRTC call
 about-webrtc-custom-webrtc-configuration-heading = WebRTC oguerohoryvéva poruhára moĩmbyre
+# The options set by the user in about:config that could impact a WebRTC call
+about-webrtc-user-modified-configuration-heading = WebRTC ñemboheko poruhára omoambuepyre
+
+## These are displayed on the button that shows or hides the
+## user modified configuration disclosure
+
+about-webrtc-user-modified-configuration-show-msg = Ehechauka ñemboheko poruhára omoambuepyre
+about-webrtc-user-modified-configuration-hide-msg = Eñomi ñemboheko poruhára omoambuepyre
+
+##
+
 # Section header for estimated bandwidths of WebRTC media flows
 about-webrtc-bandwidth-stats-heading = Ancho de banda jekuaa’ỹva
 # The ID of the MediaStreamTrack
@@ -300,9 +314,6 @@ about-webrtc-sdp-set-timestamp = Aravochaukaha { NUMBER($timestamp, useGrouping:
 
 about-webrtc-show-msg-sdp = Ehechauka SDP
 about-webrtc-hide-msg-sdp = Eñomi SDP
-
-##
-
 
 ## These are displayed on the button that shows or hides the Media Context information disclosure.
 ## The Media Context is the set of preferences and detected capabilities that informs

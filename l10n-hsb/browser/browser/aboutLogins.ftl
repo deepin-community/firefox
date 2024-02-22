@@ -29,6 +29,8 @@ about-logins-menu-menuitem-import-from-another-browser = Z druheho wobhladowaka 
 about-logins-menu-menuitem-import-from-a-file = Z dataje importować…
 about-logins-menu-menuitem-export-logins = Přizjewjenja eksportować…
 about-logins-menu-menuitem-remove-all-logins = Wšě přizjewjenja wotstronić…
+about-logins-menu-menuitem-export-logins2 = Hesła eksportować…
+about-logins-menu-menuitem-remove-all-logins2 = Wšě hesła wotstronić…
 menu-menuitem-preferences =
     { PLATFORM() ->
         [windows] Nastajenja
@@ -113,20 +115,25 @@ about-logins-login-intro-heading-logged-out2 = Pytaće swoje składowane přizje
 about-logins-login-intro-heading-logged-in = Žane synchronizowane přizjewjenja namakane.
 login-intro-description = Jeli sće swoje přizjewjenja { -brand-product-name } na druhim graće składował, tak móžeće je sem přinjesć:
 login-intro-instructions-fxa = Załožće abo přizjewće so pola swojeho { -fxaccount-brand-name } na graće, hdźež waše přizjewjenja su składowane
+about-logins-login-intro-heading-message = Składujće swoje hesła na wěstym městnje
+login-intro-description2 = Wšě hesła, kotrež w { -brand-product-name } składujeće, so zaklučuja. Nimo toho rozhladujemy so za datowymi dźěrami a warnujemy was, jeli sće potrjecheny. <a data-l10n-name="breach-alert-link">Dalše informacije</a>
 login-intro-instructions-fxa2 = Załožće abo přizjewće so pola swojeho konta na graće, hdźež waše přizjewjenja su składowane.
 login-intro-instructions-fxa-settings = Dźiće k Nastajenja > Sync > Synchronizaciju zmóžnić… Wubjerće kontrolny kašćik „Přizjewjenja a hesła“.
 login-intro-instructions-fxa-passwords-help = Wopytajće <a data-l10n-name="passwords-help-link">pomoc hesłow</a> za wjace pomocy.
 about-logins-intro-browser-only-import = Jeli waše přizjewjenja su składowane w druhim wobhladowaku, móžeće <a data-l10n-name="import-link">je do{ -brand-product-name } importować</a>
 about-logins-intro-import2 = Jeli waše přizjewjenja so zwonka { -brand-product-name } składuja, móžeće <a data-l10n-name="import-browser-link">je z druheho wobhladowaka importować</a>, abo <a data-l10n-name="import-file-link">z dataje</a>
+about-logins-intro-import3 = Wubjerće plusowe znamješko horjeka, zo byšće nětko hesło přidał. Móžeće tež <a data-l10n-name="import-browser-link">hesła z druheho wobhladowaka importować</a>, abo <a data-l10n-name="import-file-link">z dataje</a>.
 
 ## Login
 
 login-item-new-login-title = Nowe přizjewjenje załožić
+# Header for adding a password
+about-logins-login-item-new-login-title = Hesło přidać
 login-item-edit-button = Wobdźěłać
 about-logins-login-item-remove-button = Wotstronić
 login-item-origin-label = Adresa websydła
 login-item-tooltip-message = Přeswědčće so, zo to eksaktnej adresy websydła wotpowěduje, hdźež so chceće přizjewić.
-about-logins-origin-tooltip = Přeswědčće so, zo to eksaktnej adresy websydła wotpowěduje, hdźež so chceće přizjewić.
+about-logins-origin-tooltip2 = Zapodajće dospołnu adresu a zawěsćće, zo je eksaktny wotpowědnik za město, hdźež so přizjewjeće.
 # Variables
 #   $webTitle (String) - Website title of the password being changed.
 about-logins-edit-password-tooltip = Zawěsćće, zo swoje aktualne hesło za tute sydło składujeće. Hdyž so hesło tu njeměnja, njezměni so z { $webTitle }.
@@ -144,6 +151,7 @@ login-item-password-reveal-checkbox =
 login-item-copy-password-button-text = Kopěrować
 login-item-copied-password-button-text = Kopěrowane!
 login-item-save-changes-button = Změny składować
+about-logins-login-item-save-changes-button = Składować
 login-item-save-new-button = Składować
 login-item-cancel-button = Přetorhnyć
 
@@ -171,6 +179,11 @@ about-logins-edit-login-os-auth-dialog-message-win = Zapodajće swoje přizjewje
 # This message can be seen when attempting to edit a login in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-edit-login-os-auth-dialog-message-macosx = składowane přizjewjenje wobdźěłać
+# This message can be seen when attempting to edit a login in about:logins on Windows.
+about-logins-edit-login-os-auth-dialog-message2-win = Zapodajće swoje přizjewjenske daty Windows, zo byšće swoje hesło wobdźěłał. To wěstotu wašich kontow škita.
+# This message can be seen when attempting to edit a login in about:logins
+# On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
+about-logins-edit-login-os-auth-dialog-message2-macosx = składowane hesło wobdźěłać
 # This message can be seen when attempting to reveal a password in about:logins on Windows.
 about-logins-reveal-password-os-auth-dialog-message-win = Zapodajće swoje přizjewjenske daty Windows, zo byšće sej swoje hesło wobhladał. To wěstotu wašich kontow škita.
 # This message can be seen when attempting to reveal a password in about:logins
@@ -186,6 +199,11 @@ about-logins-export-password-os-auth-dialog-message-win = Zapodajće swoje přiz
 # This message can be seen when attempting to export a password in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-export-password-os-auth-dialog-message-macosx = Składowane přizjewjenja a hesła eksportować
+# This message can be seen when attempting to export a password in about:logins on Windows.
+about-logins-export-password-os-auth-dialog-message2-win = Zapodajće swoje přizjewjenske daty Windows, zo byšće swoje hesła eksportował. To wěstotu wašich kontow škita.
+# This message can be seen when attempting to export a password in about:logins
+# On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
+about-logins-export-password-os-auth-dialog-message2-macosx = składowane hesło eksportować
 
 ## Primary Password notification
 
@@ -201,6 +219,10 @@ confirmation-dialog-dismiss-button =
     .title = Přetorhnyć
 about-logins-confirm-remove-dialog-title = Tute přizjewjenje wotstronić?
 confirm-delete-dialog-message = Tuta akcija njeda so cofnyć.
+# Title for modal to confirm the removal of one saved password
+about-logins-confirm-delete-dialog-title = Hesło wotstronić?
+# Message for modal to confirm the removal of one saved password
+about-logins-confirm-delete-dialog-message = Njemóžeće tutu akciju cofnyć.
 about-logins-confirm-remove-dialog-confirm-button = Wotstronić
 
 ## Variables
@@ -260,12 +282,60 @@ about-logins-confirm-remove-all-sync-dialog-message2 =
         [few] To přizjewjenja wotstroni, kotrež sće w { -brand-short-name } na wšěch gratach składował, kotrež su z wašim kontom synchronizowane. To tež warnowanja wo datowych dźěrach wotstroni, kotrež so tu pokazuja. Njemóžeće tutu akciju cofnyć.
        *[other] To přizjewjenja wotstroni, kotrež sće w { -brand-short-name } na wšěch gratach składował, kotrež su z wašim kontom synchronizowane. To tež warnowanja wo datowych dźěrach wotstroni, kotrež so tu pokazuja. Njemóžeće tutu akciju cofnyć.
     }
+# Checkbox for modal to confirm the removal of saved passwords
+about-logins-confirm-remove-all-dialog-checkbox-label2 =
+    { $count ->
+        [1] Haj, hesło wotstronić
+        [one] Haj, hesło wotstronić
+        [two] Haj, hesle wotstronić
+        [few] Haj, hesła wotstronić
+       *[other] Haj, hesła wotstronić
+    }
+# Title for modal to confirm the removal of all saved passwords when user is NOT synced
+about-logins-confirm-remove-all-dialog-title2 =
+    { $count ->
+        [one] { $count } hesło wotstronić?
+        [two] { $count } hesle wotstronić?
+        [few] { $count } hesła wotstronić?
+       *[other] { $count } hesłow wotstronić?
+    }
+# Message for modal to confirm the removal of saved passwords when user is NOT synced
+about-logins-confirm-remove-all-dialog-message2 =
+    { $count ->
+        [1] To hesło, kotrež je so w { -brand-short-name } składowało a warnowanja wo datowych dźěrach wotstroni.
+        [one] To { $count } hesło, kotrež je so w { -brand-short-name } składowało a warnowanja wo datowych dźěrach wotstroni.
+        [two] To { $count } hesle, kotrejž stej so w { -brand-short-name } składowałoj a warnowanja wo datowych dźěrach wotstroni.
+        [few] To { $count } hesła, kotrež su so w { -brand-short-name } składowali a warnowanja wo datowych dźěrach wotstroni.
+       *[other] To { $count } hesłow, kotrež je so w { -brand-short-name } składowało a warnowanja wo datowych dźěrach wotstroni.
+    }
+# Title for modal to confirm the removal of all saved passwords when user IS SYNCED
+about-logins-confirm-remove-all-sync-dialog-title2 =
+    { $count ->
+        [one] { $count } hesło ze wšěch gratow wotstronić?
+        [two] { $count } hesle ze wšěch gratow wotstronić?
+        [few] { $count } hesła ze wšěch gratow wotstronić?
+       *[other] { $count } hesłow ze wšěch gratow wotstronić?
+    }
+# Message for modal to confirm the removal of saved passwords when user IS synced.
+about-logins-confirm-remove-all-sync-dialog-message3 =
+    { $count ->
+        [1] To hesła wotstroni, kotrež sće w { -brand-short-name } na wšěch swojich synchronizowanych gratach składował. To tež warnowanja wo datowych dźěrach wotstroni, kotrež so tu pokazuja. Njemóžeće tutu akciju cofnyć.
+        [one] To $count hesło wotstroni, kotrež sće w { -brand-short-name } na wšěch swojich synchronizowanych gratach składował. To tež warnowanja wo datowych dźěrach wotstroni, kotrež so tu pokazuja. Njemóžeće tutu akciju cofnyć.
+        [two] To $count hesle wotstroni, kotrejž sće w { -brand-short-name } na wšěch swojich synchronizowanych gratach składował. To tež warnowanja wo datowych dźěrach wotstroni, kotrež so tu pokazuja. Njemóžeće tutu akciju cofnyć.
+        [few] To $count hesła wotstroni, kotrež sće w { -brand-short-name } na wšěch swojich synchronizowanych gratach składował. To tež warnowanja wo datowych dźěrach wotstroni, kotrež so tu pokazuja. Njemóžeće tutu akciju cofnyć.
+       *[other] To $count hesłow wotstroni, kotrež sće w { -brand-short-name } na wšěch swojich synchronizowanych gratach składował. To tež warnowanja wo datowych dźěrach wotstroni, kotrež so tu pokazuja. Njemóžeće tutu akciju cofnyć.
+    }
 
 ##
 
 about-logins-confirm-export-dialog-title = Přizjewjenja a hesła eksportować
 about-logins-confirm-export-dialog-message = Waše hesła budu so jako čitajomny tekst składować (na př. BadP@ass0rd), tohodla móže kóždy, kotryž móže eksportowanu dataju wočinić, je widźeć.
 about-logins-confirm-export-dialog-confirm-button = Eksportować…
+about-logins-confirm-export-dialog-title2 = Notica wo eksportowanju hesłow
+about-logins-confirm-export-dialog-message2 =
+    Hdyž eksportujeće, so waše hesła do dataje z čitajomnym tekstom składuja.
+    Hdyž sće dataju dowužił, poručamy ju zhašeć, zo njebychu druzy, kotřiž tutón grat wužiwaja, waše hesła widźeli.
+about-logins-confirm-export-dialog-confirm-button2 = Z eksportom pokročować
 about-logins-alert-import-title = Importowanje dokónčene
 about-logins-alert-import-message = Nadrobne importowe zjeće pokazać
 confirm-discard-changes-dialog-title = Njeskładowane změny zaćisnyć?
@@ -307,6 +377,11 @@ about-logins-export-file-picker-title = Dataju přizjewjenjow eksportować
 # The default file name shown in the file picker when exporting saved logins.
 # This must end in .csv
 about-logins-export-file-picker-default-filename = logins.csv
+# Title of the file picker dialog
+about-logins-export-file-picker-title2 = Hesła z { -brand-short-name } eksportować
+# The default file name shown in the file picker when exporting saved logins.
+# This must end in .csv
+about-logins-export-file-picker-default-filename2 = hesła.csv
 about-logins-export-file-picker-export-button = Eksportować
 # A description for the .csv file format that may be shown as the file type
 # filter by the operating system.

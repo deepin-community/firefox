@@ -614,6 +614,9 @@ search-suggestions-desc = اختر طريقة عرض اقتراحات محركا
 search-suggestions-option =
     .label = اعرض اقتراحات البحث
     .accesskey = ع
+search-show-suggestions-option =
+    .label = اعرض اقتراحات البحث
+    .accesskey = ت
 search-show-suggestions-url-bar-option =
     .label = أظهر اقتراحات البحث في نتائج شريط العناوين
     .accesskey = ت
@@ -712,6 +715,9 @@ sync-signedin-login-failure = من فضلك لج لإعادة التوصيل { $
 sync-resend-verification =
     .label = أعِد إرسال التأكيد
     .accesskey = س
+sync-verify-account =
+    .label = أكّد الحساب
+    .accesskey = س
 sync-remove-account =
     .label = أزِل الحساب
     .accesskey = ز
@@ -744,8 +750,10 @@ sync-currently-syncing-bookmarks = العلامات
 sync-currently-syncing-history = التأريخ
 sync-currently-syncing-tabs = الألسنة المفتوحة
 sync-currently-syncing-logins-passwords = جلسات الولوج وكلمات السر
+sync-currently-syncing-passwords = كلمات السر
 sync-currently-syncing-addresses = العناوين
 sync-currently-syncing-creditcards = بطاقات الائتمان
+sync-currently-syncing-payment-methods = طرق الدفع
 sync-currently-syncing-addons = الإضافات
 sync-currently-syncing-settings = الإعدادات
 sync-change-options =
@@ -776,6 +784,10 @@ sync-engine-logins-passwords =
     .label = جلسات الولوج وكلمات السر
     .tooltiptext = أسماء المستخدمين وكلمات السر التي حفظتها
     .accesskey = س
+sync-engine-passwords =
+    .label = كلمات السر
+    .tooltiptext = كلمات السر التي حفظتها
+    .accesskey = ك
 sync-engine-addresses =
     .label = العناوين
     .tooltiptext = العناوين البريدية التي حفظتها (لسطح المكتب فقط)
@@ -830,6 +842,9 @@ pane-privacy-logins-and-passwords-header = جلسات الولوج وكلمات 
 forms-ask-to-save-logins =
     .label = اطلب مني حفظ كلمات سر و بيانات ولوج مواقع الوِب
     .accesskey = ط
+
+## Privacy Section - Passwords
+
 forms-exceptions =
     .label = الاستثناءات…
     .accesskey = س
@@ -884,6 +899,14 @@ primary-password-os-auth-dialog-message-win = أدخِل معلومات ولوج
 # notes are only valid for English. Please test in your locale.
 primary-password-os-auth-dialog-message-macosx = أنشِئ كلمة سر رئيسية
 master-password-os-auth-dialog-caption = { -brand-full-name }
+
+## Privacy section - Autofill
+
+pane-privacy-autofill-header = الملء التلقائي
+autofill-addresses-checkbox = حفظ وملء العناوين
+    .accesskey = ع
+autofill-saved-addresses-button = العناوين المحفوظة
+    .accesskey = ظ
 
 ## Privacy Section - History
 
@@ -1082,6 +1105,18 @@ content-blocking-cryptominers-label =
 content-blocking-fingerprinters-label =
     .label = مسجّلات البصمات
     .accesskey = ص
+# Browser fingerprinting is a method of tracking users by the configuration and settings information (their "digital fingerprint")
+# that is visible to websites they browse, rather than traditional tracking methods such as IP addresses and unique cookies.
+#
+# The known fingerprinters are those that are known for collecting browser fingerprints from user devices.
+content-blocking-known-fingerprinters-label =
+    .label = المسجّلات المعروفة
+    .accesskey = ف
+# The suspected fingerprinters are those that we are uncertain about browser fingerprinting activities. But they could
+# possibly acquire browser fingerprints because of the behavior on accessing APIs that expose browser fingerprints.
+content-blocking-suspected-fingerprinters-label =
+    .label = المسجّلات المشتبه بها
+    .accesskey = س
 
 ## Privacy Section - Tracking
 
@@ -1222,22 +1257,44 @@ httpsonly-radio-disabled =
 
 preferences-doh-header = DNS عبر HTTPS
 preferences-doh-description = يرسل نظام اسم المجال (DNS) عبر HTTPS طلبك للحصول على اسم المجال من خلال اتصال مُعمّى، مما يؤدي إلى إنشاء DNS آمن ويجعل من الصعب على الآخرين معرفة موقع الوب الذي أنت على وشك الوصول إليه.
+# Variables:
+#   $name (string) - The name of the DNS over HTTPS resolver. If a custom resolver is used, the name will be the domain of the URL.
+preferences-doh-resolver = المزود: { $name }
+# This is displayed instead of $name in preferences-doh-resolver
+# when the DoH URL is not a valid URL
+preferences-doh-bad-url = مسار غير صحيح
 preferences-doh-group-message = تفعيل DNS آمن باستخدام:
+preferences-doh-group-message2 = فعّل DNS عبر HTTPS باستخدام:
+preferences-doh-expand-section =
+    .tooltiptext = مزيد من المعلومات
+preferences-doh-setting-default =
+    .label = الحماية المبدئية
+    .accesskey = ي
 preferences-doh-default-desc = يقرر { -brand-short-name } متى يستخدم DNS آمن لحماية خصوصيتك.
 preferences-doh-default-detailed-desc-1 = أستخدم DNS آمن في المناطق التي تكون فيها متاحة
 preferences-doh-default-detailed-desc-2 = أستخدم محلل DNS المبدئي إذا كان هناك مشكلة مع مزود DNS الآمن
+preferences-doh-default-detailed-desc-3 = استخدم مزودًا محليًا، إن أمكن
 preferences-doh-default-detailed-desc-5 = عطله عندما تخبر الشبكة { -brand-short-name } بأنه لا يجب أن تستخدم DNS آمن
 preferences-doh-setting-enabled =
     .label = حماية متزايدة
     .accesskey = ة
 preferences-doh-enabled-desc = يمكنك التحكم في الوقت الذي تستخدم فيه DNS آمن و إختيار مزودك.
 preferences-doh-enabled-detailed-desc-2 = أستخدم فقط محلل DNS المبدئي إذا كانت هناك مشكلة مع DNS آمن
+preferences-doh-setting-strict =
+    .label = أقصى حماية
+    .accesskey = ح
 preferences-doh-strict-desc = سيستخدم { -brand-short-name } دائما DNS آمن. سترى تحذير خطر أمني قبل أن نستخدم نظام DNS الخاص بك.
+preferences-doh-strict-detailed-desc-1 = استخدم فقط المزود الذي تحدده
 preferences-doh-strict-detailed-desc-2 = حذر دائما إذا كان DNS الآمن غير متاح
 preferences-doh-strict-detailed-desc-3 = إذا لم يكن DNS الآمن متاحًا، فلن تتحمل المواقع أو تعمل كما ينبغي
+preferences-doh-setting-off =
+    .label = معطّل
+    .accesskey = ط
+preferences-doh-off-desc = استخدم محلل DNS الافتراضي الخاص بك
 preferences-doh-checkbox-warn =
     .label = حذر إذا كان هناك طرف ثالث يمنع DNS الآمن
     .accesskey = ح
+preferences-doh-select-resolver = اختر المزود:
 preferences-doh-exceptions-description = لن يستخدم { -brand-short-name } DNS الآمن على هذه المواقع
 preferences-doh-manage-exceptions =
     .label = أدِر الاستثناءات…

@@ -18,7 +18,7 @@ Build-Depends: autotools-dev,
                python3 (>= 3.6),
                dpkg-dev,
                libnspr4-dev (>= 2:4.32~),
-               libnss3-dev (>= 2:3.95~),
+               libnss3-dev (>= 2:3.97~),
                libvpx-dev (>= 1.10.0),
                libdbus-glib-1-dev,
                libffi-dev,
@@ -29,13 +29,12 @@ Build-Depends: autotools-dev,
                nasm (>= 2.14) [amd64 i386],
                rustc (>= 1.70),
                cargo (>= 0.66),
-      	       llvm,
-               llvm-16-dev,
-               libclang-16-dev,
-               clang-16,
-               libc++-16-dev-wasm32,
-               libclang-rt-16-dev-wasm32,
-               lld-16,
+               llvm-14-dev,
+               libclang-14-dev,
+               clang-14,
+               libc++-14-dev-wasm32,
+               libclang-rt-14-dev-wasm32,
+               lld-14,
                cbindgen (>= 0.26.0),
                nodejs (>= 12.22.1),
                zip,
@@ -47,9 +46,7 @@ Build-Depends: autotools-dev,
                ttf-bitstream-vera,
                fonts-freefont-ttf,
                fonts-dejima-mincho,
-               iso-codes,
-               rustfmt
-
+               iso-codes
 Build-Conflicts: graphicsmagick-imagemagick-compat,
                  liboss4-salsa-dev,
                  libhildonmime-dev,
@@ -57,15 +54,16 @@ Build-Conflicts: graphicsmagick-imagemagick-compat,
 Standards-Version: 3.9.8.0
 Vcs-Git: https://salsa.debian.org/mozilla-team/firefox.git -b release/master
 Vcs-Browser: https://salsa.debian.org/mozilla-team/firefox/commits/release/master
+
 Package: firefox
 Architecture: any
-Depends: ${shlibs:Depends}, 
+Depends: ${shlibs:Depends},
          ${misc:Depends},
          fontconfig,
          procps,
          debianutils (>= 1.16),
          libnspr4 (>= 2:4.32~),
-         libnss3 (>= 2:3.95~)
+         libnss3 (>= 2:3.97~)
 Recommends: libavcodec60 | libavcodec-extra60 | libavcodec59 | libavcodec-extra59 | libavcodec58 | libavcodec-extra58 | libavcodec57 | libavcodec-extra57 | libavcodec56 | libavcodec-extra56 | libavcodec55 | libavcodec-extra55 | libavcodec54 | libavcodec-extra54 | libavcodec53 | libavcodec-extra53
 Suggests: fonts-stix | otf-stix,
           fonts-lmodern,

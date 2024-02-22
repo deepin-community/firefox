@@ -29,6 +29,8 @@ about-logins-menu-menuitem-import-from-another-browser = Flytja inn úr öðrum 
 about-logins-menu-menuitem-import-from-a-file = Flytja inn úr skrá...
 about-logins-menu-menuitem-export-logins = Flytja út innskráningar...
 about-logins-menu-menuitem-remove-all-logins = Fjarlægja allar innskráningar...
+about-logins-menu-menuitem-export-logins2 = Flytja út lykilorð...
+about-logins-menu-menuitem-remove-all-logins2 = Fjarlægja öll lykilorð…
 menu-menuitem-preferences =
     { PLATFORM() ->
         [windows] Valkostir
@@ -105,20 +107,25 @@ about-logins-login-intro-heading-logged-out2 = Ertu að leita að vistuðum inns
 about-logins-login-intro-heading-logged-in = Engar samstilltar innskráningar fundust.
 login-intro-description = Ef þú vistaðir innskráningar þínar á { -brand-product-name } á öðru tæki, muntu geta náð í þær svona:
 login-intro-instructions-fxa = Búðu til eða skráðu þig inn á { -fxaccount-brand-name } á tækinu þar sem innskráningar þínar eru vistaðar.
+about-logins-login-intro-heading-message = Vistaðu lykilorðin þín á öruggum stað
+login-intro-description2 = Öll lykilorð sem þú vistar á { -brand-product-name } eru dulrituð. Auk þess fylgjumst við með gagnaþjófnuðum og látum þig vita ef þú kemur við sögu. <a data-l10n-name="breach-alert-link">Frekari upplýsingar</a>
 login-intro-instructions-fxa2 = Búðu til eða skráðu þig inn á reikninginn þinn á tækinu þar sem innskráningar þínar eru vistaðar.
 login-intro-instructions-fxa-settings = Farðu í Stillingar > Samstilling > Kveikja á samstillingu... Veldu gátreitinn fyrir innskráningar og lykilorð.
 login-intro-instructions-fxa-passwords-help = Farðu í <a data-l10n-name="passwords-help-link">aðstoð fyrir lykilorð</a> til að fá frekari hjálp.
 about-logins-intro-browser-only-import = Ef innskráningar þínar eru vistaðar í öðrum vafra geturðu <a data-l10n-name="import-link">flutt þær inn í { -brand-product-name }</a>
 about-logins-intro-import2 = Ef innskráningar þínar eru vistaðar utan { -brand-product-name } geturðu <a data-l10n-name="import-browser-link">flutt þau inn úr öðrum vafra</a> eða <a data-l10n-name="import-file-link">úr skrá</a>
+about-logins-intro-import3 = Veldu plús-táknið hér að ofan til að bæta núna við lykilorði. Þú getur líka <a data-l10n-name="import-browser-link">flutt inn lykilorð úr öðrum vafra</a> eða <a data-l10n-name="import-file-link">úr skrá</a> a>.
 
 ## Login
 
 login-item-new-login-title = Búa til nýja innskráningu
+# Header for adding a password
+about-logins-login-item-new-login-title = Bæta við lykilorði
 login-item-edit-button = Breyta
 about-logins-login-item-remove-button = Fjarlægja
 login-item-origin-label = Vistfang vefsvæðis
 login-item-tooltip-message = Gakktu úr skugga um að þetta passi nákvæmlega við vistfang vefsíðunnar þar sem þú skráir þig inn.
-about-logins-origin-tooltip = Gakktu úr skugga um að þetta passi nákvæmlega við vistfang vefsíðunnar þar sem þú skráir þig inn.
+about-logins-origin-tooltip2 = Sláðu inn allt vistfangið og vertu viss um að það passi nákvæmlega við þar sem þú skráir þig inn.
 # Variables
 #   $webTitle (String) - Website title of the password being changed.
 about-logins-edit-password-tooltip = Gakktu úr skugga um að þú sért að vista núverandi lykilorð fyrir þetta vefsvæði. Að breyta lykilorðinu hér breytir því ekki hjá { $webTitle }.
@@ -136,6 +143,7 @@ login-item-password-reveal-checkbox =
 login-item-copy-password-button-text = Afrita
 login-item-copied-password-button-text = Afritað!
 login-item-save-changes-button = Vista breytingar
+about-logins-login-item-save-changes-button = Vista
 login-item-save-new-button = Vista
 login-item-cancel-button = Hætta við
 
@@ -163,6 +171,11 @@ about-logins-edit-login-os-auth-dialog-message-win = Til að breyta innskráning
 # This message can be seen when attempting to edit a login in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-edit-login-os-auth-dialog-message-macosx = breyta vistuðu innskráningunni
+# This message can be seen when attempting to edit a login in about:logins on Windows.
+about-logins-edit-login-os-auth-dialog-message2-win = Til að breyta lykilorðinu þínu, skaltu setja inn Windows-innskráningarauðkennin þín. Þetta hjálpar til við að tryggja öryggi reikninganna þinna.
+# This message can be seen when attempting to edit a login in about:logins
+# On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
+about-logins-edit-login-os-auth-dialog-message2-macosx = breyta vistaða lykilorðinu
 # This message can be seen when attempting to reveal a password in about:logins on Windows.
 about-logins-reveal-password-os-auth-dialog-message-win = Til að skoða lykilorðið þitt, skaltu setja inn Windows-innskráningarauðkennin þín. Þetta hjálpar til við að tryggja öryggi reikninganna þinna.
 # This message can be seen when attempting to reveal a password in about:logins
@@ -178,6 +191,11 @@ about-logins-export-password-os-auth-dialog-message-win = Til að flytja út inn
 # This message can be seen when attempting to export a password in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-export-password-os-auth-dialog-message-macosx = flytja út vistaðar innskráningar og lykilorð
+# This message can be seen when attempting to export a password in about:logins on Windows.
+about-logins-export-password-os-auth-dialog-message2-win = Til að flytja út lykilorðið þitt, skaltu setja inn Windows-innskráningarauðkennin þín. Þetta hjálpar til við að tryggja öryggi reikninganna þinna.
+# This message can be seen when attempting to export a password in about:logins
+# On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
+about-logins-export-password-os-auth-dialog-message2-macosx = flytja út vistaða lykilorðið
 
 ## Primary Password notification
 
@@ -193,6 +211,10 @@ confirmation-dialog-dismiss-button =
     .title = Hætta við
 about-logins-confirm-remove-dialog-title = Fjarlægja þessa innskráningu?
 confirm-delete-dialog-message = Þessa aðgerð er ekki hægt að afturkalla.
+# Title for modal to confirm the removal of one saved password
+about-logins-confirm-delete-dialog-title = Fjarlægja lykilorð?
+# Message for modal to confirm the removal of one saved password
+about-logins-confirm-delete-dialog-message = Þú getur ekki afturkallað þessa aðgerð.
 about-logins-confirm-remove-dialog-confirm-button = Fjarlægja
 
 ## Variables
@@ -238,12 +260,50 @@ about-logins-confirm-remove-all-sync-dialog-message2 =
         [one] Þetta mun fjarlægja innskráninguna sem þú hefur vistað á { -brand-short-name } á öllum tækjum sem eru samstillt við aðganginn þinn. Þetta mun einnig fjarlægja innbrotaviðvaranir sem birtast hér. Þú munt ekki geta afturkallað þessa aðgerð.
        *[other] Þetta mun fjarlægja allar innskráningar sem þú hefur vistað á { -brand-short-name } á öllum tækjum sem eru samstillt við aðganginn þinn. Þetta mun einnig fjarlægja innbrotaviðvaranir sem birtast hér. Þú munt ekki geta afturkallað þessa aðgerð.
     }
+# Checkbox for modal to confirm the removal of saved passwords
+about-logins-confirm-remove-all-dialog-checkbox-label2 =
+    { $count ->
+        [1] Já, fjarlægja lykilorðið
+        [one] Já, fjarlægja lykilorðið
+       *[other] Já, fjarlægja lykilorðin
+    }
+# Title for modal to confirm the removal of all saved passwords when user is NOT synced
+about-logins-confirm-remove-all-dialog-title2 =
+    { $count ->
+        [one] Fjarlægja { $count } lykilorð?
+       *[other] Fjarlægja öll { $count } lykilorðin?
+    }
+# Message for modal to confirm the removal of saved passwords when user is NOT synced
+about-logins-confirm-remove-all-dialog-message2 =
+    { $count ->
+        [1] Þetta mun fjarlægja lykilorðið sem vistað er á { -brand-short-name } og allar tilkynningar um innbrot. Þú getur ekki afturkallað þessa aðgerð.
+        [one] Þetta mun fjarlægja lykilorðið sem vistað er á { -brand-short-name } og allar tilkynningar um innbrot. Þú getur ekki afturkallað þessa aðgerð.
+       *[other] Þetta mun fjarlægja lykilorðin sem vistuð eru á { -brand-short-name } og allar tilkynningar um innbrot. Þú getur ekki afturkallað þessa aðgerð.
+    }
+# Title for modal to confirm the removal of all saved passwords when user IS SYNCED
+about-logins-confirm-remove-all-sync-dialog-title2 =
+    { $count ->
+        [one] Fjarlægja { $count } lykilorð úr öllum tækjum?
+       *[other] Fjarlægja öll { $count } lykilorð úr öllum tækjum?
+    }
+# Message for modal to confirm the removal of saved passwords when user IS synced.
+about-logins-confirm-remove-all-sync-dialog-message3 =
+    { $count ->
+        [1] Þetta mun fjarlægja lykilorð sem þú hefur vistað á { -brand-short-name } á öllum tækjum sem eru samstillt við aðganginn þinn. Þetta mun einnig fjarlægja innbrotaviðvaranir sem birtast hér. Þú munt ekki geta afturkallað þessa aðgerð.
+        [one] Þetta mun fjarlægja lykilorð sem þú hefur vistað á { -brand-short-name } á öllum tækjum sem eru samstillt við aðganginn þinn. Þetta mun einnig fjarlægja innbrotaviðvaranir sem birtast hér. Þú munt ekki geta afturkallað þessa aðgerð.
+       *[other] Þetta mun fjarlægja öll lykilorð sem þú hefur vistað á { -brand-short-name } á öllum tækjum sem eru samstillt við aðganginn þinn. Þetta mun einnig fjarlægja innbrotaviðvaranir sem birtast hér. Þú munt ekki geta afturkallað þessa aðgerð.
+    }
 
 ##
 
 about-logins-confirm-export-dialog-title = Flytja út innskráningar og lykilorð
 about-logins-confirm-export-dialog-message = Lykilorðin þín verða vistuð sem læsilegur texti (t.d. BadP@ssw0rd) svo allir sem geta opnað útfluttu skrána geta skoðað þau.
 about-logins-confirm-export-dialog-confirm-button = Flytja út…
+about-logins-confirm-export-dialog-title2 = Athugasemd um útflutning lykilorða
+about-logins-confirm-export-dialog-message2 =
+    Þegar þú flytur út lykilorð, eru þau vistuð í skrá með læsilegum texta.
+    Þegar þú ert búinn að nota skrána mælum við með að þú eyðir henni svo aðrir sem nota þetta tæki geti ekki séð lykilorðin þín.
+about-logins-confirm-export-dialog-confirm-button2 = Halda áfram með útflutning
 about-logins-alert-import-title = Innflutningi lokið
 about-logins-alert-import-message = Skoða nákvæmt innflutningsyfirlit
 confirm-discard-changes-dialog-title = Henda óvistuðum breytingum?
@@ -285,6 +345,11 @@ about-logins-export-file-picker-title = Flytja út skrá með innskráningum
 # The default file name shown in the file picker when exporting saved logins.
 # This must end in .csv
 about-logins-export-file-picker-default-filename = innskraningar.csv
+# Title of the file picker dialog
+about-logins-export-file-picker-title2 = Flytja út lykilorð frá { -brand-short-name }
+# The default file name shown in the file picker when exporting saved logins.
+# This must end in .csv
+about-logins-export-file-picker-default-filename2 = lykilorð.csv
 about-logins-export-file-picker-export-button = Flytja út
 # A description for the .csv file format that may be shown as the file type
 # filter by the operating system.

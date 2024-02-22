@@ -9,6 +9,8 @@ autofill-manage-addresses-title = Adreças salvadas
 autofill-manage-addresses-list-header = Adreças
 autofill-manage-credit-cards-title = Cartas de crèdit salvadas
 autofill-manage-credit-cards-list-header = Cartas bancàrias
+autofill-manage-payment-methods-title = Metòdes de pagament enregistrats
+autofill-manage-cards-list-header = Cartas
 autofill-manage-dialog =
     .style = min-width: 560px
 autofill-manage-remove-button = Suprimir
@@ -41,7 +43,7 @@ address-capture-open-menu-button =
 address-capture-edit-address-button =
     .aria-label = Modificar l’adreça
 # The dialog title for creating addresses in browser preferences.
-autofill-add-new-address-title = Apondre una novèla adreça
+autofill-add-address-title = Apondre una adreça
 # The dialog title for editing addresses in browser preferences.
 autofill-edit-address-title = Modificar l'adreça
 autofill-address-name = Nom
@@ -106,6 +108,8 @@ autofill-address-eircode = Còdi postal (Eircode)
 
 ##
 
+# The dialog title for creating addresses in browser preferences.
+autofill-add-new-address-title = Apondre una novèla adreça
 autofill-address-country = País o region
 autofill-address-country-only = País
 autofill-address-tel = Telefòn
@@ -125,6 +129,10 @@ autofill-edit-card-password-prompt =
         [windows] { -brand-short-name } ensaja de mostrar las informacions d’una carta bancària. Confirmatz l’accès al compte Windows çai-jos.
        *[other] { -brand-short-name } ensaja de mostrar las informacions d’una carta bancària.
     }
+# The dialog title for creating credit cards in browser preferences.
+autofill-add-card-title = Apondre una carta
+# The dialog title for editing credit cards in browser preferences.
+autofill-edit-card-title2 = Modificar la carta
 autofill-card-number = Numèro de carta
 autofill-card-invalid-number = Picatz un numèro de carta valid
 autofill-card-name-on-card = Titular

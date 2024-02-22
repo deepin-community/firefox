@@ -5,13 +5,20 @@
 toolbar-button-firefox-view =
     .label = { -firefoxview-brand-name }
     .tooltiptext = { -firefoxview-brand-name }
+toolbar-button-firefox-view-2 =
+    .label = { -firefoxview-brand-name }
+    .tooltiptext = Tampilkan penjelajahan terkini dari berbagai jendela dan perangkat
 menu-tools-firefox-view =
     .label = { -firefoxview-brand-name }
     .accesskey = F
 firefoxview-page-title = { -firefoxview-brand-name }
+firefoxview-page-label =
+    .label = { -firefoxview-brand-name }
 firefoxview-close-button =
     .title = Tutup
     .aria-label = Tutup
+firefoxview-empty-state-icon =
+    .alt = Perhatian:
 # Used instead of the localized relative time when a timestamp is within a minute or so of now
 firefoxview-just-now-timestamp = Baru saja
 # This is a headline for an area in the product where users can resume and re-open tabs they have previously viewed on other devices.
@@ -23,19 +30,25 @@ firefoxview-tabpickup-progress-label = { $percentValue }% selesai
 firefoxview-tabpickup-step-signin-header = Beralih antara perangkat dengan mulus
 firefoxview-tabpickup-step-signin-description = Untuk mengambil tab ponsel Anda di sini, masuk terlebih dahulu atau buat akun.
 firefoxview-tabpickup-step-signin-primarybutton = Lanjutkan
+firefoxview-syncedtabs-signin-header = Ambil tab dari mana saja
+firefoxview-syncedtabs-signin-description = Untuk melihat seluruh tab dari semua tempat Anda menggunakan { -brand-product-name }, masuk ke akun Anda. Jika tidak memiliki akun, kami akan memandu Anda langkah demi langkah untuk mendaftar.
 firefoxview-syncedtabs-signin-primarybutton = Masuk atau daftar
 firefoxview-tabpickup-adddevice-header = Sinkronkan { -brand-product-name } di ponsel atau tablet Anda
 firefoxview-tabpickup-adddevice-description = Unduh { -brand-product-name } untuk ponsel dan masuk di sana.
 firefoxview-tabpickup-adddevice-learn-how = Pelajari caranya
 firefoxview-tabpickup-adddevice-primarybutton = Dapatkan { -brand-product-name } untuk ponsel
 firefoxview-syncedtabs-adddevice-header = Masuk ke { -brand-product-name } pada perangkat lainnya
+firefoxview-syncedtabs-adddevice-description = Untuk melihat seluruh tab dari semua tempat Anda menggunakan { -brand-product-name }, masuk di semua perangkat Anda. Pelajari cara <a data-l10n-name="url">menghubungkan perangkat tambahan</a>.
 firefoxview-syncedtabs-adddevice-primarybutton = Coba { -brand-product-name } untuk ponsel
 firefoxview-tabpickup-synctabs-header = Aktifkan sinkronisasi tab
 firefoxview-tabpickup-synctabs-description = Izinkan { -brand-short-name } untuk membagikan tab antar perangkat.
 firefoxview-tabpickup-synctabs-learn-how = Pelajari caranya
 firefoxview-tabpickup-synctabs-primarybutton = Sinkronkan tab terbuka
 firefoxview-syncedtabs-synctabs-header = Perbarui pengaturan sinkronisasi Anda
+firefoxview-syncedtabs-synctabs-description = Untuk melihat tab dari perangkat lain, Anda perlu menyelaraskan tab-tab Anda yang terbuka.
 firefoxview-syncedtabs-synctabs-checkbox = Izinkan tab terbuka untuk disinkronkan
+firefoxview-syncedtabs-loading-header = Penyelarasan sedang berlangsung
+firefoxview-syncedtabs-loading-description = Setelah selesai, Anda akan melihat semua tab Anda yang terbuka di perangkat lainnya. Silakan kembali lagi nanti.
 firefoxview-tabpickup-fxa-admin-disabled-header = Organisasi Anda telah menonaktifkan sinkronisasi
 firefoxview-tabpickup-fxa-admin-disabled-description = { -brand-short-name } tidak dapat menyinkronkan tab antar perangkat karena administrator Anda telah menonaktifkan sinkronisasi.
 firefoxview-tabpickup-network-offline-header = Periksa koneksi Internet Anda
@@ -87,6 +100,8 @@ firefoxview-collapse-button-show =
     .title = Tampilkan daftar
 firefoxview-collapse-button-hide =
     .title = Sembunyikan daftar
+firefoxview-overview-nav = Baru saja dijelajahi
+    .title = Baru saja dijelajahi
 
 ## History in this context refers to browser history
 
@@ -123,6 +138,15 @@ firefoxview-opentabs-focus-tab =
     .title = Pindah ke tab ini
 firefoxview-show-more = Tampilkan lebih banyak
 firefoxview-show-less = Tampilkan lebih sedikit
+firefoxview-show-all = Tampilkan semua
+firefoxview-search-text-box-clear-button =
+    .title = Bersihkan
+# Placeholder for the input field to search in recent browsing ("search" is a verb).
+firefoxview-search-text-box-recentbrowsing =
+    .placeholder = Cari
+# Placeholder for the input field to search in history ("search" is a verb).
+firefoxview-search-text-box-history =
+    .placeholder = Riwayat pencarian
 firefoxview-sort-history-by-date-label = Urut berdasarkan tanggal
 firefoxview-sort-history-by-site-label = Urut berdasarkan situs
 
@@ -144,6 +168,7 @@ firefoxview-choose-browser-button = Pilih peramban
 
 ## Message displayed in Firefox View when the user has chosen to never remember History
 
+firefoxview-dont-remember-history-empty-header = Tidak ada yang ditampilkan
 
 ##
 
@@ -157,9 +182,6 @@ firefoxview-import-history-close-button =
 firefoxview-import-history-header = Impor riwayat dari peramban lainnya
 
 ## Message displayed in Firefox View when the user has no recently closed tabs data
-
-
-##
 
 
 ## This message is displayed below the name of another connected device when it doesn't have any open tabs.
