@@ -203,6 +203,9 @@ containers-remove-alert-msg =
     }
 containers-remove-ok-button = Remover iste contentor
 containers-remove-cancel-button = Non remover iste contentor
+settings-tabs-show-image-in-preview =
+    .label = Monstrar un vista preliminar del imagine quando tu passa le mus sur un scheda
+    .accessKey = n
 
 ## General Section - Language & Appearance
 
@@ -794,9 +797,9 @@ sync-engine-creditcards =
     .label = Cartas de credito
     .tooltiptext = Nomines, numeros e datas de expiration (solo scriptorio)
     .accesskey = C
-sync-engine-payment-methods =
+sync-engine-payment-methods2 =
     .label = Methodos de pagamento
-    .tooltiptext = Nomines, numeros de carta, e datas de expiration (solo pro scriptorio)
+    .tooltiptext = Nomines, numeros de carta, e datas de expiration
     .accesskey = n
 sync-engine-addons =
     .label = Additivos
@@ -844,18 +847,35 @@ pane-privacy-logins-and-passwords-header = Contos e contrasignos
 forms-ask-to-save-logins =
     .label = Proponer de salvar contos e contrasignos pro sitos web
     .accesskey = r
+
+## Privacy Section - Passwords
+
+# "Logins" is the former term for "Passwords". Users should find password settings
+# by searching for the former term "logins". It's not displayed in the UI.
+pane-privacy-passwords-header = Contrasignos
+    .searchkeywords = credentiales
+# Checkbox to control whether UI is shown to users to save or fill logins/passwords.
+forms-ask-to-save-passwords =
+    .label = Demandar si salvar contrasignos
+    .accesskey = D
 forms-exceptions =
     .label = Exceptiones…
     .accesskey = x
 forms-generate-passwords =
     .label = Suggerer e generar contrasignos robuste
     .accesskey = u
+forms-suggest-passwords =
+    .label = Suggerer contrasignos complexe
+    .accesskey = S
 forms-breach-alerts =
     .label = Monstrar avisos pro contrasignos de sitos web violate
     .accesskey = v
 forms-breach-alerts-learn-more-link = Saper plus
 preferences-relay-integration-checkbox =
     .label = Suggerer mascas email { -relay-brand-name } pro proteger tu adresse email
+preferences-relay-integration-checkbox2 =
+    .label = Suggerer mascas de email { -relay-brand-name } pro proteger tu adresse email
+    .accesskey = S
 relay-integration-learn-more-link = Pro saper plus
 # Checkbox which controls filling saved logins into fields automatically when they appear, in some cases without user interaction.
 forms-fill-logins-and-passwords =
@@ -864,6 +884,13 @@ forms-fill-logins-and-passwords =
 forms-saved-logins =
     .label = Credentiales salvate…
     .accesskey = L
+# Checkbox which controls filling saved logins into fields automatically when they appear, in some cases without user interaction.
+forms-fill-usernames-and-passwords =
+    .label = Compilar nomines de usator e contrasignos automaticamente
+    .accesskey = C
+forms-saved-passwords =
+    .label = Contrasignos salvate
+    .accesskey = s
 forms-primary-pw-use =
     .label = Usar un contrasigno primari
     .accesskey = U
@@ -887,6 +914,7 @@ forms-windows-sso =
     .label = Permitter le autorisation unic de Windows pro le contos de labor e schola de Microsoft
 forms-windows-sso-learn-more-link = Saper plus
 forms-windows-sso-desc = Gerer contos in le parametros de tu apparato
+windows-passkey-settings-label = Gerer claves-contrasigno in le parametros de systema
 
 ## OS Authentication dialog
 
@@ -898,6 +926,28 @@ primary-password-os-auth-dialog-message-win = Pro crear un contrasigno primari, 
 # notes are only valid for English. Please test in your locale.
 primary-password-os-auth-dialog-message-macosx = Crear un contrasigno primari
 master-password-os-auth-dialog-caption = { -brand-full-name }
+
+## Privacy section - Autofill
+
+pane-privacy-autofill-header = Compilar automaticamente
+autofill-addresses-checkbox = Salvar e compilar automaticamente adresses
+    .accesskey = a
+autofill-saved-addresses-button = Adresses salvate
+    .accesskey = s
+autofill-payment-methods-checkbox-message = Salvar e compilar methodos de pagamento automaticamente
+    .accesskey = S
+autofill-payment-methods-checkbox-submessage = Include cartas de credito e debito
+    .accesskey = i
+autofill-saved-payment-methods-button = Methodos de pagamento salvate
+    .accesskey = v
+autofill-reauth-checkbox =
+    { PLATFORM() ->
+        [macos] Require le authentication de macOS pro compilar e modificar le methodos de pagamento.
+        [windows] Require le authentication de Windows pro compilar e modificar le methodos de pagamento.
+        [linux] Require le authentication de Linux pro compilar e modificar le methodos de pagamento.
+       *[other] Require le authentication pro compilar e modificar le methodos de pagamento.
+    }
+    .accesskey = o
 
 ## Privacy Section - History
 
@@ -953,6 +1003,7 @@ sitedata-delete-on-close =
     .label = Deler datos de cookies e sitos quando { -brand-short-name } es claudite
     .accesskey = D
 sitedata-delete-on-close-private-browsing = Durante le modo de navigation private permanente, le cookies e le datos del sito sera sempre cancellate al clausura de { -brand-short-name }.
+sitedata-delete-on-close-private-browsing2 = In base al parametros del chronologia, le cookies e le datos del sitos web sera eliminate quando tu claudera { -brand-short-name }.
 sitedata-allow-cookies-option =
     .label = Acceptar le cookies e le datos de sito
     .accesskey = A

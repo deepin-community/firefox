@@ -203,6 +203,9 @@ containers-remove-alert-msg =
     }
 containers-remove-ok-button = Hiqe këtë Kontejner
 containers-remove-cancel-button = Mos e hiq këtë Kontejner
+settings-tabs-show-image-in-preview =
+    .label = Shfaq një paraparje figure, kur kaloni kursorin sipër një skede
+    .accessKey = q
 
 ## General Section - Language & Appearance
 
@@ -403,7 +406,7 @@ update-application-auto =
     .label = T’i instalojë vetvetiu përditësimet (e këshillueshme)
     .accesskey = v
 update-application-check-choose =
-    .label = Të kontrollojë për përditësime, por t’ju lejojë të zgjidhni të instalojen apo jo
+    .label = Të kontrollojë për përditësime, por t’ju lejojë të zgjidhni të instalohen apo jo
     .accesskey = k
 update-application-manual =
     .label = Të mos kontrollojë kurrë për përditësime (nuk rekomandohet)
@@ -794,10 +797,10 @@ sync-engine-creditcards =
     .label = Karta krediti
     .tooltiptext = Emra, numra dhe data skadimi (vetëm për desktop)
     .accesskey = K
-sync-engine-payment-methods =
+sync-engine-payment-methods2 =
     .label = Metoda pagesash
-    .tooltiptext = Emra, numra kartash dhe data skadimi (vetëm për desktop)
-    .accesskey = M
+    .tooltiptext = Emra, karta krediti dhe data skadimi
+    .accesskey = E
 sync-engine-addons =
     .label = Shtesa
     .tooltiptext = Zgjerime dhe tema për Firefox Desktop
@@ -844,11 +847,25 @@ pane-privacy-logins-and-passwords-header = Kredenciale Hyrjesh dhe Fjalëkalime
 forms-ask-to-save-logins =
     .label = Pyet të ruhen apo jo kredenciale hyrjesh dhe fjalëkalime për sajte
     .accesskey = P
+
+## Privacy Section - Passwords
+
+# "Logins" is the former term for "Passwords". Users should find password settings
+# by searching for the former term "logins". It's not displayed in the UI.
+pane-privacy-passwords-header = Fjalëkalime
+    .searchkeywords = kredenciale hyrjesh
+# Checkbox to control whether UI is shown to users to save or fill logins/passwords.
+forms-ask-to-save-passwords =
+    .label = Pyet të ruhen fjalëkalimet a jo
+    .accesskey = P
 forms-exceptions =
     .label = Përjashtime…
     .accesskey = a
 forms-generate-passwords =
     .label = Sugjero dhe prodho fjalëkalime të fuqishëm
+    .accesskey = S
+forms-suggest-passwords =
+    .label = Sugjero fjalëkalime të fuqishëm
     .accesskey = S
 forms-breach-alerts =
     .label = Shfaq sinjalizime rreth fjalëkalimesh për sajte të cenuar
@@ -856,6 +873,9 @@ forms-breach-alerts =
 forms-breach-alerts-learn-more-link = Mësoni më tepër
 preferences-relay-integration-checkbox =
     .label = Sugjero maska { -relay-brand-name } email-i, për të mbrojtur adresën tuaj email
+preferences-relay-integration-checkbox2 =
+    .label = Sugjero maska { -relay-brand-name } email-i, për të mbrojtur adresën tuaj email
+    .accesskey = S
 relay-integration-learn-more-link = Mësoni më tepër
 # Checkbox which controls filling saved logins into fields automatically when they appear, in some cases without user interaction.
 forms-fill-logins-and-passwords =
@@ -864,6 +884,13 @@ forms-fill-logins-and-passwords =
 forms-saved-logins =
     .label = Kredenciale Hyrjeje të Ruajtura…
     .accesskey = K
+# Checkbox which controls filling saved logins into fields automatically when they appear, in some cases without user interaction.
+forms-fill-usernames-and-passwords =
+    .label = Plotëso automatikisht emra përdoruesish dhe fjalëkalime
+    .accesskey = P
+forms-saved-passwords =
+    .label = Fjalëkalime të ruajtur
+    .accesskey = r
 forms-primary-pw-use =
     .label = Përdorni një Fjalëkalim të Përgjithshëm
     .accesskey = P
@@ -887,6 +914,7 @@ forms-windows-sso =
     .label = Lejo hyrje njëshe Windows për llogari Microsoft, pune, apo shkolle
 forms-windows-sso-learn-more-link = Mësoni më tepër
 forms-windows-sso-desc = Administroni llogari që nga rregullimet e pajisjes tuaj
+windows-passkey-settings-label = Administroni kyçkalime te rregullime sistemi
 
 ## OS Authentication dialog
 
@@ -898,6 +926,28 @@ primary-password-os-auth-dialog-message-win = Që të krijoni një Fjalëkalim t
 # notes are only valid for English. Please test in your locale.
 primary-password-os-auth-dialog-message-macosx = të krijojë një Fjalëkalim të Përgjithshëm
 master-password-os-auth-dialog-caption = { -brand-full-name }
+
+## Privacy section - Autofill
+
+pane-privacy-autofill-header = Vetëplotësime
+autofill-addresses-checkbox = Ruaj dhe vetëplotëso adresa
+    .accesskey = v
+autofill-saved-addresses-button = Adresa të ruajtura
+    .accesskey = A
+autofill-payment-methods-checkbox-message = Ruaj dhe plotëso metoda pagesash
+    .accesskey = m
+autofill-payment-methods-checkbox-submessage = Përfshin karta krediti dhe debiti
+    .accesskey = P
+autofill-saved-payment-methods-button = Metoda pagesash të ruajtura
+    .accesskey = u
+autofill-reauth-checkbox =
+    { PLATFORM() ->
+        [macos] Kërko mirëfilltësim macOS, për të plotësuar dhe përpunuar metoda pagimi.
+        [windows] Kërko mirëfilltësim Windows, për të plotësuar dhe përpunuar metoda pagimi.
+        [linux] Kërko mirëfilltësim Linux, për të plotësuar dhe përpunuar metoda pagimi.
+       *[other] Kërko mirëfilltësim, për të plotësuar dhe përpunuar metoda pagimi.
+    }
+    .accesskey = m
 
 ## Privacy Section - History
 
@@ -942,7 +992,7 @@ history-clear-button =
 
 ## Privacy Section - Site Data
 
-sitedata-header = Cookies dhe të Dhëna Sajtesh
+sitedata-header = “Cookies” dhe të Dhëna Sajtesh
 sitedata-total-size-calculating = Po njehsohet madhësi të dhënash sajtesh dhe fshehtine…
 # Variables:
 #   $value (number) - Value of the unit (for example: 4.6, 500)
@@ -950,7 +1000,7 @@ sitedata-total-size-calculating = Po njehsohet madhësi të dhënash sajtesh dhe
 sitedata-total-size = Cookie-t, të dhënat tuaja të sajteve dhe fshehtina përdorin deri sot { $value } { $unit } hapësirë disku.
 sitedata-learn-more = Mësoni më tepër
 sitedata-delete-on-close =
-    .label = Fshi cookies dhe të dhëna sajti, kur mbyllet { -brand-short-name }-i
+    .label = Fshi “cookies” dhe të dhëna sajti, kur mbyllet { -brand-short-name }-i
     .accesskey = F
 sitedata-delete-on-close-private-browsing = Nën mënyrën shfletim i përhershëm privat, cookie-t dhe të dhënat e sajtit do të spastrohen përherë, kur mbyllet { -brand-short-name }-i.
 sitedata-allow-cookies-option =
@@ -968,9 +1018,9 @@ sitedata-option-block-cross-site-trackers =
 sitedata-option-block-cross-site-tracking-cookies =
     .label = “Cookies” gjurmimi nga sajte në sajte
 sitedata-option-block-cross-site-cookies =
-    .label = Cookie-t për gjurmim nga sajti në sajt dhe izolo “cookies” të tjera palësh të treta
+    .label = Cookie-t për gjurmim nga sajte në sajte dhe izolo “cookies” të tjera palësh të treta
 sitedata-option-block-unvisited =
-    .label = Cookies nga sajte të pavizituar
+    .label = “Cookies” nga sajte të pavizituar
 sitedata-option-block-all-cross-site-cookies =
     .label = Krejt cookie-t palë të treta (mund të shkaktojë mosfunksionim të disa sajteve)
 sitedata-option-block-all =
@@ -1070,10 +1120,10 @@ content-blocking-private-windows = Lëndë gjurmimi në Dritare Private
 content-blocking-cross-site-cookies-in-all-windows2 = “Cookies” palësh të treta në krejt dritaret
 content-blocking-cross-site-tracking-cookies = “Cookies” gjurmimi nga sajte në sajte
 content-blocking-all-cross-site-cookies-private-windows = “Cookies” palësh të treta në Dritare Private
-content-blocking-cross-site-tracking-cookies-plus-isolate = Cookie-t për gjurmim nga sajti në sajt dhe izolo cookie-t e mbetura
+content-blocking-cross-site-tracking-cookies-plus-isolate = Cookie-t për gjurmim nga sajte në sajte dhe izolo cookie-t e mbetura
 content-blocking-social-media-trackers = Gjurmues prej mediash shoqërore
 content-blocking-all-cookies = Krejt cookie-t
-content-blocking-unvisited-cookies = Cookies nga sajte të pavizituar
+content-blocking-unvisited-cookies = “Cookies” nga sajte të pavizituar
 content-blocking-all-windows-tracking-content = Gjurmim lënde në krejt dritaret
 content-blocking-all-cross-site-cookies = Krejt “cookiet” nga palë të treta
 content-blocking-cryptominers = Nxjerrës kriptomonedhash
@@ -1107,7 +1157,7 @@ content-blocking-option-private =
     .accesskey = V
 content-blocking-tracking-protection-change-block-list = Ndryshoni listë bllokimesh
 content-blocking-cookies-label =
-    .label = Cookies
+    .label = “Cookies”
     .accesskey = C
 content-blocking-expand-section =
     .tooltiptext = Më tepër hollësi
@@ -1198,7 +1248,7 @@ collection-header2 = Grumbullim dhe Përdorim të Dhënash nga { -brand-short-na
     .searchkeywords = telemetri
 collection-description = Përpiqemi t’ju japim mundësi zgjedhjesh dhe grumbullojmë vetëm ç’na duhet për të ofruar dhe përmirësuar { -brand-short-name }-in për këdo. Kërkojmë përherë leje, përpara se të marrim të dhëna personale.
 collection-privacy-notice = Shënim Privatësie
-collection-health-report-telemetry-disabled = S’e lejoni më { -vendor-short-name } të marrë të dhëna teknike dhe ndërveprimesh. Krejt të dhënat e dikurshme do të fshihen brenda 30 ditësh.
+collection-health-report-telemetry-disabled = S’e lejoni më { -vendor-short-name }-n të marrë të dhëna teknike dhe ndërveprimesh. Krejt të dhënat e dikurshme do të fshihen brenda 30 ditësh.
 collection-health-report-telemetry-disabled-link = Mësoni më tepër
 collection-health-report =
     .label = Lejojeni { -brand-short-name }-in të dërgojë te { -vendor-short-name } të dhëna teknike dhe ndërveprimesh
@@ -1258,7 +1308,7 @@ certs-thirdparty-toggle =
 space-alert-over-5gb-settings-button =
     .label = Hap Rregullimet
     .accesskey = H
-space-alert-over-5gb-message2 = <strong>{ -brand-short-name }-it po i mbarohet hapësira në disk.</strong> Lënda e sajteve mund të mos shfaqet si duhet. Mundësi të spastroni të dhëna të depozituara që nga Rregullime > Privatësi & Siguri > Cookies dhe Të dhëna Sajtesh.
+space-alert-over-5gb-message2 = <strong>{ -brand-short-name }-it po i mbarohet hapësira në disk.</strong> Lënda e sajteve mund të mos shfaqet si duhet. Mundësi të spastroni të dhëna të depozituara që nga Rregullime > Privatësi & Siguri > “Cookies” dhe Të dhëna Sajtesh.
 space-alert-under-5gb-message2 = <strong>{ -brand-short-name }-it po i mbarohet hapësira në disk.</strong> Lënda e sajteve mund të mos shfaqet si duhet. Që të optimizoni përdorimin tuaj të diskut për punim më të mirë të shfletimin, vizitoni “Mësoni Më Tepër”.
 
 ## Privacy Section - HTTPS-Only

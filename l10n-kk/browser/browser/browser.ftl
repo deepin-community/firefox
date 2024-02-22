@@ -488,6 +488,9 @@ enable-devtools-popup-description2 = F12 жарлығын қолдану үші�
 
 ## URL Bar
 
+# This string is used as an accessible name to the "X" button that cancels a custom search mode (i.e. exits the Amazon.com search mode).
+urlbar-search-mode-indicator-close =
+    .aria-label = Жабу
 # This placeholder is used when not in search mode and the user's default search
 # engine is unknown.
 urlbar-placeholder =
@@ -564,6 +567,11 @@ urlbar-result-action-search-w-engine = { $engine } көмегімен іздеу
 urlbar-result-action-sponsored = Демеуленген
 urlbar-result-action-switch-tab = Бетке ауысу
 urlbar-result-action-visit = Шолу
+# "Switch to tab with container" is used when the target tab is located in a
+# different container.
+# Variables
+# $container (String): the name of the target container
+urlbar-result-action-switch-tab-with-container = Бетке ауысу: · <span>{ $container }</span>
 # Allows the user to visit a URL that was previously copied to the clipboard.
 urlbar-result-action-visit-from-clipboard = Алмасу буферінен сілтемені шолу
 # Directs a user to press the Tab key to perform a search with the specified
@@ -888,6 +896,10 @@ tabs-toolbar-list-all-tabs =
 restore-session-startup-suggestion-message = <strong>Алдыңғы беттерді ашу керек пе?</strong> Сіз алдыңғы сессияны { -brand-short-name } қолданба мәзірі ішіндегі <img data-l10n-name="icon"/> Тарих бөлімінен қалпына келтіре аласыз.
 restore-session-startup-suggestion-button = Қалай жасау керектігін көрсету
 
+## Infobar shown when the user tries to open a file picker and file pickers are blocked by enterprise policy
+
+filepicker-blocked-infobar = Сіздің ұйымыңыз бұл компьютердегі жергілікті файлдарға қатынауды бұғаттаған.
+
 ## Mozilla data reporting notification (Telemetry, Firefox Health Report, etc)
 
 data-reporting-notification-message = { -brand-short-name } автоматты түрде { -vendor-short-name } адресіне өнімді жақсартуға көмектесетін ақпаратты жібереді.
@@ -935,7 +947,7 @@ reset-pbm-panel-cancel-button =
     .label = Болдырмау
     .accesskey = Б
 reset-pbm-panel-confirm-button =
-    .label = Сессияны деректерін өшіру
+    .label = Сессия деректерін өшіру
     .accesskey = ш
 reset-pbm-panel-complete = Жекелік шолу деректері өшірілді
 

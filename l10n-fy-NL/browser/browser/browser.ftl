@@ -491,6 +491,9 @@ enable-devtools-popup-description2 = Iepenje earst DevTools yn it menu Ekstra om
 
 ## URL Bar
 
+# This string is used as an accessible name to the "X" button that cancels a custom search mode (i.e. exits the Amazon.com search mode).
+urlbar-search-mode-indicator-close =
+    .aria-label = Slute
 # This placeholder is used when not in search mode and the user's default search
 # engine is unknown.
 urlbar-placeholder =
@@ -567,6 +570,11 @@ urlbar-result-action-search-w-engine = Sykje mei { $engine }
 urlbar-result-action-sponsored = Sponsore
 urlbar-result-action-switch-tab = Wikselje nei ljepblêd
 urlbar-result-action-visit = Besykje
+# "Switch to tab with container" is used when the target tab is located in a
+# different container.
+# Variables
+# $container (String): the name of the target container
+urlbar-result-action-switch-tab-with-container = Wikselje nei ljepblêd · <span>{ $container }</span>
 # Allows the user to visit a URL that was previously copied to the clipboard.
 urlbar-result-action-visit-from-clipboard = Besykje fan klamboerd ôf
 # Directs a user to press the Tab key to perform a search with the specified
@@ -890,6 +898,10 @@ tabs-toolbar-list-all-tabs =
 # <img data-l10n-name="icon"/> will be replaced by the application menu icon
 restore-session-startup-suggestion-message = <strong>Eardere ljepblêden iepenje?</strong> Jo kinne jo foarige sesje werstelle fan it tapassingsmenu fan { -brand-short-name } <img data-l10n-name="icon"/> út, ûnder Skiednis.
 restore-session-startup-suggestion-button = Toane hoe
+
+## Infobar shown when the user tries to open a file picker and file pickers are blocked by enterprise policy
+
+filepicker-blocked-infobar = Jo organisaasje hat tagong ta lokale bestannen op dizze kompjûter blokkearre.
 
 ## Mozilla data reporting notification (Telemetry, Firefox Health Report, etc)
 

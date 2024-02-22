@@ -29,6 +29,8 @@ about-logins-menu-menuitem-import-from-another-browser = 从其他浏览器导�
 about-logins-menu-menuitem-import-from-a-file = 从文件导入…
 about-logins-menu-menuitem-export-logins = 导出登录信息…
 about-logins-menu-menuitem-remove-all-logins = 移除所有登录信息…
+about-logins-menu-menuitem-export-logins2 = 导出密码…
+about-logins-menu-menuitem-remove-all-logins2 = 移除所有密码…
 menu-menuitem-preferences =
     { PLATFORM() ->
         [windows] 选项
@@ -49,7 +51,7 @@ login-list-count =
 # Variables
 #   $count (number) - Number of filtered logins
 #   $total (number) - Total number of logins
-login-list-filtered-count = { $count } 次/共 { $total } 次登录
+login-list-filtered-count = { $count } / { $total } 条登录信息
 # Variables
 #   $count (number) - Number of logins
 login-list-count2 = { $count } 个密码
@@ -92,20 +94,25 @@ about-logins-login-intro-heading-logged-out2 = 在寻找您保存的登录信息
 about-logins-login-intro-heading-logged-in = 未找到同步的登录信息。
 login-intro-description = 若您曾在其他设备上将登录信息保存到 { -brand-product-name }，请按以下步骤操作：
 login-intro-instructions-fxa = 在您保存登录信息的设备，注册或登录 { -fxaccount-brand-name }
+about-logins-login-intro-heading-message = 集中一处，安全保存密码
+login-intro-description2 = 所有保存到 { -brand-product-name } 的密码都受加密保护。我们还会关注外泄事件动态，并在您的账户受影响时向您发出警报。<a data-l10n-name="breach-alert-link">详细了解</a>
 login-intro-instructions-fxa2 = 在您保存登录信息的设备上注册或登录账户。
 login-intro-instructions-fxa-settings = 前往“设置”>“同步”>“开启同步…”，勾选“登录名和密码”复选框。
 login-intro-instructions-fxa-passwords-help = 若需更多帮助，请访问<a data-l10n-name="passwords-help-link">密码支持</a>页面。
 about-logins-intro-browser-only-import = 若登录信息保存在其他浏览器，您可以<a data-l10n-name="import-link">导入到 { -brand-product-name }</a>
-about-logins-intro-import2 = 若您的登录信息并未存储在 { -brand-product-name }，可以<a data-l10n-name="import-browser-link">从另一浏览器</a>或<a data-l10n-name="import-file-link">文件</a>导入
+about-logins-intro-import2 = 若您的登录信息并未保存在 { -brand-product-name }，可以<a data-l10n-name="import-browser-link">从另一浏览器</a>或<a data-l10n-name="import-file-link">文件</a>导入
+about-logins-intro-import3 = 选择上方的加号按钮即可添加密码，也可以<a data-l10n-name="import-browser-link">从其他浏览器</a>或<a data-l10n-name="import-file-link">从文件</a>导入密码。
 
 ## Login
 
 login-item-new-login-title = 新建登录信息
+# Header for adding a password
+about-logins-login-item-new-login-title = 添加密码
 login-item-edit-button = 编辑
 about-logins-login-item-remove-button = 移除
 login-item-origin-label = 网址
 login-item-tooltip-message = 请确保其与您所登录的网站地址精确匹配。
-about-logins-origin-tooltip = 请确保此处填写的网址与需登录网站的网址一致。
+about-logins-origin-tooltip2 = 请输入完整地址，确保其与需登录网站的地址一致。
 # Variables
 #   $webTitle (String) - Website title of the password being changed.
 about-logins-edit-password-tooltip = 请确保此处填写的密码是您当前所用的密码。在此处更改密码后，{ $webTitle } 上的密码并不会随之更改。
@@ -123,6 +130,7 @@ login-item-password-reveal-checkbox =
 login-item-copy-password-button-text = 复制
 login-item-copied-password-button-text = 已复制！
 login-item-save-changes-button = 保存更改
+about-logins-login-item-save-changes-button = 保存
 login-item-save-new-button = 保存
 login-item-cancel-button = 取消
 
@@ -150,6 +158,11 @@ about-logins-edit-login-os-auth-dialog-message-win = 请输入 Windows 登录凭
 # This message can be seen when attempting to edit a login in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-edit-login-os-auth-dialog-message-macosx = 编辑保存的登录信息
+# This message can be seen when attempting to edit a login in about:logins on Windows.
+about-logins-edit-login-os-auth-dialog-message2-win = 请输入 Windows 登录凭据，以编辑密码。这有助于保护您的账户安全。
+# This message can be seen when attempting to edit a login in about:logins
+# On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
+about-logins-edit-login-os-auth-dialog-message2-macosx = 编辑保存的密码
 # This message can be seen when attempting to reveal a password in about:logins on Windows.
 about-logins-reveal-password-os-auth-dialog-message-win = 请输入 Windows 登录凭据，以查看密码。这有助于保护您的账户安全。
 # This message can be seen when attempting to reveal a password in about:logins
@@ -165,6 +178,11 @@ about-logins-export-password-os-auth-dialog-message-win = 请输入 Windows 登�
 # This message can be seen when attempting to export a password in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-export-password-os-auth-dialog-message-macosx = 导出保存的登录名和密码
+# This message can be seen when attempting to export a password in about:logins on Windows.
+about-logins-export-password-os-auth-dialog-message2-win = 请输入 Windows 登录凭据，以导出密码。这有助于保护您的账户安全。
+# This message can be seen when attempting to export a password in about:logins
+# On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
+about-logins-export-password-os-auth-dialog-message2-macosx = 导出保存的密码
 
 ## Primary Password notification
 
@@ -180,6 +198,10 @@ confirmation-dialog-dismiss-button =
     .title = 取消
 about-logins-confirm-remove-dialog-title = 要移除此登录信息吗？
 confirm-delete-dialog-message = 此操作不可撤销。
+# Title for modal to confirm the removal of one saved password
+about-logins-confirm-delete-dialog-title = 确定要移除密码吗？
+# Message for modal to confirm the removal of one saved password
+about-logins-confirm-delete-dialog-message = 此操作不可撤销。
 about-logins-confirm-remove-dialog-confirm-button = 移除
 
 ## Variables
@@ -212,10 +234,27 @@ about-logins-confirm-remove-all-sync-dialog-message =
     { $count ->
        *[other] 将在您所有与 { -fxaccount-brand-name }同步的设备上，移除保存在 { -brand-short-name } 的登录信息，以及在此显示的任何数据外泄警报。此操作不可撤销。
     }
-about-logins-confirm-remove-all-sync-dialog-message2 =
+# Checkbox for modal to confirm the removal of saved passwords
+about-logins-confirm-remove-all-dialog-checkbox-label2 =
     { $count ->
-        [1] 将在您所有受同步的设备上，移除保存在 { -brand-short-name } 中的登录信息，以及在此显示的数据外泄警报。此操作不可撤销。
-       *[other] 将在您所有受同步的设备上，移除保存在 { -brand-short-name } 中的登录信息，以及在此显示的数据外泄警报。此操作不可撤销。
+        [1] 是，移除密码
+       *[other] 是，移除密码
+    }
+# Title for modal to confirm the removal of all saved passwords when user is NOT synced
+about-logins-confirm-remove-all-dialog-title2 = 确定移除 { $count } 个密码吗？
+# Message for modal to confirm the removal of saved passwords when user is NOT synced
+about-logins-confirm-remove-all-dialog-message2 =
+    { $count ->
+        [1] 将移除保存在 { -brand-short-name } 中的全部密码，以及所有数据外泄警报。此操作不可撤销。
+       *[other] 将移除保存在 { -brand-short-name } 中的全部密码，以及所有数据外泄警报。此操作不可撤销。
+    }
+# Title for modal to confirm the removal of all saved passwords when user IS SYNCED
+about-logins-confirm-remove-all-sync-dialog-title2 = 确定在所有设备上移除共 { $count } 个密码吗？
+# Message for modal to confirm the removal of saved passwords when user IS synced.
+about-logins-confirm-remove-all-sync-dialog-message3 =
+    { $count ->
+        [1] 将在您所有受同步的设备上，移除保存在 { -brand-short-name } 中的全部密码，以及在此显示的所有数据外泄警报。此操作不可撤销。
+       *[other] 将在您所有受同步的设备上，移除保存在 { -brand-short-name } 中的全部密码，以及在此显示的所有数据外泄警报。此操作不可撤销。
     }
 
 ##
@@ -223,6 +262,11 @@ about-logins-confirm-remove-all-sync-dialog-message2 =
 about-logins-confirm-export-dialog-title = 导出登录名和密码
 about-logins-confirm-export-dialog-message = 您的密码将存为可读文本（如 BadP@ssw0rd），因此任何可以打开导出文件的人都可以看到密码。
 about-logins-confirm-export-dialog-confirm-button = 导出…
+about-logins-confirm-export-dialog-title2 = 导出密码注意事项
+about-logins-confirm-export-dialog-message2 =
+    密码导出后，将以明文形式保存在文件中。
+    建议在使用完毕后删除文件，防止其他使用此设备的人看到您的密码。
+about-logins-confirm-export-dialog-confirm-button2 = 继续导出
 about-logins-alert-import-title = 导入完成
 about-logins-alert-import-message = 更多信息见：导入摘要报告
 confirm-discard-changes-dialog-title = 要丢弃未保存的更改吗？
@@ -264,6 +308,11 @@ about-logins-export-file-picker-title = 导出登录信息文件
 # The default file name shown in the file picker when exporting saved logins.
 # This must end in .csv
 about-logins-export-file-picker-default-filename = 登录信息.csv
+# Title of the file picker dialog
+about-logins-export-file-picker-title2 = 从 { -brand-short-name } 导出的密码
+# The default file name shown in the file picker when exporting saved logins.
+# This must end in .csv
+about-logins-export-file-picker-default-filename2 = passwords.csv
 about-logins-export-file-picker-export-button = 导出
 # A description for the .csv file format that may be shown as the file type
 # filter by the operating system.

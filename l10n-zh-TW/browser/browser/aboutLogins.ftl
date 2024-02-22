@@ -29,6 +29,8 @@ about-logins-menu-menuitem-import-from-another-browser = 從另一套瀏覽器�
 about-logins-menu-menuitem-import-from-a-file = 從檔案匯入…
 about-logins-menu-menuitem-export-logins = 匯出登入資訊…
 about-logins-menu-menuitem-remove-all-logins = 移除所有登入資料…
+about-logins-menu-menuitem-export-logins2 = 匯出密碼…
+about-logins-menu-menuitem-remove-all-logins2 = 刪除所有密碼…
 menu-menuitem-preferences =
     { PLATFORM() ->
         [windows] 選項
@@ -92,20 +94,25 @@ about-logins-login-intro-heading-logged-out2 = 在找先前儲存過的登入資
 about-logins-login-intro-heading-logged-in = 找不到同步的登入資訊。
 login-intro-description = 若您在其他裝置上儲存登入資訊到 { -brand-product-name } 過，請參考下列步驟，即可在此裝置使用:
 login-intro-instructions-fxa = 在您儲存登入資訊的裝置註冊或登入 { -fxaccount-brand-name }。
+about-logins-login-intro-heading-message = 將您的密碼儲存於安全的地方
+login-intro-description2 = 您儲存到 { -brand-product-name } 的所有密碼都會加密，另外我們也會注意網路上發生的資料外洩事件，並在您受影響時通知。<a data-l10n-name="breach-alert-link">了解更多資訊</a>
 login-intro-instructions-fxa2 = 在您儲存登入資訊的裝置，註冊或登入帳號。
 login-intro-instructions-fxa-settings = 到「設定 > 同步 > 開啟同步…」勾選「登入資訊與密碼」選取框。
 login-intro-instructions-fxa-passwords-help = 若需更多說明，請造訪<a data-l10n-name="passwords-help-link">密碼支援</a>說明頁面。
 about-logins-intro-browser-only-import = 若登入資訊儲存在其他瀏覽器，您可以<a data-l10n-name="import-link">匯入到 { -brand-product-name }</a>
 about-logins-intro-import2 = 若您的登入資訊並未儲存於 { -brand-product-name }，可以<a data-l10n-name="import-browser-link">從另一套瀏覽器</a>或<a data-l10n-name="import-file-link">檔案</a>匯入
+about-logins-intro-import3 = 點擊上方的加號按鈕，即可新增一組密碼。您也可以<a data-l10n-name="import-browser-link">從另一套瀏覽器</a>或<a data-l10n-name="import-file-link">檔案</a>匯入。
 
 ## Login
 
 login-item-new-login-title = 新增登入資訊
+# Header for adding a password
+about-logins-login-item-new-login-title = 新增密碼
 login-item-edit-button = 編輯
 about-logins-login-item-remove-button = 移除
 login-item-origin-label = 網站網址
 login-item-tooltip-message = 請確定此欄位與您登入網站的網址完全相符。
-about-logins-origin-tooltip = 請確認此欄位與您登入網站的網址完全相符。
+about-logins-origin-tooltip2 = 請輸入完整的網址，並且與您用來登入的網址相符。
 # Variables
 #   $webTitle (String) - Website title of the password being changed.
 about-logins-edit-password-tooltip = 請確認您更改過此網站的密碼，再於此處修改。單純於此處修改並不會更改 { $webTitle } 上的密碼。
@@ -123,6 +130,7 @@ login-item-password-reveal-checkbox =
 login-item-copy-password-button-text = 複製
 login-item-copied-password-button-text = 已複製！
 login-item-save-changes-button = 儲存變更
+about-logins-login-item-save-changes-button = 儲存
 login-item-save-new-button = 儲存
 login-item-cancel-button = 取消
 
@@ -150,6 +158,11 @@ about-logins-edit-login-os-auth-dialog-message-win = 請在下方輸入您的 Wi
 # This message can be seen when attempting to edit a login in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-edit-login-os-auth-dialog-message-macosx = 編輯儲存的登入資訊
+# This message can be seen when attempting to edit a login in about:logins on Windows.
+about-logins-edit-login-os-auth-dialog-message2-win = 請在下方輸入您的 Windows 登入帳號密碼才能編輯登入資訊。這個動作是為了保護您的登入資訊安全。
+# This message can be seen when attempting to edit a login in about:logins
+# On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
+about-logins-edit-login-os-auth-dialog-message2-macosx = 編輯儲存的網站密碼
 # This message can be seen when attempting to reveal a password in about:logins on Windows.
 about-logins-reveal-password-os-auth-dialog-message-win = 請在下方輸入您的 Windows 登入帳號密碼才能檢視密碼。這個動作是為了保護您的登入資訊安全。
 # This message can be seen when attempting to reveal a password in about:logins
@@ -165,6 +178,11 @@ about-logins-export-password-os-auth-dialog-message-win = 請在下方輸入您�
 # This message can be seen when attempting to export a password in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-export-password-os-auth-dialog-message-macosx = 匯出儲存的登入資訊與密碼
+# This message can be seen when attempting to export a password in about:logins on Windows.
+about-logins-export-password-os-auth-dialog-message2-win = 請在下方輸入您的 Windows 登入帳號密碼才能匯出密碼。這個動作是為了保護您的登入資訊安全。
+# This message can be seen when attempting to export a password in about:logins
+# On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
+about-logins-export-password-os-auth-dialog-message2-macosx = 匯出儲存的網站密碼
 
 ## Primary Password notification
 
@@ -180,6 +198,10 @@ confirmation-dialog-dismiss-button =
     .title = 取消
 about-logins-confirm-remove-dialog-title = 要移除這筆登入資訊嗎？
 confirm-delete-dialog-message = 此動作無法復原。
+# Title for modal to confirm the removal of one saved password
+about-logins-confirm-delete-dialog-title = 要移除密碼嗎？
+# Message for modal to confirm the removal of one saved password
+about-logins-confirm-delete-dialog-message = 無法復原此動作。
 about-logins-confirm-remove-dialog-confirm-button = 移除
 
 ## Variables
@@ -217,12 +239,37 @@ about-logins-confirm-remove-all-sync-dialog-message2 =
         [1] 將在您所有同步的裝置中，移除儲存到 { -brand-short-name } 的登入資訊，以及在此顯示的任何資料外洩警報。將無法還原此操作。
        *[other] 將在您所有同步的裝置中，移除儲存到 { -brand-short-name } 的登入資訊，以及在此顯示的任何資料外洩警報。將無法還原此操作。
     }
+# Checkbox for modal to confirm the removal of saved passwords
+about-logins-confirm-remove-all-dialog-checkbox-label2 =
+    { $count ->
+        [1] 好，請移除密碼
+       *[other] 好，請移除密碼
+    }
+# Title for modal to confirm the removal of all saved passwords when user is NOT synced
+about-logins-confirm-remove-all-dialog-title2 = 要移除全部共 { $count } 筆密碼嗎？
+# Message for modal to confirm the removal of saved passwords when user is NOT synced
+about-logins-confirm-remove-all-dialog-message2 =
+    { $count ->
+        [1] 將移除所有儲存到 { -brand-short-name } 的密碼與資料外洩警報，無法還原此行為。
+       *[other] 將移除所有儲存到 { -brand-short-name } 的密碼與資料外洩警報，無法還原此行為。
+    }
+# Title for modal to confirm the removal of all saved passwords when user IS SYNCED
+about-logins-confirm-remove-all-sync-dialog-title2 = 要從所有裝置移除共 { $count } 筆密碼嗎？
+# Message for modal to confirm the removal of saved passwords when user IS synced.
+about-logins-confirm-remove-all-sync-dialog-message3 =
+    { $count ->
+        [1] 將從您所有同步的裝置中，移除儲存到 { -brand-short-name } 的密碼，也會清除此處列出的資料外洩警報，無法還原此行為。
+       *[other] 將從您所有同步的裝置中，移除儲存到 { -brand-short-name } 的密碼，也會清除此處列出的資料外洩警報，無法還原此行為。
+    }
 
 ##
 
 about-logins-confirm-export-dialog-title = 匯出登入資訊與密碼
 about-logins-confirm-export-dialog-message = 您的密碼將以可閱讀的明文格式（例如 BadP@ssw0rd）儲存，任何能夠開啟檔案的人都能得知密碼內容。
 about-logins-confirm-export-dialog-confirm-button = 匯出…
+about-logins-confirm-export-dialog-title2 = 匯出密碼的注意事項
+about-logins-confirm-export-dialog-message2 = 密碼匯出後，會以明碼的方式記錄在檔案中，建議您在使用完檔案後立即刪除密碼，避免其他有機會接觸到此裝置的人能夠看到您的密碼。
+about-logins-confirm-export-dialog-confirm-button2 = 繼續匯出
 about-logins-alert-import-title = 匯入完成
 about-logins-alert-import-message = 檢視詳細的匯入摘要
 confirm-discard-changes-dialog-title = 要放棄未儲存的變更嗎？
@@ -264,6 +311,11 @@ about-logins-export-file-picker-title = 匯出登入資訊檔案
 # The default file name shown in the file picker when exporting saved logins.
 # This must end in .csv
 about-logins-export-file-picker-default-filename = logins.csv
+# Title of the file picker dialog
+about-logins-export-file-picker-title2 = 從 { -brand-short-name } 匯出密碼
+# The default file name shown in the file picker when exporting saved logins.
+# This must end in .csv
+about-logins-export-file-picker-default-filename2 = passwords.csv
 about-logins-export-file-picker-export-button = 匯出
 # A description for the .csv file format that may be shown as the file type
 # filter by the operating system.

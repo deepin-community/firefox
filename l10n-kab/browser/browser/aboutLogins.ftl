@@ -9,6 +9,12 @@ about-logins-login-filter =
     .key = F
 create-new-login-button =
     .title = Rnu anekcum amaynut
+about-logins-page-title-name = Awalen uffiren
+about-logins-login-filter2 =
+    .placeholder = Nadi awalen uffiren
+    .key = F
+create-login-button =
+    .title = rnu awal uffir
 fxaccounts-sign-in-text = Kcem ɣer wawalen-ik uffiren ɣef yibenkan-nniḍen
 fxaccounts-sign-in-sync-button = Kcem akken ad yemtawi
 fxaccounts-avatar-button =
@@ -23,6 +29,8 @@ about-logins-menu-menuitem-import-from-another-browser = Kter seg iminig nniḍe
 about-logins-menu-menuitem-import-from-a-file = Kter seg ufaylu…
 about-logins-menu-menuitem-export-logins = Sifeḍ inekcam…
 about-logins-menu-menuitem-remove-all-logins = Kkes meṛṛa inekcumen…
+about-logins-menu-menuitem-export-logins2 = Kter awalen uffiren…
+about-logins-menu-menuitem-remove-all-logins2 = Kkes akk awalen uffiren …
 menu-menuitem-preferences =
     { PLATFORM() ->
         [windows] iɣewwaṛen
@@ -49,6 +57,21 @@ login-list-filtered-count =
         [one] { $count } seg { $total } unekcum
        *[other] { $count } seg { $total } inekcam
     }
+# Variables
+#   $count (number) - Number of logins
+login-list-count2 =
+    { $count ->
+        [one] { $quantity } n wawal uffir
+       *[other] { $count } n wawalen uffiren
+    }
+# Variables
+#   $count (number) - Number of filtered logins
+#   $total (number) - Total number of logins
+login-list-filtered-count2 =
+    { $total ->
+        [one] { $count } n { $total } wawal uffir
+       *[other] { $count } n { $total } wawalen uffiren
+    }
 login-list-sort-label-text = Smizzwer s:
 login-list-name-option = Isem (A-Z)
 login-list-name-reverse-option = Isem (Z-A)
@@ -58,11 +81,14 @@ about-logins-login-list-alerts-option = Ilɣa
 login-list-last-changed-option = Asnifel aneggaru
 login-list-last-used-option = Aseqdec anneggaru
 login-list-intro-title = Ulac inekcam yettwafen
+login-list-intro-title2 = Ulac awalen uffiren i yettwaskelsen
 login-list-intro-description = Ticki teskelseḍ awal uffir deg { -brand-product-name }, ad d-iban dagi.
 about-logins-login-list-empty-search-title = Ulac inekcam yettwafen
+about-logins-login-list-empty-search-title2 = Ulac awalen uffiren i yettwafen
 about-logins-login-list-empty-search-description = Ula d yiwen n ugmuḍ ur yemmenṭaḍ d unadi-ik.
 login-list-item-title-new-login = Anekcum amaynut
 login-list-item-subtitle-new-login = Sekcem inekcumen-ik n tuqqna
+login-list-item-title-new-login2 = rnu awal uffir
 login-list-item-subtitle-missing-username = (ulac isem n useqdac)
 about-logins-list-item-breach-icon =
     .title = Asmel i tḥuza trewla n yisefka
@@ -81,6 +107,7 @@ about-logins-login-intro-heading-logged-out2 = Tettnadiḍ ɣef yinekcam-ik·im 
 about-logins-login-intro-heading-logged-in = Ulac inekcam yemtawin i yettwafen.
 login-intro-description = Ma teskelseḍ inekcam-ik deg { -brand-product-name } ɣef ddeqs n yibenkan, a-t-an amek ara tkecmeḍ ɣur-sen.
 login-intro-instructions-fxa = Rnu neɣ qqen ɣer { -fxaccount-brand-name } inek·inem ɣef yibenk anida ttwaskelsen yinekcam-ik·im.
+about-logins-login-intro-heading-message = Sekles awalen-ik uffiren deg wadeg aɣellsan
 login-intro-instructions-fxa2 = Rnu neɣ qqen ɣer umiḍan-ik·im ɣef yibenk anida ttwaskelsen yinekcam-ik.
 login-intro-instructions-fxa-settings = Ddu ɣer yiɣewwaren > Rmed amtawi… Ṛcem tibewwaḍin n yinekcam akked wawalen uffiren
 login-intro-instructions-fxa-passwords-help = Rzu ɣer <a data-l10n-name="passwords-help-link">tallalt n wawalen uffiren</a> i wugar n tallelt.
@@ -90,6 +117,8 @@ about-logins-intro-import2 = Ma yella inekcam-ik/im ttwaskelsen beṛṛa n { -b
 ## Login
 
 login-item-new-login-title = Rnu anekcum amaynut
+# Header for adding a password
+about-logins-login-item-new-login-title = rnu awal uffir
 login-item-edit-button = Ẓreg
 about-logins-login-item-remove-button = Kkes
 login-item-origin-label = Tansa n usmel web
@@ -107,6 +136,7 @@ login-item-password-reveal-checkbox =
 login-item-copy-password-button-text = Nɣel
 login-item-copied-password-button-text = Inɣel!
 login-item-save-changes-button = Sekles asnifel
+about-logins-login-item-save-changes-button = Sekles
 login-item-save-new-button = Sekles
 login-item-cancel-button = Sefsex
 
@@ -164,6 +194,10 @@ confirmation-dialog-dismiss-button =
     .title = Sefsex
 about-logins-confirm-remove-dialog-title = Kkes anekcam-agi?
 confirm-delete-dialog-message = Ulac tuɣalin ɣer deffir.
+# Title for modal to confirm the removal of one saved password
+about-logins-confirm-delete-dialog-title = Kkes awal uffir ?
+# Message for modal to confirm the removal of one saved password
+about-logins-confirm-delete-dialog-message = Ur tezmireḍ ara ad tesfesxeḍ tigawt-a.
 about-logins-confirm-remove-dialog-confirm-button = Kkes
 
 ## Variables
@@ -202,12 +236,6 @@ about-logins-confirm-remove-all-sync-dialog-message =
         [1] Aya ad yekkes anekcum i teskelseḍ deg { -brand-short-name } ɣef meṛṛa ibenkan yemtawan akkaed { -fxaccount-brand-name }-inek·inem. Ad yekkes ula d talɣut n trewla n yisefka ara d-ibanen da. Ur tezmireḍ ad esfesxeḍ tigawt-a.
         [one] Aya ad yekkes anekcum i teskelseḍ deg { -brand-short-name } ɣef meṛṛa ibenkan yemtawan akkaed { -fxaccount-brand-name }-inek·inem. Ad yekkes ula d talɣut n trewla n yisefka ara d-ibanen da. Ur tezmireḍ ad esfesxeḍ tigawt-a.
        *[other] Aya ad yekkes inekcumen i teskelseḍ deg { -brand-short-name } ɣef meṛṛa ibenkan yemtawan akkaed { -fxaccount-brand-name }-inek·inem. Ad yekkes ula d talɣut n trewla n yisefka ara d-ibanen da. Ur tezmireḍ ad esfesxeḍ tigawt-a.
-    }
-about-logins-confirm-remove-all-sync-dialog-message2 =
-    { $count ->
-        [1] Aya ad yekkes anekcum i teskelseḍ deg { -brand-short-name } ɣef meṛṛa ibenkan yemtawan akked umiḍan-ik·im. Ad yekkes ula d talɣut n trewla n yisefka ara d-ibanen da. Ur tezmireḍ ad esfesxeḍ tigawt-a.
-        [one] Aya ad yekkes anekcum i teskelseḍ deg { -brand-short-name } ɣef meṛṛa ibenkan yemtawan akked umiḍan-ik·im. Ad yekkes ula d talɣut n trewla n yisefka ara d-ibanen da. Ur tezmireḍ ad esfesxeḍ tigawt-a.
-       *[other] Aya ad yekkes inekcumen i teskelseḍ deg { -brand-short-name } ɣef meṛṛa ibenkan yemtawan akked umiḍan-ik·im. Ad yekkes ula d talɣut n trewla n yisefka ara d-ibanen da. Ur tezmireḍ ad esfesxeḍ tigawt-a.
     }
 
 ##

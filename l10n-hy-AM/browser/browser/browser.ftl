@@ -83,6 +83,8 @@ urlbar-tip-icon-description =
     .alt = Հուշում.
 urlbar-result-menu-button =
     .title = Բացել ցանկը
+urlbar-result-menu-button-feedback = Արձագանք
+    .title = Բացել ցանկը
 urlbar-result-menu-learn-more =
     .label = Իմանալ ավելին
     .accesskey = L
@@ -242,6 +244,9 @@ quickactions-cmd-plugins = բաղադրիչներ
 # Opens the print dialog
 quickactions-print2 = Տպել էջը
 quickactions-cmd-print = տպել
+# Opens the print dialog at the save to PDF option
+quickactions-savepdf = Պահել էջը որպես PDF
+quickactions-cmd-savepdf = pdf
 # Opens a new private browsing window
 quickactions-private2 = Սկսել Գաղտնի դիտարկում
 quickactions-cmd-private = գաղտնի դիտարկում
@@ -376,11 +381,33 @@ browser-window-close-button =
 browser-tab-audio-playing2 = ՆՎԱԳԱՐԿՈՒՄ Է
 # This label should be written in all capital letters if your locale supports them.
 browser-tab-audio-muted2 = ԱՆՁԱՅՆ
+# This label should be written in all capital letters if your locale supports them.
+browser-tab-audio-blocked = ԻՆՔՆԱՆՎԱԳԱՐԿՈՒՄՆ ԱՐԳԵԼԱՓԱԿՎԱԾ Է
+# This label should be written in all capital letters if your locale supports them.
+browser-tab-audio-pip = ՆԿԱՐ ՆԿԱՐՈՒՄ
 
 ## These labels should be written in all capital letters if your locale supports them.
 ## Variables:
 ##  $count (number): number of affected tabs
 
+browser-tab-mute =
+    { $count ->
+        [1] ԼՌԵՑՆԵԼ ՆԵՐԴԻՐԸ
+        [one] ԼՌԵՑՆԵԼ { $count } ՆԵՐԴԻՐՆԵՐԸ
+       *[other] ԼՌԵՑՆԵԼ { $count } ՆԵՐԴԻՐՆԵՐԸ
+    }
+browser-tab-unmute =
+    { $count ->
+        [1] ՉԼՌԵՑՆԵԼ ՆԵՐԴԻՐԸ
+        [one] ՉԼՌԵՑՆԵԼ { $count } ՆԵՐԴԻՐՆԵՐԸ
+       *[other] ՉԼՌԵՑՆԵԼ { $count } ՆԵՐԴԻՐՆԵՐԸ
+    }
+browser-tab-unblock =
+    { $count ->
+        [1] ՆՎԱԳԱՐԿԵԼ ՆԵՐԻԴՐԸ
+        [one] ՆՎԱԳԱՐԿԵԼ { $count } ՆԵՐԻԴՐԸ
+       *[other] ՆՎԱԳԱՐԿԵԼ { $count } ՆԵՐԻԴՐԸ
+    }
 
 ## Bookmarks toolbar items
 
@@ -418,6 +445,9 @@ sharing-warning-disable-for-session =
 
 ## URL Bar
 
+# This string is used as an accessible name to the "X" button that cancels a custom search mode (i.e. exits the Amazon.com search mode).
+urlbar-search-mode-indicator-close =
+    .aria-label = Փակել
 # This placeholder is used when not in search mode and the user's default search
 # engine is unknown.
 urlbar-placeholder =
@@ -517,6 +547,11 @@ urlbar-group-search-suggestions =
 # A label shown above Quick Actions in the urlbar results.
 urlbar-group-quickactions =
     .label = Արագ գործողություններ
+# A label shown above the recent searches group in the urlbar results.
+# Variables
+#  $engine (String): the name of the search engine used to search.
+urlbar-group-recent-searches =
+    .label = Վերջին որոնումները
 
 ## Reader View toolbar buttons
 
@@ -531,6 +566,7 @@ reader-view-close-button =
 ## Variables:
 ##   $shortcut (String) - Keyboard shortcut to execute the command.
 
+picture-in-picture-panel-header = Նկար-նկարում
 
 ## Full Screen and Pointer Lock UI
 
@@ -764,6 +800,9 @@ tabs-toolbar-list-all-tabs =
 restore-session-startup-suggestion-message = <strong>Բացե՞լ նախորդ ներդիրները:</strong>Դուք կարող եք վերականգնել նախորդ աշխատաշրջանը { -brand-short-name }-ի հավելվածների ցանկից՝ <img data-l10n-name="icon"/>, Պատմության ներքո:
 restore-session-startup-suggestion-button = Ցույց տուր ինձ, թե ինչպես
 
+## Infobar shown when the user tries to open a file picker and file pickers are blocked by enterprise policy
+
+
 ## Mozilla data reporting notification (Telemetry, Firefox Health Report, etc)
 
 data-reporting-notification-message = { -brand-short-name }-ը ինքնաշխատ ուղարկում է որոշ տվյալներ { -vendor-short-name }-ին, որպեսզի մենք կարողանաք բարելավենք արտադրողականությունը:
@@ -789,9 +828,28 @@ unified-extensions-button-permissions-needed =
 ## Unified extensions button when some extensions are quarantined.
 ## Note that the new line is intentionally part of the tooltip.
 
+unified-extensions-button-quarantined =
+    .label = Ընդլայնումներ
+    .tooltiptext =
+        Ընդլայնումներ
+        Որոշ Ընդլայնումներ թույլատրված չեն
 
 ## Private browsing reset button
 
+reset-pbm-toolbar-button =
+    .label = Ավարտել մասնավոր աշխատաշրջանը
+    .tooltiptext = Ավարտել մասնավոր աշխատաշրջանը
+reset-pbm-panel-heading = Ավարտե՞լ ձեր անձնական աշխատաշրջանը:
+reset-pbm-panel-description = Փակեք բոլոր անձնական ներդիրները և ջնջեք պատմությունը, թխուկները և կայքի բոլոր մյուս տվյալները:
+reset-pbm-panel-always-ask-checkbox =
+    .label = Միշտ հարցնել
+    .accesskey = A
+reset-pbm-panel-cancel-button =
+    .label = Չեղարկել
+    .accesskey = C
+reset-pbm-panel-confirm-button =
+    .label = Ջնջել աշխատաշրջանի տվյալները
+    .accesskey = D
 
 ## Autorefresh blocker
 

@@ -203,6 +203,9 @@ containers-remove-alert-msg =
     }
 containers-remove-ok-button = ਇਸ ਕਨਟੇਨਰ ਨੂੰ ਹਟਾਓ
 containers-remove-cancel-button = ਇਸ ਕਨਟੇਨਰ ਨੂੰ ਨਾ ਹਟਾਓ
+settings-tabs-show-image-in-preview =
+    .label = ਜਦੋਂ ਤੁਸੀਂ ਟੈਬ ਉੱਤੇ ਹੋਵੋ ਤਾਂ ਚਿੱਤਰ ਚਿੱਤਰ ਝਲਕ ਵੇਖੋ
+    .accessKey = h
 
 ## General Section - Language & Appearance
 
@@ -794,9 +797,9 @@ sync-engine-creditcards =
     .label = ਕਰੈਡਿਟ ਕਾਰਡ
     .tooltiptext = ਨਵਾਂ, ਨੰਬਰ ਅਤੇ ਮਿਆਦ ਪੁੱਗਣ ਦੀਆਂ ਮਿਤੀਆਂ (ਕੇਵਲ ਡੈਸਕਟਾਪ)
     .accesskey = C
-sync-engine-payment-methods =
+sync-engine-payment-methods2 =
     .label = ਭੁਗਤਾਨ ਦੇ ਢੰਗ
-    .tooltiptext = ਨਾਂ, ਕਰੈਡਿਟ ਕਾਰਡ ਅਤੇ ਮਿਆਦ (ਤਾਰੀਖਾਂ) (ਸਿਰਫ਼ ਡੈਸਕਟਾਪਾਂ ਲਈ)
+    .tooltiptext = ਨਾਂ, ਕਾਰਡਾਂ ਦੇ ਨੰਬਰ ਅਤੇ ਮਿਆਦ
     .accesskey = n
 sync-engine-addons =
     .label = ਐਡ-ਆਨ
@@ -844,18 +847,35 @@ pane-privacy-logins-and-passwords-header = ਲਾਗਇਨ ਤੇ ਪਾਸਵ�
 forms-ask-to-save-logins =
     .label = ਵੈੱਬਸਾਈਟਾਂ ਲਈ ਲਾਗਇਨ ਅਤੇ ਪਾਸਵਰਡ ਸੰਭਾਲਣ ਲਈ ਪੁੱਛੋ
     .accesskey = r
+
+## Privacy Section - Passwords
+
+# "Logins" is the former term for "Passwords". Users should find password settings
+# by searching for the former term "logins". It's not displayed in the UI.
+pane-privacy-passwords-header = ਭੁਗਤਾਨ
+    .searchkeywords = ਲਾਗਇਨ
+# Checkbox to control whether UI is shown to users to save or fill logins/passwords.
+forms-ask-to-save-passwords =
+    .label = ਪਾਸਵਰਡ ਸੰਭਾਲਣ ਲਈ ਪੁੱਛੋ
+    .accesskey = A
 forms-exceptions =
     .label = …ਛੋਟਾਂ
     .accesskey = x
 forms-generate-passwords =
     .label = ਮਜ਼ਬੂਤ ਪਾਸਵਰਡ ਸੁਝਾਓ ਅਤੇ ਬਣਾਓ
     .accesskey = u
+forms-suggest-passwords =
+    .label = ਮਜ਼ਬੂਤ ਪਾਸਵਰਡਾਂ ਲਈ ਸੁਝਾਅ ਦਿਓ
+    .accesskey = S
 forms-breach-alerts =
     .label = ਸੰਨ੍ਹ ਲੱਗੀਆਂ ਵੈੱਬਸਾਈਟਾਂ ਲਈ ਪਾਸਵਰਡਾਂ ਬਾਰੇ ਚੇਤਾਵਨੀ ਵੇਖਾਓ
     .accesskey = b
 forms-breach-alerts-learn-more-link = ਹੋਰ ਜਾਣੋ
 preferences-relay-integration-checkbox =
     .label = ਆਪਣੇ ਈਮੇਲ ਸਿਰਨਾਵੇਂ ਨੂੰ ਸੁਰੱਖਿਅਤ ਰੱਖਣ ਲਈ { -relay-brand-name } ਈਮੇਲ ਮਾਸਕ ਦਾ ਸੁਝਾਅ
+preferences-relay-integration-checkbox2 =
+    .label = ਆਪਣੇ ਈਮੇਲ ਸਿਰਨਾਵੇਂ ਨੂੰ ਸੁਰੱਖਿਅਤ ਰੱਖਣ ਵਾਸਤੇ { -relay-brand-name } ਈਮੇਲ ਮਾਸਕ ਦਾ ਸੁਝਾਅ ਦਿਓ
+    .accesskey = r
 relay-integration-learn-more-link = ਹੋਰ ਜਾਣੋ
 # Checkbox which controls filling saved logins into fields automatically when they appear, in some cases without user interaction.
 forms-fill-logins-and-passwords =
@@ -864,6 +884,13 @@ forms-fill-logins-and-passwords =
 forms-saved-logins =
     .label = …ਸੰਭਾਲੇ ਹੋਏ ਲਾਗਇਨ
     .accesskey = L
+# Checkbox which controls filling saved logins into fields automatically when they appear, in some cases without user interaction.
+forms-fill-usernames-and-passwords =
+    .label = ਵਰਤੋਂਕਾਰ ਨਾਂ ਅਤੇ ਪਾਸਵਰਡ ਆਪਣੇ-ਆਪ ਭਰੋ
+    .accesskey = F
+forms-saved-passwords =
+    .label = ਸੰਭਾਲੇ ਹੋਏ ਪਾਸਵਰਡ
+    .accesskey = d
 forms-primary-pw-use =
     .label = ਮੁੱਖ ਪਾਸਵਰਡ ਵਰਤੋਂ
     .accesskey = U
@@ -887,6 +914,7 @@ forms-windows-sso =
     .label = Microsoft, ਕੰਮ ਤੇ ਸਕੂਲ ਖਾਤਿਆਂ ਲਈ Windows ਸਿੰਗਲ ਸਾਈਨ-ਆਨ ਦੀ ਇਜਾਜ਼ਤ ਦਿਓ
 forms-windows-sso-learn-more-link = ਹੋਰ ਸਿੱਖੋ
 forms-windows-sso-desc = ਆਪਣੀਆਂ ਡਿਵਾਈਸ ਸੈਟਿੰਗਾਂ ਵਿੱਚ ਖਾਤਿਆਂ ਦਾ ਇੰਤਜ਼ਾਮ ਕਰੋ
+windows-passkey-settings-label = ਸਿਸਟਮ ਸੈਟਿੰਗਾਂ ਵਿੱਚ ਪਾਸ-ਕੀ ਦਾ ਇੰਤਜ਼ਾਮ ਕਰੋ
 
 ## OS Authentication dialog
 
@@ -898,6 +926,28 @@ primary-password-os-auth-dialog-message-win = ਮੁੱਖ ਪਾਸਵਰਡ �
 # notes are only valid for English. Please test in your locale.
 primary-password-os-auth-dialog-message-macosx = ਮੁੱਖ ਪਾਸਵਰਡ ਬਣਾਓ
 master-password-os-auth-dialog-caption = { -brand-full-name }
+
+## Privacy section - Autofill
+
+pane-privacy-autofill-header = ਆਪੇ-ਭਰੋ
+autofill-addresses-checkbox = ਸਿਰਨਾਵਿਆਂ ਨੂੰ ਸੰਭਾਲੋ ਅਤੇ ਭਰੋ
+    .accesskey = a
+autofill-saved-addresses-button = ਸੰਭਾਲੇ ਹੋਏ ਸਿਰਨਾਵੇਂ
+    .accesskey = S
+autofill-payment-methods-checkbox-message = ਭੁਗਤਾਨ ਦੇ ਢੰਗ ਸੰਭਾਲੋ ਅਤੇ ਭਰੋ
+    .accesskey = m
+autofill-payment-methods-checkbox-submessage = ਕਰੈਡਿਟ ਅਤੇ ਡੇਬਿਟ ਕਾਰਡਾਂ ਸਮੇਤ
+    .accesskey = I
+autofill-saved-payment-methods-button = ਸੰਭਾਲੇ ਹੋਏ ਭੁਗਤਾਨ ਦੇ ਢੰਗ
+    .accesskey = v
+autofill-reauth-checkbox =
+    { PLATFORM() ->
+        [macos] ਭੁਗਤਾਨ ਦੇ ਢੰਗ ਭਰਨ ਅਤੇ ਸੰਭਾਲਣ ਲਈ macOS ਪਰਮਾਣਕਿਤਾ ਚਾਹੀਦੀ ਹੈ।
+        [windows] ਭੁਗਤਾਨ ਦੇ ਢੰਗ ਭਰਨ ਅਤੇ ਸੰਭਾਲਣ ਲਈ Windows ਪਰਮਾਣਕਿਤਾ ਚਾਹੀਦੀ ਹੈ।
+        [linux] ਭੁਗਤਾਨ ਦੇ ਢੰਗ ਭਰਨ ਅਤੇ ਸੰਭਾਲਣ ਲਈ ਲੀਨਸ ਪਰਮਾਣਕਿਤਾ ਚਾਹੀਦੀ ਹੈ।
+       *[other] ਭੁਗਤਾਨ ਦੇ ਢੰਗ ਭਰਨ ਅਤੇ ਸੰਭਾਲਣ ਲਈ ਪਰਮਾਣਕਿਤਾ ਚਾਹੀਦੀ ਹੈ।
+    }
+    .accesskey = o
 
 ## Privacy Section - History
 
@@ -953,6 +1003,7 @@ sitedata-delete-on-close =
     .label = ਜਦੋਂ { -brand-short-name } ਬੰਦ ਹੋਵੇ ਤਾਂ ਕੂਕੀਜ਼ ਤੇ ਸਾਈਟ ਡਾਟੇ ਨੂੰ ਹਟਾਓ
     .accesskey = c
 sitedata-delete-on-close-private-browsing = ਪੱਕੇ ਤੌਰ ਉੱਤੇ ਪ੍ਰਾਈਵੇਟ ਬਰਾਊਜ਼ਿੰਗ ਢੰਗ ਵਿੱਚ, { -brand-short-name } ਨੂੰ ਬੰਦ ਕਰਨ ਉੱਤੇ ਕੂਕੀਜ਼ ਤੇ ਸਾਈਟ ਡਾਟੇ ਨੂੰ ਹਮੇਸ਼ਾਂ ਹੀ ਸਾਫ਼ ਕੀਤਾ ਜਾਵੇਗਾ।
+sitedata-delete-on-close-private-browsing2 = ਤੁਹਾਡੀਆਂ ਅਤੀਤ ਸੈਟਿੰਗਾਂ ਦੇ ਮੁਤਾਬਕ ਜਦੋਂ ਵੀ ਤੁਸੀਂ ਬਰਾਊਜ਼ਰ ਬੰਦ ਕਰਦੇ ਹੋ ਤਾਂ { -brand-short-name } ਤੁਹਾਡੇ ਸ਼ੈਸ਼ਨ ਤੋਂ ਕੂਕੀਜ਼ ਅਤੇ ਸਾਈਟ ਡਾਟੇ ਨੂੰ ਹਟਾ ਦਿੰਦਾ ਹੈ।
 sitedata-allow-cookies-option =
     .label = ਕੂਕੀਜ਼ ਅਤੇ ਸਾਈਟ ਡਾਟੇ ਨੂੰ ਮਨਜ਼ੂਰ ਕਰੋ
     .accesskey = A

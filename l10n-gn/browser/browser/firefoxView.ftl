@@ -17,6 +17,8 @@ firefoxview-page-label =
 firefoxview-close-button =
     .title = Mboty
     .aria-label = Mboty
+firefoxview-empty-state-icon =
+    .alt = Ema’ẽke:
 # Used instead of the localized relative time when a timestamp is within a minute or so of now
 firefoxview-just-now-timestamp = Ko’ag̃aite
 # This is a headline for an area in the product where users can resume and re-open tabs they have previously viewed on other devices.
@@ -36,21 +38,21 @@ firefoxview-tabpickup-adddevice-description = Emboguejy { -brand-product-name } 
 firefoxview-tabpickup-adddevice-learn-how = Mba’éicha eikuaáta
 firefoxview-tabpickup-adddevice-primarybutton = Ereko { -brand-product-name } ne pumbyrýpe g̃uarã
 firefoxview-syncedtabs-adddevice-header = Eike { -brand-product-name } ndive ambue imba’e’okápe
-firefoxview-syncedtabs-adddevice-description = Ehecha ne rendayke oimeraẽva mba’e’oka guive eiporúvo { -brand-product-name }, eike mba’e’okakuérape. Eikuaa mba’éichapa <a data-l10n-name="url">eikéta mba’e’okápe</a>.
+firefoxview-syncedtabs-adddevice-description = Ehecha ne rendayke oimeraẽva mba’e’oka guive eiporúvo { -brand-product-name }, eike mba’e’okakuérape. Eikuaa mba’éicha <a data-l10n-name="url">eikéta mba’e’okápe</a>.
 firefoxview-syncedtabs-adddevice-primarybutton = Ereko { -brand-product-name } ne pumbyrýpe
 firefoxview-tabpickup-synctabs-header = Emyandy tendayke ñembojuehe
 firefoxview-tabpickup-synctabs-description = Emoneĩ { -brand-short-name } omoherakuãvo tendayke mba’e’oka pa’ũme.
-firefoxview-tabpickup-synctabs-learn-how = Mba’éichapa eikuaáta
+firefoxview-tabpickup-synctabs-learn-how = Mba’éicha eikuaáta
 firefoxview-tabpickup-synctabs-primarybutton = Embojuehe tendayke ijurujáva
 firefoxview-syncedtabs-synctabs-header = Embohekopyahu mbojueheha ñemboheko
 firefoxview-syncedtabs-synctabs-description = Ehecha hag̃ua tendayke ambue mba’e’okagua, embojuehe tendayke ijurujáva.
 firefoxview-syncedtabs-synctabs-checkbox = Emoneĩ tendayke ijurujáva tojuehekuaa
 firefoxview-syncedtabs-loading-header = Ñemboheko oku’éma
-firefoxview-syncedtabs-loading-description = Emoĩmbávo, ehecháta umi tendayke ijurujáva ambue mba’e’okápe. Eporandujey ag̃ave.
+firefoxview-syncedtabs-loading-description = Emoĩmbávo, ehecháta umi tendayke ijurujáva ambue mba’e’okápe. Eporandujey ag̃amieve.
 firefoxview-tabpickup-fxa-admin-disabled-header = Nde atyguasu omboyke pe ñembojuehe
-firefoxview-tabpickup-fxa-admin-disabled-description = { -brand-short-name } nombojuehekuaái tendayke mba’e’okakuéra pa’ũme ne ñangarekohára omboykégui ñembojuehe.
-firefoxview-tabpickup-network-offline-header = Ehecha og̃uahẽ porãpa ñanduti
-firefoxview-tabpickup-network-offline-description = Reiporúramo firewall térã proxy, ehechajey { -brand-short-name } oñemoneĩpa eikekuaa hag̃ua ñandutípe.
+firefoxview-tabpickup-fxa-admin-disabled-description = { -brand-short-name } nombojuehekuaái tendayke mba’e’okakuéra pa’ũme ne ñangarekohára omboyke rupi ñembojuehe.
+firefoxview-tabpickup-network-offline-header = Ehecha oiko porãpa ñanduti
+firefoxview-tabpickup-network-offline-description = Eiporúramo firewall térã proxy, ehechajey { -brand-short-name } oñemoneĩpa eikekuaa hag̃ua ñandutípe.
 firefoxview-tabpickup-network-offline-primarybutton = Eha’ãjey
 firefoxview-tabpickup-sync-error-header = Oreapañuãi rombojuehe hag̃ua
 firefoxview-tabpickup-generic-sync-error-description = { -brand-short-name } noñe’ẽkuaái ñembojuehe me’ẽhára ndive ko’ag̃aite. Eha’ãjey ag̃amieve.
@@ -60,7 +62,7 @@ firefoxview-tabpickup-sync-disconnected-description = Eru hag̃ua tendayke, oñe
 firefoxview-tabpickup-sync-disconnected-primarybutton = Emyandy ñembojuehe mbohekohápe
 firefoxview-tabpickup-password-locked-header = Ehai ne ñe’ẽñemi ha’etéva ehecha hag̃ua tendayke
 firefoxview-tabpickup-password-locked-description = Eguerujey hag̃ua tendayke, ehaiva’erã ñe’ẽñemi ha’etéva { -brand-short-name }-pe.
-firefoxview-tabpickup-password-locked-link = Kuaave
+firefoxview-tabpickup-password-locked-link = Jekuaave
 firefoxview-tabpickup-password-locked-primarybutton = Ehai Ñe’ẽñemi Ha’etéva
 firefoxview-syncedtab-password-locked-link = <a data-l10n-name="syncedtab-password-locked-link">Eikuaave</a>
 firefoxview-tabpickup-signed-out-header = Eñepyrũ tembiapo eikejey hag̃ua
@@ -147,14 +149,24 @@ firefoxview-opentabs-focus-tab =
     .title = Emoambue tendayképe
 firefoxview-show-more = Ehechaukave
 firefoxview-show-less = Ehechauka’ive
+firefoxview-show-all = Ehechaukapaite
 firefoxview-search-text-box-clear-button =
     .title = Mopotĩ
+# Placeholder for the input field to search in recent browsing ("search" is a verb).
+firefoxview-search-text-box-recentbrowsing =
+    .placeholder = Heka
 # Placeholder for the input field to search in history ("search" is a verb).
 firefoxview-search-text-box-history =
     .placeholder = Eheka tembiasakuépe
 # Placeholder for the input field to search in recently closed tabs ("search" is a verb).
 firefoxview-search-text-box-recentlyclosed =
     .placeholder = Ndaipóri tendayke oñembotyramóva
+# Placeholder for the input field to search in tabs from other devices ("search" is a verb).
+firefoxview-search-text-box-syncedtabs =
+    .placeholder = Eheka tendayke mbojuehepyrépe
+# Placeholder for the input field to search in open tabs ("search" is a verb).
+firefoxview-search-text-box-opentabs =
+    .placeholder = Eheka tendayke ijurujávape
 # "Search" is a noun (as in "Results of the search for")
 # Variables:
 #   $query (String) - The search query used for searching through browser history.

@@ -187,6 +187,20 @@ media-codec-support-unsupported = No supuartade
 media-codec-support-error = Informazions di supuart sui codecs no disponibilis. Torne prove dopo vê riprodot un file multimediâl.
 media-codec-support-lack-of-extension = Instale estension
 
+## Media Content Decryption Modules (CDM)
+## See EME Spec for more explanation for following technical terms
+## https://w3c.github.io/encrypted-media/
+
+media-content-decryption-modules-title = Informazions sui modui di decifrazion contignûts
+media-key-system-name = Non Key System
+media-video-robustness = Soliditât video
+media-audio-robustness = Soliditât audio
+media-cdm-capabilities = Funzionalitâts
+# Clear Lead isn't defined in the spec, which means the the first few seconds
+# are not encrypted. It allows playback to start without having to wait for
+# license response, improving video start time and user experience.
+media-cdm-clear-lead = Inviament in clâr
+
 ##
 
 intl-title = Internazionalizazion e localizazion
@@ -381,7 +395,7 @@ touch-warning = input tatil asincron disativât a cause di une preference no sup
 
 ## Strings representing the status of the Enterprise Policies engine.
 
-policies-inactive = Infatîf
+policies-inactive = Inatîf
 policies-active = Atîf
 policies-error = Erôr
 

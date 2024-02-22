@@ -206,6 +206,9 @@ cfr-cbh-dismiss-button = Non ora
     .accesskey = N
 cookie-banner-blocker-cfr-header = { -brand-short-name } justo blocava cookies pro te
 cookie-banner-blocker-cfr-body = Nos automaticamente refusa plure quadros resaltante de cookie pro render difficile pro le sitos traciar te.
+cookie-banner-blocker-onboarding-header = { -brand-short-name } ha justo refusate un bandiera pro cookie pro te
+cookie-banner-blocker-onboarding-body = Minus distractiones, minus cookies traciante te sur iste sito.
+cookie-banner-blocker-onboarding-learn-more = Pro saper plus
 
 ## These strings are used in the Fox doodle Pin/set default spotlights
 
@@ -235,10 +238,6 @@ fxa-sync-cfr-secondary = Rememora me plus tarde
 
 ## Device Migration FxA Spotlight
 
-device-migration-fxa-spotlight-header = Usa tu un apparato plus vetule?
-device-migration-fxa-spotlight-body = Preserva tu datos pro assecurar te que tu non perde importante info como marcapaginas e contrasignos, specialmente si tu passa a un nove apparato.
-device-migration-fxa-spotlight-primary-button = Como reservar mi datos
-device-migration-fxa-spotlight-link = Rememora me plus tarde
 device-migration-fxa-spotlight-heavy-user-header = Non oblida de reservar tu datos
 device-migration-fxa-spotlight-heavy-user-body = Cura que le informationes importante, como marcapaginas e contrasignos, sia actualisate e protegite inter tote tu apparatos.
 device-migration-fxa-spotlight-heavy-user-primary-button = Comenciar
@@ -246,7 +245,7 @@ device-migration-fxa-spotlight-older-device-header = Tranquillitate, ab { -brand
 device-migration-fxa-spotlight-older-device-body = Un conto mantene actualisate e protegite tu informationes importante sur ulle apparato al qual tu te connecte.
 device-migration-fxa-spotlight-older-device-primary-button = Crea un conto
 device-migration-fxa-spotlight-getting-new-device-header-2 = Nove apparato in tu futuro?
-device-migration-fxa-spotlight-getting-new-device-body = Reserva subito tu datos, assi tu sera preste a initiar quando arrivara tu apparato.
+device-migration-fxa-spotlight-getting-new-device-body-2 = Seque alcun simple passos pro portar con te marcapaginas, chronologia e contrasignos quando tu initia usar un nove apparato.
 device-migration-fxa-spotlight-getting-new-device-primary-button = Como reservar mi datos
 
 ## Set as Default PDF Reader Infobar
@@ -273,3 +272,14 @@ launch-on-login-infobar-reject-button = Non ora
 launch-on-login-infobar-final-message = <strong>Aperir { -brand-short-name } quando tu reinitia tu computator?</strong> Pro gerer tu preferentias initial. cerca “initio” in Parametros.
 launch-on-login-infobar-final-reject-button = No, gratias
     .accesskey = N
+
+## Tail Fox Set Default Spotlight
+
+# This title is displayed together with the picture of a running fox with a long tail.
+# In English, this is a figure of speech meaning 'stop something from following you'.
+# If the localization of this message is challenging, consider using a simplified
+# alternative as a reference for translation: 'Keep unwanted trackers away'.
+tail-fox-spotlight-title = Libera te del spias que tracia tu datos
+tail-fox-spotlight-subtitle = Dice adeo al enoiose traciatores publicitari e opta pro un experientia internet plus rapide e plus secur.
+tail-fox-spotlight-primary-button = Aperir mi ligamines con { -brand-short-name }
+tail-fox-spotlight-secondary-button = Non ora

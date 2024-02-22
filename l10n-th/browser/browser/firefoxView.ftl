@@ -17,6 +17,8 @@ firefoxview-page-label =
 firefoxview-close-button =
     .title = ปิด
     .aria-label = ปิด
+firefoxview-empty-state-icon =
+    .alt = คำเตือน:
 # Used instead of the localized relative time when a timestamp is within a minute or so of now
 firefoxview-just-now-timestamp = เมื่อกี้นี้
 # This is a headline for an area in the product where users can resume and re-open tabs they have previously viewed on other devices.
@@ -147,14 +149,24 @@ firefoxview-opentabs-focus-tab =
     .title = สลับไปยังแท็บนี้
 firefoxview-show-more = แสดงเพิ่มเติม
 firefoxview-show-less = แสดงน้อยลง
+firefoxview-show-all = แสดงทั้งหมด
 firefoxview-search-text-box-clear-button =
     .title = ล้าง
+# Placeholder for the input field to search in recent browsing ("search" is a verb).
+firefoxview-search-text-box-recentbrowsing =
+    .placeholder = ค้นหา
 # Placeholder for the input field to search in history ("search" is a verb).
 firefoxview-search-text-box-history =
     .placeholder = ค้นหาประวัติ
 # Placeholder for the input field to search in recently closed tabs ("search" is a verb).
 firefoxview-search-text-box-recentlyclosed =
     .placeholder = ค้นหาแท็บที่เพิ่งปิดล่าสุด
+# Placeholder for the input field to search in tabs from other devices ("search" is a verb).
+firefoxview-search-text-box-syncedtabs =
+    .placeholder = ค้นหาแท็บที่ซิงค์
+# Placeholder for the input field to search in open tabs ("search" is a verb).
+firefoxview-search-text-box-opentabs =
+    .placeholder = ค้นหาแท็บที่เปิดอยู่
 # "Search" is a noun (as in "Results of the search for")
 # Variables:
 #   $query (String) - The search query used for searching through browser history.

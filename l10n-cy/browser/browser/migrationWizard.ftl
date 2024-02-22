@@ -54,7 +54,7 @@ migration-imported-edge-reading-list = Rhestr Darllen (O Edge)
 
 migration-no-permissions-message = Does gan { -brand-short-name } ddim mynediad i broffiliau porwyr eraill sydd wedi'u gosod ar y ddyfais hon.
 migration-no-permissions-instructions = I barhau i fewnforio data o borwr arall, caniatewch i { -brand-short-name } gael mynediad i'w ffolder proffil.
-migration-no-permissions-instructions-step1 = Dewis “Parhau”
+migration-no-permissions-instructions-step1 = Dewis “Ymlaen”
 # The second step in getting permissions to read data for the selected
 # browser type.
 #
@@ -167,7 +167,7 @@ migration-choose-to-import-from-file-button-label = Mewnforio o Ffeil
 migration-import-from-file-button-label = Dewis Ffeil
 migration-cancel-button-label = Diddymu
 migration-done-button-label = Gorffen
-migration-continue-button-label = Parhau
+migration-continue-button-label = Ymlaen
 migration-wizard-import-browser-no-browsers = Nid yw { -brand-short-name } wedi gallu dod o hyd i unrhyw raglenni sy'n cynnwys data nod tudalen, hanes neu gyfrinair.
 migration-wizard-import-browser-no-resources = Bu gwall. Nid oedd { -brand-short-name } wedi gallu dod o hyd i unrhyw ddata i'w fewnforio o'r proffil porwr hwnnw.
 

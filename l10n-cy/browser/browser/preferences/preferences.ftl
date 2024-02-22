@@ -215,6 +215,9 @@ containers-remove-alert-msg =
     }
 containers-remove-ok-button = Tynnu'r Cynhwysydd Hwn
 containers-remove-cancel-button = Peidio Tynnu'r Cynhwysydd Hwn
+settings-tabs-show-image-in-preview =
+    .label = Dangos ragolwg delwedd pan fyddwch chi'n hofran ar dab
+    .accessKey = h
 
 ## General Section - Language & Appearance
 
@@ -392,15 +395,15 @@ applications-use-os-default-label =
 
 applications-handle-new-file-types-description = Beth ddylai { -brand-short-name } ei wneud gyda ffeiliau eraill?
 applications-save-for-new-types =
-    .label = Cadw ffeiliau
-    .accesskey = C
+    .label = Cadw'r ffeiliau
+    .accesskey = f
 applications-ask-before-handling =
     .label = Gofyn a ydych am agor neu gadw ffeiliau
     .accesskey = G
 drm-content-header = Cynnwys Rheoli Hawliau Digidol (DRM)
 play-drm-content =
     .label = Chwarae cynnwys wedi ei reoli gan DRM
-    .accesskey = C
+    .accesskey = D
 play-drm-content-learn-more = Darllen rhagor
 update-application-title = Diweddariadau { -brand-short-name }
 update-application-description = Cadwch { -brand-short-name } yn gyfredol am y perfformiad, y sefydlogrwydd a'r diogelwch gorau.
@@ -696,7 +699,7 @@ containers-remove-button =
 sync-signedout-caption = Mynd â'ch  Gwe gyda Chi
 sync-signedout-description2 = Cydweddwch eich nodau tudalen, hanes, tabiau, cyfrineiriau, ychwanegion a dewisiadau ar draws eich holl ddyfeisiau.
 sync-signedout-account-signin3 =
-    .label = Mewngofnodi i gydweddu…
+    .label = Mewngofnodi i Sync…
     .accesskey = M
 # This message contains two links and two icon images.
 #   `<img data-l10n-name="android-icon"/>` - Android logo icon
@@ -791,7 +794,7 @@ sync-engine-history =
     .label = Hanes
     .accesskey = H
 sync-engine-tabs =
-    .label = Agor tabiau
+    .label = Tabiau ar agor
     .tooltiptext = Rhestr o'r hyn sydd ar agor ar bob dyfais wedi eu cydweddu
     .accesskey = T
 sync-engine-logins-passwords =
@@ -810,9 +813,9 @@ sync-engine-creditcards =
     .label = Cardiau Credyd
     .tooltiptext = Enwau, rhifau a dyddiadau dod i ben (bwrdd gwaith yn unig)
     .accesskey = r
-sync-engine-payment-methods =
+sync-engine-payment-methods2 =
     .label = Dulliau talu
-    .tooltiptext = Enwau, rhifau cardiau a dyddiadau dod i ben (bwrdd gwaith yn unig)
+    .tooltiptext = Enwau, rhifau cardiau a dyddiau dod i ben
     .accesskey = D
 sync-engine-addons =
     .label = Ychwanegion
@@ -860,11 +863,25 @@ pane-privacy-logins-and-passwords-header = Mewngofnodion a Chyfrineiriau
 forms-ask-to-save-logins =
     .label = Gofyn i gadw mewngofnodion a chyfrineiriau ar gyfer gwefannau
     .accesskey = G
+
+## Privacy Section - Passwords
+
+# "Logins" is the former term for "Passwords". Users should find password settings
+# by searching for the former term "logins". It's not displayed in the UI.
+pane-privacy-passwords-header = Cyfrineiriau
+    .searchkeywords = mewngofnodion
+# Checkbox to control whether UI is shown to users to save or fill logins/passwords.
+forms-ask-to-save-passwords =
+    .label = Gofyn i gadw cyfrineiriau
+    .accesskey = G
 forms-exceptions =
     .label = Eithriadau…
     .accesskey = i
 forms-generate-passwords =
     .label = Awgrymu a chynhyrchu cyfrineiriau cryf
+    .accesskey = A
+forms-suggest-passwords =
+    .label = Awgrymu cyfrineiriau cryf
     .accesskey = A
 forms-breach-alerts =
     .label = Dangos rhybuddion am gyfrineiriau ar gyfer gwefannau sydd wedi' cael tor-data
@@ -872,6 +889,9 @@ forms-breach-alerts =
 forms-breach-alerts-learn-more-link = Darllen rhagor
 preferences-relay-integration-checkbox =
     .label = Awgrymu arallewnau e-byst { -relay-brand-name } i ddiogelu eich cyfeiriad e-bost
+preferences-relay-integration-checkbox2 =
+    .label = Awgrymu arallenwau e-byst { -relay-brand-name } i ddiogelu eich cyfeiriad e-bost
+    .accesskey = w
 relay-integration-learn-more-link = Darllen rhagor
 # Checkbox which controls filling saved logins into fields automatically when they appear, in some cases without user interaction.
 forms-fill-logins-and-passwords =
@@ -880,6 +900,13 @@ forms-fill-logins-and-passwords =
 forms-saved-logins =
     .label = Mewngofnodion wedi eu Cadw…
     .accesskey = M
+# Checkbox which controls filling saved logins into fields automatically when they appear, in some cases without user interaction.
+forms-fill-usernames-and-passwords =
+    .label = Llanw enwau defnyddwyr a chyfrineiriau'n awtomatig
+    .accesskey = L
+forms-saved-passwords =
+    .label = Cyfrineiriau wedi'u cadw
+    .accesskey = C
 forms-primary-pw-use =
     .label = Defnyddio Prif Gyfrinair
     .accesskey = P
@@ -903,6 +930,7 @@ forms-windows-sso =
     .label = Caniatáu mewngofnodiad unigol cyfrifon Microsoft, gwaith ac ysgol.
 forms-windows-sso-learn-more-link = Darllen rhagor
 forms-windows-sso-desc = Rheoli cyfrifon yn eich gosodiadau dyfais
+windows-passkey-settings-label = Rheoli cyfrinallweddi o fewn gosodiadau system
 
 ## OS Authentication dialog
 
@@ -914,6 +942,28 @@ primary-password-os-auth-dialog-message-win = I greu Prif Gyfrinair, nodwch fany
 # notes are only valid for English. Please test in your locale.
 primary-password-os-auth-dialog-message-macosx = creu Prif Gyfrinair
 master-password-os-auth-dialog-caption = { -brand-full-name }
+
+## Privacy section - Autofill
+
+pane-privacy-autofill-header = Awtolanw
+autofill-addresses-checkbox = Cadw a llanw cyfeiriadau
+    .accesskey = l
+autofill-saved-addresses-button = Cyfeiriadau wedi'u cadw
+    .accesskey = y
+autofill-payment-methods-checkbox-message = Dulliau cadw a llanw taliadau
+    .accesskey = D
+autofill-payment-methods-checkbox-submessage = Yn cynnwys cardiau credyd a debyd
+    .accesskey = Y
+autofill-saved-payment-methods-button = Dulliau talu wedi'u cadw
+    .accesskey = D
+autofill-reauth-checkbox =
+    { PLATFORM() ->
+        [macos] Angen dilysu macOSi lanw a golygu dulliau talu.
+        [windows] Angen dilysu Windows i lanw a golygu dulliau talu.
+        [linux] Angen dilysu Linux i lanw a golygu dulliau talu.
+       *[other] Angen dilysu i lanw a golygu dulliau talu.
+    }
+    .accesskey = d
 
 ## Privacy Section - History
 
@@ -932,7 +982,7 @@ history-remember-label = Bydd { -brand-short-name } yn
 history-remember-option-all =
     .label = Cofio hanes
 history-remember-option-never =
-    .label = Peidio cofio hanes
+    .label = Peidio â chofio hanes
 history-remember-option-custom =
     .label = Defnyddio gosodiadau cyfaddas ar gyfer hanes
 history-remember-description = Bydd { -brand-short-name } yn cofio eich hanes pori, llwytho i lawr, ffurflenni a chwilio.
@@ -969,6 +1019,7 @@ sitedata-delete-on-close =
     .label = Dileu cwcis a data'r wefan pan fydd { -brand-short-name } yn cau
     .accesskey = D
 sitedata-delete-on-close-private-browsing = Yn y modd pori preifat parhaol, bydd cwcis a data'r wefan yn cael eu clirio bob tro pan fydd { -brand-short-name } yn cau.
+sitedata-delete-on-close-private-browsing2 = Yn seiliedig ar eich gosodiadau hanes, mae { -brand-short-name } yn dileu cwcis a data gwefan o'ch sesiwn pan fyddwch yn cau'r porwr.
 sitedata-allow-cookies-option =
     .label = Derbyn cwcis a data gan wefannau
     .accesskey = D
@@ -1210,7 +1261,7 @@ permissions-addon-exceptions =
 ## Privacy Section - Data Collection
 
 collection-header = Casglu Data a'r Defnydd o { -brand-short-name }
-collection-header2 = Casglu Data { -brand-short-name } a'i Ddefnydd
+collection-header2 = Casglu Data a'r Defnydd o { -brand-short-name }
     .searchkeywords = telemetreg
 collection-description = Rydym yn ceisio darparu dewisiadau i chi a chasglu dim ond beth sydd ei angen arnom i ddarparu a gwella { -brand-short-name } ar gyfer pawb. Rydym yn gofyn caniatâd bob tro cyn derbyn manylion personol.
 collection-privacy-notice = Hysbysiad Preifatrwydd

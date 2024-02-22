@@ -484,6 +484,9 @@ enable-devtools-popup-description2 = F12 ショートカットを使うには、
 
 ## URL Bar
 
+# This string is used as an accessible name to the "X" button that cancels a custom search mode (i.e. exits the Amazon.com search mode).
+urlbar-search-mode-indicator-close =
+    .aria-label = 閉じる
 # This placeholder is used when not in search mode and the user's default search
 # engine is unknown.
 urlbar-placeholder =
@@ -560,6 +563,11 @@ urlbar-result-action-search-w-engine = { $engine } で検索
 urlbar-result-action-sponsored = 広告
 urlbar-result-action-switch-tab = タブを表示
 urlbar-result-action-visit = 開く
+# "Switch to tab with container" is used when the target tab is located in a
+# different container.
+# Variables
+# $container (String): the name of the target container
+urlbar-result-action-switch-tab-with-container = タブを表示 · <span>{ $container }</span>
 # Allows the user to visit a URL that was previously copied to the clipboard.
 urlbar-result-action-visit-from-clipboard = クリップボードから開く
 # Directs a user to press the Tab key to perform a search with the specified
@@ -884,6 +892,10 @@ tabs-toolbar-list-all-tabs =
 restore-session-startup-suggestion-message = <strong>前回のタブを開きますか？</strong> { -brand-short-name } アプリケーションメニュー<img data-l10n-name="icon"/>の履歴から前回のセッションを復元できます。
 restore-session-startup-suggestion-button = 方法を確認
 
+## Infobar shown when the user tries to open a file picker and file pickers are blocked by enterprise policy
+
+filepicker-blocked-infobar = 所属組織がこのコンピューター上のローカルファイルへのアクセスをブロックしています
+
 ## Mozilla data reporting notification (Telemetry, Firefox Health Report, etc)
 
 data-reporting-notification-message = ユーザー体験の向上のため、{ -brand-short-name } は自動的にいくつかのデータを { -vendor-short-name } に送信します。
@@ -925,8 +937,8 @@ reset-pbm-toolbar-button =
 reset-pbm-panel-heading = プライベートセッションを終了しますか？
 reset-pbm-panel-description = すべてのプライベートタブを閉じ、履歴、Cookie、その他すべてのサイトデータを削除します。
 reset-pbm-panel-always-ask-checkbox =
-     .label = 常に確認する
-     .accesskey = A
+    .label = 常に確認する
+    .accesskey = A
 reset-pbm-panel-cancel-button =
     .label = キャンセル
     .accesskey = C

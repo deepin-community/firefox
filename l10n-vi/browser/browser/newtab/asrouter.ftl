@@ -203,6 +203,9 @@ cfr-cbh-dismiss-button = Không phải bây giờ
     .accesskey = N
 cookie-banner-blocker-cfr-header = { -brand-short-name } vừa chặn cookie cho bạn
 cookie-banner-blocker-cfr-body = Chúng tôi tự động từ chối nhiều cửa sổ bật lên hỏi về cookie để gây khó khăn cho các trang web theo dõi bạn.
+cookie-banner-blocker-onboarding-header = { -brand-short-name } vừa từ chối một biểu ngữ cookie cho bạn
+cookie-banner-blocker-onboarding-body = Ít phiền nhiễu hơn, ít cookie theo dõi bạn hơn trên trang web này.
+cookie-banner-blocker-onboarding-learn-more = Tìm hiểu thêm
 
 ## These strings are used in the Fox doodle Pin/set default spotlights
 
@@ -232,10 +235,6 @@ fxa-sync-cfr-secondary = Nhắc tôi sau
 
 ## Device Migration FxA Spotlight
 
-device-migration-fxa-spotlight-header = Sử dụng thiết bị cũ hơn?
-device-migration-fxa-spotlight-body = Sao lưu dữ liệu của bạn để đảm bảo bạn không bị mất thông tin quan trọng như dấu trang và mật khẩu — đặc biệt nếu bạn chuyển sang một thiết bị mới.
-device-migration-fxa-spotlight-primary-button = Cách sao lưu dữ liệu của tôi
-device-migration-fxa-spotlight-link = Nhắc tôi sau
 device-migration-fxa-spotlight-heavy-user-header = Đừng quên sao lưu dữ liệu của bạn
 device-migration-fxa-spotlight-heavy-user-body = Đảm bảo thông tin quan trọng — như dấu trang và mật khẩu — được cập nhật và bảo vệ trên tất cả các thiết bị của bạn.
 device-migration-fxa-spotlight-heavy-user-primary-button = Bắt đầu
@@ -243,7 +242,7 @@ device-migration-fxa-spotlight-older-device-header = Yên tâm và tin tưởng,
 device-migration-fxa-spotlight-older-device-body = Tài khoản giúp thông tin quan trọng của bạn được cập nhật và bảo vệ trên mọi thiết bị bạn kết nối.
 device-migration-fxa-spotlight-older-device-primary-button = Tạo tài khoản
 device-migration-fxa-spotlight-getting-new-device-header-2 = Thiết bị mới trong tương lai của bạn?
-device-migration-fxa-spotlight-getting-new-device-body = Hãy sao lưu dữ liệu của bạn ngay bây giờ để bạn có thể sẵn sàng sử dụng ngay khi có thiết bị mới đó.
+device-migration-fxa-spotlight-getting-new-device-body-2 = Hãy làm theo một số bước đơn giản để mang theo dấu trang, lịch sử và mật khẩu khi bạn bắt đầu sử dụng thiết bị mới.
 device-migration-fxa-spotlight-getting-new-device-primary-button = Làm thế nào để sao lưu dữ liệu của tôi
 
 ## Set as Default PDF Reader Infobar
@@ -270,3 +269,14 @@ launch-on-login-infobar-reject-button = Không phải bây giờ
 launch-on-login-infobar-final-message = <strong>Mở { -brand-short-name } mỗi khi bạn khởi động lại máy tính?</strong> Để quản lý tùy chọn khởi động của bạn, hãy tìm kiếm “khởi động” trong cài đặt.
 launch-on-login-infobar-final-reject-button = Không phải bây giờ
     .accesskey = N
+
+## Tail Fox Set Default Spotlight
+
+# This title is displayed together with the picture of a running fox with a long tail.
+# In English, this is a figure of speech meaning 'stop something from following you'.
+# If the localization of this message is challenging, consider using a simplified
+# alternative as a reference for translation: 'Keep unwanted trackers away'.
+tail-fox-spotlight-title = Loại bỏ những trình theo dõi phiền toái phía sau bạn
+tail-fox-spotlight-subtitle = Nói lời tạm biệt với những trình theo dõi quảng cáo phiền toái và tận hưởng trải nghiệm Internet nhanh chóng, an toàn hơn.
+tail-fox-spotlight-primary-button = Mở liên kết của tôi bằng { -brand-short-name }
+tail-fox-spotlight-secondary-button = Không phải bây giờ

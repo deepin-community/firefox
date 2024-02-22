@@ -495,6 +495,9 @@ enable-devtools-popup-description2 = Aby móc użyć skrótu F12, najpierw otwó
 
 ## URL Bar
 
+# This string is used as an accessible name to the "X" button that cancels a custom search mode (i.e. exits the Amazon.com search mode).
+urlbar-search-mode-indicator-close =
+    .aria-label = Zamknij
 # This placeholder is used when not in search mode and the user's default search
 # engine is unknown.
 urlbar-placeholder =
@@ -571,6 +574,11 @@ urlbar-result-action-search-w-engine = szukaj w { $engine }
 urlbar-result-action-sponsored = sponsorowane
 urlbar-result-action-switch-tab = przełącz na kartę
 urlbar-result-action-visit = otwórz stronę
+# "Switch to tab with container" is used when the target tab is located in a
+# different container.
+# Variables
+# $container (String): the name of the target container
+urlbar-result-action-switch-tab-with-container = przełącz na kartę · <span>{ $container }</span>
 # Allows the user to visit a URL that was previously copied to the clipboard.
 urlbar-result-action-visit-from-clipboard = otwórz stronę ze schowka
 # Directs a user to press the Tab key to perform a search with the specified
@@ -894,6 +902,10 @@ tabs-toolbar-list-all-tabs =
 # <img data-l10n-name="icon"/> will be replaced by the application menu icon
 restore-session-startup-suggestion-message = <strong>Otworzyć poprzednie karty?</strong> Możesz przywrócić poprzednią sesję w menu aplikacji { -brand-short-name } <img data-l10n-name="icon"/>, w sekcji Historia.
 restore-session-startup-suggestion-button = Pokaż, jak to zrobić
+
+## Infobar shown when the user tries to open a file picker and file pickers are blocked by enterprise policy
+
+filepicker-blocked-infobar = Administrator komputera zablokował dostęp do lokalnych plików
 
 ## Mozilla data reporting notification (Telemetry, Firefox Health Report, etc)
 

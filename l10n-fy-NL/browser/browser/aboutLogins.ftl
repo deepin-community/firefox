@@ -29,6 +29,8 @@ about-logins-menu-menuitem-import-from-another-browser = Ymportearje fan in oare
 about-logins-menu-menuitem-import-from-a-file = Ut in bestân ymportearje…
 about-logins-menu-menuitem-export-logins = Oanmeldingen eksportearje…
 about-logins-menu-menuitem-remove-all-logins = Alle oanmeldingen fuortsmite…
+about-logins-menu-menuitem-export-logins2 = Wachtwurden eksportearje…
+about-logins-menu-menuitem-remove-all-logins2 = Alle wachtwurden fuortsmite…
 menu-menuitem-preferences =
     { PLATFORM() ->
         [windows] Opsjes
@@ -105,20 +107,25 @@ about-logins-login-intro-heading-logged-out2 = Op syk nei jo bewarre oanmeldinge
 about-logins-login-intro-heading-logged-in = Gjin syngronisearre oanmeldingen fûn.
 login-intro-description = As jo jo oanmeldgegevens by { -brand-product-name } op in oar apparaat bewarre hawwe, kinne jo se sa ophelje:
 login-intro-instructions-fxa = Meitsje op it apparaat wêrop jo oanmeldgegevens stean in { -fxaccount-brand-name } of meld jo oan.
+about-logins-login-intro-heading-message = Bewarje jo wachtwurden op in feilich plak
+login-intro-description2 = Alle wachtwurden dy’t jo bewarje yn { -brand-product-name } wurde fersifere. Boppedat lette wy op datalekken en warskôgje jo as dit foar jo jildt. <a data-l10n-name="breach-alert-link">Mear ynfo</a>
 login-intro-instructions-fxa2 = Meitsje op it apparaat wêrop jo oanmeldgegevens stean in account of meld jo oan.
 login-intro-instructions-fxa-settings = Gean nei Ynstellingen > Sync > Syngronisaasje ynskeakelje… Pleats in finkje by Oanmeldingen en wachtwurden.
 login-intro-instructions-fxa-passwords-help = Besykje <a data-l10n-name="passwords-help-link">help by wachtwurden</a> foar mear help.
 about-logins-intro-browser-only-import = As jo oanmeldingen yn in oare browser bewarre wurde, kinne jo <a data-l10n-name="import-link">se ymportearje yn { -brand-product-name }</a>
 about-logins-intro-import2 = As jo oanmeldingen bûten { -brand-product-name } bewarre binne, dan kinne jo se ymportearje <a data-l10n-name="import-browser-link">fan in oare browser út</a> of <a data-l10n-name = "import-file-link">fan in bestân út</a>
+about-logins-intro-import3 = Selektearje de knop mei it plusteken hjirboppe om daliks in wachtwurd ta te foegjen. Jo kinne ek <a data-l10n-name="import-browser-link">wachtwurden út in oare browser</a> of  <a data-l10n-name="import-file-link">út in bestân ymportearje</a>.
 
 ## Login
 
 login-item-new-login-title = Nij oanmelding meitsje
+# Header for adding a password
+about-logins-login-item-new-login-title = Wachtwurd tafoegje
 login-item-edit-button = Bewurkje
 about-logins-login-item-remove-button = Fuortsmite
 login-item-origin-label = Websiteadres
 login-item-tooltip-message = Soargje derfoar dat dit eksakt oerienkomt mei it adres fan de website wêr’t jo jo oanmelde.
-about-logins-origin-tooltip = Soargje derfoar dat dit eksakt oerienkomt mei it adres fan de website wêr't jo jo oanmelde.
+about-logins-origin-tooltip2 = Fier it folsleine adres yn en soargje derfoar dat it krekt oerienkomt mei wêr’t jo jo oanmelde.
 # Variables
 #   $webTitle (String) - Website title of the password being changed.
 about-logins-edit-password-tooltip = Soargje derfoar dat jo jo aktuele wachtwurd foar dizze website bewarje. It wizigjen fan it wachtwurd hjir wiziget it net by { $webTitle }.
@@ -136,6 +143,7 @@ login-item-password-reveal-checkbox =
 login-item-copy-password-button-text = Kopiearje
 login-item-copied-password-button-text = Kopiearre!
 login-item-save-changes-button = Wizigingen bewarje
+about-logins-login-item-save-changes-button = Bewarje
 login-item-save-new-button = Bewarje
 login-item-cancel-button = Annulearje
 
@@ -163,6 +171,11 @@ about-logins-edit-login-os-auth-dialog-message-win = Fier jo oanmeldgegevens foa
 # This message can be seen when attempting to edit a login in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-edit-login-os-auth-dialog-message-macosx = bewurkje de bewarre oanmelding
+# This message can be seen when attempting to edit a login in about:logins on Windows.
+about-logins-edit-login-os-auth-dialog-message2-win = Fier jo oanmeldgegevens foar Windows yn om jo wachtwurd te bewurkjen. Hjirtroch wurdt de befeiliging fan jo accounts beskerme.
+# This message can be seen when attempting to edit a login in about:logins
+# On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
+about-logins-edit-login-os-auth-dialog-message2-macosx = it bewarre wachtwurd te bewurkjen
 # This message can be seen when attempting to reveal a password in about:logins on Windows.
 about-logins-reveal-password-os-auth-dialog-message-win = Fier jo oanmeldgegevens foar Windows yn om jo wachtwurd te besjen. Hjirtroch wurdt de befeiliging fan jo accounts beskerme.
 # This message can be seen when attempting to reveal a password in about:logins
@@ -178,6 +191,11 @@ about-logins-export-password-os-auth-dialog-message-win = Fier jo oanmeldgegeven
 # This message can be seen when attempting to export a password in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-export-password-os-auth-dialog-message-macosx = bewarren oanmeldingen en wachtwurden te eksportearjen
+# This message can be seen when attempting to export a password in about:logins on Windows.
+about-logins-export-password-os-auth-dialog-message2-win = Fier jo oanmeldgegevens foar Windows yn om jo wachtwurd te eksportearjen. Hjirtroch wurdt de befeiliging fan jo accounts beskerme.
+# This message can be seen when attempting to export a password in about:logins
+# On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
+about-logins-export-password-os-auth-dialog-message2-macosx = bewarre wachtwurden te eksportearjen
 
 ## Primary Password notification
 
@@ -193,6 +211,10 @@ confirmation-dialog-dismiss-button =
     .title = Annulearje
 about-logins-confirm-remove-dialog-title = Dizze oanmelding fuortsmite?
 confirm-delete-dialog-message = Dizze aksje kin net ûngedien makke wurde.
+# Title for modal to confirm the removal of one saved password
+about-logins-confirm-delete-dialog-title = Wachtwurd fuortsmite?
+# Message for modal to confirm the removal of one saved password
+about-logins-confirm-delete-dialog-message = Jo kinne dizze aksje net ûngedien meitsje.
 about-logins-confirm-remove-dialog-confirm-button = Fuortsmite
 
 ## Variables
@@ -238,12 +260,50 @@ about-logins-confirm-remove-all-sync-dialog-message2 =
         [one] Dit smyt de oanmelding fuort dy’t jo yn { -brand-short-name } bewarre hawwe fan alle apparaten dy’t mei jo account syngronisearre binne. Dit smyt ek alle warskôgingen foar datalekken dy’t hjir ferskine fuort. Jo kinne dizze aksje net ûngedien meitsje.
        *[other] Dit smyt de oanmeldingen fuort dy’t jo yn { -brand-short-name } bewarre hawwe fan alle apparaten dy’t mei jo account syngronisearre binne. Dit smyt ek alle warskôgingen foar datalekken dy’t hjir ferskine fuort. Jo kinne dizze aksje net ûngedien meitsje.
     }
+# Checkbox for modal to confirm the removal of saved passwords
+about-logins-confirm-remove-all-dialog-checkbox-label2 =
+    { $count ->
+        [1] Ja, wachtwurd fuortsmite
+        [one] Ja, wachtwurd fuortsmite
+       *[other] Ja, wachtwurden fuortsmite
+    }
+# Title for modal to confirm the removal of all saved passwords when user is NOT synced
+about-logins-confirm-remove-all-dialog-title2 =
+    { $count ->
+        [one] { $count } wachtwurd fuortsmite?
+       *[other] Alle { $count } wachtwurden fuortsmite?
+    }
+# Message for modal to confirm the removal of saved passwords when user is NOT synced
+about-logins-confirm-remove-all-dialog-message2 =
+    { $count ->
+        [1] Dit smyt it wachtwurd dat bewarre is yn { -brand-short-name } en alle warskôgingen oer datalekken fuort. Jo kinne dizze aksje net ûngedien meitsje.
+        [one] Dit smyt it wachtwurd dat bewarre is yn { -brand-short-name } en alle warskôgingen oer datalekken fuort. Jo kinne dizze aksje net ûngedien meitsje.
+       *[other] Dit smyt de wachtwurden dy’t bewarre binne yn { -brand-short-name } en alle warskôgingen oer datalekken fuort. Jo kinne dizze aksje net ûngedien meitsje.
+    }
+# Title for modal to confirm the removal of all saved passwords when user IS SYNCED
+about-logins-confirm-remove-all-sync-dialog-title2 =
+    { $count ->
+        [one] { $count } wachtwurd fan alle apparaten fuortsmite?
+       *[other] Alle { $count } wachtwurden fan alle apparaten fuortsmite?
+    }
+# Message for modal to confirm the removal of saved passwords when user IS synced.
+about-logins-confirm-remove-all-sync-dialog-message3 =
+    { $count ->
+        [1] Dit smyt it wachtwurd dat yn { -brand-short-name } bewarre is fan al jo syngronisearre apparaten fuort. Dit smyt ek alle warskôgingen foar datalekken dy’t hjir ferskine fuort. Jo kinne dizze aksje net ûngedien meitsje.
+        [one] Dit smyt it wachtwurd dat yn { -brand-short-name } bewarre is fan al jo syngronisearre apparaten fuort. Dit smyt ek alle warskôgingen foar datalekken dy’t hjir ferskine fuort. Jo kinne dizze aksje net ûngedien meitsje.
+       *[other] Dit smyt alle wachtwurden dy’t yn { -brand-short-name } bewarre binne fan al jo syngronisearre apparaten fuort. Dit smyt ek alle warskôgingen foar datalekken dy’t hjir ferskine fuort. Jo kinne dizze aksje net ûngedien meitsje.
+    }
 
 ##
 
 about-logins-confirm-export-dialog-title = Oanmeldingen en wachtwurden eksportearje
 about-logins-confirm-export-dialog-message = Jo wachtwurden wurde bewarre as lêsbere tekst (bygelyks BadP@ssw0rd), dus elkenien dy’t it eksportearre bestân iepenje kin, kin se besjen.
 about-logins-confirm-export-dialog-confirm-button = Eksportearje…
+about-logins-confirm-export-dialog-title2 = In opmerking oer it eksportearjen fan wachtwurden
+about-logins-confirm-export-dialog-message2 =
+    Wannear’t jo eksportearje, wurde jo wachtwurden as lêsbere tekst bewarre yn in bestân.
+    As jo it bestân net mear nedich hawwe, rekommandearje wy jo oan it fuort te smiten, sadat oaren dy’t dit apparaat brûke jo wachtwurden net sjen kinne.
+about-logins-confirm-export-dialog-confirm-button2 = Trochgean mei eksportearjen
 about-logins-alert-import-title = Ymportearjen foltôge
 about-logins-alert-import-message = Detaillearre ymportgearfetting besjen
 confirm-discard-changes-dialog-title = Dizze wizigingen ferwerpe?
@@ -285,6 +345,11 @@ about-logins-export-file-picker-title = Bestân mei oanmeldingen eksportearje
 # The default file name shown in the file picker when exporting saved logins.
 # This must end in .csv
 about-logins-export-file-picker-default-filename = logins.csv
+# Title of the file picker dialog
+about-logins-export-file-picker-title2 = Wachtwurden eksportearje út { -brand-short-name }
+# The default file name shown in the file picker when exporting saved logins.
+# This must end in .csv
+about-logins-export-file-picker-default-filename2 = wachtwurden.csv
 about-logins-export-file-picker-export-button = Eksportearje
 # A description for the .csv file format that may be shown as the file type
 # filter by the operating system.

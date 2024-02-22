@@ -191,6 +191,9 @@ containers-remove-alert-title = 要移除這個容器嗎？
 containers-remove-alert-msg = 若您現在移除此容器，將關閉 { $count } 個容器分頁。您確定要移除此容器嗎？
 containers-remove-ok-button = 移除此容器
 containers-remove-cancel-button = 不要移除此容器
+settings-tabs-show-image-in-preview =
+    .label = 當滑鼠移動到分頁標籤上時，顯示分頁預覽
+    .accessKey = h
 
 ## General Section - Language & Appearance
 
@@ -782,9 +785,9 @@ sync-engine-creditcards =
     .label = 信用卡
     .tooltiptext = 姓名、卡號及到期日（僅桌機）
     .accesskey = C
-sync-engine-payment-methods =
+sync-engine-payment-methods2 =
     .label = 付款方式
-    .tooltiptext = 持卡人姓名、卡號、到期日（僅桌面版）
+    .tooltiptext = 持卡人姓名、卡號、到期日
     .accesskey = n
 sync-engine-addons =
     .label = 附加元件
@@ -832,18 +835,35 @@ pane-privacy-logins-and-passwords-header = 登入資訊與密碼
 forms-ask-to-save-logins =
     .label = 向您詢問是否要記住網站的登入帳號與密碼
     .accesskey = r
+
+## Privacy Section - Passwords
+
+# "Logins" is the former term for "Passwords". Users should find password settings
+# by searching for the former term "logins". It's not displayed in the UI.
+pane-privacy-passwords-header = 密碼
+    .searchkeywords = 登入資訊
+# Checkbox to control whether UI is shown to users to save or fill logins/passwords.
+forms-ask-to-save-passwords =
+    .label = 提示儲存密碼
+    .accesskey = A
 forms-exceptions =
     .label = 例外網站…
     .accesskey = x
 forms-generate-passwords =
     .label = 產生強密碼
     .accesskey = u
+forms-suggest-passwords =
+    .label = 建議一組安全的密碼
+    .accesskey = S
 forms-breach-alerts =
     .label = 針對發生過資料外洩的網站顯示密碼警告
     .accesskey = b
 forms-breach-alerts-learn-more-link = 了解更多
 preferences-relay-integration-checkbox =
     .label = 為您建議 { -relay-brand-name } 郵件轉寄信箱，幫助您保護實際信箱
+preferences-relay-integration-checkbox2 =
+    .label = 為您建議 { -relay-brand-name } 郵件轉寄信箱，幫助您保護實際信箱
+    .accesskey = r
 relay-integration-learn-more-link = 了解更多
 # Checkbox which controls filling saved logins into fields automatically when they appear, in some cases without user interaction.
 forms-fill-logins-and-passwords =
@@ -852,6 +872,13 @@ forms-fill-logins-and-passwords =
 forms-saved-logins =
     .label = 已存登入資訊…
     .accesskey = L
+# Checkbox which controls filling saved logins into fields automatically when they appear, in some cases without user interaction.
+forms-fill-usernames-and-passwords =
+    .label = 自動填寫帳號與密碼
+    .accesskey = F
+forms-saved-passwords =
+    .label = 已存密碼
+    .accesskey = d
 forms-primary-pw-use =
     .label = 使用主控密碼
     .accesskey = U
@@ -875,6 +902,7 @@ forms-windows-sso =
     .label = 允許使用 Windows 單一登入系統，登入微軟、工作單位、學校提供的帳號
 forms-windows-sso-learn-more-link = 了解更多
 forms-windows-sso-desc = 可到您的裝置設定畫面管理帳號
+windows-passkey-settings-label = 到系統設定中管理密碼金鑰
 
 ## OS Authentication dialog
 
@@ -886,6 +914,28 @@ primary-password-os-auth-dialog-message-win = 請在下方輸入您的 Windows �
 # notes are only valid for English. Please test in your locale.
 primary-password-os-auth-dialog-message-macosx = 建立主控密碼
 master-password-os-auth-dialog-caption = { -brand-full-name }
+
+## Privacy section - Autofill
+
+pane-privacy-autofill-header = 自動填寫
+autofill-addresses-checkbox = 儲存並自動填寫地址
+    .accesskey = a
+autofill-saved-addresses-button = 已存地址
+    .accesskey = S
+autofill-payment-methods-checkbox-message = 儲存並自動填寫付款方式
+    .accesskey = m
+autofill-payment-methods-checkbox-submessage = 包含信用卡與 Debit Card
+    .accesskey = I
+autofill-saved-payment-methods-button = 儲存的付款方式
+    .accesskey = v
+autofill-reauth-checkbox =
+    { PLATFORM() ->
+        [macos] 需要進行 macOS 驗證才能填寫或編輯付款方式資訊。
+        [windows] 需要進行 Windows 驗證才能填寫或編輯付款方式資訊。
+        [linux] 需要進行 Linux 驗證才能填寫或編輯付款方式資訊。
+       *[other] 需要進行驗證才能填寫或編輯付款方式資訊。
+    }
+    .accesskey = o
 
 ## Privacy Section - History
 
@@ -941,6 +991,7 @@ sitedata-delete-on-close =
     .label = 關閉 { -brand-short-name } 時清除 Cookie 與網站資料
     .accesskey = C
 sitedata-delete-on-close-private-browsing = 在永久隱私瀏覽模式下，每次關閉 { -brand-short-name } 時就會清除 Cookie 與網站資料。
+sitedata-delete-on-close-private-browsing2 = 依照您的瀏覽紀錄設定，當您關閉瀏覽器後，{ -brand-short-name } 會自動刪除瀏覽階段中產生的 Cookie 與網站資料。
 sitedata-allow-cookies-option =
     .label = 允許網站設定 Cookie 與網站資料
     .accesskey = A

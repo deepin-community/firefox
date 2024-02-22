@@ -51,11 +51,17 @@ toolbar-context-menu-report-extension =
 toolbar-context-menu-pin-to-overflow-menu =
     .label = Spilhennañ d'al lañser dic'hlann
     .accesskey = S
+toolbar-context-menu-auto-hide-downloads-button-2 =
+    .label = Kuzhat ar bouton pa vez goullo
+    .accesskey = K
 toolbar-context-menu-remove-from-toolbar =
     .label = Lemel diouzh ar varrenn ostilhoù
     .accesskey = o
 toolbar-context-menu-view-customize-toolbar =
     .label = Personelaat…
+    .accesskey = P
+toolbar-context-menu-view-customize-toolbar-2 =
+    .label = Personelaat ar varrenn ostilhoù…
     .accesskey = P
 # This is only ever shown when toolbar-context-menu-pin-to-overflow-menu
 # is hidden, so they can share access keys.

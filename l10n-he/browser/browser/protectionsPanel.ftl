@@ -29,14 +29,6 @@ protections-panel-etp-off-header = הגנת מעקב מתקדמת כבויה ע�
 ## custom element code.
 ##   $host (String): the hostname of the site that is being displayed.
 
-protections-panel-etp-on-toggle =
-    .label = הגנת מעקב מתקדמת
-    .description = פעילה עבור אתר זה
-    .aria-label = השבתת ההגנות עבור { $host }
-protections-panel-etp-off-toggle =
-    .label = הגנת מעקב מתקדמת
-    .description = כבויה עבור אתר זה
-    .aria-label = הפעלת ההגנות עבור { $host }
 protections-panel-etp-toggle-on =
     .label = הגנת מעקב מתקדמת
     .description = פעילה עבור אתר זה
@@ -128,8 +120,41 @@ protections-panel-content-blocking-breakage-report-view-send-report =
 
 # Cookie Banner Handling
 
+protections-panel-cookie-banner-handling-header = צמצום כרזות עוגיות
+protections-panel-cookie-banner-blocker-header = חוסם כרזות עוגיות
+protections-panel-cookie-banner-handling-enabled = פעיל עבור אתר זה
+protections-panel-cookie-banner-handling-disabled = כבוי עבור אתר זה
+protections-panel-cookie-banner-handling-undetected = האתר לא נתמך כרגע
+protections-panel-cookie-banner-view-title =
+    .title = צמצום כרזות עוגיות
+# Variables
+#  $host (String): the hostname of the site that is being displayed.
+protections-panel-cookie-banner-view-turn-off-for-site = להשבית צמצום כרזות עוגיות לאתר { $host }?
+protections-panel-cookie-banner-view-turn-on-for-site = להפעיל צמצום כרזות עוגיות לאתר הזה?
+protections-panel-cookie-banner-blocker-view-title =
+    .title = חוסם כרזות עוגיות
+# Variables
+#  $host (String): the hostname of the site that is being displayed.
+protections-panel-cookie-banner-blocker-view-turn-off-for-site = להשבית חוסם כרזות עוגיות לאתר { $host }?
+protections-panel-cookie-banner-blocker-view-turn-on-for-site = להפעיל חוסם כרזות עוגיות לאתר הזה?
+protections-panel-cookie-banner-view-cookie-clear-warning = ‏{ -brand-short-name } ינקה את העוגיות של אתר זה וירענן את הדף. ניקוי כל העוגית עשוי לנתק את החשבון שלך מהאתר או לרוקן את עגלת הקניות שלך.
+protections-panel-cookie-banner-view-turn-on-description = ‏ { -brand-short-name } מנסה לדחות באופן אוטומטי את כל בקשות העוגיות באתרים נתמכים.
+protections-panel-cookie-banner-view-cancel = ביטול
+protections-panel-cookie-banner-view-turn-off = כיבוי
+protections-panel-cookie-banner-view-turn-on = הפעלה
+protections-panel-cookie-banner-blocker-view-turn-on-description = הפעלת אפשרות זו תגרום לכך ש־{ -brand-short-name } ינסה לסרב באופן אוטומטי לכרזות עוגיות באתר זה.
+protections-panel-cookie-banner-view-cancel-label =
+    .label = ביטול
 protections-panel-cookie-banner-view-turn-off-label =
     .label = כיבוי
+protections-panel-cookie-banner-view-turn-on-label =
+    .label = הפעלה
 protections-panel-report-broken-site =
     .label = דיווח על אתר שבור
     .title = דיווח על אתר שבור
+
+## Protections panel info message
+
+cfr-protections-panel-header = לגלוש מבלי שעוקבים אחריך
+cfr-protections-panel-body = הנתונים שלך נשארים אצלך. { -brand-short-name } מגן עליך מפני רוב רכיבי הריגול שעוקבים אחר הפעילות המקוונת שלך.
+cfr-protections-panel-link-text = מידע נוסף

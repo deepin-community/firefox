@@ -12,6 +12,7 @@
 
 policy-3rdparty = 设置 WebExtension 可通过 chrome.storage.managed 存取的策略。
 policy-AllowedDomainsForApps = 定义允许访问 Google Workspace 的域。
+policy-AllowFileSelectionDialogs = 允许显示文件选择对话框。
 policy-AppAutoUpdate = 启用或禁用应用程序自动更新。
 policy-AppUpdatePin = 阻止 { -brand-short-name } 更新超过特定版本。
 policy-AppUpdateURL = 设置自定义的应用程序更新网址。
@@ -40,7 +41,7 @@ policy-DisableFirefoxAccounts = 禁用 { -fxaccount-brand-name }的基础服务�
 # Firefox Screenshots is the name of the feature, and should not be translated.
 policy-DisableFirefoxScreenshots = 禁用 Firefox 的“截图”功能。
 policy-DisableFirefoxStudies = 阻止 { -brand-short-name } 运行研究实验。
-policy-DisableForgetButton = 阻止使用“忘记”功能。
+policy-DisableForgetButton = 阻止使用“抹去足迹”按钮。
 policy-DisableFormHistory = 不要记住搜索和表单的历史记录。
 policy-DisablePrimaryPasswordCreation = 若为 true，将无法创建主密码。
 policy-DisablePasswordReveal = 阻止密码在列表中明文显示

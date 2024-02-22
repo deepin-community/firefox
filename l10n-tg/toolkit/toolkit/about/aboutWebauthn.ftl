@@ -59,6 +59,7 @@ about-webauthn-list-credentials-button = Рӯйхати маълумоти ко�
 about-webauthn-cancel-button = Бекор кардан
 about-webauthn-send-pin-button = ХУБ
 about-webauthn-delete-button = Нест кардан
+about-webauthn-update-button = Навсозӣ кардан
 
 ## Authenticator options fields
 ## Option fields correspond to the CTAP2 option IDs and definitions found in https://fidoalliance.org/specs/fido-v2.1-ps-20210615/fido-client-to-authenticator-protocol-v2.1-ps-20210615.html#option-id
@@ -70,6 +71,19 @@ about-webauthn-auth-option-rk = Калиди муқим
 about-webauthn-auth-option-plat = Дастгоҳи платформа
 # pinUvAuthToken should not be translated.
 about-webauthn-auth-option-pinuvauthtoken = Иҷозатҳои фармон (pinUvAuthToken)
+# MakeCredential and GetAssertion should not be translated.
+about-webauthn-auth-option-nomcgapermissionswithclientpin = Ягон иҷозати «MakeCredential/GetAssertion» бо рамзи PIN-и муштарӣ нест
+about-webauthn-auth-option-ep = Баҳодиҳии корхона
+about-webauthn-auth-option-bioenroll = Бақайдгирии биометрӣ
+# FIDO_2_1_PRE should not be translated.
+about-webauthn-auth-option-userverificationmgmtpreview = Намунаи бақайдгирии биометрӣ (FIDO_2_1_PRE)
+about-webauthn-auth-option-uvbioenroll = Иҷозати бақайдгирии биометрӣ
+about-webauthn-auth-option-authnrcfg = Танзимоти «Authenticator»
+about-webauthn-auth-option-uvacfg = Иҷозати танзимоти «Authenticator»
+about-webauthn-auth-option-credmgmt = Идоракунии маълумоти корбар
+about-webauthn-auth-option-credentialmgmtpreview = Намунаи идоракунии маълумоти корбар
+about-webauthn-auth-option-setminpinlength = Танзими дарозии ҳадди ақали рамзи PIN
+about-webauthn-auth-option-alwaysuv = Ҳамеша дархост кардани санҷиши ҳаққонияти корбар
 # Shows when boolean value for an option is True. True should not be translated.
 about-webauthn-auth-option-true = Дуруст
 # Shows when boolean value of an option is False. False should not be translated.
@@ -81,8 +95,14 @@ about-webauthn-auth-option-null = Дастгирӣ намешавад
 ## Info fields correspond to the CTAP2 authenticatorGetInfo field member name and definitions found in https://fidoalliance.org/specs/fido-v2.1-ps-20210615/fido-client-to-authenticator-protocol-v2.1-ps-20210615.html#authenticatorGetInfo
 
 about-webauthn-auth-info-certifications = Гувоҳномаҳо
+about-webauthn-auth-info-uv-modality = Тарзи санҷиши ҳаққонияти корбар
+about-webauthn-auth-info-firmware-version = Версияи нармафзори дастгоҳ
+about-webauthn-auth-info-min-pin-length = Дарозии ҳадди ақали рамзи PIN
+about-webauthn-auth-info-force-pin-change = Маҷбуран иваз кардани рамзи PIN
 about-webauthn-auth-info-algorithms = Алгоритмҳо
+about-webauthn-auth-info-transports = Нақлиётҳо
 about-webauthn-auth-info-pin-protocols = Протоколҳои рамзи PIN
+about-webauthn-auth-info-max-msg-size = Андозаи ҳадди аксари паём
 # AAGUID should not be translated.
 about-webauthn-auth-info-aaguid = AAGUID
 about-webauthn-auth-info-extensions = Васеъшавиҳо
@@ -92,3 +112,12 @@ about-webauthn-auth-info-true = Дуруст
 # Shows when boolean value for an info field is False. False should not be translated.
 about-webauthn-auth-info-false = Нодуруст
 about-webauthn-auth-info-null = Дастгирӣ намешавад
+
+## Bio enrollment sample feedbacks
+
+
+## Scan (e.g. of fingerprint) was off-center (e.g. too high, too left, etc.).
+
+
+##
+

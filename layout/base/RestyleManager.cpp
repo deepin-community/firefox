@@ -96,9 +96,7 @@ void RestyleManager::ContentAppended(nsIContent* aFirstNewContent) {
     }
   }
 #endif
-  if (aFirstNewContent->IsElement()) {
-    StyleSet()->MaybeInvalidateForElementAppend(*aFirstNewContent->AsElement());
-  }
+  StyleSet()->MaybeInvalidateForElementAppend(*aFirstNewContent);
 
   const auto selectorFlags = container->GetSelectorFlags() &
                              NodeSelectorFlags::AllSimpleRestyleFlagsForAppend;
@@ -440,17 +438,9 @@ void RestyleManager::ContentRemoved(nsIContent* aOldChild,
     // invalidated.
     IncrementUndisplayedRestyleGeneration();
   }
-  Element* nextSibling = aFollowingSibling
-                             ? aFollowingSibling->IsElement()
-                                   ? aFollowingSibling->AsElement()
-                                   : aFollowingSibling->GetNextElementSibling()
-                             : nullptr;
   if (aOldChild->IsElement()) {
-    Element* prevSibling = aFollowingSibling
-                               ? aFollowingSibling->GetPreviousElementSibling()
-                               : container->GetLastElementChild();
     StyleSet()->MaybeInvalidateForElementRemove(*aOldChild->AsElement(),
-                                                prevSibling, nextSibling);
+                                                aFollowingSibling);
   }
 
   const auto selectorFlags =
@@ -512,6 +502,11 @@ void RestyleManager::ContentRemoved(nsIContent* aOldChild,
     // Restyle all later siblings.
     RestyleSiblingsStartingWith(aFollowingSibling);
     if (selectorFlags & NodeSelectorFlags::HasSlowSelectorNthAll) {
+      Element* nextSibling =
+          aFollowingSibling ? aFollowingSibling->IsElement()
+                                  ? aFollowingSibling->AsElement()
+                                  : aFollowingSibling->GetNextElementSibling()
+                            : nullptr;
       StyleSet()->MaybeInvalidateRelativeSelectorForNthDependencyFromSibling(
           nextSibling);
     }
@@ -594,6 +589,30 @@ static bool StateChangeMayAffectFrame(const Element& aElement,
   return needsImageFrame != aFrame.IsImageFrameOrSubclass();
 }
 
+static bool RepaintForAppearance(nsIFrame& aFrame, const Element& aElement,
+                                 ElementState aStateMask) {
+  if (aStateMask.HasAtLeastOneOfStates(ElementState::HOVER |
+                                       ElementState::ACTIVE) &&
+      aElement.IsAnyOfXULElements(nsGkAtoms::checkbox, nsGkAtoms::radio)) {
+    // The checkbox inside these elements inherit hover state and so on, see
+    // nsNativeTheme::GetContentState.
+    // FIXME(emilio): Would be nice to not have these hard-coded.
+    return true;
+  }
+  auto appearance = aFrame.StyleDisplay()->EffectiveAppearance();
+  if (appearance == StyleAppearance::None) {
+    return false;
+  }
+  nsPresContext* pc = aFrame.PresContext();
+  nsITheme* theme = pc->Theme();
+  if (!theme->ThemeSupportsWidget(pc, &aFrame, appearance)) {
+    return false;
+  }
+  bool repaint = false;
+  theme->WidgetStateChanged(&aFrame, appearance, nullptr, &repaint, nullptr);
+  return repaint;
+}
+
 /**
  * Calculates the change hint and the restyle hint for a given content state
  * change.
@@ -612,20 +631,8 @@ static nsChangeHint ChangeForContentStateChange(const Element& aElement,
     if (StateChangeMayAffectFrame(aElement, *primaryFrame, aStateMask)) {
       return nsChangeHint_ReconstructFrame;
     }
-
-    StyleAppearance appearance =
-        primaryFrame->StyleDisplay()->EffectiveAppearance();
-    if (appearance != StyleAppearance::None) {
-      nsPresContext* pc = primaryFrame->PresContext();
-      nsITheme* theme = pc->Theme();
-      if (theme->ThemeSupportsWidget(pc, primaryFrame, appearance)) {
-        bool repaint = false;
-        theme->WidgetStateChanged(primaryFrame, appearance, nullptr, &repaint,
-                                  nullptr);
-        if (repaint) {
-          changeHint |= nsChangeHint_RepaintFrame;
-        }
-      }
+    if (RepaintForAppearance(*primaryFrame, aElement, aStateMask)) {
+      changeHint |= nsChangeHint_RepaintFrame;
     }
     primaryFrame->ElementStateChanged(aStateMask);
   }
@@ -679,7 +686,8 @@ nsCString RestyleManager::ChangeHintToString(nsChangeHint aHint) {
                          "AddOrRemoveTransform",
                          "ScrollbarChange",
                          "UpdateTableCellSpans",
-                         "VisibilityChange"};
+                         "VisibilityChange",
+                         "UpdateBFC"};
   static_assert(nsChangeHint_AllHints ==
                     static_cast<uint32_t>((1ull << ArrayLength(names)) - 1),
                 "Name list doesn't match change hints.");
@@ -770,7 +778,7 @@ static nsIFrame* GetFrameForChildrenOnlyTransformHint(nsIFrame* aFrame) {
     MOZ_ASSERT(aFrame->IsSVGOuterSVGAnonChildFrame(),
                "Where is the SVGOuterSVGFrame's anon child??");
   }
-  MOZ_ASSERT(aFrame->IsFrameOfType(nsIFrame::eSVG | nsIFrame::eSVGContainer),
+  MOZ_ASSERT(aFrame->IsSVGContainerFrame(),
              "Children-only transforms only expected on SVG frames");
   return aFrame;
 }
@@ -1545,6 +1553,31 @@ static void TryToHandleContainingBlockChange(nsChangeHint& aHint,
   }
 }
 
+static void TryToHandleBlockFormattingContextChange(nsChangeHint& aHint,
+                                                    nsIFrame* aFrame) {
+  if (!(aHint & nsChangeHint_UpdateBFC)) {
+    return;
+  }
+  if (aHint & nsChangeHint_ReconstructFrame) {
+    return;
+  }
+  MOZ_ASSERT(aFrame, "If we're not reframing, we ought to have a frame");
+
+  if (nsBlockFrame* blockFrame = do_QueryFrame(aFrame)) {
+    if (blockFrame->MaybeHasFloats()) {
+      // The frame descendants may contain floats that could change their float
+      // manager, so reconstruct this.
+      // FIXME(bug 1874826): If we could fix this up rather than reconstructing,
+      // we could move all this logic to nsBlockFrame::DidSetComputedStyle, and
+      // remove UpdateBFC.
+      aHint |= nsChangeHint_ReconstructFrame;
+      return;
+    }
+    blockFrame->AddOrRemoveStateBits(NS_BLOCK_DYNAMIC_BFC,
+                                     blockFrame->IsDynamicBFC());
+  }
+}
+
 void RestyleManager::ProcessRestyledFrames(nsStyleChangeList& aChangeList) {
   NS_ASSERTION(!nsContentUtils::IsSafeToRunScript(),
                "Someone forgot a script blocker");
@@ -1656,6 +1689,7 @@ void RestyleManager::ProcessRestyledFrames(nsStyleChangeList& aChangeList) {
 
     TryToDealWithScrollbarChange(hint, content, frame, presContext);
     TryToHandleContainingBlockChange(hint, frame);
+    TryToHandleBlockFormattingContextChange(hint, frame);
 
     if (hint & nsChangeHint_ReconstructFrame) {
       // If we ever start passing true here, be careful of restyles
@@ -1746,8 +1780,7 @@ void RestyleManager::ProcessRestyledFrames(nsStyleChangeList& aChangeList) {
       hint |= nsChangeHint_RepaintFrame;
     }
 
-    if ((hint & nsChangeHint_UpdateUsesOpacity) &&
-        frame->IsFrameOfType(nsIFrame::eTablePart)) {
+    if ((hint & nsChangeHint_UpdateUsesOpacity) && frame->IsTablePart()) {
       NS_ASSERTION(hint & nsChangeHint_UpdateOpacityLayer,
                    "should only return UpdateUsesOpacity hint "
                    "when also returning UpdateOpacityLayer hint");
@@ -1773,8 +1806,7 @@ void RestyleManager::ProcessRestyledFrames(nsStyleChangeList& aChangeList) {
       // For most frame types, DLBI can detect background position changes,
       // so we only need to schedule a paint.
       hint |= nsChangeHint_SchedulePaint;
-      if (frame->IsFrameOfType(nsIFrame::eTablePart) ||
-          frame->IsFrameOfType(nsIFrame::eMathML)) {
+      if (frame->IsTablePart() || frame->IsMathMLFrame()) {
         // Table parts and MathML frames don't build display items for their
         // backgrounds, so DLBI can't detect background-position changes for
         // these frames. Repaint the whole frame.
@@ -1847,7 +1879,7 @@ void RestyleManager::ProcessRestyledFrames(nsStyleChangeList& aChangeList) {
           // inner svg frame, so update the child overflows.
           nsIFrame* childFrame = hintFrame->PrincipalChildList().FirstChild();
           for (; childFrame; childFrame = childFrame->GetNextSibling()) {
-            MOZ_ASSERT(childFrame->IsFrameOfType(nsIFrame::eSVG),
+            MOZ_ASSERT(childFrame->IsSVGFrame(),
                        "Not expecting non-SVG children");
             if (!CanSkipOverflowUpdates(childFrame)) {
               mOverflowChangedTracker.AddFrame(
@@ -2704,6 +2736,15 @@ enum class ServoPostTraversalFlags : uint32_t {
 
 MOZ_MAKE_ENUM_CLASS_BITWISE_OPERATORS(ServoPostTraversalFlags)
 
+static bool IsVisibleForA11y(const ComputedStyle& aStyle) {
+  return aStyle.StyleVisibility()->IsVisible() && !aStyle.StyleUI()->IsInert();
+}
+
+static bool IsSubtreeVisibleForA11y(const ComputedStyle& aStyle) {
+  return aStyle.StyleDisplay()->mContentVisibility !=
+         StyleContentVisibility::Hidden;
+}
+
 // Send proper accessibility notifications and return post traversal
 // flags for kids.
 static ServoPostTraversalFlags SendA11yNotifications(
@@ -2739,8 +2780,9 @@ static ServoPostTraversalFlags SendA11yNotifications(
   }
 
   bool needsNotify = false;
-  const bool isVisible = aNewStyle.StyleVisibility()->IsVisible() &&
-                         !aNewStyle.StyleUI()->IsInert();
+  const bool isVisible = IsVisibleForA11y(aNewStyle);
+  const bool wasVisible = IsVisibleForA11y(aOldStyle);
+
   if (aFlags & Flags::SendA11yNotificationsIfShown) {
     if (!isVisible) {
       // Propagate the sending-if-shown flag to descendants.
@@ -2751,11 +2793,13 @@ static ServoPostTraversalFlags SendA11yNotifications(
     // this element is visible, so we need to add it back.
     needsNotify = true;
   } else {
-    // If we shouldn't skip in any case, we need to check whether our
-    // own visibility has changed.
-    const bool wasVisible = aOldStyle.StyleVisibility()->IsVisible() &&
-                            !aOldStyle.StyleUI()->IsInert();
-    needsNotify = wasVisible != isVisible;
+    // If we shouldn't skip in any case, we need to check whether our own
+    // visibility has changed.
+    // Also notify if the subtree visibility change due to content-visibility.
+    const bool isSubtreeVisible = IsSubtreeVisibleForA11y(aNewStyle);
+    const bool wasSubtreeVisible = IsSubtreeVisibleForA11y(aOldStyle);
+    needsNotify =
+        wasVisible != isVisible || wasSubtreeVisible != isSubtreeVisible;
   }
 
   if (needsNotify) {
@@ -2767,10 +2811,12 @@ static ServoPostTraversalFlags SendA11yNotifications(
       // descendants, so we should just skip them from notifying.
       return Flags::SkipA11yNotifications;
     }
-    // Remove the subtree of this invisible element, and ask any shown
-    // descendant to add themselves back.
-    accService->ContentRemoved(presShell, aElement);
-    return Flags::SendA11yNotificationsIfShown;
+    if (wasVisible) {
+      // Remove the subtree of this invisible element, and ask any shown
+      // descendant to add themselves back.
+      accService->ContentRemoved(presShell, aElement);
+      return Flags::SendA11yNotificationsIfShown;
+    }
   }
 #endif
 
@@ -3290,6 +3336,7 @@ void RestyleManager::DoProcessPendingRestyles(ServoTraversalFlags aFlags) {
 
   doc->ClearServoRestyleRoot();
   presContext->FinishedContainerQueryUpdate();
+  presContext->UpdateHiddenByContentVisibilityForAnimationsIfNeeded();
   ClearSnapshots();
   styleSet->AssertTreeIsClean();
 
@@ -3398,7 +3445,9 @@ void RestyleManager::ElementStateChanged(Element* aElement,
   // undisplayed elements, since we don't know if it is needed.
   IncrementUndisplayedRestyleGeneration();
 
-  if (!aElement->HasServoData()) {
+  if (!aElement->HasServoData() &&
+      !(aElement->GetSelectorFlags() &
+        NodeSelectorFlags::RelativeSelectorSearchDirectionAncestorSibling)) {
     return;
   }
 

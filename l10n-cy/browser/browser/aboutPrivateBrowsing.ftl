@@ -4,7 +4,7 @@
 
 privatebrowsingpage-open-private-window-label = Agor Ffenestr Breifat
     .accesskey = F
-about-private-browsing-search-placeholder = Chwilio'r We
+about-private-browsing-search-placeholder = Chwilio'r we
 about-private-browsing-info-title = Rydych mewn Ffenestr Breifat
 about-private-browsing-search-btn =
     .title = Chwilio'r we
@@ -66,7 +66,7 @@ about-private-browsing-pin-promo-title = Dim cwcis na hanes wedi'u cadw, o'ch bw
 # Simplified version of the headline if the original text doesn't work
 # in your language: `See fewer cookie requests`.
 about-private-browsing-cookie-banners-promo-header = Gwaredu baneri cwcis!
-about-private-browsing-cookie-banners-promo-button = Lleihau Baneri Cwcis
+about-private-browsing-cookie-banners-promo-button = Cyfyngu Baneri Cwcis
 about-private-browsing-cookie-banners-promo-message = Gadael i { -brand-short-name } ateb ffenestri llamlenni cwcis yn awtomatig er mwyn i chi fod yn rhydd i bori. Bydd { -brand-short-name } yn gwrthod pob cais os yn bosib.
 # Simplified version of the headline if the original text doesn't work
 # in your language: `{ -brand-short-name } will show fewer cookie requests`

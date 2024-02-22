@@ -484,6 +484,9 @@ enable-devtools-popup-description2 = Để sử dụng phím tắt F12, trước
 
 ## URL Bar
 
+# This string is used as an accessible name to the "X" button that cancels a custom search mode (i.e. exits the Amazon.com search mode).
+urlbar-search-mode-indicator-close =
+    .aria-label = Đóng
 # This placeholder is used when not in search mode and the user's default search
 # engine is unknown.
 urlbar-placeholder =
@@ -560,6 +563,11 @@ urlbar-result-action-search-w-engine = Tìm với { $engine }
 urlbar-result-action-sponsored = Được tài trợ
 urlbar-result-action-switch-tab = Chuyển sang thẻ
 urlbar-result-action-visit = Truy cập
+# "Switch to tab with container" is used when the target tab is located in a
+# different container.
+# Variables
+# $container (String): the name of the target container
+urlbar-result-action-switch-tab-with-container = Chuyển sang thẻ · <span>{ $container }</span>
 # Allows the user to visit a URL that was previously copied to the clipboard.
 urlbar-result-action-visit-from-clipboard = Truy cập từ khay nhớ tạm
 # Directs a user to press the Tab key to perform a search with the specified
@@ -883,6 +891,10 @@ tabs-toolbar-list-all-tabs =
 # <img data-l10n-name="icon"/> will be replaced by the application menu icon
 restore-session-startup-suggestion-message = <strong>Đã mở các thẻ trước đó?</strong> Bạn có thể khôi phục phiên trước đó của mình từ menu ứng dụng { -brand-short-name } <img data-l10n-name="icon"/>, trong mục Lịch sử.
 restore-session-startup-suggestion-button = Hướng dẫn cho tôi
+
+## Infobar shown when the user tries to open a file picker and file pickers are blocked by enterprise policy
+
+filepicker-blocked-infobar = Tổ chức của bạn đã chặn quyền truy cập vào các tập tin cục bộ trên máy tính này
 
 ## Mozilla data reporting notification (Telemetry, Firefox Health Report, etc)
 

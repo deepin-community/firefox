@@ -43,6 +43,8 @@ translations-panel-settings-always-translate-language =
     .label = Bepred treiñ ar pajennoù e { $language }
 translations-panel-settings-always-translate-unknown-language =
     .label = Bepred treiñ ar yezh-mañ
+translations-panel-settings-always-offer-translation =
+    .label = Bepred kinnig da dreiñ
 # Text displayed for the option to never translate a given language
 # Variables:
 #   $language (string) - The localized display name of the detected language
@@ -71,6 +73,7 @@ translations-panel-error-load-languages-hint-button =
     .label = Klask en-dro
 translations-panel-error-dismiss-button =
     .label = Komprenet
+translations-panel-error-unsupported-hint-unknown = Digarezit, n’eo ket skoret ar yezh-se c’hoazh.
 
 ## Each label is followed, on a new line, by a dropdown list of language names.
 ## If this structure is problematic for your locale, an alternative way is to
@@ -115,13 +118,20 @@ translations-settings-title =
     .style = min-width: 36em
 translations-settings-close-key =
     .key = w
+translations-settings-always-translate-langs-description = Troet e vo ent emgefreek evit ar yezhoù-mañ da-heul
 translations-settings-languages-column =
     .label = Yezhoù
 translations-settings-remove-language-button =
     .label = Dilemel ar yezh
     .accesskey = r
+translations-settings-remove-all-languages-button =
+    .label = Lemel an holl yezhoù
+    .accesskey = y
 translations-settings-sites-column =
     .label = Lec'hiennoù
+translations-settings-remove-site-button =
+    .label = Lemel al lec’hienn
+    .accesskey = L
 translations-settings-remove-all-sites-button =
     .label = Dilemel an holl lec'hiennoù
     .accesskey = m

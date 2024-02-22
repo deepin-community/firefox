@@ -54,6 +54,8 @@ about-glean-manual-testing =
 about-glean-no-ping-label = (egyáltalán ne küldjön pinget)
 # An in-line text input field precedes this string.
 about-glean-label-for-tag-pings = Az előző mezőben győződjön meg róla, hogy van egy jól megjegyezhető hibakeresési címke, hogy később felismerje a pingeket.
+# An in-line text input field precedes this string.
+about-glean-label-for-tag-pings-with-requirements = Állítson be egy megjegyezhető hibakeresési címkét <span>(20 vagy kevesebb karakter, csak alfanumerikus karakterek és -)</span>, hogy később felismerje a pingjeit.
 # An in-line drop down list precedes this string.
 # Do not translate strings between <code> </code> tags.
 about-glean-label-for-ping-names =
@@ -85,6 +87,14 @@ about-glean-adhoc-explanation =
     a fejlesztői konzol megnyitásával itt az <code>about:glean</code> oldalon
     és a <code>testGetValue()</code> API használatával, például:
     <code>Glean.metricCategory.metricName.testGetValue()</code>.
+# Do not translate strings between <code> </code> tags.
+about-glean-adhoc-explanation2 =
+    További <i>ad hoc</i> teszteléshez,
+    egy adott műszer aktuális értékét is meghatározhatja
+    a fejlesztői konzol megnyitásával itt az <code>about:glean</code> oldalon
+    és a <code>testGetValue()</code> API használatával, például:
+    <code>Glean.metricCategory.metricName.testGetValue()</code>
+    a <code>metric.category.metric_name</code> nevű metrika esetén.
 # Do not translate strings between <code> </code> tags.
 about-glean-adhoc-note =
     Vegye figyelembe, hogy a fejlesztői eszközök konzolban a Glean JS API-t használja.

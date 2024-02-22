@@ -33,8 +33,6 @@ about-webrtc-aec-logging-toggled-off-state-msg = 記録したログファイル�
 
 # The autorefresh checkbox causes a stats section to autorefresh its content when checked
 about-webrtc-auto-refresh-label = 自動更新する
-# Determines the default state of the Auto Refresh check boxes
-about-webrtc-auto-refresh-default-label = 既定で自動更新する
 # A button which forces a refresh of displayed statistics
 about-webrtc-force-refresh-button = 更新
 # "PeerConnection" is a proper noun associated with the WebRTC module. "ID" is
@@ -98,8 +96,11 @@ about-webrtc-save-page-label = ページを保存
 about-webrtc-debug-mode-msg-label = デバッグモード
 about-webrtc-debug-mode-off-state-label = デバッグモードを開始
 about-webrtc-debug-mode-on-state-label = デバッグモードを停止
-about-webrtc-enable-logging-label = WebRTC ログのプリセットを有効化
 about-webrtc-stats-heading = セッション統計
+about-webrtc-enable-logging-label = WebRTC ログのプリセットを有効化
+about-webrtc-peerconnections-section-heading = RTCPeerConnection 統計
+about-webrtc-peerconnections-section-show-msg = RTCPeerConnection 統計を表示
+about-webrtc-peerconnections-section-hide-msg = RTCPeerConnection 統計を隠す
 about-webrtc-stats-clear = 履歴を消去
 about-webrtc-log-heading = 接続ログ
 about-webrtc-log-clear = ログを消去
@@ -194,6 +195,17 @@ about-webrtc-configuration-element-provided = 提供済み
 about-webrtc-configuration-element-not-provided = 未提供
 # The options set by the user in about:config that could impact a WebRTC call
 about-webrtc-custom-webrtc-configuration-heading = ユーザー設定の WebRTC オプション
+# The options set by the user in about:config that could impact a WebRTC call
+about-webrtc-user-modified-configuration-heading = 変更された WebRTC 設定
+
+## These are displayed on the button that shows or hides the
+## user modified configuration disclosure
+
+about-webrtc-user-modified-configuration-show-msg = 変更された設定を表示
+about-webrtc-user-modified-configuration-hide-msg = 変更された設定を隠す
+
+##
+
 # Section header for estimated bandwidths of WebRTC media flows
 about-webrtc-bandwidth-stats-heading = 推定帯域幅
 # The ID of the MediaStreamTrack
@@ -300,8 +312,6 @@ about-webrtc-sdp-set-timestamp = タイムスタンプ { NUMBER($timestamp, useG
 
 about-webrtc-show-msg-sdp = SDP を表示
 about-webrtc-hide-msg-sdp = SDP を隠す
-
-##
 
 ## These are displayed on the button that shows or hides the Media Context information disclosure.
 ## The Media Context is the set of preferences and detected capabilities that informs

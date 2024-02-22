@@ -20,7 +20,7 @@ cfr-doorhanger-extension-manage-settings-button = Merañ an arventennoù erbedi�
     .accesskey = M
 cfr-doorhanger-extension-never-show-recommendation = Na ziskouez din an erbedadenn-mañ
     .accesskey = N
-cfr-doorhanger-extension-learn-more-link = Gouzout hiroc'h
+cfr-doorhanger-extension-learn-more-link = Gouzout hiroc’h
 # This string is used on a new line below the add-on name
 # Variables:
 #   $name (String) - Add-on author name
@@ -69,7 +69,7 @@ cfr-doorhanger-extension-total-users =
 
 cfr-doorhanger-bookmark-fxa-header = Goubredit ho sinedoù e pep lec'h.
 cfr-doorhanger-bookmark-fxa-body = Kavet ho peus ul lec'hienn a-zoare! Bremañ eo dav deoc'h adkavout ar sined-mañ war ho trevnadoù hezoug. Krogit gant: { -fxaccount-brand-name }.
-cfr-doorhanger-bookmark-fxa-link-text = Goubredit ar sinedoù bremañ...
+cfr-doorhanger-bookmark-fxa-link-text = Goubredit ar sinedoù bremañ…
 cfr-doorhanger-bookmark-fxa-close-btn-tooltip =
     .aria-label = Afell serriñ
     .title = Serriñ
@@ -78,7 +78,7 @@ cfr-doorhanger-bookmark-fxa-close-btn-tooltip =
 
 cfr-protections-panel-header = Merdeit hep bezañ heuliet
 cfr-protections-panel-body = Mirit ho roadennoù ganeoc'h. { -brand-short-name } a warez ac'hanoc'h eus lodenn vrasañ an heulierien a sell ouzh ar pezh a rit enlinenn.
-cfr-protections-panel-link-text = Gouzout hiroc'h
+cfr-protections-panel-link-text = Gouzout hiroc’h
 
 ## What's New toolbar button and panel
 
@@ -208,6 +208,7 @@ cfr-cbh-confirm-button = Argas banniel an toupinoù
 cfr-cbh-dismiss-button = Ket bremañ
     .accesskey = K
 cookie-banner-blocker-cfr-header = { -brand-short-name } zo o paouez stankañ toupinoù evidoc'h
+cookie-banner-blocker-onboarding-learn-more = Gouzout hiroc’h
 
 ## These strings are used in the Fox doodle Pin/set default spotlights
 
@@ -232,9 +233,6 @@ fxa-sync-cfr-secondary = Degas soñj din diwezhatoc’h
 
 ## Device Migration FxA Spotlight
 
-device-migration-fxa-spotlight-header = Emaoc'h oc'h ober gant ur benveg koshoc'h?
-device-migration-fxa-spotlight-primary-button = Penaos gwareziñ ma roadennoù
-device-migration-fxa-spotlight-link = Degas soñj din diwezhatoc’h
 device-migration-fxa-spotlight-heavy-user-header = N'ankouait ket da warediñ ho roadennoù
 device-migration-fxa-spotlight-heavy-user-primary-button = Kregiñ ganti
 device-migration-fxa-spotlight-older-device-primary-button = Krouiñ ur gont
@@ -246,14 +244,14 @@ device-migration-fxa-spotlight-getting-new-device-primary-button = Penaos gwared
 pdf-default-notification-set-default-button =
     .label = Lakaat dre ziouer
 pdf-default-notification-decline-button =
-    .label = Diwezhatoc'h
+    .label = Diwezhatoc’h
 
 ## Launch on login infobar notification
 
-launch-on-login-learnmore = Gouzout hiroc'h
+launch-on-login-learnmore = Gouzout hiroc’h
 launch-on-login-infobar-confirm-button = Ya, digeriñ { -brand-short-name }
     .accesskey = Y
-launch-on-login-infobar-reject-button = Diwezhatoc'h
+launch-on-login-infobar-reject-button = Diwezhatoc’h
     .accesskey = D
 
 ## These string variants are used when the “launch on login” infobar
@@ -261,3 +259,6 @@ launch-on-login-infobar-reject-button = Diwezhatoc'h
 
 launch-on-login-infobar-final-reject-button = Ket
     .accesskey = K
+
+## Tail Fox Set Default Spotlight
+

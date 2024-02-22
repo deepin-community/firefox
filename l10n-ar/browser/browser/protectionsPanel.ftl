@@ -29,14 +29,14 @@ protections-panel-etp-off-header = عُطّلت الحماية الموسّعة 
 ## custom element code.
 ##   $host (String): the hostname of the site that is being displayed.
 
-protections-panel-etp-on-toggle =
+protections-panel-etp-toggle-on =
     .label = الحماية الموسّعة من التعقب
     .description = مُفعّل لهذا الموقع
-    .aria-label = تعطيل الحماية ل{ $host }
-protections-panel-etp-off-toggle =
+    .aria-label = الحماية الموسّعة من التعقب: مُفعّل ل{ $host }
+protections-panel-etp-toggle-off =
     .label = الحماية الموسّعة من التعقب
     .description = مُعطّل لهذا الموقع
-    .aria-label = تفعيل الحماية ل{ $host }
+    .aria-label = الحماية الموسّعة من التعقب: مُعطّل ل{ $host }
 # The link to be clicked to open the sub-panel view
 protections-panel-site-not-working = ألا يعمل الموقع؟
 # The heading/title of the sub-panel view
@@ -142,3 +142,12 @@ protections-panel-cookie-banner-view-turn-off-label =
     .label = عطّل
 protections-panel-cookie-banner-view-turn-on-label =
     .label = فعّل
+protections-panel-report-broken-site =
+    .label = أبلِغ عن موقع معطوب
+    .title = أبلِغ عن موقع معطوب
+
+## Protections panel info message
+
+cfr-protections-panel-header = تصفّح ولا أحد ورائك
+cfr-protections-panel-body = لتعبّر الكاف في ”بياناتك“ عنك أنت. يحميك { -brand-short-name } من عديد من المتعقّبات المعروفة والتي تريد معرفة ما تفعله في المواقع.
+cfr-protections-panel-link-text = اطّلع على المزيد

@@ -301,8 +301,9 @@ pdfjs-editor-ink-button-label = Çiz
 pdfjs-editor-stamp-button =
     .title = Resim ekle veya düzenle
 pdfjs-editor-stamp-button-label = Resim ekle veya düzenle
-pdfjs-editor-remove-button =
-    .title = Kaldır
+pdfjs-editor-highlight-button =
+    .title = Vurgula
+pdfjs-editor-highlight-button-label = Vurgula
 
 ## Remove button for the various kind of editor.
 
@@ -312,6 +313,8 @@ pdfjs-editor-remove-freetext-button =
     .title = Metni kaldır
 pdfjs-editor-remove-stamp-button =
     .title = Resmi kaldır
+pdfjs-editor-remove-highlight-button =
+    .title = Vurgulamayı kaldır
 
 ##
 
@@ -324,6 +327,10 @@ pdfjs-editor-ink-opacity-input = Saydamlık
 pdfjs-editor-stamp-add-image-button =
     .title = Resim ekle
 pdfjs-editor-stamp-add-image-button-label = Resim ekle
+# This refers to the thickness of the line used for free highlighting (not bound to text)
+pdfjs-editor-free-highlight-thickness-input = Kalınlık
+pdfjs-editor-free-highlight-thickness-title =
+    .title = Metin dışındaki öğeleri vurgularken kalınlığı değiştir
 pdfjs-free-text =
     .aria-label = Metin düzenleyicisi
 pdfjs-free-text-default-content = Yazmaya başlayın…

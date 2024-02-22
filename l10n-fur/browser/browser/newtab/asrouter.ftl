@@ -206,6 +206,9 @@ cfr-cbh-dismiss-button = No cumò
     .accesskey = N
 cookie-banner-blocker-cfr-header = { -brand-short-name } al à a pene blocât i cookies par te
 cookie-banner-blocker-cfr-body = O refudìn in automatic tancj barcons a comparse pai cookies, par rindi plui dificil pai sîts stâti daûr.
+cookie-banner-blocker-onboarding-header = { -brand-short-name } al à a pene refudât un strisson pai cookies
+cookie-banner-blocker-onboarding-body = Mancul distrazions, mancul cookies che ti stan daûr su chest sît.
+cookie-banner-blocker-onboarding-learn-more = Plui informazions
 
 ## These strings are used in the Fox doodle Pin/set default spotlights
 
@@ -235,10 +238,6 @@ fxa-sync-cfr-secondary = Visimi plui indevant
 
 ## Device Migration FxA Spotlight
 
-device-migration-fxa-spotlight-header = Stâstu doprant un dispositîf plui vieri?
-device-migration-fxa-spotlight-body = Fâs un backup dai tiei dâts par no pierdi informazions impuartantis come segnelibris e passwords — soredut se tu passis a un gnûf dispositîf.
-device-migration-fxa-spotlight-primary-button = Cemût salvâ i miei dâts
-device-migration-fxa-spotlight-link = Visimi plui indevant
 device-migration-fxa-spotlight-heavy-user-header = No sta dismenteâti di salvâ i tiei dâts
 device-migration-fxa-spotlight-heavy-user-body = Siguriti che lis informazions impuartantis — come segnelibris e passwords — a sedin inzornadis e protetis su ducj i tiei dispositîfs.
 device-migration-fxa-spotlight-heavy-user-primary-button = Scomence
@@ -246,7 +245,7 @@ device-migration-fxa-spotlight-older-device-header = Trancuilitât, di { -brand-
 device-migration-fxa-spotlight-older-device-body = Un account al ten inzornadis e protetis lis tôs informazions impuartantis su cualsisei dispositîf conetût.
 device-migration-fxa-spotlight-older-device-primary-button = Cree un account
 device-migration-fxa-spotlight-getting-new-device-header-2 = Gnûf dispositîf tal to futûr?
-device-migration-fxa-spotlight-getting-new-device-body = Salve daurman i tiei dâts, in mût di jessi pront par cuant che al rive il to dispositîf.
+device-migration-fxa-spotlight-getting-new-device-body-2 = Sta daûr di cualchi sempliç passaç par puartâ cun te segnelibris, cronologjie e passwords cuant che tu tachis a doprâ un gnûf dispositîf.
 device-migration-fxa-spotlight-getting-new-device-primary-button = Cemût salvâ i miei dâts
 
 ## Set as Default PDF Reader Infobar
@@ -273,3 +272,14 @@ launch-on-login-infobar-reject-button = No cumò
 launch-on-login-infobar-final-message = <strong>Vierzi { -brand-short-name } ogni volte che tu tornis a inviâ il computer?</strong> Par gjestî lis impostazions di inviament, cîr “inviament” tes impostazions.
 launch-on-login-infobar-final-reject-button = No graciis
     .accesskey = N
+
+## Tail Fox Set Default Spotlight
+
+# This title is displayed together with the picture of a running fox with a long tail.
+# In English, this is a figure of speech meaning 'stop something from following you'.
+# If the localization of this message is challenging, consider using a simplified
+# alternative as a reference for translation: 'Keep unwanted trackers away'.
+tail-fox-spotlight-title = Liberiti des fastidiosis spiis che ti stan daûr
+tail-fox-spotlight-subtitle = Salude par simpri lis publicitâts fastidiosis che ti stan daûr dapardut là che tu vâs e sint internet come un puest plui sigûr e svelt.
+tail-fox-spotlight-primary-button = Vierç i miei colegaments cun { -brand-short-name }
+tail-fox-spotlight-secondary-button = No cumò

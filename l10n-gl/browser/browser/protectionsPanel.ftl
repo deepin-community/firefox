@@ -142,3 +142,12 @@ protections-panel-cookie-banner-view-turn-off-label =
     .label = Desactivar
 protections-panel-cookie-banner-view-turn-on-label =
     .label = Activar
+protections-panel-report-broken-site =
+    .label = Informar dun sitio roto
+    .title = Informar dun sitio roto
+
+## Protections panel info message
+
+cfr-protections-panel-header = Navegar sen ser seguido
+cfr-protections-panel-body = Manteña os seus datos para si mesmo. { -brand-short-name } protéxeo de moitos dos rastreadores máis comúns que seguen o que fai na Rede.
+cfr-protections-panel-link-text = Máis información

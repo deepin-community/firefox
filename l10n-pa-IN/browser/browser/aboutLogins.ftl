@@ -29,6 +29,8 @@ about-logins-menu-menuitem-import-from-another-browser = …ਹੋਰ ਬਰਾ�
 about-logins-menu-menuitem-import-from-a-file = …ਤੋਂ ਫ਼ਾਈਲ ਇੰਪੋਰਟ ਕਰੋ
 about-logins-menu-menuitem-export-logins = …ਲਾਗਇਨ ਐਕਸਪੋਰਟ ਕਰੋ
 about-logins-menu-menuitem-remove-all-logins = …ਸਾਰੇ ਲਾਗਇਨ ਹਟਾਓ
+about-logins-menu-menuitem-export-logins2 = …ਪਾਸਵਰਡ ਐਕਸਪੋਰਟ
+about-logins-menu-menuitem-remove-all-logins2 = …ਸਾਰੇ ਪਾਸਵਰਡਾਂ ਨੂੰ ਹਟਾਓ
 menu-menuitem-preferences =
     { PLATFORM() ->
         [windows] ਚੋਣਾਂ
@@ -73,8 +75,8 @@ login-list-filtered-count2 =
 login-list-sort-label-text = ਲੜੀਬੱਧ:
 login-list-name-option = ਨਾਂ (A-Z)
 login-list-name-reverse-option = ਨਾਂ (Z-A)
-login-list-username-option = ਵਰਤੋਂਕਾਰ ਨਾਂ (A-Z)
-login-list-username-reverse-option = ਵਰਤੋਂਕਾਰ ਨਾਂ (Z-A)
+login-list-username-option = ਵਰਤੋਂਕਾਰ ਦਾ ਨਾਂ (A-Z)
+login-list-username-reverse-option = ਵਰਤੋਂਕਾਰ ਦਾ ਨਾਂ (Z-A)
 about-logins-login-list-alerts-option = ਚੇਤਾਵਨੀ
 login-list-last-changed-option = ਆਖਰੀ ਵਾਰ ਸੋਧੇ
 login-list-last-used-option = ਆਖਰੀ ਵਾਰ ਵਰਤੇ
@@ -105,20 +107,25 @@ about-logins-login-intro-heading-logged-out2 = ਆਪਣੇ ਸੰਭਾਲੇ �
 about-logins-login-intro-heading-logged-in = ਕੋਈ ਸਿੰਕ ਕੀਤਾ ਲਾਗਇਨ ਨਹੀਂ ਮਿਲਿਆ ।
 login-intro-description = ਜੇ ਤੁਸੀਂ ਵੱਖਰੇ ਡਿਵਾਈਸ ‘ਤੇ { -brand-product-name } ‘ਚ ਆਪਣੇ ਲਾਗਇਨ ਸੰਭਾਲੇ ਸਨ ਤਾਂ ਉਹਨਾਂ ਨੂੰ ਇੰਞ ਪ੍ਰਾਪਤ ਕਰੋ:
 login-intro-instructions-fxa = ਡਿਵਾਈਸ, ਜਿੱਥੇ ਤੁਹਾਡੇ ਲਾਗਇਨ ਸੰਭਾਲੇ ਹੋਏ ਹਨ, ਉੱਤੇ ਆਪਣਾ { -fxaccount-brand-name } ਬਣਾਓ ਜਾਂ ਉਸ ਵਿੱਚ ਲਾਗਇਨ ਕਰੋ।
+about-logins-login-intro-heading-message = ਆਪਣੇ ਪਾਸਵਰਡਾਂ ਨੂੰ ਸੁਰੱਖਿਅਤ ਥਾਂ ਉੱਤੇ ਸੰਭਾਲੋ
+login-intro-description2 = ਤੁਹਾਡੇ ਵਲੋਂ { -brand-product-name } ਵਿੱਚ ਸੰਭਾਲੇ ਸਾਰੇ ਪਾਸਵਰਡ ਇੰਕ੍ਰਿਪਟ ਕੀਤੇ ਜਾਂਦੇ ਹਨ। ਇਸ ਦੇ ਨਾਲ ਹੀ ਅਸੀਂ ਸੰਨ੍ਹਮਾਰੀ ਦਾ ਧਿਆਨ ਵੀ ਰੱਖਦੇ ਹਾਂ ਅਤੇ ਤੁਹਾਡੇ ਪ੍ਰਭਾਵਿਤ ਹੋਣ ਉੱਤੇ ਸਾਵਧਾਨ ਕਰਦੇ ਹਾਂ। <a data-l10n-name="breach-alert-link">ਹੋਰ ਜਾਣੋ</a>
 login-intro-instructions-fxa2 = ਡਿਵਾਈਸ, ਜਿੱਥੇ ਤੁਹਾਡੇ ਲਾਗਇਨ ਸੰਭਾਲੇ ਹੋਏ ਹਨ, ਉੱਤੇ ਆਪਣਾ ਖਾਤਾ ਬਣਾਓ ਜਾਂ ਸਾਈਨ ਇਨ ਕਰੋ।
 login-intro-instructions-fxa-settings = ਸੈਟਿੰਗਾਂ > ਸਿੰਕ > …ਸਿੰਕ ਕਰਨਾ ਚਾਲੂ ਲਕਰੋ, ਵਿੱਚ ਲਾਗਇਨ ਅਤੇ ਪਾਸਵਰਡ ਚੋਣ ਬਾਕਸੇ ਨੂੰ ਚੁਣੋ।
 login-intro-instructions-fxa-passwords-help = ਹੋਰ ਮਦਦ ਲਈ <a data-l10n-name="passwords-help-link">ਪਾਸਵਰਡ ਮਦਦ</a> ਨੂੰ ਵੇਖੋ।
 about-logins-intro-browser-only-import = ਜੇ ਤੁਹਾਡੇ ਲਾਗਇਨ ਹੋਰ ਬਰਾਊਜ਼ਰ ਵਿੱਚ ਸੰਭਾਲੇ ਹਨ ਤਾਂ ਤੁਸੀਂ <a data-l10n-name="import-link">ਉਹਨਾਂ ਨੂੰ { -brand-product-name } ਵਿੱਚ ਲਿਆ</a> ਸਕਦੇ ਹੋ।
 about-logins-intro-import2 = ਜੇ ਤੁਹਾਡੇ ਲਾਗ-ਇਨ { -brand-product-name } ਤੋਂ ਅਲੱਗ ਸੰਭਾਲੇ ਗਏ ਹਨ ਤਾਂ ਤੁਸੀਂ <a data-l10n-name="import-browser-link">ਹੋਰ ਬਰਾਊਜ਼ਰ</a> ਜਾਂ <a data-l10n-name="import-file-link">ਫ਼ਾਈਲ</a> ਤੋਂ ਇੰਪੋਰਟ ਕਰ ਸਕਦੇ ਹੋ।
+about-logins-intro-import3 = ਹੁਣੇ ਨਵਾਂ ਪਾਸਵਰਡ ਜੋੜਨ ਲਈ ਉੱਤੋਂ ਜੋੜ ਦੇ ਬਟਨ ਨੂੰ ਚੁਣੋ। ਤੁਸੀਂ <a data-l10n-name="import-browser-link">ਪਾਸਵਰਡਾਂ ਨੂੰ ਹੋਰ ਬਰਾਊਜ਼ਰ</a> ਜਾਂ <a data-l10n-name="import-file-link">ਫ਼ਾਇਲ ਤੋਂ ਦਰਾਮਦ</a> ਕਰ ਸਕਦੇ ਹੋ।
 
 ## Login
 
 login-item-new-login-title = ਨਵਾਂ ਲਾਗਇਨ ਬਣਾਓ
+# Header for adding a password
+about-logins-login-item-new-login-title = ਪਾਸਵਰਡ ਜੋੜੋ
 login-item-edit-button = ਸੋਧੋ
 about-logins-login-item-remove-button = ਹਟਾਓ
 login-item-origin-label = ਵੈੱਬਸਾਈਟ ਸਿਰਨਾਵਾਂ
 login-item-tooltip-message = ਪੱਕਾ ਕਰੋ ਕਿ ਇਹ ਉਸ ਵੈੱਬਸਾਈਟ ਦੇ ਸਿਰਨਾਵੇਂ ਨਾਲ ਪੂਰੀ ਤਰ੍ਹਾਂ ਮਿਲਦਾ ਹੈ, ਜਿੱਥੇ ਤੁਸੀਂ ਲਾਗਇਨ ਕਰਦੇ ਹੋ।
-about-logins-origin-tooltip = ਪੱਕਾ ਕਰੋ ਕਿ ਇਹ ਉਸ ਵੈੱਬਸਾਈਟ ਦੇ ਸਿਰਨਾਵੇਂ ਨਾਲ ਪੂਰੀ ਤਰ੍ਹਾਂ ਮਿਲਦਾ ਹੈ, ਜਿੱਥੇ ਤੁਸੀਂ ਲਾਗਇਨ ਕਰਦੇ ਹੋ।
+about-logins-origin-tooltip2 = ਪੂਰਾ ਸਿਰਨਾਵਾਂ ਦਿਓ ਅਤੇ ਪੱਕਾ ਕਰੋ ਕਿ ਇਹ ਉਸ ਨਾਲ ਮਿਲਦਾ ਹੈ, ਜਿੱਥੇ ਤੁਸੀਂ ਸਾਈਨ ਇਨ ਕਰਨਾ ਹੈ।
 # Variables
 #   $webTitle (String) - Website title of the password being changed.
 about-logins-edit-password-tooltip = ਪੱਕਾ ਕਰੋ ਕਿ ਤੁਸੀਂ ਇਸ ਸਾਈਟ ਲਈ ਆਪਣੇ ਮੌਜੂਦਾ ਪਾਸਵਰਡ ਨੂੰ ਸੰਭਾਲ ਰਹੇ ਹੋ। ਇੱਥੇ ਪਾਸਵਰਡ ਬਦਲਣ ਨਾਲ ਇਸ ਨੂੰ { $webTitle } ਲਈ ਬਦਲਿਆ ਨਹੀਂ ਜਾਂਦਾ ਹੈ।
@@ -136,6 +143,7 @@ login-item-password-reveal-checkbox =
 login-item-copy-password-button-text = ਕਾਪੀ ਕਰੋ
 login-item-copied-password-button-text = ਕਾਪੀ ਕੀਤਾ!
 login-item-save-changes-button = ਤਬਦੀਲੀਆਂ ਸੰਭਾਲੋ
+about-logins-login-item-save-changes-button = ਸੰਭਾਲੋ
 login-item-save-new-button = ਸੰਭਾਲੋ
 login-item-cancel-button = ਰੱਦ ਕਰੋ
 
@@ -163,6 +171,11 @@ about-logins-edit-login-os-auth-dialog-message-win = ਆਪਣੇ ਲਾਗਇ�
 # This message can be seen when attempting to edit a login in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-edit-login-os-auth-dialog-message-macosx = ਸੰਭਾਲੇ ਲਾਗਇਨ ਨੂੰ ਸੋਧੋ
+# This message can be seen when attempting to edit a login in about:logins on Windows.
+about-logins-edit-login-os-auth-dialog-message2-win = ਆਪਣੇ ਪਾਸਵਰਡ ਨੂੰ ਸੰਭਾਲਣ ਲਈ, ਆਪਣੀਆਂ Windows ਲਾਗਇਨ ਸਨਦਾਂ ਦਿਓ। ਇਹ ਤੁਹਾਡੇ ਖਾਤਿਆਂ ਦੀ ਸੁਰੱਖਿਆ ਨੂੰ ਸੁਰੱਖਿਅਤ ਰੱਖਣ ਲਈ ਮਦਦ ਕਰਦਾ ਹੈ।
+# This message can be seen when attempting to edit a login in about:logins
+# On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
+about-logins-edit-login-os-auth-dialog-message2-macosx = ਸੰਭਾਲੇ ਹੋਏ ਪਾਸਵਰਡ ਨੂੰ ਸੰਭਾਲੋ
 # This message can be seen when attempting to reveal a password in about:logins on Windows.
 about-logins-reveal-password-os-auth-dialog-message-win = ਆਪਣੇ ਪਾਸਵਰਡ ਵੇਖਣ ਲਈ ਆਪਣੇ ਵਿੰਡੋਜ਼ ਸਨਦ ਦਿਓ। ਇਹ ਤੁਹਾਡੇ ਖਾਤਿਆਂ ਦੀ ਸੁਰੱਖਿਆ ਨੂੰ ਬਚਾਉਣ ਲਈ ਮਦਦ ਕਰਦਾ ਹੈ।
 # This message can be seen when attempting to reveal a password in about:logins
@@ -178,6 +191,11 @@ about-logins-export-password-os-auth-dialog-message-win = ਆਪਣੇ ਲਾਗ
 # This message can be seen when attempting to export a password in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-export-password-os-auth-dialog-message-macosx = ਸੰਭਾਲੇ ਲਾਗਇਨ ਅਤੇ ਪਾਸਵਰਡ ਨੂੰ ਐਕਸਪੋਰਟ ਕਰੋ
+# This message can be seen when attempting to export a password in about:logins on Windows.
+about-logins-export-password-os-auth-dialog-message2-win = ਆਪਣੇ ਪਾਸਵਰਡ ਐਕਸਪੋਰਟ ਕਰਨ ਲਈ ਆਪਣੀਆਂ Windows ਸਨਦਾਂ ਦਿਓ। ਇਹ ਤੁਹਾਡੇ ਖਾਤਿਆਂ ਦੀ ਸੁਰੱਖਿਆ ਨੂੰ ਸੁਰੱਖਿਅਤ ਰੱਖਣ ਲਈ ਮਦਦ ਕਰਦਾ ਹੈ।
+# This message can be seen when attempting to export a password in about:logins
+# On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
+about-logins-export-password-os-auth-dialog-message2-macosx = ਸੰਭਾਲੇ ਹੋਏ ਪਾਸਵਰਡ ਐਕਸਪੋਰਟ ਕਰੋ
 
 ## Primary Password notification
 
@@ -193,6 +211,10 @@ confirmation-dialog-dismiss-button =
     .title = ਰੱਦ ਕਰੋ
 about-logins-confirm-remove-dialog-title = ਇਹ ਲਾਗਇਨ ਹਟਾਉਣਾ ਹੈ?
 confirm-delete-dialog-message = ਇਹ ਕਾਰਵਾਈ ਵਾਪਸ ਨਹੀਂ ਲਈ ਜਾ ਸਕਦੀ ਹੈ।
+# Title for modal to confirm the removal of one saved password
+about-logins-confirm-delete-dialog-title = ਪਾਸਵਰਡ ਹਟਾਉਣਾ ਹੈ?
+# Message for modal to confirm the removal of one saved password
+about-logins-confirm-delete-dialog-message = ਇਹ ਕਾਰਵਾਈ ਨੂੰ ਤੁਸੀਂ ਵਾਪਸ ਨਹੀਂ ਲੈ ਸਕਦੇ ਹੋ।
 about-logins-confirm-remove-dialog-confirm-button = ਹਟਾਓ
 
 ## Variables
@@ -237,12 +259,49 @@ about-logins-confirm-remove-all-sync-dialog-message2 =
         [one] ਇਹ ਤੁਹਾਡੇ ਵਲੋਂ ਤੁਹਾਡੇ ਖਾਤੇ ਰਾਹੀਂ ਸਿੰਕ ਕੀਤੇ ਸਾਰੇ ਡਿਵਾਈਸਾਂ ਉੱਤੇ { -brand-short-name } ਵਿੱਚ ਸੰਭਾਲੇ ਲਾਗਇਨਾਂ ਅਤੇ ਇੱਥੇ ਦਿਖਾਈ ਦਿੰਦੀਆਂ ਸੰਨ੍ਹ ਲੱਗਣ ਸੰਬੰਧੀ ਚੇਤਾਵਨੀਆਂ ਨੂੰ ਹਟਾਏਗਾ। ਤੁਸੀਂ ਇਹ ਕਾਰਵਾਈ ਵਾਪਸ ਨਹੀਂ ਲੈ ਸਕੋਗੇ।
        *[other] ਇਹ ਤੁਹਾਡੇ ਵਲੋਂ ਤੁਹਾਡੇ ਖਾਤੇ ਰਾਹੀਂ ਸਿੰਕ ਕੀਤੇ ਸਾਰੇ ਡਿਵਾਈਸਾਂ ਉੱਤੇ { -brand-short-name } ਵਿੱਚ ਸੰਭਾਲੇ ਲਾਗਇਨਾਂ ਅਤੇ ਇੱਥੇ ਦਿਖਾਈ ਦਿੰਦੀਆਂ ਸੰਨ੍ਹ ਲੱਗਣ ਸੰਬੰਧੀ ਚੇਤਾਵਨੀਆਂ ਨੂੰ ਹਟਾਏਗਾ। ਤੁਸੀਂ ਇਹ ਕਾਰਵਾਈ ਵਾਪਸ ਨਹੀਂ ਲੈ ਸਕੋਗੇ।
     }
+# Checkbox for modal to confirm the removal of saved passwords
+about-logins-confirm-remove-all-dialog-checkbox-label2 =
+    { $count ->
+        [1] ਹਾਂ, ਪਾਸਵਰਡ ਨੂੰ ਹਟਾਓ
+       *[other] Yes, remove passwords
+    }
+# Title for modal to confirm the removal of all saved passwords when user is NOT synced
+about-logins-confirm-remove-all-dialog-title2 =
+    { $count ->
+        [one] { $count } ਪਾਸਵਰਡ ਹਟਾਉਣਾ ਹੈ?
+       *[other] ਸਾਰੇ { $count } ਪਾਸਵਰਡ ਹਟਾਉਣੇ ਹਨ?
+    }
+# Message for modal to confirm the removal of saved passwords when user is NOT synced
+about-logins-confirm-remove-all-dialog-message2 =
+    { $count ->
+        [1] ਇਹ { -brand-short-name } ਵਿੱਚ ਸੰਭਾਲੇ ਪਾਸਵਰਡ ਅਤੇ ਕਿਸੇ ਵੀ ਸੰਨ੍ਹਮਾਰੀ ਚੇਤਾਵਨੀਆਂ ਨੂੰ ਹਟਾਏਗਾ। ਤੁਸੀਂ ਇਹ ਕਾਰਵਾਈ ਨੂੰ ਵਾਪਸ ਨਹੀਂ ਲੈ ਸਕਦੇ ਹੋ।
+        [one] ਇਹ { -brand-short-name } ਵਿੱਚ ਸੰਭਾਲੇ ਪਾਸਵਰਡ ਅਤੇ ਕਿਸੇ ਵੀ ਸੰਨ੍ਹਮਾਰੀ ਚੇਤਾਵਨੀਆਂ ਨੂੰ ਹਟਾਏਗਾ। ਤੁਸੀਂ ਇਹ ਕਾਰਵਾਈ ਨੂੰ ਵਾਪਸ ਨਹੀਂ ਲੈ ਸਕਦੇ ਹੋ।
+       *[other] ਇਹ { -brand-short-name } ਵਿੱਚ ਸੰਭਾਲੇ ਪਾਸਵਰਡਾਂ ਅਤੇ ਕਿਸੇ ਵੀ ਸੰਨ੍ਹਮਾਰੀ ਚੇਤਾਵਨੀਆਂ ਨੂੰ ਹਟਾਏਗਾ। ਤੁਸੀਂ ਇਹ ਕਾਰਵਾਈ ਨੂੰ ਵਾਪਸ ਨਹੀਂ ਲੈ ਸਕਦੇ ਹੋ।
+    }
+# Title for modal to confirm the removal of all saved passwords when user IS SYNCED
+about-logins-confirm-remove-all-sync-dialog-title2 =
+    { $count ->
+        [one] ਸਾਰੇ ਡਿਵਾਈਸਾਂ ਤੋਂ { $count } ਪਾਸਵਰਡ ਨੂੰ ਹਟਾਉਣਾ ਹੈ?
+       *[other] ਸਾਰੇ ਡਿਵਾਈਸਾਂ ਤੋਂ { $count } ਪਾਸਵਰਡਾਂ ਨੂੰ ਹਟਾਉਣਾ ਹੈ?
+    }
+# Message for modal to confirm the removal of saved passwords when user IS synced.
+about-logins-confirm-remove-all-sync-dialog-message3 =
+    { $count ->
+        [1] ਇਸ ਨਾਲ ਤੁਹਾਡੇ ਸਿੰਕ ਕੀਤੇ ਸਾਰੇ ਡਿਵਾਈਸਾਂ ਤੋਂ { -brand-short-name } ਵਿੱਚ ਸੰਭਾਏ ਹੋਏ ਪਾਸਵਰਡ ਨੂੰ ਹਟਾਇਆ ਜਾਵੇਗਾ। ਇਸ ਨਾਲ ਇੱਥੇ ਦਿਖਾਏ ਜਾਣ ਵਾਲੇ ਕਿਸੇ ਵੀ ਸੰਨ੍ਹਮਾਰੀ ਚੇਤਾਵਨੀਆਂ ਨੂੰ ਵੀ ਹਟਾ ਦਿੱਤਾ ਜਾਵੇਗਾ। ਤੁਸੀਂ ਇਹ ਕਾਰਵਾਈ ਵਾਪਸ ਨਹੀਂ ਲੈ ਸਕੋਗੇ।
+        [one] ਇਸ ਨਾਲ ਤੁਹਾਡੇ ਸਿੰਕ ਕੀਤੇ ਸਾਰੇ ਡਿਵਾਈਸਾਂ ਤੋਂ { -brand-short-name } ਵਿੱਚ ਸੰਭਾਏ ਹੋਏ ਪਾਸਵਰਡ ਨੂੰ ਹਟਾਇਆ ਜਾਵੇਗਾ। ਇਸ ਨਾਲ ਇੱਥੇ ਦਿਖਾਏ ਜਾਣ ਵਾਲੇ ਕਿਸੇ ਵੀ ਸੰਨ੍ਹਮਾਰੀ ਚੇਤਾਵਨੀਆਂ ਨੂੰ ਵੀ ਹਟਾ ਦਿੱਤਾ ਜਾਵੇਗਾ। ਤੁਸੀਂ ਇਹ ਕਾਰਵਾਈ ਵਾਪਸ ਨਹੀਂ ਲੈ ਸਕੋਗੇ।
+       *[other] ਇਸ ਨਾਲ ਤੁਹਾਡੇ ਸਿੰਕ ਕੀਤੇ ਸਾਰੇ ਡਿਵਾਈਸਾਂ ਤੋਂ { -brand-short-name } ਵਿੱਚ ਸੰਭਾਲੇ ਹੋਏ ਪਾਸਵਰਡ ਹਟਾਏ ਜਾਣਗੇ। ਇਸ ਨਾਲ ਇੱਥੇ ਦਿਖਾਏ ਜਾਣ ਵਾਲੇ ਕਿਸੇ ਵੀ ਸੰਨ੍ਹਮਾਰੀ ਚੇਤਾਵਨੀਆਂ ਨੂੰ ਵੀ ਹਟਾ ਦਿੱਤਾ ਜਾਵੇਗਾ। ਤੁਸੀਂ ਇਹ ਕਾਰਵਾਈ ਵਾਪਸ ਨਹੀਂ ਲੈ ਸਕੋਗੇ।
+    }
 
 ##
 
 about-logins-confirm-export-dialog-title = ਲਾਗਇਨ ਅਤੇ ਪਾਸਵਰਡ ਐਕਸਪੋਰਟ ਕਰੋ
 about-logins-confirm-export-dialog-message = ਤੁਹਾਡੇ ਪਾਸਵਰਡਾਂ ਨੂੰ ਪੜ੍ਹਨਯੋਗ ਲਿਖਤ ਵਜੋਂ ਸੰਭਾਲਿਆ ਜਾਵੇਗਾ (ਜਿਵੇਂ, BadP@ssw0rd), ਤਾਂ ਕਰਕੇ ਐਕਸਪੋਰਟ ਕੀਤੀ ਫਾਇਲ ਖੋਲ੍ਹ ਸਕਣ ਵਾਲਾ ਕੋਈ ਵੀ ਉਨ੍ਹਾਂ ਨੂੰ ਵੇਖ ਸਕਦਾ ਹੈ।
 about-logins-confirm-export-dialog-confirm-button = …ਐਕਸਪੋਰਟ ਕਰੋ
+about-logins-confirm-export-dialog-title2 = ਪਾਸਵਰਡ ਐਕਸਪੋਰਟ ਕਰਨ ਬਾਰੇ ਸੂਚਨਾ
+about-logins-confirm-export-dialog-message2 =
+    ਜਦੋਂ ਤੁਸੀਂ ਐਕਸਪੋਰਟ ਕਰਦੇ ਹੋ ਤਾਂ ਤੁਹਾਡੇ ਪਾਸਵਰਡਾਂ ਨੂੰ ਪੜ੍ਹਨਯੋਗ ਲਿਖਤ ਦੇ ਰੂਪ ਵਿੱਚ ਫਾਈਲ ਵਿੱਚ ਸੰਭਾਲਿਆ ਜਾਂਦਾ ਹੈ।
+    ਜਦੋਂ ਤੁਸੀਂ ਫਾਈਲ ਨੂੰ ਵਰਤਿਆ ਲਿਆ ਹੋਵੇ ਤਾਂ ਅਸੀਂ ਇਸ ਨੂੰ ਹਟਾ ਦੇਣ ਦੀ ਸਿਫਾਰਸ਼ ਕਰਦੇ ਹਾਂ ਤਾਂ ਕਿ ਇਸ ਡਿਵਾਈਸ ਨੂੰ ਵਰਤਣ ਵਾਲੇ ਹੋਰ ਲੋਕ ਤੁਹਾਡੇ ਪਾਸਵਰਡਾਂ ਨੂੰ ਵੇਖਣ ਨਾ ਸਕਣ।
+about-logins-confirm-export-dialog-confirm-button2 = ਐਕਸਪੋਰਟ ਕਰਨਾ ਜਾਰੀ ਰੱਖੋ
 about-logins-alert-import-title = ਇੰਪੋਰਟ ਮੁਕੰਮਲ ਹੋਇਆ
 about-logins-alert-import-message = ਵੇਰਵੇ ਸਮੇਤ ਇੰਪੋਰਟ ਕਰਨ ਦਾ ਸਾਰ ਵੇਖੋ
 confirm-discard-changes-dialog-title = ਨਾ-ਸੰਭਾਲੀਆਂ ਤਬਦੀਲੀਆਂ ਖ਼ਾਰਜ ਕਰਨੀਆਂ ਹਨ?
@@ -284,6 +343,11 @@ about-logins-export-file-picker-title = ਲਾਗਇਨ ਵਾਲੀ ਫਾਇ�
 # The default file name shown in the file picker when exporting saved logins.
 # This must end in .csv
 about-logins-export-file-picker-default-filename = logins.csv
+# Title of the file picker dialog
+about-logins-export-file-picker-title2 = { -brand-short-name } ਤੋਂ ਪਾਸਵਰਡ ਐਕਸਪੋਰਟ ਕਰੋ
+# The default file name shown in the file picker when exporting saved logins.
+# This must end in .csv
+about-logins-export-file-picker-default-filename2 = passwords.csv
 about-logins-export-file-picker-export-button = ਐਕਸਪੋਰਟ ਕਰੋ
 # A description for the .csv file format that may be shown as the file type
 # filter by the operating system.

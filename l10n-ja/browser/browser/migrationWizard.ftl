@@ -79,6 +79,7 @@ migration-bookmarks-option-label = ブックマーク
 # Edge, as this is the terminology for bookmarks on those browsers.
 migration-favorites-option-label = お気に入り
 migration-logins-and-passwords-option-label = 保存したログイン情報とパスワード
+migration-passwords-option-label = 保存したパスワード
 migration-history-option-label = 閲覧履歴
 migration-extensions-option-label = 拡張機能
 migration-form-autofill-option-label = フォームの自動入力データ
@@ -95,18 +96,10 @@ migration-passwords-from-file-no-valid-data = このファイルには正しい�
 migration-passwords-from-file-picker-title = パスワードファイルのインポート
 # A description for the .csv file format that may be shown as the file type
 # filter by the operating system.
-migration-passwords-from-file-csv-filter-title =
-    { PLATFORM() ->
-        [macos] CSV ドキュメント
-       *[other] CSV ファイル
-    }
+migration-passwords-from-file-csv-filter-title = CSV ファイル
 # A description for the .tsv file format that may be shown as the file type
 # filter by the operating system. TSV is short for 'tab separated values'.
-migration-passwords-from-file-tsv-filter-title =
-    { PLATFORM() ->
-        [macos] TSV ドキュメント
-       *[other] TSV ファイル
-    }
+migration-passwords-from-file-tsv-filter-title = TSV ファイル
 # Shown in the migration wizard after importing passwords from a file
 # has completed, if new passwords were added.
 #

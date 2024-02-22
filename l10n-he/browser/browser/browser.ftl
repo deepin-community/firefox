@@ -488,6 +488,9 @@ enable-devtools-popup-description2 = כדי להשתמש בקיצור הדרך F
 
 ## URL Bar
 
+# This string is used as an accessible name to the "X" button that cancels a custom search mode (i.e. exits the Amazon.com search mode).
+urlbar-search-mode-indicator-close =
+    .aria-label = סגירה
 # This placeholder is used when not in search mode and the user's default search
 # engine is unknown.
 urlbar-placeholder =
@@ -564,6 +567,11 @@ urlbar-result-action-search-w-engine = חיפוש באמצעות { $engine }
 urlbar-result-action-sponsored = ממומן
 urlbar-result-action-switch-tab = מעבר ללשונית
 urlbar-result-action-visit = ביקור
+# "Switch to tab with container" is used when the target tab is located in a
+# different container.
+# Variables
+# $container (String): the name of the target container
+urlbar-result-action-switch-tab-with-container = מעבר ללשונית · <span>{ $container }</span>
 # Allows the user to visit a URL that was previously copied to the clipboard.
 urlbar-result-action-visit-from-clipboard = לבקר מלוח העריכה
 # Directs a user to press the Tab key to perform a search with the specified
@@ -888,6 +896,10 @@ tabs-toolbar-list-all-tabs =
 restore-session-startup-suggestion-message = <strong>לפתוח את הלשוניות הקודמות?</strong> באפשרותך לשחזר את ההפעלה הקודמת שלך מתפריט היישום של { -brand-short-name } ‏<img data-l10n-name="icon"/>, תחת היסטוריה.
 restore-session-startup-suggestion-button = להראות לך איך
 
+## Infobar shown when the user tries to open a file picker and file pickers are blocked by enterprise policy
+
+filepicker-blocked-infobar = הארגון שלך חסם גישה לדפים מקומיים במחשב זה.
+
 ## Mozilla data reporting notification (Telemetry, Firefox Health Report, etc)
 
 data-reporting-notification-message = { -brand-short-name } יישלח אוטומטית חלק מהנתונים אל { -vendor-short-name } כדי שנוכל לשפר את החוויה שלך.
@@ -949,7 +961,7 @@ refresh-blocked-allow =
 
 ## Firefox Relay integration
 
-firefox-relay-offer-why-to-use-relay = המסכות המאובטחות והקלות לשימוש שלנו מגנות על הזהות שלך ומונעות דואר זבל על־ידי הסתרת כתובת הדוא״ל שלך.
+firefox-relay-offer-why-to-use-relay = המסיכות המאובטחות והקלות לשימוש שלנו מגנות על הזהות שלך ומונעות דואר זבל על־ידי הסתרת כתובת הדוא״ל שלך.
 # Variables:
 #  $useremail (String): user email that will receive messages
 firefox-relay-offer-what-relay-provides = כל הודעות הדוא״ל שנשלחים למסיכות הדוא״ל שלך יועברו אל <strong>{ $useremail }</strong> (אלא אם תבחר לחסום אותם).

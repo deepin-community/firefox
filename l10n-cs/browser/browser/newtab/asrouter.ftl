@@ -263,6 +263,15 @@ cookie-banner-blocker-cfr-header =
        *[other] Aplikace { -brand-short-name } pro vás právě zablokovala cookies
     }
 cookie-banner-blocker-cfr-body = Automaticky odmítáme mnoho vyskakovacích oken se soubory cookie, aby vás weby nemohly sledovat.
+cookie-banner-blocker-onboarding-header =
+    { -brand-short-name.gender ->
+        [masculine] { -brand-short-name } za vás právě odmítl lištu cookie
+        [feminine] { -brand-short-name } za vás právě odmítla lištu cookie
+        [neuter] { -brand-short-name } za vás právě odmítlo lištu cookie
+       *[other] Aplikace { -brand-short-name } za vás právě odmítla lištu cookie
+    }
+cookie-banner-blocker-onboarding-body = Méně rozptylování, méně souborů cookie, které vás na tomto webu sledují.
+cookie-banner-blocker-onboarding-learn-more = Dozvědět se více
 
 ## These strings are used in the Fox doodle Pin/set default spotlights
 
@@ -308,10 +317,6 @@ fxa-sync-cfr-secondary = Upozornit mě později
 
 ## Device Migration FxA Spotlight
 
-device-migration-fxa-spotlight-header = Používáte starší zařízení?
-device-migration-fxa-spotlight-body = Zálohujte svá data, abyste neztratili důležité informace, jako jsou záložky a hesla – zejména pokud přejdete na nové zařízení.
-device-migration-fxa-spotlight-primary-button = Jak zálohovat moje data
-device-migration-fxa-spotlight-link = Upozornit mě později
 device-migration-fxa-spotlight-heavy-user-header = Nezapomeňte si zálohovat svá data
 device-migration-fxa-spotlight-heavy-user-body = Zajistěte, aby byly důležité informace – jako záložky a hesla – aktuální a chráněné na všech vašich zařízeních.
 device-migration-fxa-spotlight-heavy-user-primary-button = Začít
@@ -319,7 +324,7 @@ device-migration-fxa-spotlight-older-device-header = { -brand-product-name } vá
 device-migration-fxa-spotlight-older-device-body = Účet udržuje vaše důležité informace aktuální a chráněné na jakémkoli zařízení, které připojíte.
 device-migration-fxa-spotlight-older-device-primary-button = Vytvořit účet
 device-migration-fxa-spotlight-getting-new-device-header-2 = Plánujete v blízké budoucnosti nové zařízení?
-device-migration-fxa-spotlight-getting-new-device-body = Zálohujte svá data hned teď, abyste je mohli začít používat, až vám bude zařízení doručeno.
+device-migration-fxa-spotlight-getting-new-device-body-2 = Když začínáte používat nové zařízení, přeneste si s sebou své záložky, historii a hesla pomocí několika jednoduchých kroků.
 device-migration-fxa-spotlight-getting-new-device-primary-button = Jak zálohovat moje data
 
 ## Set as Default PDF Reader Infobar
@@ -364,3 +369,18 @@ launch-on-login-infobar-final-message =
     }
 launch-on-login-infobar-final-reject-button = Ne, děkuji
     .accesskey = N
+
+## Tail Fox Set Default Spotlight
+
+# This title is displayed together with the picture of a running fox with a long tail.
+# In English, this is a figure of speech meaning 'stop something from following you'.
+# If the localization of this message is challenging, consider using a simplified
+# alternative as a reference for translation: 'Keep unwanted trackers away'.
+tail-fox-spotlight-title = Zbavte se dotěrných sledovacích prvků
+tail-fox-spotlight-subtitle = Rozlučte se s otravnými reklamními sledovacími prvky a zažijte bezpečnější a rychlejší internet.
+tail-fox-spotlight-primary-button =
+    { -brand-short-name.case-status ->
+        [with-cases] Otevírat mé odkazy pomocí { -brand-short-name(case: "gen") }
+       *[no-cases] Otevírat mé odkazy pomocí aplikace { -brand-short-name }
+    }
+tail-fox-spotlight-secondary-button = Teď ne

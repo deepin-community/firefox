@@ -33,6 +33,8 @@ appmenuitem-print =
     .label = Отпечатване…
 appmenuitem-find-in-page =
     .label = Търсене в страницата
+appmenuitem-translate =
+    .label = Превеждане на страницата…
 appmenuitem-zoom =
     .value = Мащабиране
 appmenuitem-more-tools =
@@ -92,6 +94,7 @@ appmenuitem-fxa-toolbar-sync-now2 = Синхронизиране
 appmenuitem-fxa-sign-in = Вписване в { -brand-product-name }
 appmenuitem-fxa-manage-account = Управление на профил
 appmenu-fxa-header2 = { -fxaccount-brand-name }
+appmenu-account-header = Профил
 # Variables
 # $time (string) - Localized relative time since last sync (e.g. 1 second ago,
 # 3 hours ago, etc.)

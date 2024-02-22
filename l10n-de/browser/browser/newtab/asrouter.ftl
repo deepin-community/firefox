@@ -206,6 +206,9 @@ cfr-cbh-dismiss-button = Nicht jetzt
     .accesskey = N
 cookie-banner-blocker-cfr-header = { -brand-short-name } hat gerade Cookies für Sie blockiert
 cookie-banner-blocker-cfr-body = Wir lehnen viele Cookie-Pop-ups automatisch ab, um es Websites zu erschweren, Sie zu verfolgen.
+cookie-banner-blocker-onboarding-header = { -brand-short-name } hat gerade ein Cookie-Banner für Sie abgelehnt
+cookie-banner-blocker-onboarding-body = Weniger Ablenkungen, weniger Cookies, die Sie auf dieser Website verfolgen.
+cookie-banner-blocker-onboarding-learn-more = Weitere Informationen
 
 ## These strings are used in the Fox doodle Pin/set default spotlights
 
@@ -235,10 +238,6 @@ fxa-sync-cfr-secondary = Später erinnern
 
 ## Device Migration FxA Spotlight
 
-device-migration-fxa-spotlight-header = Verwenden Sie ein älteres Gerät?
-device-migration-fxa-spotlight-body = Sichern Sie Ihre Daten, um wichtige Informationen wie Lesezeichen und Passwörter nicht zu verlieren – insbesondere, wenn Sie zu einem neuen Gerät wechseln.
-device-migration-fxa-spotlight-primary-button = Wie die Datensicherung funktioniert
-device-migration-fxa-spotlight-link = Später erinnern
 device-migration-fxa-spotlight-heavy-user-header = Vergessen Sie nicht, Ihre Daten zu sichern
 device-migration-fxa-spotlight-heavy-user-body = Stellen Sie sicher, dass wichtige Daten – wie Lesezeichen und Passwörter – auf all Ihren Geräten aktualisiert und geschützt werden.
 device-migration-fxa-spotlight-heavy-user-primary-button = Erste Schritte
@@ -246,7 +245,7 @@ device-migration-fxa-spotlight-older-device-header = Unbesorgt mit { -brand-prod
 device-migration-fxa-spotlight-older-device-body = Mit einem Konto bleiben Ihre wichtigen Daten auf jedem verbundenen Gerät aktuell und geschützt.
 device-migration-fxa-spotlight-older-device-primary-button = Konto erstellen
 device-migration-fxa-spotlight-getting-new-device-header-2 = Planen Sie die Anschaffung eines neuen Geräts?
-device-migration-fxa-spotlight-getting-new-device-body = Sichern Sie jetzt Ihre Daten, damit Sie bereit sind, wenn das Gerät ankommt.
+device-migration-fxa-spotlight-getting-new-device-body-2 = Befolgen Sie nur wenige einfache Schritte, um Ihre Lesezeichen, Chronik und Passwörter bei den ersten Schritten auf einem neuen Gerät mitzunehmen.
 device-migration-fxa-spotlight-getting-new-device-primary-button = Wie die Datensicherung funktioniert
 
 ## Set as Default PDF Reader Infobar
@@ -273,3 +272,14 @@ launch-on-login-infobar-reject-button = Nicht jetzt
 launch-on-login-infobar-final-message = <strong>{ -brand-short-name } jedes Mal öffnen, wenn Sie Ihren Rechner neu starten?</strong> Um Ihre Start-Einstellungen zu verwalten, suchen Sie "Start" in den Einstellungen.
 launch-on-login-infobar-final-reject-button = Nein, danke
     .accesskey = N
+
+## Tail Fox Set Default Spotlight
+
+# This title is displayed together with the picture of a running fox with a long tail.
+# In English, this is a figure of speech meaning 'stop something from following you'.
+# If the localization of this message is challenging, consider using a simplified
+# alternative as a reference for translation: 'Keep unwanted trackers away'.
+tail-fox-spotlight-title = Hängen Sie lästige Verfolger ab
+tail-fox-spotlight-subtitle = Verabschieden Sie sich von nervigen Werbe-Trackern und nutzen Sie ein sichereres und schnelleres Interneterlebnis.
+tail-fox-spotlight-primary-button = Meine Links mit { -brand-short-name } öffnen
+tail-fox-spotlight-secondary-button = Nicht jetzt

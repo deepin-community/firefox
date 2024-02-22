@@ -112,7 +112,7 @@ mr2-onboarding-default-theme-label = Переглянути типові тем�
 ## Strings for Thank You page
 
 mr2-onboarding-thank-you-header = Дякуємо, що обрали нас
-mr2-onboarding-thank-you-text = { -brand-short-name } — незалежний браузер, підтримуваний некомерційною організацією. Разом ми робимо інтернет безпечнішим, здоровішим та приватнішим.
+mr2-onboarding-thank-you-text = { -brand-short-name } – незалежний браузер, підтримуваний некомерційною організацією. Разом ми робимо інтернет безпечнішим, здоровішим та приватнішим.
 mr2-onboarding-start-browsing-button-label = Почати перегляд
 
 ## Multistage live language reloading onboarding strings (about:welcome pages)
@@ -276,7 +276,7 @@ mr2022-onboarding-no-mobile-download-cta-text = Скануйте QR-код, що
 ## Pin private window screen shown only for users who don't have Firefox private pinned
 
 mr2022-upgrade-onboarding-pin-private-window-header = Отримайте свободу приватного перегляду одним натиском
-mr2022-upgrade-onboarding-pin-private-window-subtitle = Жодних збережених кук чи історії на комп'ютері. Переглядайте без думки, що за вами хтось спостерігає.
+mr2022-upgrade-onboarding-pin-private-window-subtitle = Жодних збережених файлів cookie чи історії на комп'ютері. Переглядайте без думки, що за вами хтось спостерігає.
 mr2022-upgrade-onboarding-pin-private-window-primary-button-label =
     { PLATFORM() ->
         [macos] Закріпити приватне вікно { -brand-short-name } у док
@@ -344,3 +344,19 @@ onboarding-mobile-download-security-and-privacy-subtitle = Під час син�
 # Gratitude screen
 onboarding-gratitude-security-and-privacy-title = { -brand-short-name } працює для вас
 onboarding-gratitude-security-and-privacy-subtitle = Дякуємо вам за користування { -brand-short-name } від Mozilla Foundation. Завдяки вашій підтримці ми докладаємо зусиль для розвитку безпечнішого інтернету, доступного для всіх.
+
+## New user time and familiarity survey strings
+
+onboarding-new-user-time-based-survey-title = Як довго ви користуєтеся { -brand-short-name }?
+onboarding-new-user-familiarity-based-survey-title = Як добре ви знайомі з { -brand-short-name }?
+onboarding-new-user-survey-subtitle = Ваш відгук допомагає зробити { -brand-short-name } ще кращим.
+# When translating "brand new" it means completely new.
+onboarding-new-user-survey-time-based-option-1 = Новий користувач
+onboarding-new-user-survey-time-based-option-2 = Менш як 1 місяць
+onboarding-new-user-survey-time-based-option-3 = Понад 1 місяць, користуюся постійно
+onboarding-new-user-survey-time-based-option-4 = Понад 1 місяць, користуюся час від часу
+# When translating "brand new" it means completely new.
+onboarding-new-user-survey-familiarity-based-option-1 = Новий користувач
+onboarding-new-user-survey-familiarity-based-option-2 = Користуюся певний час
+onboarding-new-user-survey-familiarity-based-option-3 = Досвідчений користувач
+onboarding-new-user-survey-familiarity-based-option-4 = Користувався в минулому

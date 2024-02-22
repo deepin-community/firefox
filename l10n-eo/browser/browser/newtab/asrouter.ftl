@@ -203,6 +203,11 @@ cfr-cbh-confirm-button = Rifuzi kuketajn anoncojn
     .accesskey = R
 cfr-cbh-dismiss-button = Ne nun
     .accesskey = N
+cookie-banner-blocker-cfr-header = { -brand-short-name } ĵus blokis kuketojn por vi
+cookie-banner-blocker-cfr-body = Ni aŭtomate rifuzas plurajn kuketajn ŝprucfenestrojn por malfaciligi la taskon de retejoj kiuj spuras vin.
+cookie-banner-blocker-onboarding-header = { -brand-short-name } ĵus rifuzis kuketan anoncon por vi
+cookie-banner-blocker-onboarding-body = Malpli da distro, malpli da kuketoj klopodante spuri vin en tiu ĉi retejo.
+cookie-banner-blocker-onboarding-learn-more = Pli da informo
 
 ## These strings are used in the Fox doodle Pin/set default spotlights
 
@@ -232,11 +237,14 @@ fxa-sync-cfr-secondary = Rememorigi poste
 
 ## Device Migration FxA Spotlight
 
-device-migration-fxa-spotlight-header = Ĉu vi uzas malnovan aparaton?
-device-migration-fxa-spotlight-body = Faru sekurkopion de viaj datumoj por certi ne perdi iun gravan informon, kiel legosignojn kaj pasvortojn — ĉefe se vi iras al nova aparato.
-device-migration-fxa-spotlight-primary-button = Kiel fari sekurkopion de miaj datumoj
-device-migration-fxa-spotlight-link = Rememorigi poste
+device-migration-fxa-spotlight-heavy-user-header = Ne forgesu fari sekurkopion de viaj datumoj
+device-migration-fxa-spotlight-heavy-user-body = Certiĝu havi gravajn informojn, — kiel legosignojn kaj pasvortojn — ĝisdatigitaj kaj protektitaj en ĉiuj viaj aparatoj.
+device-migration-fxa-spotlight-heavy-user-primary-button = Unuaj paŝoj
+device-migration-fxa-spotlight-older-device-header = Trankvilo kaj paco, danke al { -brand-product-name }
+device-migration-fxa-spotlight-older-device-body = Konto tenas viajn gravajn informojn ĝisdatigitaj kaj protektitaj en ĉiuj aparatoj, el kiuj vi konektiĝas.
+device-migration-fxa-spotlight-older-device-primary-button = Krei konton
 device-migration-fxa-spotlight-getting-new-device-header-2 = Ĉu vi planas akiri novan aparaton?
+device-migration-fxa-spotlight-getting-new-device-body-2 = Sekfu kelkajn simplajn paŝojn por kunporti kun vi viajn legosignojn, historion kaj pasvortojn kiam vi komencas uzi novan aparaton.
 device-migration-fxa-spotlight-getting-new-device-primary-button = Kiel fari sekurkopion de miaj datumoj
 
 ## Set as Default PDF Reader Infobar
@@ -263,3 +271,14 @@ launch-on-login-infobar-reject-button = Ne nun
 launch-on-login-infobar-final-message = <strong>Ĉu malfermi { -brand-short-name } ĉiufoje je restarto de via komputilo?</strong> Por administri la agordojn de aŭtomata malfermo, serĉi “restarto” en la agordoj..
 launch-on-login-infobar-final-reject-button = Ne, dankon
     .accesskey = N
+
+## Tail Fox Set Default Spotlight
+
+# This title is displayed together with the picture of a running fox with a long tail.
+# In English, this is a figure of speech meaning 'stop something from following you'.
+# If the localization of this message is challenging, consider using a simplified
+# alternative as a reference for translation: 'Keep unwanted trackers away'.
+tail-fox-spotlight-title = Forpelu nedeziratajn spurilojn
+tail-fox-spotlight-subtitle = Adiaŭu nedeziratajn reklamajn spurilojn kaj ĝuu pli sekuran kaj rapidan sperton retuman.
+tail-fox-spotlight-primary-button = Malfermi miajn ligilojn per { -brand-short-name }
+tail-fox-spotlight-secondary-button = Ne nun

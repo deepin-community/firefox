@@ -78,6 +78,12 @@ toolbar-button-fxaccount =
     .label = { -fxaccount-brand-name }
     .tooltiptext = { -fxaccount-brand-name }
 
+## Account toolbar Button
+
+toolbar-button-account =
+    .label = ანგარიში
+    .tooltiptext = ანგარიში
+
 ## Save Page
 
 main-context-menu-page-save =
@@ -197,7 +203,7 @@ main-context-menu-media-play-speed-faster-2 =
 main-context-menu-media-play-speed-fastest-2 =
     .label = 2×
 main-context-menu-media-loop =
-    .label = უწყვეტი გამეორება
+    .label = გამეორება უწყვეტად
     .accesskey = ო
 
 ## The access keys for "Show Controls" and "Hide Controls" are the same
@@ -291,6 +297,7 @@ main-context-menu-send-to-device =
 main-context-menu-use-saved-login =
     .label = შენახული ანგარიშის გამოყენება
     .accesskey = ო
+# Displayed when there are saved passwords and the user clicks inside a username or password field
 main-context-menu-use-saved-password =
     .label = შენახული პაროლის გამოყენება
     .accesskey = ო
@@ -305,10 +312,13 @@ main-context-menu-suggest-strong-password =
     .accesskey = შ
 main-context-menu-manage-logins2 =
     .label = ანგარიშების მართვა…
-    .accesskey = მ
+    .accesskey = ა
+main-context-menu-manage-passwords =
+    .label = პაროლების მართვა
+    .accesskey = პ
 main-context-menu-keyword =
     .label = საკვანძო სიტყვის მინიჭება საძიებოდ…
-    .accesskey = მ
+    .accesskey = ო
 main-context-menu-link-send-to-device =
     .label = ბმულის გაგზავნა მოწყობილობაზე
     .accesskey = წ

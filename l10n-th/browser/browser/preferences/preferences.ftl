@@ -194,18 +194,18 @@ containers-remove-cancel-button = ไม่เอาการแยกข้อ�
 
 ## General Section - Language & Appearance
 
-language-and-appearance-header = ภาษาและลักษณะที่ปรากฏ
-preferences-web-appearance-header = ลักษณะที่ปรากฏของเว็บไซต์
+language-and-appearance-header = ภาษาและรูปลักษณ์
+preferences-web-appearance-header = รูปลักษณ์ของเว็บไซต์
 preferences-web-appearance-description = บางเว็บไซต์ปรับโทนสีตามการกำหนดลักษณะของคุณ เลือกชุดสีที่คุณต้องการใช้สำหรับไซต์เหล่านั้น
 preferences-web-appearance-choice-auto = อัตโนมัติ
 preferences-web-appearance-choice-light = สว่าง
 preferences-web-appearance-choice-dark = มืด
 preferences-web-appearance-choice-tooltip-auto =
-    .title = เปลี่ยนพื้นหลังและเนื้อหาของเว็บไซต์โดยอัตโนมัติตามการตั้งค่าระบบและธีมของ { -brand-short-name }
+    .title = เปลี่ยนพื้นหลังและเนื้อหาของเว็บไซต์โดยอัตโนมัติตามการตั้งค่าระบบและชุดรูปแบบของ { -brand-short-name }
 preferences-web-appearance-choice-tooltip-light =
-    .title = ใช้ลักษณะที่ปรากฏแบบสว่างสำหรับพื้นหลังและเนื้อหาของเว็บไซต์
+    .title = ใช้รูปลักษณ์แบบสว่างสำหรับพื้นหลังและเนื้อหาของเว็บไซต์
 preferences-web-appearance-choice-tooltip-dark =
-    .title = ใช้ลักษณะที่ปรากฏแบบมืดสำหรับพื้นหลังและเนื้อหาของเว็บไซต์
+    .title = ใช้รูปลักษณ์แบบมืดสำหรับพื้นหลังและเนื้อหาของเว็บไซต์
 preferences-web-appearance-choice-input-auto =
     .aria-description = { preferences-web-appearance-choice-tooltip-auto.title }
 preferences-web-appearance-choice-input-light =
@@ -214,10 +214,10 @@ preferences-web-appearance-choice-input-dark =
     .aria-description = { preferences-web-appearance-choice-tooltip-dark.title }
 # This can appear when using windows HCM or "Override colors: always" without
 # system colors.
-preferences-web-appearance-override-warning = การเลือกสีของคุณมีผลเหนือลักษณะที่ปรากฏของเว็บไซต์ <a data-l10n-name="colors-link">จัดการสี</a>
+preferences-web-appearance-override-warning = การเลือกสีของคุณมีผลเหนือรูปลักษณ์ของเว็บไซต์ <a data-l10n-name="colors-link">จัดการสี</a>
 # This message contains one link. It can be moved within the sentence as needed
 # to adapt to your language, but should not be changed.
-preferences-web-appearance-footer = จัดการธีมของ { -brand-short-name } ใน <a data-l10n-name="themes-link">ส่วนขยายและธีม</a>
+preferences-web-appearance-footer = จัดการชุดรูปแบบของ { -brand-short-name } ใน <a data-l10n-name="themes-link">ส่วนขยายและชุดรูปแบบ</a>
 preferences-colors-header = สี
 preferences-colors-description = แทนที่สีเริ่มต้นของ { -brand-short-name } สำหรับข้อความ พื้นหลังของเว็บไซต์ และลิงก์
 preferences-colors-manage-button =
@@ -454,6 +454,9 @@ browsing-use-smooth-scrolling =
 browsing-gtk-use-non-overlay-scrollbars =
     .label = แสดงแถบเลื่อนเสมอ
     .accesskey = o
+browsing-always-underline-links =
+    .label = ขีดเส้นใต้ลิงก์เสมอ
+    .accesskey = ข
 browsing-use-onscreen-keyboard =
     .label = แสดงแป้นพิมพ์แบบสัมผัสเมื่อจำเป็น
     .accesskey = ผ
@@ -593,6 +596,9 @@ search-suggestions-desc = เลือกว่าจะทำให้เคร
 search-suggestions-option =
     .label = ให้ข้อเสนอแนะการค้นหา
     .accesskey = ห
+search-show-suggestions-option =
+    .label = แสดงข้อเสนอแนะการค้นหา
+    .accesskey = ส
 search-show-suggestions-url-bar-option =
     .label = แสดงข้อเสนอแนะการค้นหาในผลลัพธ์ของแถบที่อยู่
     .accesskey = ส
@@ -691,6 +697,9 @@ sync-signedin-login-failure = โปรดลงชื่อเข้าเพ�
 sync-resend-verification =
     .label = ส่งการยืนยันใหม่
     .accesskey = ส
+sync-verify-account =
+    .label = ยืนยันบัญชี
+    .accesskey = ย
 sync-remove-account =
     .label = เอาบัญชีออก
     .accesskey = อ
@@ -723,8 +732,10 @@ sync-currently-syncing-bookmarks = ที่คั่นหน้า
 sync-currently-syncing-history = ประวัติ
 sync-currently-syncing-tabs = แท็บที่เปิด
 sync-currently-syncing-logins-passwords = การเข้าสู่ระบบและรหัสผ่าน
+sync-currently-syncing-passwords = รหัสผ่าน
 sync-currently-syncing-addresses = ที่อยู่
 sync-currently-syncing-creditcards = บัตรเครดิต
+sync-currently-syncing-payment-methods = วิธีการชำระเงิน
 sync-currently-syncing-addons = ส่วนเสริม
 sync-currently-syncing-settings = การตั้งค่า
 sync-change-options =
@@ -755,6 +766,10 @@ sync-engine-logins-passwords =
     .label = การเข้าสู่ระบบและรหัสผ่าน
     .tooltiptext = ชื่อผู้ใช้และรหัสผ่านที่คุณบันทึกไว้
     .accesskey = L
+sync-engine-passwords =
+    .label = รหัสผ่าน
+    .tooltiptext = รหัสผ่านที่คุณบันทึกไว้
+    .accesskey = ร
 sync-engine-addresses =
     .label = ที่อยู่
     .tooltiptext = ที่อยู่ไปรษณีย์ที่คุณได้บันทึกไว้ (เดสก์ท็อปเท่านั้น)
@@ -763,6 +778,10 @@ sync-engine-creditcards =
     .label = บัตรเครดิต
     .tooltiptext = ชื่อ, หมายเลข และวันหมดอายุ (เดสก์ท็อปเท่านั้น)
     .accesskey = ต
+sync-engine-payment-methods2 =
+    .label = วิธีการชำระเงิน
+    .tooltiptext = ชื่อ หมายเลขบัตร และวันหมดอายุ
+    .accesskey = ว
 sync-engine-addons =
     .label = ส่วนเสริม
     .tooltiptext = ส่วนขยายและชุดรูปแบบสำหรับ Firefox เดสก์ท็อป
@@ -809,18 +828,35 @@ pane-privacy-logins-and-passwords-header = การเข้าสู่ระ�
 forms-ask-to-save-logins =
     .label = ถามเพื่อบันทึกการเข้าสู่ระบบและรหัสผ่านสำหรับเว็บไซต์
     .accesskey = ถ
+
+## Privacy Section - Passwords
+
+# "Logins" is the former term for "Passwords". Users should find password settings
+# by searching for the former term "logins". It's not displayed in the UI.
+pane-privacy-passwords-header = รหัสผ่าน
+    .searchkeywords = การเข้าสู่ระบบ
+# Checkbox to control whether UI is shown to users to save or fill logins/passwords.
+forms-ask-to-save-passwords =
+    .label = ถามว่าจะบันทึกรหัสผ่านหรือไม่
+    .accesskey = ถ
 forms-exceptions =
     .label = ข้อยกเว้น…
     .accesskey = อ
 forms-generate-passwords =
     .label = แนะนำและสร้างรหัสผ่านที่คาดเดายาก
     .accesskey = แ
+forms-suggest-passwords =
+    .label = แนะนำรหัสผ่านที่คาดเดายาก
+    .accesskey = น
 forms-breach-alerts =
     .label = แสดงการแจ้งเตือนเกี่ยวกับรหัสผ่านสำหรับเว็บไซต์ที่มีการรั่วไหล
     .accesskey = b
 forms-breach-alerts-learn-more-link = เรียนรู้เพิ่มเติม
 preferences-relay-integration-checkbox =
     .label = แนะนำตัวปกปิดอีเมล { -relay-brand-name } เพื่อปกป้องที่อยู่อีเมลของคุณ
+preferences-relay-integration-checkbox2 =
+    .label = แนะนำตัวปกปิดอีเมล { -relay-brand-name } เพื่อปกป้องที่อยู่อีเมลของคุณ
+    .accesskey = แ
 relay-integration-learn-more-link = เรียนรู้เพิ่มเติม
 # Checkbox which controls filling saved logins into fields automatically when they appear, in some cases without user interaction.
 forms-fill-logins-and-passwords =
@@ -829,6 +865,13 @@ forms-fill-logins-and-passwords =
 forms-saved-logins =
     .label = การเข้าสู่ระบบที่บันทึกไว้…
     .accesskey = ก
+# Checkbox which controls filling saved logins into fields automatically when they appear, in some cases without user interaction.
+forms-fill-usernames-and-passwords =
+    .label = เติมชื่อผู้ใช้และรหัสผ่านโดยอัตโนมัติ
+    .accesskey = ต
+forms-saved-passwords =
+    .label = รหัสผ่านที่บันทึกไว้
+    .accesskey = บ
 forms-primary-pw-use =
     .label = ใช้รหัสผ่านหลัก
     .accesskey = ช
@@ -852,6 +895,7 @@ forms-windows-sso =
     .label = อนุญาต Windows single sign-on สำหรับบัญชีที่ทำงานและโรงเรียนของ Microsoft
 forms-windows-sso-learn-more-link = เรียนรู้เพิ่มเติม
 forms-windows-sso-desc = จัดการบัญชีในการตั้งค่าอุปกรณ์ของคุณ
+windows-passkey-settings-label = จัดการพาสคีย์ในการตั้งค่าระบบ
 
 ## OS Authentication dialog
 
@@ -863,6 +907,28 @@ primary-password-os-auth-dialog-message-win = หากต้องการส�
 # notes are only valid for English. Please test in your locale.
 primary-password-os-auth-dialog-message-macosx = สร้างรหัสผ่านหลัก
 master-password-os-auth-dialog-caption = { -brand-full-name }
+
+## Privacy section - Autofill
+
+pane-privacy-autofill-header = การเติมอัตโนมัติ
+autofill-addresses-checkbox = บันทึกและเติมที่อยู่อัตโนมัติ
+    .accesskey = ท
+autofill-saved-addresses-button = ที่อยู่ที่บันทึกไว้
+    .accesskey = บ
+autofill-payment-methods-checkbox-message = บันทึกและเติมวิธีการชำระเงิน
+    .accesskey = ว
+autofill-payment-methods-checkbox-submessage = รวมบัตรเครดิตและเดบิตด้วย
+    .accesskey = ร
+autofill-saved-payment-methods-button = วิธีการชำระเงินที่บันทึกไว้
+    .accesskey = ไ
+autofill-reauth-checkbox =
+    { PLATFORM() ->
+        [macos] ต้องยืนยันตัวตนกับ macOS เพื่อเติมและแก้ไขวิธีการชำระเงิน
+        [windows] ต้องยืนยันตัวตนกับ Windows เพื่อเติมและแก้ไขวิธีการชำระเงิน
+        [linux] ต้องยืนยันตัวตนกับ Linux เพื่อเติมและแก้ไขวิธีการชำระเงิน
+       *[other] ต้องยืนยันตัวตนเพื่อเติมและแก้ไขวิธีการชำระเงิน
+    }
+    .accesskey = ต
 
 ## Privacy Section - History
 
@@ -1242,6 +1308,7 @@ httpsonly-radio-disabled =
 
 preferences-doh-header = DNS over HTTPS
 preferences-doh-description = Domain Name System (DNS) over HTTPS จะส่งคำขอชื่อโดเมนของคุณผ่านการเชื่อมต่อที่มีการเข้ารหัส เพื่อเสริมความปลอดภัยให้กับ DNS และทำให้ผู้อื่นดูว่าคุณกำลังจะเข้าถึงเว็บไซต์ใดได้ยากขึ้น
+preferences-doh-description2 = Domain Name System (DNS) over HTTPS จะส่งคำขอชื่อโดเมนของคุณผ่านการเชื่อมต่อที่มีการเข้ารหัส เพื่อเสริมความปลอดภัยให้กับ DNS และทำให้ผู้อื่นดูว่าคุณกำลังจะเข้าถึงเว็บไซต์ใดได้ยากขึ้น
 # Variables:
 #   $status (string) - The status of the DoH connection
 preferences-doh-status = สถานะ: { $status }
@@ -1258,6 +1325,7 @@ preferences-doh-status-disabled = ปิด
 #   $reason (string) - A string representation of the reason DoH is not active. For example NS_ERROR_UNKNOWN_HOST or TRR_RCODE_FAIL.
 preferences-doh-status-not-active = ไม่ทำงาน ({ $reason })
 preferences-doh-group-message = เปิดใช้งาน secure DNS โดยใช้:
+preferences-doh-group-message2 = เปิดใช้งาน DNS over HTTPS โดยใช้:
 preferences-doh-expand-section =
     .tooltiptext = ข้อมูลเพิ่มเติม
 preferences-doh-setting-default =

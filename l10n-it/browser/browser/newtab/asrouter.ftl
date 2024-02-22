@@ -203,6 +203,10 @@ cfr-cbh-dismiss-button = Non adesso
 cookie-banner-blocker-cfr-header = { -brand-short-name } ha appena bloccato dei cookie per te
 cookie-banner-blocker-cfr-body = Rifiutiamo automaticamente diversi pop-up per i cookie per rendere la vita più difficile ai siti che cercano di tracciarti.
 
+cookie-banner-blocker-onboarding-header = { -brand-short-name } ha appena rifiutato un banner per i cookie
+cookie-banner-blocker-onboarding-body = Meno distrazioni, meno cookie in grado di tracciarti su questo sito.
+cookie-banner-blocker-onboarding-learn-more = Ulteriori informazioni
+
 ## These strings are used in the Fox doodle Pin/set default spotlights
 
 july-jam-headline = Sempre dalla tua parte
@@ -242,7 +246,7 @@ device-migration-fxa-spotlight-older-device-header = Tranquillità, da { -brand-
 device-migration-fxa-spotlight-older-device-body = Un account mantiene le tue informazioni importanti aggiornate e protette su qualsiasi dispositivo connesso.
 device-migration-fxa-spotlight-older-device-primary-button = Crea un account
 device-migration-fxa-spotlight-getting-new-device-header-2 = Nuovo dispositivo nel tuo futuro?
-device-migration-fxa-spotlight-getting-new-device-body = Salva subito i tuoi dati, così sarai pronto per partire quando arriverà il tuo dispositivo.
+device-migration-fxa-spotlight-getting-new-device-body-2 = Segui alcuni semplici passaggi per portare con te segnalibri, cronologia e password quando inizi a utilizzare un nuovo dispositivo.
 device-migration-fxa-spotlight-getting-new-device-primary-button = Come posso salvare i miei dati
 
 ## Set as Default PDF Reader Infobar
@@ -269,4 +273,15 @@ launch-on-login-infobar-reject-button = Non adesso
 launch-on-login-infobar-final-message = <strong>Vuoi aprire { -brand-short-name } quando riavvii il computer?</strong> Per gestire le impostazioni di avvio, cerca “avvio” nelle impostazioni.
 launch-on-login-infobar-final-reject-button = No grazie
     .accesskey = N
+
+## Tail Fox Set Default Spotlight
+
+# This title is displayed together with the picture of a running fox with a long tail.
+# In English, this is a figure of speech meaning 'stop something from following you'.
+# If the localization of this message is challenging, consider using a simplified
+# alternative as a reference for translation: 'Keep unwanted trackers away'.
+tail-fox-spotlight-title = Liberati dai fastidiosi elementi traccianti
+tail-fox-spotlight-subtitle = Dì addio alle irritanti pubblicità che ti seguono ovunque e vivi Internet in modo più sicuro e veloce.
+tail-fox-spotlight-primary-button = Apri i miei link con { -brand-short-name }
+tail-fox-spotlight-secondary-button = Non adesso
 

@@ -19,8 +19,8 @@
 browser-main-window-window-titles =
     .data-title-default = { -brand-full-name }
     .data-title-private = Приватний перегляд { -brand-full-name }
-    .data-content-title-default = { $content-title } — { -brand-full-name }
-    .data-content-title-private = { $content-title } — Приватний перегляд { -brand-full-name }
+    .data-content-title-default = { $content-title } – { -brand-full-name }
+    .data-content-title-private = { $content-title } – Приватний перегляд { -brand-full-name }
 # These are the default window titles on macOS.
 # .data-title-default and .data-title-private are used when the web content
 # opened has no title:
@@ -40,9 +40,9 @@ browser-main-window-window-titles =
 #  $content-title (String): the title of the web content.
 browser-main-window-mac-window-titles =
     .data-title-default = { -brand-full-name }
-    .data-title-private = { -brand-full-name } — Приватний перегляд
+    .data-title-private = { -brand-full-name } – Приватний перегляд
     .data-content-title-default = { $content-title }
-    .data-content-title-private = { $content-title } — Приватний перегляд
+    .data-content-title-private = { $content-title } – Приватний перегляд
 # This gets set as the initial title, and is overridden as soon as we start
 # updating the titlebar based on loaded tabs or private browsing state.
 # This should match the `data-title-default` attribute in both
@@ -374,12 +374,12 @@ identity-https-only-info-turn-off2 = Якщо сторінка здається 
 identity-https-only-info-turn-on3 = Увімкніть оновлення до HTTPS для цього сайту, якщо ви хочете, щоб { -brand-short-name } оновлював з'єднання, коли це можливо.
 identity-https-only-info-turn-off3 = Якщо сторінка має вигляд пошкодженої, можливо, ви захочете вимкнути оновлення до HTTPS для цього сайту, щоб перезавантажити його в незахищеному режимі HTTP.
 identity-https-only-info-no-upgrade = Не вдалося змінити з'єднання з HTTP.
-identity-permissions-storage-access-header = Куки сторонніх сайтів
-identity-permissions-storage-access-hint = Ці сторони можуть використовувати куки сторонніх сайтів та дані сайту, поки ви перебуваєте на ньому.
+identity-permissions-storage-access-header = Міжсайтові файли cookie
+identity-permissions-storage-access-hint = Ці сторони можуть використовувати міжсайтові файли cookie та дані сайту, поки ви перебуваєте на ньому.
 identity-permissions-storage-access-learn-more = Докладніше
 identity-permissions-reload-hint = Для застосування змін, можливо, доведеться перезавантажити сторінку.
 identity-clear-site-data =
-    .label = Стерти куки та дані сайтів…
+    .label = Стерти файли cookie та дані сайтів…
 identity-connection-not-secure-security-view = Ваше з'єднання з цим сайтом незахищене.
 identity-connection-verified = Ваше з'єднання з цим сайтом захищене.
 identity-ev-owner-label = Сертифікат виданий:
@@ -492,6 +492,9 @@ enable-devtools-popup-description2 = Для використання клаві�
 
 ## URL Bar
 
+# This string is used as an accessible name to the "X" button that cancels a custom search mode (i.e. exits the Amazon.com search mode).
+urlbar-search-mode-indicator-close =
+    .aria-label = Закрити
 # This placeholder is used when not in search mode and the user's default search
 # engine is unknown.
 urlbar-placeholder =
@@ -568,6 +571,11 @@ urlbar-result-action-search-w-engine = Шукати за допомогою { $e
 urlbar-result-action-sponsored = Спонсоровано
 urlbar-result-action-switch-tab = Перейти на вкладку
 urlbar-result-action-visit = Відвідати
+# "Switch to tab with container" is used when the target tab is located in a
+# different container.
+# Variables
+# $container (String): the name of the target container
+urlbar-result-action-switch-tab-with-container = Перейти на вкладку · <span>{ $container }</span>
 # Allows the user to visit a URL that was previously copied to the clipboard.
 urlbar-result-action-visit-from-clipboard = Відкрити з буфера обміну
 # Directs a user to press the Tab key to perform a search with the specified
@@ -892,6 +900,10 @@ tabs-toolbar-list-all-tabs =
 restore-session-startup-suggestion-message = <strong>Відкрити попередні вкладки?</strong> Ви можете відновити попередній сеанс у меню { -brand-short-name } <img data-l10n-name="icon"/> у розділі Історія.
 restore-session-startup-suggestion-button = Покажіть як
 
+## Infobar shown when the user tries to open a file picker and file pickers are blocked by enterprise policy
+
+filepicker-blocked-infobar = Ваша організація заблокувала доступ до локальних файлів на цьому комп'ютері
+
 ## Mozilla data reporting notification (Telemetry, Firefox Health Report, etc)
 
 data-reporting-notification-message = { -brand-short-name } автоматично відправляє деякі дані в { -vendor-short-name }, щоб ми могли вдосконалити вашу роботу.
@@ -931,7 +943,7 @@ reset-pbm-toolbar-button =
     .label = Завершити приватний сеанс
     .tooltiptext = Завершити приватний сеанс
 reset-pbm-panel-heading = Завершити приватний сеанс?
-reset-pbm-panel-description = Закрити всі приватні вкладки й видалити історію, куки та всі інші дані сайтів.
+reset-pbm-panel-description = Закрити всі приватні вкладки й видалити історію, файли cookie та всі інші дані сайтів.
 reset-pbm-panel-always-ask-checkbox =
     .label = Завжди запитувати мене
     .accesskey = З
@@ -957,7 +969,7 @@ firefox-relay-offer-why-to-use-relay = Наші захищені та прост
 # Variables:
 #  $useremail (String): user email that will receive messages
 firefox-relay-offer-what-relay-provides = Усі електронні листи, надіслані на ваші маски електронної пошти, будуть перенаправлені на <strong>{ $useremail }</strong> (якщо ви не вирішите їх заблокувати).
-firefox-relay-offer-legal-notice = Натискаючи “Використовувати маску електронної пошти”, ви погоджуєтеся із <label data-l10n-name="tos-url">Загальними положеннями та умовами</label> й <label data-l10n-name="privacy-url">Положенням про приватність</label>.
+firefox-relay-offer-legal-notice = Натискаючи “Використовувати маску електронної пошти”, ви погоджуєтеся з <label data-l10n-name="tos-url">Умовами надання послуг</label> і <label data-l10n-name="privacy-url">Положенням про приватність</label>.
 
 ## Add-on Pop-up Notifications
 

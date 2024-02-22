@@ -5,6 +5,9 @@
 toolbar-button-firefox-view =
     .label = { -firefoxview-brand-name }
     .tooltiptext = { -firefoxview-brand-name }
+toolbar-button-firefox-view-2 =
+    .label = { -firefoxview-brand-name }
+    .tooltiptext = Gwelet ar roll istor merdeiñ a-nevez eus an holl brenestroù ha trevnadoù
 menu-tools-firefox-view =
     .label = { -firefoxview-brand-name }
     .accesskey = F
@@ -58,7 +61,7 @@ firefoxview-tabpickup-sync-disconnected-description = Evit kaout hoc'h ivinello�
 firefoxview-tabpickup-sync-disconnected-primarybutton = Gweredekaat ar c'houbredañ en arventennoù
 firefoxview-tabpickup-password-locked-header = Enankit ho ker-tremen pennañ da welet an ivinelloù
 firefoxview-tabpickup-password-locked-description = Evit tapout hoc’h ivinelloù ho peus ezhomm da enankañ ger-tremen pennañ { -brand-short-name }
-firefoxview-tabpickup-password-locked-link = Gouzout muioc'h
+firefoxview-tabpickup-password-locked-link = Gouzout hiroc’h
 firefoxview-tabpickup-password-locked-primarybutton = Enankañ ar ger-tremen pennañ
 firefoxview-syncedtab-password-locked-link = <a data-l10n-name="syncedtab-password-locked-link">Gouzout hiroc’h</a>
 firefoxview-tabpickup-signed-out-header = Kennaskit en-dro
@@ -145,8 +148,12 @@ firefoxview-opentabs-focus-tab =
     .title = Mont d'an ivinell-mañ
 firefoxview-show-more = Diskouez muioc’h
 firefoxview-show-less = Diskouez nebeutoc’h
+firefoxview-show-all = Diskouez pep tra
 firefoxview-search-text-box-clear-button =
     .title = Skarzhañ
+# Placeholder for the input field to search in recent browsing ("search" is a verb).
+firefoxview-search-text-box-recentbrowsing =
+    .placeholder = Klask
 # Placeholder for the input field to search in history ("search" is a verb).
 firefoxview-search-text-box-history =
     .placeholder = Klask er roll istor
@@ -188,7 +195,7 @@ firefoxview-opentabs-tab-row =
 ##   $date (string) - Date to be formatted based on locale
 
 firefoxview-history-date-today = Hiziv - { DATETIME($date, dateStyle: "full") }
-firefoxview-history-date-yesterday = Dec'h - { DATETIME($date, dateStyle: "full") }
+firefoxview-history-date-yesterday = Dec’h - { DATETIME($date, dateStyle: "full") }
 firefoxview-history-date-this-month = { DATETIME($date, dateStyle: "full") }
 firefoxview-history-date-prev-month = { DATETIME($date, month: "long", year: "numeric") }
 # When history is sorted by site, this heading is used in place of a domain, in

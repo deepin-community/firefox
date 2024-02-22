@@ -191,6 +191,9 @@ containers-remove-alert-title = Xóa ngăn chứa này?
 containers-remove-alert-msg = Nếu bạn xóa ngăn chứa này bây giờ, { $count } thẻ trong ngăn chứa sẽ bị đóng. Bạn có chắc muốn xóa ngăn chứa này?
 containers-remove-ok-button = Xóa ngăn chứa này
 containers-remove-cancel-button = Không xóa ngăn chứa này
+settings-tabs-show-image-in-preview =
+    .label = Hiển thị hình ảnh xem trước khi bạn di chuột trên thẻ
+    .accessKey = h
 
 ## General Section - Language & Appearance
 
@@ -778,9 +781,9 @@ sync-engine-creditcards =
     .label = Thẻ tín dụng
     .tooltiptext = Tên, số và ngày hết hạn (chỉ trên phiên bản máy tính)
     .accesskey = C
-sync-engine-payment-methods =
+sync-engine-payment-methods2 =
     .label = Phương thức thanh toán
-    .tooltiptext = Tên, số thẻ và ngày hết hạn (chỉ trên máy tính để bàn)
+    .tooltiptext = Tên, số thẻ và ngày hết hạn
     .accesskey = n
 sync-engine-addons =
     .label = Tiện ích
@@ -828,18 +831,35 @@ pane-privacy-logins-and-passwords-header = Thông tin đăng nhập & mật kh�
 forms-ask-to-save-logins =
     .label = Hỏi để lưu lại thông tin đăng nhập và mật khẩu cho trang web
     .accesskey = r
+
+## Privacy Section - Passwords
+
+# "Logins" is the former term for "Passwords". Users should find password settings
+# by searching for the former term "logins". It's not displayed in the UI.
+pane-privacy-passwords-header = Mật khẩu
+    .searchkeywords = đăng nhập
+# Checkbox to control whether UI is shown to users to save or fill logins/passwords.
+forms-ask-to-save-passwords =
+    .label = Hỏi để lưu mật khẩu
+    .accesskey = A
 forms-exceptions =
-    .label = Ngoại trừ…
+    .label = Ngoại lệ…
     .accesskey = x
 forms-generate-passwords =
     .label = Đề xuất và tạo mật khẩu mạnh
     .accesskey = u
+forms-suggest-passwords =
+    .label = Đề xuất mật khẩu mạnh
+    .accesskey = S
 forms-breach-alerts =
     .label = Hiển thị cảnh báo về mật khẩu cho các trang web bị rò rỉ
     .accesskey = b
 forms-breach-alerts-learn-more-link = Tìm hiểu thêm
 preferences-relay-integration-checkbox =
     .label = Đề xuất mặt nạ email { -relay-brand-name } để bảo vệ địa chỉ email của bạn
+preferences-relay-integration-checkbox2 =
+    .label = Đề xuất mặt nạ email { -relay-brand-name } để bảo vệ địa chỉ email của bạn
+    .accesskey = r
 relay-integration-learn-more-link = Tìm hiểu thêm
 # Checkbox which controls filling saved logins into fields automatically when they appear, in some cases without user interaction.
 forms-fill-logins-and-passwords =
@@ -848,6 +868,13 @@ forms-fill-logins-and-passwords =
 forms-saved-logins =
     .label = Đăng nhập đã lưu…
     .accesskey = L
+# Checkbox which controls filling saved logins into fields automatically when they appear, in some cases without user interaction.
+forms-fill-usernames-and-passwords =
+    .label = Tự động điền tên người dùng và mật khẩu
+    .accesskey = F
+forms-saved-passwords =
+    .label = Mật khẩu đã lưu
+    .accesskey = d
 forms-primary-pw-use =
     .label = Sử dụng mật khẩu chính
     .accesskey = U
@@ -871,6 +898,7 @@ forms-windows-sso =
     .label = Cho phép Windows đăng nhập một lần cho tài khoản Microsoft, cơ quan và trường học
 forms-windows-sso-learn-more-link = Tìm hiểu thêm
 forms-windows-sso-desc = Quản lý tài khoản trong cài đặt thiết bị của bạn
+windows-passkey-settings-label = Quản lý passkey trong cài đặt hệ thống
 
 ## OS Authentication dialog
 
@@ -882,6 +910,28 @@ primary-password-os-auth-dialog-message-win = Để tạo mật khẩu chính, h
 # notes are only valid for English. Please test in your locale.
 primary-password-os-auth-dialog-message-macosx = tạo một mật khẩu chính
 master-password-os-auth-dialog-caption = { -brand-full-name }
+
+## Privacy section - Autofill
+
+pane-privacy-autofill-header = Tự động điền
+autofill-addresses-checkbox = Lưu và điền địa chỉ
+    .accesskey = a
+autofill-saved-addresses-button = Địa chỉ đã lưu
+    .accesskey = S
+autofill-payment-methods-checkbox-message = Lưu và điền phương thức thanh toán
+    .accesskey = m
+autofill-payment-methods-checkbox-submessage = Bao gồm thẻ tín dụng và thẻ ghi nợ
+    .accesskey = I
+autofill-saved-payment-methods-button = Phương thức thanh toán đã lưu
+    .accesskey = v
+autofill-reauth-checkbox =
+    { PLATFORM() ->
+        [macos] Yêu cầu xác thực trên macOS để điền và chỉnh sửa phương thức thanh toán.
+        [windows] Yêu cầu xác thực trên Windows để điền và chỉnh sửa phương thức thanh toán.
+        [linux] Yêu cầu xác thực trên Linux để điền và chỉnh sửa phương thức thanh toán.
+       *[other] Yêu cầu xác thực để điền và chỉnh sửa phương thức thanh toán.
+    }
+    .accesskey = o
 
 ## Privacy Section - History
 
@@ -937,6 +987,7 @@ sitedata-delete-on-close =
     .label = Xóa cookie và dữ liệu trang web khi đóng { -brand-short-name }
     .accesskey = c
 sitedata-delete-on-close-private-browsing = Trong chế độ duyệt riêng tư, cookie và dữ liệu trang web sẽ luôn bị xóa khi { -brand-short-name } bị đóng.
+sitedata-delete-on-close-private-browsing2 = Dựa trên cài đặt lịch sử của bạn, { -brand-short-name } xóa cookie và dữ liệu trang web khỏi phiên của bạn khi bạn đóng trình duyệt.
 sitedata-allow-cookies-option =
     .label = Cho phép cookie và dữ liệu trang
     .accesskey = A
@@ -1165,14 +1216,14 @@ permissions-block-popups =
 # "popup" is a misspelling that is more popular than the correct spelling of
 # "pop-up" so it's included as a search keyword, not displayed in the UI.
 permissions-block-popups-exceptions-button =
-    .label = Ngoại trừ…
+    .label = Ngoại lệ…
     .accesskey = E
     .searchkeywords = cửa sổ bật lên
 permissions-addon-install-warning =
     .label = Cảnh báo khi trang web cố gắng cài đặt tiện ích
     .accesskey = W
 permissions-addon-exceptions =
-    .label = Ngoại trừ…
+    .label = Ngoại lệ…
     .accesskey = E
 
 ## Privacy Section - Data Collection
@@ -1313,7 +1364,7 @@ preferences-doh-checkbox-warn =
 preferences-doh-select-resolver = Chọn nhà cung cấp:
 preferences-doh-exceptions-description = { -brand-short-name } sẽ không sử dụng DNS an toàn trên các trang web này
 preferences-doh-manage-exceptions =
-    .label = Quản lý ngoại trừ…
+    .label = Quản lý ngoại lệ…
     .accesskey = x
 
 ## The following strings are used in the Download section of settings

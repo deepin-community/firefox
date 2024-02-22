@@ -78,6 +78,12 @@ toolbar-button-fxaccount =
     .label = { -fxaccount-brand-name(case: "a") }
     .tooltiptext = { -fxaccount-brand-name(case: "a") }
 
+## Account toolbar Button
+
+toolbar-button-account =
+    .label = חשבון
+    .tooltiptext = חשבון
+
 ## Save Page
 
 main-context-menu-page-save =
@@ -291,6 +297,7 @@ main-context-menu-send-to-device =
 main-context-menu-use-saved-login =
     .label = שימוש בכניסה שמורה
     .accesskey = ש
+# Displayed when there are saved passwords and the user clicks inside a username or password field
 main-context-menu-use-saved-password =
     .label = שימוש בססמה שמורה
     .accesskey = ש
@@ -306,6 +313,9 @@ main-context-menu-suggest-strong-password =
 main-context-menu-manage-logins2 =
     .label = ניהול כניסות
     .accesskey = כ
+main-context-menu-manage-passwords =
+    .label = ניהול ססמאות
+    .accesskey = נ
 main-context-menu-keyword =
     .label = הוספת מילת מפתח לחיפוש זה…
     .accesskey = ס
@@ -358,7 +368,7 @@ main-context-menu-view-page-source =
     .label = הצגת מקור הדף
     .accesskey = מ
 main-context-menu-bidi-switch-text =
-    .label = הפוך כיוון כתיבה
+    .label = היפוך כיוון כתיבה
     .accesskey = כ
 main-context-menu-bidi-switch-page =
     .label = הפיכת כיוון דף

@@ -206,6 +206,9 @@ cfr-cbh-dismiss-button = Inte nu
     .accesskey = n
 cookie-banner-blocker-cfr-header = { -brand-short-name } blockerade precis kakor åt dig
 cookie-banner-blocker-cfr-body = Vi vägrar automatiskt många popup-fönster för kakor för att göra det svårt för webbplatser att spåra dig.
+cookie-banner-blocker-onboarding-header = { -brand-short-name } nekade precis en kakbanner åt dig
+cookie-banner-blocker-onboarding-body = Mindre distraktioner, färre kakor som spårar dig på den här webbplatsen.
+cookie-banner-blocker-onboarding-learn-more = Läs mer
 
 ## These strings are used in the Fox doodle Pin/set default spotlights
 
@@ -235,10 +238,6 @@ fxa-sync-cfr-secondary = Påminn mig senare
 
 ## Device Migration FxA Spotlight
 
-device-migration-fxa-spotlight-header = Använder du en äldre enhet?
-device-migration-fxa-spotlight-body = Säkerhetskopiera dina data för att se till att du inte förlorar viktig information som bokmärken och lösenord — speciellt om du byter till en ny enhet.
-device-migration-fxa-spotlight-primary-button = Hur man säkerhetskopierar mina data
-device-migration-fxa-spotlight-link = Påminn mig senare
 device-migration-fxa-spotlight-heavy-user-header = Glöm inte att säkerhetskopiera din data
 device-migration-fxa-spotlight-heavy-user-body = Se till att viktig information — som bokmärken och lösenord — uppdateras och skyddas på alla dina enheter.
 device-migration-fxa-spotlight-heavy-user-primary-button = Kom igång
@@ -246,7 +245,7 @@ device-migration-fxa-spotlight-older-device-header = Trygghet, från { -brand-pr
 device-migration-fxa-spotlight-older-device-body = Ett konto håller din viktiga information uppdaterad och skyddad på alla enheter du ansluter.
 device-migration-fxa-spotlight-older-device-primary-button = Skapa ett konto
 device-migration-fxa-spotlight-getting-new-device-header-2 = Tänker du skaffa en ny enhet i framtiden?
-device-migration-fxa-spotlight-getting-new-device-body = Säkerhetskopiera din data nu, så att du är redo att börja när din enhet kommer.
+device-migration-fxa-spotlight-getting-new-device-body-2 = Följ några enkla steg för att ta med dig dina bokmärken, historik och lösenord när du kommer igång med en ny enhet.
 device-migration-fxa-spotlight-getting-new-device-primary-button = Hur man säkerhetskopierar mina data
 
 ## Set as Default PDF Reader Infobar
@@ -273,3 +272,14 @@ launch-on-login-infobar-reject-button = Inte nu
 launch-on-login-infobar-final-message = <strong>Öppna { -brand-short-name } varje gång du startar om datorn?</strong> För att hantera dina startinställningar, sök "start" i inställningarna.
 launch-on-login-infobar-final-reject-button = Nej tack
     .accesskey = N
+
+## Tail Fox Set Default Spotlight
+
+# This title is displayed together with the picture of a running fox with a long tail.
+# In English, this is a figure of speech meaning 'stop something from following you'.
+# If the localization of this message is challenging, consider using a simplified
+# alternative as a reference for translation: 'Keep unwanted trackers away'.
+tail-fox-spotlight-title = Håll oönskade spårare borta
+tail-fox-spotlight-subtitle = Säg adjö till irriterande annonsspårare och njut av en säkrare, snabb internetupplevelse.
+tail-fox-spotlight-primary-button = Öppna mina länkar med { -brand-short-name }
+tail-fox-spotlight-secondary-button = Inte nu

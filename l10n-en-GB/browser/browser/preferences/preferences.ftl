@@ -203,6 +203,9 @@ containers-remove-alert-msg =
     }
 containers-remove-ok-button = Remove this Container
 containers-remove-cancel-button = Don’t remove this Container
+settings-tabs-show-image-in-preview =
+    .label = Show an image preview when you hover on a tab
+    .accessKey = h
 
 ## General Section - Language & Appearance
 
@@ -794,9 +797,9 @@ sync-engine-creditcards =
     .label = Credit cards
     .tooltiptext = Names, numbers and expiry dates (desktop only)
     .accesskey = C
-sync-engine-payment-methods =
+sync-engine-payment-methods2 =
     .label = Payment methods
-    .tooltiptext = Names, card numbers, and expiry dates (desktop only)
+    .tooltiptext = Names, card numbers, and expiry dates
     .accesskey = n
 sync-engine-addons =
     .label = Add-ons
@@ -844,18 +847,35 @@ pane-privacy-logins-and-passwords-header = Logins and Passwords
 forms-ask-to-save-logins =
     .label = Ask to save logins and passwords for web sites
     .accesskey = r
+
+## Privacy Section - Passwords
+
+# "Logins" is the former term for "Passwords". Users should find password settings
+# by searching for the former term "logins". It's not displayed in the UI.
+pane-privacy-passwords-header = Passwords
+    .searchkeywords = logins
+# Checkbox to control whether UI is shown to users to save or fill logins/passwords.
+forms-ask-to-save-passwords =
+    .label = Ask to save passwords
+    .accesskey = A
 forms-exceptions =
     .label = Exceptions…
     .accesskey = x
 forms-generate-passwords =
     .label = Suggest and generate strong passwords
     .accesskey = u
+forms-suggest-passwords =
+    .label = Suggest strong passwords
+    .accesskey = S
 forms-breach-alerts =
     .label = Show alerts about passwords for breached web sites
     .accesskey = b
 forms-breach-alerts-learn-more-link = Learn more
 preferences-relay-integration-checkbox =
     .label = Suggest { -relay-brand-name } email masks to protect your email address
+preferences-relay-integration-checkbox2 =
+    .label = Suggest { -relay-brand-name } email masks to protect your email address
+    .accesskey = r
 relay-integration-learn-more-link = Learn more
 # Checkbox which controls filling saved logins into fields automatically when they appear, in some cases without user interaction.
 forms-fill-logins-and-passwords =
@@ -864,6 +884,13 @@ forms-fill-logins-and-passwords =
 forms-saved-logins =
     .label = Saved Logins…
     .accesskey = L
+# Checkbox which controls filling saved logins into fields automatically when they appear, in some cases without user interaction.
+forms-fill-usernames-and-passwords =
+    .label = Fill usernames and passwords automatically
+    .accesskey = F
+forms-saved-passwords =
+    .label = Saved passwords
+    .accesskey = d
 forms-primary-pw-use =
     .label = Use a Primary Password
     .accesskey = U
@@ -887,6 +914,7 @@ forms-windows-sso =
     .label = Allow Windows single sign-on for Microsoft, work, and school accounts
 forms-windows-sso-learn-more-link = Learn more
 forms-windows-sso-desc = Manage accounts in your device settings
+windows-passkey-settings-label = Manage passkeys in system settings
 
 ## OS Authentication dialog
 
@@ -898,6 +926,28 @@ primary-password-os-auth-dialog-message-win = To create a Primary Password, ente
 # notes are only valid for English. Please test in your locale.
 primary-password-os-auth-dialog-message-macosx = create a Primary Password
 master-password-os-auth-dialog-caption = { -brand-full-name }
+
+## Privacy section - Autofill
+
+pane-privacy-autofill-header = Autofill
+autofill-addresses-checkbox = Save and fill addresses
+    .accesskey = a
+autofill-saved-addresses-button = Saved addresses
+    .accesskey = S
+autofill-payment-methods-checkbox-message = Save and fill payment methods
+    .accesskey = m
+autofill-payment-methods-checkbox-submessage = Includes credit and debit cards
+    .accesskey = I
+autofill-saved-payment-methods-button = Saved payment methods
+    .accesskey = v
+autofill-reauth-checkbox =
+    { PLATFORM() ->
+        [macos] Require macOS authentication to fill and edit payment methods.
+        [windows] Require Windows authentication to fill and edit payment methods.
+        [linux] Require Linux authentication to fill and edit payment methods.
+       *[other] Require authentication to fill and edit payment methods.
+    }
+    .accesskey = o
 
 ## Privacy Section - History
 
@@ -953,6 +1003,7 @@ sitedata-delete-on-close =
     .label = Delete cookies and site data when { -brand-short-name } is closed
     .accesskey = c
 sitedata-delete-on-close-private-browsing = In permanent private browsing mode, cookies and site data will always be cleared when { -brand-short-name } is closed.
+sitedata-delete-on-close-private-browsing2 = Based on your history settings, { -brand-short-name } deletes cookies and site data from your session when you close the browser.
 sitedata-allow-cookies-option =
     .label = Accept cookies and site data
     .accesskey = A

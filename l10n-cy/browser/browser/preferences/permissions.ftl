@@ -54,7 +54,7 @@ permissions-capabilities-allow =
 permissions-capabilities-block =
     .label = Rhwystro
 permissions-capabilities-prompt =
-    .label = Gofyn bob Tro
+    .label = Gofyn Bob Tro
 permissions-capabilities-listitem-allow =
     .value = Caniatáu
 permissions-capabilities-listitem-block =
@@ -106,6 +106,13 @@ permissions-exceptions-saved-logins-window2 =
     .title = Eithriadau - Mewngofnodion wedi eu Cadw
     .style = { permissions-window2.style }
 permissions-exceptions-saved-logins-desc = Ni fydd mewngofnodion i'r gwefannau canlynol yn cael eu cadw
+
+## Exceptions - Saved Passwords
+
+permissions-exceptions-saved-passwords-window =
+    .title = Eithriadau - Cyfrineiriau wedi'u Cadw
+    .style = { permissions-window2.style }
+permissions-exceptions-saved-passwords-desc = Fydd { -brand-short-name } ddim yn cadw cyfrineiriau ar gyfer gwefannau sy'n cael eu rhestru yma.
 
 ## Exceptions - Add-ons
 

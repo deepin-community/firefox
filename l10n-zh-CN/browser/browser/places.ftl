@@ -53,7 +53,7 @@ places-by-last-visited =
     .label = 按上次访问时间
     .accesskey = L
 places-by-day-and-site =
-    .label = 按日期和站点
+    .label = 按日期和网站
     .accesskey = t
 places-history-search =
     .placeholder = 在历史记录中搜索
@@ -195,7 +195,7 @@ places-import-bookmarks-from-html =
     .label = 从 HTML 文件导入书签…
     .accesskey = I
 places-export-bookmarks-to-html =
-    .label = 导出书签到 HTML…
+    .label = 导出书签为 HTML 文件…
     .accesskey = E
 places-import-other-browser =
     .label = 从其他浏览器导入数据…
@@ -243,11 +243,11 @@ places-forward-button =
     .tooltiptext = 转到下一页
 places-details-pane-select-an-item-description = 选择一个条目来查看或编辑其属性
 places-details-pane-no-items =
-    .value = 无
+    .value = 没有项目
 # Variables:
 #   $count (Number): number of items
 places-details-pane-items-count =
-    .value = { $count }个项目
+    .value = { $count } 个项目
 
 ## Strings used as a placeholder in the Library search field. For example,
 ## "Search History" stands for "Search through the browser's history".

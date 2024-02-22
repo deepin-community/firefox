@@ -29,14 +29,6 @@ protections-panel-etp-off-header = Utvida sporingsvern er slått AV for denne ne
 ## custom element code.
 ##   $host (String): the hostname of the site that is being displayed.
 
-protections-panel-etp-on-toggle =
-    .label = Utvida sporingsvern
-    .description = På for denne nettstaden
-    .aria-label = Slå av vern for { $host }
-protections-panel-etp-off-toggle =
-    .label = Utvida sporingsvern
-    .description = Av for denne nettstaden
-    .aria-label = Slå på vern for { $host }
 protections-panel-etp-toggle-on =
     .label = Utvida sporingsvern
     .description = På for denne nettstaden
@@ -154,3 +146,9 @@ protections-panel-cookie-banner-view-turn-off-label =
     .label = Slå av
 protections-panel-cookie-banner-view-turn-on-label =
     .label = Slå på
+
+## Protections panel info message
+
+cfr-protections-panel-header = Surf utan å bli følgd
+cfr-protections-panel-body = Behald dine data for deg sjølv. { -brand-short-name } beskyttar deg mot mange av dei vanlegaste sporarane som følgjer det du gjer på nettet.
+cfr-protections-panel-link-text = Les meir

@@ -132,6 +132,7 @@ spotlight-public-wifi-vpn-link = לא כעת
 
 spotlight-better-internet-header = אינטרנט טוב יותר מתחיל בך
 spotlight-better-internet-body = הבחירה להשתמש ב־{ -brand-short-name } משמעה הצבעה עבור אינטרנט פתוח ונגיש שטוב יותר לכולם.
+spotlight-peace-mind-header = אנחנו דואגים לך
 spotlight-peace-mind-body = בכל חודש, { -brand-short-name } חוסם בממוצע למעלה מ־3,000 רכיבי מעקב למשתמש. כי שום דבר, במיוחד מטרדי פרטיות כמו רכיבי מעקב, לא צריך לעמוד בינך לבין האינטרנט הטוב.
 spotlight-pin-primary-button =
     { PLATFORM() ->
@@ -191,9 +192,21 @@ colorways-cfr-body = צבעו את הדפדפן שלכם בגוונים בלעד
 
 ## Cookie Banner Handling CFR
 
+cfr-cbh-header = לאפשר ל־{ -brand-short-name } לדחות כרזות עוגיות?
+cfr-cbh-body = ‏{ -brand-short-name } יכול לדחות באופן אוטומטי מגוון רחב של בקשות כרזות עוגיות.
+cfr-cbh-confirm-button = דחיית כרזות עוגיות
+    .accesskey = ד
+cfr-cbh-dismiss-button = לא כעת
+    .accesskey = ל
+cookie-banner-blocker-cfr-header = ‏{ -brand-short-name } חסם הרגע עוגיות עבורך
+cookie-banner-blocker-onboarding-header = ‏{ -brand-short-name } סירב הרגע לכרזת עוגיות עבורך
+cookie-banner-blocker-onboarding-body = פחות הסחות דעת, פחות מעקב עם עוגיות באתר הזה.
+cookie-banner-blocker-onboarding-learn-more = מידע נוסף
 
 ## These strings are used in the Fox doodle Pin/set default spotlights
 
+july-jam-headline = אנחנו דואגים לך
+july-jam-body = בכל חודש, { -brand-short-name } חוסם בממוצע יותר מ־3,000 רכיבי מעקב למשתמש, מה שמעניק לך גישה בטוחה ומהירה לאינטרנט.
 july-jam-set-default-primary = פתיחת הקישורים שלי באמצעות { -brand-short-name }
 fox-doodle-pin-headline = ברוכים השבים
 # “indie” is short for the term “independent”.
@@ -218,10 +231,6 @@ fxa-sync-cfr-secondary = להזכיר לי מאוחר יותר
 
 ## Device Migration FxA Spotlight
 
-device-migration-fxa-spotlight-header = משתמשים במכשיר ישן?
-device-migration-fxa-spotlight-body = כדאי לגבות את הנתונים שלכם כדי לוודא שלא תאבדו מידע חשוב כמו סימניות וססמאות - במיוחד אם אתם עוברים למכשיר חדש.
-device-migration-fxa-spotlight-primary-button = כיצד לגבות את הנתונים שלי
-device-migration-fxa-spotlight-link = להזכיר לי מאוחר יותר
 device-migration-fxa-spotlight-heavy-user-header = לא לשכוח לגבות את הנתונים שלך
 device-migration-fxa-spotlight-heavy-user-body = באפשרותך לוודא שמידע חשוב - כמו סימניות וססמאות - מעודכנים ומוגנים בכל המכשירים שלך.
 device-migration-fxa-spotlight-heavy-user-primary-button = תחילת עבודה
@@ -229,7 +238,7 @@ device-migration-fxa-spotlight-older-device-header = שקט נפשי, מאת { -
 device-migration-fxa-spotlight-older-device-body = השימוש בחשבון שומר על המידע החשוב שלך מעודכן ומוגן בכל מכשיר שיחובר אליו.
 device-migration-fxa-spotlight-older-device-primary-button = יצירת חשבון
 device-migration-fxa-spotlight-getting-new-device-header-2 = יהיה לך מכשיר חדש בעתיד?
-device-migration-fxa-spotlight-getting-new-device-body = כדאי לגבות את הנתונים שלך כעת, כדי להתכונן למעבר למכשיר החדש.
+device-migration-fxa-spotlight-getting-new-device-body-2 = בכמה צעדים פשוטים ניתן להביא איתך את הסימניות, ההיסטוריה והססמאות שלך בעת תחילת שימוש במכשיר חדש.
 device-migration-fxa-spotlight-getting-new-device-primary-button = כיצד לגבות את הנתונים שלי
 
 ## Set as Default PDF Reader Infobar
@@ -256,3 +265,8 @@ launch-on-login-infobar-reject-button = לא כעת
 launch-on-login-infobar-final-message = <strong>לפתוח את { -brand-short-name } בכל פעם שהמחשב שלך יופעל מחדש?</strong> כדי לנהל את העדפות האתחול שלך, יש לחפש ״אתחול״ בהגדרות.
 launch-on-login-infobar-final-reject-button = לא תודה
     .accesskey = ל
+
+## Tail Fox Set Default Spotlight
+
+tail-fox-spotlight-primary-button = פתיחת הקישורים שלי באמצעות { -brand-short-name }
+tail-fox-spotlight-secondary-button = לא כעת

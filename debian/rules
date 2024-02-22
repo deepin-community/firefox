@@ -19,6 +19,7 @@ PYTHON := PYTHONDONTWRITEBYTECODE=y python3
 
 PRODUCT := browser
 include debian/upstream.mk
+include /usr/share/dpkg/buildopts.mk
 
 SYSTEM_LIBS = zlib ffi
 ifeq (,$(filter buster bullseye,$(DIST)))
@@ -76,7 +77,7 @@ $(call uc,$(PRODUCT)) := $(call uc,$(DISPLAY_NAME))
 Product := $(call uc_first,$(PRODUCT))
 $(Product) := $(DISPLAY_NAME)
 
-export MOZ_APP_REMOTINGNAME := $(call uc_first,$($(PRODUCT)))
+export MOZ_APP_REMOTINGNAME := $($(PRODUCT))
 
 LIB_DIR := /usr/lib/$($(PRODUCT))
 SHARE_DIR := /usr/share/$($(PRODUCT))
@@ -128,7 +129,6 @@ ifneq (,$(filter armel armhf arm64 riscv64,$(DEB_HOST_ARCH)))
 	MOZ_ENABLE_V4L2 = 1
 endif
 ifneq (,$(filter i386 amd64 armel armhf arm64,$(DEB_HOST_ARCH)))
-	MOZ_ENABLE_VAAPI = 1
 	CRASH_REPORTER = 1
 endif
 ifneq (,$(filter mips%,$(DEB_HOST_ARCH)))
@@ -143,7 +143,7 @@ CXX := g++
 endif
 
 ifeq (,$(filter buster bullseye,$(DIST)))
-PATH := /usr/lib/llvm-16/bin:$(PATH)
+PATH := /usr/lib/llvm-14/bin:$(PATH)
 endif
 
 ifneq (,$(filter mips mipsel,$(DEB_HOST_ARCH)))
@@ -184,7 +184,7 @@ debian/l10n/$(PRODUCT)-l10n.control: %: %.in
 
 $(call lazy,LIBAVCODEC,$$(shell awk -F\" '/libavcodec\.so\./ { sub(/libavcodec\.so\./,"", $$$$2); p = "libavcodec" $$$$2 " | libavcodec-extra" $$$$2; if (d) { d = d " | " p } else { d = p } } END { print d }' dom/media/platforms/ffmpeg/FFmpegRuntimeLinker.cpp))
 
-$(PREPROCESSED_FILES): VARS = GRE_VERSION PRODUCT_DOWNLOAD_NAME $(PRODUCT) $(call uc,$(PRODUCT)) $(Product) MOZ_APP_REMOTINGNAME $(SYSTEM_LIBS_VARS) SHORT_SOURCE_CHANNEL DIST TRANSITION MOZ_FFVPX MOZ_ENABLE_VAAPI MOZ_ENABLE_V4L2 CRASH_REPORTER DEB_HOST_ARCH
+$(PREPROCESSED_FILES): VARS = GRE_VERSION PRODUCT_DOWNLOAD_NAME $(PRODUCT) $(call uc,$(PRODUCT)) $(Product) MOZ_APP_REMOTINGNAME $(SYSTEM_LIBS_VARS) SHORT_SOURCE_CHANNEL DIST TRANSITION MOZ_FFVPX MOZ_ENABLE_V4L2 CRASH_REPORTER DEB_HOST_ARCH
 debian/control: VARS += L10N_PACKAGES_DEPS PRODUCT LIBAVCODEC
 $(PREPROCESSED_FILES):
 	MOZ_OBJDIR=debian/objdir MACH_BUILD_PYTHON_NATIVE_PACKAGE_SOURCE=none $(PYTHON) ./mach python python/mozbuild/mozbuild/preprocessor.py --marker % -Fsubstitution $(foreach var,$(VARS),-D$(var)="$($(var))" )$< -o $@
@@ -257,7 +257,8 @@ stamps/build-$(PRODUCT):: stamps/configure-check-$(PRODUCT)
 		_LEAKTEST_FILES=leaktest.py
 
 L10N_BUILD_STAMPS = $(foreach lang,$(L10N_LANGS),stamps/build-l10n-$(lang))
-stamps/build-l10n:: $(L10N_BUILD_STAMPS)
+stamps/build-l10n::
+	debian/rules $(addprefix -j,$(DEB_BUILD_OPTION_PARALLEL)) $(L10N_BUILD_STAMPS)
 
 $(L10N_BUILD_STAMPS):: stamps/build-l10n-%: stamps/virtualenv
 	$(if $(wildcard build-l10n/$*),,mkdir -p build-l10n/$*)
@@ -306,7 +307,8 @@ stamps/install-$(PRODUCT)::
 	-TZ=UTC unzip -d debian/tmp$(LIB_DIR)/browser debian/tmp$(LIB_DIR)/browser/omni.ja 'defaults/preferences/*'
 
 L10N_DH_INSTALL_STAMPS = $(foreach lang,$(L10N_LANGS),stamps/dh_install-l10n-$(lang))
-stamps/dh_install-l10n:: $(L10N_DH_INSTALL_STAMPS)
+stamps/dh_install-l10n::
+	debian/rules $(addprefix -j,$(DEB_BUILD_OPTION_PARALLEL)) $(L10N_DH_INSTALL_STAMPS)
 
 $(L10N_DH_INSTALL_STAMPS):: stamps/dh_install-l10n-%: stamps/build-l10n-%
 	dh_install -p$($(PRODUCT))-l10n-$(call lc,$*) build-l10n/$*/dist/xpi/langpack-$*@$($(PRODUCT)).mozilla.org.xpi $(LIB_DIR)/browser/extensions/
@@ -321,7 +323,7 @@ override_dh_install-indep: stamps/dh_install-l10n
 
 # dwz trips on libxul, after using a lot of memory.
 override_dh_dwz:
-	dh_dwz -X libxul
+	dh_dwz -X libxul -X libgkcodecs
 
 override_dh_strip:
 	dh_strip --dbgsym-migration='$($(PRODUCT))-dbg (<< 49.0-4~)'

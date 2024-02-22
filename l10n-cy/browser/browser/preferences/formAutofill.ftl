@@ -5,10 +5,12 @@
 
 ## The address and credit card autofill management dialog in browser preferences
 
-autofill-manage-addresses-title = Cyfeiriadau wedi eu Cadw
+autofill-manage-addresses-title = Cyfeiriadau wedi'u cadw
 autofill-manage-addresses-list-header = Cyfeiriadau
 autofill-manage-credit-cards-title = Cardiau Credyd wedi eu Cadw
 autofill-manage-credit-cards-list-header = Cardiau Credyd
+autofill-manage-payment-methods-title = Dulliau talu wedi'u cadw
+autofill-manage-cards-list-header = Cardiau
 autofill-manage-dialog =
     .style = min-width: 560px
 autofill-manage-remove-button = Tynnu
@@ -20,7 +22,7 @@ autofill-manage-edit-button = Golygu…
 address-capture-save-doorhanger-header = Cadw cyfeiriad?
 address-capture-save-doorhanger-description = Cadw manylion i { -brand-short-name } er mwyn i chi allu llenwi ffurflenni'n gyflym.
 address-capture-update-doorhanger-header = Diweddaru'r cyfeiriad?
-address-capture-edit-doorhanger-header = Golygu'r cyfeiriad
+address-capture-edit-doorhanger-header = Golygu cyfeiriad
 address-capture-save-button =
     .label = Cadw
     .accessKey = C
@@ -42,9 +44,9 @@ address-capture-open-menu-button =
 address-capture-edit-address-button =
     .aria-label = Golygu cyfeiriad
 # The dialog title for creating addresses in browser preferences.
-autofill-add-new-address-title = Ychwanegu Cyfeiriad Newydd
+autofill-add-address-title = Ychwanegu cyfeiriad
 # The dialog title for editing addresses in browser preferences.
-autofill-edit-address-title = Golygu Cyfeiriad
+autofill-edit-address-title = Golygu cyfeiriad
 autofill-address-name = Enw
 autofill-address-given-name = Enw Cyntaf
 autofill-address-additional-name = Enw Canol
@@ -96,7 +98,7 @@ autofill-address-oblast = Oblast
 ## Postal code name types
 
 # Used in IN
-autofill-address-pin = Pin
+autofill-address-pin = Pinio
 autofill-address-postal-code = Cod Post
 autofill-address-zip = Cod Zip
 # Used in IE
@@ -107,14 +109,15 @@ autofill-address-eircode = Eircode
 
 ##
 
+# The dialog title for creating addresses in browser preferences.
+autofill-add-new-address-title = Ychwanegu Cyfeiriad Newydd
 autofill-address-country = Gwlad neu Ranbarth
-autofill-address-country-only = Sir
+autofill-address-country-only = Gwlad
 autofill-address-tel = Ffôn
 autofill-address-email = E-bost
 autofill-cancel-button = Diddymu
 autofill-save-button = Cadw
 autofill-country-warning-message = Dim ond ar gyfer rhai gwledydd y mae Awtolanw Ffurflenni ar gael ar hyn o bryd.
-autofill-message-tooltip = Gweld neges am awtolenwi
 # The dialog title for creating credit cards in browser preferences.
 autofill-add-new-card-title = Ychwanegu Cerdyn Credyd Newydd
 # The dialog title for editing credit cards in browser preferences.
@@ -127,6 +130,11 @@ autofill-edit-card-password-prompt =
         [windows] Mae { -brand-short-name } yn ceisio dangos manylion cerdyn credyd. Cadarnhewch fynediad i'r cyfrif Windows hwn isod.
        *[other] Mae { -brand-short-name } yn ceisio dangos manylion cerdyn credyd.
     }
+autofill-message-tooltip = Gweld neges am awtolenwi
+# The dialog title for creating credit cards in browser preferences.
+autofill-add-card-title = Ychwanegu cerdyn
+# The dialog title for editing credit cards in browser preferences.
+autofill-edit-card-title2 = Golygu cerdyn
 autofill-card-number = Rhif y Cerdyn
 autofill-card-invalid-number = Rhowch rif cerdyn dilys
 autofill-card-name-on-card = Enw ar y Cerdyn

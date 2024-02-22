@@ -78,6 +78,12 @@ toolbar-button-fxaccount =
     .label = { -fxaccount-brand-name(capitalization: "sentence") }
     .tooltiptext = { -fxaccount-brand-name(capitalization: "sentence") }
 
+## Account toolbar Button
+
+toolbar-button-account =
+    .label = Tili
+    .tooltiptext = Tili
+
 ## Save Page
 
 main-context-menu-page-save =
@@ -291,6 +297,7 @@ main-context-menu-send-to-device =
 main-context-menu-use-saved-login =
     .label = Käytä tallennettua kirjautumistietoa
     .accesskey = k
+# Displayed when there are saved passwords and the user clicks inside a username or password field
 main-context-menu-use-saved-password =
     .label = Käytä tallennettua salasanaa
     .accesskey = s
@@ -305,6 +312,9 @@ main-context-menu-suggest-strong-password =
     .accesskey = S
 main-context-menu-manage-logins2 =
     .label = Hallitse kirjautumistietoja
+    .accesskey = H
+main-context-menu-manage-passwords =
+    .label = Hallitse salasanoja
     .accesskey = H
 main-context-menu-keyword =
     .label = Lisää pikakomento tälle haulle…

@@ -248,7 +248,7 @@ class DispatchChangeEventCallback final : public GetFilesCallback {
     RefPtr<HTMLInputElement> inputElement(mInputElement);
     nsresult rv = nsContentUtils::DispatchInputEvent(inputElement);
     NS_WARNING_ASSERTION(NS_SUCCEEDED(rv), "Failed to dispatch input event");
-
+    mInputElement->SetUserInteracted(true);
     rv = nsContentUtils::DispatchTrustedEvent(mInputElement->OwnerDoc(),
                                               mInputElement, u"change"_ns,
                                               CanBubble::eYes, Cancelable::eNo);
@@ -667,6 +667,7 @@ nsColorPickerShownCallback::Done(const nsAString& aColor) {
   }
 
   if (mValueChanged) {
+    mInput->SetUserInteracted(true);
     rv = nsContentUtils::DispatchTrustedEvent(
         mInput->OwnerDoc(), static_cast<Element*>(mInput.get()), u"change"_ns,
         CanBubble::eYes, Cancelable::eNo);
@@ -995,6 +996,7 @@ HTMLInputElement::HTMLInputElement(already_AddRefed<dom::NodeInfo>&& aNodeInfo,
       mAutocompleteInfoState(nsContentUtils::eAutocompleteAttrState_Unknown),
       mDisabledChanged(false),
       mValueChanged(false),
+      mUserInteracted(false),
       mLastValueChangeWasInteractive(false),
       mCheckedChanged(false),
       mChecked(false),
@@ -1006,8 +1008,6 @@ HTMLInputElement::HTMLInputElement(already_AddRefed<dom::NodeInfo>&& aNodeInfo,
       mCheckedIsToggled(false),
       mIndeterminate(false),
       mInhibitRestoration(aFromParser & FROM_PARSER_FRAGMENT),
-      mCanShowValidUI(true),
-      mCanShowInvalidUI(true),
       mHasRange(false),
       mIsDraggingRange(false),
       mNumberControlSpinnerIsSpinning(false),
@@ -1023,8 +1023,8 @@ HTMLInputElement::HTMLInputElement(already_AddRefed<dom::NodeInfo>&& aNodeInfo,
                 "Keep the size of HTMLInputElement under 512 to avoid "
                 "performance regression!");
 
-  // We are in a type=text so we now we currenty need a TextControlState.
-  mInputData.mState = TextControlState::Construct(this);
+  // We are in a type=text but we create TextControlState lazily.
+  mInputData.mState = nullptr;
 
   void* memory = mInputTypeMem;
   mInputType = InputType::Create(this, mType, memory);
@@ -1054,7 +1054,8 @@ void HTMLInputElement::FreeData() {
   if (!IsSingleLineTextControl(false)) {
     free(mInputData.mValue);
     mInputData.mValue = nullptr;
-  } else {
+  } else if (mInputData.mState) {
+    // XXX Passing nullptr to UnbindFromFrame doesn't do anything!
     UnbindFromFrame(nullptr);
     mInputData.mState->Destroy();
     mInputData.mState = nullptr;
@@ -1066,10 +1067,21 @@ void HTMLInputElement::FreeData() {
   }
 }
 
+void HTMLInputElement::EnsureEditorState() {
+  MOZ_ASSERT(IsSingleLineTextControl(false));
+  if (!mInputData.mState) {
+    mInputData.mState = TextControlState::Construct(this);
+  }
+}
+
 TextControlState* HTMLInputElement::GetEditorState() const {
   if (!IsSingleLineTextControl(false)) {
     return nullptr;
   }
+
+  // We've postponed allocating TextControlState, doing that in a const
+  // method is fine.
+  const_cast<HTMLInputElement*>(this)->EnsureEditorState();
 
   MOZ_ASSERT(mInputData.mState,
              "Single line text controls need to have a state"
@@ -1086,7 +1098,7 @@ NS_IMPL_CYCLE_COLLECTION_TRAVERSE_BEGIN_INHERITED(HTMLInputElement,
                                                   TextControlElement)
   NS_IMPL_CYCLE_COLLECTION_TRAVERSE(mValidity)
   NS_IMPL_CYCLE_COLLECTION_TRAVERSE(mControllers)
-  if (tmp->IsSingleLineTextControl(false)) {
+  if (tmp->IsSingleLineTextControl(false) && tmp->mInputData.mState) {
     tmp->mInputData.mState->Traverse(cb);
   }
 
@@ -1099,7 +1111,7 @@ NS_IMPL_CYCLE_COLLECTION_UNLINK_BEGIN_INHERITED(HTMLInputElement,
                                                 TextControlElement)
   NS_IMPL_CYCLE_COLLECTION_UNLINK(mValidity)
   NS_IMPL_CYCLE_COLLECTION_UNLINK(mControllers)
-  if (tmp->IsSingleLineTextControl(false)) {
+  if (tmp->IsSingleLineTextControl(false) && tmp->mInputData.mState) {
     tmp->mInputData.mState->Unlink();
   }
 
@@ -1236,13 +1248,14 @@ void HTMLInputElement::AfterSetAttr(int32_t aNameSpaceID, nsAtom* aName,
       }
     }
 
-    // If @value is changed and BF_VALUE_CHANGED is false, @value is the value
-    // of the element so, if the value of the element is different than @value,
-    // we have to re-set it. This is only the case when GetValueMode() returns
-    // VALUE_MODE_VALUE.
     if (aName == nsGkAtoms::value) {
+      // If the element has a value in value mode, the value content attribute
+      // is the default value. So if the elements value didn't change from the
+      // default, we have to re-set it.
       if (!mValueChanged && GetValueMode() == VALUE_MODE_VALUE) {
         SetDefaultValueAsValue();
+      } else if (GetValueMode() == VALUE_MODE_DEFAULT && HasDirAuto()) {
+        SetAutoDirectionality(aNotify);
       }
       // GetStepBase() depends on the `value` attribute if `min` is not present,
       // even if the value doesn't change.
@@ -1369,7 +1382,7 @@ void HTMLInputElement::AfterSetAttr(int32_t aNameSpaceID, nsAtom* aName,
                  "HTML5 spec does not allow underflow for type=range");
     } else if (aName == nsGkAtoms::dir && aValue &&
                aValue->Equals(nsGkAtoms::_auto, eIgnoreCase)) {
-      SetDirectionFromValue(aNotify);
+      SetAutoDirectionality(aNotify);
     } else if (aName == nsGkAtoms::lang) {
       // FIXME(emilio, bug 1651070): This doesn't account for lang changes on
       // ancestors.
@@ -1584,7 +1597,12 @@ void HTMLInputElement::GetNonFileValueInternal(nsAString& aValue) const {
   switch (GetValueMode()) {
     case VALUE_MODE_VALUE:
       if (IsSingleLineTextControl(false)) {
-        mInputData.mState->GetValue(aValue, true, /* aForDisplay = */ false);
+        if (mInputData.mState) {
+          mInputData.mState->GetValue(aValue, true, /* aForDisplay = */ false);
+        } else {
+          // Value hasn't been set yet.
+          aValue.Truncate();
+        }
       } else if (!aValue.Assign(mInputData.mValue, fallible)) {
         aValue.Truncate();
       }
@@ -2341,7 +2359,9 @@ nsIEditor* HTMLInputElement::GetEditorForBindings() {
   return GetTextEditorFromState();
 }
 
-bool HTMLInputElement::HasEditor() { return !!GetTextEditorWithoutCreation(); }
+bool HTMLInputElement::HasEditor() const {
+  return !!GetTextEditorWithoutCreation();
+}
 
 TextEditor* HTMLInputElement::GetTextEditorFromState() {
   TextControlState* state = GetEditorState();
@@ -2355,7 +2375,7 @@ TextEditor* HTMLInputElement::GetTextEditor() {
   return GetTextEditorFromState();
 }
 
-TextEditor* HTMLInputElement::GetTextEditorWithoutCreation() {
+TextEditor* HTMLInputElement::GetTextEditorWithoutCreation() const {
   TextControlState* state = GetEditorState();
   if (!state) {
     return nullptr;
@@ -2593,15 +2613,25 @@ void HTMLInputElement::AfterSetFilesOrDirectories(bool aSetValueChanged) {
 }
 
 void HTMLInputElement::FireChangeEventIfNeeded() {
+  if (!MayFireChangeOnBlur()) {
+    return;
+  }
+
   // We're not exposing the GetValue return value anywhere here, so it's safe to
   // claim to be a system caller.
   nsAutoString value;
   GetValue(value, CallerType::System);
 
-  if (!MayFireChangeOnBlur() || mFocusedValue.Equals(value)) {
+  // NOTE(emilio): Per spec we should not set this if we don't fire the change
+  // event, but that seems like a bug. Using mValueChanged seems reasonable to
+  // keep the expected behavior while
+  // https://github.com/whatwg/html/issues/10013 is resolved.
+  if (mValueChanged) {
+    SetUserInteracted(true);
+  }
+  if (mFocusedValue.Equals(value)) {
     return;
   }
-
   // Dispatch the change event.
   mFocusedValue = value;
   nsContentUtils::DispatchTrustedEvent(
@@ -2708,6 +2738,7 @@ nsresult HTMLInputElement::SetValueInternal(
         // of calling this method, you need to maintain SetUserInput() too. FYI:
         // After calling SetValue(), the input type might have been
         //      modified so that mInputData may not store TextControlState.
+        EnsureEditorState();
         if (!mInputData.mState->SetValue(
                 value, aOldValue,
                 forcePreserveUndoHistory
@@ -3125,9 +3156,9 @@ bool HTMLInputElement::CheckActivationBehaviorPreconditions(
       // we're a DOMActivate dispatched from click handling, it will not be set.
       WidgetMouseEvent* mouseEvent = aVisitor.mEvent->AsMouseEvent();
       bool outerActivateEvent =
-          ((mouseEvent && mouseEvent->IsLeftClickEvent()) ||
-           (aVisitor.mEvent->mMessage == eLegacyDOMActivate &&
-            !mInInternalActivate));
+          (mouseEvent && mouseEvent->IsLeftClickEvent()) ||
+          (aVisitor.mEvent->mMessage == eLegacyDOMActivate &&
+           !mInInternalActivate);
       if (outerActivateEvent) {
         aVisitor.mItemFlags |= NS_OUTER_ACTIVATE_EVENT;
       }
@@ -3484,11 +3515,9 @@ void HTMLInputElement::StepNumberControlForUserEvent(int32_t aDirection) {
     // the user. (IsValid() can return false if the 'required' attribute is
     // set and the value is the empty string.)
     if (!IsValueEmpty()) {
-      // We pass 'true' for UpdateValidityUIBits' aIsFocused argument
-      // regardless because we need the UI to update _now_ or the user will
-      // wonder why the step behavior isn't functioning.
-      UpdateValidityUIBits(true);
-      UpdateValidityElementStates(true);
+      // We pass 'true' for SetUserInteracted because we need the UI to update
+      // _now_ or the user will wonder why the step behavior isn't functioning.
+      SetUserInteracted(true);
       return;
     }
   }
@@ -3643,18 +3672,12 @@ static bool ActivatesWithKeyboard(FormControlType aType, uint32_t aKeyCode) {
 }
 
 nsresult HTMLInputElement::PostHandleEvent(EventChainPostVisitor& aVisitor) {
-  if (aVisitor.mEvent->mMessage == eFocus ||
-      aVisitor.mEvent->mMessage == eBlur) {
-    if (aVisitor.mEvent->mMessage == eBlur) {
-      if (mIsDraggingRange) {
-        FinishRangeThumbDrag();
-      } else if (mNumberControlSpinnerIsSpinning) {
-        StopNumberControlSpinnerSpin();
-      }
+  if (aVisitor.mEvent->mMessage == eBlur) {
+    if (mIsDraggingRange) {
+      FinishRangeThumbDrag();
+    } else if (mNumberControlSpinnerIsSpinning) {
+      StopNumberControlSpinnerSpin();
     }
-
-    UpdateValidityUIBits(aVisitor.mEvent->mMessage == eFocus);
-    UpdateValidityElementStates(true);
   }
 
   nsresult rv = NS_OK;
@@ -3828,14 +3851,16 @@ nsresult HTMLInputElement::PostHandleEvent(EventChainPostVisitor& aVisitor) {
               Decimal newValue;
               switch (keyEvent->mKeyCode) {
                 case NS_VK_LEFT:
-                  newValue =
-                      value +
-                      (GetComputedDirectionality() == eDir_RTL ? step : -step);
+                  newValue = value +
+                             (GetComputedDirectionality() == Directionality::Rtl
+                                  ? step
+                                  : -step);
                   break;
                 case NS_VK_RIGHT:
-                  newValue =
-                      value +
-                      (GetComputedDirectionality() == eDir_RTL ? -step : step);
+                  newValue = value +
+                             (GetComputedDirectionality() == Directionality::Rtl
+                                  ? -step
+                                  : step);
                   break;
                 case NS_VK_UP:
                   // Even for horizontal range, "up" means "increase"
@@ -4053,11 +4078,14 @@ void HTMLInputElement::ActivationBehavior(EventChainPostVisitor& aVisitor) {
   }
 
   if (mCheckedIsToggled) {
+    SetUserInteracted(true);
+
     // Fire input event and then change event.
     DebugOnly<nsresult> rvIgnored = nsContentUtils::DispatchInputEvent(this);
     NS_WARNING_ASSERTION(NS_SUCCEEDED(rvIgnored),
                          "Failed to dispatch input event");
 
+    // FIXME: Why is this different than every other change event?
     nsContentUtils::DispatchTrustedEvent<WidgetEvent>(
         OwnerDoc(), static_cast<Element*>(this), eFormChange, CanBubble::eYes,
         Cancelable::eNo);
@@ -4071,8 +4099,7 @@ void HTMLInputElement::ActivationBehavior(EventChainPostVisitor& aVisitor) {
       FireEventForAccessibility(this, eFormRadioStateChange);
       // Fire event for the previous selected radio.
       nsCOMPtr<nsIContent> content = do_QueryInterface(aVisitor.mItemData);
-      if (HTMLInputElement* previous =
-              HTMLInputElement::FromNodeOrNull(content)) {
+      if (auto* previous = HTMLInputElement::FromNodeOrNull(content)) {
         FireEventForAccessibility(previous, eFormRadioStateChange);
       }
     }
@@ -4155,7 +4182,7 @@ nsresult HTMLInputElement::MaybeHandleRadioButtonNavigation(
         return RadioButtonMove::Forward;
       case NS_VK_LEFT:
       case NS_VK_RIGHT: {
-        const bool isRtl = GetComputedDirectionality() == eDir_RTL;
+        const bool isRtl = GetComputedDirectionality() == Directionality::Rtl;
         return isRtl == (aKeyCode == NS_VK_LEFT) ? RadioButtonMove::Forward
                                                  : RadioButtonMove::Back;
       }
@@ -4331,7 +4358,7 @@ nsresult HTMLInputElement::BindToTree(BindContext& aContext, nsINode& aParent) {
 
   // Set direction based on value if dir=auto
   if (HasDirAuto()) {
-    SetDirectionFromValue(false);
+    SetAutoDirectionality(false);
   }
 
   // An element can't suffer from value missing if it is not in a document.
@@ -4500,7 +4527,7 @@ void HTMLInputElement::HandleTypeChange(FormControlType aNewType,
 
   TextControlState::SelectionProperties sp;
 
-  if (GetEditorState()) {
+  if (IsSingleLineTextControl(false) && mInputData.mState) {
     mInputData.mState->SyncUpSelectionPropertiesBeforeDestruction();
     sp = mInputData.mState->GetSelectionProperties();
   }
@@ -4621,11 +4648,16 @@ void HTMLInputElement::HandleTypeChange(FormControlType aNewType,
 
   UpdateBarredFromConstraintValidation();
 
-  // Changing type may affect directionality because of the special-case for
-  // <input type=tel>, as specified in
+  // Changing type may affect auto directionality, or non-auto directionality
+  // because of the special-case for <input type=tel>, as specified in
   // https://html.spec.whatwg.org/multipage/dom.html#the-directionality
-  if (!HasDirAuto() && (oldType == FormControlType::InputTel ||
-                        mType == FormControlType::InputTel)) {
+  if (HasDirAuto()) {
+    const bool autoDirAssociated = IsAutoDirectionalityAssociated(mType);
+    if (IsAutoDirectionalityAssociated(oldType) != autoDirAssociated) {
+      SetAutoDirectionality(aNotify);
+    }
+  } else if (oldType == FormControlType::InputTel ||
+             mType == FormControlType::InputTel) {
     RecomputeDirectionality(this, aNotify);
   }
 
@@ -5874,13 +5906,11 @@ nsresult HTMLInputElement::SetDefaultValueAsValue() {
   return SetValueInternal(resetVal, ValueSetterOption::ByInternalAPI);
 }
 
-void HTMLInputElement::SetDirectionFromValue(bool aNotify,
+// https://html.spec.whatwg.org/#auto-directionality
+void HTMLInputElement::SetAutoDirectionality(bool aNotify,
                                              const nsAString* aKnownValue) {
-  // FIXME(emilio): https://html.spec.whatwg.org/#the-directionality says this
-  // applies to Text, Search, Telephone, URL, or Email state, but the check
-  // below doesn't filter out week/month/number.
-  if (!IsSingleLineTextControl(true)) {
-    return;
+  if (!IsAutoDirectionalityAssociated()) {
+    return SetDirectionality(GetParentDirectionality(this), aNotify);
   }
   nsAutoString value;
   if (!aKnownValue) {
@@ -5901,6 +5931,7 @@ HTMLInputElement::Reset() {
   SetCheckedChanged(false);
   SetValueChanged(false);
   SetLastValueChangeWasInteractive(false);
+  SetUserInteracted(false);
 
   switch (GetValueMode()) {
     case VALUE_MODE_VALUE: {
@@ -6046,7 +6077,7 @@ HTMLInputElement::SubmitNamesValues(FormData* aFormData) {
   }
 
   // Submit dirname=dir
-  if (DoesDirnameApply()) {
+  if (IsAutoDirectionalityAssociated()) {
     return SubmitDirnameDir(aFormData);
   }
 
@@ -6196,24 +6227,14 @@ void HTMLInputElement::UpdateValidityElementStates(bool aNotify) {
   ElementState state;
   if (IsValid()) {
     state |= ElementState::VALID;
+    if (mUserInteracted) {
+      state |= ElementState::USER_VALID;
+    }
   } else {
     state |= ElementState::INVALID;
-    if (GetValidityState(VALIDITY_STATE_CUSTOM_ERROR) ||
-        (mCanShowInvalidUI && ShouldShowValidityUI())) {
+    if (mUserInteracted) {
       state |= ElementState::USER_INVALID;
     }
-  }
-  // :-moz-ui-valid applies if all of the following conditions are true:
-  // 1. The element is not focused, or had either :-moz-ui-valid or
-  //    :-moz-ui-invalid applying before it was focused ;
-  // 2. The element is either valid or isn't allowed to have
-  //    :-moz-ui-invalid applying ;
-  // 3. The element has already been modified or the user tried to submit the
-  //    form owner while invalid.
-  if (mCanShowValidUI && ShouldShowValidityUI() &&
-      (IsValid() ||
-       (!state.HasState(ElementState::USER_INVALID) && !mCanShowInvalidUI))) {
-    state |= ElementState::USER_VALID;
   }
   AddStatesSilently(state);
 }
@@ -6949,7 +6970,7 @@ void HTMLInputElement::OnValueChanged(ValueChangeKind aKind,
   UpdateAllValidityStates(true);
 
   if (HasDirAuto()) {
-    SetDirectionFromValue(true, aKnownNewValue);
+    SetAutoDirectionality(true, aKnownNewValue);
   }
 }
 
@@ -7225,19 +7246,12 @@ Decimal HTMLInputElement::GetDefaultStep() const {
   }
 }
 
-void HTMLInputElement::UpdateValidityUIBits(bool aIsFocused) {
-  if (aIsFocused) {
-    // If the invalid UI is shown, we should show it while focusing (and
-    // update). Otherwise, we should not.
-    mCanShowInvalidUI = !IsValid() && ShouldShowValidityUI();
-
-    // If neither invalid UI nor valid UI is shown, we shouldn't show the valid
-    // UI while typing.
-    mCanShowValidUI = ShouldShowValidityUI();
-  } else {
-    mCanShowInvalidUI = true;
-    mCanShowValidUI = true;
+void HTMLInputElement::SetUserInteracted(bool aInteracted) {
+  if (mUserInteracted == aInteracted) {
+    return;
   }
+  mUserInteracted = aInteracted;
+  UpdateValidityElementStates(true);
 }
 
 void HTMLInputElement::UpdateInRange(bool aNotify) {

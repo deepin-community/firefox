@@ -466,6 +466,9 @@ browsing-use-smooth-scrolling =
 browsing-gtk-use-non-overlay-scrollbars =
     .label = Vis alltid rullefelt
     .accesskey = V
+browsing-always-underline-links =
+    .label = Understrek alltid lenker
+    .accesskey = U
 browsing-use-onscreen-keyboard =
     .label = Vis eit tøtsj-tastatur når nødvendig
     .accesskey = t
@@ -609,6 +612,9 @@ search-suggestions-desc = Vel korleis forslag frå søkjemotoren skal visast.
 search-suggestions-option =
     .label = Tilby søkjeforslag
     .accesskey = T
+search-show-suggestions-option =
+    .label = Vis søkjeforslag
+    .accesskey = s
 search-show-suggestions-url-bar-option =
     .label = Vis søkjeforslag i adresselinja
     .accesskey = l
@@ -707,6 +713,9 @@ sync-signedin-login-failure = Logg inn for å kople til på nytt { $email }
 sync-resend-verification =
     .label = Send stadfesting på nytt
     .accesskey = S
+sync-verify-account =
+    .label = Stadfest konto
+    .accesskey = S
 sync-remove-account =
     .label = Fjern konto
     .accesskey = k
@@ -739,8 +748,10 @@ sync-currently-syncing-bookmarks = Bokmerke
 sync-currently-syncing-history = Historikk
 sync-currently-syncing-tabs = Opne faner
 sync-currently-syncing-logins-passwords = Innloggingar og passord
+sync-currently-syncing-passwords = Passord
 sync-currently-syncing-addresses = Adresser
 sync-currently-syncing-creditcards = Kredittkort
+sync-currently-syncing-payment-methods = Betalingsmåtar
 sync-currently-syncing-addons = Tillegg
 sync-currently-syncing-settings = Innstillingar
 sync-change-options =
@@ -771,6 +782,10 @@ sync-engine-logins-passwords =
     .label = Innloggingar og passord
     .tooltiptext = Brukarnamn og passord som du har lagra
     .accesskey = l
+sync-engine-passwords =
+    .label = Passord
+    .tooltiptext = Passord du har lagra
+    .accesskey = P
 sync-engine-addresses =
     .label = Adresser
     .tooltiptext = Postadresser du har lagra (berre skrivebord)
@@ -779,6 +794,10 @@ sync-engine-creditcards =
     .label = Kredittkort
     .tooltiptext = Namn, nummer og forfallsdato (berre skrivebord)
     .accesskey = K
+sync-engine-payment-methods2 =
+    .label = Betalingsmåtar
+    .tooltiptext = Namn, kortnummer, og opphøyrsdatoar
+    .accesskey = n
 sync-engine-addons =
     .label = Tillegg
     .tooltiptext = Utvidingar og tema for Firefox desktop
@@ -825,12 +844,26 @@ pane-privacy-logins-and-passwords-header = Innloggingar og passord
 forms-ask-to-save-logins =
     .label = Spør om å lagre innloggingar og passord for nettsider
     .accesskey = i
+
+## Privacy Section - Passwords
+
+# "Logins" is the former term for "Passwords". Users should find password settings
+# by searching for the former term "logins". It's not displayed in the UI.
+pane-privacy-passwords-header = Passord
+    .searchkeywords = innloggingar
+# Checkbox to control whether UI is shown to users to save or fill logins/passwords.
+forms-ask-to-save-passwords =
+    .label = Spør om å lagre passord
+    .accesskey = S
 forms-exceptions =
     .label = Unntak…
     .accesskey = n
 forms-generate-passwords =
     .label = Foreslå og generer sterke passord
     .accesskey = o
+forms-suggest-passwords =
+    .label = Foreslå sterke passord
+    .accesskey = F
 forms-breach-alerts =
     .label = Vis varsel om passord for datalekkasjar på nettstadar
     .accesskey = p
@@ -844,6 +877,9 @@ forms-fill-logins-and-passwords =
     .accesskey = i
 forms-saved-logins =
     .label = Lagre innloggingar…
+    .accesskey = L
+forms-saved-passwords =
+    .label = Lagra passord
     .accesskey = L
 forms-primary-pw-use =
     .label = Bruk eit hovudpassord
@@ -868,6 +904,7 @@ forms-windows-sso =
     .label = Tillat Windows enkel innlogging for Microsoft-, arbeids- og skulekontoar.
 forms-windows-sso-learn-more-link = Les meir
 forms-windows-sso-desc = Handsam konton i einingsinnstillingane dine
+windows-passkey-settings-label = Handsam passnøkkel i systeminnstillingane
 
 ## OS Authentication dialog
 
@@ -879,6 +916,14 @@ primary-password-os-auth-dialog-message-win = Skriv inn innloggingsinformasjonen
 # notes are only valid for English. Please test in your locale.
 primary-password-os-auth-dialog-message-macosx = lag eit hovudpassord
 master-password-os-auth-dialog-caption = { -brand-full-name }
+
+## Privacy section - Autofill
+
+pane-privacy-autofill-header = Autofyll
+autofill-saved-addresses-button = Lagra adresser
+    .accesskey = L
+autofill-saved-payment-methods-button = Lagra betaslingsmetodar
+    .accesskey = a
 
 ## Privacy Section - History
 

@@ -3,10 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 page-title = ਸਮੱਸਿਆ ਹੱਲ਼ ਜਾਣਕਾਰੀ
-page-subtitle =
-    ਇਹ ਸਫ਼ੇ ਉੱਤੇ ਤਕਨੀਕੀ ਜਾਣਕਾਰੀ ਹੈ, ਜੋ ਕਿ ਤੁਹਾਨੂੰ ਸਮੱਸਿਆ ਹੱਲ਼ ਕਰਨ ਲਈ ਫਾਇਦੇਮੰਦ
-    ਹੋ ਸਕਦੀ ਹੈ। ਜੇ ਤੁਸੀਂ { -brand-short-name } ਬਾਰੇ ਆਮ ਸਵਾਦ ਦੇ ਜਵਾਬ ਲੱਭ ਰਹੇ ਹੋ ਤਾਂ
-    ਸਾਡੀ <a data-l10n-name="support-link">ਸਪੋਰਟ ਵੈੱਬ ਸਾਈਟ</a> ਨੂੰ ਵੇਖੋ ਜੀ।
+page-subtitle = ਇਹ ਸਫ਼ੇ ਉੱਤੇ ਤਕਨੀਕੀ ਜਾਣਕਾਰੀ ਹੈ, ਜੋ ਕਿ ਤੁਹਾਨੂੰ ਸਮੱਸਿਆ ਹੱਲ਼ ਕਰਨ ਲਈ ਫਾਇਦੇਮੰਦ ਹੋ ਸਕਦੀ ਹੈ। ਜੇ ਤੁਸੀਂ { -brand-short-name } ਬਾਰੇ ਆਮ ਸਵਾਲਾਂ ਦੇ ਜਵਾਬ ਲੱਭ ਰਹੇ ਹੋ ਤਾਂ ਸਾਡੀ <a data-l10n-name="support-link">ਸਪੋਰਟ ਵੈੱਬ ਸਾਈਟ</a> ਨੂੰ ਵੇਖੋ ਜੀ।
 crashes-title = ਕਰੈਸ਼ ਰਿਪੋਰਟਾਂ
 crashes-id = ਰਿਪੋਰਟ ID
 crashes-send-date = ਭੇਜੀਆਂ
@@ -188,6 +185,21 @@ media-codec-support-codec-name = Codec ਦਾ ਨਾਂ
 media-codec-support-supported = ਸਹਿਯੋਗੀ
 media-codec-support-unsupported = ਗ਼ੈਰ-ਸਹਿਯੋਗੀ
 media-codec-support-error = Codec ਸਹਿਯੋਗ ਦੀ ਜਾਣਕਾਰੀ ਮੌਜੂਦ ਨਹੀਂ ਹੈ। ਮੀਡੀਆ ਫ਼ਾਇਲ ਚਲਾਉਣ ਤੋਂ ਬਾਅਦ ਮੁੜ ਕੋਸ਼ਿਸ਼ ਕਰੋ।
+media-codec-support-lack-of-extension = ਇਕਸਟੈਨਸ਼ਨ ਇੰਸਟਾਲ ਕਰੋ
+
+## Media Content Decryption Modules (CDM)
+## See EME Spec for more explanation for following technical terms
+## https://w3c.github.io/encrypted-media/
+
+media-content-decryption-modules-title = ਸਮੱਗਰੀ ਡਿਕ੍ਰਿਪਸ਼ਨ ਮੋਡੀਊਲ ਜਾਣਕਾਰੀ
+media-key-system-name = ਕੁੰਜੀ ਸਿਸਟਮ ਨਾਂ
+media-video-robustness = ਵੀਡੀਓ ਰੋਬਸਟਨੈਸ
+media-audio-robustness = ਆਡੀਓ ਰੋਬਸਟਨੈਸ
+media-cdm-capabilities = ਸਮਰੱਥਾਵਾਂ
+# Clear Lead isn't defined in the spec, which means the the first few seconds
+# are not encrypted. It allows playback to start without having to wait for
+# license response, improving video start time and user experience.
+media-cdm-clear-lead = ਮੁੱਢ ਨੂੰ ਸਾਫ਼ ਕਰੋ
 
 ##
 

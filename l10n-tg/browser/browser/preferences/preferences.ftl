@@ -793,9 +793,9 @@ sync-engine-creditcards =
     .label = Кортҳои кредитӣ
     .tooltiptext = Номҳо, рақамҳо ва санаҳои анҷоми муҳлат (танҳо барои мизи корӣ)
     .accesskey = К
-sync-engine-payment-methods =
+sync-engine-payment-methods2 =
     .label = Тарзҳои пардохт
-    .tooltiptext = Номҳо, рақамҳои кортҳо, санаҳои анҷоми муҳлати корт (танҳо версияи мизи корӣ)
+    .tooltiptext = Номҳо, рақамҳои корт ва санаҳои анҷоми муҳлат
     .accesskey = а
 sync-engine-addons =
     .label = Ҷузъҳои иловагӣ
@@ -843,18 +843,35 @@ pane-privacy-logins-and-passwords-header = Воридшавиҳо ва ниҳо�
 forms-ask-to-save-logins =
     .label = Пурсидани имкони нигоҳ доштани воридшавиҳо ва ниҳонвожаҳо барои сомонаҳо
     .accesskey = П
+
+## Privacy Section - Passwords
+
+# "Logins" is the former term for "Passwords". Users should find password settings
+# by searching for the former term "logins". It's not displayed in the UI.
+pane-privacy-passwords-header = Ниҳонвожаҳо
+    .searchkeywords = воридшавиҳо
+# Checkbox to control whether UI is shown to users to save or fill logins/passwords.
+forms-ask-to-save-passwords =
+    .label = Дархост барои нигоҳ доштани ниҳонвожаҳо
+    .accesskey = р
 forms-exceptions =
     .label = Истисноҳо…
     .accesskey = И
 forms-generate-passwords =
     .label = Пешниҳод ва эҷод кардани ниҳонвожаҳои қавӣ
     .accesskey = П
+forms-suggest-passwords =
+    .label = Пешниҳод кардани ниҳонвожаҳои боқувват
+    .accesskey = ш
 forms-breach-alerts =
     .label = Намоиш додани огоҳиҳо оид ба ниҳонвожаҳо барои сомонаҳои вайронкардашуда
     .accesskey = Н
 forms-breach-alerts-learn-more-link = Маълумоти бештар
 preferences-relay-integration-checkbox =
     .label = Барои муҳофизат кардани нишонии почтаи электронии шумо, ниқобҳои муҳофизатии почтаи электронии { -relay-brand-name } пешниҳод карда мешаванд
+preferences-relay-integration-checkbox2 =
+    .label = Барои муҳофизат кардани нишонии почтаи электронии шумо, ниқобҳои муҳофизатии почтаи электронии { -relay-brand-name } пешниҳод карда мешаванд
+    .accesskey = а
 relay-integration-learn-more-link = Маълумоти бештар
 # Checkbox which controls filling saved logins into fields automatically when they appear, in some cases without user interaction.
 forms-fill-logins-and-passwords =
@@ -863,6 +880,13 @@ forms-fill-logins-and-passwords =
 forms-saved-logins =
     .label = Воридшавиҳои нигоҳдошташуда…
     .accesskey = В
+# Checkbox which controls filling saved logins into fields automatically when they appear, in some cases without user interaction.
+forms-fill-usernames-and-passwords =
+    .label = Ба таври худкор пур кардани номҳои корбар ва ниҳонвожаҳо
+    .accesskey = а
+forms-saved-passwords =
+    .label = Ниҳонвожаҳои нигоҳдошташуда
+    .accesskey = и
 forms-primary-pw-use =
     .label = Истифода кардани ниҳонвожаи асосӣ
     .accesskey = И
@@ -886,6 +910,7 @@ forms-windows-sso =
     .label = Иҷозат додани воридшавии ягонаи Windows барои ҳисобҳои Microsoft, корӣ ва мактабӣ
 forms-windows-sso-learn-more-link = Маълумоти бештар
 forms-windows-sso-desc = Ҳисобҳоро дар танзимоти дастгоҳи худ идора кунед
+windows-passkey-settings-label = Идоракунии шоҳкалидҳо дар танзимоти низомӣ
 
 ## OS Authentication dialog
 
@@ -897,6 +922,28 @@ primary-password-os-auth-dialog-message-win = Барои эҷод кардани
 # notes are only valid for English. Please test in your locale.
 primary-password-os-auth-dialog-message-macosx = ниҳонвожаи асосиро эҷод кунад
 master-password-os-auth-dialog-caption = { -brand-full-name }
+
+## Privacy section - Autofill
+
+pane-privacy-autofill-header = Пуркунии худкор
+autofill-addresses-checkbox = Нигоҳ доштан ва пур кардани нишониҳо
+    .accesskey = г
+autofill-saved-addresses-button = Нишониҳои нигоҳдошташуда
+    .accesskey = и
+autofill-payment-methods-checkbox-message = Нигоҳ доштан ва пур кардани тарзҳои пардохт
+    .accesskey = г
+autofill-payment-methods-checkbox-submessage = Дар бар гирифтани кортҳои пардохтӣ ва қарзӣ
+    .accesskey = б
+autofill-saved-payment-methods-button = Тарзҳои пардохти нигоҳдошташуда
+    .accesskey = р
+autofill-reauth-checkbox =
+    { PLATFORM() ->
+        [macos] Дархости санҷиши ҳаққонияти «macOS» барои пуркунӣ ва таҳриркунии тарзҳои пардохт.
+        [windows] Дархости санҷиши ҳаққонияти «Windows» барои пуркунӣ ва таҳриркунии тарзҳои пардохт.
+        [linux] Дархости санҷиши ҳаққонияти «Linux» барои пуркунӣ ва таҳриркунии тарзҳои пардохт.
+       *[other] Дархости санҷиши ҳаққоният барои пуркунӣ ва таҳриркунии тарзҳои пардохт.
+    }
+    .accesskey = х
 
 ## Privacy Section - History
 
@@ -1276,6 +1323,7 @@ httpsonly-radio-disabled =
 
 preferences-doh-header = DNS тавассути HTTPS
 preferences-doh-description = Низоми номҳои домен (DNS) тавассути HTTPS дархостҳои шуморо барои номи домен тавассути пайвасти рамзгузоришуда ирсол карда, DNS-и бехатарро месозад ва ба дигарон барои дидани сомонаҳое, ки шумо мехоҳед ба он дастрасӣ пайдо намоед, душворӣ мекунад.
+preferences-doh-description2 = Низоми номҳои домен (DNS) тавассути HTTPS дархостҳои шуморо барои номи домен тавассути пайвасти рамзгузоришуда ирсол карда, DNS-и бехатарро таъмин мекунад ва ба дигарон барои дидани сомонаҳое, ки шумо мехоҳед ба он дастрасӣ пайдо намоед, душворӣ мекунад.
 # Variables:
 #   $status (string) - The status of the DoH connection
 preferences-doh-status = Вазъият: { $status }

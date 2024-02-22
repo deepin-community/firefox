@@ -28,14 +28,6 @@ protections-panel-etp-off-header = La protezione antitracciamento avanzata è DI
 ## custom element code.
 ##   $host (String): the hostname of the site that is being displayed.
 
-protections-panel-etp-on-toggle =
-    .label = Protezione antitracciamento avanzata
-    .description = Attiva per questo sito
-    .aria-label = Disattiva protezioni per { $host }
-protections-panel-etp-off-toggle =
-    .label = Protezione antitracciamento avanzata
-    .description = Disattivata per questo sito
-    .aria-label = Attiva protezioni per { $host }
 protections-panel-etp-toggle-on =
     .label = Protezione antitracciamento avanzata
     .description = Attiva per questo sito
@@ -146,18 +138,23 @@ protections-panel-cookie-banner-blocker-view-turn-off-for-site = Disattivare Blo
 protections-panel-cookie-banner-blocker-view-turn-on-for-site = Attivare Blocco banner per i cookie per questo sito?
 protections-panel-cookie-banner-view-cookie-clear-warning = { -brand-short-name } eliminerà i cookie per questo sito e aggiornerà la pagina. L’eliminazione dei cookie potrebbe disconnetterti dal sito o svuotare eventuali carrelli in sospeso.
 protections-panel-cookie-banner-view-turn-on-description = { -brand-short-name } cerca di rifiutare automaticamente tutte le richieste per i cookie nei siti supportati.
-protections-panel-cookie-banner-blocker-view-turn-on-description = Attivalo e { -brand-short-name } cercherà di rifiutare automaticamente i banner per i cookie su questo sito.
 protections-panel-cookie-banner-view-cancel = Annulla
 protections-panel-cookie-banner-view-turn-off = Disattiva
 protections-panel-cookie-banner-view-turn-on = Attiva
+protections-panel-cookie-banner-blocker-view-turn-on-description = Attivalo e { -brand-short-name } cercherà di rifiutare automaticamente i banner per i cookie su questo sito.
 protections-panel-cookie-banner-view-cancel-label =
     .label = Annulla
 protections-panel-cookie-banner-view-turn-off-label =
     .label = Disattiva
 protections-panel-cookie-banner-view-turn-on-label =
     .label = Attiva
-
 protections-panel-report-broken-site =
-  .label = Segnala problemi con il sito
-  .title = Segnala problemi con il sito
+    .label = Segnala problemi con il sito
+    .title = Segnala problemi con il sito
+
+## Protections panel info message
+
+cfr-protections-panel-header = Naviga senza lasciarti seguire
+cfr-protections-panel-body = Mantieni i tuoi dati al riparo da occhi indiscreti. { -brand-short-name } ti protegge dagli elementi traccianti più comuni che cercano di seguire le tue attività online.
+cfr-protections-panel-link-text = Ulteriori informazioni
 

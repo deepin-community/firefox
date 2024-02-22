@@ -279,6 +279,9 @@ quickactions-cmd-plugins = engadidos
 # Opens the print dialog
 quickactions-print2 = Imprimir a páxina
 quickactions-cmd-print = imprimir
+# Opens the print dialog at the save to PDF option
+quickactions-savepdf = Garda a páxina como PDF
+quickactions-cmd-savepdf = pdf
 # Opens a new private browsing window
 quickactions-private2 = Abrir unha xanela privada
 quickactions-cmd-private = navegación privada
@@ -348,6 +351,7 @@ identity-connection-secure = Conexión segura
 identity-connection-failure = Fallou a conexión
 identity-connection-internal = Esta é unha páxina segura de { -brand-short-name }.
 identity-connection-file = Está páxina está almacenada no computador.
+identity-connection-associated = Esta páxina cargouse desde outra páxina.
 identity-extension-page = Este páxina cargouse dende unha extensión.
 identity-active-blocked = { -brand-short-name } bloqueou partes desta páxina que non son seguras.
 identity-custom-root = Conexión comprobada por un emisor de certificados que non é recoñecido por Mozilla.
@@ -487,6 +491,9 @@ enable-devtools-popup-description2 = Para usar o atallo F12 abra primeiro as fer
 
 ## URL Bar
 
+# This string is used as an accessible name to the "X" button that cancels a custom search mode (i.e. exits the Amazon.com search mode).
+urlbar-search-mode-indicator-close =
+    .aria-label = Pechar
 # This placeholder is used when not in search mode and the user's default search
 # engine is unknown.
 urlbar-placeholder =
@@ -563,8 +570,6 @@ urlbar-result-action-search-w-engine = Buscar con { $engine }
 urlbar-result-action-sponsored = Patrocinado
 urlbar-result-action-switch-tab = Cambiar á lapela
 urlbar-result-action-visit = Visitar
-# Allows the user to visit a URL that was previously copied to the clipboard.
-urlbar-result-action-visit-from-your-clipboard = Visitar desde o seu portapapeis
 # Allows the user to visit a URL that was previously copied to the clipboard.
 urlbar-result-action-visit-from-clipboard = Visitar desde o portapapeis
 # Directs a user to press the Tab key to perform a search with the specified
