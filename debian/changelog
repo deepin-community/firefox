@@ -1,3 +1,9 @@
+firefox (123.0-1deepin1) unstable; urgency=medium
+
+  * debian/control*, debian/rules: Use LLVM-16 build it. 
+
+ -- xiangzelong <xiangzelong@deepin.org>  Sat, 24 Feb 2024 18:31:55 +0800
+
 firefox (123.0-1) unstable; urgency=medium
 
   * New upstream release.
