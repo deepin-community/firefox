@@ -16,3 +16,5 @@ debian-hacks/Don-t-auto-disable-extensions-in-system-directories.patch
 debian-hacks/Work-around-GCC-ICE-on-ppc64el.patch
 debian-hacks/Relax-cargo-version-requirement.patch
 debian-hacks/Adjust-our-gfx-skia-moz.build-patch-to-upstream-chan.patch
+loong64-keep-unsigned-32-bit-param.patch
+loong64-fix-usage-of-some-instruction-encoding-field-masks.patch

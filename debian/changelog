@@ -1,3 +1,12 @@
+firefox (123.0-1deepin2) unstable; urgency=medium
+
+  * fix: loong64: Keep unsigned 32-bit parameter sign-extended in register
+    - https://phabricator.services.mozilla.com/D204011
+  * fix: loong64: Fix usage of some instruction encoding field masks
+    - https://phabricator.services.mozilla.com/D203884
+
+ -- Chang Yang <yangchang@deepin.org>  Wed, 13 Mar 2024 15:44:34 +0800
+
 firefox (123.0-1deepin1) unstable; urgency=medium
 
   * debian/control*, debian/rules: Use LLVM-16 build it. 
