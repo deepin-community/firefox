@@ -12,6 +12,8 @@ menu-tools-firefox-view =
     .label = { -firefoxview-brand-name }
     .accesskey = F
 firefoxview-page-title = { -firefoxview-brand-name }
+firefoxview-page-heading =
+    .heading = { -firefoxview-brand-name }
 firefoxview-page-label =
     .label = { -firefoxview-brand-name }
 firefoxview-close-button =
@@ -51,6 +53,7 @@ firefoxview-syncedtabs-loading-header = Synkronisering pågår
 firefoxview-syncedtabs-loading-description = När det är klart ser du alla flikar som du har öppna på andra enheter. Kom snart tillbaka.
 firefoxview-tabpickup-fxa-admin-disabled-header = Din organisation har inaktiverat synkronisering
 firefoxview-tabpickup-fxa-admin-disabled-description = { -brand-short-name } kan inte synkronisera flikar mellan enheter eftersom din administratör har inaktiverat synkronisering.
+firefoxview-tabpickup-fxa-disabled-by-policy-description = { -brand-short-name } kan inte synkronisera flikar mellan enheter eftersom din organisation har inaktiverat synkronisering.
 firefoxview-tabpickup-network-offline-header = Kontrollera din internetanslutning
 firefoxview-tabpickup-network-offline-description = Om du använder en brandvägg eller proxy, kontrollera att { -brand-short-name } har behörighet att komma åt webben.
 firefoxview-tabpickup-network-offline-primarybutton = Försök igen
@@ -184,6 +187,8 @@ firefoxview-search-results-count =
 firefoxview-search-results-empty = Inga resultat för "{ $query }"
 firefoxview-sort-history-by-date-label = Sortera efter datum
 firefoxview-sort-history-by-site-label = Sortera efter webbplats
+firefoxview-sort-open-tabs-by-recency-label = Sortera efter senaste aktivitet
+firefoxview-sort-open-tabs-by-order-label = Sortera efter flikordning
 # Variables:
 #   $url (string) - URL that will be opened in the new tab
 firefoxview-opentabs-tab-row =
@@ -246,3 +251,25 @@ firefoxview-recentlyclosed-empty-description-two = Visa din <a data-l10n-name="h
 
 firefoxview-syncedtabs-device-notabs = Inga flikar öppna på den här enheten
 firefoxview-syncedtabs-connect-another-device = Anslut en annan enhet
+firefoxview-pinned-tabs =
+    .title = Fästa flikar
+firefoxview-tabs =
+    .title = Flikar
+
+## These tooltips will be displayed when hovering over a pinned tab on the Open Tabs page
+## Variables:
+##  $tabTitle (string) - Title of pinned tab that will be opened when selected
+
+firefoxview-opentabs-pinned-tab =
+    .title = Växla till { $tabTitle }
+# This tooltip will be shown for a pinned tab whose URL is currently bookmarked.
+firefoxview-opentabs-bookmarked-pinned-tab =
+    .title = Växla till (bokmärkt) { $tabTitle }
+
+## These tooltips will be displayed when hovering over an unpinned Open Tab
+## Variables:
+##   $url (string) - URL of tab that will be opened when selected
+
+# This tooltip will be shown for an unpinned tab whose URL is currently bookmarked.
+firefoxview-opentabs-bookmarked-tab =
+    .title = (Bokmärkt) { $url }

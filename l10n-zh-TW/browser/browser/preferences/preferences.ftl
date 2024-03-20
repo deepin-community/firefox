@@ -218,6 +218,10 @@ preferences-web-appearance-choice-input-dark =
 # This can appear when using windows HCM or "Override colors: always" without
 # system colors.
 preferences-web-appearance-override-warning = 您選擇的配色會蓋過網站外觀的配色。<a data-l10n-name="colors-link">管理色彩</a>。
+# This can appear when using windows HCM or "Override colors: always" without
+# system colors.
+preferences-web-appearance-override-warning2 =
+    .message = 您選擇的配色會蓋過網站外觀的配色。。
 # This message contains one link. It can be moved within the sentence as needed
 # to adapt to your language, but should not be changed.
 preferences-web-appearance-footer = 到<a data-l10n-name="themes-link">擴充套件與佈景主題</a>管理 { -brand-short-name } 的佈景主題
@@ -245,6 +249,8 @@ preferences-default-zoom-value =
 preferences-zoom-text-only =
     .label = 只縮放文字
     .accesskey = t
+preferences-text-zoom-override-warning =
+    .message = 警告：若您選擇「只縮放文字」，但未將預設縮放比例設定為 100%，可能造成某些網站或內容不正常。
 language-header = 語言
 choose-language-description = 請選擇瀏覽支援多國語言的網頁時要優先顯示哪種語言
 choose-button =
@@ -550,6 +556,9 @@ home-prefs-shortcuts-by-option-sponsored =
 home-prefs-recommended-by-header =
     .label = { $provider } 推薦
 home-prefs-recommended-by-description-new = 由 { -brand-product-name } 的姊妹作 { $provider } 精心策展的內容
+home-prefs-recommended-by-header-generic =
+    .label = 推薦的文章
+home-prefs-recommended-by-description-generic = 由 { -brand-product-name } 產品家族精選的內容文章
 
 ##
 
@@ -737,7 +746,7 @@ prefs-syncing-button =
 sync-syncing-across-devices-heading = 您連線的裝置會同步下列項目:
 sync-currently-syncing-bookmarks = 書籤
 sync-currently-syncing-history = 瀏覽紀錄
-sync-currently-syncing-tabs = 開啟分頁
+sync-currently-syncing-tabs = 開啟的分頁
 sync-currently-syncing-logins-passwords = 登入資訊與密碼
 sync-currently-syncing-passwords = 密碼
 sync-currently-syncing-addresses = 地址
@@ -766,7 +775,7 @@ sync-engine-history =
     .label = 瀏覽紀錄
     .accesskey = r
 sync-engine-tabs =
-    .label = 開啟分頁
+    .label = 開啟的分頁
     .tooltiptext = 所有同步設備中，開啟的網頁清單
     .accesskey = T
 sync-engine-logins-passwords =
@@ -1053,7 +1062,7 @@ addressbar-locbar-clipboard-option =
     .label = 剪貼簿
     .accesskey = C
 addressbar-locbar-openpage-option =
-    .label = 開啟分頁
+    .label = 開啟的分頁
     .accesskey = O
 # Shortcuts refers to the shortcut tiles on the new tab page, previously known as top sites. Translation should be consistent.
 addressbar-locbar-shortcuts-option =
@@ -1068,10 +1077,10 @@ addressbar-locbar-engines-option =
 addressbar-locbar-quickactions-option =
     .label = 快速操作
     .accesskey = Q
+addressbar-suggestions-settings = 修改搜尋建議偏好設定
 addressbar-locbar-showrecentsearches-option =
     .label = 顯示近期搜尋項目
     .accesskey = r
-addressbar-suggestions-settings = 修改搜尋建議偏好設定
 addressbar-quickactions-learn-more = 了解更多
 
 ## Privacy Section - Content Blocking

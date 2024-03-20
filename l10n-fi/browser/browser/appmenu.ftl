@@ -77,6 +77,16 @@ appmenu-remote-tabs-turn-on-sync =
 appmenu-remote-tabs-showmore =
     .label = Näytä lisää välilehtiä
     .tooltiptext = Näytä lisää välilehtiä tältä laitteelta
+# This is shown when there are inactive tabs which are not being shown.
+# Variables
+# $count (Number) - The number of inactive tabs which are not being shown (at least 1)
+appmenu-remote-tabs-showinactive =
+    .label =
+        { $count ->
+            [one] Näytä yksi passiivinen välilehti
+           *[other] Näytä { $count } passiivista välilehteä
+        }
+    .tooltiptext = Näytä tämä laitteen passiiviset välilehdet
 # This is shown beneath the name of a device when that device has no open tabs
 appmenu-remote-tabs-notabs = Ei avoimia välilehtiä
 # This is shown when Sync is configured but syncing tabs is disabled.
@@ -168,6 +178,11 @@ profiler-popup-capture-shortcut =
 # devtools/client/performance-new/shared/background.jsm.js
 # Please take care that the same values are also defined in devtools' perftools.ftl.
 
+
+# Presets and their l10n IDs are defined in the file
+# devtools/client/performance-new/shared/background.sys.mjs
+# Please take care that the same values are also defined in devtools' perftools.ftl.
+
 profiler-popup-presets-web-developer-description = Suositeltu esiasetus suurimpaan osaan verkkosovellusten vianjäljityksessä.
 profiler-popup-presets-web-developer-label =
     .label = Web-kehittäjä
@@ -257,3 +272,13 @@ appmenu-developer-tools-extensions =
     .label = Extensions for Developers
 appmenuitem-report-broken-site =
     .label = Ilmoita rikkinäisestä sivustosta
+
+## Panel for privacy and security products
+
+appmenuitem-sign-in-account = Kirjaudu tilillesi
+appmenuitem-monitor-title = { -monitor-brand-short-name }
+appmenuitem-monitor-description = Vastaanota tietovuotovaroituksia
+appmenuitem-relay-title = { -relay-brand-short-name }
+appmenuitem-relay-description = Peitä oikea sähköpostiosoitteesi ja puhelinnumerosi
+appmenuitem-vpn-title = { -mozilla-vpn-brand-name }
+appmenuitem-vpn-description = Suojaa toimintaasi verkossa

@@ -77,6 +77,16 @@ appmenu-remote-tabs-turn-on-sync =
 appmenu-remote-tabs-showmore =
     .label = Εμφάνιση περισσότερων καρτελών
     .tooltiptext = Εμφάνιση περισσότερων καρτελών αυτής της συσκευής
+# This is shown when there are inactive tabs which are not being shown.
+# Variables
+# $count (Number) - The number of inactive tabs which are not being shown (at least 1)
+appmenu-remote-tabs-showinactive =
+    .label =
+        { $count ->
+            [one] Εμφάνιση μίας ανενεργής καρτέλας
+           *[other] Εμφάνιση { $count } ανενεργών καρτελών
+        }
+    .tooltiptext = Εμφάνιση των ανενεργών καρτελών σε αυτήν τη συσκευή
 # This is shown beneath the name of a device when that device has no open tabs
 appmenu-remote-tabs-notabs = Καμία ανοικτή καρτέλα
 # This is shown when Sync is configured but syncing tabs is disabled.
@@ -168,6 +178,11 @@ profiler-popup-capture-shortcut =
 # devtools/client/performance-new/shared/background.jsm.js
 # Please take care that the same values are also defined in devtools' perftools.ftl.
 
+
+# Presets and their l10n IDs are defined in the file
+# devtools/client/performance-new/shared/background.sys.mjs
+# Please take care that the same values are also defined in devtools' perftools.ftl.
+
 profiler-popup-presets-web-developer-description = Προτεινόμενη προεπιλογή για τον έλεγχο σφαλμάτων των περισσότερων εφαρμογών ιστού με χαμηλό κόστος.
 profiler-popup-presets-web-developer-label =
     .label = Ανάπτυξη web
@@ -257,3 +272,13 @@ appmenu-developer-tools-extensions =
     .label = Επεκτάσεις για προγραμματιστές
 appmenuitem-report-broken-site =
     .label = Αναφορά προβληματικού ιστοτόπου
+
+## Panel for privacy and security products
+
+appmenuitem-sign-in-account = Συνδεθείτε στον λογαριασμό σας
+appmenuitem-monitor-title = { -monitor-brand-short-name }
+appmenuitem-monitor-description = Λάβετε ειδοποιήσεις παραβίασης δεδομένων
+appmenuitem-relay-title = { -relay-brand-short-name }
+appmenuitem-relay-description = Αποκρύψτε το πραγματικό email και το τηλέφωνό σας
+appmenuitem-vpn-title = { -mozilla-vpn-brand-name }
+appmenuitem-vpn-description = Προστατέψτε το διαδικτυακό σας απόρρητο

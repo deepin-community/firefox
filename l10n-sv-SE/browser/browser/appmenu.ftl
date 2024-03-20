@@ -77,6 +77,16 @@ appmenu-remote-tabs-turn-on-sync =
 appmenu-remote-tabs-showmore =
     .label = Visa fler flikar
     .tooltiptext = Visa flikar från denna enhet
+# This is shown when there are inactive tabs which are not being shown.
+# Variables
+# $count (Number) - The number of inactive tabs which are not being shown (at least 1)
+appmenu-remote-tabs-showinactive =
+    .label =
+        { $count ->
+            [one] Visa en inaktiv flik
+           *[other] Visa { $count } inaktiva flikar
+        }
+    .tooltiptext = Visa de inaktiva flikarna på den här enheten
 # This is shown beneath the name of a device when that device has no open tabs
 appmenu-remote-tabs-notabs = Inga öppna flikar
 # This is shown when Sync is configured but syncing tabs is disabled.
@@ -168,6 +178,11 @@ profiler-popup-capture-shortcut =
 # devtools/client/performance-new/shared/background.jsm.js
 # Please take care that the same values are also defined in devtools' perftools.ftl.
 
+
+# Presets and their l10n IDs are defined in the file
+# devtools/client/performance-new/shared/background.sys.mjs
+# Please take care that the same values are also defined in devtools' perftools.ftl.
+
 profiler-popup-presets-web-developer-description = Rekommenderad förinställning för de flesta webbappfelsökningar, med lite pålägg.
 profiler-popup-presets-web-developer-label =
     .label = Webbutvecklare
@@ -257,3 +272,13 @@ appmenu-developer-tools-extensions =
     .label = Tillägg för utvecklare
 appmenuitem-report-broken-site =
     .label = Rapportera trasig webbplats
+
+## Panel for privacy and security products
+
+appmenuitem-sign-in-account = Logga in på ditt konto
+appmenuitem-monitor-title = { -monitor-brand-short-name }
+appmenuitem-monitor-description = Få varningar om dataintrång
+appmenuitem-relay-title = { -relay-brand-short-name }
+appmenuitem-relay-description = Dölj din riktiga e-postadress och telefonnummer
+appmenuitem-vpn-title = { -mozilla-vpn-brand-name }
+appmenuitem-vpn-description = Skydda din onlineaktivitet

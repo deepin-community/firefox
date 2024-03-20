@@ -188,6 +188,24 @@ media-codec-support-codec-name = Nome do Codec
 media-codec-support-supported = Suportado
 media-codec-support-unsupported = Não suportado
 media-codec-support-error = Informações de suporte de codec indisponíveis. Tente novamente após reproduzir um ficheiro de multimédia.
+media-codec-support-lack-of-extension = Instalar extensão
+
+## Media Content Decryption Modules (CDM)
+## See EME Spec for more explanation for following technical terms
+## https://w3c.github.io/encrypted-media/
+
+media-content-decryption-modules-title = Informação dos módulos de desencriptação de conteúdo
+media-key-system-name = Nome do sistema de chaves
+media-video-robustness = Robustez do vídeo
+media-audio-robustness = Robustez do áudio
+media-cdm-capabilities = Capacidades
+# Clear Lead isn't defined in the spec, which means the the first few seconds
+# are not encrypted. It allows playback to start without having to wait for
+# license response, improving video start time and user experience.
+media-cdm-clear-lead = Início limpo
+# We choose 2.2 as this is the version which the video provider usually want to have in order to stream 4K video securely
+# HDCP version https://w3c.github.io/encrypted-media/#idl-def-hdcpversion
+media-hdcp-22-compatible = Compatível com HDCP 2.2
 
 ##
 
@@ -267,6 +285,7 @@ try-newer-driver = Bloqueado para a sua versão do controlador gráfico. Tente a
 # there are no good translations, these are only used in about:support
 clear-type-parameters = Parâmetros ClearType
 compositing = Composição
+support-font-determination = Informação de depuração de visibilidade de tipo de letra
 hardware-h264 = Descodificação H264 por hardware
 main-thread-no-omtc = thread principal, sem OMTC
 yes = Sim

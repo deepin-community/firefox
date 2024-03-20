@@ -15,6 +15,10 @@ fxviewtabrow-time = { DATETIME($time, timeStyle: "short") }
 fxviewtabrow-tabs-list-tab =
     .title = { $targetURI } adresini yeni sekmede aç
 # Variables:
+#   $tabTitle (string) - Title of tab being closed
+fxviewtabrow-close-tab-button =
+    .title = { $tabTitle } sekmesini kapat
+# Variables:
 #   $tabTitle (string) - Title of tab being dismissed
 fxviewtabrow-dismiss-tab-button =
     .title = { $tabTitle } sekmesini kaldır
@@ -51,6 +55,14 @@ fxviewtabrow-move-tab-window = Yeni pencereye taşı
     .accesskey = Y
 fxviewtabrow-send-tab = Sekmeyi cihaza gönder
     .accesskey = c
+fxviewtabrow-pin-tab = Sekmeyi sabitle
+    .accesskey = S
+fxviewtabrow-unpin-tab = Normal sekmeye dönüştür
+    .accesskey = N
+fxviewtabrow-mute-tab = Sekmenin sesini kapat
+    .accesskey = m
+fxviewtabrow-unmute-tab = Sekmenin sesini aç
+    .accesskey = m
 # Variables:
 #   $tabTitle (string) - Title of the tab to which the context menu is associated
 fxviewtabrow-options-menu-button =
@@ -63,3 +75,10 @@ fxviewtabrow-mute-tab-button =
 #   $tabTitle (string) - Title of tab being unmuted
 fxviewtabrow-unmute-tab-button =
     .title = { $tabTitle } sesini aç
+
+## Strings below are to be used without context (tab title/URL) on mute/unmute buttons
+
+fxviewtabrow-mute-tab-button-no-context =
+    .title = Sekmenin sesini kapat
+fxviewtabrow-unmute-tab-button-no-context =
+    .title = Sekmenin sesini aç

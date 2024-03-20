@@ -209,6 +209,9 @@ containers-remove-alert-msg =
     }
 containers-remove-ok-button = Odstrani ta vsebnik
 containers-remove-cancel-button = Ne odstrani tega vsebnika
+settings-tabs-show-image-in-preview =
+    .label = Ob pomiku miškinega kazalca na zavihek prikaži sliko predogleda
+    .accessKey = h
 
 ## General Section - Language & Appearance
 
@@ -233,6 +236,10 @@ preferences-web-appearance-choice-input-dark =
 # This can appear when using windows HCM or "Override colors: always" without
 # system colors.
 preferences-web-appearance-override-warning = Vaše izbire barv so nastavljene, da preglasijo videz spletnih strani. <a data-l10n-name="colors-link">Upravljanje barv</a>
+# This can appear when using windows HCM or "Override colors: always" without
+# system colors.
+preferences-web-appearance-override-warning2 =
+    .message = Vaše izbire barv so nastavljene, da preglasijo videz spletnih strani.
 # This message contains one link. It can be moved within the sentence as needed
 # to adapt to your language, but should not be changed.
 preferences-web-appearance-footer = Upravljajte teme { -brand-short-name(sklon: "rodilnik") } na strani <a data-l10n-name="themes-link">Razširitve in teme</a>
@@ -260,6 +267,8 @@ preferences-default-zoom-value =
 preferences-zoom-text-only =
     .label = Povečaj le besedilo
     .accesskey = b
+preferences-text-zoom-override-warning =
+    .message = Opozorilo: Če izberete "Povečaj le besedilo", privzeta povečava pa ni 100 %, lahko nekatere strani ali vsebina delujejo nepravilno.
 language-header = Jezik
 choose-language-description = Izberite prednosten jezik za prikazovanje strani
 choose-button =
@@ -565,6 +574,9 @@ home-prefs-shortcuts-by-option-sponsored =
 home-prefs-recommended-by-header =
     .label = Priporoča { $provider }
 home-prefs-recommended-by-description-new = Izjemna vsebina, ki jo pripravlja { $provider }, del družine { -brand-product-name }
+home-prefs-recommended-by-header-generic =
+    .label = Priporočene zgodbe
+home-prefs-recommended-by-description-generic = Izjemna vsebina, ki jo pripravlja družina { -brand-product-name }
 
 ##
 
@@ -759,7 +771,7 @@ sync-currently-syncing-logins-passwords = prijave in gesla
 sync-currently-syncing-passwords = gesla
 sync-currently-syncing-addresses = naslovi
 sync-currently-syncing-creditcards = kreditne kartice
-sync-currently-syncing-payment-methods = načini plačila
+sync-currently-syncing-payment-methods = plačilna sredstva
 sync-currently-syncing-addons = dodatki
 sync-currently-syncing-settings = nastavitve
 sync-change-options =
@@ -803,7 +815,7 @@ sync-engine-creditcards =
     .tooltiptext = Imena, številke in datume veljavnosti (samo računalniki)
     .accesskey = K
 sync-engine-payment-methods2 =
-    .label = Načini plačila
+    .label = Plačilna sredstva
     .tooltiptext = Imena, številke kartic in datumi veljavnosti
     .accesskey = a
 sync-engine-addons =
@@ -938,11 +950,11 @@ autofill-addresses-checkbox = Shranjuj in izpolnjuj naslove
     .accesskey = a
 autofill-saved-addresses-button = Shranjeni naslovi
     .accesskey = h
-autofill-payment-methods-checkbox-message = Shranjuj in izpolnjuj načine plačila
+autofill-payment-methods-checkbox-message = Shranjuj in izpolnjuj plačilna sredstva
     .accesskey = l
 autofill-payment-methods-checkbox-submessage = Vključuje kreditne in debetne kartice
     .accesskey = k
-autofill-saved-payment-methods-button = Shranjeni načini plačil
+autofill-saved-payment-methods-button = Shranjena plačilna sredstva
     .accesskey = h
 
 ## Privacy Section - History
@@ -999,6 +1011,7 @@ sitedata-delete-on-close =
     .label = Izbriši piškotke in podatke strani, ko se { -brand-short-name } zapre
     .accesskey = z
 sitedata-delete-on-close-private-browsing = V načinu stalnega zasebnega brskanja bodo piškotki in podatki strani izbrisani ob vsakem zaprtju { -brand-short-name(sklon: "rodilnik") }.
+sitedata-delete-on-close-private-browsing2 = V skladu z nastavitvami zgodovine { -brand-short-name } izbriše piškotke in podatke spletnih mest, ko zaprete brskalnik.
 sitedata-allow-cookies-option =
     .label = Sprejemaj piškotke in podatke strani
     .accesskey = S
@@ -1075,10 +1088,10 @@ addressbar-locbar-engines-option =
 addressbar-locbar-quickactions-option =
     .label = hitra dejanja
     .accesskey = h
+addressbar-suggestions-settings = Spremeni nastavitve predlogov iskanja
 addressbar-locbar-showrecentsearches-option =
     .label = Prikaži nedavna iskanja
     .accesskey = d
-addressbar-suggestions-settings = Spremeni nastavitve predlogov iskanja
 addressbar-quickactions-learn-more = Več o tem
 
 ## Privacy Section - Content Blocking
@@ -1323,6 +1336,7 @@ httpsonly-radio-disabled =
 
 preferences-doh-header = DNS prek HTTPS
 preferences-doh-description = DNS (sistem domenskih imen) prek HTTPS pošilja vaše zahtevke za imena domen po šifrirani povezavi, kar ustvari zavarovan DNS in drugim otežuje vpogled v to, katera spletna mesta obiskujete.
+preferences-doh-description2 = DNS (sistem domenskih imen) prek HTTPS pošilja vaše zahtevke za imena domen po šifrirani povezavi, kar ustvari zavarovan DNS in drugim otežuje vpogled v to, katera spletna mesta obiskujete.
 # Variables:
 #   $status (string) - The status of the DoH connection
 preferences-doh-status = Stanje: { $status }

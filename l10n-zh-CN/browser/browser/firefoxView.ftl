@@ -12,6 +12,8 @@ menu-tools-firefox-view =
     .label = { -firefoxview-brand-name }
     .accesskey = F
 firefoxview-page-title = { -firefoxview-brand-name }
+firefoxview-page-heading =
+    .heading = { -firefoxview-brand-name }
 firefoxview-page-label =
     .label = { -firefoxview-brand-name }
 firefoxview-close-button =
@@ -51,6 +53,7 @@ firefoxview-syncedtabs-loading-header = 正在同步
 firefoxview-syncedtabs-loading-description = 完成后即可看到其他设备上打开的标签页，请稍后回来查看。
 firefoxview-tabpickup-fxa-admin-disabled-header = 您的组织已禁用同步服务
 firefoxview-tabpickup-fxa-admin-disabled-description = 由于您的管理员已禁用同步服务，{ -brand-short-name } 无法跨设备同步标签页。
+firefoxview-tabpickup-fxa-disabled-by-policy-description = 您的组织已禁用同步功能，{ -brand-short-name } 无法在设备间同步标签页。
 firefoxview-tabpickup-network-offline-header = 请检查您的互联网连接
 firefoxview-tabpickup-network-offline-description = 若您正在使用防火墙或代理，请检查 { -brand-short-name } 是否有联网权限。
 firefoxview-tabpickup-network-offline-primarybutton = 重试
@@ -184,6 +187,8 @@ firefoxview-search-results-count =
 firefoxview-search-results-empty = 未找到“{ $query }”的相关结果
 firefoxview-sort-history-by-date-label = 按日期排序
 firefoxview-sort-history-by-site-label = 按网站排序
+firefoxview-sort-open-tabs-by-recency-label = 按最近活动排序
+firefoxview-sort-open-tabs-by-order-label = 按标签页顺序排序
 # Variables:
 #   $url (string) - URL that will be opened in the new tab
 firefoxview-opentabs-tab-row =
@@ -246,3 +251,25 @@ firefoxview-recentlyclosed-empty-description-two = 如需查找较早前关闭�
 
 firefoxview-syncedtabs-device-notabs = 此设备上没有打开的标签页
 firefoxview-syncedtabs-connect-another-device = 连接其他设备
+firefoxview-pinned-tabs =
+    .title = 固定的标签页
+firefoxview-tabs =
+    .title = 标签页
+
+## These tooltips will be displayed when hovering over a pinned tab on the Open Tabs page
+## Variables:
+##  $tabTitle (string) - Title of pinned tab that will be opened when selected
+
+firefoxview-opentabs-pinned-tab =
+    .title = 切换到“{ $tabTitle }”
+# This tooltip will be shown for a pinned tab whose URL is currently bookmarked.
+firefoxview-opentabs-bookmarked-pinned-tab =
+    .title = 切换到“{ $tabTitle }”（已加书签）
+
+## These tooltips will be displayed when hovering over an unpinned Open Tab
+## Variables:
+##   $url (string) - URL of tab that will be opened when selected
+
+# This tooltip will be shown for an unpinned tab whose URL is currently bookmarked.
+firefoxview-opentabs-bookmarked-tab =
+    .title = { $url }（已加书签）

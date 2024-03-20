@@ -54,6 +54,8 @@ about-glean-manual-testing =
 about-glean-no-ping-label = (não enviar qualquer ping)
 # An in-line text input field precedes this string.
 about-glean-label-for-tag-pings = No campo anterior, certifique-se que existe uma etiqueta de depuração memorável para que você possa reconhecer os seus pings mais tarde.
+# An in-line text input field precedes this string.
+about-glean-label-for-tag-pings-with-requirements = Defina uma etiqueta de depuração memorável <span>(20 carateres ou menos, apenas alfanuméricos e -)</span> para que possa reconhecer os seus pings mais tarde.
 # An in-line drop down list precedes this string.
 # Do not translate strings between <code> </code> tags.
 about-glean-label-for-ping-names =
@@ -85,6 +87,14 @@ about-glean-adhoc-explanation =
     abrindo uma consola devtools em <code>about:glean</code>
     e utilizando a API <code>testGetValue()</code> como
     <code>Glean.metricCategory.metricName.testGetValue()</code>.
+# Do not translate strings between <code> </code> tags.
+about-glean-adhoc-explanation2 =
+    Para mais testes <i>ad hoc</i>,
+    também pode determinar o valor atual de uma determinada peça de instrumentação
+    abrindo uma consola do programador em <code>about:glean</code>
+    e utilizando a API <code>testGetValue()</code> como
+    <code>Glean.metricCategory.metricName.testGetValue()</code>
+    para uma métrica denominada <code>metric.category.metric_name</code>.
 # Do not translate strings between <code> </code> tags.
 about-glean-adhoc-note =
     Por favor, note que está a utilizar a API Glean JS através da consola de ferramentas de desenvolvimento.

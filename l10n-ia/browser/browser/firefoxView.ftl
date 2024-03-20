@@ -12,6 +12,8 @@ menu-tools-firefox-view =
     .label = { -firefoxview-brand-name }
     .accesskey = F
 firefoxview-page-title = { -firefoxview-brand-name }
+firefoxview-page-heading =
+    .heading = { -firefoxview-brand-name }
 firefoxview-page-label =
     .label = { -firefoxview-brand-name }
 firefoxview-close-button =
@@ -51,6 +53,7 @@ firefoxview-syncedtabs-loading-header = Synchronisation in curso
 firefoxview-syncedtabs-loading-description = Quando illo es facite, tu videra ulle schedas que tu ha aperite sur altere apparatos.
 firefoxview-tabpickup-fxa-admin-disabled-header = Tu organisation ha disactivate le synchronisation
 firefoxview-tabpickup-fxa-admin-disabled-description = { -brand-short-name } non pote synchronisar schedas inter apparatos perque tu administrator ha disactivate le synchronisation.
+firefoxview-tabpickup-fxa-disabled-by-policy-description = { -brand-short-name } non pote synchronisar schedas inter apparatos perque tu organisation ha disactivate le synchronisation.
 firefoxview-tabpickup-network-offline-header = Controla tu connexion a internet
 firefoxview-tabpickup-network-offline-description = Si tu usa un firewall o proxy, verifica que { -brand-short-name } ha permission pro acceder al web.
 firefoxview-tabpickup-network-offline-primarybutton = Retenta
@@ -184,6 +187,8 @@ firefoxview-search-results-count =
 firefoxview-search-results-empty = Nulle resultatos pro “{ $query }”
 firefoxview-sort-history-by-date-label = Ordinar per data
 firefoxview-sort-history-by-site-label = Ordinar per sito
+firefoxview-sort-open-tabs-by-recency-label = Ordinar per activitate recente
+firefoxview-sort-open-tabs-by-order-label = Ordinar per ordine de scheda
 # Variables:
 #   $url (string) - URL that will be opened in the new tab
 firefoxview-opentabs-tab-row =
@@ -246,3 +251,25 @@ firefoxview-recentlyclosed-empty-description-two = Pro trovar schedas de plus lo
 
 firefoxview-syncedtabs-device-notabs = Nulle schedas aperte sur iste apparato
 firefoxview-syncedtabs-connect-another-device = Connecter un altere apparato
+firefoxview-pinned-tabs =
+    .title = Schedas appunctate
+firefoxview-tabs =
+    .title = Schedas
+
+## These tooltips will be displayed when hovering over a pinned tab on the Open Tabs page
+## Variables:
+##  $tabTitle (string) - Title of pinned tab that will be opened when selected
+
+firefoxview-opentabs-pinned-tab =
+    .title = Passar a { $tabTitle }
+# This tooltip will be shown for a pinned tab whose URL is currently bookmarked.
+firefoxview-opentabs-bookmarked-pinned-tab =
+    .title = Passar a (marcapaginas) { $tabTitle }
+
+## These tooltips will be displayed when hovering over an unpinned Open Tab
+## Variables:
+##   $url (string) - URL of tab that will be opened when selected
+
+# This tooltip will be shown for an unpinned tab whose URL is currently bookmarked.
+firefoxview-opentabs-bookmarked-tab =
+    .title = (marcapaginas) { $url }

@@ -64,6 +64,11 @@ shopping-message-bar-analysis-in-progress-with-amount = Kontrollerer kvaliteten 
 shopping-message-bar-page-not-supported =
     .heading = Vi kan ikke kontrollere disse anmeldelser
     .message = Desværre kan vi ikke kontrollere kvaliteten af anmeldelser for visse typer af produkter. For eksempel gavekort og streaming af video, musik og spil.
+shopping-message-bar-keep-closed-header =
+    .heading = Lad være lukket?
+    .message = Du kan opdatere dine indstillinger for at lade Verificering af anmeldelser være lukket som standard. Lige nu åbner funktionen automatisk.
+shopping-message-bar-keep-closed-dismiss-button = Nej tak
+shopping-message-bar-keep-closed-accept-button = Ja, lad være lukket
 
 ## Strings for the product review snippets card
 
@@ -89,6 +94,19 @@ shopping-settings-recommendations-toggle =
 shopping-settings-recommendations-learn-more2 = Du vil til tider få vist reklamer for relevante produkter. Vi reklamerer kun for produkter med pålidelige anmeldelser. <a data-l10n-name="review-quality-url">Læs mere</a>
 shopping-settings-opt-out-button = Slå verificering af anmeldelser fra
 powered-by-fakespot = Verificering af anmeldelser er leveret af <a data-l10n-name="fakespot-link">{ -fakespot-brand-full-name }</a>.
+shopping-settings-auto-open-toggle =
+    .label = Åbn Verificering af anmeldelser automatisk
+# Description text for regions where we support three sites. Sites are limited to Amazon, Walmart and Best Buy.
+# Variables:
+#   $firstSite (String) - The first shopping page name
+#   $secondSite (String) - The second shopping page name
+#   $thirdSite (String) - The third shopping page name
+shopping-settings-auto-open-description-three-sites = Når du ser produkter på { $firstSite }, { $secondSite } og { $thirdSite }
+# Description text for regions where we support only one site (e.g. currently used in FR/DE with Amazon).
+# Variables:
+#   $currentSite (String) - The current shopping page name
+shopping-settings-auto-open-description-single-site = Når du ser produkter på { $currentSite }
+shopping-settings-sidebar-enabled-state = Verificering af anmeldelser er <strong>aktiveret</strong>
 
 ## Strings for the adjusted rating component
 
@@ -171,6 +189,22 @@ shopping-callout-pdp-opted-in-title = Er de her anmeldelser pålidelige? Find hu
 shopping-callout-pdp-opted-in-subtitle = Åbn verificering af anmeldelser for at se en justeret bedømmelse, hvor upålidelige anmeldelser er fjernet. Og se højdepunkter fra de seneste pålidelige anmeldelser.
 shopping-callout-closed-not-opted-in-title = Pålidelige anmeldelser med et enkelt klik
 shopping-callout-closed-not-opted-in-subtitle = Prøv verificering af anmeldelser, når du ser prismærket. Hør rigtige menneskers mening før du handler.
+shopping-callout-closed-not-opted-in-revised-title = Pålidelige anmeldelser med et enkelt klik
+shopping-callout-closed-not-opted-in-revised-subtitle = Klik på ikonet med prismærket i adresselinjen for at komme tilbage til Verificering af anmeldelser.
+shopping-callout-closed-not-opted-in-revised-button = Forstået
+shopping-callout-not-opted-in-reminder-title = Vær tryg når du handler
+shopping-callout-not-opted-in-reminder-subtitle = Er du i tvivl, om anmeldelser af et produkter er rigtige eller forfalskede? Verificering af anmeldelser fra { -brand-product-name } kan hjælpe dig.
+shopping-callout-not-opted-in-reminder-open-button = Åbn Verificering af anmeldelser
+shopping-callout-not-opted-in-reminder-close-button = Afvis
+shopping-callout-not-opted-in-reminder-ignore-checkbox = Vis ikke igen
+shopping-callout-not-opted-in-reminder-img-alt =
+    .aria-label = Abstrakt illustration af tre produktanmeldelser. Den ene har et symbol for at indikere, at anmeldelser muligvis ikke er pålidelig.
+shopping-callout-disabled-auto-open-title = Verificering af anmeldelser er nu lukket som standard
+shopping-callout-disabled-auto-open-subtitle = Klik på ikonet med prismærket i adresselinjen når du vil se, om du kan stole på anmeldelserne af et produkt.
+shopping-callout-disabled-auto-open-button = Forstået
+shopping-callout-opted-out-title = Verificering af anmeldelser er slået fra
+shopping-callout-opted-out-subtitle = For at slå funktionen til skal du klikke på ikonet med prismærket i adresselinjen og følge vejledningen.
+shopping-callout-opted-out-button = Forstået
 
 ## Onboarding message strings.
 
@@ -186,7 +220,6 @@ shopping-onboarding-dynamic-subtitle-1 = Se hvor pålidelige anmeldelserne af pr
 #   $currentSite (str) - The current shopping page name
 shopping-onboarding-single-subtitle = Se, hvor pålidelige anmeldelserne af produkter på <b>{ $currentSite }</b> er, før du handler. Verificering af anmeldelser, en eksperimentel funktion fra { -brand-product-name }, er indbygget i browseren.
 shopping-onboarding-body = Ved hjælp af { -fakespot-brand-full-name } kan vi hjælpe dig med at undgå partiske og upålidelige anmeldelser. Vores AI-model forbedres hele tiden for at beskytte dig, når du shopper. <a data-l10n-name="learn_more">Læs mere</a>
-shopping-onboarding-opt-in-privacy-policy-and-terms-of-use2 = Ved at vælge “{ shopping-onboarding-opt-in-button }“ accepterer du { -fakespot-brand-name }s <a data-l10n-name="privacy_policy">privatlivspolitik</a> og <a data-l10n-name="terms_of_use">betingelser for brug.</a>
 shopping-onboarding-opt-in-privacy-policy-and-terms-of-use3 = Ved at vælge “{ shopping-onboarding-opt-in-button }“ accepterer du { -brand-product-name }' <a data-l10n-name="privacy_policy">privatlivspolitik</a>  samt { -fakespot-brand-name }s <a data-l10n-name="terms_of_use">betingelser for brug.</a>
 shopping-onboarding-opt-in-button = Ja, prøv det
 shopping-onboarding-not-now-button = Ikke nu

@@ -77,6 +77,18 @@ appmenu-remote-tabs-turn-on-sync =
 appmenu-remote-tabs-showmore =
     .label = Dalšne rejtariki pokazaś
     .tooltiptext = Dalšne rejtariki z toś togo rěda pokazaś
+# This is shown when there are inactive tabs which are not being shown.
+# Variables
+# $count (Number) - The number of inactive tabs which are not being shown (at least 1)
+appmenu-remote-tabs-showinactive =
+    .label =
+        { $count ->
+            [one] { $count } inaktiwny rejtarik pokazaś
+            [two] { $count } inaktiwnej rejtarika pokazaś
+            [few] { $count } inaktiwne rejtarik pokazaś
+           *[other] { $count } inaktiwnych rejtarikow pokazaś
+        }
+    .tooltiptext = Inaktiwne rejtariki na toś tom rěźe pokazaś
 # This is shown beneath the name of a device when that device has no open tabs
 appmenu-remote-tabs-notabs = Žedne wócynjone rejtariki
 # This is shown when Sync is configured but syncing tabs is disabled.
@@ -168,6 +180,11 @@ profiler-popup-capture-shortcut =
 # devtools/client/performance-new/shared/background.jsm.js
 # Please take care that the same values are also defined in devtools' perftools.ftl.
 
+
+# Presets and their l10n IDs are defined in the file
+# devtools/client/performance-new/shared/background.sys.mjs
+# Please take care that the same values are also defined in devtools' perftools.ftl.
+
 profiler-popup-presets-web-developer-description = Dopórucone pśednastajenje za pytanje zmólkow za nejwěcej webnałoženjow z mało zastojańskimi datami.
 profiler-popup-presets-web-developer-label =
     .label = Webwuwijaŕ
@@ -257,3 +274,13 @@ appmenu-developer-tools-extensions =
     .label = Rozšyrjenja za wuwijarje
 appmenuitem-report-broken-site =
     .label = Wobškóźone sedło k wěsći daś
+
+## Panel for privacy and security products
+
+appmenuitem-sign-in-account = Pśizjawśo se pla swójogo konta
+appmenuitem-monitor-title = { -monitor-brand-short-name }
+appmenuitem-monitor-description = Dostańśo warnowanja wó datowych źěrach
+appmenuitem-relay-title = { -relay-brand-short-name }
+appmenuitem-relay-description = Maskěrujśo swóju napšawdnu e-mailowu adresu a swój telefon
+appmenuitem-vpn-title = { -mozilla-vpn-brand-name }
+appmenuitem-vpn-description = Šćitajśo swóju aktiwitu online

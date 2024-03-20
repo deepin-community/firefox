@@ -12,6 +12,8 @@ menu-tools-firefox-view =
     .label = { -firefoxview-brand-name }
     .accesskey = F
 firefoxview-page-title = { -firefoxview-brand-name }
+firefoxview-page-heading =
+    .heading = { -firefoxview-brand-name }
 firefoxview-page-label =
     .label = { -firefoxview-brand-name }
 firefoxview-close-button =
@@ -51,6 +53,7 @@ firefoxview-syncedtabs-loading-header = 동기화 진행 중
 firefoxview-syncedtabs-loading-description = 완료되면, 다른 기기에서 열려 있는 탭이 모두 표시됩니다. 곧 다시 확인해 보세요.
 firefoxview-tabpickup-fxa-admin-disabled-header = 조직에서 동기화를 사용하지 않도록 설정함
 firefoxview-tabpickup-fxa-admin-disabled-description = { -brand-short-name }는 관리자가 동기화를 비활성화했기 때문에 기기 간에 탭을 동기화할 수 없습니다.
+firefoxview-tabpickup-fxa-disabled-by-policy-description = { -brand-short-name }는 조직이 동기화를 비활성화했기 때문에 기기 간에 탭을 동기화할 수 없습니다.
 firefoxview-tabpickup-network-offline-header = 인터넷 연결 확인
 firefoxview-tabpickup-network-offline-description = 방화벽이나 프록시를 사용하는 경우, { -brand-short-name }에 웹 액세스 권한이 있는지 확인하세요.
 firefoxview-tabpickup-network-offline-primarybutton = 다시 시도
@@ -180,6 +183,8 @@ firefoxview-search-results-count = { $count }개 사이트
 firefoxview-search-results-empty = “{ $query }”에 대한 결과 없음
 firefoxview-sort-history-by-date-label = 날짜순 정렬
 firefoxview-sort-history-by-site-label = 사이트순 정렬
+firefoxview-sort-open-tabs-by-recency-label = 최근 활동순 정렬
+firefoxview-sort-open-tabs-by-order-label = 탭 순서로 정렬
 # Variables:
 #   $url (string) - URL that will be opened in the new tab
 firefoxview-opentabs-tab-row =
@@ -242,3 +247,25 @@ firefoxview-recentlyclosed-empty-description-two = 오래 전 탭을 찾으려�
 
 firefoxview-syncedtabs-device-notabs = 이 기기에 열린 탭 없음
 firefoxview-syncedtabs-connect-another-device = 다른 기기 연결
+firefoxview-pinned-tabs =
+    .title = 고정된 탭
+firefoxview-tabs =
+    .title = 탭
+
+## These tooltips will be displayed when hovering over a pinned tab on the Open Tabs page
+## Variables:
+##  $tabTitle (string) - Title of pinned tab that will be opened when selected
+
+firefoxview-opentabs-pinned-tab =
+    .title = { $tabTitle } 탭으로 전환
+# This tooltip will be shown for a pinned tab whose URL is currently bookmarked.
+firefoxview-opentabs-bookmarked-pinned-tab =
+    .title = (북마크됨) { $tabTitle } 탭으로 전환
+
+## These tooltips will be displayed when hovering over an unpinned Open Tab
+## Variables:
+##   $url (string) - URL of tab that will be opened when selected
+
+# This tooltip will be shown for an unpinned tab whose URL is currently bookmarked.
+firefoxview-opentabs-bookmarked-tab =
+    .title = (북마크됨) { $url }

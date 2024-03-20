@@ -64,6 +64,11 @@ shopping-message-bar-analysis-in-progress-with-amount = Kontrola kwality pohódn
 shopping-message-bar-page-not-supported =
     .heading = Njemóžemy tute pohódnoćenja přepruwować
     .message = Bohužel njemóžemy kwalitu pohódnoćenja za wěste produktowe typy kontrolować. Na přikład za darne karty a prudźace widejo, hudźbu a hry.
+shopping-message-bar-keep-closed-header =
+    .heading = Začinjeny wostajić?
+    .message = Móžeće swoje nastajenja aktualizować, zo byšće kontrolu pohódnoćenjow po standardźe začinjenu wostajić. Tuchwilu so awtomatisce wočinja.
+shopping-message-bar-keep-closed-dismiss-button = Ně, dźakuju so
+shopping-message-bar-keep-closed-accept-button = Haj, začinjeny wostajić
 
 ## Strings for the product review snippets card
 
@@ -89,6 +94,19 @@ shopping-settings-recommendations-toggle =
 shopping-settings-recommendations-learn-more2 = Budźeće hdys a hdys wabjenje za relewantne produkty widźeć. Wabimy jenož za produkty ze spušćomnymi pohódnoćenjemi. <a data-l10n-name="review-quality-url">Dalše informacije</a>
 shopping-settings-opt-out-button = Kontrolu pohódnoćenjow znjemóžnić
 powered-by-fakespot = Kontrola pohódnoćenjow so wot <a data-l10n-name="fakespot-link">{ -fakespot-brand-full-name } spěchuje</a>.
+shopping-settings-auto-open-toggle =
+    .label = Kontrolu pohódnoćenjow awtomatisce wočinić
+# Description text for regions where we support three sites. Sites are limited to Amazon, Walmart and Best Buy.
+# Variables:
+#   $firstSite (String) - The first shopping page name
+#   $secondSite (String) - The second shopping page name
+#   $thirdSite (String) - The third shopping page name
+shopping-settings-auto-open-description-three-sites = Hdyž sej produkty na { $firstSite }, { $secondSite } a { $thirdSite } wobhladujeće
+# Description text for regions where we support only one site (e.g. currently used in FR/DE with Amazon).
+# Variables:
+#   $currentSite (String) - The current shopping page name
+shopping-settings-auto-open-description-single-site = Hdyž sej produkty na { $currentSite } wobhladujeće
+shopping-settings-sidebar-enabled-state = Kontrola pohódnoćenjow je <strong>zmóžnjena</strong>
 
 ## Strings for the adjusted rating component
 
@@ -173,6 +191,22 @@ shopping-callout-pdp-opted-in-title = Su tute pohódnoćenja spušćomne? Wuslě
 shopping-callout-pdp-opted-in-subtitle = Wočińće kontrolu pohódnoćenjow, zo byšće přiměrjene hódnoćenje z wotstronjenymi njespušćomnymi pohódnoćenjemi. Wobhladajće sej nimo toho  wjerški z najnowšich awtentiskich pohódnoćenjow.
 shopping-callout-closed-not-opted-in-title = Jedne kliknjenje do spušćomnych pohódnoćenjow
 shopping-callout-closed-not-opted-in-subtitle = Dajće kontroli pohódnoćenjow šansu, hdyžkuli płaćiznowu tafličku widźiće. Dóstańće spěšnje dohlady wot woprawdźitych nakupowarjow – prjedy hač kupujeće.
+shopping-callout-closed-not-opted-in-revised-title = Jedne kliknjenje do dowěry hódnych pohódnoćenjow
+shopping-callout-closed-not-opted-in-revised-subtitle = Klikńće prosće na symbol płaćiznoweje taflički w adresowym polu, zo byšće so ke kontroli pohódnoćenjow wróćił.
+shopping-callout-closed-not-opted-in-revised-button = Sym zrozumił
+shopping-callout-not-opted-in-reminder-title = Nakupće z dowěru
+shopping-callout-not-opted-in-reminder-subtitle = Njejsće sej wěsty, hač pohódnoćenja produkta su prawdźiwe abo sfalšowane? Kontrola pohódnoćenjow z { -brand-product-name } móže pomhać.
+shopping-callout-not-opted-in-reminder-open-button = Kontrolu pohódnoćenjow wočinić
+shopping-callout-not-opted-in-reminder-close-button = Zaćisnyć
+shopping-callout-not-opted-in-reminder-ignore-checkbox = Hižo so njepokazać
+shopping-callout-not-opted-in-reminder-img-alt =
+    .aria-label = Abstraktne zwobraznjenje třoch produktowych pohódnoćenjow. Jedne ma warnowanski symbol, kotryž pokazuje, zo snano dowěry hódne njeje.
+shopping-callout-disabled-auto-open-title = Kontrola pohódnoćenjow je nětko po standardźe začinjena
+shopping-callout-disabled-auto-open-subtitle = Klikńće na symbol płaćiznoweje taflički w adresowym polu, hdyžkuli chceće widźeć, hač móžeće pohódnoćenjam produkta dowěrić.
+shopping-callout-disabled-auto-open-button = Sym zrozumił
+shopping-callout-opted-out-title = Kontrola pohódnoćenjow je znjemóžnjena
+shopping-callout-opted-out-subtitle = Zo byšće ju zaso zmóžnił, klikńće na symbol płaćiznoweje taflički w adresowym polu a slědujće instrukcijam.
+shopping-callout-opted-out-button = Sym zrozumił
 
 ## Onboarding message strings.
 
@@ -188,7 +222,6 @@ shopping-onboarding-dynamic-subtitle-1 = Hladajće, kak spušćomne produktowe p
 #   $currentSite (str) - The current shopping page name
 shopping-onboarding-single-subtitle = Hladajće, kak spušćomne pohódnoćenja produktow na <b>{ $currentSite }</b> su, prjedy hač produkty kupiće. Kontrola pohódnoćenjow, eksperimentalna funkcija z { -brand-product-name }, je direktnje do wobhladowaka zatwarjena.
 shopping-onboarding-body = Z pomocu potenciala { -fakespot-brand-full-name }, pomhamy wam, předzajate a njeawtentiske pohódnoćenja wobeńć. Naš model KI so stajnje polěpšuje, zo by was škitał, hdyž nakupujeće. <a data-l10n-name="learn_more">Dalše informacije</a>
-shopping-onboarding-opt-in-privacy-policy-and-terms-of-use2 = Hdyž “{ shopping-onboarding-opt-in-button }“ wuběraće, zwoliće do<a data-l10n-name="privacy_policy">prawidłow priwatnosće</a> a <a data-l10n-name="terms_of_use">wužiwanskich wuměnjenjow</a> { -fakespot-brand-name }.
 shopping-onboarding-opt-in-privacy-policy-and-terms-of-use3 = Hdyž “{ shopping-onboarding-opt-in-button }“ wuběraće, zwoliće do <a data-l10n-name="privacy_policy">prawidłow priwatnosće</a> { -brand-product-name } a <a data-l10n-name="terms_of_use">wužiwanskich wuměnjenjow</a> { -fakespot-brand-name }.
 shopping-onboarding-opt-in-button = Haj, wupruwować
 shopping-onboarding-not-now-button = Nic nětko

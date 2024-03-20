@@ -24,7 +24,7 @@ Build-Depends: autotools-dev,
                libnspr4-dev (>= 2:@NSPR_VERSION@~),
 %endif
 %if USE_SYSTEM_NSS
-%define NSS_VERSION 3.97
+%define NSS_VERSION 3.98
                libnss3-dev (>= 2:@NSS_VERSION@~),
 %endif
 %if USE_SYSTEM_VPX
@@ -51,19 +51,13 @@ Build-Depends: autotools-dev,
 %else
                cargo (>= 0.66),
 %endif
-%if DIST == bullseye || DIST == buster
                llvm-dev,
                libclang-dev,
                clang,
-%else
-               llvm-14-dev,
-               libclang-14-dev,
-               clang-14,
-%endif
 %if DIST != bullseye && DIST != buster
-               libc++-14-dev-wasm32,
-               libclang-rt-14-dev-wasm32,
-               lld-14,
+               libc++-dev-wasm32,
+               libclang-rt-dev-wasm32,
+               lld,
 %endif
                cbindgen (>= 0.26.0),
                nodejs (>= 12.22.1),

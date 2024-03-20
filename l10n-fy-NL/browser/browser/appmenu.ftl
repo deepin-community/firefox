@@ -77,6 +77,16 @@ appmenu-remote-tabs-turn-on-sync =
 appmenu-remote-tabs-showmore =
     .label = Mear ljepblêden toane
     .tooltiptext = Mear ljepblêden toane fan dit apparaat
+# This is shown when there are inactive tabs which are not being shown.
+# Variables
+# $count (Number) - The number of inactive tabs which are not being shown (at least 1)
+appmenu-remote-tabs-showinactive =
+    .label =
+        { $count ->
+            [one] Ien aktyf ljepblêd toane
+           *[other] { $count } ynaktive ljepblêden toane
+        }
+    .tooltiptext = De ynaktive ljepblêden op dit apparaat toane
 # This is shown beneath the name of a device when that device has no open tabs
 appmenu-remote-tabs-notabs = Gjin iepen ljepblêden
 # This is shown when Sync is configured but syncing tabs is disabled.
@@ -168,6 +178,11 @@ profiler-popup-capture-shortcut =
 # devtools/client/performance-new/shared/background.jsm.js
 # Please take care that the same values are also defined in devtools' perftools.ftl.
 
+
+# Presets and their l10n IDs are defined in the file
+# devtools/client/performance-new/shared/background.sys.mjs
+# Please take care that the same values are also defined in devtools' perftools.ftl.
+
 profiler-popup-presets-web-developer-description = Oanrekommandearre foarynstelling foar de measte flateropspoaring yn web-apps, mei lege overhead.
 profiler-popup-presets-web-developer-label =
     .label = Webûntwikkeler
@@ -257,3 +272,13 @@ appmenu-developer-tools-extensions =
     .label = Utwreidingen foar ûntwikkelers
 appmenuitem-report-broken-site =
     .label = Net-wurkjende website melde
+
+## Panel for privacy and security products
+
+appmenuitem-sign-in-account = Oanmelde by jo account
+appmenuitem-monitor-title = { -monitor-brand-short-name }
+appmenuitem-monitor-description = Untfang warskôgingen oer datalekken
+appmenuitem-relay-title = { -relay-brand-short-name }
+appmenuitem-relay-description = Maskearje jo wiere e-mailadres en telefoannûmer
+appmenuitem-vpn-title = { -mozilla-vpn-brand-name }
+appmenuitem-vpn-description = Beskermje jo online aktiviteit

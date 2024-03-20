@@ -227,6 +227,10 @@ preferences-web-appearance-choice-input-dark =
 # This can appear when using windows HCM or "Override colors: always" without
 # system colors.
 preferences-web-appearance-override-warning = Tifranin-ik•im n yiniten ttbeddilent arwes n usmel web. <a data-l10n-name="colors-link">Sefrek initen</a>
+# This can appear when using windows HCM or "Override colors: always" without
+# system colors.
+preferences-web-appearance-override-warning2 =
+    .message = Tifranin-ik•im n yiniten ttbeddilent arwes n usmel web.
 # This message contains one link. It can be moved within the sentence as needed
 # to adapt to your language, but should not be changed.
 preferences-web-appearance-footer = Sefrek isental n { -brand-short-name } deg <a data-l10n-name="themes-link">yiseɣzaf & yisental</a>
@@ -745,8 +749,10 @@ sync-currently-syncing-bookmarks = Ticraḍ n yisebtar
 sync-currently-syncing-history = Azray
 sync-currently-syncing-tabs = Ldi iccaren
 sync-currently-syncing-logins-passwords = Inekcam d wawalen uffiren
+sync-currently-syncing-passwords = Awalen uffiren
 sync-currently-syncing-addresses = Tansiwin
 sync-currently-syncing-creditcards = Tikarḍiwin n usmad
+sync-currently-syncing-payment-methods = Tarrayin n uxelleṣ
 sync-currently-syncing-addons = Izegrar
 sync-currently-syncing-settings = Iɣewwaren
 sync-change-options =
@@ -1022,10 +1028,10 @@ addressbar-locbar-engines-option =
 addressbar-locbar-quickactions-option =
     .label = Tigawin tiruradin
     .accesskey = T
+addressbar-suggestions-settings = Snifel ismenyifen i yisumar n umsedday n unadi
 addressbar-locbar-showrecentsearches-option =
     .label = Sken inadiyen imaynuten
     .accesskey = m
-addressbar-suggestions-settings = Snifel ismenyifen i yisumar n umsedday n unadi
 addressbar-quickactions-learn-more = Issin ugar
 
 ## Privacy Section - Content Blocking

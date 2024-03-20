@@ -77,6 +77,16 @@ appmenu-remote-tabs-turn-on-sync =
 appmenu-remote-tabs-showmore =
     .label = Vis flere faner
     .tooltiptext = Vis flere faner fra denne enheten
+# This is shown when there are inactive tabs which are not being shown.
+# Variables
+# $count (Number) - The number of inactive tabs which are not being shown (at least 1)
+appmenu-remote-tabs-showinactive =
+    .label =
+        { $count ->
+            [one] Vis en inaktiv fane
+           *[other] Vis { $count } inaktive faner
+        }
+    .tooltiptext = Vis de inaktive fanene på denne enheten
 # This is shown beneath the name of a device when that device has no open tabs
 appmenu-remote-tabs-notabs = Ingen åpne faner
 # This is shown when Sync is configured but syncing tabs is disabled.
@@ -168,6 +178,11 @@ profiler-popup-capture-shortcut =
 # devtools/client/performance-new/shared/background.jsm.js
 # Please take care that the same values are also defined in devtools' perftools.ftl.
 
+
+# Presets and their l10n IDs are defined in the file
+# devtools/client/performance-new/shared/background.sys.mjs
+# Please take care that the same values are also defined in devtools' perftools.ftl.
+
 profiler-popup-presets-web-developer-description = Anbefalt forhåndsinnstilling for de fleste feilsøkinger i nettapper, med lite tillegg.
 profiler-popup-presets-web-developer-label =
     .label = Nettsideutvikling
@@ -257,3 +272,13 @@ appmenu-developer-tools-extensions =
     .label = Extensions for Developers
 appmenuitem-report-broken-site =
     .label = Rapporter problem med et nettsted
+
+## Panel for privacy and security products
+
+appmenuitem-sign-in-account = Logg inn på kontoen din
+appmenuitem-monitor-title = { -monitor-brand-short-name }
+appmenuitem-monitor-description = Få varsler om datalekkasjer
+appmenuitem-relay-title = { -relay-brand-short-name }
+appmenuitem-relay-description = Skjul din ekte e-postadresse og ditt telefonnummer
+appmenuitem-vpn-title = { -mozilla-vpn-brand-name }
+appmenuitem-vpn-description = Beskytt din nettaktivitet

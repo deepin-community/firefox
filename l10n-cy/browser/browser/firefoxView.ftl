@@ -12,6 +12,8 @@ menu-tools-firefox-view =
     .label = { -firefoxview-brand-name }
     .accesskey = F
 firefoxview-page-title = { -firefoxview-brand-name }
+firefoxview-page-heading =
+    .heading = { -firefoxview-brand-name }
 firefoxview-page-label =
     .label = { -firefoxview-brand-name }
 firefoxview-close-button =
@@ -37,7 +39,7 @@ firefoxview-tabpickup-adddevice-header = Cydweddwch { -brand-product-name } ar e
 firefoxview-tabpickup-adddevice-description = Llwytho { -brand-product-name } ar gyfer ffôn symudol a mewngofnodi yno.
 firefoxview-tabpickup-adddevice-learn-how = Sut mae gwneud
 firefoxview-tabpickup-adddevice-primarybutton = Cael { -brand-product-name } ar gyfer symudol
-firefoxview-syncedtabs-adddevice-header = Mewngofnodwch i{ -brand-product-name } ar eich dyfeisiau eraill
+firefoxview-syncedtabs-adddevice-header = Mewngofnodwch i { -brand-product-name } ar eich dyfeisiau eraill
 firefoxview-syncedtabs-adddevice-description = I weld eich tabiau o ble bynnag rydych yn defnyddio { -brand-product-name }, mewngofnodwch ar eich holl ddyfeisiau. Dysgwch sut i <a data-l10n-name="url">gysylltu dyfeisiau ychwanegol</a>.
 firefoxview-syncedtabs-adddevice-primarybutton = Rhowch gynnig ar { -brand-product-name } ar gyfer ffonau symudol
 firefoxview-tabpickup-synctabs-header = Cychwyn cydweddu tabiau
@@ -51,6 +53,7 @@ firefoxview-syncedtabs-loading-header = Wrthi'n cysoni
 firefoxview-syncedtabs-loading-description = Pan fydd wedi'i wneud, byddwch yn gweld unrhyw dabiau sydd gennych ar agor ar ddyfeisiau eraill. Dewch nôl i weld.
 firefoxview-tabpickup-fxa-admin-disabled-header = Mae eich sefydliad wedi analluogi cydweddu
 firefoxview-tabpickup-fxa-admin-disabled-description = Nid yw { -brand-short-name } yn gallu cydweddu tabiau rhwng dyfeisiau oherwydd bod eich gweinyddwr wedi analluogi cydweddu.
+firefoxview-tabpickup-fxa-disabled-by-policy-description = Nid yw { -brand-short-name } yn gallu cydweddu tabiau rhwng dyfeisiau oherwydd bod eich sefydliad wedi analluogi cydweddu.
 firefoxview-tabpickup-network-offline-header = Gwiriwch eich cysylltiad rhwydwaith
 firefoxview-tabpickup-network-offline-description = Os ydych yn defnyddio mur cadarn neu ddirprwy, gwiriwch fod gan { -brand-short-name } ganiatâd i gael mynediad i'r we.
 firefoxview-tabpickup-network-offline-primarybutton = Ceisiwch eto
@@ -157,7 +160,7 @@ firefoxview-search-text-box-recentbrowsing =
     .placeholder = Chwilio
 # Placeholder for the input field to search in history ("search" is a verb).
 firefoxview-search-text-box-history =
-    .placeholder = Chwilio hanes
+    .placeholder = Chwilio'ch hanes
 # Placeholder for the input field to search in recently closed tabs ("search" is a verb).
 firefoxview-search-text-box-recentlyclosed =
     .placeholder = Chwilio tabiau a gaewyd yn ddiweddar
@@ -188,6 +191,8 @@ firefoxview-search-results-count =
 firefoxview-search-results-empty = Dim canlyniadau ar gyfer "{ $query }"
 firefoxview-sort-history-by-date-label = Trefnu yn ôl dyddiad
 firefoxview-sort-history-by-site-label = Trefnu yn ôl gwefan
+firefoxview-sort-open-tabs-by-recency-label = Trefnu yn ôl gweithgaredd diweddar
+firefoxview-sort-open-tabs-by-order-label = Trefnu yn ôl trefn tabiau
 # Variables:
 #   $url (string) - URL that will be opened in the new tab
 firefoxview-opentabs-tab-row =

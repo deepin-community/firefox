@@ -10,6 +10,18 @@ contentanalysis-slow-agent-dialog-title = Analyza wobsaha běži
 # Variables:
 #   $content - Description of the content being warned about, such as "clipboard" or "aFile.txt"
 contentanalysis-slow-agent-dialog-body = Analyza wobsaha resursu „{ $content }“ analyzuje
+contentanalysis-slow-agent-dialog-header = Skenuje so
+# Variables:
+#   $agent - The name of the DLP agent doing the analysis
+#   $filename - Name of the file being analyzed, such as "aFile.txt"
+contentanalysis-slow-agent-dialog-body-file = { $agent } „{ $filename }“ na zakładźe datowych prawidłow wašeje organizacije přepruwuje. To wokomik traje.
+# Variables:
+#   $agent - The name of the DLP agent doing the analysis
+contentanalysis-slow-agent-dialog-body-clipboard = { $agent } na zakładźe datowych prawidłow wašeje organizacije přepruwuje, štož sće zasadźił. To wokomik traje.
+# Note that this is shown when the user drag and drops text into the browser.
+# Variables:
+#   $agent - The name of the DLP agent doing the analysis
+contentanalysis-slow-agent-dialog-body-dropped-text = { $agent } tekst, kotryž sće zasadźił, na zakładźe datowych prawidłow wašeje organizacije přepruwuje. To wokomik traje.
 contentanalysis-operationtype-clipboard = mjezyskład
 contentanalysis-operationtype-dropped-text = pušćeny tekst
 contentanalysis-warndialogtitle = Tutón wobsah je snano njewěsty
@@ -29,3 +41,5 @@ contentanalysis-block-message = Waša organizacija software přećiwo straće da
 # Variables:
 #   $content - Description of the content being blocked, such as "clipboard" or "aFile.txt"
 contentanalysis-error-message = Při komunikaciji ze software přećiwo straće datow je zmylk nastał. Přenjesenje je so za resursu wotpokazało: { $content }.
+contentanalysis-inprogress-quit-title = { -brand-shorter-name } wopušćić?
+contentanalysis-inprogress-quit-yesbutton = Haj, wopušćić

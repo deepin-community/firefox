@@ -77,6 +77,12 @@ appmenu-remote-tabs-turn-on-sync =
 appmenu-remote-tabs-showmore =
     .label = Hiển thị thêm các thẻ
     .tooltiptext = Hiển thị các thẻ từ thiết bị này
+# This is shown when there are inactive tabs which are not being shown.
+# Variables
+# $count (Number) - The number of inactive tabs which are not being shown (at least 1)
+appmenu-remote-tabs-showinactive =
+    .label = Hiện { $count } thẻ không hoạt động
+    .tooltiptext = Hiển thị các thẻ không hoạt động trên thiết bị này
 # This is shown beneath the name of a device when that device has no open tabs
 appmenu-remote-tabs-notabs = Không có thẻ đang mở
 # This is shown when Sync is configured but syncing tabs is disabled.
@@ -168,6 +174,11 @@ profiler-popup-capture-shortcut =
 # devtools/client/performance-new/shared/background.jsm.js
 # Please take care that the same values are also defined in devtools' perftools.ftl.
 
+
+# Presets and their l10n IDs are defined in the file
+# devtools/client/performance-new/shared/background.sys.mjs
+# Please take care that the same values are also defined in devtools' perftools.ftl.
+
 profiler-popup-presets-web-developer-description = Cài đặt trước được đề xuất cho hầu hết gỡ lỗi ứng dụng web, với chi phí thấp.
 profiler-popup-presets-web-developer-label =
     .label = Nhà phát triển Web
@@ -257,3 +268,13 @@ appmenu-developer-tools-extensions =
     .label = Tiện ích mở rộng dành cho nhà phát triển
 appmenuitem-report-broken-site =
     .label = Báo cáo trang web bị hỏng
+
+## Panel for privacy and security products
+
+appmenuitem-sign-in-account = Đăng nhập vào tài khoản của bạn
+appmenuitem-monitor-title = { -monitor-brand-short-name }
+appmenuitem-monitor-description = Nhận cảnh báo rò rỉ dữ liệu
+appmenuitem-relay-title = { -relay-brand-short-name }
+appmenuitem-relay-description = Che giấu email và điện thoại thật của bạn
+appmenuitem-vpn-title = { -mozilla-vpn-brand-name }
+appmenuitem-vpn-description = Bảo vệ hoạt động trực tuyến của bạn

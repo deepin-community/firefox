@@ -1,17 +1,31 @@
-firefox (123.0-1deepin2) unstable; urgency=medium
+firefox (124.0-1deepin1) unstable; urgency=medium
 
+  [ Chang Yang ]
   * fix: loong64: Keep unsigned 32-bit parameter sign-extended in register
     - https://phabricator.services.mozilla.com/D204011
   * fix: loong64: Fix usage of some instruction encoding field masks
     - https://phabricator.services.mozilla.com/D203884
 
- -- Chang Yang <yangchang@deepin.org>  Wed, 13 Mar 2024 15:44:34 +0800
+ -- Tianyu Chen <sweetyfish@deepin.org>  Wed, 20 Mar 2024 14:50:15 +0800
 
-firefox (123.0-1deepin1) unstable; urgency=medium
+firefox (124.0-1) unstable; urgency=medium
 
-  * debian/control*, debian/rules: Use LLVM-16 build it. 
+  * New upstream release.
+  * Fixes for mfsa2024-12, also known as:
+    CVE-2024-2606, CVE-2024-2607, CVE-2024-2608, CVE-2023-5388,
+    CVE-2024-2609, CVE-2024-2610, CVE-2024-2611, CVE-2024-2612,
+    CVE-2024-2613, CVE-2024-2614, CVE-2024-2615.
 
- -- xiangzelong <xiangzelong@deepin.org>  Sat, 24 Feb 2024 18:31:55 +0800
+  * debian/control*, debian/rules: Undo workaround for bug 1052002.
+  * debian/control*: Bump nss build dependency.
+
+ -- Mike Hommey <glandium@debian.org>  Wed, 20 Mar 2024 06:13:42 +0900
+
+firefox (123.0.1-1) unstable; urgency=medium
+
+  * New upstream release.
+
+ -- Mike Hommey <glandium@debian.org>  Tue, 12 Mar 2024 05:58:24 +0900
 
 firefox (123.0-1) unstable; urgency=medium
 

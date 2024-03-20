@@ -12,6 +12,8 @@ menu-tools-firefox-view =
     .label = { -firefoxview-brand-name }
     .accesskey = F
 firefoxview-page-title = { -firefoxview-brand-name }
+firefoxview-page-heading =
+    .heading = { -firefoxview-brand-name }
 firefoxview-page-label =
     .label = { -firefoxview-brand-name }
 firefoxview-close-button =
@@ -51,6 +53,7 @@ firefoxview-syncedtabs-loading-header = Synchronizěrujo se
 firefoxview-syncedtabs-loading-description = Gaž to jo dokóńcone, buźośo rejtariki wiźeś, kótarež su na drugich rědach wócynjone. Pśiźćo skóro mimo.
 firefoxview-tabpickup-fxa-admin-disabled-header = Waša organizacija jo znjemóžniła synchronizaciju
 firefoxview-tabpickup-fxa-admin-disabled-description = { -brand-short-name } njamóžo rejtariki mjazy rědami synchronizěrowaś, dokulaž waš administrator jo znjemóžnił synchronizěrowanje.
+firefoxview-tabpickup-fxa-disabled-by-policy-description = { -brand-short-name } njamóžo rejtariki mjazy rědami synchronizěrowaś, dokulaž waša organizacija jo znjemóžniła synchronizěrowanje.
 firefoxview-tabpickup-network-offline-header = Pśeglědujśo swój internetny zwisk
 firefoxview-tabpickup-network-offline-description = Jolic wognjowu murju abo proksy wužywaśo, pśeglědujśo, lěc { -brand-short-name } ma pšawo na pśistup k internetoju.
 firefoxview-tabpickup-network-offline-primarybutton = Hyšći raz wopytaś
@@ -186,6 +189,8 @@ firefoxview-search-results-count =
 firefoxview-search-results-empty = Žedne wuslědki za „{ $query }“
 firefoxview-sort-history-by-date-label = Pó datumje sortěrowaś
 firefoxview-sort-history-by-site-label = Pó sedle sortěrowaś
+firefoxview-sort-open-tabs-by-recency-label = Pó nejnowšej aktiwiśe sortěrowaś
+firefoxview-sort-open-tabs-by-order-label = Pó pórěźe rejtarikow sortěrowaś
 # Variables:
 #   $url (string) - URL that will be opened in the new tab
 firefoxview-opentabs-tab-row =
@@ -248,3 +253,25 @@ firefoxview-recentlyclosed-empty-description-two = Aby starše rejtariki namaka�
 
 firefoxview-syncedtabs-device-notabs = Žedne rejtariki na toś tom rěźe wócynjone
 firefoxview-syncedtabs-connect-another-device = Z drugim rědom zwězaś
+firefoxview-pinned-tabs =
+    .title = Pśipěte rejtariki
+firefoxview-tabs =
+    .title = Rejtariki
+
+## These tooltips will be displayed when hovering over a pinned tab on the Open Tabs page
+## Variables:
+##  $tabTitle (string) - Title of pinned tab that will be opened when selected
+
+firefoxview-opentabs-pinned-tab =
+    .title = K { $tabTitle } pśejś
+# This tooltip will be shown for a pinned tab whose URL is currently bookmarked.
+firefoxview-opentabs-bookmarked-pinned-tab =
+    .title = K (Cytańske znamje) { $tabTitle } přeńć
+
+## These tooltips will be displayed when hovering over an unpinned Open Tab
+## Variables:
+##   $url (string) - URL of tab that will be opened when selected
+
+# This tooltip will be shown for an unpinned tab whose URL is currently bookmarked.
+firefoxview-opentabs-bookmarked-tab =
+    .title = (Cytańske znamje) { $url }

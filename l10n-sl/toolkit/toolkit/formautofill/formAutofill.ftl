@@ -7,13 +7,13 @@
 
 # The macos string is preceded by the operating system (macOS) with "Firefox is trying to ",
 # and has a period added to its end. Make sure to test in your locale.
-autofill-use-payment-method-os-prompt-macos = uporabiti shranjene podatke o načinu plačila
-autofill-use-payment-method-os-prompt-windows = { -brand-short-name } poskuša uporabiti shranjene podatke o načinu plačila. Spodaj potrdite dostop do tega računa Windows.
-autofill-use-payment-method-os-prompt-other = { -brand-short-name } poskuša uporabiti shranjene podatke o načinu plačila.
+autofill-use-payment-method-os-prompt-macos = uporabiti shranjene podatke o plačilnih sredstvih
+autofill-use-payment-method-os-prompt-windows = { -brand-short-name } poskuša uporabiti shranjene podatke o plačilnih sredstvih. Spodaj potrdite dostop do tega računa Windows.
+autofill-use-payment-method-os-prompt-other = { -brand-short-name } poskuša uporabiti shranjene podatke o plačilnih sredstvih.
 # In macOS, this string is preceded by the operating system with "Firefox is trying to ",
 # and has a period added to its end. Make sure to test in your locale.
 autofill-edit-payment-method-os-prompt-macos = prikazati shranjene podatke o načinu plačila
-autofill-edit-payment-method-os-prompt-windows = { -brand-short-name } poskuša prikazati shranjene podatke o načinu plačila. Spodaj potrdite dostop do tega računa Windows.
+autofill-edit-payment-method-os-prompt-windows = { -brand-short-name } poskuša prikazati shranjene podatke o plačilnem sredstvu. Spodaj potrdite dostop do tega računa Windows.
 autofill-edit-payment-method-os-prompt-other = { -brand-short-name } poskuša prikazati shranjene podatke o načinu plačila.
 # The links lead users to Form Autofill browser preferences.
 autofill-options-link = Možnosti samodejnega izpolnjevanja obrazcev
@@ -40,9 +40,26 @@ credit-card-capture-never-save-button =
 # Used on the doorhanger when an credit card change is detected.
 
 credit-card-update-doorhanger-header = Želite posodobiti to kartico?
+credit-card-update-doorhanger-description = Posodabljanje kartice:
 credit-card-capture-save-new-button =
     .label = Shrani kot novo kartico
     .accessKey = n
 credit-card-capture-update-button =
     .label = Posodobi obstoječo kartico
     .accessKey = d
+# Used as a label for the button, displayed at the bottom of the dropdown suggestion, to open Form Autofill browser preferences.
+autofill-manage-addresses-label = Upravljanje naslovov
+# Used as a label for the button, displayed at the bottom of the dropdown suggestion, to open Form Autofill browser preferences.
+autofill-manage-payment-methods-label = Upravljanje plačilnih sredstev
+
+## These are brand names and should only be translated when a locale-specific name for that brand is in common use
+
+autofill-card-network-amex = American Express
+autofill-card-network-cartebancaire = Carte Bancaire
+autofill-card-network-diners = Diners Club
+autofill-card-network-discover = Discover
+autofill-card-network-jcb = JCB
+autofill-card-network-mastercard = MasterCard
+autofill-card-network-mir = MIR
+autofill-card-network-unionpay = Union Pay
+autofill-card-network-visa = Visa

@@ -14,3 +14,14 @@ autofill-options-link-osx = फ़ॉर्म स्वतः भरण वर�
 
 # Used on the doorhanger when an credit card change is detected.
 
+
+## These are brand names and should only be translated when a locale-specific name for that brand is in common use
+
+autofill-card-network-amex = अमेरिकन एक्सप्रेस
+autofill-card-network-cartebancaire = भुगतान कार्ड
+autofill-card-network-discover = पता लगाएँ
+autofill-card-network-jcb = JCB
+autofill-card-network-mastercard = MasterCard
+autofill-card-network-mir = MIR
+autofill-card-network-unionpay = Union Pay
+autofill-card-network-visa = Visa

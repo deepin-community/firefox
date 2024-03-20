@@ -34,3 +34,5 @@ fxa-menu-send-tab-to-device-syncnotready =
 fxa-menu-send-tab-to-device-description = Pošle panel do jiného zařízení, na kterém jste přihlášeni.
 fxa-menu-sign-out =
     .label = Odhlásit se…
+fxa-menu-sync-title = Sync
+fxa-menu-sync-description = Získejte přístup ke svému webu odkudkoliv

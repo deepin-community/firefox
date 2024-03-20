@@ -12,6 +12,8 @@ menu-tools-firefox-view =
     .label = { -firefoxview-brand-name }
     .accesskey = F
 firefoxview-page-title = { -firefoxview-brand-name }
+firefoxview-page-heading =
+    .heading = { -firefoxview-brand-name }
 firefoxview-page-label =
     .label = { -firefoxview-brand-name }
 firefoxview-close-button =
@@ -51,6 +53,7 @@ firefoxview-syncedtabs-loading-header = Synkronointi käynnissä
 firefoxview-syncedtabs-loading-description = Kun se valmistuu, näet kaikki muilla laitteilla avoinna olevat välilehdet. Tarkista pian uudelleen.
 firefoxview-tabpickup-fxa-admin-disabled-header = Organisaatiosi on poistanut synkronoinnin käytöstä
 firefoxview-tabpickup-fxa-admin-disabled-description = { -brand-short-name } ei voi synkronoida välilehtiä laitteiden välillä, koska laitteesi järjestelmänvalvoja on poistanut synkronoinnin käytöstä.
+firefoxview-tabpickup-fxa-disabled-by-policy-description = { -brand-short-name } ei voi synkronoida välilehtiä laitteiden välillä, koska organisaatiosi on poistanut synkronoinnin käytöstä.
 firefoxview-tabpickup-network-offline-header = Tarkista Internet-yhteytesi
 firefoxview-tabpickup-network-offline-description = Jos käytät palomuuria tai välityspalvelinta, tarkista että { -brand-short-name } on oikeutettu käyttämään verkkoa.
 firefoxview-tabpickup-network-offline-primarybutton = Yritä uudelleen
@@ -184,6 +187,8 @@ firefoxview-search-results-count =
 firefoxview-search-results-empty = Ei tuloksia haulla "{ $query }"
 firefoxview-sort-history-by-date-label = Järjestä päiväyksen mukaan
 firefoxview-sort-history-by-site-label = Järjestä sivuston mukaan
+firefoxview-sort-open-tabs-by-recency-label = Järjestä viimeisimmän toiminnan mukaan
+firefoxview-sort-open-tabs-by-order-label = Järjestä välilehtijärjestyksen mukaan
 # Variables:
 #   $url (string) - URL that will be opened in the new tab
 firefoxview-opentabs-tab-row =
@@ -246,3 +251,25 @@ firefoxview-recentlyclosed-empty-description-two = Jos haluat etsiä välilehti�
 
 firefoxview-syncedtabs-device-notabs = Ei avoimia välilehtiä tällä laitteella
 firefoxview-syncedtabs-connect-another-device = Yhdistä toinen laite
+firefoxview-pinned-tabs =
+    .title = Kiinnitetyt välilehdet
+firefoxview-tabs =
+    .title = Välilehdet
+
+## These tooltips will be displayed when hovering over a pinned tab on the Open Tabs page
+## Variables:
+##  $tabTitle (string) - Title of pinned tab that will be opened when selected
+
+firefoxview-opentabs-pinned-tab =
+    .title = Vaihda välilehteen { $tabTitle }
+# This tooltip will be shown for a pinned tab whose URL is currently bookmarked.
+firefoxview-opentabs-bookmarked-pinned-tab =
+    .title = Vaihda välilehteen (kirjanmerkitty) { $tabTitle }
+
+## These tooltips will be displayed when hovering over an unpinned Open Tab
+## Variables:
+##   $url (string) - URL of tab that will be opened when selected
+
+# This tooltip will be shown for an unpinned tab whose URL is currently bookmarked.
+firefoxview-opentabs-bookmarked-tab =
+    .title = (Kirjanmerkitty) { $url }

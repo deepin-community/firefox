@@ -12,6 +12,8 @@ menu-tools-firefox-view =
     .label = { -firefoxview-brand-name }
     .accesskey = F
 firefoxview-page-title = { -firefoxview-brand-name }
+firefoxview-page-heading =
+    .heading = { -firefoxview-brand-name }
 firefoxview-page-label =
     .label = { -firefoxview-brand-name }
 firefoxview-close-button =
@@ -51,6 +53,7 @@ firefoxview-syncedtabs-loading-header = 正在同步
 firefoxview-syncedtabs-loading-description = 同步完成後就會看到您其他裝置上開啟的分頁，請稍候再回來。
 firefoxview-tabpickup-fxa-admin-disabled-header = 您的組織已停用同步功能
 firefoxview-tabpickup-fxa-admin-disabled-description = 由於您的管理員已停用同步功能，{ -brand-short-name } 無法在裝置間同步分頁。
+firefoxview-tabpickup-fxa-disabled-by-policy-description = 由於您的組織已停用同步功能，{ -brand-short-name } 無法在裝置間同步分頁。
 firefoxview-tabpickup-network-offline-header = 請檢查您的網際網路連線是否正常
 firefoxview-tabpickup-network-offline-description = 若您在防火牆或代理伺服器後面，請確認 { -brand-short-name } 可連線至網際網路。
 firefoxview-tabpickup-network-offline-primarybutton = 重試
@@ -117,9 +120,9 @@ firefoxview-history-context-delete = 從瀏覽紀錄刪除
 
 ## Open Tabs in this context refers to all open tabs in the browser
 
-firefoxview-opentabs-nav = 開啟分頁
-    .title = 開啟分頁
-firefoxview-opentabs-header = 開啟分頁
+firefoxview-opentabs-nav = 開啟的分頁
+    .title = 開啟的分頁
+firefoxview-opentabs-header = 開啟的分頁
 
 ## Recently closed tabs in this context refers to recently closed tabs from all windows
 
@@ -180,6 +183,8 @@ firefoxview-search-results-count = { $count } 個網站
 firefoxview-search-results-empty = 沒有「{ $query }」的搜尋結果
 firefoxview-sort-history-by-date-label = 依照日期排序
 firefoxview-sort-history-by-site-label = 依照網站排序
+firefoxview-sort-open-tabs-by-recency-label = 依照近期活動排序
+firefoxview-sort-open-tabs-by-order-label = 依照分頁順序排序
 # Variables:
 #   $url (string) - URL that will be opened in the new tab
 firefoxview-opentabs-tab-row =
@@ -242,3 +247,25 @@ firefoxview-recentlyclosed-empty-description-two = 要尋找更久之前的分�
 
 firefoxview-syncedtabs-device-notabs = 未於此裝置開啟分頁
 firefoxview-syncedtabs-connect-another-device = 連結其他裝置
+firefoxview-pinned-tabs =
+    .title = 釘選的分頁
+firefoxview-tabs =
+    .title = 分頁
+
+## These tooltips will be displayed when hovering over a pinned tab on the Open Tabs page
+## Variables:
+##  $tabTitle (string) - Title of pinned tab that will be opened when selected
+
+firefoxview-opentabs-pinned-tab =
+    .title = 切換到 { $tabTitle }
+# This tooltip will be shown for a pinned tab whose URL is currently bookmarked.
+firefoxview-opentabs-bookmarked-pinned-tab =
+    .title = 切換到（已加入書籤的）{ $tabTitle }
+
+## These tooltips will be displayed when hovering over an unpinned Open Tab
+## Variables:
+##   $url (string) - URL of tab that will be opened when selected
+
+# This tooltip will be shown for an unpinned tab whose URL is currently bookmarked.
+firefoxview-opentabs-bookmarked-tab =
+    .title = （已加入書籤的）{ $url }

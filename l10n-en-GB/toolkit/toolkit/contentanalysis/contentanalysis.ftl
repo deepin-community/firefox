@@ -10,8 +10,22 @@ contentanalysis-slow-agent-dialog-title = Content analysis in progress
 # Variables:
 #   $content - Description of the content being warned about, such as "clipboard" or "aFile.txt"
 contentanalysis-slow-agent-dialog-body = Content Analysis is analysing resource “{ $content }”
+contentanalysis-slow-agent-dialog-header = Scan in progress
+# Variables:
+#   $agent - The name of the DLP agent doing the analysis
+#   $filename - Name of the file being analyzed, such as "aFile.txt"
+contentanalysis-slow-agent-dialog-body-file = { $agent } is reviewing “{ $filename }” against your organisation’s data policies. This may take a moment.
+# Variables:
+#   $agent - The name of the DLP agent doing the analysis
+contentanalysis-slow-agent-dialog-body-clipboard = { $agent } is reviewing what you pasted against your organisation’s data policies. This may take a moment.
+# Note that this is shown when the user drag and drops text into the browser.
+# Variables:
+#   $agent - The name of the DLP agent doing the analysis
+contentanalysis-slow-agent-dialog-body-dropped-text = { $agent } is reviewing the text you dropped against your organisation’s data policies. This may take a moment.
 contentanalysis-operationtype-clipboard = clipboard
 contentanalysis-operationtype-dropped-text = dropped text
+#   $filename - The filename associated with the request, such as "aFile.txt"
+contentanalysis-customdisplaystring-description = upload of “{ $filename }”
 contentanalysis-warndialogtitle = This content may be unsafe
 # Variables:
 #   $content - Description of the content being warned about, such as "clipboard" or "aFile.txt"
@@ -29,3 +43,6 @@ contentanalysis-block-message = Your organisation uses data-loss prevention soft
 # Variables:
 #   $content - Description of the content being blocked, such as "clipboard" or "aFile.txt"
 contentanalysis-error-message = An error occurred in communicating with the data-loss prevention software. Transfer denied for resource: { $content }.
+contentanalysis-inprogress-quit-title = Quit { -brand-shorter-name }?
+contentanalysis-inprogress-quit-message = Several actions are in progress. If you quit { -brand-shorter-name }, these actions will not be completed.
+contentanalysis-inprogress-quit-yesbutton = Yes, quit

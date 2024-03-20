@@ -19,6 +19,7 @@ sanitize-dialog-title-everything =
     .title = Opa tembiasakue ñemopotĩ
     .style = min-width: 34em
 clear-data-settings-label = Oñembotývo, { -brand-short-name } omboguepaiteva’erã ijehegui
+sanitize-on-shutdown-description = Ombogue ijehegui opaite mba’eporurã omembotykuévo { -brand-short-name }.
 
 ## clear-time-duration-prefix is followed by a dropdown list, with
 ## values localized using clear-time-duration-value-* messages.
@@ -54,12 +55,19 @@ history-section-label = Tembiasakue
 item-history-and-downloads =
     .label = Kundaha ha ñemboguejypyre rembiasakue
     .accesskey = B
-item-browsing-and-search =
-    .label = Tenda eikehague, myanyhẽha marandu ñongatupyre ha jeheka
-    .accesskey = V
+item-history-form-data-downloads =
+    .label = Tembiasakue
+    .accesskey = H
+item-history-form-data-downloads-description = Embogue tembiasakue tenda ha mboguejy, marandu ñongatupyre myanyhẽha ha jehekaha
 item-cookies =
     .label = Kookie
     .accesskey = K
+# Variables:
+#   $amount (Number) - Amount of site data currently stored on disk
+#   $unit (String) - Abbreviation of the unit that $amount is in, e.g. "MB"
+item-cookies-site-data-with-size =
+    .label = Kookie ha tenda mba’ekuaarã ({ $amount } { $unit })
+    .accesskey = e
 item-cookies-site-data =
     .label = Kookie ha tenda mba’ekuaarã
     .accesskey = e
@@ -70,6 +78,12 @@ item-active-logins =
 item-cache =
     .label = Kache
     .accesskey = a
+# Variables:
+#   $amount (Number) - Amount of cached data
+#   $unit (String) - Abbreviation of the unit that $amount is in, e.g. "MB"
+item-cached-content-with-size =
+    .label = Marandurenda ha kuatiarogue sapy’agua kachépe ({ $amount } { $unit })
+    .accesskey = f
 item-cached-content =
     .label = Marandurenda ha kuatiarogue sapy’agua kachépe
     .accesskey = f
@@ -81,9 +95,6 @@ item-site-prefs =
     .label = Tenda ñemboheko
     .accesskey = i
 item-site-prefs-description = Erujey umi ñemoneĩ ha jerohoryvéva tenda rehegua ñemboheko ypyguápe
-item-download-history =
-    .label = Marandurenda mboguejypyre rysýi
-    .accesskey = D
 data-section-label = Mba’ekuaarã
 item-site-settings =
     .label = Tenda ñemboheko
@@ -98,6 +109,8 @@ sanitize-button-ok =
     .label = Emopotĩ ko’ág̃a
 sanitize-button-ok2 =
     .label = Mopotĩ
+sanitize-button-ok-on-shutdown =
+    .label = Eñongatu Moambuepyre
 # The label for the default button between the user clicking it and the window
 # closing.  Indicates the items are being cleared.
 sanitize-button-clearing =

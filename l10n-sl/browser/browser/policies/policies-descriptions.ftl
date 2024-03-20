@@ -12,10 +12,13 @@
 
 policy-3rdparty = Nastavi, do katerih pravilnikov lahko dostopajo razširitve WebExtensions preko chrome.storage.managed.
 policy-AllowedDomainsForApps = Določi domene, ki jim je dovoljen dostop do Google Workspace.
+policy-AllowFileSelectionDialogs = Dovoli pogovorna okna za izbiro datotek.
 policy-AppAutoUpdate = Omogoči ali onemogoči samodejne posodobitve programa.
-policy-AppUpdatePin = { -brand-short-name(sklon: "dajalnik") } prepreči posodobitev preko določene različice.
+policy-AppUpdatePin = { -brand-short-name(sklon: "dajalnik") } prepreči posodobitev prek določene različice.
 policy-AppUpdateURL = Nastavi poljuben URL za posodobitve programa.
 policy-Authentication = Nastavi integrirano overjanje za spletna mesta, ki ga podpirajo.
+policy-AutofillAddressEnabled = Omogoči samodejno izpolnjevanje naslovov.
+policy-AutofillCreditCardEnabled = Omogoči samodejno izpolnjevanje plačilnih sredstev.
 policy-AutoLaunchProtocolsFromOrigins = Določi seznam zunanjih protokolov, ki jih je mogoče uporabiti z navedenih virov brez poziva uporabniku.
 policy-BackgroundAppUpdate2 = Omogoči ali onemogoči storitev za posodobitve v ozadju.
 policy-BlockAboutAddons = Zavrni dostop do upravitelja dodatkov (about:addons).

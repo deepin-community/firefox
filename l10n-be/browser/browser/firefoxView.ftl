@@ -12,6 +12,8 @@ menu-tools-firefox-view =
     .label = { -firefoxview-brand-name }
     .accesskey = А
 firefoxview-page-title = { -firefoxview-brand-name }
+firefoxview-page-heading =
+    .heading = { -firefoxview-brand-name }
 firefoxview-page-label =
     .label = { -firefoxview-brand-name }
 firefoxview-close-button =
@@ -51,6 +53,7 @@ firefoxview-syncedtabs-loading-header = Ідзе сінхранізацыя
 firefoxview-syncedtabs-loading-description = Па заканчэнні вы ўбачыце ўсе карткі, адкрытыя на іншых прыладах. Праверце пазней.
 firefoxview-tabpickup-fxa-admin-disabled-header = У ваша арганізацыі сінхранізацыя адключана
 firefoxview-tabpickup-fxa-admin-disabled-description = { -brand-short-name } не можа сінхранізаваць карткі паміж прыладамі, таму што ваш адміністратар адключыў сінхранізацыю.
+firefoxview-tabpickup-fxa-disabled-by-policy-description = { -brand-short-name } не можа сінхранізаваць карткі паміж прыладамі, таму што ваша арганізацыя адключыла сінхранізацыю.
 firefoxview-tabpickup-network-offline-header = Праверце падлучэнне да Інтэрнэту
 firefoxview-tabpickup-network-offline-description = Калі вы карыстаецеся фаерволам або проксі, пераканайцеся, што { -brand-short-name } мае дазвол на доступ у сеціва.
 firefoxview-tabpickup-network-offline-primarybutton = Паспрабаваць зноў
@@ -185,6 +188,8 @@ firefoxview-search-results-count =
 firefoxview-search-results-empty = Няма вынікаў для «{ $query }»
 firefoxview-sort-history-by-date-label = Сартаваць па даце
 firefoxview-sort-history-by-site-label = Сартаваць па сайтах
+firefoxview-sort-open-tabs-by-recency-label = Сартаваць па апошняй актыўнасці
+firefoxview-sort-open-tabs-by-order-label = Сартаваць па парадку картак
 # Variables:
 #   $url (string) - URL that will be opened in the new tab
 firefoxview-opentabs-tab-row =
@@ -247,3 +252,25 @@ firefoxview-recentlyclosed-empty-description-two = Каб знайсці даў�
 
 firefoxview-syncedtabs-device-notabs = На гэтай прыладзе няма адкрытых картак
 firefoxview-syncedtabs-connect-another-device = Злучыць іншую прыладу
+firefoxview-pinned-tabs =
+    .title = Прышпіленыя карткі
+firefoxview-tabs =
+    .title = Карткі
+
+## These tooltips will be displayed when hovering over a pinned tab on the Open Tabs page
+## Variables:
+##  $tabTitle (string) - Title of pinned tab that will be opened when selected
+
+firefoxview-opentabs-pinned-tab =
+    .title = Пераключыцца на { $tabTitle }
+# This tooltip will be shown for a pinned tab whose URL is currently bookmarked.
+firefoxview-opentabs-bookmarked-pinned-tab =
+    .title = Пераключыцца на (з закладкай) { $tabTitle }
+
+## These tooltips will be displayed when hovering over an unpinned Open Tab
+## Variables:
+##   $url (string) - URL of tab that will be opened when selected
+
+# This tooltip will be shown for an unpinned tab whose URL is currently bookmarked.
+firefoxview-opentabs-bookmarked-tab =
+    .title = (З закладкай) { $url }

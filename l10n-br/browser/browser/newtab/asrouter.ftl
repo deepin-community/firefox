@@ -207,7 +207,6 @@ cfr-cbh-confirm-button = Argas banniel an toupinoù
     .accesskey = A
 cfr-cbh-dismiss-button = Ket bremañ
     .accesskey = K
-cookie-banner-blocker-cfr-header = { -brand-short-name } zo o paouez stankañ toupinoù evidoc'h
 cookie-banner-blocker-onboarding-learn-more = Gouzout hiroc’h
 
 ## These strings are used in the Fox doodle Pin/set default spotlights
@@ -248,6 +247,7 @@ pdf-default-notification-decline-button =
 
 ## Launch on login infobar notification
 
+launch-on-login-infobar-message = <strong>Digeriñ { -brand-short-name } bewech ma adloc’hit hoc’h urzhiataer?</strong> Bremañ e c’hellit lakaat { -brand-short-name } da zigeriñ ent-emgefreek pa adloc’hit ho trevnad.
 launch-on-login-learnmore = Gouzout hiroc’h
 launch-on-login-infobar-confirm-button = Ya, digeriñ { -brand-short-name }
     .accesskey = Y
@@ -257,6 +257,7 @@ launch-on-login-infobar-reject-button = Diwezhatoc’h
 ## These string variants are used when the “launch on login” infobar
 ## notification is displayed for a second time.
 
+launch-on-login-infobar-final-message = <strong>Digeriñ { -brand-short-name } bewech ma adloc’hit hoc’h urzhiataer?</strong> Evit merañ ho penndibaboù loc’hañ, klaskit “loc’hañ” e-barzh an arventennoù.
 launch-on-login-infobar-final-reject-button = Ket
     .accesskey = K
 

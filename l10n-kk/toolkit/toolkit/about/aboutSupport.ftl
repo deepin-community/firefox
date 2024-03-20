@@ -200,6 +200,9 @@ media-cdm-capabilities = Мүмкіндіктер
 # are not encrypted. It allows playback to start without having to wait for
 # license response, improving video start time and user experience.
 media-cdm-clear-lead = Таза бастау
+# We choose 2.2 as this is the version which the video provider usually want to have in order to stream 4K video securely
+# HDCP version https://w3c.github.io/encrypted-media/#idl-def-hdcpversion
+media-hdcp-22-compatible = HDCP 2.2 үйлесімді
 
 ##
 
@@ -279,6 +282,7 @@ try-newer-driver = Графикалық драйверіңіз нұсқасым�
 # there are no good translations, these are only used in about:support
 clear-type-parameters = ClearType баптаулары
 compositing = Композитинг
+support-font-determination = Қаріп көрінуінің жөндеу ақпараты
 hardware-h264 = Құрылғылық H264 декодтау
 main-thread-no-omtc = басты ағын, OMTC жоқ
 yes = Иә

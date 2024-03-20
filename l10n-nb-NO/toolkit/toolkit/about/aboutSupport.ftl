@@ -200,6 +200,9 @@ media-cdm-capabilities = Egenskaper
 # are not encrypted. It allows playback to start without having to wait for
 # license response, improving video start time and user experience.
 media-cdm-clear-lead = Fri start
+# We choose 2.2 as this is the version which the video provider usually want to have in order to stream 4K video securely
+# HDCP version https://w3c.github.io/encrypted-media/#idl-def-hdcpversion
+media-hdcp-22-compatible = HDCP 2.2-kompatibel
 
 ##
 
@@ -279,6 +282,7 @@ try-newer-driver = Blokkert av grafikkdriveren. Prøv å oppdatere grafikkdriver
 # there are no good translations, these are only used in about:support
 clear-type-parameters = ClearType-parametere
 compositing = Kompositt
+support-font-determination = Feilsøkingsinformasjon for skriftsynlighet
 hardware-h264 = Hardware H264 dekoding
 main-thread-no-omtc = hovedtråd, ingen OMTC
 yes = Ja

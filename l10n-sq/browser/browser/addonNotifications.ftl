@@ -40,6 +40,7 @@ site-permission-install-first-prompt-midi-message = Nuk garantohet se ky sajt ë
 ##
 
 xpinstall-disabled-locked = Instalimi i software-it është çaktivizuar nga përgjegjësi i sistemit tuaj.
+xpinstall-disabled-by-policy = Instalimi i software-it është çaktivizuar nga enti juaj.
 xpinstall-disabled = Instalimi i software-it është hëpërhë i çaktivizuar. Klikoni mbi Aktivizoje dhe riprovoni.
 xpinstall-disabled-button =
     .label = Aktivizoje
@@ -51,6 +52,13 @@ xpinstall-disabled-button =
 addon-install-blocked-by-policy = { $addonName } ({ $addonId }) është bllokuar nga përgjegjësi i sistemit tuaj.
 # This message is shown when the installation of add-ons from a domain is blocked by enterprise policy.
 addon-domain-blocked-by-policy = Përgjegjësi i sistemit tuaj e pengoi këtë sajt t’ju kërkojë të instalojë program në kompjuterin tuaj.
+# This message is shown when the installation of an add-on is blocked by enterprise policy.
+# Variables:
+#   $addonName (String): the name of the add-on.
+#   $addonId (String): the ID of add-on.
+addon-installation-blocked-by-policy = { $addonName } ({ $addonId }) është e bllokuar nga enti juaj.
+# This message is shown when the installation of add-ons from a domain is blocked by enterprise policy.
+addon-install-domain-blocked-by-policy = Enti juaj e pengoi këtë sajt t’ju kërkojë të instaloni program në kompjuterin tuaj.
 addon-install-full-screen-blocked = Nuk lejohet instalim shtesash teksa gjendet në mënyrën sa krejt ekrani ose para saj.
 # Variables:
 #   $addonName (String): the localized name of the sideloaded add-on.

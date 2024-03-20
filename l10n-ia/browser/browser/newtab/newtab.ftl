@@ -45,6 +45,7 @@ newtab-topsites-add-search-engine-header = Adder un motor de recerca
 newtab-topsites-add-shortcut-header = Nove accesso directe
 newtab-topsites-edit-topsites-header = Modificar le sito preferite
 newtab-topsites-edit-shortcut-header = Modificar accesso directe
+newtab-topsites-add-shortcut-label = Adder via-breve
 newtab-topsites-title-label = Titulo
 newtab-topsites-title-input =
     .placeholder = Scriber un titulo
@@ -194,6 +195,7 @@ newtab-section-header-recent-activity = Recente activitate
 # Variables:
 #   $provider (string) - Name of the corresponding content provider.
 newtab-section-header-pocket = Recommendate per { $provider }
+newtab-section-header-stories = Historias que face pensar
 
 ## Empty Section States: These show when there are no more items in a section. Ex. When there are no more Pocket story recommendations, in the space where there would have been stories, this is shown instead.
 
@@ -202,6 +204,8 @@ newtab-empty-section-highlights = Comencia a navigar e nos te monstrara hic alcu
 # Variables:
 #   $provider (string) - Name of the content provider for this section, e.g "Pocket".
 newtab-empty-section-topstories = Tu ja es toto al currente. Reveni plus tarde pro plus historias popular de { $provider }. Non vole attender? Selige un subjecto popular pro discoperir altere articulos interessante sur le web.
+# Ex. When there are no more story recommendations, in the space where there would have been stories, this is shown instead.
+newtab-empty-section-topstories-generic = Tu ja es actualisate con toto. Re-controla plus tarde pro altere historias. Non vole attender? Selectiona un thema popular pro trovar le plus grande historias del web.
 
 ## Empty Section (Content Discovery Experience). These show when there are no more stories or when some stories fail to load.
 
@@ -257,6 +261,9 @@ newtab-custom-pocket-subtitle = Contento exceptional a cura de { -pocket-brand-n
 newtab-custom-pocket-toggle =
     .label = Recommendate per { -pocket-brand-name }
     .description = Contento exceptional a cura de { -pocket-brand-name }, parte del familia { -brand-product-name }
+newtab-custom-stories-toggle =
+    .label = Historias recommendate
+    .description = Exceptional contento curate per le familia de { -brand-product-name }
 newtab-custom-pocket-sponsored = Articulos sponsorisate
 newtab-custom-pocket-show-recent-saves = Monstrar salvamentos recente
 newtab-custom-recent-title = Activitate recente

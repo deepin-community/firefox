@@ -12,6 +12,8 @@ menu-tools-firefox-view =
     .label = { -firefoxview-brand-name }
     .accesskey = F
 firefoxview-page-title = { -firefoxview-brand-name }
+firefoxview-page-heading =
+    .heading = { -firefoxview-brand-name }
 firefoxview-page-label =
     .label = { -firefoxview-brand-name }
 firefoxview-close-button =
@@ -51,6 +53,7 @@ firefoxview-syncedtabs-loading-header = Sincronizazion in cors
 firefoxview-syncedtabs-loading-description = Une volte completade, lis schedis viertis in cualsisei altri dispositîf a vignaran visualizadis achì. Controle plui indevant.
 firefoxview-tabpickup-fxa-admin-disabled-header = La tô organizazion e à disativât la sincronizazion
 firefoxview-tabpickup-fxa-admin-disabled-description = { -brand-short-name } nol rive a sincronizâ lis schedis tra i dispositîfs parcè che il to aministradôr al à disabilitât la sincronizazion.
+firefoxview-tabpickup-fxa-disabled-by-policy-description = { -brand-short-name } nol rive a sincronizâ lis schedis tra i dispositîfs parcè che la tô organizazion e à disativât la sincronizazion.
 firefoxview-tabpickup-network-offline-header = Controle la tô conession a internet
 firefoxview-tabpickup-network-offline-description = Se tu stâs doprant un firewall o un proxy, controle che { -brand-short-name } al vedi i permès par acedi a internet.
 firefoxview-tabpickup-network-offline-primarybutton = Torne prove
@@ -184,6 +187,8 @@ firefoxview-search-results-count =
 firefoxview-search-results-empty = Nissun risultât par “{ $query }”
 firefoxview-sort-history-by-date-label = Ordene par date
 firefoxview-sort-history-by-site-label = Ordene par sît
+firefoxview-sort-open-tabs-by-recency-label = Ordene par ativitât resinte
+firefoxview-sort-open-tabs-by-order-label = Ordene par ordin di schede
 # Variables:
 #   $url (string) - URL that will be opened in the new tab
 firefoxview-opentabs-tab-row =
@@ -246,3 +251,25 @@ firefoxview-recentlyclosed-empty-description-two = Par cjatâ schedis sieradis d
 
 firefoxview-syncedtabs-device-notabs = Nissune schede vierte in chest dispositîf
 firefoxview-syncedtabs-connect-another-device = Conet un altri dispositîf
+firefoxview-pinned-tabs =
+    .title = Schedis fissadis
+firefoxview-tabs =
+    .title = Schedis
+
+## These tooltips will be displayed when hovering over a pinned tab on the Open Tabs page
+## Variables:
+##  $tabTitle (string) - Title of pinned tab that will be opened when selected
+
+firefoxview-opentabs-pinned-tab =
+    .title = Passe a { $tabTitle }
+# This tooltip will be shown for a pinned tab whose URL is currently bookmarked.
+firefoxview-opentabs-bookmarked-pinned-tab =
+    .title = Passe a (tai segnelibris) { $tabTitle }
+
+## These tooltips will be displayed when hovering over an unpinned Open Tab
+## Variables:
+##   $url (string) - URL of tab that will be opened when selected
+
+# This tooltip will be shown for an unpinned tab whose URL is currently bookmarked.
+firefoxview-opentabs-bookmarked-tab =
+    .title = (Tai segnelibris) { $url }

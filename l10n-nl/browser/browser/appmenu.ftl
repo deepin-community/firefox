@@ -77,6 +77,16 @@ appmenu-remote-tabs-turn-on-sync =
 appmenu-remote-tabs-showmore =
     .label = Meer tabbladen tonen
     .tooltiptext = Meer tabbladen van dit apparaat tonen
+# This is shown when there are inactive tabs which are not being shown.
+# Variables
+# $count (Number) - The number of inactive tabs which are not being shown (at least 1)
+appmenu-remote-tabs-showinactive =
+    .label =
+        { $count ->
+            [one] Eén actief tabblad tonen
+           *[other] { $count } inactieve tabbladen tonen
+        }
+    .tooltiptext = De inactieve tabbladen op dit apparaat tonen
 # This is shown beneath the name of a device when that device has no open tabs
 appmenu-remote-tabs-notabs = Geen open tabbladen
 # This is shown when Sync is configured but syncing tabs is disabled.
@@ -168,6 +178,11 @@ profiler-popup-capture-shortcut =
 # devtools/client/performance-new/shared/background.jsm.js
 # Please take care that the same values are also defined in devtools' perftools.ftl.
 
+
+# Presets and their l10n IDs are defined in the file
+# devtools/client/performance-new/shared/background.sys.mjs
+# Please take care that the same values are also defined in devtools' perftools.ftl.
+
 profiler-popup-presets-web-developer-description = Aanbevolen voorinstelling voor de meeste foutopsporing in web-apps, met lage overhead.
 profiler-popup-presets-web-developer-label =
     .label = Webontwikkelaar
@@ -257,3 +272,13 @@ appmenu-developer-tools-extensions =
     .label = Extensies voor ontwikkelaars
 appmenuitem-report-broken-site =
     .label = Niet-werkende website melden
+
+## Panel for privacy and security products
+
+appmenuitem-sign-in-account = Aanmelden bij uw account
+appmenuitem-monitor-title = { -monitor-brand-short-name }
+appmenuitem-monitor-description = Ontvang waarschuwingen over datalekken
+appmenuitem-relay-title = { -relay-brand-short-name }
+appmenuitem-relay-description = Maskeer uw echte e-mailadres en telefoonnummer
+appmenuitem-vpn-title = { -mozilla-vpn-brand-name }
+appmenuitem-vpn-description = Bescherm uw online activiteit

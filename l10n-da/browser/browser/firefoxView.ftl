@@ -12,6 +12,8 @@ menu-tools-firefox-view =
     .label = { -firefoxview-brand-name }
     .accesskey = r
 firefoxview-page-title = { -firefoxview-brand-name }
+firefoxview-page-heading =
+    .heading = { -firefoxview-brand-name }
 firefoxview-page-label =
     .label = { -firefoxview-brand-name }
 firefoxview-close-button =
@@ -51,6 +53,7 @@ firefoxview-syncedtabs-loading-header = Synkronisering er i gang
 firefoxview-syncedtabs-loading-description = Når processen er færdig, kan du se åbne faneblade fra dine andre enheder. Prøv at tjekke igen senere.
 firefoxview-tabpickup-fxa-admin-disabled-header = Din organisation har deaktiveret synkronisering
 firefoxview-tabpickup-fxa-admin-disabled-description = { -brand-short-name } kan ikke synkronisere faneblade mellem enheder, fordi din administrator har deaktiveret synkronisering.
+firefoxview-tabpickup-fxa-disabled-by-policy-description = { -brand-short-name } kunne ikke synkronisere faneblade mellem enheder, fordi din organisation har deaktiveret synkronisering.
 firefoxview-tabpickup-network-offline-header = Kontroller din internetforbindelse
 firefoxview-tabpickup-network-offline-description = Hvis du bruger en firewall eller en proxy, kontroller om { -brand-short-name } har adgang til internettet.
 firefoxview-tabpickup-network-offline-primarybutton = Prøv igen
@@ -184,6 +187,8 @@ firefoxview-search-results-count =
 firefoxview-search-results-empty = Ingen resultater for "{ $query }"
 firefoxview-sort-history-by-date-label = Sorter efter dato
 firefoxview-sort-history-by-site-label = Sorter efter websted
+firefoxview-sort-open-tabs-by-recency-label = Sorter efter seneste aktivitet
+firefoxview-sort-open-tabs-by-order-label = Sorter efter fanebladenes rækkefølge
 # Variables:
 #   $url (string) - URL that will be opened in the new tab
 firefoxview-opentabs-tab-row =
@@ -246,3 +251,25 @@ firefoxview-recentlyclosed-empty-description-two = Besøg din <a data-l10n-name=
 
 firefoxview-syncedtabs-device-notabs = Ingen åbne faneblade på denne enhed
 firefoxview-syncedtabs-connect-another-device = Opret forbindelse til en ny enhed
+firefoxview-pinned-tabs =
+    .title = Fastgjorte faneblade
+firefoxview-tabs =
+    .title = Faneblade
+
+## These tooltips will be displayed when hovering over a pinned tab on the Open Tabs page
+## Variables:
+##  $tabTitle (string) - Title of pinned tab that will be opened when selected
+
+firefoxview-opentabs-pinned-tab =
+    .title = Skift til { $tabTitle }
+# This tooltip will be shown for a pinned tab whose URL is currently bookmarked.
+firefoxview-opentabs-bookmarked-pinned-tab =
+    .title = Skift til { $tabTitle } (gemt som bogmærke)
+
+## These tooltips will be displayed when hovering over an unpinned Open Tab
+## Variables:
+##   $url (string) - URL of tab that will be opened when selected
+
+# This tooltip will be shown for an unpinned tab whose URL is currently bookmarked.
+firefoxview-opentabs-bookmarked-tab =
+    .title = { $url } (gemt som bogmærke)

@@ -12,6 +12,8 @@ menu-tools-firefox-view =
     .label = { -firefoxview-brand-name }
     .accesskey = F
 firefoxview-page-title = { -firefoxview-brand-name }
+firefoxview-page-heading =
+    .heading = { -firefoxview-brand-name }
 firefoxview-page-label =
     .label = { -firefoxview-brand-name }
 firefoxview-close-button =
@@ -51,6 +53,7 @@ firefoxview-syncedtabs-loading-header = Συγχρονισμός σε εξέλι
 firefoxview-syncedtabs-loading-description = Μόλις ολοκληρωθεί, θα δείτε όλες τις ανοικτές καρτέλες από άλλες συσκευές. Επιστρέψτε σε λίγο.
 firefoxview-tabpickup-fxa-admin-disabled-header = Ο οργανισμός σας έχει απενεργοποιήσει τον συγχρονισμό
 firefoxview-tabpickup-fxa-admin-disabled-description = Το { -brand-short-name } δεν μπορεί να συγχρονίσει τις καρτέλες μεταξύ συσκευών, επειδή ο διαχειριστής σας έχει απενεργοποιήσει τον συγχρονισμό.
+firefoxview-tabpickup-fxa-disabled-by-policy-description = Το { -brand-short-name } δεν μπορεί να συγχρονίσει τις καρτέλες μεταξύ συσκευών, επειδή ο οργανισμός σας έχει απενεργοποιήσει τον συγχρονισμό.
 firefoxview-tabpickup-network-offline-header = Ελέγξτε τη σύνδεσή σας στο διαδίκτυο
 firefoxview-tabpickup-network-offline-description = Εάν χρησιμοποιείτε τείχος προστασίας ή διακομιστή μεσολάβησης, ελέγξτε ότι το { -brand-short-name } έχει άδεια πρόσβασης στο διαδίκτυο.
 firefoxview-tabpickup-network-offline-primarybutton = Δοκιμή ξανά
@@ -184,6 +187,8 @@ firefoxview-search-results-count =
 firefoxview-search-results-empty = Κανένα αποτέλεσμα για «{ $query }»
 firefoxview-sort-history-by-date-label = Ταξινόμηση κατά ημερομηνία
 firefoxview-sort-history-by-site-label = Ταξινόμηση κατά ιστότοπο
+firefoxview-sort-open-tabs-by-recency-label = Ταξινόμηση κατά πρόσφατη δραστηριότητα
+firefoxview-sort-open-tabs-by-order-label = Ταξινόμηση κατά σειρά καρτελών
 # Variables:
 #   $url (string) - URL that will be opened in the new tab
 firefoxview-opentabs-tab-row =
@@ -246,3 +251,25 @@ firefoxview-recentlyclosed-empty-description-two = Για να βρείτε πα
 
 firefoxview-syncedtabs-device-notabs = Καμία ανοικτή καρτέλα σε αυτήν τη συσκευή
 firefoxview-syncedtabs-connect-another-device = Σύνδεση άλλης συσκευής
+firefoxview-pinned-tabs =
+    .title = Καρφιτσωμένες καρτέλες
+firefoxview-tabs =
+    .title = Καρτέλες
+
+## These tooltips will be displayed when hovering over a pinned tab on the Open Tabs page
+## Variables:
+##  $tabTitle (string) - Title of pinned tab that will be opened when selected
+
+firefoxview-opentabs-pinned-tab =
+    .title = Εναλλαγή σε «{ $tabTitle }»
+# This tooltip will be shown for a pinned tab whose URL is currently bookmarked.
+firefoxview-opentabs-bookmarked-pinned-tab =
+    .title = Εναλλαγή σε «{ $tabTitle }» (Με σελιδοδείκτη)
+
+## These tooltips will be displayed when hovering over an unpinned Open Tab
+## Variables:
+##   $url (string) - URL of tab that will be opened when selected
+
+# This tooltip will be shown for an unpinned tab whose URL is currently bookmarked.
+firefoxview-opentabs-bookmarked-tab =
+    .title = (Με σελιδοδείκτη) { $url }

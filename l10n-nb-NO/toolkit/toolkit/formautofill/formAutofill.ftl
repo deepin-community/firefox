@@ -5,6 +5,16 @@
 
 ## OS Prompt Dialog
 
+# The macos string is preceded by the operating system (macOS) with "Firefox is trying to ",
+# and has a period added to its end. Make sure to test in your locale.
+autofill-use-payment-method-os-prompt-macos = bruk lagret informasjon om betalingsmåte
+autofill-use-payment-method-os-prompt-windows = { -brand-short-name } prøver å bruke lagret informasjon om betalingsmåte. Bekreft tilgang til denne Windows-kontoen nedenfor.
+autofill-use-payment-method-os-prompt-other = { -brand-short-name } prøver å bruke lagret informasjon om betalingsmåte.
+# In macOS, this string is preceded by the operating system with "Firefox is trying to ",
+# and has a period added to its end. Make sure to test in your locale.
+autofill-edit-payment-method-os-prompt-macos = vis lagret informasjon om betalingsmåte
+autofill-edit-payment-method-os-prompt-windows = { -brand-short-name } prøver å vise lagret informasjon om betalingsmåte. Bekreft tilgang til denne Windows-kontoen nedenfor.
+autofill-edit-payment-method-os-prompt-other = { -brand-short-name } prøver å vise lagret informasjon om betalingsmåte.
 # The links lead users to Form Autofill browser preferences.
 autofill-options-link = Innstillinger for autoutfylling av skjema
 autofill-options-link-osx = Innstillinger for autoutfylling av skjema
@@ -37,3 +47,19 @@ credit-card-capture-save-new-button =
 credit-card-capture-update-button =
     .label = Oppdater eksisterende kort
     .accessKey = O
+# Used as a label for the button, displayed at the bottom of the dropdown suggestion, to open Form Autofill browser preferences.
+autofill-manage-addresses-label = Behandle adresser
+# Used as a label for the button, displayed at the bottom of the dropdown suggestion, to open Form Autofill browser preferences.
+autofill-manage-payment-methods-label = Behandle betalingsmåter
+
+## These are brand names and should only be translated when a locale-specific name for that brand is in common use
+
+autofill-card-network-amex = American Express
+autofill-card-network-cartebancaire = Carte Bancaire
+autofill-card-network-diners = Diners Club
+autofill-card-network-discover = Discover
+autofill-card-network-jcb = JCB
+autofill-card-network-mastercard = MasterCard
+autofill-card-network-mir = MIR
+autofill-card-network-unionpay = Union Pay
+autofill-card-network-visa = Visa

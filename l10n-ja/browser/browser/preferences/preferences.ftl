@@ -218,6 +218,10 @@ preferences-web-appearance-choice-input-dark =
 # This can appear when using windows HCM or "Override colors: always" without
 # system colors.
 preferences-web-appearance-override-warning = 選択した配色でウェブサイトの外観を上書きします。<a data-l10n-name="colors-link">配色の管理</a>
+# This can appear when using windows HCM or "Override colors: always" without
+# system colors.
+preferences-web-appearance-override-warning2 =
+    .message = 選択した配色でウェブサイトの外観を上書きします。
 # This message contains one link. It can be moved within the sentence as needed
 # to adapt to your language, but should not be changed.
 preferences-web-appearance-footer = <a data-l10n-name="themes-link">アドオンとテーマ</a> で { -brand-short-name } のテーマを管理する
@@ -245,6 +249,8 @@ preferences-default-zoom-value =
 preferences-zoom-text-only =
     .label = 文字サイズのみ変更
     .accesskey = t
+preferences-text-zoom-override-warning =
+    .message = 警告: [文字サイズのみ変更] を選択し、既定のズームが 100% でない場合、一部のサイトやコンテンツが正しく表示されない可能性があります。
 language-header = 言語
 choose-language-description = ウェブページの表示に使用する言語の優先順位を設定できます。
 choose-button =
@@ -457,7 +463,7 @@ browsing-use-smooth-scrolling =
 browsing-gtk-use-non-overlay-scrollbars =
     .label = 常にスクロールバーを表示する
     .accesskey = o
-browsing-always-underline-links=
+browsing-always-underline-links =
     .label = 常にリンクに下線を付ける
     .accesskey = u
 browsing-use-onscreen-keyboard =
@@ -550,6 +556,9 @@ home-prefs-shortcuts-by-option-sponsored =
 home-prefs-recommended-by-header =
     .label = { $provider } のおすすめ
 home-prefs-recommended-by-description-new = { -brand-product-name } ファミリーを構成する { $provider } が厳選した注目のコンテンツ
+home-prefs-recommended-by-header-generic =
+    .label = おすすめのストーリー
+home-prefs-recommended-by-description-generic = { -brand-product-name } ファミリーに選ばれた優良コンテンツ
 
 ##
 
@@ -831,6 +840,7 @@ pane-privacy-logins-and-passwords-header = ログインとパスワード
 forms-ask-to-save-logins =
     .label = ウェブサイトのログイン情報とパスワードを保存する
     .accesskey = r
+
 ## Privacy Section - Passwords
 
 # "Logins" is the former term for "Passwords". Users should find password settings
@@ -923,12 +933,13 @@ autofill-payment-methods-checkbox-submessage = クレジットカードとデビ
     .accesskey = I
 autofill-saved-payment-methods-button = 保存された支払方法
     .accesskey = v
-autofill-reauth-checkbox = { PLATFORM() ->
-            [macos] 支払い方法の入力と編集は macOS の認証が必要です。
-            [windows] 支払い方法の入力と編集は Windows の認証が必要です。
-            [linux] 支払い方法の入力と編集は Linux の認証が必要です。
-           *[other] 支払い方法の入力と編集は OS の認証が必要です。
-        }
+autofill-reauth-checkbox =
+    { PLATFORM() ->
+        [macos] 支払い方法の入力と編集は macOS の認証が必要です。
+        [windows] 支払い方法の入力と編集は Windows の認証が必要です。
+        [linux] 支払い方法の入力と編集は Linux の認証が必要です。
+       *[other] 支払い方法の入力と編集は OS の認証が必要です。
+    }
     .accesskey = o
 
 ## Privacy Section - History
@@ -1062,10 +1073,10 @@ addressbar-locbar-engines-option =
 addressbar-locbar-quickactions-option =
     .label = クイックアクション
     .accesskey = Q
+addressbar-suggestions-settings = 検索エンジンの検索候補の設定を変更
 addressbar-locbar-showrecentsearches-option =
     .label = 最近の検索を表示
     .accesskey = r
-addressbar-suggestions-settings = 検索エンジンの検索候補の設定を変更
 addressbar-quickactions-learn-more = 詳細情報
 
 ## Privacy Section - Content Blocking

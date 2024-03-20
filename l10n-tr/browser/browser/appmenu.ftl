@@ -77,6 +77,16 @@ appmenu-remote-tabs-turn-on-sync =
 appmenu-remote-tabs-showmore =
     .label = Daha fazla sekme göster
     .tooltiptext = Bu cihazdan daha fazla sekme göster
+# This is shown when there are inactive tabs which are not being shown.
+# Variables
+# $count (Number) - The number of inactive tabs which are not being shown (at least 1)
+appmenu-remote-tabs-showinactive =
+    .label =
+        { $count ->
+            [one] Pasif sekmeyi göster
+           *[other] { $count } pasif sekmeyi göster
+        }
+    .tooltiptext = Bu cihazdaki pasif sekmeleri göster
 # This is shown beneath the name of a device when that device has no open tabs
 appmenu-remote-tabs-notabs = Açık sekme yok
 # This is shown when Sync is configured but syncing tabs is disabled.
@@ -168,7 +178,12 @@ profiler-popup-capture-shortcut =
 # devtools/client/performance-new/shared/background.jsm.js
 # Please take care that the same values are also defined in devtools' perftools.ftl.
 
-profiler-popup-presets-web-developer-description = Çoğu web uygulamasında hata ayıklama için önerilen ayarlar, düşük overhead.
+
+# Presets and their l10n IDs are defined in the file
+# devtools/client/performance-new/shared/background.sys.mjs
+# Please take care that the same values are also defined in devtools' perftools.ftl.
+
+profiler-popup-presets-web-developer-description = Çoğu web uygulamasında hata ayıklama için önerilen ayarlar, düşük ek yük.
 profiler-popup-presets-web-developer-label =
     .label = Web geliştirici
 profiler-popup-presets-firefox-description = { -brand-shorter-name } tarayıcısını profilleme için önerilen ayar.
@@ -257,3 +272,13 @@ appmenu-developer-tools-extensions =
     .label = Geliştiricilere özel uzantılar
 appmenuitem-report-broken-site =
     .label = Bozuk siteyi rapor et
+
+## Panel for privacy and security products
+
+appmenuitem-sign-in-account = Hesabınıza giriş yapın
+appmenuitem-monitor-title = { -monitor-brand-short-name }
+appmenuitem-monitor-description = Veri ihlali uyarıları alın
+appmenuitem-relay-title = { -relay-brand-short-name }
+appmenuitem-relay-description = Gerçek e-posta adresinizi ve telefon numaranızı maskeleyin
+appmenuitem-vpn-title = { -mozilla-vpn-brand-name }
+appmenuitem-vpn-description = Çevrimiçi etkinliklerinizi koruyun

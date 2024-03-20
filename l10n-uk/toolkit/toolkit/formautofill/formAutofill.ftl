@@ -47,3 +47,19 @@ credit-card-capture-save-new-button =
 credit-card-capture-update-button =
     .label = Оновити наявну картку
     .accessKey = о
+# Used as a label for the button, displayed at the bottom of the dropdown suggestion, to open Form Autofill browser preferences.
+autofill-manage-addresses-label = Керувати адресами
+# Used as a label for the button, displayed at the bottom of the dropdown suggestion, to open Form Autofill browser preferences.
+autofill-manage-payment-methods-label = Керувати способами оплати
+
+## These are brand names and should only be translated when a locale-specific name for that brand is in common use
+
+autofill-card-network-amex = Аmerican Express
+autofill-card-network-cartebancaire = Сarte Bancaire
+autofill-card-network-diners = Dіners Club
+autofill-card-network-discover = Dіscover
+autofill-card-network-jcb = JCB
+autofill-card-network-mastercard = MasterCаrd
+autofill-card-network-mir = MIR
+autofill-card-network-unionpay = Uniоn Pay
+autofill-card-network-visa = Vіsa

@@ -64,6 +64,8 @@ shopping-message-bar-analysis-in-progress-with-amount = Controlo qualitate de re
 shopping-message-bar-page-not-supported =
     .heading = Nos non pote controlar iste recensiones
     .message = Infortunatemente, nos non pote verificar le qualitate de recension pro certe typos de productos. Per exemplo, cartas dono e diffusion multimedial de video, musica, e jocos.
+shopping-message-bar-keep-closed-dismiss-button = No, gratias
+shopping-message-bar-keep-closed-accept-button = Si, mantener claudite
 
 ## Strings for the product review snippets card
 
@@ -89,6 +91,9 @@ shopping-settings-recommendations-toggle =
 shopping-settings-recommendations-learn-more2 = Tu videra avisos publicitari occasional pro productos pertinente. Nos solo clama productos con recensiones fidabile. <a data-l10n-name="review-quality-url">Pro saper plus</a>
 shopping-settings-opt-out-button = Disactivar verificator de recension
 powered-by-fakespot = Verificator de recension es supportate per <a data-l10n-name="fakespot-link">{ -fakespot-brand-full-name }</a>.
+shopping-settings-auto-open-toggle =
+    .label = Aperir automaticamente Verificator de recension
+shopping-settings-sidebar-enabled-state = Verificator de recension es <strong>Active</strong>
 
 ## Strings for the adjusted rating component
 
@@ -171,6 +176,16 @@ shopping-callout-pdp-opted-in-title = Es fidabile iste recensiones? Discoperi lo
 shopping-callout-pdp-opted-in-subtitle = Aperi le verificator de recension pro vider un classification adjustate con le recensiones non fidabile removite. In ultra, vide le evidentias de recente recensiones authentic.
 shopping-callout-closed-not-opted-in-title = Un clic pro recensiones fidabile
 shopping-callout-closed-not-opted-in-subtitle = Prova le verificator de recension quandocunque tu vide le etiquetta del precio. Obtene discernimentos ab real compratores facilemente, ante que tu compra.
+shopping-callout-closed-not-opted-in-revised-title = Un clic pro recensiones fidibile
+shopping-callout-closed-not-opted-in-revised-button = Comprendite
+shopping-callout-not-opted-in-reminder-title = Compra con confidentia
+shopping-callout-not-opted-in-reminder-open-button = Aperir Verificator de recension
+shopping-callout-not-opted-in-reminder-close-button = Dimitter
+shopping-callout-not-opted-in-reminder-ignore-checkbox = Non plus monstrar.
+shopping-callout-disabled-auto-open-title = Verificator de recension es ora predefinite claudite
+shopping-callout-disabled-auto-open-button = Comprendite
+shopping-callout-opted-out-title = Verificator de recension es disactivate
+shopping-callout-opted-out-button = Comprendite
 
 ## Onboarding message strings.
 
@@ -186,7 +201,6 @@ shopping-onboarding-dynamic-subtitle-1 = Vide quanto es fidabile le recensiones 
 #   $currentSite (str) - The current shopping page name
 shopping-onboarding-single-subtitle = Vide quanto fidabile es le recensiones de producto sur <b>{ $currentSite }</b> ante que tu compra. Verificator de recension, un function experimental per { -brand-product-name }, es integrate justo in le navigator.
 shopping-onboarding-body = Per le potentia de { -fakespot-brand-full-name }, nos te adjuta a evitar recensiones prevenite e inauthentic. Nostre modello de intelligentia artificial sempre meliora pro proteger te dum tu compra. <a data-l10n-name="learn_more">Pro saper plus</a>
-shopping-onboarding-opt-in-privacy-policy-and-terms-of-use2 = Seligente “{ shopping-onboarding-opt-in-button }“ tu concorda con le <a data-l10n-name="privacy_policy">politica de confidentialitate</a> e le <a data-l10n-name="terms_of_use">conditiones de uso de { -fakespot-brand-name }.</a>
 shopping-onboarding-opt-in-privacy-policy-and-terms-of-use3 = Seligente “{ shopping-onboarding-opt-in-button }“ tu concorda con le <a data-l10n-name="privacy_policy">politica de confidentialitate de</a> { -brand-product-name } e le <a data-l10n-name="terms_of_use">conditiones de uso de { -fakespot-brand-name }.</a>
 shopping-onboarding-opt-in-button = Si, essaya lo
 shopping-onboarding-not-now-button = Non ora
