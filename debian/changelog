@@ -1,3 +1,13 @@
+firefox (124.0-1deepin1) unstable; urgency=medium
+
+  [ Chang Yang ]
+  * fix: loong64: Keep unsigned 32-bit parameter sign-extended in register
+    - https://phabricator.services.mozilla.com/D204011
+  * fix: loong64: Fix usage of some instruction encoding field masks
+    - https://phabricator.services.mozilla.com/D203884
+
+ -- Tianyu Chen <sweetyfish@deepin.org>  Wed, 20 Mar 2024 14:50:15 +0800
+
 firefox (124.0-1) unstable; urgency=medium
 
   * New upstream release.
