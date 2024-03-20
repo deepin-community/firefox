@@ -112,7 +112,7 @@ onboarding-live-language-header = 选择您的语言
 mr2022-onboarding-live-language-text = { -brand-short-name } 也懂您的语言
 mr2022-language-mismatch-subtitle = 幸得社区相助，{ -brand-short-name } 已被翻译成 90 余种语言。您的操作系统似乎正在使用“{ $systemLanguage }”，而 { -brand-short-name } 正在使用“{ $appLanguage }”。
 onboarding-live-language-button-label-downloading = 正在下载{ $negotiatedLanguage }语言包…
-onboarding-live-language-waiting-button = 正在获取可用语言列表…
+onboarding-live-language-waiting-button = 正在获取可用语言…
 onboarding-live-language-installing = 正在安装{ $negotiatedLanguage }语言包…
 mr2022-onboarding-live-language-switch-to = 切换为“{ $negotiatedLanguage }”
 mr2022-onboarding-live-language-continue-in = 继续使用“{ $appLanguage }”
@@ -333,6 +333,9 @@ onboarding-gratitude-security-and-privacy-subtitle = 感谢使用由 Mozilla 基
 onboarding-new-user-time-based-survey-title = 您使用 { -brand-short-name } 多长时间了？
 onboarding-new-user-familiarity-based-survey-title = 您在多大程度上熟悉 { -brand-short-name }？
 onboarding-new-user-survey-subtitle = 您的反馈有助于改善 { -brand-short-name }。
+# When translating "next" it means the next screen in onboarding.
+onboarding-new-user-survey-next-button-label = 下一步
+onboarding-new-user-survey-legal-link-label = 选择“{ onboarding-new-user-survey-next-button-label }”即代表您同意 { -brand-product-name } 的<a data-l10n-name="privacy_notice">隐私声明</a>
 # When translating "brand new" it means completely new.
 onboarding-new-user-survey-time-based-option-1 = 我是新用户
 onboarding-new-user-survey-time-based-option-2 = 不到一个月

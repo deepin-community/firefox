@@ -142,10 +142,6 @@ ifeq (default,$(origin CXX))
 CXX := g++
 endif
 
-ifeq (,$(filter buster bullseye,$(DIST)))
-PATH := /usr/lib/llvm-16/bin:$(PATH)
-endif
-
 ifneq (,$(filter mips mipsel,$(DEB_HOST_ARCH)))
 CONFIGURE_FLAGS += --disable-jit
 endif

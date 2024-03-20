@@ -349,6 +349,9 @@ onboarding-gratitude-security-and-privacy-subtitle = Mozilla Foundation ұсын
 onboarding-new-user-time-based-survey-title = { -brand-short-name } қолданып жүргеніңізге қанша уақыт болды?
 onboarding-new-user-familiarity-based-survey-title = { -brand-short-name } өнімімен қаншалықты таныссыз?
 onboarding-new-user-survey-subtitle = Сіздің пікіріңіз { -brand-short-name } өнімін одан сайын жақсартуға көмектеседі.
+# When translating "next" it means the next screen in onboarding.
+onboarding-new-user-survey-next-button-label = Келесі
+onboarding-new-user-survey-legal-link-label = "{ onboarding-new-user-survey-next-button-label }" таңдау арқылы, сіз { -brand-product-name } өнімінің <a data-l10n-name="privacy_notice">Жекелік ескертуімен</a> келісесіз
 # When translating "brand new" it means completely new.
 onboarding-new-user-survey-time-based-option-1 = Мен жаңадан келдім
 onboarding-new-user-survey-time-based-option-2 = 1 айдан аз

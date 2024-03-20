@@ -64,6 +64,11 @@ shopping-message-bar-analysis-in-progress-with-amount = 正在確認評論品質
 shopping-message-bar-page-not-supported =
     .heading = 我們無法檢查這些評論
     .message = 很可惜，我們無法確認某些類型產品（例如：儲值卡、影音串流服務、遊戲）的評論品質。
+shopping-message-bar-keep-closed-header =
+    .heading = 要保持關閉嗎？
+    .message = 您可以調整設定，預社關閉商品評論檢查器。目前會自動開啟。
+shopping-message-bar-keep-closed-dismiss-button = 不要，謝謝
+shopping-message-bar-keep-closed-accept-button = 好，請關掉
 
 ## Strings for the product review snippets card
 
@@ -89,6 +94,19 @@ shopping-settings-recommendations-toggle =
 shopping-settings-recommendations-learn-more2 = 您會偶而看到相關商品的廣告，我們僅會推薦評論品質可靠的商品。<a data-l10n-name="review-quality-url">了解更多資訊</a>
 shopping-settings-opt-out-button = 關閉商品評論檢查器
 powered-by-fakespot = 商品評論檢查器是由 <a data-l10n-name="fakespot-link">{ -fakespot-brand-full-name }</a> 提供。
+shopping-settings-auto-open-toggle =
+    .label = 自動開啟商品評論檢查器
+# Description text for regions where we support three sites. Sites are limited to Amazon, Walmart and Best Buy.
+# Variables:
+#   $firstSite (String) - The first shopping page name
+#   $secondSite (String) - The second shopping page name
+#   $thirdSite (String) - The third shopping page name
+shopping-settings-auto-open-description-three-sites = 當您在 { $firstSite }、{ $secondSite } 或 { $thirdSite } 檢視商品時
+# Description text for regions where we support only one site (e.g. currently used in FR/DE with Amazon).
+# Variables:
+#   $currentSite (String) - The current shopping page name
+shopping-settings-auto-open-description-single-site = 當您在 { $currentSite } 檢視商品時
+shopping-settings-sidebar-enabled-state = 商品評論檢查器<strong>已開啟</strong>
 
 ## Strings for the adjusted rating component
 
@@ -171,6 +189,22 @@ shopping-callout-pdp-opted-in-title = 這些商品評論可靠嗎？快速確認
 shopping-callout-pdp-opted-in-subtitle = 開啟商品評論檢查器來確認移除不可靠的評論後的校正評分，以及根據近期的可靠評論所整理的重點。
 shopping-callout-closed-not-opted-in-title = 點一下即可看到可靠的商品評論
 shopping-callout-closed-not-opted-in-subtitle = 看到標價的時候，就可以試用看看商品評論檢查器。在購買之前快速確認實際購買商品的顧客評論。
+shopping-callout-closed-not-opted-in-revised-title = 點一下即可看到可信任的商品評論
+shopping-callout-closed-not-opted-in-revised-subtitle = 只要點擊網址列中價格標籤圖示，即可回到商品評論檢查器。
+shopping-callout-closed-not-opted-in-revised-button = 知道了！
+shopping-callout-not-opted-in-reminder-title = 購物更放心
+shopping-callout-not-opted-in-reminder-subtitle = 不確定網站中的產品評論是真是假？{ -brand-product-name } 的商品評論檢查器可以協助您檢查。
+shopping-callout-not-opted-in-reminder-open-button = 開啟商品評論檢查器
+shopping-callout-not-opted-in-reminder-close-button = 知道了
+shopping-callout-not-opted-in-reminder-ignore-checkbox = 不要再顯示
+shopping-callout-not-opted-in-reminder-img-alt =
+    .aria-label = 三筆產品評論的抽象示意圖。當中一個有警告圖示，表示該評論可能不可信。
+shopping-callout-disabled-auto-open-title = 現在起會預設關閉商品評論檢查器
+shopping-callout-disabled-auto-open-subtitle = 您可以隨時點擊網址列中的價格標籤圖示，看看商品的評論是否可信。
+shopping-callout-disabled-auto-open-button = 知道了！
+shopping-callout-opted-out-title = 商品評論檢查器已關閉
+shopping-callout-opted-out-subtitle = 若要重新開啟，請點擊網址列中的價格標籤圖示，並依照提示步驟操作。
+shopping-callout-opted-out-button = 知道了！
 
 ## Onboarding message strings.
 
@@ -186,7 +220,6 @@ shopping-onboarding-dynamic-subtitle-1 = 購物前先看看商品在 <b>{ $curre
 #   $currentSite (str) - The current shopping page name
 shopping-onboarding-single-subtitle = 購買商品之前，先看看 <b>{ $currentSite }</b> 上的商品評論可不可靠。{ -brand-product-name } 的實驗性功能「商品評論檢查器」直接內建於瀏覽器中。
 shopping-onboarding-body = 透過 { -fakespot-brand-full-name } 的威力，我們協助您避免帶有偏見與虛偽的評論。我們會隨您在線上購物，持續改進 AI 模型。<a data-l10n-name="learn_more">了解更多資訊</a>
-shopping-onboarding-opt-in-privacy-policy-and-terms-of-use2 = 選擇「{ shopping-onboarding-opt-in-button }」，代表您同意 { -fakespot-brand-name } 的<a data-l10n-name="privacy_policy">隱私權保護政策</a>與<a data-l10n-name="terms_of_use">使用條款</a>。
 shopping-onboarding-opt-in-privacy-policy-and-terms-of-use3 = 選擇「{ shopping-onboarding-opt-in-button }」，代表您同意 { -brand-product-name } 的<a data-l10n-name="privacy_policy">隱私權保護政策</a>與 { -fakespot-brand-name } 的<a data-l10n-name="terms_of_use">使用條款</a>。
 shopping-onboarding-opt-in-button = 好，試用看看
 shopping-onboarding-not-now-button = 現在不要

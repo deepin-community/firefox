@@ -12,6 +12,8 @@ menu-tools-firefox-view =
     .label = { -firefoxview-brand-name }
     .accesskey = F
 firefoxview-page-title = { -firefoxview-brand-name }
+firefoxview-page-heading =
+    .heading = { -firefoxview-brand-name }
 firefoxview-page-label =
     .label = { -firefoxview-brand-name }
 firefoxview-close-button =
@@ -51,6 +53,7 @@ firefoxview-syncedtabs-loading-header = Sincronização em andamento
 firefoxview-syncedtabs-loading-description = Quando terminar, abas abertas em outros dispositivos aparecem aqui. Verifique mais tarde.
 firefoxview-tabpickup-fxa-admin-disabled-header = Sua organização desativou a sincronização
 firefoxview-tabpickup-fxa-admin-disabled-description = O { -brand-short-name } não consegue sincronizar abas entre dispositivos porque seu administrador desativou a sincronização.
+firefoxview-tabpickup-fxa-disabled-by-policy-description = O { -brand-short-name } não pode sincronizar abas entre dispositivos porque sua organização desativou a sincronização.
 firefoxview-tabpickup-network-offline-header = Verifique sua conexão com a internet
 firefoxview-tabpickup-network-offline-description = Se estiver usando um firewall ou proxy, verifique se o { -brand-short-name } tem permissão para acessar a web.
 firefoxview-tabpickup-network-offline-primarybutton = Tentar novamente
@@ -184,6 +187,8 @@ firefoxview-search-results-count =
 firefoxview-search-results-empty = Nenhum resultado de “{ $query }”
 firefoxview-sort-history-by-date-label = Ordenar por data
 firefoxview-sort-history-by-site-label = Ordenar por site
+firefoxview-sort-open-tabs-by-recency-label = Ordenar por atividade recente
+firefoxview-sort-open-tabs-by-order-label = Ordenar por ordem de aba
 # Variables:
 #   $url (string) - URL that will be opened in the new tab
 firefoxview-opentabs-tab-row =

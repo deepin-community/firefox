@@ -77,6 +77,12 @@ appmenu-remote-tabs-turn-on-sync =
 appmenu-remote-tabs-showmore =
     .label = 더 많은 탭 표시
     .tooltiptext = 이 기기의 탭 더 보기
+# This is shown when there are inactive tabs which are not being shown.
+# Variables
+# $count (Number) - The number of inactive tabs which are not being shown (at least 1)
+appmenu-remote-tabs-showinactive =
+    .label = 비활성 탭 { $count }개 표시
+    .tooltiptext = 이 기기의 비활성 탭 표시
 # This is shown beneath the name of a device when that device has no open tabs
 appmenu-remote-tabs-notabs = 열린 탭이 없음
 # This is shown when Sync is configured but syncing tabs is disabled.
@@ -168,6 +174,11 @@ profiler-popup-capture-shortcut =
 # devtools/client/performance-new/shared/background.jsm.js
 # Please take care that the same values are also defined in devtools' perftools.ftl.
 
+
+# Presets and their l10n IDs are defined in the file
+# devtools/client/performance-new/shared/background.sys.mjs
+# Please take care that the same values are also defined in devtools' perftools.ftl.
+
 profiler-popup-presets-web-developer-description = 오버헤드가 낮은 대부분의 웹 앱 디버깅에 권장되는 프리셋입니다.
 profiler-popup-presets-web-developer-label =
     .label = 웹 개발자
@@ -257,3 +268,13 @@ appmenu-developer-tools-extensions =
     .label = 개발자용 확장 기능
 appmenuitem-report-broken-site =
     .label = 깨진 사이트 신고
+
+## Panel for privacy and security products
+
+appmenuitem-sign-in-account = 계정에 로그인
+appmenuitem-monitor-title = { -monitor-brand-short-name }
+appmenuitem-monitor-description = 데이터 유출 알림 받기
+appmenuitem-relay-title = { -relay-brand-short-name }
+appmenuitem-relay-description = 실제 이메일과 전화를 가리세요
+appmenuitem-vpn-title = { -mozilla-vpn-brand-name }
+appmenuitem-vpn-description = 온라인 활동을 보호하세요

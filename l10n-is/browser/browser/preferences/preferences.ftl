@@ -230,6 +230,10 @@ preferences-web-appearance-choice-input-dark =
 # This can appear when using windows HCM or "Override colors: always" without
 # system colors.
 preferences-web-appearance-override-warning = Litaval þitt yfirtekur útlit vefsvæðisins. <a data-l10n-name="colors-link">Sýsla með liti</a>
+# This can appear when using windows HCM or "Override colors: always" without
+# system colors.
+preferences-web-appearance-override-warning2 =
+    .message = Litaval þitt yfirtekur útlit vefsvæðisins.
 # This message contains one link. It can be moved within the sentence as needed
 # to adapt to your language, but should not be changed.
 preferences-web-appearance-footer = Sýslaðu með { -brand-short-name } þemu í <a data-l10n-name="themes-link">Forritsaukar og þemu</a>
@@ -257,6 +261,8 @@ preferences-default-zoom-value =
 preferences-zoom-text-only =
     .label = Stækka/minnka einungis texta
     .accesskey = t
+preferences-text-zoom-override-warning =
+    .message = Viðvörun: Ef þú velur „Stækka/minnka einungis texta“ og sjálfgefni aðdrátturinn þinn er ekki stilltur á 100%, getur það valdið því að sum vefsvæði eða efni verði fyrir hnjaski.
 language-header = Tungumál
 choose-language-description = Veldu þau tungumál sem hafa forgang við birtingu vefsíðu
 choose-button =
@@ -562,6 +568,9 @@ home-prefs-shortcuts-by-option-sponsored =
 home-prefs-recommended-by-header =
     .label = Með þessu mælir { $provider }
 home-prefs-recommended-by-description-new = Úrvalsefni í umsjón { $provider }, hluta af { -brand-product-name } fjölskyldunni
+home-prefs-recommended-by-header-generic =
+    .label = Sögur sem mælt er með
+home-prefs-recommended-by-description-generic = Úrvalsefni sem safnað hefur verið af aðstandendum { -brand-product-name }
 
 ##
 
@@ -1080,10 +1089,10 @@ addressbar-locbar-engines-option =
 addressbar-locbar-quickactions-option =
     .label = Flýtiaðgerðir
     .accesskey = g
+addressbar-suggestions-settings = Breyta stillingum fyrir ábendingar leitarvéla
 addressbar-locbar-showrecentsearches-option =
     .label = Sýna nýlegar leitir
     .accesskey = r
-addressbar-suggestions-settings = Breyta stillingum fyrir ábendingar leitarvéla
 addressbar-quickactions-learn-more = Kanna nánar
 
 ## Privacy Section - Content Blocking

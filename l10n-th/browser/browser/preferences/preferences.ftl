@@ -191,6 +191,9 @@ containers-remove-alert-title = เอาการแยกข้อมูลน
 containers-remove-alert-msg = หากคุณเอาการแยกข้อมูลนี้ออกตอนนี้ { $count } แท็บแยกข้อมูลจะถูกปิด คุณแน่ใจหรือไม่ว่าต้องการเอาการแยกข้อมูลนี้ออก?
 containers-remove-ok-button = เอาการแยกข้อมูลนี้ออก
 containers-remove-cancel-button = ไม่เอาการแยกข้อมูลนี้ออก
+settings-tabs-show-image-in-preview =
+    .label = แสดงตัวอย่างภาพเมื่อคุณวางเมาส์เหนือแท็บ
+    .accessKey = แ
 
 ## General Section - Language & Appearance
 
@@ -215,6 +218,10 @@ preferences-web-appearance-choice-input-dark =
 # This can appear when using windows HCM or "Override colors: always" without
 # system colors.
 preferences-web-appearance-override-warning = การเลือกสีของคุณมีผลเหนือรูปลักษณ์ของเว็บไซต์ <a data-l10n-name="colors-link">จัดการสี</a>
+# This can appear when using windows HCM or "Override colors: always" without
+# system colors.
+preferences-web-appearance-override-warning2 =
+    .message = การเลือกสีของคุณมีผลเหนือรูปลักษณ์ของเว็บไซต์
 # This message contains one link. It can be moved within the sentence as needed
 # to adapt to your language, but should not be changed.
 preferences-web-appearance-footer = จัดการชุดรูปแบบของ { -brand-short-name } ใน <a data-l10n-name="themes-link">ส่วนขยายและชุดรูปแบบ</a>
@@ -984,6 +991,7 @@ sitedata-delete-on-close =
     .label = ลบคุกกี้และข้อมูลไซต์เมื่อ { -brand-short-name } ถูกปิด
     .accesskey = บ
 sitedata-delete-on-close-private-browsing = ในโหมดการเรียกดูแบบส่วนตัวแบบถาวร คุกกี้และข้อมูลไซต์จะถูกล้างทุกครั้งเมื่อปิด { -brand-short-name }
+sitedata-delete-on-close-private-browsing2 = ตามการตั้งค่าประวัติของคุณ { -brand-short-name } จะลบคุกกี้และข้อมูลไซต์ออกจากวาระของคุณเมื่อปิดเบราว์เซอร์
 sitedata-allow-cookies-option =
     .label = ยอมรับคุกกี้และข้อมูลไซต์
     .accesskey = ย
@@ -999,7 +1007,7 @@ sitedata-option-block-cross-site-trackers =
 sitedata-option-block-cross-site-tracking-cookies =
     .label = คุกกี้ติดตามข้ามไซต์
 sitedata-option-block-cross-site-cookies =
-    .label = คุกกี้ติดตามข้ามไซต์ และแยกคุกกี้ข้ามไซต์อื่น ๆ
+    .label = คุกกี้ติดตามข้ามไซต์ และคัดแยกคุกกี้ข้ามไซต์อื่นๆ
 sitedata-option-block-unvisited =
     .label = คุกกี้จากเว็บไซต์ที่ไม่ได้เยี่ยมชม
 sitedata-option-block-all-cross-site-cookies =
@@ -1060,10 +1068,10 @@ addressbar-locbar-engines-option =
 addressbar-locbar-quickactions-option =
     .label = คำสั่งด่วน
     .accesskey = ด
+addressbar-suggestions-settings = เปลี่ยนการกำหนดลักษณะสำหรับข้อเสนอแนะของเครื่องมือค้นหา
 addressbar-locbar-showrecentsearches-option =
     .label = แสดงการค้นหาล่าสุด
     .accesskey = ล
-addressbar-suggestions-settings = เปลี่ยนการกำหนดลักษณะสำหรับข้อเสนอแนะของเครื่องมือค้นหา
 addressbar-quickactions-learn-more = เรียนรู้เพิ่มเติม
 
 ## Privacy Section - Content Blocking
@@ -1101,7 +1109,7 @@ content-blocking-private-windows = ตัวติดตามเนื้อห
 content-blocking-cross-site-cookies-in-all-windows2 = คุกกี้แบบข้ามไซต์ในทุกหน้าต่าง
 content-blocking-cross-site-tracking-cookies = คุกกี้ติดตามข้ามไซต์
 content-blocking-all-cross-site-cookies-private-windows = คุกกี้แบบข้ามไซต์ในหน้าต่างส่วนตัว
-content-blocking-cross-site-tracking-cookies-plus-isolate = คุกกี้ติดตามข้ามไซต์ และแยกคุกกี้ที่เหลืออยู่
+content-blocking-cross-site-tracking-cookies-plus-isolate = คุกกี้ติดตามข้ามไซต์ และคัดแยกคุกกี้ที่เหลืออยู่
 content-blocking-social-media-trackers = ตัวติดตามสื่อสังคมออนไลน์
 content-blocking-all-cookies = คุกกี้ทั้งหมด
 content-blocking-unvisited-cookies = คุกกี้จากไซต์ที่ไม่ได้เยี่ยมชม

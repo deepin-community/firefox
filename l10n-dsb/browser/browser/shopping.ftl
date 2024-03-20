@@ -64,6 +64,11 @@ shopping-message-bar-analysis-in-progress-with-amount = Kontrola kwality pógód
 shopping-message-bar-page-not-supported =
     .heading = Njamóžomy toś te pógódnośenja pśeglědowaś
     .message = Bóžko  njamóžomy kwalitu pógódnośenja za wěste produktowe typy kontrolěrowaś. Na pśikład za darjeńske kórty a tšugajuce wideo, muziku a graśa.
+shopping-message-bar-keep-closed-header =
+    .heading = Zacynjony wóstajiś?
+    .message = Móžośo swóje nastajenja aktualizěrowaś, aby kontrolu pógódnośenjow pó standarźe zacynjonu wóstajił. Tuchylu se awtomatiski wócynja.
+shopping-message-bar-keep-closed-dismiss-button = Ně, źěkujom se
+shopping-message-bar-keep-closed-accept-button = Jo, zacynjony wóstajiś
 
 ## Strings for the product review snippets card
 
@@ -89,6 +94,19 @@ shopping-settings-recommendations-toggle =
 shopping-settings-recommendations-learn-more2 = Buźośo wótergi wabjenje za relewantne produkty wiźeś. Wabimy jano za produkty ze spušćobnymi pógódnośenjami. <a data-l10n-name="review-quality-url">Dalšne informacije</a>
 shopping-settings-opt-out-button = Kontrolu pógódnośenjow znjemóžniś
 powered-by-fakespot = Kontrola pógódnośenjow se wót <a data-l10n-name="fakespot-link">{ -fakespot-brand-full-name } spěchujo</a>.
+shopping-settings-auto-open-toggle =
+    .label = Kontrolu pógódnośenjow awtomatiski wócyniś
+# Description text for regions where we support three sites. Sites are limited to Amazon, Walmart and Best Buy.
+# Variables:
+#   $firstSite (String) - The first shopping page name
+#   $secondSite (String) - The second shopping page name
+#   $thirdSite (String) - The third shopping page name
+shopping-settings-auto-open-description-three-sites = Gaž se produkty na { $firstSite }, { $secondSite } a { $thirdSite } woglědujośo
+# Description text for regions where we support only one site (e.g. currently used in FR/DE with Amazon).
+# Variables:
+#   $currentSite (String) - The current shopping page name
+shopping-settings-auto-open-description-single-site = Gaž se produkty na { $currentSite } woglědujośo
+shopping-settings-sidebar-enabled-state = Kontrola pógódnośenjow jo <strong>zmóžnjona</strong>
 
 ## Strings for the adjusted rating component
 
@@ -173,6 +191,22 @@ shopping-callout-pdp-opted-in-title = Su toś te pógódnośenja spušćobne? Wu
 shopping-callout-pdp-opted-in-subtitle = Wócyńśo kontrolu pógódnośenjow, aby pśiměrjone gódnośenje z wótwónoźonymi njespušćobnymi pógódnośenjami. Woglědajśo se mimo togo  wjerški z nejnowšych awtentiskich pógódnośenjow.
 shopping-callout-closed-not-opted-in-title = Jadno kliknjenje do spušćobnych pógódnośenjow
 shopping-callout-closed-not-opted-in-subtitle = Dajśo kontroli pógódnośenjow šansu, gažkuli płaśiznowu toflicku wiźiśo. Dostańśo malsnje doglědy wót wopšawdnych nakupowarjow – nježli až kupujośo.
+shopping-callout-closed-not-opted-in-revised-title = Jadno kliknjenje do dowěry gódnych pógódnośenjow
+shopping-callout-closed-not-opted-in-revised-subtitle = Klikniśo jadnorje na symbol płaśiznoweje toflicki w adresowem pólu, aby se ku kontroli pógódnośenjow wrośił.
+shopping-callout-closed-not-opted-in-revised-button = Som zrozměł
+shopping-callout-not-opted-in-reminder-title = Nakupujśo z dowěru
+shopping-callout-not-opted-in-reminder-subtitle = Njejsćo se wěsty, lěc pógódnośenja produkta su njefalšowane abo falšowane? Kontrola pógódnośenjow z { -brand-product-name } móžo pomagaś.
+shopping-callout-not-opted-in-reminder-open-button = Kontrolu pógódnośenjow wócyniś
+shopping-callout-not-opted-in-reminder-close-button = Zachyśiś
+shopping-callout-not-opted-in-reminder-ignore-checkbox = Wěcej se njepokazaś
+shopping-callout-not-opted-in-reminder-img-alt =
+    .aria-label = Abstraktne zwobraznjenje tśich produktowych pógódnośenjow. Jadno ma warnowański symbol, kótaryž pokazujo, až njejo snaź dowěry gódne.
+shopping-callout-disabled-auto-open-title = Kontrola pógódnośenjow jo něnto pó standarźe zacynjona
+shopping-callout-disabled-auto-open-subtitle = Klikniśo na symbol płaśiznoweje toflicki w adresowem pólu, gažkuli cośo wiźeś, lěc móžośo pógódnośenjam produkta dowěriś.
+shopping-callout-disabled-auto-open-button = Som zrozměł
+shopping-callout-opted-out-title = Kontrola pógódnośenjow jo znjemóžnjona
+shopping-callout-opted-out-subtitle = Aby ju zasej zmóžnił, klikniśo na symbol płaśiznoweje toflicki w adresowem pólu a slědujśo instrukcijam.
+shopping-callout-opted-out-button = Som zrozměł
 
 ## Onboarding message strings.
 
@@ -188,7 +222,6 @@ shopping-onboarding-dynamic-subtitle-1 = Glědajśo, kak spušćobne produktowe 
 #   $currentSite (str) - The current shopping page name
 shopping-onboarding-single-subtitle = Glědajśo, kak spušćobne pógódnośenja produktow na <b>{ $currentSite }</b> su, nježli až produkty kupujośo. Kontrola pógódnośenjow, eksperimentalna funkcija z { -brand-product-name }, jo direktnje do wobglědowaka zatwarjona.
 shopping-onboarding-body = Z pomocu potenciala { -fakespot-brand-full-name }, pomagamy wam, se njeawtentiskich pógódnośenjow a pógódnośenjow połnych pśedsudkow wobinuś. Naš model KI se stawnje pólěpšujo, aby was šćitał, gaž nakupujośo. <a data-l10n-name="learn_more">Dalšne informacije</a>
-shopping-onboarding-opt-in-privacy-policy-and-terms-of-use2 = Gaž “{ shopping-onboarding-opt-in-button }“ wuběraśo, zwólijośo do<a data-l10n-name="privacy_policy">pšawidłow priwatnosći</a> a <a data-l10n-name="terms_of_use">wužywańskich wuměnjenjow</a> { -fakespot-brand-name }.
 shopping-onboarding-opt-in-privacy-policy-and-terms-of-use3 = Gaž “{ shopping-onboarding-opt-in-button }“ wuběraśo, zwolijośo do <a data-l10n-name="privacy_policy">pšawidłow priwatnosći</a> { -brand-product-name } a <a data-l10n-name="terms_of_use">wužywańskich wuměnjenjow</a> { -fakespot-brand-name }.
 shopping-onboarding-opt-in-button = Jo, wopytaś
 shopping-onboarding-not-now-button = Nic něnto

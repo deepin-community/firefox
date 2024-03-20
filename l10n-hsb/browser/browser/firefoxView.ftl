@@ -12,6 +12,8 @@ menu-tools-firefox-view =
     .label = { -firefoxview-brand-name }
     .accesskey = F
 firefoxview-page-title = { -firefoxview-brand-name }
+firefoxview-page-heading =
+    .heading = { -firefoxview-brand-name }
 firefoxview-page-label =
     .label = { -firefoxview-brand-name }
 firefoxview-close-button =
@@ -51,6 +53,7 @@ firefoxview-syncedtabs-loading-header = Synchronizuje so
 firefoxview-syncedtabs-loading-description = Hdyž to je dokónčene, budźeće rajtarki widźeć, kotrež su na druhich gratach wočinjene. Hladajće bórze za tym.
 firefoxview-tabpickup-fxa-admin-disabled-header = Waša organizacija je synchronizaciju znjemóžniła
 firefoxview-tabpickup-fxa-admin-disabled-description = { -brand-short-name } njemóže rajtarki mjez gratami synchronizować, dokelž waš administrator je synchronizowanje znjemóžnił.
+firefoxview-tabpickup-fxa-disabled-by-policy-description = { -brand-short-name } njemóže rajtarki mjez gratami synchronizować, dokelž waša organizacija je synchronizowanje znjemóžniła.
 firefoxview-tabpickup-network-offline-header = Přepruwujće swój internetny zwisk
 firefoxview-tabpickup-network-offline-description = Jeli wohnjowu murju abo proksy wužiwaće, přepruwujće, hač { -brand-short-name } ma prawo na přistup k internetej.
 firefoxview-tabpickup-network-offline-primarybutton = Hišće raz spytać
@@ -186,6 +189,8 @@ firefoxview-search-results-count =
 firefoxview-search-results-empty = Žane wuslědki za „{ $query }“
 firefoxview-sort-history-by-date-label = Po datumje sortěrować
 firefoxview-sort-history-by-site-label = Po sydle sortěrować
+firefoxview-sort-open-tabs-by-recency-label = Po najnowšej aktiwiće sortěrować
+firefoxview-sort-open-tabs-by-order-label = Po porjedźe rajtarkow sortěrować
 # Variables:
 #   $url (string) - URL that will be opened in the new tab
 firefoxview-opentabs-tab-row =
@@ -248,3 +253,19 @@ firefoxview-recentlyclosed-empty-description-two = Zo byšće starše rajtarki n
 
 firefoxview-syncedtabs-device-notabs = Žane rajtarki na tutym graće wočinjene
 firefoxview-syncedtabs-connect-another-device = Z druhim gratom zwjazać
+firefoxview-pinned-tabs =
+    .title = Připjate rajtarki
+firefoxview-tabs =
+    .title = Rajtarki
+
+## These tooltips will be displayed when hovering over a pinned tab on the Open Tabs page
+## Variables:
+##  $tabTitle (string) - Title of pinned tab that will be opened when selected
+
+firefoxview-opentabs-pinned-tab =
+    .title = K { $tabTitle } přeńć
+
+## These tooltips will be displayed when hovering over an unpinned Open Tab
+## Variables:
+##   $url (string) - URL of tab that will be opened when selected
+

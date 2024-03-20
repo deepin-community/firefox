@@ -77,6 +77,16 @@ appmenu-remote-tabs-turn-on-sync =
 appmenu-remote-tabs-showmore =
     .label = Ehechaukave tendayke
     .tooltiptext = Ehechaukave tendayke ko mba’e’oka pegua
+# This is shown when there are inactive tabs which are not being shown.
+# Variables
+# $count (Number) - The number of inactive tabs which are not being shown (at least 1)
+appmenu-remote-tabs-showinactive =
+    .label =
+        { $count ->
+            [one] Ehechauka tendayke oiko’ỹva
+           *[other] Ehechauka { $count } tendayke oiko’ỹva
+        }
+    .tooltiptext = Ehechauka tendayke oiko’ỹva ko mba’e’okápe
 # This is shown beneath the name of a device when that device has no open tabs
 appmenu-remote-tabs-notabs = Ndaipóri tendayke ijurujáva
 # This is shown when Sync is configured but syncing tabs is disabled.
@@ -168,6 +178,11 @@ profiler-popup-capture-shortcut =
 # devtools/client/performance-new/shared/background.jsm.js
 # Please take care that the same values are also defined in devtools' perftools.ftl.
 
+
+# Presets and their l10n IDs are defined in the file
+# devtools/client/performance-new/shared/background.sys.mjs
+# Please take care that the same values are also defined in devtools' perftools.ftl.
+
 profiler-popup-presets-web-developer-description = Ñemboheko iporãva emopotĩ hag̃ua ñanduti tembiporu’i, nahenyhẽrasáiva.
 profiler-popup-presets-web-developer-label =
     .label = Ñanduti Mboguatahára
@@ -257,3 +272,13 @@ appmenu-developer-tools-extensions =
     .label = Jepysokue mboguatahárape g̃uarã
 appmenuitem-report-broken-site =
     .label = Emombe’u tenda vai
+
+## Panel for privacy and security products
+
+appmenuitem-sign-in-account = Eñepyrũ tembiapo ne mba’etépe
+appmenuitem-monitor-title = { -monitor-brand-short-name }
+appmenuitem-monitor-description = Ejapyhy mongyhyje mba’ekuaarã ñembogua rehe
+appmenuitem-relay-title = { -relay-brand-short-name }
+appmenuitem-relay-description = Ehovamo’ã ne ñanduti veve ha pumbyry
+appmenuitem-vpn-title = { -mozilla-vpn-brand-name }
+appmenuitem-vpn-description = Emo’ã ne rekoñemi ñandutípe

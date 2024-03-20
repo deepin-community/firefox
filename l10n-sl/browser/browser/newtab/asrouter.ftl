@@ -210,7 +210,7 @@ cfr-cbh-confirm-button = Zavračaj pasice s piškotki
     .accesskey = Z
 cfr-cbh-dismiss-button = Ne zdaj
     .accesskey = N
-cookie-banner-blocker-cfr-header = { -brand-short-name } je za vas pravkar zavrnil piškotke
+cookie-banner-blocker-onboarding-header = { -brand-short-name } je za vas pravkar zavrnil pasico s piškotki
 cookie-banner-blocker-onboarding-body = Manj motenj in manj piškotkov, ki vam sledijo po tem spletnem mestu.
 cookie-banner-blocker-onboarding-learn-more = Več o tem
 
@@ -248,6 +248,7 @@ device-migration-fxa-spotlight-heavy-user-primary-button = Začnite
 device-migration-fxa-spotlight-older-device-body = Račun ohranja vaše pomembne podatke posodobljene in zaščitene na katerikoli napravi, ki jo povežete.
 device-migration-fxa-spotlight-older-device-primary-button = Ustvarite račun
 device-migration-fxa-spotlight-getting-new-device-header-2 = Se vam obeta nov računalnik?
+device-migration-fxa-spotlight-getting-new-device-body-2 = Z nekaj preprostimi koraki si preselite zaznamke, zgodovino in gesla s seboj, ko začnete uporabljati novo napravo.
 device-migration-fxa-spotlight-getting-new-device-primary-button = Kako varnostno kopirati podatke
 
 ## Set as Default PDF Reader Infobar
@@ -274,3 +275,14 @@ launch-on-login-infobar-reject-button = Ne zdaj
 launch-on-login-infobar-final-message = <strong>Želite, da se { -brand-short-name } odpre ob vsakem ponovnem zagonu računalnika?</strong> Za upravljanje možnosti zagona v nastavitvah poiščite "zagon".
 launch-on-login-infobar-final-reject-button = Ne, hvala
     .accesskey = N
+
+## Tail Fox Set Default Spotlight
+
+# This title is displayed together with the picture of a running fox with a long tail.
+# In English, this is a figure of speech meaning 'stop something from following you'.
+# If the localization of this message is challenging, consider using a simplified
+# alternative as a reference for translation: 'Keep unwanted trackers away'.
+tail-fox-spotlight-title = Spravite nadležne sledilce s svoje sledi
+tail-fox-spotlight-subtitle = Poslovite se od nadležnega sledenja oglasov in se prepustite varnejšemu in hitrejšemu internetu.
+tail-fox-spotlight-primary-button = Odpiraj povezave v { -brand-short-name(sklon: "mestnik") }
+tail-fox-spotlight-secondary-button = Ne zdaj

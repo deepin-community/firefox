@@ -12,6 +12,8 @@ menu-tools-firefox-view =
     .label = { -firefoxview-brand-name }
     .accesskey = F
 firefoxview-page-title = { -firefoxview-brand-name }
+firefoxview-page-heading =
+    .heading = { -firefoxview-brand-name }
 firefoxview-page-label =
     .label = { -firefoxview-brand-name }
 firefoxview-close-button =
@@ -51,6 +53,7 @@ firefoxview-syncedtabs-loading-header = Синхрондау орындалуд�
 firefoxview-syncedtabs-loading-description = Ол аяқталғаннан кейін, сіз басқа құрылғыларда ашылған барлық беттерді көресіз. Біраздан кейін тексеріңіз.
 firefoxview-tabpickup-fxa-admin-disabled-header = Сізідң ұйымыңыз синхрондауды сөндірген
 firefoxview-tabpickup-fxa-admin-disabled-description = { -brand-short-name } құрылғылар арасында беттерді синхрондай алмайды, себебі әкімшіңіз синхрондауды сөндірген.
+firefoxview-tabpickup-fxa-disabled-by-policy-description = { -brand-short-name } құрылғылар арасында беттерді синхрондай алмайды, себебі ұйымыңыз синхрондауды сөндірген.
 firefoxview-tabpickup-network-offline-header = Интернет байланысын тексеріңіз
 firefoxview-tabpickup-network-offline-description = Брандмауэр немесе прокси қолданып жатсаңыз, { -brand-short-name } интернетке кіруге рұқсаты бар екенін тексеріңіз.
 firefoxview-tabpickup-network-offline-primarybutton = Қайтадан көру
@@ -184,6 +187,8 @@ firefoxview-search-results-count =
 firefoxview-search-results-empty = "{ $query }" бойынша нәтиже жоқ
 firefoxview-sort-history-by-date-label = Күні бойынша сұрыптау
 firefoxview-sort-history-by-site-label = Сайт бойынша сұрыптау
+firefoxview-sort-open-tabs-by-recency-label = Соңғы әрекет бойынша сұрыптау
+firefoxview-sort-open-tabs-by-order-label = Беттер реті бойынша сұрыптау
 # Variables:
 #   $url (string) - URL that will be opened in the new tab
 firefoxview-opentabs-tab-row =
@@ -246,3 +251,25 @@ firefoxview-recentlyclosed-empty-description-two = Одан да бұрыңғы 
 
 firefoxview-syncedtabs-device-notabs = Бұл құрылғыда ашық беттер жоқ
 firefoxview-syncedtabs-connect-another-device = Басқа құрылғыны байланыстыру
+firefoxview-pinned-tabs =
+    .title = Бекітілген беттер
+firefoxview-tabs =
+    .title = Беттер
+
+## These tooltips will be displayed when hovering over a pinned tab on the Open Tabs page
+## Variables:
+##  $tabTitle (string) - Title of pinned tab that will be opened when selected
+
+firefoxview-opentabs-pinned-tab =
+    .title = { $tabTitle } бетіне ауысу
+# This tooltip will be shown for a pinned tab whose URL is currently bookmarked.
+firefoxview-opentabs-bookmarked-pinned-tab =
+    .title = { $tabTitle } бетіне ауысу (Бетбелгілерде)
+
+## These tooltips will be displayed when hovering over an unpinned Open Tab
+## Variables:
+##   $url (string) - URL of tab that will be opened when selected
+
+# This tooltip will be shown for an unpinned tab whose URL is currently bookmarked.
+firefoxview-opentabs-bookmarked-tab =
+    .title = (Бетбелгілерде) { $url }

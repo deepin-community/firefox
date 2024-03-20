@@ -45,6 +45,7 @@ newtab-topsites-add-search-engine-header = Thêm công cụ tìm kiếm
 newtab-topsites-add-shortcut-header = Lối tắt mới
 newtab-topsites-edit-topsites-header = Sửa trang web hàng đầu
 newtab-topsites-edit-shortcut-header = Chỉnh sửa lối tắt
+newtab-topsites-add-shortcut-label = Thêm lối tắt
 newtab-topsites-title-label = Tiêu đề
 newtab-topsites-title-input =
     .placeholder = Nhập tiêu đề
@@ -198,6 +199,7 @@ newtab-section-header-recent-activity = Hoạt động gần đây
 # Variables:
 #   $provider (string) - Name of the corresponding content provider.
 newtab-section-header-pocket = Được đề xuất bởi { $provider }
+newtab-section-header-stories = Những câu chuyện kích động tư tưởng
 
 ## Empty Section States: These show when there are no more items in a section. Ex. When there are no more Pocket story recommendations, in the space where there would have been stories, this is shown instead.
 
@@ -206,6 +208,8 @@ newtab-empty-section-highlights = Bắt đầu duyệt web và chúng tôi sẽ 
 # Variables:
 #   $provider (string) - Name of the content provider for this section, e.g "Pocket".
 newtab-empty-section-topstories = Bạn đã bắt kịp. Kiểm tra lại sau để biết thêm các câu chuyện hàng đầu từ { $provider }. Không muốn đợi? Chọn một chủ đề phổ biến để tìm thêm những câu chuyện tuyệt vời từ khắp nơi trên web.
+# Ex. When there are no more story recommendations, in the space where there would have been stories, this is shown instead.
+newtab-empty-section-topstories-generic = Bạn đã bắt kịp. Kiểm tra lại sau để biết thêm các câu chuyện. Không muốn đợi? Chọn một chủ đề phổ biến để tìm thêm những câu chuyện tuyệt vời từ khắp nơi trên web.
 
 ## Empty Section (Content Discovery Experience). These show when there are no more stories or when some stories fail to load.
 
@@ -260,6 +264,9 @@ newtab-custom-pocket-subtitle = Nội dung đặc biệt do { -pocket-brand-name
 newtab-custom-pocket-toggle =
     .label = Được đề xuất bởi { -pocket-brand-name }
     .description = Nội dung đặc biệt do { -pocket-brand-name }, một phần của { -brand-product-name }, quản lý
+newtab-custom-stories-toggle =
+    .label = Câu chuyện được đề xuất
+    .description = Nội dung đặc biệt được quản lý bởi gia đình { -brand-product-name }
 newtab-custom-pocket-sponsored = Câu chuyện được tài trợ
 newtab-custom-pocket-show-recent-saves = Hiển thị các lần lưu gần đây
 newtab-custom-recent-title = Hoạt động gần đây

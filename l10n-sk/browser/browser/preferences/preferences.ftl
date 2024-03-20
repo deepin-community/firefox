@@ -233,6 +233,10 @@ preferences-web-appearance-choice-input-dark =
 # This can appear when using windows HCM or "Override colors: always" without
 # system colors.
 preferences-web-appearance-override-warning = Váš výber farieb má prednosť pred vzhľadom webových stránok. <a data-l10n-name="colors-link">Spravovať farby</a>
+# This can appear when using windows HCM or "Override colors: always" without
+# system colors.
+preferences-web-appearance-override-warning2 =
+    .message = Váš výber farieb má prednosť pred vzhľadom webových stránok.
 # This message contains one link. It can be moved within the sentence as needed
 # to adapt to your language, but should not be changed.
 preferences-web-appearance-footer = Témy vzhľadu { -brand-short-name(case: "gen") } môžete spravovať v okne <a data-l10n-name="themes-link">Správcu doplnkov</a>.
@@ -258,8 +262,10 @@ preferences-default-zoom = Predvolená veľkosť
 preferences-default-zoom-value =
     .label = { $percentage } %
 preferences-zoom-text-only =
-    .label = Meniť len veľkosť textu
+    .label = Meniť iba veľkosť textu
     .accesskey = t
+preferences-text-zoom-override-warning =
+    .message = Upozornenie: ak vyberiete možnosť “Meniť iba veľkosť textu” a vaše predvolené priblíženie nie je nastavené na 100 %, môže to spôsobiť nesprávne zobrazenie niektorých stránok alebo obsahu.
 language-header = Jazyk
 choose-language-description = Vyberte jazyky pre zobrazovanie webových stránok
 choose-button =
@@ -565,6 +571,9 @@ home-prefs-shortcuts-by-option-sponsored =
 home-prefs-recommended-by-header =
     .label = Odporúča { $provider }
 home-prefs-recommended-by-description-new = Výnimočný obsah vybraný službou { $provider }, ktorá je súčasťou rodiny { -brand-product-name(case: "gen") }
+home-prefs-recommended-by-header-generic =
+    .label = Odporúčané príbehy
+home-prefs-recommended-by-description-generic = Výnimočný obsah spravovaný rodinou { -brand-product-name }
 
 ##
 
@@ -1084,10 +1093,10 @@ addressbar-locbar-engines-option =
 addressbar-locbar-quickactions-option =
     .label = rýchle akcie
     .accesskey = r
+addressbar-suggestions-settings = Zmeniť nastavenia pre návrhy vyhľadávania
 addressbar-locbar-showrecentsearches-option =
     .label = zobraziť nedávne vyhľadávania
     .accesskey = e
-addressbar-suggestions-settings = Zmeniť nastavenia pre návrhy vyhľadávania
 addressbar-quickactions-learn-more = Ďalšie informácie
 
 ## Privacy Section - Content Blocking

@@ -233,6 +233,10 @@ preferences-web-appearance-choice-input-dark =
 # This can appear when using windows HCM or "Override colors: always" without
 # system colors.
 preferences-web-appearance-override-warning = Ваш выбар колераў мае перавагу над знешнім выглядам вэб-сайта. <a data-l10n-name="colors-link">Кіраваць колерамі</a>
+# This can appear when using windows HCM or "Override colors: always" without
+# system colors.
+preferences-web-appearance-override-warning2 =
+    .message = Ваш выбар колераў мае перавагу над знешнім выглядам вэб-сайта.
 # This message contains one link. It can be moved within the sentence as needed
 # to adapt to your language, but should not be changed.
 preferences-web-appearance-footer = Кіруйце тэмамі { -brand-short-name } у <a data-l10n-name="themes-link">пашырэннях і тэмах</a>
@@ -260,6 +264,8 @@ preferences-default-zoom-value =
 preferences-zoom-text-only =
     .label = Павялічваць толькі тэкст
     .accesskey = т
+preferences-text-zoom-override-warning =
+    .message = Папярэджанне: калі вы выбіраеце «Павялічваць толькі тэкст», а ваш прадвызначаны маштаб не ўсталяваны на 100%, гэта можа прывесці да няспраўнасці некаторых сайтаў або змесціва.
 language-header = Мова
 choose-language-description = Выберыце мовы, якім вы аддаяце перавагу, для прагляду старонак
 choose-button =
@@ -565,6 +571,9 @@ home-prefs-shortcuts-by-option-sponsored =
 home-prefs-recommended-by-header =
     .label = Рэкамендавана { $provider }
 home-prefs-recommended-by-description-new = Выключнае змесціва, куратарам якога з'яўляецца { $provider }, частка сям'і { -brand-product-name }
+home-prefs-recommended-by-header-generic =
+    .label = Рэкамендаваныя гісторыі
+home-prefs-recommended-by-description-generic = Выключнае змесціва, курыраванае сям'ёй { -brand-product-name }
 
 ##
 
@@ -1084,10 +1093,10 @@ addressbar-locbar-engines-option =
 addressbar-locbar-quickactions-option =
     .label = Хуткія дзеянні
     .accesskey = Х
+addressbar-suggestions-settings = Змяніць налады для падказак пашукавіка
 addressbar-locbar-showrecentsearches-option =
     .label = Паказваць апошнія пошукі
     .accesskey = к
-addressbar-suggestions-settings = Змяніць налады для падказак пашукавіка
 addressbar-quickactions-learn-more = Падрабязней
 
 ## Privacy Section - Content Blocking

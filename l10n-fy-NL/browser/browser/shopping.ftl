@@ -64,6 +64,11 @@ shopping-message-bar-analysis-in-progress-with-amount = Beoardielingskwaliteit k
 shopping-message-bar-page-not-supported =
     .heading = Wy kinne dizze beoardieling net kontrolearje
     .message = Spitigernôch kinne wy de beoardielingskwaliteit net kontrolearje foar bepaalde soarten produkten. Bygelyks kadokaarten en streaming fideo, muzyk en spultsjes.
+shopping-message-bar-keep-closed-header =
+    .heading = Sluten hâlde?
+    .message = Jo kinne jo ynstellingen bywurkje om de Beoardielingskontrôle standert sluten te hâlden. Op dit stuit wurdt dizze automatysk iepene.
+shopping-message-bar-keep-closed-dismiss-button = Nee, tankewol
+shopping-message-bar-keep-closed-accept-button = Ja, sluten hâlde
 
 ## Strings for the product review snippets card
 
@@ -89,6 +94,19 @@ shopping-settings-recommendations-toggle =
 shopping-settings-recommendations-learn-more2 = Jo sjogge sa no en dan advertinsjes foar relevante produkten. Wy advertearje allinnich foar produkten mei betroubere beoardielingen. <a data-l10n-name="review-quality-url">Mear ynfo</a>
 shopping-settings-opt-out-button = Beoardielingskontrôle útskeakelje
 powered-by-fakespot = Beoardielingskontrôle wurdt mooglik makke troch <a data-l10n-name="fakespot-link">{ -fakespot-brand-full-name }</a>.
+shopping-settings-auto-open-toggle =
+    .label = Beoardielingskontrôle automatysk iepenje
+# Description text for regions where we support three sites. Sites are limited to Amazon, Walmart and Best Buy.
+# Variables:
+#   $firstSite (String) - The first shopping page name
+#   $secondSite (String) - The second shopping page name
+#   $thirdSite (String) - The third shopping page name
+shopping-settings-auto-open-description-three-sites = Wannear’t jo produkten besjen op { $firstSite }, { $secondSite } en { $thirdSite }
+# Description text for regions where we support only one site (e.g. currently used in FR/DE with Amazon).
+# Variables:
+#   $currentSite (String) - The current shopping page name
+shopping-settings-auto-open-description-single-site = Wannear’t jo produkten besjen op { $currentSite }
+shopping-settings-sidebar-enabled-state = Beoardielingskontrôle is <strong>Oan</strong>
 
 ## Strings for the adjusted rating component
 
@@ -173,6 +191,22 @@ shopping-callout-pdp-opted-in-title = Binne dizze beoardielingen betrouber? Untd
 shopping-callout-pdp-opted-in-subtitle = Iepenje de beoardielingskontrôle om in oanpaste wurdearring te sjen wêrút ûnbetroubere beoardielingen fuortsmiten binne. Plus, sjoch hichtepunten út resinte autentike resinsjes.
 shopping-callout-closed-not-opted-in-title = Ien klik nei betroubere beoardielingen
 shopping-callout-closed-not-opted-in-subtitle = Probearje beoardielingskontrôle ris wannear’t jo it priiskaartsje sjogge. Krij fluch ynsjoch fan echte klanten – eardat jo wat keapje.
+shopping-callout-closed-not-opted-in-revised-title = Ien klik nei betroubere beoardielingen
+shopping-callout-closed-not-opted-in-revised-subtitle = Klik gewoan op it priiskaartpiktogram yn de adresbalke om werom te gean nei Beoardielingskontrôle.
+shopping-callout-closed-not-opted-in-revised-button = Begrepen
+shopping-callout-not-opted-in-reminder-title = Winkelje mei fertrouwen
+shopping-callout-not-opted-in-reminder-subtitle = Net wis oft de beoardielingen fan in produkt echt of nep binne? Beoardielingskontrôle  fan { -brand-product-name } kin helpe.
+shopping-callout-not-opted-in-reminder-open-button = Beoardielingskontrôle iepenje
+shopping-callout-not-opted-in-reminder-close-button = Slute
+shopping-callout-not-opted-in-reminder-ignore-checkbox = Net mear toane
+shopping-callout-not-opted-in-reminder-img-alt =
+    .aria-label = Abstrakte yllustraasje fan trije produktbeoardielingen. Ien hat in warskôgingssymboal dat oanjout dat it miskien net betrouber is.
+shopping-callout-disabled-auto-open-title = Beoardielingskontrôle is no standert sluten
+shopping-callout-disabled-auto-open-subtitle = Klik op it priiskaartpiktogram yn de adresbalke wannear’t jo sjen wolle oft jo de beoardielingen fan in produkt fertrouwe kinne.
+shopping-callout-disabled-auto-open-button = Begrepen
+shopping-callout-opted-out-title = Beoardielingskontrôle is útskeakele
+shopping-callout-opted-out-subtitle = Klik op it priislabelpiktogram yn de adresbalke en folgje de oanwizingen om him wer yn te skeakeljen.
+shopping-callout-opted-out-button = Begrepen
 
 ## Onboarding message strings.
 
@@ -188,7 +222,6 @@ shopping-onboarding-dynamic-subtitle-1 = Besjoch hoe betrouber produktbeoardieli
 #   $currentSite (str) - The current shopping page name
 shopping-onboarding-single-subtitle = Besjoch hoe betrouber de produktbeoardielingen op <b>{ $currentSite }</b> binne eardat jo keapje. Beoardielingskontrôle, in eksperimintele funksje fan { -brand-product-name }, is streekrjocht yn de browser ynboud.
 shopping-onboarding-body = Mei help fan de krêft fan { -fakespot-brand-full-name } helpe wy jo befoaroardiele en net-autentike beoardielingen foar te kommen. Us AI-model wurdt hieltyd ferbettere om jo te beskermjen wylst jo winkelje. <a data-l10n-name="learn_more">Mear ynfo</a>
-shopping-onboarding-opt-in-privacy-policy-and-terms-of-use2 = Troch ‘{ shopping-onboarding-opt-in-button }’ te selektearjen, geane jo akkoard mei it <a data-l10n-name="privacy_policy">privacybelied</a> en  de <a data-l10n-name="terms_of_use">brûksbetingsten</a> fan { -fakespot-brand-name }.
 shopping-onboarding-opt-in-privacy-policy-and-terms-of-use3 = Troch ‘{ shopping-onboarding-opt-in-button }’ te selektearjen, geane jo akkoard mei it <a data-l10n-name="privacy_policy">privacybelied</a> fan { -brand-product-name } en  de <a data-l10n-name="terms_of_use">brûksbetingsten</a> fan { -fakespot-brand-name }.
 shopping-onboarding-opt-in-button = Ja, probearje
 shopping-onboarding-not-now-button = No net

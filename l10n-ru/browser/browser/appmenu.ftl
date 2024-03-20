@@ -77,6 +77,17 @@ appmenu-remote-tabs-turn-on-sync =
 appmenu-remote-tabs-showmore =
     .label = Показать больше вкладок
     .tooltiptext = Показать больше вкладок с этого устройства
+# This is shown when there are inactive tabs which are not being shown.
+# Variables
+# $count (Number) - The number of inactive tabs which are not being shown (at least 1)
+appmenu-remote-tabs-showinactive =
+    .label =
+        { $count ->
+            [one] Показать { $count } неактивную вкладку
+            [few] Показать { $count } неактивных вкладок
+           *[many] Показать { $count } неактивных вкладок
+        }
+    .tooltiptext = Показать неактивные вкладки на этом устройстве
 # This is shown beneath the name of a device when that device has no open tabs
 appmenu-remote-tabs-notabs = Нет открытых вкладок
 # This is shown when Sync is configured but syncing tabs is disabled.
@@ -168,6 +179,11 @@ profiler-popup-capture-shortcut =
 # devtools/client/performance-new/shared/background.jsm.js
 # Please take care that the same values are also defined in devtools' perftools.ftl.
 
+
+# Presets and their l10n IDs are defined in the file
+# devtools/client/performance-new/shared/background.sys.mjs
+# Please take care that the same values are also defined in devtools' perftools.ftl.
+
 profiler-popup-presets-web-developer-description = Рекомендуемые настройки для отладки большинства веб-приложений с низкими накладными расходами.
 profiler-popup-presets-web-developer-label =
     .label = Веб-разработка
@@ -257,3 +273,13 @@ appmenu-developer-tools-extensions =
     .label = Расширения для разработчиков
 appmenuitem-report-broken-site =
     .label = Сообщить о сломанном сайте
+
+## Panel for privacy and security products
+
+appmenuitem-sign-in-account = Войдите в свой аккаунт
+appmenuitem-monitor-title = { -monitor-brand-short-name }
+appmenuitem-monitor-description = Получайте уведомления об утечках данных
+appmenuitem-relay-title = { -relay-brand-short-name }
+appmenuitem-relay-description = Скройте свои настоящие электронную почту и телефон
+appmenuitem-vpn-title = { -mozilla-vpn-brand-name }
+appmenuitem-vpn-description = Защитите свою активность в Интернете
