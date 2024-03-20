@@ -236,6 +236,10 @@ preferences-web-appearance-choice-input-dark =
 # This can appear when using windows HCM or "Override colors: always" without
 # system colors.
 preferences-web-appearance-override-warning = Waše barbowe wuběry napohlad websydła přepisuja. <a data-l10n-name="colors-link">Barby rjadować</a>
+# This can appear when using windows HCM or "Override colors: always" without
+# system colors.
+preferences-web-appearance-override-warning2 =
+    .message = Waše barbowe wuběry napohlad websydła přepisuja.
 # This message contains one link. It can be moved within the sentence as needed
 # to adapt to your language, but should not be changed.
 preferences-web-appearance-footer = Drasty { -brand-short-name } w <a data-l10n-name="themes-link">Rozšěrjenja a drasty</a> rjadować
@@ -263,6 +267,8 @@ preferences-default-zoom-value =
 preferences-zoom-text-only =
     .label = Jenož tekst skalować
     .accesskey = t
+preferences-text-zoom-override-warning =
+    .message = Kedźbu: Jeli „Jenož tekst skalěrować“  wuběraće a waše standardne skalěrowanje njeje na 100 % nastajene, móža problemy z někotrymi sydłami abo wobsahom wustupować.
 language-header = Rěč
 choose-language-description = Wubjerće swoju preferowanu rěč za zwobraznjenje stronow
 choose-button =
@@ -568,6 +574,9 @@ home-prefs-shortcuts-by-option-sponsored =
 home-prefs-recommended-by-header =
     .label = Wot { $provider } doporučeny
 home-prefs-recommended-by-description-new = Wosebite wobsah, wubrany přez { $provider }, dźěla swójby { -brand-product-name }
+home-prefs-recommended-by-header-generic =
+    .label = Doporučene stawiznički
+home-prefs-recommended-by-description-generic = Wuwzaćowy wobsah, kotryž so přez swójbu { -brand-product-name } hlada
 
 ##
 
@@ -1088,10 +1097,10 @@ addressbar-locbar-engines-option =
 addressbar-locbar-quickactions-option =
     .label = Spěšne akcije
     .accesskey = S
+addressbar-suggestions-settings = Nastajenja za namjety pytawy změnić
 addressbar-locbar-showrecentsearches-option =
     .label = Najnowše pytanja pokazać
     .accesskey = n
-addressbar-suggestions-settings = Nastajenja za namjety pytawy změnić
 addressbar-quickactions-learn-more = Dalše informacije
 
 ## Privacy Section - Content Blocking

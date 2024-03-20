@@ -200,6 +200,7 @@ newtab-section-header-recent-activity = Nedávná aktivita
 # Variables:
 #   $provider (string) - Name of the corresponding content provider.
 newtab-section-header-pocket = Doporučení ze služby { $provider }
+newtab-section-header-stories = Podnětné články
 
 ## Empty Section States: These show when there are no more items in a section. Ex. When there are no more Pocket story recommendations, in the space where there would have been stories, this is shown instead.
 
@@ -268,6 +269,9 @@ newtab-custom-pocket-subtitle = Výjimečný obsah vybraný službou { -pocket-b
 newtab-custom-pocket-toggle =
     .label = Doporučeno službou { -pocket-brand-name }
     .description = Výjimečný obsah vybraný službou { -pocket-brand-name }, která je součástí rodiny { -brand-product-name(case: "gen") }
+newtab-custom-stories-toggle =
+    .label = Doporučené články
+    .description = Výjimečný obsah spravovaný rodinou { -brand-product-name }
 newtab-custom-pocket-sponsored = Sponzorované články
 newtab-custom-pocket-show-recent-saves = Zobrazit nedávno uložené
 newtab-custom-recent-title = Nedávná aktivita

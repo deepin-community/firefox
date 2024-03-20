@@ -10,6 +10,18 @@ contentanalysis-slow-agent-dialog-title = Análisis de contenido en progreso
 # Variables:
 #   $content - Description of the content being warned about, such as "clipboard" or "aFile.txt"
 contentanalysis-slow-agent-dialog-body = El análisis de contenido está analizando el recurso "{ $content }"
+contentanalysis-slow-agent-dialog-header = Escaneo en proceso
+# Variables:
+#   $agent - The name of the DLP agent doing the analysis
+#   $filename - Name of the file being analyzed, such as "aFile.txt"
+contentanalysis-slow-agent-dialog-body-file = { $agent } está revisando “{ $filename }” según las políticas de datos de su organización. Esto puede tomar un tiempo.
+# Variables:
+#   $agent - The name of the DLP agent doing the analysis
+contentanalysis-slow-agent-dialog-body-clipboard = { $agent } está revisando lo que has pegado según las políticas de datos de tu organización. Esto puede tomar un tiempo.
+# Note that this is shown when the user drag and drops text into the browser.
+# Variables:
+#   $agent - The name of the DLP agent doing the analysis
+contentanalysis-slow-agent-dialog-body-dropped-text = { $agent } está revisando el texto que has soltado según las políticas de datos de tu organización. Esto puede tomar un tiempo.
 contentanalysis-operationtype-clipboard = portapapeles
 contentanalysis-operationtype-dropped-text = texto descartado
 contentanalysis-warndialogtitle = Este contenido puede no ser seguro
@@ -29,3 +41,5 @@ contentanalysis-block-message = Tu organización utiliza software de prevención
 # Variables:
 #   $content - Description of the content being blocked, such as "clipboard" or "aFile.txt"
 contentanalysis-error-message = Se produjo un error al comunicarse con el software de prevención de pérdida de datos. Transferencia denegada para el recurso: { $content }.
+contentanalysis-inprogress-quit-title = ¿Salir de { -brand-shorter-name }?
+contentanalysis-inprogress-quit-yesbutton = Sí, salir

@@ -5,7 +5,7 @@
 fxa-toolbar-sync-syncing2 = Eşitleniyor…
 sync-disconnect-dialog-title2 = Bağlantı kesilsin mi?
 sync-disconnect-dialog-body = { -brand-product-name } artık hesabınızla eşitlenmeyecektir ama bu cihazdaki mevcut gezinti verileri silinmeyecektir.
-sync-disconnect-dialog-button = Bağlatıyı kes
+sync-disconnect-dialog-button = Bağlantıyı kes
 fxa-signout-dialog2-title = { -fxaccount-brand-name }ndan çıkılsın mı?
 fxa-signout-dialog-title2 = Hesabınızdan çıkış yapılsın mı?
 fxa-signout-dialog-body = Eşitlenmiş veriler hesabınızda kalacaktır.
@@ -33,3 +33,5 @@ fxa-menu-send-tab-to-device-syncnotready =
 fxa-menu-send-tab-to-device-description = Giriş yaptığınız her cihaza anında sekme gönderin.
 fxa-menu-sign-out =
     .label = Çıkış yap…
+fxa-menu-sync-title = Eşitle
+fxa-menu-sync-description = Web’inize her yerden erişin

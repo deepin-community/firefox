@@ -230,6 +230,10 @@ preferences-web-appearance-choice-input-dark =
 # This can appear when using windows HCM or "Override colors: always" without
 # system colors.
 preferences-web-appearance-override-warning = Vos sélections de couleurs changent l’apparence des sites web. <a data-l10n-name="colors-link">Gérer les couleurs</a>
+# This can appear when using windows HCM or "Override colors: always" without
+# system colors.
+preferences-web-appearance-override-warning2 =
+    .message = Vos sélections de couleurs changent l’apparence des sites web.
 # This message contains one link. It can be moved within the sentence as needed
 # to adapt to your language, but should not be changed.
 preferences-web-appearance-footer = Gérez les thèmes de { -brand-short-name } depuis la section <a data-l10n-name="themes-link">Extensions et thèmes</a>
@@ -257,6 +261,8 @@ preferences-default-zoom-value =
 preferences-zoom-text-only =
     .label = Agrandir uniquement le texte
     .accesskey = A
+preferences-text-zoom-override-warning =
+    .message = Attention : si vous sélectionnez « Agrandir uniquement le texte » et que votre zoom par défaut n’est pas réglé sur 100 %, certains sites ou contenus peuvent ne pas fonctionner correctement.
 language-header = Langue
 choose-language-description = Choix de la langue préférée pour l’affichage des pages
 choose-button =
@@ -562,6 +568,8 @@ home-prefs-shortcuts-by-option-sponsored =
 home-prefs-recommended-by-header =
     .label = Recommandations par { $provider }
 home-prefs-recommended-by-description-new = Contenu exceptionnel sélectionné par { $provider }, membre de la famille { -brand-product-name }
+home-prefs-recommended-by-header-generic =
+    .label = Articles recommandés
 
 ##
 
@@ -1080,10 +1088,10 @@ addressbar-locbar-engines-option =
 addressbar-locbar-quickactions-option =
     .label = Les actions rapides
     .accesskey = a
+addressbar-suggestions-settings = Modifier les préférences pour les suggestions de recherche
 addressbar-locbar-showrecentsearches-option =
     .label = Afficher les recherches récentes
     .accesskey = r
-addressbar-suggestions-settings = Modifier les préférences pour les suggestions de recherche
 addressbar-quickactions-learn-more = En savoir plus
 
 ## Privacy Section - Content Blocking

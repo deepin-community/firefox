@@ -24,6 +24,10 @@ policy-AppUpdateURL = Imposta URL personalizzato per aggiornamento applicazione.
 
 policy-Authentication = Configura autenticazione integrata per i siti in cui è supportata.
 
+policy-AutofillAddressEnabled = Attiva compilazione automatica per gli indirizzi.
+
+policy-AutofillCreditCardEnabled = Attiva compilazione automatica per i metodi di pagamento.
+
 policy-AutoLaunchProtocolsFromOrigins = Definisce un elenco di protocolli esterni che possono essere utilizzati dalle origini approvate senza chiedere conferma all’utente.
 
 policy-BackgroundAppUpdate2 = Attiva o disattiva il sistema di aggiornamento in background.
@@ -43,6 +47,8 @@ policy-CaptivePortal = Attiva o disattiva supporto per captive portal.
 policy-CertificatesDescription = Aggiungi certificati o utilizza i certificati predefiniti (built-in).
 
 policy-Cookies = Consenti o nega ai siti web di impostare cookie.
+
+policy-ContentAnalysis = Attiva o disattiva la connessione all’agente per la prevenzione della perdita di dati.
 
 # Containers in this context is referring to container tabs in Firefox.
 policy-Containers = Imposta criteri relativi alle schede contenitore.
@@ -224,3 +230,4 @@ policy-UseSystemPrintDialog = Stampa utilizzando la finestra di dialogo di siste
 policy-WebsiteFilter = Impedisci l’accesso a determinati siti web. Consulta la documentazione per ulteriori dettagli sul formato da utilizzare.
 
 policy-Windows10SSO = Permetti l’utilizzo di Windows single sign-on per account Microsoft, account aziendale o dell’istituto di istruzione.
+

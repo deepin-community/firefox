@@ -77,6 +77,16 @@ appmenu-remote-tabs-turn-on-sync =
 appmenu-remote-tabs-showmore =
     .label = Mostrar mais separadores
     .tooltiptext = Mostrar mais separadores deste dispositivo
+# This is shown when there are inactive tabs which are not being shown.
+# Variables
+# $count (Number) - The number of inactive tabs which are not being shown (at least 1)
+appmenu-remote-tabs-showinactive =
+    .label =
+        { $count ->
+            [one] Mostrar um separador inativo
+           *[other] Mostrar { $count } separadores inativos
+        }
+    .tooltiptext = Mostrar os separadores inativos neste dispositivo
 # This is shown beneath the name of a device when that device has no open tabs
 appmenu-remote-tabs-notabs = Nenhum separador aberto
 # This is shown when Sync is configured but syncing tabs is disabled.
@@ -168,6 +178,11 @@ profiler-popup-capture-shortcut =
 # devtools/client/performance-new/shared/background.jsm.js
 # Please take care that the same values are also defined in devtools' perftools.ftl.
 
+
+# Presets and their l10n IDs are defined in the file
+# devtools/client/performance-new/shared/background.sys.mjs
+# Please take care that the same values are also defined in devtools' perftools.ftl.
+
 profiler-popup-presets-web-developer-description = Predefinição recomendada para a maioria das depurações de aplicações web, com pouca sobrecarga.
 profiler-popup-presets-web-developer-label =
     .label = Programador web
@@ -255,3 +270,15 @@ appmenu-customizetoolbar =
 appmenu-developer-tools-subheader = Ferramentas do navegador
 appmenu-developer-tools-extensions =
     .label = Extensões para Programadores
+appmenuitem-report-broken-site =
+    .label = Reportar site com problemas
+
+## Panel for privacy and security products
+
+appmenuitem-sign-in-account = Inicie sessão na sua conta
+appmenuitem-monitor-title = { -monitor-brand-short-name }
+appmenuitem-monitor-description = Obter alertas de violações de dados
+appmenuitem-relay-title = { -relay-brand-short-name }
+appmenuitem-relay-description = Mascare o seu e-mail e telefone reais
+appmenuitem-vpn-title = { -mozilla-vpn-brand-name }
+appmenuitem-vpn-description = Proteja a sua privacidade na Internet

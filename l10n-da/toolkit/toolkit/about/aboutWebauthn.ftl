@@ -158,6 +158,23 @@ about-webauthn-ctap2-enroll-feedback-good = Scanningen var god.
 
 ## Scan (e.g. of fingerprint) was off-center (e.g. too high, too left, etc.).
 
+about-webauthn-ctap2-enroll-feedback-too-high = For højt oppe.
+about-webauthn-ctap2-enroll-feedback-too-low = For langt nede.
+about-webauthn-ctap2-enroll-feedback-too-left = For langt til venstre.
+about-webauthn-ctap2-enroll-feedback-too-right = For langt til højre.
 
 ##
 
+about-webauthn-ctap2-enroll-feedback-too-fast = Scanningen blev foretaget for hurtigt.
+about-webauthn-ctap2-enroll-feedback-too-slow = Scanningen blev foretaget for langsomt.
+about-webauthn-ctap2-enroll-feedback-poor-quality = Scanningen var af dårlig kvalitet.
+# Skewed in the sense of fingerprint/iris scan was too distorted
+about-webauthn-ctap2-enroll-feedback-too-skewed = Scanningen var for forvrænget.
+about-webauthn-ctap2-enroll-feedback-too-short = Scanningen var for kort.
+# Scan (e.g. of fingerprint) couldn't be merged with previous samples.
+about-webauthn-ctap2-enroll-feedback-merge-failure = Sammenføjning af scanninger mislykkedes.
+# Scan (e.g. of fingerprint) is somehow identical to an existing sample.
+about-webauthn-ctap2-enroll-feedback-exists = Scanningen findes allerede.
+about-webauthn-ctap2-enroll-feedback-no-user-activity = Ingen brugeraktivitet.
+about-webauthn-ctap2-enroll-feedback-no-user-presence-transition = Brugeren foretog ikke scanningen som forventet.
+about-webauthn-ctap2-enroll-feedback-other = Scannefejl.

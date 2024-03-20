@@ -5,7 +5,7 @@
 
 about-logins-page-title = Регистрации и пароли
 about-logins-login-filter =
-    .placeholder = Търсене на влизания
+    .placeholder = Търсене на регистрации
     .key = F
 create-new-login-button =
     .title = Нова регистрация
@@ -18,14 +18,14 @@ create-login-button =
 fxaccounts-sign-in-text = Вземете паролите си на всички ваши устройства
 fxaccounts-sign-in-sync-button = Вписване в Sync
 fxaccounts-avatar-button =
-    .title = Управление на сметката
+    .title = Управление на профила
 
 ## The ⋯ menu that is in the top corner of the page
 
 menu =
     .title = Отваря менюто
 # This menuitem is only visible on Windows and macOS
-about-logins-menu-menuitem-import-from-another-browser = Внасяне от друг мрежов четец…
+about-logins-menu-menuitem-import-from-another-browser = Внасяне от друг четец…
 about-logins-menu-menuitem-import-from-a-file = Внасяне от файл…
 about-logins-menu-menuitem-export-logins = Изнасяне на регистрации…
 about-logins-menu-menuitem-remove-all-logins = Премахване на всички регистрации…
@@ -54,8 +54,8 @@ login-list-count =
 #   $total (number) - Total number of logins
 login-list-filtered-count =
     { $total ->
-        [one] { $count } от { $total } влизане
-       *[other] { $count } от { $total } влизания
+        [one] { $count } от { $total } регистрация
+       *[other] { $count } от { $total } регистрации
     }
 # Variables
 #   $count (number) - Number of logins
@@ -106,14 +106,15 @@ about-logins-list-section-week = Последните 7 дни
 about-logins-login-intro-heading-logged-out2 = Търсите запазените си регистрации? Включете синхронизирането или ги внесете.
 about-logins-login-intro-heading-logged-in = Не са намерени синхронизирани регистрации.
 login-intro-description = Ако сте запазили данните си за вход в { -brand-product-name } на друго устройство, ето как да ги вземете тук:
-login-intro-instructions-fxa = Създайте или влезте в своята { -fxaccount-brand-name } на устройството, където са запазени вашите данни за вход
+login-intro-instructions-fxa = Създайте или влезте в { -fxaccount-brand-name } на устройството, където са запазени вашите данни за вход
 about-logins-login-intro-heading-message = Запазете паролите си на безопасно място
-login-intro-description2 = Всички пароли, които запазвате в { -brand-product-name }, са шифровани. Освен това следим за пробиви в сигурността и, ако сте засегнати, ви предупреждаваме. <a data-l10n-name="breach-alert-link">Научете повече</a>
+login-intro-description2 = Всички пароли, които запазвате в { -brand-product-name }, са шифровани. Освен това следим за пробиви в сигурността и ако сте засегнати, ви предупреждаваме. <a data-l10n-name="breach-alert-link">Научете повече</a>
 login-intro-instructions-fxa2 = Създайте или влезте в профила на устройството, където са запазени вашите данни за вход
 login-intro-instructions-fxa-settings = Отворете "Настройки" > Sync > Включване на синхронизиране… Изберете отметката за регистрации и пароли.
 login-intro-instructions-fxa-passwords-help = Посетете <a data-l10n-name="passwords-help-link">поддръжка на пароли</a> за помощ.
 about-logins-intro-browser-only-import = Ако вашите регистрации са запазени в друг мрежов четец, можете да ги <a data-l10n-name="import-link">внесете във { -brand-product-name }</a>.
-about-logins-intro-import2 = Ако вашите данни за вписване се съхраняват извън { -brand-product-name }, можете <a data-l10n-name="import-browser-link">да ги внесете от друг четец</a> или <a data-l10n-name="import-file-link">от файл</a>
+about-logins-intro-import2 = Ако вашите регистрации се съхраняват извън { -brand-product-name }, можете <a data-l10n-name="import-browser-link">да ги внесете от друг четец</a> или <a data-l10n-name="import-file-link">от файл</a>
+about-logins-intro-import3 = За да добавите парола използвайте бутона със знак плюс. Също можете <a data-l10n-name="import-browser-link">да ги внесете от друг четец</a> или <a data-l10n-name="import-file-link">от файл</a>
 
 ## Login
 
@@ -169,12 +170,12 @@ about-logins-os-auth-dialog-caption = { -brand-full-name }
 about-logins-edit-login-os-auth-dialog-message-win = За да промените регистрацията, въведете данните си за вход в Windows. Това се прави с цел защита на регистрациите.
 # This message can be seen when attempting to edit a login in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
-about-logins-edit-login-os-auth-dialog-message-macosx = прави промени в данни за вход
+about-logins-edit-login-os-auth-dialog-message-macosx = промяна на запазени регистрации
 # This message can be seen when attempting to edit a login in about:logins on Windows.
 about-logins-edit-login-os-auth-dialog-message2-win = За да промените паролата, въведете данните си за вход в Windows. Това се прави с цел защита на вашите регистрации.
 # This message can be seen when attempting to edit a login in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
-about-logins-edit-login-os-auth-dialog-message2-macosx = променя запазена парола
+about-logins-edit-login-os-auth-dialog-message2-macosx = промяна на запазена парола
 # This message can be seen when attempting to reveal a password in about:logins on Windows.
 about-logins-reveal-password-os-auth-dialog-message-win = За да видите паролата, въведете данните си за вход в Windows. Това се прави с цел защита на регистрациите.
 # This message can be seen when attempting to reveal a password in about:logins
@@ -198,7 +199,7 @@ about-logins-export-password-os-auth-dialog-message2-macosx = изнася за�
 
 ## Primary Password notification
 
-about-logins-primary-password-notification-message = Моля, въведете главната си парола, за да видите запазените регистрации и пароли
+about-logins-primary-password-notification-message = За да видите запазените регистрации и пароли, въведете главната си парола
 master-password-reload-button =
     .label = Вписване
     .accesskey = в
@@ -249,11 +250,6 @@ about-logins-confirm-remove-all-sync-dialog-message =
         [one] Така ще бъде премахната запазената във { -brand-short-name } регистрация от всички устройства, синхронизирани с { -fxaccount-brand-name }. Също и всички известия за пробиви, появяващи се тук. Действието е необратимо.
        *[other] Така ще бъдат премахнати запазените във { -brand-short-name } регистрации от всички устройства, синхронизирани с { -fxaccount-brand-name }. Също и всички известия за пробиви, появяващи се тук. Действието е необратимо.
     }
-about-logins-confirm-remove-all-sync-dialog-message2 =
-    { $count ->
-        [one] Така ще бъде премахната запазената във { -brand-short-name } регистрация от всички устройства, синхронизирани с профила. Също и всички известия за пробиви, появяващи се тук. Действието е необратимо.
-       *[other] Така ще бъдат премахнати запазените във { -brand-short-name } регистрации от всички устройства, синхронизирани с профила. Също и всички известия за пробиви, появяващи се тук. Действието е необратимо.
-    }
 # Checkbox for modal to confirm the removal of saved passwords
 about-logins-confirm-remove-all-dialog-checkbox-label2 =
     { $count ->
@@ -278,6 +274,12 @@ about-logins-confirm-remove-all-sync-dialog-title2 =
         [one] Премахване на { $count } регистрация от всички устройства?
        *[other] Премахване на { $count } регистрации от всички устройства?
     }
+# Message for modal to confirm the removal of saved passwords when user IS synced.
+about-logins-confirm-remove-all-sync-dialog-message3 =
+    { $count ->
+        [one] Така ще бъде премахната запазената във { -brand-short-name } парола от всички устройства, синхронизирани с профила. Също и всички известия за пробиви, появяващи се тук. Действието е необратимо.
+       *[other] Така ще бъдат премахнати запазените във { -brand-short-name } пароли от всички устройства, синхронизирани с профила. Също и всички известия за пробиви, появяващи се тук. Действието е необратимо.
+    }
 
 ##
 
@@ -285,6 +287,9 @@ about-logins-confirm-export-dialog-title = Изнасяне на регистр�
 about-logins-confirm-export-dialog-message = Вашите пароли ще бъдат запазени като четим текст (например Лош@Пар0ла), така че всеки, който има достъп до изнесения файл ще може да ги види.
 about-logins-confirm-export-dialog-confirm-button = Изнасяне…
 about-logins-confirm-export-dialog-title2 = Бележка относно изнасянето на пароли
+about-logins-confirm-export-dialog-message2 =
+    При изнасяне, паролите се записват във файл като текст.
+    Когато приключите с използването на файла, препоръчваме да го изтриете, за да не могат другите, които използват същото устройство, да видят паролите ви.
 about-logins-confirm-export-dialog-confirm-button2 = Напред с изнасянето
 about-logins-alert-import-title = Внасянето е завършено
 about-logins-alert-import-message = Подробен отчет за внасянето
@@ -295,7 +300,7 @@ confirm-discard-changes-dialog-confirm-button = Отхвърляне
 ## Breach Alert notification
 
 about-logins-breach-alert-title = Пробив в страница
-breach-alert-text = Паролите са изтекли или откраднати от този уебсайт, откакто последно сте обновили данните си за вход. Променете паролата си, за да защитите профила си.
+breach-alert-text = Паролите са изтекли или откраднати от тази страница, откакто последно сте обновили данните си за вход. За да защитите профила си, променете паролата си.
 about-logins-breach-alert-date = Пробивът е станал на { DATETIME($date, day: "numeric", month: "long", year: "numeric") }
 # Variables:
 #   $hostname (String) - The hostname of the website associated with the login, e.g. "example.com"
@@ -337,8 +342,8 @@ about-logins-export-file-picker-export-button = Изнасяне
 # filter by the operating system.
 about-logins-export-file-picker-csv-filter-title =
     { PLATFORM() ->
-        [macos] Документ на CSV
-       *[other] Файл на CSV
+        [macos] Документ с разделители
+       *[other] Файл с разделители
     }
 
 ## Login Import Dialog
@@ -352,8 +357,8 @@ about-logins-import-file-picker-import-button = Внасяне
 # filter by the operating system.
 about-logins-import-file-picker-csv-filter-title =
     { PLATFORM() ->
-        [macos] Документ на CSV
-       *[other] Файл на CSV
+        [macos] Документ с разделители
+       *[other] Файл с разделители
     }
 # A description for the .tsv file format that may be shown as the file type
 # filter by the operating system. TSV is short for 'tab separated values'.
@@ -384,6 +389,16 @@ about-logins-import-dialog-items-added2 =
     { $count ->
         [one] <span>Добавена парола:</span> <span data-l10n-name="count">{ $count }</span>
        *[other] <span>Добавени пароли:</span> <span data-l10n-name="count">{ $count }</span>
+    }
+about-logins-import-dialog-items-modified2 =
+    { $count ->
+        [one] <span>Обновен запис:</span> <span data-l10n-name="count">{ $count }</span>
+       *[other] <span>Обновени записи:</span> <span data-l10n-name="count">{ $count }</span>
+    }
+about-logins-import-dialog-items-no-change2 =
+    { $count ->
+        [one] <span>Дублиращ се запис:</span> <span data-l10n-name="count">{ $count }</span><span data-l10n-name="meta">(не е внесен)</span>
+       *[other] <span>Дублиращи се записи:</span> <span data-l10n-name="count">{ $count }</span><span data-l10n-name="meta">(не са внесени)</span>
     }
 about-logins-import-dialog-items-error =
     { $count ->

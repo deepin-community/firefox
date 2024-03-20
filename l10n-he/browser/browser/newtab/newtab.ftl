@@ -45,6 +45,7 @@ newtab-topsites-add-search-engine-header = הוספת מנוע חיפוש
 newtab-topsites-add-shortcut-header = קיצור דרך חדש
 newtab-topsites-edit-topsites-header = עריכת אתר מוביל
 newtab-topsites-edit-shortcut-header = עריכת קיצור דרך
+newtab-topsites-add-shortcut-label = הוספת קיצור דרך
 newtab-topsites-title-label = כותרת
 newtab-topsites-title-input =
     .placeholder = נא להזין כותרת
@@ -196,6 +197,7 @@ newtab-section-header-recent-activity = פעילות אחרונה
 # Variables:
 #   $provider (string) - Name of the corresponding content provider.
 newtab-section-header-pocket = מומלץ על־ידי { $provider }
+newtab-section-header-stories = סיפורים מעוררי מחשבה
 
 ## Empty Section States: These show when there are no more items in a section. Ex. When there are no more Pocket story recommendations, in the space where there would have been stories, this is shown instead.
 
@@ -204,6 +206,8 @@ newtab-empty-section-highlights = ניתן להתחיל בגלישה ואנו נ
 # Variables:
 #   $provider (string) - Name of the content provider for this section, e.g "Pocket".
 newtab-empty-section-topstories = התעדכנת בכל הסיפורים. כדאי לנסות שוב מאוחר יותר כדי לקבל עוד סיפורים מובילים מאת { $provider }. לא רוצה לחכות? ניתן לבחור נושא נפוץ כדי למצוא עוד סיפורים נפלאים מרחבי הרשת.
+# Ex. When there are no more story recommendations, in the space where there would have been stories, this is shown instead.
+newtab-empty-section-topstories-generic = התעדכנת בכל הסיפורים. כדאי לנסות שוב מאוחר יותר כדי לקבל עוד סיפורים. לא רוצה לחכות? ניתן לבחור נושא נפוץ כדי למצוא עוד סיפורים נפלאים מרחבי הרשת.
 
 ## Empty Section (Content Discovery Experience). These show when there are no more stories or when some stories fail to load.
 
@@ -255,6 +259,9 @@ newtab-custom-pocket-subtitle = תוכן יוצא דופן שנבחר בקפיד
 newtab-custom-pocket-toggle =
     .label = מומלץ על־ידי { -pocket-brand-name }
     .description = תוכן יוצא דופן שנבחר בקפידה על־ידי { -pocket-brand-name }, חלק ממשפחת { -brand-product-name }
+newtab-custom-stories-toggle =
+    .label = סיפורים מומלצים
+    .description = תוכן יוצא דופן שנבחר בקפידה על־ידי משפחת { -brand-product-name }
 newtab-custom-pocket-sponsored = סיפורים ממומנים
 newtab-custom-pocket-show-recent-saves = הצגת שמירות אחרונות
 newtab-custom-recent-title = פעילות אחרונה

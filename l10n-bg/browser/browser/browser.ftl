@@ -279,6 +279,8 @@ quickactions-cmd-plugins = приставки
 # Opens the print dialog
 quickactions-print2 = Отпечатване
 quickactions-cmd-print = печат, отпечатване
+# Opens the print dialog at the save to PDF option
+quickactions-savepdf = Запазване на страницата като PDF
 quickactions-cmd-savepdf = pdf
 # Opens a new private browsing window
 quickactions-private2 = Поверителен прозорец
@@ -345,10 +347,11 @@ identity-site-information = Информация за { $host }
 identity-header-security-with-host =
     .title = Сигурност на връзката към { $host }
 identity-connection-not-secure = Връзката не е защитена
-identity-connection-secure = Връзката е шифрована
+identity-connection-secure = Връзката е защитена
 identity-connection-failure = Неуспешна връзка
 identity-connection-internal = Това е защитена страница на { -brand-short-name }.
 identity-connection-file = Страницата е запазена в компютъра.
+identity-connection-associated = Страницата е отворена от друга страница.
 identity-extension-page = Страницата е отворена от разширение.
 identity-active-blocked = { -brand-short-name } блокира части от страницата, които не са шифрирани.
 identity-custom-root = Връзката е потвърдена от издател на сертификат, който не е разпознат от Mozilla.
@@ -356,8 +359,9 @@ identity-passive-loaded = Части от страницата, например
 identity-active-loaded = Изключихте защитата за тази страница.
 identity-weak-encryption = Тази странница използва слабо шифриране.
 identity-insecure-login-forms = Въведените на страницата данни за вход може да бъдат компрометирани.
-identity-https-only-connection-upgraded = (превключено на HTTPS)
+identity-https-only-connection-upgraded = (превключено към HTTPS)
 identity-https-only-label = Режим „само HTTPS“
+identity-https-only-label2 = Автоматично превключване на страницата към защитена връзка
 identity-https-only-dropdown-on =
     .label = Включено
 identity-https-only-dropdown-off =
@@ -366,6 +370,8 @@ identity-https-only-dropdown-off-temporarily =
     .label = Временно изключено
 identity-https-only-info-turn-on2 = Включете режима „Само HTTPS“ за този сайт, ако искате { -brand-short-name } да надгради връзката, когато е възможно.
 identity-https-only-info-turn-off2 = Ако страницата изглежда счупена би трябвало да изключите режима „само HTTPS“ за сайта, за да бъде презареден през незащитения протокол HTTP.
+identity-https-only-info-turn-on3 = Включете надграждането към HTTPS за страницата, ако искате { -brand-short-name } да надгражда връзката, когато е възможно.
+identity-https-only-info-turn-off3 = Ако страницата изглежда счупена би трябвало да изключите надграждането до HTTPS за страницата, за да бъде презареден през незащитения протокол HTTP.
 identity-https-only-info-no-upgrade = Връзката не може да бъде превключена от HTTP.
 identity-permissions-storage-access-header = Бисквитки между сайтове
 identity-permissions-storage-access-hint = Тези страни могат да ползват бисквитки между сайтовете и данни от сайта, докато сте на него.
@@ -373,7 +379,7 @@ identity-permissions-storage-access-learn-more = Научете повече
 identity-permissions-reload-hint = За да бъдат приложени промените може да се наложи да презаредите страницата.
 identity-clear-site-data =
     .label = Изчистване на бисквитки и данни…
-identity-connection-not-secure-security-view = Връзката със сайта не е сигурна.
+identity-connection-not-secure-security-view = Връзката към страницата не е защитена.
 identity-connection-verified = Връзката със сайта е шифрована.
 identity-ev-owner-label = Сертификатът е издаден на:
 identity-description-custom-root2 = Mozilla не разпознава този издател на сертификати. Може да е добавен от вашата операционна система или от администратор.
@@ -561,6 +567,13 @@ urlbar-result-action-search-w-engine = Търсене с { $engine }
 urlbar-result-action-sponsored = Спонсорирано
 urlbar-result-action-switch-tab = Превключване към раздел
 urlbar-result-action-visit = Посещаване
+# "Switch to tab with container" is used when the target tab is located in a
+# different container.
+# Variables
+# $container (String): the name of the target container
+urlbar-result-action-switch-tab-with-container = Превключване към раздел · <span>{ $container }</span>
+# Allows the user to visit a URL that was previously copied to the clipboard.
+urlbar-result-action-visit-from-clipboard = Посещаване от междинната памет
 # Directs a user to press the Tab key to perform a search with the specified
 # engine.
 # Variables
@@ -613,6 +626,11 @@ urlbar-group-search-suggestions =
 # A label shown above Quick Actions in the urlbar results.
 urlbar-group-quickactions =
     .label = Бързи действия
+# A label shown above the recent searches group in the urlbar results.
+# Variables
+#  $engine (String): the name of the search engine used to search.
+urlbar-group-recent-searches =
+    .label = Скорошни търсения
 
 ## Reader View toolbar buttons
 
@@ -633,6 +651,9 @@ picture-in-picture-urlbar-button-close =
     .tooltiptext = Затваряне на картина в картината ({ $shortcut })
 picture-in-picture-panel-header = Картина в картината
 picture-in-picture-panel-headline = Този уебсайт не препоръчва картина в картина
+picture-in-picture-panel-body = Видеоклиповете може да не се показват според очакванията на разработчика, докато картина в картината е включена.
+picture-in-picture-enable-toggle =
+    .label = Включване въпреки това
 
 ## Full Screen and Pointer Lock UI
 
@@ -877,6 +898,7 @@ restore-session-startup-suggestion-button = Покажете ми как
 
 ## Infobar shown when the user tries to open a file picker and file pickers are blocked by enterprise policy
 
+filepicker-blocked-infobar = Достъпът до файловете на компютъра е ограничен от вашето ведомство.
 
 ## Mozilla data reporting notification (Telemetry, Firefox Health Report, etc)
 
@@ -913,6 +935,21 @@ unified-extensions-button-quarantined =
 
 ## Private browsing reset button
 
+reset-pbm-toolbar-button =
+    .label = Край на поверителния сеанс
+    .tooltiptext = Край на поверителния сеанс
+reset-pbm-panel-heading = Прекратяване на поверителния сеанс?
+reset-pbm-panel-description = Затваря поверителните раздели и премахва историята, бисквитките и другите данни от страниците.
+reset-pbm-panel-always-ask-checkbox =
+    .label = Винаги да пита
+    .accesskey = п
+reset-pbm-panel-cancel-button =
+    .label = Отказ
+    .accesskey = т
+reset-pbm-panel-confirm-button =
+    .label = Премахване на данни от сеанса
+    .accesskey = п
+reset-pbm-panel-complete = Информацията от поверителния сеанс е премахната
 
 ## Autorefresh blocker
 

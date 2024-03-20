@@ -64,6 +64,11 @@ shopping-message-bar-analysis-in-progress-with-amount = Έλεγχος ποιό�
 shopping-message-bar-page-not-supported =
     .heading = Δεν μπορούμε να ελέγξουμε αυτές τις κριτικές
     .message = Δυστυχώς, δεν μπορούμε να ελέγξουμε την ποιότητα των κριτικών για ορισμένους τύπους προϊόντων, όπως δωροκάρτες, βίντεο σε μορφή streaming, μουσική και παιχνίδια.
+shopping-message-bar-keep-closed-header =
+    .heading = Να παραμείνει κλειστός;
+    .message = Μπορείτε να ενημερώσετε τις ρυθμίσεις σας για να παραμένει κλειστός ο έλεγχος κριτικών από προεπιλογή. Αυτήν τη στιγμή, ανοίγει αυτόματα.
+shopping-message-bar-keep-closed-dismiss-button = Όχι, ευχαριστώ
+shopping-message-bar-keep-closed-accept-button = Ναι, να παραμείνει κλειστός
 
 ## Strings for the product review snippets card
 
@@ -89,6 +94,19 @@ shopping-settings-recommendations-toggle =
 shopping-settings-recommendations-learn-more2 = Θα βλέπετε περιστασιακά διαφημίσεις για σχετικά προϊόντα. Διαφημίζουμε μόνο προϊόντα με αξιόπιστες κριτικές. <a data-l10n-name="review-quality-url">Μάθετε περισσότερα</a>
 shopping-settings-opt-out-button = Απενεργοποίηση ελέγχου κριτικών
 powered-by-fakespot = Ο έλεγχος κριτικών παρέχεται από το <a data-l10n-name="fakespot-link">{ -fakespot-brand-full-name }</a>.
+shopping-settings-auto-open-toggle =
+    .label = Αυτόματο άνοιγμα ελέγχου κριτικών
+# Description text for regions where we support three sites. Sites are limited to Amazon, Walmart and Best Buy.
+# Variables:
+#   $firstSite (String) - The first shopping page name
+#   $secondSite (String) - The second shopping page name
+#   $thirdSite (String) - The third shopping page name
+shopping-settings-auto-open-description-three-sites = Όταν βλέπετε προϊόντα στα { $firstSite }, { $secondSite } και { $thirdSite }
+# Description text for regions where we support only one site (e.g. currently used in FR/DE with Amazon).
+# Variables:
+#   $currentSite (String) - The current shopping page name
+shopping-settings-auto-open-description-single-site = Όταν βλέπετε προϊόντα στο { $currentSite }
+shopping-settings-sidebar-enabled-state = Ο έλεγχος κριτικών είναι <strong>ενεργός</strong>
 
 ## Strings for the adjusted rating component
 
@@ -171,6 +189,22 @@ shopping-callout-pdp-opted-in-title = Είναι αξιόπιστες αυτές
 shopping-callout-pdp-opted-in-subtitle = Ανοίξτε τον έλεγχο κριτικών για να δείτε μια αναπροσαρμοσμένη βαθμολογία μετά από αφαίρεση των αναξιόπιστων κριτικών. Επιπλέον, θα βρείτε τα πιο σημαντικά σημεία από πρόσφατες, αυθεντικές κριτικές.
 shopping-callout-closed-not-opted-in-title = Αξιόπιστες κριτικές με ένα κλικ
 shopping-callout-closed-not-opted-in-subtitle = Δοκιμάστε τον έλεγχο κριτικών κάθε φορά που βλέπετε το εικονίδιο-καρτελάκι. Λάβετε γρήγορα πληροφορίες από πραγματικούς αγοραστές προτού αγοράσετε.
+shopping-callout-closed-not-opted-in-revised-title = Αξιόπιστες κριτικές με ένα κλικ
+shopping-callout-closed-not-opted-in-revised-subtitle = Απλά κάντε κλικ στο εικονίδιο της ετικέτας στη γραμμή διευθύνσεων για να επιστρέψετε στον έλεγχο κριτικών.
+shopping-callout-closed-not-opted-in-revised-button = Το κατάλαβα
+shopping-callout-not-opted-in-reminder-title = Αγοράστε με αυτοπεποίθηση
+shopping-callout-not-opted-in-reminder-subtitle = Δεν είστε σίγουροι αν οι κριτικές ενός προϊόντος είναι πραγματικές ή ψευδείς; Ο έλεγχος κριτικών από το { -brand-product-name } μπορεί να βοηθήσει.
+shopping-callout-not-opted-in-reminder-open-button = Άνοιγμα ελέγχου κριτικών
+shopping-callout-not-opted-in-reminder-close-button = Απόρριψη
+shopping-callout-not-opted-in-reminder-ignore-checkbox = Να μην εμφανιστεί ξανά
+shopping-callout-not-opted-in-reminder-img-alt =
+    .aria-label = Αφηρημένη απεικόνιση τριών κριτικών προϊόντων. Κάποιος έχει ένα προειδοποιητικό σύμβολο που υποδεικνύει ότι ενδέχεται να μην είναι αξιόπιστο.
+shopping-callout-disabled-auto-open-title = Ο έλεγχος κριτικών είναι πλέον ανενεργός από προεπιλογή
+shopping-callout-disabled-auto-open-subtitle = Κάντε κλικ στο εικονίδιο με την ετικέτα στη γραμμή διευθύνσεων όποτε θέλετε για να δείτε αν μπορείτε να εμπιστευτείτε τις κριτικές ενός προϊόντος.
+shopping-callout-disabled-auto-open-button = Το κατάλαβα
+shopping-callout-opted-out-title = Ο έλεγχος κριτικών είναι ανενεργός
+shopping-callout-opted-out-subtitle = Για να τον ενεργοποιήσετε ξανά, κάντε κλικ στο εικονίδιο-καρτελάκι στη γραμμή διευθύνσεων και ακολουθήστε τις οδηγίες.
+shopping-callout-opted-out-button = Το κατάλαβα
 
 ## Onboarding message strings.
 
@@ -186,7 +220,6 @@ shopping-onboarding-dynamic-subtitle-1 = Δείτε πόσο αξιόπιστε�
 #   $currentSite (str) - The current shopping page name
 shopping-onboarding-single-subtitle = Δείτε πόσο αξιόπιστες είναι οι κριτικές των προϊόντων στο <b>{ $currentSite }</b> πριν αγοράσετε. Ο έλεγχος κριτικών, μια πειραματική δυνατότητα από τo { -brand-product-name }, ενσωματώνεται στο πρόγραμμα περιήγησης.
 shopping-onboarding-body = Με την υποστήριξη του { -fakespot-brand-full-name }, σας βοηθάμε να αποφύγετε τις μεροληπτικές και ψευδείς κριτικές. Το μοντέλο AI μας βελτιώνεται συνεχώς για να σας προστατεύει όσο κάνετε τις αγορές σας. <a data-l10n-name="learn_more">Μάθετε περισσότερα</a>
-shopping-onboarding-opt-in-privacy-policy-and-terms-of-use2 = Επιλέγοντας «{ shopping-onboarding-opt-in-button }», αποδέχεστε την <a data-l10n-name="privacy_policy">Πολιτική απορρήτου</a> και τους <a data-l10n-name="terms_of_use">Όρους χρήσης</a> του { -fakespot-brand-name }.
 shopping-onboarding-opt-in-privacy-policy-and-terms-of-use3 = Επιλέγοντας «{ shopping-onboarding-opt-in-button }», αποδέχεστε την <a data-l10n-name="privacy_policy">πολιτική απορρήτου</a> του { -brand-product-name } και τους <a data-l10n-name="terms_of_use">όρους χρήσης</a> του { -fakespot-brand-name }.
 shopping-onboarding-opt-in-button = Έναρξη δοκιμής
 shopping-onboarding-not-now-button = Όχι τώρα

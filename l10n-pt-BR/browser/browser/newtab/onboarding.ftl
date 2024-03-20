@@ -268,8 +268,8 @@ mr2022-onboarding-colorway-description-innovator = <b>Inovador.</b> Você vê op
 
 mr2022-onboarding-mobile-download-title = Alterne entre computador e celular
 mr2022-onboarding-mobile-download-subtitle = Pegue abas de um dispositivo e continue de onde parou em outro. Além disso, sincronize seus favoritos e senhas em qualquer lugar que use o { -brand-product-name }.
-mr2022-onboarding-mobile-download-cta-text = Capture o código QR para instalar o { -brand-product-name } para celular ou <a data-l10n-name="download-label">envie um link de download para si mesmo</a>.
-mr2022-onboarding-no-mobile-download-cta-text = Capture o código QR para instalar o { -brand-product-name } para dispositivos móveis.
+mr2022-onboarding-mobile-download-cta-text = Aponte a câmera do celular para o código QR para instalar o { -brand-product-name }, ou <a data-l10n-name="download-label">envie um link de download para si mesmo</a>.
+mr2022-onboarding-no-mobile-download-cta-text = Aponte a câmera para o código QR para instalar o { -brand-product-name } em dispositivos móveis.
 
 ## MR2022 Upgrade Dialog screens
 ## Pin private window screen shown only for users who don't have Firefox private pinned
@@ -342,13 +342,16 @@ onboarding-mobile-download-security-and-privacy-title = Proteja-se com criptogra
 onboarding-mobile-download-security-and-privacy-subtitle = Quando você usa a sincronização, o { -brand-short-name } criptografa suas senhas, favoritos e muito mais. Além disso, você pode abrir abas de outros dispositivos.
 # Gratitude screen
 onboarding-gratitude-security-and-privacy-title = { -brand-short-name } protege você
-onboarding-gratitude-security-and-privacy-subtitle = Obrigado por usar o { -brand-short-name }, respaldado pela Fundação Mozilla. Com seu apoio, estamos trabalhando para tornar a internet mais segura e mais acessível a todos.
+onboarding-gratitude-security-and-privacy-subtitle = Obrigado por usar o { -brand-short-name }, respaldado pela Fundação Mozilla. Com seu apoio, estamos trabalhando para tornar a internet mais segura e acessível a todos.
 
 ## New user time and familiarity survey strings
 
 onboarding-new-user-time-based-survey-title = Há quanto tempo você usa o { -brand-short-name }?
 onboarding-new-user-familiarity-based-survey-title = Qual é seu nível de familiaridade com o { -brand-short-name }?
 onboarding-new-user-survey-subtitle = Sua resposta ajuda a tornar o { -brand-short-name } ainda melhor.
+# When translating "next" it means the next screen in onboarding.
+onboarding-new-user-survey-next-button-label = Avançar
+onboarding-new-user-survey-legal-link-label = Ao selecionar “{ onboarding-new-user-survey-next-button-label },” você declara que concorda com o <a data-l10n-name="privacy_notice">aviso de privacidade</a> do { -brand-product-name }
 # When translating "brand new" it means completely new.
 onboarding-new-user-survey-time-based-option-1 = Acabei de começar
 onboarding-new-user-survey-time-based-option-2 = Menos de 1 mês

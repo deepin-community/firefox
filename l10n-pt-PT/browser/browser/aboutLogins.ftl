@@ -58,6 +58,21 @@ login-list-filtered-count =
         [many] { $count } de { $total } inícios de sessão
        *[other] { $count } de { $total } inícios de sessão
     }
+# Variables
+#   $count (number) - Number of logins
+login-list-count2 =
+    { $count ->
+        [one] { $count } palavra-passe
+       *[other] { $count } palavras-passe
+    }
+# Variables
+#   $count (number) - Number of filtered logins
+#   $total (number) - Total number of logins
+login-list-filtered-count2 =
+    { $total ->
+        [one] { $count } de { $total } palavra-passe
+       *[other] { $count } de { $total } palavras-passe
+    }
 login-list-sort-label-text = Ordenar por:
 login-list-name-option = Nome (A-Z)
 login-list-name-reverse-option = Nome (Z-A)
@@ -94,11 +109,13 @@ about-logins-login-intro-heading-logged-in = Não foram encontradas credenciais 
 login-intro-description = Se guardou as suas credenciais para o { -brand-product-name } num dispositivo diferente, eis como as obter aqui:
 login-intro-instructions-fxa = Crie ou inicie a sessão na sua { -fxaccount-brand-name } no dispositivo onde as suas credenciais estão guardadas
 about-logins-login-intro-heading-message = Guarde as suas palavras-passe num local seguro
+login-intro-description2 = Todas as palavras-passe que guarda no { -brand-product-name } são encriptadas. Além disso, nós estamos atentos às violações e avisamo-lo se for afetado. <a data-l10n-name="breach-alert-link">Saber mais</a>
 login-intro-instructions-fxa2 = Crie ou inicie a sessão na sua conta no dispositivo onde as suas credenciais estão guardadas.
 login-intro-instructions-fxa-settings = Aceda a Definições > Sincronizar > Ativar sincronização... Marque a caixa de seleção Credenciais e palavras-passe.
 login-intro-instructions-fxa-passwords-help = Visite <a data-l10n-name="passwords-help-link">apoio para as palavras-passe</a> para mais ajuda.
 about-logins-intro-browser-only-import = Se as suas credenciais estão guardadas noutro navegador, pode <a data-l10n-name="import-link">importar as mesmas para o { -brand-product-name }</a>
 about-logins-intro-import2 = Se as suas credenciais são guardadas fora do { -brand-product-name }, poderá <a data-l10n-name="import-browser-link">importar as mesmas de outro navegador</a> ou <a data-l10n-name="import-file-link">de um ficheiro</a>
+about-logins-intro-import3 = Selecione o botão com o sinal de mais acima para adicionar agora uma palavra-passe. Também pode <a data-l10n-name="import-browser-link">importar as palavras-passe de outro navegador</a> ou <a data-l10n-name="import-file-link">de um ficheiro</a>.
 
 ## Login
 
@@ -109,6 +126,11 @@ login-item-edit-button = Editar
 about-logins-login-item-remove-button = Remover
 login-item-origin-label = Endereço do site
 login-item-tooltip-message = Certifique-se que isto corresponde ao endereço exato do site onde se autenticou.
+about-logins-origin-tooltip2 = Insira o endereço completo e verifique se é uma correspondência exata para onde iniciou a sessão.
+# Variables
+#   $webTitle (String) - Website title of the password being changed.
+about-logins-edit-password-tooltip = Certifique-se que está a guardar a sua palavra-passe atual para este site. Alterar a palavra-passe aqui não altera a mesma com { $webTitle }.
+about-logins-add-password-tooltip = Certifique-se que está a guardar a sua palavra-passe atual para este site.
 login-item-origin =
     .placeholder = https://www.example.com
 login-item-username-label = Nome de utilizador
@@ -150,6 +172,8 @@ about-logins-edit-login-os-auth-dialog-message-win = Para editar a sua credencia
 # This message can be seen when attempting to edit a login in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-edit-login-os-auth-dialog-message-macosx = editar a credencial guardada
+# This message can be seen when attempting to edit a login in about:logins on Windows.
+about-logins-edit-login-os-auth-dialog-message2-win = Para editar a sua palavra-passe, insira as suas credenciais de autenticação do Windows. Isto ajuda a proteger a segurança das suas contas.
 # This message can be seen when attempting to edit a login in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-edit-login-os-auth-dialog-message2-macosx = editar a palavra-passe guardada
@@ -168,6 +192,8 @@ about-logins-export-password-os-auth-dialog-message-win = Para exportas as suas 
 # This message can be seen when attempting to export a password in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-export-password-os-auth-dialog-message-macosx = exportar credenciais e palavras-passe guardadas
+# This message can be seen when attempting to export a password in about:logins on Windows.
+about-logins-export-password-os-auth-dialog-message2-win = Para exportar as suas palavras-passe, insira as suas credenciais de autenticação do Windows. Isto ajuda a proteger a segurança das suas contas.
 # This message can be seen when attempting to export a password in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-export-password-os-auth-dialog-message2-macosx = exportar palavras-passe guardadas
@@ -226,12 +252,46 @@ about-logins-confirm-remove-all-sync-dialog-message =
         [1] Isto irá remover a credencial que guardou no { -brand-short-name } em todos os seus dispositivos onde sincronizou a sua { -fxaccount-brand-name }. Isto irá também remover quaisquer alertas de violação de dados que sejam apresentados aqui. Não poderá anular esta ação.
        *[other] Isto irá remover todas as credenciais que guardou no { -brand-short-name } em todos os seus dispositivos onde sincronizou a sua { -fxaccount-brand-name }. Isto irá também remover quaisquer alertas de violação de dados que sejam apresentados aqui. Não poderá anular esta ação.
     }
+# Checkbox for modal to confirm the removal of saved passwords
+about-logins-confirm-remove-all-dialog-checkbox-label2 =
+    { $count ->
+        [1] Sim, remover a palavra-passe
+       *[other] Sim, remover as palavras-passe
+    }
+# Title for modal to confirm the removal of all saved passwords when user is NOT synced
+about-logins-confirm-remove-all-dialog-title2 =
+    { $count ->
+        [one] Remover { $count } palavra-passe?
+       *[other] Remover todas as { $count } palavras-passe?
+    }
+# Message for modal to confirm the removal of saved passwords when user is NOT synced
+about-logins-confirm-remove-all-dialog-message2 =
+    { $count ->
+        [1] Isto irá remover a palavra-passe guardada no { -brand-short-name } e quaisquer alertas de violação de dados. Não poderá anular esta ação.
+       *[other] Isto irá remover as palavras-passe guardadas no { -brand-short-name } e quaisquer alertas de violação de dados. Não poderá anular esta ação.
+    }
+# Title for modal to confirm the removal of all saved passwords when user IS SYNCED
+about-logins-confirm-remove-all-sync-dialog-title2 =
+    { $count ->
+        [one] Remover { $count } palavra-passe de todos os dispositivos?
+       *[other] Remover todas as { $count } palavras-passe de todos os dispositivos?
+    }
+# Message for modal to confirm the removal of saved passwords when user IS synced.
+about-logins-confirm-remove-all-sync-dialog-message3 =
+    { $count ->
+        [1] Isto irá remover a palavra-passe guardada no { -brand-short-name } em todos os seus dispositivos sincronizados. Isto também irá remover quaisquer alertas de violação de dados que apareçam aqui. Não poderá anular esta ação.
+       *[other] Isto irá remover as palavras-passe guardadas no { -brand-short-name } em todos os seus dispositivos sincronizados. Isto também irá remover quaisquer alertas de violação de dados que apareçam aqui. Não poderá anular esta ação.
+    }
 
 ##
 
 about-logins-confirm-export-dialog-title = Exportar credenciais e palavras-passe
 about-logins-confirm-export-dialog-message = As suas palavras-passe serão guardadas como texto legível (por exemplo, BadP@ssw0rd) para que qualquer pessoa que possa abrir o ficheiro exportado as possa visualizar.
 about-logins-confirm-export-dialog-confirm-button = Exportar…
+about-logins-confirm-export-dialog-title2 = Uma nota sobre a exportação das palavras-passe
+about-logins-confirm-export-dialog-message2 =
+    Quando exporta, as suas palavras-passe são guardadas num ficheiro com texto legível.
+    Quando terminar de utilizar o ficheiro, nós recomendamos que o elimine para que outros que utilizem este dispositivo não possam ver as suas palavras-passe.
 about-logins-confirm-export-dialog-confirm-button2 = Continuar com a exportação
 about-logins-alert-import-title = Importação concluída
 about-logins-alert-import-message = Ver resumo detalhado da importação
@@ -274,6 +334,8 @@ about-logins-export-file-picker-title = Exportar ficheiro de credenciais
 # The default file name shown in the file picker when exporting saved logins.
 # This must end in .csv
 about-logins-export-file-picker-default-filename = credenciais.csv
+# Title of the file picker dialog
+about-logins-export-file-picker-title2 = Exportar palavras-passe do { -brand-short-name }
 # The default file name shown in the file picker when exporting saved logins.
 # This must end in .csv
 about-logins-export-file-picker-default-filename2 = passwords.csv
@@ -290,6 +352,8 @@ about-logins-export-file-picker-csv-filter-title =
 
 # Title of the file picker dialog
 about-logins-import-file-picker-title = Importar ficheiro de credenciais
+# Title of the file picker dialog
+about-logins-import-file-picker-title2 = Importar palavras-passe para  { -brand-short-name }
 about-logins-import-file-picker-import-button = Importar
 # A description for the .csv file format that may be shown as the file type
 # filter by the operating system.
@@ -326,6 +390,18 @@ about-logins-import-dialog-items-no-change =
         [one] <span>Foi encontrada uma credencial duplicada:</span> <span data-l10n-name="count">{ $count }</span> <span data-l10n-name="meta">(não importada)</span>
        *[other] <span>Foram encontradas credenciais duplicadas:</span> <span data-l10n-name="count">{ $count }</span> <span data-l10n-name="meta">(não importadas)</span>
     }
+about-logins-import-dialog-items-added2 =
+    { $count ->
+       *[other] <span>Adicionadas novas palavras-passe:</span> <span data-l10n-name="count">{ $count }</span>
+    }
+about-logins-import-dialog-items-modified2 =
+    { $count ->
+       *[other] <span>Entradas existentes atualizadas:</span> <span data-l10n-name="count">{ $count }</span>
+    }
+about-logins-import-dialog-items-no-change2 =
+    { $count ->
+       *[other] <span>Entradas duplicadas encontradas:</span> <span data-l10n-name="count">{ $count }</span> <span data-l10n-name="meta">(não importadas)</span>
+    }
 about-logins-import-dialog-items-error =
     { $count ->
         [one] <span>Erro:</span> <span data-l10n-name="count">{ $count }</span> <span data-l10n-name="meta">(não importada)</span>
@@ -347,6 +423,7 @@ about-logins-import-dialog-error-try-import-again = Tente importar novamente...
 about-logins-import-dialog-error-cancel = Cancelar
 about-logins-import-report-title = Resumo de importação
 about-logins-import-report-description = Credenciais e palavras-passe importadas para o { -brand-short-name }.
+about-logins-import-report-description2 = Palavras-passe importadas para  { -brand-short-name }.
 #
 # Variables:
 #  $number (number) - The number of the row
@@ -354,6 +431,9 @@ about-logins-import-report-row-index = Linha { $number }
 about-logins-import-report-row-description-no-change = Duplicado: correspondência exata a credencial existente
 about-logins-import-report-row-description-modified = Credencial existente atualizada
 about-logins-import-report-row-description-added = Nova credencial adicionada
+about-logins-import-report-row-description-no-change2 = Duplicado: correspondência exata da entrada existente
+about-logins-import-report-row-description-modified2 = Atualizada entrada existente
+about-logins-import-report-row-description-added2 = Nova palavra-passe adicionada
 about-logins-import-report-row-description-error = Erro: campo em falta
 
 ##
@@ -381,6 +461,18 @@ about-logins-import-report-no-change =
     { $count ->
         [one] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">credencial duplicada</div> <div data-l10n-name="not-imported">(não importada)</div>
        *[other] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">credenciais duplicadas</div> <div data-l10n-name="not-imported">(não importadas)</div>
+    }
+about-logins-import-report-added2 =
+    { $count ->
+       *[other] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">novas palavras-passe adicionadas</div>
+    }
+about-logins-import-report-modified2 =
+    { $count ->
+       *[other] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">entradas existentes atualizadas</div>
+    }
+about-logins-import-report-no-change2 =
+    { $count ->
+       *[other] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">entradas duplicadas</div> <div data-l10n-name="not-imported">(não importadas)</div>
     }
 about-logins-import-report-error =
     { $count ->

@@ -230,6 +230,10 @@ preferences-web-appearance-choice-input-dark =
 # This can appear when using windows HCM or "Override colors: always" without
 # system colors.
 preferences-web-appearance-override-warning = Fargevalgene dine overstyrer nettstedets utseende. <a data-l10n-name="colors-link">Behandle farger</a>
+# This can appear when using windows HCM or "Override colors: always" without
+# system colors.
+preferences-web-appearance-override-warning2 =
+    .message = Fargevalgene dine overstyrer nettstedets utseende.
 # This message contains one link. It can be moved within the sentence as needed
 # to adapt to your language, but should not be changed.
 preferences-web-appearance-footer = Behandle { -brand-short-name }-temaer i <a data-l10n-name="themes-link">Tillegg og temaer</a>
@@ -257,6 +261,8 @@ preferences-default-zoom-value =
 preferences-zoom-text-only =
     .label = Forstørr bare tekst
     .accesskey = t
+preferences-text-zoom-override-warning =
+    .message = Advarsel: Hvis du velger «Forstørr bare tekst» og standardzoomen ikke er satt til 100 %, kan det føre til at enkelte nettsteder eller innhold ikke fungerer korrekt.
 language-header = Språk
 choose-language-description = Velg foretrukket språk på nettsider
 choose-button =
@@ -562,6 +568,9 @@ home-prefs-shortcuts-by-option-sponsored =
 home-prefs-recommended-by-header =
     .label = Anbefalt av { $provider }
 home-prefs-recommended-by-description-new = Eksepsjonelt innhold satt sammen av { $provider }, en del av { -brand-product-name }-familien
+home-prefs-recommended-by-header-generic =
+    .label = Anbefalte artikler
+home-prefs-recommended-by-description-generic = Enestående innhold kuratert av { -brand-product-name }-familien
 
 ##
 
@@ -754,7 +763,7 @@ sync-currently-syncing-logins-passwords = Innlogginger og passord
 sync-currently-syncing-passwords = Passord
 sync-currently-syncing-addresses = Adresser
 sync-currently-syncing-creditcards = Betalingskort
-sync-currently-syncing-payment-methods = Betalingsmetoder
+sync-currently-syncing-payment-methods = Betalingsmåter
 sync-currently-syncing-addons = Utvidelser
 sync-currently-syncing-settings = Innstillinger
 sync-change-options =
@@ -798,7 +807,7 @@ sync-engine-creditcards =
     .tooltiptext = Navn, numre og forfallsdato (bare datamaskin)
     .accesskey = K
 sync-engine-payment-methods2 =
-    .label = Betalingsmetoder
+    .label = Betalingsmåter
     .tooltiptext = Navn, kortnummer og utløpsdatoer
     .accesskey = n
 sync-engine-addons =
@@ -934,18 +943,18 @@ autofill-addresses-checkbox = Lagre og fyll ut adresser
     .accesskey = L
 autofill-saved-addresses-button = Lagrede adresser
     .accesskey = L
-autofill-payment-methods-checkbox-message = Lagre og fyll inn betalingsmetoder
+autofill-payment-methods-checkbox-message = Lagre og fyll inn betalingsmåter
     .accesskey = L
 autofill-payment-methods-checkbox-submessage = Inkluderer kreditt- og debetkort
     .accesskey = I
-autofill-saved-payment-methods-button = Lagrede betalingsmetoder
+autofill-saved-payment-methods-button = Lagrede betalingsmåter
     .accesskey = e
 autofill-reauth-checkbox =
     { PLATFORM() ->
-        [macos] Krev macOS-autentisering for å fylle ut og redigere betalingsmetoder.
-        [windows] Krev Windows-autentisering for å fylle ut og redigere betalingsmetoder.
-        [linux] Krev Linux-autentisering for å fylle ut og redigere betalingsmetoder.
-       *[other] Krev autentisering for å fylle ut og redigere betalingsmetoder.
+        [macos] Krev macOS-autentisering for å fylle ut og redigere betalingsmåter.
+        [windows] Krev Windows-autentisering for å fylle ut og redigere betalingsmåter.
+        [linux] Krev Linux-autentisering for å fylle ut og redigere betalingsmåter.
+       *[other] Krev autentisering for å fylle ut og redigere betalingsmåter.
     }
     .accesskey = a
 
@@ -1003,6 +1012,7 @@ sitedata-delete-on-close =
     .label = Slett infokapsler og nettsteddata når { -brand-short-name } stenger
     .accesskey = S
 sitedata-delete-on-close-private-browsing = I permanent privat nettlesingsmodus vil infokapsler og nettstedsdata alltid bli slettet når { -brand-short-name } er avsluttet.
+sitedata-delete-on-close-private-browsing2 = Basert på historikkinnstillingene dine, sletter { -brand-short-name } infokapsler og nettstedsdata fra økten din når du lukker nettleseren.
 sitedata-allow-cookies-option =
     .label = Tillat infokapsler og nettstedsdata
     .accesskey = a
@@ -1079,10 +1089,10 @@ addressbar-locbar-engines-option =
 addressbar-locbar-quickactions-option =
     .label = Hurtige handlinger
     .accesskey = H
+addressbar-suggestions-settings = Endre innstillinger for søkeforslag
 addressbar-locbar-showrecentsearches-option =
     .label = Vis nylige søk
     .accesskey = V
-addressbar-suggestions-settings = Endre innstillinger for søkeforslag
 addressbar-quickactions-learn-more = Les mer
 
 ## Privacy Section - Content Blocking

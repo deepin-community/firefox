@@ -168,7 +168,7 @@ show-tabs-in-taskbar =
     .label = Lapok előnézetének megjelenítése a Windows tálcán
     .accesskey = L
 browser-containers-enabled =
-    .label = Konténer lapok engedélyezése
+    .label = Konténerlapok engedélyezése
     .accesskey = n
 browser-containers-learn-more = További tudnivalók
 browser-containers-settings =
@@ -230,6 +230,10 @@ preferences-web-appearance-choice-input-dark =
 # This can appear when using windows HCM or "Override colors: always" without
 # system colors.
 preferences-web-appearance-override-warning = Az Ön színválasztásai felülírják a webhely megjelenését. <a data-l10n-name="colors-link">Színek kezelése</a>
+# This can appear when using windows HCM or "Override colors: always" without
+# system colors.
+preferences-web-appearance-override-warning2 =
+    .message = Az Ön színválasztásai felülírják a webhely megjelenését.
 # This message contains one link. It can be moved within the sentence as needed
 # to adapt to your language, but should not be changed.
 preferences-web-appearance-footer = Kezelje a { -brand-short-name } témáit a <a data-l10n-name="themes-link">Kiegészítők és témák</a> lapon
@@ -257,6 +261,8 @@ preferences-default-zoom-value =
 preferences-zoom-text-only =
     .label = Csak a szöveg nagyítása
     .accesskey = v
+preferences-text-zoom-override-warning =
+    .message = Figyelmeztetés: Ha a „Csak szöveg nagyítása” lehetőséget választja, és az alapértelmezett nagyítás nem 100%-ra van állítva, az egyes webhelyek és tartalmak nem megfelelő működését okozhatja.
 language-header = Nyelv
 choose-language-description = Az oldalak megjelenítésére előnyben részesített nyelv megadása
 choose-button =
@@ -562,6 +568,9 @@ home-prefs-shortcuts-by-option-sponsored =
 home-prefs-recommended-by-header =
     .label = A(z) { $provider } ajánlásával
 home-prefs-recommended-by-description-new = Kivételes tartalmak a { $provider } válogatásában, amely a { -brand-product-name } család része
+home-prefs-recommended-by-header-generic =
+    .label = Ajánlott történetek
+home-prefs-recommended-by-description-generic = Kivételes tartalmak a { -brand-product-name } család válogatásában
 
 ##
 
@@ -665,7 +674,7 @@ search-keyword-warning-bookmark = Olyan kulcsszót választott, amelyet jelenleg
 
 containers-back-button2 =
     .aria-label = Vissza a Beállításokhoz
-containers-header = Konténer lapok
+containers-header = Konténerlapok
 containers-add-button =
     .label = Új konténer hozzáadása
     .accesskey = a
@@ -1080,10 +1089,10 @@ addressbar-locbar-engines-option =
 addressbar-locbar-quickactions-option =
     .label = Gyors műveletek
     .accesskey = r
+addressbar-suggestions-settings = Keresőszolgáltatás-javaslatok beállításainak módosítása
 addressbar-locbar-showrecentsearches-option =
     .label = Legutóbbi keresések megjelenítése
     .accesskey = L
-addressbar-suggestions-settings = Keresőszolgáltatás-javaslatok beállításainak módosítása
 addressbar-quickactions-learn-more = További tudnivalók
 
 ## Privacy Section - Content Blocking

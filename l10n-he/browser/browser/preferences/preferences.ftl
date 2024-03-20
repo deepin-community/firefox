@@ -230,6 +230,10 @@ preferences-web-appearance-choice-input-dark =
 # This can appear when using windows HCM or "Override colors: always" without
 # system colors.
 preferences-web-appearance-override-warning = בחירות הצבעים שלך דורסות את מראה האתר. <a data-l10n-name="colors-link">ניהול צבעים</a>
+# This can appear when using windows HCM or "Override colors: always" without
+# system colors.
+preferences-web-appearance-override-warning2 =
+    .message = בחירות הצבעים שלך דורסות את מראה האתר.
 # This message contains one link. It can be moved within the sentence as needed
 # to adapt to your language, but should not be changed.
 preferences-web-appearance-footer = ניהול ערכות נושא של { -brand-short-name } ב<a data-l10n-name="themes-link">הרחבות וערכות נושא</a>
@@ -257,6 +261,8 @@ preferences-default-zoom-value =
 preferences-zoom-text-only =
     .label = שינוי גודל טקסט בלבד
     .accesskey = ט
+preferences-text-zoom-override-warning =
+    .message = אזהרה: בחירה באפשרות ״שינוי גודל טקסט בלבד״ בעת שהמרחק מתצוגה ברירת המחדל שלך אינו מוגדר ל־100%, עלולה לגרום לאתרים או תוכן מסוים להישבר.
 language-header = שפה
 choose-language-description = בחירת השפה המועדפת עליך להצגת דפים
 choose-button =
@@ -562,6 +568,9 @@ home-prefs-shortcuts-by-option-sponsored =
 home-prefs-recommended-by-header =
     .label = מומלץ על־ידי { $provider }
 home-prefs-recommended-by-description-new = תוכן יוצא דופן שנבחר בקפידה על־ידי { $provider }, חלק ממשפחת { -brand-product-name }
+home-prefs-recommended-by-header-generic =
+    .label = סיפורים מומלצים
+home-prefs-recommended-by-description-generic = תוכן יוצא דופן שנבחר בקפידה על־ידי משפחת { -brand-product-name }
 
 ##
 
@@ -1077,10 +1086,10 @@ addressbar-locbar-engines-option =
 addressbar-locbar-quickactions-option =
     .label = פעולות מהירות
     .accesskey = פ
+addressbar-suggestions-settings = שינוי העדפות של הצעות מנועי חיפוש
 addressbar-locbar-showrecentsearches-option =
     .label = הצגת חיפושים אחרונים
     .accesskey = ח
-addressbar-suggestions-settings = שינוי העדפות של הצעות מנועי חיפוש
 addressbar-quickactions-learn-more = מידע נוסף
 
 ## Privacy Section - Content Blocking

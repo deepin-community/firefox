@@ -242,6 +242,10 @@ preferences-web-appearance-choice-input-dark =
 # This can appear when using windows HCM or "Override colors: always" without
 # system colors.
 preferences-web-appearance-override-warning = Mae eich dewisiadau lliw yn drech nag gwedd gwefan. <a data-l10n-name="colors-link">Rheoli lliwiau</a>
+# This can appear when using windows HCM or "Override colors: always" without
+# system colors.
+preferences-web-appearance-override-warning2 =
+    .message = Mae eich dewisiadau lliw yn drech nag gwedd gwefan.
 # This message contains one link. It can be moved within the sentence as needed
 # to adapt to your language, but should not be changed.
 preferences-web-appearance-footer = Rheoli themâu { -brand-short-name } yn <a data-l10n-name="themes-link">Estyniadau a Themâu</a>
@@ -269,6 +273,8 @@ preferences-default-zoom-value =
 preferences-zoom-text-only =
     .label = Chwyddo testun yn unig
     .accesskey = t
+preferences-text-zoom-override-warning =
+    .message = Rhybudd: Os fyddwch yn dewis “Chwyddo testun yn unig” ac nad yw'ch chwyddo rhagosodedig wedi'i osod i 100%, gall achosi i rai gwefannau neu gynnwys dorri.
 language-header = Iaith
 choose-language-description = Dewiswch eich dewis o iaith i ddangos tudalennau
 choose-button =
@@ -574,6 +580,9 @@ home-prefs-shortcuts-by-option-sponsored =
 home-prefs-recommended-by-header =
     .label = Argymhellwyd gan { $provider }
 home-prefs-recommended-by-description-new = Cynnwys eithriadol wedi'u curadu gan { $provider }, rhan o deulu { -brand-product-name }
+home-prefs-recommended-by-header-generic =
+    .label = Straeon cymeradwy
+home-prefs-recommended-by-description-generic = Cynnwys eithriadol wedi'i gasglu gan deulu { -brand-product-name }
 
 ##
 
@@ -1096,10 +1105,10 @@ addressbar-locbar-engines-option =
 addressbar-locbar-quickactions-option =
     .label = Gweithredoedd cyflym
     .accesskey = c
+addressbar-suggestions-settings = Newid dewisiadau am awgrymiadau peiriannau chwilio
 addressbar-locbar-showrecentsearches-option =
     .label = Dangos y chwilio diweddar
     .accesskey = D
-addressbar-suggestions-settings = Newid dewisiadau am awgrymiadau peiriannau chwilio
 addressbar-quickactions-learn-more = Darllen rhagor
 
 ## Privacy Section - Content Blocking

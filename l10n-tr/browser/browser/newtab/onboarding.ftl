@@ -269,7 +269,7 @@ mr2022-onboarding-colorway-description-innovator = <b>Siz bir yenilikçisiniz.</
 
 mr2022-onboarding-mobile-download-title = Bilgisayardan telefona, telefondan bilgisayara atlayın
 mr2022-onboarding-mobile-download-subtitle = Bir cihazınızdaki sekmelere diğer cihazınızdan ulaşıp kaldığınız yerden devam edebilirsiniz. Üstelik { -brand-product-name } kullandığınız her yerden yer imlerinize ve parolalarınıza erişebilirsiniz.
-mr2022-onboarding-mobile-download-cta-text = { -brand-product-name } mobil uygulamasını indirmek için QR kodunu okutun veya <a data-l10n-name="download-label">kendinize indirme linkini gönderin</a>.
+mr2022-onboarding-mobile-download-cta-text = { -brand-product-name } mobil uygulamasını indirmek için QR kodunu okutun veya <a data-l10n-name="download-label">kendinize indirme bağlantısını gönderin</a>.
 mr2022-onboarding-no-mobile-download-cta-text = { -brand-product-name } mobil uygulamasını indirmek için QR kodunu okutun.
 
 ## MR2022 Upgrade Dialog screens
@@ -348,8 +348,10 @@ onboarding-gratitude-security-and-privacy-subtitle = Mozilla Vakfı tarafından 
 ## New user time and familiarity survey strings
 
 onboarding-new-user-time-based-survey-title = { -brand-short-name } tarayıcısını ne zamandır kullanıyorsunuz?
-onboarding-new-user-familiarity-based-survey-title = { -brand-short-name } tarayıcısını kadar tanıyorsunuz?
+onboarding-new-user-familiarity-based-survey-title = { -brand-short-name } tarayıcısını ne kadar tanıyorsunuz?
 onboarding-new-user-survey-subtitle = Geri bildiriminiz { -brand-short-name } tarayıcısını daha da iyileştirmemize yardımcı oluyor.
+# When translating "next" it means the next screen in onboarding.
+onboarding-new-user-survey-next-button-label = İleri
 # When translating "brand new" it means completely new.
 onboarding-new-user-survey-time-based-option-1 = Yeni kullanmaya başladım
 onboarding-new-user-survey-time-based-option-2 = 1 aydan az

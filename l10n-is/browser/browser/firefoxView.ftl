@@ -12,6 +12,8 @@ menu-tools-firefox-view =
     .label = { -firefoxview-brand-name }
     .accesskey = F
 firefoxview-page-title = { -firefoxview-brand-name }
+firefoxview-page-heading =
+    .heading = { -firefoxview-brand-name }
 firefoxview-page-label =
     .label = { -firefoxview-brand-name }
 firefoxview-close-button =
@@ -51,6 +53,7 @@ firefoxview-syncedtabs-loading-header = Samstilling í gangi
 firefoxview-syncedtabs-loading-description = Þegar því er lokið sérðu alla flipa sem þú hefur opna á öðrum tækjum. Komdu hingað aftur fljótlega.
 firefoxview-tabpickup-fxa-admin-disabled-header = Kerfisstjórarnir þínir hafa gert samstillingu óvirka
 firefoxview-tabpickup-fxa-admin-disabled-description = { -brand-short-name } getur ekki samstillt flipa á milli tækja vegna þess að kerfisstjórarnir þínir hafa slökkt á samstillingu.
+firefoxview-tabpickup-fxa-disabled-by-policy-description = { -brand-short-name } getur ekki samstillt flipa á milli tækja vegna þess að kerfisstjórar hafa slökkt á samstillingu.
 firefoxview-tabpickup-network-offline-header = Athugaðu internettenginguna þína
 firefoxview-tabpickup-network-offline-description = Ef þú ert að nota eldvegg eða milliþjón, athugaðu þá hvort { -brand-short-name } hafi heimild til að opna vefinn.
 firefoxview-tabpickup-network-offline-primarybutton = Reyndu aftur
@@ -184,6 +187,8 @@ firefoxview-search-results-count =
 firefoxview-search-results-empty = Engar niðurstöður fyrir „{ $query }“
 firefoxview-sort-history-by-date-label = Raða eftir dagsetningu
 firefoxview-sort-history-by-site-label = Raða eftir vefsvæðum
+firefoxview-sort-open-tabs-by-recency-label = Raða eftir nýlegri virkni
+firefoxview-sort-open-tabs-by-order-label = Raða eftir röð flipa
 # Variables:
 #   $url (string) - URL that will be opened in the new tab
 firefoxview-opentabs-tab-row =
@@ -246,3 +251,25 @@ firefoxview-recentlyclosed-empty-description-two = Til að finna flipa sem lengr
 
 firefoxview-syncedtabs-device-notabs = Engir flipar opnir á þessu tæki
 firefoxview-syncedtabs-connect-another-device = Tengja annað tæki
+firefoxview-pinned-tabs =
+    .title = Festir flipar
+firefoxview-tabs =
+    .title = Flipar
+
+## These tooltips will be displayed when hovering over a pinned tab on the Open Tabs page
+## Variables:
+##  $tabTitle (string) - Title of pinned tab that will be opened when selected
+
+firefoxview-opentabs-pinned-tab =
+    .title = Skipta yfir á { $tabTitle }
+# This tooltip will be shown for a pinned tab whose URL is currently bookmarked.
+firefoxview-opentabs-bookmarked-pinned-tab =
+    .title = Skipta yfir á (bókamerktan) { $tabTitle }
+
+## These tooltips will be displayed when hovering over an unpinned Open Tab
+## Variables:
+##   $url (string) - URL of tab that will be opened when selected
+
+# This tooltip will be shown for an unpinned tab whose URL is currently bookmarked.
+firefoxview-opentabs-bookmarked-tab =
+    .title = (Bókamerkt) { $url }

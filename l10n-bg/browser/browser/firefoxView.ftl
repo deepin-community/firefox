@@ -12,6 +12,8 @@ menu-tools-firefox-view =
     .label = { -firefoxview-brand-name }
     .accesskey = ф
 firefoxview-page-title = { -firefoxview-brand-name }
+firefoxview-page-heading =
+    .heading = { -firefoxview-brand-name }
 firefoxview-page-label =
     .label = { -firefoxview-brand-name }
 firefoxview-close-button =
@@ -41,6 +43,7 @@ firefoxview-syncedtabs-adddevice-header = Влезте в/ъв { -brand-product-
 firefoxview-syncedtabs-adddevice-description = За да видите разделите от другите места, на които използвате { -brand-product-name } влезте във всичките си устройства. Научете как <a data-l10n-name="url">да свържете допълнителни устройства</a>.
 firefoxview-syncedtabs-adddevice-primarybutton = Опитайте { -brand-product-name } за телефон
 firefoxview-tabpickup-synctabs-header = Включване синхронизирането на раздели
+firefoxview-tabpickup-synctabs-description = Разрешава на { -brand-short-name } да споделя раздели между устройствата.
 firefoxview-tabpickup-synctabs-learn-how = Научете как
 firefoxview-tabpickup-synctabs-primarybutton = Синхронизиране на отворените раздели
 firefoxview-syncedtabs-synctabs-checkbox = Разрешаване на синхронизиране на отворените раздели
@@ -62,6 +65,10 @@ firefoxview-mobile-promo-primarybutton = Изтеглете { -brand-product-nam
 firefoxview-mobile-confirmation-header = 🎉 Готово!
 firefoxview-closed-tabs-title = Наскоро затворени
 firefoxview-closed-tabs-placeholder-header = Няма наскоро затворени раздели
+# Variables:
+#   $tabTitle (string) - Title of tab being dismissed
+firefoxview-closed-tabs-dismiss-tab =
+    .title = Отхвърляне на { $tabTitle }
 # refers to the last tab that was used
 firefoxview-pickup-tabs-badge = Последна активност
 firefoxview-try-colorways-button = Опитайте цветовете
@@ -71,6 +78,7 @@ firefoxview-change-colorway-button = Променяне на цветовете
 #  $collection (String): Colorway Collection name
 firefoxview-colorway-description = { $intensity } · { $collection }
 firefoxview-synced-tabs-placeholder-header = Все още няма какво да се види
+firefoxview-synced-tabs-placeholder-body = Следващият път, когато отворите страница в { -brand-product-name } на друго устройство я грабнете тук като магия.
 firefoxview-collapse-button-show =
     .title = Списък
 firefoxview-collapse-button-hide =
@@ -114,6 +122,10 @@ firefoxview-view-all-link = Всички
 #   $winID (Number) - The index of the owner window for this set of tabs
 firefoxview-opentabs-window-header =
     .title = Прозорец { $winID }
+# Variables:
+#   $winID (Number) - The index of the owner window (which is currently focused) for this set of tabs
+firefoxview-opentabs-current-window-header =
+    .title = Прозорец { $winID } (текущ)
 firefoxview-opentabs-focus-tab =
     .title = Превключване към този раздел
 firefoxview-show-more = Повече
@@ -136,8 +148,27 @@ firefoxview-search-text-box-syncedtabs =
 # Placeholder for the input field to search in open tabs ("search" is a verb).
 firefoxview-search-text-box-opentabs =
     .placeholder = Търсене в отворени раздели
+# "Search" is a noun (as in "Results of the search for")
+# Variables:
+#   $query (String) - The search query used for searching through browser history.
+firefoxview-search-results-header = Резултати за „{ $query }“
+# Variables:
+#   $count (Number) - The number of visits matching the search query.
+firefoxview-search-results-count =
+    { $count ->
+        [one] { $count } страница
+       *[other] { $count } страници
+    }
+# Message displayed when a search is performed and no matching results were found.
+# Variables:
+#   $query (String) - The search query.
+firefoxview-search-results-empty = Няма резултати за „{ $query }“
 firefoxview-sort-history-by-date-label = Сортиране по дата
 firefoxview-sort-history-by-site-label = Сортиране по страница
+# Variables:
+#   $url (string) - URL that will be opened in the new tab
+firefoxview-opentabs-tab-row =
+    .title = Превключване към { $url }
 
 ## Variables:
 ##   $date (string) - Date to be formatted based on locale
@@ -181,7 +212,9 @@ firefoxview-import-history-header = Внасяне на история от др
 
 ## Message displayed in Firefox View when the user has no recently closed tabs data
 
+firefoxview-recentlyclosed-empty-header = Рано затворихте раздела?
 
 ## This message is displayed below the name of another connected device when it doesn't have any open tabs.
 
+firefoxview-syncedtabs-device-notabs = На устройството няма отворени раздели
 firefoxview-syncedtabs-connect-another-device = Свързване на друго устройство

@@ -12,6 +12,8 @@ menu-tools-firefox-view =
     .label = { -firefoxview-brand-name }
     .accesskey = F
 firefoxview-page-title = { -firefoxview-brand-name }
+firefoxview-page-heading =
+    .heading = { -firefoxview-brand-name }
 firefoxview-page-label =
     .label = { -firefoxview-brand-name }
 firefoxview-close-button =
@@ -51,6 +53,7 @@ firefoxview-syncedtabs-loading-header = Sincronização em progresso
 firefoxview-syncedtabs-loading-description = Quando terminar, irá ver todos os separadores abertos nos outros dispositivos. Volte em breve.
 firefoxview-tabpickup-fxa-admin-disabled-header = A sua organização desativou a sincronização
 firefoxview-tabpickup-fxa-admin-disabled-description = O { -brand-short-name } não consegue sincronizar separadores entre dispositivos porque o seu administrador desativou a sincronização.
+firefoxview-tabpickup-fxa-disabled-by-policy-description = O { -brand-short-name } não é capaz de sincronizar separadores entre dispositivos porque a sua organização desativou a sincronização.
 firefoxview-tabpickup-network-offline-header = Verifique a sua ligação à Internet
 firefoxview-tabpickup-network-offline-description = Se está a utilizar uma firewall ou proxy, verifique se o { -brand-short-name } tem permissão para aceder à Internet.
 firefoxview-tabpickup-network-offline-primarybutton = Tentar novamente
@@ -161,12 +164,31 @@ firefoxview-search-text-box-history =
 # Placeholder for the input field to search in recently closed tabs ("search" is a verb).
 firefoxview-search-text-box-recentlyclosed =
     .placeholder = Pesquisar separadores fechados recentemente
+# Placeholder for the input field to search in tabs from other devices ("search" is a verb).
+firefoxview-search-text-box-syncedtabs =
+    .placeholder = Pesquisar nos separadores sincronizados
+# Placeholder for the input field to search in open tabs ("search" is a verb).
+firefoxview-search-text-box-opentabs =
+    .placeholder = Pesquisar nos separadores abertos
+# "Search" is a noun (as in "Results of the search for")
+# Variables:
+#   $query (String) - The search query used for searching through browser history.
+firefoxview-search-results-header = Resultados da pesquisa para “{ $query }”
+# Variables:
+#   $count (Number) - The number of visits matching the search query.
+firefoxview-search-results-count =
+    { $count ->
+        [one] { $count } site
+       *[other] { $count } sites
+    }
 # Message displayed when a search is performed and no matching results were found.
 # Variables:
 #   $query (String) - The search query.
 firefoxview-search-results-empty = Nenhum resultado para “{ $query }”
 firefoxview-sort-history-by-date-label = Ordenar por data
 firefoxview-sort-history-by-site-label = Ordenar por site
+firefoxview-sort-open-tabs-by-recency-label = Ordenar por atividade recente
+firefoxview-sort-open-tabs-by-order-label = Ordenar por ordem de separadores
 # Variables:
 #   $url (string) - URL that will be opened in the new tab
 firefoxview-opentabs-tab-row =
@@ -229,3 +251,25 @@ firefoxview-recentlyclosed-empty-description-two = Para encontrar separadores an
 
 firefoxview-syncedtabs-device-notabs = Nenhum separador aberto neste dispositivo
 firefoxview-syncedtabs-connect-another-device = Ligar outro dispositivo
+firefoxview-pinned-tabs =
+    .title = Separadores fixos
+firefoxview-tabs =
+    .title = Separadores
+
+## These tooltips will be displayed when hovering over a pinned tab on the Open Tabs page
+## Variables:
+##  $tabTitle (string) - Title of pinned tab that will be opened when selected
+
+firefoxview-opentabs-pinned-tab =
+    .title = Mudar para { $tabTitle }
+# This tooltip will be shown for a pinned tab whose URL is currently bookmarked.
+firefoxview-opentabs-bookmarked-pinned-tab =
+    .title = Mudar para { $tabTitle } (marcado)
+
+## These tooltips will be displayed when hovering over an unpinned Open Tab
+## Variables:
+##   $url (string) - URL of tab that will be opened when selected
+
+# This tooltip will be shown for an unpinned tab whose URL is currently bookmarked.
+firefoxview-opentabs-bookmarked-tab =
+    .title = (Marcado) { $url }

@@ -15,6 +15,10 @@ fxviewtabrow-time = { DATETIME($time, timeStyle: "short") }
 fxviewtabrow-tabs-list-tab =
     .title = 새 탭에서 { $targetURI } 열기
 # Variables:
+#   $tabTitle (string) - Title of tab being closed
+fxviewtabrow-close-tab-button =
+    .title = { $tabTitle } 닫기
+# Variables:
 #   $tabTitle (string) - Title of tab being dismissed
 fxviewtabrow-dismiss-tab-button =
     .title = { $tabTitle } 닫기
@@ -51,6 +55,14 @@ fxviewtabrow-move-tab-window = 새 창으로 이동
     .accesskey = W
 fxviewtabrow-send-tab = 탭을 기기로 보내기
     .accesskey = n
+fxviewtabrow-pin-tab = 탭 고정
+    .accesskey = P
+fxviewtabrow-unpin-tab = 탭 고정 해제
+    .accesskey = p
+fxviewtabrow-mute-tab = 탭 음소거
+    .accesskey = M
+fxviewtabrow-unmute-tab = 탭 음소거 해제
+    .accesskey = m
 # Variables:
 #   $tabTitle (string) - Title of the tab to which the context menu is associated
 fxviewtabrow-options-menu-button =
@@ -63,3 +75,10 @@ fxviewtabrow-mute-tab-button =
 #   $tabTitle (string) - Title of tab being unmuted
 fxviewtabrow-unmute-tab-button =
     .title = 음소거 해제 { $tabTitle }
+
+## Strings below are to be used without context (tab title/URL) on mute/unmute buttons
+
+fxviewtabrow-mute-tab-button-no-context =
+    .title = 탭 음소거
+fxviewtabrow-unmute-tab-button-no-context =
+    .title = 탭 음소거 해제

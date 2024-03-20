@@ -12,6 +12,8 @@ menu-tools-firefox-view =
     .label = { -firefoxview-brand-name }
     .accesskey = F
 firefoxview-page-title = { -firefoxview-brand-name }
+firefoxview-page-heading =
+    .heading = { -firefoxview-brand-name }
 firefoxview-page-label =
     .label = { -firefoxview-brand-name }
 firefoxview-close-button =
@@ -51,6 +53,7 @@ firefoxview-syncedtabs-loading-header = Eşitleme devam ediyor
 firefoxview-syncedtabs-loading-description = İşlem tamamlandığında diğer cihazlarda açtığınız sekmeleri burada göreceksiniz. Daha sonra tekrar kontrol edin.
 firefoxview-tabpickup-fxa-admin-disabled-header = Kuruluşunuz eşitlemeyi devre dışı bırakmış
 firefoxview-tabpickup-fxa-admin-disabled-description = Yöneticiniz eşitlemeyi devre dışı bıraktığı için { -brand-short-name } sekmeleri cihazlar arasında eşitleyemiyor.
+firefoxview-tabpickup-fxa-disabled-by-policy-description = Kuruluşunuz eşitlemeyi devre dışı bıraktığı için { -brand-short-name }, sekmelerinizi cihazlar arasında eşitleyemiyor.
 firefoxview-tabpickup-network-offline-header = İnternet bağlantınızı kontrol edin
 firefoxview-tabpickup-network-offline-description = Güvenlik duvarı veya vekil sunucu kullanıyorsanız { -brand-short-name } tarayıcısının web’e erişim iznine sahip olup olmadığını kontrol edin.
 firefoxview-tabpickup-network-offline-primarybutton = Yeniden dene
@@ -184,6 +187,8 @@ firefoxview-search-results-count =
 firefoxview-search-results-empty = “{ $query }” için sonuç yok
 firefoxview-sort-history-by-date-label = Tarihe göre sırala
 firefoxview-sort-history-by-site-label = Siteye göre sırala
+firefoxview-sort-open-tabs-by-recency-label = Son etkinliğe göre sırala
+firefoxview-sort-open-tabs-by-order-label = Sekme sırasına göre sırala
 # Variables:
 #   $url (string) - URL that will be opened in the new tab
 firefoxview-opentabs-tab-row =
@@ -246,3 +251,25 @@ firefoxview-recentlyclosed-empty-description-two = Daha önceden kapattığını
 
 firefoxview-syncedtabs-device-notabs = Bu cihazda açık sekme yok
 firefoxview-syncedtabs-connect-another-device = Başka bir cihaz bağlayın
+firefoxview-pinned-tabs =
+    .title = Sabitlenmiş sekmeler
+firefoxview-tabs =
+    .title = Sekmeler
+
+## These tooltips will be displayed when hovering over a pinned tab on the Open Tabs page
+## Variables:
+##  $tabTitle (string) - Title of pinned tab that will be opened when selected
+
+firefoxview-opentabs-pinned-tab =
+    .title = { $tabTitle } sekmesine geç
+# This tooltip will be shown for a pinned tab whose URL is currently bookmarked.
+firefoxview-opentabs-bookmarked-pinned-tab =
+    .title = { $tabTitle } sekmesine geç (yer imlerinizde)
+
+## These tooltips will be displayed when hovering over an unpinned Open Tab
+## Variables:
+##   $url (string) - URL of tab that will be opened when selected
+
+# This tooltip will be shown for an unpinned tab whose URL is currently bookmarked.
+firefoxview-opentabs-bookmarked-tab =
+    .title = (Yer imlerinizde) { $url }

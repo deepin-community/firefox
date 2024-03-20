@@ -47,3 +47,19 @@ credit-card-capture-save-new-button =
 credit-card-capture-update-button =
     .label = עדכון כרטיס קיים
     .accessKey = ק
+# Used as a label for the button, displayed at the bottom of the dropdown suggestion, to open Form Autofill browser preferences.
+autofill-manage-addresses-label = ניהול כתובות
+# Used as a label for the button, displayed at the bottom of the dropdown suggestion, to open Form Autofill browser preferences.
+autofill-manage-payment-methods-label = ניהול אמצעי תשלום
+
+## These are brand names and should only be translated when a locale-specific name for that brand is in common use
+
+autofill-card-network-amex = אמריקן אקספרס
+autofill-card-network-cartebancaire = Carte Bancaire
+autofill-card-network-diners = דיינרס קלאב
+autofill-card-network-discover = Discover
+autofill-card-network-jcb = JCB
+autofill-card-network-mastercard = מאסטרקארד
+autofill-card-network-mir = MIR
+autofill-card-network-unionpay = Union Pay
+autofill-card-network-visa = ויזה

@@ -43,6 +43,11 @@ options-inspector-draggable-properties-tooltip =
 options-inspector-simplified-highlighters-label = Dopre evidenziadôrs plui sempliçs cun prefers-reduced-motion
 options-inspector-simplified-highlighters-tooltip =
     .title = Al ative i evidenziadôrs semplificâts cuant che  prefers-reduced-motion al è atîf. Al dissegne liniis al puest di retangui jemplâts tor ator dai elements evidenziâts par evitâ efiets di lampament.
+# The label for the checkbox option to make the Enter key move the focus to the next input
+# when editing a property name or value in the Inspector rules view
+options-inspector-rules-focus-next-on-enter-label = Passe al cjamp di input sucessîf cun <kbd>Invie</kbd>
+options-inspector-rules-focus-next-on-enter-tooltip =
+    .title = Se ativade, fracant il tast Invie dilunc la modifiche di un seletôr, di un non di proprietât o di un so valôr, tu passarâs al cjamp di input sucessîf.
 
 ## "Default Color Unit" options for the Inspector
 
@@ -126,7 +131,7 @@ options-enable-service-workers-http-label = Ative i service workers sore di HTTP
 options-enable-service-workers-http-tooltip =
     .title = Ativant cheste opzion a vignaran ativâts i service workers sore HTTP par dutis lis schedis che a àn une cassele dai imprescj vierte.
 # The label for the checkbox that toggles source maps in all tools.
-options-source-maps-label = Ative mapis dai sorzints
+options-source-maps-label = Ative mapis des origjins
 options-source-maps-tooltip =
     .title = Se tu ativis cheste opzion i sorzints a vignaran mapâts intai struments.
 # The message shown for settings that trigger page reload

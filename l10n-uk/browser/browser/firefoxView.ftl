@@ -12,6 +12,8 @@ menu-tools-firefox-view =
     .label = { -firefoxview-brand-name }
     .accesskey = F
 firefoxview-page-title = { -firefoxview-brand-name }
+firefoxview-page-heading =
+    .heading = { -firefoxview-brand-name }
 firefoxview-page-label =
     .label = { -firefoxview-brand-name }
 firefoxview-close-button =
@@ -51,6 +53,7 @@ firefoxview-syncedtabs-loading-header = Виконується синхроні�
 firefoxview-syncedtabs-loading-description = По її завершенню ви побачите всі вкладки, відкриті на інших пристроях. Перевірте це незабаром.
 firefoxview-tabpickup-fxa-admin-disabled-header = Ваша організація вимкнула синхронізацію
 firefoxview-tabpickup-fxa-admin-disabled-description = { -brand-short-name } не може синхронізувати вкладки між пристроями, тому що ваш адміністратор вимкнув синхронізацію.
+firefoxview-tabpickup-fxa-disabled-by-policy-description = { -brand-short-name } не може синхронізувати вкладки між пристроями, оскільки ваша організація вимкнула синхронізацію.
 firefoxview-tabpickup-network-offline-header = Перевірте своє з'єднання з інтернетом
 firefoxview-tabpickup-network-offline-description = Якщо ви користуєтеся мережевим екраном чи проксі, переконайтеся, що { -brand-short-name } має дозвіл на доступ до інтернету.
 firefoxview-tabpickup-network-offline-primarybutton = Спробувати знову
@@ -185,6 +188,8 @@ firefoxview-search-results-count =
 firefoxview-search-results-empty = Немає результатів для “{ $query }”
 firefoxview-sort-history-by-date-label = Сортувати за датою
 firefoxview-sort-history-by-site-label = Сортувати за сайтом
+firefoxview-sort-open-tabs-by-recency-label = Сортувати за останньою активністю
+firefoxview-sort-open-tabs-by-order-label = Сортувати за порядком вкладок
 # Variables:
 #   $url (string) - URL that will be opened in the new tab
 firefoxview-opentabs-tab-row =
@@ -247,3 +252,25 @@ firefoxview-recentlyclosed-empty-description-two = Щоб знайти давн�
 
 firefoxview-syncedtabs-device-notabs = На цьому пристрої немає відкритих вкладок
 firefoxview-syncedtabs-connect-another-device = Під'єднати інший пристрій
+firefoxview-pinned-tabs =
+    .title = Прикріплення вкладок
+firefoxview-tabs =
+    .title = Вкладки
+
+## These tooltips will be displayed when hovering over a pinned tab on the Open Tabs page
+## Variables:
+##  $tabTitle (string) - Title of pinned tab that will be opened when selected
+
+firefoxview-opentabs-pinned-tab =
+    .title = Перейти до { $tabTitle }
+# This tooltip will be shown for a pinned tab whose URL is currently bookmarked.
+firefoxview-opentabs-bookmarked-pinned-tab =
+    .title = Перейти до (у закладках) { $tabTitle }
+
+## These tooltips will be displayed when hovering over an unpinned Open Tab
+## Variables:
+##   $url (string) - URL of tab that will be opened when selected
+
+# This tooltip will be shown for an unpinned tab whose URL is currently bookmarked.
+firefoxview-opentabs-bookmarked-tab =
+    .title = (У закладках) { $url }

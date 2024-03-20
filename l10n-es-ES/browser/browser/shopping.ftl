@@ -64,6 +64,11 @@ shopping-message-bar-analysis-in-progress-with-amount = Comprobando la calidad d
 shopping-message-bar-page-not-supported =
     .heading = No podemos comprobar estas reseñas.
     .message = Lamentablemente, no podemos verificar la calidad de las reseñas para ciertos tipos de productos. Por ejemplo, tarjetas de regalo y transmisión de vídeo, música y juegos.
+shopping-message-bar-keep-closed-header =
+    .heading = ¿Mantener cerrado?
+    .message = Puede actualizar su configuración para mantener Review Checker cerrado por defecto. Actualmente, se abre de forma automática.
+shopping-message-bar-keep-closed-dismiss-button = No, gracias.
+shopping-message-bar-keep-closed-accept-button = Sí, mantener cerrado.
 
 ## Strings for the product review snippets card
 
@@ -89,6 +94,19 @@ shopping-settings-recommendations-toggle =
 shopping-settings-recommendations-learn-more2 = Verá anuncios ocasionales de productos relevantes. Solo publicitamos productos con reseñas fiables. <a data-l10n-name="review-quality-url">Saber más</a>
 shopping-settings-opt-out-button = Desactivar el verificador de reseñas
 powered-by-fakespot = El verificador de reseñas funciona con <a data-l10n-name="fakespot-link">{ -fakespot-brand-full-name }</a>.
+shopping-settings-auto-open-toggle =
+    .label = Abrir automáticamente el Verificador de reseñas
+# Description text for regions where we support three sites. Sites are limited to Amazon, Walmart and Best Buy.
+# Variables:
+#   $firstSite (String) - The first shopping page name
+#   $secondSite (String) - The second shopping page name
+#   $thirdSite (String) - The third shopping page name
+shopping-settings-auto-open-description-three-sites = Cuando vea productos en { $firstSite }, { $secondSite } y { $thirdSite }
+# Description text for regions where we support only one site (e.g. currently used in FR/DE with Amazon).
+# Variables:
+#   $currentSite (String) - The current shopping page name
+shopping-settings-auto-open-description-single-site = Cuando vea productos en { $currentSite }
+shopping-settings-sidebar-enabled-state = El verificador de reseñas está <strong>activado</strong>
 
 ## Strings for the adjusted rating component
 
@@ -173,6 +191,22 @@ shopping-callout-pdp-opted-in-title = ¿Son fiables estas reseñas? Descúbralo 
 shopping-callout-pdp-opted-in-subtitle = Abra el verificador de reseñas para ver una calificación ajustada con las reseñas no fiables eliminadas. Además, vea los aspectos más destacados de auténticas reseñas recientes.
 shopping-callout-closed-not-opted-in-title = Un clic para obtener reseñas fiables
 shopping-callout-closed-not-opted-in-subtitle = Pruebe el verificador de reseñas cada vez que vea la etiqueta de precio. Obtenga rápidamente información de compradores reales, antes de comprar.
+shopping-callout-closed-not-opted-in-revised-title = Un clic para obtener reseñas fiables
+shopping-callout-closed-not-opted-in-revised-subtitle = Simplemente haga clic en el icono de etiqueta de precio en la barra de direcciones para volver al Verificador de reseñas.
+shopping-callout-closed-not-opted-in-revised-button = Entendido
+shopping-callout-not-opted-in-reminder-title = Compre con confianza
+shopping-callout-not-opted-in-reminder-subtitle = ¿No está seguro si las revisiones de un producto son reales o falsas? El verificador de reseñas de { -brand-product-name } puede ayudarle.
+shopping-callout-not-opted-in-reminder-open-button = Abrir el verificador de reseñas
+shopping-callout-not-opted-in-reminder-close-button = Descartar
+shopping-callout-not-opted-in-reminder-ignore-checkbox = No volver a mostrar
+shopping-callout-not-opted-in-reminder-img-alt =
+    .aria-label = Ilustración abstracta de tres reseñas de productos. Una de ellas tiene un símbolo de advertencia que indica que puede no ser fiable.
+shopping-callout-disabled-auto-open-title = El verificador de reseñas ahora está cerrado de forma predeterminada
+shopping-callout-disabled-auto-open-subtitle = Haga clic en el ícono de la etiqueta de precio en la barra de direcciones cada vez que desee verificar si puede confiar en las reseñas de un producto.
+shopping-callout-disabled-auto-open-button = Entendido
+shopping-callout-opted-out-title = El verificador de reseñas está desactivado
+shopping-callout-opted-out-subtitle = Para volver a activarlo, haga clic en el icono de la etiqueta de precio en la barra de direcciones y siga las indicaciones.
+shopping-callout-opted-out-button = Entendido
 
 ## Onboarding message strings.
 
@@ -188,7 +222,6 @@ shopping-onboarding-dynamic-subtitle-1 = Vea si son fiables son las reseñas de 
 #   $currentSite (str) - The current shopping page name
 shopping-onboarding-single-subtitle = Compruebe lo fiables que son las reseñas de productos en <b>{ $currentSite }</b> antes de comprar. El verificador de reseñas, una función experimental de { -brand-product-name }, está integrado directamente en el navegador.
 shopping-onboarding-body = Utilizando la tecnología de { -fakespot-brand-full-name }, le ayudamos a evitar reseñas sesgadas y no auténticas. Nuestro modelo de IA siempre mejora para protegerle mientras compra. <a data-l10n-name="learn_more">Saber más</a>
-shopping-onboarding-opt-in-privacy-policy-and-terms-of-use2 = Al seleccionar “{ shopping-onboarding-opt-in-button }“, acepta la <a data-l10n-name="privacy_policy">política de privacidad</a> de { -fakespot-brand-name } y <a data-l10n-name="terms_of_use">los términos de uso</a>.
 shopping-onboarding-opt-in-privacy-policy-and-terms-of-use3 = Al seleccionar “{ shopping-onboarding-opt-in-button }“, acepta la <a data-l10n-name="privacy_policy">política de privacidad</a> de { -brand-product-name } y <a data-l10n-name="terms_of_use">los términos de uso</a> de { -fakespot-brand-name }.
 shopping-onboarding-opt-in-button = Si, probarlo
 shopping-onboarding-not-now-button = Ahora no

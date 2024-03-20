@@ -10,8 +10,22 @@ contentanalysis-slow-agent-dialog-title = Innehållsanalys pågår
 # Variables:
 #   $content - Description of the content being warned about, such as "clipboard" or "aFile.txt"
 contentanalysis-slow-agent-dialog-body = Innehållsanalys analyserar resursen "{ $content }"
+contentanalysis-slow-agent-dialog-header = Genomsökning pågår
+# Variables:
+#   $agent - The name of the DLP agent doing the analysis
+#   $filename - Name of the file being analyzed, such as "aFile.txt"
+contentanalysis-slow-agent-dialog-body-file = { $agent } granskar "{ $filename }" mot din organisations datapolicy. Detta kan ta en stund.
+# Variables:
+#   $agent - The name of the DLP agent doing the analysis
+contentanalysis-slow-agent-dialog-body-clipboard = { $agent } granskar vad du klistrat in mot din organisations datapolicy. Detta kan ta en stund.
+# Note that this is shown when the user drag and drops text into the browser.
+# Variables:
+#   $agent - The name of the DLP agent doing the analysis
+contentanalysis-slow-agent-dialog-body-dropped-text = { $agent } granskar texten du släppte mot din organisations datapolicy. Detta kan ta en stund.
 contentanalysis-operationtype-clipboard = urklipp
 contentanalysis-operationtype-dropped-text = släppt text
+#   $filename - The filename associated with the request, such as "aFile.txt"
+contentanalysis-customdisplaystring-description = uppladdning av "{ $filename }"
 contentanalysis-warndialogtitle = Det här innehållet kan vara osäkert
 # Variables:
 #   $content - Description of the content being warned about, such as "clipboard" or "aFile.txt"
@@ -29,3 +43,6 @@ contentanalysis-block-message = Din organisation använder programvara för att 
 # Variables:
 #   $content - Description of the content being blocked, such as "clipboard" or "aFile.txt"
 contentanalysis-error-message = Ett fel uppstod i kommunikationen med programvaran för att förhindra dataförlust. Överföring nekad för resurs: { $content }.
+contentanalysis-inprogress-quit-title = Avsluta { -brand-shorter-name }?
+contentanalysis-inprogress-quit-message = Flera åtgärder pågår. Om du avslutar { -brand-shorter-name } kommer dessa åtgärder inte att slutföras.
+contentanalysis-inprogress-quit-yesbutton = Ja, avsluta

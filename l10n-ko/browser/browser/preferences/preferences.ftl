@@ -218,6 +218,10 @@ preferences-web-appearance-choice-input-dark =
 # This can appear when using windows HCM or "Override colors: always" without
 # system colors.
 preferences-web-appearance-override-warning = 선택한 색상이 웹 사이트 화면 배색보다 우선합니다. <a data-l10n-name="colors-link">색상 관리</a>
+# This can appear when using windows HCM or "Override colors: always" without
+# system colors.
+preferences-web-appearance-override-warning2 =
+    .message = 선택한 색상이 웹 사이트 화면 배색보다 우선합니다.
 # This message contains one link. It can be moved within the sentence as needed
 # to adapt to your language, but should not be changed.
 preferences-web-appearance-footer = <a data-l10n-name="themes-link">확장 기능 및 테마</a>에서 { -brand-short-name } 테마 관리
@@ -245,6 +249,8 @@ preferences-default-zoom-value =
 preferences-zoom-text-only =
     .label = 글자 크기만 조정
     .accesskey = t
+preferences-text-zoom-override-warning =
+    .message = 경고: "글자 크기만 조정"을 선택하고 기본 확대/축소가 100%로 설정되지 않은 경우, 일부 사이트나 콘텐츠가 깨질 수 있습니다.
 language-header = 언어
 choose-language-description = 웹 페이지를 표시할 기본 언어 선택
 choose-button =
@@ -550,6 +556,9 @@ home-prefs-shortcuts-by-option-sponsored =
 home-prefs-recommended-by-header =
     .label = { $provider } 추천
 home-prefs-recommended-by-description-new = { -brand-product-name } 제품군의 일부인 { $provider }에서 선별한 뛰어난 콘텐츠
+home-prefs-recommended-by-header-generic =
+    .label = 추천 이야기
+home-prefs-recommended-by-description-generic = { -brand-product-name } 제품군이 선별한 뛰어난 콘텐츠
 
 ##
 
@@ -856,9 +865,9 @@ forms-breach-alerts =
     .accesskey = b
 forms-breach-alerts-learn-more-link = 더 알아보기
 preferences-relay-integration-checkbox =
-    .label = 이메일 주소를 보호하기 위해 { -relay-brand-name } 이메일 마스크 제안
+    .label = 이메일 주소를 보호하기 위해 { -relay-brand-name } 이메일 가리기 제안
 preferences-relay-integration-checkbox2 =
-    .label = 이메일 주소를 보호하기 위해 { -relay-brand-name } 이메일 마스크 제안
+    .label = 이메일 주소를 보호하기 위해 { -relay-brand-name } 이메일 가리기 제안
     .accesskey = r
 relay-integration-learn-more-link = 더 알아보기
 # Checkbox which controls filling saved logins into fields automatically when they appear, in some cases without user interaction.
@@ -1064,10 +1073,10 @@ addressbar-locbar-engines-option =
 addressbar-locbar-quickactions-option =
     .label = 빠른 작업
     .accesskey = Q
+addressbar-suggestions-settings = 검색 엔진 제안 설정 변경
 addressbar-locbar-showrecentsearches-option =
     .label = 최근 검색 표시
     .accesskey = r
-addressbar-suggestions-settings = 검색 엔진 제안 설정 변경
 addressbar-quickactions-learn-more = 더 알아보기
 
 ## Privacy Section - Content Blocking
