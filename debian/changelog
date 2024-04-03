@@ -1,3 +1,9 @@
+firefox (123.0-1deepin3) unstable; urgency=medium
+
+  * fix: enable vaapi in vendor.js
+
+ -- Chang Yang <yangchang@deepin.org>  Wed, 03 Apr 2024 18:04:42 +0800
+
 firefox (123.0-1deepin2) unstable; urgency=medium
 
   * fix: loong64: Keep unsigned 32-bit parameter sign-extended in register
