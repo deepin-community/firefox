@@ -1,3 +1,10 @@
+firefox (124.0-1deepin2) unstable; urgency=medium
+
+  * fix: enable vaapi in vendor.js.
+   
+
+ -- LiChengGang <lichenggang@uniontech.com>  Wed, 03 Apr 2024 20:25:09 +0800
+
 firefox (124.0-1deepin1) unstable; urgency=medium
 
   [ Chang Yang ]
