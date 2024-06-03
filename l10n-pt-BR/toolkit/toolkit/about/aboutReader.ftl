@@ -4,7 +4,6 @@
 
 about-reader-loading = Carregando…
 about-reader-load-error = Falha ao carregar artigo da página
-
 about-reader-color-scheme-light = Claro
     .title = Esquema de cores claro
 about-reader-color-scheme-dark = Escuro
@@ -13,7 +12,32 @@ about-reader-color-scheme-sepia = Sépia
     .title = Esquema de cores sépia
 about-reader-color-scheme-auto = Automático
     .title = Esquema de cores automático
-
+about-reader-color-theme-light = Claro
+    .title = Tema de cores claras
+about-reader-color-theme-dark = Escuro
+    .title = Tema de cores escuras
+about-reader-color-theme-sepia = Sépia
+    .title = Tema de cores sépia
+about-reader-color-theme-auto = Automático
+    .title = Tema automático de cores
+about-reader-color-theme-gray = Cinza
+    .title = Tema de cores cinza
+about-reader-color-theme-contrast = Contraste
+    .title = Tema de cores com contraste
+about-reader-color-theme-custom = Cores personalizadas
+    .title = Tema de cores personalizadas
+about-reader-color-light-theme = Claro
+    .title = Tema claro
+about-reader-color-dark-theme = Escuro
+    .title = Tema escuro
+about-reader-color-sepia-theme = Sépia
+    .title = Tema sépia
+about-reader-color-auto-theme = Automático
+    .title = Tema automático
+about-reader-color-gray-theme = Cinza
+    .title = Tema cinza
+about-reader-color-contrast-theme = Contraste
+    .title = Tema de contraste
 # An estimate for how long it takes to read an article,
 # expressed as a range covering both slow and fast readers.
 # Variables:
@@ -49,4 +73,54 @@ about-reader-font-type-sans-serif = Sem serifa
 
 about-reader-toolbar-close = Fechar leitor
 about-reader-toolbar-type-controls = Controle de fontes
+about-reader-toolbar-color-controls = Cores
+about-reader-toolbar-text-layout-controls = Texto e layout
+about-reader-toolbar-theme-controls = Tema
 about-reader-toolbar-savetopocket = Salvar no { -pocket-brand-name }
+
+## Reader View colors menu
+
+about-reader-colors-menu-header = Tema
+about-reader-fxtheme-tab = Padrão
+about-reader-customtheme-tab = Personalizado
+
+## These are used as labels for the custom theme color pickers.
+## The .title element is used to make the editing functionality
+## clear and give context for screen reader users.
+
+about-reader-custom-colors-foreground = Texto
+    .title = Editar cor
+about-reader-custom-colors-background = Fundo
+    .title = Editar cor
+about-reader-custom-colors-unvisited-links = Links não visitados
+    .title = Editar cor
+about-reader-custom-colors-visited-links = Links visitados
+    .title = Editar cor
+about-reader-custom-colors-selection-highlight = Destacador para ler em voz alta
+    .title = Editar cor
+about-reader-custom-colors-reset-button = Restaurar padrão
+
+## Reader View improved text and layout menu
+
+about-reader-layout-header = Layout
+about-reader-advanced-layout-header = Avançado
+about-reader-slider-label-width-narrow = Estreito
+about-reader-slider-label-width-wide = Largo
+about-reader-slider-label-spacing-narrow = Estreito
+about-reader-slider-label-spacing-standard = Normal
+about-reader-slider-label-spacing-wide = Largo
+about-reader-content-width-label =
+    .label = Largura do conteúdo
+about-reader-line-spacing-label =
+    .label = Espaçamento entre linhas
+about-reader-character-spacing-label =
+    .label = Espaçamento entre caracteres
+about-reader-word-spacing-label =
+    .label = Espaçamento entre palavras
+about-reader-text-alignment-label = Alinhamento de texto
+about-reader-text-alignment-left =
+    .title = Alinhar texto à esquerda
+about-reader-text-alignment-center =
+    .title = Centralizar texto
+about-reader-text-alignment-right =
+    .title = Alinhar texto à direita

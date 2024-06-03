@@ -161,7 +161,7 @@ void MediaControlKeyManager::SetSupportedMediaKeys(
     const MediaKeysArray& aSupportedKeys) {
   mSupportedKeys.Clear();
   for (const auto& key : aSupportedKeys) {
-    LOG_INFO("Supported keys=%s", ToMediaControlKeyStr(key));
+    LOG_INFO("Supported keys=%s", GetEnumString(key).get());
     mSupportedKeys.AppendElement(key);
   }
   if (mEventSource && mEventSource->IsOpened()) {
@@ -184,10 +184,16 @@ void MediaControlKeyManager::SetEnablePictureInPictureMode(bool aIsEnabled) {
   }
 }
 
-void MediaControlKeyManager::SetPositionState(const PositionState& aState) {
-  LOG_INFO("Set PositionState, duration=%f, playbackRate=%f, position=%f",
-           aState.mDuration, aState.mPlaybackRate,
-           aState.mLastReportedPlaybackPosition);
+void MediaControlKeyManager::SetPositionState(
+    const Maybe<PositionState>& aState) {
+  if (aState) {
+    LOG_INFO("Set PositionState, duration=%f, playbackRate=%f, position=%f",
+             aState->mDuration, aState->mPlaybackRate,
+             aState->mLastReportedPlaybackPosition);
+  } else {
+    LOG_INFO("Set PositionState, Nothing");
+  }
+
   if (mEventSource && mEventSource->IsOpened()) {
     mEventSource->SetPositionState(aState);
   }

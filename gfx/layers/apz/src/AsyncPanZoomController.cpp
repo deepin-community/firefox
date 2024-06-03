@@ -106,6 +106,10 @@ static mozilla::LazyLogModule sApzCtlLog("apz.controller");
   APZC_LOG("%p(%s scrollId=%" PRIu64 "): " fmt, (apzc),   \
            (apzc)->IsRootContent() ? "root" : "subframe", \
            (apzc)->GetScrollId(), ##__VA_ARGS__)
+#define APZC_LOGV_DETAIL(fmt, apzc, ...)                   \
+  APZC_LOGV("%p(%s scrollId=%" PRIu64 "): " fmt, (apzc),   \
+            (apzc)->IsRootContent() ? "root" : "subframe", \
+            (apzc)->GetScrollId(), ##__VA_ARGS__)
 
 #define APZC_LOG_FM_COMMON(fm, prefix, level, ...)                 \
   if (MOZ_LOG_TEST(sApzCtlLog, level)) {                           \
@@ -237,11 +241,6 @@ typedef PlatformSpecificStateBase
  * \li\b apz.drag.enabled
  * Setting this pref to true will cause APZ to handle mouse-dragging of
  * scrollbar thumbs.
- *
- * \li\b apz.drag.initial.enabled
- * Setting this pref to true will cause APZ to try to handle mouse-dragging
- * of scrollbar thumbs without an initial round-trip to content to start it
- * if possible. Only has an effect if apz.drag.enabled is also true.
  *
  * \li\b apz.drag.touch.enabled
  * Setting this pref to true will cause APZ to handle touch-dragging of
@@ -1306,10 +1305,13 @@ nsEventStatus AsyncPanZoomController::OnTouchStart(
       if (RefPtr<GeckoContentController> controller =
               GetGeckoContentController()) {
         MOZ_ASSERT(GetCurrentTouchBlock());
-        controller->NotifyAPZStateChange(
-            GetGuid(), APZStateChange::eStartTouch,
+        const bool canBePanOrZoom =
             GetCurrentTouchBlock()->GetOverscrollHandoffChain()->CanBePanned(
-                this),
+                this) ||
+            (ZoomConstraintsAllowDoubleTapZoom() &&
+             GetCurrentTouchBlock()->TouchActionAllowsDoubleTapZoom());
+        controller->NotifyAPZStateChange(
+            GetGuid(), APZStateChange::eStartTouch, canBePanOrZoom,
             Some(GetCurrentTouchBlock()->GetBlockId()));
       }
       mLastTouch.mTimeStamp = mTouchStartTime = aEvent.mTimeStamp;
@@ -2248,6 +2250,11 @@ CSSRect AsyncPanZoomController::GetCurrentScrollRangeInCssPixels() const {
   return Metrics().CalculateScrollRange();
 }
 
+bool AsyncPanZoomController::AllowOneTouchPinch() const {
+  return StaticPrefs::apz_one_touch_pinch_enabled() &&
+         ZoomConstraintsAllowZoom();
+}
+
 // Return whether or not the underlying layer can be scrolled on either axis.
 bool AsyncPanZoomController::CanScroll(const InputData& aEvent) const {
   ParentLayerPoint delta = GetDeltaForEvent(aEvent);
@@ -3103,7 +3110,7 @@ nsEventStatus AsyncPanZoomController::GenerateSingleTap(
         // touch block caused a `click` event or not, thus for long-tap events,
         // it's not necessary.
         if (aType != TapType::eLongTapUp) {
-          touch->SetSingleTapOccurred();
+          touch->SetSingleTapState(apz::SingleTapState::WasClick);
         }
       }
       // Because this may be being running as part of
@@ -3134,7 +3141,7 @@ void AsyncPanZoomController::OnTouchEndOrCancel() {
     MOZ_ASSERT(GetCurrentTouchBlock());
     controller->NotifyAPZStateChange(
         GetGuid(), APZStateChange::eEndTouch,
-        GetCurrentTouchBlock()->SingleTapOccurred(),
+        static_cast<int>(GetCurrentTouchBlock()->SingleTapState()),
         Some(GetCurrentTouchBlock()->GetBlockId()));
   }
 }
@@ -3150,6 +3157,21 @@ nsEventStatus AsyncPanZoomController::OnSingleTapUp(
         GetCurrentTouchBlock()->TouchActionAllowsDoubleTapZoom())) {
     return GenerateSingleTap(TapType::eSingleTap, aEvent.mPoint,
                              aEvent.modifiers);
+  }
+
+  // Ignore the event if it does not have valid local coordinates.
+  // GenerateSingleTap will not send a tap in this case.
+  if (!ConvertToGecko(aEvent.mPoint)) {
+    return nsEventStatus_eIgnore;
+  }
+
+  // Here we need to wait for the call to OnSingleTapConfirmed, we need to tell
+  // it to ActiveElementManager so that we can do element activation once
+  // ActiveElementManager got a single tap event later.
+  if (TouchBlockState* touch = GetCurrentTouchBlock()) {
+    if (!touch->IsDuringFastFling()) {
+      touch->SetSingleTapState(apz::SingleTapState::NotYetDetermined);
+    }
   }
   return nsEventStatus_eIgnore;
 }
@@ -4734,7 +4756,7 @@ bool AsyncPanZoomController::UpdateAnimation(
   // Even if there's no animation, if we have a scroll offset change pending due
   // to the frame delay, we need to keep compositing.
   if (mLastSampleTime == aSampleTime) {
-    APZC_LOG_DETAIL(
+    APZC_LOGV_DETAIL(
         "UpdateAnimation short-circuit, animation=%p, pending frame-delayed "
         "offset=%d\n",
         this, mAnimation.get(), HavePendingFrameDelayedOffset());
@@ -4754,8 +4776,8 @@ bool AsyncPanZoomController::UpdateAnimation(
   // so that e.g. a main-thread animation can stay in sync with user-driven
   // scrolling or a compositor animation.
   bool needComposite = SampleCompositedAsyncTransform(aProofOfLock);
-  APZC_LOG_DETAIL("UpdateAnimation needComposite=%d mAnimation=%p\n", this,
-                  needComposite, mAnimation.get());
+  APZC_LOGV_DETAIL("UpdateAnimation needComposite=%d mAnimation=%p\n", this,
+                   needComposite, mAnimation.get());
 
   TimeDuration sampleTimeDelta = aSampleTime - mLastSampleTime;
   mLastSampleTime = aSampleTime;
@@ -5295,10 +5317,10 @@ void AsyncPanZoomController::UpdateCheckerboardEvent(
     const MutexAutoLock& aProofOfLock, uint32_t aMagnitude) {
   if (mCheckerboardEvent && mCheckerboardEvent->RecordFrameInfo(aMagnitude)) {
     // This checkerboard event is done. Report some metrics to telemetry.
-    mozilla::glean::gfx_checkerboard::severity.AccumulateSamples(
-        {mCheckerboardEvent->GetSeverity()});
-    mozilla::glean::gfx_checkerboard::peak_pixel_count.AccumulateSamples(
-        {mCheckerboardEvent->GetPeak()});
+    mozilla::glean::gfx_checkerboard::severity.AccumulateSingleSample(
+        mCheckerboardEvent->GetSeverity());
+    mozilla::glean::gfx_checkerboard::peak_pixel_count.AccumulateSingleSample(
+        mCheckerboardEvent->GetPeak());
     mozilla::glean::gfx_checkerboard::duration.AccumulateRawDuration(
         mCheckerboardEvent->GetDuration());
 
@@ -5581,17 +5603,6 @@ void AsyncPanZoomController::NotifyLayersUpdated(
         aScrollMetadata.GetOverscrollBehavior());
   }
 
-  if (needToReclampScroll) {
-    // Whenever scrollable rect or composition bounds has changed, we need to
-    // re-clamp the scroll offset since it may be out of bounds. Also note that
-    // we need to re-clamp before updating new scroll offsets from content since
-    // we will use the last scroll offset to reflect the new offsets.
-    ClampAndSetVisualScrollOffset(Metrics().GetVisualScrollOffset());
-    for (auto& sampledState : mSampledState) {
-      sampledState.ClampVisualScrollOffset(Metrics());
-    }
-  }
-
   bool instantScrollMayTriggerTransform = false;
   bool scrollOffsetUpdated = false;
   bool smoothScrollRequested = false;
@@ -5738,20 +5749,11 @@ void AsyncPanZoomController::NotifyLayersUpdated(
       relativeDelta =
           Some(Metrics().ApplyPureRelativeScrollUpdateFrom(scrollUpdate));
       Metrics().RecalculateLayoutViewportOffset();
-    } else if (scrollUpdate.GetType() == ScrollUpdateType::MergeableAbsolute) {
-      APZC_LOG("%p mergeable updating scroll offset from %s to %s\n", this,
-               ToString(Metrics().GetVisualScrollOffset()).c_str(),
-               ToString(scrollUpdate.GetDestination()).c_str());
-      relativeDelta =
-          Some(Metrics().ApplyAbsoluteScrollUpdateFrom(scrollUpdate).second);
-      Metrics().RecalculateLayoutViewportOffset();
-      scrollOffsetUpdated = true;
     } else {
       APZC_LOG("%p updating scroll offset from %s to %s\n", this,
                ToString(Metrics().GetVisualScrollOffset()).c_str(),
                ToString(scrollUpdate.GetDestination()).c_str());
-      auto [offsetChanged, _] =
-          Metrics().ApplyAbsoluteScrollUpdateFrom(scrollUpdate);
+      bool offsetChanged = Metrics().ApplyScrollUpdateFrom(scrollUpdate);
       Metrics().RecalculateLayoutViewportOffset();
 
       if (offsetChanged || scrollUpdate.GetMode() != ScrollMode::Instant ||
@@ -5785,6 +5787,15 @@ void AsyncPanZoomController::NotifyLayersUpdated(
       // in a state where things are out of sync.
       CancelAnimation();
       didCancelAnimation = true;
+    }
+  }
+
+  if (aIsFirstPaint || needToReclampScroll) {
+    // The scrollable rect or composition bounds may have changed in a way that
+    // makes our local scroll offset out of bounds, so clamp it.
+    ClampAndSetVisualScrollOffset(Metrics().GetVisualScrollOffset());
+    for (auto& sampledState : mSampledState) {
+      sampledState.ClampVisualScrollOffset(Metrics());
     }
   }
 

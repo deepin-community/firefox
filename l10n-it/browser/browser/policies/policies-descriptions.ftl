@@ -67,9 +67,12 @@ policy-DisableDefaultBrowserAgent = Impedisci al “default browser agent” di 
 
 policy-DisableDeveloperTools = Blocca accesso agli strumenti di sviluppo.
 
+policy-DisableEncryptedClientHello = Disattiva la funzione TLS Encrypted Client Hello (ECH).
+
 policy-DisableFeedbackCommands = Disattiva i comandi per inviare feedback dal menu Aiuto (“Invia feedback…” e “Segnala un sito ingannevole…”).
 
 policy-DisableFirefoxAccounts = Disattiva i servizi basati sugli { -fxaccount-brand-name }, incluso Sync.
+policy-DisableFirefoxAccounts1 = Disattiva i servizi basati su account, incluso Sync.
 
 # Firefox Screenshots is the name of the feature, and should not be translated.
 policy-DisableFirefoxScreenshots = Disattiva Firefox Screenshots.
@@ -184,6 +187,8 @@ policy-PasswordManagerEnabled = Attiva il salvataggio delle password nel gestore
 
 policy-PasswordManagerExceptions = Impedisci a { -brand-short-name } di salvare le password per determinati siti.
 
+policy-PostQuantumKeyAgreementEnabled = Attiva l’accettazione chiave post-quantistica per TLS.
+
 # PDF.js and PDF should not be translated
 policy-PDFjs = Disattiva o configura PDF.js, il lettore integrato di PDF di { -brand-short-name }.
 
@@ -222,6 +227,8 @@ policy-StartDownloadsInTempDirectory = Forza l’avvio dei download in una carte
 
 policy-SupportMenu = Aggiungi una voce di menu personalizzata nel menu Aiuto.
 
+policy-TranslateEnabled = Attiva o disattiva la traduzione di pagine web.
+
 policy-UserMessaging = Non visualizzare determinati messaggi all’utente.
 
 policy-UseSystemPrintDialog = Stampa utilizzando la finestra di dialogo di sistema.
@@ -230,4 +237,3 @@ policy-UseSystemPrintDialog = Stampa utilizzando la finestra di dialogo di siste
 policy-WebsiteFilter = Impedisci l’accesso a determinati siti web. Consulta la documentazione per ulteriori dettagli sul formato da utilizzare.
 
 policy-Windows10SSO = Permetti l’utilizzo di Windows single sign-on per account Microsoft, account aziendale o dell’istituto di istruzione.
-

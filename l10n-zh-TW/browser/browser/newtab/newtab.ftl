@@ -258,9 +258,6 @@ newtab-custom-row-selector =
 newtab-custom-sponsored-sites = 贊助捷徑
 newtab-custom-pocket-title = 由 { -pocket-brand-name } 推薦
 newtab-custom-pocket-subtitle = 由 { -brand-product-name } 的姊妹作 { -pocket-brand-name } 精心策展的內容
-newtab-custom-pocket-toggle =
-    .label = 由 { -pocket-brand-name } 推薦
-    .description = 由 { -brand-product-name } 的姊妹作 { -pocket-brand-name } 精心策展的內容
 newtab-custom-stories-toggle =
     .label = 推薦的文章
     .description = 由 { -brand-product-name } 產品家族精選的內容文章
@@ -273,3 +270,24 @@ newtab-custom-recent-toggle =
     .description = 近期造訪過的網站與內容精選
 newtab-custom-close-button = 關閉
 newtab-custom-settings = 管理更多設定
+
+## New Tab Wallpapers
+
+newtab-wallpaper-title = 背景圖
+newtab-wallpaper-reset = 還原為預設值
+newtab-wallpaper-light-red-panda = 小貓熊
+newtab-wallpaper-light-mountain = 白色山脈
+newtab-wallpaper-light-sky = 紫色與粉紅色的天空
+newtab-wallpaper-light-color = 藍色、粉紅與黃色圖型
+newtab-wallpaper-light-landscape = 藍霧山景
+newtab-wallpaper-light-beach = 棕櫚樹海灘
+newtab-wallpaper-dark-aurora = 極光
+newtab-wallpaper-dark-color = 紅色與藍色圖型
+newtab-wallpaper-dark-panda = 隱藏在森林中的小貓熊
+newtab-wallpaper-dark-sky = 城市的夜空景觀
+newtab-wallpaper-dark-mountain = 山景
+newtab-wallpaper-dark-city = 紫色城市風景
+# Variables
+#   $author_string (String) - The name of the creator of the photo.
+#   $webpage_string (String) - The name of the webpage where the photo is located.
+newtab-wallpaper-attribution = 相片由 <a data-l10n-name="name-link">{ $author_string }</a> 於 <a data-l10n-name="webpage-link">{ $webpage_string }</a> 提供

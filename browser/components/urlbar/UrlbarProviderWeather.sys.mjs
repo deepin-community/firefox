@@ -115,7 +115,7 @@ class ProviderWeather extends UrlbarProvider {
       return false;
     }
 
-    return keywords.has(queryContext.searchString.trim().toLocaleLowerCase());
+    return keywords.has(queryContext.trimmedLowerCaseSearchString);
   }
 
   /**
@@ -157,17 +157,13 @@ class ProviderWeather extends UrlbarProvider {
    *
    * @param {UrlbarResult} result
    *   The result whose view will be updated.
-   * @param {Map} idsByName
-   *   A Map from an element's name, as defined by the provider; to its ID in
-   *   the DOM, as defined by the browser.This is useful if parts of the view
-   *   update depend on element IDs, as some ARIA attributes do.
    * @returns {object} An object describing the view update.
    */
-  getViewUpdate(result, idsByName) {
+  getViewUpdate(result) {
     return lazy.QuickSuggest.weather.getViewUpdate(result);
   }
 
-  onEngagement(state, queryContext, details, controller) {
+  onLegacyEngagement(state, queryContext, details, controller) {
     // Ignore engagements on other results that didn't end the session.
     if (details.result?.providerName != this.name && details.isSessionOngoing) {
       return;
@@ -247,7 +243,7 @@ class ProviderWeather extends UrlbarProvider {
    *   A non-empty string means the user picked the weather row or some part of
    *   it, and both impression and click telemetry will be recorded. The
    *   non-empty-string values come from the `details.selType` passed in to
-   *   `onEngagement()`; see `TelemetryEvent.typeFromElement()`.
+   *   `onLegacyEngagement()`; see `TelemetryEvent.typeFromElement()`.
    */
   #recordEngagementTelemetry(result, isPrivate, selType) {
     // Indexes recorded in quick suggest telemetry are 1-based, so add 1 to the

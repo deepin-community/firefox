@@ -104,7 +104,7 @@ using mozilla::ImagePoint from "Units.h";
 using mozilla::ImageIntSize from "Units.h";
 using mozilla::widget::ThemeChangeKind from "mozilla/widget/WidgetMessageUtils.h";
 using class mozilla::dom::MessagePort from "mozilla/dom/MessagePort.h";
-using class mozilla::dom::ipc::StructuredCloneData from "mozilla/dom/ipc/StructuredCloneData.h";
+[MoveOnly=data] using class mozilla::dom::ipc::StructuredCloneData from "mozilla/dom/ipc/StructuredCloneData.h";
 using mozilla::OriginAttributes from "mozilla/ipc/BackgroundUtils.h";
 using struct mozilla::layers::TextureFactoryIdentifier from "mozilla/layers/CompositorTypes.h";
 using mozilla::layers::CompositorOptions from "mozilla/layers/CompositorOptions.h";
@@ -188,7 +188,7 @@ struct SystemFontListEntry {
     uint8_t   index;
     FontVisibility visibility;
 };
-#elif defined(XP_MACOSX)
+#elif defined(XP_MACOSX) || defined(XP_IOS)
 // Used on Mac OS X to pass the list of font families (not faces)
 // from chrome to content processes.
 // The entryType field distinguishes several types of font family
@@ -470,8 +470,13 @@ struct IPCImage {
     ImageIntSize size;
 };
 
-union PClipboardReadRequestOrError {
-    PClipboardReadRequest;
+struct ClipboardReadRequest {
+    ManagedEndpoint<PClipboardReadRequestChild> childEndpoint;
+    nsCString[] availableTypes;
+};
+
+union ClipboardReadRequestOrError {
+    ClipboardReadRequest;
     nsresult;
 };
 
@@ -1057,8 +1062,6 @@ child:
 
     async PRemotePrintJob();
 
-    async PClipboardReadRequest(nsCString[] aTypes);
-
 parent:
     async SynchronizeLayoutHistoryState(MaybeDiscardedBrowsingContext aContext,
                                         nullable nsILayoutHistoryState aState);
@@ -1226,14 +1229,16 @@ parent:
                       MaybeDiscardedWindowContext aRequestingWindowContext)
         returns (IPCTransferableData transferableData);
 
-    // Returns a list of formats supported by the clipboard
-    sync GetExternalClipboardFormats(int32_t aWhichClipboard, bool aPlainTextOnly) returns (nsCString[] aTypes);
-
     // Requests getting data from clipboard.
     async GetClipboardAsync(nsCString[] aTypes, int32_t aWhichClipboard,
                             MaybeDiscardedWindowContext aRequestingWindowContext,
                             nsIPrincipal aRequestingPrincipal)
-        returns (PClipboardReadRequestOrError aClipboardReadRequest);
+        returns (ClipboardReadRequestOrError aClipboardReadRequestOrError);
+
+    // Requests getting data from clipboard.
+    sync GetClipboardDataSnapshotSync(nsCString[] aTypes, int32_t aWhichClipboard,
+                                      MaybeDiscardedWindowContext aRequestingWindowContext)
+        returns (ClipboardReadRequestOrError aClipboardReadRequestOrError);
 
     // Clears the clipboard.
     async EmptyClipboard(int32_t aWhichClipboard);
@@ -1733,7 +1738,7 @@ parent:
      */
     async NotifyPositionStateChanged(
         MaybeDiscardedBrowsingContext aContext,
-        PositionState aState);
+        PositionState? aState);
 
     /**
      * This method will make canonical browsing context to update the count of
@@ -1869,8 +1874,18 @@ both:
     async DiscardBrowsingContext(MaybeDiscardedBrowsingContext aContext, bool aDoDiscard)
             returns (uint64_t unused);
 
+    /**
+     * aContext is the one that's taking the affect. Either the one that
+     * receives the focus, or the one that loses the focus.
+     *
+     * aAncestorBrowsingContextToFocus can only be non-null when
+     * aShouldClearAncestorFocus is true. This is the browsing context
+     * that receives the focus when aContext loses the focus.
+     */
     async AdjustWindowFocus(MaybeDiscardedBrowsingContext aContext,
-                            bool aIsVisible, uint64_t aActionId);
+                            bool aIsVisible, uint64_t aActionId,
+                            bool aShouldClearAncestorFocus,
+                            MaybeDiscardedBrowsingContext aAncestorBrowsingContextToFocus);
     async WindowClose(MaybeDiscardedBrowsingContext aContext,
                       bool aTrustedCaller);
     async WindowFocus(MaybeDiscardedBrowsingContext aContext,

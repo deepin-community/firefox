@@ -441,6 +441,12 @@ void GCRuntime::waitBackgroundSweepEnd() {
 
 void GCRuntime::startBackgroundFree() {
   AutoLockHelperThreadState lock;
+
+  if (lifoBlocksToFree.ref().isEmpty() &&
+      buffersToFreeAfterMinorGC.ref().empty()) {
+    return;
+  }
+
   freeTask.startOrRunIfIdle(lock);
 }
 
@@ -1194,18 +1200,19 @@ class ImmediateSweepWeakCacheTask : public GCParallelTask {
 };
 
 void GCRuntime::updateAtomsBitmap() {
-  DenseBitmap marked;
-  if (atomMarking.computeBitmapFromChunkMarkBits(rt, marked)) {
-    for (GCZonesIter zone(this); !zone.done(); zone.next()) {
-      atomMarking.refineZoneBitmapForCollectedZone(zone, marked);
+  size_t collectedZones = 0;
+  size_t uncollectedZones = 0;
+  for (ZonesIter zone(this, SkipAtoms); !zone.done(); zone.next()) {
+    if (zone->isCollecting()) {
+      collectedZones++;
+    } else {
+      uncollectedZones++;
     }
-  } else {
-    // Ignore OOM in computeBitmapFromChunkMarkBits. The
-    // refineZoneBitmapForCollectedZone call can only remove atoms from the
-    // zone bitmap, so it is conservative to just not call it.
   }
 
-  atomMarking.markAtomsUsedByUncollectedZones(rt);
+  atomMarking.refineZoneBitmapsForCollectedZones(this, collectedZones);
+
+  atomMarking.markAtomsUsedByUncollectedZones(this, uncollectedZones);
 
   // For convenience sweep these tables non-incrementally as part of bitmap
   // sweeping; they are likely to be much smaller than the main atoms table.
@@ -2393,6 +2400,14 @@ void GCRuntime::endSweepPhase(bool destroyingRuntime) {
   gcstats::AutoPhase ap(stats(), gcstats::PhaseKind::SWEEP);
 
   MOZ_ASSERT_IF(destroyingRuntime, !useBackgroundThreads);
+
+  // Release parallel marking threads for worker runtimes now we've finished
+  // marking. The main thread keeps the reservation as long as parallel marking
+  // is enabled.
+  if (!rt->isMainRuntime()) {
+    MOZ_ASSERT_IF(useParallelMarking, reservedMarkingThreads != 0);
+    releaseMarkingThreads();
+  }
 
   {
     gcstats::AutoPhase ap(stats(), gcstats::PhaseKind::DESTROY);

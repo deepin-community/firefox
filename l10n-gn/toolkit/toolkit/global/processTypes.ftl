@@ -17,6 +17,8 @@ process-type-privilegedmozilla = Mozilla ohecharamovéva tetepy
 process-type-extension = Jepysokue
 # process used to open file:// URLs
 process-type-file = Marandurenda pypeguáva
+# process used to instantiate new child processes
+process-type-forkserver = Mba’e’oka hakãmbýva
 # process used to isolate a webpage from other web pages
 # to improve security
 process-type-webisolated = Ñanduti retepy mombyrygua
@@ -41,6 +43,7 @@ process-type-socket = Moingeha
 process-type-rdd = RDD
 # process used to run some IPC actor in their own sandbox
 process-type-utility = Actor IPC pa’ũ guasúpe
+process-type-utility-actor-audio-decoder-generic = Mba’epu papapy’oha ha’ete’ỹva
 process-type-utility-actor-audio-decoder-applemedia = AppleMedia jeporurã
 process-type-utility-actor-audio-decoder-wmf = Windows Media Foundation jeporurã
 process-type-utility-actor-mf-media-engine = Media Foundation Engine jeporurã

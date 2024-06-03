@@ -55,6 +55,7 @@
 #include "vm/BytecodeUtil.h"  // JSDVG_IGNORE_STACK
 #include "vm/ErrorObject.h"
 #include "vm/ErrorReporting.h"
+#include "vm/FrameIter.h"
 #include "vm/JSFunction.h"
 #include "vm/JSObject.h"
 #include "vm/PlainObject.h"  // js::PlainObject
@@ -798,8 +799,14 @@ JS_PUBLIC_API void js::StopDrainingJobQueue(JSContext* cx) {
   cx->internalJobQueue->interrupt();
 }
 
+JS_PUBLIC_API void js::RestartDrainingJobQueue(JSContext* cx) {
+  MOZ_ASSERT(cx->internalJobQueue.ref());
+  cx->internalJobQueue->uninterrupt();
+}
+
 JS_PUBLIC_API void js::RunJobs(JSContext* cx) {
   MOZ_ASSERT(cx->jobQueue);
+  MOZ_ASSERT(cx->isEvaluatingModule == 0);
   cx->jobQueue->runJobs(cx);
   JS::ClearKeptObjects(cx);
 }
@@ -886,7 +893,6 @@ void InternalJobQueue::runJobs(JSContext* cx) {
     draining_ = false;
 
     if (interrupted_) {
-      interrupted_ = false;
       break;
     }
 
@@ -968,6 +974,7 @@ JSContext::JSContext(JSRuntime* runtime, const JS::ContextOptions& options)
 #ifdef DEBUG
       inUnsafeCallWithABI(this, false),
       hasAutoUnsafeCallWithABI(this, false),
+      liveArraySortDataInstances(this, 0),
 #endif
 #ifdef JS_SIMULATOR
       simulator_(this, nullptr),
@@ -993,11 +1000,11 @@ JSContext::JSContext(JSRuntime* runtime, const JS::ContextOptions& options)
 #else
       regExpSearcherLastLimit(this, 0),
 #endif
+      isEvaluatingModule(this, 0),
       frontendCollectionPool_(this),
       suppressProfilerSampling(false),
       tempLifoAlloc_(this, (size_t)TEMP_LIFO_ALLOC_PRIMARY_CHUNK_SIZE),
       debuggerMutations(this, 0),
-      ionPcScriptCache(this, nullptr),
       status(this, JS::ExceptionStatus::None),
       unwrappedException_(this),
       unwrappedExceptionStack_(this),
@@ -1040,6 +1047,9 @@ JSContext::~JSContext() {
 
   /* Free the stuff hanging off of cx. */
   MOZ_ASSERT(!resolvingList);
+
+  // Ensure we didn't leak memory for the ArraySortData vector.
+  MOZ_ASSERT(liveArraySortDataInstances == 0);
 
   if (dtoaState) {
     DestroyDtoaState(dtoaState);
@@ -1189,6 +1199,13 @@ SavedFrame* JSContext::getPendingExceptionStack() {
   return unwrappedExceptionStack();
 }
 
+#ifdef DEBUG
+const JS::Value& JSContext::getPendingExceptionUnwrapped() {
+  MOZ_ASSERT(isExceptionPending());
+  return unwrappedException();
+}
+#endif
+
 bool JSContext::isClosingGenerator() {
   return isExceptionPending() &&
          unwrappedException().isMagic(JS_GENERATOR_CLOSING);
@@ -1262,6 +1279,34 @@ void JSContext::resetJitStackLimit() {
 }
 
 void JSContext::initJitStackLimit() { resetJitStackLimit(); }
+
+JSScript* JSContext::currentScript(jsbytecode** ppc,
+                                   AllowCrossRealm allowCrossRealm) {
+  if (ppc) {
+    *ppc = nullptr;
+  }
+
+  // Fast path: there are no JS frames on the stack if there's no activation.
+  if (!activation()) {
+    return nullptr;
+  }
+
+  FrameIter iter(this);
+  if (iter.done() || !iter.hasScript()) {
+    return nullptr;
+  }
+
+  JSScript* script = iter.script();
+  if (allowCrossRealm == AllowCrossRealm::DontAllow &&
+      script->realm() != realm()) {
+    return nullptr;
+  }
+
+  if (ppc) {
+    *ppc = iter.pc();
+  }
+  return script;
+}
 
 #ifdef JS_CRASH_DIAGNOSTICS
 void ContextChecks::check(AbstractFramePtr frame, int argIndex) {

@@ -719,14 +719,33 @@ void HTMLEditor::UpdateRootElement() {
 
 nsresult HTMLEditor::FocusedElementOrDocumentBecomesEditable(
     Document& aDocument, Element* aElement) {
+  const bool isInDesignMode =
+      (IsInDesignMode() && (!aElement || aElement->IsInDesignMode()));
+
   // If we should've already handled focus event, selection limiter should not
-  // be set.  Therefore, if it's set, we should do nothing here.
+  // be set.  However, IMEStateManager is not notified the pseudo focus change
+  // in this case. Therefore, we need to notify IMEStateManager of this.
   if (GetSelectionAncestorLimiter()) {
+    if (isInDesignMode) {
+      return NS_OK;
+    }
+    // Although editor is already initialized due to re-used, ISM may not
+    // create IME content observer yet. So we have to create it.
+    IMEState newState;
+    nsresult rv = GetPreferredIMEState(&newState);
+    if (NS_FAILED(rv)) {
+      NS_WARNING("EditorBase::GetPreferredIMEState() failed");
+      return NS_OK;
+    }
+    if (const RefPtr<Element> focusedElement = GetFocusedElement()) {
+      MOZ_ASSERT(focusedElement == aElement);
+      IMEStateManager::UpdateIMEState(newState, focusedElement, *this);
+    }
     return NS_OK;
   }
   // If we should be in the design mode, we want to handle focus event fired
   // on the document node.  Therefore, we should emulate it here.
-  if (IsInDesignMode() && (!aElement || aElement->IsInDesignMode())) {
+  if (isInDesignMode) {
     MOZ_ASSERT(&aDocument == GetDocument());
     nsresult rv = OnFocus(aDocument);
     NS_WARNING_ASSERTION(NS_SUCCEEDED(rv), "HTMLEditor::OnFocus() failed");
@@ -3754,10 +3773,14 @@ nsresult HTMLEditor::InsertLinkAroundSelectionAsAction(
     return EditorBase::ToGenericNSResult(rv);
   }
 
-  nsAutoString href;
-  anchor->GetHref(href);
-  if (href.IsEmpty()) {
-    return NS_OK;
+  // XXX Is this ok? Does this just want to check that we're a link? If so
+  // there are faster ways to do this.
+  {
+    nsAutoCString href;
+    anchor->GetHref(href);
+    if (href.IsEmpty()) {
+      return NS_OK;
+    }
   }
 
   AutoPlaceholderBatch treatAsOneTransaction(
@@ -5949,14 +5972,23 @@ bool HTMLEditor::IsEmpty() const {
     return true;
   }
 
-  // XXX Oddly, we check body or document element's state instead of
-  //     active editing host.  Must be a bug.
-  Element* bodyOrDocumentElement = GetRoot();
-  if (!bodyOrDocumentElement) {
-    return true;
+  const Element* activeElement =
+      GetDocument() ? GetDocument()->GetActiveElement() : nullptr;
+  const Element* editingHostOrBodyOrRootElement =
+      activeElement && activeElement->IsEditable()
+          ? ComputeEditingHost(*activeElement, LimitInBodyElement::No)
+          : ComputeEditingHost(LimitInBodyElement::No);
+  if (MOZ_UNLIKELY(!editingHostOrBodyOrRootElement)) {
+    // If there is no active element nor no selection range in the document,
+    // let's check entire the document as what we do traditionally.
+    editingHostOrBodyOrRootElement = GetRoot();
+    if (!editingHostOrBodyOrRootElement) {
+      return true;
+    }
   }
 
-  for (nsIContent* childContent = bodyOrDocumentElement->GetFirstChild();
+  for (nsIContent* childContent =
+           editingHostOrBodyOrRootElement->GetFirstChild();
        childContent; childContent = childContent->GetNextSibling()) {
     if (!childContent->IsText() || childContent->Length()) {
       return false;

@@ -243,6 +243,9 @@ class QuotaManager final : public BackgroundThreadObject {
   Result<nsCOMPtr<nsIFile>, nsresult> GetOriginDirectory(
       const OriginMetadata& aOriginMetadata) const;
 
+  Result<bool, nsresult> DoesOriginDirectoryExist(
+      const OriginMetadata& aOriginMetadata) const;
+
   static nsresult CreateDirectoryMetadata(
       nsIFile& aDirectory, int64_t aTimestamp,
       const OriginMetadata& aOriginMetadata);
@@ -264,6 +267,9 @@ class QuotaManager final : public BackgroundThreadObject {
   Result<OriginMetadata, nsresult> GetOriginMetadata(nsIFile* aDirectory);
 
   Result<Ok, nsresult> RemoveOriginDirectory(nsIFile& aDirectory);
+
+  Result<bool, nsresult> DoesClientDirectoryExist(
+      const ClientMetadata& aClientMetadata) const;
 
   RefPtr<UniversalDirectoryLockPromise> OpenStorageDirectory(
       const Nullable<PersistenceType>& aPersistenceType,
@@ -727,7 +733,8 @@ class QuotaManager final : public BackgroundThreadObject {
 
   nsCOMPtr<mozIStorageConnection> mStorageConnection;
 
-  EnumeratedArray<Client::Type, Client::TYPE_MAX, nsCString> mShutdownSteps;
+  EnumeratedArray<Client::Type, nsCString, size_t(Client::TYPE_MAX)>
+      mShutdownSteps;
   LazyInitializedOnce<const TimeStamp> mShutdownStartedAt;
 
   // Accesses to mQuotaManagerShutdownSteps must be protected by mQuotaMutex.

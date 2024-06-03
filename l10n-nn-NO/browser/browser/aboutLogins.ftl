@@ -275,6 +275,12 @@ about-logins-confirm-remove-all-sync-dialog-title2 =
         [one] Fjerne { $count } passord frå alle einingar?
        *[other] Fjerne alle { $count } passord frå alle einingar?
     }
+# Message for modal to confirm the removal of saved passwords when user IS synced.
+about-logins-confirm-remove-all-sync-dialog-message3 =
+    { $count ->
+        [1] Dette vil fjerne passordet som er lagra i { -brand-short-name } på alle dei synkroniserte einingane dine. Dette vil også fjerne alle varsel om datalekkasjer som vert vist her. Du kan ikkje angre denne handlinga.
+       *[other] This will remove all passwords saved to { -brand-short-name } on all your synced devices. This will also remove any breach alerts that appear here. You cannot undo this action.
+    }
 
 ##
 
@@ -282,6 +288,9 @@ about-logins-confirm-export-dialog-title = Eksporter innloggingar og passord
 about-logins-confirm-export-dialog-message = Passorda dine vert lagra som lesbar tekst (t.d. DårlegP@ss0rd), slik at alle som kan åpne den eksporterte fila kan sjå dei.
 about-logins-confirm-export-dialog-confirm-button = Eksporter…
 about-logins-confirm-export-dialog-title2 = Ein merknad om eksport av passord
+about-logins-confirm-export-dialog-message2 =
+    Når du eksporterer, vert passorda dine lagra i ei fil med lesbar tekst.
+    Når du er ferdig med å bruke fila, anbefalar vi at du slettar henne slik at andre som brukar denne eininga ikkje kan sjå passorda dine.
 about-logins-confirm-export-dialog-confirm-button2 = Hald fram med eksport
 about-logins-alert-import-title = Import fullført
 about-logins-alert-import-message = Vis detaljert importoversikt
@@ -377,6 +386,21 @@ about-logins-import-dialog-items-no-change =
     { $count ->
        *[other] <span>Duplikate innloggingar funne:</span> <span data-l10n-name="count">{ $count }</span> <span data-l10n-name="meta">(ikkje importerte)</span>
     }
+about-logins-import-dialog-items-added2 =
+    { $count ->
+        [one] <span>Nytt passord lagt til: </span> <span data-l10n-name="count">{ $count }</span>
+       *[other] <span>Nye passord lagt til: </span> <span data-l10n-name="count">{ $count }</span>
+    }
+about-logins-import-dialog-items-modified2 =
+    { $count ->
+        [one] <span>Eksisterande element oppdatert:</span> <span data-l10n-name="count">{ $count }</span>
+       *[other] <span>Eksisterande element oppdatert:</span> <span data-l10n-name="count">{ $count }</span>
+    }
+about-logins-import-dialog-items-no-change2 =
+    { $count ->
+        [one] <span>Duplikat element funne:</span> <span data-l10n-name="count">{ $count }</span> <span data-l10n-name="meta">(ikkje importert)</span >
+       *[other] <span>Duplikate element funne:</span> <span data-l10n-name="count">{ $count }</span> <span data-l10n-name="meta">(ikkje importert)</span >
+    }
 about-logins-import-dialog-items-error =
     { $count ->
        *[other] <span>Feil:</span> <span data-l10n-name="count">{ $count }</span> <span data-l10n-name="meta">(ikkje importerte)</span>
@@ -397,6 +421,7 @@ about-logins-import-dialog-error-try-import-again = Prøv å importere ein gong 
 about-logins-import-dialog-error-cancel = Avbryt
 about-logins-import-report-title = Importsamandrag
 about-logins-import-report-description = Innloggingar og passord importerte til { -brand-short-name }.
+about-logins-import-report-description2 = Passord importerte til { -brand-short-name }.
 #
 # Variables:
 #  $number (number) - The number of the row
@@ -404,6 +429,7 @@ about-logins-import-report-row-index = Rad { $number }
 about-logins-import-report-row-description-no-change = Duplikat: Nøyaktig samsvar med eksisterande innlogging
 about-logins-import-report-row-description-modified = Eksisterande innlogging oppdatert
 about-logins-import-report-row-description-added = Ny innlogging lagt til
+about-logins-import-report-row-description-no-change2 = Duplikat: Nøyaktig samsvar med eksisterande oppføring
 about-logins-import-report-row-description-modified2 = Eksisterande oppføring oppdatert
 about-logins-import-report-row-description-added2 = Nytt passord lagt til
 about-logins-import-report-row-description-error = Feil: Manglar felt

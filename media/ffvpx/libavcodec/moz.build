@@ -20,8 +20,10 @@ LOCAL_INCLUDES += ['/modules/fdlibm/inexact-math-override']
 SharedLibrary('mozavcodec')
 SOURCES += [
     'allcodecs.c',
+    'audio_frame_queue.c',
     'avcodec.c',
     'avdct.c',
+    'avfft.c',
     'avpacket.c',
     'bitstream.c',
     'bitstream_filters.c',
@@ -46,7 +48,9 @@ SOURCES += [
     'jrevdct.c',
     'libopus.c',
     'libopusdec.c',
+    'libopusenc.c',
     'libvorbisdec.c',
+    'libvorbisenc.c',
     'log2_tab.c',
     'mpegaudio.c',
     'mpegaudiodata.c',
@@ -144,11 +148,6 @@ if not CONFIG["MOZ_SYSTEM_LIBVPX"]:
 else:
   CXXFLAGS += CONFIG["MOZ_LIBVPX_CFLAGS"]
   OS_LIBS += CONFIG["MOZ_LIBVPX_LIBS"]
-
-if CONFIG['MOZ_LIBAV_FFT']:
-    SOURCES += [
-        'avfft.c',
-    ]
 
 SYMBOLS_FILE = 'avcodec.symbols'
 NoVisibilityFlags()

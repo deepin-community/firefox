@@ -161,6 +161,9 @@ webrtc-allow-share-screen-with-file = ¿Emoneĩ ko marandurenda ohechávo mba’
 # another audio output connection.
 webrtc-allow-share-speaker-with-file = ¿Emoneĩ ko marandurenda oiporúvo ambue ñe’ẽatãha?
 webrtc-allow-share-camera-and-microphone-with-file = ¿Emoneĩ ko marandurenda oiporúvo ta’ãnganohẽha ha ñe’ẽatãha?
+webrtc-allow-share-camera-and-audio-capture-with-file = ¿Emoneĩ ko marandurenda toiporu ta’ãnganohẽha ha tohendu mba’epu tendaykepegua?
+webrtc-allow-share-screen-and-microphone-with-file = ¿Emoneĩ marandurenda toiporu ne ñe’ẽatãha ha tohecha mba’erechaha?
+webrtc-allow-share-screen-and-audio-capture-with-file = ¿Emoneĩ marandurenda tohendu mba’epu tendaykegua ha tohecha mba’erechaha?
 
 ## Variables:
 ##   $origin (String): the first party origin.

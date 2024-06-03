@@ -3,16 +3,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 <html:template id="appMenu-viewCache">
-  <panelview id="appMenu-mainView" class="PanelUI-subView">
-    <vbox class="panel-subview-body">
-      <toolbarbutton id="appMenu-whatsnew-button"
-                     class="subviewbutton subviewbutton-iconic subviewbutton-nav"
-                     hidden="true"
-                     closemenu="none"
-                     oncommand="PanelUI.showSubView('PanelUI-whatsNew', this)"/>
-    </vbox>
-  </panelview>
-
   <!-- This is a placeholder app menu which should be replaced with the "real"
        Proton app menu before the Proton pref starts getting enabled. -->
   <panelview id="appMenu-protonMainView" class="PanelUI-subView"
@@ -38,6 +28,13 @@
           </vbox>
         </toolbarbutton>
       </toolbaritem>
+      <toolbarbutton id="appMenu-profiles-button"
+                     class="subviewbutton subviewbutton-nav"
+                     data-l10n-id="appmenuitem-profiles"
+                     data-l10n-args='{ "profilename": "" }'
+                     closemenu="none"
+                     oncommand="gProfiles.updateView(this)"
+                     hidden="true"/>
       <toolbarseparator id="appMenu-fxa-separator" class="proton-zap"/>
       <toolbarbutton id="appMenu-new-tab-button2"
                      class="subviewbutton"
@@ -127,7 +124,7 @@
 # in the middle of the fullscreen transition otherwise.
                        oncommand="
                          this.closest('panel').hidePopup();
-                         setTimeout(() => BrowserFullScreen(), 0);
+                         setTimeout(() => BrowserCommands.fullScreen(), 0);
                        "
                        tooltip="dynamic-shortcut-tooltip">
            <observes element="View:FullScreen" attribute="checked"/>
@@ -210,6 +207,39 @@
                    class="subviewbutton panel-subview-footer-button"
                    data-l10n-id="appmenu-manage-history"
                    oncommand="PlacesCommandHook.showPlacesOrganizer('History'); CustomizableUI.hidePanelForNode(this);"/>
+  </panelview>
+
+  <panelview id="PanelUI-profiles" flex="1">
+    <vbox class="panel-subview-body">
+      <vbox id="current-profile">
+        <image id="profile-icon-image"></image>
+        <h2 id="profile-name"></h2>
+        <hbox id="this-profile-buttons">
+          <toolbarbutton id="profiles-edit-this-delete-button"
+                         class="subviewbutton toolbarbutton-1"
+                         oncommand="switchToTabHavingURI('about:profilemanager', true)"/>
+          <toolbarbutton id="profiles-delete-this-profile-button"
+                         class="subviewbutton toolbarbutton-1"
+                         oncommand="switchToTabHavingURI('about:profilemanager', true)"/>
+        </hbox>
+      </vbox>
+      <toolbarseparator/>
+      <vbox id="profiles-list"></vbox>
+      <toolbarseparator/>
+      <toolbarbutton id="profiles-close-profile-button"
+                     class="subviewbutton"
+                     data-l10n-id="appmenu-close-profile"
+                     data-l10n-args='{ "profilename": "" }'
+                     oncommand=""/>
+      <toolbarbutton id="profiles-create-profile-button"
+                     class="subviewbutton"
+                     data-l10n-id="appmenu-create-profile"
+                     oncommand="switchToTabHavingURI('about:profilemanager', true)"/>
+      <toolbarbutton id="profiles-manage-profiles-button"
+                     class="subviewbutton"
+                     data-l10n-id="appmenu-manage-profiles"
+                     oncommand="switchToTabHavingURI('about:profilemanager', true)"/>
+    </vbox>
   </panelview>
 
   <panelview id="appMenu-library-recentlyClosedTabs"/>
@@ -717,29 +747,6 @@
                      data-l10n-id="appmenuitem-downloads"
                      oncommand="DownloadsPanel.showDownloadsHistory();"/>
     </vbox>
-  </panelview>
-
-  <panelview id="PanelUI-whatsNew" class="PanelUI-subView" mainview-with-header="true">
-    <hbox id="PanelUI-whatsNew-title" class="panel-header">
-      <html:h1>
-        <html:span data-l10n-id="whatsnew-panel-header"></html:span>
-      </html:h1>
-    </hbox>
-    <toolbarseparator/>
-    <vbox class="panel-subview-body">
-      <toolbaritem id="PanelUI-whatsNew-content"
-                   orient="vertical"
-                   smoothscroll="false">
-        <html:div id="PanelUI-whatsNew-message-container" role="document">
-          <!-- What's New messages will be rendered here -->
-        </html:div>
-      </toolbaritem>
-    </vbox>
-    <toolbarseparator/>
-    <checkbox id="panelMenu-toggleWhatsNew"
-              class="panelMenu-toggleWhatsNew-checkbox"
-              onclick="ToolbarPanelHub.toggleWhatsNewPref(event)"
-              data-l10n-id="whatsnew-panel-footer-checkbox"/>
   </panelview>
 
   <panelview id="reset-pbm-panel" class="PanelUI-subView" role="document">

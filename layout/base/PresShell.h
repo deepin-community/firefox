@@ -531,6 +531,12 @@ class PresShell final : public nsStubDocumentObserver,
                                 dom::HTMLSlotElement* aOldSlot,
                                 dom::HTMLSlotElement* aNewSlot);
 
+  /**
+   * Handles when a CustomStateSet state is about to be removed or added.
+   */
+  void CustomStatesWillChange(Element& aElement);
+  void CustomStateChanged(Element& aElement, nsAtom* aState);
+
   void PostRecreateFramesFor(Element*);
   void RestyleForAnimation(Element*, RestyleHint);
 
@@ -1604,6 +1610,18 @@ class PresShell final : public nsStubDocumentObserver,
   MOZ_CAN_RUN_SCRIPT nsresult ScrollToAnchor();
 
   /**
+   * Finds text fragments ranes in the document, highlights the ranges and
+   * scrolls to the last text fragment range on the page if
+   * `aScrollToTextFragment` is true.
+   *
+   * @param aScrollToTextFragment If true, scrolls the view to the last text
+   *                              fragment.
+   * @return True if scrolling happened.
+   */
+  MOZ_CAN_RUN_SCRIPT bool HighlightAndGoToTextFragment(
+      bool aScrollToTextFragment);
+
+  /**
    * When scroll anchoring adjusts positions in the root frame during page load,
    * it may move our scroll position in the root frame.
    *
@@ -2440,6 +2458,14 @@ class PresShell final : public nsStubDocumentObserver,
                                              nsEventStatus* aEventStatus);
 
     /**
+     * Maybe dispatch mouse events for aTouchEnd.  This should be called after
+     * aTouchEndEvent is dispatched into the DOM.
+     */
+    MOZ_CAN_RUN_SCRIPT void MaybeSynthesizeCompatMouseEventsForTouchEnd(
+        const WidgetTouchEvent* aTouchEndEvent,
+        const nsEventStatus* aStatus) const;
+
+    /**
      * MaybeDiscardOrDelayKeyboardEvent() may discared or put aGUIEvent into
      * the delayed event queue if it's a keyboard event and if we should do so.
      * If aGUIEvent is not a keyboard event, this does nothing.
@@ -2821,8 +2847,10 @@ class PresShell final : public nsStubDocumentObserver,
      * and then, this cleans up the state of mPresShell and aEvent.
      *
      * @param aEvent            The handled event.
+     * @param aStatus           The status of aEvent.  Must not be nullptr.
      */
-    MOZ_CAN_RUN_SCRIPT void FinalizeHandlingEvent(WidgetEvent* aEvent);
+    MOZ_CAN_RUN_SCRIPT void FinalizeHandlingEvent(WidgetEvent* aEvent,
+                                                  const nsEventStatus* aStatus);
 
     /**
      * AutoCurrentEventInfoSetter() pushes and pops current event info of

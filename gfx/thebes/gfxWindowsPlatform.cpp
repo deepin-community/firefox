@@ -82,6 +82,7 @@
 #include "mozilla/layers/DeviceAttachmentsD3D11.h"
 #include "mozilla/WindowsProcessMitigations.h"
 #include "D3D11Checks.h"
+#include "mozilla/ScreenHelperWin.h"
 
 using namespace mozilla;
 using namespace mozilla::gfx;
@@ -258,8 +259,7 @@ class D3DSharedTexturesReporter final : public nsIMemoryReporter {
 
 NS_IMPL_ISUPPORTS(D3DSharedTexturesReporter, nsIMemoryReporter)
 
-gfxWindowsPlatform::gfxWindowsPlatform()
-    : mRenderMode(RENDER_GDI), mSupportsHDR(false) {
+gfxWindowsPlatform::gfxWindowsPlatform() : mRenderMode(RENDER_GDI) {
   // If win32k is locked down then we can't use COM STA and shouldn't need it.
   // Also, we won't be using any GPU memory in this process.
   if (!IsWin32kLockedDown()) {
@@ -400,7 +400,11 @@ void gfxWindowsPlatform::InitAcceleration() {
   // CanUseHardwareVideoDecoding depends on DeviceManagerDx state,
   // so update the cached value now.
   UpdateCanUseHardwareVideoDecoding();
-  UpdateSupportsHDR();
+
+  // Our ScreenHelperWin also depends on DeviceManagerDx state.
+  if (XRE_IsParentProcess() && !gfxPlatform::IsHeadless()) {
+    ScreenHelperWin::RefreshScreens();
+  }
 
   RecordStartupTelemetry();
 }
@@ -529,57 +533,6 @@ void gfxWindowsPlatform::UpdateRenderMode() {
           "GFX: Failed to update reference draw target after device reset");
     }
   }
-}
-
-void gfxWindowsPlatform::UpdateSupportsHDR() {
-  // TODO: This function crashes content processes, for reasons that are not
-  // obvious from the crash reports. For now, this function can only be executed
-  // by the parent process. Therefore SupportsHDR() will always return false for
-  // content processes, as noted in the header.
-  if (!XRE_IsParentProcess()) {
-    return;
-  }
-
-  // Set mSupportsHDR to true if any of the DeviceManager outputs have both:
-  // 1) greater than 8-bit color
-  // 2) a colorspace that uses BT2020
-  DeviceManagerDx* dx = DeviceManagerDx::Get();
-  nsTArray<DXGI_OUTPUT_DESC1> outputs = dx->EnumerateOutputs();
-
-  for (auto& output : outputs) {
-    if (output.BitsPerColor <= 8) {
-      continue;
-    }
-
-    switch (output.ColorSpace) {
-      case DXGI_COLOR_SPACE_RGB_STUDIO_G22_NONE_P2020:
-      case DXGI_COLOR_SPACE_YCBCR_STUDIO_G22_LEFT_P2020:
-      case DXGI_COLOR_SPACE_YCBCR_FULL_G22_LEFT_P2020:
-      case DXGI_COLOR_SPACE_RGB_FULL_G2084_NONE_P2020:
-      case DXGI_COLOR_SPACE_YCBCR_STUDIO_G2084_LEFT_P2020:
-      case DXGI_COLOR_SPACE_RGB_STUDIO_G2084_NONE_P2020:
-      case DXGI_COLOR_SPACE_YCBCR_STUDIO_G22_TOPLEFT_P2020:
-      case DXGI_COLOR_SPACE_YCBCR_STUDIO_G2084_TOPLEFT_P2020:
-      case DXGI_COLOR_SPACE_RGB_FULL_G22_NONE_P2020:
-      case DXGI_COLOR_SPACE_YCBCR_STUDIO_GHLG_TOPLEFT_P2020:
-      case DXGI_COLOR_SPACE_YCBCR_FULL_GHLG_TOPLEFT_P2020:
-#ifndef __MINGW32__
-      // Windows MinGW has an older dxgicommon.h that doesn't define
-      // these enums. We'd like to define them ourselves in that case,
-      // but there's no compilable way to add new enums to an existing
-      // enum type. So instead we just don't check for these values.
-      case DXGI_COLOR_SPACE_RGB_STUDIO_G24_NONE_P2020:
-      case DXGI_COLOR_SPACE_YCBCR_STUDIO_G24_LEFT_P2020:
-      case DXGI_COLOR_SPACE_YCBCR_STUDIO_G24_TOPLEFT_P2020:
-#endif
-        mSupportsHDR = true;
-        return;
-      default:
-        break;
-    }
-  }
-
-  mSupportsHDR = false;
 }
 
 mozilla::gfx::BackendType gfxWindowsPlatform::GetContentBackendFor(

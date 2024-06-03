@@ -569,7 +569,7 @@ urlbar-result-action-visit = Truy cập
 # $container (String): the name of the target container
 urlbar-result-action-switch-tab-with-container = Chuyển sang thẻ · <span>{ $container }</span>
 # Allows the user to visit a URL that was previously copied to the clipboard.
-urlbar-result-action-visit-from-clipboard = Truy cập từ khay nhớ tạm
+urlbar-result-action-visit-from-clipboard = Truy cập từ bộ nhớ tạm
 # Directs a user to press the Tab key to perform a search with the specified
 # engine.
 # Variables
@@ -597,6 +597,12 @@ urlbar-result-action-copy-to-clipboard = Sao chép
 # Variables
 #  $result (String): the string representation for a formula result
 urlbar-result-action-calculator-result = = { $result }
+
+## Strings used for buttons in the urlbar
+
+# Label prompting user to search with a particular search engine.
+#  $engine (String): the name of a search engine that searches a specific site
+urlbar-result-search-with = Tìm với { $engine }
 
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
@@ -904,6 +910,15 @@ data-reporting-notification-button =
     .accesskey = C
 # Label for the indicator shown in the private browsing window titlebar.
 private-browsing-indicator-label = Duyệt web riêng tư
+# Tooltip for the indicator shown in the window titlebar when content analysis is active.
+# Variables:
+#   $agentName (String): The name of the DLP agent that is connected
+content-analysis-indicator-tooltip =
+    .tooltiptext = Ngăn ngừa mất dữ liệu (DLP) bởi { $agentName }. Nhấp vào đây để biết thêm thông tin.
+content-analysis-panel-title = Bảo vệ dữ liệu
+# Variables:
+#   $agentName (String): The name of the DLP agent that is connected
+content-analysis-panel-text = Tổ chức của bạn sử dụng { $agentName } để bảo vệ chống mất dữ liệu. <a data-l10n-name="info">Tìm hiểu thêm</a>
 
 ## Unified extensions (toolbar) button
 

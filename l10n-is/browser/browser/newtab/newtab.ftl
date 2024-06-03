@@ -178,7 +178,7 @@ newtab-section-menu-remove-section = Fjarlægja kafla
 newtab-section-menu-collapse-section = Fella kafla
 newtab-section-menu-expand-section = Stækka hluta
 newtab-section-menu-manage-section = Stjórna kafla
-newtab-section-menu-manage-webext = Stjórna viðbót
+newtab-section-menu-manage-webext = Stjórna forritsauka
 newtab-section-menu-add-topsite = Bæta við toppsíðu
 newtab-section-menu-add-search-engine = Bæta við leitarvél
 newtab-section-menu-move-up = Færa upp
@@ -262,9 +262,6 @@ newtab-custom-row-selector =
 newtab-custom-sponsored-sites = Kostaðar flýtileiðir
 newtab-custom-pocket-title = Mælt með af { -pocket-brand-name }
 newtab-custom-pocket-subtitle = Úrvalsefni í umsjón { -pocket-brand-name }, hluta af { -brand-product-name } fjölskyldunni
-newtab-custom-pocket-toggle =
-    .label = Mælt með af { -pocket-brand-name }
-    .description = Úrvalsefni í umsjón { -pocket-brand-name }, hluta af { -brand-product-name } fjölskyldunni
 newtab-custom-stories-toggle =
     .label = Sögur sem mælt er með
     .description = Úrvalsefni sem safnað hefur verið af aðstandendum { -brand-product-name }
@@ -277,3 +274,24 @@ newtab-custom-recent-toggle =
     .description = Úrval af nýlegum síðum og efni
 newtab-custom-close-button = Loka
 newtab-custom-settings = Sýsla með fleiri stillingar
+
+## New Tab Wallpapers
+
+newtab-wallpaper-title = Bakgrunnar
+newtab-wallpaper-reset = Endurstilla á sjálfgefið
+newtab-wallpaper-light-red-panda = Rauð panda
+newtab-wallpaper-light-mountain = Hvítt fjall
+newtab-wallpaper-light-sky = Himinn með fjólubláum og bleikum skýjum
+newtab-wallpaper-light-color = Blá, bleik og gul form
+newtab-wallpaper-light-landscape = Fjallalandslag í bláu mistri
+newtab-wallpaper-light-beach = Strönd með pálmatré
+newtab-wallpaper-dark-aurora = Norðurljós
+newtab-wallpaper-dark-color = Rauð og blá form
+newtab-wallpaper-dark-panda = Rauð panda falin í skógi
+newtab-wallpaper-dark-sky = Borgarlandslag með næturhimni
+newtab-wallpaper-dark-mountain = Fjöllótt landslag
+newtab-wallpaper-dark-city = Fjólublátt borgarlandslag
+# Variables
+#   $author_string (String) - The name of the creator of the photo.
+#   $webpage_string (String) - The name of the webpage where the photo is located.
+newtab-wallpaper-attribution = Ljósmynd eftir <a data-l10n-name="name-link">{ $author_string }</a> á <a data-l10n-name="webpage-link">{ $webpage_string }</a>

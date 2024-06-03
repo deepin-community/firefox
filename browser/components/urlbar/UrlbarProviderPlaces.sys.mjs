@@ -1472,10 +1472,8 @@ class ProviderPlaces extends UrlbarProvider {
 
   /**
    * Cancels a running query.
-   *
-   * @param {object} queryContext The query context object
    */
-  cancelQuery(queryContext) {
+  cancelQuery() {
     if (this._currentSearch) {
       this._currentSearch.stop();
     }
@@ -1519,7 +1517,7 @@ class ProviderPlaces extends UrlbarProvider {
     search.notifyResult(false);
   }
 
-  onEngagement(state, queryContext, details, controller) {
+  onLegacyEngagement(state, queryContext, details, controller) {
     let { result } = details;
     if (result?.providerName != this.name) {
       return;

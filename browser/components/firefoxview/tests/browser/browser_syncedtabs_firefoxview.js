@@ -29,7 +29,7 @@ add_task(async function test_unconfigured_initial_state() {
   });
   await withFirefoxView({}, async browser => {
     const { document } = browser.contentWindow;
-    await navigateToCategoryAndWait(document, "syncedtabs");
+    await navigateToViewAndWait(document, "syncedtabs");
     Services.obs.notifyObservers(null, UIState.ON_UPDATE);
 
     let syncedTabsComponent = document.querySelector(
@@ -85,7 +85,7 @@ add_task(async function test_signed_in() {
 
   await withFirefoxView({}, async browser => {
     const { document } = browser.contentWindow;
-    await navigateToCategoryAndWait(document, "syncedtabs");
+    await navigateToViewAndWait(document, "syncedtabs");
     Services.obs.notifyObservers(null, UIState.ON_UPDATE);
 
     let syncedTabsComponent = document.querySelector(
@@ -148,7 +148,7 @@ add_task(async function test_no_synced_tabs() {
 
   await withFirefoxView({}, async browser => {
     const { document } = browser.contentWindow;
-    await navigateToCategoryAndWait(document, "syncedtabs");
+    await navigateToViewAndWait(document, "syncedtabs");
     Services.obs.notifyObservers(null, UIState.ON_UPDATE);
 
     let syncedTabsComponent = document.querySelector(
@@ -188,7 +188,7 @@ add_task(async function test_no_error_for_two_desktop() {
 
   await withFirefoxView({}, async browser => {
     const { document } = browser.contentWindow;
-    await navigateToCategoryAndWait(document, "syncedtabs");
+    await navigateToViewAndWait(document, "syncedtabs");
     Services.obs.notifyObservers(null, UIState.ON_UPDATE);
 
     let syncedTabsComponent = document.querySelector(
@@ -232,7 +232,7 @@ add_task(async function test_empty_state() {
 
   await withFirefoxView({ openNewWindow: true }, async browser => {
     const { document } = browser.contentWindow;
-    await navigateToCategoryAndWait(document, "syncedtabs");
+    await navigateToViewAndWait(document, "syncedtabs");
     Services.obs.notifyObservers(null, UIState.ON_UPDATE);
 
     let syncedTabsComponent = document.querySelector(
@@ -276,9 +276,12 @@ add_task(async function test_tabs() {
   });
 
   await withFirefoxView({ openNewWindow: true }, async browser => {
-    const { document } = browser.contentWindow;
-    await navigateToCategoryAndWait(document, "syncedtabs");
+    // Notify observers while in recent browsing. Once synced tabs is selected,
+    // it should have the updated data.
     Services.obs.notifyObservers(null, UIState.ON_UPDATE);
+
+    const { document } = browser.contentWindow;
+    await navigateToViewAndWait(document, "syncedtabs");
 
     let syncedTabsComponent = document.querySelector(
       "view-syncedtabs:not([slot=syncedtabs])"
@@ -309,7 +312,7 @@ add_task(async function test_tabs() {
     );
     ok(tabRow1[1].shadowRoot.textContent.includes, "Sandboxes - Sinon.JS");
     is(tabRow1.length, 2, "Correct number of rows are displayed.");
-    let tabRow2 = tabLists[1].shadowRoot.querySelectorAll("fxview-tab-row");
+    let tabRow2 = tabLists[1].rowEls;
     is(tabRow2.length, 2, "Correct number of rows are dispayed.");
     ok(tabRow1[0].shadowRoot.textContent.includes, "The Guardian");
     ok(tabRow1[1].shadowRoot.textContent.includes, "The Times");
@@ -365,7 +368,7 @@ add_task(async function test_empty_desktop_same_name() {
 
   await withFirefoxView({ openNewWindow: true }, async browser => {
     const { document } = browser.contentWindow;
-    await navigateToCategoryAndWait(document, "syncedtabs");
+    await navigateToViewAndWait(document, "syncedtabs");
     Services.obs.notifyObservers(null, UIState.ON_UPDATE);
 
     let syncedTabsComponent = document.querySelector(
@@ -413,7 +416,7 @@ add_task(async function test_empty_desktop_same_name_three() {
 
   await withFirefoxView({ openNewWindow: true }, async browser => {
     const { document } = browser.contentWindow;
-    await navigateToCategoryAndWait(document, "syncedtabs");
+    await navigateToViewAndWait(document, "syncedtabs");
     Services.obs.notifyObservers(null, UIState.ON_UPDATE);
 
     let syncedTabsComponent = document.querySelector(
@@ -459,7 +462,7 @@ add_task(async function search_synced_tabs() {
 
   await withFirefoxView({}, async browser => {
     const { document } = browser.contentWindow;
-    await navigateToCategoryAndWait(document, "syncedtabs");
+    await navigateToViewAndWait(document, "syncedtabs");
     Services.obs.notifyObservers(null, UIState.ON_UPDATE);
 
     let syncedTabsComponent = document.querySelector(
@@ -666,7 +669,7 @@ add_task(async function search_synced_tabs_recent_browsing() {
   });
   await withFirefoxView({}, async browser => {
     const { document } = browser.contentWindow;
-    await navigateToCategoryAndWait(document, "recentbrowsing");
+    await navigateToViewAndWait(document, "recentbrowsing");
     Services.obs.notifyObservers(null, UIState.ON_UPDATE);
 
     const recentBrowsing = document.querySelector("view-recentbrowsing");

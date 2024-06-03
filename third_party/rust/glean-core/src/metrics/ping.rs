@@ -6,6 +6,7 @@ use std::fmt;
 use std::sync::Arc;
 
 use crate::ping::PingMaker;
+use crate::upload::PingPayload;
 use crate::Glean;
 
 use uuid::Uuid;
@@ -26,8 +27,15 @@ struct InnerPing {
     pub send_if_empty: bool,
     /// Whether to use millisecond-precise start/end times.
     pub precise_timestamps: bool,
+    /// Whether to include the {client|ping}_info sections on assembly.
+    pub include_info_sections: bool,
     /// The "reason" codes that this ping can send
     pub reason_codes: Vec<String>,
+
+    /// Whether this ping is enabled.
+    /// Note: Data for disabled pings is still recorded.
+    /// It will not be cleared out on submit.
+    enabled: bool,
 }
 
 impl fmt::Debug for PingType {
@@ -37,6 +45,7 @@ impl fmt::Debug for PingType {
             .field("include_client_id", &self.0.include_client_id)
             .field("send_if_empty", &self.0.send_if_empty)
             .field("precise_timestamps", &self.0.precise_timestamps)
+            .field("include_info_sections", &self.0.include_info_sections)
             .field("reason_codes", &self.0.reason_codes)
             .finish()
     }
@@ -61,14 +70,37 @@ impl PingType {
         include_client_id: bool,
         send_if_empty: bool,
         precise_timestamps: bool,
+        include_info_sections: bool,
         reason_codes: Vec<String>,
+    ) -> Self {
+        Self::new_internal(
+            name,
+            include_client_id,
+            send_if_empty,
+            precise_timestamps,
+            include_info_sections,
+            reason_codes,
+            true,
+        )
+    }
+
+    pub(crate) fn new_internal<A: Into<String>>(
+        name: A,
+        include_client_id: bool,
+        send_if_empty: bool,
+        precise_timestamps: bool,
+        include_info_sections: bool,
+        reason_codes: Vec<String>,
+        enabled: bool,
     ) -> Self {
         let this = Self(Arc::new(InnerPing {
             name: name.into(),
             include_client_id,
             send_if_empty,
             precise_timestamps,
+            include_info_sections,
             reason_codes,
+            enabled,
         }));
 
         // Register this ping.
@@ -92,6 +124,10 @@ impl PingType {
 
     pub(crate) fn precise_timestamps(&self) -> bool {
         self.0.precise_timestamps
+    }
+
+    pub(crate) fn include_info_sections(&self) -> bool {
+        self.0.include_info_sections
     }
 
     /// Submits the ping for eventual uploading.
@@ -130,6 +166,11 @@ impl PingType {
     /// Whether the ping was succesfully assembled and queued.
     #[doc(hidden)]
     pub fn submit_sync(&self, glean: &Glean, reason: Option<&str>) -> bool {
+        if !self.0.enabled {
+            log::info!("Ping disabled: not submitting '{}' ping.", self.0.name);
+            return false;
+        }
+
         if !glean.is_upload_enabled() {
             log::info!("Glean disabled: not submitting any pings.");
             return false;
@@ -186,13 +227,17 @@ impl PingType {
                     // so both scenarios should be impossible.
                     let content =
                         ::serde_json::to_string(&ping.content).expect("ping serialization failed");
-                    glean.upload_manager.enqueue_ping(
-                        glean,
-                        ping.doc_id,
-                        ping.url_path,
-                        &content,
-                        Some(ping.headers),
-                    );
+                    // TODO: Shouldn't we consolidate on a single collected Ping representation?
+                    let ping = PingPayload {
+                        document_id: ping.doc_id.to_string(),
+                        upload_path: ping.url_path.to_string(),
+                        json_body: content,
+                        headers: Some(ping.headers),
+                        body_has_info_sections: self.0.include_info_sections,
+                        ping_name: self.0.name.to_string(),
+                    };
+
+                    glean.upload_manager.enqueue_ping(glean, ping);
                     return true;
                 }
 

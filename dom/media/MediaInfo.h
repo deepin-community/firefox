@@ -109,10 +109,14 @@ struct FlacCodecSpecificData {
   RefPtr<MediaByteBuffer> mStreamInfoBinaryBlob{new MediaByteBuffer};
 };
 
-struct Mp3CodecSpecificData {
+struct Mp3CodecSpecificData final {
   bool operator==(const Mp3CodecSpecificData& rhs) const {
     return mEncoderDelayFrames == rhs.mEncoderDelayFrames &&
            mEncoderPaddingFrames == rhs.mEncoderPaddingFrames;
+  }
+
+  auto MutTiedFields() {
+    return std::tie(mEncoderDelayFrames, mEncoderPaddingFrames);
   }
 
   // The number of frames that should be skipped from the beginning of the
@@ -219,14 +223,6 @@ inline already_AddRefed<MediaByteBuffer> ForceGetAudioCodecSpecificBlob(
 // information as a blob or where a blob is ambiguous.
 inline already_AddRefed<MediaByteBuffer> GetAudioCodecSpecificBlob(
     const AudioCodecSpecificVariant& v) {
-  MOZ_ASSERT(!v.is<NoCodecSpecificData>(),
-             "NoCodecSpecificData shouldn't be used as a blob");
-  MOZ_ASSERT(!v.is<AacCodecSpecificData>(),
-             "AacCodecSpecificData has 2 blobs internally, one should "
-             "explicitly be selected");
-  MOZ_ASSERT(!v.is<Mp3CodecSpecificData>(),
-             "Mp3CodecSpecificData shouldn't be used as a blob");
-
   return ForceGetAudioCodecSpecificBlob(v);
 }
 
@@ -470,7 +466,8 @@ class VideoInfo : public TrackInfo {
       rv.AppendPrintf("extra data: %zu bytes", mExtraData->Length());
     }
     rv.AppendPrintf("rotation: %d", static_cast<int>(mRotation));
-    rv.AppendPrintf("colors: %s", ColorDepthStrings[static_cast<int>(mColorDepth)]);
+    rv.AppendPrintf("colors: %s",
+                    ColorDepthStrings[static_cast<int>(mColorDepth)]);
     if (mColorSpace) {
       rv.AppendPrintf(
           "YUV colorspace: %s ",
@@ -486,7 +483,8 @@ class VideoInfo : public TrackInfo {
           "transfer function %s ",
           TransferFunctionStrings[static_cast<int>(mTransferFunction.value())]);
     }
-    rv.AppendPrintf("color range: %s", ColorRangeStrings[static_cast<int>(mColorRange)]);
+    rv.AppendPrintf("color range: %s",
+                    ColorRangeStrings[static_cast<int>(mColorRange)]);
     if (mImageRect) {
       rv.AppendPrintf("image rect: %dx%d", mImageRect->Width(),
                       mImageRect->Height());
@@ -564,7 +562,7 @@ class AudioInfo : public TrackInfo {
 
   bool operator==(const AudioInfo& rhs) const;
 
-  static const uint32_t MAX_RATE = 640000;
+  static const uint32_t MAX_RATE = 768000;
   static const uint32_t MAX_CHANNEL_COUNT = 256;
 
   bool IsValid() const override {

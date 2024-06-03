@@ -53,6 +53,7 @@ firefoxview-syncedtabs-loading-header = Дар ҳоли ҳамоҳангсозӣ
 firefoxview-syncedtabs-loading-description = Вақте ки раванд ба анҷом мерасад, шумо ҳамаи варақаҳоеро, ки дар дастгоҳҳои дигар кушодаед, дар ин ҷой мебинед. Ба наздикӣ ба ин ҷой баргардед.
 firefoxview-tabpickup-fxa-admin-disabled-header = Ташкилоти шумо имкони ҳамоҳангсозиро ғайрифаъол кард
 firefoxview-tabpickup-fxa-admin-disabled-description = «{ -brand-short-name }» наметавонад, ки варақаҳоро байни дастгоҳҳо ҳамоҳанг кунад, зеро ки маъмури шумо имкони ҳамоҳангсозиро ғайрифаъол кард.
+firefoxview-tabpickup-fxa-disabled-by-policy-description = «{ -brand-short-name }» наметавонад, ки варақаҳоро байни дастгоҳҳо ҳамоҳанг кунад, зеро ки ташкилоти шумо имкони ҳамоҳангсозиро ғайрифаъол кард.
 firefoxview-tabpickup-network-offline-header = Пайвастшавии Интернети худро тафтиш кунед
 firefoxview-tabpickup-network-offline-description = Агар шумо аз девори оташ (firewall) ё прокси (proxy) истифода баред, мутмаин шавед, ки браузери «{ -brand-short-name }» барои пайдо кардани дастрасӣ ба Интернет иҷозат дорад.
 firefoxview-tabpickup-network-offline-primarybutton = Аз нав кӯшиш кардан
@@ -186,6 +187,8 @@ firefoxview-search-results-count =
 firefoxview-search-results-empty = Ягон натиҷа барои «{ $query }» нест
 firefoxview-sort-history-by-date-label = Мураттаб кардан аз рӯи ном
 firefoxview-sort-history-by-site-label = Мураттаб кардан аз рӯи сомона
+firefoxview-sort-open-tabs-by-recency-label = Мураттаб кардан аз рӯи фаъолияти охирин
+firefoxview-sort-open-tabs-by-order-label = Мураттаб кардан аз рӯи тартиби варақаҳо
 # Variables:
 #   $url (string) - URL that will be opened in the new tab
 firefoxview-opentabs-tab-row =
@@ -248,6 +251,8 @@ firefoxview-recentlyclosed-empty-description-two = Барои дидани ва�
 
 firefoxview-syncedtabs-device-notabs = Дар ин дастгоҳ ягон варақаи кушода нест
 firefoxview-syncedtabs-connect-another-device = Пайваст кардани дастгоҳи дигар
+firefoxview-pinned-tabs =
+    .title = Варақаҳои васлшуда
 firefoxview-tabs =
     .title = Варақаҳо
 
@@ -257,8 +262,14 @@ firefoxview-tabs =
 
 firefoxview-opentabs-pinned-tab =
     .title = Гузариш ба { $tabTitle }
+# This tooltip will be shown for a pinned tab whose URL is currently bookmarked.
+firefoxview-opentabs-bookmarked-pinned-tab =
+    .title = Гузариш ба { $tabTitle } (Дар хатбаракҳо)
 
 ## These tooltips will be displayed when hovering over an unpinned Open Tab
 ## Variables:
 ##   $url (string) - URL of tab that will be opened when selected
 
+# This tooltip will be shown for an unpinned tab whose URL is currently bookmarked.
+firefoxview-opentabs-bookmarked-tab =
+    .title = (Дар хатбаракҳо) { $url }

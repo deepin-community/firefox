@@ -307,20 +307,26 @@ mozilla::Maybe<PropertyInfo> js::NativeObject::lookupPure(jsid id) {
   return mozilla::Nothing();
 }
 
-bool NativeObject::setUniqueId(JSContext* cx, uint64_t uid) {
+bool NativeObject::setUniqueId(JSRuntime* runtime, uint64_t uid) {
   MOZ_ASSERT(!hasUniqueId());
   MOZ_ASSERT(!gc::HasUniqueId(this));
 
-  return setOrUpdateUniqueId(cx, uid);
-}
-
-bool NativeObject::setOrUpdateUniqueId(JSContext* cx, uint64_t uid) {
-  if (!hasDynamicSlots() && !allocateSlots(cx, 0)) {
+  Nursery& nursery = runtime->gc.nursery();
+  if (!hasDynamicSlots() && !allocateSlots(nursery, 0)) {
     return false;
   }
 
   getSlotsHeader()->setUniqueId(uid);
+  return true;
+}
 
+bool NativeObject::setOrUpdateUniqueId(JSContext* cx, uint64_t uid) {
+  if (!hasDynamicSlots() && !allocateSlots(cx->nursery(), 0)) {
+    ReportOutOfMemory(cx);
+    return false;
+  }
+
+  getSlotsHeader()->setUniqueId(uid);
   return true;
 }
 
@@ -337,7 +343,12 @@ bool NativeObject::growSlots(JSContext* cx, uint32_t oldCapacity,
   MOZ_ASSERT(newCapacity <= MAX_SLOTS_COUNT);
 
   if (!hasDynamicSlots()) {
-    return allocateSlots(cx, newCapacity);
+    if (!allocateSlots(cx->nursery(), newCapacity)) {
+      ReportOutOfMemory(cx);
+      return false;
+    }
+
+    return true;
   }
 
   uint64_t uid = maybeUniqueId();
@@ -415,7 +426,7 @@ bool NativeObject::allocateInitialSlots(JSContext* cx, uint32_t capacity) {
   return true;
 }
 
-bool NativeObject::allocateSlots(JSContext* cx, uint32_t newCapacity) {
+bool NativeObject::allocateSlots(Nursery& nursery, uint32_t newCapacity) {
   MOZ_ASSERT(!hasUniqueId());
   MOZ_ASSERT(!hasDynamicSlots());
 
@@ -423,7 +434,8 @@ bool NativeObject::allocateSlots(JSContext* cx, uint32_t newCapacity) {
 
   uint32_t dictionarySpan = getSlotsHeader()->dictionarySlotSpan();
 
-  HeapSlot* allocation = AllocateCellBuffer<HeapSlot>(cx, this, newAllocated);
+  HeapSlot* allocation =
+      AllocateCellBuffer<HeapSlot>(nursery, this, newAllocated);
   if (!allocation) {
     return false;
   }
@@ -943,8 +955,8 @@ bool NativeObject::growElements(JSContext* cx, uint32_t reqCapacity) {
     // For arrays with writable length, and all non-Array objects, call
     // `NativeObject::goodElementsAllocationAmount()` to determine the
     // amount to allocate from the the requested capacity and existing length.
-    if (!goodElementsAllocationAmount(cx, reqCapacity + numShifted,
-                                      getElementsHeader()->length,
+    uint32_t length = is<ArrayObject>() ? as<ArrayObject>().length() : 0;
+    if (!goodElementsAllocationAmount(cx, reqCapacity + numShifted, length,
                                       &newAllocated)) {
       return false;
     }

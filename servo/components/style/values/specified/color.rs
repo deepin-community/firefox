@@ -5,8 +5,10 @@
 //! Specified color values.
 
 use super::AllowQuirks;
+use crate::color::component::ColorComponent;
+use crate::color::convert::normalize_hue;
 use crate::color::parsing::{
-    self, AngleOrNumber, Color as CSSParserColor, FromParsedColor, NumberOrPercentage,
+    self, ColorParser, FromParsedColor, NumberOrAngle, NumberOrPercentage,
 };
 use crate::color::{mix::ColorInterpolationMethod, AbsoluteColor, ColorSpace};
 use crate::media_queries::Device;
@@ -15,11 +17,10 @@ use crate::values::computed::{Color as ComputedColor, Context, ToComputedValue};
 use crate::values::generics::color::{
     ColorMixFlags, GenericCaretColor, GenericColorMix, GenericColorOrAuto,
 };
-use crate::values::specified::calc::CalcNode;
 use crate::values::specified::Percentage;
 use crate::values::{normalize, CustomIdent};
+use cssparser::color::OPAQUE;
 use cssparser::{color::PredefinedColorSpace, BasicParseErrorKind, ParseErrorKind, Parser, Token};
-use itoa;
 use std::fmt::{self, Write};
 use std::io::Write as IoWrite;
 use style_traits::{CssType, CssWriter, KeywordsCollectFn, ParseError, StyleParseErrorKind};
@@ -428,142 +429,196 @@ impl SystemColor {
     }
 }
 
+impl<T> From<ColorComponent<T>> for Option<T> {
+    fn from(value: ColorComponent<T>) -> Self {
+        match value {
+            ColorComponent::None => None,
+            ColorComponent::Value(value) => Some(value),
+        }
+    }
+}
+
+impl ColorComponent<NumberOrPercentage> {
+    #[inline]
+    fn into_alpha(self) -> Option<f32> {
+        match self {
+            ColorComponent::None => None,
+            ColorComponent::Value(number_or_percentage) => {
+                Some(normalize(number_or_percentage.to_number(1.0)).clamp(0.0, OPAQUE))
+            },
+        }
+    }
+}
+
 impl FromParsedColor for Color {
     fn from_current_color() -> Self {
         Color::CurrentColor
     }
 
-    fn from_rgba(r: u8, g: u8, b: u8, a: f32) -> Self {
-        AbsoluteColor::srgb_legacy(r, g, b, a).into()
+    fn from_rgba(
+        red: ColorComponent<u8>,
+        green: ColorComponent<u8>,
+        blue: ColorComponent<u8>,
+        alpha: ColorComponent<NumberOrPercentage>,
+    ) -> Self {
+        macro_rules! c {
+            ($c:expr) => {{
+                match $c {
+                    ColorComponent::None => 0u8,
+                    ColorComponent::Value(value) => value,
+                }
+            }};
+        }
+
+        // Legacy rgb() doesn't support "none" alpha values and falls back to 0.
+        let alpha = alpha.into_alpha().unwrap_or(0.0);
+
+        AbsoluteColor::srgb_legacy(c!(red), c!(green), c!(blue), alpha).into()
     }
 
     fn from_hsl(
-        hue: Option<f32>,
-        saturation: Option<f32>,
-        lightness: Option<f32>,
-        alpha: Option<f32>,
+        hue: ColorComponent<NumberOrAngle>,
+        saturation: ColorComponent<NumberOrPercentage>,
+        lightness: ColorComponent<NumberOrPercentage>,
+        alpha: ColorComponent<NumberOrPercentage>,
     ) -> Self {
-        AbsoluteColor::new(ColorSpace::Hsl, hue, saturation, lightness, alpha).into()
+        // Percent reference range for S and L: 0% = 0.0, 100% = 100.0
+        const LIGHTNESS_RANGE: f32 = 100.0;
+        const SATURATION_RANGE: f32 = 100.0;
+
+        let hue = hue.map_value(|angle| normalize_hue(angle.degrees()));
+        let saturation =
+            saturation.map_value(|s| s.to_number(SATURATION_RANGE).clamp(0.0, SATURATION_RANGE));
+        let lightness =
+            lightness.map_value(|l| l.to_number(LIGHTNESS_RANGE).clamp(0.0, LIGHTNESS_RANGE));
+
+        AbsoluteColor::new(
+            ColorSpace::Hsl,
+            hue,
+            saturation,
+            lightness,
+            alpha.into_alpha(),
+        )
+        .into()
     }
 
     fn from_hwb(
-        hue: Option<f32>,
-        whiteness: Option<f32>,
-        blackness: Option<f32>,
-        alpha: Option<f32>,
+        hue: ColorComponent<NumberOrAngle>,
+        whiteness: ColorComponent<NumberOrPercentage>,
+        blackness: ColorComponent<NumberOrPercentage>,
+        alpha: ColorComponent<NumberOrPercentage>,
     ) -> Self {
-        AbsoluteColor::new(ColorSpace::Hwb, hue, whiteness, blackness, alpha).into()
+        // Percent reference range for W and B: 0% = 0.0, 100% = 100.0
+        const WHITENESS_RANGE: f32 = 100.0;
+        const BLACKNESS_RANGE: f32 = 100.0;
+
+        let hue = hue.map_value(|angle| normalize_hue(angle.degrees()));
+        let whiteness =
+            whiteness.map_value(|w| w.to_number(WHITENESS_RANGE).clamp(0.0, WHITENESS_RANGE));
+        let blackness =
+            blackness.map_value(|b| b.to_number(BLACKNESS_RANGE).clamp(0.0, BLACKNESS_RANGE));
+
+        AbsoluteColor::new(
+            ColorSpace::Hwb,
+            hue,
+            whiteness,
+            blackness,
+            alpha.into_alpha(),
+        )
+        .into()
     }
 
     fn from_lab(
-        lightness: Option<f32>,
-        a: Option<f32>,
-        b: Option<f32>,
-        alpha: Option<f32>,
+        lightness: ColorComponent<NumberOrPercentage>,
+        a: ColorComponent<NumberOrPercentage>,
+        b: ColorComponent<NumberOrPercentage>,
+        alpha: ColorComponent<NumberOrPercentage>,
     ) -> Self {
-        AbsoluteColor::new(ColorSpace::Lab, lightness, a, b, alpha).into()
+        // for L: 0% = 0.0, 100% = 100.0
+        // for a and b: -100% = -125, 100% = 125
+        const LIGHTNESS_RANGE: f32 = 100.0;
+        const A_B_RANGE: f32 = 125.0;
+
+        let lightness = lightness.map_value(|l| l.to_number(LIGHTNESS_RANGE));
+        let a = a.map_value(|a| a.to_number(A_B_RANGE));
+        let b = b.map_value(|b| b.to_number(A_B_RANGE));
+
+        AbsoluteColor::new(ColorSpace::Lab, lightness, a, b, alpha.into_alpha()).into()
     }
 
     fn from_lch(
-        lightness: Option<f32>,
-        chroma: Option<f32>,
-        hue: Option<f32>,
-        alpha: Option<f32>,
+        lightness: ColorComponent<NumberOrPercentage>,
+        chroma: ColorComponent<NumberOrPercentage>,
+        hue: ColorComponent<NumberOrAngle>,
+        alpha: ColorComponent<NumberOrPercentage>,
     ) -> Self {
-        AbsoluteColor::new(ColorSpace::Lch, lightness, chroma, hue, alpha).into()
+        // for L: 0% = 0.0, 100% = 100.0
+        // for C: 0% = 0, 100% = 150
+        const LIGHTNESS_RANGE: f32 = 100.0;
+        const CHROMA_RANGE: f32 = 150.0;
+
+        let lightness = lightness.map_value(|l| l.to_number(LIGHTNESS_RANGE));
+        let chroma = chroma.map_value(|c| c.to_number(CHROMA_RANGE));
+        let hue = hue.map_value(|angle| normalize_hue(angle.degrees()));
+
+        AbsoluteColor::new(ColorSpace::Lch, lightness, chroma, hue, alpha.into_alpha()).into()
     }
 
     fn from_oklab(
-        lightness: Option<f32>,
-        a: Option<f32>,
-        b: Option<f32>,
-        alpha: Option<f32>,
+        lightness: ColorComponent<NumberOrPercentage>,
+        a: ColorComponent<NumberOrPercentage>,
+        b: ColorComponent<NumberOrPercentage>,
+        alpha: ColorComponent<NumberOrPercentage>,
     ) -> Self {
-        AbsoluteColor::new(ColorSpace::Oklab, lightness, a, b, alpha).into()
+        // for L: 0% = 0.0, 100% = 1.0
+        // for a and b: -100% = -0.4, 100% = 0.4
+        const LIGHTNESS_RANGE: f32 = 1.0;
+        const A_B_RANGE: f32 = 0.4;
+
+        let lightness = lightness.map_value(|l| l.to_number(LIGHTNESS_RANGE));
+        let a = a.map_value(|a| a.to_number(A_B_RANGE));
+        let b = b.map_value(|b| b.to_number(A_B_RANGE));
+
+        AbsoluteColor::new(ColorSpace::Oklab, lightness, a, b, alpha.into_alpha()).into()
     }
 
     fn from_oklch(
-        lightness: Option<f32>,
-        chroma: Option<f32>,
-        hue: Option<f32>,
-        alpha: Option<f32>,
+        lightness: ColorComponent<NumberOrPercentage>,
+        chroma: ColorComponent<NumberOrPercentage>,
+        hue: ColorComponent<NumberOrAngle>,
+        alpha: ColorComponent<NumberOrPercentage>,
     ) -> Self {
-        AbsoluteColor::new(ColorSpace::Oklch, lightness, chroma, hue, alpha).into()
+        // for L: 0% = 0.0, 100% = 1.0
+        // for C: 0% = 0.0 100% = 0.4
+        const LIGHTNESS_RANGE: f32 = 1.0;
+        const CHROMA_RANGE: f32 = 0.4;
+
+        let lightness = lightness.map_value(|l| l.to_number(LIGHTNESS_RANGE));
+        let chroma = chroma.map_value(|c| c.to_number(CHROMA_RANGE));
+        let hue = hue.map_value(|angle| normalize_hue(angle.degrees()));
+
+        AbsoluteColor::new(
+            ColorSpace::Oklch,
+            lightness,
+            chroma,
+            hue,
+            alpha.into_alpha(),
+        )
+        .into()
     }
 
     fn from_color_function(
         color_space: PredefinedColorSpace,
-        c1: Option<f32>,
-        c2: Option<f32>,
-        c3: Option<f32>,
-        alpha: Option<f32>,
+        c1: ColorComponent<NumberOrPercentage>,
+        c2: ColorComponent<NumberOrPercentage>,
+        c3: ColorComponent<NumberOrPercentage>,
+        alpha: ColorComponent<NumberOrPercentage>,
     ) -> Self {
-        AbsoluteColor::new(color_space.into(), c1, c2, c3, alpha).into()
-    }
-}
+        let c1 = c1.map_value(|c| c.to_number(1.0));
+        let c2 = c2.map_value(|c| c.to_number(1.0));
+        let c3 = c3.map_value(|c| c.to_number(1.0));
 
-struct ColorParser<'a, 'b: 'a>(&'a ParserContext<'b>);
-impl<'a, 'b: 'a, 'i: 'a> parsing::ColorParser<'i> for ColorParser<'a, 'b> {
-    type Output = Color;
-    type Error = StyleParseErrorKind<'i>;
-
-    fn parse_angle_or_number<'t>(
-        &self,
-        input: &mut Parser<'i, 't>,
-    ) -> Result<AngleOrNumber, ParseError<'i>> {
-        use crate::values::specified::Angle;
-
-        let location = input.current_source_location();
-        let token = input.next()?.clone();
-        match token {
-            Token::Dimension {
-                value, ref unit, ..
-            } => {
-                let angle = Angle::parse_dimension(value, unit, /* from_calc = */ false);
-
-                let degrees = match angle {
-                    Ok(angle) => angle.degrees(),
-                    Err(()) => return Err(location.new_unexpected_token_error(token.clone())),
-                };
-
-                Ok(AngleOrNumber::Angle { degrees })
-            },
-            Token::Number { value, .. } => Ok(AngleOrNumber::Number { value }),
-            Token::Function(ref name) => {
-                let function = CalcNode::math_function(self.0, name, location)?;
-                CalcNode::parse_angle_or_number(self.0, input, function)
-            },
-            t => return Err(location.new_unexpected_token_error(t)),
-        }
-    }
-
-    fn parse_percentage<'t>(&self, input: &mut Parser<'i, 't>) -> Result<f32, ParseError<'i>> {
-        Ok(Percentage::parse(self.0, input)?.get())
-    }
-
-    fn parse_number<'t>(&self, input: &mut Parser<'i, 't>) -> Result<f32, ParseError<'i>> {
-        use crate::values::specified::Number;
-
-        Ok(Number::parse(self.0, input)?.get())
-    }
-
-    fn parse_number_or_percentage<'t>(
-        &self,
-        input: &mut Parser<'i, 't>,
-    ) -> Result<NumberOrPercentage, ParseError<'i>> {
-        let location = input.current_source_location();
-
-        match *input.next()? {
-            Token::Number { value, .. } => Ok(NumberOrPercentage::Number { value }),
-            Token::Percentage { unit_value, .. } => {
-                Ok(NumberOrPercentage::Percentage { unit_value })
-            },
-            Token::Function(ref name) => {
-                let function = CalcNode::math_function(self.0, name, location)?;
-                CalcNode::parse_number_or_percentage(self.0, input, function)
-            },
-            ref t => return Err(location.new_unexpected_token_error(t.clone())),
-        }
+        AbsoluteColor::new(color_space.into(), c1, c2, c3, alpha.into_alpha()).into()
     }
 }
 
@@ -603,7 +658,7 @@ impl Color {
             },
         };
 
-        let color_parser = ColorParser(&*context);
+        let color_parser = ColorParser { context: &context };
         match input.try_parse(|i| parsing::parse_color_with(&color_parser, i)) {
             Ok(mut color) => {
                 if let Color::Absolute(ref mut absolute) = color {
@@ -700,7 +755,7 @@ impl ToCss for Color {
         W: Write,
     {
         match *self {
-            Color::CurrentColor => cssparser::ToCss::to_css(&CSSParserColor::CurrentColor, dest),
+            Color::CurrentColor => dest.write_str("currentcolor"),
             Color::Absolute(ref absolute) => absolute.to_css(dest),
             Color::ColorMix(ref mix) => mix.to_css(dest),
             Color::LightDark(ref ld) => ld.to_css(dest),
@@ -772,7 +827,12 @@ impl Color {
         loc: &cssparser::SourceLocation,
     ) -> Result<Self, ParseError<'i>> {
         match cssparser::color::parse_hash_color(bytes) {
-            Ok((r, g, b, a)) => Ok(Self::from_rgba(r, g, b, a)),
+            Ok((r, g, b, a)) => Ok(Self::from_rgba(
+                r.into(),
+                g.into(),
+                b.into(),
+                ColorComponent::Value(NumberOrPercentage::Number { value: a }),
+            )),
             Err(()) => Err(loc.new_custom_error(StyleParseErrorKind::UnspecifiedError)),
         }
     }

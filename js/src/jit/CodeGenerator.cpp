@@ -2167,8 +2167,8 @@ class CreateDependentString {
     NotInlineString,
     Count
   };
-  mozilla::EnumeratedArray<FallbackKind, FallbackKind::Count, Label> fallbacks_,
-      joins_;
+  mozilla::EnumeratedArray<FallbackKind, Label, size_t(FallbackKind::Count)>
+      fallbacks_, joins_;
 
  public:
   CreateDependentString(CharEncoding encoding, Register string, Register temp1,
@@ -4205,13 +4205,23 @@ void CodeGenerator::visitGuardShape(LGuardShape* guard) {
 }
 
 void CodeGenerator::visitGuardFuse(LGuardFuse* guard) {
+  auto fuseIndex = guard->mir()->fuseIndex();
+  switch (fuseIndex) {
+    case RealmFuses::FuseIndex::OptimizeGetIteratorFuse:
+      addOptimizeGetIteratorFuseDependency();
+      return;
+    default:
+      // validateAndRegisterFuseDependencies doesn't have
+      // handling for this yet, actively check fuse instead.
+      break;
+  }
+
   Register temp = ToRegister(guard->temp0());
   Label bail;
 
   // Bake specific fuse address for Ion code, because we won't share this code
   // across realms.
-  GuardFuse* fuse =
-      mirGen().realm->realmFuses().getFuseByIndex(guard->mir()->fuseIndex());
+  GuardFuse* fuse = mirGen().realm->realmFuses().getFuseByIndex(fuseIndex);
   masm.loadPtr(AbsoluteAddress(fuse->fuseRef()), temp);
   masm.branchPtr(Assembler::NotEqual, temp, ImmPtr(nullptr), &bail);
 
@@ -4629,6 +4639,17 @@ void CodeGenerator::visitGuardIsFixedLengthTypedArray(
   Label bail;
   masm.loadObjClassUnsafe(obj, temp);
   masm.branchIfClassIsNotFixedLengthTypedArray(temp, &bail);
+  bailoutFrom(&bail, guard->snapshot());
+}
+
+void CodeGenerator::visitGuardIsResizableTypedArray(
+    LGuardIsResizableTypedArray* guard) {
+  Register obj = ToRegister(guard->input());
+  Register temp = ToRegister(guard->temp0());
+
+  Label bail;
+  masm.loadObjClassUnsafe(obj, temp);
+  masm.branchIfClassIsNotResizableTypedArray(temp, &bail);
   bailoutFrom(&bail, guard->snapshot());
 }
 
@@ -6258,7 +6279,8 @@ void CodeGenerator::visitCallKnown(LCallKnown* call) {
       UnusedStackBytesForCall(call->mir()->paddedNumStackArgs());
   WrappedFunction* target = call->getSingleTarget();
 
-  // Native single targets (except wasm) are handled by LCallNative.
+  // Native single targets (except Wasm and TrampolineNative functions) are
+  // handled by LCallNative.
   MOZ_ASSERT(target->hasJitEntry());
 
   // Missing arguments must have been explicitly appended by WarpBuilder.
@@ -6330,12 +6352,7 @@ void CodeGenerator::visitCallKnown(LCallKnown* call) {
 
 template <typename T>
 void CodeGenerator::emitCallInvokeFunction(T* apply) {
-  Register objreg = ToRegister(apply->getTempObject());
-
-  // Push the space used by the arguments.
-  masm.moveStackPtrTo(objreg);
-
-  pushArg(objreg);                                     // argv.
+  pushArg(masm.getStackPointer());                     // argv.
   pushArg(ToRegister(apply->getArgc()));               // argc.
   pushArg(Imm32(apply->mir()->ignoresReturnValue()));  // ignoresReturnValue.
   pushArg(Imm32(apply->mir()->isConstructing()));      // isConstructing.
@@ -6359,7 +6376,13 @@ void CodeGenerator::emitAllocateSpaceForApply(Register argcreg,
                "Stack padding assumes that the frameSize is correct");
     MOZ_ASSERT(JitStackValueAlignment == 2);
     Label noPaddingNeeded;
-    // if the number of arguments is odd, then we do not need any padding.
+    // If the number of arguments is odd, then we do not need any padding.
+    //
+    // Note: The |JitStackValueAlignment == 2| condition requires that the
+    // overall number of values on the stack is even. When we have an odd number
+    // of arguments, we don't need any padding, because the |thisValue| is
+    // pushed after the arguments, so the overall number of values on the stack
+    // is even.
     masm.branchTestPtr(Assembler::NonZero, argcreg, Imm32(1), &noPaddingNeeded);
     masm.addPtr(Imm32(1), scratch);
     masm.bind(&noPaddingNeeded);
@@ -6371,13 +6394,13 @@ void CodeGenerator::emitAllocateSpaceForApply(Register argcreg,
   masm.subFromStackPtr(scratch);
 
 #ifdef DEBUG
-  // Put a magic value in the space reserved for padding. Note, this code
-  // cannot be merged with the previous test, as not all architectures can
-  // write below their stack pointers.
+  // Put a magic value in the space reserved for padding. Note, this code cannot
+  // be merged with the previous test, as not all architectures can write below
+  // their stack pointers.
   if (JitStackValueAlignment > 1) {
     MOZ_ASSERT(JitStackValueAlignment == 2);
     Label noPaddingNeeded;
-    // if the number of arguments is odd, then we do not need any padding.
+    // If the number of arguments is odd, then we do not need any padding.
     masm.branchTestPtr(Assembler::NonZero, argcreg, Imm32(1), &noPaddingNeeded);
     BaseValueIndex dstPtr(masm.getStackPointer(), argcreg);
     masm.storeValue(MagicValue(JS_ARG_POISON), dstPtr);
@@ -6392,8 +6415,8 @@ void CodeGenerator::emitAllocateSpaceForConstructAndPushNewTarget(
     Register argcreg, Register newTargetAndScratch) {
   // Align the JitFrameLayout on the JitStackAlignment. Contrary to
   // |emitAllocateSpaceForApply()|, we're always pushing a magic value, because
-  // we can't write to |newTargetAndScratch| before |new.target| has
-  // been pushed onto the stack.
+  // we can't write to |newTargetAndScratch| before |new.target| has been pushed
+  // onto the stack.
   if (JitStackValueAlignment > 1) {
     MOZ_ASSERT(frameSize() % JitStackAlignment == 0,
                "Stack padding assumes that the frameSize is correct");
@@ -6401,6 +6424,12 @@ void CodeGenerator::emitAllocateSpaceForConstructAndPushNewTarget(
 
     Label noPaddingNeeded;
     // If the number of arguments is even, then we do not need any padding.
+    //
+    // Note: The |JitStackValueAlignment == 2| condition requires that the
+    // overall number of values on the stack is even. When we have an even
+    // number of arguments, we don't need any padding, because |new.target| is
+    // is pushed before the arguments and |thisValue| is pushed after all
+    // arguments, so the overall number of values on the stack is even.
     masm.branchTestPtr(Assembler::Zero, argcreg, Imm32(1), &noPaddingNeeded);
     masm.pushValue(MagicValue(JS_ARG_POISON));
     masm.bind(&noPaddingNeeded);
@@ -6426,9 +6455,8 @@ void CodeGenerator::emitCopyValuesForApply(Register argvSrcBase,
   Label loop;
   masm.bind(&loop);
 
-  // As argvIndex is off by 1, and we use the decBranchPtr instruction
-  // to loop back, we have to substract the size of the word which are
-  // copied.
+  // As argvIndex is off by 1, and we use the decBranchPtr instruction to loop
+  // back, we have to substract the size of the word which are copied.
   BaseValueIndex srcPtr(argvSrcBase, argvIndex,
                         int32_t(argvSrcOffset) - sizeof(void*));
   BaseValueIndex dstPtr(masm.getStackPointer(), argvIndex,
@@ -6477,6 +6505,9 @@ void CodeGenerator::emitPushArguments(Register argcreg, Register scratch,
   // clang-format on
 
   // Compute the source and destination offsets into the stack.
+  //
+  // The |extraFormals| parameter is used when copying rest-parameters and
+  // allows to skip the initial parameters before the actual rest-parameters.
   Register argvSrcBase = FramePointer;
   size_t argvSrcOffset =
       JitFrameLayout::offsetOfActualArgs() + extraFormals * sizeof(JS::Value);
@@ -6489,17 +6520,18 @@ void CodeGenerator::emitPushArguments(Register argcreg, Register scratch,
   emitCopyValuesForApply(argvSrcBase, argvIndex, copyreg, argvSrcOffset,
                          argvDstOffset);
 
-  // Join with all arguments copied and the extra stack usage computed.
+  // Join with all arguments copied.
   masm.bind(&end);
 }
 
-void CodeGenerator::emitPushArguments(LApplyArgsGeneric* apply,
-                                      Register scratch) {
-  // Holds the function nargs. Initially the number of args to the caller.
+void CodeGenerator::emitPushArguments(LApplyArgsGeneric* apply) {
+  // Holds the function nargs.
   Register argcreg = ToRegister(apply->getArgc());
   Register copyreg = ToRegister(apply->getTempObject());
+  Register scratch = ToRegister(apply->getTempForArgCopy());
   uint32_t extraFormals = apply->numExtraFormals();
 
+  // Allocate space on the stack for arguments.
   emitAllocateSpaceForApply(argcreg, scratch);
 
   emitPushArguments(argcreg, scratch, copyreg, extraFormals);
@@ -6508,22 +6540,21 @@ void CodeGenerator::emitPushArguments(LApplyArgsGeneric* apply,
   masm.pushValue(ToValue(apply, LApplyArgsGeneric::ThisIndex));
 }
 
-void CodeGenerator::emitPushArguments(LApplyArgsObj* apply, Register scratch) {
-  // argc and argsObj are mapped to the same calltemp register.
-  MOZ_ASSERT(apply->getArgsObj() == apply->getArgc());
-
-  Register tmpArgc = ToRegister(apply->getTempObject());
+void CodeGenerator::emitPushArguments(LApplyArgsObj* apply) {
   Register argsObj = ToRegister(apply->getArgsObj());
+  Register tmpArgc = ToRegister(apply->getTempObject());
+  Register scratch = ToRegister(apply->getTempForArgCopy());
+
+  // argc and argsObj are mapped to the same calltemp register.
+  MOZ_ASSERT(argsObj == ToRegister(apply->getArgc()));
 
   // Load argc into tmpArgc.
-  Address lengthAddr(argsObj, ArgumentsObject::getInitialLengthSlotOffset());
-  masm.unboxInt32(lengthAddr, tmpArgc);
-  masm.rshift32(Imm32(ArgumentsObject::PACKED_BITS_COUNT), tmpArgc);
+  masm.loadArgumentsObjectLength(argsObj, tmpArgc);
 
-  // Allocate space on the stack for arguments. This modifies scratch.
+  // Allocate space on the stack for arguments.
   emitAllocateSpaceForApply(tmpArgc, scratch);
 
-  // Load arguments data
+  // Load arguments data.
   masm.loadPrivate(Address(argsObj, ArgumentsObject::getDataSlotOffset()),
                    argsObj);
   size_t argsSrcOffset = ArgumentsData::offsetOfArgs();
@@ -6532,6 +6563,7 @@ void CodeGenerator::emitPushArguments(LApplyArgsObj* apply, Register scratch) {
   // After this call, the argsObj register holds the argument count instead.
   emitPushArrayAsArguments(tmpArgc, argsObj, scratch, argsSrcOffset);
 
+  // Push |this|.
   masm.pushValue(ToValue(apply, LApplyArgsObj::ThisIndex));
 }
 
@@ -6555,68 +6587,71 @@ void CodeGenerator::emitPushArrayAsArguments(Register tmpArgc,
 
   // Skip the copy of arguments if there are none.
   masm.branchTestPtr(Assembler::Zero, tmpArgc, tmpArgc, &noCopy);
+  {
+    // Copy the values. This code is skipped entirely if there are no values.
+    size_t argvDstOffset = 0;
 
-  // Copy the values.  This code is skipped entirely if there are
-  // no values.
-  size_t argvDstOffset = 0;
+    Register argvSrcBase = srcBaseAndArgc;
 
-  Register argvSrcBase = srcBaseAndArgc;
-  Register copyreg = scratch;
+    // Stash away |tmpArgc| and adjust argvDstOffset accordingly.
+    masm.push(tmpArgc);
+    Register argvIndex = tmpArgc;
+    argvDstOffset += sizeof(void*);
 
-  masm.push(tmpArgc);
-  Register argvIndex = tmpArgc;
-  argvDstOffset += sizeof(void*);
+    // Copy
+    emitCopyValuesForApply(argvSrcBase, argvIndex, scratch, argvSrcOffset,
+                           argvDstOffset);
 
-  // Copy
-  emitCopyValuesForApply(argvSrcBase, argvIndex, copyreg, argvSrcOffset,
-                         argvDstOffset);
-
-  // Restore.
-  masm.pop(srcBaseAndArgc);  // srcBaseAndArgc now contains argc.
-  masm.jump(&epilogue);
-
-  // Clear argc if we skipped the copy step.
+    // Restore.
+    masm.pop(srcBaseAndArgc);  // srcBaseAndArgc now contains argc.
+    masm.jump(&epilogue);
+  }
   masm.bind(&noCopy);
-  masm.movePtr(ImmWord(0), srcBaseAndArgc);
+  {
+    // Clear argc if we skipped the copy step.
+    masm.movePtr(ImmWord(0), srcBaseAndArgc);
+  }
 
-  // Join with all arguments copied and the extra stack usage computed.
+  // Join with all arguments copied.
   // Note, "srcBase" has become "argc".
   masm.bind(&epilogue);
 }
 
-void CodeGenerator::emitPushArguments(LApplyArrayGeneric* apply,
-                                      Register scratch) {
+void CodeGenerator::emitPushArguments(LApplyArrayGeneric* apply) {
+  Register elements = ToRegister(apply->getElements());
   Register tmpArgc = ToRegister(apply->getTempObject());
-  Register elementsAndArgc = ToRegister(apply->getElements());
+  Register scratch = ToRegister(apply->getTempForArgCopy());
+
+  // argc and elements are mapped to the same calltemp register.
+  MOZ_ASSERT(elements == ToRegister(apply->getArgc()));
 
   // Invariants guarded in the caller:
   //  - the array is not too long
   //  - the array length equals its initialized length
 
   // The array length is our argc for the purposes of allocating space.
-  Address length(ToRegister(apply->getElements()),
-                 ObjectElements::offsetOfLength());
-  masm.load32(length, tmpArgc);
+  masm.load32(Address(elements, ObjectElements::offsetOfLength()), tmpArgc);
 
   // Allocate space for the values.
   emitAllocateSpaceForApply(tmpArgc, scratch);
 
   // After this call "elements" has become "argc".
   size_t elementsOffset = 0;
-  emitPushArrayAsArguments(tmpArgc, elementsAndArgc, scratch, elementsOffset);
+  emitPushArrayAsArguments(tmpArgc, elements, scratch, elementsOffset);
 
   // Push |this|.
   masm.pushValue(ToValue(apply, LApplyArrayGeneric::ThisIndex));
 }
 
-void CodeGenerator::emitPushArguments(LConstructArgsGeneric* construct,
-                                      Register scratch) {
-  MOZ_ASSERT(scratch == ToRegister(construct->getNewTarget()));
-
-  // Holds the function nargs. Initially the number of args to the caller.
+void CodeGenerator::emitPushArguments(LConstructArgsGeneric* construct) {
+  // Holds the function nargs.
   Register argcreg = ToRegister(construct->getArgc());
   Register copyreg = ToRegister(construct->getTempObject());
+  Register scratch = ToRegister(construct->getTempForArgCopy());
   uint32_t extraFormals = construct->numExtraFormals();
+
+  // newTarget and scratch are mapped to the same calltemp register.
+  MOZ_ASSERT(scratch == ToRegister(construct->getNewTarget()));
 
   // Allocate space for the values.
   // After this call "newTarget" has become "scratch".
@@ -6628,29 +6663,31 @@ void CodeGenerator::emitPushArguments(LConstructArgsGeneric* construct,
   masm.pushValue(ToValue(construct, LConstructArgsGeneric::ThisIndex));
 }
 
-void CodeGenerator::emitPushArguments(LConstructArrayGeneric* construct,
-                                      Register scratch) {
-  MOZ_ASSERT(scratch == ToRegister(construct->getNewTarget()));
-
+void CodeGenerator::emitPushArguments(LConstructArrayGeneric* construct) {
+  Register elements = ToRegister(construct->getElements());
   Register tmpArgc = ToRegister(construct->getTempObject());
-  Register elementsAndArgc = ToRegister(construct->getElements());
+  Register scratch = ToRegister(construct->getTempForArgCopy());
+
+  // argc and elements are mapped to the same calltemp register.
+  MOZ_ASSERT(elements == ToRegister(construct->getArgc()));
+
+  // newTarget and scratch are mapped to the same calltemp register.
+  MOZ_ASSERT(scratch == ToRegister(construct->getNewTarget()));
 
   // Invariants guarded in the caller:
   //  - the array is not too long
   //  - the array length equals its initialized length
 
   // The array length is our argc for the purposes of allocating space.
-  Address length(ToRegister(construct->getElements()),
-                 ObjectElements::offsetOfLength());
-  masm.load32(length, tmpArgc);
+  masm.load32(Address(elements, ObjectElements::offsetOfLength()), tmpArgc);
 
   // Allocate space for the values.
+  // After this call "newTarget" has become "scratch".
   emitAllocateSpaceForConstructAndPushNewTarget(tmpArgc, scratch);
 
-  // After this call "elements" has become "argc" and "newTarget" has become
-  // "scratch".
+  // After this call "elements" has become "argc".
   size_t elementsOffset = 0;
-  emitPushArrayAsArguments(tmpArgc, elementsAndArgc, scratch, elementsOffset);
+  emitPushArrayAsArguments(tmpArgc, elements, scratch, elementsOffset);
 
   // Push |this|.
   masm.pushValue(ToValue(construct, LConstructArrayGeneric::ThisIndex));
@@ -6671,43 +6708,24 @@ void CodeGenerator::emitApplyGeneric(T* apply) {
 
   // Copy the arguments of the current function.
   //
-  // In the case of ApplyArray, ConstructArray, or ApplyArgsObj, also
-  // compute argc. The argc register and the elements/argsObj register
-  // are the same; argc must not be referenced before the call to
-  // emitPushArguments() and elements/argsObj must not be referenced
-  // after it returns.
+  // In the case of ApplyArray, ConstructArray, or ApplyArgsObj, also compute
+  // argc. The argc register and the elements/argsObj register are the same;
+  // argc must not be referenced before the call to emitPushArguments() and
+  // elements/argsObj must not be referenced after it returns.
   //
-  // In the case of ConstructArray or ConstructArgs, also overwrite newTarget
-  // with scratch; newTarget must not be referenced after this point.
+  // In the case of ConstructArray or ConstructArgs, also overwrite newTarget;
+  // newTarget must not be referenced after this point.
   //
   // objreg is dead across this call.
-  emitPushArguments(apply, scratch);
+  emitPushArguments(apply);
 
   masm.checkStackAlignment();
 
   bool constructing = apply->mir()->isConstructing();
 
-  // If the function is native, only emit the call to InvokeFunction.
-  if (apply->hasSingleTarget() &&
-      apply->getSingleTarget()->isNativeWithoutJitEntry()) {
-    emitCallInvokeFunction(apply);
-
-#ifdef DEBUG
-    // Native constructors are guaranteed to return an Object value, so we never
-    // have to replace a primitive result with the previously allocated Object
-    // from CreateThis.
-    if (constructing) {
-      Label notPrimitive;
-      masm.branchTestPrimitive(Assembler::NotEqual, JSReturnOperand,
-                               &notPrimitive);
-      masm.assumeUnreachable("native constructors don't return primitives");
-      masm.bind(&notPrimitive);
-    }
-#endif
-
-    emitRestoreStackPointerFromFP();
-    return;
-  }
+  // If the function is native, the call is compiled through emitApplyNative.
+  MOZ_ASSERT_IF(apply->hasSingleTarget(),
+                !apply->getSingleTarget()->isNativeWithoutJitEntry());
 
   Label end, invoke;
 
@@ -6801,8 +6819,8 @@ void CodeGenerator::emitApplyGeneric(T* apply) {
 
   masm.bind(&end);
 
-  // If the return value of the constructing function is Primitive,
-  // replace the return value with the Object from CreateThis.
+  // If the return value of the constructing function is Primitive, replace the
+  // return value with the Object from CreateThis.
   if (constructing) {
     Label notPrimitive;
     masm.branchTestPrimitive(Assembler::NotEqual, JSReturnOperand,
@@ -6822,17 +6840,200 @@ void CodeGenerator::emitApplyGeneric(T* apply) {
   emitRestoreStackPointerFromFP();
 }
 
-void CodeGenerator::visitApplyArgsGeneric(LApplyArgsGeneric* apply) {
+template <typename T>
+void CodeGenerator::emitCallInvokeNativeFunction(T* apply) {
+  pushArg(masm.getStackPointer());                     // argv.
+  pushArg(ToRegister(apply->getArgc()));               // argc.
+  pushArg(Imm32(apply->mir()->ignoresReturnValue()));  // ignoresReturnValue.
+  pushArg(Imm32(apply->mir()->isConstructing()));      // isConstructing.
+
+  using Fn =
+      bool (*)(JSContext*, bool, bool, uint32_t, Value*, MutableHandleValue);
+  callVM<Fn, jit::InvokeNativeFunction>(apply);
+}
+
+template <typename T>
+void CodeGenerator::emitPushNativeArguments(T* apply) {
+  Register argc = ToRegister(apply->getArgc());
+  Register tmpArgc = ToRegister(apply->getTempObject());
+  Register scratch = ToRegister(apply->getTempForArgCopy());
+  uint32_t extraFormals = apply->numExtraFormals();
+
+  // Push arguments.
+  Label noCopy;
+  masm.branchTestPtr(Assembler::Zero, argc, argc, &noCopy);
+  {
+    // Use scratch register to calculate stack space (no padding needed).
+    masm.movePtr(argc, scratch);
+
+    // Reserve space for copying the arguments.
+    NativeObject::elementsSizeMustNotOverflow();
+    masm.lshiftPtr(Imm32(ValueShift), scratch);
+    masm.subFromStackPtr(scratch);
+
+    // Compute the source and destination offsets into the stack.
+    Register argvSrcBase = FramePointer;
+    size_t argvSrcOffset =
+        JitFrameLayout::offsetOfActualArgs() + extraFormals * sizeof(JS::Value);
+    size_t argvDstOffset = 0;
+
+    Register argvIndex = tmpArgc;
+    masm.move32(argc, argvIndex);
+
+    // Copy arguments.
+    emitCopyValuesForApply(argvSrcBase, argvIndex, scratch, argvSrcOffset,
+                           argvDstOffset);
+  }
+  masm.bind(&noCopy);
+}
+
+template <typename T>
+void CodeGenerator::emitPushArrayAsNativeArguments(T* apply) {
+  Register argc = ToRegister(apply->getArgc());
+  Register elements = ToRegister(apply->getElements());
+  Register tmpArgc = ToRegister(apply->getTempObject());
+  Register scratch = ToRegister(apply->getTempForArgCopy());
+
+  // NB: argc and elements are mapped to the same register.
+  MOZ_ASSERT(argc == elements);
+
+  // Invariants guarded in the caller:
+  //  - the array is not too long
+  //  - the array length equals its initialized length
+
+  // The array length is our argc.
+  masm.load32(Address(elements, ObjectElements::offsetOfLength()), tmpArgc);
+
+  // Skip the copy of arguments if there are none.
+  Label noCopy;
+  masm.branchTestPtr(Assembler::Zero, tmpArgc, tmpArgc, &noCopy);
+  {
+    // |tmpArgc| is off-by-one, so adjust the offset accordingly.
+    BaseObjectElementIndex srcPtr(elements, tmpArgc,
+                                  -int32_t(sizeof(JS::Value)));
+
+    Label loop;
+    masm.bind(&loop);
+    masm.pushValue(srcPtr, scratch);
+    masm.decBranchPtr(Assembler::NonZero, tmpArgc, Imm32(1), &loop);
+  }
+  masm.bind(&noCopy);
+
+  // Set argc in preparation for emitCallInvokeNativeFunction.
+  masm.load32(Address(elements, ObjectElements::offsetOfLength()), argc);
+}
+
+void CodeGenerator::emitPushArguments(LApplyArgsNative* apply) {
+  emitPushNativeArguments(apply);
+}
+
+void CodeGenerator::emitPushArguments(LApplyArrayNative* apply) {
+  emitPushArrayAsNativeArguments(apply);
+}
+
+void CodeGenerator::emitPushArguments(LConstructArgsNative* construct) {
+  emitPushNativeArguments(construct);
+}
+
+void CodeGenerator::emitPushArguments(LConstructArrayNative* construct) {
+  emitPushArrayAsNativeArguments(construct);
+}
+
+void CodeGenerator::emitPushArguments(LApplyArgsObjNative* apply) {
+  Register argc = ToRegister(apply->getArgc());
+  Register argsObj = ToRegister(apply->getArgsObj());
+  Register tmpArgc = ToRegister(apply->getTempObject());
+  Register scratch = ToRegister(apply->getTempForArgCopy());
+
+  // NB: argc and argsObj are mapped to the same register.
+  MOZ_ASSERT(argc == argsObj);
+
+  // Load argc into tmpArgc.
+  masm.loadArgumentsObjectLength(argsObj, tmpArgc);
+
+  // Push arguments.
+  Label noCopy, epilogue;
+  masm.branchTestPtr(Assembler::Zero, tmpArgc, tmpArgc, &noCopy);
+  {
+    // Use scratch register to calculate stack space (no padding needed).
+    masm.movePtr(tmpArgc, scratch);
+
+    // Reserve space for copying the arguments.
+    NativeObject::elementsSizeMustNotOverflow();
+    masm.lshiftPtr(Imm32(ValueShift), scratch);
+    masm.subFromStackPtr(scratch);
+
+    // Load arguments data.
+    Register argvSrcBase = argsObj;
+    masm.loadPrivate(Address(argsObj, ArgumentsObject::getDataSlotOffset()),
+                     argvSrcBase);
+    size_t argvSrcOffset = ArgumentsData::offsetOfArgs();
+    size_t argvDstOffset = 0;
+
+    // Stash away |tmpArgc| and adjust argvDstOffset accordingly.
+    masm.push(tmpArgc);
+    argvDstOffset += sizeof(void*);
+
+    // Copy the values.
+    emitCopyValuesForApply(argvSrcBase, tmpArgc, scratch, argvSrcOffset,
+                           argvDstOffset);
+
+    // Set argc in preparation for emitCallInvokeNativeFunction.
+    masm.pop(argc);
+    masm.jump(&epilogue);
+  }
+  masm.bind(&noCopy);
+  {
+    // Set argc in preparation for emitCallInvokeNativeFunction.
+    masm.movePtr(ImmWord(0), argc);
+  }
+  masm.bind(&epilogue);
+}
+
+template <typename T>
+void CodeGenerator::emitApplyNative(T* apply) {
+  MOZ_ASSERT(apply->mir()->getSingleTarget()->isNativeWithoutJitEntry());
+
+  constexpr bool isConstructing = T::isConstructing();
+  MOZ_ASSERT(isConstructing == apply->mir()->isConstructing(),
+             "isConstructing condition must be consistent");
+
+  // Push newTarget.
+  if constexpr (isConstructing) {
+    masm.pushValue(JSVAL_TYPE_OBJECT, ToRegister(apply->getNewTarget()));
+  }
+
+  // Push arguments.
+  emitPushArguments(apply);
+
+  // Push |this|.
+  if constexpr (isConstructing) {
+    masm.pushValue(MagicValue(JS_IS_CONSTRUCTING));
+  } else {
+    masm.pushValue(ToValue(apply, T::ThisIndex));
+  }
+
+  // Push callee.
+  masm.pushValue(JSVAL_TYPE_OBJECT, ToRegister(apply->getFunction()));
+
+  // Call the native function.
+  emitCallInvokeNativeFunction(apply);
+
+  // Pop arguments and continue.
+  emitRestoreStackPointerFromFP();
+}
+
+template <typename T>
+void CodeGenerator::emitApplyArgsGuard(T* apply) {
   LSnapshot* snapshot = apply->snapshot();
   Register argcreg = ToRegister(apply->getArgc());
 
   // Ensure that we have a reasonable number of arguments.
   bailoutCmp32(Assembler::Above, argcreg, Imm32(JIT_ARGS_LENGTH_MAX), snapshot);
-
-  emitApplyGeneric(apply);
 }
 
-void CodeGenerator::visitApplyArgsObj(LApplyArgsObj* apply) {
+template <typename T>
+void CodeGenerator::emitApplyArgsObjGuard(T* apply) {
   Register argsObj = ToRegister(apply->getArgsObj());
   Register temp = ToRegister(apply->getTempObject());
 
@@ -6840,60 +7041,76 @@ void CodeGenerator::visitApplyArgsObj(LApplyArgsObj* apply) {
   masm.loadArgumentsObjectLength(argsObj, temp, &bail);
   masm.branch32(Assembler::Above, temp, Imm32(JIT_ARGS_LENGTH_MAX), &bail);
   bailoutFrom(&bail, apply->snapshot());
+}
 
+template <typename T>
+void CodeGenerator::emitApplyArrayGuard(T* apply) {
+  LSnapshot* snapshot = apply->snapshot();
+  Register elements = ToRegister(apply->getElements());
+  Register tmp = ToRegister(apply->getTempObject());
+
+  Address length(elements, ObjectElements::offsetOfLength());
+  masm.load32(length, tmp);
+
+  // Ensure that we have a reasonable number of arguments.
+  bailoutCmp32(Assembler::Above, tmp, Imm32(JIT_ARGS_LENGTH_MAX), snapshot);
+
+  // Ensure that the array does not contain an uninitialized tail.
+
+  Address initializedLength(elements,
+                            ObjectElements::offsetOfInitializedLength());
+  masm.sub32(initializedLength, tmp);
+  bailoutCmp32(Assembler::NotEqual, tmp, Imm32(0), snapshot);
+}
+
+void CodeGenerator::visitApplyArgsGeneric(LApplyArgsGeneric* apply) {
+  emitApplyArgsGuard(apply);
+  emitApplyGeneric(apply);
+}
+
+void CodeGenerator::visitApplyArgsObj(LApplyArgsObj* apply) {
+  emitApplyArgsObjGuard(apply);
   emitApplyGeneric(apply);
 }
 
 void CodeGenerator::visitApplyArrayGeneric(LApplyArrayGeneric* apply) {
-  LSnapshot* snapshot = apply->snapshot();
-  Register tmp = ToRegister(apply->getTempObject());
-
-  Address length(ToRegister(apply->getElements()),
-                 ObjectElements::offsetOfLength());
-  masm.load32(length, tmp);
-
-  // Ensure that we have a reasonable number of arguments.
-  bailoutCmp32(Assembler::Above, tmp, Imm32(JIT_ARGS_LENGTH_MAX), snapshot);
-
-  // Ensure that the array does not contain an uninitialized tail.
-
-  Address initializedLength(ToRegister(apply->getElements()),
-                            ObjectElements::offsetOfInitializedLength());
-  masm.sub32(initializedLength, tmp);
-  bailoutCmp32(Assembler::NotEqual, tmp, Imm32(0), snapshot);
-
+  emitApplyArrayGuard(apply);
   emitApplyGeneric(apply);
 }
 
 void CodeGenerator::visitConstructArgsGeneric(LConstructArgsGeneric* lir) {
-  LSnapshot* snapshot = lir->snapshot();
-  Register argcreg = ToRegister(lir->getArgc());
-
-  // Ensure that we have a reasonable number of arguments.
-  bailoutCmp32(Assembler::Above, argcreg, Imm32(JIT_ARGS_LENGTH_MAX), snapshot);
-
+  emitApplyArgsGuard(lir);
   emitApplyGeneric(lir);
 }
 
 void CodeGenerator::visitConstructArrayGeneric(LConstructArrayGeneric* lir) {
-  LSnapshot* snapshot = lir->snapshot();
-  Register tmp = ToRegister(lir->getTempObject());
-
-  Address length(ToRegister(lir->getElements()),
-                 ObjectElements::offsetOfLength());
-  masm.load32(length, tmp);
-
-  // Ensure that we have a reasonable number of arguments.
-  bailoutCmp32(Assembler::Above, tmp, Imm32(JIT_ARGS_LENGTH_MAX), snapshot);
-
-  // Ensure that the array does not contain an uninitialized tail.
-
-  Address initializedLength(ToRegister(lir->getElements()),
-                            ObjectElements::offsetOfInitializedLength());
-  masm.sub32(initializedLength, tmp);
-  bailoutCmp32(Assembler::NotEqual, tmp, Imm32(0), snapshot);
-
+  emitApplyArrayGuard(lir);
   emitApplyGeneric(lir);
+}
+
+void CodeGenerator::visitApplyArgsNative(LApplyArgsNative* lir) {
+  emitApplyArgsGuard(lir);
+  emitApplyNative(lir);
+}
+
+void CodeGenerator::visitApplyArgsObjNative(LApplyArgsObjNative* lir) {
+  emitApplyArgsObjGuard(lir);
+  emitApplyNative(lir);
+}
+
+void CodeGenerator::visitApplyArrayNative(LApplyArrayNative* lir) {
+  emitApplyArrayGuard(lir);
+  emitApplyNative(lir);
+}
+
+void CodeGenerator::visitConstructArgsNative(LConstructArgsNative* lir) {
+  emitApplyArgsGuard(lir);
+  emitApplyNative(lir);
+}
+
+void CodeGenerator::visitConstructArrayNative(LConstructArrayNative* lir) {
+  emitApplyArrayGuard(lir);
+  emitApplyNative(lir);
 }
 
 void CodeGenerator::visitBail(LBail* lir) { bailout(lir->snapshot()); }
@@ -9658,6 +9875,68 @@ void CodeGenerator::visitTypedArrayElementSize(LTypedArrayElementSize* lir) {
   Register out = ToRegister(lir->output());
 
   masm.typedArrayElementSize(obj, out);
+}
+
+void CodeGenerator::visitResizableTypedArrayByteOffsetMaybeOutOfBounds(
+    LResizableTypedArrayByteOffsetMaybeOutOfBounds* lir) {
+  Register obj = ToRegister(lir->object());
+  Register out = ToRegister(lir->output());
+  Register temp = ToRegister(lir->temp0());
+
+  masm.loadResizableTypedArrayByteOffsetMaybeOutOfBoundsIntPtr(obj, out, temp);
+}
+
+void CodeGenerator::visitResizableTypedArrayLength(
+    LResizableTypedArrayLength* lir) {
+  Register obj = ToRegister(lir->object());
+  Register out = ToRegister(lir->output());
+  Register temp = ToRegister(lir->temp0());
+
+  masm.loadResizableTypedArrayLengthIntPtr(lir->synchronization(), obj, out,
+                                           temp);
+}
+
+void CodeGenerator::visitResizableDataViewByteLength(
+    LResizableDataViewByteLength* lir) {
+  Register obj = ToRegister(lir->object());
+  Register out = ToRegister(lir->output());
+  Register temp = ToRegister(lir->temp0());
+
+  masm.loadResizableDataViewByteLengthIntPtr(lir->synchronization(), obj, out,
+                                             temp);
+}
+
+void CodeGenerator::visitGrowableSharedArrayBufferByteLength(
+    LGrowableSharedArrayBufferByteLength* lir) {
+  Register obj = ToRegister(lir->object());
+  Register out = ToRegister(lir->output());
+
+  // Explicit |byteLength| accesses are seq-consistent atomic loads.
+  auto sync = Synchronization::Load();
+
+  masm.loadGrowableSharedArrayBufferByteLengthIntPtr(sync, obj, out);
+}
+
+void CodeGenerator::visitGuardResizableArrayBufferViewInBounds(
+    LGuardResizableArrayBufferViewInBounds* lir) {
+  Register obj = ToRegister(lir->object());
+  Register temp = ToRegister(lir->temp0());
+
+  Label bail;
+  masm.branchIfResizableArrayBufferViewOutOfBounds(obj, temp, &bail);
+  bailoutFrom(&bail, lir->snapshot());
+}
+
+void CodeGenerator::visitGuardResizableArrayBufferViewInBoundsOrDetached(
+    LGuardResizableArrayBufferViewInBoundsOrDetached* lir) {
+  Register obj = ToRegister(lir->object());
+  Register temp = ToRegister(lir->temp0());
+
+  Label done, bail;
+  masm.branchIfResizableArrayBufferViewInBounds(obj, temp, &done);
+  masm.branchIfHasAttachedArrayBuffer(obj, temp, &bail);
+  masm.bind(&done);
+  bailoutFrom(&bail, lir->snapshot());
 }
 
 void CodeGenerator::visitGuardHasAttachedArrayBuffer(
@@ -15039,15 +15318,19 @@ static bool CreateStackMapFromLSafepoint(LSafepoint& safepoint,
   // REG DUMP AREA, if any.
   size_t regDumpWords = 0;
   const LiveGeneralRegisterSet wasmAnyRefRegs = safepoint.wasmAnyRefRegs();
-  GeneralRegisterForwardIterator wasmAnyRefRegsIter(wasmAnyRefRegs);
+  const LiveGeneralRegisterSet slotsOrElementsRegs =
+      safepoint.slotsOrElementsRegs();
+  const LiveGeneralRegisterSet refRegs(GeneralRegisterSet::Union(
+      wasmAnyRefRegs.set(), slotsOrElementsRegs.set()));
+  GeneralRegisterForwardIterator refRegsIter(refRegs);
   switch (safepoint.wasmSafepointKind()) {
     case WasmSafepointKind::LirCall:
     case WasmSafepointKind::CodegenCall: {
       size_t spilledNumWords = nRegisterDumpBytes / sizeof(void*);
       regDumpWords += spilledNumWords;
 
-      for (; wasmAnyRefRegsIter.more(); ++wasmAnyRefRegsIter) {
-        Register reg = *wasmAnyRefRegsIter;
+      for (; refRegsIter.more(); ++refRegsIter) {
+        Register reg = *refRegsIter;
         size_t offsetFromSpillBase =
             safepoint.liveRegs().gprs().offsetOfPushedRegister(reg) /
             sizeof(void*);
@@ -15055,9 +15338,13 @@ static bool CreateStackMapFromLSafepoint(LSafepoint& safepoint,
                    offsetFromSpillBase <= spilledNumWords);
         size_t index = spilledNumWords - offsetFromSpillBase;
 
-        stackMap->set(index, wasm::StackMap::AnyRef);
+        if (wasmAnyRefRegs.has(reg)) {
+          stackMap->set(index, wasm::StackMap::AnyRef);
+        } else {
+          MOZ_ASSERT(slotsOrElementsRegs.has(reg));
+          stackMap->set(index, wasm::StackMap::ArrayDataPointer);
+        }
       }
-
       // Float and vector registers do not have to be handled; they cannot
       // contain wasm anyrefs, and they are spilled after general-purpose
       // registers. Gprs are therefore closest to the spill base and thus their
@@ -15066,8 +15353,8 @@ static bool CreateStackMapFromLSafepoint(LSafepoint& safepoint,
     case WasmSafepointKind::Trap: {
       regDumpWords += trapExitLayoutNumWords;
 
-      for (; wasmAnyRefRegsIter.more(); ++wasmAnyRefRegsIter) {
-        Register reg = *wasmAnyRefRegsIter;
+      for (; refRegsIter.more(); ++refRegsIter) {
+        Register reg = *refRegsIter;
         size_t offsetFromTop = trapExitLayout.getOffset(reg);
 
         // If this doesn't hold, the associated register wasn't saved by
@@ -15080,7 +15367,12 @@ static bool CreateStackMapFromLSafepoint(LSafepoint& safepoint,
         // offset up from the bottom of the (integer register) save area.
         size_t offsetFromBottom = trapExitLayoutNumWords - 1 - offsetFromTop;
 
-        stackMap->set(offsetFromBottom, wasm::StackMap::AnyRef);
+        if (wasmAnyRefRegs.has(reg)) {
+          stackMap->set(offsetFromBottom, wasm::StackMap::AnyRef);
+        } else {
+          MOZ_ASSERT(slotsOrElementsRegs.has(reg));
+          stackMap->set(offsetFromBottom, wasm::StackMap::ArrayDataPointer);
+        }
       }
     } break;
     default:
@@ -15374,15 +15666,37 @@ void CodeGenerator::validateAndRegisterFuseDependencies(JSContext* cx,
 
         if (!hasSeenObjectEmulateUndefinedFuse.intact()) {
           JitSpew(JitSpew_Codegen,
-                  "tossing compilation; fuse dependency no longer valid\n");
+                  "tossing compilation; hasSeenObjectEmulateUndefinedFuse fuse "
+                  "dependency no longer valid\n");
           *isValid = false;
           return;
         }
 
         if (!hasSeenObjectEmulateUndefinedFuse.addFuseDependency(cx, script)) {
-          JitSpew(
-              JitSpew_Codegen,
-              "tossing compilation; failed to register script dependency\n");
+          JitSpew(JitSpew_Codegen,
+                  "tossing compilation; failed to register "
+                  "hasSeenObjectEmulateUndefinedFuse script dependency\n");
+          *isValid = false;
+          return;
+        }
+        break;
+      }
+
+      case FuseDependencyKind::OptimizeGetIteratorFuse: {
+        auto& optimizeGetIteratorFuse =
+            cx->realm()->realmFuses.optimizeGetIteratorFuse;
+        if (!optimizeGetIteratorFuse.intact()) {
+          JitSpew(JitSpew_Codegen,
+                  "tossing compilation; optimizeGetIteratorFuse fuse "
+                  "dependency no longer valid\n");
+          *isValid = false;
+          return;
+        }
+
+        if (!optimizeGetIteratorFuse.addFuseDependency(cx, script)) {
+          JitSpew(JitSpew_Codegen,
+                  "tossing compilation; failed to register "
+                  "optimizeGetIteratorFuse script dependency\n");
           *isValid = false;
           return;
         }
@@ -15751,15 +16065,16 @@ void CodeGenerator::visitMegamorphicSetElement(LMegamorphicSetElement* lir) {
 
 void CodeGenerator::visitLoadScriptedProxyHandler(
     LLoadScriptedProxyHandler* ins) {
-  const Register obj = ToRegister(ins->getOperand(0));
-  ValueOperand output = ToOutValue(ins);
+  Register obj = ToRegister(ins->getOperand(0));
+  Register output = ToRegister(ins->output());
 
-  masm.loadPtr(Address(obj, ProxyObject::offsetOfReservedSlots()),
-               output.scratchReg());
-  masm.loadValue(
-      Address(output.scratchReg(), js::detail::ProxyReservedSlots::offsetOfSlot(
-                                       ScriptedProxyHandler::HANDLER_EXTRA)),
-      output);
+  masm.loadPtr(Address(obj, ProxyObject::offsetOfReservedSlots()), output);
+
+  Label bail;
+  Address handlerAddr(output, js::detail::ProxyReservedSlots::offsetOfSlot(
+                                  ScriptedProxyHandler::HANDLER_EXTRA));
+  masm.fallibleUnboxObject(handlerAddr, output, &bail);
+  bailoutFrom(&bail, ins->snapshot());
 }
 
 #ifdef JS_PUNBOX64
@@ -17263,25 +17578,20 @@ void CodeGenerator::visitLoadDataViewElement(LLoadDataViewElement* lir) {
 
 void CodeGenerator::visitLoadTypedArrayElementHole(
     LLoadTypedArrayElementHole* lir) {
-  Register object = ToRegister(lir->object());
+  Register elements = ToRegister(lir->elements());
+  Register index = ToRegister(lir->index());
+  Register length = ToRegister(lir->length());
   const ValueOperand out = ToOutValue(lir);
 
-  // Load the length.
   Register scratch = out.scratchReg();
-  Register scratch2 = ToRegister(lir->temp0());
-  Register index = ToRegister(lir->index());
-  masm.loadArrayBufferViewLengthIntPtr(object, scratch);
 
   // Load undefined if index >= length.
   Label outOfBounds, done;
-  masm.spectreBoundsCheckPtr(index, scratch, scratch2, &outOfBounds);
-
-  // Load the elements vector.
-  masm.loadPtr(Address(object, ArrayBufferViewObject::dataOffset()), scratch);
+  masm.spectreBoundsCheckPtr(index, length, scratch, &outOfBounds);
 
   Scalar::Type arrayType = lir->mir()->arrayType();
   Label fail;
-  BaseIndex source(scratch, index, ScaleFromScalarType(arrayType));
+  BaseIndex source(elements, index, ScaleFromScalarType(arrayType));
   MacroAssembler::Uint32Mode uint32Mode =
       lir->mir()->forceDouble() ? MacroAssembler::Uint32Mode::ForceDouble
                                 : MacroAssembler::Uint32Mode::FailOnDouble;
@@ -17301,37 +17611,38 @@ void CodeGenerator::visitLoadTypedArrayElementHole(
 
 void CodeGenerator::visitLoadTypedArrayElementHoleBigInt(
     LLoadTypedArrayElementHoleBigInt* lir) {
-  Register object = ToRegister(lir->object());
+  Register elements = ToRegister(lir->elements());
+  Register index = ToRegister(lir->index());
+  Register length = ToRegister(lir->length());
   const ValueOperand out = ToOutValue(lir);
 
-  // On x86 there are not enough registers. In that case reuse the output's
-  // type register as temporary.
-#ifdef JS_CODEGEN_X86
-  MOZ_ASSERT(lir->temp()->isBogusTemp());
-  Register temp = out.typeReg();
-#else
   Register temp = ToRegister(lir->temp());
-#endif
-  Register64 temp64 = ToRegister64(lir->temp64());
 
-  // Load the length.
-  Register scratch = out.scratchReg();
-  Register index = ToRegister(lir->index());
-  masm.loadArrayBufferViewLengthIntPtr(object, scratch);
+  // On x86 there are not enough registers. In that case reuse the output
+  // registers as temporaries.
+#ifdef JS_CODEGEN_X86
+  MOZ_ASSERT(lir->temp64().isBogusTemp());
+  Register64 temp64 = out.toRegister64();
+#else
+  Register64 temp64 = ToRegister64(lir->temp64());
+#endif
 
   // Load undefined if index >= length.
   Label outOfBounds, done;
-  masm.spectreBoundsCheckPtr(index, scratch, temp, &outOfBounds);
-
-  // Load the elements vector.
-  masm.loadPtr(Address(object, ArrayBufferViewObject::dataOffset()), scratch);
+  masm.spectreBoundsCheckPtr(index, length, temp, &outOfBounds);
 
   Scalar::Type arrayType = lir->mir()->arrayType();
-  BaseIndex source(scratch, index, ScaleFromScalarType(arrayType));
+  BaseIndex source(elements, index, ScaleFromScalarType(arrayType));
   masm.load64(source, temp64);
 
+#ifdef JS_CODEGEN_X86
+  Register bigInt = temp;
+  Register maybeTemp = InvalidReg;
+#else
   Register bigInt = out.scratchReg();
-  emitCreateBigInt(lir, arrayType, temp64, bigInt, temp);
+  Register maybeTemp = temp;
+#endif
+  emitCreateBigInt(lir, arrayType, temp64, bigInt, maybeTemp);
 
   masm.tagValue(JSVAL_TYPE_BIGINT, bigInt, out);
   masm.jump(&done);
@@ -17677,6 +17988,10 @@ void CodeGenerator::visitStoreTypedArrayElementHoleBigInt(
   masm.storeToTypedBigIntArray(arrayType, temp, dest);
 
   masm.bind(&skip);
+}
+
+void CodeGenerator::visitMemoryBarrier(LMemoryBarrier* ins) {
+  masm.memoryBarrier(ins->type());
 }
 
 void CodeGenerator::visitAtomicIsLockFree(LAtomicIsLockFree* lir) {
@@ -18447,6 +18762,24 @@ void CodeGenerator::visitGuardToClass(LGuardToClass* ins) {
   Label notEqual;
 
   masm.branchTestObjClass(Assembler::NotEqual, lhs, ins->mir()->getClass(),
+                          temp, spectreRegToZero, &notEqual);
+
+  // Can't return null-return here, so bail.
+  bailoutFrom(&notEqual, ins->snapshot());
+}
+
+void CodeGenerator::visitGuardToEitherClass(LGuardToEitherClass* ins) {
+  Register lhs = ToRegister(ins->lhs());
+  Register temp = ToRegister(ins->temp0());
+
+  // branchTestObjClass may zero the object register on speculative paths
+  // (we should have a defineReuseInput allocation in this case).
+  Register spectreRegToZero = lhs;
+
+  Label notEqual;
+
+  masm.branchTestObjClass(Assembler::NotEqual, lhs,
+                          {ins->mir()->getClass1(), ins->mir()->getClass2()},
                           temp, spectreRegToZero, &notEqual);
 
   // Can't return null-return here, so bail.
@@ -19757,9 +20090,17 @@ void CodeGenerator::visitLoadWrapperTarget(LLoadWrapperTarget* lir) {
   Register output = ToRegister(lir->output());
 
   masm.loadPtr(Address(object, ProxyObject::offsetOfReservedSlots()), output);
-  masm.unboxObject(
-      Address(output, js::detail::ProxyReservedSlots::offsetOfPrivateSlot()),
-      output);
+
+  // Bail for revoked proxies.
+  Label bail;
+  Address targetAddr(output,
+                     js::detail::ProxyReservedSlots::offsetOfPrivateSlot());
+  if (lir->mir()->fallible()) {
+    masm.fallibleUnboxObject(targetAddr, output, &bail);
+    bailoutFrom(&bail, lir->snapshot());
+  } else {
+    masm.unboxObject(targetAddr, output);
+  }
 }
 
 void CodeGenerator::visitGuardHasGetterSetter(LGuardHasGetterSetter* lir) {
@@ -20133,7 +20474,8 @@ void CodeGenerator::visitToHashableString(LToHashableString* ins) {
                     Address(input, JSString::offsetOfFlags()),
                     Imm32(JSString::ATOM_BIT), &isAtom);
 
-  masm.lookupStringInAtomCacheLastLookups(input, output, ool->entry());
+  masm.lookupStringInAtomCacheLastLookups(input, output, output, ool->entry());
+  masm.jump(ool->rejoin());
   masm.bind(&isAtom);
   masm.movePtr(input, output);
   masm.bind(ool->rejoin());
@@ -20537,9 +20879,20 @@ void CodeGenerator::visitWasmAnyRefFromJSString(LWasmAnyRefFromJSString* lir) {
 }
 
 void CodeGenerator::visitWasmNewI31Ref(LWasmNewI31Ref* lir) {
-  Register value = ToRegister(lir->value());
-  Register output = ToRegister(lir->output());
-  masm.truncate32ToWasmI31Ref(value, output);
+  if (lir->value()->isConstant()) {
+    // i31ref are often created with constants. If that's the case we will
+    // do the operation statically here. This is similar to what is done
+    // in masm.truncate32ToWasmI31Ref.
+    Register output = ToRegister(lir->output());
+    uint32_t value =
+        static_cast<uint32_t>(lir->value()->toConstant()->toInt32());
+    uintptr_t ptr = wasm::AnyRef::fromUint32Truncate(value).rawValue();
+    masm.movePtr(ImmWord(ptr), output);
+  } else {
+    Register value = ToRegister(lir->value());
+    Register output = ToRegister(lir->output());
+    masm.truncate32ToWasmI31Ref(value, output);
+  }
 }
 
 void CodeGenerator::visitWasmI31RefGet(LWasmI31RefGet* lir) {

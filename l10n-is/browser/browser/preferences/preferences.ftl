@@ -32,6 +32,8 @@ search-input-box2 =
     .style = width: 15.4em
     .placeholder = Finna í stillingum
 managed-notice = Vafranum er stjórnað af kerfisstjórum þínum.
+managed-notice-info-icon =
+    .alt = Upplýsingar
 category-list =
     .aria-label = Flokkar
 pane-general-title = Almennt
@@ -104,7 +106,7 @@ extension-controlling-proxy-config = <img data-l10n-name ="icon"/><strong>{ $nam
 #
 # <img data-l10n-name="addons-icon"/> will be replaced with Add-ons icon
 # <img data-l10n-name="menu-icon"/> will be replaced with Menu icon
-extension-controlled-enable = Til að virkja viðbót farðu þá í <img data-l10n-name="addons-icon"/> viðbætur í <img data-l10n-name="menu-icon"/> valmyndinni.
+extension-controlled-enable = Til að virkja forritsaukann farðu þá í <img data-l10n-name="addons-icon"/> viðbætur í <img data-l10n-name="menu-icon"/> valmyndinni.
 
 ## Preferences UI Search Results
 
@@ -134,7 +136,7 @@ windows-launch-on-login-disabled = Þessi kjörstilling hefur verið gerð óvir
 startup-restore-warn-on-quit =
     .label = Aðvara þegar vafra er lokað
 disable-extension =
-    .label = Slökkva á viðbót
+    .label = Slökkva á forritsauka
 preferences-data-migration-header = Flytja inn vafragögn
 preferences-data-migration-description = Flyttu inn bókamerki, lykilorð, feril og sjálfvirk útfyllingargögn í { -brand-short-name }.
 preferences-data-migration-button =
@@ -708,6 +710,13 @@ sync-mobile-promo = Sæktu Firefox fyrir <img data-l10n-name="android-icon"/> <a
 
 sync-profile-picture =
     .tooltiptext = Breyta notandamynd
+sync-profile-picture-with-alt =
+    .tooltiptext = Breyta notandamynd
+    .alt = Breyta notandamynd
+sync-profile-picture-account-problem =
+    .alt = Auðkennismynd reiknings
+fxa-login-rejected-warning =
+    .alt = Aðvörun
 sync-sign-out =
     .label = Útskráning…
     .accesskey = g
@@ -1274,6 +1283,8 @@ addon-recommendations-link = Fræðast meira
 # or builds with no Telemetry support available.
 collection-health-report-disabled = Gagnaskýrslur eru óvirkar í þessari útgáfu
 collection-backlogged-crash-reports-with-link = Leyfa { -brand-short-name } að senda bakraktar hrunskýrslur fyrir þína hönd <a data-l10n-name="crash-reports-link">Frekari upplýsingar</a>
+    .accesskey = y
+collection-backlogged-crash-reports = Leyfa { -brand-short-name } að senda bakraktar hrunskýrslur fyrir þína hönd
     .accesskey = y
 privacy-segmentation-section-header = Nýir eiginleikar sem bæta vafrið þitt
 privacy-segmentation-section-description = Þegar við bjóðum upp á eiginleika sem nota gögnin þín til að veita þér persónulegri upplifun:

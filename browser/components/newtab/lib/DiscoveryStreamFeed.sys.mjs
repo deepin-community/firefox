@@ -26,7 +26,7 @@ const { setTimeout, clearTimeout } = ChromeUtils.importESModule(
 import {
   actionTypes as at,
   actionCreators as ac,
-} from "resource://activity-stream/common/Actions.sys.mjs";
+} from "resource://activity-stream/common/Actions.mjs";
 
 const CACHE_KEY = "discovery_stream";
 const STARTUP_CACHE_EXPIRE_TIME = 7 * 24 * 60 * 60 * 1000; // 1 week
@@ -331,7 +331,7 @@ export class DiscoveryStreamFeed {
               },
             });
           },
-          error(error) {},
+          error() {},
         });
       }
     }
@@ -565,8 +565,8 @@ export class DiscoveryStreamFeed {
 
   generateFeedUrl(isBff) {
     if (isBff) {
-      return `https://${lazy.NimbusFeatures.saveToPocket.getVariable(
-        "bffApi"
+      return `https://${Services.prefs.getStringPref(
+        "extensions.pocket.bffApi"
       )}/desktop/v1/recommendations?locale=$locale&region=$region&count=30`;
     }
     return FEED_URL;
@@ -605,6 +605,13 @@ export class DiscoveryStreamFeed {
       pocketConfig.ctaButtonVariant === "variant-b"
     ) {
       ctaButtonVariant = pocketConfig.ctaButtonVariant;
+    }
+    let spocMessageVariant = "";
+    if (
+      pocketConfig.spocMessageVariant === "variant-a" ||
+      pocketConfig.spocMessageVariant === "variant-b"
+    ) {
+      spocMessageVariant = pocketConfig.spocMessageVariant;
     }
 
     const prepConfArr = arr => {
@@ -681,6 +688,9 @@ export class DiscoveryStreamFeed {
       // For now button variants are for experimentation and English only.
       ctaButtonSponsors: this.locale.startsWith("en-") ? ctaButtonSponsors : [],
       ctaButtonVariant: this.locale.startsWith("en-") ? ctaButtonVariant : "",
+      spocMessageVariant: this.locale.startsWith("en-")
+        ? spocMessageVariant
+        : "",
     });
 
     sendUpdate({
@@ -976,8 +986,9 @@ export class DiscoveryStreamFeed {
         });
 
         if (spocsResponse) {
+          const fetchTimestamp = Date.now();
           spocsState = {
-            lastUpdated: Date.now(),
+            lastUpdated: fetchTimestamp,
             spocs: {
               ...spocsResponse,
             },
@@ -1040,8 +1051,13 @@ export class DiscoveryStreamFeed {
 
               const { data: blockedResults } = this.filterBlocked(capResult);
 
+              const { data: spocsWithFetchTimestamp } = this.addFetchTimestamp(
+                blockedResults,
+                fetchTimestamp
+              );
+
               const { data: scoredResults, personalized } =
-                await this.scoreItems(blockedResults, "spocs");
+                await this.scoreItems(spocsWithFetchTimestamp, "spocs");
 
               spocsState.spocs = {
                 ...spocsState.spocs,
@@ -1199,6 +1215,22 @@ export class DiscoveryStreamFeed {
     return { data };
   }
 
+  // Add the fetch timestamp property to each spoc returned to communicate how
+  // old the spoc is in telemetry when it is used by the client
+  addFetchTimestamp(spocs, fetchTimestamp) {
+    if (spocs && spocs.length) {
+      return {
+        data: spocs.map(s => {
+          return {
+            ...s,
+            fetchTimestamp,
+          };
+        }),
+      };
+    }
+    return { data: spocs };
+  }
+
   // For backwards compatibility, older spoc endpoint don't have flight_id,
   // but instead had campaign_id we can use
   //
@@ -1324,8 +1356,8 @@ export class DiscoveryStreamFeed {
       let options = {};
       if (this.isBff) {
         const headers = new Headers();
-        const oAuthConsumerKey = lazy.NimbusFeatures.saveToPocket.getVariable(
-          "oAuthConsumerKeyBff"
+        const oAuthConsumerKey = Services.prefs.getStringPref(
+          "extensions.pocket.oAuthConsumerKeyBff"
         );
         headers.append("consumer_key", oAuthConsumerKey);
         options = {
@@ -1758,7 +1790,7 @@ export class DiscoveryStreamFeed {
         break;
       // Check if spocs was disabled. Remove them if they were.
       case PREF_SHOW_SPONSORED:
-      case PREF_SHOW_SPONSORED_TOPSITES:
+      case PREF_SHOW_SPONSORED_TOPSITES: {
         const dispatch = update =>
           this.store.dispatch(ac.BroadcastToContent(update));
         // We refresh placements data because one of the spocs were turned off.
@@ -1784,6 +1816,7 @@ export class DiscoveryStreamFeed {
         await this.cache.set("spocs", {});
         await this.loadSpocs(dispatch);
         break;
+      }
     }
   }
 
@@ -2040,6 +2073,7 @@ export class DiscoveryStreamFeed {
      `onboardingExperience` Show new users some UI explaining Pocket above the Pocket section.
      `ctaButtonSponsors` An array of sponsors we want to show a cta button on the card for.
      `ctaButtonVariant` Sets the variant for the cta sponsor button.
+     `spocMessageVariant` Sets the variant for the sponsor message dialog.
 */
 getHardcodedLayout = ({
   spocsUrl = SPOCS_URL,
@@ -2063,6 +2097,7 @@ getHardcodedLayout = ({
   onboardingExperience = false,
   ctaButtonSponsors = [],
   ctaButtonVariant = "",
+  spocMessageVariant = "",
 }) => ({
   lastUpdate: Date.now(),
   spocs: {
@@ -2144,7 +2179,9 @@ getHardcodedLayout = ({
             link_url: "https://getpocket.com/firefox/new_tab_learn_more",
             icon: "chrome://global/skin/icons/pocket.svg",
           },
-          properties: {},
+          properties: {
+            spocMessageVariant,
+          },
           styles: {
             ".ds-message": "margin-bottom: -20px",
           },
@@ -2162,6 +2199,7 @@ getHardcodedLayout = ({
             onboardingExperience,
             ctaButtonSponsors,
             ctaButtonVariant,
+            spocMessageVariant,
           },
           widgets: {
             positions: widgetPositions.map(position => {

@@ -655,6 +655,9 @@ sync-mobile-promo = Pobier Firefox na <img data-l10n-name="android-icon"/> <a da
 
 sync-profile-picture =
     .tooltiptext = Zmiyń profilowy ôbrozek
+sync-profile-picture-with-alt =
+    .tooltiptext = Zmiyń profilowy ôbrozek
+    .alt = Zmiyń profilowy ôbrozek
 sync-sign-out =
     .label = Wyloguj sie…
     .accesskey = g
@@ -1110,6 +1113,8 @@ addon-recommendations-link = Przewiydz sie wiyncyj
 # or builds with no Telemetry support available.
 collection-health-report-disabled = Posyłanie danych je zastawione przi tyj kōnfiguracyji
 collection-backlogged-crash-reports-with-link = Przizwōl, coby { -brand-short-name } posyłoł nazbiyrane raporty z awaryjōw za ciebie <a data-l10n-name="crash-reports-link">Przewiydz sie wiyncyj</a>
+    .accesskey = c
+collection-backlogged-crash-reports = Przizwōl, coby { -brand-short-name } posyłoł nazbiyrane raporty z awaryjōw za ciebie
     .accesskey = c
 
 ## Privacy Section - Security

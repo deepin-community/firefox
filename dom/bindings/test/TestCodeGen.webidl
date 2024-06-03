@@ -162,10 +162,6 @@ enum OnlyForUseInInnerUnion {
  LegacyFactoryFunction=Test2(DictForConstructor dict, any any1, object obj1,
                         object? obj2, sequence<Dict> seq, optional any any2,
                         optional object obj3, optional object? obj4),
- LegacyFactoryFunction=Test3((long or record<DOMString, any>) arg1),
- LegacyFactoryFunction=Test4(record<DOMString, record<DOMString, any>> arg1),
- LegacyFactoryFunction=Test5(record<DOMString, sequence<record<DOMString, record<DOMString, sequence<sequence<any>>>>>> arg1),
- LegacyFactoryFunction=Test6(sequence<record<ByteString, sequence<sequence<record<ByteString, record<USVString, any>>>>>> arg1),
  Exposed=Window]
 interface TestInterface {
   constructor();
@@ -1087,7 +1083,19 @@ interface TestInterface {
   undefined passUnionArrayBuffer((DOMString or ArrayBuffer) foo);
   undefined passUnionAllowSharedArrayBuffer((DOMString or [AllowShared] ArrayBuffer) foo);
 
-  // If you add things here, add them to TestExampleGen and TestJSImplGen as well
+  // If you add things here, add them to TestExampleGen as well
+};
+
+[LegacyFactoryFunction=Test3((long or record<DOMString, any>) arg1),
+ LegacyFactoryFunction=Test4(record<DOMString, record<DOMString, any>> arg1),
+ Exposed=Window]
+interface TestLegacyFactoryFunctionInterface {
+};
+
+[LegacyFactoryFunction=Test5(record<DOMString, sequence<record<DOMString, record<DOMString, sequence<sequence<any>>>>>> arg1),
+ LegacyFactoryFunction=Test6(sequence<record<ByteString, sequence<sequence<record<ByteString, record<USVString, any>>>>>> arg1),
+ Exposed=Window]
+interface TestLegacyFactoryFunctionInterface2 {
 };
 
 [Exposed=Window]
@@ -1534,4 +1542,17 @@ interface TestPrefChromeOnlySCFuncConstructorForInterface {
   // There should be checks for all Pref/ChromeOnly/SecureContext/Func
   // in the generated constructor.
   constructor();
+};
+
+typedef (TestCallback or GrandparentDict) TestCallbackDictUnion;
+typedef (GrandparentDict or TestCallback) TestDictCallbackUnion;
+
+[Exposed=Window]
+interface TestCallbackDictUnionOverload {
+  undefined overload1(boolean arg);
+  undefined overload1(TestCallback arg);
+  undefined overload1(optional GrandparentDict arg = {});
+  undefined overload2(boolean arg);
+  undefined overload2(optional GrandparentDict arg = {});
+  undefined overload2(TestCallback arg);
 };

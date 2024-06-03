@@ -42,6 +42,7 @@ extensions = [
     "sphinx.ext.todo",
     "mozbuild.sphinx",
     "sphinx_js",
+    "sphinxcontrib.jquery",
     "sphinxcontrib.mermaid",
     "sphinx_copybutton",
     "sphinx_markdown_tables",
@@ -54,6 +55,8 @@ extensions = [
 # When adding more paths to this list, please ensure that they are not
 # excluded from valid-jsdoc in the top-level .eslintrc.js.
 js_source_path = [
+    "../browser/components/backup",
+    "../browser/components/backup/resources",
     "../browser/components/extensions",
     "../browser/components/migration",
     "../browser/components/migration/content",

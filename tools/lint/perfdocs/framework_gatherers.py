@@ -167,7 +167,7 @@ class RaptorGatherer(FrameworkGatherer):
         :return list: the list of the tests
         """
         desc_exclusion = ["here", "manifest_relpath", "path", "relpath"]
-        test_manifest = TestManifest([str(manifest_path)], strict=False)
+        test_manifest = TestManifest([str(manifest_path)], strict=False, document=True)
         test_list = test_manifest.active_tests(exists=False, disabled=False)
         subtests = {}
         for subtest in test_list:
@@ -177,6 +177,20 @@ class RaptorGatherer(FrameworkGatherer):
             for key, value in subtest.items():
                 if key not in desc_exclusion:
                     description[key] = value
+
+            # Add searchfox link
+            key = list(test_manifest.source_documents.keys())[0]
+
+            if (
+                test_manifest.source_documents[key]
+                and subtest["name"] in test_manifest.source_documents[key].keys()
+            ):
+                description["link searchfox"] = (
+                    "https://searchfox.org/mozilla-central/source/"
+                    + manifest_path
+                    + "#"
+                    + test_manifest.source_documents[key][subtest["name"]]["lineno"]
+                )
 
             # Prepare alerting metrics for verification
             description["metrics"] = [
@@ -226,7 +240,6 @@ class RaptorGatherer(FrameworkGatherer):
         browsers = [
             "firefox",
             "chrome",
-            "chromium",
             "refbrow",
             "fennec68",
             "geckoview",
@@ -258,6 +271,8 @@ class RaptorGatherer(FrameworkGatherer):
                 result += f"   {idx+1}. **{description['name']}**\n\n"
             if "owner" in description.keys():
                 result += f"   **Owner**: {description['owner']}\n\n"
+            if test_description:
+                result += f"   **Description**: {test_description}\n\n"
 
             for key in sorted(description.keys()):
                 if key in ["owner", "name", "manifest", "metrics"]:
@@ -265,10 +280,12 @@ class RaptorGatherer(FrameworkGatherer):
                 sub_title = key.replace("_", " ")
                 if key == "test_url":
                     if "<" in description[key] or ">" in description[key]:
-                        description[key] = description[key].replace("<", "\<")
-                        description[key] = description[key].replace(">", "\>")
+                        description[key] = description[key].replace("<", r"\<")
+                        description[key] = description[key].replace(">", r"\>")
                     result += f"   * **{sub_title}**: `<{description[key]}>`__\n"
                 elif key == "secondary_url":
+                    result += f"   * **{sub_title}**: `<{description[key]}>`__\n"
+                elif key == "link searchfox":
                     result += f"   * **{sub_title}**: `<{description[key]}>`__\n"
                 elif key in ["playback_pageset_manifest"]:
                     result += (

@@ -40,6 +40,7 @@ about-webauthn-results-pin-invalid-error =
        *[other] Lỗi: Mã PIN không chính xác. Hãy thử lại. Bạn còn { $retriesLeft } lần thử.
     }
 about-webauthn-results-pin-blocked-error = Lỗi: Không còn lần thử nào nữa và thiết bị của bạn đã bị khóa do nhập sai mã PIN quá nhiều lần. Thiết bị cần được đặt lại.
+about-webauthn-results-pin-not-set-error = Lỗi: Chưa đặt mã PIN. Hoạt động này cần được bảo vệ bằng mã PIN.
 about-webauthn-results-pin-too-short-error = Lỗi: Mã PIN đã nhập quá ngắn.
 about-webauthn-results-pin-too-long-error = Lỗi: Mã PIN đã nhập quá dài.
 about-webauthn-results-pin-auth-blocked-error = Lỗi: Có quá nhiều lần thử không thành công liên tiếp và xác thực bằng mã PIN đã tạm thời bị chặn. Thiết bị của bạn cần được khởi động lại (rút phích cắm và cắm lại).
@@ -53,6 +54,7 @@ about-webauthn-current-pin-label = PIN hiện tại:
 about-webauthn-pin-required-label = Vui lòng nhập PIN của bạn:
 about-webauthn-credential-list-subsection-title = Thông tin xác thực:
 about-webauthn-credential-list-empty = Không tìm thấy thông tin xác thực trên thiết bị.
+about-webauthn-confirm-deletion-label = Bạn đang chuẩn bị xóa:
 
 ## Buttons
 
@@ -70,6 +72,10 @@ about-webauthn-update-button = Cập nhật
 
 about-webauthn-auth-option-clientpin = PIN máy khách
 about-webauthn-auth-option-plat = Nền tảng thiết bị
+# pinUvAuthToken should not be translated.
+about-webauthn-auth-option-pinuvauthtoken = Quyền hạn lệnh (pinUvAuthToken)
+# MakeCredential and GetAssertion should not be translated.
+about-webauthn-auth-option-nomcgapermissionswithclientpin = Không có quyền hạn MakeCredential / GetAssertion với PIN máy khách
 about-webauthn-auth-option-largeblobs = Blob lớn
 about-webauthn-auth-option-authnrcfg = Cấu hình xác thực
 about-webauthn-auth-option-uvacfg = Quyền hạn cấu hình xác thực
@@ -85,6 +91,7 @@ about-webauthn-auth-option-null = Không hỗ trợ
 ## Authenticator info fields
 ## Info fields correspond to the CTAP2 authenticatorGetInfo field member name and definitions found in https://fidoalliance.org/specs/fido-v2.1-ps-20210615/fido-client-to-authenticator-protocol-v2.1-ps-20210615.html#authenticatorGetInfo
 
+about-webauthn-auth-info-certifications = Chứng nhận
 about-webauthn-auth-info-max-cred-blob-length = Độ dài tối đa của blob thông tin xác thực
 about-webauthn-auth-info-firmware-version = Phiên bản phần mềm
 about-webauthn-auth-info-min-pin-length = Độ dài tối thiểu của PIN

@@ -12,8 +12,8 @@ const { ExtensionPermissions } = ChromeUtils.importESModule(
 
 Services.prefs.setBoolPref("extensions.manifestV3.enabled", true);
 
-// ExtensionParent.jsm is being imported lazily because when it is imported Services.appinfo will be
-// retrieved and cached (as a side-effect of Schemas.jsm being imported), and so Services.appinfo
+// ExtensionParent.sys.mjs is being imported lazily because when it is imported Services.appinfo will be
+// retrieved and cached (as a side-effect of Schemas.sys.mjs being imported), and so Services.appinfo
 // will not be returning the version set by AddonTestUtils.createAppInfo and this test will
 // fail on non-nightly builds (because the cached appinfo.version will be undefined and
 // AddonManager startup will fail).
@@ -48,6 +48,32 @@ add_setup(async () => {
   await AddonTestUtils.promiseStartupManager();
   AddonTestUtils.usePrivilegedSignatures = false;
 });
+
+add_task(
+  {
+    skip_if: () => ExtensionPermissions._useLegacyStorageBackend,
+  },
+  async function test_permissions_rkv_recovery_rename() {
+    const databaseDir = await makeRkvDatabaseDir(
+      "extension-store-permissions",
+      {
+        mockCorrupted: true,
+      }
+    );
+    const res = await ExtensionPermissions.get("@testextension");
+    Assert.deepEqual(
+      res,
+      { permissions: [], origins: [] },
+      "Expect ExtensionPermissions get promise to be resolved"
+    );
+    Assert.ok(
+      await IOUtils.exists(
+        PathUtils.join(databaseDir, "data.safe.bin.corrupt")
+      ),
+      "Expect corrupt file to be found"
+    );
+  }
+);
 
 add_task(async function test_permissions_on_startup() {
   let extensionId = "@permissionTest";
@@ -678,6 +704,7 @@ const GRANTED_WITHOUT_USER_PROMPT = [
   "theme",
   "unlimitedStorage",
   "webRequest",
+  "webRequestAuthProvider",
   "webRequestBlocking",
   "webRequestFilterResponse",
   "webRequestFilterResponse.serviceWorkerScript",
@@ -1031,4 +1058,48 @@ add_task(async function test_internal_permissions() {
   });
 
   await extension.unload();
+});
+
+add_task(function test_normalizeOptional() {
+  const optional1 = {
+    origins: ["*://site.com/", "*://*.domain.com/"],
+    permissions: ["downloads", "tabs"],
+  };
+
+  function normalize(perms, optional) {
+    perms = { origins: [], permissions: [], ...perms };
+    optional = { origins: [], permissions: [], ...optional };
+    return ExtensionPermissions.normalizeOptional(perms, optional);
+  }
+
+  normalize({ origins: ["http://site.com/"] }, optional1);
+  normalize({ origins: ["https://site.com/"] }, optional1);
+  normalize({ origins: ["*://blah.domain.com/"] }, optional1);
+  normalize({ permissions: ["downloads", "tabs"] }, optional1);
+
+  Assert.throws(
+    () => normalize({ origins: ["http://www.example.com/"] }, optional1),
+    /was not declared in the manifest/
+  );
+  Assert.throws(
+    () => normalize({ permissions: ["proxy"] }, optional1),
+    /was not declared in optional_permissions/
+  );
+
+  const optional2 = {
+    origins: ["<all_urls>", "*://*/*"],
+    permissions: ["idle", "clipboardWrite"],
+  };
+
+  normalize({ origins: ["http://site.com/"] }, optional2);
+  normalize({ origins: ["https://site.com/"] }, optional2);
+  normalize({ origins: ["*://blah.domain.com/"] }, optional2);
+  normalize({ permissions: ["idle", "clipboardWrite"] }, optional2);
+
+  let perms = normalize({ origins: ["<all_urls>"] }, optional2);
+  equal(
+    perms.origins.sort().join(),
+    optional2.origins.sort().join(),
+    `Expect both "all sites" permissions`
+  );
 });

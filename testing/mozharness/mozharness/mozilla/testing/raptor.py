@@ -190,7 +190,6 @@ class Raptor(
                         "firefox",
                         "chrome",
                         "chrome-m",
-                        "chromium",
                         "fennec",
                         "geckoview",
                         "refbrow",
@@ -357,6 +356,17 @@ class Raptor(
                         "The number of times a cold load test is repeated (for cold load tests "
                         "only, where the browser is shutdown and restarted between test "
                         "iterations)."
+                    ),
+                },
+            ],
+            [
+                ["--post-startup-delay"],
+                {
+                    "dest": "post_startup_delay",
+                    "type": "int",
+                    "help": (
+                        "How long to wait (ms) after browser start-up before "
+                        "starting the tests."
                     ),
                 },
             ],
@@ -608,6 +618,15 @@ class Raptor(
                     ),
                 },
             ],
+            [
+                ["--screenshot-on-failure"],
+                {
+                    "action": "store_true",
+                    "dest": "screenshot_on_failure",
+                    "default": False,
+                    "help": "Take a screenshot when the test fails.",
+                },
+            ],
         ]
         + testing_config_options
         + copy.deepcopy(code_coverage_config_options)
@@ -732,6 +751,7 @@ class Raptor(
         self.browser_cycles = self.config.get("browser_cycles")
         self.clean = self.config.get("clean")
         self.page_timeout = self.config.get("page_timeout", None)
+        self.screenshot_on_failure = self.config.get("screenshot_on_failure")
 
         for (arg,), details in Raptor.browsertime_options:
             # Allow overriding defaults on the `./mach raptor-test ...` command-line.
@@ -827,25 +847,18 @@ class Raptor(
     def install_chromium_distribution(self):
         """Install Google Chromium distribution in production"""
         linux, mac, win = "linux", "mac", "win"
-        chrome, chromium, chromium_release, chromium_release_android = (
+        chrome, chromium_release, chromium_release_android = (
             "chrome",
-            "chromium",
             "custom-car",
             "cstm-car-m",
         )
 
         available_chromium_dists = [
             chrome,
-            chromium,
             chromium_release,
             chromium_release_android,
         ]
         binary_location = {
-            chromium: {
-                linux: ["chrome-linux", "chrome"],
-                mac: ["chrome-mac", "Chromium.app", "Contents", "MacOS", "Chromium"],
-                win: ["chrome-win", "Chrome.exe"],
-            },
             chromium_release: {
                 linux: ["chromium", "Default", "chrome"],
                 win: ["chromium", "Default", "chrome.exe"],
@@ -1002,7 +1015,8 @@ class Raptor(
         if os.getenv("PERF_FLAGS"):
             for option in os.getenv("PERF_FLAGS").split():
                 if "=" in option:
-                    kw_option, value = option.split("=")
+                    eq_index = option.find("=")
+                    kw_option, value = option[:eq_index], option[eq_index + 1 :]
                     kw_options[kw_option] = value
                 else:
                     options.extend(["--" + option])
@@ -1054,6 +1068,15 @@ class Raptor(
             )
         if self.config.get("page_timeout"):
             options.extend([f"--page-timeout={self.page_timeout}"])
+        if self.config.get("post_startup_delay"):
+            options.extend(
+                [f"--post-startup-delay={self.config['post_startup_delay']}"]
+            )
+        if (
+            self.config.get("screenshot_on_failure", False)
+            or os.environ.get("MOZ_AUTOMATION", None) is not None
+        ):
+            options.extend(["--screenshot-on-failure"])
 
         for (arg,), details in Raptor.browsertime_options:
             # Allow overriding defaults on the `./mach raptor-test ...` command-line
@@ -1168,7 +1191,6 @@ class Raptor(
             )
         self.register_virtualenv_module(
             requirements=[mozbase_requirements],
-            two_pass=True,
             editable=True,
         )
 

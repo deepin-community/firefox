@@ -227,7 +227,7 @@ newtab-pocket-read-more = Các chủ đề phổ biến:
 newtab-pocket-new-topics-title = Muốn nhiều câu chuyện hơn nữa? Xem các chủ đề phổ biến này từ { -pocket-brand-name }
 newtab-pocket-more-recommendations = Nhiều khuyến nghị hơn
 newtab-pocket-learn-more = Tìm hiểu thêm
-newtab-pocket-cta-button = Nhận { -pocket-brand-name }
+newtab-pocket-cta-button = Sử dụng { -pocket-brand-name }
 newtab-pocket-cta-text = Lưu những câu chuyện bạn yêu thích trong { -pocket-brand-name } và vui vẻ khi đọc chúng.
 newtab-pocket-pocket-firefox-family = { -pocket-brand-name } là một phần của gia đình { -brand-product-name }
 # A save to Pocket button that shows over the card thumbnail on hover.
@@ -261,9 +261,6 @@ newtab-custom-row-selector =
 newtab-custom-sponsored-sites = Các lối tắt được tài trợ
 newtab-custom-pocket-title = Được đề xuất bởi { -pocket-brand-name }
 newtab-custom-pocket-subtitle = Nội dung đặc biệt do { -pocket-brand-name }, một phần của { -brand-product-name }, quản lý
-newtab-custom-pocket-toggle =
-    .label = Được đề xuất bởi { -pocket-brand-name }
-    .description = Nội dung đặc biệt do { -pocket-brand-name }, một phần của { -brand-product-name }, quản lý
 newtab-custom-stories-toggle =
     .label = Câu chuyện được đề xuất
     .description = Nội dung đặc biệt được quản lý bởi gia đình { -brand-product-name }
@@ -276,3 +273,24 @@ newtab-custom-recent-toggle =
     .description = Tuyển chọn các trang và nội dung gần đây
 newtab-custom-close-button = Đóng
 newtab-custom-settings = Quản lý các cài đặt khác
+
+## New Tab Wallpapers
+
+newtab-wallpaper-title = Hình nền
+newtab-wallpaper-reset = Đặt lại về mặc định
+newtab-wallpaper-light-red-panda = Gấu trúc đỏ
+newtab-wallpaper-light-mountain = Núi trắng
+newtab-wallpaper-light-sky = Bầu trời với những đám mây màu tím và hồng
+newtab-wallpaper-light-color = Hình dạng màu xanh, hồng và vàng
+newtab-wallpaper-light-landscape = Phong cảnh núi sương mù xanh
+newtab-wallpaper-light-beach = Bãi biển có cây cọ
+newtab-wallpaper-dark-aurora = Cực quang
+newtab-wallpaper-dark-color = Hình dạng màu đỏ và màu xanh
+newtab-wallpaper-dark-panda = Gấu trúc đỏ ẩn trong rừng
+newtab-wallpaper-dark-sky = Cảnh quan thành phố với bầu trời đêm
+newtab-wallpaper-dark-mountain = Phong cảnh núi
+newtab-wallpaper-dark-city = Phong cảnh thành phố màu tím
+# Variables
+#   $author_string (String) - The name of the creator of the photo.
+#   $webpage_string (String) - The name of the webpage where the photo is located.
+newtab-wallpaper-attribution = Hình ảnh bởi <a data-l10n-name="name-link">{ $author_string }</a> trên <a data-l10n-name="webpage-link">{ $webpage_string }</a>

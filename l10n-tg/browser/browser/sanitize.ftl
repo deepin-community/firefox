@@ -19,6 +19,7 @@ sanitize-dialog-title-everything =
     .title = Пок кардани ҳамаи таърих
     .style = min-width: 34em
 clear-data-settings-label = Вақте ки шумо браузерро мепӯшед, «{ -brand-short-name }» ҳамаро ба таври худкор тоза мекунад
+sanitize-on-shutdown-description = Ҳангоми пӯшидани браузери «{ -brand-short-name }» ҳамаи унсурҳои интихобшуда ба таври худкор пок карда мешаванд.
 
 ## clear-time-duration-prefix is followed by a dropdown list, with
 ## values localized using clear-time-duration-value-* messages.
@@ -57,24 +58,43 @@ item-history-and-downloads =
 item-history-form-data-downloads =
     .label = Таърих
     .accesskey = Т
+item-history-form-data-downloads-description = Таърихи сомонаҳо ва боргириҳо, маълумоти нигоҳдошташуда дар шаклҳо ва ҷустуҷӯҳои шумо пок карда мешаванд
 item-cookies =
     .label = Кукиҳо
+    .accesskey = К
+# Variables:
+#   $amount (Number) - Amount of site data currently stored on disk
+#   $unit (String) - Abbreviation of the unit that $amount is in, e.g. "MB"
+item-cookies-site-data-with-size =
+    .label = Кукиҳо ва иттилооти сомона ({ $amount } { $unit })
     .accesskey = К
 item-cookies-site-data =
     .label = Кукиҳо ва иттилооти сомона
     .accesskey = у
+item-cookies-site-data-description = Воридшавиҳои шумо дар сомонаҳо метавонанд бекор карда шаванд ва сабадҳои харидории шумо холӣ карда шаванд
 item-active-logins =
     .label = Воридшавиҳои фаъол
     .accesskey = В
 item-cache =
     .label = Зерҳофиза
     .accesskey = З
+# Variables:
+#   $amount (Number) - Amount of cached data
+#   $unit (String) - Abbreviation of the unit that $amount is in, e.g. "MB"
+item-cached-content-with-size =
+    .label = Файлҳо ва саҳифаҳои муваққатӣ дар зерҳофиза ({ $amount } { $unit })
+    .accesskey = Ф
+item-cached-content =
+    .label = Файлҳо ва саҳифаҳои муваққатӣ дар зерҳофиза
+    .accesskey = Ф
+item-cached-content-description = Унсурҳои ёридиҳандае, ки сомонаҳоро тезтар бор мекунанд, пок карда мешаванд
 item-form-search-history =
     .label = Таърихи шаклҳо ва ҷустуҷӯ
     .accesskey = Т
 item-site-prefs =
     .label = Танзимоти сомона
     .accesskey = а
+item-site-prefs-description = Иҷозатҳо ва хусусиятҳои сомонаҳои шумо ба танзимоти аслӣ барқарор карда мешаванд
 data-section-label = Иттилоот
 item-site-settings =
     .label = Танзимоти сомона

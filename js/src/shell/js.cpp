@@ -11,6 +11,7 @@
 #include "mozilla/Assertions.h"  // MOZ_ASSERT, MOZ_ASSERT_IF, MOZ_RELEASE_ASSERT, MOZ_CRASH
 #include "mozilla/Atomics.h"
 #include "mozilla/Attributes.h"
+#include "mozilla/Compression.h"
 #include "mozilla/DebugOnly.h"
 #include "mozilla/EnumSet.h"
 #include "mozilla/IntegerPrintfMacros.h"
@@ -127,7 +128,7 @@
 #include "js/ErrorReport.h"                 // JS::PrintError
 #include "js/Exception.h"                   // JS::StealPendingExceptionStack
 #include "js/experimental/CodeCoverage.h"   // js::EnableCodeCoverage
-#include "js/experimental/CompileScript.h"  // JS::NewFrontendContext, JS::DestroyFrontendContext, JS::HadFrontendErrors, JS::ConvertFrontendErrorsToRuntimeErrors, JS::CompileGlobalScriptToStencil, JS::CompileModuleScriptToStencil, JS::CompilationStorage
+#include "js/experimental/CompileScript.h"  // JS::NewFrontendContext, JS::DestroyFrontendContext, JS::HadFrontendErrors, JS::ConvertFrontendErrorsToRuntimeErrors, JS::CompileGlobalScriptToStencil, JS::CompileModuleScriptToStencil
 #include "js/experimental/CTypes.h"         // JS::InitCTypesClass
 #include "js/experimental/Intl.h"  // JS::AddMoz{DateTimeFormat,DisplayNames}Constructor
 #include "js/experimental/JitInfo.h"  // JSJit{Getter,Setter,Method}CallArgs, JSJitGetterInfo, JSJit{Getter,Setter}Op, JSJitInfo
@@ -212,6 +213,8 @@
 #include "vm/JSObject-inl.h"
 #include "vm/Realm-inl.h"
 #include "vm/Stack-inl.h"
+
+#undef compress
 
 using namespace js;
 using namespace js::cli;
@@ -637,15 +640,11 @@ void OffThreadJob::run() {
 
   switch (kind_) {
     case Kind::CompileScript: {
-      JS::CompilationStorage compileStorage;
-      stencil_ = JS::CompileGlobalScriptToStencil(fc_, options_, srcBuf_,
-                                                  compileStorage);
+      stencil_ = JS::CompileGlobalScriptToStencil(fc_, options_, srcBuf_);
       break;
     }
     case Kind::CompileModule: {
-      JS::CompilationStorage compileStorage;
-      stencil_ = JS::CompileModuleScriptToStencil(fc_, options_, srcBuf_,
-                                                  compileStorage);
+      stencil_ = JS::CompileModuleScriptToStencil(fc_, options_, srcBuf_);
       break;
     }
     case Kind::Decode: {
@@ -724,21 +723,12 @@ bool shell::enableWasm = false;
 bool shell::enableSharedMemory = SHARED_MEMORY_DEFAULT;
 bool shell::enableWasmBaseline = false;
 bool shell::enableWasmOptimizing = false;
-
-#define WASM_FEATURE(NAME, _, STAGE, ...) \
-  bool shell::enableWasm##NAME = STAGE != WasmFeatureStage::Experimental;
-JS_FOR_WASM_FEATURES(WASM_FEATURE);
-#undef WASM_FEATURE
-
 bool shell::enableWasmVerbose = false;
 bool shell::enableTestWasmAwaitTier2 = false;
 bool shell::enableSourcePragmas = true;
 bool shell::enableAsyncStacks = false;
 bool shell::enableAsyncStackCaptureDebuggeeOnly = false;
 bool shell::enableToSource = false;
-#ifdef ENABLE_JSON_PARSE_WITH_SOURCE
-bool shell::enableJSONParseWithSource = false;
-#endif
 bool shell::enableImportAttributes = false;
 bool shell::enableImportAttributesAssertSyntax = false;
 #ifdef JS_GC_ZEAL
@@ -1323,6 +1313,13 @@ static bool DrainJobQueue(JSContext* cx, unsigned argc, Value* vp) {
     return false;
   }
 
+  if (cx->isEvaluatingModule != 0) {
+    JS_ReportErrorASCII(
+        cx,
+        "Can't drain the job queue when executing the top level of a module");
+    return false;
+  }
+
   RunShellJobs(cx);
 
   if (GetShellContext(cx)->quitting) {
@@ -1538,7 +1535,6 @@ static bool BoundToAsyncStack(JSContext* cx, unsigned argc, Value* vp) {
   }
   RootedString causeString(cx, ToString(cx, v));
   if (!causeString) {
-    MOZ_ASSERT(cx->isExceptionPending());
     return false;
   }
 
@@ -2436,6 +2432,20 @@ static bool ConvertTranscodeResultToJSException(JSContext* cx,
   }
 }
 
+static void SetQuitting(JSContext* cx, int32_t code) {
+  ShellContext* sc = GetShellContext(cx);
+  js::StopDrainingJobQueue(cx);
+  sc->exitCode = code;
+  sc->quitting = true;
+}
+
+static void UnsetQuitting(JSContext* cx) {
+  ShellContext* sc = GetShellContext(cx);
+  js::RestartDrainingJobQueue(cx);
+  sc->exitCode = 0;
+  sc->quitting = false;
+}
+
 static bool Evaluate(JSContext* cx, unsigned argc, Value* vp) {
   CallArgs args = CallArgsFromVp(argc, vp);
 
@@ -2724,6 +2734,11 @@ static bool Evaluate(JSContext* cx, unsigned argc, Value* vp) {
                 ? JS_ExecuteScript(cx, script, args.rval())
                 : JS_ExecuteScript(cx, envChain, script, args.rval()))) {
         if (catchTermination && !JS_IsExceptionPending(cx)) {
+          ShellContext* sc = GetShellContext(cx);
+          if (sc->quitting) {
+            UnsetQuitting(cx);
+          }
+
           JSAutoRealm ar1(cx, callerGlobal);
           JSString* str = JS_NewStringCopyZ(cx, "terminated");
           if (!str) {
@@ -3173,8 +3188,6 @@ static bool PrintErr(JSContext* cx, unsigned argc, Value* vp) {
 static bool Help(JSContext* cx, unsigned argc, Value* vp);
 
 static bool Quit(JSContext* cx, unsigned argc, Value* vp) {
-  ShellContext* sc = GetShellContext(cx);
-
   // Print a message to stderr in differential testing to help jsfunfuzz
   // find uncatchable-exception bugs.
   if (js::SupportDifferentialTesting()) {
@@ -3197,9 +3210,7 @@ static bool Quit(JSContext* cx, unsigned argc, Value* vp) {
     return false;
   }
 
-  js::StopDrainingJobQueue(cx);
-  sc->exitCode = code;
-  sc->quitting = true;
+  SetQuitting(cx, code);
   return false;
 }
 
@@ -4116,11 +4127,7 @@ static void SetStandardRealmOptions(JS::RealmOptions& options) {
   options.creationOptions()
       .setSharedMemoryAndAtomicsEnabled(enableSharedMemory)
       .setCoopAndCoepEnabled(false)
-      .setToSourceEnabled(enableToSource)
-#ifdef ENABLE_JSON_PARSE_WITH_SOURCE
-      .setJSONParseWithSource(enableJSONParseWithSource)
-#endif
-      ;
+      .setToSourceEnabled(enableToSource);
 }
 
 [[nodiscard]] static bool CheckRealmOptions(JSContext* cx,
@@ -5456,7 +5463,7 @@ static bool ModuleLink(JSContext* cx, unsigned argc, Value* vp) {
 
   Rooted<ModuleObject*> module(cx,
                                object->as<ShellModuleObjectWrapper>().get());
-  if (!js::ModuleLink(cx, module)) {
+  if (!JS::ModuleLink(cx, module)) {
     return false;
   }
 
@@ -5485,7 +5492,7 @@ static bool ModuleEvaluate(JSContext* cx, unsigned argc, Value* vp) {
 
     Rooted<ModuleObject*> module(cx,
                                  object->as<ShellModuleObjectWrapper>().get());
-    if (!js::ModuleEvaluate(cx, module, args.rval())) {
+    if (!JS::ModuleEvaluate(cx, module, args.rval())) {
       return false;
     }
   }
@@ -5731,6 +5738,11 @@ static bool FrontendTest(JSContext* cx, unsigned argc, Value* vp,
       return false;
     }
     if (!js::ParseCompileOptions(cx, options, objOptions, nullptr)) {
+      return false;
+    }
+
+    if (goal == frontend::ParseGoal::Module && options.lineno == 0) {
+      JS_ReportErrorASCII(cx, "Module cannot be compiled with lineNumber == 0");
       return false;
     }
 
@@ -6151,8 +6163,7 @@ static bool OffThreadCompileModuleToStencil(JSContext* cx, unsigned argc,
       return false;
     }
 
-    if (options.lineno == 0) {
-      JS_ReportErrorASCII(cx, "Module cannot be compiled with lineNumber == 0");
+    if (!ValidateModuleCompileOptions(cx, options)) {
       return false;
     }
   }
@@ -6802,6 +6813,10 @@ static bool NewGlobal(JSContext* cx, unsigned argc, Value* vp) {
     creationOptions.setNewCompartmentAndZone();
   }
 
+  // Ensure the target compartment/zone is kept alive when sameCompartmentAs or
+  // sameZoneAs is used.
+  Rooted<JSObject*> compartmentRoot(cx);
+
   JS::AutoHoldPrincipals principals(cx);
 
   if (args.length() == 1 && args[0].isObject()) {
@@ -6819,15 +6834,16 @@ static bool NewGlobal(JSContext* cx, unsigned argc, Value* vp) {
       return false;
     }
     if (v.isObject()) {
-      creationOptions.setNewCompartmentInExistingZone(
-          UncheckedUnwrap(&v.toObject()));
+      compartmentRoot = UncheckedUnwrap(&v.toObject());
+      creationOptions.setNewCompartmentInExistingZone(compartmentRoot);
     }
 
     if (!JS_GetProperty(cx, opts, "sameCompartmentAs", &v)) {
       return false;
     }
     if (v.isObject()) {
-      creationOptions.setExistingCompartment(UncheckedUnwrap(&v.toObject()));
+      compartmentRoot = UncheckedUnwrap(&v.toObject());
+      creationOptions.setExistingCompartment(compartmentRoot);
     }
 
     if (!JS_GetProperty(cx, opts, "newCompartment", &v)) {
@@ -9004,6 +9020,121 @@ static bool IsValidJSON(JSContext* cx, unsigned argc, Value* vp) {
   return true;
 }
 
+// Quick file format for a LZ4 compressed file
+static constexpr uint32_t LZ4MagicHeader = -1;
+// A magic word and a length field
+static constexpr size_t LZ4HeaderSize = sizeof(uint32_t) * 2;
+static constexpr size_t LZ4MaxSize = UINT32_MAX;
+
+static bool CompressLZ4(JSContext* cx, unsigned argc, Value* vp) {
+  CallArgs args = CallArgsFromVp(argc, vp);
+  RootedObject callee(cx, &args.callee());
+
+  if (!args.get(0).isObject() ||
+      !args.get(0).toObject().is<ArrayBufferObject>()) {
+    ReportUsageErrorASCII(cx, callee, "First argument must be an ArrayBuffer");
+    return false;
+  }
+
+  JS::Rooted<ArrayBufferObject*> bytes(
+      cx, &args.get(0).toObject().as<ArrayBufferObject>());
+  size_t byteLength = bytes->byteLength();
+  if (byteLength > LZ4MaxSize) {
+    ReportOutOfMemory(cx);
+    return false;
+  }
+
+  // Create a buffer big enough for the header and the max amount of compressed
+  // bytes.
+  size_t outputCapacity =
+      LZ4HeaderSize + mozilla::Compression::LZ4::maxCompressedSize(byteLength);
+
+  mozilla::UniquePtr<void, JS::FreePolicy> output(js_malloc(outputCapacity));
+  if (!output) {
+    ReportOutOfMemory(cx);
+    return false;
+  }
+
+  // Write the magic header word and decompressed size in bytes.
+  ((uint32_t*)(output.get()))[0] = LZ4MagicHeader;
+  ((uint32_t*)(output.get()))[1] = byteLength;
+
+  // Compress the bytes into the output
+  char* compressedBytesStart = ((char*)output.get()) + LZ4HeaderSize;
+  size_t compressedBytesLength = mozilla::Compression::LZ4::compress(
+      (const char*)bytes->dataPointer(), byteLength, compressedBytesStart);
+  size_t outputLength = compressedBytesLength + LZ4HeaderSize;
+
+  // Create an ArrayBuffer wrapping the compressed bytes
+  JSObject* outputArrayBuffer =
+      NewArrayBufferWithContents(cx, outputLength, std::move(output));
+  if (!outputArrayBuffer) {
+    return false;
+  }
+
+  args.rval().setObject(*outputArrayBuffer);
+  return true;
+}
+
+static bool DecompressLZ4(JSContext* cx, unsigned argc, Value* vp) {
+  CallArgs args = CallArgsFromVp(argc, vp);
+  RootedObject callee(cx, &args.callee());
+
+  if (!args.get(0).isObject() ||
+      !args.get(0).toObject().is<ArrayBufferObject>()) {
+    ReportUsageErrorASCII(cx, callee, "First argument must be an ArrayBuffer");
+    return false;
+  }
+
+  JS::Rooted<ArrayBufferObject*> bytes(
+      cx, &args.get(0).toObject().as<ArrayBufferObject>());
+  size_t byteLength = bytes->byteLength();
+  if (byteLength < LZ4HeaderSize) {
+    JS_ReportErrorASCII(cx, "Invalid LZ4 buffer");
+    return false;
+  }
+
+  // Check the magic header and get the decompressed byte length.
+  uint32_t magicHeader = ((uint32_t*)(bytes->dataPointer()))[0];
+  uint32_t decompressedBytesLength = ((uint32_t*)(bytes->dataPointer()))[1];
+  if (magicHeader != LZ4MagicHeader) {
+    JS_ReportErrorASCII(cx, "Invalid magic header");
+    return false;
+  }
+
+  // Allocate a buffer to store the decompressed bytes.
+  mozilla::UniquePtr<void, JS::FreePolicy> decompressedBytes(
+      js_malloc(decompressedBytesLength));
+  if (!decompressedBytes) {
+    ReportOutOfMemory(cx);
+    return false;
+  }
+
+  // Decompress the bytes into the output
+  const char* compressedBytesStart =
+      ((const char*)bytes->dataPointer()) + LZ4HeaderSize;
+  size_t compressedBytesLength = byteLength - LZ4HeaderSize;
+  size_t actualDecompressedBytesLength = 0;
+  if (!mozilla::Compression::LZ4::decompress(
+          compressedBytesStart, compressedBytesLength,
+          (char*)decompressedBytes.get(), decompressedBytesLength,
+          &actualDecompressedBytesLength) ||
+      actualDecompressedBytesLength != decompressedBytesLength) {
+    JS_ReportErrorASCII(cx, "Invalid LZ4 buffer");
+    return false;
+  }
+
+  // Create an ArrayBuffer wrapping the decompressed bytes
+  JSObject* outputArrayBuffer = NewArrayBufferWithContents(
+      cx, decompressedBytesLength, std::move(decompressedBytes));
+  if (!outputArrayBuffer) {
+    return false;
+  }
+
+  args.rval().setObject(*outputArrayBuffer);
+  return true;
+}
+
 // clang-format off
 static const JSFunctionSpecWithHelp shell_functions[] = {
     JS_FN_HELP("options", Options, 0, 0,
@@ -9674,6 +9805,14 @@ JS_FN_HELP("createUserArrayBuffer", CreateUserArrayBuffer, 1, 0,
     JS_FN_HELP("isValidJSON", IsValidJSON, 1, 0,
 "isValidJSON(source)",
 " Returns true if the given source is valid JSON."),
+
+    JS_FN_HELP("compressLZ4", CompressLZ4, 1, 0,
+"compressLZ4(bytes)",
+" Return a compressed copy of bytes using LZ4."),
+
+    JS_FN_HELP("decompressLZ4", DecompressLZ4, 1, 0,
+"decompressLZ4(bytes)",
+" Return a decompressed copy of bytes using LZ4."),
 
     JS_FS_HELP_END
 };
@@ -11015,9 +11154,6 @@ static void SetWorkerContextOptions(JSContext* cx) {
       .setWasm(enableWasm)
       .setWasmBaseline(enableWasmBaseline)
       .setWasmIon(enableWasmOptimizing)
-#define WASM_FEATURE(NAME, ...) .setWasm##NAME(enableWasm##NAME)
-          JS_FOR_WASM_FEATURES(WASM_FEATURE)
-#undef WASM_FEATURE
 
       .setWasmVerbose(enableWasmVerbose)
       .setTestWasmAwaitTier2(enableTestWasmAwaitTier2)
@@ -11453,21 +11589,34 @@ static bool ParsePrefValue(const char* name, const char* val, T* result) {
   }
 }
 
-static bool SetJSPref(const char* pref) {
-  const char* assign = strchr(pref, '=');
-  if (!assign) {
-    fprintf(stderr, "Missing '=' for --setpref\n");
-    return false;
+static bool SetJSPrefToTrueForBool(const char* name) {
+  // Search for a matching pref and try to set it to a default value for the
+  // type.
+#define CHECK_PREF(NAME, CPP_NAME, TYPE, SETTER, IS_STARTUP_PREF)      \
+  if (strcmp(name, NAME) == 0) {                                       \
+    if constexpr (std::is_same_v<TYPE, bool>) {                        \
+      JS::Prefs::SETTER(true);                                         \
+      return true;                                                     \
+    } else {                                                           \
+      fprintf(stderr, "Pref %s must have a value specified.\n", name); \
+      return false;                                                    \
+    }                                                                  \
   }
+  FOR_EACH_JS_PREF(CHECK_PREF)
+#undef CHECK_PREF
 
-  size_t nameLen = assign - pref;
-  const char* valStart = assign + 1;  // Skip '='.
+  // Nothing matched, return false
+  fprintf(stderr, "Invalid pref name: %s\n", name);
+  return false;
+}
 
-  // Search for a matching pref and try to set it.
+static bool SetJSPrefToValue(const char* name, size_t nameLen,
+                             const char* value) {
+  // Search for a matching pref and try to set it to the provided value.
 #define CHECK_PREF(NAME, CPP_NAME, TYPE, SETTER, IS_STARTUP_PREF)         \
-  if (nameLen == strlen(NAME) && memcmp(pref, NAME, strlen(NAME)) == 0) { \
+  if (nameLen == strlen(NAME) && memcmp(name, NAME, strlen(NAME)) == 0) { \
     TYPE v;                                                               \
-    if (!ParsePrefValue<TYPE>(NAME, valStart, &v)) {                      \
+    if (!ParsePrefValue<TYPE>(NAME, value, &v)) {                         \
       return false;                                                       \
     }                                                                     \
     JS::Prefs::SETTER(v);                                                 \
@@ -11476,8 +11625,27 @@ static bool SetJSPref(const char* pref) {
   FOR_EACH_JS_PREF(CHECK_PREF)
 #undef CHECK_PREF
 
-  fprintf(stderr, "Invalid pref name: %s\n", pref);
+  // Nothing matched, return false
+  fprintf(stderr, "Invalid pref name: %s\n", name);
   return false;
+}
+
+static bool SetJSPref(const char* pref) {
+  const char* assign = strchr(pref, '=');
+  if (!assign) {
+    if (!SetJSPrefToTrueForBool(pref)) {
+      return false;
+    }
+    return true;
+  }
+
+  size_t nameLen = assign - pref;
+  const char* valStart = assign + 1;  // Skip '='.
+
+  if (!SetJSPrefToValue(pref, nameLen, valStart)) {
+    return false;
+  }
+  return true;
 }
 
 static void ListJSPrefs() {
@@ -11832,20 +12000,8 @@ bool InitOptionParser(OptionParser& op) {
       !op.addBoolOption('\0', "test-wasm-await-tier2",
                         "Forcibly activate tiering and block "
                         "instantiation on completion of tier2") ||
-#define WASM_FEATURE(NAME, LOWER_NAME, STAGE, COMPILE_PRED, COMPILER_PRED, \
-                     FLAG_PRED, FLAG_FORCE_ON, FLAG_FUZZ_ON, SHELL, ...)   \
-  !op.addBoolOption('\0', "no-wasm-" SHELL,                                \
-                    STAGE == WasmFeatureStage::Experimental                \
-                        ? "No-op."                                         \
-                        : "Disable wasm " SHELL " feature.") ||            \
-      !op.addBoolOption('\0', "wasm-" SHELL,                               \
-                        STAGE == WasmFeatureStage::Experimental            \
-                            ? "Enable wasm " SHELL " feature."             \
-                            : "No-op.") ||
-      JS_FOR_WASM_FEATURES(WASM_FEATURE)
-#undef WASM_FEATURE
-          !op.addBoolOption('\0', "no-native-regexp",
-                            "Disable native regexp compilation") ||
+      !op.addBoolOption('\0', "no-native-regexp",
+                        "Disable native regexp compilation") ||
       !op.addIntOption(
           '\0', "regexp-warmup-threshold", "COUNT",
           "Wait for COUNT invocations before compiling regexps to native code "
@@ -11868,10 +12024,8 @@ bool InitOptionParser(OptionParser& op) {
                         "property of null or undefined") ||
       !op.addBoolOption('\0', "enable-iterator-helpers",
                         "Enable iterator helpers") ||
-#ifdef ENABLE_JSON_PARSE_WITH_SOURCE
       !op.addBoolOption('\0', "enable-json-parse-with-source",
                         "Enable JSON.parse with source") ||
-#endif
       !op.addBoolOption('\0', "enable-shadow-realms", "Enable ShadowRealms") ||
       !op.addBoolOption('\0', "disable-array-grouping",
                         "Disable Object.groupBy and Map.groupBy") ||
@@ -11887,6 +12041,8 @@ bool InitOptionParser(OptionParser& op) {
       !op.addBoolOption(
           '\0', "enable-arraybuffer-resizable",
           "Enable resizable ArrayBuffers and growable SharedArrayBuffers") ||
+      !op.addBoolOption('\0', "enable-uint8array-base64",
+                        "Enable Uint8Array base64/hex methods") ||
       !op.addBoolOption('\0', "enable-top-level-await",
                         "Enable top-level await") ||
       !op.addBoolOption('\0', "enable-class-static-blocks",
@@ -12206,14 +12362,29 @@ bool InitOptionParser(OptionParser& op) {
 #endif
       !op.addStringOption('\0', "telemetry-dir", "[directory]",
                           "Output telemetry results in a directory") ||
-      !op.addMultiStringOption('\0', "setpref", "name=val",
-                               "Set the value of a JS pref. Use --list-prefs "
+      !op.addMultiStringOption('P', "setpref", "name[=val]",
+                               "Set the value of a JS pref. The value may "
+                               "be omitted for boolean prefs, in which case "
+                               "they default to true. Use --list-prefs "
                                "to print all pref names.") ||
       !op.addBoolOption(
           '\0', "list-prefs",
           "Print list of prefs that can be set with --setpref.") ||
       !op.addBoolOption('\0', "use-fdlibm-for-sin-cos-tan",
-                        "Use fdlibm for Math.sin, Math.cos, and Math.tan")) {
+                        "Use fdlibm for Math.sin, Math.cos, and Math.tan") ||
+      !op.addBoolOption('\0', "wasm-gc", "Enable WebAssembly gc proposal.") ||
+      !op.addBoolOption('\0', "wasm-relaxed-simd",
+                        "Enable WebAssembly relaxed-simd proposal.") ||
+      !op.addBoolOption('\0', "wasm-multi-memory",
+                        "Enable WebAssembly multi-memory proposal.") ||
+      !op.addBoolOption('\0', "wasm-memory-control",
+                        "Enable WebAssembly memory-control proposal.") ||
+      !op.addBoolOption('\0', "wasm-memory64",
+                        "Enable WebAssembly memory64 proposal.") ||
+      !op.addBoolOption('\0', "wasm-tail-calls",
+                        "Enable WebAssembly tail-calls proposal.") ||
+      !op.addBoolOption('\0', "wasm-js-string-builtins",
+                        "Enable WebAssembly js-string-builtins proposal.")) {
     return false;
   }
 
@@ -12234,36 +12405,71 @@ bool SetGlobalOptionsPreJSInit(const OptionParser& op) {
   // Override pref values for prefs that have a custom shell flag.
   // If you're adding a new feature, consider using --setpref instead.
 
-  JS::Prefs::setAtStartup_array_grouping(
-      !op.getBoolOption("disable-array-grouping"));
-  JS::Prefs::setAtStartup_arraybuffer_transfer(
-      !op.getBoolOption("disable-arraybuffer-transfer"));
-  JS::Prefs::set_experimental_shadow_realms(
-      op.getBoolOption("enable-shadow-realms"));
-  JS::Prefs::setAtStartup_well_formed_unicode_strings(
-      !op.getBoolOption("disable-well-formed-unicode-strings"));
+  if (op.getBoolOption("disable-array-grouping")) {
+    JS::Prefs::setAtStartup_array_grouping(false);
+  }
+  if (op.getBoolOption("disable-arraybuffer-transfer")) {
+    JS::Prefs::setAtStartup_arraybuffer_transfer(false);
+  }
+  if (op.getBoolOption("enable-shadow-realms")) {
+    JS::Prefs::set_experimental_shadow_realms(true);
+  }
+  if (op.getBoolOption("disable-well-formed-unicode-strings")) {
+    JS::Prefs::setAtStartup_well_formed_unicode_strings(false);
+  }
 #ifdef NIGHTLY_BUILD
-  JS::Prefs::setAtStartup_experimental_arraybuffer_resizable(
-      op.getBoolOption("enable-arraybuffer-resizable"));
-  JS::Prefs::setAtStartup_experimental_sharedarraybuffer_growable(
-      op.getBoolOption("enable-arraybuffer-resizable"));
-  JS::Prefs::setAtStartup_experimental_iterator_helpers(
-      op.getBoolOption("enable-iterator-helpers"));
-  JS::Prefs::setAtStartup_experimental_new_set_methods(
-      op.getBoolOption("enable-new-set-methods"));
-  JS::Prefs::setAtStartup_experimental_symbols_as_weakmap_keys(
-      op.getBoolOption("enable-symbols-as-weakmap-keys"));
+  if (op.getBoolOption("enable-arraybuffer-resizable")) {
+    JS::Prefs::setAtStartup_experimental_arraybuffer_resizable(true);
+    JS::Prefs::setAtStartup_experimental_sharedarraybuffer_growable(true);
+  }
+  if (op.getBoolOption("enable-iterator-helpers")) {
+    JS::Prefs::setAtStartup_experimental_iterator_helpers(true);
+  }
+  if (op.getBoolOption("enable-new-set-methods")) {
+    JS::Prefs::setAtStartup_experimental_new_set_methods(true);
+  }
+  if (op.getBoolOption("enable-symbols-as-weakmap-keys")) {
+    JS::Prefs::setAtStartup_experimental_symbols_as_weakmap_keys(true);
+  }
+  if (op.getBoolOption("enable-uint8array-base64")) {
+    JS::Prefs::setAtStartup_experimental_uint8array_base64(true);
+  }
+#endif
+#ifdef ENABLE_JSON_PARSE_WITH_SOURCE
+  JS::Prefs::setAtStartup_experimental_json_parse_with_source(
+      op.getBoolOption("enable-json-parse-with-source"));
+#else
+  if (op.getBoolOption("enable-json-parse-with-source")) {
+    fprintf(stderr, "JSON.parse with source is not enabled on this build.\n");
+  }
 #endif
 
-  JS::Prefs::setAtStartup_weakrefs(!op.getBoolOption("disable-weak-refs"));
+  if (op.getBoolOption("disable-weak-refs")) {
+    JS::Prefs::setAtStartup_weakrefs(false);
+  }
   JS::Prefs::setAtStartup_experimental_weakrefs_expose_cleanupSome(true);
 
-  JS::Prefs::setAtStartup_destructuring_fuse(
-      !op.getBoolOption("disable-destructuring-fuse"));
+  if (op.getBoolOption("disable-destructuring-fuse")) {
+    JS::Prefs::setAtStartup_destructuring_fuse(false);
+  }
+  if (op.getBoolOption("disable-property-error-message-fix")) {
+    JS::Prefs::setAtStartup_property_error_message_fix(false);
+  }
+
   JS::Prefs::set_use_fdlibm_for_sin_cos_tan(
       op.getBoolOption("use-fdlibm-for-sin-cos-tan"));
-  JS::Prefs::setAtStartup_property_error_message_fix(
-      !op.getBoolOption("disable-property-error-message-fix"));
+
+  if (op.getBoolOption("wasm-gc") || op.getBoolOption("wasm-relaxed-simd") ||
+      op.getBoolOption("wasm-multi-memory") ||
+      op.getBoolOption("wasm-memory-control") ||
+      op.getBoolOption("wasm-memory64") ||
+      op.getBoolOption("wasm-tail-calls") ||
+      op.getBoolOption("wasm-js-string-builtins")) {
+    fprintf(
+        stderr,
+        "Wasm shell flags are now using prefs, use -P wasm_feature instead.\n");
+    return false;
+  }
 
   if (op.getBoolOption("list-prefs")) {
     ListJSPrefs();
@@ -12456,9 +12662,6 @@ bool SetContextOptions(JSContext* cx, const OptionParser& op) {
   enableAsyncStackCaptureDebuggeeOnly =
       op.getBoolOption("async-stacks-capture-debuggee-only");
   enableToSource = !op.getBoolOption("disable-tosource");
-#ifdef ENABLE_JSON_PARSE_WITH_SOURCE
-  enableJSONParseWithSource = op.getBoolOption("enable-json-parse-with-source");
-#endif
   enableImportAttributesAssertSyntax =
       op.getBoolOption("enable-import-assertions");
   enableImportAttributes = op.getBoolOption("enable-import-attributes") ||
@@ -12556,17 +12759,6 @@ bool SetContextWasmOptions(JSContext* cx, const OptionParser& op) {
     }
   }
 
-#define WASM_FEATURE(NAME, LOWER_NAME, STAGE, COMPILE_PRED, COMPILER_PRED, \
-                     FLAG_PRED, FLAG_FORCE_ON, FLAG_FUZZ_ON, SHELL, ...)   \
-  if (STAGE == WasmFeatureStage::Experimental) {                           \
-    enableWasm##NAME = op.getBoolOption("wasm-" SHELL);                    \
-  } else {                                                                 \
-    enableWasm##NAME = !op.getBoolOption("no-wasm-" SHELL);                \
-  }
-
-  JS_FOR_WASM_FEATURES(WASM_FEATURE);
-#undef WASM_FEATURE
-
   enableWasmVerbose = op.getBoolOption("wasm-verbose");
   enableTestWasmAwaitTier2 = op.getBoolOption("test-wasm-await-tier2");
 
@@ -12575,11 +12767,7 @@ bool SetContextWasmOptions(JSContext* cx, const OptionParser& op) {
       .setWasm(enableWasm)
       .setWasmForTrustedPrinciples(enableWasm)
       .setWasmBaseline(enableWasmBaseline)
-      .setWasmIon(enableWasmOptimizing)
-#define WASM_FEATURE(NAME, ...) .setWasm##NAME(enableWasm##NAME)
-          JS_FOR_WASM_FEATURES(WASM_FEATURE)
-#undef WASM_FEATURE
-      ;
+      .setWasmIon(enableWasmOptimizing);
 
 #ifndef __wasi__
   // This must be set before self-hosted code is initialized, as self-hosted
@@ -12598,18 +12786,12 @@ bool SetContextWasmOptions(JSContext* cx, const OptionParser& op) {
 
   // Also the following are to be propagated.
   const char* to_propagate[] = {
-#  define WASM_FEATURE(NAME, LOWER_NAME, STAGE, COMPILE_PRED, COMPILER_PRED, \
-                       FLAG_PRED, FLAG_FORCE_ON, FLAG_FUZZ_ON, SHELL, ...)   \
-    STAGE == WasmFeatureStage::Experimental ? "--wasm-" SHELL                \
-                                            : "--no-wasm-" SHELL,
-      JS_FOR_WASM_FEATURES(WASM_FEATURE)
-#  undef WASM_FEATURE
       // Compiler selection options
       "--test-wasm-await-tier2",
-      NULL};
-  for (const char** p = &to_propagate[0]; *p; p++) {
-    if (op.getBoolOption(&(*p)[2] /* 2 => skip the leading '--' */)) {
-      if (!sCompilerProcessFlags.append(*p)) {
+  };
+  for (const char* p : to_propagate) {
+    if (op.getBoolOption(p + 2 /* 2 => skip the leading '--' */)) {
+      if (!sCompilerProcessFlags.append(p)) {
         return false;
       }
     }

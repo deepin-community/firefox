@@ -684,6 +684,9 @@ sync-mobile-promo = Luchdaich a-nuas Firefox airson <img data-l10n-name="android
 
 sync-profile-picture =
     .tooltiptext = Atharraich dealbh na pròifil
+sync-profile-picture-with-alt =
+    .tooltiptext = Atharraich dealbh na pròifil
+    .alt = Atharraich dealbh na pròifil
 sync-sign-out =
     .label = Clàraich a-mach…
     .accesskey = C
@@ -1161,6 +1164,8 @@ addon-recommendations-link = Barrachd fiosrachaidh
 # or builds with no Telemetry support available.
 collection-health-report-disabled = Tha aithriseadh dàta à comas airson rèiteachadh a’ bhuild seo
 collection-backlogged-crash-reports-with-link = Leig le { -brand-short-name } aithisgean tuislidh a chàirn roimhe a chur às do leth <a data-l10n-name="crash-reports-link">Barrachd fiosrachaidh</a>
+    .accesskey = c
+collection-backlogged-crash-reports = Leig le { -brand-short-name } aithisgean tuislidh a chàirn roimhe a chur às do leth
     .accesskey = c
 privacy-segmentation-section-header = Gleusan ùra a leasaicheas am brabhsadh a nì thu
 privacy-segmentation-section-description = Ma bhios gleusan againn a chleachdas an dàta agad airson àrainneachd nas pearsantaiche:

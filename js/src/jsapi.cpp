@@ -40,6 +40,7 @@
 #include "gc/Marking.h"
 #include "gc/PublicIterators.h"
 #include "jit/JitSpewer.h"
+#include "jit/TrampolineNatives.h"
 #include "js/CallAndConstruct.h"  // JS::IsCallable
 #include "js/CharacterEncoding.h"
 #include "js/ColumnNumber.h"  // JS::TaggedColumnNumberOneOrigin, JS::ColumnNumberOneOrigin
@@ -49,6 +50,7 @@
 #include "js/Date.h"  // JS::GetReduceMicrosecondTimePrecisionCallback
 #include "js/ErrorInterceptor.h"
 #include "js/ErrorReport.h"           // JSErrorBase
+#include "js/experimental/JitInfo.h"  // JSJitInfo
 #include "js/friend/ErrorMessages.h"  // js::GetErrorMessage, JSMSG_*
 #include "js/friend/StackLimits.h"    // js::AutoCheckRecursionLimit
 #include "js/GlobalObject.h"
@@ -1289,7 +1291,7 @@ JS_PUBLIC_API void JS_RemoveExtraGCRootsTracer(JSContext* cx,
 }
 
 JS_PUBLIC_API JS::GCReason JS::WantEagerMinorGC(JSRuntime* rt) {
-  if (rt->gc.nursery().shouldCollect()) {
+  if (rt->gc.nursery().wantEagerCollection()) {
     return JS::GCReason::EAGER_NURSERY_COLLECTION;
   }
   return JS::GCReason::NO_REASON;
@@ -1302,7 +1304,7 @@ JS_PUBLIC_API JS::GCReason JS::WantEagerMajorGC(JSRuntime* rt) {
 JS_PUBLIC_API void JS::MaybeRunNurseryCollection(JSRuntime* rt,
                                                  JS::GCReason reason) {
   gc::GCRuntime& gc = rt->gc;
-  if (gc.nursery().shouldCollect()) {
+  if (gc.nursery().wantEagerCollection()) {
     gc.minorGC(reason);
   }
 }
@@ -1602,7 +1604,8 @@ JS_PUBLIC_API bool JS::ToPrimitive(JSContext* cx, HandleObject obj, JSType hint,
   return ToPrimitiveSlow(cx, hint, vp);
 }
 
-JS_PUBLIC_API bool JS::GetFirstArgumentAsTypeHint(JSContext* cx, CallArgs args,
+JS_PUBLIC_API bool JS::GetFirstArgumentAsTypeHint(JSContext* cx,
+                                                  const CallArgs& args,
                                                   JSType* result) {
   if (!args.get(0).isString()) {
     JS_ReportErrorNumberASCII(cx, GetErrorMessage, nullptr,
@@ -2335,8 +2338,12 @@ JS_PUBLIC_API JSFunction* JS::NewFunctionFromSpec(JSContext* cx,
     return nullptr;
   }
 
-  if (fs->call.info) {
-    fun->setJitInfo(fs->call.info);
+  if (auto* jitInfo = fs->call.info) {
+    if (jitInfo->type() == JSJitInfo::OpType::TrampolineNative) {
+      jit::SetTrampolineNativeJitEntry(cx, fun, jitInfo->trampolineNative);
+    } else {
+      fun->setJitInfo(jitInfo);
+    }
   }
   return fun;
 }
@@ -4966,7 +4973,25 @@ JS_PUBLIC_API bool JS::CopyAsyncStack(JSContext* cx,
   return true;
 }
 
-JS_PUBLIC_API Zone* JS::GetObjectZone(JSObject* obj) { return obj->zone(); }
+JS_PUBLIC_API Zone* JS::GetObjectZone(JSObject* obj) {
+  Zone* zone = obj->zone();
+
+  // Check zone pointer is valid and not a poison value. See bug 1878421.
+  MOZ_RELEASE_ASSERT(zone->runtimeFromMainThread());
+
+  return zone;
+}
+
+JS_PUBLIC_API Zone* JS::GetTenuredGCThingZone(GCCellPtr thing) {
+  js::gc::Cell* cell = thing.asCell();
+  MOZ_ASSERT(!js::gc::IsInsideNursery(cell));
+  Zone* zone = js::gc::detail::GetTenuredGCThingZone(cell);
+
+  // Check zone pointer is valid and not a poison value. See bug 1878421.
+  MOZ_RELEASE_ASSERT(zone->runtimeFromMainThread());
+
+  return zone;
+}
 
 JS_PUBLIC_API Zone* JS::GetNurseryCellZone(gc::Cell* cell) {
   return cell->nurseryZone();

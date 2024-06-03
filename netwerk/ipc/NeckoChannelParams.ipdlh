@@ -63,6 +63,7 @@ struct CookieJarSettingsArgs
   nsString partitionKey;
   bool hasFingerprintingRandomizationKey;
   uint8_t[] fingerprintingRandomizationKey;
+  uint64_t topLevelWindowContextId;
 };
 
 //-----------------------------------------------------------------------------
@@ -420,6 +421,7 @@ struct HttpConnectionInfoCloneArgs
   nsCString topWindowOrigin;
   bool isHttp3;
   bool webTransport;
+  uint64_t webTransportId;
   bool hasIPHintAddress;
   nsCString echConfig;
   ProxyInfoCloneArgs[] proxyInfo;
@@ -452,6 +454,12 @@ struct CookieStruct
   int32_t   sameSite;
   int32_t   rawSameSite;
   uint8_t   schemeMap;
+};
+
+struct CookieStructTable
+{
+  OriginAttributes attrs;
+  CookieStruct[] cookies;
 };
 
 struct DocumentCreationArgs {

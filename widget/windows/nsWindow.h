@@ -175,7 +175,6 @@ class nsWindow final : public nsBaseWidget {
   void Resize(double aWidth, double aHeight, bool aRepaint) override;
   void Resize(double aX, double aY, double aWidth, double aHeight,
               bool aRepaint) override;
-  mozilla::Maybe<bool> IsResizingNativeWidget() override;
   void PlaceBehind(nsTopLevelWidgetZPlacement aPlacement, nsIWidget* aWidget,
                    bool aActivate) override;
   void SetSizeMode(nsSizeMode aMode) override;
@@ -755,8 +754,12 @@ class nsWindow final : public nsBaseWidget {
   bool mIsAlert = false;
   bool mIsPerformingDwmFlushHack = false;
   bool mDraggingWindowWithMouse = false;
-  DWORD_PTR mOldStyle = 0;
-  DWORD_PTR mOldExStyle = 0;
+  // Partial cached window-styles, for when going fullscreen. (Only window-
+  // decoration-related flags are saved here.)
+  struct WindowStyles {
+    LONG_PTR style, exStyle;
+  };
+  mozilla::Maybe<WindowStyles> mOldStyles;
   nsNativeDragTarget* mNativeDragTarget = nullptr;
   HKL mLastKeyboardLayout = 0;
   mozilla::CheckInvariantWrapper<FrameState> mFrameState;
@@ -887,8 +890,8 @@ class nsWindow final : public nsBaseWidget {
   mozilla::UniquePtr<mozilla::widget::DirectManipulationOwner> mDmOwner;
 
   // Client rect for minimize, maximize and close buttons.
-  mozilla::EnumeratedArray<WindowButtonType, WindowButtonType::Count,
-                           LayoutDeviceIntRect>
+  mozilla::EnumeratedArray<WindowButtonType, LayoutDeviceIntRect,
+                           size_t(WindowButtonType::Count)>
       mWindowBtnRect;
 
   mozilla::DataMutex<Desktop> mDesktopId;

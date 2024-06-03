@@ -282,6 +282,7 @@ try-newer-driver = Ojejokóva peteĩchagua ta’ãngápe ñangarekohárape. Eñe
 # there are no good translations, these are only used in about:support
 clear-type-parameters = ClearType ra’ãhaite
 compositing = Hetepyete
+support-font-determination = Marandu teñoiha jehecha mopotĩha
 hardware-h264 = Hardware H264 Papapy’o
 main-thread-no-omtc = inimbo ha’etéva, OMTC ỹre
 yes = Héẽ
@@ -427,3 +428,15 @@ pointing-device-mouse = Anguja
 pointing-device-touchscreen = Mba’erechaha pokoguáva
 pointing-device-pen-digitizer = Haiha monguatiaha
 pointing-device-none = Mba’e’oka jehechaukaha’ỹ
+
+## Content Analysis (DLP)
+
+# DLP stands for Data Loss Prevention, an industry term for external software
+# that enterprises can set up to prevent sensitive data from being transferred
+# to external websites.
+content-analysis-title = Tetepy resa’ỹijo (DLP)
+content-analysis-active = Myandy
+content-analysis-connected-to-agent = Ojoaju pytyvõha rehe
+content-analysis-agent-path = Pytyvõha rape
+content-analysis-agent-failed-signature-verification = Ojavy pe ñemboheraguapy jehechajey
+content-analysis-request-count = Mba’ejerure papajey

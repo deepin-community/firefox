@@ -18,7 +18,8 @@ class RecordedTextureData final : public TextureData {
  public:
   RecordedTextureData(already_AddRefed<CanvasChild> aCanvasChild,
                       gfx::IntSize aSize, gfx::SurfaceFormat aFormat,
-                      TextureType aTextureType);
+                      TextureType aTextureType,
+                      TextureType aWebglTextureType = TextureType::Unknown);
 
   void FillInfo(TextureData::Info& aInfo) const final;
 
@@ -56,6 +57,8 @@ class RecordedTextureData final : public TextureData {
   DISALLOW_COPY_AND_ASSIGN(RecordedTextureData);
 
   ~RecordedTextureData() override;
+
+  void DetachSnapshotWrapper(bool aInvalidate = false, bool aRelease = true);
 
   int64_t mTextureId;
   RefPtr<CanvasChild> mCanvasChild;

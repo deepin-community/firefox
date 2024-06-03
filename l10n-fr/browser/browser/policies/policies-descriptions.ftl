@@ -17,6 +17,8 @@ policy-AppAutoUpdate = Activer ou désactiver les mises à jour automatiques des
 policy-AppUpdatePin = Empêcher { -brand-short-name } d’être mis à jour au-delà de la version spécifiée.
 policy-AppUpdateURL = Définir une URL de mise à jour personnalisée pour l’application.
 policy-Authentication = Configurer l’authentification intégrée pour les sites web qui la proposent.
+policy-AutofillAddressEnabled = Activer le remplissage automatique des adresses.
+policy-AutofillCreditCardEnabled = Activer le remplissage automatique des moyens de paiement.
 policy-AutoLaunchProtocolsFromOrigins = Définir une liste de protocoles externes qui peuvent être utilisés à partir d’origines répertoriées sans demander à l’utilisateur.
 policy-BackgroundAppUpdate2 = Activer ou désactiver la mise à jour en arrière-plan.
 policy-BlockAboutAddons = Bloquer l’accès au gestionnaire de modules (about:addons).
@@ -26,6 +28,7 @@ policy-BlockAboutSupport = Bloquer l’accès à la page about:support.
 policy-Bookmarks = Créer des marque-pages dans la Barre personnelle, le menu des marque-pages ou un de leurs sous-dossiers.
 policy-CaptivePortal = Permettre ou interdire la prise en charge des portails captifs.
 policy-CertificatesDescription = Ajouter des certificats ou utiliser des certificats prédéfinis.
+policy-ContentAnalysis = Activer ou désactiver la connexion à l’agent de protection contre la perte de données.
 policy-Cookies = Permettre ou interdire aux sites de définir des cookies.
 # Containers in this context is referring to container tabs in Firefox.
 policy-Containers = Définir des politiques relatives aux conteneurs.
@@ -36,8 +39,11 @@ policy-DisableAppUpdate = Empêcher le navigateur de se mettre à jour.
 policy-DisableBuiltinPDFViewer = Désactiver PDF.js, la visionneuse PDF intégrée dans { -brand-short-name }.
 policy-DisableDefaultBrowserAgent = Empêcher l’agent de navigateur par défaut de prendre des mesures. Uniquement applicable à Windows ; les autres plateformes n’ont pas cet agent.
 policy-DisableDeveloperTools = Bloquer l’accès aux outils de développement.
+policy-DisableEncryptedClientHello = Désactiver la fonctionnalité TLS Encrypted Client Hello (ECH).
 policy-DisableFeedbackCommands = Désactiver les commandes permettant d’envoyer des commentaires dans le menu d’aide (Donner votre avis et Signaler un site trompeur).
 policy-DisableFirefoxAccounts = Désactiver les services basés sur un { -fxaccount-brand-name }, y compris la synchronisation.
+# This string is in the process of being deprecated in favor of policy-DisableAccounts.
+policy-DisableFirefoxAccounts1 = Désactiver les services qui demandent un compte, y compris la synchronisation.
 # Firefox Screenshots is the name of the feature, and should not be translated.
 policy-DisableFirefoxScreenshots = Désactiver la fonctionnalité Firefox Screenshots.
 policy-DisableFirefoxStudies = Empêcher { -brand-short-name } d’exécuter des études.
@@ -122,6 +128,7 @@ policy-SSLVersionMax = Définir la version maximale de SSL à utiliser.
 policy-SSLVersionMin = Définir la version minimale de SSL à utiliser.
 policy-StartDownloadsInTempDirectory = Forcer les téléchargements à démarrer dans un emplacement temporaire local plutôt que dans le dossier de téléchargement par défaut.
 policy-SupportMenu = Ajouter une entrée personnalisée au menu d’aide pour l’assistance.
+policy-TranslateEnabled = Activer ou désactiver la traduction des pages web.
 policy-UserMessaging = Masquer certains messages à destination de l’utilisateur.
 policy-UseSystemPrintDialog = Imprimer en utilisant la boîte de dialogue système.
 # “format” refers to the format used for the value of this policy.

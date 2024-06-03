@@ -24,6 +24,7 @@ neterror-pref-reset-button = Վերականգնել հիմնական կարգա�
 neterror-return-to-previous-page-button = Հետ գնալ
 neterror-return-to-previous-page-recommended-button = Հետ գնալ (առաջարկվում է)
 neterror-try-again-button = Կրկին փորձել
+neterror-settings-button = Փոխել DNS-ի կարգավորումները
 neterror-view-certificate-link = Զննել Արտոնագիրը
 
 ##
@@ -48,12 +49,15 @@ neterror-dns-not-found-hint-firewall = Ստուգեք, որ { -brand-short-name 
 ##   $hostname (String) - Hostname of the website to which the user was trying to connect.
 ##   $trrDomain (String) - Hostname of the DNS over HTTPS server that is currently in use.
 
+neterror-dns-not-found-trr-offline = Դուք միացված չեք համացանցին:
+neterror-dns-not-found-bad-trr-url = Անվավեր URL:
 
 ## Native fallback specific messages
 ## Variables:
 ##   $trrDomain (String) - Hostname of the DNS over HTTPS server that is currently in use.
 
 neterror-dns-not-found-native-fallback-heuristic = DNS՝ HTTPS-ի միջոցովը անջատված է ձեր  ցանցում:
+neterror-dns-not-found-native-fallback-not-confirmed2 = { -brand-short-name }-ը անկարող է միանալ { $trrDomain }-ին:
 
 ##
 

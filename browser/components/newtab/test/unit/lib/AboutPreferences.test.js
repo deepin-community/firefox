@@ -3,10 +3,7 @@ import {
   AboutPreferences,
   PREFERENCES_LOADED_EVENT,
 } from "lib/AboutPreferences.sys.mjs";
-import {
-  actionTypes as at,
-  actionCreators as ac,
-} from "common/Actions.sys.mjs";
+import { actionTypes as at, actionCreators as ac } from "common/Actions.mjs";
 import { GlobalOverrider } from "test/unit/utils";
 
 describe("AboutPreferences Feed", () => {
@@ -146,7 +143,7 @@ describe("AboutPreferences Feed", () => {
               },
             },
             createProcessingInstruction: sandbox.stub(),
-            createElementNS: sandbox.stub().callsFake((NS, el) => node),
+            createElementNS: sandbox.stub().callsFake(() => node),
             getElementById: sandbox.stub().returns(node),
             insertBefore: sandbox.stub().returnsArg(0),
             querySelector: sandbox

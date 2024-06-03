@@ -139,8 +139,8 @@ void DecoderTemplate<DecoderType>::Configure(const ConfigType& aConfig,
 
   nsCString errorMessage;
   if (!DecoderType::Validate(aConfig, errorMessage)) {
-    aRv.ThrowTypeError(
-        nsPrintfCString("config is invalid: %s", errorMessage.get()));
+    LOG("Configure: Validate error: %s", errorMessage.get());
+    aRv.ThrowTypeError(errorMessage);
     return;
   }
 
@@ -296,8 +296,7 @@ void DecoderTemplate<DecoderType>::CloseInternal(const nsresult& aResult) {
   if (r.isErr()) {
     nsCString name;
     GetErrorName(r.unwrapErr(), name);
-    LOGE("Error in ResetInternal: %s", name.get());
-    MOZ_CRASH();
+    LOGE("Error in ResetInternal during CloseInternal: %s", name.get());
   }
   mState = CodecState::Closed;
   nsCString error;
@@ -322,13 +321,13 @@ void DecoderTemplate<DecoderType>::OutputDecodedData(
   MOZ_ASSERT(mState == CodecState::Configured);
   MOZ_ASSERT(mActiveConfig);
 
-  nsTArray<RefPtr<VideoFrame>> frames = DecodedDataToOutputType(
+  nsTArray<RefPtr<OutputType>> frames = DecodedDataToOutputType(
       GetParentObject(), std::move(aData), *mActiveConfig);
-  RefPtr<VideoFrameOutputCallback> cb(mOutputCallback);
-  for (RefPtr<VideoFrame>& frame : frames) {
+  RefPtr<OutputCallbackType> cb(mOutputCallback);
+  for (RefPtr<OutputType>& frame : frames) {
     LOG("Outputing decoded data: ts: %" PRId64, frame->Timestamp());
-    RefPtr<VideoFrame> f = frame;
-    cb->Call((VideoFrame&)(*f));
+    RefPtr<OutputType> f = frame;
+    cb->Call((OutputType&)(*f));
   }
 }
 
@@ -473,7 +472,6 @@ MessageProcessedResult DecoderTemplate<DecoderType>::ProcessConfigureMessage(
     mProcessingMessage.reset();
     QueueATask("Error while configuring decoder",
                [self = RefPtr{this}]() MOZ_CAN_RUN_SCRIPT_BOUNDARY {
-                 MOZ_ASSERT(self->mState != CodecState::Closed);
                  self->CloseInternal(NS_ERROR_DOM_NOT_SUPPORTED_ERR);
                });
     return MessageProcessedResult::Processed;
@@ -881,6 +879,7 @@ void DecoderTemplate<DecoderType>::DestroyDecoderAgentIfAny() {
 }
 
 template class DecoderTemplate<VideoDecoderTraits>;
+template class DecoderTemplate<AudioDecoderTraits>;
 
 #undef LOG
 #undef LOGW

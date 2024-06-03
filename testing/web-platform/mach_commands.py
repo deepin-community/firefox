@@ -111,7 +111,6 @@ class WebPlatformTestsRunnerSetup(MozbuildObject):
 
     def kwargs_firefox(self, kwargs):
         """Setup kwargs specific to running Firefox and other gecko browsers"""
-        import mozinfo
         from wptrunner import wptcommandline
 
         kwargs = self.kwargs_common(kwargs)
@@ -143,15 +142,6 @@ class WebPlatformTestsRunnerSetup(MozbuildObject):
 
         if kwargs["install_fonts"] is None:
             kwargs["install_fonts"] = True
-
-        if (
-            kwargs["install_fonts"]
-            and mozinfo.info["os"] == "win"
-            and mozinfo.info["os_version"] == "6.1"
-        ):
-            # On Windows 7 --install-fonts fails, so fall back to a Firefox-specific codepath
-            self.setup_fonts_firefox()
-            kwargs["install_fonts"] = False
 
         if kwargs["preload_browser"] is None:
             kwargs["preload_browser"] = False
@@ -189,7 +179,10 @@ class WebPlatformTestsRunnerSetup(MozbuildObject):
         wptrunner_path = os.path.join(self._here, "tests", "tools", "wptrunner")
         browser_cls = run.product_setup[kwargs["product"]].browser_cls
         requirements = ["requirements.txt"]
-        if hasattr(browser_cls, "requirements"):
+        if (
+            hasattr(browser_cls, "requirements")
+            and browser_cls.requirements is not None
+        ):
             requirements.append(browser_cls.requirements)
 
         for filename in requirements:

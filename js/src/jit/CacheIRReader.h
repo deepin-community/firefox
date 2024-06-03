@@ -96,6 +96,9 @@ class MOZ_RAII CacheIRReader {
 
   uint32_t stubOffset() { return buffer_.readByte() * sizeof(uintptr_t); }
   GuardClassKind guardClassKind() { return GuardClassKind(buffer_.readByte()); }
+  ArrayBufferViewKind arrayBufferViewKind() {
+    return ArrayBufferViewKind(buffer_.readByte());
+  }
   ValueType valueType() { return ValueType(buffer_.readByte()); }
   wasm::ValType::Kind wasmValType() {
     return wasm::ValType::Kind(buffer_.readByte());
@@ -126,21 +129,15 @@ class MOZ_RAII CacheIRReader {
     bool isSameRealm = encoded & CallFlags::IsSameRealm;
     bool needsUninitializedThis = encoded & CallFlags::NeedsUninitializedThis;
     MOZ_ASSERT_IF(needsUninitializedThis, isConstructing);
-    switch (format) {
-      case CallFlags::Unknown:
-        MOZ_CRASH("Unexpected call flags");
-      case CallFlags::Standard:
-        return CallFlags(isConstructing, /*isSpread =*/false, isSameRealm,
-                         needsUninitializedThis);
-      case CallFlags::Spread:
-        return CallFlags(isConstructing, /*isSpread =*/true, isSameRealm,
-                         needsUninitializedThis);
-      default:
-        // The existing non-standard argument formats (FunCall and FunApply)
-        // can't be constructors.
-        MOZ_ASSERT(!isConstructing);
-        return CallFlags(format);
-    }
+
+    // FunCall and FunApply can't be constructors.
+    MOZ_ASSERT_IF(format == CallFlags::FunCall, !isConstructing);
+    MOZ_ASSERT_IF(format == CallFlags::FunApplyArgsObj, !isConstructing);
+    MOZ_ASSERT_IF(format == CallFlags::FunApplyArray, !isConstructing);
+    MOZ_ASSERT_IF(format == CallFlags::FunApplyNullUndefined, !isConstructing);
+
+    return CallFlags(format, isConstructing, isSameRealm,
+                     needsUninitializedThis);
   }
 
   uint8_t readByte() { return buffer_.readByte(); }

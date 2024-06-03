@@ -676,6 +676,9 @@ sync-mobile-promo = Descargar Firefox para <img data-l10n-name="android-icon"/> 
 
 sync-profile-picture =
     .tooltiptext = Cambiar imagen de perfil
+sync-profile-picture-with-alt =
+    .tooltiptext = Cambiar imagen de perfil
+    .alt = Cambiar imagen de perfil
 sync-sign-out =
     .label = Salir…
     .accesskey = g
@@ -1153,6 +1156,8 @@ addon-recommendations-link = Saber más
 # or builds with no Telemetry support available.
 collection-health-report-disabled = El reporte de datos está deshabilitado para esta configuración de compilación
 collection-backlogged-crash-reports-with-link = Permitir que { -brand-short-name } envié informes de fallos acumulados en tu nombre. <a data-l10n-name="crash-reports-link">Aprender más</a>
+    .accesskey = c
+collection-backlogged-crash-reports = Permitir que { -brand-short-name } envié informes de fallos acumulados en tu nombre.
     .accesskey = c
 privacy-segmentation-section-header = Nuevas funcionalidades que mejoran tu navegación
 privacy-segmentation-section-description = Cuando ofrecemos funciones que usan sus datos para brindarte una experiencia más personal:

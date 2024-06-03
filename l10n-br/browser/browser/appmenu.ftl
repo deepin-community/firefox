@@ -77,6 +77,19 @@ appmenu-remote-tabs-turn-on-sync =
 appmenu-remote-tabs-showmore =
     .label = Diskouez muioc'h a ivinelloù
     .tooltiptext = Diskouez muioc'h a ivinelloù eus an trevnad-mañ
+# This is shown when there are inactive tabs which are not being shown.
+# Variables
+# $count (Number) - The number of inactive tabs which are not being shown (at least 1)
+appmenu-remote-tabs-showinactive =
+    .label =
+        { $count ->
+            [one] Diskouez un ivinell dioberiant
+            [two] Diskouez { $count } ivinell dioberiant
+            [few] Diskouez { $count } ivinell dioberiant
+            [many] Diskouez { $count } ivinell dioberiant
+           *[other] Diskouez { $count } ivinell dioberiant
+        }
+    .tooltiptext = Diskouez an ivinelloù dioberiant war an trevnad-mañ
 # This is shown beneath the name of a device when that device has no open tabs
 appmenu-remote-tabs-notabs = Ivinell digor ebet
 # This is shown when Sync is configured but syncing tabs is disabled.
@@ -268,4 +281,6 @@ appmenuitem-report-broken-site =
 appmenuitem-sign-in-account = Kevreit ouzh ho kont
 appmenuitem-monitor-title = { -monitor-brand-short-name }
 appmenuitem-relay-title = { -relay-brand-short-name }
+appmenuitem-relay-description = Kuzhit ho chomlec’h postel hag ho niverenn bellgomz gwirion
 appmenuitem-vpn-title = { -mozilla-vpn-brand-name }
+appmenuitem-vpn-description = Gwarezit hoc’h oberiantiz enlinenn

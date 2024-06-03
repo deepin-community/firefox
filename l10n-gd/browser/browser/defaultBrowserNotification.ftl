@@ -21,3 +21,20 @@ default-browser-prompt-message-alt = Faigh luaths, sàbhailteachd is prìobhaide
 default-browser-prompt-button-primary-alt = Suidhich mar am brabhsair bunaiteach
 default-browser-prompt-checkbox-not-again-label = Na seall an teachdaireachd seo a-rithist
 default-browser-prompt-button-secondary = Chan ann an-dràsta
+
+## Strings for a Windows native guidance notification when the user is forced to
+## use Windows Settings to set the default browser. Instructions differ for
+## Windows 10 and 11.
+
+default-browser-guidance-notification-title = Cha mhòr ’s gu bheil { -brand-short-name } agad mar am brabhsair bunaiteach
+# Quoted text are keywords to look for in the Windows Settings app.
+default-browser-guidance-notification-body-instruction-win10 =
+    Ceum 1: Tadhail air “Roghainnean > Aplacaidean bunaiteach”
+    Ceum 2: Sgrolaich sìos gu “Brabhsair-lìn”
+    Ceum 3: Tagh { -brand-short-name }
+# Quoted text are keywords to look for in the Windows Settings app.
+default-browser-guidance-notification-body-instruction-win11 =
+    Ceum 1: Tadhail air “Roghainnean > Aplacaidean bunaiteach”
+    Ceum 2: Tagh “Suidhich { -brand-short-name } mar a’ bhun-roghainn”
+default-browser-guidance-notification-info-page = Seall dhomh
+default-browser-guidance-notification-dismiss = Deiseil

@@ -158,7 +158,7 @@ class EmbedderPort {
       data: holder.deserialize({}),
     });
   }
-  onEvent(aEvent, aData, aCallback) {
+  onEvent(aEvent, aData) {
     debug`onEvent ${aEvent} ${aData}`;
 
     switch (aEvent) {
@@ -360,6 +360,23 @@ async function exportExtension(aAddon, aPermissions, aSourceURI) {
     updateDate = null;
   }
 
+  const normalizePermissions = perms => {
+    if (perms?.permissions) {
+      perms = { ...perms };
+      perms.permissions = perms.permissions.filter(
+        perm => !perm.startsWith("internal:")
+      );
+    }
+    return perms;
+  };
+
+  const optionalPermissions = aAddon.optionalPermissions?.permissions ?? [];
+  const optionalOrigins = aAddon.optionalPermissions?.origins ?? [];
+  const grantedPermissions =
+    normalizePermissions(await lazy.ExtensionPermissions.get(id)) ?? [];
+  const grantedOptionalPermissions = grantedPermissions?.permissions ?? [];
+  const grantedOptionalOrigins = grantedPermissions?.origins ?? [];
+
   return {
     webExtensionId: id,
     locationURI: aSourceURI != null ? aSourceURI.spec : "",
@@ -393,6 +410,10 @@ async function exportExtension(aAddon, aPermissions, aSourceURI) {
       temporary: temporarilyInstalled,
       updateDate,
       version,
+      optionalPermissions,
+      optionalOrigins,
+      grantedOptionalPermissions,
+      grantedOptionalOrigins,
     },
   };
 }
@@ -528,7 +549,7 @@ class ExtensionPromptObserver {
     resolve(response.allow);
   }
 
-  observe(aSubject, aTopic, aData) {
+  observe(aSubject, aTopic) {
     debug`observe ${aTopic}`;
 
     switch (aTopic) {
@@ -572,7 +593,7 @@ class AddonInstallObserver {
     });
   }
 
-  observe(aSubject, aTopic, aData) {
+  observe(aSubject, aTopic) {
     debug`observe ${aTopic}`;
     switch (aTopic) {
       case "addon-install-failed": {
@@ -758,7 +779,7 @@ class ExtensionProcessListener {
     ]);
   }
 
-  async onEvent(aEvent, aData, aCallback) {
+  async onEvent(aEvent, aData) {
     debug`onEvent ${aEvent} ${aData}`;
 
     switch (aEvent) {
@@ -872,7 +893,7 @@ async function updatePromptHandler(aInfo) {
 }
 
 export var GeckoViewWebExtension = {
-  observe(aSubject, aTopic, aData) {
+  observe(aSubject, aTopic) {
     debug`observe ${aTopic}`;
 
     switch (aTopic) {
@@ -1193,6 +1214,61 @@ export var GeckoViewWebExtension = {
           const extension = await this.setPrivateBrowsingAllowed(
             extensionId,
             allowed
+          );
+          aCallback.onSuccess({ extension });
+        } catch (ex) {
+          aCallback.onError(`Unexpected error: ${ex}`);
+        }
+        break;
+      }
+
+      case "GeckoView:WebExtension:AddOptionalPermissions": {
+        const { extensionId, permissions, origins } = aData;
+        try {
+          const addon = await this.extensionById(extensionId);
+          const normalized = lazy.ExtensionPermissions.normalizeOptional(
+            {
+              permissions,
+              origins,
+            },
+            addon.optionalPermissions
+          );
+          const policy = WebExtensionPolicy.getByID(addon.id);
+          await lazy.ExtensionPermissions.add(
+            extensionId,
+            normalized,
+            policy?.extension
+          );
+          const extension = await exportExtension(
+            addon,
+            addon.userPermissions,
+            /* aSourceURI */ null
+          );
+          aCallback.onSuccess({ extension });
+        } catch (ex) {
+          aCallback.onError(`Unexpected error: ${ex}`);
+        }
+        break;
+      }
+
+      case "GeckoView:WebExtension:RemoveOptionalPermissions": {
+        const { extensionId, permissions, origins } = aData;
+        try {
+          const addon = await this.extensionById(extensionId);
+          const normalized = lazy.ExtensionPermissions.normalizeOptional(
+            { permissions, origins },
+            addon.optionalPermissions
+          );
+          const policy = WebExtensionPolicy.getByID(addon.id);
+          await lazy.ExtensionPermissions.remove(
+            addon.id,
+            normalized,
+            policy?.extension
+          );
+          const extension = await exportExtension(
+            addon,
+            addon.userPermissions,
+            /* aSourceURI */ null
           );
           aCallback.onSuccess({ extension });
         } catch (ex) {

@@ -1129,7 +1129,7 @@ const BASE_MESSAGES = () => [
       lifetime: 2,
     },
     targeting:
-      "source == 'startup' && !isMajorUpgrade && !activeNotifications && !isDefaultBrowser && !willShowDefaultPrompt && (currentDate|date - profileAgeCreated|date) / 86400000 >= 28 && userPrefs.cfrFeatures == true",
+      "source == 'startup' && !isMajorUpgrade && !activeNotifications && !isDefaultBrowser && !willShowDefaultPrompt && 'browser.shell.checkDefaultBrowser'|preferenceValue && (currentDate|date - profileAgeCreated|date) / 86400000 >= 28 && userPrefs.cfrFeatures == true",
     trigger: {
       id: "defaultBrowserCheck",
     },
@@ -1205,10 +1205,110 @@ const BASE_MESSAGES = () => [
       lifetime: 1,
     },
     targeting:
-      "source == 'startup' && !isMajorUpgrade && !activeNotifications && !isDefaultBrowser && !willShowDefaultPrompt && (currentDate|date - profileAgeCreated|date) / 86400000 <= 28 && (currentDate|date - profileAgeCreated|date) / 86400000 >= 7 && userPrefs.cfrFeatures == true",
+      "source == 'startup' && !isMajorUpgrade && !activeNotifications && !isDefaultBrowser && !willShowDefaultPrompt && 'browser.shell.checkDefaultBrowser'|preferenceValue && (currentDate|date - profileAgeCreated|date) / 86400000 <= 28 && (currentDate|date - profileAgeCreated|date) / 86400000 >= 7 && userPrefs.cfrFeatures == true",
     trigger: {
       id: "defaultBrowserCheck",
     },
+  },
+  {
+    id: "SET_DEFAULT_BROWSER_GUIDANCE_NOTIFICATION_WIN10",
+    template: "toast_notification",
+    content: {
+      title: {
+        string_id: "default-browser-guidance-notification-title",
+      },
+      body: {
+        string_id:
+          "default-browser-guidance-notification-body-instruction-win10",
+      },
+      launch_action: {
+        type: "OPEN_URL",
+        data: {
+          args: "https://support.mozilla.org/1/firefox/%VERSION%/%OS%/%LOCALE%/win-set-firefox-default-browser",
+          where: "tabshifted",
+        },
+      },
+      requireInteraction: true,
+      actions: [
+        {
+          action: "info-page",
+          title: {
+            string_id: "default-browser-guidance-notification-info-page",
+          },
+          launch_action: {
+            type: "OPEN_URL",
+            data: {
+              args: "https://support.mozilla.org/1/firefox/%VERSION%/%OS%/%LOCALE%/win-set-firefox-default-browser",
+              where: "tabshifted",
+            },
+          },
+        },
+        {
+          action: "dismiss",
+          title: {
+            string_id: "default-browser-guidance-notification-dismiss",
+          },
+          windowsSystemActivationType: true,
+        },
+      ],
+      tag: "set-default-guidance-notification",
+    },
+    // Both Windows 10 and 11 return `os.windowsVersion == 10.0`. We limit to
+    // only Windows 10 with `os.windowsBuildNumber < 22000`. We need this due to
+    // Windows 10 and 11 having substantively different UX for Windows Settings.
+    targeting:
+      "os.isWindows && os.windowsVersion >= 10.0 && os.windowsBuildNumber < 22000",
+    trigger: { id: "deeplinkedToWindowsSettingsUI" },
+  },
+  {
+    id: "SET_DEFAULT_BROWSER_GUIDANCE_NOTIFICATION_WIN11",
+    template: "toast_notification",
+    content: {
+      title: {
+        string_id: "default-browser-guidance-notification-title",
+      },
+      body: {
+        string_id:
+          "default-browser-guidance-notification-body-instruction-win11",
+      },
+      launch_action: {
+        type: "OPEN_URL",
+        data: {
+          args: "https://support.mozilla.org/1/firefox/%VERSION%/%OS%/%LOCALE%/win-set-firefox-default-browser",
+          where: "tabshifted",
+        },
+      },
+      requireInteraction: true,
+      actions: [
+        {
+          action: "info-page",
+          title: {
+            string_id: "default-browser-guidance-notification-info-page",
+          },
+          launch_action: {
+            type: "OPEN_URL",
+            data: {
+              args: "https://support.mozilla.org/1/firefox/%VERSION%/%OS%/%LOCALE%/win-set-firefox-default-browser",
+              where: "tabshifted",
+            },
+          },
+        },
+        {
+          action: "dismiss",
+          title: {
+            string_id: "default-browser-guidance-notification-dismiss",
+          },
+          windowsSystemActivationType: true,
+        },
+      ],
+      tag: "set-default-guidance-notification",
+    },
+    // Both Windows 10 and 11 return `os.windowsVersion == 10.0`. We limit to
+    // only Windows 11 with `os.windowsBuildNumber >= 22000`. We need this due to
+    // Windows 10 and 11 having substantively different UX for Windows Settings.
+    targeting:
+      "os.isWindows && os.windowsVersion >= 10.0 && os.windowsBuildNumber >= 22000",
+    trigger: { id: "deeplinkedToWindowsSettingsUI" },
   },
 ];
 

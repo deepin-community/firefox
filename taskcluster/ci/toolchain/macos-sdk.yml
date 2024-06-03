@@ -32,17 +32,53 @@ macosx64-sdk-13.3:
         toolchain-alias:
             - MacOSX13.3.sdk
 
-macosx64-sdk-14.2:
-    description: "MacOSX14.2 SDK"
+macosx64-sdk-14.4:
+    description: "MacOSX14.4 SDK"
     treeherder:
-        symbol: TM(sdk14.2)
+        symbol: TM(sdk14.4)
     run:
         arguments:
-            - https://swcdn.apple.com/content/downloads/35/47/042-23550-A_M34N50O9N3/sua6ev7bjcexvorh4709vsgk64zgvsl42p/CLTools_macOSNMOS_SDK.pkg
-            - 22ce0acc9ab5c28845218b8c686d0208d6bf66bef64a369d3c0622247ba1258b438c9e44c64bb2bacf5e99eb398a6e7a337f2730cd4a969a7f0d2d5d3107306a
-            - Library/Developer/CommandLineTools/SDKs/MacOSX14.2.sdk
-        toolchain-artifact: project/gecko/mac-sdk/MacOSX14.2.sdk.tar.zst
+            - https://swcdn.apple.com/content/downloads/14/48/052-59890-A_I0F5YGAY0Y/p9n40hio7892gou31o1v031ng6fnm9sb3c/CLTools_macOSNMOS_SDK.pkg
+            - a4e05d2a051027620c86f72694da126a2ceed59b8740270426c4ca3adb38e16fe981b536a373a7f0cdcc84bbe9d9149608ccd03967dbd94262548ccadbfa0f5d
+            - Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk
+        toolchain-artifact: project/gecko/mac-sdk/MacOSX14.4.sdk.tar.zst
         toolchain-alias:
             - macosx64-sdk
             - macosx64-sdk-toolchain
-            - MacOSX14.2.sdk
+            - MacOSX14.4.sdk
+
+ios-sdk-17.4:
+    description: "iPhoneOS17.4 SDK"
+    treeherder:
+        symbol: TM(ios17.4)
+    # Because it's using an internal tooltool artifact, it can't be used as a local-toolchain for
+    # bootstrap. But we still want to use the same script as local-toolchains.
+    attributes:
+        local-toolchain: false
+    run:
+        script: private_local_toolchain.sh
+        arguments:
+            - unpack-sdk.py
+            - http://taskcluster/tooltool.mozilla-releng.net/sha512/7d9f1f1e0d4963fbafc8ec20ee604665e99d66699db2515f388b3b061aaab83349815e1ef862922f4f46ffbe1ac2d86fb00701802c7a9994c74f6e1d32894c34
+            - 7d9f1f1e0d4963fbafc8ec20ee604665e99d66699db2515f388b3b061aaab83349815e1ef862922f4f46ffbe1ac2d86fb00701802c7a9994c74f6e1d32894c34
+            - Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk
+        toolchain-artifact: project/gecko/mac-sdk/iPhoneOS17.4.sdk.tar.zst
+        toolchain-alias: ios-sdk
+
+ios-sim-sdk-17.4:
+    description: "iPhoneSimulator17.4 SDK"
+    treeherder:
+        symbol: TM(ios-sim-17.4)
+    # Because it's using an internal tooltool artifact, it can't be used as a local-toolchain for
+    # bootstrap. But we still want to use the same script as local-toolchains.
+    attributes:
+        local-toolchain: false
+    run:
+        script: private_local_toolchain.sh
+        arguments:
+            - unpack-sdk.py
+            - http://taskcluster/tooltool.mozilla-releng.net/sha512/7d9f1f1e0d4963fbafc8ec20ee604665e99d66699db2515f388b3b061aaab83349815e1ef862922f4f46ffbe1ac2d86fb00701802c7a9994c74f6e1d32894c34
+            - 7d9f1f1e0d4963fbafc8ec20ee604665e99d66699db2515f388b3b061aaab83349815e1ef862922f4f46ffbe1ac2d86fb00701802c7a9994c74f6e1d32894c34
+            - Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator.sdk
+        toolchain-artifact: project/gecko/mac-sdk/iPhoneSimulator17.4.sdk.tar.zst
+        toolchain-alias: ios-sim-sdk

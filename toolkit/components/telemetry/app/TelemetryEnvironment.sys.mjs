@@ -358,6 +358,10 @@ const DEFAULT_ENVIRONMENT_PREFS = new Map([
     { what: RECORD_DEFAULTPREF_VALUE },
   ],
   ["xpinstall.signatures.required", { what: RECORD_PREF_VALUE }],
+  [
+    "xpinstall.signatures.weakSignaturesTemporarilyAllowed",
+    { what: RECORD_PREF_VALUE },
+  ],
   ["nimbus.debug", { what: RECORD_PREF_VALUE }],
 ]);
 
@@ -674,7 +678,7 @@ EnvironmentAddonBuilder.prototype = {
   },
 
   // nsIObserver
-  observe(aSubject, aTopic, aData) {
+  observe(aSubject, aTopic) {
     this._environment._log.trace("observe - Topic " + aTopic);
     if (aTopic == GMP_PROVIDER_REGISTERED_TOPIC) {
       Services.obs.removeObserver(this, GMP_PROVIDER_REGISTERED_TOPIC);
@@ -837,6 +841,7 @@ EnvironmentAddonBuilder.prototype = {
             hasBinaryComponents: false,
             installDay: Utils.millisecondsToDays(installDate.getTime()),
             signedState: addon.signedState,
+            signedTypes: JSON.stringify(addon.signedTypes),
             quarantineIgnoredByApp: enforceBoolean(
               addon.quarantineIgnoredByApp
             ),

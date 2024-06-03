@@ -167,9 +167,18 @@ def update_glean(command_context, version):
     topsrcdir = Path(command_context.topsrcdir)
 
     replace_in_file_or_die(
-        topsrcdir / "build.gradle",
-        r'gleanVersion = "[0-9.]+"',
-        f'gleanVersion = "{version}"',
+        topsrcdir
+        / "mobile"
+        / "android"
+        / "android-components"
+        / "plugins"
+        / "dependencies"
+        / "src"
+        / "main"
+        / "java"
+        / "DependenciesPlugin.kt",
+        r'mozilla_glean = "[0-9.]+"',
+        f'mozilla_glean = "{version}"',
     )
     replace_in_file_or_die(
         topsrcdir / "toolkit" / "components" / "glean" / "Cargo.toml",
@@ -183,8 +192,13 @@ def update_glean(command_context, version):
     )
     replace_in_file_or_die(
         topsrcdir / "gfx" / "wr" / "webrender" / "Cargo.toml",
-        r'^glean = "[0-9.]+"',
-        f'glean = "{version}"',
+        r'^glean = { version = "[0-9.]+"(.+)}',
+        f'glean = {{ version = "{version}"\\1}}',
+    )
+    replace_in_file_or_die(
+        topsrcdir / "gfx" / "wr" / "wr_glyph_rasterizer" / "Cargo.toml",
+        r'^glean = { version = "[0-9.]+"(.+)}',
+        f'glean = {{ version = "{version}"\\1}}',
     )
     replace_in_file_or_die(
         topsrcdir / "python" / "sites" / "mach.txt",
@@ -193,13 +207,9 @@ def update_glean(command_context, version):
     )
 
     instructions = f"""
-    We've edited most of the necessary files to require Glean SDK {version}.
+    We've edited the necessary files to require Glean SDK {version}.
 
-    You will have to edit the following files yourself:
-
-        gfx/wr/wr_glyph_rasterizer/Cargo.toml
-
-    Then, to ensure Glean and Firefox's other Rust dependencies are appropriately vendored,
+    To ensure Glean and Firefox's other Rust dependencies are appropriately vendored,
     please run the following commands:
 
         cargo update -p glean
@@ -225,3 +235,47 @@ def update_glean(command_context, version):
     """
 
     print(textwrap.dedent(instructions))
+
+
+@Command(
+    "event-into-legacy",
+    category="misc",
+    description="Create a Legacy Telemetry compatible event definition from an existing Glean Event metric.",
+)
+@CommandArgument(
+    "--append",
+    "-a",
+    action="store_true",
+    help="Append to toolkit/components/telemetry/Events.yaml (note: verify and make any necessary modifications before landing).",
+)
+@CommandArgument("event", default=None, nargs="?", type=str, help="Event name.")
+def event_into_legacy(command_context, event=None, append=False):
+    # Get the metrics_index's list of metrics indices
+    # by loading the index as a module.
+    import sys
+    from os import path
+
+    sys.path.append(path.join(path.dirname(__file__), path.pardir))
+
+    from metrics_index import metrics_yamls
+
+    sys.path.append(path.dirname(__file__))
+
+    from pathlib import Path
+
+    from translate_events import translate_event
+
+    legacy_yaml_path = path.join(
+        Path(command_context.topsrcdir),
+        "toolkit",
+        "components",
+        "telemetry",
+        "Events.yaml",
+    )
+
+    return translate_event(
+        event,
+        append,
+        [Path(command_context.topsrcdir) / x for x in metrics_yamls],
+        legacy_yaml_path,
+    )

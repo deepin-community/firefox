@@ -3,6 +3,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+#include "nsIThreadPool.h"
 #if defined(HAVE_RES_NINIT)
 #  include <sys/types.h>
 #  include <netinet/in.h>
@@ -137,6 +138,24 @@ class nsResState {
 
 #endif  // RES_RETRY_ON_FAILURE
 
+class DnsThreadListener final : public nsIThreadPoolListener {
+  NS_DECL_THREADSAFE_ISUPPORTS
+  NS_DECL_NSITHREADPOOLLISTENER
+ private:
+  virtual ~DnsThreadListener() = default;
+};
+
+NS_IMETHODIMP
+DnsThreadListener::OnThreadCreated() { return NS_OK; }
+
+NS_IMETHODIMP
+DnsThreadListener::OnThreadShuttingDown() {
+  DNSThreadShutdown();
+  return NS_OK;
+}
+
+NS_IMPL_ISUPPORTS(DnsThreadListener, nsIThreadPoolListener)
+
 //----------------------------------------------------------------------------
 
 static const char kPrefGetTtl[] = "network.dns.get-ttl";
@@ -252,6 +271,8 @@ nsresult nsHostResolver::Init() MOZ_NO_THREAD_SAFETY_ANALYSIS {
   MOZ_ALWAYS_SUCCEEDS(
       threadPool->SetThreadStackSize(nsIThreadManager::kThreadPoolStackSize));
   MOZ_ALWAYS_SUCCEEDS(threadPool->SetName("DNS Resolver"_ns));
+  nsCOMPtr<nsIThreadPoolListener> listener = new DnsThreadListener();
+  threadPool->SetListener(listener);
   mResolverThreads = ToRefPtr(std::move(threadPool));
 
   return NS_OK;
@@ -1469,6 +1490,18 @@ nsHostResolver::LookupStatus nsHostResolver::CompleteLookup(
                               aReason, aTRRRequest, lock);
 }
 
+namespace {
+class NetAddrIPv6FirstComparator {
+ public:
+  static bool Equals(const NetAddr& aLhs, const NetAddr& aRhs) {
+    return aLhs.raw.family == aRhs.raw.family;
+  }
+  static bool LessThan(const NetAddr& aLhs, const NetAddr& aRhs) {
+    return aLhs.raw.family > aRhs.raw.family;
+  }
+};
+}  // namespace
+
 nsHostResolver::LookupStatus nsHostResolver::CompleteLookupLocked(
     nsHostRecord* rec, nsresult status, AddrInfo* aNewRRSet, bool pb,
     const nsACString& aOriginsuffix, TRRSkippedReason aReason,
@@ -1580,6 +1613,16 @@ nsHostResolver::LookupStatus nsHostResolver::CompleteLookupLocked(
       old_addr_info = std::move(newRRSet);
     }
     addrRec->negative = !addrRec->addr_info;
+
+    if (addrRec->addr_info && StaticPrefs::network_dns_preferIPv6() &&
+        addrRec->addr_info->Addresses().Length() > 1 &&
+        addrRec->addr_info->Addresses()[0].IsIPAddrV4()) {
+      // Sort IPv6 addresses first.
+      auto builder = addrRec->addr_info->Build();
+      builder.SortAddresses(NetAddrIPv6FirstComparator());
+      addrRec->addr_info = builder.Finish();
+    }
+
     PrepareRecordExpirationAddrRecord(addrRec);
   }
 
@@ -1651,6 +1694,15 @@ nsHostResolver::LookupStatus nsHostResolver::CompleteLookupByTypeLocked(
   MOZ_ASSERT(rec);
   MOZ_ASSERT(rec->pb == pb);
   MOZ_ASSERT(!rec->IsAddrRecord());
+
+  if (rec->LoadNative()) {
+    // If this was resolved using the native resolver
+    // we also need to update the global count.
+    if (rec->LoadUsingAnyThread()) {
+      mActiveAnyThreadCount--;
+      rec->StoreUsingAnyThread(false);
+    }
+  }
 
   RefPtr<TypeHostRecord> typeRec = do_QueryObject(rec);
   MOZ_ASSERT(typeRec);

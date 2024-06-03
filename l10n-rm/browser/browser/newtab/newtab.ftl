@@ -45,6 +45,7 @@ newtab-topsites-add-search-engine-header = Agiuntar maschina da tschertgar
 newtab-topsites-add-shortcut-header = Nova scursanida
 newtab-topsites-edit-topsites-header = Modifitgar la pagina principala
 newtab-topsites-edit-shortcut-header = Modifitgar la scursanida
+newtab-topsites-add-shortcut-label = Agiuntar ina scursanida
 newtab-topsites-title-label = Titel
 newtab-topsites-title-input =
     .placeholder = Endatar in titel
@@ -198,6 +199,7 @@ newtab-section-header-recent-activity = Activitad recenta
 # Variables:
 #   $provider (string) - Name of the corresponding content provider.
 newtab-section-header-pocket = Recumandà da { $provider }
+newtab-section-header-stories = Istorgias che dattan da pensar
 
 ## Empty Section States: These show when there are no more items in a section. Ex. When there are no more Pocket story recommendations, in the space where there would have been stories, this is shown instead.
 
@@ -206,6 +208,8 @@ newtab-empty-section-highlights = Cumenza a navigar e nus ta mussain qua artitge
 # Variables:
 #   $provider (string) - Name of the content provider for this section, e.g "Pocket".
 newtab-empty-section-topstories = Ussa has ti legì tut las novitads. Turna pli tard per ulteriuras novitads da { $provider }. Na pos betg spetgar? Tscherna in tema popular per chattar ulteriuras istorgias ord il web.
+# Ex. When there are no more story recommendations, in the space where there would have been stories, this is shown instead.
+newtab-empty-section-topstories-generic = Ti has legì tut las novitads. Turna pli tard per leger ulteriurs artitgels da vaglia. Na pos betg spetgar? Tscherna in tema popular per chattar autras bunas istorgias en il web.
 
 ## Empty Section (Content Discovery Experience). These show when there are no more stories or when some stories fail to load.
 
@@ -258,9 +262,9 @@ newtab-custom-row-selector =
 newtab-custom-sponsored-sites = Scursanidas sponsuradas
 newtab-custom-pocket-title = Recumandà da { -pocket-brand-name }
 newtab-custom-pocket-subtitle = Cuntegn excepziunal, tschernì da { -pocket-brand-name }, in product da { -brand-product-name }
-newtab-custom-pocket-toggle =
-    .label = Recumandà da { -pocket-brand-name }
-    .description = Cuntegn excepziunal, tschernì da { -pocket-brand-name }, in product da { -brand-product-name }
+newtab-custom-stories-toggle =
+    .label = Istorgias recumandadas
+    .description = Cuntegn excepziunal curà da { -brand-product-name }
 newtab-custom-pocket-sponsored = Artitgels sponsurads
 newtab-custom-pocket-show-recent-saves = Mussar ils elements memorisads dacurt
 newtab-custom-recent-title = Activitad recenta
@@ -270,3 +274,24 @@ newtab-custom-recent-toggle =
     .description = Ina selecziun da websites e cuntegn visità dacurt
 newtab-custom-close-button = Serrar
 newtab-custom-settings = Administrar ulteriurs parameters
+
+## New Tab Wallpapers
+
+newtab-wallpaper-title = Maletgs dal fund davos
+newtab-wallpaper-reset = Restaurar il standard
+newtab-wallpaper-light-red-panda = Panda cotschen
+newtab-wallpaper-light-mountain = Muntogna alva
+newtab-wallpaper-light-sky = Tschiel cun nivels violets e rosas
+newtab-wallpaper-light-color = Furmas blauas, rosas e melnas
+newtab-wallpaper-light-landscape = Cuntrada da muntognas en tschajera blaua
+newtab-wallpaper-light-beach = Splagia cun palma
+newtab-wallpaper-dark-aurora = Glisch polara
+newtab-wallpaper-dark-color = Furmas cotschnas e blauas
+newtab-wallpaper-dark-panda = Panda cotschen zuppà en il guaud
+newtab-wallpaper-dark-sky = Cuntrada da citad cun tschiel nocturn
+newtab-wallpaper-dark-mountain = Cuntrada da muntognas
+newtab-wallpaper-dark-city = Cuntrada da citad violetta
+# Variables
+#   $author_string (String) - The name of the creator of the photo.
+#   $webpage_string (String) - The name of the webpage where the photo is located.
+newtab-wallpaper-attribution = Foto da <a data-l10n-name="name-link">{ $author_string }</a> sin <a data-l10n-name="webpage-link">{ $webpage_string }</a>

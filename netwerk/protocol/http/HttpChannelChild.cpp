@@ -8,7 +8,7 @@
 // HttpLog.h should generally be included first
 #include "HttpLog.h"
 
-#include "mozilla/net/PBackgroundDataBridge.h"
+#include "nsError.h"
 #include "nsHttp.h"
 #include "nsICacheEntry.h"
 #include "mozilla/BasePrincipal.h"
@@ -23,6 +23,7 @@
 #include "mozilla/ipc/IPCStreamUtils.h"
 #include "mozilla/net/NeckoChild.h"
 #include "mozilla/net/HttpChannelChild.h"
+#include "mozilla/net/PBackgroundDataBridge.h"
 #include "mozilla/net/UrlClassifierCommon.h"
 #include "mozilla/net/UrlClassifierFeatureFactory.h"
 
@@ -34,6 +35,7 @@
 #include "nsContentPolicyUtils.h"
 #include "nsDOMNavigationTiming.h"
 #include "nsIThreadRetargetableStreamListener.h"
+#include "nsIStreamTransportService.h"
 #include "nsStringStream.h"
 #include "nsHttpChannel.h"
 #include "nsHttpHandler.h"
@@ -598,6 +600,17 @@ void HttpChannelChild::DoOnStartRequest(nsIRequest* aRequest) {
   } else if (listener) {
     mListener = listener;
     mCompressListener = listener;
+
+    // We call MaybeRetarget here to allow the stream converter
+    // the option to request data on another thread, even if the
+    // final listener might not support it
+    if (nsCOMPtr<nsIStreamConverter> conv =
+            do_QueryInterface((mCompressListener))) {
+      rv = conv->MaybeRetarget(this);
+      if (NS_SUCCEEDED(rv)) {
+        mOMTResult = LABELS_HTTP_CHILD_OMT_STATS_2::successOnlyDecomp;
+      }
+    }
   }
 }
 
@@ -852,15 +865,10 @@ class RecordStopRequestDelta final {
     }
 
     TimeDuration delta = (mOnStopRequestTime - mOnDataFinishedTime);
-    if (delta.ToMilliseconds() < 0) {
-      // Because Telemetry can't handle negatives
-      delta = -delta;
-      glean::networking::http_content_ondatafinished_to_onstop_delay_negative
-          .AccumulateRawDuration(delta);
-    } else {
-      glean::networking::http_content_ondatafinished_to_onstop_delay
-          .AccumulateRawDuration(delta);
-    }
+    MOZ_ASSERT((delta.ToMilliseconds() >= 0),
+               "OnDataFinished after OnStopRequest");
+    glean::networking::http_content_ondatafinished_to_onstop_delay
+        .AccumulateRawDuration(delta);
   }
 };
 
@@ -1157,28 +1165,48 @@ void HttpChannelChild::CollectOMTTelemetry() {
       NS_CP_ContentTypeName(mLoadInfo->InternalContentPolicyType()));
 
   Telemetry::AccumulateCategoricalKeyed(
-      key, static_cast<LABELS_HTTP_CHILD_OMT_STATS>(mOMTResult));
+      key, static_cast<LABELS_HTTP_CHILD_OMT_STATS_2>(mOMTResult));
 }
 
+// We want to inspect all upgradable mixed content loads
+// (i.e., loads point to HTTP from an HTTPS page), for
+// resources that stem from audio, video and img elements.
+// Of those, we want to measure which succceed and which fail.
+// Some double negatives, but we check the following:exempt loads that
+// 1) Request was upgraded as mixed passive content
+// 2) Request _could_ have been upgraded as mixed passive content if the pref
+// had been set and Request wasn't upgraded by any other means (URL isn't https)
 void HttpChannelChild::CollectMixedContentTelemetry() {
   MOZ_ASSERT(NS_IsMainThread());
 
-  nsContentPolicyType internalLoadType;
-  mLoadInfo->GetInternalContentPolicyType(&internalLoadType);
-  bool statusIsSuccess = NS_SUCCEEDED(mStatus);
+  bool wasUpgraded = mLoadInfo->GetBrowserDidUpgradeInsecureRequests();
+  if (!wasUpgraded) {
+    // If this wasn't upgraded, let's check if it _could_ have been upgraded as
+    // passive mixed content and that it wasn't upgraded with any other method
+    if (!mURI->SchemeIs("https") &&
+        !mLoadInfo->GetBrowserWouldUpgradeInsecureRequests()) {
+      return;
+    }
+  }
+
+  // UseCounters require a document.
   RefPtr<Document> doc;
   mLoadInfo->GetLoadingDocument(getter_AddRefs(doc));
   if (!doc) {
     return;
   }
-  if (internalLoadType == nsIContentPolicy::TYPE_INTERNAL_IMAGE ||
-      internalLoadType == nsIContentPolicy::TYPE_INTERNAL_IMAGE_PRELOAD) {
-    if (mLoadInfo->GetBrowserUpgradeInsecureRequests()) {
+
+  nsContentPolicyType internalLoadType;
+  mLoadInfo->GetInternalContentPolicyType(&internalLoadType);
+  bool statusIsSuccess = NS_SUCCEEDED(mStatus);
+
+  if (internalLoadType == nsIContentPolicy::TYPE_INTERNAL_IMAGE) {
+    if (wasUpgraded) {
       doc->SetUseCounter(
           statusIsSuccess
               ? eUseCounter_custom_MixedContentUpgradedImageSuccess
               : eUseCounter_custom_MixedContentUpgradedImageFailure);
-    } else if (mLoadInfo->GetBrowserWouldUpgradeInsecureRequests()) {
+    } else {
       doc->SetUseCounter(
           statusIsSuccess
               ? eUseCounter_custom_MixedContentNotUpgradedImageSuccess
@@ -1187,12 +1215,12 @@ void HttpChannelChild::CollectMixedContentTelemetry() {
     return;
   }
   if (internalLoadType == nsIContentPolicy::TYPE_INTERNAL_VIDEO) {
-    if (mLoadInfo->GetBrowserUpgradeInsecureRequests()) {
+    if (wasUpgraded) {
       doc->SetUseCounter(
           statusIsSuccess
               ? eUseCounter_custom_MixedContentUpgradedVideoSuccess
               : eUseCounter_custom_MixedContentUpgradedVideoFailure);
-    } else if (mLoadInfo->GetBrowserWouldUpgradeInsecureRequests()) {
+    } else {
       doc->SetUseCounter(
           statusIsSuccess
               ? eUseCounter_custom_MixedContentNotUpgradedVideoSuccess
@@ -1201,12 +1229,12 @@ void HttpChannelChild::CollectMixedContentTelemetry() {
     return;
   }
   if (internalLoadType == nsIContentPolicy::TYPE_INTERNAL_AUDIO) {
-    if (mLoadInfo->GetBrowserUpgradeInsecureRequests()) {
+    if (wasUpgraded) {
       doc->SetUseCounter(
           statusIsSuccess
               ? eUseCounter_custom_MixedContentUpgradedAudioSuccess
               : eUseCounter_custom_MixedContentUpgradedAudioFailure);
-    } else if (mLoadInfo->GetBrowserWouldUpgradeInsecureRequests()) {
+    } else {
       doc->SetUseCounter(
           statusIsSuccess
               ? eUseCounter_custom_MixedContentNotUpgradedAudioSuccess
@@ -1262,6 +1290,9 @@ void HttpChannelChild::DoOnStopRequest(nsIRequest* aRequest,
   MOZ_ASSERT(!LoadOnStopRequestCalled(),
              "We should not call OnStopRequest twice");
 
+  // notify "http-on-before-stop-request" observers
+  gHttpHandler->OnBeforeStopRequest(this);
+
   if (mListener) {
     nsCOMPtr<nsIStreamListener> listener(mListener);
     StoreOnStopRequestCalled(true);
@@ -1280,7 +1311,7 @@ void HttpChannelChild::DoOnStopRequest(nsIRequest* aRequest,
     return;
   }
 
-  // notify "http-on-stop-connect" observers
+  // notify "http-on-stop-request" observers
   gHttpHandler->OnStopRequest(this);
 
   ReleaseListeners();
@@ -1470,6 +1501,9 @@ void HttpChannelChild::ContinueDoNotifyListener() {
   // the point of view of our consumer and we have to report our self
   // as not-pending.
   StoreIsPending(false);
+
+  // notify "http-on-before-stop-request" observers
+  gHttpHandler->OnBeforeStopRequest(this);
 
   if (mListener && !LoadOnStopRequestCalled()) {
     nsCOMPtr<nsIStreamListener> listener = mListener;
@@ -3029,7 +3063,7 @@ HttpChannelChild::RetargetDeliveryTo(nsISerialEventTarget* aNewTarget) {
   NS_ENSURE_ARG(aNewTarget);
   if (aNewTarget->IsOnCurrentThread()) {
     NS_WARNING("Retargeting delivery to same thread");
-    mOMTResult = LABELS_HTTP_CHILD_OMT_STATS::successMainThread;
+    mOMTResult = LABELS_HTTP_CHILD_OMT_STATS_2::successMainThread;
     return NS_OK;
   }
 
@@ -3037,7 +3071,7 @@ HttpChannelChild::RetargetDeliveryTo(nsISerialEventTarget* aNewTarget) {
     // TODO: Maybe add a new label for this? Maybe it doesn't
     // matter though, since we also blocked QI, so we shouldn't
     // ever get here.
-    mOMTResult = LABELS_HTTP_CHILD_OMT_STATS::failListener;
+    mOMTResult = LABELS_HTTP_CHILD_OMT_STATS_2::failListener;
     return NS_ERROR_NO_INTERFACE;
   }
 
@@ -3048,25 +3082,32 @@ HttpChannelChild::RetargetDeliveryTo(nsISerialEventTarget* aNewTarget) {
       do_QueryInterface(mListener, &rv);
   if (!retargetableListener || NS_FAILED(rv)) {
     NS_WARNING("Listener is not retargetable");
-    mOMTResult = LABELS_HTTP_CHILD_OMT_STATS::failListener;
+    mOMTResult = LABELS_HTTP_CHILD_OMT_STATS_2::failListener;
     return NS_ERROR_NO_INTERFACE;
   }
 
   rv = retargetableListener->CheckListenerChain();
   if (NS_FAILED(rv)) {
     NS_WARNING("Subsequent listeners are not retargetable");
-    mOMTResult = LABELS_HTTP_CHILD_OMT_STATS::failListenerChain;
+    mOMTResult = LABELS_HTTP_CHILD_OMT_STATS_2::failListenerChain;
     return rv;
   }
 
   {
     MutexAutoLock lock(mEventTargetMutex);
     MOZ_ASSERT(!mODATarget);
-    mODATarget = aNewTarget;
+    RetargetDeliveryToImpl(aNewTarget, lock);
   }
 
-  mOMTResult = LABELS_HTTP_CHILD_OMT_STATS::success;
+  mOMTResult = LABELS_HTTP_CHILD_OMT_STATS_2::success;
   return NS_OK;
+}
+
+void HttpChannelChild::RetargetDeliveryToImpl(nsISerialEventTarget* aNewTarget,
+                                              MutexAutoLock& aLockRef) {
+  aLockRef.AssertOwns(mEventTargetMutex);
+
+  mODATarget = aNewTarget;
 }
 
 NS_IMETHODIMP
@@ -3083,30 +3124,19 @@ HttpChannelChild::GetDeliveryTarget(nsISerialEventTarget** aEventTarget) {
 
 void HttpChannelChild::TrySendDeletingChannel() {
   AUTO_PROFILER_LABEL("HttpChannelChild::TrySendDeletingChannel", NETWORK);
+  MOZ_ASSERT(NS_IsMainThread());
+
   if (!mDeletingChannelSent.compareExchange(false, true)) {
     // SendDeletingChannel is already sent.
     return;
   }
 
-  if (NS_IsMainThread()) {
-    if (NS_WARN_IF(!CanSend())) {
-      // IPC actor is destroyed already, do not send more messages.
-      return;
-    }
-
-    Unused << PHttpChannelChild::SendDeletingChannel();
+  if (NS_WARN_IF(!CanSend())) {
+    // IPC actor is destroyed already, do not send more messages.
     return;
   }
 
-  nsCOMPtr<nsISerialEventTarget> neckoTarget = GetNeckoTarget();
-  MOZ_ASSERT(neckoTarget);
-
-  DebugOnly<nsresult> rv = neckoTarget->Dispatch(
-      NewNonOwningRunnableMethod(
-          "net::HttpChannelChild::TrySendDeletingChannel", this,
-          &HttpChannelChild::TrySendDeletingChannel),
-      NS_DISPATCH_NORMAL);
-  MOZ_ASSERT(NS_SUCCEEDED(rv));
+  Unused << PHttpChannelChild::SendDeletingChannel();
 }
 
 nsresult HttpChannelChild::AsyncCallImpl(

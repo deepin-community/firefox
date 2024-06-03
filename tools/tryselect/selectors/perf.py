@@ -127,19 +127,6 @@ class PerfParser(CompareParser):
             },
         ],
         [
-            # Bug 1866047 - Remove once monorepo changes are complete
-            ["--fenix"],
-            {
-                "action": "store_true",
-                "default": False,
-                "help": "Include Fenix in tasks to run (disabled by default). Must "
-                "be used in conjunction with --android. Fenix isn't built on mozilla-central "
-                "so we pull the APK being tested from the firefox-android project. This "
-                "means that the fenix APK being tested in the two pushes is the same, and "
-                "any local changes made won't impact it.",
-            },
-        ],
-        [
             ["--chrome"],
             {
                 "action": "store_true",
@@ -334,6 +321,15 @@ class PerfParser(CompareParser):
                 "action": "store_true",
                 "default": False,
                 "help": "Use PerfCompare Beta instead of CompareView.",
+            },
+        ],
+        [
+            ["--non-pgo"],
+            {
+                "action": "store_true",
+                "default": False,
+                "help": "Use opt/non-pgo builds instead of shippable/pgo builds. "
+                "Setting this flag will result in faster try runs.",
             },
         ],
     ]
@@ -715,7 +711,7 @@ class PerfParser(CompareParser):
                         PerfParser.variants[variant.value]["query"]
                     )
 
-    def _build_categories(category, category_info, category_matrix):
+    def _build_categories(category, category_info, category_matrix, **kwargs):
         """Builds the categories to display."""
         categories = {}
 
@@ -744,6 +740,16 @@ class PerfParser(CompareParser):
                     )
                     for suite in category_info["suites"]
                 }
+
+                if kwargs.get("non_pgo"):
+                    for key, query_list in platform_queries.items():
+                        updated_query_list = []
+                        for query in query_list:
+                            updated_query = query.replace(
+                                "'shippable", "!shippable !nightlyasrelease"
+                            )
+                            updated_query_list.append(updated_query)
+                        platform_queries[key] = updated_query_list
 
                 platform_category_name = f"{category} {platform.value}"
                 platform_category_info = {
@@ -931,7 +937,7 @@ class PerfParser(CompareParser):
         for category, category_matrix in category_decision_matrix.items():
             categories.update(
                 PerfParser._build_categories(
-                    category, PerfParser.categories[category], category_matrix
+                    category, PerfParser.categories[category], category_matrix, **kwargs
                 )
             )
 

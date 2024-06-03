@@ -237,7 +237,7 @@
 			<string>Firefox Protocol</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>firefox</string>
+				<string>firefox-bridge</string>
 			</array>
 		</dict>
 		<dict>
@@ -245,7 +245,7 @@
 			<string>Firefox Private Browsing Protocol</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>firefox-private</string>
+				<string>firefox-private-bridge</string>
 			</array>
 		</dict>
 	</array>
@@ -291,5 +291,8 @@
 
   <key>NSMicrophoneUsageDescription</key>
   <string>Only sites you allow within @MAC_APP_NAME@ will be able to use the microphone.</string>
+
+  <key>NSCameraReactionEffectGesturesEnabledDefault</key>
+  <false/>
 </dict>
 </plist>

@@ -454,6 +454,12 @@ void mozJSModuleLoader::InitStatics() {
   MOZ_ASSERT(!sSelf);
   sSelf = new mozJSModuleLoader();
   RegisterWeakMemoryReporter(sSelf);
+
+  dom::AutoJSAPI jsapi;
+  jsapi.Init();
+  JSContext* cx = jsapi.cx();
+  sSelf->InitSharedGlobal(cx);
+
   NonSharedGlobalSyncModuleLoaderScope::InitStatics();
 }
 
@@ -486,12 +492,16 @@ void mozJSModuleLoader::ShutdownLoaders() {
   }
 }
 
-mozJSModuleLoader* mozJSModuleLoader::GetOrCreateDevToolsLoader() {
+mozJSModuleLoader* mozJSModuleLoader::GetOrCreateDevToolsLoader(
+    JSContext* aCx) {
   if (sDevToolsLoader) {
     return sDevToolsLoader;
   }
   sDevToolsLoader = new mozJSModuleLoader();
   RegisterWeakMemoryReporter(sDevToolsLoader);
+
+  sDevToolsLoader->InitSharedGlobal(aCx);
+
   return sDevToolsLoader;
 }
 
@@ -682,26 +692,22 @@ void mozJSModuleLoader::CreateLoaderGlobal(JSContext* aCx,
   aGlobal.set(global);
 }
 
-JSObject* mozJSModuleLoader::GetSharedGlobal(JSContext* aCx) {
-  if (!mLoaderGlobal) {
-    JS::RootedObject globalObj(aCx);
+void mozJSModuleLoader::InitSharedGlobal(JSContext* aCx) {
+  JS::RootedObject globalObj(aCx);
 
-    CreateLoaderGlobal(
-        aCx, IsDevToolsLoader() ? "DevTools global"_ns : "shared JSM global"_ns,
-        &globalObj);
+  CreateLoaderGlobal(
+      aCx, IsDevToolsLoader() ? "DevTools global"_ns : "shared JSM global"_ns,
+      &globalObj);
 
-    // If we fail to create a module global this early, we're not going to
-    // get very far, so just bail out now.
-    MOZ_RELEASE_ASSERT(globalObj);
-    mLoaderGlobal = globalObj;
+  // If we fail to create a module global this early, we're not going to
+  // get very far, so just bail out now.
+  MOZ_RELEASE_ASSERT(globalObj);
+  mLoaderGlobal = globalObj;
 
-    // AutoEntryScript required to invoke debugger hook, which is a
-    // Gecko-specific concept at present.
-    dom::AutoEntryScript aes(globalObj, "module loader report global");
-    JS_FireOnNewGlobalObject(aes.cx(), globalObj);
-  }
-
-  return mLoaderGlobal;
+  // AutoEntryScript required to invoke debugger hook, which is a
+  // Gecko-specific concept at present.
+  dom::AutoEntryScript aes(globalObj, "module loader report global");
+  JS_FireOnNewGlobalObject(aes.cx(), globalObj);
 }
 
 // Read script file on the main thread and pass it back to worker.
@@ -970,8 +976,8 @@ JSObject* mozJSModuleLoader::PrepareObjectForLocation(JSContext* aCx,
                                                       nsIFile* aModuleFile,
                                                       nsIURI* aURI,
                                                       bool aRealFile) {
-  RootedObject globalObj(aCx, GetSharedGlobal(aCx));
-  NS_ENSURE_TRUE(globalObj, nullptr);
+  RootedObject globalObj(aCx, GetSharedGlobal());
+  MOZ_ASSERT(globalObj);
   JSAutoRealm ar(aCx, globalObj);
 
   // |thisObj| is the object we set properties on for a particular .jsm.
@@ -1273,7 +1279,10 @@ nsresult mozJSModuleLoader::GetScriptForLocation(
 }
 
 void mozJSModuleLoader::UnloadModules() {
+  MOZ_ASSERT(!mIsUnloaded);
+
   mInitialized = false;
+  mIsUnloaded = true;
 
   if (mLoaderGlobal) {
     MOZ_ASSERT(JS_HasExtensibleLexicalEnvironment(mLoaderGlobal));
@@ -1381,6 +1390,11 @@ nsresult mozJSModuleLoader::IsModuleLoaded(const nsACString& aLocation,
                                            bool* retval) {
   MOZ_ASSERT(nsContentUtils::IsCallerChrome());
 
+  if (mIsUnloaded) {
+    *retval = false;
+    return NS_OK;
+  }
+
   mInitialized = true;
   ModuleLoaderInfo info(aLocation);
   if (mImports.Get(info.Key())) {
@@ -1414,6 +1428,11 @@ nsresult mozJSModuleLoader::IsJSModuleLoaded(const nsACString& aLocation,
                                              bool* retval) {
   MOZ_ASSERT(nsContentUtils::IsCallerChrome());
 
+  if (mIsUnloaded) {
+    *retval = false;
+    return NS_OK;
+  }
+
   mInitialized = true;
   ModuleLoaderInfo info(aLocation);
   if (mImports.Get(info.Key())) {
@@ -1428,6 +1447,11 @@ nsresult mozJSModuleLoader::IsJSModuleLoaded(const nsACString& aLocation,
 nsresult mozJSModuleLoader::IsESModuleLoaded(const nsACString& aLocation,
                                              bool* retval) {
   MOZ_ASSERT(nsContentUtils::IsCallerChrome());
+
+  if (mIsUnloaded) {
+    *retval = false;
+    return NS_OK;
+  }
 
   mInitialized = true;
   ModuleLoaderInfo info(aLocation);
@@ -1722,6 +1746,11 @@ nsresult mozJSModuleLoader::Import(JSContext* aCx, const nsACString& aLocation,
                                    JS::MutableHandleObject aModuleGlobal,
                                    JS::MutableHandleObject aModuleExports,
                                    bool aIgnoreExports) {
+  if (mIsUnloaded) {
+    JS_ReportErrorASCII(aCx, "Module loaded is already unloaded");
+    return NS_ERROR_FAILURE;
+  }
+
   mInitialized = true;
 
   AUTO_PROFILER_MARKER_TEXT(
@@ -2007,6 +2036,11 @@ nsresult mozJSModuleLoader::ImportESModule(
         aSkipCheck /* = SkipCheckForBrokenURLOrZeroSized::No */) {
   using namespace JS::loader;
 
+  if (mIsUnloaded) {
+    JS_ReportErrorASCII(aCx, "Module loaded is already unloaded");
+    return NS_ERROR_FAILURE;
+  }
+
   mInitialized = true;
 
   // Called from ChromeUtils::ImportESModule.
@@ -2018,8 +2052,8 @@ nsresult mozJSModuleLoader::ImportESModule(
                     MarkerInnerWindowIdFromJSContext(aCx)),
       Substring(aLocation, 0, std::min(size_t(128), aLocation.Length())));
 
-  RootedObject globalObj(aCx, GetSharedGlobal(aCx));
-  NS_ENSURE_TRUE(globalObj, NS_ERROR_FAILURE);
+  RootedObject globalObj(aCx, GetSharedGlobal());
+  MOZ_ASSERT(globalObj);
   MOZ_ASSERT_IF(NS_IsMainThread(),
                 xpc::Scriptability::Get(globalObj).Allowed());
 

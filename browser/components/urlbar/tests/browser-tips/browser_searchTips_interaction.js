@@ -25,7 +25,7 @@ XPCOMUtils.defineLazyServiceGetter(
   "nsIClipboardHelper"
 );
 
-// These should match the same consts in UrlbarProviderSearchTips.jsm.
+// These should match the same consts in UrlbarProviderSearchTips.sys.mjs.
 const MAX_SHOWN_COUNT = 4;
 const LAST_UPDATE_THRESHOLD_MS = 24 * 60 * 60 * 1000;
 
@@ -680,7 +680,7 @@ add_task(async function noActionWhenDisabled() {
     ],
   });
 
-  await withDNSRedirect("www.bing.com", "/", async url => {
+  await withDNSRedirect("www.bing.com", "/", async () => {
     Assert.ok(
       !UrlbarTestUtils.isPopupOpen(window),
       "The UrlbarView should not be open."

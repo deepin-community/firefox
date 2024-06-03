@@ -53,6 +53,9 @@ mr1-onboarding-import-primary-button-label-attribution = Ворид кардан
 mr1-onboarding-theme-header = Соҳиби он шавед
 mr1-onboarding-theme-subtitle = Намуди зоҳирии «{ -brand-short-name }»-ро бо мавзуи дилхоҳ иваз намоед.
 mr1-onboarding-theme-secondary-button-label = Ҳоло не
+newtab-wallpaper-onboarding-title = Чакраҳои рангро кӯшиш намоед
+newtab-wallpaper-onboarding-subtitle = Барои танзими нигоҳи нав барои Варақаи нави шумо, тасвири заминаеро интихоб намоед.
+newtab-wallpaper-onboarding-primary-button-label = Танзими тасвири замина
 # System theme uses operating system color settings
 mr1-onboarding-theme-label-system = Мавзуи низомӣ
 mr1-onboarding-theme-label-light = Равшан
@@ -348,8 +351,11 @@ onboarding-gratitude-security-and-privacy-subtitle = Баҳри истифода
 ## New user time and familiarity survey strings
 
 onboarding-new-user-time-based-survey-title = Шумо аз браузери «{ -brand-short-name }» чанд вақт боз истифода мебаред?
+onboarding-new-user-familiarity-based-survey-title = Шумо бо «{ -brand-short-name }» то чӣ андоза шинос ҳастед?
+onboarding-new-user-survey-subtitle = Изҳори назари шумо барои беҳтар кардани «{ -brand-short-name }» кумак мекунад.
 # When translating "next" it means the next screen in onboarding.
 onboarding-new-user-survey-next-button-label = Навбатӣ
+onboarding-new-user-survey-legal-link-label = Бо интихоб кардани «{ onboarding-new-user-survey-next-button-label }», шумо бо <a data-l10n-name="privacy_notice">Огоҳномаи махфияти</a> «{ -brand-product-name }» розӣ мешавед.
 # When translating "brand new" it means completely new.
 onboarding-new-user-survey-time-based-option-1 = Ман комилан нав ҳастам
 onboarding-new-user-survey-time-based-option-2 = Камтар аз 1 моҳ
@@ -357,3 +363,6 @@ onboarding-new-user-survey-time-based-option-3 = Зиёда аз 1 моҳ, му�
 onboarding-new-user-survey-time-based-option-4 = Зиёда аз 1 моҳ, баъзан
 # When translating "brand new" it means completely new.
 onboarding-new-user-survey-familiarity-based-option-1 = Ман комилан нав ҳастам
+onboarding-new-user-survey-familiarity-based-option-2 = Ман онро якчанд маротиба истифода кардам
+onboarding-new-user-survey-familiarity-based-option-3 = Ман бо он хуб шинос ҳастам
+onboarding-new-user-survey-familiarity-based-option-4 = Ман онро пеш истифода бурдам, аммо бисёр вақт гузашт

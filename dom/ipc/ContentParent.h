@@ -50,8 +50,6 @@
 #include "DriverCrashGuard.h"
 #include "nsIReferrerInfo.h"
 
-#define CHILD_PROCESS_SHUTDOWN_MESSAGE u"child-process-shutdown"_ns
-
 class nsConsoleService;
 class nsIContentProcessInfo;
 class nsICycleCollectorLogSink;
@@ -551,12 +549,12 @@ class ContentParent final : public PContentParent,
   void SetMainThreadQoSPriority(nsIThread::QoSPriority aQoSPriority);
 
   // This function is called when we are about to load a document from an
-  // HTTP(S) or FTP channel for a content process.  It is a useful place
+  // HTTP(S) channel for a content process.  It is a useful place
   // to start to kick off work as early as possible in response to such
   // document loads.
   // aShouldWaitForPermissionCookieUpdate is set to true if main thread IPCs for
   // updating permissions/cookies are sent.
-  nsresult AboutToLoadHttpFtpDocumentForChild(
+  nsresult AboutToLoadHttpDocumentForChild(
       nsIChannel* aChannel,
       bool* aShouldWaitForPermissionCookieUpdate = nullptr);
 
@@ -618,7 +616,8 @@ class ContentParent final : public PContentParent,
       uint64_t aActionId);
   mozilla::ipc::IPCResult RecvAdjustWindowFocus(
       const MaybeDiscarded<BrowsingContext>& aContext, bool aIsVisible,
-      uint64_t aActionId);
+      uint64_t aActionId, bool aShouldClearFocus,
+      const MaybeDiscarded<BrowsingContext>& aAncestorBrowsingContextToFocus);
   mozilla::ipc::IPCResult RecvClearFocus(
       const MaybeDiscarded<BrowsingContext>& aContext);
   mozilla::ipc::IPCResult RecvSetFocusedBrowsingContext(
@@ -964,15 +963,16 @@ class ContentParent final : public PContentParent,
                                                const int32_t& aWhichClipboard,
                                                bool* aHasType);
 
-  mozilla::ipc::IPCResult RecvGetExternalClipboardFormats(
-      const int32_t& aWhichClipboard, const bool& aPlainTextOnly,
-      nsTArray<nsCString>* aTypes);
-
   mozilla::ipc::IPCResult RecvGetClipboardAsync(
       nsTArray<nsCString>&& aTypes, const int32_t& aWhichClipboard,
       const MaybeDiscarded<WindowContext>& aRequestingWindowContext,
       mozilla::NotNull<nsIPrincipal*> aRequestingPrincipal,
       GetClipboardAsyncResolver&& aResolver);
+
+  mozilla::ipc::IPCResult RecvGetClipboardDataSnapshotSync(
+      nsTArray<nsCString>&& aTypes, const int32_t& aWhichClipboard,
+      const MaybeDiscarded<WindowContext>& aRequestingWindowContext,
+      ClipboardReadRequestOrError* aRequestOrError);
 
   already_AddRefed<PClipboardWriteRequestParent>
   AllocPClipboardWriteRequestParent(const int32_t& aClipboardType);
@@ -1270,7 +1270,7 @@ class ContentParent final : public PContentParent,
 
   mozilla::ipc::IPCResult RecvNotifyPositionStateChanged(
       const MaybeDiscarded<BrowsingContext>& aContext,
-      const PositionState& aState);
+      const Maybe<PositionState>& aState);
 
   mozilla::ipc::IPCResult RecvAddOrRemovePageAwakeRequest(
       const MaybeDiscarded<BrowsingContext>& aContext,

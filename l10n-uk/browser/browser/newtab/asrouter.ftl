@@ -65,6 +65,7 @@ cfr-doorhanger-extension-total-users =
 
 cfr-doorhanger-bookmark-fxa-header = Синхронізуйте свої закладки всюди.
 cfr-doorhanger-bookmark-fxa-body = Гарна знахідка! Тепер синхронізуйте цю закладку зі своїми мобільними пристроями. Почніть роботу з { -fxaccount-brand-name(case: "abl") }.
+cfr-doorhanger-bookmark-fxa-body-2 = Чудова знахідка! Тепер синхронізуйте цю закладку зі своїми мобільними пристроями. Почніть роботу з обліковим записом.
 cfr-doorhanger-bookmark-fxa-link-text = Синхронізувати закладки зараз…
 cfr-doorhanger-bookmark-fxa-close-btn-tooltip =
     .aria-label = Кнопка закриття
@@ -207,8 +208,6 @@ cfr-cbh-confirm-button = Відхиляти банери про файли cooki
     .accesskey = В
 cfr-cbh-dismiss-button = Не зараз
     .accesskey = Н
-cookie-banner-blocker-cfr-header = { -brand-short-name } щойно заблокував файли cookie
-cookie-banner-blocker-cfr-body = Ми автоматично відхиляємо багато банерів про файли cookie, щоб сайтам було складніше вас відстежувати.
 cookie-banner-blocker-onboarding-header = { -brand-short-name } щойно відхилив банер про файли cookie
 cookie-banner-blocker-onboarding-body = Менше відволікань і менше файлів cookie, які відстежують вас на цьому сайті.
 cookie-banner-blocker-onboarding-learn-more = Докладніше

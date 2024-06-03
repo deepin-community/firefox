@@ -43,14 +43,14 @@ FILE* MemOpen(const std::vector<uint8_t>& data) {
   FILE* src = tmpfile();
   if (!src) return nullptr;
   fwrite(data.data(), 1, data.size(), src);
-  rewind(src);
+  fseek(src, 0, SEEK_SET);
   return src;
 }
 }  // namespace
 
 TEST_P(SourceManagerTestParam, TestStdioSourceManager) {
   TestConfig config = GetParam();
-  std::vector<uint8_t> compressed = ReadTestData(config.fn.c_str());
+  std::vector<uint8_t> compressed = ReadTestData(config.fn);
   if (config.dparams.size_factor < 1.0) {
     compressed.resize(compressed.size() * config.dparams.size_factor);
   }
@@ -77,7 +77,7 @@ TEST_P(SourceManagerTestParam, TestStdioSourceManager) {
 
 TEST_P(SourceManagerTestParam, TestMemSourceManager) {
   TestConfig config = GetParam();
-  std::vector<uint8_t> compressed = ReadTestData(config.fn.c_str());
+  std::vector<uint8_t> compressed = ReadTestData(config.fn);
   if (config.dparams.size_factor < 1.0f) {
     compressed.resize(compressed.size() * config.dparams.size_factor);
   }

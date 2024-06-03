@@ -700,6 +700,9 @@ sync-mobile-promo = Firefox ჩამოტვირთეთ <img data-l10n-nam
 
 sync-profile-picture =
     .tooltiptext = პროფილის სურათის შეცვლა
+sync-profile-picture-with-alt =
+    .tooltiptext = პროფილის სურათის შეცვლა
+    .alt = პროფილის სურათის შეცვლა
 sync-sign-out =
     .label = გამოსვლა...
     .accesskey = გ
@@ -1257,6 +1260,8 @@ addon-recommendations-link = ვრცლად
 # or builds with no Telemetry support available.
 collection-health-report-disabled = მოხსენებები გამორთულია ანაწყობის ამ კონფიგურაციისთვის
 collection-backlogged-crash-reports-with-link = ნებართვა, რომ { -brand-short-name } თავადვე გაგზავნის უეცარი გათიშვების მოხსენებებს <a data-l10n-name="crash-reports-link">ვრცლად</a>
+    .accesskey = უ
+collection-backlogged-crash-reports = ნებართვა, რომ { -brand-short-name } თავადვე გაგზავნის უეცარი გათიშვების მოხსენებებს
     .accesskey = უ
 privacy-segmentation-section-header = ახალი შესაძლებლობები მოხერხებულად სარგებლობისთვის
 privacy-segmentation-section-description = როცა გთზავაზობთ შესაძლებლობებს თქვენი მონაცემების საფუძველზე მეტად მორგებული მომსახურებისთვის:

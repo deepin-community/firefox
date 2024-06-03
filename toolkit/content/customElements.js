@@ -732,7 +732,7 @@
       }
 
       get label() {
-        return this.getAttribute("label");
+        return this.getAttribute("label") || "";
       }
 
       set image(val) {
@@ -762,9 +762,7 @@
       }
 
       get accessKey() {
-        return this.labelElement
-          ? this.labelElement.accessKey
-          : this.getAttribute("accesskey");
+        return this.labelElement?.accessKey || this.getAttribute("accesskey");
       }
     };
   MozElements.BaseTextMixin = BaseTextMixin;
@@ -818,6 +816,8 @@
     // like the previous Services.scriptloader.loadSubscript() function
     function importCustomElementFromESModule(name) {
       switch (name) {
+        case "moz-button":
+          return import("chrome://global/content/elements/moz-button.mjs");
         case "moz-button-group":
           return import(
             "chrome://global/content/elements/moz-button-group.mjs"

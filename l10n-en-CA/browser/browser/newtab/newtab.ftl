@@ -45,6 +45,7 @@ newtab-topsites-add-search-engine-header = Add Search Engine
 newtab-topsites-add-shortcut-header = New Shortcut
 newtab-topsites-edit-topsites-header = Edit Top Site
 newtab-topsites-edit-shortcut-header = Edit Shortcut
+newtab-topsites-add-shortcut-label = Add Shortcut
 newtab-topsites-title-label = Title
 newtab-topsites-title-input =
     .placeholder = Enter a title
@@ -198,6 +199,7 @@ newtab-section-header-recent-activity = Recent activity
 # Variables:
 #   $provider (string) - Name of the corresponding content provider.
 newtab-section-header-pocket = Recommended by { $provider }
+newtab-section-header-stories = Thought-provoking stories
 
 ## Empty Section States: These show when there are no more items in a section. Ex. When there are no more Pocket story recommendations, in the space where there would have been stories, this is shown instead.
 
@@ -206,6 +208,8 @@ newtab-empty-section-highlights = Start browsing, and we’ll show some of the g
 # Variables:
 #   $provider (string) - Name of the content provider for this section, e.g "Pocket".
 newtab-empty-section-topstories = You’ve caught up. Check back later for more top stories from { $provider }. Can’t wait? Select a popular topic to find more great stories from around the web.
+# Ex. When there are no more story recommendations, in the space where there would have been stories, this is shown instead.
+newtab-empty-section-topstories-generic = You’ve caught up. Check back later for more stories. Can’t wait? Select a popular topic to find more great stories from around the web.
 
 ## Empty Section (Content Discovery Experience). These show when there are no more stories or when some stories fail to load.
 
@@ -258,9 +262,9 @@ newtab-custom-row-selector =
 newtab-custom-sponsored-sites = Sponsored shortcuts
 newtab-custom-pocket-title = Recommended by { -pocket-brand-name }
 newtab-custom-pocket-subtitle = Exceptional content curated by { -pocket-brand-name }, part of the { -brand-product-name } family
-newtab-custom-pocket-toggle =
-    .label = Recommended by { -pocket-brand-name }
-    .description = Exceptional content curated by { -pocket-brand-name }, part of the { -brand-product-name } family
+newtab-custom-stories-toggle =
+    .label = Recommended stories
+    .description = Exceptional content curated by the { -brand-product-name } family
 newtab-custom-pocket-sponsored = Sponsored stories
 newtab-custom-pocket-show-recent-saves = Show recent saves
 newtab-custom-recent-title = Recent activity
@@ -270,3 +274,24 @@ newtab-custom-recent-toggle =
     .description = A selection of recent sites and content
 newtab-custom-close-button = Close
 newtab-custom-settings = Manage more settings
+
+## New Tab Wallpapers
+
+newtab-wallpaper-title = Wallpapers
+newtab-wallpaper-reset = Reset to default
+newtab-wallpaper-light-red-panda = Red panda
+newtab-wallpaper-light-mountain = White mountain
+newtab-wallpaper-light-sky = Sky with purple and pink clouds
+newtab-wallpaper-light-color = Blue, pink and yellow shapes
+newtab-wallpaper-light-landscape = Blue mist mountain landscape
+newtab-wallpaper-light-beach = Beach with palm tree
+newtab-wallpaper-dark-aurora = Aurora Borealis
+newtab-wallpaper-dark-color = Red and blue shapes
+newtab-wallpaper-dark-panda = Red panda hidden in forest
+newtab-wallpaper-dark-sky = City landscape with a night sky
+newtab-wallpaper-dark-mountain = Landscape mountain
+newtab-wallpaper-dark-city = Purple city landscape
+# Variables
+#   $author_string (String) - The name of the creator of the photo.
+#   $webpage_string (String) - The name of the webpage where the photo is located.
+newtab-wallpaper-attribution = Photo by <a data-l10n-name="name-link">{ $author_string }</a> on <a data-l10n-name="webpage-link">{ $webpage_string }</a>

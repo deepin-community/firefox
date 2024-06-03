@@ -375,7 +375,12 @@ class nsHttpHandler final : public nsIHttpProtocolHandler,
     NotifyObservers(chan, NS_DOCUMENT_ON_MODIFY_REQUEST_TOPIC);
   }
 
-  // Called by the channel before writing a request
+  // Called by the channel before calling onStopRequest
+  void OnBeforeStopRequest(nsIHttpChannel* chan) {
+    NotifyObservers(chan, NS_HTTP_ON_BEFORE_STOP_REQUEST_TOPIC);
+  }
+
+  // Called by the channel after calling onStopRequest
   void OnStopRequest(nsIHttpChannel* chan) {
     NotifyObservers(chan, NS_HTTP_ON_STOP_REQUEST_TOPIC);
   }
@@ -424,6 +429,8 @@ class nsHttpHandler final : public nsIHttpProtocolHandler,
                                                  int32_t port,
                                                  nsACString& hostLine);
 
+  static uint8_t UrgencyFromCoSFlags(uint32_t cos);
+
   SpdyInformation* SpdyInfo() { return &mSpdyInfo; }
   bool IsH2MandatorySuiteEnabled() { return mH2MandatorySuiteEnabled; }
 
@@ -445,10 +452,6 @@ class nsHttpHandler final : public nsIHttpProtocolHandler,
   uint32_t DefaultQpackTableSize() const { return mQpackTableSize; }
   uint16_t DefaultHttp3MaxBlockedStreams() const {
     return (uint16_t)mHttp3MaxBlockedStreams;
-  }
-
-  uint32_t MaxHttpResponseHeaderSize() const {
-    return mMaxHttpResponseHeaderSize;
   }
 
   const nsCString& Http3QlogDir();
@@ -729,9 +732,6 @@ class nsHttpHandler final : public nsIHttpProtocolHandler,
   Atomic<uint32_t, Relaxed> mHttp3MaxBlockedStreams{10};
 
   nsCString mHttp3QlogDir;
-
-  // The max size (in bytes) for received Http response header.
-  uint32_t mMaxHttpResponseHeaderSize{393216};
 
   // The ratio for dispatching transactions from the focused window.
   float mFocusedWindowTransactionRatio{0.9f};

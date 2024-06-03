@@ -9,7 +9,7 @@
 
 use std::fmt::Write;
 
-use neqo_common::{qdebug, Decoder};
+use neqo_common::{qdebug, Decoder, IpTos};
 
 use crate::{
     connection::Connection,
@@ -26,21 +26,31 @@ pub fn dump_packet(
     pt: PacketType,
     pn: PacketNumber,
     payload: &[u8],
+    tos: IpTos,
 ) {
-    if !log::log_enabled!(log::Level::Debug) {
+    if log::STATIC_MAX_LEVEL == log::LevelFilter::Off || !log::log_enabled!(log::Level::Debug) {
         return;
     }
 
-    let mut s = String::from("");
+    let mut s = String::new();
     let mut d = Decoder::from(payload);
     while d.remaining() > 0 {
         let Ok(f) = Frame::decode(&mut d) else {
             s.push_str(" [broken]...");
             break;
         };
-        if let Some(x) = f.dump() {
+        let x = f.dump();
+        if !x.is_empty() {
             write!(&mut s, "\n  {} {}", dir, &x).unwrap();
         }
     }
-    qdebug!([conn], "pn={} type={:?} {}{}", pn, pt, path.borrow(), s);
+    qdebug!(
+        [conn],
+        "pn={} type={:?} {} {:?}{}",
+        pn,
+        pt,
+        path.borrow(),
+        tos,
+        s
+    );
 }

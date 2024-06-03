@@ -120,6 +120,8 @@ class nsComputedDOMStyle final : public nsDOMCSSDeclaration,
     mExposeVisitedStyle = aExpose;
   }
 
+  float UsedFontSize() final;
+
   void GetCSSImageURLs(const nsACString& aPropertyName,
                        nsTArray<nsCString>& aImageURLs,
                        mozilla::ErrorResult& aRv) final;
@@ -146,6 +148,10 @@ class nsComputedDOMStyle final : public nsDOMCSSDeclaration,
   NS_DECL_NSIMUTATIONOBSERVER_PARENTCHAINCHANGED
 
  private:
+  already_AddRefed<nsROCSSPrimitiveValue> AppUnitsToCSSValue(nscoord);
+  already_AddRefed<nsROCSSPrimitiveValue> PixelsToCSSValue(float);
+  void SetValueToPixels(nsROCSSPrimitiveValue*, float);
+
   void GetPropertyValue(const nsCSSPropertyID aPropID,
                         const nsACString& aMaybeCustomPropertyNme,
                         nsACString& aValue);
@@ -312,6 +318,10 @@ class nsComputedDOMStyle final : public nsDOMCSSDeclaration,
   // Find out if we need to flush layout of the document, depending on the
   // property that was requested.
   bool NeedsToFlushLayout(nsCSSPropertyID) const;
+  // Find out if we need to flush layout of the document due to container
+  // query being made before relevant query containers are reflowed at least
+  // once.
+  bool NeedsToFlushLayoutForContainerQuery() const;
   // Flushes the given document, which must be our document, and potentially the
   // mElement's document.
   void Flush(Document&, mozilla::FlushType);

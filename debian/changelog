@@ -1,19 +1,91 @@
-firefox (124.0-1deepin2) unstable; urgency=medium
+firefox (126.0.1-1) unstable; urgency=medium
 
-  * fix: enable vaapi in vendor.js.
-   
+  * New upstream release.
 
- -- LiChengGang <lichenggang@uniontech.com>  Wed, 03 Apr 2024 20:25:09 +0800
+ -- Mike Hommey <glandium@debian.org>  Wed, 29 May 2024 05:31:51 +0900
 
-firefox (124.0-1deepin1) unstable; urgency=medium
+firefox (126.0-1) unstable; urgency=medium
 
-  [ Chang Yang ]
-  * fix: loong64: Keep unsigned 32-bit parameter sign-extended in register
-    - https://phabricator.services.mozilla.com/D204011
-  * fix: loong64: Fix usage of some instruction encoding field masks
-    - https://phabricator.services.mozilla.com/D203884
+  * New upstream release.
+  * Fixes for mfsa2024-21, also known as:
+    CVE-2024-4764, CVE-2024-4367, CVE-2024-4767, CVE-2024-4768,
+    CVE-2024-4769, CVE-2024-4770, CVE-2024-4771, CVE-2024-4772,
+    CVE-2024-4773, CVE-2024-4774, CVE-2024-4775, CVE-2024-4776,
+    CVE-2024-4777, CVE-2024-4778.
 
- -- Tianyu Chen <sweetyfish@deepin.org>  Wed, 20 Mar 2024 14:50:15 +0800
+  * debian/browser.install.in: Don't install now removed crashreporter
+    files.
+
+  * third_party/rust/bumpalo/.cargo-checksum.json,
+    third_party/rust/bumpalo/Cargo.toml,
+    third_party/rust/naga/.cargo-checksum.json,
+    third_party/rust/naga/Cargo.toml,
+    third_party/rust/wgpu-core/.cargo-checksum.json,
+    third_party/rust/wgpu-core/Cargo.toml,
+    third_party/rust/wgpu-core/src/snatch.rs,
+    third_party/rust/wgpu-hal/.cargo-checksum.json,
+    third_party/rust/wgpu-hal/Cargo.toml,
+    third_party/rust/wgpu-types/.cargo-checksum.json,
+    third_party/rust/wgpu-types/Cargo.toml: Relax minimum supported rust
+    version to 1.70.
+
+ -- Mike Hommey <glandium@debian.org>  Wed, 15 May 2024 06:46:24 +0900
+
+firefox (125.0.3-1) unstable; urgency=medium
+
+  * New upstream release.
+
+  * debian/rules: Avoid conflicting initializations of the mozbuild state
+    directory.
+
+ -- Mike Hommey <glandium@debian.org>  Wed, 01 May 2024 11:43:16 +0900
+
+firefox (125.0.2-1) unstable; urgency=medium
+
+  * New upstream release.
+
+ -- Mike Hommey <glandium@debian.org>  Tue, 23 Apr 2024 05:42:33 +0900
+
+firefox (125.0.1-2) unstable; urgency=medium
+
+  * debian/browser.install.in, debian/rules: Install libmozav*.so on all
+    archs.
+
+ -- Mike Hommey <glandium@debian.org>  Thu, 18 Apr 2024 09:47:44 +0900
+
+firefox (125.0.1-1) unstable; urgency=medium
+
+  * New upstream release.
+  * Fixes for mfsa2024-18, also known as:
+    CVE-2024-3852, CVE-2024-3853, CVE-2024-3854, CVE-2024-3855,
+    CVE-2024-3856, CVE-2024-3857, CVE-2024-3858, CVE-2024-3859,
+    CVE-2024-3860, CVE-2024-3861, CVE-2024-3862, CVE-2024-3302,
+    CVE-2024-3864, CVE-2024-3865.
+
+  * debian/control*: Bump nss build dependency.
+
+  * python/mozboot/mozboot/util.py,
+    third_party/rust/neqo-common/.cargo-checksum.json,
+    third_party/rust/neqo-common/Cargo.toml,
+    third_party/rust/neqo-crypto/.cargo-checksum.json,
+    third_party/rust/neqo-crypto/Cargo.toml,
+    third_party/rust/neqo-crypto/src/p11.rs,
+    third_party/rust/neqo-http3/.cargo-checksum.json,
+    third_party/rust/neqo-http3/Cargo.toml,
+    third_party/rust/neqo-qpack/.cargo-checksum.json,
+    third_party/rust/neqo-qpack/Cargo.toml,
+    third_party/rust/neqo-transport/.cargo-checksum.json,
+    third_party/rust/neqo-transport/Cargo.toml: Relax minimum supported
+    rust version to 1.70
+
+ -- Mike Hommey <glandium@debian.org>  Wed, 17 Apr 2024 09:11:02 +0900
+
+firefox (124.0.1-1) unstable; urgency=medium
+
+  * New upstream release.
+  * Fixes for mfsa2024-15, also known as CVE-2024-29943, CVE-2024-29944.
+
+ -- Mike Hommey <glandium@debian.org>  Sat, 23 Mar 2024 05:17:50 +0900
 
 firefox (124.0-1) unstable; urgency=medium
 

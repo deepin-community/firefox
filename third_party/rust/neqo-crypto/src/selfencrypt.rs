@@ -47,7 +47,7 @@ impl SelfEncrypt {
         debug_assert_eq!(salt.len(), Self::SALT_LENGTH);
         let salt = hkdf::import_key(self.version, salt)?;
         let secret = hkdf::extract(self.version, self.cipher, Some(&salt), k)?;
-        Aead::new(false, self.version, self.cipher, &secret, "neqo self")
+        Aead::new(self.version, self.cipher, &secret, "neqo self")
     }
 
     /// Rotate keys.  This causes any previous key that is being held to be replaced by the current
@@ -82,7 +82,7 @@ impl SelfEncrypt {
         //   opaque aead_encrypted(plaintext)[length as expanded];
         // };
         // AAD covers the entire header, plus the value of the AAD parameter that is provided.
-        let salt = random(Self::SALT_LENGTH);
+        let salt = random::<{ Self::SALT_LENGTH }>();
         let cipher = self.make_aead(&self.key, &salt)?;
         let encoded_len = 2 + salt.len() + plaintext.len() + cipher.expansion();
 

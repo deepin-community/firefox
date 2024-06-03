@@ -12,10 +12,13 @@
 
 policy-3rdparty = Set policies that WebExtensions can access via chrome.storage.managed.
 policy-AllowedDomainsForApps = Define domains allowed to access Google Workspace.
+policy-AllowFileSelectionDialogs = Allow file selection dialogs.
 policy-AppAutoUpdate = Enable or disable automatic application update.
 policy-AppUpdatePin = Prevent { -brand-short-name } from being updated beyond the specified version.
 policy-AppUpdateURL = Set custom app update URL.
 policy-Authentication = Configure integrated authentication for websites that support it.
+policy-AutofillAddressEnabled = Enable autofill for addresses.
+policy-AutofillCreditCardEnabled = Enable autofill for payment methods.
 policy-AutoLaunchProtocolsFromOrigins = Define a list of external protocols that can be used from listed origins without prompting the user.
 policy-BackgroundAppUpdate2 = Enable or disable the background updater.
 policy-BlockAboutAddons = Block access to the Add-ons Manager (about:addons).
@@ -25,6 +28,7 @@ policy-BlockAboutSupport = Block access to the about:support page.
 policy-Bookmarks = Create bookmarks in the Bookmarks toolbar, Bookmarks menu, or a specified folder inside them.
 policy-CaptivePortal = Enable or disable captive portal support.
 policy-CertificatesDescription = Add certificates or use built-in certificates.
+policy-ContentAnalysis = Enable or disable connection to data-loss-prevention agent.
 policy-Cookies = Allow or deny websites to set cookies.
 # Containers in this context is referring to container tabs in Firefox.
 policy-Containers = Set policies related to containers.
@@ -35,8 +39,11 @@ policy-DisableAppUpdate = Prevent the browser from updating.
 policy-DisableBuiltinPDFViewer = Disable PDF.js, the built-in PDF viewer in { -brand-short-name }.
 policy-DisableDefaultBrowserAgent = Prevent the default browser agent from taking any actions. Only applicable to Windows; other platforms don’t have the agent.
 policy-DisableDeveloperTools = Block access to the developer tools.
+policy-DisableEncryptedClientHello = Disable use of the TLS feature Encrypted Client Hello (ECH).
 policy-DisableFeedbackCommands = Disable commands to send feedback from the Help menu (Submit Feedback and Report Deceptive Site).
 policy-DisableFirefoxAccounts = Disable { -fxaccount-brand-name } based services, including Sync.
+# This string is in the process of being deprecated in favor of policy-DisableAccounts.
+policy-DisableFirefoxAccounts1 = Disable account-based services, including sync.
 # Firefox Screenshots is the name of the feature, and should not be translated.
 policy-DisableFirefoxScreenshots = Disable the Firefox Screenshots feature.
 policy-DisableFirefoxStudies = Prevent { -brand-short-name } from running studies.
@@ -91,6 +98,7 @@ policy-LocalFileLinks = Allow specific websites to link to local files.
 policy-ManagedBookmarks = Configures a list of bookmarks managed by an administrator that cannot be changed by the user.
 policy-ManualAppUpdateOnly = Allow manual updates only and do not notify the user about updates.
 policy-PrimaryPassword = Require or prevent using a Primary Password.
+policy-PrintingEnabled = Enable or disable printing.
 policy-NetworkPrediction = Enable or disable network prediction (DNS prefetching).
 policy-NewTabPage = Enable or disable the New Tab page.
 policy-NoDefaultBookmarks = Disable creation of the default bookmarks bundled with { -brand-short-name }, and the Smart Bookmarks (Most Visited, Recent Tags). Note: this policy is only effective if used before the first run of the profile.
@@ -120,6 +128,7 @@ policy-SSLVersionMax = Set the maximum SSL version.
 policy-SSLVersionMin = Set the minimum SSL version.
 policy-StartDownloadsInTempDirectory = Force downloads to start off in a local, temporary location rather than the default download directory.
 policy-SupportMenu = Add a custom support menu item to the help menu.
+policy-TranslateEnabled = Enable or disable webpage translation.
 policy-UserMessaging = Don’t show certain messages to the user.
 policy-UseSystemPrintDialog = Print using the system print dialog.
 # “format” refers to the format used for the value of this policy.

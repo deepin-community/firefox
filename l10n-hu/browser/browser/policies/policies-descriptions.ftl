@@ -17,6 +17,8 @@ policy-AppAutoUpdate = Az automatikus alkalmazásfrissítés engedélyezése vag
 policy-AppUpdatePin = A { -brand-short-name } megakadályozása abban, hogy a megadott verzión túl frissüljön.
 policy-AppUpdateURL = Egyéni alkalmazás-frissítési URL megadása.
 policy-Authentication = Integrált hitelesítés beállítása azokhoz a weboldalakhoz, melyek támogatják.
+policy-AutofillAddressEnabled = Automatikus címkitöltés engedélyezése.
+policy-AutofillCreditCardEnabled = Fizetési módok automatikus kitöltésének engedélyezése.
 policy-AutoLaunchProtocolsFromOrigins = Adjon meg egy listát azokról a külső protokollokról, amelyek a felhasználó megkérdezése nélkül használhatók a felsorolt eredetektől.
 policy-BackgroundAppUpdate2 = Engedélyezze vagy tiltsa le a háttérfrissítőt.
 policy-BlockAboutAddons = Hozzáférés blokkolása a Kiegészítőkezelőhöz (about:addons).
@@ -26,6 +28,7 @@ policy-BlockAboutSupport = Hozzáférés blokkolása az about:support oldalhoz.
 policy-Bookmarks = Könyvjelzők létrehozása a Könyvjelzők eszköztáron, a Könyvjelző menüben vagy az abban megadott mappában.
 policy-CaptivePortal = Beléptető oldal támogatás engedélyezése vagy letiltása.
 policy-CertificatesDescription = Tanúsítványok hozzáadása vagy beépített tanúsítványok használata.
+policy-ContentAnalysis = Az adatvesztés-megelőzési ügynökhöz való kapcsolat engedélyezése vagy letiltása.
 policy-Cookies = A weboldalak süti elhelyezésének engedélyezése vagy letiltása.
 # Containers in this context is referring to container tabs in Firefox.
 policy-Containers = A konténerekhez kapcsolódó házirendek beállítása.
@@ -36,8 +39,11 @@ policy-DisableAppUpdate = A böngésző frissítésének megakadályozása.
 policy-DisableBuiltinPDFViewer = A PDF.js-nek, a { -brand-short-name } beépített PDF-megjelenítőjének letiltása.
 policy-DisableDefaultBrowserAgent = Akadályozza meg, hogy az alapértelmezett böngésző-ügynök bármilyen műveletet végezzen. Csak Windowsra vonatkozik, más platformokon nincs meg ez az ügynök.
 policy-DisableDeveloperTools = A fejlesztői eszközökhöz hozzáférés blokkolása.
+policy-DisableEncryptedClientHello = Az Encrypted Client Hello (ECH) TLS funkció használatának letiltása.
 policy-DisableFeedbackCommands = A visszajelzés küldési parancsok letiltása a Súgó menüben (Visszajelzés beküldése és Félrevezető oldal jelentése).
 policy-DisableFirefoxAccounts = A { -fxaccount-brand-name } alapú szolgáltatások letiltása, beleértve a Syncet.
+# This string is in the process of being deprecated in favor of policy-DisableAccounts.
+policy-DisableFirefoxAccounts1 = Fiókalapú szolgáltatások, köztük a szinkronizálás letiltása.
 # Firefox Screenshots is the name of the feature, and should not be translated.
 policy-DisableFirefoxScreenshots = A Firefox Screenshots funkció letiltása.
 policy-DisableFirefoxStudies = Annak a megakadályozása, hogy a { -brand-short-name } tanulmányokat futtasson.
@@ -122,6 +128,7 @@ policy-SSLVersionMax = A legmagasabb SSL verzió beállítása.
 policy-SSLVersionMin = A legkisebb SSL verzió beállítása.
 policy-StartDownloadsInTempDirectory = A letöltések arra kényszerítése, hogy az alapértelmezett letöltési könyvtár helyett egy helyi, ideiglenes helyen induljanak el.
 policy-SupportMenu = Egyéni támogatási menüpont hozzáadása a súgó menühöz.
+policy-TranslateEnabled = Weboldalak fordításának engedélyezése vagy letiltása.
 policy-UserMessaging = Ne mutasson bizonyos üzeneteket a felhasználónak.
 policy-UseSystemPrintDialog = Nyomtatás a rendszer nyomtatási párbeszédablakával.
 # “format” refers to the format used for the value of this policy.

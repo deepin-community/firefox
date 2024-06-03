@@ -800,6 +800,7 @@ nsresult nsLookAndFeel::PerThemeData::GetColor(ColorID aID,
     case ColorID::SpellCheckerUnderline:
     case ColorID::Mark:
     case ColorID::Marktext:
+    case ColorID::MozAutofillBackground:
       aColor = GetStandinForNativeColor(
           aID, mIsDark ? ColorScheme::Dark : ColorScheme::Light);
       break;
@@ -863,9 +864,6 @@ nsresult nsLookAndFeel::NativeGetInt(IntID aID, int32_t& aResult) {
     case IntID::CaretWidth:
       aResult = 1;
       break;
-    case IntID::ShowCaretDuringSelection:
-      aResult = 0;
-      break;
     case IntID::SelectTextfieldsOnKeyFocus: {
       GtkSettings* settings;
       gboolean select_on_focus;
@@ -903,10 +901,6 @@ nsresult nsLookAndFeel::NativeGetInt(IntID aID, int32_t& aResult) {
       settings = gtk_settings_get_default();
       g_object_get(settings, "gtk-menu-popup-delay", &delay, nullptr);
       aResult = (int32_t)delay;
-      break;
-    }
-    case IntID::TooltipDelay: {
-      aResult = 500;
       break;
     }
     case IntID::MenusCanOverlapOSBar:
@@ -1033,6 +1027,11 @@ nsresult nsLookAndFeel::NativeGetInt(IntID aID, int32_t& aResult) {
     case IntID::TitlebarRadius: {
       EnsureInit();
       aResult = EffectiveTheme().mTitlebarRadius;
+      break;
+    }
+    case IntID::TitlebarButtonSpacing: {
+      EnsureInit();
+      aResult = EffectiveTheme().mTitlebarButtonSpacing;
       break;
     }
     case IntID::AllowOverlayScrollbarsOverlap: {
@@ -1976,6 +1975,10 @@ void nsLookAndFeel::PerThemeData::Init() {
     mTitlebar = GetColorPair(style, GTK_STATE_FLAG_NORMAL);
     mTitlebarInactive = GetColorPair(style, GTK_STATE_FLAG_BACKDROP);
     mTitlebarRadius = IsSolidCSDStyleUsed() ? 0 : GetBorderRadius(style);
+    // Get titlebar spacing, a default one is 6 pixels (gtk/gtkheaderbar.c)
+    mTitlebarButtonSpacing = 6;
+    g_object_get(GetWidget(MOZ_GTK_HEADER_BAR), "spacing",
+                 &mTitlebarButtonSpacing, nullptr);
   }
 
   // We special-case the header bar color in Adwaita, Yaru and Breeze to be the

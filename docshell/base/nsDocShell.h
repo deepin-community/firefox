@@ -489,7 +489,8 @@ class nsDocShell final : public nsDocLoader,
   bool HasDocumentViewer() const { return !!mDocumentViewer; }
 
   static uint32_t ComputeURILoaderFlags(
-      mozilla::dom::BrowsingContext* aBrowsingContext, uint32_t aLoadType);
+      mozilla::dom::BrowsingContext* aBrowsingContext, uint32_t aLoadType,
+      bool aIsDocumentLoad = true);
 
   void SetLoadingSessionHistoryInfo(
       const mozilla::dom::LoadingSessionHistoryInfo& aLoadingInfo,
@@ -1265,10 +1266,6 @@ class nsDocShell final : public nsDocLoader,
   AppType mAppType;
   uint32_t mLoadType;
   uint32_t mFailedLoadType;
-
-  // Whether or not handling of the <meta name="viewport"> tag is overridden.
-  // Possible values are defined as constants in nsIDocShell.idl.
-  MetaViewportOverride mMetaViewportOverride;
 
   // See WindowGlobalParent::mSingleChannelId.
   mozilla::Maybe<uint64_t> mSingleChannelId;

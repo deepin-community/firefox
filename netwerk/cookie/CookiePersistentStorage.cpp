@@ -132,14 +132,7 @@ NS_IMETHODIMP
 ConvertAppIdToOriginAttrsSQLFunction::OnFunctionCall(
     mozIStorageValueArray* aFunctionArguments, nsIVariant** aResult) {
   nsresult rv;
-  int32_t inIsolatedMozBrowser;
-
-  rv = aFunctionArguments->GetInt32(1, &inIsolatedMozBrowser);
-  NS_ENSURE_SUCCESS(rv, rv);
-
-  // Create an originAttributes object by inIsolatedMozBrowser.
-  // Then create the originSuffix string from this object.
-  OriginAttributes attrs(inIsolatedMozBrowser != 0);
+  OriginAttributes attrs;
   nsAutoCString suffix;
   attrs.CreateSuffix(suffix);
 
@@ -205,7 +198,7 @@ SetInBrowserFromOriginAttributesSQLFunction::OnFunctionCall(
   NS_ENSURE_TRUE(success, NS_ERROR_FAILURE);
 
   RefPtr<nsVariant> outVar(new nsVariant());
-  rv = outVar->SetAsInt32(attrs.mInIsolatedMozBrowser);
+  rv = outVar->SetAsInt32(false);
   NS_ENSURE_SUCCESS(rv, rv);
 
   outVar.forget(aResult);
@@ -2112,22 +2105,22 @@ void CookiePersistentStorage::CollectCookieJarSizeData() {
     if (cookieEntry.IsPartitioned()) {
       uint16_t cePartitioned = cookieEntry.GetCookies().Length();
       sumPartitioned += cePartitioned;
-      mozilla::glean::networking::cookie_count_part_by_key.AccumulateSamples(
-          {cePartitioned});
+      mozilla::glean::networking::cookie_count_part_by_key
+          .AccumulateSingleSample(cePartitioned);
     } else {
       uint16_t ceUnpartitioned = cookieEntry.GetCookies().Length();
       sumUnpartitioned += ceUnpartitioned;
-      mozilla::glean::networking::cookie_count_unpart_by_key.AccumulateSamples(
-          {ceUnpartitioned});
+      mozilla::glean::networking::cookie_count_unpart_by_key
+          .AccumulateSingleSample(ceUnpartitioned);
     }
   }
 
-  mozilla::glean::networking::cookie_count_total.AccumulateSamples(
-      {mCookieCount});
-  mozilla::glean::networking::cookie_count_partitioned.AccumulateSamples(
-      {sumPartitioned});
-  mozilla::glean::networking::cookie_count_unpartitioned.AccumulateSamples(
-      {sumUnpartitioned});
+  mozilla::glean::networking::cookie_count_total.AccumulateSingleSample(
+      mCookieCount);
+  mozilla::glean::networking::cookie_count_partitioned.AccumulateSingleSample(
+      sumPartitioned);
+  mozilla::glean::networking::cookie_count_unpartitioned.AccumulateSingleSample(
+      sumUnpartitioned);
 }
 
 }  // namespace net

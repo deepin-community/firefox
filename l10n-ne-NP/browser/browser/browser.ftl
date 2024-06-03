@@ -5,11 +5,52 @@
 
 ## The main browser window's title
 
+# These are the default window titles everywhere except macOS.
+# .data-title-default and .data-title-private are used when the web content
+# opened has no title:
+#
+# default - "Mozilla Firefox"
+# private - "Mozilla Firefox (Private Browsing)"
+#
+# .data-content-title-default and .data-content-title-private are for use when
+# there *is* a content title.
+# Variables:
+#  $content-title (String): the title of the web content.
+browser-main-window-window-titles =
+    .data-title-default = { -brand-full-name }
+    .data-title-private = { -brand-full-name } निजी ब्राउजिङ
+    .data-content-title-default = { $content-title }—{ -brand-full-name }
+    .data-content-title-private = { $content-title }—{ -brand-full-name } निजी ब्राउजिङ
+# These are the default window titles on macOS.
+# .data-title-default and .data-title-private are used when the web content
+# opened has no title:
+#
+#
+# "default" - "Mozilla Firefox"
+# "private" - "Mozilla Firefox — (Private Browsing)"
+#
+# .data-content-title-default and .data-content-title-private are for use when
+# there *is* a content title.
+# Do not use the brand name in these, as we do on non-macOS.
+#
+# Also note the other subtle difference here: we use a `-` to separate the
+# brand name from `(Private Browsing)`, which does not happen on other OSes.
+#
+# Variables:
+#  $content-title (String): the title of the web content.
+browser-main-window-mac-window-titles =
+    .data-title-default = { -brand-full-name }
+    .data-title-private = { -brand-full-name }—निजी ब्राउजिङ
+    .data-content-title-default = { $content-title }
+    .data-content-title-private = { $content-title }—निजी ब्राउजिङ
 # This gets set as the initial title, and is overridden as soon as we start
 # updating the titlebar based on loaded tabs or private browsing state.
 # This should match the `data-title-default` attribute in both
 # `browser-main-window` and `browser-main-window-mac`.
 browser-main-window-title = { -brand-full-name }
+# The non-variable portion of this MUST match the translation of
+# "PRIVATE_BROWSING_SHORTCUT_TITLE" in custom.properties
+private-browsing-shortcut-text-2 = { -brand-shortcut-name } निजी ब्राउजिङ
 
 ##
 
@@ -26,6 +67,8 @@ urlbar-midi-notification-anchor =
     .tooltiptext = MIDI प्यानल खोल्नुहोस्
 urlbar-eme-notification-anchor =
     .tooltiptext = DRM सफ्टवेयर प्रयोग प्रबन्ध मिलाउनुहोस्
+urlbar-web-authn-anchor =
+    .tooltiptext = वेब प्रमाणीकरण प्यानल खोल्नुहोस्
 urlbar-canvas-notification-anchor =
     .tooltiptext = क्यानभस निकासको अनुमति म्यानेज गर्नुहोस्
 urlbar-web-rtc-share-microphone-notification-anchor =
@@ -34,6 +77,10 @@ urlbar-default-notification-anchor =
     .tooltiptext = सन्देश प्यानल खोल
 urlbar-geolocation-notification-anchor =
     .tooltiptext = स्थान अनुरोध प्यानल खोल
+urlbar-xr-notification-anchor =
+    .tooltiptext = भर्चुअल रियालिटी अनुमति प्यानल खोल्नुहोस्
+urlbar-storage-access-anchor =
+    .tooltiptext = ब्राउजिङ गतिविधि अनुमति प्यानल खोल्नुहोस्
 urlbar-web-rtc-share-screen-notification-anchor =
     .tooltiptext = आफ्नो साइटमा सञ्झ्याल वा स्क्रिन साझेदारीको प्रबन्ध मिलाउनुहोस्
 urlbar-indexed-db-notification-anchor =
@@ -44,25 +91,65 @@ urlbar-plugins-notification-anchor =
     .tooltiptext = प्रयोगमा रहेका प्लगइनहरू व्यवस्थापन गर्नुहोस्
 urlbar-web-rtc-share-devices-notification-anchor =
     .tooltiptext = यो साइटको तपाईँको क्यामेरा र/अथवा माइक्रो फोन प्रयोग अधिकार ब्यवस्थापन गर्नुहोस्
+# "Speakers" is used in a general sense that might include headphones or
+# another audio output connection.
+urlbar-web-rtc-share-speaker-notification-anchor =
+    .tooltiptext = साइटसँग अन्य स्पिकरहरू साझेदारी गर्ने प्रबन्ध गर्नुहोस्
+urlbar-autoplay-notification-anchor =
+    .tooltiptext = स्वत: प्ले प्यानल खोल्नुहोस्
 urlbar-persistent-storage-notification-anchor =
     .tooltiptext = डाटालाई लगातार भण्डारणमा राख्नुहोस्
 urlbar-addons-notification-anchor =
     .tooltiptext = एडअन स्थापना सन्देश प्यानल खोल्नुहोस्
+urlbar-tip-help-icon =
+    .title = मद्दत प्राप्त गर्नुहोस्
+urlbar-search-tips-confirm = ठीक छ, मैले बुझेँ
+urlbar-search-tips-confirm-short = बुझेँ
+# Read out before Urlbar Tip text content so screenreader users know the
+# subsequent text is a tip offered by the browser. It should end in a colon or
+# localized equivalent.
+urlbar-tip-icon-description =
+    .alt = सुझाव:
+urlbar-result-menu-button =
+    .title = मेनु खाेल्नुहोस्
+urlbar-result-menu-button-feedback = प्रतिक्रिया
+    .title = मेनु खोल्नुहोस्
+urlbar-result-menu-learn-more =
+    .label = थप जान्नुहोस्
+    .accesskey = L
+urlbar-result-menu-remove-from-history =
+    .label = इतिहासबाट हटाउनुहोस्
+    .accesskey = R
+urlbar-result-menu-tip-get-help =
+    .label = मद्दत प्राप्त गर्नुहोस्
+    .accesskey = h
 
 ## Prompts users to use the Urlbar when they open a new tab or visit the
 ## homepage of their default search engine.
 ## Variables:
 ##  $engineName (String): The name of the user's default search engine. e.g. "Google" or "DuckDuckGo".
 
+urlbar-search-tips-onboard = कम टाइप गर्नुहोस्, थप खोज्नुहोस्: खोज्नुहोस् { $engineName } आफ्नो ठेगाना पट्टीबाट।
+urlbar-search-tips-redirect-2 = { $engineName } र तपाईंको ब्राउजिङ इतिहासबाट सुझावहरू हेर्नको लागि ठेगाना पट्टीमा आफ्नो खोज सुरु गर्नुहोस्।
+# Make sure to match the name of the Search panel in settings.
+urlbar-search-tips-persist = खोजी अझ सरल भयो। यहाँ ठेगाना पट्टी मा आफ्नो खोज थप विशिष्ट बनाउन प्रयास गर्नुहोस्। यसको सट्टा URL देखाउन, सेटिङहरूमा खोजमा जानुहोस्।
+# Prompts users to use the Urlbar when they are typing in the domain of a
+# search engine, e.g. google.com or amazon.com.
+urlbar-tabtosearch-onboard = तपाईलाई के चाहिन्छ छिटो फेला पार्न यो सर्टकट चयन गर्नुहोस्।
 
 ## Local search mode indicator labels in the urlbar
 
 urlbar-search-mode-bookmarks = बुकमार्कहरु
+urlbar-search-mode-tabs = ट्याबहरू
+urlbar-search-mode-history = इतिहास
+urlbar-search-mode-actions = कार्य
 
 ##
 
 urlbar-geolocation-blocked =
     .tooltiptext = तपाईँले यो वेबसाइटको लागि स्थान जानकारी अवरुद्ध गर्नु भएको छ।
+urlbar-xr-blocked =
+    .tooltiptext = तपाईंले यस वेबसाइटको लागि भर्चुअल वास्तविकता उपकरण पहुँच अवरुद्ध गर्नुभएको छ।
 urlbar-web-notifications-blocked =
     .tooltiptext = तपाईँले यो वेबसाइटको लागि सूचनाहरू अवरुद्ध गर्नु भएको छ।
 urlbar-camera-blocked =
@@ -75,10 +162,14 @@ urlbar-persistent-storage-blocked =
     .tooltiptext = तपाईँले यो वेबसाइटको लागि लगातार भण्डारण अवरुद्ध गर्नु भएको छ।
 urlbar-popup-blocked =
     .tooltiptext = तपाईँले यो वेबसाइटको लागि पपअप अवरुद्ध गर्नु भएको छ|
+urlbar-autoplay-media-blocked =
+    .tooltiptext = तपाईंले यस वेबसाइटको लागि ध्वनिको साथ स्वत: प्ले मिडिया अवरुद्ध गर्नुभएको छ।
 urlbar-canvas-blocked =
     .tooltiptext = तपाईँले यो वेबसाइटको लागि क्यानभस डाटाको निकास अवरुद्ध गर्नु भएको छ।
 urlbar-midi-blocked =
     .tooltiptext = तपाईँले यो वेबसाइटको लागि MIDI अवरुद्ध गर्नु भएको छ।
+urlbar-install-blocked =
+    .tooltiptext = तपाईंले यस वेबसाइटको लागि एड-अन स्थापना ब्लक गर्नुभएको छ।
 # Variables
 #   $shortcut (String) - A keyboard shortcut for the edit bookmark command.
 urlbar-star-edit-bookmark =
@@ -90,6 +181,12 @@ urlbar-star-add-bookmark =
 
 ## Page Action Context Menu
 
+page-action-manage-extension2 =
+    .label = एक्स्टेनसन व्यवस्थित गर्नुहोस्…
+    .accesskey = E
+page-action-remove-extension2 =
+    .label = एक्स्टेन्सन हटाउनुहोस्
+    .accesskey = v
 
 ## Auto-hide Context Menu
 
@@ -102,6 +199,9 @@ full-screen-exit =
 
 ## Search Engine selection buttons (one-offs)
 
+# This string prompts the user to use the list of search shortcuts in
+# the Urlbar and searchbar.
+search-one-offs-with-title = यो पटक, यो सङ्ग खोजी गर्नुहोस्:
 search-one-offs-change-settings-compact-button =
     .tooltiptext = खोज सेटिङ परिवर्तन गर्नुहोस्
 search-one-offs-context-open-new-tab =
@@ -110,6 +210,23 @@ search-one-offs-context-open-new-tab =
 search-one-offs-context-set-as-default =
     .label = पूर्वनिर्धारित खोजी इन्जिन बनाउनुहोस्
     .accesskey = D
+search-one-offs-context-set-as-default-private =
+    .label = निजी विन्डोजको लागि पूर्वनिर्धारित खोज इन्जिनको रूपमा सेट गर्नुहोस्
+    .accesskey = P
+# Search engine one-off buttons with an @alias shortcut/keyword.
+# Variables:
+#  $engineName (String): The name of the engine.
+#  $alias (String): The @alias shortcut/keyword.
+search-one-offs-engine-with-alias =
+    .tooltiptext = { $engineName } ({ $alias })
+# Shown when adding new engines from the address bar shortcut buttons or context
+# menu, or from the search bar shortcut buttons.
+# Variables:
+#  $engineName (String): The name of the engine.
+search-one-offs-add-engine =
+    .label = "{ $engineName }" थप्नुहोस्
+    .tooltiptext = "{ $engineName }" थप्नुहोस्
+    .aria-label = "{ $engineName }" थप्नुहोस्
 # When more than 5 engines are offered by a web page, they are grouped in a
 # submenu using this as its label.
 search-one-offs-add-engine-menu =
@@ -128,11 +245,43 @@ search-one-offs-tabs =
     .tooltiptext = ट्याबहरू ({ $restrict })
 search-one-offs-history =
     .tooltiptext = इतिहास ({ $restrict })
+search-one-offs-actions =
+    .tooltiptext = कार्यहरू ({ $restrict })
 
 ## QuickActions are shown in the urlbar as the user types a matching string
 ## The -cmd- strings are comma separated list of keywords that will match
 ## the action.
 
+# Opens the about:addons page in the home / recommendations section
+quickactions-addons = एड-अनहरू हेर्नुहोस्
+quickactions-cmd-addons2 = एड-अनहरु
+# Opens the bookmarks library window
+quickactions-bookmarks2 = बुकमार्कहरू प्रबन्ध गर्नुहोस्
+quickactions-cmd-bookmarks = बुकमार्कहरू
+# Opens a SUMO article explaining how to clear history
+quickactions-clearhistory = इतिहास हटाउनुहोस्
+quickactions-cmd-clearhistory = इतिहास हटाउनुहोस्
+# Opens about:downloads page
+quickactions-downloads2 = डाउनलोडहरू हेर्नुहोस्
+quickactions-cmd-downloads = डाउनलोडहरू
+# Opens about:addons page in the extensions section
+quickactions-extensions = विस्तारहरू प्रबन्ध गर्नुहोस्
+quickactions-cmd-extensions = विस्तारहरू
+# Opens the devtools web inspector
+quickactions-inspector2 = विकासकर्ता उपकरणहरू खोल्नुहोस्
+quickactions-cmd-inspector = निरीक्षक, devtools
+# Opens about:logins
+quickactions-logins2 = पासवर्डहरू प्रबन्ध गर्नुहोस्
+quickactions-cmd-logins = लगइनहरू, पासवर्डहरू
+# Opens about:addons page in the plugins section
+quickactions-plugins = प्लगिनहरू व्यवस्थापन गर्नुहोस्
+quickactions-cmd-plugins = प्लगइनहरू
+# Opens the print dialog
+quickactions-print2 = पृष्ठ छाप्नुहोस्
+quickactions-cmd-print = छाप्नुहोस्
+# Opens the print dialog at the save to PDF option
+quickactions-savepdf = पृष्ठ PDF को रूपमा बचत गर्नुहोस्
+quickactions-cmd-savepdf = pdf
 
 ## Bookmark Panel
 
@@ -172,7 +321,30 @@ identity-passive-loaded = यो पृष्ठको भागहरू सु
 identity-active-loaded = तपाईँले यो पृष्ठमा संरक्षण अक्षम गर्नुभएको छ।
 identity-weak-encryption = यो पेजले कमजोर इन्क्रिप्सन प्रयोग गर्छ।
 identity-insecure-login-forms = यस पृष्ठमा प्रविष्ट लगिन जानकारी सुरक्षित छैन र सम्झौता हुन सक्छ।
+identity-https-only-connection-upgraded = (upgraded to HTTPS)
+identity-https-only-label = HTTPS-मात्र मोड
+identity-https-only-label2 = यस साइटलाई स्वचालित रूपमा सुरक्षित जडानमा अपग्रेड गर्नुहोस्
+identity-https-only-dropdown-on =
+    .label = खुल्ला
+identity-https-only-dropdown-off =
+    .label = बन्द गर्नुहोस्
+identity-https-only-dropdown-off-temporarily =
+    .label = अस्थायी रूपमा बन्द
+identity-https-only-info-turn-on2 = यदि तपाइँ सम्भव भएमा जडान अपग्रेड गर्न { -brand-short-name } चाहनुहुन्छ भने यो साइटको लागि HTTPS-मात्र मोड खोल्नुहोस्।
+identity-https-only-info-turn-off2 = यदि पृष्ठ भाँचिएको देखिन्छ भने, तपाइँ असुरक्षित HTTP प्रयोग गरेर पुन: लोड गर्न यो साइटको लागि HTTPS-मात्र मोड बन्द गर्न सक्नुहुन्छ।
+identity-https-only-info-turn-on3 = यदि तपाइँ सम्भव भएसम्म जडान अपग्रेड गर्न { -brand-short-name } चाहनुहुन्छ भने यस साइटको लागि HTTPS अपग्रेडहरू खोल्नुहोस्।
+identity-https-only-info-turn-off3 = यदि पृष्ठ भाँचिएको देखिन्छ भने, तपाइँ असुरक्षित HTTP प्रयोग गरेर पुन: लोड गर्न यो साइटको लागि HTTPS अपग्रेडहरू बन्द गर्न सक्नुहुन्छ।
+identity-https-only-info-no-upgrade = HTTP बाट जडान अपग्रेड गर्न असमर्थ।
+identity-permissions-storage-access-header = क्रस-साइट कुकीहरू
+identity-permissions-storage-access-hint = तपाईं यस साइटमा हुँदा यी पक्षहरूले क्रस-साइट कुकीहरू र साइट डेटा प्रयोग गर्न सक्छन्।
+identity-permissions-storage-access-learn-more = अझ जान्नुहोस्
 identity-permissions-reload-hint = परिवर्तनहरू लागू हुन पेज पुनः लोड गर्नुहोस्
+identity-clear-site-data =
+    .label = कुकिजहरु र साइट डाटा हटाउनुहोस्…
+identity-connection-not-secure-security-view = तपाईं यस साइटमा सुरक्षित रूपमा जडान हुनुहुन्न।
+identity-connection-verified = तपाईं यस साइटमा सुरक्षित रूपमा जडान हुनुहुन्छ।
+identity-ev-owner-label = प्रमाणपत्र जारी गरिएको:
+identity-description-custom-root2 = मोजिलाले यो प्रमाणपत्र जारीकर्तालाई पहिचान गर्दैन। यो तपाइँको अपरेटिङ सिस्टम वा प्रशासक द्वारा थपिएको हुन सक्छ।
 identity-remove-cert-exception =
     .label = एक्सेप्सन हटाउनुहोस्
     .accesskey = R
@@ -199,11 +371,23 @@ identity-more-info-link-text =
 
 browser-window-minimize-button =
     .tooltiptext = सानो गर्नुहोस्
+browser-window-maximize-button =
+    .tooltiptext = अधिकतम गर्नुहोस्
+browser-window-restore-down-button =
+    .tooltiptext = Restore Down
 browser-window-close-button =
     .tooltiptext = बन्द गर्नुहोस्
 
 ## Tab actions
 
+# This label should be written in all capital letters if your locale supports them.
+browser-tab-audio-playing2 = खेलिरहेको
+# This label should be written in all capital letters if your locale supports them.
+browser-tab-audio-muted2 = म्यूट गरिएको
+# This label should be written in all capital letters if your locale supports them.
+browser-tab-audio-blocked = अटोप्ले अवरुद्ध
+# This label should be written in all capital letters if your locale supports them.
+browser-tab-audio-pip = चित्र-भित्र-चित्र
 
 ## These labels should be written in all capital letters if your locale supports them.
 ## Variables:
@@ -453,6 +637,9 @@ tabs-toolbar-list-all-tabs =
     .tooltiptext = सब ट्याबहरूको सूचि बनाउनुहोस्
 
 ## Infobar shown at startup to suggest session-restore
+
+
+## Infobar shown when the user tries to open a file picker and file pickers are blocked by enterprise policy
 
 
 ## Mozilla data reporting notification (Telemetry, Firefox Health Report, etc)

@@ -32,6 +32,8 @@ search-input-box2 =
     .style = width: 15.4em
     .placeholder = Баптаулардан табу
 managed-notice = Браузеріңіз сіздің ұйымыңызбен басқаралады.
+managed-notice-info-icon =
+    .alt = Ақпарат
 category-list =
     .aria-label = Санаттар
 pane-general-title = Жалпы
@@ -708,6 +710,13 @@ sync-mobile-promo = Firefox қолданбасын <img data-l10n-name="android-
 
 sync-profile-picture =
     .tooltiptext = Профиль суретін ауыстыру
+sync-profile-picture-with-alt =
+    .tooltiptext = Профиль суретін ауыстыру
+    .alt = Профиль суретін ауыстыру
+sync-profile-picture-account-problem =
+    .alt = Тіркелгі профилінің суреті
+fxa-login-rejected-warning =
+    .alt = Ескерту
 sync-sign-out =
     .label = Шығу…
     .accesskey = Ш
@@ -1274,6 +1283,8 @@ addon-recommendations-link = Көбірек білу
 # or builds with no Telemetry support available.
 collection-health-report-disabled = Деректер есептемесін беру бұл жинақта сөндірілген
 collection-backlogged-crash-reports-with-link = { -brand-short-name } үшін сіздің атыңыздан жиналған құлаулар хабарламаларын жіберуді рұқсат ету <a data-l10n-name="crash-reports-link">Көбірек білу</a>
+    .accesskey = с
+collection-backlogged-crash-reports = { -brand-short-name } үшін сіздің атыңыздан жиналған құлаулар хабарламаларын жіберуді рұқсат ету
     .accesskey = с
 privacy-segmentation-section-header = Шолуыңызды жақсартатын жаңа мүмкіндіктер
 privacy-segmentation-section-description = Сізге жеке тәжірибе беру үшін деректеріңізді пайдаланатын мүмкіндіктерді ұсынғанда:

@@ -5,7 +5,7 @@
 
 ## These messages are used as headings in the recommendation doorhanger
 
-cfr-doorhanger-extension-heading = Tillögur að viðbótum
+cfr-doorhanger-extension-heading = Tillögur að forritsaukum
 cfr-doorhanger-feature-heading = Eiginleiki sem mælt er með
 
 ##
@@ -63,6 +63,7 @@ cfr-doorhanger-extension-total-users =
 
 cfr-doorhanger-bookmark-fxa-header = Samstilltu bókamerkin þín allsstaðar.
 cfr-doorhanger-bookmark-fxa-body = Frábær fundur! Vertu ekki án þessa bókamerkis á farsímum þínum. Byrjaðu á { -fxaccount-brand-name }.
+cfr-doorhanger-bookmark-fxa-body-2 = Frábær fundur! Vertu ekki án þessa bókamerkis á snjalltækjunum þínum. Byrjaðu á að fá þér reikning.
 cfr-doorhanger-bookmark-fxa-link-text = Samstilla bókamerki núna ...
 cfr-doorhanger-bookmark-fxa-close-btn-tooltip =
     .aria-label = Loka hnappur
@@ -204,8 +205,6 @@ cfr-cbh-confirm-button = Hafna vefkökuborðum
     .accesskey = r
 cfr-cbh-dismiss-button = Ekki núna
     .accesskey = n
-cookie-banner-blocker-cfr-header = { -brand-short-name } var að loka á vefkökur fyrir þig
-cookie-banner-blocker-cfr-body = Við höfnum sjálfkrafa mörgum vefkökugluggum til að gera vefsvæðum erfiðara fyrir að rekja ferðir þínar.
 cookie-banner-blocker-onboarding-header = { -brand-short-name } var að loka á vefkökuborða fyrir þig
 cookie-banner-blocker-onboarding-body = Minni truflanir, færri vefkökur sem rekja ferðir þínar á þessu vefsvæði.
 cookie-banner-blocker-onboarding-learn-more = Fræðast meira

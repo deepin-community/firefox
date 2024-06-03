@@ -10,6 +10,13 @@ support-files = [
   "addons/set_homepage.xpi",
   "addons/set_newtab.xpi",
 ]
+skip-if = [
+  "os == 'linux' && os_version == '18.04' && asan", # manifest runs too long
+  "os == 'linux' && os_version == '18.04' && tsan", # manifest runs too long
+  "win11_2009 && asan", # manifest runs too long
+]
+
+["browser_about_settings.js"]
 
 ["browser_advanced_update.js"]
 skip-if = ["!updater"]
@@ -81,6 +88,8 @@ skip-if = ["socketprocess_networking"]
 ["browser_cookies_exceptions.js"]
 
 ["browser_defaultbrowser_alwayscheck.js"]
+
+["browser_dns_over_https_exceptions_subdialog.js"]
 
 ["browser_engines.js"]
 fail-if = ["a11y_checks"] # Bug 1854636 clicked treechildren#engineChildren may not be focusable
@@ -272,7 +281,6 @@ support-files = [
   "subdialog.xhtml",
   "subdialog2.xhtml",
 ]
-fail-if = ["a11y_checks"] # Bug 1854636 clicked label.dialogTitle, vbox#dialogTemplate.dialogOverlay may not be focusable
 
 ["browser_sync_chooseWhatToSync.js"]
 

@@ -457,7 +457,10 @@ class nsDisplayListBuilder {
    * a displayport, and for scroll handoff to work properly the ancestor
    * scrollframes should also get their own scrollable layers.
    */
-  void ForceLayerForScrollParent() { mForceLayerForScrollParent = true; }
+  void ForceLayerForScrollParent();
+  uint32_t GetNumActiveScrollframesEncountered() const {
+    return mNumActiveScrollframesEncountered;
+  }
   /**
    * Set the flag that indicates there is a non-minimal display port in the
    * current subtree. This is used to determine display port expiry.
@@ -656,7 +659,7 @@ class nsDisplayListBuilder {
    * Get the frame that the caret is supposed to draw in.
    * If the caret is currently invisible, this will be null.
    */
-  nsIFrame* GetCaretFrame() { return mCaretFrame; }
+  nsIFrame* GetCaretFrame() { return CurrentPresShellState()->mCaretFrame; }
   /**
    * Get the rectangle we're supposed to draw the caret into.
    */
@@ -849,9 +852,9 @@ class nsDisplayListBuilder {
   /**
    * Notifies the builder that a particular themed widget exists
    * at the given rectangle within the currently built display list.
-   * For certain appearance values (currently only StyleAppearance::Toolbar and
-   * StyleAppearance::WindowTitlebar) this gets called during every display list
-   * construction, for every themed widget of the right type within the
+   * For certain appearance values (currently only
+   * StyleAppearance::MozWindowTitlebar) this gets called during every display
+   * list construction, for every themed widget of the right type within the
    * display list, except for themed widgets which are transformed or have
    * effects applied to them (e.g. CSS opacity or filters).
    *
@@ -899,6 +902,11 @@ class nsDisplayListBuilder {
 
   void AddEffectUpdate(dom::RemoteBrowser* aBrowser,
                        const dom::EffectsInfo& aUpdate);
+
+  /**
+   * Invalidates the caret frames from previous paints, if they have changed.
+   */
+  void InvalidateCaretFramesIfNeeded();
 
   /**
    * Allocate memory in our arena. It will only be freed when this display list
@@ -1726,6 +1734,7 @@ class nsDisplayListBuilder {
     bool mInsidePointerEventsNoneDoc;
     bool mTouchEventPrefEnabledDoc;
     nsIFrame* mPresShellIgnoreScrollFrame;
+    nsIFrame* mCaretFrame = nullptr;
   };
 
   PresShellState* CurrentPresShellState() {
@@ -1760,7 +1769,6 @@ class nsDisplayListBuilder {
   // The reference frame for mCurrentFrame.
   const nsIFrame* mCurrentReferenceFrame;
 
-  nsIFrame* mCaretFrame;
   // A temporary list that we append scroll info items to while building
   // display items for the contents of frames with SVG effects.
   // Only non-null when ShouldBuildScrollInfoItemsForHoisting() is true.
@@ -1805,6 +1813,9 @@ class nsDisplayListBuilder {
   // Stores reusable items collected during display list preprocessing.
   nsTHashSet<nsDisplayItem*> mReuseableItems;
 
+  // Tracked carets used for retained display list.
+  AutoTArray<RefPtr<nsCaret>, 1> mPaintedCarets;
+
   // Tracked regions used for retained display list.
   WeakFrameRegion mRetainedWindowDraggingRegion;
   WeakFrameRegion mRetainedWindowNoDraggingRegion;
@@ -1847,6 +1858,8 @@ class nsDisplayListBuilder {
 
   nsDisplayListBuilderMode mMode;
   static uint32_t sPaintSequenceNumber;
+
+  uint32_t mNumActiveScrollframesEncountered = 0;
 
   bool mContainsBlendMode;
   bool mIsBuildingScrollbar;
@@ -3190,12 +3203,13 @@ class nsDisplayList {
     // array of 20 items should be able to avoid a lot of dynamic allocations
     // here.
     AutoTArray<Item, 20> items;
+    // Ensure we need just one alloc otherwise, no-op if enough.
+    items.SetCapacity(Length());
 
     for (nsDisplayItem* item : TakeItems()) {
       items.AppendElement(Item(item));
     }
-
-    std::stable_sort(items.begin(), items.end(), aComparator);
+    items.StableSort(aComparator);
 
     for (Item& item : items) {
       AppendToTop(item);
@@ -3203,6 +3217,7 @@ class nsDisplayList {
   }
 
   nsDisplayList TakeItems() {
+    // This std::move makes this a defined empty list, see assignment operator.
     nsDisplayList list = std::move(*this);
 #ifdef MOZ_DIAGNOSTIC_ASSERT_ENABLED
     list.mAllowNonEmptyDestruction = true;
@@ -3570,7 +3585,7 @@ class RetainedDisplayList : public nsDisplayList {
     for (OldItemInfo& i : mOldItems) {
       if (i.mItem && i.mOwnsItem) {
         i.mItem->Destroy(aBuilder);
-        MOZ_ASSERT(!GetBottom(),
+        MOZ_ASSERT(!GetBottom() || aBuilder->PartialBuildFailed(),
                    "mOldItems should not be owning items if we also have items "
                    "in the normal list");
       }
@@ -6414,6 +6429,12 @@ class nsDisplayTransform : public nsPaintedDisplayItem {
 
   bool CreatesStackingContextHelper() override { return true; }
 
+  void SetContainsASRs(bool aContainsASRs) { mContainsASRs = aContainsASRs; }
+  bool GetContainsASRs() const { return mContainsASRs; }
+  bool ShouldDeferTransform() const {
+    return !mFrame->ChildrenHavePerspective() && !mContainsASRs;
+  }
+
  private:
   void ComputeBounds(nsDisplayListBuilder* aBuilder);
   nsRect TransformUntransformedBounds(nsDisplayListBuilder* aBuilder,
@@ -6459,6 +6480,7 @@ class nsDisplayTransform : public nsPaintedDisplayItem {
   // True if this item is created together with `nsDisplayPerspective`
   // from the same CSS stacking context.
   bool mHasAssociatedPerspective : 1;
+  bool mContainsASRs : 1;
 };
 
 /* A display item that applies a perspective transformation to a single

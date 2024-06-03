@@ -6,9 +6,8 @@
 
 use std::{
     cell::RefCell,
-    convert::TryFrom,
     fmt::{Debug, Display},
-    mem,
+    iter, mem,
     net::SocketAddr,
     rc::Rc,
     time::Instant,
@@ -591,7 +590,7 @@ impl Http3Client {
     ///
     /// An error will be return if stream does not exist.
     pub fn stream_close_send(&mut self, stream_id: StreamId) -> Res<()> {
-        qinfo!([self], "Close sending side stream={}.", stream_id);
+        qdebug!([self], "Close sending side stream={}.", stream_id);
         self.base_handler
             .stream_close_send(&mut self.conn, stream_id)
     }
@@ -653,7 +652,7 @@ impl Http3Client {
         stream_id: StreamId,
         buf: &mut [u8],
     ) -> Res<(usize, bool)> {
-        qinfo!([self], "read_data from stream {}.", stream_id);
+        qdebug!([self], "read_data from stream {}.", stream_id);
         let res = self.base_handler.read_data(&mut self.conn, stream_id, buf);
         if let Err(e) = &res {
             if e.connection_error() {
@@ -875,30 +874,20 @@ impl Http3Client {
     ///
     /// [1]: ../neqo_transport/enum.ConnectionEvent.html
     pub fn process_input(&mut self, dgram: &Datagram, now: Instant) {
-        qtrace!([self], "Process input.");
-        self.conn.process_input(dgram, now);
-        self.process_http3(now);
+        self.process_multiple_input(iter::once(dgram), now);
     }
 
     pub fn process_multiple_input<'a, I>(&mut self, dgrams: I, now: Instant)
     where
         I: IntoIterator<Item = &'a Datagram>,
-        I::IntoIter: ExactSizeIterator,
     {
-        let dgrams = dgrams.into_iter();
-        qtrace!([self], "Process multiple datagrams, len={}", dgrams.len());
-        if dgrams.len() == 0 {
+        let mut dgrams = dgrams.into_iter().peekable();
+        qtrace!([self], "Process multiple datagrams");
+        if dgrams.peek().is_none() {
             return;
         }
         self.conn.process_multiple_input(dgrams, now);
         self.process_http3(now);
-    }
-
-    /// This should not be used because it gives access to functionalities that may disrupt the
-    /// proper functioning of the HTTP/3 session.
-    /// Only used by `neqo-interop`.
-    pub fn conn(&mut self) -> &mut Connection {
-        &mut self.conn
     }
 
     /// Process HTTP3 layer.
@@ -943,12 +932,12 @@ impl Http3Client {
     /// returned. After that, the application should call the function again if a new UDP packet is
     /// received and processed or the timer value expires.
     ///
-    /// The HTTP/3 neqo implementation drives the HTTP/3 and QUC layers, therefore this function
+    /// The HTTP/3 neqo implementation drives the HTTP/3 and QUIC layers, therefore this function
     /// will call both layers:
     ///  - First it calls HTTP/3 layer processing (`process_http3`) to make sure the layer writes
     ///    data to QUIC layer or cancels streams if needed.
     ///  - Then QUIC layer processing is called - [`Connection::process_output`][3]. This produces a
-    ///    packet or a timer value. It may also produce ned [`ConnectionEvent`][2]s, e.g. connection
+    ///    packet or a timer value. It may also produce new [`ConnectionEvent`][2]s, e.g. connection
     ///    state-change event.
     ///  - Therefore the HTTP/3 layer processing (`process_http3`) is called again.
     ///
@@ -1296,7 +1285,7 @@ impl EventProvider for Http3Client {
 
 #[cfg(test)]
 mod tests {
-    use std::{convert::TryFrom, mem, time::Duration};
+    use std::{mem, time::Duration};
 
     use neqo_common::{event::Provider, qtrace, Datagram, Decoder, Encoder};
     use neqo_crypto::{AllowZeroRtt, AntiReplay, ResumptionToken};
@@ -1306,8 +1295,9 @@ mod tests {
         StreamType, Version, RECV_BUFFER_SIZE, SEND_BUFFER_SIZE,
     };
     use test_fixture::{
-        addr, anti_replay, default_server_h3, fixture_init, new_server, now,
-        CountingConnectionIdGenerator, DEFAULT_ALPN_H3, DEFAULT_KEYS, DEFAULT_SERVER_NAME,
+        anti_replay, default_server_h3, fixture_init, new_server, now,
+        CountingConnectionIdGenerator, DEFAULT_ADDR, DEFAULT_ALPN_H3, DEFAULT_KEYS,
+        DEFAULT_SERVER_NAME,
     };
 
     use super::{
@@ -1340,8 +1330,8 @@ mod tests {
         Http3Client::new(
             DEFAULT_SERVER_NAME,
             Rc::new(RefCell::new(CountingConnectionIdGenerator::default())),
-            addr(),
-            addr(),
+            DEFAULT_ADDR,
+            DEFAULT_ADDR,
             Http3Parameters::default()
                 .connection_parameters(
                     // Disable compatible upgrade, which complicates tests.
@@ -1996,7 +1986,7 @@ mod tests {
     // The response header from PUSH_DATA (0x01, 0x06, 0x00, 0x00, 0xd9, 0x54, 0x01, 0x34) are
     // decoded into:
     fn check_push_response_header(header: &[Header]) {
-        let expected_push_response_header = vec![
+        let expected_push_response_header = [
             Header::new(":status", "200"),
             Header::new("content-length", "4"),
         ];
@@ -3952,7 +3942,7 @@ mod tests {
                 );
             }
             x => {
-                panic!("event {:?}", x);
+                panic!("event {x:?}");
             }
         }
 
@@ -3998,7 +3988,7 @@ mod tests {
                 assert!(fin);
             }
             x => {
-                panic!("event {:?}", x);
+                panic!("event {x:?}");
             }
         }
         // Stream should now be closed and gone
@@ -4071,7 +4061,7 @@ mod tests {
                     assert_eq!(stream_id, request_stream_id);
                 }
                 x => {
-                    panic!("event {:?}", x);
+                    panic!("event {x:?}");
                 }
             }
         }
@@ -4135,7 +4125,7 @@ mod tests {
                 assert!(!interim);
                 recv_header = true;
             } else {
-                panic!("event {:?}", e);
+                panic!("event {e:?}");
             }
         }
         assert!(recv_header);

@@ -31,7 +31,6 @@
 #include "builtin/Object.h"
 #include "builtin/Promise.h"
 #include "gc/GC.h"
-#include "jit/AtomicOperations.h"
 #include "jit/BaselineJIT.h"
 #include "jit/Jit.h"
 #include "jit/JitRuntime.h"
@@ -1274,7 +1273,7 @@ bool js::HandleClosingGeneratorReturn(JSContext* cx, AbstractFramePtr frame,
     cx->clearPendingException();
     ok = true;
     auto* genObj = GetGeneratorObjectForFrame(cx, frame);
-    genObj->setClosed();
+    genObj->setClosed(cx);
   }
   return ok;
 }
@@ -4165,7 +4164,7 @@ bool MOZ_NEVER_INLINE JS_HAZ_JSNATIVE_CALLER js::Interpret(JSContext* cx,
     CASE(FinalYieldRval) {
       ReservedRooted<JSObject*> gen(&rootObject0, &REGS.sp[-1].toObject());
       REGS.sp--;
-      AbstractGeneratorObject::finalSuspend(gen);
+      AbstractGeneratorObject::finalSuspend(cx, gen);
       goto successful_return_continuation;
     }
 
@@ -4736,15 +4735,6 @@ bool js::GreaterThan(JSContext* cx, MutableHandleValue lhs,
 bool js::GreaterThanOrEqual(JSContext* cx, MutableHandleValue lhs,
                             MutableHandleValue rhs, bool* res) {
   return GreaterThanOrEqualOperation(cx, lhs, rhs, res);
-}
-
-bool js::AtomicIsLockFree(JSContext* cx, HandleValue in, int* out) {
-  int i;
-  if (!ToInt32(cx, in, &i)) {
-    return false;
-  }
-  *out = js::jit::AtomicOperations::isLockfreeJS(i);
-  return true;
 }
 
 bool js::DeleteNameOperation(JSContext* cx, Handle<PropertyName*> name,

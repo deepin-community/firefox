@@ -64,6 +64,9 @@ shopping-message-bar-analysis-in-progress-with-amount = Controlo qualitate de re
 shopping-message-bar-page-not-supported =
     .heading = Nos non pote controlar iste recensiones
     .message = Infortunatemente, nos non pote verificar le qualitate de recension pro certe typos de productos. Per exemplo, cartas dono e diffusion multimedial de video, musica, e jocos.
+shopping-message-bar-keep-closed-header =
+    .heading = Mantener claudite?
+    .message = Tu pote actualisar tu parametros pro normalmente mantener claudite Review Checker. Ora, illo se aperi automaticamente.
 shopping-message-bar-keep-closed-dismiss-button = No, gratias
 shopping-message-bar-keep-closed-accept-button = Si, mantener claudite
 
@@ -93,6 +96,16 @@ shopping-settings-opt-out-button = Disactivar verificator de recension
 powered-by-fakespot = Verificator de recension es supportate per <a data-l10n-name="fakespot-link">{ -fakespot-brand-full-name }</a>.
 shopping-settings-auto-open-toggle =
     .label = Aperir automaticamente Verificator de recension
+# Description text for regions where we support three sites. Sites are limited to Amazon, Walmart and Best Buy.
+# Variables:
+#   $firstSite (String) - The first shopping page name
+#   $secondSite (String) - The second shopping page name
+#   $thirdSite (String) - The third shopping page name
+shopping-settings-auto-open-description-three-sites = Quando tu vide productos sur { $firstSite }, { $secondSite }, e { $thirdSite }
+# Description text for regions where we support only one site (e.g. currently used in FR/DE with Amazon).
+# Variables:
+#   $currentSite (String) - The current shopping page name
+shopping-settings-auto-open-description-single-site = Quando tu vide productos sur { $currentSite }
 shopping-settings-sidebar-enabled-state = Verificator de recension es <strong>Active</strong>
 
 ## Strings for the adjusted rating component
@@ -177,14 +190,20 @@ shopping-callout-pdp-opted-in-subtitle = Aperi le verificator de recension pro v
 shopping-callout-closed-not-opted-in-title = Un clic pro recensiones fidabile
 shopping-callout-closed-not-opted-in-subtitle = Prova le verificator de recension quandocunque tu vide le etiquetta del precio. Obtene discernimentos ab real compratores facilemente, ante que tu compra.
 shopping-callout-closed-not-opted-in-revised-title = Un clic pro recensiones fidibile
+shopping-callout-closed-not-opted-in-revised-subtitle = Sol clicca le icone tag de precio in le barra de adresse pro retornar a Review Checker.
 shopping-callout-closed-not-opted-in-revised-button = Comprendite
 shopping-callout-not-opted-in-reminder-title = Compra con confidentia
+shopping-callout-not-opted-in-reminder-subtitle = Es tu incerte re un recension de producto, si illo es real o false? Le verificator de recension per { -brand-product-name } pote adjutar.
 shopping-callout-not-opted-in-reminder-open-button = Aperir Verificator de recension
 shopping-callout-not-opted-in-reminder-close-button = Dimitter
 shopping-callout-not-opted-in-reminder-ignore-checkbox = Non plus monstrar.
+shopping-callout-not-opted-in-reminder-img-alt =
+    .aria-label = Illustration abstracte de tres recensiones de producto. Un ha un symbolo de attention indicante que illo pote non esser digne de fide.
 shopping-callout-disabled-auto-open-title = Verificator de recension es ora predefinite claudite
+shopping-callout-disabled-auto-open-subtitle = Clicca le icone del etiquetta de precio in le barra de adresse quandocunque tu vole vider si tu pote fider te del recensiones de producto.
 shopping-callout-disabled-auto-open-button = Comprendite
 shopping-callout-opted-out-title = Verificator de recension es disactivate
+shopping-callout-opted-out-subtitle = Pro reactivar lo, clicca le icone del etiquetta de precio in le barra de adresse e seque le suggestiones.
 shopping-callout-opted-out-button = Comprendite
 
 ## Onboarding message strings.

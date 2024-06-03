@@ -232,7 +232,12 @@ nsresult RemoteWorkerChild::ExecWorkerOnMainThread(RemoteWorkerData&& aData) {
   // Ensure that the IndexedDatabaseManager is initialized so that if any
   // workers do any IndexedDB calls that all of IDB's prefs/etc. are
   // initialized.
-  Unused << NS_WARN_IF(!IndexedDatabaseManager::GetOrCreate());
+  IndexedDatabaseManager* idm = IndexedDatabaseManager::GetOrCreate();
+  if (idm) {
+    Unused << NS_WARN_IF(NS_FAILED(idm->EnsureLocale()));
+  } else {
+    NS_WARNING("Failed to get IndexedDatabaseManager!");
+  }
 
   auto scopeExit =
       MakeScopeExit([&] { ExceptionalErrorTransitionDuringExecWorker(); });
@@ -281,7 +286,7 @@ nsresult RemoteWorkerChild::ExecWorkerOnMainThread(RemoteWorkerData&& aData) {
   info.mStorageAccess = aData.storageAccess();
   info.mUseRegularPrincipal = aData.useRegularPrincipal();
   info.mUsingStorageAccess = aData.usingStorageAccess();
-  info.mIsThirdPartyContextToTopWindow = aData.isThirdPartyContextToTopWindow();
+  info.mIsThirdPartyContext = aData.isThirdPartyContext();
   info.mOriginAttributes =
       BasePrincipal::Cast(principal)->OriginAttributesRef();
   info.mShouldResistFingerprinting = aData.shouldResistFingerprinting();

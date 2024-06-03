@@ -107,6 +107,14 @@ function openContextMenu(aMessage, aBrowser, aActor) {
 }
 
 class nsContextMenu {
+  /**
+   * A promise to retrieve the translations language pair
+   * if the context menu was opened in a context relevant to
+   * open the SelectTranslationsPanel.
+   * @type {Promise<{fromLang: string, toLang: string}>}
+   */
+  #translationsLangPairPromise;
+
   constructor(aXulMenu, aIsShift) {
     // Get contextual info.
     this.setContext();
@@ -328,7 +336,9 @@ class nsContextMenu {
     InlineSpellCheckerUI.clearDictionaryListFromMenu();
     InlineSpellCheckerUI.uninit();
     if (
-      Cu.isModuleLoaded("resource://gre/modules/LoginManagerContextMenu.jsm")
+      Cu.isESModuleLoaded(
+        "resource://gre/modules/LoginManagerContextMenu.sys.mjs"
+      )
     ) {
       nsContextMenu.LoginManagerContextMenu.clearLoginsFromMenu(document);
     }
@@ -383,6 +393,11 @@ class nsContextMenu {
     ]) {
       this.showItem(id, this.inPDFEditor);
     }
+
+    this.showItem(
+      "context-pdfjs-highlight-selection",
+      this.pdfEditorStates?.hasSelectedText
+    );
 
     if (!this.inPDFEditor) {
       return;
@@ -1379,9 +1394,7 @@ class nsContextMenu {
 
   useGeneratedPassword() {
     nsContextMenu.LoginManagerContextMenu.useGeneratedPassword(
-      this.targetIdentifier,
-      this.contentData.documentURIObject,
-      this.browser
+      this.targetIdentifier
     );
   }
 
@@ -1606,7 +1619,7 @@ class nsContextMenu {
 
   // Open new "view source" window with the frame's URL.
   viewFrameSource() {
-    BrowserViewSourceOfDocument({
+    BrowserCommands.viewSourceOfDocument({
       browser: this.browser,
       URL: this.contentData.docLocation,
       outerWindowID: this.frameOuterWindowID,
@@ -1614,7 +1627,7 @@ class nsContextMenu {
   }
 
   viewInfo() {
-    BrowserPageInfo(
+    BrowserCommands.pageInfo(
       this.contentData.docLocation,
       null,
       null,
@@ -1624,7 +1637,7 @@ class nsContextMenu {
   }
 
   viewImageInfo() {
-    BrowserPageInfo(
+    BrowserCommands.pageInfo(
       this.contentData.docLocation,
       "mediaTab",
       this.imageInfo,
@@ -1648,7 +1661,7 @@ class nsContextMenu {
   }
 
   viewFrameInfo() {
-    BrowserPageInfo(
+    BrowserCommands.pageInfo(
       this.contentData.docLocation,
       null,
       null,
@@ -1969,7 +1982,7 @@ class nsContextMenu {
     // we give up waiting for the filename.
     function timerCallback() {}
     timerCallback.prototype = {
-      notify: function sLA_timer_notify(aTimer) {
+      notify: function sLA_timer_notify() {
         channel.cancel(NS_ERROR_SAVE_LINK_AS_TIMEOUT);
       },
     };
@@ -2481,23 +2494,6 @@ class nsContextMenu {
   }
 
   /**
-   * Retrieves an instance of the TranslationsParent actor.
-   * @returns {TranslationsParent} - The TranslationsParent actor.
-   * @throws Throws if an instance of the actor cannot be retrieved.
-   */
-  static #getTranslationsActor() {
-    const actor =
-      gBrowser.selectedBrowser.browsingContext.currentWindowGlobal.getActor(
-        "Translations"
-      );
-
-    if (!actor) {
-      throw new Error("Unable to get the TranslationsParent");
-    }
-    return actor;
-  }
-
-  /**
    * Determines if Full Page Translations is currently active on this page.
    *
    * @returns {boolean}
@@ -2505,7 +2501,9 @@ class nsContextMenu {
   static #isFullPageTranslationsActive() {
     try {
       const { requestedTranslationPair } =
-        this.#getTranslationsActor().languageState;
+        TranslationsParent.getTranslationsActor(
+          gBrowser.selectedBrowser
+        ).languageState;
       return requestedTranslationPair !== null;
     } catch {
       // Failed to retrieve the Full Page Translations actor, do nothing.
@@ -2514,9 +2512,85 @@ class nsContextMenu {
   }
 
   /**
-   * Displays or hides as well as localizes the translate-selection item in the context menu.
+   * Opens the SelectTranslationsPanel singleton instance.
+   *
+   * @param {Event} event - The triggering event for opening the panel.
    */
-  async showTranslateSelectionItem() {
+  openSelectTranslationsPanel(event) {
+    const context = this.contentData.context;
+    let screenX = context.screenXDevPx / window.devicePixelRatio;
+    let screenY = context.screenYDevPx / window.devicePixelRatio;
+    SelectTranslationsPanel.open(
+      event,
+      screenX,
+      screenY,
+      this.#getTextToTranslate(),
+      this.#translationsLangPairPromise
+    );
+  }
+
+  /**
+   * Localizes the translate-selection menuitem.
+   *
+   * The item will either be localized with a target language's display name
+   * or localized in a generic way without a target language.
+   *
+   * @param {Element} translateSelectionItem
+   * @returns {Promise<void>}
+   */
+  async localizeTranslateSelectionItem(translateSelectionItem) {
+    const { toLang } = await this.#translationsLangPairPromise;
+
+    if (toLang) {
+      // A valid to-language exists, so localize the menuitem for that language.
+      let displayName;
+
+      try {
+        const displayNames = new Services.intl.DisplayNames(undefined, {
+          type: "language",
+        });
+        displayName = displayNames.of(toLang);
+      } catch {
+        // Services.intl.DisplayNames.of threw, do nothing.
+      }
+
+      if (displayName) {
+        document.l10n.setAttributes(
+          translateSelectionItem,
+          this.isTextSelected
+            ? "main-context-menu-translate-selection-to-language"
+            : "main-context-menu-translate-link-text-to-language",
+          { language: displayName }
+        );
+        return;
+      }
+    }
+
+    // Either no to-language exists, or an error occurred,
+    // so localize the menuitem without a target language.
+    document.l10n.setAttributes(
+      translateSelectionItem,
+      this.isTextSelected
+        ? "main-context-menu-translate-selection"
+        : "main-context-menu-translate-link-text"
+    );
+  }
+
+  /**
+   * Fetches text for translation, prioritizing selected text over link text.
+   *
+   * @returns {string} The text to translate.
+   */
+  #getTextToTranslate() {
+    return this.isTextSelected
+      ? this.selectionInfo.fullText.trim()
+      : this.linkTextStr.trim();
+  }
+
+  /**
+   * Displays or hides the translate-selection item in the context menu.
+   */
+  showTranslateSelectionItem() {
     const translateSelectionItem = document.getElementById(
       "context-translate-selection"
     );
@@ -2527,16 +2601,13 @@ class nsContextMenu {
       "browser.translations.select.enable"
     );
 
-    // Selected text takes precedence over link text.
-    const translatableText = this.isTextSelected
-      ? this.selectedText.trim()
-      : this.linkTextStr.trim();
+    const textToTranslate = this.#getTextToTranslate();
 
     translateSelectionItem.hidden =
       // Only show the item if the feature is enabled.
       !(translationsEnabled && selectTranslationsEnabled) ||
       // If there is no text to translate, we have nothing to do.
-      translatableText.length === 0 ||
+      textToTranslate.length === 0 ||
       // We do not allow translating selections on top of Full Page Translations.
       nsContextMenu.#isFullPageTranslationsActive();
 
@@ -2544,39 +2615,9 @@ class nsContextMenu {
       return;
     }
 
-    const preferredLanguages =
-      nsContextMenu.TranslationsParent.getPreferredLanguages();
-    const topPreferredLanguage = preferredLanguages[0];
-
-    if (topPreferredLanguage) {
-      const { language } = await nsContextMenu.LanguageDetector.detectLanguage(
-        translatableText
-      );
-      if (topPreferredLanguage !== language) {
-        try {
-          const dn = new Services.intl.DisplayNames(undefined, {
-            type: "language",
-          });
-          document.l10n.setAttributes(
-            translateSelectionItem,
-            this.isTextSelected
-              ? "main-context-menu-translate-selection-to-language"
-              : "main-context-menu-translate-link-text-to-language",
-            { language: dn.of(topPreferredLanguage) }
-          );
-          return;
-        } catch {
-          // Services.intl.DisplayNames.of threw, do nothing.
-        }
-      }
-    }
-
-    document.l10n.setAttributes(
-      translateSelectionItem,
-      this.isTextSelected
-        ? "main-context-menu-translate-selection"
-        : "main-context-menu-translate-link-text"
-    );
+    this.#translationsLangPairPromise =
+      SelectTranslationsPanel.getLangPairPromise(textToTranslate);
+    this.localizeTranslateSelectionItem(translateSelectionItem);
   }
 
   // Formats the 'Search <engine> for "<selection or link text>"' context menu.
@@ -2681,8 +2722,6 @@ class nsContextMenu {
 
 ChromeUtils.defineESModuleGetters(nsContextMenu, {
   DevToolsShim: "chrome://devtools-startup/content/DevToolsShim.sys.mjs",
-  LanguageDetector:
-    "resource://gre/modules/translation/LanguageDetector.sys.mjs",
   LoginManagerContextMenu:
     "resource://gre/modules/LoginManagerContextMenu.sys.mjs",
   TranslationsParent: "resource://gre/actors/TranslationsParent.sys.mjs",

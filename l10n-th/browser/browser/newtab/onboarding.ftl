@@ -24,7 +24,7 @@ return-to-amo-subtitle = เยี่ยม คุณได้ติดตั้
 #   $addon-name (String) - Name of the add-on
 return-to-amo-addon-title = ตอนนี้มาติดตั้ง <img data-l10n-name="icon"/> <b>{ $addon-name }</b> กันเลย
 return-to-amo-add-extension-label = เพิ่มส่วนขยาย
-return-to-amo-add-theme-label = เพิ่มชุดรูปแบบ
+return-to-amo-add-theme-label = เพิ่มชุดตกแต่ง
 
 ##  Variables: $addon-name (String) - Name of the add-on to be installed
 
@@ -51,10 +51,10 @@ mr1-onboarding-sign-in-button-label = ลงชื่อเข้า
 #   $previous (Str) - Previous browser name, such as Edge, Chrome
 mr1-onboarding-import-primary-button-label-attribution = นำเข้าจาก { $previous }
 mr1-onboarding-theme-header = ทำให้เป็นของคุณเอง
-mr1-onboarding-theme-subtitle = ปรับแต่ง { -brand-short-name } ด้วยชุดรูปแบบ
+mr1-onboarding-theme-subtitle = ปรับแต่ง { -brand-short-name } ด้วยชุดตกแต่ง
 mr1-onboarding-theme-secondary-button-label = ไม่ใช่ตอนนี้
 # System theme uses operating system color settings
-mr1-onboarding-theme-label-system = ชุดรูปแบบของระบบ
+mr1-onboarding-theme-label-system = ชุดตกแต่งของระบบ
 mr1-onboarding-theme-label-light = สว่าง
 mr1-onboarding-theme-label-dark = มืด
 # "Alpenglow" here is the name of the theme, and should be kept in English.
@@ -69,45 +69,45 @@ onboarding-theme-primary-button-label = เสร็จสิ้น
 # Tooltip displayed on hover of system theme
 mr1-onboarding-theme-tooltip-system =
     .title =
-        ใช้ชุดรูปแบบสำหรับปุ่ม เมนู และหน้าต่าง
-        เหมือนกับระบบปฏิบัติการ
+        ใช้ชุดตกแต่งสำหรับปุ่ม เมนู และหน้าต่าง
+        ตามระบบปฏิบัติการ
 # Input description for system theme
 mr1-onboarding-theme-description-system =
     .aria-description =
-        ใช้ชุดรูปแบบสำหรับปุ่ม เมนู และหน้าต่าง
-        เหมือนกับระบบปฏิบัติการ
+        ใช้ชุดตกแต่งสำหรับปุ่ม เมนู และหน้าต่าง
+        ตามระบบปฏิบัติการ
 # Tooltip displayed on hover of light theme
 mr1-onboarding-theme-tooltip-light =
     .title =
-        ใช้ชุดรูปแบบสว่างสำหรับปุ่ม
+        ใช้ชุดตกแต่งแบบสว่างสำหรับปุ่ม
         เมนู และหน้าต่าง
 # Input description for light theme
 mr1-onboarding-theme-description-light =
     .aria-description =
-        ใช้ชุดรูปแบบสว่างสำหรับปุ่ม
+        ใช้ชุดตกแต่งแบบสว่างสำหรับปุ่ม
         เมนู และหน้าต่าง
 # Tooltip displayed on hover of dark theme
 mr1-onboarding-theme-tooltip-dark =
     .title =
-        ใช้ชุดรูปแบบมืดสำหรับปุ่ม
+        ใช้ชุดตกแต่งแบบมืดสำหรับปุ่ม
         เมนู และหน้าต่าง
 # Input description for dark theme
 mr1-onboarding-theme-description-dark =
     .aria-description =
-        ใช้ชุดรูปแบบมืดสำหรับปุ่ม
+        ใช้ชุดตกแต่งแบบมืดสำหรับปุ่ม
         เมนู และหน้าต่าง
 # Tooltip displayed on hover of Alpenglow theme
 mr1-onboarding-theme-tooltip-alpenglow =
     .title =
-        ใช้ชุดรูปแบบสีสันสดใสสำหรับปุ่ม
+        ใช้ชุดตกแต่งสีสันสดใสสำหรับปุ่ม
         เมนู และหน้าต่าง
 # Input description for Alpenglow theme
 mr1-onboarding-theme-description-alpenglow =
     .aria-description =
-        ใช้ชุดรูปแบบสีสันสดใสสำหรับปุ่ม
+        ใช้ชุดตกแต่งสีสันสดใสสำหรับปุ่ม
         เมนู และหน้าต่าง
 # Selector description for default themes
-mr2-onboarding-default-theme-label = สำรวจชุดรูปแบบเริ่มต้น
+mr2-onboarding-default-theme-label = สำรวจชุดตกแต่งเริ่มต้น
 
 ## Strings for Thank You page
 
@@ -350,6 +350,9 @@ onboarding-gratitude-security-and-privacy-subtitle = ขอบคุณที่
 onboarding-new-user-time-based-survey-title = คุณใช้ { -brand-short-name } มานานเท่าไรแล้ว?
 onboarding-new-user-familiarity-based-survey-title = คุณคุ้นเคยกับ { -brand-short-name } แค่ไหน?
 onboarding-new-user-survey-subtitle = คำติชมของคุณช่วยทำให้ { -brand-short-name } ดียิ่งขึ้นไปอีก
+# When translating "next" it means the next screen in onboarding.
+onboarding-new-user-survey-next-button-label = ถัดไป
+onboarding-new-user-survey-legal-link-label = การเลือก “{ onboarding-new-user-survey-next-button-label }” แสดงว่าคุณยอมรับ<a data-l10n-name="privacy_notice">ประกาศความเป็นส่วนตัว</a>ของ { -brand-product-name }
 # When translating "brand new" it means completely new.
 onboarding-new-user-survey-time-based-option-1 = ฉันเพิ่งเริ่มใช้
 onboarding-new-user-survey-time-based-option-2 = น้อยกว่า 1 เดือน

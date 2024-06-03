@@ -32,6 +32,8 @@ search-input-box2 =
     .style = width: 15.4em
     .placeholder = Hľadať v nastaveniach
 managed-notice = Váš prehliadač spravuje vaša organizácia.
+managed-notice-info-icon =
+    .alt = Informácia
 category-list =
     .aria-label = Kategórie
 pane-general-title = Všeobecné
@@ -712,6 +714,13 @@ sync-mobile-promo = Stiahnite si Firefox pre <img data-l10n-name="android-icon"
 
 sync-profile-picture =
     .tooltiptext = Zmeniť obrázok profilu
+sync-profile-picture-with-alt =
+    .tooltiptext = Zmeniť obrázok profilu
+    .alt = Zmeniť obrázok profilu
+sync-profile-picture-account-problem =
+    .alt = Profilová fotka účtu
+fxa-login-rejected-warning =
+    .alt = Upozornenie
 sync-sign-out =
     .label = Odhlásiť sa…
     .accesskey = h
@@ -1278,6 +1287,8 @@ addon-recommendations-link = Ďalšie informácie
 # or builds with no Telemetry support available.
 collection-health-report-disabled = Odosielanie údajov je v konfigurácii tohto zostavenia zakázané
 collection-backlogged-crash-reports-with-link = Povoliť { -brand-short-name(case: "dat") } odosielať vo vašom mene správy o zlyhaní <a data-l10n-name="crash-reports-link">Ďalšie informácie</a>
+    .accesskey = P
+collection-backlogged-crash-reports = Povoliť { -brand-short-name(case: "dat") } odosielať vo vašom mene správy o zlyhaní
     .accesskey = P
 privacy-segmentation-section-header = Nové funkcie, ktoré vylepšujú vaše prehliadanie
 privacy-segmentation-section-description = Keď ponúkame funkcie, ktoré využívajú vaše údaje, aby vám poskytli ešte lepšiu skúsenosť:

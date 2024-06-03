@@ -3,7 +3,9 @@
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import React from "react";
-import { actionCreators as ac } from "common/Actions.sys.mjs";
+import { actionCreators as ac } from "common/Actions.mjs";
+import { SafeAnchor } from "../../DiscoveryStreamComponents/SafeAnchor/SafeAnchor";
+import { WallpapersSection } from "../../WallpapersSection/WallpapersSection";
 
 export class ContentSection extends React.PureComponent {
   constructor(props) {
@@ -96,6 +98,10 @@ export class ContentSection extends React.PureComponent {
       mayHaveSponsoredStories,
       mayHaveRecentSaves,
       openPreferences,
+      spocMessageVariant,
+      wallpapersEnabled,
+      activeWallpaper,
+      setPref,
     } = this.props;
     const {
       topSitesEnabled,
@@ -109,6 +115,15 @@ export class ContentSection extends React.PureComponent {
 
     return (
       <div className="home-section">
+        {wallpapersEnabled && (
+          <div className="wallpapers-section">
+            <h2 data-l10n-id="newtab-wallpaper-title"></h2>
+            <WallpapersSection
+              setPref={setPref}
+              activeWallpaper={activeWallpaper}
+            />
+          </div>
+        )}
         <div id="shortcuts-section" className="section">
           <moz-toggle
             id="shortcuts-toggle"
@@ -253,6 +268,23 @@ export class ContentSection extends React.PureComponent {
             />
           </label>
         </div>
+
+        {pocketRegion &&
+          mayHaveSponsoredStories &&
+          spocMessageVariant === "variant-c" && (
+            <div className="sponsored-content-info">
+              <div className="icon icon-help"></div>
+              <div>
+                Sponsored content supports our mission to build a better web.{" "}
+                <SafeAnchor
+                  dispatch={this.props.dispatch}
+                  url="https://support.mozilla.org/kb/pocket-sponsored-stories-new-tabs"
+                >
+                  Find out how
+                </SafeAnchor>
+              </div>
+            </div>
+          )}
 
         <span className="divider" role="separator"></span>
 

@@ -104,6 +104,7 @@ class ClientSource;
 class Console;
 class Crypto;
 class CustomElementRegistry;
+class DataTransfer;
 class DocGroup;
 class External;
 class Function;
@@ -119,7 +120,7 @@ class OwningExternalOrWindowProxy;
 class Promise;
 class PostMessageEvent;
 struct RequestInit;
-class RequestOrUSVString;
+class RequestOrUTF8String;
 class SharedWorker;
 class Selection;
 struct SizeToContentConstraints;
@@ -127,6 +128,7 @@ class WebTaskScheduler;
 class WebTaskSchedulerMainThread;
 class SpeechSynthesis;
 class Timeout;
+class TrustedTypePolicyFactory;
 class VisualViewport;
 class VRDisplay;
 enum class VRDisplayEventReason : uint8_t;
@@ -669,7 +671,7 @@ class nsGlobalWindowInner final : public mozilla::dom::EventTarget,
   already_AddRefed<mozilla::dom::cache::CacheStorage> GetCaches(
       mozilla::ErrorResult& aRv);
   already_AddRefed<mozilla::dom::Promise> Fetch(
-      const mozilla::dom::RequestOrUSVString& aInput,
+      const mozilla::dom::RequestOrUTF8String& aInput,
       const mozilla::dom::RequestInit& aInit,
       mozilla::dom::CallerType aCallerType, mozilla::ErrorResult& aRv);
   MOZ_CAN_RUN_SCRIPT void Print(mozilla::ErrorResult& aError);
@@ -1254,10 +1256,17 @@ class nsGlobalWindowInner final : public mozilla::dom::EventTarget,
   virtual JS::loader::ModuleLoaderBase* GetModuleLoader(
       JSContext* aCx) override;
 
+  mozilla::dom::TrustedTypePolicyFactory* TrustedTypes();
+
+  void SetCurrentPasteDataTransfer(mozilla::dom::DataTransfer* aDataTransfer);
+  mozilla::dom::DataTransfer* GetCurrentPasteDataTransfer() const;
+
  private:
   RefPtr<mozilla::dom::ContentMediaController> mContentMediaController;
 
   RefPtr<mozilla::dom::WebTaskSchedulerMainThread> mWebTaskScheduler;
+
+  RefPtr<mozilla::dom::TrustedTypePolicyFactory> mTrustedTypePolicyFactory;
 
  protected:
   // Whether we need to care about orientation changes.
@@ -1459,6 +1468,10 @@ class nsGlobalWindowInner final : public mozilla::dom::EventTarget,
     nsRefPtrHashtable<nsStringHashKey, mozilla::dom::ChromeMessageBroadcaster>
         mGroupMessageManagers{1};
   } mChromeFields;
+
+  // Cache the DataTransfer created for a paste event, this will be reset after
+  // the event is dispatched.
+  RefPtr<mozilla::dom::DataTransfer> mCurrentPasteDataTransfer;
 
   // These fields are used by the inner and outer windows to prevent
   // programatically moving the window while the mouse is down.

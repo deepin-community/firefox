@@ -60,7 +60,6 @@ class nsGenericHTMLElement : public nsGenericHTMLElementBase {
       : nsGenericHTMLElementBase(std::move(aNodeInfo)) {
     NS_ASSERTION(mNodeInfo->NamespaceID() == kNameSpaceID_XHTML,
                  "Unexpected namespace");
-    AddStatesSilently(mozilla::dom::ElementState::LTR);
   }
 
   NS_INLINE_DECL_REFCOUNTING_INHERITED(nsGenericHTMLElement,
@@ -332,7 +331,7 @@ class nsGenericHTMLElement : public nsGenericHTMLElementBase {
  public:
   // Implementation for nsIContent
   nsresult BindToTree(BindContext&, nsINode& aParent) override;
-  void UnbindFromTree(bool aNullParent = true) override;
+  void UnbindFromTree(UnbindContext&) override;
 
   Focusable IsFocusableWithoutStyle(bool aWithMouse) override {
     Focusable result;
@@ -641,6 +640,7 @@ class nsGenericHTMLElement : public nsGenericHTMLElementBase {
    * @param aResult    result value [out]
    */
   void GetURIAttr(nsAtom* aAttr, nsAtom* aBaseAttr, nsAString& aResult) const;
+  void GetURIAttr(nsAtom* aAttr, nsAtom* aBaseAttr, nsACString& aResult) const;
 
   /**
    * Gets the absolute URI values of an attribute, by resolving any relative
@@ -648,7 +648,8 @@ class nsGenericHTMLElement : public nsGenericHTMLElementBase {
    * isn't a relative URI, the substring is returned as is. Only works for
    * attributes in null namespace.
    */
-  bool GetURIAttr(nsAtom* aAttr, nsAtom* aBaseAttr, nsIURI** aURI) const;
+  const nsAttrValue* GetURIAttr(nsAtom* aAttr, nsAtom* aBaseAttr,
+                                nsIURI** aURI) const;
 
   bool IsHidden() const { return HasAttr(nsGkAtoms::hidden); }
 
@@ -727,6 +728,10 @@ class nsGenericHTMLElement : public nsGenericHTMLElementBase {
       const nsAttrValue* aOldValue, nsIPrincipal* aMaybeScriptedPrincipal,
       bool aNotify) override;
 
+  void OnAttrSetButNotChanged(int32_t aNamespaceID, nsAtom* aName,
+                              const nsAttrValueOrString& aValue,
+                              bool aNotify) override;
+
   MOZ_CAN_RUN_SCRIPT void AfterSetPopoverAttr();
 
   mozilla::EventListenerManager* GetEventListenerManagerForAttr(
@@ -761,6 +766,9 @@ class nsGenericHTMLElement : public nsGenericHTMLElementBase {
     GetEnumAttr(aName, nullptr, aResult);
   }
   void GetHTMLURIAttr(nsAtom* aName, nsAString& aResult) const {
+    GetURIAttr(aName, nullptr, aResult);
+  }
+  void GetHTMLURIAttr(nsAtom* aName, nsACString& aResult) const {
     GetURIAttr(aName, nullptr, aResult);
   }
 
@@ -1004,7 +1012,7 @@ class nsGenericHTMLFormElement : public nsGenericHTMLElement {
   // nsIContent
   void SaveSubtreeState() override;
   nsresult BindToTree(BindContext&, nsINode& aParent) override;
-  void UnbindFromTree(bool aNullParent = true) override;
+  void UnbindFromTree(UnbindContext&) override;
 
   /**
    * This callback is called by a fieldest on all its elements whenever its

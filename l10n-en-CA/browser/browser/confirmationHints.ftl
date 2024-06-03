@@ -7,6 +7,7 @@
 
 confirmation-hint-breakage-report-sent = Report sent. Thank you!
 confirmation-hint-login-removed = Login removed!
+confirmation-hint-password-removed = Password removed!
 confirmation-hint-page-bookmarked = Saved to bookmarks
 confirmation-hint-password-saved = Password saved!
 confirmation-hint-password-created = Password saved
@@ -21,3 +22,10 @@ confirmation-hint-send-to-device = Sent!
 confirmation-hint-firefox-relay-mask-created = New mask created!
 confirmation-hint-firefox-relay-mask-reused = Existing mask reused!
 confirmation-hint-screenshot-copied = Screenshot copied!
+# Variables:
+#   $tabCount (Number): The number of duplicate tabs closed, at least 1.
+confirmation-hint-duplicate-tabs-closed =
+    { $tabCount ->
+        [one] Closed { $tabCount } tab
+       *[other] Closed { $tabCount } tabs
+    }

@@ -430,9 +430,6 @@ async function browseraction_contextmenu_remove_extension_helper() {
     },
     useAddonManager: "temporary",
   });
-  let brand = Services.strings
-    .createBundle("chrome://branding/locale/brand.properties")
-    .GetStringFromName("brandShorterName");
   let { prompt } = Services;
   let promptService = {
     _response: 1,
@@ -452,7 +449,7 @@ async function browseraction_contextmenu_remove_extension_helper() {
     Services.prompt = prompt;
   });
 
-  async function testContextMenu(menuId, customizing) {
+  async function testContextMenu(menuId) {
     info(`Open browserAction context menu in ${menuId}`);
     let confirmArgs = promptService.confirmArgs();
     let menu = await openContextMenu(menuId, buttonId);
@@ -466,9 +463,6 @@ async function browseraction_contextmenu_remove_extension_helper() {
     await closeChromeContextMenu(menuId, removeExtension);
     let args = await confirmArgs;
     is(args[1], `Remove ${name}?`);
-    if (!Services.prefs.getBoolPref("prompts.windowPromptSubDialog", false)) {
-      is(args[2], `Remove ${name} from ${brand}?`);
-    }
     is(args[4], "Remove");
     return menu;
   }

@@ -232,7 +232,7 @@ struct SafelyInitialized {
     // |T| per C++11 [expr.type.conv]p2 -- will produce a safely-initialized,
     // safely-usable T that it can return.
 
-#if defined(XP_WIN) || defined(XP_MACOSX) || \
+#if defined(XP_WIN) || defined(XP_DARWIN) || \
     (defined(XP_UNIX) && !defined(__clang__))
 
     // That presumption holds for pointers, where value initialization produces
@@ -981,12 +981,12 @@ enum class AutoGCRooterKind : uint8_t {
   Limit
 };
 
-using RootedListHeads =
-    mozilla::EnumeratedArray<RootKind, RootKind::Limit, js::StackRootedBase*>;
+using RootedListHeads = mozilla::EnumeratedArray<RootKind, js::StackRootedBase*,
+                                                 size_t(RootKind::Limit)>;
 
 using AutoRooterListHeads =
-    mozilla::EnumeratedArray<AutoGCRooterKind, AutoGCRooterKind::Limit,
-                             AutoGCRooter*>;
+    mozilla::EnumeratedArray<AutoGCRooterKind, AutoGCRooter*,
+                             size_t(AutoGCRooterKind::Limit)>;
 
 // Superclass of JSContext which can be used for rooting data in use by the
 // current thread but that does not provide all the functions of a JSContext.

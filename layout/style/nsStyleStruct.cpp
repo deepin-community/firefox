@@ -2020,7 +2020,7 @@ StyleTransition::StyleTransition(const StyleTransition& aCopy) = default;
 bool StyleTransition::operator==(const StyleTransition& aOther) const {
   return mTimingFunction == aOther.mTimingFunction &&
          mDuration == aOther.mDuration && mDelay == aOther.mDelay &&
-         mProperty == aOther.mProperty;
+         mProperty == aOther.mProperty && mBehavior == aOther.mBehavior;
 }
 
 StyleAnimation::StyleAnimation(const StyleAnimation& aCopy) = default;
@@ -3079,6 +3079,7 @@ nsStyleUIReset::nsStyleUIReset()
       mTransitionDurationCount(1),
       mTransitionDelayCount(1),
       mTransitionPropertyCount(1),
+      mTransitionBehaviorCount(1),
       mAnimations(
           nsStyleAutoArray<StyleAnimation>::WITH_SINGLE_INITIAL_ELEMENT),
       mAnimationTimingFunctionCount(1),
@@ -3120,6 +3121,7 @@ nsStyleUIReset::nsStyleUIReset(const nsStyleUIReset& aSource)
       mTransitionDurationCount(aSource.mTransitionDurationCount),
       mTransitionDelayCount(aSource.mTransitionDelayCount),
       mTransitionPropertyCount(aSource.mTransitionPropertyCount),
+      mTransitionBehaviorCount(aSource.mTransitionBehaviorCount),
       mAnimations(aSource.mAnimations.Clone()),
       mAnimationTimingFunctionCount(aSource.mAnimationTimingFunctionCount),
       mAnimationDurationCount(aSource.mAnimationDurationCount),
@@ -3178,6 +3180,7 @@ nsChangeHint nsStyleUIReset::CalcDifference(
        mTransitionDurationCount != aNewData.mTransitionDurationCount ||
        mTransitionDelayCount != aNewData.mTransitionDelayCount ||
        mTransitionPropertyCount != aNewData.mTransitionPropertyCount ||
+       mTransitionBehaviorCount != aNewData.mTransitionBehaviorCount ||
        mAnimations != aNewData.mAnimations ||
        mAnimationTimingFunctionCount !=
            aNewData.mAnimationTimingFunctionCount ||
@@ -3461,12 +3464,6 @@ void StyleCalcNode::ScaleLengthsBy(float aScale) {
   }
 }
 
-nscoord StyleCalcLengthPercentage::Resolve(nscoord aBasis,
-                                           CoordRounder aRounder) const {
-  CSSCoord result = ResolveToCSSPixels(CSSPixel::FromAppUnits(aBasis));
-  return aRounder(result * AppUnitsPerCSSPixel());
-}
-
 bool nsStyleDisplay::PrecludesSizeContainmentOrContentVisibilityWithFrame(
     const nsIFrame& aFrame) const {
   // The spec says that in the case of SVG, the contain property only applies
@@ -3539,7 +3536,7 @@ static nscoord Resolve(const StyleContainIntrinsicSize& aSize,
   }
   MOZ_ASSERT(aSize.HasAuto());
   if (const auto* element = Element::FromNodeOrNull(aFrame.GetContent())) {
-    Maybe<float> lastSize = aAxis == eLogicalAxisBlock
+    Maybe<float> lastSize = aAxis == LogicalAxis::Block
                                 ? element->GetLastRememberedBSize()
                                 : element->GetLastRememberedISize();
     if (lastSize && aFrame.HidesContent()) {
@@ -3559,7 +3556,7 @@ Maybe<nscoord> ContainSizeAxes::ContainIntrinsicBSize(
   }
   const StyleContainIntrinsicSize& bSize =
       aFrame.StylePosition()->ContainIntrinsicBSize(aFrame.GetWritingMode());
-  return Some(Resolve(bSize, aNoneValue, aFrame, eLogicalAxisBlock));
+  return Some(Resolve(bSize, aNoneValue, aFrame, LogicalAxis::Block));
 }
 
 Maybe<nscoord> ContainSizeAxes::ContainIntrinsicISize(
@@ -3569,7 +3566,7 @@ Maybe<nscoord> ContainSizeAxes::ContainIntrinsicISize(
   }
   const StyleContainIntrinsicSize& iSize =
       aFrame.StylePosition()->ContainIntrinsicISize(aFrame.GetWritingMode());
-  return Some(Resolve(iSize, aNoneValue, aFrame, eLogicalAxisInline));
+  return Some(Resolve(iSize, aNoneValue, aFrame, LogicalAxis::Inline));
 }
 
 nsSize ContainSizeAxes::ContainSize(const nsSize& aUncontainedSize,

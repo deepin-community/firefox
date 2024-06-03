@@ -32,6 +32,8 @@ search-input-box2 =
     .style = width: 15.4em
     .placeholder = Eheka ñembohekópe
 managed-notice = Pe kundaha rehe oñangareko atyguasu.
+managed-notice-info-icon =
+    .alt = Ñemomarandu
 category-list =
     .aria-label = Mboja’opy
 pane-general-title = Tuichakue
@@ -203,6 +205,9 @@ containers-remove-alert-msg =
     }
 containers-remove-ok-button = Eipe’a ko guerekoha
 containers-remove-cancel-button = Aníke eipe’a ko guerekoha
+settings-tabs-show-image-in-preview =
+    .label = Ehechauka hechaha ypy embohasávo hekaha tendayke ári
+    .accessKey = h
 
 ## General Section - Language & Appearance
 
@@ -258,6 +263,8 @@ preferences-default-zoom-value =
 preferences-zoom-text-only =
     .label = Emoañete moñe’ẽrã año
     .accesskey = t
+preferences-text-zoom-override-warning =
+    .message = Kyhyjerã: eiporavóramo “Moñe’ẽrã mbotuichave añoite” ha pe zoom ijypyguáva noñembohekói 100%, ikatu heta tenda ndoikoporãmbái.
 language-header = Ñe’ẽ
 choose-language-description = Eipoiravo pe ñe’ẽ erohoryvéva ehechauka hag̃ua ñanduti kuatiarogue
 choose-button =
@@ -703,6 +710,13 @@ sync-mobile-promo = Emboguejy Firefox kóvape g̃uarã:<img data-l10n-name="andr
 
 sync-profile-picture =
     .tooltiptext = Emoambue nera’ãnga nemba’ete pegua
+sync-profile-picture-with-alt =
+    .tooltiptext = Emoambue nera’ãnga nemba’ete pegua
+    .alt = Emoambue nera’ãnga nemba’ete pegua
+sync-profile-picture-account-problem =
+    .alt = Ta’ãnga mba’etepegua
+fxa-login-rejected-warning =
+    .alt = Kyhyjerã
 sync-sign-out =
     .label = Ñesẽte
     .accesskey = ñ
@@ -1269,6 +1283,8 @@ addon-recommendations-link = Kuaave
 # or builds with no Telemetry support available.
 collection-health-report-disabled = Pe mba’ekuaarã momarandu oñemboguéma ko ñemboheko guasúpe g̃uarã
 collection-backlogged-crash-reports-with-link = Emoneĩ { -brand-short-name } omomarandúvo jejavymeme nde rérape <a data-l10n-name="crash-reports-link">Eikuaave</a>
+    .accesskey = c
+collection-backlogged-crash-reports = Emoneĩ { -brand-short-name } omomarandúvo jejavymeme nde rérape
     .accesskey = c
 privacy-segmentation-section-header = Tembiapoite pyahu ombopya’evéva ne ñeikundaha
 privacy-segmentation-section-description = Roikuave’ẽ vove tembiapoite oiporúva mba’ekuaarã ome’ẽségui jehasakue nemba’erãva:

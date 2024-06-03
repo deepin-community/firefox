@@ -40,9 +40,6 @@ class ProviderQuickActions extends UrlbarProvider {
   constructor() {
     super();
     lazy.UrlbarResult.addDynamicResultType(DYNAMIC_TYPE_NAME);
-    Services.tm.idleDispatchToMainThread(() =>
-      lazy.QuickActionsLoaderDefault.load()
-    );
   }
 
   /**
@@ -97,7 +94,8 @@ class ProviderQuickActions extends UrlbarProvider {
    * @returns {Promise}
    */
   async startQuery(queryContext, addCallback) {
-    let input = queryContext.trimmedSearchString.toLowerCase();
+    await lazy.QuickActionsLoaderDefault.ensureLoaded();
+    let input = queryContext.trimmedLowerCaseSearchString;
 
     if (
       !queryContext.searchMode &&
@@ -243,7 +241,7 @@ class ProviderQuickActions extends UrlbarProvider {
     }
   }
 
-  onEngagement(state, queryContext, details, controller) {
+  onLegacyEngagement(state, queryContext, details, controller) {
     // Ignore engagements on other results that didn't end the session.
     if (details.result?.providerName != this.name && details.isSessionOngoing) {
       return;

@@ -32,6 +32,8 @@ search-input-box2 =
     .style = width: 15.4em
     .placeholder = Шукаць у наладах
 managed-notice = Вашым браўзерам кіруе ваша арганізацыя.
+managed-notice-info-icon =
+    .alt = інфармацыя
 category-list =
     .aria-label = Катэгорыі
 pane-general-title = Агульныя
@@ -712,6 +714,13 @@ sync-mobile-promo = Сцягніце Firefox для <img data-l10n-name="android
 
 sync-profile-picture =
     .tooltiptext = Змяніць профільную выяву
+sync-profile-picture-with-alt =
+    .tooltiptext = Змяніць профільную выяву
+    .alt = Змяніць профільную выяву
+sync-profile-picture-account-problem =
+    .alt = Фота профілю ўліковага запісу
+fxa-login-rejected-warning =
+    .alt = Папярэджанне
 sync-sign-out =
     .label = Выйсці…
     .accesskey = і
@@ -1278,6 +1287,8 @@ addon-recommendations-link = Падрабязней
 # or builds with no Telemetry support available.
 collection-health-report-disabled = Адпраўка дадзеных адключана для гэтай канфігурацыі зборкі
 collection-backlogged-crash-reports-with-link = Дазволіць { -brand-short-name } адсылаць запісаныя справаздачы аб збоях ад вашага імя <a data-l10n-name="crash-reports-link">Падрабязней</a>
+    .accesskey = с
+collection-backlogged-crash-reports = Дазволіць { -brand-short-name } адсылаць запісаныя справаздачы аб збоях ад вашага імя
     .accesskey = с
 privacy-segmentation-section-header = Новыя функцыі, якія паляпшаюць ваша агляданне
 privacy-segmentation-section-description = Калі мы прапануем функцыі, якія выкарыстоўваюць вашы дадзеныя, каб даць вам больш персаналізаваны досвед:

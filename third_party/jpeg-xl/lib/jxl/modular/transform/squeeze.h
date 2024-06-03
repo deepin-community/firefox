@@ -29,9 +29,9 @@
 #include "lib/jxl/modular/modular_image.h"
 #include "lib/jxl/modular/transform/transform.h"
 
-#define JXL_MAX_FIRST_PREVIEW_SIZE 8
-
 namespace jxl {
+
+constexpr size_t kMaxFirstPreviewSize = 8;
 
 /*
         int avg=(A+B)>>1;
@@ -81,7 +81,7 @@ Status CheckMetaSqueezeParams(const SqueezeParams &parameter, int num_channels);
 
 Status MetaSqueeze(Image &image, std::vector<SqueezeParams> *parameters);
 
-Status InvSqueeze(Image &input, std::vector<SqueezeParams> parameters,
+Status InvSqueeze(Image &input, const std::vector<SqueezeParams> &parameters,
                   ThreadPool *pool);
 
 }  // namespace jxl

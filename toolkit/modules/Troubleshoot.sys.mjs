@@ -22,6 +22,7 @@ const PREFS_FOR_DISPLAY = [
   "apz.",
   "browser.cache.",
   "browser.contentblocking.category",
+  "browser.contentanalysis.",
   "browser.display.",
   "browser.download.always_ask_before_handling_new_types",
   "browser.download.enable_spam_prevention",
@@ -52,6 +53,7 @@ const PREFS_FOR_DISPLAY = [
   "browser.startup.homepage",
   "browser.startup.page",
   "browser.tabs.",
+  "browser.toolbars.",
   "browser.urlbar.",
   "browser.zoom.",
   "doh-rollout.",
@@ -412,6 +414,11 @@ var dataProviders = {
         remoteType = remoteType === "preallocated" ? "prealloc" : remoteType;
       } catch (e) {}
 
+      // We will split Utility by actor name, so do not do it now
+      if (remoteType === "utility") {
+        continue;
+      }
+
       // The parent process is also managed by the ppmm (because
       // of non-remote tabs), but it doesn't have a remoteType.
       if (!remoteType) {
@@ -422,6 +429,20 @@ var dataProviders = {
         remoteTypes[remoteType]++;
       } else {
         remoteTypes[remoteType] = 1;
+      }
+    }
+
+    for (let i = 0; i < processInfo.children.length; i++) {
+      if (processInfo.children[i].type === "utility") {
+        for (let utilityWithActor of processInfo.children[i].utilityActors.map(
+          e => `utility_${e.actorName}`
+        )) {
+          if (remoteTypes[utilityWithActor]) {
+            remoteTypes[utilityWithActor]++;
+          } else {
+            remoteTypes[utilityWithActor] = 1;
+          }
+        }
       }
     }
 
@@ -976,6 +997,24 @@ var dataProviders = {
         systemLocales: osPrefs.systemLocales,
         regionalPrefsLocales: osPrefs.regionalPrefsLocales,
       },
+    });
+  },
+
+  contentAnalysis: async function contentAnalysis(done) {
+    const contentAnalysis = Cc["@mozilla.org/contentanalysis;1"].getService(
+      Ci.nsIContentAnalysis
+    );
+    if (!contentAnalysis.isActive) {
+      done({ active: false });
+      return;
+    }
+    let info = await contentAnalysis.getDiagnosticInfo();
+    done({
+      active: true,
+      connected: info.connectedToAgent,
+      agentPath: info.agentPath,
+      failedSignatureVerification: info.failedSignatureVerification,
+      requestCount: info.requestCount,
     });
   },
 

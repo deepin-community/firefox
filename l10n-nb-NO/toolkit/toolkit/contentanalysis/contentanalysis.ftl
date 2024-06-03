@@ -6,10 +6,6 @@ contentanalysis-alert-title = Innholdsanalyse
 # Variables:
 #   $content - Description of the content being warned about, such as "clipboard" or "aFile.txt"
 contentanalysis-slow-agent-notification = Innholdsanalyseverktøyet bruker lang tid på å svare på ressursen «{ $content }»
-contentanalysis-slow-agent-dialog-title = Innholdsanalyse pågår
-# Variables:
-#   $content - Description of the content being warned about, such as "clipboard" or "aFile.txt"
-contentanalysis-slow-agent-dialog-body = Innholdsanalyse analyserer ressursen «{ $content }»
 contentanalysis-slow-agent-dialog-header = Skanning pågår
 # Variables:
 #   $agent - The name of the DLP agent doing the analysis
@@ -22,8 +18,12 @@ contentanalysis-slow-agent-dialog-body-clipboard = { $agent } gjennomgår det du
 # Variables:
 #   $agent - The name of the DLP agent doing the analysis
 contentanalysis-slow-agent-dialog-body-dropped-text = { $agent } gjennomgår teksten du har droppet i forhold til organisasjonens dataretningslinjer. Dette kan ta et øyeblikk.
+# Variables:
+#   $agent - The name of the DLP agent doing the analysis
+contentanalysis-slow-agent-dialog-body-print = { $agent } gjennomgår det du skrev ut mot organisasjonens dataretningslinjer. Dette kan ta et øyeblikk.
 contentanalysis-operationtype-clipboard = utklippstavle
 contentanalysis-operationtype-dropped-text = sluppet tekst
+contentanalysis-operationtype-print = skriv ut
 #   $filename - The filename associated with the request, such as "aFile.txt"
 contentanalysis-customdisplaystring-description = opplasting av «{ $filename }»
 contentanalysis-warndialogtitle = Dette innholdet kan være usikkert
@@ -43,6 +43,28 @@ contentanalysis-block-message = Organisasjonen din bruker programvare for å for
 # Variables:
 #   $content - Description of the content being blocked, such as "clipboard" or "aFile.txt"
 contentanalysis-error-message = Det oppsto en feil under kommunikasjonen med programvaren for å forhindre tap av data. Overføring avvist for ressurs: { $content }.
+# Variables:
+#   $agent - The name of the DLP agent doing the analysis
+#   $content - Description of the content being blocked, such as "clipboard" or "aFile.txt"
+contentanalysis-unspecified-error-message = Det oppsto en feil under kommunikasjonen med { $agent }. Overføring avvist for ressurs: { $content }.
+# Variables:
+#   $agent - The name of the DLP agent doing the analysis
+#   $content - Description of the content being blocked, such as "clipboard" or "aFile.txt"
+contentanalysis-no-agent-connected-message = Kan ikke koble til { $agent }. Overføring avvist for ressurs: { $content }.
+# Variables:
+#   $agent - The name of the DLP agent doing the analysis
+#   $content - Description of the content being blocked, such as "clipboard" or "aFile.txt"
+contentanalysis-invalid-agent-signature-message = Mislykket signaturverifisering for { $agent }. Overføring avvist for ressurs: { $content }.
+contentanalysis-block-dialog-title-upload-file = Du har ikke tillatelse til å laste opp denne filen
+# Variables:
+#   $filename - Name of the file that was blocked, such as "aFile.txt"
+contentanalysis-block-dialog-body-upload-file = I henhold til organisasjonens retningslinjer for databeskyttelse har du ikke tillatelse til å laste opp filen «{ $filename }». Kontakt administratoren din for mer informasjon.
+contentanalysis-block-dialog-title-clipboard = Du har ikke tillatelse til å lime inn dette innholdet
+contentanalysis-block-dialog-body-clipboard = I henhold til organisasjonens retningslinjer for databeskyttelse har du ikke tillatelse til å lime inn dette innholdet. Kontakt administratoren din for mer informasjon.
+contentanalysis-block-dialog-title-dropped-text = Du har ikke tillatelse til å dra og slippe dette innholdet
+contentanalysis-block-dialog-body-dropped-text = I henhold til organisasjonens retningslinjer for databeskyttelse har du ikke tillatelse til å dra og slippe dette innholdet. Kontakt administratoren din for mer informasjon.
+contentanalysis-block-dialog-title-print = Du har ikke tillatelse til å skrive ut dette dokumentet
+contentanalysis-block-dialog-body-print = I henhold til organisasjonens retningslinjer for databeskyttelse har du ikke tillatelse til å skrive ut dette dokumentet. Kontakt administratoren din for mer informasjon.
 contentanalysis-inprogress-quit-title = Avslutte { -brand-shorter-name }?
 contentanalysis-inprogress-quit-message = Flere handlinger pågår. Hvis du avslutter { -brand-shorter-name }, vil disse handlingene ikke bli fullført.
 contentanalysis-inprogress-quit-yesbutton = Ja, avslutt

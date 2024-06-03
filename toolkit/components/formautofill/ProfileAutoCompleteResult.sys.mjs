@@ -12,7 +12,7 @@ ChromeUtils.defineESModuleGetters(lazy, {
 ChromeUtils.defineLazyGetter(
   lazy,
   "l10n",
-  () => new Localization(["browser/preferences/formAutofill.ftl"], true)
+  () => new Localization(["toolkit/formautofill/formAutofill.ftl"], true)
 );
 
 class ProfileAutoCompleteResult {
@@ -100,16 +100,16 @@ class ProfileAutoCompleteResult {
    * Get the secondary label based on the focused field name and related field names
    * in the same form.
    *
-   * @param   {string} focusedFieldName The field name of the focused input
-   * @param   {Array<object>} allFieldNames The field names in the same section
-   * @param   {object} profile The profile providing the labels to show.
+   * @param   {string} _focusedFieldName The field name of the focused input
+   * @param   {Array<object>} _allFieldNames The field names in the same section
+   * @param   {object} _profile The profile providing the labels to show.
    * @returns {string} The secondary label
    */
-  _getSecondaryLabel(focusedFieldName, allFieldNames, profile) {
+  _getSecondaryLabel(_focusedFieldName, _allFieldNames, _profile) {
     return "";
   }
 
-  _generateLabels(focusedFieldName, allFieldNames, profiles) {}
+  _generateLabels(_focusedFieldName, _allFieldNames, _profiles) {}
 
   /**
    * Get the value of the result at the given index.
@@ -131,6 +131,12 @@ class ProfileAutoCompleteResult {
     if (typeof label == "string") {
       return label;
     }
+
+    let type = this.getTypeOfIndex(index);
+    if (type == "clear" || type == "manage") {
+      return label.primary;
+    }
+
     return JSON.stringify(label);
   }
 
@@ -141,6 +147,16 @@ class ProfileAutoCompleteResult {
    * @returns {string} The comment at the specified index
    */
   getCommentAt(index) {
+    let type = this.getTypeOfIndex(index);
+    switch (type) {
+      case "clear":
+        return '{"fillMessageName": "FormAutofill:ClearForm"}';
+      case "manage":
+        return '{"fillMessageName": "FormAutofill:OpenPreferences"}';
+      case "insecure":
+        return '{"noLearnMore": true }';
+    }
+
     const item = this.getAt(index);
     return item.comment ?? JSON.stringify(this._matchingProfiles[index]);
   }
@@ -157,14 +173,16 @@ class ProfileAutoCompleteResult {
       return itemStyle;
     }
 
-    if (index == this._popupLabels.length - 1) {
-      return "autofill-footer";
+    switch (this.getTypeOfIndex(index)) {
+      case "manage":
+        return "action";
+      case "clear":
+        return "action";
+      case "insecure":
+        return "insecureWarning";
+      default:
+        return "autofill";
     }
-    if (this._isInputAutofilled) {
-      return "autofill-clear-button";
-    }
-
-    return "autofill-profile";
   }
 
   /**
@@ -190,20 +208,38 @@ class ProfileAutoCompleteResult {
   /**
    * Returns true if the value at the given index is removable
    *
-   * @param   {number}  index The index of the result to remove
+   * @param   {number}  _index The index of the result to remove
    * @returns {boolean} True if the value is removable
    */
-  isRemovableAt(index) {
+  isRemovableAt(_index) {
     return false;
   }
 
   /**
    * Removes a result from the resultset
    *
-   * @param {number} index The index of the result to remove
+   * @param {number} _index The index of the result to remove
    */
-  removeValueAt(index) {
+  removeValueAt(_index) {
     // There is no plan to support removing profiles via autocomplete.
+  }
+
+  /**
+   * Returns a type string that identifies te type of row at the given index.
+   *
+   * @param   {number} index The index of the result requested
+   * @returns {string} The type at the specified index
+   */
+  getTypeOfIndex(index) {
+    if (this._isInputAutofilled && index == 0) {
+      return "clear";
+    }
+
+    if (index == this._popupLabels.length - 1) {
+      return "manage";
+    }
+
+    return "item";
   }
 }
 
@@ -277,12 +313,29 @@ export class AddressResult extends ProfileAutoCompleteResult {
   }
 
   _generateLabels(focusedFieldName, allFieldNames, profiles) {
+    const manageLabel = lazy.l10n.formatValueSync(
+      "autofill-manage-addresses-label"
+    );
+
+    let footerItem = {
+      primary: manageLabel,
+      secondary: "",
+    };
+
     if (this._isInputAutofilled) {
-      return [
-        { primary: "", secondary: "" }, // Clear button
-        { primary: "", secondary: "" }, // Footer
+      const clearLabel = lazy.l10n.formatValueSync("autofill-clear-form-label");
+
+      let labels = [
+        {
+          primary: clearLabel,
+        },
       ];
+      labels.push(footerItem);
+      return labels;
     }
+
+    let focusedCategory =
+      lazy.FormAutofillUtils.getCategoryFromFieldName(focusedFieldName);
 
     // Skip results without a primary label.
     let labels = profiles
@@ -297,31 +350,87 @@ export class AddressResult extends ProfileAutoCompleteResult {
         ) {
           primaryLabel = profile["-moz-street-address-one-line"];
         }
+
+        let profileFields = allFieldNames.filter(
+          fieldName => !!profile[fieldName]
+        );
+
+        let categories =
+          lazy.FormAutofillUtils.getCategoriesFromFieldNames(profileFields);
+        let status = this.getStatusNote(categories, focusedCategory);
+        let secondary = this._getSecondaryLabel(
+          focusedFieldName,
+          allFieldNames,
+          profile
+        );
+        const ariaLabel = [primaryLabel, secondary, status]
+          .filter(chunk => !!chunk) // Exclude empty chunks.
+          .join(" ");
         return {
           primary: primaryLabel,
-          secondary: this._getSecondaryLabel(
-            focusedFieldName,
-            allFieldNames,
-            profile
-          ),
+          secondary,
+          status,
+          ariaLabel,
         };
       });
-    // Add an empty result entry for footer. Its content will come from
-    // the footer binding, so don't assign any value to it.
-    // The additional properties: categories and focusedCategory are required of
-    // the popup to generate autofill hint on the footer.
-    labels.push({
-      primary: "",
-      secondary: "",
-      categories: lazy.FormAutofillUtils.getCategoriesFromFieldNames(
-        this._allFieldNames
-      ),
-      focusedCategory: lazy.FormAutofillUtils.getCategoryFromFieldName(
-        this._focusedFieldName
-      ),
-    });
+
+    let allCategories =
+      lazy.FormAutofillUtils.getCategoriesFromFieldNames(allFieldNames);
+
+    if (allCategories && allCategories.length) {
+      let statusItem = {
+        primary: "",
+        secondary: "",
+        status: this.getStatusNote(allCategories, focusedCategory),
+        style: "status",
+      };
+      labels.push(statusItem);
+    }
+
+    labels.push(footerItem);
 
     return labels;
+  }
+
+  getStatusNote(categories, focusedCategory) {
+    if (!categories || !categories.length) {
+      return "";
+    }
+
+    // If the length of categories is 1, that means all the fillable fields are in the same
+    // category. We will change the way to inform user according to this flag. When the value
+    // is true, we show "Also autofills ...", otherwise, show "Autofills ..." only.
+    let hasExtraCategories = categories.length > 1;
+    // Show the categories in certain order to conform with the spec.
+    let orderedCategoryList = [
+      "address",
+      "name",
+      "organization",
+      "tel",
+      "email",
+    ];
+    let showCategories = hasExtraCategories
+      ? orderedCategoryList.filter(
+          category =>
+            categories.includes(category) && category != focusedCategory
+        )
+      : [orderedCategoryList.find(category => category == focusedCategory)];
+
+    let formatter = new Intl.ListFormat(undefined, {
+      style: "narrow",
+    });
+
+    let categoriesText = showCategories.map(category =>
+      lazy.l10n.formatValueSync("autofill-category-" + category)
+    );
+    categoriesText = formatter.format(categoriesText);
+
+    let statusTextTmplKey = hasExtraCategories
+      ? "autofill-phishing-warningmessage-extracategory"
+      : "autofill-phishing-warningmessage";
+    return lazy.l10n.formatValueSync(statusTextTmplKey, {
+      categories: categoriesText,
+    });
   }
 }
 
@@ -385,11 +494,24 @@ export class CreditCardResult extends ProfileAutoCompleteResult {
       ];
     }
 
+    const manageLabel = lazy.l10n.formatValueSync(
+      "autofill-manage-payment-methods-label"
+    );
+
+    let footerItem = {
+      primary: manageLabel,
+    };
+
     if (this._isInputAutofilled) {
-      return [
-        { primary: "", secondary: "" }, // Clear button
-        { primary: "", secondary: "" }, // Footer
+      const clearLabel = lazy.l10n.formatValueSync("autofill-clear-form-label");
+
+      let labels = [
+        {
+          primary: clearLabel,
+        },
       ];
+      labels.push(footerItem);
+      return labels;
     }
 
     // Skip results without a primary label.
@@ -425,28 +547,23 @@ export class CreditCardResult extends ProfileAutoCompleteResult {
           .filter(chunk => !!chunk) // Exclude empty chunks.
           .join(" ");
         return {
-          primary,
-          secondary,
+          primary: primary.toString().replaceAll("*", "•"),
+          secondary: secondary.toString().replaceAll("*", "•"),
           ariaLabel,
           image,
         };
       });
-    // Add an empty result entry for footer.
-    labels.push({ primary: "", secondary: "" });
+
+    labels.push(footerItem);
 
     return labels;
   }
 
-  getStyleAt(index) {
-    const itemStyle = this.getAt(index).style;
-    if (itemStyle) {
-      return itemStyle;
-    }
-
+  getTypeOfIndex(index) {
     if (!this._isSecure) {
-      return "autofill-insecureWarning";
+      return "insecure";
     }
 
-    return super.getStyleAt(index);
+    return super.getTypeOfIndex(index);
   }
 }

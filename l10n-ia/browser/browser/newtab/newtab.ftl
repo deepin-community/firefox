@@ -258,9 +258,6 @@ newtab-custom-row-selector =
 newtab-custom-sponsored-sites = Accessos directe sponsorisate
 newtab-custom-pocket-title = Recommendate per { -pocket-brand-name }
 newtab-custom-pocket-subtitle = Contento exceptional a cura de { -pocket-brand-name }, parte del familia { -brand-product-name }
-newtab-custom-pocket-toggle =
-    .label = Recommendate per { -pocket-brand-name }
-    .description = Contento exceptional a cura de { -pocket-brand-name }, parte del familia { -brand-product-name }
 newtab-custom-stories-toggle =
     .label = Historias recommendate
     .description = Exceptional contento curate per le familia de { -brand-product-name }
@@ -273,3 +270,24 @@ newtab-custom-recent-toggle =
     .description = Un selection de sitos e contento recente
 newtab-custom-close-button = Clauder
 newtab-custom-settings = Gerer altere parametros
+
+## New Tab Wallpapers
+
+newtab-wallpaper-title = Fundos
+newtab-wallpaper-reset = Restaurar le predefinition
+newtab-wallpaper-light-red-panda = Panda rubie
+newtab-wallpaper-light-mountain = Montania blanc
+newtab-wallpaper-light-sky = Celo con nubes purpuree e rosate
+newtab-wallpaper-light-color = Formas blau, rosate e jalne
+newtab-wallpaper-light-landscape = Paisage montan con bruma blau
+newtab-wallpaper-light-beach = Plagia con arbore de palma
+newtab-wallpaper-dark-aurora = Aurora Boreal
+newtab-wallpaper-dark-color = Formas rubie e blau
+newtab-wallpaper-dark-panda = Panda rubie celate in bosco
+newtab-wallpaper-dark-sky = Paisage urban con un celo nocturne
+newtab-wallpaper-dark-mountain = Paisage montan
+newtab-wallpaper-dark-city = Paisage urban purpuree
+# Variables
+#   $author_string (String) - The name of the creator of the photo.
+#   $webpage_string (String) - The name of the webpage where the photo is located.
+newtab-wallpaper-attribution = Photo per <a data-l10n-name="name-link">{ $author_string }</a> sur <a data-l10n-name="webpage-link">{ $webpage_string }</a>

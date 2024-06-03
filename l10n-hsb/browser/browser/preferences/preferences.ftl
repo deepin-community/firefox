@@ -32,6 +32,8 @@ search-input-box2 =
     .style = width: 15.4em
     .placeholder = W nastajenjach pytać
 managed-notice = Waš wobhladowak so wot wašeje organizacije rjaduje.
+managed-notice-info-icon =
+    .alt = Informacije
 category-list =
     .aria-label = Kategorije
 pane-general-title = Powšitkowny
@@ -716,6 +718,13 @@ sync-mobile-promo = Firefox za <img data-l10n-name="android-icon"/> <a data-l10n
 
 sync-profile-picture =
     .tooltiptext = Profilowy wobraz změnić
+sync-profile-picture-with-alt =
+    .tooltiptext = Profilowy wobraz změnić
+    .alt = Profilowy wobraz změnić
+sync-profile-picture-account-problem =
+    .alt = Kontowy profilowy wobraz
+fxa-login-rejected-warning =
+    .alt = Warnowanje
 sync-sign-out =
     .label = Wotzjewić…
     .accesskey = t
@@ -1282,6 +1291,8 @@ addon-recommendations-link = Dalše informacije
 # or builds with no Telemetry support available.
 collection-health-report-disabled = Datowe rozprawjenje je znjemóžnjene za tutu programowu konfiguraciju
 collection-backlogged-crash-reports-with-link = { -brand-short-name } dowolić, zo bychu so njepósłane spadowe rozprawy we wašim mjenje pósłali <a data-l10n-name="crash-reports-link">Dalše informacije</a>
+    .accesskey = d
+collection-backlogged-crash-reports = { -brand-short-name } dowolić, zo bychu so njepósłane spadowe rozprawy we wašim mjenje pósłali
     .accesskey = d
 privacy-segmentation-section-header = Nowe funkcije, kotrež waše přehladowanje polěpšeja
 privacy-segmentation-section-description = Hdyž funkcije poskicámy, kotrež waše daty wužiwaja, zo bychmy wam bóle wosobinske dožiwjenje skićili:

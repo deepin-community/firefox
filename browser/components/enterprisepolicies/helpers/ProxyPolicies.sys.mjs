@@ -11,7 +11,7 @@ ChromeUtils.defineLazyGetter(lazy, "log", () => {
     "resource://gre/modules/Console.sys.mjs"
   );
   return new ConsoleAPI({
-    prefix: "ProxyPolicies.jsm",
+    prefix: "ProxyPolicies",
     // tip: set maxLogLevel to "debug" and use log.debug() to create detailed
     // messages during development. See LOG_LEVELS in Console.sys.mjs for details.
     maxLogLevel: "error",
@@ -28,6 +28,22 @@ export var PROXY_TYPES_MAP = new Map([
   ["autoDetect", Ci.nsIProtocolProxyService.PROXYCONFIG_WPAD],
   ["autoConfig", Ci.nsIProtocolProxyService.PROXYCONFIG_PAC],
 ]);
+
+let proxyPreferences = [
+  "network.proxy.type",
+  "network.proxy.autoconfig_url",
+  "network.proxy.socks_remote_dns",
+  "signon.autologin.proxy",
+  "network.proxy.socks_version",
+  "network.proxy.no_proxies_on",
+  "network.proxy.share_proxy_settings",
+  "network.proxy.http",
+  "network.proxy.http_port",
+  "network.proxy.ssl",
+  "network.proxy.ssl_port",
+  "network.proxy.socks",
+  "network.proxy.socks_port",
+];
 
 export var ProxyPolicies = {
   configureProxySettings(param, setPref) {
@@ -104,6 +120,14 @@ export var ProxyPolicies = {
 
     if (param.SOCKSProxy) {
       setProxyHostAndPort("socks", param.SOCKSProxy);
+    }
+
+    // All preferences should be locked regardless of whether or not a
+    // specific value was set.
+    if (param.Locked) {
+      for (let preference of proxyPreferences) {
+        Services.prefs.lockPref(preference);
+      }
     }
   },
 };

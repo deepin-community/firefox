@@ -671,7 +671,7 @@ subsetTest(promise_test, async test => {
                    browserSignals.prevWinsMs[0][1].renderURL === "${renderURL1}") {
                  return {bid: 1, allowComponentAuction: true, render: "${renderURL2}"};
                }
-               throw "Unexpected biddingSignals: " + JSON.stringify(browserSignals);`,
+               throw "Unexpected browserSignals: " + JSON.stringify(browserSignals);`,
             reportWin:
               `if (browserSignals.renderURL === "${renderURL1}")
                  sendReportTo("${bidderReportURL1}");
@@ -685,7 +685,7 @@ subsetTest(promise_test, async test => {
   auctionConfig.componentAuctions[0].decisionLogicURL =
       createDecisionScriptURL(
           uuid,
-          { scoreAd: `if (browserSignals.renderURL != '${renderURL1}')
+          { scoreAd: `if (browserSignals.renderURL !== '${renderURL1}')
                         throw 'Wrong ad';`,
             reportResult: `sendReportTo('${seller1ReportURL}');`}
       );
@@ -696,7 +696,7 @@ subsetTest(promise_test, async test => {
       decisionLogicURL: createDecisionScriptURL(
           uuid,
           { origin: OTHER_ORIGIN1,
-            scoreAd: `if (browserSignals.renderURL != '${renderURL2}')
+            scoreAd: `if (browserSignals.renderURL !== '${renderURL2}')
                         throw 'Wrong ad';`,
             reportResult: `sendReportTo('${seller2ReportURL}');`}
       )

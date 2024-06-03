@@ -126,8 +126,6 @@ translations-manage-description = Shkarkoni gjuhë për përkthim jashtë linje.
 translations-manage-all-language = Krejt gjuhët
 translations-manage-download-button = Shkarkoje
 translations-manage-delete-button = Fshije
-translations-manage-error-download = Pati një problem me shkarkimin e kartelave të gjuhës. Ju lutemi, riprovoni.
-translations-manage-error-delete = Pati një problem me fshirjen e kartelave të gjuhës. Ju lutemi, riprovoni.
 translations-manage-intro = Caktoni gjuhët tuaj dhe parapëlqime për përkthim sajtesh dhe administroni gjuhë të instaluara për përkthim jashtë interneti.
 translations-manage-install-description = Instaloni gjuhë për përkthim jashtë linje.
 translations-manage-language-install-button =
@@ -135,12 +133,21 @@ translations-manage-language-install-button =
 translations-manage-language-install-all-button =
     .label = Instaloji krejt
     .accesskey = I
+translations-manage-intro-2 = Ujdisni gjuhë tuajën dhe parapëlqime përkthimi sajtesh dhe administroni gjuhë të shkarkuara për përkthim jashtë interneti.
+translations-manage-download-description = Shkarkoni gjuhë për përkthim jashtë linje
+translations-manage-language-download-button =
+    .label = Shkarkoje
+translations-manage-language-download-all-button =
+    .label = Shkarkoji krejt
+    .accesskey = S
 translations-manage-language-remove-button =
     .label = Hiqe
 translations-manage-language-remove-all-button =
     .label = Hiqi krejt
     .accesskey = H
 translations-manage-error-install = Pati një problem me instalimin e kartelave të gjuhës. Ju lutemi, riprovoni.
+translations-manage-error-download = Pati një problem me shkarkimin e kartelave të gjuhës. Ju lutemi, riprovoni.
+translations-manage-error-delete = Pati një problem me fshirjen e kartelave të gjuhës. Ju lutemi, riprovoni.
 translations-manage-error-remove = Pati një problem me heqjen e kartelave të gjuhës. Ju lutemi, riprovoni.
 translations-manage-error-list = S’u arrit të merrej lista e gjuhëve të gatshme për përkthim. Rifreskoni faqen, që të riprovohet.
 translations-settings-title =
@@ -170,3 +177,75 @@ translations-settings-remove-all-sites-button =
 translations-settings-close-dialog =
     .buttonlabelaccept = Mbylle
     .buttonaccesskeyaccept = M
+# Text displayed in the right-click context menu for translating
+# selected text to a yet-to-be-determined language.
+main-context-menu-translate-selection =
+    .label = Përkthe Përzgjedhjen…
+    .accesskey = P
+# Text displayed in the right-click context menu for translating
+# selected text to a target language.
+#
+# Variables:
+#   $language (string) - The localized display name of the target language
+main-context-menu-translate-selection-to-language =
+    .label = Përkthe Përzgjedhjen në { $language }
+    .accesskey = n
+# Text displayed in the right-click context menu for translating
+# the text of a hyperlink to a yet-to-be-determined language.
+main-context-menu-translate-link-text =
+    .label = Përkthe Tekst Lidhjeje…
+    .accesskey = L
+# Text displayed in the right-click context menu for translating
+# the text of a hyperlink to a target language.
+#
+# Variables:
+#   $language (string) - The localized display name of the target language
+main-context-menu-translate-link-text-to-language =
+    .label = Përkthe Tekst Lidhjeje në { $language }
+    .accesskey = n
+# Text displayed in the select translations panel header.
+select-translations-panel-header = Përkthim
+# Text displayed above the from-language dropdown menu.
+select-translations-panel-from-label = Nga
+# Text displayed above the to-language dropdown menu.
+select-translations-panel-to-label = Në
+# Text displayed above the try-another-source-language dropdown menu.
+select-translations-panel-try-another-language-label = Provoni një tjetër gjuhë burim
+select-translations-panel-cancel-button =
+    .label = Anuloje
+# Text displayed on the copy button before it is clicked.
+select-translations-panel-copy-button =
+    .label = Kopjoje
+# Text displayed on the copy button after it is clicked.
+select-translations-panel-copy-button-copied =
+    .label = U kopjua
+select-translations-panel-done-button =
+    .label = U bë
+select-translations-panel-translate-full-page-button =
+    .label = Përktheje krejt faqen
+select-translations-panel-translate-button =
+    .label = Përktheje
+select-translations-panel-try-again-button =
+    .label = Riprovoni
+# Text displayed as a placeholder when the panel is idle.
+select-translations-panel-idle-placeholder-text = Teksti i përkthyer do të shfaqet këtu.
+# Text displayed as a placeholder when the panel is actively translating.
+select-translations-panel-translating-placeholder-text = Po përkthehet…
+select-translations-panel-init-failure-message =
+    .message = S’u ngarkuan dot gjuhë. Kontrolloni lidhjen tuaj internet dhe riprovoni.
+# Text displayed when the translation fails to complete.
+select-translations-panel-translation-failure-message =
+    .message = Pati një problem me përkthimin. Ju lutemi, riprovoni.
+# If your language requires declining the language name, a possible solution
+# is to adapt the structure of the phrase, or use a support noun, e.g.
+# `Sorry, we don't support the language yet: { $language }
+#
+# Variables:
+#   $language (string) - The language of the document.
+select-translations-panel-unsupported-language-message-known =
+    .message = Na ndjeni, s’e mbulojmë ende { $language }.
+select-translations-panel-unsupported-language-message-unknown =
+    .message = Na ndjeni, s’e mbulojmë ende këtë gjuhë.
+# Text displayed on the menuitem that opens the Translation Settings page.
+select-translations-panel-open-translations-settings-menuitem =
+    .label = Rregullime përkthimi

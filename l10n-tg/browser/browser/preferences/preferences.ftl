@@ -32,6 +32,8 @@ search-input-box2 =
     .style = width: 15.4em
     .placeholder = Ҷустуҷӯ дар танзимот
 managed-notice = Браузери шумо аз тарафи ташкилоти шумо идора карда мешавад.
+managed-notice-info-icon =
+    .alt = Маълумот
 category-list =
     .aria-label = Категорияҳо
 pane-general-title = Умумӣ
@@ -203,6 +205,9 @@ containers-remove-alert-msg =
     }
 containers-remove-ok-button = Тоза кардани ин дарбаргиранда
 containers-remove-cancel-button = Ин дарбаргиранда тоза карда нашавад
+settings-tabs-show-image-in-preview =
+    .label = Нишон додани пешнамоиши тасвир ҳангоми гузоштани муш ба болои варақа
+    .accessKey = h
 
 ## General Section - Language & Appearance
 
@@ -258,6 +263,8 @@ preferences-default-zoom-value =
 preferences-zoom-text-only =
     .label = Танҳо калон кардани андозаи матн
     .accesskey = К
+preferences-text-zoom-override-warning =
+    .message = Огоҳӣ: Агар шумо «Танҳо калон кардани андозаи матн»-ро интихоб кунед ва андозаи пешфарзи шумо ба 100% муқаррар карда нашудааст, он метавонад боиси вайрон шудани баъзе сомонаҳо ва муҳтаво гардад.
 language-header = Забон
 choose-language-description = Забони дилхоҳатонро барои намоиши саҳифаҳо интихоб намоед
 choose-button =
@@ -562,6 +569,9 @@ home-prefs-shortcuts-by-option-sponsored =
 home-prefs-recommended-by-header =
     .label = Аз тарафи { $provider } тавсия дода мешавад
 home-prefs-recommended-by-description-new = Муҳтавои мустасно аз тарафи { $provider } интихоб карда шудааст ва қисми оилаи { -brand-product-name } мебошад
+home-prefs-recommended-by-header-generic =
+    .label = Ҳикояҳои тавсияшуда
+home-prefs-recommended-by-description-generic = Муҳтавои мустасно аз тарафи оилаи «{ -brand-product-name }» дастгирӣ карда мешавад
 
 ##
 
@@ -699,6 +709,13 @@ sync-mobile-promo = «Firefox»-ро барои <img data-l10n-name="android-ico
 
 sync-profile-picture =
     .tooltiptext = Иваз кардани расми профил
+sync-profile-picture-with-alt =
+    .tooltiptext = Иваз кардани расми профил
+    .alt = Иваз кардани расми профил
+sync-profile-picture-account-problem =
+    .alt = Расми профили ҳисоб
+fxa-login-rejected-warning =
+    .alt = Огоҳӣ
 sync-sign-out =
     .label = Баромадан…
     .accesskey = Б
@@ -1003,6 +1020,7 @@ sitedata-delete-on-close =
     .label = Нест кардани кукиҳо ва маълумоти сомона ҳангоми пӯшидани браузери «{ -brand-short-name }»
     .accesskey = Н
 sitedata-delete-on-close-private-browsing = Дар реҷаи тамошокунии хусусии доимӣ, кукиҳо ва маълумоти сомона ҳангоми пӯшидани «{ -brand-short-name }» ҳамеша пок карда мешаванд.
+sitedata-delete-on-close-private-browsing2 = Дар асоси танзимоти таърихи шумо, «{ -brand-short-name }» ҳангоми пӯшидани браузер кукиҳо ва маълумоти сомонаро аз ҷаласаи шумо нест мекунад.
 sitedata-allow-cookies-option =
     .label = Қабул кардани кукиҳо ва иттилооти сомона
     .accesskey = Қ
@@ -1264,6 +1282,8 @@ addon-recommendations-link = Маълумоти бештар
 # or builds with no Telemetry support available.
 collection-health-report-disabled = Гузоришдиҳии маълумот барои ин танзими сохт ғайрифаъол карда шуд
 collection-backlogged-crash-reports-with-link = Иҷозат додан ба «{ -brand-short-name }» барои фиристодани аз номи шумо гузоришҳо бо сабтҳои вайроншавӣ ва корҳои иҷронашуда <a data-l10n-name="crash-reports-link">Маълумоти бештар</a>
+    .accesskey = И
+collection-backlogged-crash-reports = Иҷозат додан ба «{ -brand-short-name }» барои фиристодани аз номи шумо гузоришҳо бо сабтҳои вайроншавӣ ва корҳои иҷронашуда
     .accesskey = И
 privacy-segmentation-section-header = Хусусиятҳои нав, ки таҷрибаи тамошокунии шуморо беҳтар мекунанд
 privacy-segmentation-section-description = Вақте ки мо хусусиятҳоеро пешниҳод мекунем, ки барои таъмини таҷрибаи хусусии беҳтар аз маълумоти шумо истифода мебаранд:

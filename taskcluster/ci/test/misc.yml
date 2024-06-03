@@ -8,7 +8,7 @@ job-defaults:
 geckoview-junit:
     description: "Geckoview junit run"
     suite: geckoview-junit
-    variants: ["geckoview-fission", "no-fission"]
+    variants: ["geckoview-fission", "no-fission", "geckoview-no-fission-ship"]
     treeherder-symbol: gv-junit
     loopback-video: true
     target: geckoview-androidTest.apk
@@ -17,6 +17,7 @@ geckoview-junit:
         by-variant:
             geckoview-fission: ['trunk']
             no-fission: built-projects
+            geckoview-no-fission-ship: built-projects
             default: []
     tier: default
     mozharness:
@@ -127,6 +128,7 @@ test-verify:
                     - linux64-node
                     - linux64-minidump-stackwalk
                     - linux64-fix-stacks
+                    - linux64-hostutils
 
 test-verify-gpu:
     description: "Extra verification of tests modified on this push on gpu instances"
@@ -228,6 +230,7 @@ test-coverage:
                     - linux64-node
                     - linux64-minidump-stackwalk
                     - linux64-fix-stacks
+                    - linux64-hostutils
 
 test-coverage-gpu:
     description: "Per-test coverage for tests that require gpu instances"

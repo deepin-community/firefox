@@ -444,7 +444,9 @@ GCRuntime::GCRuntime(JSRuntime* rt)
 #endif
       requestSliceAfterBackgroundTask(false),
       lifoBlocksToFree((size_t)JSContext::TEMP_LIFO_ALLOC_PRIMARY_CHUNK_SIZE),
-      lifoBlocksToFreeAfterMinorGC(
+      lifoBlocksToFreeAfterFullMinorGC(
+          (size_t)JSContext::TEMP_LIFO_ALLOC_PRIMARY_CHUNK_SIZE),
+      lifoBlocksToFreeAfterNextMinorGC(
           (size_t)JSContext::TEMP_LIFO_ALLOC_PRIMARY_CHUNK_SIZE),
       sweepGroupIndex(0),
       sweepGroups(nullptr),
@@ -658,7 +660,7 @@ void GCRuntime::setZeal(uint8_t zeal, uint32_t frequency) {
 
   if (zeal == 0) {
     if (hasZealMode(ZealMode::GenerationalGC)) {
-      evictNursery(JS::GCReason::DEBUG_GC);
+      evictNursery();
       nursery().leaveZealMode();
     }
 
@@ -669,7 +671,7 @@ void GCRuntime::setZeal(uint8_t zeal, uint32_t frequency) {
 
   ZealMode zealMode = ZealMode(zeal);
   if (zealMode == ZealMode::GenerationalGC) {
-    evictNursery(JS::GCReason::DEBUG_GC);
+    evictNursery(JS::GCReason::EVICT_NURSERY);
     nursery().enterZealMode();
   }
 
@@ -704,7 +706,7 @@ void GCRuntime::unsetZeal(uint8_t zeal) {
   }
 
   if (zealMode == ZealMode::GenerationalGC) {
-    evictNursery(JS::GCReason::DEBUG_GC);
+    evictNursery();
     nursery().leaveZealMode();
   }
 
@@ -930,6 +932,8 @@ void GCRuntime::finish() {
   }
 #endif
 
+  releaseMarkingThreads();
+
 #ifdef JS_GC_ZEAL
   // Free memory associated with GC verification.
   finishVerifier();
@@ -1064,14 +1068,18 @@ bool GCRuntime::setParameter(JSGCParamKey key, uint32_t value,
       compactingEnabled = value != 0;
       break;
     case JSGC_PARALLEL_MARKING_ENABLED:
-      // Not supported on workers.
-      parallelMarkingEnabled = rt->isMainRuntime() && value != 0;
-      return initOrDisableParallelMarking();
+      setParallelMarkingEnabled(value != 0);
+      break;
     case JSGC_INCREMENTAL_WEAKMAP_ENABLED:
       for (auto& marker : markers) {
         marker->incrementalWeakMapMarkingEnabled = value != 0;
       }
       break;
+    case JSGC_SEMISPACE_NURSERY_ENABLED: {
+      AutoUnlockGC unlock(lock);
+      nursery().setSemispaceEnabled(value);
+      break;
+    }
     case JSGC_MIN_EMPTY_CHUNK_COUNT:
       setMinEmptyChunkCount(value, lock);
       break;
@@ -1151,8 +1159,7 @@ void GCRuntime::resetParameter(JSGCParamKey key, AutoLockGC& lock) {
       compactingEnabled = TuningDefaults::CompactingEnabled;
       break;
     case JSGC_PARALLEL_MARKING_ENABLED:
-      parallelMarkingEnabled = TuningDefaults::ParallelMarkingEnabled;
-      initOrDisableParallelMarking();
+      setParallelMarkingEnabled(TuningDefaults::ParallelMarkingEnabled);
       break;
     case JSGC_INCREMENTAL_WEAKMAP_ENABLED:
       for (auto& marker : markers) {
@@ -1160,6 +1167,11 @@ void GCRuntime::resetParameter(JSGCParamKey key, AutoLockGC& lock) {
             TuningDefaults::IncrementalWeakMapMarkingEnabled;
       }
       break;
+    case JSGC_SEMISPACE_NURSERY_ENABLED: {
+      AutoUnlockGC unlock(lock);
+      nursery().setSemispaceEnabled(TuningDefaults::SemispaceNurseryEnabled);
+      break;
+    }
     case JSGC_MIN_EMPTY_CHUNK_COUNT:
       setMinEmptyChunkCount(TuningDefaults::MinEmptyChunkCount, lock);
       break;
@@ -1241,6 +1253,8 @@ uint32_t GCRuntime::getParameter(JSGCParamKey key, const AutoLockGC& lock) {
       return parallelMarkingEnabled;
     case JSGC_INCREMENTAL_WEAKMAP_ENABLED:
       return marker().incrementalWeakMapMarkingEnabled;
+    case JSGC_SEMISPACE_NURSERY_ENABLED:
+      return nursery().semispaceEnabled();
     case JSGC_CHUNK_BYTES:
       return ChunkSize;
     case JSGC_HELPER_THREAD_RATIO:
@@ -1350,16 +1364,56 @@ void GCRuntime::assertNoMarkingWork() const {
 }
 #endif
 
+bool GCRuntime::setParallelMarkingEnabled(bool enabled) {
+  if (enabled == parallelMarkingEnabled) {
+    return true;
+  }
+
+  parallelMarkingEnabled = enabled;
+  return initOrDisableParallelMarking();
+}
+
 bool GCRuntime::initOrDisableParallelMarking() {
-  // Attempt to initialize parallel marking state or disable it on failure.
+  // Attempt to initialize parallel marking state or disable it on failure. This
+  // is called when parallel marking is enabled or disabled.
 
   MOZ_ASSERT(markers.length() != 0);
 
-  if (!updateMarkersVector()) {
-    parallelMarkingEnabled = false;
+  if (updateMarkersVector()) {
+    return true;
+  }
+
+  // Failed to initialize parallel marking so disable it instead.
+  MOZ_ASSERT(parallelMarkingEnabled);
+  parallelMarkingEnabled = false;
+  MOZ_ALWAYS_TRUE(updateMarkersVector());
+  return false;
+}
+
+void GCRuntime::releaseMarkingThreads() {
+  MOZ_ALWAYS_TRUE(reserveMarkingThreads(0));
+}
+
+bool GCRuntime::reserveMarkingThreads(size_t newCount) {
+  if (reservedMarkingThreads == newCount) {
+    return true;
+  }
+
+  // Update the helper thread system's global count by subtracting this
+  // runtime's current contribution |reservedMarkingThreads| and adding the new
+  // contribution |newCount|.
+
+  AutoLockHelperThreadState lock;
+  auto& globalCount = HelperThreadState().gcParallelMarkingThreads;
+  MOZ_ASSERT(globalCount >= reservedMarkingThreads);
+  size_t newGlobalCount = globalCount - reservedMarkingThreads + newCount;
+  if (newGlobalCount > HelperThreadState().threadCount) {
+    // Not enough total threads.
     return false;
   }
 
+  globalCount = newGlobalCount;
+  reservedMarkingThreads = newCount;
   return true;
 }
 
@@ -1377,6 +1431,16 @@ bool GCRuntime::updateMarkersVector() {
   // Limit worker count to number of GC parallel tasks that can run
   // concurrently, otherwise one thread can deadlock waiting on another.
   size_t targetCount = std::min(markingWorkerCount(), getMaxParallelThreads());
+
+  if (rt->isMainRuntime()) {
+    // For the main runtime, reserve helper threads as long as parallel marking
+    // is enabled. Worker runtimes may not mark in parallel if there are
+    // insufficient threads available at the time.
+    size_t threadsToReserve = targetCount > 1 ? targetCount : 0;
+    if (!reserveMarkingThreads(threadsToReserve)) {
+      return false;
+    }
+  }
 
   if (markers.length() > targetCount) {
     return markers.resize(targetCount);
@@ -2085,7 +2149,7 @@ void GCRuntime::queueUnusedLifoBlocksForFree(LifoAlloc* lifo) {
 }
 
 void GCRuntime::queueAllLifoBlocksForFreeAfterMinorGC(LifoAlloc* lifo) {
-  lifoBlocksToFreeAfterMinorGC.ref().transferFrom(lifo);
+  lifoBlocksToFreeAfterFullMinorGC.ref().transferFrom(lifo);
 }
 
 void GCRuntime::queueBuffersForFreeAfterMinorGC(Nursery::BufferSet& buffers) {
@@ -2691,24 +2755,7 @@ void GCRuntime::endPreparePhase(JS::GCReason reason) {
   MOZ_ASSERT(unmarkTask.isIdle());
 
   for (GCZonesIter zone(this); !zone.done(); zone.next()) {
-    /*
-     * In an incremental GC, clear the area free lists to ensure that subsequent
-     * allocations refill them and end up marking new cells back. See
-     * arenaAllocatedDuringGC().
-     */
-    zone->arenas.clearFreeLists();
-
     zone->setPreservingCode(false);
-
-#ifdef JS_GC_ZEAL
-    if (hasZealMode(ZealMode::YieldBeforeRootMarking)) {
-      for (auto kind : AllAllocKinds()) {
-        for (ArenaIterInGC arena(zone, kind); !arena.done(); arena.next()) {
-          arena->checkNoMarkedCells();
-        }
-      }
-    }
-#endif
   }
 
   // Discard JIT code more aggressively if the process is approaching its
@@ -2750,7 +2797,7 @@ void GCRuntime::endPreparePhase(JS::GCReason reason) {
    */
 
   {
-    gcstats::AutoPhase ap1(stats(), gcstats::PhaseKind::PREPARE);
+    gcstats::AutoPhase ap(stats(), gcstats::PhaseKind::PREPARE);
 
     AutoLockHelperThreadState helperLock;
 
@@ -2767,20 +2814,6 @@ void GCRuntime::endPreparePhase(JS::GCReason reason) {
     haveDiscardedJITCodeThisSlice = true;
 
     /*
-     * Relazify functions after discarding JIT code (we can't relazify
-     * functions with JIT code) and before the actual mark phase, so that
-     * the current GC can collect the JSScripts we're unlinking here.  We do
-     * this only when we're performing a shrinking GC, as too much
-     * relazification can cause performance issues when we have to reparse
-     * the same functions over and over.
-     */
-    if (isShrinkingGC()) {
-      relazifyFunctionsForShrinkingGC();
-      purgePropMapTablesForShrinkingGC();
-      purgeSourceURLsForShrinkingGC();
-    }
-
-    /*
      * We must purge the runtime at the beginning of an incremental GC. The
      * danger if we purge later is that the snapshot invariant of
      * incremental GC will be broken, as follows. If some object is
@@ -2790,8 +2823,25 @@ void GCRuntime::endPreparePhase(JS::GCReason reason) {
      * it. This object might never be marked, so a GC hazard would exist.
      */
     purgeRuntime();
+  }
 
-    startBackgroundFreeAfterMinorGC();
+  // This will start background free for lifo blocks queued by purgeRuntime,
+  // even if there's nothing in the nursery.
+  collectNurseryFromMajorGC(reason);
+
+  {
+    gcstats::AutoPhase ap(stats(), gcstats::PhaseKind::PREPARE);
+    // Relazify functions after discarding JIT code (we can't relazify functions
+    // with JIT code) and before the actual mark phase, so that the current GC
+    // can collect the JSScripts we're unlinking here.  We do this only when
+    // we're performing a shrinking GC, as too much relazification can cause
+    // performance issues when we have to reparse the same functions over and
+    // over.
+    if (isShrinkingGC()) {
+      relazifyFunctionsForShrinkingGC();
+      purgePropMapTablesForShrinkingGC();
+      purgeSourceURLsForShrinkingGC();
+    }
 
     if (isShutdownGC()) {
       /* Clear any engine roots that may hold external data live. */
@@ -2853,6 +2903,21 @@ void GCRuntime::beginMarkPhase(AutoGCSession& session) {
 #endif
 
   for (GCZonesIter zone(this); !zone.done(); zone.next()) {
+    // In an incremental GC, clear the arena free lists to ensure that
+    // subsequent allocations refill them and end up marking new cells black.
+    // See arenaAllocatedDuringGC().
+    zone->arenas.clearFreeLists();
+
+#ifdef JS_GC_ZEAL
+    if (hasZealMode(ZealMode::YieldBeforeRootMarking)) {
+      for (auto kind : AllAllocKinds()) {
+        for (ArenaIter arena(zone, kind); !arena.done(); arena.next()) {
+          arena->checkNoMarkedCells();
+        }
+      }
+    }
+#endif
+
     // Incremental marking barriers are enabled at this point.
     zone->changeGCState(Zone::Prepare, zone->initialMarkingState());
 
@@ -2870,7 +2935,7 @@ void GCRuntime::beginMarkPhase(AutoGCSession& session) {
   stats().measureInitialHeapSize();
 
   useParallelMarking = SingleThreadedMarking;
-  if (canMarkInParallel() && initParallelMarkers()) {
+  if (canMarkInParallel() && initParallelMarking()) {
     useParallelMarking = AllowParallelMarking;
   }
 
@@ -2989,8 +3054,18 @@ inline bool GCRuntime::canMarkInParallel() const {
                                      tunables.parallelMarkingThresholdBytes();
 }
 
-bool GCRuntime::initParallelMarkers() {
+bool GCRuntime::initParallelMarking() {
+  // This is called at the start of collection.
+
   MOZ_ASSERT(canMarkInParallel());
+
+  // Reserve/release helper threads for worker runtimes. These are released at
+  // the end of sweeping. If there are not enough helper threads because
+  // other runtimes are marking in parallel then parallel marking will not be
+  // used.
+  if (!rt->isMainRuntime() && !reserveMarkingThreads(markers.length())) {
+    return false;
+  }
 
   // Allocate stack for parallel markers. The first marker always has stack
   // allocated. Other markers have their stack freed in
@@ -3655,11 +3730,8 @@ void GCRuntime::incrementalSlice(SliceBudget& budget, JS::GCReason reason,
       [[fallthrough]];
 
     case State::MarkRoots:
-      if (NeedToCollectNursery(this)) {
-        collectNurseryFromMajorGC(reason);
-      }
-
       endPreparePhase(reason);
+
       beginMarkPhase(session);
       incrementalState = State::Mark;
 
@@ -3818,8 +3890,11 @@ void GCRuntime::incrementalSlice(SliceBudget& budget, JS::GCReason reason,
 }
 
 void GCRuntime::collectNurseryFromMajorGC(JS::GCReason reason) {
-  collectNursery(gcOptions(), reason,
+  collectNursery(gcOptions(), JS::GCReason::EVICT_NURSERY,
                  gcstats::PhaseKind::EVICT_NURSERY_FOR_MAJOR_GC);
+
+  MOZ_ASSERT(nursery().isEmpty());
+  MOZ_ASSERT(storeBuffer().isEmpty());
 }
 
 bool GCRuntime::hasForegroundWork() const {
@@ -4673,26 +4748,43 @@ void GCRuntime::collectNursery(JS::GCOptions options, JS::GCReason reason,
   gcstats::AutoPhase ap(stats(), phase);
 
   nursery().collect(options, reason);
-  MOZ_ASSERT(nursery().isEmpty());
 
   startBackgroundFreeAfterMinorGC();
+
+  // We ignore gcMaxBytes when allocating for minor collection. However, if we
+  // overflowed, we disable the nursery. The next time we allocate, we'll fail
+  // because bytes >= gcMaxBytes.
+  if (heapSize.bytes() >= tunables.gcMaxBytes()) {
+    if (!nursery().isEmpty()) {
+      nursery().collect(options, JS::GCReason::DISABLE_GENERATIONAL_GC);
+      MOZ_ASSERT(nursery().isEmpty());
+      startBackgroundFreeAfterMinorGC();
+    }
+    nursery().disable();
+  }
 }
 
 void GCRuntime::startBackgroundFreeAfterMinorGC() {
-  MOZ_ASSERT(nursery().isEmpty());
+  // Called after nursery collection. Free whatever blocks are safe to free now.
 
-  {
-    AutoLockHelperThreadState lock;
+  AutoLockHelperThreadState lock;
 
-    lifoBlocksToFree.ref().transferFrom(&lifoBlocksToFreeAfterMinorGC.ref());
+  lifoBlocksToFree.ref().transferFrom(&lifoBlocksToFreeAfterNextMinorGC.ref());
 
-    if (lifoBlocksToFree.ref().isEmpty() &&
-        buffersToFreeAfterMinorGC.ref().empty()) {
-      return;
-    }
+  if (nursery().tenuredEverything) {
+    lifoBlocksToFree.ref().transferFrom(
+        &lifoBlocksToFreeAfterFullMinorGC.ref());
+  } else {
+    lifoBlocksToFreeAfterNextMinorGC.ref().transferFrom(
+        &lifoBlocksToFreeAfterFullMinorGC.ref());
   }
 
-  startBackgroundFree();
+  if (lifoBlocksToFree.ref().isEmpty() &&
+      buffersToFreeAfterMinorGC.ref().empty()) {
+    return;
+  }
+
+  freeTask.startOrRunIfIdle(lock);
 }
 
 bool GCRuntime::gcIfRequestedImpl(bool eagerOk) {

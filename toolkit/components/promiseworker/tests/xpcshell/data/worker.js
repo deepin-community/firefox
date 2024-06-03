@@ -12,8 +12,9 @@ importScripts("resource://gre/modules/workers/require.js");
 var PromiseWorker = require("resource://gre/modules/workers/PromiseWorker.js");
 
 var worker = new PromiseWorker.AbstractWorker();
-worker.dispatch = function (method, args = []) {
-  return Agent[method](...args);
+
+worker.dispatch = async function (method, args = []) {
+  return await Agent[method](...args);
 };
 worker.postMessage = function (...args) {
   self.postMessage(...args);
@@ -34,7 +35,15 @@ var Agent = {
     return args;
   },
 
-  throwError(msg, ...args) {
+  async bounceWithExtraCalls(...args) {
+    let result = await worker.callMainThread("echo", [
+      "Posting something unrelated",
+    ]);
+    args.push(result.ok);
+    return args;
+  },
+
+  throwError(msg) {
     throw new Error(msg);
   },
 };

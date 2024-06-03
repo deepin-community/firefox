@@ -182,10 +182,10 @@ urlbar-star-add-bookmark =
 ## Page Action Context Menu
 
 page-action-manage-extension2 =
-    .label = Sýsla með viðbót…
+    .label = Sýsla með forritsauka…
     .accesskey = e
 page-action-remove-extension2 =
-    .label = Fjarlægja viðbót
+    .label = Fjarlægja forritsauka
     .accesskey = F
 
 ## Auto-hide Context Menu
@@ -352,7 +352,7 @@ identity-connection-failure = Tenging mistókst
 identity-connection-internal = Þetta er örugg { -brand-short-name } síða.
 identity-connection-file = Þessi síða er vistuð á tölvunni þinni.
 identity-connection-associated = Þessari síðu er hlaðið inn af annarri síðu.
-identity-extension-page = Þessari síðu er hlaðið inn af viðbót.
+identity-extension-page = Þessari síðu er hlaðið inn af forritsauka.
 identity-active-blocked = { -brand-short-name } hefur lokað á suma hluta á þessari síðu sem eru ekki öruggir.
 identity-custom-root = Tenging staðfest af útgefanda skilríkis sem ekki er viðurkennt af Mozilla.
 identity-passive-loaded = Sumir hlutir á þessari síðu eru ekki öruggir (eins og myndir).
@@ -545,7 +545,7 @@ urlbar-switch-to-tab =
     .value = Fara á flipa:
 # Used to indicate that a selected autocomplete entry is provided by an extension.
 urlbar-extension =
-    .value = Viðbót:
+    .value = Forritsauki:
 urlbar-go-button =
     .tooltiptext = Hoppa á tengilinn sem er í veffangastikunni
 urlbar-page-action-button =
@@ -604,6 +604,12 @@ urlbar-result-action-copy-to-clipboard = Afrita
 # Variables
 #  $result (String): the string representation for a formula result
 urlbar-result-action-calculator-result = = { $result }
+
+## Strings used for buttons in the urlbar
+
+# Label prompting user to search with a particular search engine.
+#  $engine (String): the name of a search engine that searches a specific site
+urlbar-result-search-with = Leita með { $engine }
 
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
@@ -911,6 +917,15 @@ data-reporting-notification-button =
     .accesskey = V
 # Label for the indicator shown in the private browsing window titlebar.
 private-browsing-indicator-label = Huliðsvafur
+# Tooltip for the indicator shown in the window titlebar when content analysis is active.
+# Variables:
+#   $agentName (String): The name of the DLP agent that is connected
+content-analysis-indicator-tooltip =
+    .tooltiptext = Gagnatapsvörn (DLP) með { $agentName }. Smelltu til að fá frekari upplýsingar.
+content-analysis-panel-title = Gagnavarnir
+# Variables:
+#   $agentName (String): The name of the DLP agent that is connected
+content-analysis-panel-text = Stofnunin þín notar { $agentName } til að verjast gagnatapi. <a data-l10n-name="info">Frekari upplýsingar</a>
 
 ## Unified extensions (toolbar) button
 

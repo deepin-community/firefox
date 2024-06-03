@@ -126,6 +126,12 @@ translations-manage-description = ดาวน์โหลดภาษาสำ�
 translations-manage-all-language = ภาษาทั้งหมด
 translations-manage-download-button = ดาวน์โหลด
 translations-manage-delete-button = ลบ
+translations-manage-language-remove-button =
+    .label = ลบ
+translations-manage-language-remove-all-button =
+    .label = เอาออกทั้งหมด
+    .accesskey = e
+translations-manage-error-install = มีปัญหาในการติดตั้งไฟล์ภาษา โปรดลองอีกครั้ง
 translations-manage-error-download = เกิดปัญหาในการดาวน์โหลดไฟล์ภาษา โปรดลองอีกครั้ง
 translations-manage-error-delete = เกิดข้อผิดพลาดในการลบไฟล์ภาษา โปรดลองอีกครั้ง
 translations-manage-intro = ตั้งค่าการกำหนดลักษณะภาษาและการแปลไซต์ของคุณและจัดการภาษาที่ติดตั้งสำหรับการแปลแบบออฟไลน์
@@ -135,12 +141,6 @@ translations-manage-language-install-button =
 translations-manage-language-install-all-button =
     .label = ติดตั้งทั้งหมด
     .accesskey = I
-translations-manage-language-remove-button =
-    .label = ลบ
-translations-manage-language-remove-all-button =
-    .label = เอาออกทั้งหมด
-    .accesskey = e
-translations-manage-error-install = มีปัญหาในการติดตั้งไฟล์ภาษา โปรดลองอีกครั้ง
 translations-manage-error-remove = มีข้อผิดพลาดในการลบไฟล์ภาษาออก โปรดลองอีกครั้ง
 translations-manage-error-list = ไม่สามารถรับรายชื่อภาษาที่ใช้ได้สำหรับการแปล เรียกหน้านี้ใหม่เพื่อลองอีกครั้ง
 translations-settings-title =
@@ -170,3 +170,22 @@ translations-settings-remove-all-sites-button =
 translations-settings-close-dialog =
     .buttonlabelaccept = ปิด
     .buttonaccesskeyaccept = ป
+select-translations-panel-cancel-button =
+    .label = ยกเลิก
+select-translations-panel-translate-button =
+    .label = แปล
+select-translations-panel-try-again-button =
+    .label = ลองอีกครั้ง
+# Text displayed when the translation fails to complete.
+select-translations-panel-translation-failure-message =
+    .message = เกิดปัญหาในการแปล โปรดลองอีกครั้ง
+# If your language requires declining the language name, a possible solution
+# is to adapt the structure of the phrase, or use a support noun, e.g.
+# `Sorry, we don't support the language yet: { $language }
+#
+# Variables:
+#   $language (string) - The language of the document.
+select-translations-panel-unsupported-language-message-known =
+    .message = ขออภัย เรายังไม่รองรับ { $language }
+select-translations-panel-unsupported-language-message-unknown =
+    .message = ขออภัย เรายังไม่รองรับภาษานี้

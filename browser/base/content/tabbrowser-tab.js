@@ -259,6 +259,14 @@
       return this._lastAccessed == Infinity ? Date.now() : this._lastAccessed;
     }
 
+    /**
+     * Returns a timestamp which attempts to represent the last time the user saw this tab.
+     * If the tab has not been active in this session, any lastAccessed is used. We
+     * differentiate between selected and explicitly visible; a selected tab in a hidden
+     * window is last seen when that window and tab were last visible.
+     * We use the application start time as a fallback value when no other suitable value
+     * is available.
+     */
     get lastSeenActive() {
       const isForegroundWindow =
         this.ownerGlobal ==
@@ -270,8 +278,16 @@
       if (this._lastSeenActive) {
         return this._lastSeenActive;
       }
-      // Use the application start time as the fallback value
-      return Services.startup.getStartupInfo().start.getTime();
+
+      const appStartTime = Services.startup.getStartupInfo().start.getTime();
+      if (!this._lastAccessed || this._lastAccessed >= appStartTime) {
+        // When the tab was created this session but hasn't been seen by the user,
+        // default to the application start time.
+        return appStartTime;
+      }
+      // The tab was restored from a previous session but never seen.
+      // Use the lastAccessed as the best proxy for when the user might have seen it.
+      return this._lastAccessed;
     }
 
     get _overPlayingIcon() {
@@ -350,7 +366,20 @@
           count: affectedTabsLength,
         });
       }
-      this._mouseenter();
+
+      if (this.hidden || this.closing) {
+        return;
+      }
+
+      let tabToWarm = this.mOverCloseButton
+        ? gBrowser._findTabToBlurTo(this)
+        : this;
+      gBrowser.warmupTab(tabToWarm);
+
+      // If the previous target wasn't part of this tab then this is a mouseenter event.
+      if (!this.contains(event.relatedTarget)) {
+        this._mouseenter();
+      }
     }
 
     on_mouseout(event) {
@@ -360,7 +389,11 @@
       if (event.target == this.overlayIcon) {
         this.setSecondaryTabTooltipLabel(null);
       }
-      this._mouseleave();
+
+      // If the new target is not part of this tab then this is a mouseleave event.
+      if (!this.contains(event.relatedTarget)) {
+        this._mouseleave();
+      }
     }
 
     on_dragstart(event) {
@@ -440,7 +473,7 @@
       }
     }
 
-    on_mouseup(event) {
+    on_mouseup() {
       // Make sure that clear-selection is released.
       // Otherwise selection using Shift key may be broken.
       gBrowser.unlockClearMultiSelection();
@@ -530,9 +563,6 @@
     }
 
     _mouseenter() {
-      if (this.hidden || this.closing) {
-        return;
-      }
       this._hover = true;
 
       if (this.selected) {
@@ -544,12 +574,6 @@
 
       // Prepare connection to host beforehand.
       SessionStore.speculativeConnectOnTabHover(this);
-
-      let tabToWarm = this;
-      if (this.mOverCloseButton) {
-        tabToWarm = gBrowser._findTabToBlurTo(this);
-      }
-      gBrowser.warmupTab(tabToWarm);
 
       this.dispatchEvent(new CustomEvent("TabHoverStart", { bubbles: true }));
     }
@@ -698,11 +722,11 @@
       this.setAttribute("aria-describedby", "tabbrowser-tab-a11y-desc");
     }
 
-    on_focus(event) {
+    on_focus() {
       this.updateA11yDescription();
     }
 
-    on_AriaFocus(event) {
+    on_AriaFocus() {
       this.updateA11yDescription();
     }
   }

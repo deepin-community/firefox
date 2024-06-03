@@ -7,7 +7,7 @@ Subject: Relax cargo version requirement
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/build/moz.configure/rust.configure b/build/moz.configure/rust.configure
-index 7a2fd1a..9801f82 100644
+index acac34e..b615749 100644
 --- a/build/moz.configure/rust.configure
 +++ b/build/moz.configure/rust.configure
 @@ -180,7 +180,7 @@ def rust_compiler(rustc_info, cargo_info, target):

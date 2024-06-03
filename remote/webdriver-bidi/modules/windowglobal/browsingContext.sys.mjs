@@ -17,6 +17,8 @@ ChromeUtils.defineESModuleGetters(lazy, {
     "chrome://remote/content/webdriver-bidi/modules/root/browsingContext.sys.mjs",
   OriginType:
     "chrome://remote/content/webdriver-bidi/modules/root/browsingContext.sys.mjs",
+  OwnershipModel: "chrome://remote/content/webdriver-bidi/RemoteValue.sys.mjs",
+  PollPromise: "chrome://remote/content/shared/Sync.sys.mjs",
 });
 
 const DOCUMENT_FRAGMENT_NODE = 11;
@@ -356,6 +358,29 @@ class BrowsingContextModule extends WindowGlobalBiDiModule {
     });
   }
 
+  /**
+   * Waits until the visibility state of the document has the expected value.
+   *
+   * @param {object} options
+   * @param {number} options.value
+   *     Expected value of the visibility state.
+   *
+   * @returns {Promise}
+   *     Promise that resolves when the visibility state has the expected value.
+   */
+  async _awaitVisibilityState(options) {
+    const { value } = options;
+    const win = this.messageHandler.window;
+
+    await lazy.PollPromise((resolve, reject) => {
+      if (win.document.visibilityState === value) {
+        resolve();
+      } else {
+        reject();
+      }
+    });
+  }
+
   _getBaseURL() {
     return this.messageHandler.window.document.baseURI;
   }
@@ -401,16 +426,9 @@ class BrowsingContextModule extends WindowGlobalBiDiModule {
   }
 
   _locateNodes(params = {}) {
-    const {
-      locator,
-      maxNodeCount,
-      resultOwnership,
-      sandbox,
-      serializationOptions,
-      startNodes,
-    } = params;
+    const { locator, maxNodeCount, serializationOptions, startNodes } = params;
 
-    const realm = this.messageHandler.getRealm({ sandboxName: sandbox });
+    const realm = this.messageHandler.getRealm();
 
     const contextNodes = [];
     if (startNodes === null) {
@@ -458,7 +476,7 @@ class BrowsingContextModule extends WindowGlobalBiDiModule {
         this.serialize(
           returnedNode,
           serializationOptions,
-          resultOwnership,
+          lazy.OwnershipModel.None,
           realm,
           { seenNodeIds }
         )

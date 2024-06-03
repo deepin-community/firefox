@@ -24,8 +24,7 @@ namespace dom {
 
 using SVGAElementBase = SVGGraphicsElement;
 
-class SVGAElement final : public SVGAElementBase,
-                          public Link {
+class SVGAElement final : public SVGAElementBase, public Link {
  protected:
   using Element::GetText;
 
@@ -48,7 +47,7 @@ class SVGAElement final : public SVGAElementBase,
 
   // nsIContent
   nsresult BindToTree(BindContext&, nsINode& aParent) override;
-  void UnbindFromTree(bool aNullParent = true) override;
+  void UnbindFromTree(UnbindContext&) override;
 
   int32_t TabIndexDefault() override;
   Focusable IsFocusableWithoutStyle(bool aWithMouse) override;
@@ -93,6 +92,7 @@ class SVGAElement final : public SVGAElementBase,
   virtual ~SVGAElement() = default;
 
   StringAttributesInfo GetStringInfo() override;
+  void DidAnimateAttribute(int32_t aNameSpaceID, nsAtom* aAttribute) override;
 
   enum { HREF, XLINK_HREF, TARGET };
   SVGAnimatedString mStringAttributes[3];

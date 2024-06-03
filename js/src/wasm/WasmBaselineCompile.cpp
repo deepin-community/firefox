@@ -1658,7 +1658,7 @@ bool BaseCompiler::callIndirect(uint32_t funcTypeIndex, uint32_t tableIndex,
   return true;
 }
 
-#ifdef ENABLE_WASM_FUNCTION_REFERENCES
+#ifdef ENABLE_WASM_GC
 void BaseCompiler::callRef(const Stk& calleeRef, const FunctionCall& call,
                            CodeOffset* fastCallOffset,
                            CodeOffset* slowCallOffset) {
@@ -1788,15 +1788,25 @@ void BaseCompiler::finishTryNote(size_t tryNoteIndex) {
     masm.nop();
   }
 
-  // Check the previous try note to ensure that we don't share an edge with
-  // it that could lead to ambiguity. Insert a nop, if required.
-  if (tryNotes.length() > 0) {
-    const TryNote& previous = tryNotes.back();
+  // Check the most recent finished try note to ensure that we don't share an
+  // edge with it that could lead to ambiguity. Insert a nop, if required.
+  //
+  // Notice that finishTryNote is called in LIFO order -- using depth-first
+  // search numbering to see if we are traversing back from a nested try to a
+  // parent try, where we may need to ensure that the end offsets do not
+  // coincide.
+  //
+  // In the case the tryNodeIndex >= mostRecentFinishedTryNoteIndex_, we have
+  // finished a try that began after the most recent finished try, and so
+  // startTryNote will take care of any nops.
+  if (tryNoteIndex < mostRecentFinishedTryNoteIndex_) {
+    const TryNote& previous = tryNotes[mostRecentFinishedTryNoteIndex_];
     uint32_t currentOffset = masm.currentOffset();
     if (previous.tryBodyEnd() == currentOffset) {
       masm.nop();
     }
   }
+  mostRecentFinishedTryNoteIndex_ = tryNoteIndex;
 
   // Don't set the end of the try note if we've OOM'ed, as the above nop's may
   // not have been placed. This is okay as this compilation will be thrown
@@ -3770,12 +3780,6 @@ bool BaseCompiler::emitEnd() {
         return false;
       }
       doReturn(ContinuationKind::Fallthrough);
-      // This is emitted here after `doReturn` to avoid being executed in the
-      // normal return path of a function, and instead only when a `delegate`
-      // jumps to it.
-      if (!emitBodyDelegateThrowPad()) {
-        return false;
-      }
       iter_.popEnd();
       MOZ_ASSERT(iter_.controlStackEmpty());
       return iter_.endFunction(iter_.end());
@@ -3875,7 +3879,7 @@ bool BaseCompiler::emitBrIf() {
   return emitBranchPerform(&b);
 }
 
-#ifdef ENABLE_WASM_FUNCTION_REFERENCES
+#ifdef ENABLE_WASM_GC
 bool BaseCompiler::emitBrOnNull() {
   MOZ_ASSERT(!hasLatentOp());
 
@@ -4097,9 +4101,6 @@ bool BaseCompiler::emitTryTable() {
   // Emit a landing pad that exceptions will jump into. Jump over it for now.
   Label skipLandingPad;
   masm.jump(&skipLandingPad);
-
-  // Bind the otherLabel so that delegate can target this
-  masm.bind(&controlItem().otherLabel);
 
   StackHeight prePadHeight = fr.stackHeight();
   uint32_t padOffset = masm.currentOffset();
@@ -4486,30 +4487,6 @@ bool BaseCompiler::emitCatchAll() {
   return pushBlockResults(exnResult);
 }
 
-bool BaseCompiler::emitBodyDelegateThrowPad() {
-  Control& block = controlItem();
-
-  // Only emit a landing pad if a `delegate` has generated a jump to here.
-  if (block.otherLabel.used()) {
-    StackHeight savedHeight = fr.stackHeight();
-    fr.setStackHeight(block.stackHeight);
-    masm.bind(&block.otherLabel);
-
-    // A try-delegate jumps immediately to its delegated try block, so we are
-    // responsible to unpack the exception and rethrow it.
-    RegRef exn;
-    RegRef tag;
-    consumePendingException(RegPtr(InstanceReg), &exn, &tag);
-    freeRef(tag);
-    if (!throwFrom(exn)) {
-      return false;
-    }
-    fr.setStackHeight(savedHeight);
-  }
-
-  return true;
-}
-
 bool BaseCompiler::emitDelegate() {
   uint32_t relativeDepth;
   ResultType resultType;
@@ -4519,46 +4496,16 @@ bool BaseCompiler::emitDelegate() {
     return false;
   }
 
-  Control& tryDelegate = controlItem();
-
-  // End the try branch like a plain catch block without exception ref handling.
-  if (deadCode_) {
-    fr.resetStackHeight(tryDelegate.stackHeight, resultType);
-    popValueStackTo(tryDelegate.stackSize);
-  } else {
-    MOZ_ASSERT(stk_.length() == tryDelegate.stackSize + resultType.length());
-    popBlockResults(resultType, tryDelegate.stackHeight,
-                    ContinuationKind::Jump);
-    freeResultRegisters(resultType);
-    masm.jump(&tryDelegate.label);
-    MOZ_ASSERT(!tryDelegate.deadOnArrival);
+  if (!endBlock(resultType)) {
+    return false;
   }
 
-  deadCode_ = tryDelegate.deadOnArrival;
-
-  if (deadCode_) {
+  if (controlItem().deadOnArrival) {
     return true;
   }
 
-  // Create an exception landing pad that immediately branches to the landing
-  // pad of the delegated try block.
-  masm.bind(&tryDelegate.otherLabel);
-
-  StackHeight savedHeight = fr.stackHeight();
-  fr.setStackHeight(tryDelegate.stackHeight);
-
   // Mark the end of the try body. This may insert a nop.
   finishTryNote(controlItem().tryNoteIndex);
-
-  // The landing pad begins at this point
-  TryNoteVector& tryNotes = masm.tryNotes();
-  TryNote& tryNote = tryNotes[controlItem().tryNoteIndex];
-  tryNote.setLandingPad(masm.currentOffset(), masm.framePushed());
-
-  // Store the Instance that was left in InstanceReg by the exception
-  // handling mechanism, that is this frame's Instance but with the exception
-  // filled in Instance::pendingException.
-  fr.storeInstancePtr(InstanceReg);
 
   // If the target block is a non-try block, skip over it and find the next
   // try block or the very last block (to re-throw out of the function).
@@ -4569,22 +4516,24 @@ bool BaseCompiler::emitDelegate() {
     relativeDepth++;
   }
   Control& target = controlItem(relativeDepth);
+  TryNoteVector& tryNotes = masm.tryNotes();
+  TryNote& delegateTryNote = tryNotes[controlItem().tryNoteIndex];
 
-  popBlockResults(ResultType::Empty(), target.stackHeight,
-                  ContinuationKind::Jump);
-  masm.jump(&target.otherLabel);
-
-  fr.setStackHeight(savedHeight);
-
-  // Where the try branch jumps to, if it's not dead.
-  if (tryDelegate.label.used()) {
-    masm.bind(&tryDelegate.label);
+  if (&target == &lastBlock) {
+    // A delegate targeting the function body block means that any exception
+    // in this try needs to be propagated to the caller function. We use the
+    // delegate code offset of `0` as that will be in the prologue and cannot
+    // have a try note.
+    delegateTryNote.setDelegate(0);
+  } else {
+    // Delegate to one byte inside the beginning of the target try note, as
+    // that's when matches hit. Try notes are guaranteed to not be empty either
+    // and so this will not miss either.
+    const TryNote& targetTryNote = tryNotes[target.tryNoteIndex];
+    delegateTryNote.setDelegate(targetTryNote.tryBodyBegin() + 1);
   }
 
-  captureResultRegisters(resultType);
-  bceSafe_ = tryDelegate.bceSafeOnExit;
-
-  return pushBlockResults(resultType);
+  return true;
 }
 
 bool BaseCompiler::endTryCatch(ResultType type) {
@@ -4624,7 +4573,6 @@ bool BaseCompiler::endTryCatch(ResultType type) {
   // Create landing pad for all catch handlers in this block.
   // When used for a catchless try block, this will generate a landing pad
   // with no handlers and only the fall-back rethrow.
-  masm.bind(&tryCatch.otherLabel);
 
   // The stack height also needs to be set not for a block result, but for the
   // entry to the exception handlers. This is reset again below for the join.
@@ -5286,7 +5234,7 @@ bool BaseCompiler::emitReturnCallIndirect() {
 }
 #endif
 
-#ifdef ENABLE_WASM_FUNCTION_REFERENCES
+#ifdef ENABLE_WASM_GC
 bool BaseCompiler::emitCallRef() {
   const FuncType* funcType;
   Nothing unused_callee;
@@ -6289,7 +6237,7 @@ bool BaseCompiler::emitRefIsNull() {
   return true;
 }
 
-#ifdef ENABLE_WASM_FUNCTION_REFERENCES
+#ifdef ENABLE_WASM_GC
 bool BaseCompiler::emitRefAsNonNull() {
   Nothing nothing;
   if (!iter_.readRefAsNonNull(&nothing)) {
@@ -9776,13 +9724,13 @@ bool BaseCompiler::emitCallBuiltinModuleFunc() {
     return true;
   }
 
-  if (builtinModuleFunc->usesMemory) {
+  if (builtinModuleFunc->usesMemory()) {
     // The final parameter of an builtinModuleFunc is implicitly the heap base
     pushHeapBase(0);
   }
 
   // Call the builtinModuleFunc
-  return emitInstanceCall(builtinModuleFunc->signature);
+  return emitInstanceCall(*builtinModuleFunc->sig());
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -9989,36 +9937,18 @@ bool BaseCompiler::emitBody() {
       case uint16_t(Op::Else):
         CHECK_NEXT(emitElse());
       case uint16_t(Op::Try):
-        if (!moduleEnv_.exceptionsEnabled()) {
-          return iter_.unrecognizedOpcode(&op);
-        }
         CHECK_NEXT(emitTry());
       case uint16_t(Op::Catch):
-        if (!moduleEnv_.exceptionsEnabled()) {
-          return iter_.unrecognizedOpcode(&op);
-        }
         CHECK_NEXT(emitCatch());
       case uint16_t(Op::CatchAll):
-        if (!moduleEnv_.exceptionsEnabled()) {
-          return iter_.unrecognizedOpcode(&op);
-        }
         CHECK_NEXT(emitCatchAll());
       case uint16_t(Op::Delegate):
-        if (!moduleEnv_.exceptionsEnabled()) {
-          return iter_.unrecognizedOpcode(&op);
-        }
         CHECK(emitDelegate());
         iter_.popDelegate();
         NEXT();
       case uint16_t(Op::Throw):
-        if (!moduleEnv_.exceptionsEnabled()) {
-          return iter_.unrecognizedOpcode(&op);
-        }
         CHECK_NEXT(emitThrow());
       case uint16_t(Op::Rethrow):
-        if (!moduleEnv_.exceptionsEnabled()) {
-          return iter_.unrecognizedOpcode(&op);
-        }
         CHECK_NEXT(emitRethrow());
       case uint16_t(Op::ThrowRef):
         if (!moduleEnv_.exnrefEnabled()) {
@@ -10063,16 +9993,15 @@ bool BaseCompiler::emitBody() {
         }
         CHECK_NEXT(emitReturnCallIndirect());
 #endif
-#ifdef ENABLE_WASM_FUNCTION_REFERENCES
+#ifdef ENABLE_WASM_GC
       case uint16_t(Op::CallRef):
-        if (!moduleEnv_.functionReferencesEnabled()) {
+        if (!moduleEnv_.gcEnabled()) {
           return iter_.unrecognizedOpcode(&op);
         }
         CHECK_NEXT(emitCallRef());
 #  ifdef ENABLE_WASM_TAIL_CALLS
       case uint16_t(Op::ReturnCallRef):
-        if (!moduleEnv_.functionReferencesEnabled() ||
-            !moduleEnv_.tailCallsEnabled()) {
+        if (!moduleEnv_.gcEnabled() || !moduleEnv_.tailCallsEnabled()) {
           return iter_.unrecognizedOpcode(&op);
         }
         CHECK_NEXT(emitReturnCallRef());
@@ -10609,19 +10538,19 @@ bool BaseCompiler::emitBody() {
       case uint16_t(Op::MemorySize):
         CHECK_NEXT(emitMemorySize());
 
-#ifdef ENABLE_WASM_FUNCTION_REFERENCES
+#ifdef ENABLE_WASM_GC
       case uint16_t(Op::RefAsNonNull):
-        if (!moduleEnv_.functionReferencesEnabled()) {
+        if (!moduleEnv_.gcEnabled()) {
           return iter_.unrecognizedOpcode(&op);
         }
         CHECK_NEXT(emitRefAsNonNull());
       case uint16_t(Op::BrOnNull):
-        if (!moduleEnv_.functionReferencesEnabled()) {
+        if (!moduleEnv_.gcEnabled()) {
           return iter_.unrecognizedOpcode(&op);
         }
         CHECK_NEXT(emitBrOnNull());
       case uint16_t(Op::BrOnNonNull):
-        if (!moduleEnv_.functionReferencesEnabled()) {
+        if (!moduleEnv_.gcEnabled()) {
           return iter_.unrecognizedOpcode(&op);
         }
         CHECK_NEXT(emitBrOnNonNull());
@@ -11484,113 +11413,113 @@ bool BaseCompiler::emitBody() {
 
           case uint32_t(ThreadOp::I32AtomicAdd):
             CHECK_NEXT(
-                emitAtomicRMW(ValType::I32, Scalar::Int32, AtomicFetchAddOp));
+                emitAtomicRMW(ValType::I32, Scalar::Int32, AtomicOp::Add));
           case uint32_t(ThreadOp::I64AtomicAdd):
             CHECK_NEXT(
-                emitAtomicRMW(ValType::I64, Scalar::Int64, AtomicFetchAddOp));
+                emitAtomicRMW(ValType::I64, Scalar::Int64, AtomicOp::Add));
           case uint32_t(ThreadOp::I32AtomicAdd8U):
             CHECK_NEXT(
-                emitAtomicRMW(ValType::I32, Scalar::Uint8, AtomicFetchAddOp));
+                emitAtomicRMW(ValType::I32, Scalar::Uint8, AtomicOp::Add));
           case uint32_t(ThreadOp::I32AtomicAdd16U):
             CHECK_NEXT(
-                emitAtomicRMW(ValType::I32, Scalar::Uint16, AtomicFetchAddOp));
+                emitAtomicRMW(ValType::I32, Scalar::Uint16, AtomicOp::Add));
           case uint32_t(ThreadOp::I64AtomicAdd8U):
             CHECK_NEXT(
-                emitAtomicRMW(ValType::I64, Scalar::Uint8, AtomicFetchAddOp));
+                emitAtomicRMW(ValType::I64, Scalar::Uint8, AtomicOp::Add));
           case uint32_t(ThreadOp::I64AtomicAdd16U):
             CHECK_NEXT(
-                emitAtomicRMW(ValType::I64, Scalar::Uint16, AtomicFetchAddOp));
+                emitAtomicRMW(ValType::I64, Scalar::Uint16, AtomicOp::Add));
           case uint32_t(ThreadOp::I64AtomicAdd32U):
             CHECK_NEXT(
-                emitAtomicRMW(ValType::I64, Scalar::Uint32, AtomicFetchAddOp));
+                emitAtomicRMW(ValType::I64, Scalar::Uint32, AtomicOp::Add));
 
           case uint32_t(ThreadOp::I32AtomicSub):
             CHECK_NEXT(
-                emitAtomicRMW(ValType::I32, Scalar::Int32, AtomicFetchSubOp));
+                emitAtomicRMW(ValType::I32, Scalar::Int32, AtomicOp::Sub));
           case uint32_t(ThreadOp::I64AtomicSub):
             CHECK_NEXT(
-                emitAtomicRMW(ValType::I64, Scalar::Int64, AtomicFetchSubOp));
+                emitAtomicRMW(ValType::I64, Scalar::Int64, AtomicOp::Sub));
           case uint32_t(ThreadOp::I32AtomicSub8U):
             CHECK_NEXT(
-                emitAtomicRMW(ValType::I32, Scalar::Uint8, AtomicFetchSubOp));
+                emitAtomicRMW(ValType::I32, Scalar::Uint8, AtomicOp::Sub));
           case uint32_t(ThreadOp::I32AtomicSub16U):
             CHECK_NEXT(
-                emitAtomicRMW(ValType::I32, Scalar::Uint16, AtomicFetchSubOp));
+                emitAtomicRMW(ValType::I32, Scalar::Uint16, AtomicOp::Sub));
           case uint32_t(ThreadOp::I64AtomicSub8U):
             CHECK_NEXT(
-                emitAtomicRMW(ValType::I64, Scalar::Uint8, AtomicFetchSubOp));
+                emitAtomicRMW(ValType::I64, Scalar::Uint8, AtomicOp::Sub));
           case uint32_t(ThreadOp::I64AtomicSub16U):
             CHECK_NEXT(
-                emitAtomicRMW(ValType::I64, Scalar::Uint16, AtomicFetchSubOp));
+                emitAtomicRMW(ValType::I64, Scalar::Uint16, AtomicOp::Sub));
           case uint32_t(ThreadOp::I64AtomicSub32U):
             CHECK_NEXT(
-                emitAtomicRMW(ValType::I64, Scalar::Uint32, AtomicFetchSubOp));
+                emitAtomicRMW(ValType::I64, Scalar::Uint32, AtomicOp::Sub));
 
           case uint32_t(ThreadOp::I32AtomicAnd):
             CHECK_NEXT(
-                emitAtomicRMW(ValType::I32, Scalar::Int32, AtomicFetchAndOp));
+                emitAtomicRMW(ValType::I32, Scalar::Int32, AtomicOp::And));
           case uint32_t(ThreadOp::I64AtomicAnd):
             CHECK_NEXT(
-                emitAtomicRMW(ValType::I64, Scalar::Int64, AtomicFetchAndOp));
+                emitAtomicRMW(ValType::I64, Scalar::Int64, AtomicOp::And));
           case uint32_t(ThreadOp::I32AtomicAnd8U):
             CHECK_NEXT(
-                emitAtomicRMW(ValType::I32, Scalar::Uint8, AtomicFetchAndOp));
+                emitAtomicRMW(ValType::I32, Scalar::Uint8, AtomicOp::And));
           case uint32_t(ThreadOp::I32AtomicAnd16U):
             CHECK_NEXT(
-                emitAtomicRMW(ValType::I32, Scalar::Uint16, AtomicFetchAndOp));
+                emitAtomicRMW(ValType::I32, Scalar::Uint16, AtomicOp::And));
           case uint32_t(ThreadOp::I64AtomicAnd8U):
             CHECK_NEXT(
-                emitAtomicRMW(ValType::I64, Scalar::Uint8, AtomicFetchAndOp));
+                emitAtomicRMW(ValType::I64, Scalar::Uint8, AtomicOp::And));
           case uint32_t(ThreadOp::I64AtomicAnd16U):
             CHECK_NEXT(
-                emitAtomicRMW(ValType::I64, Scalar::Uint16, AtomicFetchAndOp));
+                emitAtomicRMW(ValType::I64, Scalar::Uint16, AtomicOp::And));
           case uint32_t(ThreadOp::I64AtomicAnd32U):
             CHECK_NEXT(
-                emitAtomicRMW(ValType::I64, Scalar::Uint32, AtomicFetchAndOp));
+                emitAtomicRMW(ValType::I64, Scalar::Uint32, AtomicOp::And));
 
           case uint32_t(ThreadOp::I32AtomicOr):
             CHECK_NEXT(
-                emitAtomicRMW(ValType::I32, Scalar::Int32, AtomicFetchOrOp));
+                emitAtomicRMW(ValType::I32, Scalar::Int32, AtomicOp::Or));
           case uint32_t(ThreadOp::I64AtomicOr):
             CHECK_NEXT(
-                emitAtomicRMW(ValType::I64, Scalar::Int64, AtomicFetchOrOp));
+                emitAtomicRMW(ValType::I64, Scalar::Int64, AtomicOp::Or));
           case uint32_t(ThreadOp::I32AtomicOr8U):
             CHECK_NEXT(
-                emitAtomicRMW(ValType::I32, Scalar::Uint8, AtomicFetchOrOp));
+                emitAtomicRMW(ValType::I32, Scalar::Uint8, AtomicOp::Or));
           case uint32_t(ThreadOp::I32AtomicOr16U):
             CHECK_NEXT(
-                emitAtomicRMW(ValType::I32, Scalar::Uint16, AtomicFetchOrOp));
+                emitAtomicRMW(ValType::I32, Scalar::Uint16, AtomicOp::Or));
           case uint32_t(ThreadOp::I64AtomicOr8U):
             CHECK_NEXT(
-                emitAtomicRMW(ValType::I64, Scalar::Uint8, AtomicFetchOrOp));
+                emitAtomicRMW(ValType::I64, Scalar::Uint8, AtomicOp::Or));
           case uint32_t(ThreadOp::I64AtomicOr16U):
             CHECK_NEXT(
-                emitAtomicRMW(ValType::I64, Scalar::Uint16, AtomicFetchOrOp));
+                emitAtomicRMW(ValType::I64, Scalar::Uint16, AtomicOp::Or));
           case uint32_t(ThreadOp::I64AtomicOr32U):
             CHECK_NEXT(
-                emitAtomicRMW(ValType::I64, Scalar::Uint32, AtomicFetchOrOp));
+                emitAtomicRMW(ValType::I64, Scalar::Uint32, AtomicOp::Or));
 
           case uint32_t(ThreadOp::I32AtomicXor):
             CHECK_NEXT(
-                emitAtomicRMW(ValType::I32, Scalar::Int32, AtomicFetchXorOp));
+                emitAtomicRMW(ValType::I32, Scalar::Int32, AtomicOp::Xor));
           case uint32_t(ThreadOp::I64AtomicXor):
             CHECK_NEXT(
-                emitAtomicRMW(ValType::I64, Scalar::Int64, AtomicFetchXorOp));
+                emitAtomicRMW(ValType::I64, Scalar::Int64, AtomicOp::Xor));
           case uint32_t(ThreadOp::I32AtomicXor8U):
             CHECK_NEXT(
-                emitAtomicRMW(ValType::I32, Scalar::Uint8, AtomicFetchXorOp));
+                emitAtomicRMW(ValType::I32, Scalar::Uint8, AtomicOp::Xor));
           case uint32_t(ThreadOp::I32AtomicXor16U):
             CHECK_NEXT(
-                emitAtomicRMW(ValType::I32, Scalar::Uint16, AtomicFetchXorOp));
+                emitAtomicRMW(ValType::I32, Scalar::Uint16, AtomicOp::Xor));
           case uint32_t(ThreadOp::I64AtomicXor8U):
             CHECK_NEXT(
-                emitAtomicRMW(ValType::I64, Scalar::Uint8, AtomicFetchXorOp));
+                emitAtomicRMW(ValType::I64, Scalar::Uint8, AtomicOp::Xor));
           case uint32_t(ThreadOp::I64AtomicXor16U):
             CHECK_NEXT(
-                emitAtomicRMW(ValType::I64, Scalar::Uint16, AtomicFetchXorOp));
+                emitAtomicRMW(ValType::I64, Scalar::Uint16, AtomicOp::Xor));
           case uint32_t(ThreadOp::I64AtomicXor32U):
             CHECK_NEXT(
-                emitAtomicRMW(ValType::I64, Scalar::Uint32, AtomicFetchXorOp));
+                emitAtomicRMW(ValType::I64, Scalar::Uint32, AtomicOp::Xor));
 
           case uint32_t(ThreadOp::I32AtomicXchg):
             CHECK_NEXT(emitAtomicXchg(ValType::I32, Scalar::Int32));
@@ -11851,6 +11780,8 @@ BaseCompiler::BaseCompiler(const ModuleEnvironment& moduleEnv,
       stackMapGenerator_(stackMaps, trapExitLayout, trapExitLayoutNumWords,
                          *masm),
       deadCode_(false),
+      // Init value is selected to ensure proper logic in finishTryNote.
+      mostRecentFinishedTryNoteIndex_(0),
       bceSafe_(0),
       latentOp_(LatentOp::None),
       latentType_(ValType::I32),
@@ -11979,10 +11910,7 @@ bool js::wasm::BaselineCompileFunctions(const ModuleEnvironment& moduleEnv,
     // Build the local types vector.
 
     ValTypeVector locals;
-    if (!locals.appendAll(moduleEnv.funcs[func.index].type->args())) {
-      return false;
-    }
-    if (!DecodeLocalEntries(d, *moduleEnv.types, moduleEnv.features, &locals)) {
+    if (!DecodeLocalEntriesWithParams(d, moduleEnv, func.index, &locals)) {
       return false;
     }
 

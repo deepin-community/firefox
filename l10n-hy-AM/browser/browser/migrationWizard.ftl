@@ -2,7 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-migration-wizard-selection-header = Ներմուծեք զննարկիչի տվյալները
+migration-wizard-selection-header = Ներմուծեք դիտարկիչի տվյալները
 # Shown in the new migration wizard's dropdown selector for choosing the browser
 # to import from. This variant is shown when the selected browser doesn't support
 # user profiles, and so we only show the browser name.
@@ -51,10 +51,15 @@ migration-imported-edge-reading-list = Ընթերցացուցակ (Edge-ից)
 ## In practice, this tends to only occur on Linux when Firefox
 ## is installed as a Snap.
 
+migration-no-permissions-message = { -brand-short-name }-ը հասանելություն չունի այս սարքում տեղադրված այլ դիտարկիչների պրոֆիլներին:
+migration-no-permissions-instructions = Տվյալների ներմուծումը շարունակելու համար՝ տվեք { -brand-short-name }-ին իր պրոֆիլի թղթապանակի հասանելիություն:
 migration-no-permissions-instructions-step1 = Ընտրեք «Շարունակել»
 
 ## These strings will be displayed based on how many resources are selected to import
 
+migration-all-available-data-label = Ներմուծել բոլոր հասանելի տվյալները
+migration-no-selected-data-label = Ներմուծման համար տվյալներ չկան
+migration-selected-data-label = Ներմուծել ընտրված տվյալները
 
 ##
 
@@ -65,8 +70,9 @@ migration-bookmarks-option-label = Էջանիշեր
 migration-favorites-option-label = Ընտրյալներ
 migration-logins-and-passwords-option-label = Պահված մուտքագրումներ և գաղտնաբառեր
 migration-passwords-option-label = Պահված գաղտնաբառեր
-migration-history-option-label = Զննարկման պատմությունը
+migration-history-option-label = Դիտարկման պատմություն
 migration-extensions-option-label = Ընդլայնումներ
+migration-form-autofill-option-label = Ձևաթղթի ինքնալրացման տվյալները
 migration-payment-methods-option-label = Վճարամիջոցներ
 migration-cookies-option-label = Թխուկներ
 migration-session-option-label = Պատուհաններ և Ներդիրներ
@@ -114,6 +120,7 @@ migration-wizard-progress-success-updated-passwords =
 migration-bookmarks-from-file-picker-title = Ներմուծել էջանիշերի ֆայլը
 migration-bookmarks-from-file-progress-header = Էջանիշների ներմուծում
 migration-bookmarks-from-file = Էջանիշեր
+migration-bookmarks-from-file-success-header = Էջանիշները հաջողությամբ ներմուծվեցին
 # A description for the .html file format that may be shown as the file type
 # filter by the operating system.
 migration-bookmarks-from-file-html-filter-title =
@@ -224,6 +231,10 @@ migration-wizard-progress-success-extensions =
 #   $matched (Number): the number of matched imported extensions
 #   $quantity (Number): the number of total extensions found during import
 migration-wizard-progress-partial-success-extensions = { $matched }-ը { $quantity } ընդլայնումներից
+# Shown in the migration wizard if there are no matched extensions
+# on import from supported browsers.
+migration-wizard-progress-no-matched-extensions = Համապատասխան ընդլայնումներ չկան
+migration-wizard-progress-extensions-addons-link = Ընտրեք ընդլայնումներ { -brand-short-name }-ի համար
 
 ##
 
@@ -236,6 +247,16 @@ migration-wizard-progress-success-passwords =
     { $quantity ->
         [one] { $quantity } գաղտնաբառ
        *[other] { $quantity } գաղտնաբառ
+    }
+# Shown in the migration wizard after importing history from another
+# browser has completed.
+#
+# Variables:
+#  $maxAgeInDays (Number): the maximum number of days of history that might be imported.
+migration-wizard-progress-success-history =
+    { $maxAgeInDays ->
+        [one] Վերջին օրից
+       *[other] Վերջին { $maxAgeInDays } օրից
     }
 migration-wizard-progress-success-formdata = Ձևերի պատմություն
 # Shown in the migration wizard after importing payment methods from another

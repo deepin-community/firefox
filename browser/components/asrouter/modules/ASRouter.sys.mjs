@@ -55,7 +55,6 @@ ChromeUtils.defineESModuleGetters(lazy, {
   Spotlight: "resource:///modules/asrouter/Spotlight.sys.mjs",
   ToastNotification: "resource:///modules/asrouter/ToastNotification.sys.mjs",
   ToolbarBadgeHub: "resource:///modules/asrouter/ToolbarBadgeHub.sys.mjs",
-  ToolbarPanelHub: "resource:///modules/asrouter/ToolbarPanelHub.sys.mjs",
 });
 
 XPCOMUtils.defineLazyServiceGetters(lazy, {
@@ -67,7 +66,7 @@ ChromeUtils.defineLazyGetter(lazy, "log", () => {
   );
   return new Logger("ASRouter");
 });
-import { actionCreators as ac } from "resource://activity-stream/common/Actions.sys.mjs";
+import { actionCreators as ac } from "resource://activity-stream/common/Actions.mjs";
 import { MESSAGING_EXPERIMENTS_DEFAULT_FEATURES } from "resource:///modules/asrouter/MessagingExperimentConstants.sys.mjs";
 import { CFRMessageProvider } from "resource:///modules/asrouter/CFRMessageProvider.sys.mjs";
 import { OnboardingMessageProvider } from "resource:///modules/asrouter/OnboardingMessageProvider.sys.mjs";
@@ -106,18 +105,10 @@ const TOPIC_EXPERIMENT_ENROLLMENT_CHANGED = "nimbus:enrollments-updated";
 const USE_REMOTE_L10N_PREF =
   "browser.newtabpage.activity-stream.asrouter.useRemoteL10n";
 
-// Experiment groups that need to report the reach event in Messaging-Experiments.
-// If you're adding new groups to it, make sure they're also added in the
-// `messaging_experiments.reach.objects` defined in "toolkit/components/telemetry/Events.yaml"
-const REACH_EVENT_GROUPS = [
-  "cfr",
-  "moments-page",
-  "infobar",
-  "spotlight",
-  "featureCallout",
-];
 const REACH_EVENT_CATEGORY = "messaging_experiments";
 const REACH_EVENT_METHOD = "reach";
+// Reach for the pbNewtab feature will be added in bug 1755401
+const NO_REACH_EVENT_GROUPS = ["pbNewtab"];
 
 export const MessageLoaderUtils = {
   STARTPAGE_VERSION,
@@ -405,7 +396,11 @@ export const MessageLoaderUtils = {
       // Add Reach messages from unenrolled sibling branches, provided we are
       // recording Reach events for this feature. If we are in a rollout, we do
       // not have sibling branches.
-      if (!REACH_EVENT_GROUPS.includes(featureId) || !experimentData) {
+      if (
+        NO_REACH_EVENT_GROUPS.includes(featureId) ||
+        !MESSAGING_EXPERIMENTS_DEFAULT_FEATURES.includes(featureId) ||
+        !experimentData
+      ) {
         continue;
       }
 
@@ -624,7 +619,6 @@ export class _ASRouter {
     this._onLocaleChanged = this._onLocaleChanged.bind(this);
     this.isUnblockedMessage = this.isUnblockedMessage.bind(this);
     this.unblockAll = this.unblockAll.bind(this);
-    this.forceWNPanel = this.forceWNPanel.bind(this);
     this._onExperimentEnrollmentsUpdated =
       this._onExperimentEnrollmentsUpdated.bind(this);
     this.forcePBWindow = this.forcePBWindow.bind(this);
@@ -947,7 +941,7 @@ export class _ASRouter {
     return this.state;
   }
 
-  async _onLocaleChanged(subject, topic, data) {
+  async _onLocaleChanged() {
     await this._maybeUpdateL10nAttachment();
   }
 
@@ -997,10 +991,6 @@ export class _ASRouter {
       addImpression: this.addImpression,
       blockMessageById: this.blockMessageById,
       unblockMessageById: this.unblockMessageById,
-      sendTelemetry: this.sendTelemetry,
-    });
-    lazy.ToolbarPanelHub.init(this.waitForInitialized, {
-      getMessages: this.handleMessageRequest,
       sendTelemetry: this.sendTelemetry,
     });
     lazy.MomentsPageHub.init(this.waitForInitialized, {
@@ -1059,7 +1049,6 @@ export class _ASRouter {
 
     lazy.ASRouterPreferences.removeListener(this.onPrefChange);
     lazy.ASRouterPreferences.uninit();
-    lazy.ToolbarPanelHub.uninit();
     lazy.ToolbarBadgeHub.uninit();
     lazy.MomentsPageHub.uninit();
 
@@ -1313,16 +1302,6 @@ export class _ASRouter {
     return true;
   }
 
-  async _extraTemplateStrings(originalMessage) {
-    let extraTemplateStrings;
-    let localProvider = this._findProvider(originalMessage.provider);
-    if (localProvider && localProvider.getExtraAttributes) {
-      extraTemplateStrings = await localProvider.getExtraAttributes();
-    }
-
-    return extraTemplateStrings;
-  }
-
   _findProvider(providerID) {
     return this._localProviders[
       this.state.providers.find(i => i.id === providerID).localProvider
@@ -1350,11 +1329,6 @@ export class _ASRouter {
     }
 
     switch (message.template) {
-      case "whatsnew_panel_message":
-        if (force) {
-          lazy.ToolbarPanelHub.forceShowMessage(browser, message);
-        }
-        break;
       case "cfr_doorhanger":
       case "milestone_message":
         if (force) {
@@ -1743,7 +1717,7 @@ export class _ASRouter {
     }
     // Update storage
     this._storage.set("groupImpressions", newGroupImpressions);
-    return this.setState(({ groups }) => ({
+    return this.setState(() => ({
       groupImpressions: newGroupImpressions,
     }));
   }
@@ -2007,29 +1981,6 @@ export class _ASRouter {
       trigger,
       false
     );
-  }
-
-  async forceWNPanel(browser) {
-    let win = browser.ownerGlobal;
-    await lazy.ToolbarPanelHub.enableToolbarButton();
-
-    win.PanelUI.showSubView(
-      "PanelUI-whatsNew",
-      win.document.getElementById("whats-new-menu-button")
-    );
-
-    let panel = win.document.getElementById("customizationui-widget-panel");
-    // Set the attribute to keep the panel open
-    panel.setAttribute("noautohide", true);
-  }
-
-  async closeWNPanel(browser) {
-    let win = browser.ownerGlobal;
-    let panel = win.document.getElementById("customizationui-widget-panel");
-    // Set the attribute to allow the panel to close
-    panel.setAttribute("noautohide", false);
-    // Removing the button is enough to close the panel.
-    await lazy.ToolbarPanelHub._hideToolbarButton(win);
   }
 
   async _onExperimentEnrollmentsUpdated() {

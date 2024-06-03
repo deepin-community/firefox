@@ -14,12 +14,6 @@ let ignoreList = [
   { sourceName: /codemirror\.css$/i, isFromDevTools: true },
   // UA-only media features.
   {
-    sourceName: /\b(autocomplete-item)\.css$/,
-    errorMessage: /Expected media feature name but found \u2018-moz.*/i,
-    isFromDevTools: false,
-    platforms: ["windows"],
-  },
-  {
     sourceName:
       /\b(contenteditable|EditorOverride|svg|forms|html|mathml|ua)\.css$/i,
     errorMessage: /Unknown pseudo-class.*-moz-/i,
@@ -27,7 +21,7 @@ let ignoreList = [
   },
   {
     sourceName:
-      /\b(scrollbars|xul|html|mathml|ua|forms|svg|manageDialog|autocomplete-item-shared|formautofill)\.css$/i,
+      /\b(scrollbars|xul|html|mathml|ua|forms|svg|manageDialog|formautofill)\.css$/i,
     errorMessage: /Unknown property.*-moz-/i,
     isFromDevTools: false,
   },
@@ -64,24 +58,6 @@ if (!Services.prefs.getBoolPref("layout.css.zoom.enabled")) {
   ignoreList.push({
     sourceName: /\bscrollbars\.css$/i,
     errorMessage: /Error in parsing value for ‘zoom’/i,
-    isFromDevTools: false,
-  });
-}
-
-if (!Services.prefs.getBoolPref("layout.css.math-depth.enabled")) {
-  // mathml.css UA sheet rule for math-depth.
-  ignoreList.push({
-    sourceName: /\b(scrollbars|mathml)\.css$/i,
-    errorMessage: /Unknown property .*\bmath-depth\b/i,
-    isFromDevTools: false,
-  });
-}
-
-if (!Services.prefs.getBoolPref("layout.css.math-style.enabled")) {
-  // mathml.css UA sheet rule for math-style.
-  ignoreList.push({
-    sourceName: /(?:res|gre-resources)\/mathml\.css$/i,
-    errorMessage: /Unknown property .*\bmath-style\b/i,
     isFromDevTools: false,
   });
 }
@@ -141,6 +117,8 @@ let propNameAllowlist = [
     isFromDevTools: false,
   },
   { propName: "--browser-stack-z-index-rdm-toolbar", isFromDevTools: false },
+  // about:profiling is in devtools even though it uses non-devtools styles.
+  { propName: "--in-content-border-hover", isFromDevTools: false },
 
   // These variables are specified from devtools but read from non-devtools
   // styles, which confuses the test.
@@ -452,13 +430,13 @@ add_task(async function checkAllTheCSS() {
   let loadCSS = chromeUri =>
     new Promise(resolve => {
       let linkEl, onLoad, onError;
-      onLoad = e => {
+      onLoad = () => {
         processCSSRules(linkEl.sheet);
         resolve();
         linkEl.removeEventListener("load", onLoad);
         linkEl.removeEventListener("error", onError);
       };
-      onError = e => {
+      onError = () => {
         ok(
           false,
           "Loading " + linkEl.getAttribute("href") + " threw an error!"

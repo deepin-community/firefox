@@ -8,6 +8,7 @@ from configparser import RawConfigParser
 from io import StringIO
 
 import ipdl
+from ipdl.ast import SYNC
 
 
 def log(minv, fmt, *args):
@@ -77,14 +78,30 @@ A protocol Foo in the namespace bar will cause the sources
   cppdir/FooParent.cpp, cppdir/FooChild.cpp
 to be generated""",
 )
+op.add_option(
+    "-F",
+    "--file-list",
+    dest="file_list_file",
+    default=None,
+    help="""A file containing IPDL files to parse. This will be
+merged with files provided on the commandline.""",
+)
 
-options, files = op.parse_args()
+options, cmdline_files = op.parse_args()
 _verbosity = options.verbosity
 syncMsgList = options.syncMsgList
 msgMetadata = options.msgMetadata
 headersdir = options.headersdir
 cppdir = options.cppdir
 includedirs = [os.path.abspath(incdir) for incdir in options.includedirs]
+
+files = []
+
+if options.file_list_file is not None:
+    with open(options.file_list_file) as f:
+        files.extend(f.read().splitlines())
+
+files.extend(cmdline_files)
 
 if not len(files):
     op.error("No IPDL files specified")
@@ -96,6 +113,7 @@ log(2, 'Generated C++ headers will be generated relative to "%s"', headersdir)
 log(2, 'Generated C++ sources will be generated in "%s"', cppdir)
 
 allmessages = {}
+allsyncmessages = []
 allmessageprognames = []
 allprotocols = []
 
@@ -172,9 +190,15 @@ for f in files:
     if ast.protocol:
         allmessages[ast.protocol.name] = ipdl.genmsgenum(ast)
         allprotocols.append(ast.protocol.name)
+
         # e.g. PContent::RequestMemoryReport (not prefixed or suffixed.)
         for md in ast.protocol.messageDecls:
             allmessageprognames.append("%s::%s" % (md.namespace, md.decl.progname))
+
+            if md.sendSemantics is SYNC:
+                allsyncmessages.append(
+                    "%s__%s" % (ast.protocol.name, md.prettyMsgName())
+                )
 
 allprotocols.sort()
 
@@ -247,6 +271,23 @@ print(
 } // anonymous namespace
 
 namespace IPC {
+
+bool IPCMessageTypeIsSync(uint32_t aMessageType)
+{
+  switch (aMessageType) {
+""",
+    file=ipc_msgtype_name,
+)
+
+for msg in allsyncmessages:
+    print("  case %s:" % msg, file=ipc_msgtype_name)
+
+print(
+    """    return true;
+  default:
+    return false;
+  }
+}
 
 const char* StringFromIPCMessageType(uint32_t aMessageType)
 {

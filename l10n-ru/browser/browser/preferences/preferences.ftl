@@ -32,6 +32,8 @@ search-input-box2 =
     .style = width: 15.4em
     .placeholder = Найти в Настройках
 managed-notice = Ваш браузер управляется Вашей организацией.
+managed-notice-info-icon =
+    .alt = Информация
 category-list =
     .aria-label = Категории
 pane-general-title = Основные
@@ -712,6 +714,13 @@ sync-mobile-promo = Загрузите Firefox для <img data-l10n-name="andro
 
 sync-profile-picture =
     .tooltiptext = Изменить фотографию в профиле
+sync-profile-picture-with-alt =
+    .tooltiptext = Изменить фотографию в профиле
+    .alt = Изменить фотографию в профиле
+sync-profile-picture-account-problem =
+    .alt = Фото профиля аккаунта
+fxa-login-rejected-warning =
+    .alt = Предупреждение
 sync-sign-out =
     .label = Выйти…
     .accesskey = ы
@@ -1278,6 +1287,8 @@ addon-recommendations-link = Подробнее
 # or builds with no Telemetry support available.
 collection-health-report-disabled = Для этой конфигурации сборки отправка данных отключена
 collection-backlogged-crash-reports-with-link = Разрешить { -brand-short-name } отправлять от вашего имени накопившиеся сообщения о его падениях <a data-l10n-name="crash-reports-link">Подробнее</a>
+    .accesskey = ш
+collection-backlogged-crash-reports = Разрешить { -brand-short-name } отправлять от вашего имени накопившиеся сообщения о его падениях
     .accesskey = ш
 privacy-segmentation-section-header = Новые возможности, улучшающие ваш просмотр сети
 privacy-segmentation-section-description = Когда мы предлагаем возможности, которые используют ваши данные, чтобы улучшить персонализацию браузера:

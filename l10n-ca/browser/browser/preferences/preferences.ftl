@@ -700,6 +700,9 @@ sync-mobile-promo = Baixeu el Firefox per a l'<img data-l10n-name="android-icon"
 
 sync-profile-picture =
     .tooltiptext = Canvia la imatge de perfil
+sync-profile-picture-with-alt =
+    .tooltiptext = Canvia la imatge de perfil
+    .alt = Canvia la imatge de perfil
 sync-sign-out =
     .label = Tanca la sessió…
     .accesskey = T
@@ -1238,6 +1241,8 @@ addon-recommendations-link = Més informació
 # or builds with no Telemetry support available.
 collection-health-report-disabled = L'informe de dades està desactivat en la configuració d'aquesta versió
 collection-backlogged-crash-reports-with-link = Permet que el { -brand-short-name } enviï els informes de fallada pendents automàticament <a data-l10n-name="crash-reports-link">Més informació</a>
+    .accesskey = f
+collection-backlogged-crash-reports = Permet que el { -brand-short-name } enviï els informes de fallada pendents automàticament
     .accesskey = f
 privacy-segmentation-section-header = Noves funcions que milloren la navegació
 privacy-segmentation-section-description = Quan us oferim funcions que utilitzen les vostres dades per oferir-vos una experiència més personal:

@@ -28,6 +28,7 @@ policy-BlockAboutSupport = about:support sayfasına erişimi engelle.
 policy-Bookmarks = Yer imleri araç çubuğunda, yer imleri menüsünde veya bunların içindeki belli bir klasörde yer imi oluştur.
 policy-CaptivePortal = Kısıtlama portalı desteğini aç veya kapat.
 policy-CertificatesDescription = Sertifika ekle veya yerleşik sertifikaları kullan.
+policy-ContentAnalysis = data-loss-prevention istemci bağlantısını etkinleştir veya devre dışı bırak.
 policy-Cookies = Web sitelerinin çerez ayarlamasına izin ver veya verme.
 # Containers in this context is referring to container tabs in Firefox.
 policy-Containers = Kapsayıcılarla ilgili ilkeleri ayarla.
@@ -35,11 +36,14 @@ policy-DisableAccounts = Hesap tabanlı hizmetleri devre dışı bırak (eşitle
 policy-DisabledCiphers = Şifrelemeleri devre dışı bırak.
 policy-DefaultDownloadDirectory = Varsayılan indirme klasörünü ayarla.
 policy-DisableAppUpdate = Tarayıcının güncellenmesini engelle.
-policy-DisableBuiltinPDFViewer = Dahili { -brand-short-name } PDF göstericisi olan PDF.js’i devre dışı bırak.
+policy-DisableBuiltinPDFViewer = Dahili { -brand-short-name } PDF görüntüleyicisi olan PDF.js’i devre dışı bırak.
 policy-DisableDefaultBrowserAgent = Varsayılan tarayıcı agent’ının herhangi bir işlem yapmasını önle. Yalnızca Windows için geçerlidir. Diğer platformlarda agent yoktur.
 policy-DisableDeveloperTools = Geliştirici araçlarına erişimi engelle.
+policy-DisableEncryptedClientHello = Encrypted Client Hello (ECH) TLS özelliğini devre dışı bırak.
 policy-DisableFeedbackCommands = Yardım menüsünden geri bildirim göndermeye olanak sağlayan komutları (“Geri bildirim gönder” ve “Aldatıcı siteyi ihbar et”) devre dışı bırak.
 policy-DisableFirefoxAccounts = { -fxaccount-brand-name } tabanlı servisleri devre dışı bırak (Sync dahil).
+# This string is in the process of being deprecated in favor of policy-DisableAccounts.
+policy-DisableFirefoxAccounts1 = Hesap tabanlı hizmetleri devre dışı bırak (eşitleme dahil).
 # Firefox Screenshots is the name of the feature, and should not be translated.
 policy-DisableFirefoxScreenshots = Firefox Screenshots özelliğini devre dışı bırak.
 policy-DisableFirefoxStudies = { -brand-short-name } tarayıcısının araştırma yürütmesini engelle.
@@ -105,7 +109,7 @@ policy-OverridePostUpdatePage = Güncelleme sonrası “Yenilikler” sayfasın�
 policy-PasswordManagerEnabled = Parolaları parola yöneticisine kaydetmeyi aç.
 policy-PasswordManagerExceptions = { -brand-short-name } tarayıcısının belirli sitelerde parola kaydetmesini engelle.
 # PDF.js and PDF should not be translated
-policy-PDFjs = Dahili { -brand-short-name } PDF göstericisi olan PDF.js’i devre dışı bırak veya yapılandır.
+policy-PDFjs = Dahili { -brand-short-name } PDF görüntüleyicisi olan PDF.js’i devre dışı bırak veya yapılandır.
 policy-Permissions2 = Kamera, mikrofon, konum, bildirim ve otomatik oynatma izinlerini yapılandır.
 policy-PictureInPicture = Görüntü içinde görüntü özelliğini aç veya kapat.
 policy-PopupBlocking = Belirli web sitelerin varsayılan olarak açılır pencere açmasına izin ver.
@@ -124,6 +128,7 @@ policy-SSLVersionMax = Maksimum SSL sürümünü ayarla.
 policy-SSLVersionMin = Minimum SSL sürümünü ayarla.
 policy-StartDownloadsInTempDirectory = İndirmeleri varsayılan indirme dizini yerine geçici bir yerel konumda başlat.
 policy-SupportMenu = Yardım menüsüne özel bir destek menüsü öğesi ekle.
+policy-TranslateEnabled = Web sayfası çevirilerini etkinleştir veya devre dışı bırak.
 policy-UserMessaging = Kullanıcıya belirli mesajları gösterme.
 policy-UseSystemPrintDialog = Sistem yazdırma iletişim kutusunu kullanarak yazdır.
 # “format” refers to the format used for the value of this policy.

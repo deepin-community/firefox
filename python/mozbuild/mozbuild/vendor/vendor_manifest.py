@@ -348,6 +348,23 @@ class VendorManifest(MozbuildObject):
             from mozbuild.vendor.host_codeberg import CodebergHost
 
             return CodebergHost(self.manifest)
+        elif self.manifest["vendoring"]["source-hosting"] == "yaml-dir":
+            import importlib.util
+
+            modulename, classname = self.manifest["vendoring"][
+                "source-host-path"
+            ].rsplit(".", 1)
+            spec = importlib.util.spec_from_file_location(
+                modulename,
+                os.path.join(
+                    os.path.dirname(self.yaml_file),
+                    modulename.replace(".", os.sep) + ".py",
+                ),
+            )
+            module = importlib.util.module_from_spec(spec)
+            sys.modules[modulename] = module
+            spec.loader.exec_module(module)
+            return getattr(module, classname)(self.manifest)
         else:
             raise Exception(
                 "Unknown source host: " + self.manifest["vendoring"]["source-hosting"]
@@ -612,7 +629,7 @@ class VendorManifest(MozbuildObject):
                 if r[0] in l:
                     print("Found " + l)
                     replaced += 1
-                    yaml[i] = re.sub(r[0] + " [v\.a-f0-9]+.*$", r[0] + r[1], yaml[i])
+                    yaml[i] = re.sub(r[0] + r" [v\.a-f0-9]+.*$", r[0] + r[1], yaml[i])
 
         assert len(replacements) == replaced
 

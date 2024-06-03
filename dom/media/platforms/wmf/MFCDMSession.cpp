@@ -11,6 +11,7 @@
 #include "MFMediaEngineUtils.h"
 #include "GMPUtils.h"  // ToHexString
 #include "mozilla/EMEUtils.h"
+#include "mozilla/dom/BindingUtils.h"
 #include "mozilla/dom/MediaKeyMessageEventBinding.h"
 #include "mozilla/dom/MediaKeyStatusMapBinding.h"
 #include "nsThreadUtils.h"
@@ -244,7 +245,7 @@ void MFCDMSession::OnSessionKeysChange() {
     nsAutoCString keyIdString(ToHexString(keyId));
     LOG("Append keyid-sz=%u, keyid=%s, status=%s", keyStatus.cbKeyId,
         keyIdString.get(),
-        ToMediaKeyStatusStr(ToMediaKeyStatus(keyStatus.eMediaKeyStatus)));
+        dom::GetEnumString(ToMediaKeyStatus(keyStatus.eMediaKeyStatus)).get());
     keyInfos.AppendElement(MFCDMKeyInformation{
         std::move(keyId), ToMediaKeyStatus(keyStatus.eMediaKeyStatus)});
   }
@@ -304,8 +305,7 @@ void MFCDMSession::OnSessionKeyMessage(
       case MF_MEDIAKEYSESSION_MESSAGETYPE_INDIVIDUALIZATION_REQUEST:
         return dom::MediaKeyMessageType::Individualization_request;
       default:
-        MOZ_ASSERT_UNREACHABLE("Unknown session message type");
-        return dom::MediaKeyMessageType::EndGuard_;
+        MOZ_CRASH("Unknown session message type");
     }
   };
   LOG("Notify 'keymessage' for %s", NS_ConvertUTF16toUTF8(*mSessionId).get());

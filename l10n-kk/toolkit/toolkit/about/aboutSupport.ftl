@@ -428,3 +428,15 @@ pointing-device-mouse = Тышқан
 pointing-device-touchscreen = Тачскрин
 pointing-device-pen-digitizer = Қалам диджитайзері
 pointing-device-none = Көрсеткіш құрылғылары жоқ
+
+## Content Analysis (DLP)
+
+# DLP stands for Data Loss Prevention, an industry term for external software
+# that enterprises can set up to prevent sensitive data from being transferred
+# to external websites.
+content-analysis-title = Мазмұнды талдау (DLP)
+content-analysis-active = Белсенді
+content-analysis-connected-to-agent = Агентке байланысқан
+content-analysis-agent-path = Агент жолы
+content-analysis-agent-failed-signature-verification = Агент қолтаңбаны тексеруді сәтсіз аяқтады
+content-analysis-request-count = Сұраным саны

@@ -32,6 +32,8 @@ search-input-box2 =
     .style = width: 15.4em
     .placeholder = חיפוש בהגדרות
 managed-notice = הדפדפן שלך מנוהל על־ידי הארגון שלך.
+managed-notice-info-icon =
+    .alt = מידע
 category-list =
     .aria-label = קטגוריות
 pane-general-title = כללי
@@ -708,6 +710,13 @@ sync-mobile-promo = הורידו את Firefox עבור <img data-l10n-name="and
 
 sync-profile-picture =
     .tooltiptext = שינוי תמונת פרופיל
+sync-profile-picture-with-alt =
+    .tooltiptext = שינוי תמונת פרופיל
+    .alt = שינוי תמונת פרופיל
+sync-profile-picture-account-problem =
+    .alt = תמונת פרופיל חשבון
+fxa-login-rejected-warning =
+    .alt = אזהרה
 sync-sign-out =
     .label = התנתקות…
     .accesskey = ה
@@ -1270,6 +1279,8 @@ addon-recommendations-link = מידע נוסף
 # or builds with no Telemetry support available.
 collection-health-report-disabled = דיווח נתונים מנוטרל עבור תצורת בנייה זו
 collection-backlogged-crash-reports-with-link = לאפשר ל־{ -brand-short-name } לשלוח דיווחי קריסות שנשמרו בשמך <a data-l10n-name="crash-reports-link">מידע נוסף</a>
+    .accesskey = ק
+collection-backlogged-crash-reports = לאפשר ל־{ -brand-short-name } לשלוח דיווחי קריסות שנשמרו בשמך
     .accesskey = ק
 privacy-segmentation-section-header = תכונות חדשות שמשפרות את הגלישה שלך
 privacy-segmentation-section-description = כשאנחנו מציעים תכונות המשתמשות בנתונים שלך כדי להעניק לך חוויה אישית יותר:

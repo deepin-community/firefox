@@ -24,9 +24,6 @@ skip-if = ["!debug"]
 ["test_feature_fileioall.js"]
 skip-if = ["release_or_beta"]
 
-# The sanitizer checks appears to overwrite our own memory hooks in xpcshell tests,
-# and no allocation markers are gathered. Skip this test in that configuration.
-
 ["test_feature_java.js"]
 skip-if = ["os != 'android'"]
 
@@ -39,6 +36,7 @@ skip-if = ["tsan"] # Times out on TSan, bug 1612707
 skip-if = [
   "release_or_beta",
   "os == 'win' && socketprocess_networking",
+  "tsan", # bug 1885381
 ]
 
 ["test_feature_nativeallocations.js"]
@@ -47,6 +45,12 @@ skip-if = [
   "asan",
   "tsan",
   "socketprocess_networking",
+]
+
+["test_feature_posix_signals.js"]
+skip-if = [
+  "ccov",
+  "os == 'win'",
 ]
 
 # Native stackwalking is somewhat unreliable depending on the platform.
@@ -59,6 +63,9 @@ skip-if = [
 #
 # For sanitizer builds, there were many intermittents, and we're not getting much
 # additional coverage there, so it's better to be a bit more reliable.
+
+# The sanitizer checks appears to overwrite our own memory hooks in xpcshell tests,
+# and no allocation markers are gathered. Skip this test in that configuration.
 
 ["test_feature_stackwalking.js"]
 skip-if = [

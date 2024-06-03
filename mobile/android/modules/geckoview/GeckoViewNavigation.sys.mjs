@@ -155,7 +155,7 @@ export class GeckoViewNavigation extends GeckoViewModule {
   }
 
   // Bundle event handler.
-  async onEvent(aEvent, aData, aCallback) {
+  async onEvent(aEvent, aData) {
     debug`onEvent: event=${aEvent}, data=${aData}`;
 
     switch (aEvent) {
@@ -189,13 +189,18 @@ export class GeckoViewNavigation extends GeckoViewModule {
           triggeringPrincipal = referrerWindow.browser.contentPrincipal;
           csp = referrerWindow.browser.csp;
 
+          const { contentPrincipal } = this.browser;
+          const isNormal = contentPrincipal.privateBrowsingId == 0;
+          const referrerIsPrivate = triggeringPrincipal.privateBrowsingId != 0;
+
           const referrerPolicy = referrerWindow.browser.referrerInfo
             ? referrerWindow.browser.referrerInfo.referrerPolicy
             : Ci.nsIReferrerInfo.EMPTY;
 
           referrerInfo = new lazy.ReferrerInfo(
             referrerPolicy,
-            true,
+            // Don't `sendReferrer` if the private session (current) is opened by a normal session (referrer)
+            isNormal || referrerIsPrivate,
             referrerWindow.browser.documentURI
           );
         } else if (referrerUri) {
@@ -291,7 +296,7 @@ export class GeckoViewNavigation extends GeckoViewModule {
 
     return new Promise(resolve => {
       const handler = {
-        observe(aSubject, aTopic, aData) {
+        observe(aSubject, aTopic) {
           if (
             aTopic === "geckoview-window-created" &&
             aSubject.name === aSessionId
@@ -371,7 +376,7 @@ export class GeckoViewNavigation extends GeckoViewModule {
 
     // Wait indefinitely for app to respond with a browser or null
     Services.tm.spinEventLoopUntil(
-      "GeckoViewNavigation.jsm:handleNewSession",
+      "GeckoViewNavigation.sys.mjs:handleNewSession",
       () => this.window.closed || browser !== undefined
     );
     return browser || null;
@@ -383,8 +388,7 @@ export class GeckoViewNavigation extends GeckoViewModule {
     aOpenWindowInfo,
     aWhere,
     aFlags,
-    aTriggeringPrincipal,
-    aCsp
+    aTriggeringPrincipal
   ) {
     debug`createContentWindow: uri=${aUri && aUri.spec}
                                 where=${aWhere} flags=${aFlags}`;
@@ -585,7 +589,7 @@ export class GeckoViewNavigation extends GeckoViewModule {
   }
 
   // WebProgress event handler.
-  onLocationChange(aWebProgress, aRequest, aLocationURI, aFlags) {
+  onLocationChange(aWebProgress, aRequest, aLocationURI) {
     debug`onLocationChange`;
 
     let fixedURI = aLocationURI;
@@ -648,6 +652,8 @@ export class GeckoViewNavigation extends GeckoViewModule {
       canGoForward: this.browser.canGoForward,
       isTopLevel: aWebProgress.isTopLevel,
       permissions,
+      hasUserGesture:
+        this.window.document.hasValidTransientUserGestureActivation,
     };
     lazy.TranslationsParent.onLocationChange(this.browser);
     this.eventDispatcher.sendRequest(message);

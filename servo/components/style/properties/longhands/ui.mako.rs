@@ -3,11 +3,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 <%namespace name="helpers" file="/helpers.mako.rs" />
-<% from data import DEFAULT_RULES_EXCEPT_KEYFRAME, Method %>
-
-// CSS Basic User Interface Module Level 1
-// https://drafts.csswg.org/css-ui-3/
-<% data.new_style_struct("UI", inherited=False, gecko_name="UIReset") %>
+<% from data import DEFAULT_RULES_EXCEPT_KEYFRAME %>
 
 // TODO spec says that UAs should not support this
 // we should probably remove from gecko (https://bugzilla.mozilla.org/show_bug.cgi?id=1328331)
@@ -145,7 +141,7 @@ ${helpers.predefined_type(
     "transition-duration",
     "Time",
     "computed::Time::zero()",
-    engines="gecko servo-2013 servo-2020",
+    engines="gecko servo",
     initial_specified_value="specified::Time::zero()",
     parse_method="parse_non_negative",
     vector=True,
@@ -160,7 +156,7 @@ ${helpers.predefined_type(
     "transition-timing-function",
     "TimingFunction",
     "computed::TimingFunction::ease()",
-    engines="gecko servo-2013 servo-2020",
+    engines="gecko servo",
     initial_specified_value="specified::TimingFunction::ease()",
     vector=True,
     need_index=True,
@@ -174,7 +170,7 @@ ${helpers.predefined_type(
     "transition-property",
     "TransitionProperty",
     "computed::TransitionProperty::all()",
-    engines="gecko servo-2013 servo-2020",
+    engines="gecko servo",
     initial_specified_value="specified::TransitionProperty::all()",
     vector=True,
     none_value="computed::TransitionProperty::none()",
@@ -189,7 +185,7 @@ ${helpers.predefined_type(
     "transition-delay",
     "Time",
     "computed::Time::zero()",
-    engines="gecko servo-2013 servo-2020",
+    engines="gecko servo",
     initial_specified_value="specified::Time::zero()",
     vector=True,
     need_index=True,
@@ -199,13 +195,27 @@ ${helpers.predefined_type(
     affects="",
 )}
 
+${helpers.predefined_type(
+    "transition-behavior",
+    "TransitionBehavior",
+    "computed::TransitionBehavior::normal()",
+    engines="gecko",
+    initial_specified_value="specified::TransitionBehavior::normal()",
+    vector=True,
+    need_index=True,
+    animation_value_type="none",
+    gecko_pref="layout.css.transition-behavior.enabled",
+    spec="https://drafts.csswg.org/css-transitions-2/#transition-behavior-property",
+    affects="",
+)}
+
 <% animation_extra_prefixes = "moz:layout.css.prefixes.animations webkit" %>
 
 ${helpers.predefined_type(
     "animation-name",
     "AnimationName",
     "computed::AnimationName::none()",
-    engines="gecko servo-2013 servo-2020",
+    engines="gecko servo",
     initial_specified_value="specified::AnimationName::none()",
     vector=True,
     need_index=True,
@@ -220,7 +230,7 @@ ${helpers.predefined_type(
     "animation-duration",
     "Time",
     "computed::Time::zero()",
-    engines="gecko servo-2013 servo-2020",
+    engines="gecko servo",
     initial_specified_value="specified::Time::zero()",
     parse_method="parse_non_negative",
     vector=True,
@@ -237,7 +247,7 @@ ${helpers.predefined_type(
     "animation-timing-function",
     "TimingFunction",
     "computed::TimingFunction::ease()",
-    engines="gecko servo-2013 servo-2020",
+    engines="gecko servo",
     initial_specified_value="specified::TimingFunction::ease()",
     vector=True,
     need_index=True,
@@ -251,7 +261,7 @@ ${helpers.predefined_type(
     "animation-iteration-count",
     "AnimationIterationCount",
     "computed::AnimationIterationCount::one()",
-    engines="gecko servo-2013 servo-2020",
+    engines="gecko servo",
     initial_specified_value="specified::AnimationIterationCount::one()",
     vector=True,
     need_index=True,
@@ -266,7 +276,7 @@ ${helpers.predefined_type(
     "animation-direction",
     "AnimationDirection",
     "computed::AnimationDirection::Normal",
-    engines="gecko servo-2013 servo-2020",
+    engines="gecko servo",
     initial_specified_value="specified::AnimationDirection::Normal",
     vector=True,
     need_index=True,
@@ -281,7 +291,7 @@ ${helpers.predefined_type(
     "animation-play-state",
     "AnimationPlayState",
     "computed::AnimationPlayState::Running",
-    engines="gecko servo-2013 servo-2020",
+    engines="gecko servo",
     initial_specified_value="computed::AnimationPlayState::Running",
     vector=True,
     need_index=True,
@@ -296,7 +306,7 @@ ${helpers.predefined_type(
     "animation-fill-mode",
     "AnimationFillMode",
     "computed::AnimationFillMode::None",
-    engines="gecko servo-2013 servo-2020",
+    engines="gecko servo",
     initial_specified_value="computed::AnimationFillMode::None",
     vector=True,
     need_index=True,
@@ -311,12 +321,13 @@ ${helpers.predefined_type(
     "animation-composition",
     "AnimationComposition",
     "computed::AnimationComposition::Replace",
-    engines="gecko",
+    engines="gecko servo",
     initial_specified_value="computed::AnimationComposition::Replace",
     vector=True,
     need_index=True,
     animation_value_type="none",
     gecko_pref="layout.css.animation-composition.enabled",
+    servo_pref="layout.unimplemented",
     spec="https://drafts.csswg.org/css-animations-2/#animation-composition",
     affects="",
 )}
@@ -325,7 +336,7 @@ ${helpers.predefined_type(
     "animation-delay",
     "Time",
     "computed::Time::zero()",
-    engines="gecko servo-2013 servo-2020",
+    engines="gecko servo",
     initial_specified_value="specified::Time::zero()",
     vector=True,
     need_index=True,
@@ -340,7 +351,8 @@ ${helpers.predefined_type(
     "animation-timeline",
     "AnimationTimeline",
     "computed::AnimationTimeline::auto()",
-    engines="gecko",
+    engines="gecko servo",
+    servo_pref="layout.unimplemented",
     initial_specified_value="specified::AnimationTimeline::auto()",
     vector=True,
     need_index=True,

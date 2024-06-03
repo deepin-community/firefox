@@ -90,7 +90,6 @@ class nsIDOMXULSelectControlElement;
 class nsIDOMXULSelectControlItemElement;
 class nsIFrame;
 class nsIHTMLCollection;
-class nsIMozBrowserFrame;
 class nsIPrincipal;
 class nsIScreen;
 class nsIScrollableFrame;
@@ -244,12 +243,22 @@ class Grid;
     SetOrRemoveNullableStringAttr(nsGkAtoms::attr, aValue, aRv); \
   }
 
+#define REFLECT_NULLABLE_ELEMENT_ATTR(method, attr)      \
+  Element* Get##method() const {                         \
+    return GetAttrAssociatedElement(nsGkAtoms::attr);    \
+  }                                                      \
+                                                         \
+  void Set##method(Element* aElement) {                  \
+    ExplicitlySetAttrElement(nsGkAtoms::attr, aElement); \
+  }
+
 class Element : public FragmentOrElement {
  public:
 #ifdef MOZILLA_INTERNAL_API
   explicit Element(already_AddRefed<mozilla::dom::NodeInfo>&& aNodeInfo)
       : FragmentOrElement(std::move(aNodeInfo)),
-        mState(ElementState::READONLY | ElementState::DEFINED) {
+        mState(ElementState::READONLY | ElementState::DEFINED |
+               ElementState::LTR) {
     MOZ_ASSERT(mNodeInfo->NodeType() == ELEMENT_NODE,
                "Bad NodeType in aNodeInfo");
     SetIsElement();
@@ -459,22 +468,13 @@ class Element : public FragmentOrElement {
   virtual bool IsInteractiveHTMLContent() const;
 
   /**
-   * Returns |this| as an nsIMozBrowserFrame* if the element is a frame or
-   * iframe element.
-   *
-   * We have this method, rather than using QI, so that we can use it during
-   * the servo traversal, where we can't QI DOM nodes because of non-thread-safe
-   * refcounts.
-   */
-  virtual nsIMozBrowserFrame* GetAsMozBrowserFrame() { return nullptr; }
-
-  /**
    * Is the attribute named aAttribute a mapped attribute?
    */
   NS_IMETHOD_(bool) IsAttributeMapped(const nsAtom* aAttribute) const;
 
   nsresult BindToTree(BindContext&, nsINode& aParent) override;
-  void UnbindFromTree(bool aNullParent = true) override;
+  void UnbindFromTree(UnbindContext&) override;
+  using nsIContent::UnbindFromTree;
 
   virtual nsMapRuleToAttributesFunc GetAttributeMappingFunction() const;
   static void MapNoAttributesInto(mozilla::MappedDeclarationsBuilder&);
@@ -658,8 +658,13 @@ class Element : public FragmentOrElement {
   REFLECT_NULLABLE_DOMSTRING_ATTR(Role, role)
 
   // AriaAttributes
+  REFLECT_NULLABLE_ELEMENT_ATTR(AriaActiveDescendantElement,
+                                aria_activedescendant)
   REFLECT_NULLABLE_DOMSTRING_ATTR(AriaAtomic, aria_atomic)
   REFLECT_NULLABLE_DOMSTRING_ATTR(AriaAutoComplete, aria_autocomplete)
+  REFLECT_NULLABLE_DOMSTRING_ATTR(AriaBrailleLabel, aria_braillelabel)
+  REFLECT_NULLABLE_DOMSTRING_ATTR(AriaBrailleRoleDescription,
+                                  aria_brailleroledescription)
   REFLECT_NULLABLE_DOMSTRING_ATTR(AriaBusy, aria_busy)
   REFLECT_NULLABLE_DOMSTRING_ATTR(AriaChecked, aria_checked)
   REFLECT_NULLABLE_DOMSTRING_ATTR(AriaColCount, aria_colcount)
@@ -1107,8 +1112,6 @@ class Element : public FragmentOrElement {
     return FindAttributeDependence(aAttribute, aMaps, N);
   }
 
-  static nsStaticAtom* const* HTMLSVGPropertiesToTraverseAndUnlink();
-
   MOZ_CAN_RUN_SCRIPT virtual void HandleInvokeInternal(nsAtom* aAction,
                                                        ErrorResult& aRv) {}
 
@@ -1245,6 +1248,16 @@ class Element : public FragmentOrElement {
 
   void ClearExplicitlySetAttrElement(nsAtom*);
 
+  /**
+   * Gets the attribute element for the given attribute.
+   * https://html.spec.whatwg.org/multipage/common-dom-interfaces.html#explicitly-set-attr-element
+   * Unlike GetAttrAssociatedElement, this returns the target even if it isn't
+   * a descendant of any of this element's shadow-including ancestors. It also
+   * doesn't attempt to retrieve an element using a string id set in the content
+   * attribute.
+   */
+  Element* GetExplicitlySetAttrElement(nsAtom* aAttr) const;
+
   PseudoStyleType GetPseudoElementType() const {
     nsresult rv = NS_OK;
     auto raw = GetProperty(nsGkAtoms::pseudoProperty, &rv);
@@ -1332,14 +1345,16 @@ class Element : public FragmentOrElement {
   void GetLoading(nsAString& aValue) const;
   bool ParseLoadingAttribute(const nsAString& aValue, nsAttrValue& aResult);
 
+  // https://html.spec.whatwg.org/#potentially-render-blocking
+  virtual bool IsPotentiallyRenderBlocking() { return false; }
+  bool BlockingContainsRender() const;
+
   // Shadow DOM v1
   enum class ShadowRootDeclarative : bool { No, Yes };
 
   MOZ_CAN_RUN_SCRIPT_BOUNDARY
-  already_AddRefed<ShadowRoot> AttachShadow(
-      const ShadowRootInit& aInit, ErrorResult& aError,
-      ShadowRootDeclarative aNewShadowIsDeclarative =
-          ShadowRootDeclarative::No);
+  already_AddRefed<ShadowRoot> AttachShadow(const ShadowRootInit& aInit,
+                                            ErrorResult& aError);
   bool CanAttachShadowDOM() const;
 
   enum class DelegatesFocus : bool { No, Yes };
@@ -1348,8 +1363,7 @@ class Element : public FragmentOrElement {
   already_AddRefed<ShadowRoot> AttachShadowWithoutNameChecks(
       ShadowRootMode aMode, DelegatesFocus = DelegatesFocus::No,
       SlotAssignmentMode aSlotAssignmentMode = SlotAssignmentMode::Named,
-      ShadowRootClonable aClonable = ShadowRootClonable::No,
-      ShadowRootDeclarative aDeclarative = ShadowRootDeclarative::No);
+      ShadowRootClonable aClonable = ShadowRootClonable::No);
 
   // Attach UA Shadow Root if it is not attached.
   enum class NotifyUAWidgetSetup : bool { No, Yes };
@@ -1482,6 +1496,8 @@ class Element : public FragmentOrElement {
   MOZ_CAN_RUN_SCRIPT double ClientWidthDouble() {
     return CSSPixel::FromAppUnits(GetClientAreaRect().Width());
   }
+
+  MOZ_CAN_RUN_SCRIPT double CurrentCSSZoom();
 
   // This function will return the block size of first line box, no matter if
   // the box is 'block' or 'inline'. The return unit is pixel. If the element

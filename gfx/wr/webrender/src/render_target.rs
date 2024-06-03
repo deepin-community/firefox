@@ -5,9 +5,10 @@
 
 use api::{units::*, PremultipliedColorF, ClipMode};
 use api::{ColorF, ImageFormat, LineOrientation, BorderStyle};
-use crate::batch::{AlphaBatchBuilder, AlphaBatchContainer, BatchTextures, add_quad_to_batch};
+use crate::batch::{AlphaBatchBuilder, AlphaBatchContainer, BatchTextures};
 use crate::batch::{ClipBatcher, BatchBuilder, INVALID_SEGMENT_INDEX, ClipMaskInstanceList};
 use crate::command_buffer::{CommandBufferList, QuadFlags};
+use crate::pattern::{PatternKind, PatternShaderInput};
 use crate::segment::EdgeAaSegmentMask;
 use crate::spatial_tree::SpatialTree;
 use crate::clip::{ClipStore, ClipItemKind};
@@ -18,13 +19,13 @@ use crate::gpu_types::{TransformPalette, ZBufferIdGenerator, MaskInstance, ClipS
 use crate::gpu_types::{ZBufferId, QuadSegment, PrimitiveInstanceData, TransformPaletteId};
 use crate::internal_types::{FastHashMap, TextureSource, CacheTextureId};
 use crate::picture::{SliceId, SurfaceInfo, ResolvedSurfaceTexture, TileCacheInstance};
-use crate::prepare::write_prim_blocks;
+use crate::quad;
 use crate::prim_store::{PrimitiveInstance, PrimitiveStore, PrimitiveScratchBuffer};
 use crate::prim_store::gradient::{
     FastLinearGradientInstance, LinearGradientInstance, RadialGradientInstance,
     ConicGradientInstance,
 };
-use crate::renderer::{GpuBufferBuilder, GpuBufferAddress};
+use crate::renderer::{GpuBufferAddress, GpuBufferBuilder};
 use crate::render_backend::DataStores;
 use crate::render_task::{RenderTaskKind, RenderTaskAddress, SubPass};
 use crate::render_task::{RenderTask, ScalingTask, SvgFilterInfo, MaskSubPass};
@@ -104,6 +105,7 @@ pub trait RenderTarget {
         _z_generator: &mut ZBufferIdGenerator,
         _prim_instances: &[PrimitiveInstance],
         _cmd_buffers: &CommandBufferList,
+        _gpu_buffer_builder: &mut GpuBufferBuilder,
     ) {
     }
 
@@ -183,6 +185,7 @@ impl<T: RenderTarget> RenderTargetList<T> {
         z_generator: &mut ZBufferIdGenerator,
         prim_instances: &[PrimitiveInstance],
         cmd_buffers: &CommandBufferList,
+        gpu_buffer_builder: &mut GpuBufferBuilder,
     ) {
         if self.targets.is_empty() {
             return;
@@ -198,6 +201,7 @@ impl<T: RenderTarget> RenderTargetList<T> {
                 z_generator,
                 prim_instances,
                 cmd_buffers,
+                gpu_buffer_builder,
             );
         }
     }
@@ -207,6 +211,7 @@ impl<T: RenderTarget> RenderTargetList<T> {
     }
 }
 
+const NUM_PATTERNS: usize = crate::pattern::NUM_PATTERNS as usize;
 
 /// Contains the work (in the form of instance arrays) needed to fill a color
 /// color output surface (RGBA8).
@@ -232,10 +237,10 @@ pub struct ColorRenderTarget {
     pub resolve_ops: Vec<ResolveOp>,
     pub clear_color: Option<ColorF>,
 
-    pub prim_instances: Vec<PrimitiveInstanceData>,
-    pub prim_instances_with_scissor: FastHashMap<DeviceIntRect, Vec<PrimitiveInstanceData>>,
-
-    pub clip_masks: Vec<ClipMaskInstanceList>,
+    pub prim_instances: [Vec<PrimitiveInstanceData>; NUM_PATTERNS],
+    pub prim_instances_with_scissor: FastHashMap<(DeviceIntRect, PatternKind), Vec<PrimitiveInstanceData>>,
+    
+    pub clip_masks: ClipMaskInstanceList,
 }
 
 impl RenderTarget for ColorRenderTarget {
@@ -258,9 +263,9 @@ impl RenderTarget for ColorRenderTarget {
             used_rect,
             resolve_ops: Vec::new(),
             clear_color: Some(ColorF::TRANSPARENT),
-            prim_instances: Vec::new(),
+            prim_instances: [Vec::new(), Vec::new()],
             prim_instances_with_scissor: FastHashMap::default(),
-            clip_masks: Vec::new(),
+            clip_masks: ClipMaskInstanceList::new(),
         }
     }
 
@@ -274,10 +279,10 @@ impl RenderTarget for ColorRenderTarget {
         z_generator: &mut ZBufferIdGenerator,
         prim_instances: &[PrimitiveInstance],
         cmd_buffers: &CommandBufferList,
+        gpu_buffer_builder: &mut GpuBufferBuilder,
     ) {
         profile_scope!("build");
         let mut merged_batches = AlphaBatchContainer::new(None);
-        let mut gpu_buffer_builder = GpuBufferBuilder::new();
 
         for task_id in &self.alpha_tasks {
             profile_scope!("alpha_task");
@@ -326,7 +331,7 @@ impl RenderTarget for ColorRenderTarget {
                             pic_task.surface_spatial_node_index,
                             z_generator,
                             prim_instances,
-                            &mut gpu_buffer_builder,
+                            gpu_buffer_builder,
                             segments,
                         );
                     });
@@ -373,24 +378,27 @@ impl RenderTarget for ColorRenderTarget {
                 let render_task_address = task_id.into();
                 let target_rect = task.get_target_rect();
 
-                add_quad_to_batch(
+                quad::add_to_batch(
+                    info.pattern,
+                    info.pattern_input,
                     render_task_address,
                     info.transform_id,
-                    info.prim_address,
+                    info.prim_address_f,
                     info.quad_flags,
                     info.edge_flags,
                     INVALID_SEGMENT_INDEX as u8,
                     RenderTaskId::INVALID,
                     ZBufferId(0),
                     render_tasks,
+                    gpu_buffer_builder,
                     |_, instance| {
                         if info.prim_needs_scissor_rect {
                             self.prim_instances_with_scissor
-                                .entry(target_rect)
+                                .entry((target_rect, info.pattern))
                                 .or_insert(Vec::new())
                                 .push(instance);
                         } else {
-                            self.prim_instances.push(instance);
+                            self.prim_instances[info.pattern as usize].push(instance);
                         }
                     }
                 );
@@ -497,7 +505,7 @@ pub struct AlphaRenderTarget {
     pub zero_clears: Vec<RenderTaskId>,
     pub one_clears: Vec<RenderTaskId>,
     pub texture_id: CacheTextureId,
-    pub clip_masks: Vec<ClipMaskInstanceList>,
+    pub clip_masks: ClipMaskInstanceList,
 }
 
 impl RenderTarget for AlphaRenderTarget {
@@ -515,7 +523,7 @@ impl RenderTarget for AlphaRenderTarget {
             zero_clears: Vec::new(),
             one_clears: Vec::new(),
             texture_id,
-            clip_masks: Vec::new(),
+            clip_masks: ClipMaskInstanceList::new(),
         }
     }
 
@@ -921,6 +929,7 @@ fn add_svg_filter_instances(
         kind,
         input_count,
         generic_int,
+        padding: 0,
         extra_data_address: extra_data_address.unwrap_or(GpuCacheAddress::INVALID),
     };
 
@@ -978,7 +987,7 @@ fn build_mask_tasks(
         let (clip_address, fast_path) = match clip_node.item.kind {
             ClipItemKind::RoundedRectangle { rect, radius, mode } => {
                 let (fast_path, clip_address) = if radius.is_uniform().is_some() {
-                    let mut writer = gpu_buffer_builder.write_blocks(3);
+                    let mut writer = gpu_buffer_builder.f32.write_blocks(3);
                     writer.push_one(rect);
                     writer.push_one([radius.top_left.width, 0.0, 0.0, 0.0]);
                     writer.push_one([mode as i32 as f32, 0.0, 0.0, 0.0]);
@@ -986,7 +995,7 @@ fn build_mask_tasks(
 
                     (true, clip_address)
                 } else {
-                    let mut writer = gpu_buffer_builder.write_blocks(4);
+                    let mut writer = gpu_buffer_builder.f32.write_blocks(4);
                     writer.push_one(rect);
                     writer.push_one([
                         radius.top_left.width,
@@ -1011,7 +1020,7 @@ fn build_mask_tasks(
             ClipItemKind::Rectangle { rect, mode, .. } => {
                 assert_eq!(mode, ClipMode::Clip);
 
-                let mut writer = gpu_buffer_builder.write_blocks(3);
+                let mut writer = gpu_buffer_builder.f32.write_blocks(3);
                 writer.push_one(rect);
                 writer.push_one([0.0, 0.0, 0.0, 0.0]);
                 writer.push_one([mode as i32 as f32, 0.0, 0.0, 0.0]);
@@ -1042,8 +1051,8 @@ fn build_mask_tasks(
                 }
 
                 for tile in clip_store.visible_mask_tiles(&clip_instance) {
-                    let clip_prim_address = write_prim_blocks(
-                        gpu_buffer_builder,
+                    let clip_prim_address = quad::write_prim_blocks(
+                        &mut gpu_buffer_builder.f32,
                         rect,
                         rect,
                         PremultipliedColorF::WHITE,
@@ -1057,7 +1066,9 @@ fn build_mask_tasks(
                         .resolve_texture(tile.task_id)
                         .expect("bug: texture not found for tile");
 
-                    add_quad_to_batch(
+                    quad::add_to_batch(
+                        PatternKind::ColorOrTexture,
+                        PatternShaderInput::default(),
                         render_task_address,
                         clip_transform_id,
                         clip_prim_address,
@@ -1067,6 +1078,7 @@ fn build_mask_tasks(
                         tile.task_id,
                         ZBufferId(0),
                         render_tasks,
+                        gpu_buffer_builder,
                         |_, prim| {
                             if clip_needs_scissor_rect {
                                 results
@@ -1106,8 +1118,8 @@ fn build_mask_tasks(
                 spatial_tree,
             );
 
-            let main_prim_address = write_prim_blocks(
-                gpu_buffer_builder,
+            let main_prim_address = quad::write_prim_blocks(
+                &mut gpu_buffer_builder.f32,
                 task_world_rect.cast_unit(),
                 task_world_rect.cast_unit(),
                 PremultipliedColorF::WHITE,
@@ -1152,7 +1164,9 @@ fn build_mask_tasks(
             QuadFlags::empty()
         };
 
-        add_quad_to_batch(
+        quad::add_to_batch(
+            PatternKind::Mask,
+            PatternShaderInput::default(),
             render_task_address,
             prim_transform_id,
             main_prim_address,
@@ -1162,6 +1176,7 @@ fn build_mask_tasks(
             RenderTaskId::INVALID,
             ZBufferId(0),
             render_tasks,
+            gpu_buffer_builder,
             |_, prim| {
                 let instance = MaskInstance {
                     prim,
@@ -1202,7 +1217,7 @@ fn build_sub_pass(
     render_tasks: &RenderTaskGraph,
     transforms: &mut TransformPalette,
     ctx: &RenderTargetContext,
-    output: &mut Vec<ClipMaskInstanceList>,
+    output: &mut ClipMaskInstanceList,
 ) {
     if let Some(ref sub_pass) = task.sub_pass {
         match sub_pass {
@@ -1228,14 +1243,12 @@ fn build_sub_pass(
                     content_origin + target_rect.size().to_f32(),
                 );
 
-                let mut clip_masks = ClipMaskInstanceList::new();
-
                 build_mask_tasks(
                     masks,
                     render_task_address,
                     content_rect / device_pixel_scale,
                     target_rect,
-                    masks.main_prim_address,
+                    masks.prim_address_f,
                     masks.prim_spatial_node_index,
                     raster_spatial_node_index,
                     ctx.clip_store,
@@ -1244,10 +1257,8 @@ fn build_sub_pass(
                     gpu_buffer_builder,
                     transforms,
                     render_tasks,
-                    &mut clip_masks,
+                    output,
                 );
-
-                output.push(clip_masks);
             }
         }
     }

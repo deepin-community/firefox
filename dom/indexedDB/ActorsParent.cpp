@@ -94,6 +94,7 @@
 #include "mozilla/dom/FileBlobImpl.h"
 #include "mozilla/dom/FlippedOnce.h"
 #include "mozilla/dom/IDBCursorBinding.h"
+#include "mozilla/dom/IDBFactory.h"
 #include "mozilla/dom/IPCBlob.h"
 #include "mozilla/dom/IPCBlobUtils.h"
 #include "mozilla/dom/IndexedDatabase.h"
@@ -122,6 +123,7 @@
 #include "mozilla/dom/quota/CheckedUnsafePtr.h"
 #include "mozilla/dom/quota/Client.h"
 #include "mozilla/dom/quota/ClientImpl.h"
+#include "mozilla/dom/quota/DebugOnlyMacro.h"
 #include "mozilla/dom/quota/DirectoryLock.h"
 #include "mozilla/dom/quota/DecryptingInputStream_impl.h"
 #include "mozilla/dom/quota/EncryptingOutputStream_impl.h"
@@ -291,7 +293,8 @@ static_assert(kSQLiteGrowthIncrement >= 0 &&
               "Must be 0 (disabled) or a positive multiple of the page size!");
 
 // The maximum number of threads that can be used for database activity at a
-// single time.
+// single time. Please keep in sync with the constants in
+// test_connection_idle_maintenance*.js tests
 const uint32_t kMaxConnectionThreadCount = 20;
 
 static_assert(kMaxConnectionThreadCount, "Must have at least one thread!");
@@ -304,7 +307,8 @@ static_assert(kMaxConnectionThreadCount >= kMaxIdleConnectionThreadCount,
               "Idle thread limit must be less than total thread limit!");
 
 // The length of time that database connections will be held open after all
-// transactions have completed before doing idle maintenance.
+// transactions have completed before doing idle maintenance. Please keep in
+// sync with the timeouts in test_connection_idle_maintenance*.js tests
 const uint32_t kConnectionIdleMaintenanceMS = 2 * 1000;  // 2 seconds
 
 // The length of time that database connections will be held open after all
@@ -1162,7 +1166,8 @@ class DatabaseConnection final : public CachingDatabaseConnection {
     return CheckpointInternal(CheckpointMode::Full);
   }
 
-  void DoIdleProcessing(bool aNeedsCheckpoint);
+  void DoIdleProcessing(bool aNeedsCheckpoint,
+                        const Atomic<bool>& aInterrupted);
 
   void Close();
 
@@ -1189,7 +1194,8 @@ class DatabaseConnection final : public CachingDatabaseConnection {
    */
   Result<bool, nsresult> ReclaimFreePagesWhileIdle(
       CachedStatement& aFreelistStatement, CachedStatement& aRollbackStatement,
-      uint32_t aFreelistCount, bool aNeedsCheckpoint);
+      uint32_t aFreelistCount, bool aNeedsCheckpoint,
+      const Atomic<bool>& aInterrupted);
 
   Result<int64_t, nsresult> GetFileSize(const nsAString& aPath);
 };
@@ -1362,6 +1368,34 @@ class ConnectionPool final {
     }
   };
 
+  struct PerformingIdleMaintenanceDatabaseInfo {
+    const NotNull<DatabaseInfo*> mDatabaseInfo;
+    RefPtr<IdleConnectionRunnable> mIdleConnectionRunnable;
+
+    PerformingIdleMaintenanceDatabaseInfo(
+        DatabaseInfo& aDatabaseInfo,
+        RefPtr<IdleConnectionRunnable> aIdleConnectionRunnable);
+
+    PerformingIdleMaintenanceDatabaseInfo(
+        const PerformingIdleMaintenanceDatabaseInfo& aOther) = delete;
+    PerformingIdleMaintenanceDatabaseInfo(
+        PerformingIdleMaintenanceDatabaseInfo&& aOther) noexcept
+        : mDatabaseInfo{aOther.mDatabaseInfo},
+          mIdleConnectionRunnable{std::move(aOther.mIdleConnectionRunnable)} {
+      MOZ_COUNT_CTOR(ConnectionPool::PerformingIdleMaintenanceDatabaseInfo);
+    }
+    PerformingIdleMaintenanceDatabaseInfo& operator=(
+        const PerformingIdleMaintenanceDatabaseInfo& aOther) = delete;
+    PerformingIdleMaintenanceDatabaseInfo& operator=(
+        PerformingIdleMaintenanceDatabaseInfo&& aOther) = delete;
+
+    ~PerformingIdleMaintenanceDatabaseInfo();
+
+    bool operator==(const DatabaseInfo* aDatabaseInfo) const {
+      return mDatabaseInfo == aDatabaseInfo;
+    }
+  };
+
   class ThreadInfo {
    public:
     ThreadInfo();
@@ -1456,7 +1490,8 @@ class ConnectionPool final {
   nsCOMPtr<nsIThreadPool> mIOTarget;
   nsTArray<IdleThreadInfo> mIdleThreads;
   nsTArray<IdleDatabaseInfo> mIdleDatabases;
-  nsTArray<NotNull<DatabaseInfo*>> mDatabasesPerformingIdleMaintenance;
+  nsTArray<PerformingIdleMaintenanceDatabaseInfo>
+      mDatabasesPerformingIdleMaintenance;
   nsCOMPtr<nsITimer> mIdleTimer;
   TimeStamp mTargetIdleTime;
 
@@ -1559,6 +1594,7 @@ class ConnectionPool::ConnectionRunnable : public Runnable {
 
 class ConnectionPool::IdleConnectionRunnable final : public ConnectionRunnable {
   const bool mNeedsCheckpoint;
+  Atomic<bool> mInterrupted;
 
  public:
   IdleConnectionRunnable(DatabaseInfo& aDatabaseInfo, bool aNeedsCheckpoint)
@@ -1566,6 +1602,8 @@ class ConnectionPool::IdleConnectionRunnable final : public ConnectionRunnable {
 
   NS_INLINE_DECL_REFCOUNTING_INHERITED(IdleConnectionRunnable,
                                        ConnectionRunnable)
+
+  void Interrupt() { mInterrupted = true; }
 
  private:
   ~IdleConnectionRunnable() override = default;
@@ -1937,6 +1975,10 @@ class TransactionDatabaseOperationBase : public DatabaseOperationBase {
   };
 
   InitializedOnce<const NotNull<SafeRefPtr<TransactionBase>>> mTransaction;
+  // Unique request id within the context of the transaction, allocated by the
+  // transaction in the content process starting from 0. Values less than 0 are
+  // impossible and forbidden. Used to support the explicit commit() request.
+  const int64_t mRequestId;
   InternalState mInternalState = InternalState::Initial;
   bool mWaitingForContinue = false;
   const bool mTransactionIsAborted;
@@ -1998,10 +2040,11 @@ class TransactionDatabaseOperationBase : public DatabaseOperationBase {
   virtual void Cleanup();
 
  protected:
-  explicit TransactionDatabaseOperationBase(
-      SafeRefPtr<TransactionBase> aTransaction);
+  TransactionDatabaseOperationBase(SafeRefPtr<TransactionBase> aTransaction,
+                                   int64_t aRequestId);
 
   TransactionDatabaseOperationBase(SafeRefPtr<TransactionBase> aTransaction,
+                                   const int64_t aRequestId,
                                    uint64_t aLoggingSerialNumber);
 
   ~TransactionDatabaseOperationBase() override;
@@ -2061,6 +2104,7 @@ class TransactionDatabaseOperationBase : public DatabaseOperationBase {
 
 class Factory final : public PBackgroundIDBFactoryParent,
                       public AtomicSafeRefCounted<Factory> {
+  nsCString mSystemLocale;
   RefPtr<DatabaseLoggingInfo> mLoggingInfo;
 
 #ifdef DEBUG
@@ -2072,7 +2116,7 @@ class Factory final : public PBackgroundIDBFactoryParent,
 
  public:
   [[nodiscard]] static SafeRefPtr<Factory> Create(
-      const LoggingInfo& aLoggingInfo);
+      const LoggingInfo& aLoggingInfo, const nsACString& aSystemLocale);
 
   DatabaseLoggingInfo* GetLoggingInfo() const {
     AssertIsOnBackgroundThread();
@@ -2081,11 +2125,14 @@ class Factory final : public PBackgroundIDBFactoryParent,
     return mLoggingInfo;
   }
 
+  const nsCString& GetSystemLocale() const { return mSystemLocale; }
+
   MOZ_DECLARE_REFCOUNTED_TYPENAME(mozilla::dom::indexedDB::Factory)
   MOZ_INLINE_DECL_SAFEREFCOUNTING_INHERITED(Factory, AtomicSafeRefCounted)
 
   // Only constructed in Create().
-  explicit Factory(RefPtr<DatabaseLoggingInfo> aLoggingInfo);
+  Factory(RefPtr<DatabaseLoggingInfo> aLoggingInfo,
+          const nsACString& aSystemLocale);
 
   // IPDL methods are only called by IPDL.
   void ActorDestroy(ActorDestroyReason aWhy) override;
@@ -2101,6 +2148,14 @@ class Factory final : public PBackgroundIDBFactoryParent,
 
   bool DeallocPBackgroundIDBFactoryRequestParent(
       PBackgroundIDBFactoryRequestParent* aActor) override;
+
+  mozilla::ipc::IPCResult RecvGetDatabases(
+      const PersistenceType& aPersistenceType,
+      const PrincipalInfo& aPrincipalInfo,
+      GetDatabasesResolver&& aResolve) override;
+
+ private:
+  Maybe<ContentParentId> GetContentParentId() const;
 };
 
 class WaitForTransactionsHelper final : public Runnable {
@@ -2355,11 +2410,13 @@ class Database final
 
   already_AddRefed<PBackgroundIDBTransactionParent>
   AllocPBackgroundIDBTransactionParent(
-      const nsTArray<nsString>& aObjectStoreNames, const Mode& aMode) override;
+      const nsTArray<nsString>& aObjectStoreNames, const Mode& aMode,
+      const Durability& aDurability) override;
 
   mozilla::ipc::IPCResult RecvPBackgroundIDBTransactionConstructor(
       PBackgroundIDBTransactionParent* aActor,
-      nsTArray<nsString>&& aObjectStoreNames, const Mode& aMode) override;
+      nsTArray<nsString>&& aObjectStoreNames, const Mode& aMode,
+      const Durability& aDurability) override;
 
   mozilla::ipc::IPCResult RecvDeleteMe() override;
 
@@ -2378,6 +2435,7 @@ class Database::StartTransactionOp final
  private:
   explicit StartTransactionOp(SafeRefPtr<TransactionBase> aTransaction)
       : TransactionDatabaseOperationBase(std::move(aTransaction),
+                                         /* aRequestId */ 0,
                                          /* aLoggingSerialNumber */ 0) {}
 
   ~StartTransactionOp() override = default;
@@ -2551,6 +2609,7 @@ class TransactionBase : public AtomicSafeRefCounted<TransactionBase> {
 
  protected:
   using Mode = IDBTransaction::Mode;
+  using Durability = IDBTransaction::Durability;
 
  private:
   const SafeRefPtr<Database> mDatabase;
@@ -2562,6 +2621,7 @@ class TransactionBase : public AtomicSafeRefCounted<TransactionBase> {
   uint64_t mActiveRequestCount;
   Atomic<bool> mInvalidatedOnAnyThread;
   const Mode mMode;
+  const Durability mDurability;  // TODO: See bug 1883045
   FlippedOnce<false> mInitialized;
   FlippedOnce<false> mHasBeenActiveOnConnectionThread;
   FlippedOnce<false> mActorDestroyed;
@@ -2620,6 +2680,8 @@ class TransactionBase : public AtomicSafeRefCounted<TransactionBase> {
   const nsACString& DatabaseId() const { return mDatabaseId; }
 
   Mode GetMode() const { return mMode; }
+
+  Durability GetDurability() const { return mDurability; }
 
   const Database& GetDatabase() const {
     MOZ_ASSERT(mDatabase);
@@ -2683,7 +2745,8 @@ class TransactionBase : public AtomicSafeRefCounted<TransactionBase> {
   virtual ~TransactionBase();
 
  protected:
-  TransactionBase(SafeRefPtr<Database> aDatabase, Mode aMode);
+  TransactionBase(SafeRefPtr<Database> aDatabase, Mode aMode,
+                  Durability aDurability);
 
   void NoteActorDestroyed() {
     AssertIsOnBackgroundThread();
@@ -2725,7 +2788,8 @@ class TransactionBase : public AtomicSafeRefCounted<TransactionBase> {
     CommitOrAbort();
   }
 
-  PBackgroundIDBRequestParent* AllocRequest(RequestParams&& aParams,
+  PBackgroundIDBRequestParent* AllocRequest(const int64_t aRequestId,
+                                            RequestParams&& aParams,
                                             bool aTrustParams);
 
   bool StartRequest(PBackgroundIDBRequestParent* aActor);
@@ -2735,7 +2799,7 @@ class TransactionBase : public AtomicSafeRefCounted<TransactionBase> {
   already_AddRefed<PBackgroundIDBCursorParent> AllocCursor(
       const OpenCursorParams& aParams, bool aTrustParams);
 
-  bool StartCursor(PBackgroundIDBCursorParent* aActor,
+  bool StartCursor(PBackgroundIDBCursorParent* aActor, const int64_t aRequestId,
                    const OpenCursorParams& aParams);
 
   virtual void UpdateMetadata(nsresult aResult) {}
@@ -2818,26 +2882,27 @@ class NormalTransaction final : public TransactionBase,
   mozilla::ipc::IPCResult RecvAbort(const nsresult& aResultCode) override;
 
   PBackgroundIDBRequestParent* AllocPBackgroundIDBRequestParent(
-      const RequestParams& aParams) override;
+      const int64_t& aRequestId, const RequestParams& aParams) override;
 
   mozilla::ipc::IPCResult RecvPBackgroundIDBRequestConstructor(
-      PBackgroundIDBRequestParent* aActor,
+      PBackgroundIDBRequestParent* aActor, const int64_t& aRequestId,
       const RequestParams& aParams) override;
 
   bool DeallocPBackgroundIDBRequestParent(
       PBackgroundIDBRequestParent* aActor) override;
 
   already_AddRefed<PBackgroundIDBCursorParent> AllocPBackgroundIDBCursorParent(
-      const OpenCursorParams& aParams) override;
+      const int64_t& aRequestId, const OpenCursorParams& aParams) override;
 
   mozilla::ipc::IPCResult RecvPBackgroundIDBCursorConstructor(
-      PBackgroundIDBCursorParent* aActor,
+      PBackgroundIDBCursorParent* aActor, const int64_t& aRequestId,
       const OpenCursorParams& aParams) override;
 
  public:
   // This constructor is only called by Database.
   NormalTransaction(
       SafeRefPtr<Database> aDatabase, TransactionBase::Mode aMode,
+      TransactionBase::Durability aDurability,
       nsTArray<SafeRefPtr<FullObjectStoreMetadata>>&& aObjectStores);
 
   MOZ_INLINE_DECL_SAFEREFCOUNTING_INHERITED(NormalTransaction, TransactionBase)
@@ -2910,26 +2975,25 @@ class VersionChangeTransaction final
       const IndexOrObjectStoreId& aIndexId, const nsAString& aName) override;
 
   PBackgroundIDBRequestParent* AllocPBackgroundIDBRequestParent(
-      const RequestParams& aParams) override;
+      const int64_t& aRequestId, const RequestParams& aParams) override;
 
   mozilla::ipc::IPCResult RecvPBackgroundIDBRequestConstructor(
-      PBackgroundIDBRequestParent* aActor,
+      PBackgroundIDBRequestParent* aActor, const int64_t& aRequestId,
       const RequestParams& aParams) override;
 
   bool DeallocPBackgroundIDBRequestParent(
       PBackgroundIDBRequestParent* aActor) override;
 
   already_AddRefed<PBackgroundIDBCursorParent> AllocPBackgroundIDBCursorParent(
-      const OpenCursorParams& aParams) override;
+      const int64_t& aRequestId, const OpenCursorParams& aParams) override;
 
   mozilla::ipc::IPCResult RecvPBackgroundIDBCursorConstructor(
-      PBackgroundIDBCursorParent* aActor,
+      PBackgroundIDBCursorParent* aActor, const int64_t& aRequestId,
       const OpenCursorParams& aParams) override;
 };
 
 class FactoryOp
     : public DatabaseOperationBase,
-      public PBackgroundIDBFactoryRequestParent,
       public SupportsCheckedUnsafePtr<CheckIf<DiagnosticAssertEnabled>> {
  public:
   struct MaybeBlockedDatabaseInfo final {
@@ -2961,21 +3025,26 @@ class FactoryOp
 
  protected:
   enum class State {
-    // Just created on the PBackground thread, dispatched to the main thread.
-    // Next step is either SendingResults if permission is denied,
-    // PermissionChallenge if the permission is unknown, or FinishOpen
-    // if permission is granted.
+    // Just created on the PBackground thread, dispatched to the current thread.
+    // Next step is either SendingResults if opening initialization failed, or
+    // DirectoryOpenPending if the opening initialization succeeded.
     Initial,
-
-    // Ensuring quota manager is created and opening directory on the
-    // PBackground thread. Next step is either SendingResults if quota manager
-    // is not available or DirectoryOpenPending if quota manager is available.
-    FinishOpen,
 
     // Waiting for directory open allowed on the PBackground thread. The next
     // step is either SendingResults if directory lock failed to acquire, or
-    // DatabaseOpenPending if directory lock is acquired.
+    // DirectoryWorkOpen if the factory operation is not tied up to a specific
+    // database, or DatabaseOpenPending otherwise.
     DirectoryOpenPending,
+
+    // Waiting to do/doing directory work on the QuotaManager IO thread. Its
+    // next step is DirectoryWorkDone if directory work was successful or
+    // SendingResults if directory work failed.
+    DirectoryWorkOpen,
+
+    // Checking if database work can be started. If the database is not blocked
+    // by other factory operations then the next step is DatabaseWorkOpen.
+    // Otherwise the next step is DatabaseOpenPending.
+    DirectoryWorkDone,
 
     // Waiting for database open allowed on the PBackground thread. The next
     // step is DatabaseWorkOpen.
@@ -3026,14 +3095,18 @@ class FactoryOp
   // Must be released on the main thread!
   RefPtr<DirectoryLock> mDirectoryLock;
 
-  RefPtr<FactoryOp> mDelayedOp;
+  nsTArray<NotNull<RefPtr<FactoryOp>>> mBlocking;
+  nsTArray<NotNull<RefPtr<FactoryOp>>> mBlockedOn;
+
   nsTArray<MaybeBlockedDatabaseInfo> mMaybeBlockedDatabases;
 
-  const CommonFactoryRequestParams mCommonParams;
+  const PrincipalInfo mPrincipalInfo;
   OriginMetadata mOriginMetadata;
-  nsCString mDatabaseId;
-  nsString mDatabaseFilePath;
+  Maybe<nsString> mDatabaseName;
+  Maybe<nsCString> mDatabaseId;
+  Maybe<nsString> mDatabaseFilePath;
   int64_t mDirectoryLockId;
+  const PersistenceType mPersistenceType;
   State mState;
   bool mWaitingForPermissionRetry;
   bool mEnforcingQuota;
@@ -3047,17 +3120,23 @@ class FactoryOp
     return mOriginMetadata.mOrigin;
   }
 
+  const Maybe<nsString>& DatabaseNameRef() const {
+    AssertIsOnOwningThread();
+
+    return mDatabaseName;
+  }
+
   bool DatabaseFilePathIsKnown() const {
     AssertIsOnOwningThread();
 
-    return !mDatabaseFilePath.IsEmpty();
+    return mDatabaseFilePath.isSome();
   }
 
   const nsAString& DatabaseFilePath() const {
     AssertIsOnOwningThread();
-    MOZ_ASSERT(!mDatabaseFilePath.IsEmpty());
+    MOZ_ASSERT(mDatabaseFilePath);
 
-    return mDatabaseFilePath;
+    return mDatabaseFilePath.ref();
   }
 
   void NoteDatabaseBlocked(Database* aDatabase);
@@ -3075,7 +3154,9 @@ class FactoryOp
  protected:
   FactoryOp(SafeRefPtr<Factory> aFactory,
             const Maybe<ContentParentId>& aContentParentId,
-            const CommonFactoryRequestParams& aCommonParams, bool aDeleting);
+            const PersistenceType aPersistenceType,
+            const PrincipalInfo& aPrincipalInfo,
+            const Maybe<nsString>& aDatabaseName, bool aDeleting);
 
   ~FactoryOp() override {
     // Normally this would be out-of-line since it is a virtual function but
@@ -3087,6 +3168,8 @@ class FactoryOp
   nsresult Open();
 
   nsresult DirectoryOpen();
+
+  nsresult DirectoryWorkDone();
 
   nsresult SendToIOThread();
 
@@ -3102,6 +3185,8 @@ class FactoryOp
                                      const Maybe<uint64_t>& aNewVersion);
 
   // Methods that subclasses must implement.
+  virtual nsresult DoDirectoryWork() = 0;
+
   virtual nsresult DatabaseOpen() = 0;
 
   virtual nsresult DoDatabaseWork() = 0;
@@ -3123,21 +3208,56 @@ class FactoryOp
 
   void DirectoryLockFailed();
 
-  // IPDL methods.
-  void ActorDestroy(ActorDestroyReason aWhy) override;
-
   virtual void SendBlockedNotification() = 0;
 
  private:
-  mozilla::Result<PermissionValue, nsresult> CheckPermission();
-
-  nsresult FinishOpen();
-
   // Test whether this FactoryOp needs to wait for the given op.
   bool MustWaitFor(const FactoryOp& aExistingOp);
+
+  void AddBlockingOp(FactoryOp& aOp) {
+    AssertIsOnOwningThread();
+
+    mBlocking.AppendElement(WrapNotNull(&aOp));
+  }
+
+  void AddBlockedOnOp(FactoryOp& aOp) {
+    AssertIsOnOwningThread();
+
+    mBlockedOn.AppendElement(WrapNotNull(&aOp));
+  }
+
+  void MaybeUnblock(FactoryOp& aOp) {
+    AssertIsOnOwningThread();
+
+    mBlockedOn.RemoveElement(&aOp);
+    if (mBlockedOn.IsEmpty()) {
+      MOZ_ALWAYS_SUCCEEDS(NS_DispatchToCurrentThread(this));
+    }
+  }
 };
 
-class OpenDatabaseOp final : public FactoryOp {
+class FactoryRequestOp : public FactoryOp,
+                         public PBackgroundIDBFactoryRequestParent {
+ protected:
+  const CommonFactoryRequestParams mCommonParams;
+
+  FactoryRequestOp(SafeRefPtr<Factory> aFactory,
+                   const Maybe<ContentParentId>& aContentParentId,
+                   const CommonFactoryRequestParams& aCommonParams,
+                   bool aDeleting)
+      : FactoryOp(std::move(aFactory), aContentParentId,
+                  aCommonParams.metadata().persistenceType(),
+                  aCommonParams.principalInfo(),
+                  Some(aCommonParams.metadata().name()), aDeleting),
+        mCommonParams(aCommonParams) {}
+
+  nsresult DoDirectoryWork() override;
+
+  // IPDL methods.
+  void ActorDestroy(ActorDestroyReason aWhy) override;
+};
+
+class OpenDatabaseOp final : public FactoryRequestOp {
   friend class Database;
   friend class VersionChangeTransaction;
 
@@ -3219,7 +3339,7 @@ class OpenDatabaseOp::VersionChangeOp final
   explicit VersionChangeOp(OpenDatabaseOp* aOpenDatabaseOp)
       : TransactionDatabaseOperationBase(
             aOpenDatabaseOp->mVersionChangeTransaction.clonePtr(),
-            aOpenDatabaseOp->LoggingSerialNumber()),
+            /* aRequestId */ 0, aOpenDatabaseOp->LoggingSerialNumber()),
         mOpenDatabaseOp(aOpenDatabaseOp),
         mRequestedVersion(aOpenDatabaseOp->mRequestedVersion),
         mPreviousVersion(
@@ -3239,7 +3359,7 @@ class OpenDatabaseOp::VersionChangeOp final
   void Cleanup() override;
 };
 
-class DeleteDatabaseOp final : public FactoryOp {
+class DeleteDatabaseOp final : public FactoryRequestOp {
   class VersionChangeOp;
 
   nsString mDatabaseDirectoryPath;
@@ -3250,8 +3370,8 @@ class DeleteDatabaseOp final : public FactoryOp {
   DeleteDatabaseOp(SafeRefPtr<Factory> aFactory,
                    const Maybe<ContentParentId>& aContentParentId,
                    const CommonFactoryRequestParams& aParams)
-      : FactoryOp(std::move(aFactory), aContentParentId, aParams,
-                  /* aDeleting */ true),
+      : FactoryRequestOp(std::move(aFactory), aContentParentId, aParams,
+                         /* aDeleting */ true),
         mPreviousVersion(0) {}
 
  private:
@@ -3297,6 +3417,43 @@ class DeleteDatabaseOp::VersionChangeOp final : public DatabaseOperationBase {
   NS_DECL_NSIRUNNABLE
 };
 
+class GetDatabasesOp final : public FactoryOp {
+  nsTHashMap<nsStringHashKey, DatabaseMetadata> mDatabaseMetadataTable;
+  nsTArray<DatabaseMetadata> mDatabaseMetadataArray;
+  Factory::GetDatabasesResolver mResolver;
+
+ public:
+  GetDatabasesOp(SafeRefPtr<Factory> aFactory,
+                 const Maybe<ContentParentId>& aContentParentId,
+                 const PersistenceType aPersistenceType,
+                 const PrincipalInfo& aPrincipalInfo,
+                 Factory::GetDatabasesResolver&& aResolver)
+      : FactoryOp(std::move(aFactory), aContentParentId, aPersistenceType,
+                  aPrincipalInfo, Nothing(), /* aDeleting */ false),
+        mResolver(std::move(aResolver)) {}
+
+ private:
+  ~GetDatabasesOp() override = default;
+
+  nsresult DatabasesNotAvailable();
+
+  nsresult DoDirectoryWork() override;
+
+  nsresult DatabaseOpen() override;
+
+  nsresult DoDatabaseWork() override;
+
+  nsresult BeginVersionChange() override;
+
+  bool AreActorsAlive() override;
+
+  void SendBlockedNotification() override;
+
+  nsresult DispatchToWorkThread() override;
+
+  void SendResults() override;
+};
+
 class VersionChangeTransactionOp : public TransactionDatabaseOperationBase {
  public:
   void Cleanup() override;
@@ -3304,7 +3461,8 @@ class VersionChangeTransactionOp : public TransactionDatabaseOperationBase {
  protected:
   explicit VersionChangeTransactionOp(
       SafeRefPtr<VersionChangeTransaction> aTransaction)
-      : TransactionDatabaseOperationBase(std::move(aTransaction)) {}
+      : TransactionDatabaseOperationBase(std::move(aTransaction),
+                                         /* aRequestId */ 0) {}
 
   ~VersionChangeTransactionOp() override = default;
 
@@ -3489,8 +3647,9 @@ class NormalTransactionOp : public TransactionDatabaseOperationBase,
   void Cleanup() override;
 
  protected:
-  explicit NormalTransactionOp(SafeRefPtr<TransactionBase> aTransaction)
-      : TransactionDatabaseOperationBase(std::move(aTransaction))
+  NormalTransactionOp(SafeRefPtr<TransactionBase> aTransaction,
+                      const int64_t aRequestId)
+      : TransactionDatabaseOperationBase(std::move(aTransaction), aRequestId)
 #ifdef DEBUG
         ,
         mResponseSent(false)
@@ -3598,7 +3757,7 @@ class ObjectStoreAddOrPutRequestOp final : public NormalTransactionOp {
   };
   class SCInputStream;
 
-  const ObjectStoreAddPutParams mParams;
+  ObjectStoreAddPutParams mParams;
   Maybe<UniqueIndexTable> mUniqueIndexTable;
 
   // This must be non-const so that we can update the mNextAutoIncrementId field
@@ -3617,6 +3776,7 @@ class ObjectStoreAddOrPutRequestOp final : public NormalTransactionOp {
  private:
   // Only created by TransactionBase.
   ObjectStoreAddOrPutRequestOp(SafeRefPtr<TransactionBase> aTransaction,
+                               const int64_t aRequestId,
                                RequestParams&& aParams);
 
   ~ObjectStoreAddOrPutRequestOp() override = default;
@@ -3853,6 +4013,7 @@ class ObjectStoreGetRequestOp final : public NormalTransactionOp {
  private:
   // Only created by TransactionBase.
   ObjectStoreGetRequestOp(SafeRefPtr<TransactionBase> aTransaction,
+                          const int64_t aRequestId,
                           const RequestParams& aParams, bool aGetAll);
 
   ~ObjectStoreGetRequestOp() override = default;
@@ -3882,6 +4043,7 @@ class ObjectStoreGetKeyRequestOp final : public NormalTransactionOp {
  private:
   // Only created by TransactionBase.
   ObjectStoreGetKeyRequestOp(SafeRefPtr<TransactionBase> aTransaction,
+                             const int64_t aRequestId,
                              const RequestParams& aParams, bool aGetAll);
 
   ~ObjectStoreGetKeyRequestOp() override = default;
@@ -3900,6 +4062,7 @@ class ObjectStoreDeleteRequestOp final : public NormalTransactionOp {
 
  private:
   ObjectStoreDeleteRequestOp(SafeRefPtr<TransactionBase> aTransaction,
+                             const int64_t aRequestId,
                              const ObjectStoreDeleteParams& aParams);
 
   ~ObjectStoreDeleteRequestOp() override = default;
@@ -3921,6 +4084,7 @@ class ObjectStoreClearRequestOp final : public NormalTransactionOp {
 
  private:
   ObjectStoreClearRequestOp(SafeRefPtr<TransactionBase> aTransaction,
+                            const int64_t aRequestId,
                             const ObjectStoreClearParams& aParams);
 
   ~ObjectStoreClearRequestOp() override = default;
@@ -3941,8 +4105,10 @@ class ObjectStoreCountRequestOp final : public NormalTransactionOp {
 
  private:
   ObjectStoreCountRequestOp(SafeRefPtr<TransactionBase> aTransaction,
+                            const int64_t aRequestId,
                             const ObjectStoreCountParams& aParams)
-      : NormalTransactionOp(std::move(aTransaction)), mParams(aParams) {}
+      : NormalTransactionOp(std::move(aTransaction), aRequestId),
+        mParams(aParams) {}
 
   ~ObjectStoreCountRequestOp() override = default;
 
@@ -3960,8 +4126,8 @@ class IndexRequestOpBase : public NormalTransactionOp {
 
  protected:
   IndexRequestOpBase(SafeRefPtr<TransactionBase> aTransaction,
-                     const RequestParams& aParams)
-      : NormalTransactionOp(std::move(aTransaction)),
+                     const int64_t aRequestId, const RequestParams& aParams)
+      : NormalTransactionOp(std::move(aTransaction), aRequestId),
         mMetadata(IndexMetadataForParams(Transaction(), aParams)) {}
 
   ~IndexRequestOpBase() override = default;
@@ -3984,7 +4150,8 @@ class IndexGetRequestOp final : public IndexRequestOpBase {
  private:
   // Only created by TransactionBase.
   IndexGetRequestOp(SafeRefPtr<TransactionBase> aTransaction,
-                    const RequestParams& aParams, bool aGetAll);
+                    const int64_t aRequestId, const RequestParams& aParams,
+                    bool aGetAll);
 
   ~IndexGetRequestOp() override = default;
 
@@ -4004,7 +4171,8 @@ class IndexGetKeyRequestOp final : public IndexRequestOpBase {
  private:
   // Only created by TransactionBase.
   IndexGetKeyRequestOp(SafeRefPtr<TransactionBase> aTransaction,
-                       const RequestParams& aParams, bool aGetAll);
+                       const int64_t aRequestId, const RequestParams& aParams,
+                       bool aGetAll);
 
   ~IndexGetKeyRequestOp() override = default;
 
@@ -4022,8 +4190,8 @@ class IndexCountRequestOp final : public IndexRequestOpBase {
  private:
   // Only created by TransactionBase.
   IndexCountRequestOp(SafeRefPtr<TransactionBase> aTransaction,
-                      const RequestParams& aParams)
-      : IndexRequestOpBase(std::move(aTransaction), aParams),
+                      const int64_t aRequestId, const RequestParams& aParams)
+      : IndexRequestOpBase(std::move(aTransaction), aRequestId, aParams),
         mParams(aParams.get_IndexCountParams()) {}
 
   ~IndexCountRequestOp() override = default;
@@ -4123,7 +4291,8 @@ class CursorBase : public PBackgroundIDBCursorParent {
   ~CursorBase() override { MOZ_ASSERT(!mObjectStoreMetadata); }
 
  private:
-  virtual bool Start(const OpenCursorParams& aParams) = 0;
+  virtual bool Start(const int64_t aRequestId,
+                     const OpenCursorParams& aParams) = 0;
 };
 
 class IndexCursorBase : public CursorBase {
@@ -4281,7 +4450,7 @@ class Cursor final
   LazyInitializedOnce<const typename Base::ContinueQueries> mContinueQueries;
 
   // Only called by TransactionBase.
-  bool Start(const OpenCursorParams& aParams) final;
+  bool Start(const int64_t aRequestId, const OpenCursorParams& aParams) final;
 
   void SendResponseInternal(CursorResponse& aResponse,
                             const FilesArrayT<CursorType>& aFiles);
@@ -4295,8 +4464,8 @@ class Cursor final
   mozilla::ipc::IPCResult RecvDeleteMe() override;
 
   mozilla::ipc::IPCResult RecvContinue(
-      const CursorRequestParams& aParams, const Key& aCurrentKey,
-      const Key& aCurrentObjectStoreKey) override;
+      const int64_t& aRequestId, const CursorRequestParams& aParams,
+      const Key& aCurrentKey, const Key& aCurrentObjectStoreKey) override;
 
  public:
   Cursor(SafeRefPtr<TransactionBase> aTransaction,
@@ -4343,8 +4512,9 @@ class Cursor<CursorType>::CursorOpBase
 #endif
 
  protected:
-  explicit CursorOpBase(Cursor* aCursor)
-      : TransactionDatabaseOperationBase(aCursor->mTransaction.clonePtr()),
+  explicit CursorOpBase(Cursor* aCursor, const int64_t aRequestId)
+      : TransactionDatabaseOperationBase(aCursor->mTransaction.clonePtr(),
+                                         /* aRequestId */ aRequestId),
         mCursor(aCursor)
 #ifdef DEBUG
         ,
@@ -4522,9 +4692,10 @@ class Cursor<CursorType>::OpenOp final : public CursorOpBase {
   using CursorOpBase::mResponse;
 
   // Only created by Cursor.
-  OpenOp(Cursor* const aCursor,
+  OpenOp(Cursor* const aCursor, const int64_t aRequestId,
          const Maybe<SerializedKeyRange>& aOptionalKeyRange)
-      : CursorOpBase(aCursor), mOptionalKeyRange(aOptionalKeyRange) {}
+      : CursorOpBase(aCursor, aRequestId),
+        mOptionalKeyRange(aOptionalKeyRange) {}
 
   // Reference counted.
   ~OpenOp() override = default;
@@ -4542,9 +4713,9 @@ class Cursor<CursorType>::ContinueOp final
   const CursorRequestParams mParams;
 
   // Only created by Cursor.
-  ContinueOp(Cursor* const aCursor, CursorRequestParams aParams,
-             CursorPosition<CursorType> aPosition)
-      : CursorOpBase(aCursor),
+  ContinueOp(Cursor* const aCursor, int64_t aRequestId,
+             CursorRequestParams aParams, CursorPosition<CursorType> aPosition)
+      : CursorOpBase(aCursor, aRequestId),
         mParams(std::move(aParams)),
         mCurrentPosition{std::move(aPosition)} {
     MOZ_ASSERT(mParams.type() != CursorRequestParams::T__None);
@@ -4661,6 +4832,8 @@ class DatabaseLoggingInfo final {
 };
 
 class QuotaClient final : public mozilla::dom::quota::Client {
+  friend class GetDatabasesOp;
+
   static QuotaClient* sInstance;
 
   nsCOMPtr<nsIEventTarget> mBackgroundThread;
@@ -4794,8 +4967,9 @@ class QuotaClient final : public mozilla::dom::quota::Client {
   // checks those unfinished deletion and clean them up after that.
   template <ObsoleteFilenamesHandling ObsoleteFilenames =
                 ObsoleteFilenamesHandling::Omit>
-  Result<GetDatabaseFilenamesResult<ObsoleteFilenames>, nsresult>
-  GetDatabaseFilenames(nsIFile& aDirectory, const AtomicBool& aCanceled);
+  Result<GetDatabaseFilenamesResult<ObsoleteFilenames>,
+         nsresult> static GetDatabaseFilenames(nsIFile& aDirectory,
+                                               const AtomicBool& aCanceled);
 
   nsresult GetUsageForOriginInternal(PersistenceType aPersistenceType,
                                      const OriginMetadata& aOriginMetadata,
@@ -4836,6 +5010,9 @@ class DeleteFilesRunnable final : public Runnable {
   RefPtr<DirectoryLock> mDirectoryLock;
   nsTArray<int64_t> mFileIds;
   State mState;
+  DEBUGONLY(bool mDEBUGCountsAsPending = false);
+
+  static uint64_t sPendingRunnables;
 
  public:
   DeleteFilesRunnable(SafeRefPtr<DatabaseFileManager> aFileManager,
@@ -4843,8 +5020,14 @@ class DeleteFilesRunnable final : public Runnable {
 
   void RunImmediately();
 
+  static bool IsDeletionPending() { return sPendingRunnables > 0; }
+
  private:
+#ifdef DEBUG
+  ~DeleteFilesRunnable();
+#else
   ~DeleteFilesRunnable() = default;
+#endif
 
   void Open();
 
@@ -4923,6 +5106,7 @@ class Maintenance final : public Runnable {
   PRTime mStartTime;
   RefPtr<UniversalDirectoryLock> mPendingDirectoryLock;
   RefPtr<UniversalDirectoryLock> mDirectoryLock;
+  nsTArray<nsCOMPtr<nsIRunnable>> mCompleteCallbacks;
   nsTArray<DirectoryInfo> mDirectoryInfos;
   nsTHashMap<nsStringHashKey, DatabaseMaintenance*> mDatabaseMaintenances;
   nsresult mResultCode;
@@ -4964,11 +5148,20 @@ class Maintenance final : public Runnable {
 
   void UnregisterDatabaseMaintenance(DatabaseMaintenance* aDatabaseMaintenance);
 
+  bool HasDatabaseMaintenances() const { return mDatabaseMaintenances.Count(); }
+
   RefPtr<DatabaseMaintenance> GetDatabaseMaintenance(
       const nsAString& aDatabasePath) const {
     AssertIsOnBackgroundThread();
 
     return mDatabaseMaintenances.Get(aDatabasePath);
+  }
+
+  void WaitForCompletion(nsIRunnable* aCallback) {
+    AssertIsOnBackgroundThread();
+    MOZ_ASSERT(mDatabaseMaintenances.Count());
+
+    mCompleteCallbacks.AppendElement(aCallback);
   }
 
   void Stringify(nsACString& aResult) const;
@@ -6380,9 +6573,9 @@ class DeserializeIndexValueHelper final : public Runnable {
       value.setUndefined();
 
       ErrorResult rv;
-      IDBObjectStore::AppendIndexUpdateInfo(mIndexID, mKeyPath, mMultiEntry,
-                                            mLocale, jsapi.cx(), value,
-                                            &mUpdateInfoArray, &rv);
+      IDBObjectStore::AppendIndexUpdateInfo(
+          mIndexID, mKeyPath, mMultiEntry, &mUpdateInfoArray,
+          /* aAutoIncrementedObjectStoreKeyPath */ VoidString(), &rv);
       return rv.Failed() ? rv.StealNSResult() : NS_OK;
     }
 #endif
@@ -6420,9 +6613,9 @@ class DeserializeIndexValueHelper final : public Runnable {
            [this](const nsresult rv) { OperationCompleted(rv); });
 
     ErrorResult errorResult;
-    IDBObjectStore::AppendIndexUpdateInfo(mIndexID, mKeyPath, mMultiEntry,
-                                          mLocale, cx, value, &mUpdateInfoArray,
-                                          &errorResult);
+    IDBObjectStore::AppendIndexUpdateInfo(
+        mIndexID, mKeyPath, mMultiEntry, mLocale, cx, value, &mUpdateInfoArray,
+        /* aAutoIncrementedObjectStoreKeyPath */ VoidString(), &errorResult);
     QM_TRY(OkIf(!errorResult.Failed()), NS_OK,
            ([this, &errorResult](const NotOk) {
              OperationCompleted(errorResult.StealNSResult());
@@ -6517,7 +6710,7 @@ already_AddRefed<nsIThreadPool> MakeConnectionIOTarget() {
  ******************************************************************************/
 
 already_AddRefed<PBackgroundIDBFactoryParent> AllocPBackgroundIDBFactoryParent(
-    const LoggingInfo& aLoggingInfo) {
+    const LoggingInfo& aLoggingInfo, const nsACString& aSystemLocale) {
   AssertIsOnBackgroundThread();
 
   if (NS_WARN_IF(QuotaClient::IsShuttingDownOnBackgroundThread())) {
@@ -6531,15 +6724,15 @@ already_AddRefed<PBackgroundIDBFactoryParent> AllocPBackgroundIDBFactoryParent(
     return nullptr;
   }
 
-  SafeRefPtr<Factory> actor = Factory::Create(aLoggingInfo);
+  SafeRefPtr<Factory> actor = Factory::Create(aLoggingInfo, aSystemLocale);
   MOZ_ASSERT(actor);
 
   return actor.forget();
 }
 
 bool RecvPBackgroundIDBFactoryConstructor(
-    PBackgroundIDBFactoryParent* aActor,
-    const LoggingInfo& /* aLoggingInfo */) {
+    PBackgroundIDBFactoryParent* aActor, const LoggingInfo& /* aLoggingInfo */,
+    const nsACString& /* aSystemLocale */) {
   AssertIsOnBackgroundThread();
   MOZ_ASSERT(aActor);
   MOZ_ASSERT(!QuotaClient::IsShuttingDownOnBackgroundThread());
@@ -6862,7 +7055,8 @@ nsresult DatabaseConnection::CheckpointInternal(CheckpointMode aMode) {
   return NS_OK;
 }
 
-void DatabaseConnection::DoIdleProcessing(bool aNeedsCheckpoint) {
+void DatabaseConnection::DoIdleProcessing(bool aNeedsCheckpoint,
+                                          const Atomic<bool>& aInterrupted) {
   AssertIsOnConnectionThread();
   MOZ_ASSERT(mInReadTransaction);
   MOZ_ASSERT(!mInWriteTransaction);
@@ -6887,22 +7081,23 @@ void DatabaseConnection::DoIdleProcessing(bool aNeedsCheckpoint) {
     mInReadTransaction = false;
   }
 
-  const bool freedSomePages = freelistCount && [this, &freelistStmt,
-                                                &rollbackStmt, freelistCount,
-                                                aNeedsCheckpoint] {
-    // Warn in case of an error, but do not propagate it. Just indicate we
-    // didn't free any pages.
-    QM_TRY_INSPECT(const bool& res,
-                   ReclaimFreePagesWhileIdle(freelistStmt, rollbackStmt,
-                                             freelistCount, aNeedsCheckpoint),
-                   false);
+  const bool freedSomePages =
+      freelistCount && [this, &freelistStmt, &rollbackStmt, freelistCount,
+                        aNeedsCheckpoint, &aInterrupted] {
+        // Warn in case of an error, but do not propagate it. Just indicate we
+        // didn't free any pages.
+        QM_TRY_INSPECT(
+            const bool& res,
+            ReclaimFreePagesWhileIdle(freelistStmt, rollbackStmt, freelistCount,
+                                      aNeedsCheckpoint, aInterrupted),
+            false);
 
-    // Make sure we didn't leave a transaction running.
-    MOZ_ASSERT(!mInReadTransaction);
-    MOZ_ASSERT(!mInWriteTransaction);
+        // Make sure we didn't leave a transaction running.
+        MOZ_ASSERT(!mInReadTransaction);
+        MOZ_ASSERT(!mInWriteTransaction);
 
-    return res;
-  }();
+        return res;
+      }();
 
   // Truncate the WAL if we were asked to or if we managed to free some space.
   if (aNeedsCheckpoint || freedSomePages) {
@@ -6922,7 +7117,8 @@ void DatabaseConnection::DoIdleProcessing(bool aNeedsCheckpoint) {
 
 Result<bool, nsresult> DatabaseConnection::ReclaimFreePagesWhileIdle(
     CachedStatement& aFreelistStatement, CachedStatement& aRollbackStatement,
-    uint32_t aFreelistCount, bool aNeedsCheckpoint) {
+    uint32_t aFreelistCount, bool aNeedsCheckpoint,
+    const Atomic<bool>& aInterrupted) {
   AssertIsOnConnectionThread();
   MOZ_ASSERT(aFreelistStatement);
   MOZ_ASSERT(aRollbackStatement);
@@ -6932,11 +7128,14 @@ Result<bool, nsresult> DatabaseConnection::ReclaimFreePagesWhileIdle(
 
   AUTO_PROFILER_LABEL("DatabaseConnection::ReclaimFreePagesWhileIdle", DOM);
 
-  // Make sure we don't keep working if anything else needs this thread.
-  nsIThread* currentThread = NS_GetCurrentThread();
-  MOZ_ASSERT(currentThread);
+  uint32_t pauseOnConnectionThreadMs = StaticPrefs::
+      dom_indexedDB_connectionIdleMaintenance_pauseOnConnectionThreadMs();
+  if (pauseOnConnectionThreadMs > 0) {
+    PR_Sleep(PR_MillisecondsToInterval(pauseOnConnectionThreadMs));
+  }
 
-  if (NS_HasPendingEvents(currentThread)) {
+  // Make sure we don't keep working if anything else needs this thread.
+  if (aInterrupted) {
     return false;
   }
 
@@ -6968,7 +7167,7 @@ Result<bool, nsresult> DatabaseConnection::ReclaimFreePagesWhileIdle(
 
   mInWriteTransaction = true;
 
-  bool freedSomePages = false, interrupted = false;
+  bool freedSomePages = false;
 
   const auto rollback = [&aRollbackStatement, this](const auto&) {
     MOZ_ASSERT(mInWriteTransaction);
@@ -6984,14 +7183,12 @@ Result<bool, nsresult> DatabaseConnection::ReclaimFreePagesWhileIdle(
   uint64_t previousFreelistCount = (uint64_t)aFreelistCount + 1;
 
   QM_TRY(CollectWhile(
-             [&aFreelistCount, &previousFreelistCount, &interrupted,
-              currentThread]() -> Result<bool, nsresult> {
-               if (NS_HasPendingEvents(currentThread)) {
-                 // Abort if something else wants to use the thread, and
-                 // roll back this transaction. It's ok if we never make
-                 // progress here because the idle service should
-                 // eventually reclaim this space.
-                 interrupted = true;
+             [&aFreelistCount, &previousFreelistCount,
+              &aInterrupted]() -> Result<bool, nsresult> {
+               if (aInterrupted) {
+                 // On interrupt, abort and roll back this transaction. It's ok
+                 // if we never make progress here because the idle service
+                 // should eventually reclaim this space.
                  return false;
                }
                // If we were not able to free anything, we might either see
@@ -7001,7 +7198,7 @@ Result<bool, nsresult> DatabaseConnection::ReclaimFreePagesWhileIdle(
                bool madeProgress = previousFreelistCount != aFreelistCount;
                previousFreelistCount = aFreelistCount;
                MOZ_ASSERT(madeProgress);
-               QM_WARNONLY_TRY(MOZ_TO_RESULT(!madeProgress));
+               QM_WARNONLY_TRY(MOZ_TO_RESULT(madeProgress));
                return madeProgress && (aFreelistCount != 0);
              },
              [&aFreelistStatement, &aFreelistCount, &incrementalVacuumStmt,
@@ -7015,9 +7212,9 @@ Result<bool, nsresult> DatabaseConnection::ReclaimFreePagesWhileIdle(
 
                return Ok{};
              })
-             .andThen([&commitStmt, &freedSomePages, &interrupted, &rollback,
+             .andThen([&commitStmt, &freedSomePages, &aInterrupted, &rollback,
                        this](Ok) -> Result<Ok, nsresult> {
-               if (interrupted) {
+               if (aInterrupted) {
                  rollback(Ok{});
                  freedSomePages = false;
                }
@@ -7982,8 +8179,9 @@ void ConnectionPool::CloseIdleDatabases() {
   }
 
   if (!mDatabasesPerformingIdleMaintenance.IsEmpty()) {
-    for (const auto dbInfo : mDatabasesPerformingIdleMaintenance) {
-      CloseDatabase(*dbInfo);
+    for (PerformingIdleMaintenanceDatabaseInfo& performingIdleMaintenanceInfo :
+         mDatabasesPerformingIdleMaintenance) {
+      CloseDatabase(*performingIdleMaintenanceInfo.mDatabaseInfo);
     }
     mDatabasesPerformingIdleMaintenance.Clear();
   }
@@ -8059,16 +8257,13 @@ bool ConnectionPool::ScheduleTransaction(TransactionInfo& aTransactionInfo,
         // deliberately const to prevent the attempt to wrongly optimize the
         // refcounting by passing runnable.forget() to the Dispatch method, see
         // bug 1598559.
-        const nsCOMPtr<nsIRunnable> runnable =
-            new Runnable("IndexedDBDummyRunnable");
 
         for (uint32_t index = mDatabasesPerformingIdleMaintenance.Length();
              index > 0; index--) {
-          const auto dbInfo = mDatabasesPerformingIdleMaintenance[index - 1];
-          dbInfo->mThreadInfo.AssertValid();
+          const auto& performingIdleMaintenanceInfo =
+              mDatabasesPerformingIdleMaintenance[index - 1];
 
-          MOZ_ALWAYS_SUCCEEDS(dbInfo->mThreadInfo.ThreadRef().Dispatch(
-              runnable, NS_DISPATCH_NORMAL));
+          performingIdleMaintenanceInfo.mIdleConnectionRunnable->Interrupt();
         }
       }
 
@@ -8369,12 +8564,15 @@ void ConnectionPool::PerformIdleDatabaseMaintenance(
   aDatabaseInfo.mNeedsCheckpoint = false;
   aDatabaseInfo.mIdle = false;
 
+  auto idleConnectionRunnable =
+      MakeRefPtr<IdleConnectionRunnable>(aDatabaseInfo, neededCheckpoint);
+
   mDatabasesPerformingIdleMaintenance.AppendElement(
-      WrapNotNullUnchecked(&aDatabaseInfo));
+      PerformingIdleMaintenanceDatabaseInfo{aDatabaseInfo,
+                                            idleConnectionRunnable});
 
   MOZ_ALWAYS_SUCCEEDS(aDatabaseInfo.mThreadInfo.ThreadRef().Dispatch(
-      MakeAndAddRef<IdleConnectionRunnable>(aDatabaseInfo, neededCheckpoint),
-      NS_DISPATCH_NORMAL));
+      idleConnectionRunnable.forget(), NS_DISPATCH_NORMAL));
 }
 
 void ConnectionPool::CloseDatabase(DatabaseInfo& aDatabaseInfo) const {
@@ -8437,7 +8635,8 @@ ConnectionPool::IdleConnectionRunnable::Run() {
     // The connection could be null if EnsureConnection() didn't run or was not
     // successful in TransactionDatabaseOperationBase::RunOnConnectionThread().
     if (mDatabaseInfo.mConnection) {
-      mDatabaseInfo.mConnection->DoIdleProcessing(mNeedsCheckpoint);
+      mDatabaseInfo.mConnection->DoIdleProcessing(mNeedsCheckpoint,
+                                                  mInterrupted);
     }
 
     MOZ_ALWAYS_SUCCEEDS(owningThread->Dispatch(this, NS_DISPATCH_NORMAL));
@@ -8733,6 +8932,25 @@ ConnectionPool::IdleDatabaseInfo::~IdleDatabaseInfo() {
   MOZ_COUNT_DTOR(ConnectionPool::IdleDatabaseInfo);
 }
 
+ConnectionPool::PerformingIdleMaintenanceDatabaseInfo::
+    PerformingIdleMaintenanceDatabaseInfo(
+        DatabaseInfo& aDatabaseInfo,
+        RefPtr<IdleConnectionRunnable> aIdleConnectionRunnable)
+    : mDatabaseInfo(WrapNotNullUnchecked(&aDatabaseInfo)),
+      mIdleConnectionRunnable(std::move(aIdleConnectionRunnable)) {
+  AssertIsOnBackgroundThread();
+  MOZ_ASSERT(mIdleConnectionRunnable);
+
+  MOZ_COUNT_CTOR(ConnectionPool::PerformingIdleMaintenanceDatabaseInfo);
+}
+
+ConnectionPool::PerformingIdleMaintenanceDatabaseInfo::
+    ~PerformingIdleMaintenanceDatabaseInfo() {
+  AssertIsOnBackgroundThread();
+
+  MOZ_COUNT_DTOR(ConnectionPool::PerformingIdleMaintenanceDatabaseInfo);
+}
+
 ConnectionPool::IdleThreadInfo::IdleThreadInfo(ThreadInfo aThreadInfo)
     : IdleResource(TimeStamp::NowLoRes() +
                    TimeDuration::FromMilliseconds(kConnectionThreadIdleMS)),
@@ -8915,8 +9133,10 @@ DatabaseLoggingInfo::~DatabaseLoggingInfo() {
  * Factory
  ******************************************************************************/
 
-Factory::Factory(RefPtr<DatabaseLoggingInfo> aLoggingInfo)
-    : mLoggingInfo(std::move(aLoggingInfo))
+Factory::Factory(RefPtr<DatabaseLoggingInfo> aLoggingInfo,
+                 const nsACString& aSystemLocale)
+    : mSystemLocale(aSystemLocale),
+      mLoggingInfo(std::move(aLoggingInfo))
 #ifdef DEBUG
       ,
       mActorDestroyed(false)
@@ -8929,7 +9149,8 @@ Factory::Factory(RefPtr<DatabaseLoggingInfo> aLoggingInfo)
 Factory::~Factory() { MOZ_ASSERT(mActorDestroyed); }
 
 // static
-SafeRefPtr<Factory> Factory::Create(const LoggingInfo& aLoggingInfo) {
+SafeRefPtr<Factory> Factory::Create(const LoggingInfo& aLoggingInfo,
+                                    const nsACString& aSystemLocale) {
   AssertIsOnBackgroundThread();
   MOZ_ASSERT(!QuotaClient::IsShuttingDownOnBackgroundThread());
 
@@ -8966,7 +9187,7 @@ SafeRefPtr<Factory> Factory::Create(const LoggingInfo& aLoggingInfo) {
             return do_AddRef(entry.Data());
           });
 
-  return MakeSafeRefPtr<Factory>(std::move(loggingInfo));
+  return MakeSafeRefPtr<Factory>(std::move(loggingInfo), aSystemLocale);
 }
 
 void Factory::ActorDestroy(ActorDestroyReason aWhy) {
@@ -9045,20 +9266,17 @@ Factory::AllocPBackgroundIDBFactoryRequestParent(
     return nullptr;
   }
 
-  Maybe<ContentParentId> contentParentId;
-
-  uint64_t childID = BackgroundParent::GetChildID(Manager());
-  if (childID) {
-    // If childID is not zero we are dealing with an other-process actor. We
-    // want to initialize OpenDatabaseOp/DeleteDatabaseOp here with the ID
-    // (and later also Database) in that case, so Database::IsOwnedByProcess
-    // can find Databases belonging to a particular content process when
-    // QuotaClient::AbortOperationsForProcess is called which is currently used
-    // to abort operations for content processes only.
-    contentParentId = Some(ContentParentId(childID));
+  if (NS_AUUF_OR_WARN_IF(
+          principalInfo.type() == PrincipalInfo::TContentPrincipalInfo &&
+          QuotaManager::IsOriginInternal(
+              principalInfo.get_ContentPrincipalInfo().originNoSuffix()) &&
+          metadata.persistenceType() != PERSISTENCE_TYPE_PERSISTENT)) {
+    return nullptr;
   }
 
-  auto actor = [&]() -> RefPtr<FactoryOp> {
+  Maybe<ContentParentId> contentParentId = GetContentParentId();
+
+  auto actor = [&]() -> RefPtr<FactoryRequestOp> {
     if (aParams.type() == FactoryRequestParams::TOpenDatabaseRequestParams) {
       return MakeRefPtr<OpenDatabaseOp>(SafeRefPtrFromThis(), contentParentId,
                                         *commonParams);
@@ -9085,9 +9303,9 @@ mozilla::ipc::IPCResult Factory::RecvPBackgroundIDBFactoryRequestConstructor(
   MOZ_ASSERT(aParams.type() != FactoryRequestParams::T__None);
   MOZ_ASSERT(!QuotaClient::IsShuttingDownOnBackgroundThread());
 
-  auto* op = static_cast<FactoryOp*>(aActor);
+  auto* op = static_cast<FactoryRequestOp*>(aActor);
 
-  MOZ_ALWAYS_SUCCEEDS(NS_DispatchToMainThread(op));
+  MOZ_ALWAYS_SUCCEEDS(NS_DispatchToCurrentThread(op));
   return IPC_OK();
 }
 
@@ -9097,8 +9315,67 @@ bool Factory::DeallocPBackgroundIDBFactoryRequestParent(
   MOZ_ASSERT(aActor);
 
   // Transfer ownership back from IPDL.
-  RefPtr<FactoryOp> op = dont_AddRef(static_cast<FactoryOp*>(aActor));
+  RefPtr<FactoryRequestOp> op =
+      dont_AddRef(static_cast<FactoryRequestOp*>(aActor));
   return true;
+}
+
+mozilla::ipc::IPCResult Factory::RecvGetDatabases(
+    const PersistenceType& aPersistenceType,
+    const PrincipalInfo& aPrincipalInfo, GetDatabasesResolver&& aResolve) {
+  AssertIsOnBackgroundThread();
+
+  auto ResolveGetDatabasesAndReturn = [&aResolve](const nsresult rv) {
+    aResolve(rv);
+    return IPC_OK();
+  };
+
+  QM_TRY(MOZ_TO_RESULT(!QuotaClient::IsShuttingDownOnBackgroundThread()),
+         ResolveGetDatabasesAndReturn);
+
+  QM_TRY(MOZ_TO_RESULT(IsValidPersistenceType(aPersistenceType)),
+         QM_IPC_FAIL(this));
+
+  QM_TRY(MOZ_TO_RESULT(QuotaManager::IsPrincipalInfoValid(aPrincipalInfo)),
+         QM_IPC_FAIL(this));
+
+  MOZ_ASSERT(aPrincipalInfo.type() == PrincipalInfo::TSystemPrincipalInfo ||
+             aPrincipalInfo.type() == PrincipalInfo::TContentPrincipalInfo);
+
+  PersistenceType persistenceType =
+      IDBFactory::GetPersistenceType(aPrincipalInfo);
+
+  QM_TRY(MOZ_TO_RESULT(aPersistenceType == persistenceType), QM_IPC_FAIL(this));
+
+  Maybe<ContentParentId> contentParentId = GetContentParentId();
+
+  auto op = MakeRefPtr<GetDatabasesOp>(SafeRefPtrFromThis(), contentParentId,
+                                       aPersistenceType, aPrincipalInfo,
+                                       std::move(aResolve));
+
+  gFactoryOps->AppendElement(op);
+
+  // Balanced in CleanupMetadata() which is/must always called by SendResults().
+  IncreaseBusyCount();
+
+  MOZ_ALWAYS_SUCCEEDS(NS_DispatchToCurrentThread(op));
+
+  return IPC_OK();
+}
+
+Maybe<ContentParentId> Factory::GetContentParentId() const {
+  uint64_t childID = BackgroundParent::GetChildID(Manager());
+  if (childID) {
+    // If childID is not zero we are dealing with an other-process actor. We
+    // want to initialize OpenDatabaseOp/DeleteDatabaseOp here with the ID
+    // (and later also Database) in that case, so Database::IsOwnedByProcess
+    // can find Databases belonging to a particular content process when
+    // QuotaClient::AbortOperationsForProcess is called which is currently used
+    // to abort operations for content processes only.
+    return Some(ContentParentId(childID));
+  }
+
+  return Nothing();
 }
 
 /*******************************************************************************
@@ -9542,7 +9819,8 @@ bool Database::DeallocPBackgroundIDBDatabaseFileParent(
 
 already_AddRefed<PBackgroundIDBTransactionParent>
 Database::AllocPBackgroundIDBTransactionParent(
-    const nsTArray<nsString>& aObjectStoreNames, const Mode& aMode) {
+    const nsTArray<nsString>& aObjectStoreNames, const Mode& aMode,
+    const Durability& aDurability) {
   AssertIsOnBackgroundThread();
 
   // Once a database is closed it must not try to open new transactions.
@@ -9559,6 +9837,12 @@ Database::AllocPBackgroundIDBTransactionParent(
                          aMode != IDBTransaction::Mode::ReadWrite &&
                          aMode != IDBTransaction::Mode::ReadWriteFlush &&
                          aMode != IDBTransaction::Mode::Cleanup)) {
+    return nullptr;
+  }
+
+  if (NS_AUUF_OR_WARN_IF(aDurability != IDBTransaction::Durability::Default &&
+                         aDurability != IDBTransaction::Durability::Strict &&
+                         aDurability != IDBTransaction::Durability::Relaxed)) {
     return nullptr;
   }
 
@@ -9604,13 +9888,15 @@ Database::AllocPBackgroundIDBTransactionParent(
       nullptr);
 
   return MakeSafeRefPtr<NormalTransaction>(SafeRefPtrFromThis(), aMode,
+                                           aDurability,
                                            std::move(objectStoreMetadatas))
       .forget();
 }
 
 mozilla::ipc::IPCResult Database::RecvPBackgroundIDBTransactionConstructor(
     PBackgroundIDBTransactionParent* aActor,
-    nsTArray<nsString>&& aObjectStoreNames, const Mode& aMode) {
+    nsTArray<nsString>&& aObjectStoreNames, const Mode& aMode,
+    const Durability& aDurability) {  // TODO: See bug 1883045
   AssertIsOnBackgroundThread();
   MOZ_ASSERT(aActor);
   MOZ_ASSERT(!aObjectStoreNames.IsEmpty());
@@ -9618,6 +9904,9 @@ mozilla::ipc::IPCResult Database::RecvPBackgroundIDBTransactionConstructor(
              aMode == IDBTransaction::Mode::ReadWrite ||
              aMode == IDBTransaction::Mode::ReadWriteFlush ||
              aMode == IDBTransaction::Mode::Cleanup);
+  MOZ_ASSERT(aDurability == IDBTransaction::Durability::Default ||
+             aDurability == IDBTransaction::Durability::Strict ||
+             aDurability == IDBTransaction::Durability::Relaxed);
   MOZ_ASSERT(!mClosed);
 
   if (IsInvalidated()) {
@@ -9749,7 +10038,8 @@ void Database::StartTransactionOp::Cleanup() {
  * TransactionBase
  ******************************************************************************/
 
-TransactionBase::TransactionBase(SafeRefPtr<Database> aDatabase, Mode aMode)
+TransactionBase::TransactionBase(SafeRefPtr<Database> aDatabase, Mode aMode,
+                                 Durability aDurability)
     : mDatabase(std::move(aDatabase)),
       mDatabaseId(mDatabase->Id()),
       mLoggingSerialNumber(
@@ -9757,6 +10047,7 @@ TransactionBase::TransactionBase(SafeRefPtr<Database> aDatabase, Mode aMode)
       mActiveRequestCount(0),
       mInvalidatedOnAnyThread(false),
       mMode(aMode),
+      mDurability(aDurability),
       mResultCode(NS_OK) {
   AssertIsOnBackgroundThread();
   MOZ_ASSERT(mDatabase);
@@ -9833,14 +10124,13 @@ void TransactionBase::CommitOrAbort() {
     return;
   }
 
-  // In case of a failed request that was started after committing was
-  // initiated, abort (cf.
-  // https://w3c.github.io/IndexedDB/#async-execute-request step 5.3 vs. 5.4).
-  // Note this can only happen here when we are committing explicitly, otherwise
-  // the decision is made by the child.
+  // In case of a failed request and explicitly committed transaction, abort
+  // (cf. https://w3c.github.io/IndexedDB/#async-execute-request step 5.3
+  // vs. 5.4). It's worth emphasizing this can only happen here when we are
+  // committing explicitly, otherwise the decision is made by the child.
   if (NS_SUCCEEDED(mResultCode) && mLastFailedRequest &&
       *mLastRequestBeforeCommit &&
-      *mLastFailedRequest >= **mLastRequestBeforeCommit) {
+      *mLastFailedRequest == **mLastRequestBeforeCommit) {
     mResultCode = NS_ERROR_DOM_INDEXEDDB_ABORT_ERR;
   }
 
@@ -10294,7 +10584,7 @@ void TransactionBase::Invalidate() {
 }
 
 PBackgroundIDBRequestParent* TransactionBase::AllocRequest(
-    RequestParams&& aParams, bool aTrustParams) {
+    const int64_t aRequestId, RequestParams&& aParams, bool aTrustParams) {
   AssertIsOnBackgroundThread();
   MOZ_ASSERT(aParams.type() != RequestParams::T__None);
 
@@ -10316,67 +10606,77 @@ PBackgroundIDBRequestParent* TransactionBase::AllocRequest(
   switch (aParams.type()) {
     case RequestParams::TObjectStoreAddParams:
     case RequestParams::TObjectStorePutParams:
-      actor = new ObjectStoreAddOrPutRequestOp(SafeRefPtrFromThis(),
+      actor = new ObjectStoreAddOrPutRequestOp(SafeRefPtrFromThis(), aRequestId,
                                                std::move(aParams));
       break;
 
     case RequestParams::TObjectStoreGetParams:
-      actor = new ObjectStoreGetRequestOp(SafeRefPtrFromThis(), aParams,
-                                          /* aGetAll */ false);
+      actor =
+          new ObjectStoreGetRequestOp(SafeRefPtrFromThis(), aRequestId, aParams,
+                                      /* aGetAll */ false);
       break;
 
     case RequestParams::TObjectStoreGetAllParams:
-      actor = new ObjectStoreGetRequestOp(SafeRefPtrFromThis(), aParams,
-                                          /* aGetAll */ true);
+      actor =
+          new ObjectStoreGetRequestOp(SafeRefPtrFromThis(), aRequestId, aParams,
+                                      /* aGetAll */ true);
       break;
 
     case RequestParams::TObjectStoreGetKeyParams:
-      actor = new ObjectStoreGetKeyRequestOp(SafeRefPtrFromThis(), aParams,
+      actor = new ObjectStoreGetKeyRequestOp(SafeRefPtrFromThis(), aRequestId,
+                                             aParams,
                                              /* aGetAll */ false);
       break;
 
     case RequestParams::TObjectStoreGetAllKeysParams:
-      actor = new ObjectStoreGetKeyRequestOp(SafeRefPtrFromThis(), aParams,
+      actor = new ObjectStoreGetKeyRequestOp(SafeRefPtrFromThis(), aRequestId,
+                                             aParams,
                                              /* aGetAll */ true);
       break;
 
     case RequestParams::TObjectStoreDeleteParams:
-      actor = new ObjectStoreDeleteRequestOp(
-          SafeRefPtrFromThis(), aParams.get_ObjectStoreDeleteParams());
+      actor =
+          new ObjectStoreDeleteRequestOp(SafeRefPtrFromThis(), aRequestId,
+                                         aParams.get_ObjectStoreDeleteParams());
       break;
 
     case RequestParams::TObjectStoreClearParams:
-      actor = new ObjectStoreClearRequestOp(
-          SafeRefPtrFromThis(), aParams.get_ObjectStoreClearParams());
+      actor =
+          new ObjectStoreClearRequestOp(SafeRefPtrFromThis(), aRequestId,
+                                        aParams.get_ObjectStoreClearParams());
       break;
 
     case RequestParams::TObjectStoreCountParams:
-      actor = new ObjectStoreCountRequestOp(
-          SafeRefPtrFromThis(), aParams.get_ObjectStoreCountParams());
+      actor =
+          new ObjectStoreCountRequestOp(SafeRefPtrFromThis(), aRequestId,
+                                        aParams.get_ObjectStoreCountParams());
       break;
 
     case RequestParams::TIndexGetParams:
-      actor = new IndexGetRequestOp(SafeRefPtrFromThis(), aParams,
+      actor = new IndexGetRequestOp(SafeRefPtrFromThis(), aRequestId, aParams,
                                     /* aGetAll */ false);
       break;
 
     case RequestParams::TIndexGetKeyParams:
-      actor = new IndexGetKeyRequestOp(SafeRefPtrFromThis(), aParams,
-                                       /* aGetAll */ false);
+      actor =
+          new IndexGetKeyRequestOp(SafeRefPtrFromThis(), aRequestId, aParams,
+                                   /* aGetAll */ false);
       break;
 
     case RequestParams::TIndexGetAllParams:
-      actor = new IndexGetRequestOp(SafeRefPtrFromThis(), aParams,
+      actor = new IndexGetRequestOp(SafeRefPtrFromThis(), aRequestId, aParams,
                                     /* aGetAll */ true);
       break;
 
     case RequestParams::TIndexGetAllKeysParams:
-      actor = new IndexGetKeyRequestOp(SafeRefPtrFromThis(), aParams,
-                                       /* aGetAll */ true);
+      actor =
+          new IndexGetKeyRequestOp(SafeRefPtrFromThis(), aRequestId, aParams,
+                                   /* aGetAll */ true);
       break;
 
     case RequestParams::TIndexCountParams:
-      actor = new IndexCountRequestOp(SafeRefPtrFromThis(), aParams);
+      actor =
+          new IndexCountRequestOp(SafeRefPtrFromThis(), aRequestId, aParams);
       break;
 
     default:
@@ -10486,6 +10786,7 @@ already_AddRefed<PBackgroundIDBCursorParent> TransactionBase::AllocCursor(
 }
 
 bool TransactionBase::StartCursor(PBackgroundIDBCursorParent* const aActor,
+                                  const int64_t aRequestId,
                                   const OpenCursorParams& aParams) {
   AssertIsOnBackgroundThread();
   MOZ_ASSERT(aActor);
@@ -10493,7 +10794,7 @@ bool TransactionBase::StartCursor(PBackgroundIDBCursorParent* const aActor,
 
   auto* const op = static_cast<CursorBase*>(aActor);
 
-  if (NS_WARN_IF(!op->Start(aParams))) {
+  if (NS_WARN_IF(!op->Start(aRequestId, aParams))) {
     return false;
   }
 
@@ -10506,8 +10807,9 @@ bool TransactionBase::StartCursor(PBackgroundIDBCursorParent* const aActor,
 
 NormalTransaction::NormalTransaction(
     SafeRefPtr<Database> aDatabase, TransactionBase::Mode aMode,
+    TransactionBase::Durability aDurability,
     nsTArray<SafeRefPtr<FullObjectStoreMetadata>>&& aObjectStores)
-    : TransactionBase(std::move(aDatabase), aMode),
+    : TransactionBase(std::move(aDatabase), aMode, aDurability),
       mObjectStores{std::move(aObjectStores)} {
   AssertIsOnBackgroundThread();
   MOZ_ASSERT(!mObjectStores.IsEmpty());
@@ -10572,16 +10874,18 @@ mozilla::ipc::IPCResult NormalTransaction::RecvAbort(
 
 PBackgroundIDBRequestParent*
 NormalTransaction::AllocPBackgroundIDBRequestParent(
-    const RequestParams& aParams) {
+    const int64_t& aRequestId, const RequestParams& aParams) {
   AssertIsOnBackgroundThread();
   MOZ_ASSERT(aParams.type() != RequestParams::T__None);
 
-  return AllocRequest(std::move(const_cast<RequestParams&>(aParams)),
+  return AllocRequest(aRequestId,
+                      std::move(const_cast<RequestParams&>(aParams)),
                       IsSameProcessActor());
 }
 
 mozilla::ipc::IPCResult NormalTransaction::RecvPBackgroundIDBRequestConstructor(
-    PBackgroundIDBRequestParent* const aActor, const RequestParams& aParams) {
+    PBackgroundIDBRequestParent* const aActor, const int64_t& aRequestId,
+    const RequestParams& aParams) {
   AssertIsOnBackgroundThread();
   MOZ_ASSERT(aActor);
   MOZ_ASSERT(aParams.type() != RequestParams::T__None);
@@ -10602,19 +10906,20 @@ bool NormalTransaction::DeallocPBackgroundIDBRequestParent(
 
 already_AddRefed<PBackgroundIDBCursorParent>
 NormalTransaction::AllocPBackgroundIDBCursorParent(
-    const OpenCursorParams& aParams) {
+    const int64_t& aRequestId, const OpenCursorParams& aParams) {
   AssertIsOnBackgroundThread();
 
   return AllocCursor(aParams, IsSameProcessActor());
 }
 
 mozilla::ipc::IPCResult NormalTransaction::RecvPBackgroundIDBCursorConstructor(
-    PBackgroundIDBCursorParent* const aActor, const OpenCursorParams& aParams) {
+    PBackgroundIDBCursorParent* const aActor, const int64_t& aRequestId,
+    const OpenCursorParams& aParams) {
   AssertIsOnBackgroundThread();
   MOZ_ASSERT(aActor);
   MOZ_ASSERT(aParams.type() != OpenCursorParams::T__None);
 
-  if (!StartCursor(aActor, aParams)) {
+  if (!StartCursor(aActor, aRequestId, aParams)) {
     return IPC_FAIL(this, "StartCursor failed!");
   }
   return IPC_OK();
@@ -10627,7 +10932,9 @@ mozilla::ipc::IPCResult NormalTransaction::RecvPBackgroundIDBCursorConstructor(
 VersionChangeTransaction::VersionChangeTransaction(
     OpenDatabaseOp* aOpenDatabaseOp)
     : TransactionBase(aOpenDatabaseOp->mDatabase.clonePtr(),
-                      IDBTransaction::Mode::VersionChange),
+                      IDBTransaction::Mode::VersionChange,
+                      // VersionChange must not change durability.
+                      IDBTransaction::Durability::Default),  // Not used.
       mOpenDatabaseOp(aOpenDatabaseOp) {
   AssertIsOnBackgroundThread();
   MOZ_ASSERT(aOpenDatabaseOp);
@@ -10689,7 +10996,7 @@ void VersionChangeTransaction::UpdateMetadata(nsresult aResult) {
   AssertIsOnBackgroundThread();
   MOZ_ASSERT(mOpenDatabaseOp);
   MOZ_ASSERT(!!mActorWasAlive == !!mOpenDatabaseOp->mDatabase);
-  MOZ_ASSERT_IF(mActorWasAlive, !mOpenDatabaseOp->mDatabaseId.IsEmpty());
+  MOZ_ASSERT_IF(mActorWasAlive, !mOpenDatabaseOp->mDatabaseId.ref().IsEmpty());
 
   if (IsActorDestroyed() || !mActorWasAlive) {
     return;
@@ -11158,17 +11465,19 @@ mozilla::ipc::IPCResult VersionChangeTransaction::RecvRenameIndex(
 
 PBackgroundIDBRequestParent*
 VersionChangeTransaction::AllocPBackgroundIDBRequestParent(
-    const RequestParams& aParams) {
+    const int64_t& aRequestId, const RequestParams& aParams) {
   AssertIsOnBackgroundThread();
   MOZ_ASSERT(aParams.type() != RequestParams::T__None);
 
-  return AllocRequest(std::move(const_cast<RequestParams&>(aParams)),
+  return AllocRequest(aRequestId,
+                      std::move(const_cast<RequestParams&>(aParams)),
                       IsSameProcessActor());
 }
 
 mozilla::ipc::IPCResult
 VersionChangeTransaction::RecvPBackgroundIDBRequestConstructor(
-    PBackgroundIDBRequestParent* aActor, const RequestParams& aParams) {
+    PBackgroundIDBRequestParent* aActor, const int64_t& aRequestId,
+    const RequestParams& aParams) {
   AssertIsOnBackgroundThread();
   MOZ_ASSERT(aActor);
   MOZ_ASSERT(aParams.type() != RequestParams::T__None);
@@ -11189,7 +11498,7 @@ bool VersionChangeTransaction::DeallocPBackgroundIDBRequestParent(
 
 already_AddRefed<PBackgroundIDBCursorParent>
 VersionChangeTransaction::AllocPBackgroundIDBCursorParent(
-    const OpenCursorParams& aParams) {
+    const int64_t& aRequestId, const OpenCursorParams& aParams) {
   AssertIsOnBackgroundThread();
 
   return AllocCursor(aParams, IsSameProcessActor());
@@ -11197,12 +11506,13 @@ VersionChangeTransaction::AllocPBackgroundIDBCursorParent(
 
 mozilla::ipc::IPCResult
 VersionChangeTransaction::RecvPBackgroundIDBCursorConstructor(
-    PBackgroundIDBCursorParent* aActor, const OpenCursorParams& aParams) {
+    PBackgroundIDBCursorParent* aActor, const int64_t& aRequestId,
+    const OpenCursorParams& aParams) {
   AssertIsOnBackgroundThread();
   MOZ_ASSERT(aActor);
   MOZ_ASSERT(aParams.type() != OpenCursorParams::T__None);
 
-  if (!StartCursor(aActor, aParams)) {
+  if (!StartCursor(aActor, aRequestId, aParams)) {
     return IPC_FAIL(this, "StartCursor failed!");
   }
   return IPC_OK();
@@ -11351,7 +11661,8 @@ bool Cursor<CursorType>::VerifyRequestParams(
 }
 
 template <IDBCursorType CursorType>
-bool Cursor<CursorType>::Start(const OpenCursorParams& aParams) {
+bool Cursor<CursorType>::Start(const int64_t aRequestId,
+                               const OpenCursorParams& aParams) {
   AssertIsOnBackgroundThread();
   MOZ_ASSERT(aParams.type() == ToOpenCursorParamsType(CursorType));
   MOZ_ASSERT(this->mObjectStoreMetadata);
@@ -11363,7 +11674,7 @@ bool Cursor<CursorType>::Start(const OpenCursorParams& aParams) {
   const Maybe<SerializedKeyRange>& optionalKeyRange =
       GetCommonOpenCursorParams(aParams).optionalKeyRange();
 
-  const RefPtr<OpenOp> openOp = new OpenOp(this, optionalKeyRange);
+  const RefPtr<OpenOp> openOp = new OpenOp(this, aRequestId, optionalKeyRange);
 
   if (NS_WARN_IF(!openOp->Init(*mTransaction))) {
     openOp->Cleanup();
@@ -11487,8 +11798,8 @@ mozilla::ipc::IPCResult Cursor<CursorType>::RecvDeleteMe() {
 
 template <IDBCursorType CursorType>
 mozilla::ipc::IPCResult Cursor<CursorType>::RecvContinue(
-    const CursorRequestParams& aParams, const Key& aCurrentKey,
-    const Key& aCurrentObjectStoreKey) {
+    const int64_t& aRequestId, const CursorRequestParams& aParams,
+    const Key& aCurrentKey, const Key& aCurrentObjectStoreKey) {
   AssertIsOnBackgroundThread();
   MOZ_ASSERT(aParams.type() != CursorRequestParams::T__None);
   MOZ_ASSERT(this->mObjectStoreMetadata);
@@ -11538,7 +11849,7 @@ mozilla::ipc::IPCResult Cursor<CursorType>::RecvContinue(
   }
 
   const RefPtr<ContinueOp> continueOp =
-      new ContinueOp(this, aParams, std::move(position));
+      new ContinueOp(this, aRequestId, aParams, std::move(position));
   if (NS_WARN_IF(!continueOp->Init(*mTransaction))) {
     continueOp->Cleanup();
     return IPC_FAIL(this, "ContinueOp initialization failed!");
@@ -11560,15 +11871,18 @@ DatabaseFileManager::DatabaseFileManager(
     PersistenceType aPersistenceType,
     const quota::OriginMetadata& aOriginMetadata,
     const nsAString& aDatabaseName, const nsCString& aDatabaseID,
-    bool aEnforcingQuota, bool aIsInPrivateBrowsingMode)
+    const nsAString& aDatabaseFilePath, bool aEnforcingQuota,
+    bool aIsInPrivateBrowsingMode)
     : mPersistenceType(aPersistenceType),
       mOriginMetadata(aOriginMetadata),
       mDatabaseName(aDatabaseName),
       mDatabaseID(aDatabaseID),
+      mDatabaseFilePath(aDatabaseFilePath),
       mCipherKeyManager(
           aIsInPrivateBrowsingMode
               ? new IndexedDBCipherKeyManager("IndexedDBCipherKeyManager")
               : nullptr),
+      mDatabaseVersion(0),
       mEnforcingQuota(aEnforcingQuota),
       mIsInPrivateBrowsingMode(aIsInPrivateBrowsingMode) {}
 
@@ -12247,8 +12561,9 @@ nsresult QuotaClient::GetUsageForOriginInternal(
             // If this fails, it probably means we are in a serious situation.
             // e.g. Filesystem corruption. Will handle this in bug 1521541.
             QM_TRY(MOZ_TO_RESULT(RemoveDatabaseFilesAndDirectory(
-                       *directory, subdirNameBase, nullptr, aPersistenceType,
-                       aOriginMetadata, u""_ns)),
+                       *directory, subdirNameBase, /* aQuotaManager */ nullptr,
+                       aPersistenceType, aOriginMetadata,
+                       /* aDatabaseName */ u""_ns)),
                    Err(NS_ERROR_UNEXPECTED));
 
             databaseFilenames.Remove(subdirNameBase);
@@ -12421,6 +12736,17 @@ void QuotaClient::StopIdleMaintenance() {
 
 void QuotaClient::InitiateShutdown() {
   AssertIsOnBackgroundThread();
+  MOZ_ASSERT(IsShuttingDownOnBackgroundThread());
+
+  if (mDeleteTimer) {
+    // QuotaClient::AsyncDeleteFile will not schedule new timers beyond
+    // shutdown. And we expect all critical (PBM) deletions to have been
+    // triggered before this point via ClearPrivateRepository (w/out using
+    // DeleteFilesRunnable at all).
+    mDeleteTimer->Cancel();
+    mDeleteTimer = nullptr;
+    mPendingDeleteInfos.Clear();
+  }
 
   AbortAllOperations();
 }
@@ -12428,7 +12754,7 @@ void QuotaClient::InitiateShutdown() {
 bool QuotaClient::IsShutdownCompleted() const {
   return (!gFactoryOps || gFactoryOps->IsEmpty()) &&
          (!gLiveDatabaseHashtable || !gLiveDatabaseHashtable->Count()) &&
-         !mCurrentMaintenance;
+         !mCurrentMaintenance && !DeleteFilesRunnable::IsDeletionPending();
 }
 
 void QuotaClient::ForceKillActors() {
@@ -12508,16 +12834,19 @@ void QuotaClient::FinalizeShutdown() {
     mMaintenanceThreadPool->Shutdown();
     mMaintenanceThreadPool = nullptr;
   }
-
-  if (mDeleteTimer) {
-    MOZ_ALWAYS_SUCCEEDS(mDeleteTimer->Cancel());
-    mDeleteTimer = nullptr;
-  }
 }
 
 void QuotaClient::DeleteTimerCallback(nsITimer* aTimer, void* aClosure) {
   AssertIsOnBackgroundThread();
   MOZ_ASSERT(aTimer);
+
+  // Even though we do not schedule new timers after shutdown has started,
+  // an already existing one might fire afterwards (actually we think it
+  // shouldn't, but there is no reason to enforce this invariant). We can
+  // just ignore it, the cleanup work is done in InitiateShutdown.
+  if (NS_WARN_IF(IsShuttingDownOnBackgroundThread())) {
+    return;
+  }
 
   auto* const self = static_cast<QuotaClient*>(aClosure);
   MOZ_ASSERT(self);
@@ -12661,6 +12990,8 @@ void QuotaClient::ProcessMaintenanceQueue() {
  * DeleteFilesRunnable
  ******************************************************************************/
 
+uint64_t DeleteFilesRunnable::sPendingRunnables = 0;
+
 DeleteFilesRunnable::DeleteFilesRunnable(
     SafeRefPtr<DatabaseFileManager> aFileManager, nsTArray<int64_t>&& aFileIds)
     : Runnable("dom::indexeddb::DeleteFilesRunnable"),
@@ -12668,6 +12999,12 @@ DeleteFilesRunnable::DeleteFilesRunnable(
       mFileManager(std::move(aFileManager)),
       mFileIds(std::move(aFileIds)),
       mState(State_Initial) {}
+
+#ifdef DEBUG
+DeleteFilesRunnable::~DeleteFilesRunnable() {
+  MOZ_ASSERT(!mDEBUGCountsAsPending);
+}
+#endif
 
 void DeleteFilesRunnable::RunImmediately() {
   AssertIsOnBackgroundThread();
@@ -12679,6 +13016,10 @@ void DeleteFilesRunnable::RunImmediately() {
 void DeleteFilesRunnable::Open() {
   AssertIsOnBackgroundThread();
   MOZ_ASSERT(mState == State_Initial);
+
+  MOZ_ASSERT(!mDEBUGCountsAsPending);
+  sPendingRunnables++;
+  DEBUGONLY(mDEBUGCountsAsPending = true);
 
   QuotaManager* const quotaManager = QuotaManager::Get();
   if (NS_WARN_IF(!quotaManager)) {
@@ -12733,6 +13074,9 @@ void DeleteFilesRunnable::UnblockOpen() {
   MOZ_ASSERT(mState == State_UnblockingOpen);
 
   mDirectoryLock = nullptr;
+  MOZ_ASSERT(mDEBUGCountsAsPending);
+  sPendingRunnables--;
+  DEBUGONLY(mDEBUGCountsAsPending = false);
 
   mState = State_Completed;
 }
@@ -12824,6 +13168,11 @@ void Maintenance::UnregisterDatabaseMaintenance(
   if (mDatabaseMaintenances.Count()) {
     return;
   }
+
+  for (const auto& completeCallback : mCompleteCallbacks) {
+    MOZ_ALWAYS_SUCCEEDS(NS_DispatchToCurrentThread(completeCallback));
+  }
+  mCompleteCallbacks.Clear();
 
   mState = State::Finishing;
   Finish();
@@ -13221,6 +13570,10 @@ nsresult Maintenance::BeginDatabaseMaintenance() {
       if (gFactoryOps) {
         for (uint32_t index = gFactoryOps->Length(); index > 0; index--) {
           CheckedUnsafePtr<FactoryOp>& existingOp = (*gFactoryOps)[index - 1];
+
+          if (existingOp->DatabaseNameRef().isNothing()) {
+            return false;
+          }
 
           if (!existingOp->DatabaseFilePathIsKnown()) {
             continue;
@@ -14381,14 +14734,17 @@ void DatabaseOperationBase::AutoSetProgressHandler::Unregister() {
 
 FactoryOp::FactoryOp(SafeRefPtr<Factory> aFactory,
                      const Maybe<ContentParentId>& aContentParentId,
-                     const CommonFactoryRequestParams& aCommonParams,
-                     bool aDeleting)
+                     const PersistenceType aPersistenceType,
+                     const PrincipalInfo& aPrincipalInfo,
+                     const Maybe<nsString>& aDatabaseName, bool aDeleting)
     : DatabaseOperationBase(aFactory->GetLoggingInfo()->Id(),
                             aFactory->GetLoggingInfo()->NextRequestSN()),
       mFactory(std::move(aFactory)),
       mContentParentId(aContentParentId),
-      mCommonParams(aCommonParams),
+      mPrincipalInfo(aPrincipalInfo),
+      mDatabaseName(aDatabaseName),
       mDirectoryLockId(-1),
+      mPersistenceType(aPersistenceType),
       mState(State::Initial),
       mWaitingForPermissionRetry(false),
       mEnforcingQuota(true),
@@ -14439,7 +14795,7 @@ void FactoryOp::NoteDatabaseClosed(Database* const aDatabase) {
   }
 
   DatabaseActorInfo* info;
-  MOZ_ALWAYS_TRUE(gLiveDatabaseHashtable->Get(mDatabaseId, &info));
+  MOZ_ALWAYS_TRUE(gLiveDatabaseHashtable->Get(mDatabaseId.ref(), &info));
   MOZ_ASSERT(info->mWaitingFactoryOp == this);
 
   if (AreActorsAlive()) {
@@ -14476,12 +14832,16 @@ void FactoryOp::StringifyState(nsACString& aResult) const {
       aResult.AppendLiteral("Initial");
       return;
 
-    case State::FinishOpen:
-      aResult.AppendLiteral("FinishOpen");
-      return;
-
     case State::DirectoryOpenPending:
       aResult.AppendLiteral("DirectoryOpenPending");
+      return;
+
+    case State::DirectoryWorkOpen:
+      aResult.AppendLiteral("DirectoryWorkOpen");
+      return;
+
+    case State::DirectoryWorkDone:
+      aResult.AppendLiteral("DirectoryWorkDone");
       return;
 
     case State::DatabaseOpenPending:
@@ -14525,8 +14885,7 @@ void FactoryOp::Stringify(nsACString& aResult) const {
   AssertIsOnOwningThread();
 
   aResult.AppendLiteral("PersistenceType:");
-  aResult.Append(
-      PersistenceTypeToString(mCommonParams.metadata().persistenceType()));
+  aResult.Append(PersistenceTypeToString(mPersistenceType));
   aResult.Append(kQuotaGenericDelimiter);
 
   aResult.AppendLiteral("Origin:");
@@ -14538,23 +14897,43 @@ void FactoryOp::Stringify(nsACString& aResult) const {
 }
 
 nsresult FactoryOp::Open() {
-  AssertIsOnMainThread();
+  AssertIsOnOwningThread();
   MOZ_ASSERT(mState == State::Initial);
+  MOZ_ASSERT(mOriginMetadata.mOrigin.IsEmpty());
+  MOZ_ASSERT(!mDirectoryLock);
 
-  if (NS_WARN_IF(QuotaClient::IsShuttingDownOnNonBackgroundThread()) ||
-      !OperationMayProceed()) {
+  if (NS_WARN_IF(QuotaClient::IsShuttingDownOnBackgroundThread()) ||
+      IsActorDestroyed()) {
     IDB_REPORT_INTERNAL_ERR();
     return NS_ERROR_DOM_INDEXEDDB_UNKNOWN_ERR;
   }
 
-  const PrincipalInfo& principalInfo = mCommonParams.principalInfo();
-  if (principalInfo.type() == PrincipalInfo::TSystemPrincipalInfo) {
-    MOZ_ASSERT(mCommonParams.metadata().persistenceType() ==
-               PERSISTENCE_TYPE_PERSISTENT);
-  } else if (principalInfo.type() == PrincipalInfo::TContentPrincipalInfo) {
+  QM_TRY(QuotaManager::EnsureCreated());
+
+  QuotaManager* const quotaManager = QuotaManager::Get();
+  MOZ_ASSERT(quotaManager);
+
+  QM_TRY_UNWRAP(
+      auto principalMetadata,
+      quotaManager->GetInfoFromValidatedPrincipalInfo(mPrincipalInfo));
+
+  mOriginMetadata = {std::move(principalMetadata), mPersistenceType};
+
+  if (mPrincipalInfo.type() == PrincipalInfo::TSystemPrincipalInfo) {
+    MOZ_ASSERT(mPersistenceType == PERSISTENCE_TYPE_PERSISTENT);
+
+    mEnforcingQuota = false;
+  } else if (mPrincipalInfo.type() == PrincipalInfo::TContentPrincipalInfo) {
     const ContentPrincipalInfo& contentPrincipalInfo =
-        principalInfo.get_ContentPrincipalInfo();
-    if (contentPrincipalInfo.attrs().mPrivateBrowsingId != 0) {
+        mPrincipalInfo.get_ContentPrincipalInfo();
+
+    MOZ_ASSERT_IF(
+        QuotaManager::IsOriginInternal(contentPrincipalInfo.originNoSuffix()),
+        mPersistenceType == PERSISTENCE_TYPE_PERSISTENT);
+
+    mEnforcingQuota = mPersistenceType != PERSISTENCE_TYPE_PERSISTENT;
+
+    if (mOriginMetadata.mIsPrivate) {
       if (StaticPrefs::dom_indexedDB_privateBrowsing_enabled()) {
         // Explicitly disallow moz-extension urls from using the encrypted
         // indexedDB storage mode when the caller is an extension (see Bug
@@ -14573,35 +14952,54 @@ nsresult FactoryOp::Open() {
     MOZ_ASSERT(false);
   }
 
-  QM_TRY_INSPECT(const auto& permission, CheckPermission());
+  if (mDatabaseName.isSome()) {
+    nsCString databaseId;
 
-  MOZ_ASSERT(permission == PermissionValue::kPermissionAllowed ||
-             permission == PermissionValue::kPermissionDenied);
+    QuotaManager::GetStorageId(mPersistenceType, mOriginMetadata.mOrigin,
+                               Client::IDB, databaseId);
 
-  if (permission == PermissionValue::kPermissionDenied) {
-    return NS_ERROR_DOM_INDEXEDDB_NOT_ALLOWED_ERR;
+    databaseId.Append('*');
+    databaseId.Append(NS_ConvertUTF16toUTF8(mDatabaseName.ref()));
+
+    mDatabaseId = Some(std::move(databaseId));
+
+    // Need to get database file path before opening the directory.
+    // XXX: For what reason?
+    QM_TRY_UNWRAP(
+        auto databaseFilePath,
+        ([this, quotaManager]() -> mozilla::Result<nsString, nsresult> {
+          QM_TRY_INSPECT(const auto& dbFile,
+                         quotaManager->GetOriginDirectory(mOriginMetadata));
+
+          QM_TRY(MOZ_TO_RESULT(dbFile->Append(
+              NS_LITERAL_STRING_FROM_CSTRING(IDB_DIRECTORY_NAME))));
+
+          QM_TRY(MOZ_TO_RESULT(dbFile->Append(
+              GetDatabaseFilenameBase(mDatabaseName.ref(),
+                                      mOriginMetadata.mIsPrivate) +
+              kSQLiteSuffix)));
+
+          QM_TRY_RETURN(
+              MOZ_TO_RESULT_INVOKE_MEMBER_TYPED(nsString, dbFile, GetPath));
+        }()));
+
+    mDatabaseFilePath = Some(std::move(databaseFilePath));
   }
 
-  {
-    // These services have to be started on the main thread currently.
+  // Open directory
+  mState = State::DirectoryOpenPending;
 
-    IndexedDatabaseManager* mgr;
-    if (NS_WARN_IF(!(mgr = IndexedDatabaseManager::GetOrCreate()))) {
-      IDB_REPORT_INTERNAL_ERR();
-      return NS_ERROR_DOM_INDEXEDDB_UNKNOWN_ERR;
-    }
-
-    nsCOMPtr<mozIStorageService> ss;
-    if (NS_WARN_IF(!(ss = do_GetService(MOZ_STORAGE_SERVICE_CONTRACTID)))) {
-      IDB_REPORT_INTERNAL_ERR();
-      return NS_ERROR_DOM_INDEXEDDB_UNKNOWN_ERR;
-    }
-  }
-
-  MOZ_ASSERT(permission == PermissionValue::kPermissionAllowed);
-
-  mState = State::FinishOpen;
-  MOZ_ALWAYS_SUCCEEDS(mOwningEventTarget->Dispatch(this, NS_DISPATCH_NORMAL));
+  quotaManager->OpenClientDirectory({mOriginMetadata, Client::IDB})
+      ->Then(
+          GetCurrentSerialEventTarget(), __func__,
+          [self = RefPtr(this)](
+              const ClientDirectoryLockPromise::ResolveOrRejectValue& aValue) {
+            if (aValue.IsResolve()) {
+              self->DirectoryLockAcquired(aValue.ResolveValue());
+            } else {
+              self->DirectoryLockFailed();
+            }
+          });
 
   return NS_OK;
 }
@@ -14610,47 +15008,77 @@ nsresult FactoryOp::DirectoryOpen() {
   AssertIsOnOwningThread();
   MOZ_ASSERT(mState == State::DirectoryOpenPending);
   MOZ_ASSERT(mDirectoryLock);
-  MOZ_ASSERT(!mDatabaseFilePath.IsEmpty());
+
+  if (mDatabaseName.isNothing()) {
+    QuotaManager* const quotaManager = QuotaManager::Get();
+    MOZ_ASSERT(quotaManager);
+
+    // Must set this before dispatching otherwise we will race with the IO
+    // thread.
+    mState = State::DirectoryWorkOpen;
+
+    QM_TRY(MOZ_TO_RESULT(
+               quotaManager->IOThread()->Dispatch(this, NS_DISPATCH_NORMAL)),
+           NS_ERROR_DOM_INDEXEDDB_UNKNOWN_ERR, IDB_REPORT_INTERNAL_ERR_LAMBDA);
+
+    return NS_OK;
+  }
+
+  mState = State::DirectoryWorkDone;
+  MOZ_ALWAYS_SUCCEEDS(Run());
+
+  return NS_OK;
+}
+
+nsresult FactoryOp::DirectoryWorkDone() {
+  AssertIsOnOwningThread();
+  MOZ_ASSERT(mState == State::DirectoryWorkDone);
+  MOZ_ASSERT(mDirectoryLock);
   MOZ_ASSERT(gFactoryOps);
 
   // See if this FactoryOp needs to wait.
-  const bool delayed =
-      std::any_of(
-          gFactoryOps->rbegin(), gFactoryOps->rend(),
-          [foundThis = false, &self = *this](const auto& existingOp) mutable {
-            if (existingOp == &self) {
-              foundThis = true;
-              return false;
-            }
+  const bool blocked = [&self = *this] {
+    bool foundThis = false;
+    bool blocked = false;
 
-            if (foundThis && self.MustWaitFor(*existingOp)) {
-              // Only one op can be delayed.
-              MOZ_ASSERT(!existingOp->mDelayedOp);
-              existingOp->mDelayedOp = &self;
-              return true;
-            }
+    for (const auto& existingOp : Reversed(*gFactoryOps)) {
+      if (existingOp == &self) {
+        foundThis = true;
+        continue;
+      }
 
-            return false;
-          }) ||
-      [&self = *this] {
-        QuotaClient* quotaClient = QuotaClient::GetInstance();
-        MOZ_ASSERT(quotaClient);
+      if (foundThis && self.MustWaitFor(*existingOp)) {
+        existingOp->AddBlockingOp(self);
+        self.AddBlockedOnOp(*existingOp);
+        blocked = true;
+      }
+    }
 
-        if (RefPtr<Maintenance> currentMaintenance =
-                quotaClient->GetCurrentMaintenance()) {
-          if (RefPtr<DatabaseMaintenance> databaseMaintenance =
-                  currentMaintenance->GetDatabaseMaintenance(
-                      self.mDatabaseFilePath)) {
-            databaseMaintenance->WaitForCompletion(&self);
-            return true;
-          }
+    return blocked;
+  }() || [&self = *this] {
+    QuotaClient* quotaClient = QuotaClient::GetInstance();
+    MOZ_ASSERT(quotaClient);
+
+    if (RefPtr<Maintenance> currentMaintenance =
+            quotaClient->GetCurrentMaintenance()) {
+      if (self.mDatabaseName.isSome()) {
+        if (RefPtr<DatabaseMaintenance> databaseMaintenance =
+                currentMaintenance->GetDatabaseMaintenance(
+                    self.mDatabaseFilePath.ref())) {
+          databaseMaintenance->WaitForCompletion(&self);
+          return true;
         }
+      } else if (currentMaintenance->HasDatabaseMaintenances()) {
+        currentMaintenance->WaitForCompletion(&self);
+        return true;
+      }
+    }
 
-        return false;
-      }();
+    return false;
+  }();
 
   mState = State::DatabaseOpenPending;
-  if (!delayed) {
+  if (!blocked) {
     QM_TRY(MOZ_TO_RESULT(DatabaseOpen()));
   }
 
@@ -14684,22 +15112,23 @@ void FactoryOp::WaitForTransactions() {
   AssertIsOnOwningThread();
   MOZ_ASSERT(mState == State::BeginVersionChange ||
              mState == State::WaitingForOtherDatabasesToClose);
-  MOZ_ASSERT(!mDatabaseId.IsEmpty());
+  MOZ_ASSERT(!mDatabaseId.ref().IsEmpty());
   MOZ_ASSERT(!IsActorDestroyed());
 
   mState = State::WaitingForTransactionsToComplete;
 
   RefPtr<WaitForTransactionsHelper> helper =
-      new WaitForTransactionsHelper(mDatabaseId, this);
+      new WaitForTransactionsHelper(mDatabaseId.ref(), this);
   helper->WaitForTransactions();
 }
 
 void FactoryOp::CleanupMetadata() {
   AssertIsOnOwningThread();
 
-  if (mDelayedOp) {
-    MOZ_ALWAYS_SUCCEEDS(NS_DispatchToCurrentThread(mDelayedOp.forget()));
+  for (const NotNull<RefPtr<FactoryOp>>& blockingOp : mBlocking) {
+    blockingOp->MaybeUnblock(*this);
   }
+  mBlocking.Clear();
 
   MOZ_ASSERT(gFactoryOps);
   gFactoryOps->RemoveElement(this);
@@ -14722,37 +15151,6 @@ void FactoryOp::FinishSendResults() {
 
   // Make sure to release the factory on this thread.
   mFactory = nullptr;
-}
-
-Result<PermissionValue, nsresult> FactoryOp::CheckPermission() {
-  MOZ_ASSERT(NS_IsMainThread());
-  MOZ_ASSERT(mState == State::Initial);
-
-  const PrincipalInfo& principalInfo = mCommonParams.principalInfo();
-  MOZ_ASSERT(principalInfo.type() == PrincipalInfo::TSystemPrincipalInfo ||
-             principalInfo.type() == PrincipalInfo::TContentPrincipalInfo);
-
-  if (principalInfo.type() == PrincipalInfo::TSystemPrincipalInfo) {
-    MOZ_ASSERT(mState == State::Initial);
-
-    return PermissionValue::kPermissionAllowed;
-  }
-
-  QM_TRY_INSPECT(
-      const auto& permission,
-      ([persistenceType = mCommonParams.metadata().persistenceType(),
-        origin = QuotaManager::GetOriginFromValidatedPrincipalInfo(
-            principalInfo)]() -> mozilla::Result<PermissionValue, nsresult> {
-        if (persistenceType == PERSISTENCE_TYPE_PERSISTENT) {
-          if (QuotaManager::IsOriginInternal(origin)) {
-            return PermissionValue::kPermissionAllowed;
-          }
-          return Err(NS_ERROR_DOM_INDEXEDDB_NOT_ALLOWED_ERR);
-        }
-        return PermissionValue::kPermissionAllowed;
-      })());
-
-  return permission;
 }
 
 nsresult FactoryOp::SendVersionChangeMessages(
@@ -14795,100 +15193,26 @@ nsresult FactoryOp::SendVersionChangeMessages(
   return NS_OK;
 }  // namespace indexedDB
 
-nsresult FactoryOp::FinishOpen() {
-  AssertIsOnOwningThread();
-  MOZ_ASSERT(mState == State::FinishOpen);
-  MOZ_ASSERT(mOriginMetadata.mOrigin.IsEmpty());
-  MOZ_ASSERT(!mDirectoryLock);
-
-  if (NS_WARN_IF(QuotaClient::IsShuttingDownOnBackgroundThread()) ||
-      IsActorDestroyed()) {
-    IDB_REPORT_INTERNAL_ERR();
-    return NS_ERROR_DOM_INDEXEDDB_UNKNOWN_ERR;
-  }
-
-  QM_TRY(QuotaManager::EnsureCreated());
-
-  QuotaManager* const quotaManager = QuotaManager::Get();
-  MOZ_ASSERT(quotaManager);
-
-  const PrincipalInfo& principalInfo = mCommonParams.principalInfo();
-
-  const DatabaseMetadata& metadata = mCommonParams.metadata();
-
-  const PersistenceType persistenceType = metadata.persistenceType();
-
-  if (principalInfo.type() == PrincipalInfo::TSystemPrincipalInfo) {
-    mOriginMetadata = {QuotaManager::GetInfoForChrome(), persistenceType};
-
-    MOZ_ASSERT(QuotaManager::IsOriginInternal(mOriginMetadata.mOrigin));
-
-    mEnforcingQuota = false;
-  } else {
-    MOZ_ASSERT(principalInfo.type() == PrincipalInfo::TContentPrincipalInfo);
-
-    QM_TRY_UNWRAP(
-        auto principalMetadata,
-        quotaManager->GetInfoFromValidatedPrincipalInfo(principalInfo));
-
-    mOriginMetadata = {std::move(principalMetadata), persistenceType};
-
-    mEnforcingQuota = persistenceType != PERSISTENCE_TYPE_PERSISTENT;
-  }
-
-  QuotaManager::GetStorageId(persistenceType, mOriginMetadata.mOrigin,
-                             Client::IDB, mDatabaseId);
-
-  mDatabaseId.Append('*');
-  mDatabaseId.Append(NS_ConvertUTF16toUTF8(metadata.name()));
-
-  // Need to get database file path before opening the directory.
-  // XXX: For what reason?
-  QM_TRY_UNWRAP(
-      mDatabaseFilePath,
-      ([this, metadata, quotaManager]() -> mozilla::Result<nsString, nsresult> {
-        QM_TRY_INSPECT(const auto& dbFile,
-                       quotaManager->GetOriginDirectory(mOriginMetadata));
-
-        QM_TRY(MOZ_TO_RESULT(dbFile->Append(
-            NS_LITERAL_STRING_FROM_CSTRING(IDB_DIRECTORY_NAME))));
-
-        QM_TRY(MOZ_TO_RESULT(
-            dbFile->Append(GetDatabaseFilenameBase(metadata.name(),
-                                                   mOriginMetadata.mIsPrivate) +
-                           kSQLiteSuffix)));
-
-        QM_TRY_RETURN(
-            MOZ_TO_RESULT_INVOKE_MEMBER_TYPED(nsString, dbFile, GetPath));
-      }()));
-
-  // Open directory
-  mState = State::DirectoryOpenPending;
-
-  quotaManager->OpenClientDirectory({mOriginMetadata, Client::IDB})
-      ->Then(
-          GetCurrentSerialEventTarget(), __func__,
-          [self = RefPtr(this)](
-              const ClientDirectoryLockPromise::ResolveOrRejectValue& aValue) {
-            if (aValue.IsResolve()) {
-              self->DirectoryLockAcquired(aValue.ResolveValue());
-            } else {
-              self->DirectoryLockFailed();
-            }
-          });
-
-  return NS_OK;
-}
-
 bool FactoryOp::MustWaitFor(const FactoryOp& aExistingOp) {
   AssertIsOnOwningThread();
 
-  // Things for the same persistence type, the same origin and the same
-  // database must wait.
-  return aExistingOp.mCommonParams.metadata().persistenceType() ==
-             mCommonParams.metadata().persistenceType() &&
-         aExistingOp.mOriginMetadata.mOrigin == mOriginMetadata.mOrigin &&
-         aExistingOp.mDatabaseId == mDatabaseId;
+  // If the persistence types don't overlap, the op can proceed.
+  if (aExistingOp.mPersistenceType != mPersistenceType) {
+    return false;
+  }
+
+  // If the origins don't overlap, the op can proceed.
+  if (aExistingOp.mOriginMetadata.mOrigin != mOriginMetadata.mOrigin) {
+    return false;
+  }
+
+  // If the database ids don't overlap, the op can proceed.
+  if (!aExistingOp.mDatabaseId.isNothing() && !mDatabaseId.isNothing() &&
+      aExistingOp.mDatabaseId.ref() != mDatabaseId.ref()) {
+    return false;
+  }
+
+  return true;
 }
 
 // Run() assumes that the caller holds a strong reference to the object that
@@ -14920,8 +15244,12 @@ FactoryOp::Run() {
       QM_WARNONLY_TRY(MOZ_TO_RESULT(Open()), handleError);
       break;
 
-    case State::FinishOpen:
-      QM_WARNONLY_TRY(MOZ_TO_RESULT(FinishOpen()), handleError);
+    case State::DirectoryWorkOpen:
+      QM_WARNONLY_TRY(MOZ_TO_RESULT(DoDirectoryWork()), handleError);
+      break;
+
+    case State::DirectoryWorkDone:
+      QM_WARNONLY_TRY(MOZ_TO_RESULT(DirectoryWorkDone()), handleError);
       break;
 
     case State::DatabaseOpenPending:
@@ -14990,7 +15318,11 @@ void FactoryOp::DirectoryLockFailed() {
   MOZ_ALWAYS_SUCCEEDS(Run());
 }
 
-void FactoryOp::ActorDestroy(ActorDestroyReason aWhy) {
+nsresult FactoryRequestOp::DoDirectoryWork() {
+  MOZ_CRASH("Not implemented because this should be unreachable.");
+}
+
+void FactoryRequestOp::ActorDestroy(ActorDestroyReason aWhy) {
   AssertIsOnBackgroundThread();
 
   NoteActorDestroyed();
@@ -14999,8 +15331,8 @@ void FactoryOp::ActorDestroy(ActorDestroyReason aWhy) {
 OpenDatabaseOp::OpenDatabaseOp(SafeRefPtr<Factory> aFactory,
                                const Maybe<ContentParentId>& aContentParentId,
                                const CommonFactoryRequestParams& aParams)
-    : FactoryOp(std::move(aFactory), aContentParentId, aParams,
-                /* aDeleting */ false),
+    : FactoryRequestOp(std::move(aFactory), aContentParentId, aParams,
+                       /* aDeleting */ false),
       mMetadata(MakeSafeRefPtr<FullDatabaseMetadata>(aParams.metadata())),
       mRequestedVersion(aParams.metadata().version()),
       mVersionChangeOp(nullptr),
@@ -15009,7 +15341,7 @@ OpenDatabaseOp::OpenDatabaseOp(SafeRefPtr<Factory> aFactory,
 void OpenDatabaseOp::ActorDestroy(ActorDestroyReason aWhy) {
   AssertIsOnOwningThread();
 
-  FactoryOp::ActorDestroy(aWhy);
+  FactoryRequestOp::ActorDestroy(aWhy);
 
   if (mVersionChangeOp) {
     mVersionChangeOp->NoteActorDestroyed();
@@ -15116,7 +15448,7 @@ nsresult OpenDatabaseOp::DoDatabaseWork() {
         const auto& databaseFilePath,
         MOZ_TO_RESULT_INVOKE_MEMBER_TYPED(nsString, dbFile, GetPath));
 
-    MOZ_ASSERT(databaseFilePath == mDatabaseFilePath);
+    MOZ_ASSERT(databaseFilePath == mDatabaseFilePath.ref());
   }
 #endif
 
@@ -15133,8 +15465,8 @@ nsresult OpenDatabaseOp::DoDatabaseWork() {
 
   if (!fileManager) {
     fileManager = MakeSafeRefPtr<DatabaseFileManager>(
-        persistenceType, mOriginMetadata, databaseName, mDatabaseId,
-        mEnforcingQuota, mInPrivateBrowsing);
+        persistenceType, mOriginMetadata, databaseName, mDatabaseId.ref(),
+        mDatabaseFilePath.ref(), mEnforcingQuota, mInPrivateBrowsing);
   }
 
   Maybe<const CipherKey> maybeKey =
@@ -15328,7 +15660,7 @@ nsresult OpenDatabaseOp::LoadDatabaseInformation(
 
   QM_TRY_INSPECT(
       const auto& lastIndexId,
-      ([&aConnection,
+      ([this, &aConnection,
         &objectStores]() -> mozilla::Result<IndexOrObjectStoreId, nsresult> {
         // Load index information
         QM_TRY_INSPECT(
@@ -15345,7 +15677,7 @@ nsresult OpenDatabaseOp::LoadDatabaseInformation(
 
         QM_TRY(CollectWhileHasResult(
             *stmt,
-            [&lastIndexId, &objectStores, &aConnection,
+            [this, &lastIndexId, &objectStores, &aConnection,
              usedIds = Maybe<nsTHashSet<uint64_t>>{},
              usedNames = Maybe<nsTHashSet<nsString>>{}](
                 auto& stmt) mutable -> mozilla::Result<Ok, nsresult> {
@@ -15436,8 +15768,7 @@ nsresult OpenDatabaseOp::LoadDatabaseInformation(
                     indexMetadata->mCommonMetadata.locale();
                 const bool& isAutoLocale =
                     indexMetadata->mCommonMetadata.autoLocale();
-                const nsCString& systemLocale =
-                    IndexedDatabaseManager::GetLocale();
+                const nsCString& systemLocale = mFactory->GetSystemLocale();
                 if (!systemLocale.IsEmpty() && isAutoLocale &&
                     !indexedLocale.Equals(systemLocale)) {
                   QM_TRY(MOZ_TO_RESULT(UpdateLocaleAwareIndex(
@@ -15575,7 +15906,7 @@ nsresult OpenDatabaseOp::BeginVersionChange() {
   MOZ_ASSERT(!mDatabase->IsClosed());
 
   DatabaseActorInfo* info;
-  MOZ_ALWAYS_TRUE(gLiveDatabaseHashtable->Get(mDatabaseId, &info));
+  MOZ_ALWAYS_TRUE(gLiveDatabaseHashtable->Get(mDatabaseId.ref(), &info));
 
   MOZ_ASSERT(info->mLiveDatabases.Contains(mDatabase.unsafeGetRawPtr()));
   MOZ_ASSERT(!info->mWaitingFactoryOp);
@@ -15719,9 +16050,9 @@ void OpenDatabaseOp::SendResults() {
   MOZ_ASSERT_IF(!HasFailed(), !mVersionChangeTransaction);
 
   DebugOnly<DatabaseActorInfo*> info = nullptr;
-  MOZ_ASSERT_IF(
-      gLiveDatabaseHashtable && gLiveDatabaseHashtable->Get(mDatabaseId, &info),
-      !info->mWaitingFactoryOp);
+  MOZ_ASSERT_IF(mDatabaseId.isSome() && gLiveDatabaseHashtable &&
+                    gLiveDatabaseHashtable->Get(mDatabaseId.ref(), &info),
+                !info->mWaitingFactoryOp);
 
   if (mVersionChangeTransaction) {
     MOZ_ASSERT(HasFailed());
@@ -15739,6 +16070,8 @@ void OpenDatabaseOp::SendResults() {
       // If we just successfully completed a versionchange operation then we
       // need to update the version in our metadata.
       mMetadata->mCommonMetadata.version() = mRequestedVersion;
+
+      mFileManager->UpdateDatabaseVersion(mRequestedVersion);
 
       nsresult rv = EnsureDatabaseActorIsAlive();
       if (NS_SUCCEEDED(rv)) {
@@ -15787,7 +16120,7 @@ void OpenDatabaseOp::SendResults() {
         &OpenDatabaseOp::ConnectionClosedCallback);
 
     RefPtr<WaitForTransactionsHelper> helper =
-        new WaitForTransactionsHelper(mDatabaseId, callback);
+        new WaitForTransactionsHelper(mDatabaseId.ref(), callback);
     helper->WaitForTransactions();
   } else {
     CleanupMetadata();
@@ -15812,7 +16145,7 @@ void OpenDatabaseOp::EnsureDatabaseActor() {
              mState == State::DatabaseWorkVersionChange ||
              mState == State::SendingResults);
   MOZ_ASSERT(!HasFailed());
-  MOZ_ASSERT(!mDatabaseFilePath.IsEmpty());
+  MOZ_ASSERT(mDatabaseFilePath.isSome());
   MOZ_ASSERT(!IsActorDestroyed());
 
   if (mDatabase) {
@@ -15820,13 +16153,13 @@ void OpenDatabaseOp::EnsureDatabaseActor() {
   }
 
   MOZ_ASSERT(mMetadata->mDatabaseId.IsEmpty());
-  mMetadata->mDatabaseId = mDatabaseId;
+  mMetadata->mDatabaseId = mDatabaseId.ref();
 
   MOZ_ASSERT(mMetadata->mFilePath.IsEmpty());
-  mMetadata->mFilePath = mDatabaseFilePath;
+  mMetadata->mFilePath = mDatabaseFilePath.ref();
 
   DatabaseActorInfo* info;
-  if (gLiveDatabaseHashtable->Get(mDatabaseId, &info)) {
+  if (gLiveDatabaseHashtable->Get(mDatabaseId.ref(), &info)) {
     AssertMetadataConsistency(*info->mMetadata);
     mMetadata = info->mMetadata.clonePtr();
   }
@@ -15853,7 +16186,7 @@ void OpenDatabaseOp::EnsureDatabaseActor() {
     // XXX Maybe use LookupOrInsertWith above, to avoid a second lookup here?
     info = gLiveDatabaseHashtable
                ->InsertOrUpdate(
-                   mDatabaseId,
+                   mDatabaseId.ref(),
                    MakeUnique<DatabaseActorInfo>(
                        mMetadata.clonePtr(),
                        WrapNotNullUnchecked(mDatabase.unsafeGetRawPtr())))
@@ -16148,8 +16481,8 @@ void DeleteDatabaseOp::LoadPreviousVersion(nsIFile& aDatabaseFile) {
 
   if (!fileManager) {
     fileManager = MakeSafeRefPtr<DatabaseFileManager>(
-        persistenceType, mOriginMetadata, databaseName, mDatabaseId,
-        mEnforcingQuota, mInPrivateBrowsing);
+        persistenceType, mOriginMetadata, databaseName, mDatabaseId.ref(),
+        mDatabaseFilePath.ref(), mEnforcingQuota, mInPrivateBrowsing);
   }
 
   const auto maybeKey =
@@ -16257,7 +16590,7 @@ nsresult DeleteDatabaseOp::DoDatabaseWork() {
         const auto& databaseFilePath,
         MOZ_TO_RESULT_INVOKE_MEMBER_TYPED(nsString, dbFile, GetPath));
 
-    MOZ_ASSERT(databaseFilePath == mDatabaseFilePath);
+    MOZ_ASSERT(databaseFilePath == mDatabaseFilePath.ref());
   }
 #endif
 
@@ -16291,7 +16624,7 @@ nsresult DeleteDatabaseOp::BeginVersionChange() {
   }
 
   DatabaseActorInfo* info;
-  if (gLiveDatabaseHashtable->Get(mDatabaseId, &info)) {
+  if (gLiveDatabaseHashtable->Get(mDatabaseId.ref(), &info)) {
     MOZ_ASSERT(!info->mWaitingFactoryOp);
 
     nsresult rv =
@@ -16365,9 +16698,9 @@ void DeleteDatabaseOp::SendResults() {
   MOZ_ASSERT(mMaybeBlockedDatabases.IsEmpty());
 
   DebugOnly<DatabaseActorInfo*> info = nullptr;
-  MOZ_ASSERT_IF(
-      gLiveDatabaseHashtable && gLiveDatabaseHashtable->Get(mDatabaseId, &info),
-      !info->mWaitingFactoryOp);
+  MOZ_ASSERT_IF(mDatabaseId.isSome() && gLiveDatabaseHashtable &&
+                    gLiveDatabaseHashtable->Get(mDatabaseId.ref(), &info),
+                !info->mWaitingFactoryOp);
 
   if (!IsActorDestroyed()) {
     FactoryRequestResponse response;
@@ -16448,7 +16781,7 @@ void DeleteDatabaseOp::VersionChangeOp::RunOnOwningThread() {
 
     // Inform all the other databases that they are now invalidated. That
     // should remove the previous metadata from our table.
-    if (gLiveDatabaseHashtable->Get(deleteOp->mDatabaseId, &info)) {
+    if (gLiveDatabaseHashtable->Get(deleteOp->mDatabaseId.ref(), &info)) {
       MOZ_ASSERT(!info->mLiveDatabases.IsEmpty());
       MOZ_ASSERT(!info->mWaitingFactoryOp);
 
@@ -16474,7 +16807,7 @@ void DeleteDatabaseOp::VersionChangeOp::RunOnOwningThread() {
           database->Invalidate();
         }
 
-        MOZ_ASSERT(!gLiveDatabaseHashtable->Get(deleteOp->mDatabaseId));
+        MOZ_ASSERT(!gLiveDatabaseHashtable->Get(deleteOp->mDatabaseId.ref()));
       }
     }
   }
@@ -16511,21 +16844,257 @@ nsresult DeleteDatabaseOp::VersionChangeOp::Run() {
   return NS_OK;
 }
 
+nsresult GetDatabasesOp::DatabasesNotAvailable() {
+  AssertIsOnIOThread();
+  MOZ_ASSERT(mState == State::DatabaseWorkOpen);
+
+  mState = State::SendingResults;
+
+  QM_TRY(MOZ_TO_RESULT(mOwningEventTarget->Dispatch(this, NS_DISPATCH_NORMAL)));
+
+  return NS_OK;
+}
+
+nsresult GetDatabasesOp::DoDirectoryWork() {
+  AssertIsOnIOThread();
+  MOZ_ASSERT(mState == State::DirectoryWorkOpen);
+
+  // This state (DirectoryWorkOpen) runs immediately on the I/O thread, before
+  // waiting for existing factory operations to complete (at which point
+  // DoDatabaseWork will be invoked). To match the spec, we must snapshot the
+  // current state of any databases that are being created (version = 0) or
+  // upgraded (version >= 1) now. If we only sampled these values in
+  // DoDatabaseWork, we would only see their post-creation/post-upgrade
+  // versions, which would be incorrect.
+
+  IndexedDatabaseManager* const idm = IndexedDatabaseManager::Get();
+  MOZ_ASSERT(idm);
+
+  const auto& fileManagers =
+      idm->GetFileManagers(mPersistenceType, mOriginMetadata.mOrigin);
+
+  for (const auto& fileManager : fileManagers) {
+    auto& metadata =
+        mDatabaseMetadataTable.LookupOrInsert(fileManager->DatabaseFilePath());
+    metadata.name() = fileManager->DatabaseName();
+    metadata.version() = fileManager->DatabaseVersion();
+  }
+
+  // Must set this before dispatching otherwise we will race with the IO thread.
+  mState = State::DirectoryWorkDone;
+
+  QM_TRY(MOZ_TO_RESULT(mOwningEventTarget->Dispatch(this, NS_DISPATCH_NORMAL)));
+
+  return NS_OK;
+}
+
+nsresult GetDatabasesOp::DatabaseOpen() {
+  AssertIsOnOwningThread();
+  MOZ_ASSERT(mState == State::DatabaseOpenPending);
+
+  nsresult rv = SendToIOThread();
+  if (NS_WARN_IF(NS_FAILED(rv))) {
+    return rv;
+  }
+
+  return NS_OK;
+}
+
+nsresult GetDatabasesOp::DoDatabaseWork() {
+  AssertIsOnIOThread();
+  MOZ_ASSERT(mState == State::DatabaseWorkOpen);
+
+  AUTO_PROFILER_LABEL("GetDatabasesOp::DoDatabaseWork", DOM);
+
+  if (NS_WARN_IF(QuotaClient::IsShuttingDownOnNonBackgroundThread()) ||
+      !OperationMayProceed()) {
+    IDB_REPORT_INTERNAL_ERR();
+    return NS_ERROR_DOM_INDEXEDDB_UNKNOWN_ERR;
+  }
+
+  QuotaManager* const quotaManager = QuotaManager::Get();
+  MOZ_ASSERT(quotaManager);
+
+  if (mPersistenceType != PERSISTENCE_TYPE_PERSISTENT) {
+    QM_TRY(MOZ_TO_RESULT(
+        quotaManager->EnsureTemporaryStorageIsInitializedInternal()));
+  }
+
+  {
+    QM_TRY_INSPECT(const bool& exists,
+                   quotaManager->DoesOriginDirectoryExist(mOriginMetadata));
+    if (!exists) {
+      return DatabasesNotAvailable();
+    }
+  }
+
+  QM_TRY(([&quotaManager, this]()
+              -> mozilla::Result<std::pair<nsCOMPtr<nsIFile>, bool>, nsresult> {
+    if (mPersistenceType == PERSISTENCE_TYPE_PERSISTENT) {
+      QM_TRY_RETURN(
+          quotaManager->EnsurePersistentOriginIsInitialized(mOriginMetadata));
+    }
+
+    QM_TRY_RETURN(quotaManager->EnsureTemporaryOriginIsInitialized(
+        mPersistenceType, mOriginMetadata));
+  }()
+                     .map([](const auto& res) { return Ok{}; })));
+
+  {
+    QM_TRY_INSPECT(const bool& exists,
+                   quotaManager->DoesClientDirectoryExist(
+                       ClientMetadata{mOriginMetadata, Client::IDB}));
+    if (!exists) {
+      return DatabasesNotAvailable();
+    }
+  }
+
+  QM_TRY_INSPECT(
+      const auto& clientDirectory,
+      ([&quotaManager, this]()
+           -> mozilla::Result<std::pair<nsCOMPtr<nsIFile>, bool>, nsresult> {
+        if (mPersistenceType == PERSISTENCE_TYPE_PERSISTENT) {
+          QM_TRY_RETURN(quotaManager->EnsurePersistentClientIsInitialized(
+              ClientMetadata{mOriginMetadata, Client::IDB}));
+        }
+
+        QM_TRY_RETURN(quotaManager->EnsureTemporaryClientIsInitialized(
+            ClientMetadata{mOriginMetadata, Client::IDB}));
+      }()
+                  .map([](const auto& res) { return res.first; })));
+
+  QM_TRY_INSPECT(
+      (const auto& [subdirsToProcess, databaseFilenames]),
+      QuotaClient::GetDatabaseFilenames(*clientDirectory,
+                                        /* aCanceled */ Atomic<bool>{false}));
+
+  for (const auto& databaseFilename : databaseFilenames) {
+    QM_TRY_INSPECT(
+        const auto& databaseFile,
+        CloneFileAndAppend(*clientDirectory, databaseFilename + kSQLiteSuffix));
+
+    nsString path;
+    databaseFile->GetPath(path);
+
+    // Use the snapshotted values from DoDirectoryWork which correctly
+    // snapshotted the state of any pending creations/upgrades. This does mean
+    // that we need to skip reporting databases that had a version of 0 at that
+    // time because they were still being created. In the event that any other
+    // creation or upgrade requests are made after our operation is created,
+    // this operation will block those, so it's not possible for this set of
+    // data to get out of sync. The snapshotting (using cached database name
+    // and version in DatabaseFileManager) also guarantees that we are not
+    // touching the SQLite database here on the QuotaManager I/O thread which
+    // is already open on the connection thread.
+
+    auto metadata = mDatabaseMetadataTable.Lookup(path);
+    if (metadata) {
+      if (metadata->version() != 0) {
+        mDatabaseMetadataArray.AppendElement(DatabaseMetadata(
+            metadata->name(), metadata->version(), mPersistenceType));
+      }
+
+      continue;
+    }
+
+    // Since the database is not already open (there was no DatabaseFileManager
+    // for snapshotting in DoDirectoryWork which could provide us with the
+    // database name and version without needing to open the SQLite database),
+    // it is safe and necessary for us to open the database on this thread and
+    // retrieve its name and version. We do not need to worry about racing a
+    // database open because database opens can only be processed on this
+    // thread and we are performing the steps below synchronously.
+
+    QM_TRY_INSPECT(
+        const auto& fmDirectory,
+        CloneFileAndAppend(*clientDirectory,
+                           databaseFilename + kFileManagerDirectoryNameSuffix));
+
+    QM_TRY_UNWRAP(
+        const NotNull<nsCOMPtr<mozIStorageConnection>> connection,
+        CreateStorageConnection(*databaseFile, *fmDirectory, VoidString(),
+                                mOriginMetadata.mOrigin, mDirectoryLockId,
+                                TelemetryIdForFile(databaseFile), Nothing{}));
+
+    {
+      // Load version information.
+      QM_TRY_INSPECT(const auto& stmt,
+                     CreateAndExecuteSingleStepStatement<
+                         SingleStepResult::ReturnNullIfNoResult>(
+                         *connection, "SELECT name, version FROM database"_ns));
+
+      QM_TRY(OkIf(stmt), NS_ERROR_FILE_CORRUPTED);
+
+      QM_TRY_INSPECT(
+          const auto& databaseName,
+          MOZ_TO_RESULT_INVOKE_MEMBER_TYPED(nsString, stmt, GetString, 0));
+
+      QM_TRY_INSPECT(const int64_t& version,
+                     MOZ_TO_RESULT_INVOKE_MEMBER(stmt, GetInt64, 1));
+
+      mDatabaseMetadataArray.AppendElement(
+          DatabaseMetadata(databaseName, version, mPersistenceType));
+    }
+  }
+
+  mState = State::SendingResults;
+
+  QM_TRY(MOZ_TO_RESULT(mOwningEventTarget->Dispatch(this, NS_DISPATCH_NORMAL)));
+
+  return NS_OK;
+}
+
+nsresult GetDatabasesOp::BeginVersionChange() {
+  MOZ_CRASH("Not implemented because this should be unreachable.");
+}
+
+bool GetDatabasesOp::AreActorsAlive() {
+  MOZ_CRASH("Not implemented because this should be unreachable.");
+}
+
+void GetDatabasesOp::SendBlockedNotification() {
+  MOZ_CRASH("Not implemented because this should be unreachable.");
+}
+
+nsresult GetDatabasesOp::DispatchToWorkThread() {
+  MOZ_CRASH("Not implemented because this should be unreachable.");
+}
+
+void GetDatabasesOp::SendResults() {
+  AssertIsOnOwningThread();
+  MOZ_ASSERT(mState == State::SendingResults);
+
+#ifdef DEBUG
+  NoteActorDestroyed();
+#endif
+
+  mResolver(mDatabaseMetadataArray);
+
+  mDirectoryLock = nullptr;
+
+  CleanupMetadata();
+
+  FinishSendResults();
+}
+
 TransactionDatabaseOperationBase::TransactionDatabaseOperationBase(
-    SafeRefPtr<TransactionBase> aTransaction)
+    SafeRefPtr<TransactionBase> aTransaction, const int64_t aRequestId)
     : DatabaseOperationBase(aTransaction->GetLoggingInfo()->Id(),
                             aTransaction->GetLoggingInfo()->NextRequestSN()),
       mTransaction(WrapNotNull(std::move(aTransaction))),
+      mRequestId(aRequestId),
       mTransactionIsAborted((*mTransaction)->IsAborted()),
       mTransactionLoggingSerialNumber((*mTransaction)->LoggingSerialNumber()) {
   MOZ_ASSERT(LoggingSerialNumber());
 }
 
 TransactionDatabaseOperationBase::TransactionDatabaseOperationBase(
-    SafeRefPtr<TransactionBase> aTransaction, uint64_t aLoggingSerialNumber)
+    SafeRefPtr<TransactionBase> aTransaction, const int64_t aRequestId,
+    uint64_t aLoggingSerialNumber)
     : DatabaseOperationBase(aTransaction->GetLoggingInfo()->Id(),
                             aLoggingSerialNumber),
       mTransaction(WrapNotNull(std::move(aTransaction))),
+      mRequestId(aRequestId),
       mTransactionIsAborted((*mTransaction)->IsAborted()),
       mTransactionLoggingSerialNumber((*mTransaction)->LoggingSerialNumber()) {}
 
@@ -16749,7 +17318,7 @@ void TransactionDatabaseOperationBase::SendPreprocessInfoOrResults(
     mWaitingForContinue = true;
   } else {
     if (mLoggingSerialNumber) {
-      (*mTransaction)->NoteFinishedRequest(mLoggingSerialNumber, ResultCode());
+      (*mTransaction)->NoteFinishedRequest(mRequestId, ResultCode());
     }
 
     Cleanup();
@@ -16985,7 +17554,8 @@ TransactionBase::CommitOp::Run() {
       connection->FinishWriteTransaction();
 
       if (mTransaction->GetMode() == IDBTransaction::Mode::Cleanup) {
-        connection->DoIdleProcessing(/* aNeedsCheckpoint */ true);
+        connection->DoIdleProcessing(/* aNeedsCheckpoint */ true,
+                                     /* aInterrupted */ Atomic<bool>(false));
 
         connection->EnableQuotaChecks();
       }
@@ -18218,8 +18788,9 @@ mozilla::ipc::IPCResult NormalTransactionOp::RecvContinue(
 }
 
 ObjectStoreAddOrPutRequestOp::ObjectStoreAddOrPutRequestOp(
-    SafeRefPtr<TransactionBase> aTransaction, RequestParams&& aParams)
-    : NormalTransactionOp(std::move(aTransaction)),
+    SafeRefPtr<TransactionBase> aTransaction, const int64_t aRequestId,
+    RequestParams&& aParams)
+    : NormalTransactionOp(std::move(aTransaction), aRequestId),
       mParams(
           std::move(aParams.type() == RequestParams::TObjectStoreAddParams
                         ? aParams.get_ObjectStoreAddParams().commonParams()
@@ -18448,6 +19019,11 @@ nsresult ObjectStoreAddOrPutRequestOp::DoDatabaseWork(
         }
 
         QM_TRY(key.SetFromInteger(autoIncrementNum));
+
+        // Update index keys if primary key is preserved in child.
+        for (auto& updateInfo : mParams.indexUpdateInfos()) {
+          updateInfo.value().MaybeUpdateAutoIncrementKey(autoIncrementNum);
+        }
       } else if (key.IsFloat()) {
         double numericKey = key.ToFloat();
         numericKey = std::min(numericKey, double(1LL << 53));
@@ -18734,9 +19310,9 @@ ObjectStoreAddOrPutRequestOp::SCInputStream::IsNonBlocking(bool* _retval) {
 }
 
 ObjectStoreGetRequestOp::ObjectStoreGetRequestOp(
-    SafeRefPtr<TransactionBase> aTransaction, const RequestParams& aParams,
-    bool aGetAll)
-    : NormalTransactionOp(std::move(aTransaction)),
+    SafeRefPtr<TransactionBase> aTransaction, const int64_t aRequestId,
+    const RequestParams& aParams, bool aGetAll)
+    : NormalTransactionOp(std::move(aTransaction), aRequestId),
       mObjectStoreId(aGetAll
                          ? aParams.get_ObjectStoreGetAllParams().objectStoreId()
                          : aParams.get_ObjectStoreGetParams().objectStoreId()),
@@ -18906,9 +19482,9 @@ void ObjectStoreGetRequestOp::GetResponse(RequestResponse& aResponse,
 }
 
 ObjectStoreGetKeyRequestOp::ObjectStoreGetKeyRequestOp(
-    SafeRefPtr<TransactionBase> aTransaction, const RequestParams& aParams,
-    bool aGetAll)
-    : NormalTransactionOp(std::move(aTransaction)),
+    SafeRefPtr<TransactionBase> aTransaction, const int64_t aRequestId,
+    const RequestParams& aParams, bool aGetAll)
+    : NormalTransactionOp(std::move(aTransaction), aRequestId),
       mObjectStoreId(
           aGetAll ? aParams.get_ObjectStoreGetAllKeysParams().objectStoreId()
                   : aParams.get_ObjectStoreGetKeyParams().objectStoreId()),
@@ -18994,9 +19570,9 @@ void ObjectStoreGetKeyRequestOp::GetResponse(RequestResponse& aResponse,
 }
 
 ObjectStoreDeleteRequestOp::ObjectStoreDeleteRequestOp(
-    SafeRefPtr<TransactionBase> aTransaction,
+    SafeRefPtr<TransactionBase> aTransaction, const int64_t aRequestId,
     const ObjectStoreDeleteParams& aParams)
-    : NormalTransactionOp(std::move(aTransaction)),
+    : NormalTransactionOp(std::move(aTransaction), aRequestId),
       mParams(aParams),
       mObjectStoreMayHaveIndexes(false) {
   AssertIsOnBackgroundThread();
@@ -19055,9 +19631,9 @@ nsresult ObjectStoreDeleteRequestOp::DoDatabaseWork(
 }
 
 ObjectStoreClearRequestOp::ObjectStoreClearRequestOp(
-    SafeRefPtr<TransactionBase> aTransaction,
+    SafeRefPtr<TransactionBase> aTransaction, const int64_t aRequestId,
     const ObjectStoreClearParams& aParams)
-    : NormalTransactionOp(std::move(aTransaction)),
+    : NormalTransactionOp(std::move(aTransaction), aRequestId),
       mParams(aParams),
       mObjectStoreMayHaveIndexes(false) {
   AssertIsOnBackgroundThread();
@@ -19228,8 +19804,9 @@ SafeRefPtr<FullIndexMetadata> IndexRequestOpBase::IndexMetadataForParams(
 }
 
 IndexGetRequestOp::IndexGetRequestOp(SafeRefPtr<TransactionBase> aTransaction,
+                                     const int64_t aRequestId,
                                      const RequestParams& aParams, bool aGetAll)
-    : IndexRequestOpBase(std::move(aTransaction), aParams),
+    : IndexRequestOpBase(std::move(aTransaction), aRequestId, aParams),
       mDatabase(Transaction().GetDatabasePtr()),
       mOptionalKeyRange(aGetAll
                             ? aParams.get_IndexGetAllParams().optionalKeyRange()
@@ -19358,9 +19935,9 @@ void IndexGetRequestOp::GetResponse(RequestResponse& aResponse,
 }
 
 IndexGetKeyRequestOp::IndexGetKeyRequestOp(
-    SafeRefPtr<TransactionBase> aTransaction, const RequestParams& aParams,
-    bool aGetAll)
-    : IndexRequestOpBase(std::move(aTransaction), aParams),
+    SafeRefPtr<TransactionBase> aTransaction, const int64_t aRequestId,
+    const RequestParams& aParams, bool aGetAll)
+    : IndexRequestOpBase(std::move(aTransaction), aRequestId, aParams),
       mOptionalKeyRange(
           aGetAll ? aParams.get_IndexGetAllKeysParams().optionalKeyRange()
                   : Some(aParams.get_IndexGetKeyParams().keyRange())),

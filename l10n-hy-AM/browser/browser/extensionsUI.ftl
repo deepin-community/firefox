@@ -20,6 +20,11 @@ addon-post-install-message = { $addonName }-ն ավելացվել է;
 
 ## A modal confirmation dialog to allow an extension on quarantined domains.
 
+# Variables:
+#   $addonName (String): localized name of the extension.
+webext-quarantine-confirmation-title = Աշխատեցնե՞լ { $addonName }-ը սահմանափակված կայքերում:
+webext-quarantine-confirmation-line-1 = Ձեր տվյալները պաշտպանելու համար այս ընդլայնումն արգելված է այս կայքում:
+webext-quarantine-confirmation-line-2 = Թույլատրեք այս ընդլայնումը, եթե վստահում եք Ձեր տվյալների կարդալը կամ փոխելը իրեն՝ { -vendor-short-name }-ի կողմից սահմանափակված կայքերում:
 webext-quarantine-confirmation-allow =
     .label = Թույլատրել
     .accesskey = A

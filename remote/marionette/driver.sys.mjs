@@ -540,7 +540,7 @@ GeckoDriver.prototype.handleEvent = function ({ target, type }) {
   }
 };
 
-GeckoDriver.prototype.observe = async function (subject, topic, data) {
+GeckoDriver.prototype.observe = async function (subject, topic) {
   switch (topic) {
     case TOPIC_BROWSER_READY:
       this.registerWindow(subject);
@@ -3345,23 +3345,6 @@ GeckoDriver.prototype.setUserVerified = function (cmd) {
 GeckoDriver.prototype.setPermission = async function (cmd) {
   const { descriptor, state, oneRealm = false } = cmd.parameters;
   const browsingContext = lazy.assert.open(this.getBrowsingContext());
-
-  // XXX: WPT should not have these but currently they do and we pass testing pref to
-  // pass them, see bug 1875837.
-  if (
-    ["clipboard-read", "clipboard-write"].includes(descriptor.name) &&
-    state === "granted"
-  ) {
-    if (
-      Services.prefs.getBoolPref("dom.events.testing.asyncClipboard", false)
-    ) {
-      // Okay, do nothing. The clipboard module will work without permission.
-      return;
-    }
-    throw new lazy.error.UnsupportedOperationError(
-      "setPermission: expected dom.events.testing.asyncClipboard to be set"
-    );
-  }
 
   // XXX: We currently depend on camera/microphone tests throwing UnsupportedOperationError,
   // the fix is ongoing in bug 1609427.

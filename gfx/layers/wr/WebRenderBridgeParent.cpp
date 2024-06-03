@@ -141,7 +141,7 @@ void gfx_wr_set_crash_annotation(mozilla::wr::CrashAnnotation aAnnotation,
     return;
   }
 
-  CrashReporter::AnnotateCrashReport(annotation, nsDependentCString(aValue));
+  CrashReporter::RecordAnnotationCString(annotation, aValue);
 }
 
 void gfx_wr_clear_crash_annotation(mozilla::wr::CrashAnnotation aAnnotation) {
@@ -150,7 +150,7 @@ void gfx_wr_clear_crash_annotation(mozilla::wr::CrashAnnotation aAnnotation) {
     return;
   }
 
-  CrashReporter::RemoveCrashReportAnnotation(annotation);
+  CrashReporter::UnrecordAnnotation(annotation);
 }
 }
 
@@ -1188,7 +1188,8 @@ mozilla::ipc::IPCResult WebRenderBridgeParent::RecvSetDisplayList(
       IsRootWebRenderBridgeParent());
 
   if (!IsRootWebRenderBridgeParent()) {
-    CrashReporter::AnnotateCrashReport(CrashReporter::Annotation::URL, aTxnURL);
+    CrashReporter::RecordAnnotationNSCString(CrashReporter::Annotation::URL,
+                                             aTxnURL);
   }
 
   CompositorBridgeParent* cbp = GetRootCompositorBridgeParent();
@@ -1330,7 +1331,8 @@ mozilla::ipc::IPCResult WebRenderBridgeParent::RecvEmptyTransaction(
       IsRootWebRenderBridgeParent());
 
   if (!IsRootWebRenderBridgeParent()) {
-    CrashReporter::AnnotateCrashReport(CrashReporter::Annotation::URL, aTxnURL);
+    CrashReporter::RecordAnnotationNSCString(CrashReporter::Annotation::URL,
+                                             aTxnURL);
   }
 
   AUTO_PROFILER_TRACING_MARKER("Paint", "EmptyTransaction", GRAPHICS);
@@ -1916,6 +1918,10 @@ mozilla::ipc::IPCResult WebRenderBridgeParent::RecvClearCachedResources() {
       " Id %" PRIx64 " root %d",
       wr::AsUint64(mPipelineId), wr::AsUint64(mApi->GetId()),
       IsRootWebRenderBridgeParent());
+
+  if (!IsRootWebRenderBridgeParent()) {
+    mApi->FlushPendingWrTransactionEventsWithoutWait();
+  }
 
   // Clear resources
   wr::TransactionBuilder txn(mApi);
@@ -2616,17 +2622,17 @@ void WebRenderBridgeParent::ScheduleGenerateFrame(wr::RenderReasons aReasons) {
 }
 
 void WebRenderBridgeParent::FlushRendering(wr::RenderReasons aReasons,
-                                           bool aWaitForPresent) {
+                                           bool aBlocking) {
   if (mDestroyed) {
     return;
   }
 
-  // This gets called during e.g. window resizes, so we need to flush the
-  // scene (which has the display list at the new window size).
-  FlushSceneBuilds();
-  FlushFrameGeneration(aReasons);
-  if (aWaitForPresent) {
+  if (aBlocking) {
+    FlushSceneBuilds();
+    FlushFrameGeneration(aReasons);
     FlushFramePresentation();
+  } else {
+    ScheduleGenerateFrame(aReasons);
   }
 }
 

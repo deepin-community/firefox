@@ -12,6 +12,7 @@
 ##  $host (String): the hostname of the site that is being displayed.
 ##  $provider (String): the hostname of another website you are using to log in to the site being displayed
 
+identity-credential-header-providers = Մուտք գործեք մուտքի մատակարարի միջոցով
 identity-credential-header-accounts = Մուտք գործեք { $provider }-ով
 identity-credential-urlbar-anchor =
     .tooltiptext = Բացեք մուտքի փեղկը
@@ -24,3 +25,4 @@ identity-credential-accept-button =
 identity-credential-sign-in-button =
     .label = Մուտք գործել
     .accesskey = S
+identity-credential-policy-title = Օգտագործեք { $provider } որպես մուտքի մատակարար

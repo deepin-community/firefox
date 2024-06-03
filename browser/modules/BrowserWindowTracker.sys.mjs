@@ -244,7 +244,7 @@ export const BrowserWindowTracker = {
     // Prevent leaks in case the window closes before we track it as an open
     // window.
     const topic = "browsing-context-discarded";
-    const observer = (aSubject, aTopic, aData) => {
+    const observer = aSubject => {
       if (window.browsingContext == aSubject) {
         let pending = this.pendingWindows.get(window);
         if (pending) {
@@ -287,9 +287,6 @@ export const BrowserWindowTracker = {
     remote = undefined,
     fission = undefined,
   } = {}) {
-    let telemetryObj = {};
-    TelemetryStopwatch.start("FX_NEW_WINDOW_MS", telemetryObj);
-
     let windowFeatures = "chrome,dialog=no,all";
     if (features) {
       windowFeatures += `,${features}`;
@@ -344,7 +341,6 @@ export const BrowserWindowTracker = {
     win.addEventListener(
       "MozAfterPaint",
       () => {
-        TelemetryStopwatch.finish("FX_NEW_WINDOW_MS", telemetryObj);
         if (
           Services.prefs.getIntPref("browser.startup.page") == 1 &&
           loadURIString == lazy.HomePage.get()

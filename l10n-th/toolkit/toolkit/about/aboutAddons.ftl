@@ -10,7 +10,7 @@ search-header =
 ## Variables
 ##   $domain - Domain name where add-ons are available (e.g. addons.mozilla.org)
 
-list-empty-get-extensions-message = รับส่วนขยายและชุดรูปแบบใน <a data-l10n-name="get-extensions">{ $domain }</a>
+list-empty-get-extensions-message = รับส่วนขยายและชุดตกแต่งใน <a data-l10n-name="get-extensions">{ $domain }</a>
 list-empty-get-dictionaries-message = รับพจนานุกรมบน <a data-l10n-name="get-extensions">{ $domain }</a>
 list-empty-get-language-packs-message = รับชุดภาษาบน <a data-l10n-name="get-extensions">{ $domain }</a>
 
@@ -126,9 +126,9 @@ addon-category-discover-title =
 addon-category-extension = ส่วนขยาย
 addon-category-extension-title =
     .title = ส่วนขยาย
-addon-category-theme = ชุดรูปแบบ
+addon-category-theme = ชุดตกแต่ง
 addon-category-theme-title =
-    .title = ชุดรูปแบบ
+    .title = ชุดตกแต่ง
 addon-category-plugin = ปลั๊กอิน
 addon-category-plugin-title =
     .title = ปลั๊กอิน
@@ -144,13 +144,13 @@ addon-category-available-updates-title =
 addon-category-recent-updates = การอัปเดตล่าสุด
 addon-category-recent-updates-title =
     .title = การอัปเดตล่าสุด
-addon-category-sitepermission = สิทธิอนุญาตไซต์
+addon-category-sitepermission = การกำหนดสิทธิ์ไซต์
 addon-category-sitepermission-title =
-    .title = สิทธิอนุญาตไซต์
+    .title = การกำหนดสิทธิ์ไซต์
 # String displayed in about:addons in the Site Permissions section
 # Variables:
 #  $host (string) - DNS host name for which the webextension enables permissions
-addon-sitepermission-host = สิทธิอนุญาตไซต์สำหรับ { $host }
+addon-sitepermission-host = การกำหนดสิทธิ์ไซต์สำหรับ { $host }
 
 ## These are global warnings
 
@@ -261,20 +261,20 @@ header-back-button =
 # Explanatory introduction to the list of recommended add-ons. The action word
 # ("recommends") in the final sentence is a link to external documentation.
 discopane-intro =
-    ส่วนขยายและชุดรูปแบบเป็นเหมือนแอปสำหรับเบราว์เซอร์ของคุณ ซึ่งให้คุณป้องกัน
+    ส่วนขยายและชุดตกแต่งเป็นเหมือนแอปสำหรับเบราว์เซอร์ของคุณ ซึ่งให้คุณป้องกัน
     รหัสผ่าน ดาวน์โหลดวิดีโอ ค้นหาดีล ปิดกั้นโฆษณาที่น่ารำคาญ เปลี่ยนรูปลักษณ์ของ
     เบราว์เซอร์ของคุณ และอื่น ๆ อีกมากมาย โปรแกรมซอฟต์แวร์ขนาดเล็กเหล่านั้นมักถูก
     พัฒนาโดยบุคคลที่สาม นี่คือตัวเลือกที่ { -brand-product-name } <a data-l10n-name="learn-more-trigger">แนะนำ</a>เพื่อ
     ความปลอดภัย ประสิทธิภาพ และการทำงานที่ดีกว่า
 # Notice to make user aware that the recommendations are personalized.
 discopane-notice-recommendations =
-    บางคำแนะนำเหล่านี้ถูกปรับเปลี่ยนตามแบบส่วนบุคคล ซึ่งขึ้นอยู่กับส่วนขยายอื่นที่คุณติดตั้ง,
-    ค่ากำหนดโปรไฟล์, และสถิติการใช้งาน
+    บางคำแนะนำเหล่านี้ถูกปรับเปลี่ยนตามแบบส่วนบุคคล ซึ่งขึ้นอยู่กับส่วนขยายอื่นที่คุณติดตั้ง
+    ค่าปรับแต่งโปรไฟล์ และสถิติการใช้งาน
 # Notice to make user aware that the recommendations are personalized.
 discopane-notice-recommendations2 =
     .message =
-        บางคำแนะนำเหล่านี้ถูกปรับเปลี่ยนตามแบบส่วนบุคคล ซึ่งขึ้นอยู่กับส่วนขยายอื่นที่คุณติดตั้ง,
-        ค่ากำหนดโปรไฟล์, และสถิติการใช้งาน
+        บางคำแนะนำเหล่านี้ถูกปรับเปลี่ยนตามแบบส่วนบุคคล ซึ่งขึ้นอยู่กับส่วนขยายอื่นที่คุณติดตั้ง
+        ค่าปรับแต่งโปรไฟล์ และสถิติการใช้งาน
 discopane-notice-learn-more = เรียนรู้เพิ่มเติม
 privacy-policy = นโยบายความเป็นส่วนตัว
 # Refers to the author of an add-on, shown below the name of the add-on.
@@ -286,12 +286,12 @@ created-by-author = โดย <a data-l10n-name="author">{ $author }</a>
 #   $dailyUsers (number) - The number of daily users.
 user-count = ผู้ใช้: { $dailyUsers }
 install-extension-button = เพิ่มลงใน { -brand-product-name }
-install-theme-button = ติดตั้งชุดรูปแบบ
+install-theme-button = ติดตั้งชุดตกแต่ง
 # The label of the button that appears after installing an add-on. Upon click,
 # the detailed add-on view is opened, from where the add-on can be managed.
 manage-addon-button = จัดการ
 find-more-addons = ค้นหาส่วนเสริมเพิ่มเติม
-find-more-themes = ค้นหาชุดรูปแบบเพิ่มเติม
+find-more-themes = ค้นหาชุดตกแต่งเพิ่มเติม
 # This is a label for the button to open the "more options" menu, it is only
 # used for screen readers.
 addon-options-button =
@@ -316,11 +316,11 @@ preferences-addon-button =
     }
 details-addon-button = รายละเอียด
 release-notes-addon-button = บันทึกประจำรุ่น
-permissions-addon-button = การอนุญาต
+permissions-addon-button = การกำหนดสิทธิ์
 extension-enabled-heading = ถูกเปิดใช้งาน
 extension-disabled-heading = ถูกปิดใช้งาน
 theme-enabled-heading = เปิดใช้งาน
-theme-disabled-heading2 = ชุดรูปแบบที่บันทึกไว้
+theme-disabled-heading2 = ชุดตกแต่งที่บันทึกไว้
 plugin-enabled-heading = ถูกเปิดใช้งาน
 plugin-disabled-heading = ถูกปิดใช้งาน
 dictionary-enabled-heading = ถูกเปิดใช้งาน
@@ -427,28 +427,28 @@ available-updates-heading = การอัปเดตที่มี
 recent-updates-heading = การอัปเดตล่าสุด
 release-notes-loading = กำลังโหลด…
 release-notes-error = ขออภัย แต่เกิดข้อผิดพลาดในการโหลดบันทึกประจำรุ่น
-addon-permissions-empty = ส่วนขยายนี้ไม่ต้องการการอนุญาตใด ๆ
-addon-permissions-required = สิทธิอนุญาตที่ต้องการสำหรับฟังก์ชันการทำงานหลัก:
-addon-permissions-optional = สิทธิอนุญาตที่เลือกได้สำหรับฟังก์ชันการทำงานที่เพิ่ม:
-addon-permissions-learnmore = เรียนรู้เพิ่มเติมเกี่ยวกับสิทธิอนุญาต
+addon-permissions-empty = ส่วนขยายนี้ไม่จำเป็นต้องขอสิทธิ์ใด
+addon-permissions-required = สิทธิ์ที่ต้องการสำหรับฟังก์ชันการทำงานหลัก:
+addon-permissions-optional = สิทธิ์เผื่อเลือกสำหรับฟังก์ชันการทำงานเพิ่มเติม:
+addon-permissions-learnmore = เรียนรู้เพิ่มเติมเกี่ยวกับการกำหนดสิทธิ์
 recommended-extensions-heading = ส่วนขยายที่แนะนำ
-recommended-themes-heading = ชุดรูปแบบที่แนะนำ
+recommended-themes-heading = ชุดตกแต่งที่แนะนำ
 # Variables:
 #   $hostname (string) - Host where the permissions are granted
 addon-sitepermissions-required = มอบความสามารถต่อไปนี้ให้ <span data-l10n-name="hostname">{ $hostname }</span>:
 # A recommendation for the Firefox Color theme shown at the bottom of the theme
 # list view. The "Firefox Color" name itself should not be translated.
-recommended-theme-1 = รู้สึกสร้างสรรค์ใช่ไหม? <a data-l10n-name="link">สร้างชุดรูปแบบในแบบของคุณเองด้วย Firefox Color</a>
+recommended-theme-1 = รู้สึกสร้างสรรค์ใช่ไหม? <a data-l10n-name="link">สร้างชุดตกแต่งในแบบของคุณเองด้วย Firefox Color</a>
 
 ## Page headings
 
 extension-heading = จัดการส่วนขยายของคุณ
-theme-heading = จัดการชุดรูปแบบของคุณ
+theme-heading = จัดการชุดตกแต่งของคุณ
 plugin-heading = จัดการปลั๊กอินของคุณ
 dictionary-heading = จัดการพจนานุกรมของคุณ
 locale-heading = จัดการภาษาของคุณ
 updates-heading = จัดการการอัปเดตของคุณ
-sitepermission-heading = จัดการสิทธิอนุญาตไซต์ของคุณ
+sitepermission-heading = จัดการการกำหนดสิทธิ์ไซต์ของคุณ
 discover-heading = ปรับแต่ง { -brand-short-name } ของคุณ
 shortcuts-heading = จัดการทางลัดส่วนขยาย
 default-heading-search-label = ค้นหาส่วนเสริมเพิ่มเติม

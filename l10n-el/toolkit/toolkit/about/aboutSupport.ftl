@@ -431,3 +431,15 @@ pointing-device-mouse = Ποντίκι
 pointing-device-touchscreen = Οθόνη αφής
 pointing-device-pen-digitizer = Ψηφιοποιητής γραφίδας
 pointing-device-none = Δεν υπάρχουν συσκευές κατάδειξης
+
+## Content Analysis (DLP)
+
+# DLP stands for Data Loss Prevention, an industry term for external software
+# that enterprises can set up to prevent sensitive data from being transferred
+# to external websites.
+content-analysis-title = Ανάλυση περιεχομένου (DLP)
+content-analysis-active = Ενεργή
+content-analysis-connected-to-agent = Έγινε σύνδεση με πάροχο
+content-analysis-agent-path = Διαδρομή παρόχου
+content-analysis-agent-failed-signature-verification = Αποτυχία επαλήθευσης υπογραφής παρόχου
+content-analysis-request-count = Αριθμός αιτημάτων

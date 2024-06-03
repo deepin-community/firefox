@@ -318,11 +318,17 @@ function compare_remote_settings_files {
     remote_records_url="$REMOTE_SETTINGS_SERVER/buckets/${bucket}/collections/${collection}/changeset?_expected=${last_modified}"
     local_location_output="$REMOTE_SETTINGS_OUTPUT/${bucket}/${collection}.json"
     mkdir -p "$REMOTE_SETTINGS_OUTPUT/${bucket}"
-    ${WGET} -qO- "$remote_records_url" | ${JQ} '{"data": .changes, "timestamp": .timestamp}' > "${local_location_output}"
+    # We sort both the keys and the records in search-config-v2 to make it
+    # easier to read and to experiment with making changes via the dump file.
+    if [ "${collection}" = "search-config-v2" ]; then
+      ${WGET} -qO- "$remote_records_url" | ${JQ} --sort-keys '{"data": .changes | sort_by(.recordType, .identifier), "timestamp": .timestamp}' > "${local_location_output}"
+    else
+      ${WGET} -qO- "$remote_records_url" | ${JQ} '{"data": .changes, "timestamp": .timestamp}' > "${local_location_output}"
+    fi
 
     # 5. Download attachments if needed.
     if [ "${bucket}" = "blocklists" ] && [ "${collection}" = "addons-bloomfilters" ]; then
-      # Find the attachment with the most recent generation_time, like _updateMLBF in Blocklist.jsm.
+      # Find the attachment with the most recent generation_time, like _updateMLBF in Blocklist.sys.mjs.
       # The server should return one "bloomfilter-base" record, but in case it returns multiple,
       # return the most recent one. The server may send multiple entries if we ever decide to use
       # the "filter_expression" feature of Remote Settings to send different records to specific
@@ -364,7 +370,7 @@ function update_remote_settings_attachment() {
   # $4 is a jq filter on the arrays that should return one record with the attachment
   local jq_attachment_selector=".data | map(select(.attachment)) | $4"
 
-  # These paths match _readAttachmentDump in services/settings/Attachments.jsm.
+  # These paths match _readAttachmentDump in services/settings/Attachments.sys.mjs.
   local path_to_attachment="${bucket}/${collection}/${attachment_id}"
   local path_to_meta="${bucket}/${collection}/${attachment_id}.meta.json"
   local old_meta="$REMOTE_SETTINGS_INPUT/${path_to_meta}"
@@ -415,10 +421,10 @@ function compare_mobile_experiments() {
 
   ( ${DIFF} fenix-experiments-old.json fenix-experiments-new.json; ${DIFF} focus-experiments-old.json focus-experiments-new.json ) > "${EXPERIMENTER_DIFF_ARTIFACT}"
   if [ -s "${EXPERIMENTER_DIFF_ARTIFACT}" ]; then
+    return 0
+  else
     # no change
     return 1
-  else
-    return 0
   fi
 }
 

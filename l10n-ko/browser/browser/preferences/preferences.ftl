@@ -32,6 +32,8 @@ search-input-box2 =
     .style = width: 15.4em
     .placeholder = 설정에서 찾기
 managed-notice = 이 브라우저는 조직에서 관리하고 있습니다.
+managed-notice-info-icon =
+    .alt = 정보
 category-list =
     .aria-label = 카테고리
 pane-general-title = 일반
@@ -645,7 +647,7 @@ search-remove-engine =
 search-add-engine =
     .label = 추가
     .accesskey = A
-search-find-more-link = 더 많은 검색 엔진 찾기
+search-find-more-link = 검색 엔진 더 찾기
 # This warning is displayed when the chosen keyword is already in use
 # ('Duplicate' is an adjective)
 search-keyword-warning-title = 키워드 복사
@@ -692,6 +694,13 @@ sync-mobile-promo = 모바일 기기와 동기화하려면 <img data-l10n-name="
 
 sync-profile-picture =
     .tooltiptext = 프로필 사진 변경
+sync-profile-picture-with-alt =
+    .tooltiptext = 프로필 사진 변경
+    .alt = 프로필 사진 변경
+sync-profile-picture-account-problem =
+    .alt = 계정 프로필 사진
+fxa-login-rejected-warning =
+    .alt = 경고
 sync-sign-out =
     .label = 로그아웃…
     .accesskey = g
@@ -1258,6 +1267,8 @@ addon-recommendations-link = 더 알아보기
 # or builds with no Telemetry support available.
 collection-health-report-disabled = 이 빌드 설정에서는 데이터 보고가 비활성화 되어 있음
 collection-backlogged-crash-reports-with-link = { -brand-short-name }가 사용자를 대신하여 백로그된 충돌 보고서를 보내도록 허용 <a data-l10n-name="crash-reports-link">더 알아보기</a>
+    .accesskey = c
+collection-backlogged-crash-reports = { -brand-short-name }가 사용자를 대신하여 백로그된 충돌 보고서를 보내도록 허용
     .accesskey = c
 privacy-segmentation-section-header = 탐색을 향상시키는 새로운 기능
 privacy-segmentation-section-description = 더 개인적인 경험을 제공하기 위해 사용자의 데이터를 사용하는 기능을 제공하는 경우:

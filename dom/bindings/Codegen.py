@@ -11,7 +11,6 @@ import re
 import string
 import textwrap
 
-import six
 from Configuration import (
     Descriptor,
     MemberIsLegacyUnforgeable,
@@ -51,7 +50,6 @@ LEGACYCALLER_HOOK_NAME = "_legacycaller"
 RESOLVE_HOOK_NAME = "_resolve"
 MAY_RESOLVE_HOOK_NAME = "_mayResolve"
 NEW_ENUMERATE_HOOK_NAME = "_newEnumerate"
-ENUM_ENTRY_VARIABLE_NAME = "strings"
 INSTANCE_RESERVED_SLOTS = 1
 
 # This size is arbitrary. It is a power of 2 to make using it as a modulo
@@ -247,12 +245,6 @@ def wantsGetWrapperCache(desc):
     )
 
 
-# We'll want to insert the indent at the beginnings of lines, but we
-# don't want to indent empty lines.  So only indent lines that have a
-# non-newline character on them.
-lineStartDetector = re.compile("^(?=[^\n#])", re.MULTILINE)
-
-
 def indent(s, indentLevel=2):
     """
     Indent C++ code.
@@ -260,9 +252,16 @@ def indent(s, indentLevel=2):
     Weird secret feature: this doesn't indent lines that start with # (such as
     #include lines or #ifdef/#endif).
     """
-    if s == "":
-        return s
-    return re.sub(lineStartDetector, indentLevel * " ", s)
+
+    # We'll want to insert the indent at the beginnings of lines, but we
+    # don't want to indent empty lines.
+    padding = indentLevel * " "
+    return "\n".join(
+        [
+            (padding + line) if line and line[0] != "#" else line
+            for line in s.split("\n")
+        ]
+    )
 
 
 # dedent() and fill() are often called on the same string multiple
@@ -927,11 +926,51 @@ def InterfaceObjectProtoGetter(descriptor, forXrays=False):
     return (protoGetter, protoHandleGetter)
 
 
-class CGInterfaceObjectJSClass(CGThing):
-    def __init__(self, descriptor, properties):
+class CGNamespaceObjectJSClass(CGThing):
+    def __init__(self, descriptor):
         CGThing.__init__(self)
         self.descriptor = descriptor
-        self.properties = properties
+
+    def declare(self):
+        # We're purely for internal consumption
+        return ""
+
+    def define(self):
+        (protoGetter, _) = InterfaceObjectProtoGetter(self.descriptor, forXrays=True)
+
+        classString = self.descriptor.interface.getExtendedAttribute("ClassString")
+        if classString is None:
+            classString = self.descriptor.interface.identifier.name
+        else:
+            classString = classString[0]
+        return fill(
+            """
+            static const DOMIfaceAndProtoJSClass sNamespaceObjectClass = {
+              {
+                "${classString}",
+                JSCLASS_IS_DOMIFACEANDPROTOJSCLASS,
+                JS_NULL_CLASS_OPS,
+                JS_NULL_CLASS_SPEC,
+                JS_NULL_CLASS_EXT,
+                JS_NULL_OBJECT_OPS
+              },
+              eNamespace,
+              prototypes::id::_ID_Count,
+              0,
+              ${hooks},
+              ${protoGetter}
+            };
+            """,
+            classString=classString,
+            hooks=NativePropertyHooks(self.descriptor),
+            protoGetter=protoGetter,
+        )
+
+
+class CGInterfaceObjectInfo(CGThing):
+    def __init__(self, descriptor):
+        CGThing.__init__(self)
+        self.descriptor = descriptor
 
     def declare(self):
         # We're purely for internal consumption
@@ -939,104 +978,31 @@ class CGInterfaceObjectJSClass(CGThing):
 
     def define(self):
         if self.descriptor.interface.ctor():
-            assert not self.descriptor.interface.isNamespace()
             ctorname = CONSTRUCT_HOOK_NAME
-        elif self.descriptor.interface.isNamespace():
-            ctorname = "nullptr"
         else:
             ctorname = "ThrowingConstructor"
         wantsIsInstance = self.descriptor.interface.hasInterfacePrototypeObject()
 
         prototypeID, depth = PrototypeIDAndDepth(self.descriptor)
-        slotCount = "DOM_INTERFACE_SLOTS_BASE"
-        if len(self.descriptor.interface.legacyFactoryFunctions) > 0:
-            slotCount += " + %i /* slots for the legacy factory functions */" % len(
-                self.descriptor.interface.legacyFactoryFunctions
-            )
         (protoGetter, _) = InterfaceObjectProtoGetter(self.descriptor, forXrays=True)
 
-        if ctorname == "ThrowingConstructor":
-            ret = ""
-            classOpsPtr = "&sBoringInterfaceObjectClassClassOps"
-        elif ctorname == "nullptr":
-            ret = ""
-            classOpsPtr = "JS_NULL_CLASS_OPS"
-        else:
-            ret = fill(
-                """
-                static const JSClassOps sInterfaceObjectClassOps = {
-                    nullptr,               /* addProperty */
-                    nullptr,               /* delProperty */
-                    nullptr,               /* enumerate */
-                    nullptr,               /* newEnumerate */
-                    nullptr,               /* resolve */
-                    nullptr,               /* mayResolve */
-                    nullptr,               /* finalize */
-                    ${ctorname}, /* call */
-                    ${ctorname}, /* construct */
-                    nullptr,               /* trace */
-                };
-
-                """,
-                ctorname=ctorname,
-            )
-            classOpsPtr = "&sInterfaceObjectClassOps"
-
-        if self.descriptor.interface.isNamespace():
-            classString = self.descriptor.interface.getExtendedAttribute("ClassString")
-            if classString is None:
-                classString = self.descriptor.interface.identifier.name
-            else:
-                classString = classString[0]
-            funToString = "nullptr"
-            objectOps = "JS_NULL_OBJECT_OPS"
-        else:
-            classString = "Function"
-            funToString = (
-                '"function %s() {\\n    [native code]\\n}"'
-                % self.descriptor.interface.identifier.name
-            )
-            # We need non-default ObjectOps so we can actually make
-            # use of our funToString.
-            objectOps = "&sInterfaceObjectClassObjectOps"
-
-        ret = ret + fill(
+        return fill(
             """
-            static const DOMIfaceJSClass sInterfaceObjectClass = {
-              {
-                {
-                  "${classString}",
-                  JSCLASS_IS_DOMIFACEANDPROTOJSCLASS | JSCLASS_HAS_RESERVED_SLOTS(${slotCount}),
-                  ${classOpsPtr},
-                  JS_NULL_CLASS_SPEC,
-                  JS_NULL_CLASS_EXT,
-                  ${objectOps}
-                },
-                ${type},
-                ${prototypeID},
-                ${depth},
-                ${hooks},
-                ${protoGetter}
-              },
+            static const DOMInterfaceInfo sInterfaceObjectInfo = {
+              { ${ctorname}, ${hooks} },
+              ${protoGetter},
+              ${prototypeID},
+              ${depth},
               ${wantsIsInstance},
-              ${funToString}
             };
             """,
-            classString=classString,
-            slotCount=slotCount,
-            classOpsPtr=classOpsPtr,
+            ctorname=ctorname,
             hooks=NativePropertyHooks(self.descriptor),
-            objectOps=objectOps,
-            type="eNamespace"
-            if self.descriptor.interface.isNamespace()
-            else "eInterface",
+            protoGetter=protoGetter,
             prototypeID=prototypeID,
             depth=depth,
-            protoGetter=protoGetter,
             wantsIsInstance=toStringBool(wantsIsInstance),
-            funToString=funToString,
         )
-        return ret
 
 
 class CGList(CGThing):
@@ -1600,7 +1566,7 @@ class CGHeaders(CGWrapper):
     def getDeclarationFilename(decl):
         # Use our local version of the header, not the exported one, so that
         # test bindings, which don't export, will work correctly.
-        basename = os.path.basename(decl.filename())
+        basename = os.path.basename(decl.filename)
         return basename.replace(".webidl", "Binding.h")
 
     @staticmethod
@@ -2324,7 +2290,6 @@ class CGLegacyFactoryFunctions(CGThing):
 
             static const LegacyFactoryFunction legacyFactoryFunctions[] = {
               $*{legacyFactoryFunctions}
-              { nullptr, { nullptr, nullptr }, 0 }
             };
             """,
             name=self.descriptor.name,
@@ -3539,83 +3504,30 @@ class CGCreateInterfaceObjectsMethod(CGAbstractMethod):
         self.haveLegacyWindowAliases = haveLegacyWindowAliases
 
     def definition_body(self):
-        (protoGetter, protoHandleGetter) = InterfacePrototypeObjectProtoGetter(
-            self.descriptor
-        )
-        if protoHandleGetter is None:
-            parentProtoType = "Rooted"
-            getParentProto = "aCx, " + protoGetter
-        else:
-            parentProtoType = "Handle"
-            getParentProto = protoHandleGetter
-        getParentProto = getParentProto + "(aCx)"
-
-        (protoGetter, protoHandleGetter) = InterfaceObjectProtoGetter(self.descriptor)
-        if protoHandleGetter is None:
-            getConstructorProto = "aCx, " + protoGetter
-            constructorProtoType = "Rooted"
-        else:
-            getConstructorProto = protoHandleGetter
-            constructorProtoType = "Handle"
-        getConstructorProto += "(aCx)"
-
         needInterfaceObject = self.descriptor.interface.hasInterfaceObject()
-        needInterfacePrototypeObject = (
-            self.descriptor.interface.hasInterfacePrototypeObject()
-        )
-
-        # if we don't need to create anything, why are we generating this?
-        assert needInterfaceObject or needInterfacePrototypeObject
-
-        getParentProto = fill(
-            """
-            JS::${type}<JSObject*> parentProto(${getParentProto});
-            if (!parentProto) {
-              return;
-            }
-            """,
-            type=parentProtoType,
-            getParentProto=getParentProto,
-        )
-
-        getConstructorProto = fill(
-            """
-            JS::${type}<JSObject*> constructorProto(${getConstructorProto});
-            if (!constructorProto) {
-              return;
-            }
-            """,
-            type=constructorProtoType,
-            getConstructorProto=getConstructorProto,
-        )
-
-        if self.descriptor.interface.ctor():
-            constructArgs = methodLength(self.descriptor.interface.ctor())
-            isConstructorChromeOnly = isChromeOnly(self.descriptor.interface.ctor())
-        else:
-            constructArgs = 0
-            isConstructorChromeOnly = False
-        if len(self.descriptor.interface.legacyFactoryFunctions) > 0:
-            legacyFactoryFunctions = "legacyFactoryFunctions"
-        else:
-            legacyFactoryFunctions = "nullptr"
-
-        if needInterfacePrototypeObject:
-            protoClass = "&sPrototypeClass"
-            protoCache = (
-                "&aProtoAndIfaceCache.EntrySlotOrCreate(prototypes::id::%s)"
-                % self.descriptor.name
-            )
-            parentProto = "parentProto"
-            getParentProto = CGGeneric(getParentProto)
-        else:
-            protoClass = "nullptr"
-            protoCache = "nullptr"
-            parentProto = "nullptr"
-            getParentProto = None
-
         if needInterfaceObject:
-            interfaceClass = "&sInterfaceObjectClass"
+            (protoGetter, protoHandleGetter) = InterfaceObjectProtoGetter(
+                self.descriptor
+            )
+            if protoHandleGetter is None:
+                getConstructorProto = "aCx, " + protoGetter
+                constructorProtoType = "Rooted"
+            else:
+                getConstructorProto = protoHandleGetter
+                constructorProtoType = "Handle"
+
+            getConstructorProto = fill(
+                """
+                JS::${type}<JSObject*> constructorProto(${getConstructorProto}(aCx));
+                if (!constructorProto) {
+                  return;
+                }
+                """,
+                type=constructorProtoType,
+                getConstructorProto=getConstructorProto,
+            )
+
+            interfaceInfo = "&sInterfaceObjectInfo"
             interfaceCache = (
                 "&aProtoAndIfaceCache.EntrySlotOrCreate(constructors::id::%s)"
                 % self.descriptor.name
@@ -3625,12 +3537,11 @@ class CGCreateInterfaceObjectsMethod(CGAbstractMethod):
         else:
             # We don't have slots to store the legacy factory functions.
             assert len(self.descriptor.interface.legacyFactoryFunctions) == 0
-            interfaceClass = "nullptr"
+            interfaceInfo = "nullptr"
             interfaceCache = "nullptr"
             getConstructorProto = None
             constructorProto = "nullptr"
 
-        isGlobal = self.descriptor.isGlobal() is not None
         if self.properties.hasNonChromeOnly():
             properties = "sNativeProperties.Upcast()"
         else:
@@ -3649,31 +3560,117 @@ class CGCreateInterfaceObjectsMethod(CGAbstractMethod):
         name = self.descriptor.interface.getClassName()
         assert not (needInterfaceObject and " " in name)
 
-        call = fill(
+        if self.descriptor.interface.isNamespace():
+            # If we don't need to create anything, why are we generating this?
+            assert needInterfaceObject
+
+            call = fill(
+                """
+                JS::Heap<JSObject*>* interfaceCache = ${interfaceCache};
+                dom::CreateNamespaceObject(aCx, aGlobal, ${constructorProto},
+                                           sNamespaceObjectClass,
+                                           interfaceCache,
+                                           ${properties},
+                                           ${chromeProperties},
+                                           "${name}", aDefineOnGlobal);
+                """,
+                interfaceCache=interfaceCache,
+                constructorProto=constructorProto,
+                properties=properties,
+                chromeProperties=chromeProperties,
+                name=name,
+            )
+            return CGList(
+                [
+                    getConstructorProto,
+                    CGGeneric(call),
+                ],
+                "\n",
+            ).define()
+
+        needInterfacePrototypeObject = (
+            self.descriptor.interface.hasInterfacePrototypeObject()
+        )
+
+        # If we don't need to create anything, why are we generating this?
+        assert needInterfaceObject or needInterfacePrototypeObject
+
+        if needInterfacePrototypeObject:
+            (protoGetter, protoHandleGetter) = InterfacePrototypeObjectProtoGetter(
+                self.descriptor
+            )
+            if protoHandleGetter is None:
+                parentProtoType = "Rooted"
+                getParentProto = "aCx, " + protoGetter
+            else:
+                parentProtoType = "Handle"
+                getParentProto = protoHandleGetter
+
+            getParentProto = fill(
+                """
+                JS::${type}<JSObject*> parentProto(${getParentProto}(aCx));
+                if (!parentProto) {
+                  return;
+                }
+                """,
+                type=parentProtoType,
+                getParentProto=getParentProto,
+            )
+
+            protoClass = "&sPrototypeClass"
+            protoCache = (
+                "&aProtoAndIfaceCache.EntrySlotOrCreate(prototypes::id::%s)"
+                % self.descriptor.name
+            )
+            parentProto = "parentProto"
+            getParentProto = CGGeneric(getParentProto)
+        else:
+            protoClass = "nullptr"
+            protoCache = "nullptr"
+            parentProto = "nullptr"
+            getParentProto = None
+
+        if self.descriptor.interface.ctor():
+            constructArgs = methodLength(self.descriptor.interface.ctor())
+            isConstructorChromeOnly = isChromeOnly(self.descriptor.interface.ctor())
+        else:
+            constructArgs = 0
+            isConstructorChromeOnly = False
+        if len(self.descriptor.interface.legacyFactoryFunctions) > 0:
+            legacyFactoryFunctions = "Span(legacyFactoryFunctions)"
+        else:
+            legacyFactoryFunctions = "Span<const LegacyFactoryFunction, 0>{}"
+
+        isGlobal = self.descriptor.isGlobal() is not None
+
+        ensureCaches = fill(
             """
             JS::Heap<JSObject*>* protoCache = ${protoCache};
             JS::Heap<JSObject*>* interfaceCache = ${interfaceCache};
+            """,
+            protoCache=protoCache,
+            interfaceCache=interfaceCache,
+        )
+        call = fill(
+            """
             dom::CreateInterfaceObjects(aCx, aGlobal, ${parentProto},
                                         ${protoClass}, protoCache,
-                                        ${constructorProto}, ${interfaceClass}, ${constructArgs}, ${isConstructorChromeOnly}, ${legacyFactoryFunctions},
+                                        ${constructorProto}, ${interfaceInfo}, ${constructArgs}, ${isConstructorChromeOnly}, ${legacyFactoryFunctions},
                                         interfaceCache,
                                         ${properties},
                                         ${chromeProperties},
                                         "${name}", aDefineOnGlobal,
                                         ${unscopableNames},
                                         ${isGlobal},
-                                        ${legacyWindowAliases},
-                                        ${isNamespace});
+                                        ${legacyWindowAliases});
             """,
             protoClass=protoClass,
             parentProto=parentProto,
-            protoCache=protoCache,
             constructorProto=constructorProto,
-            interfaceClass=interfaceClass,
+            interfaceInfo=interfaceInfo,
             constructArgs=constructArgs,
             isConstructorChromeOnly=toStringBool(isConstructorChromeOnly),
             legacyFactoryFunctions=legacyFactoryFunctions,
-            interfaceCache=interfaceCache,
             properties=properties,
             chromeProperties=chromeProperties,
             name=name,
@@ -3682,7 +3679,6 @@ class CGCreateInterfaceObjectsMethod(CGAbstractMethod):
             legacyWindowAliases="legacyWindowAliases"
             if self.haveLegacyWindowAliases
             else "nullptr",
-            isNamespace=toStringBool(self.descriptor.interface.isNamespace()),
         )
 
         # If we fail after here, we must clear interface and prototype caches
@@ -3897,8 +3893,14 @@ class CGCreateInterfaceObjectsMethod(CGAbstractMethod):
             )
         else:
             defineProtoVar = None
+
+        # ensureCaches needs to come first as it crashes on failure (like OOM).
+        # We want to make sure that the caches do exist before we try to return
+        # to the caller, so it can rely on that (and detect other failures by
+        # checking for null in the caches).
         return CGList(
             [
+                CGGeneric(ensureCaches),
                 getParentProto,
                 getConstructorProto,
                 CGGeneric(call),
@@ -7046,7 +7048,10 @@ def getJSToNativeConversionInfo(
             """
             {
               int index;
-              if (!FindEnumStringIndex<${invalidEnumValueFatal}>(cx, $${val}, ${values}, "${enumtype}", "${sourceDescription}", &index)) {
+              if (!binding_detail::FindEnumStringIndex<${invalidEnumValueFatal}>(cx, $${val},
+                                                                                 binding_detail::EnumStrings<${enumtype}>::Values,
+                                                                                 "${enumtype}", "${sourceDescription}",
+                                                                                 &index)) {
                 $*{exceptionCode}
               }
               $*{handleInvalidEnumValueCode}
@@ -7054,7 +7059,6 @@ def getJSToNativeConversionInfo(
             }
             """,
             enumtype=enumName,
-            values=enumName + "Values::" + ENUM_ENTRY_VARIABLE_NAME,
             invalidEnumValueFatal=toStringBool(invalidEnumValueFatal),
             handleInvalidEnumValueCode=handleInvalidEnumValueCode,
             exceptionCode=exceptionCode,
@@ -12330,20 +12334,13 @@ def getEnumValueName(value):
         raise SyntaxError('"_empty" is not an IDL enum value we support yet')
     if value == "":
         return "_empty"
-    nativeName = MakeNativeName(value)
-    if nativeName == "EndGuard_":
-        raise SyntaxError(
-            'Enum value "' + value + '" cannot be used because it'
-            " collides with our internal EndGuard_ value.  Please"
-            " rename our internal EndGuard_ to something else"
-        )
-    return nativeName
+    return MakeNativeName(value)
 
 
 class CGEnumToJSValue(CGAbstractMethod):
     def __init__(self, enum):
         enumType = enum.identifier.name
-        self.stringsArray = enumType + "Values::" + ENUM_ENTRY_VARIABLE_NAME
+        self.stringsArray = "binding_detail::EnumStrings<" + enumType + ">::Values"
         CGAbstractMethod.__init__(
             self,
             None,
@@ -12361,8 +12358,8 @@ class CGEnumToJSValue(CGAbstractMethod):
             """
             MOZ_ASSERT(uint32_t(aArgument) < ArrayLength(${strings}));
             JSString* resultStr =
-              JS_NewStringCopyN(aCx, ${strings}[uint32_t(aArgument)].value,
-                                ${strings}[uint32_t(aArgument)].length);
+              JS_NewStringCopyN(aCx, ${strings}[uint32_t(aArgument)].BeginReading(),
+                                ${strings}[uint32_t(aArgument)].Length());
             if (!resultStr) {
               return false;
             }
@@ -12377,80 +12374,54 @@ class CGEnum(CGThing):
     def __init__(self, enum):
         CGThing.__init__(self)
         self.enum = enum
-        entryDecl = fill(
-            """
-            extern const EnumEntry ${entry_array}[${entry_count}];
-
-            static constexpr size_t Count = ${real_entry_count};
-
-            // Our "${entry_array}" contains an extra entry with a null string.
-            static_assert(mozilla::ArrayLength(${entry_array}) - 1 == Count,
-                          "Mismatch between enum strings and enum count");
-
-            static_assert(static_cast<size_t>(${name}::EndGuard_) == Count,
-                          "Mismatch between enum value and enum count");
-
-            inline auto GetString(${name} stringId) {
-              MOZ_ASSERT(static_cast<${type}>(stringId) < Count);
-              const EnumEntry& entry = ${entry_array}[static_cast<${type}>(stringId)];
-              return Span<const char>{entry.value, entry.length};
-            }
-            """,
-            entry_array=ENUM_ENTRY_VARIABLE_NAME,
-            entry_count=self.nEnumStrings(),
-            # -1 because nEnumStrings() includes a string for EndGuard_
-            real_entry_count=self.nEnumStrings() - 1,
-            name=self.enum.identifier.name,
-            type=self.underlyingType(),
-        )
         strings = CGNamespace(
-            self.stringsNamespace(),
+            "binding_detail",
             CGGeneric(
-                declare=entryDecl,
+                declare=fill(
+                    """
+                    template <> struct EnumStrings<${name}> {
+                      static const nsLiteralCString Values[${count}];
+                    };
+                    """,
+                    name=self.enum.identifier.name,
+                    count=self.nEnumStrings(),
+                ),
                 define=fill(
                     """
-                          extern const EnumEntry ${name}[${count}] = {
-                            $*{entries}
-                            { nullptr, 0 }
-                          };
-                          """,
-                    name=ENUM_ENTRY_VARIABLE_NAME,
+                    const nsLiteralCString EnumStrings<${name}>::Values[${count}] = {
+                      $*{entries}
+                    };
+                    """,
+                    name=self.enum.identifier.name,
                     count=self.nEnumStrings(),
-                    entries="".join(
-                        '{"%s", %d},\n' % (val, len(val)) for val in self.enum.values()
-                    ),
+                    entries="".join('"%s"_ns,\n' % val for val in self.enum.values()),
                 ),
             ),
         )
         toJSValue = CGEnumToJSValue(enum)
         self.cgThings = CGList([strings, toJSValue], "\n")
 
-    def stringsNamespace(self):
-        return self.enum.identifier.name + "Values"
-
     def nEnumStrings(self):
-        return len(self.enum.values()) + 1
+        return len(self.enum.values())
 
-    def underlyingType(self):
-        count = self.nEnumStrings()
+    @staticmethod
+    def underlyingType(enum):
+        count = len(enum.values())
         if count <= 256:
             return "uint8_t"
         if count <= 65536:
             return "uint16_t"
-        raise ValueError(
-            "Enum " + self.enum.identifier.name + " has more than 65536 values"
-        )
+        raise ValueError("Enum " + enum.identifier.name + " has more than 65536 values")
 
     def declare(self):
         decl = fill(
             """
             enum class ${name} : ${ty} {
               $*{enums}
-              EndGuard_
             };
             """,
             name=self.enum.identifier.name,
-            ty=self.underlyingType(),
+            ty=CGEnum.underlyingType(self.enum),
             enums=",\n".join(map(getEnumValueName, self.enum.values())) + ",\n",
         )
 
@@ -12458,6 +12429,39 @@ class CGEnum(CGThing):
 
     def define(self):
         return self.cgThings.define()
+
+    def deps(self):
+        return self.enum.getDeps()
+
+
+class CGMaxContiguousEnumValue(CGThing):
+    def __init__(self, enum):
+        CGThing.__init__(self)
+        self.enum = enum
+
+    def declare(self):
+        enumValues = self.enum.values()
+        return fill(
+            """
+            template <>
+            struct MaxContiguousEnumValue<dom::${name}>
+            {
+              static constexpr dom::${name} value = dom::${name}::${maxValue};
+
+              static_assert(static_cast<${ty}>(dom::${name}::${minValue}) == 0,
+                            "We rely on this in ContiguousEnumValues");
+              static_assert(mozilla::ArrayLength(dom::binding_detail::EnumStrings<dom::${name}>::Values) - 1 == UnderlyingValue(value),
+                            "Mismatch between enum strings and enum count");
+            };
+            """,
+            name=self.enum.identifier.name,
+            ty=CGEnum.underlyingType(self.enum),
+            maxValue=getEnumValueName(enumValues[-1]),
+            minValue=getEnumValueName(enumValues[0]),
+        )
+
+    def define(self):
+        return ""
 
     def deps(self):
         return self.enum.getDeps()
@@ -14867,7 +14871,7 @@ class CGCountMaybeMissingProperty(CGAbstractMethod):
            generate nested switches) or strings to use for case bodies.
         """
         cases = []
-        for label, body in sorted(six.iteritems(switchDecriptor["cases"])):
+        for label, body in sorted(switchDecriptor["cases"].items()):
             if isinstance(body, dict):
                 body = self.gen_switch(body)
             cases.append(
@@ -16954,9 +16958,11 @@ class CGDescriptor(CGThing):
             # done, set up our NativePropertyHooks.
             cgThings.append(CGNativePropertyHooks(descriptor, properties))
 
-        if descriptor.interface.hasInterfaceObject():
+        if descriptor.interface.isNamespace():
+            cgThings.append(CGNamespaceObjectJSClass(descriptor))
+        elif descriptor.interface.hasInterfaceObject():
             cgThings.append(CGClassConstructor(descriptor, descriptor.interface.ctor()))
-            cgThings.append(CGInterfaceObjectJSClass(descriptor, properties))
+            cgThings.append(CGInterfaceObjectInfo(descriptor))
             cgThings.append(CGLegacyFactoryFunctions(descriptor))
 
         cgThings.append(CGLegacyCallHook(descriptor))
@@ -18412,7 +18418,7 @@ class CGGlobalNames(CGGeneric):
                 ),
             )
 
-            entries.append((name, nativeEntry))
+            entries.append((name.encode(), nativeEntry))
 
         # Unfortunately, when running tests, we may have no entries.
         # PerfectHash will assert if we give it an empty set of entries, so we
@@ -18569,7 +18575,7 @@ class ForwardDeclarationBuilder:
                     ]
                 )
             )
-        for namespace, child in sorted(six.iteritems(self.children)):
+        for namespace, child in sorted(self.children.items()):
             decls.append(CGNamespace(namespace, child._build(atTopLevel=False)))
 
         cg = CGList(decls, "\n")
@@ -19073,9 +19079,11 @@ class CGBindingRoot(CGThing):
         # Do codegen for all the enums
         enums = config.getEnums(webIDLFile)
         cgthings.extend(CGEnum(e) for e in enums)
+        maxEnumValues = CGList([CGMaxContiguousEnumValue(e) for e in enums], "\n")
 
         bindingDeclareHeaders["mozilla/Span.h"] = enums
         bindingDeclareHeaders["mozilla/ArrayUtils.h"] = enums
+        bindingDeclareHeaders["mozilla/EnumTypeTraits.h"] = enums
 
         hasCode = descriptors or callbackDescriptors or dictionaries or callbacks
         bindingHeaders["mozilla/dom/BindingUtils.h"] = hasCode
@@ -19175,7 +19183,13 @@ class CGBindingRoot(CGThing):
         curr = CGWrapper(CGList(cgthings, "\n\n"), post="\n\n")
 
         # Wrap all of that in our namespaces.
-        curr = CGNamespace.build(["mozilla", "dom"], CGWrapper(curr, pre="\n"))
+
+        if len(maxEnumValues) > 0:
+            curr = CGNamespace("dom", CGWrapper(curr, pre="\n"))
+            curr = CGWrapper(CGList([curr, maxEnumValues], "\n\n"), post="\n\n")
+            curr = CGNamespace("mozilla", CGWrapper(curr, pre="\n"))
+        else:
+            curr = CGNamespace.build(["mozilla", "dom"], CGWrapper(curr, pre="\n"))
 
         curr = CGList(
             [
@@ -19194,12 +19208,10 @@ class CGBindingRoot(CGThing):
 
         # Add header includes.
         bindingHeaders = [
-            header for header, include in six.iteritems(bindingHeaders) if include
+            header for header, include in bindingHeaders.items() if include
         ]
         bindingDeclareHeaders = [
-            header
-            for header, include in six.iteritems(bindingDeclareHeaders)
-            if include
+            header for header, include in bindingDeclareHeaders.items() if include
         ]
 
         curr = CGHeaders(
@@ -24681,7 +24693,7 @@ class CGEventRoot(CGThing):
             self.root,
             pre=(
                 AUTOGENERATED_WITH_SOURCE_WARNING_COMMENT
-                % os.path.basename(descriptor.interface.filename())
+                % os.path.basename(descriptor.interface.filename)
             ),
         )
 

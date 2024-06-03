@@ -243,8 +243,9 @@ where
         Self { inner, separator }
     }
 
+    /// Serialize the CSS Value with the specific serialization function.
     #[inline]
-    fn write_item<F>(&mut self, f: F) -> fmt::Result
+    pub fn write_item<F>(&mut self, f: F) -> fmt::Result
     where
         F: FnOnce(&mut CssWriter<'b, W>) -> fmt::Result,
     {
@@ -508,6 +509,7 @@ macro_rules! impl_to_css_for_predefined_type {
 impl_to_css_for_predefined_type!(f32);
 impl_to_css_for_predefined_type!(i8);
 impl_to_css_for_predefined_type!(i32);
+impl_to_css_for_predefined_type!(u8);
 impl_to_css_for_predefined_type!(u16);
 impl_to_css_for_predefined_type!(u32);
 impl_to_css_for_predefined_type!(::cssparser::Token<'a>);

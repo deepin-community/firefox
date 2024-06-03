@@ -426,7 +426,7 @@ add_task(async function test_addonsWatch_InterestingChange() {
     return new Promise(resolve =>
       TelemetryEnvironment.registerChangeListener(
         "testWatchAddons_Changes" + aExpected,
-        (reason, data) => {
+        reason => {
           Assert.equal(reason, "addons-changed");
           receivedNotifications++;
           resolve();
@@ -630,13 +630,10 @@ add_task(async function test_addons() {
   };
 
   let deferred = Promise.withResolvers();
-  TelemetryEnvironment.registerChangeListener(
-    "test_WebExtension",
-    (reason, data) => {
-      Assert.equal(reason, "addons-changed");
-      deferred.resolve();
-    }
-  );
+  TelemetryEnvironment.registerChangeListener("test_WebExtension", reason => {
+    Assert.equal(reason, "addons-changed");
+    deferred.resolve();
+  });
 
   // Install an add-on so we have some data.
   let addon = await installXPIFromURL(ADDON_INSTALL_URL);
@@ -718,16 +715,18 @@ add_task(async function test_addons() {
 add_task(async function test_signedAddon() {
   AddonTestUtils.useRealCertChecks = true;
 
-  const ADDON_INSTALL_URL = gDataRoot + "signed-webext.xpi";
-  const ADDON_ID = "tel-signed-webext@tests.mozilla.org";
+  const { PKCS7_WITH_SHA1, COSE_WITH_SHA256 } = Ci.nsIAppSignatureInfo;
+
+  const ADDON_INSTALL_URL = gDataRoot + "amosigned.xpi";
+  const ADDON_ID = "amosigned-xpi@tests.mozilla.org";
   const ADDON_INSTALL_DATE = truncateToDays(Date.now());
   const EXPECTED_ADDON_DATA = {
     blocklisted: false,
-    description: "A signed webextension",
-    name: "XPI Telemetry Signed Test",
+    description: null,
+    name: "XPI Test",
     userDisabled: false,
     appDisabled: false,
-    version: "1.0",
+    version: "2.2",
     scope: 1,
     type: "extension",
     foreignInstall: false,
@@ -735,6 +734,7 @@ add_task(async function test_signedAddon() {
     installDay: ADDON_INSTALL_DATE,
     updateDay: ADDON_INSTALL_DATE,
     signedState: AddonManager.SIGNEDSTATE_SIGNED,
+    signedTypes: JSON.stringify([COSE_WITH_SHA256, PKCS7_WITH_SHA1]),
     quarantineIgnoredByUser: false,
     // quarantineIgnoredByApp expected to be false because
     // the test addon is signed as a non-privileged (see signedState),
@@ -881,7 +881,7 @@ add_task(async function test_collectionWithbrokenAddonData() {
     return new Promise(resolve =>
       TelemetryEnvironment.registerChangeListener(
         "testBrokenAddon_collection" + aExpected,
-        (reason, data) => {
+        reason => {
           Assert.equal(reason, "addons-changed");
           receivedNotifications++;
           resolve();
@@ -1052,7 +1052,7 @@ add_task(async function test_experimentsAPI() {
   const EXPERIMENT2 = "experiment-2";
   const EXPERIMENT2_BRANCH = "other-branch";
 
-  let checkExperiment = (environmentData, id, branch, type = null) => {
+  let checkExperiment = (environmentData, id, branch) => {
     Assert.ok(
       "experiments" in environmentData,
       "The current environment must report the experiment annotations."

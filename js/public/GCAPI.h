@@ -308,22 +308,21 @@ typedef enum JSGCParamKey {
   JSGC_LARGE_HEAP_INCREMENTAL_LIMIT = 26,
 
   /**
-   * Attempt to run a minor GC in the idle time if the free space falls
-   * below this number of bytes.
+   * Free space bytes threshold for eager nursery collection.
    *
    * Default: NurseryChunkUsableSize / 4
-   * Pref: None
+   * Pref: javascript.options.mem.nursery_eager_collection_threshold_kb
    */
-  JSGC_NURSERY_FREE_THRESHOLD_FOR_IDLE_COLLECTION = 27,
+  JSGC_NURSERY_EAGER_COLLECTION_THRESHOLD_KB = 27,
 
   /**
-   * Attempt to run a minor GC in the idle time if the free space falls
-   * below this percentage (from 0 to 99).
+   * Free space fraction threshold for eager nursery collection. This is a
+   * percentage (from 0 to 99).
    *
    * Default: 25
-   * Pref: None
+   * Pref: javascript.options.mem.nursery_eager_collection_threshold_percent
    */
-  JSGC_NURSERY_FREE_THRESHOLD_FOR_IDLE_COLLECTION_PERCENT = 30,
+  JSGC_NURSERY_EAGER_COLLECTION_THRESHOLD_PERCENT = 30,
 
   /**
    * Minimum size of the generational GC nurseries.
@@ -418,9 +417,9 @@ typedef enum JSGCParamKey {
    * collected in this many milliseconds.
    *
    * Default: 5000
-   * Pref: None
+   * Pref: javascript.options.mem.nursery_eager_collection_timeout_ms
    */
-  JSGC_NURSERY_TIMEOUT_FOR_IDLE_COLLECTION_MS = 46,
+  JSGC_NURSERY_EAGER_COLLECTION_TIMEOUT_MS = 46,
 
   /**
    * The system page size in KB.
@@ -456,9 +455,19 @@ typedef enum JSGCParamKey {
   /**
    * The heap size above which to use parallel marking.
    *
+   * Pref: javascript.options.mem.gc_parallel_marking_threshold_mb
    * Default: ParallelMarkingThresholdMB
    */
   JSGC_PARALLEL_MARKING_THRESHOLD_MB = 50,
+
+  /**
+   * Whether the semispace nursery is enabled.
+   *
+   * Pref: javascript.options.mem.gc_experimental_semispace_nursery
+   * Default: SemispaceNurseryEnabled
+   */
+  JSGC_SEMISPACE_NURSERY_ENABLED = 51,
+
 } JSGCParamKey;
 
 /*
@@ -1287,10 +1296,26 @@ JS_GetExternalStringCallbacks(JSString* str);
 
 namespace JS {
 
+/**
+ * Check whether the nursery should be eagerly collected, this is before it is
+ * full.
+ *
+ * The idea is that this can be called when the host environment has some idle
+ * time which it can use to for GC activity.
+ *
+ * Returns GCReason::NO_REASON to indicate no collection is desired.
+ */
 extern JS_PUBLIC_API GCReason WantEagerMinorGC(JSRuntime* rt);
 
 extern JS_PUBLIC_API GCReason WantEagerMajorGC(JSRuntime* rt);
 
+/**
+ * Check whether the nursery should be eagerly collected as per WantEagerMajorGC
+ * above, and if so run a collection.
+ *
+ * The idea is that this can be called when the host environment has some idle
+ * time which it can use to for GC activity.
+ */
 extern JS_PUBLIC_API void MaybeRunNurseryCollection(JSRuntime* rt,
                                                     JS::GCReason reason);
 
@@ -1326,6 +1351,11 @@ namespace gc {
  * malloc memory.
  */
 extern JS_PUBLIC_API JSObject* NewMemoryInfoObject(JSContext* cx);
+
+/*
+ * Return whether |obj| is a dead nursery object during a minor GC.
+ */
+JS_PUBLIC_API bool IsDeadNurseryObject(JSObject* obj);
 
 /*
  * Run the finalizer of a nursery-allocated JSObject that is known to be dead.

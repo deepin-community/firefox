@@ -46,3 +46,46 @@ screenshots-generic-error-title = ¡Épa! { -screenshots-brand-name } itavyraím
 screenshots-generic-error-details = Ndoroikuaái mba’etépa pe oikóva. ¿Ejapose jeýpa térã ejapyhy peteĩ kuatiarogue ambuévagui?
 screenshots-too-large-error-title = Pe mba’erechaha jejapyhy oñemomichĩ tuichaiterei rupi
 screenshots-too-large-error-details = Eñeha’ã eiporavo peteĩ tendaguasu oguereko’ỹva 32.700 píxeles ipukuvehápe térã 124.900.000 píxeles tuichakue.
+screenshots-component-retry-button =
+    .title = Eha’ãjey mba’erechaha jejapyhy
+    .aria-label = Eha’ãjey mba’erechaha jejapyhy
+screenshots-component-cancel-button =
+    .title =
+        { PLATFORM() ->
+            [macos] Heja (esc)
+           *[other] Heja (Esc)
+        }
+    .aria-label = Heja
+# Variables
+#   $shortcut (String) - A keyboard shortcut for copying the screenshot.
+screenshots-component-copy-button =
+    .title = Monguatia ({ $shortcut })
+    .aria-label = Monguatia
+screenshots-component-copy-button-label = Monguatia
+# Variables
+#   $shortcut (String) - A keyboard shortcut for saving/downloading the screenshot.
+screenshots-component-download-button =
+    .title = Mboguejy ({ $shortcut })
+    .aria-label = Mboguejy
+screenshots-component-download-button-label = Emboguejy
+
+## The below strings are used to capture keydown events so the strings should
+## not be changed unless the keyboard layout in the locale requires it.
+
+screenshots-component-download-key = S
+screenshots-component-copy-key = C
+
+##
+
+# This string represents the selection size area
+# "x" here represents "by" (i.e 123 by 456)
+# Variables:
+#   $width (Number) - The width of the selection region in pixels
+#   $height (Number) - The height of the selection region in pixels
+screenshots-overlay-selection-region-size-2 = { $width } x { $height }
+# This string represents the selection size area
+# "×" here represents "by" (i.e 123 by 456)
+# Variables:
+#   $width (Number) - The width of the selection region in pixels
+#   $height (Number) - The height of the selection region in pixels
+screenshots-overlay-selection-region-size-3 = { $width } × { $height }

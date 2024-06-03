@@ -10,6 +10,9 @@ search-header =
 ## Variables
 ##   $domain - Domain name where add-ons are available (e.g. addons.mozilla.org)
 
+list-empty-get-extensions-message = Ստացեք ընդլայնումներ և ոճեր՝ <a data-l10n-name="get-extensions">{ $domain }-ում</a>
+list-empty-get-dictionaries-message = Ստացեք բառարաններ՝ <a data-l10n-name="get-extensions">{ $domain }-ում</a>
+list-empty-get-language-packs-message = Ստացեք լեզուների փաթեթներ՝ <a data-l10n-name="get-extensions">{ $domain }-ում</a>
 
 ##
 
@@ -26,6 +29,7 @@ list-empty-button =
 help-button = Լրացուցիչ աջակցություն
 sidebar-help-button-title =
     .title = Լրացուցիչ աջակցություն
+addons-settings-button = { -brand-short-name }-ի կարգավորումներ
 show-unsigned-extensions-button =
     .label = Որոշ ընդլայնումներ չեն կարող ստուգվել:
 show-all-extensions-button =
@@ -34,6 +38,8 @@ detail-version =
     .label = Տարբերակ
 detail-last-updated =
     .label = Վերջին Թարմացումը
+addon-detail-description-expand = Ցուցադրել ավելին
+addon-detail-description-collapse = Ցուցադրել պակասը
 detail-contributions-description = Այս հավելման ստեղծողը խնդրում է, որ դուք աջակցեք հավելման զարգացմանը` կատարելով փոքր ներդրում:
 detail-contributions-button = Աջակցել
     .title = Աջակցել այս հավելասարքի մշակմանը
@@ -41,8 +47,8 @@ detail-contributions-button = Աջակցել
 detail-update-type =
     .value = Ինքնաշխատ Թարմացումներ
 detail-update-default =
-    .label = Լռելյայն
-    .tooltiptext = Ինքնաբար տեղադրել թարմացումները, եթե միայն սա լռելյայն է
+    .label = Սկզբնադիր
+    .tooltiptext = Ինքնաբար տեղադրել թարմացումները, միայն եթե դրանք սկզբնադիր են
 detail-update-automatic =
     .label = Միացնել
     .tooltiptext = Տեղադրել թարմացումները ինքնաբար:
@@ -50,20 +56,20 @@ detail-update-manual =
     .label = Անջատել
     .tooltiptext = Չտեղադրել թարմացումները ինքնաբար
 # Used as a description for the option to allow or block an add-on in private windows.
-detail-private-browsing-label = Սկսել Գաղտնի դիտարկում
+detail-private-browsing-label = Աշխատեցնել գաղտնի պատուհաններում
 # Some add-ons may elect to not run in private windows by setting incognito: not_allowed in the manifest.  This
 # cannot be overridden by the user.
-detail-private-disallowed-label = Թույլատրված չէ անձնական պատուհանում
-detail-private-disallowed-description2 = Այս ընդլայնումը չի գործի անձնական զննարկման ժամանակ։ <a data-l10n-name="learn-more">Իմանալ ավելին</a>
+detail-private-disallowed-label = Թույլատրված չէ գաղտնի պատուհաններում
+detail-private-disallowed-description2 = Այս ընդլայնումը չի գործում գաղտնի դիտարկման ժամանակ։ <a data-l10n-name="learn-more">Իմանալ ավելին</a>
 # Some special add-ons are privileged, run in private windows automatically, and this permission can't be revoked
 detail-private-required-label = Պահանջվում է մուտք դեպի անձնական պատուհան
 detail-private-required-description2 = Այս ընդլայնումը հասանելի է ձեր առցանց գործունության՝ անձնական զննարկման ժամանակ։ <a data-l10n-name="learn-more">Իմանալ ավելին</a>
 detail-private-browsing-on =
     .label = Թույլատրել
-    .tooltiptext = Թույլատրել
+    .tooltiptext = Միացնել գաղտնի դիտարկումում
 detail-private-browsing-off =
     .label = Չթույլատրել
-    .tooltiptext = Չթույլատրել
+    .tooltiptext = Անջատել գաղտնի դիտարկումում
 detail-home =
     .label = Կայքէջը
 detail-home-value =
@@ -107,10 +113,10 @@ legacy-extensions =
     .value = Հնացած ընդլայնումներ
 legacy-extensions-description = Այս ընդլայնումները չեն համապատասխանում { -brand-short-name }-ի պահանջներին և ապաակտիվացվել են: <label data-l10n-name="legacy-learn-more">Իմանալ ավելին հավելումների փոփոխությունների մասին</label>
 private-browsing-description2 =
-    { -brand-short-name }-ը փոփոխում է ընդլայնման աշխատանքը անձնական զննարկամն ժամանակ։ Ցանկցած ձեր հավելած նոր ընդլայնումներ
-    { -brand-short-name }-ը լռելյայն չի գործարկի Անձնական Պատուհաններում։ Մինչև կարգավորումներում թույլատրեք այն,
-    ընդլայնումը չի աշխատի՝ անձնակնա զննարկմն ժամանակ և ձեր առցանց գործունության ժամանակ հասանելիության չի ունենա։
-    Մենք կատարել ենք այս փոփոխությունները ձեր անձնկան զննարկումը գաղտնի դարձնելու համար։
+    { -brand-short-name }-ը փոփոխում է ընդլայնումների աշխատանքը գաղտնի դիտարկման ժամանակ։ Ձեր կողմից ավելացված ցանկացած նոր ընդլայնում
+    { -brand-short-name }-ը սկզբնադրորեն չի աշխատեցնի գաղտնի պատուհաններում։ Մինչև կարգավորումներում չթույլատրեք այն,
+    ընդլայնումը չի աշխատի գաղտնի դիտարկման ժամանակ և Ձեր առցանց գործունությանը հասանելիության չի ունենա։
+    Մենք կատարել ենք այս փոփոխությունը Ձեր գաղտնի դիտարկումը գաղտնի պահելու համար։
     <label data-l10n-name="private-browsing-learn-more">Իմանալ ինչպես կառավարել ընդլայնման կարգավորումները</label>
 addon-category-discover = Խորհուրդներ
 addon-category-discover-title =
@@ -136,6 +142,9 @@ addon-category-available-updates-title =
 addon-category-recent-updates = Վերջին Թարմացումները
 addon-category-recent-updates-title =
     .title = Վերջին Թարմացումները
+addon-category-sitepermission = Կայքի թույլտվություններ
+addon-category-sitepermission-title =
+    .title = Կայքերի թույլտվություններ
 # String displayed in about:addons in the Site Permissions section
 # Variables:
 #  $host (string) - DNS host name for which the webextension enables permissions
@@ -245,7 +254,7 @@ header-back-button =
 # Explanatory introduction to the list of recommended add-ons. The action word
 # ("recommends") in the final sentence is a link to external documentation.
 discopane-intro =
-    Ընդլայնումները և հիմնապատկերները նման են ձեր զննարկիչի գործադիրներին և դրանք ձեզ թույլատրում են
+    Ընդլայնումները և հիմնապատկերները նման են ձեր դիտարկիչի գործադիրներին և դրանք ձեզ թույլատրում են
     պաշտպանել գաղտնաբառերը, ներբեռնել տեսանյութեր, գտնել գործարքներ, արգելափակել նյարդայնացնող գովազդները, փոխել
     ձեր զննարկչի տեսքը և ավելին։ Այս փոքր ծրագրային ծրագրերը 
     հաճախ զարգացվել են երրորդ կողմի կողմից։ Ահա ընտրանք { -brand-product-name }
@@ -266,12 +275,13 @@ created-by-author = <a data-l10n-name="author">{ $author }</a>-ի կողմից
 # Variables:
 #   $dailyUsers (number) - The number of daily users.
 user-count = Օգտագործողներ { $dailyUsers }
-install-extension-button = Ավելացնել { -brand-product-name }
-install-theme-button = Տեղադրել ձևավորում
+install-extension-button = Հավելել { -brand-product-name }-ին
+install-theme-button = Տեղադրել ոճ
 # The label of the button that appears after installing an add-on. Upon click,
 # the detailed add-on view is opened, from where the add-on can be managed.
 manage-addon-button = Կառավարել
-find-more-addons = Գտեք ավելի շատ հավելումներ
+find-more-addons = Գտնել ավելի շատ հավելումներ
+find-more-themes = Գտնել ավելի շատ ոճեր
 # This is a label for the button to open the "more options" menu, it is only
 # used for screen readers.
 addon-options-button =
@@ -300,18 +310,21 @@ permissions-addon-button = Թույլտվություններ
 extension-enabled-heading = Միացված
 extension-disabled-heading = Անջատված
 theme-enabled-heading = Միացված
+theme-disabled-heading2 = Պահված ոճեր
 plugin-enabled-heading = Միացված
 plugin-disabled-heading = Անջատված
 dictionary-enabled-heading = Միացված
 dictionary-disabled-heading = Անջատված
 locale-enabled-heading = Միացված
 locale-disabled-heading = Անջատված
+sitepermission-enabled-heading = Միացվեց
+sitepermission-disabled-heading = Անջատվեց
 always-activate-button = Միշտ ակտիվացնել
 never-activate-button = Երբեք չակտիվացնել
 addon-detail-author-label = Հեղինակ
 addon-detail-version-label = Տարբերակ
 addon-detail-last-updated-label = Վերջին թարմացումը
-addon-detail-homepage-label = Կայքէջ
+addon-detail-homepage-label = Տնէջ
 addon-detail-rating-label = Վարկանիշ
 # Message for add-ons with a staged pending update.
 install-postponed-message = Այս ընդլայնումը կթարմացվի, երբ { -brand-short-name }-ը վերամեկնարկի:
@@ -348,11 +361,15 @@ pending-uninstall-description2 =
     .message = { $addon }-ը հեռացվել է։
 pending-uninstall-undo-button = Հետարկել
 addon-detail-updates-label = Թույլատրել ինքնաթարմացումները
-addon-detail-updates-radio-default = Լռելյայն
+addon-detail-updates-radio-default = Սկզբնադիր
 addon-detail-updates-radio-on = Միացնել
 addon-detail-updates-radio-off = Անջատել
 addon-detail-update-check-label = Ստուգել թարմացումները
 install-update-button = Թարմացնել
+# aria-label associated to the updates row to help screen readers to announce the group
+# of input controls being entered.
+addon-detail-group-label-updates =
+    .aria-label = { addon-detail-updates-label }
 # This is the tooltip text for the private browsing badge in about:addons. The
 # badge is the private browsing icon included next to the extension's name.
 addon-badge-private-browsing-allowed2 =
@@ -361,10 +378,19 @@ addon-badge-private-browsing-allowed2 =
 addon-detail-private-browsing-help = Երբ թույլատրված է, գաղտնի զննարկելիս ընդլայնումը կունենա ձեր առցանց գործունեության մատչում։ <a data-l10n-name="learn-more">Իմանալ ավելին</a>
 addon-detail-private-browsing-allow = Թույլատրել
 addon-detail-private-browsing-disallow = Չթույլատրել
+# aria-label associated to the private browsing row to help screen readers to announce the group
+# of input controls being entered.
+addon-detail-group-label-private-browsing =
+    .aria-label = { detail-private-browsing-label }
 
 ## "sites with restrictions" (internally called "quarantined") are special domains
 ## where add-ons are normally blocked for security reasons.
 
+# Used as a description for the option to allow or block an add-on on quarantined domains.
+addon-detail-quarantined-domains-label = Աշխատեցնել կայքերում՝ սահմանափակումներով
+# Used as label and tooltip text on the radio inputs associated to the quarantined domains UI controls.
+addon-detail-quarantined-domains-allow = Թույլատրել
+addon-detail-quarantined-domains-disallow = Չթույլատրել
 
 ## This is the tooltip text for the recommended badges for an extension in about:addons. The
 ## badge is a small icon displayed next to an extension when it is recommended on AMO.
@@ -372,6 +398,14 @@ addon-detail-private-browsing-disallow = Չթույլատրել
 addon-badge-recommended2 =
     .title = { -brand-product-name }-ը միայն խորհուրդ է տալիս ընդլայնումներ, որոնք համապատասխանում են մեր անվտանգության և արդյունավետության չափօրինակներին
     .aria-label = { addon-badge-recommended2.title }
+# We hard code "Mozilla" in the string below because the extensions are built
+# by Mozilla and we don't want forks to display "by Fork".
+addon-badge-line3 =
+    .title = Պաշտոնական ընդլայնում, հավաքված Mozilla-ի կողմից: Համապատասխանում է անվտանգության և արտադրողականության չափանիշներին
+    .aria-label = { addon-badge-line3.title }
+addon-badge-verified2 =
+    .title = Այս ընդլայնումը գնահատվել է՝ անվտանգության և արտադրողականության մեր չափանիշներին համապատասխանելու համար
+    .aria-label = { addon-badge-verified2.title }
 
 ##
 
@@ -380,6 +414,7 @@ recent-updates-heading = Վերջին թարմացումները
 release-notes-loading = Բեռնում․․․
 release-notes-error = Հնարավոր չեղավ բացել թողարկման նշումները։
 addon-permissions-empty = Այս ընդլայնումը չի պահանջում որևէ թույլատվություններ
+addon-permissions-learnmore = Իմանալ ավելին թույլտվությունների մասին
 recommended-extensions-heading = Երաշխավորված ընդլայնում
 recommended-themes-heading = Երաշխավորված հիմնապատկերներ
 # A recommendation for the Firefox Color theme shown at the bottom of the theme
@@ -394,6 +429,7 @@ plugin-heading = Կառավարեք ձեր ընդլայնումները
 dictionary-heading = Կառավարեք ձեր բառարանները
 locale-heading = Կառավարեք ձեր լեզուները
 updates-heading = Կառավարեք ձեր թարմացումները
+sitepermission-heading = Կառավարեք կայքի թույլտվությունները
 discover-heading = Անհատականացրեք ձեր { -brand-short-name }-ը
 shortcuts-heading = Կառավարել ընդլայնման դյուրացումները
 default-heading-search-label = Ավելի շատ հավելումներ
@@ -413,6 +449,7 @@ details-notification-incompatible = { $name }-ը և { -brand-short-name } { $ver
 #   $version (string) - Application version.
 details-notification-incompatible2 =
     .message = { $name }-ը և { -brand-short-name } { $version }-ը անհամատեղելի են:
+details-notification-incompatible-link = Ավելի շատ տեղեկություն
 details-notification-unsigned-and-disabled = { $name }-ը չէր կարող հաստատվել { -brand-short-name }-ում օգտագործման համար և անջատվել է։
 details-notification-unsigned-and-disabled2 =
     .message = { $name }-ը չէր կարող հաստատվել { -brand-short-name }-ում օգտագործման համար և անջատվել է։

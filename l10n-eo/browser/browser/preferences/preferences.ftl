@@ -32,6 +32,8 @@ search-input-box2 =
     .style = width: 15.4em
     .placeholder = Serĉi en agordoj
 managed-notice = Via retumilo estas administrata de via organizo.
+managed-notice-info-icon =
+    .alt = Informo
 category-list =
     .aria-label = Kategorioj
 pane-general-title = Ĉefaj
@@ -467,13 +469,13 @@ performance-default-content-process-count =
 
 browsing-title = Retumo
 browsing-use-autoscroll =
-    .label = Uzi aŭtomatan ŝovadon
+    .label = Uzi aŭtomatan rulumon
     .accesskey = a
 browsing-use-smooth-scrolling =
-    .label = Uzi glatan ŝovadon
+    .label = Uzi glatan rulumon
     .accesskey = g
 browsing-gtk-use-non-overlay-scrollbars =
-    .label = Ĉiam montri ŝovstriojn
+    .label = Ĉiam montri rulumskalojn
     .accesskey = s
 browsing-always-underline-links =
     .label = Ĉiam substreki ligilojn
@@ -708,6 +710,13 @@ sync-mobile-promo = Elŝuti Firefox por <img data-l10n-name="android-icon"/> <a 
 
 sync-profile-picture =
     .tooltiptext = Ŝanĝi bildon de profilo
+sync-profile-picture-with-alt =
+    .tooltiptext = Ŝanĝi bildon de profilo
+    .alt = Ŝanĝi bildon de profilo
+sync-profile-picture-account-problem =
+    .alt = Bildo de profilo de konto
+fxa-login-rejected-warning =
+    .alt = Averto
 sync-sign-out =
     .label = Fini seancon…
     .accesskey = F
@@ -1274,6 +1283,8 @@ addon-recommendations-link = Pli da informo
 # or builds with no Telemetry support available.
 collection-health-report-disabled = La raporto de datumoj estas malŝaltita pro la agordoj de konstruo
 collection-backlogged-crash-reports-with-link = Permesi al { -brand-short-name } aŭtomate sendi ankoraŭ nesenditajn raportojn pri paneo. <a data-l10n-name="crash-reports-link">Pli da informo</a>
+    .accesskey = A
+collection-backlogged-crash-reports = Permesi al { -brand-short-name } aŭtomate sendi ankoraŭ nesenditajn raportojn pri paneo.
     .accesskey = A
 privacy-segmentation-section-header = Novaj trajtoj kiuj plibonigas vian retumon
 privacy-segmentation-section-description = Kiam ni proponas trajtojn kiuj uzas viajn datumojn por havi pli personan sperton:

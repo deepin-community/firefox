@@ -7,6 +7,7 @@
 import { AppConstants } from "resource://gre/modules/AppConstants.sys.mjs";
 import { XPCShellContentUtils } from "resource://testing-common/XPCShellContentUtils.sys.mjs";
 
+/** @type {Lazy} */
 const lazy = {};
 
 ChromeUtils.defineESModuleGetters(lazy, {
@@ -32,9 +33,9 @@ let BASE_MANIFEST = Object.freeze({
 });
 
 class ExtensionWrapper {
-  /** @type {AddonWrapper} */
+  /** @type {import("resource://gre/modules/addons/XPIDatabase.sys.mjs").AddonWrapper} */
   addon;
-  /** @type {Promise<AddonWrapper>} */
+  /** @type {Promise} */
   addonPromise;
   /** @type {nsIFile[]} */
   cleanupFiles;
@@ -457,10 +458,10 @@ class AOMExtensionWrapper extends ExtensionWrapper {
   /**
    * Override for subclasses which don't set an ID in the constructor.
    *
-   * @param {nsIURI} uri
-   * @param {string} id
+   * @param {nsIURI} _uri
+   * @param {string} _id
    */
-  maybeSetID(uri, id) {}
+  maybeSetID(_uri, _id) {}
 }
 
 class InstallableWrapper extends AOMExtensionWrapper {

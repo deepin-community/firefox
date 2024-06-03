@@ -53,6 +53,9 @@ mr1-onboarding-import-primary-button-label-attribution = Import from { $previous
 mr1-onboarding-theme-header = Make it your own
 mr1-onboarding-theme-subtitle = Personalize { -brand-short-name } with a theme.
 mr1-onboarding-theme-secondary-button-label = Not now
+newtab-wallpaper-onboarding-title = Try a splash of colour
+newtab-wallpaper-onboarding-subtitle = Choose a wallpaper to give your New Tab a fresh look.
+newtab-wallpaper-onboarding-primary-button-label = Set wallpaper
 # System theme uses operating system color settings
 mr1-onboarding-theme-label-system = System theme
 mr1-onboarding-theme-label-light = Light
@@ -332,3 +335,34 @@ onboarding-device-migration-title = Welcome back!
 onboarding-device-migration-subtitle = Sign in to your { -fxaccount-brand-name(capitalization: "sentence") } to bring your bookmarks, passwords, and history with you on your new device.
 onboarding-device-migration-subtitle2 = Sign in to your account to bring your bookmarks, passwords, and history with you on your new device.
 onboarding-device-migration-primary-button-label = Sign in
+
+## The following screens have been updated to use security and privacy focused strings:
+
+# Easy setup screen
+onboarding-easy-setup-security-and-privacy-title = We love keeping you safe
+onboarding-easy-setup-security-and-privacy-subtitle = Our non-profit backed browser helps stop companies from secretly following you around the web.
+# Mobile download screen
+onboarding-mobile-download-security-and-privacy-title = Stay encrypted when you hop between devices
+onboarding-mobile-download-security-and-privacy-subtitle = When you’re synced up, { -brand-short-name } encrypts your passwords, bookmarks, and more. Plus you can grab tabs from your other devices.
+# Gratitude screen
+onboarding-gratitude-security-and-privacy-title = { -brand-short-name } has your back
+onboarding-gratitude-security-and-privacy-subtitle = Thank you for using { -brand-short-name }, backed by the Mozilla Foundation. With your support, we’re working to make the internet safer and more accessible for everyone.
+
+## New user time and familiarity survey strings
+
+onboarding-new-user-time-based-survey-title = How long have you been using { -brand-short-name }?
+onboarding-new-user-familiarity-based-survey-title = How familiar are you with { -brand-short-name }?
+onboarding-new-user-survey-subtitle = Your feedback helps make { -brand-short-name } even better.
+# When translating "next" it means the next screen in onboarding.
+onboarding-new-user-survey-next-button-label = Next
+onboarding-new-user-survey-legal-link-label = By selecting “{ onboarding-new-user-survey-next-button-label },” you agree to { -brand-product-name }’s <a data-l10n-name="privacy_notice">Privacy Notice</a>
+# When translating "brand new" it means completely new.
+onboarding-new-user-survey-time-based-option-1 = I’m brand new
+onboarding-new-user-survey-time-based-option-2 = Less than 1 month
+onboarding-new-user-survey-time-based-option-3 = More than 1 month, regularly
+onboarding-new-user-survey-time-based-option-4 = More than 1 month, occasionally
+# When translating "brand new" it means completely new.
+onboarding-new-user-survey-familiarity-based-option-1 = I’m brand new
+onboarding-new-user-survey-familiarity-based-option-2 = I’ve used it some
+onboarding-new-user-survey-familiarity-based-option-3 = I’m very familiar with it
+onboarding-new-user-survey-familiarity-based-option-4 = I used it in the past, but it’s been a while

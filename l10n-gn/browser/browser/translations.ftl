@@ -126,8 +126,6 @@ translations-manage-description = Emboguejy ñe’ẽnguéra emoñe’ẽasa hag
 translations-manage-all-language = Opaite ñe’ẽ
 translations-manage-download-button = Mboguejy
 translations-manage-delete-button = Mboguete
-translations-manage-error-download = Iñapañuãi emboguejykuévo ñe’ẽnguéra marandurenda. Eha’ãjey ag̃amieve.
-translations-manage-error-delete = Iñapañuãi emboguekuévo ñe’ẽnguéra marandurenda. Eha’ãjey ag̃ave.
 translations-manage-intro = Emohenda tenda ñe’ẽ ha ñemoñe’ẽasa ehayhúvéva ha eñangereko umi ñe’ẽ emohendáva emoñe’ẽasátava ñanduti’ỹre.
 translations-manage-install-description = Emboguejy ñe’ẽnguéra emoñe’ẽasa hag̃ua ñanduti’ỹre
 translations-manage-language-install-button =
@@ -135,12 +133,21 @@ translations-manage-language-install-button =
 translations-manage-language-install-all-button =
     .label = Emohendapa
     .accesskey = I
+translations-manage-intro-2 = Emohenda tenda ñe’ẽ ha ñemoñe’ẽasa ehayhúvéva ha eñangereko umi ñe’ẽ emboguejýva emoñe’ẽasátava ñanduti’ỹre.
+translations-manage-download-description = Emboguejy ñe’ẽnguéra emoñe’ẽasa hag̃ua ñanduti’ỹre
+translations-manage-language-download-button =
+    .label = Mboguejy
+translations-manage-language-download-all-button =
+    .label = Emboguejypaite
+    .accesskey = D
 translations-manage-language-remove-button =
     .label = Mboguete
 translations-manage-language-remove-all-button =
     .label = Emboguepa
     .accesskey = e
 translations-manage-error-install = Oĩ apañuãi emboguejykuévo ñe’ẽnguéra marandurenda. Eha’ãjey ag̃ave.
+translations-manage-error-download = Iñapañuãi emboguejykuévo ñe’ẽnguéra marandurenda. Eha’ãjey ag̃amieve.
+translations-manage-error-delete = Iñapañuãi emboguekuévo ñe’ẽnguéra marandurenda. Eha’ãjey ag̃ave.
 translations-manage-error-remove = Oĩ apañuãi emboguekuévo ñe’ẽnguéra marandurenda. Eha’ãjey ag̃ave.
 translations-manage-error-list = Ndaikatúi ereko ñe’ẽnguéra rysýi emoñe’ẽasa hag̃ua. Embohekopyahu kuatiarogue eha’ãjey hag̃ua.
 translations-settings-title =
@@ -170,3 +177,75 @@ translations-settings-remove-all-sites-button =
 translations-settings-close-dialog =
     .buttonlabelaccept = Mboty
     .buttonaccesskeyaccept = C
+# Text displayed in the right-click context menu for translating
+# selected text to a yet-to-be-determined language.
+main-context-menu-translate-selection =
+    .label = Emoñe’ẽasa poravopy…
+    .accesskey = n
+# Text displayed in the right-click context menu for translating
+# selected text to a target language.
+#
+# Variables:
+#   $language (string) - The localized display name of the target language
+main-context-menu-translate-selection-to-language =
+    .label = Emoñe’ẽasa poravopy { $language }-pe
+    .accesskey = n
+# Text displayed in the right-click context menu for translating
+# the text of a hyperlink to a yet-to-be-determined language.
+main-context-menu-translate-link-text =
+    .label = Emoñe’ẽasa juajuha retepy…
+    .accesskey = n
+# Text displayed in the right-click context menu for translating
+# the text of a hyperlink to a target language.
+#
+# Variables:
+#   $language (string) - The localized display name of the target language
+main-context-menu-translate-link-text-to-language =
+    .label = Emoñe’ẽasa juajuha retepy { $language }-pe
+    .accesskey = n
+# Text displayed in the select translations panel header.
+select-translations-panel-header = Ñemoñe’ẽasa
+# Text displayed above the from-language dropdown menu.
+select-translations-panel-from-label = Mba’éva
+# Text displayed above the to-language dropdown menu.
+select-translations-panel-to-label = G̃uarã
+# Text displayed above the try-another-source-language dropdown menu.
+select-translations-panel-try-another-language-label = Eha’ãjey ambue ñe’ẽ ypygua ndive
+select-translations-panel-cancel-button =
+    .label = Heja
+# Text displayed on the copy button before it is clicked.
+select-translations-panel-copy-button =
+    .label = Monguatia
+# Text displayed on the copy button after it is clicked.
+select-translations-panel-copy-button-copied =
+    .label = Monguatiapyre
+select-translations-panel-done-button =
+    .label = Japopyre
+select-translations-panel-translate-full-page-button =
+    .label = Emoñe’ẽasapa kuatiarogue
+select-translations-panel-translate-button =
+    .label = Ñe’ẽasa
+select-translations-panel-try-again-button =
+    .label = Eha’ãjey
+# Text displayed as a placeholder when the panel is idle.
+select-translations-panel-idle-placeholder-text = Moñe’ẽrã moñe’ẽasapyre osẽta ápe.
+# Text displayed as a placeholder when the panel is actively translating.
+select-translations-panel-translating-placeholder-text = Oñemoñe’ẽasa…
+select-translations-panel-init-failure-message =
+    .message = Nahenyhẽkuaái ñe’ẽnguéra. Ehechajey oikópa ne ñanduti ha eha’ãjey ag̃ave.
+# Text displayed when the translation fails to complete.
+select-translations-panel-translation-failure-message =
+    .message = Iñapañuãi’imi emoñe’ẽasakuévo, Eha’ãjey ag̃amieve.
+# If your language requires declining the language name, a possible solution
+# is to adapt the structure of the phrase, or use a support noun, e.g.
+# `Sorry, we don't support the language yet: { $language }
+#
+# Variables:
+#   $language (string) - The language of the document.
+select-translations-panel-unsupported-language-message-known =
+    .message = Rombyasy, noromoneĩri gueteri { $language }.
+select-translations-panel-unsupported-language-message-unknown =
+    .message = Rombyasy, noromoneĩri gueteri ko ñe’ẽ.
+# Text displayed on the menuitem that opens the Translation Settings page.
+select-translations-panel-open-translations-settings-menuitem =
+    .label = Ñemoñe’ẽasa ñemboheko

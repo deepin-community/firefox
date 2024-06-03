@@ -99,7 +99,7 @@ interface nsISearchEngine : nsISupports
    *   Width of the requested icon. If not specified, it is assumed that
    *   16x16 is desired.
    */
-  jsval getIconURL([optional] in unsigned short preferredWidth);
+  Promise getIconURL([optional] in unsigned short preferredWidth);
 
   /**
    * Opens a speculative connection to the engine's search URI
@@ -290,13 +290,13 @@ interface nsISearchService : nsISupports
    * @return |true| if the search service is now initialized, |false| if
    * initialization has not been triggered yet.
    */
-  readonly attribute bool isInitialized;
+  readonly attribute boolean isInitialized;
 
   /**
    * Determine whether initialization has been completed successfully.
    *
    */
-  readonly attribute bool hasSuccessfullyInitialized;
+  readonly attribute boolean hasSuccessfullyInitialized;
 
 
   /**
@@ -548,4 +548,14 @@ interface nsISearchService : nsISupports
    *        "https://www.google.com/search?q=terms".
    */
   nsISearchParseSubmissionResult parseSubmissionURL(in AString url);
+
+  /**
+   * Returns a list of alternate domains for a given search engine domain.
+   *
+   * @param domain
+   *        The domain of the search engine.
+   * @returns {Array}
+   *          An array which contains all alternate domains.
+   */
+  Array<ACString> getAlternateDomains(in ACString domain);
 };

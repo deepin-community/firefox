@@ -70,7 +70,7 @@ urlbar-eme-notification-anchor =
 urlbar-web-authn-anchor =
     .tooltiptext = เปิดแผง ​Web Authentication
 urlbar-canvas-notification-anchor =
-    .tooltiptext = จัดการสิทธิ์อนุญาตการสกัดข้อมูลจาก canvas
+    .tooltiptext = จัดการการกำหนดสิทธิ์ในการสกัดข้อมูลจาก Canvas
 urlbar-web-rtc-share-microphone-notification-anchor =
     .tooltiptext = จัดการการแบ่งปันไมโครโฟนของคุณกับไซต์
 urlbar-default-notification-anchor =
@@ -94,7 +94,7 @@ urlbar-web-rtc-share-devices-notification-anchor =
 # "Speakers" is used in a general sense that might include headphones or
 # another audio output connection.
 urlbar-web-rtc-share-speaker-notification-anchor =
-    .tooltiptext = จัดการการแบ่งปันลำโพงอื่น ๆ กับไซต์
+    .tooltiptext = จัดการการแบ่งปันลำโพงอื่นๆ กับไซต์
 urlbar-autoplay-notification-anchor =
     .tooltiptext = เปิดแผงการเล่นอัตโนมัติ
 urlbar-persistent-storage-notification-anchor =
@@ -298,8 +298,8 @@ quickactions-cmd-screenshot = ภาพหน้าจอ
 quickactions-settings2 = จัดการการตั้งค่า
 quickactions-cmd-settings = การตั้งค่า, การกำหนดลักษณะ, ตัวเลือก
 # Opens about:addons page in the themes section
-quickactions-themes = จัดการชุดรูปแบบ
-quickactions-cmd-themes = ชุดรูปแบบ
+quickactions-themes = จัดการชุดตกแต่ง
+quickactions-cmd-themes = ชุดตกแต่ง
 # Opens a SUMO article explaining how to update the browser
 quickactions-update = อัปเดต { -brand-short-name }
 quickactions-cmd-update = อัปเดต
@@ -364,10 +364,10 @@ identity-https-only-dropdown-off =
     .label = ปิด
 identity-https-only-dropdown-off-temporarily =
     .label = ปิดชั่วคราว
-identity-https-only-info-turn-on2 = เปิดโหมด HTTPS-Only หากคุณต้องการให้ { -brand-short-name } อัปเกรดการเชื่อมต่อเมื่อเป็นไปได้
-identity-https-only-info-turn-off2 = หากหน้าดูเหมือนจะพัง คุณอาจต้องปิดโหมด HTTPS-Only สำหรับไซต์นี้เพื่อโหลดใหม่โดยใช้ HTTP ที่ไม่ปลอดภัย
-identity-https-only-info-turn-on3 = เปิดการอัปเกรด HTTPS สำหรับไซต์นี้หากคุณต้องการให้ { -brand-short-name } อัปเกรดการเชื่อมต่อเมื่อเป็นไปได้
-identity-https-only-info-turn-off3 = หากหน้าดูเหมือนจะพัง คุณอาจต้องปิดการอัปเกรด HTTPS สำหรับไซต์นี้เพื่อโหลดใหม่โดยใช้ HTTP ที่ไม่ปลอดภัย
+identity-https-only-info-turn-on2 = เปิดโหมด HTTPS-Only ถ้าคุณต้องการให้ { -brand-short-name } อัปเกรดการเชื่อมต่อเมื่อเป็นไปได้
+identity-https-only-info-turn-off2 = ถ้าหน้าดูเหมือนจะใช้การไม่ได้ คุณอาจต้องปิดโหมด HTTPS-Only สำหรับไซต์นี้เพื่อโหลดใหม่โดยใช้ HTTP แบบไม่ปลอดภัย
+identity-https-only-info-turn-on3 = เปิดการอัปเกรด HTTPS สำหรับไซต์นี้ถ้าคุณต้องการให้ { -brand-short-name } อัปเกรดการเชื่อมต่อเมื่อเป็นไปได้
+identity-https-only-info-turn-off3 = ถ้าหน้าดูเหมือนจะใช้การไม่ได้ คุณอาจต้องปิดการอัปเกรด HTTPS สำหรับไซต์นี้เพื่อโหลดใหม่โดยใช้ HTTP แบบไม่ปลอดภัย
 identity-https-only-info-no-upgrade = ไม่สามารถอัปเกรดการเชื่อมต่อจาก HTTP ได้
 identity-permissions-storage-access-header = คุกกี้ข้ามไซต์
 identity-permissions-storage-access-hint = บุคคลเหล่านี้สามารถใช้คุกกี้ข้ามไซต์และข้อมูลไซต์ในขณะที่คุณอยู่บนไซต์นี้ได้
@@ -385,7 +385,7 @@ identity-remove-cert-exception =
 identity-description-insecure = การเชื่อมต่อของคุณไปยังไซต์นี้ไม่เป็นส่วนตัว ข้อมูลที่คุณแบ่งปันกับไซต์นี้สามารถดูได้โดยผู้อื่น (เช่น รหัสผ่าน, ข้อความ, บัตรเครดิต ฯลฯ)
 identity-description-insecure-login-forms = การเข้าสู่ระบบที่คุณป้อนบนหน้านี้ไม่ปลอดภัยและอาจถูกบุกรุกได้
 identity-description-weak-cipher-intro = การเชื่อมต่อของคุณไปยังเว็บไซต์นี้ใช้การเข้ารหัสที่อ่อนแอและไม่เป็นส่วนตัว
-identity-description-weak-cipher-risk = ผู้คนอื่น ๆ สามารถดูข้อมูลของคุณหรือเปลี่ยนแปลงลักษณะการทำงานของเว็บไซต์
+identity-description-weak-cipher-risk = คนอื่นๆ จะสามารถดูข้อมูลของคุณหรือปรับเปลี่ยนลักษณะการทำงานของเว็บไซต์ได้
 identity-description-active-blocked2 = { -brand-short-name } ได้ปิดกั้นบางส่วนของหน้านี้ที่ไม่ปลอดภัย
 identity-description-passive-loaded = การเชื่อมต่อของคุณไม่เป็นส่วนตัวและข้อมูลที่คุณแบ่งปันกับเว็บไซต์คนอื่นสามารถดูได้
 identity-description-passive-loaded-insecure2 = เว็บไซต์นี้มีเนื้อหาที่ไม่ปลอดภัย (อย่างเช่น ภาพ)
@@ -480,7 +480,7 @@ sharing-warning-disable-for-session =
 
 ## DevTools F12 popup
 
-enable-devtools-popup-description2 = หากต้องการใช้ทางลัด F12 ให้เปิด DevTools ก่อนผ่านเมนู เครื่องมือสำหรับเบราว์เซอร์
+enable-devtools-popup-description2 = ถ้าต้องการใช้ทางลัด F12 ให้เปิด DevTools ก่อนผ่านเมนู เครื่องมือสำหรับเบราว์เซอร์
 
 ## URL Bar
 

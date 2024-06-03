@@ -71,6 +71,7 @@ const gRuleManagers = [];
 
 import { XPCOMUtils } from "resource://gre/modules/XPCOMUtils.sys.mjs";
 
+/** @type {Lazy} */
 const lazy = {};
 
 ChromeUtils.defineESModuleGetters(lazy, {
@@ -182,6 +183,8 @@ export class Rule {
 
 class Ruleset {
   /**
+   * @typedef {number} integer
+   *
    * @param {string} rulesetId - extension-defined ruleset ID.
    * @param {integer} rulesetPrecedence
    * @param {Rule[]} rules - extension-defined rules
@@ -634,20 +637,20 @@ class ModifyHeadersBase {
   }
 
   /**
-   * @param {MatchedRule} matchedRule
+   * @param {MatchedRule} _matchedRule
    * @returns {object[]}
    */
-  headerActionsFor(matchedRule) {
+  headerActionsFor(_matchedRule) {
     throw new Error("Not implemented.");
   }
 
   /**
-   * @param {MatchedRule} matchedrule
-   * @param {string} name
-   * @param {string} value
-   * @param {boolean} merge
+   * @param {MatchedRule} _matchedrule
+   * @param {string} _name
+   * @param {string} _value
+   * @param {boolean} _merge
    */
-  setHeaderImpl(matchedrule, name, value, merge) {
+  setHeaderImpl(_matchedrule, _name, _value, _merge) {
     throw new Error("Not implemented.");
   }
 
@@ -1316,7 +1319,7 @@ class RequestDetails {
    * @param {string} options.type - ResourceType (MozContentPolicyType).
    * @param {string} [options.method] - HTTP method
    * @param {integer} [options.tabId]
-   * @param {BrowsingContext} [options.browsingContext] - The BrowsingContext
+   * @param {CanonicalBrowsingContext} [options.browsingContext] - The CBC
    *   associated with the request. Typically the bc for which the subresource
    *   request is initiated, if any. For document requests, this is the parent
    *   (i.e. the parent frame for sub_frame, null for main_frame).
@@ -1913,7 +1916,7 @@ const NetworkIntegration = {
   maxEvaluatedRulesCount: 0,
 
   register() {
-    // We register via WebRequest.jsm to ensure predictable ordering of DNR and
+    // We register via WebRequest.sys.mjs to ensure predictable ordering of DNR and
     // WebRequest behavior.
     lazy.WebRequest.setDNRHandlingEnabled(true);
   },
@@ -1975,7 +1978,10 @@ const NetworkIntegration = {
   /**
    * Applies the actions of the DNR rules.
    *
-   * @param {ChannelWrapper} channel
+   * @typedef {ChannelWrapper & { _dnrMatchedRules?: MatchedRule[] }}
+   *          ChannelWrapperViaDNR
+   *
+   * @param {ChannelWrapperViaDNR} channel
    * @returns {boolean} Whether to ignore any responses from the webRequest API.
    */
   onBeforeRequest(channel) {
@@ -1993,7 +1999,7 @@ const NetworkIntegration = {
         this.applyRedirect(channel, finalMatch);
         return true;
       case "upgradeScheme":
-        this.applyUpgradeScheme(channel, finalMatch);
+        this.applyUpgradeScheme(channel);
         return true;
     }
     // If there are multiple rules, then it may be a combination of allow,
@@ -2034,7 +2040,7 @@ const NetworkIntegration = {
     properties.setProperty("cancelledByExtension", addonId);
   },
 
-  applyUpgradeScheme(channel, matchedRule) {
+  applyUpgradeScheme(channel) {
     // Request upgrade. No-op if already secure (i.e. https).
     channel.upgradeToSecure();
   },
@@ -2294,7 +2300,7 @@ function beforeWebRequestEvent(channel, kind) {
 /**
  * Applies matching DNR rules, some of which may potentially cancel the request.
  *
- * @param {ChannelWrapper} channel
+ * @param {ChannelWrapperViaDNR} channel
  * @param {string} kind - The name of the webRequest event.
  * @returns {boolean} Whether to ignore any responses from the webRequest API.
  */

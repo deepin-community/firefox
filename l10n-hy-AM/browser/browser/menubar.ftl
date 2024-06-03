@@ -60,21 +60,21 @@ menu-file-new-tab =
     .label = Նոր Ներդիր
     .accesskey = Ն
 menu-file-new-container-tab =
-    .label = Նոր Պարունակ ներդիր
-    .accesskey = դ
+    .label = Նոր պարունակ ներդիր
+    .accesskey = ր
 menu-file-new-window =
-    .label = Նոր Պատուհան
+    .label = Նոր պատուհան
     .accesskey = Ն
 menu-file-new-private-window =
-    .label = Սկսել Գաղտնի դիտարկում
-    .accesskey = Գ
+    .label = Նոր գաղտնի պատուհան
+    .accesskey = Պ
 # "Open Location" is only displayed on macOS, and only on windows
 # that aren't main browser windows, or when there are no windows
 # but Firefox is still running.
 menu-file-open-location =
-    .label = Բացել Հասցե…
+    .label = Բացել հասցե…
 menu-file-open-file =
-    .label = Բացել Ֆայլ…
+    .label = Բացել ֆայլ…
     .accesskey = Բ
 # Variables:
 #  $tabCount (Number): the number of tabs that are affected by the action.
@@ -87,14 +87,14 @@ menu-file-close-tab =
         }
     .accesskey = C
 menu-file-close-window =
-    .label = Փակել Պատուհանը
+    .label = Փակել պատուհանը
     .accesskey = տ
 menu-file-save-page =
     .label = Պահպանել Էջը որպես…
     .accesskey = ո
 menu-file-email-link =
-    .label = Հղումը ուղարկել էլ. փոստով...
-    .accesskey = Հ
+    .label = Ուղարկել հղումը էլ. փոստով...
+    .accesskey = Ո
 menu-file-share-url =
     .label = Համօգտագործել
     .accesskey = h
@@ -146,6 +146,8 @@ menu-view-history-button =
     .label = Պատմություն
 menu-view-synced-tabs-sidebar =
     .label = Համաժամեցված ներդիրներ
+menu-view-megalist-sidebar =
+    .label = Գաղտնաբառեր
 menu-view-full-zoom =
     .label = Մասշտաբը
     .accesskey = Մ
@@ -170,6 +172,9 @@ menu-view-page-style-no-style =
 menu-view-page-basic-style =
     .label = Էջի հիմնական ոճ
     .accesskey = B
+menu-view-repair-text-encoding =
+    .label = Վերականգնել տեքստի կոդավորումը
+    .accesskey = c
 
 ## These should match what Safari and other Apple applications
 ## use on macOS.
@@ -325,8 +330,14 @@ menu-help-more-troubleshooting-info =
     .accesskey = T
 menu-help-report-site-issue =
     .label = Զեկուցել կայքի խնդրի մասին…
+menu-help-share-ideas =
+    .label = Կիսվել գաղափարներով և արձագանքներով…
+    .accesskey = S
 menu-help-enter-troubleshoot-mode2 =
     .label = Խափանաշտկման կերպ…
+    .accesskey = M
+menu-help-exit-troubleshoot-mode =
+    .label = Անջատել խափանաշտկումը
     .accesskey = M
 menu-help-switch-device =
     .label = Անցում նոր սարքի
@@ -339,3 +350,5 @@ menu-help-report-deceptive-site =
 menu-help-not-deceptive =
     .label = Սա խաբուսիկ կայք չէ...
     .accesskey = խ
+menu-report-broken-site =
+    .label = Զեկուցել խոտանված կայքի մասին

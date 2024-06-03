@@ -53,6 +53,9 @@ mr1-onboarding-import-primary-button-label-attribution = ייבוא מ־{ $previ
 mr1-onboarding-theme-header = התאמה לטעם האישי שלך
 mr1-onboarding-theme-subtitle = התאמה אישית של { -brand-short-name } עם ערכת נושא.
 mr1-onboarding-theme-secondary-button-label = לא כעת
+newtab-wallpaper-onboarding-title = אולי איזה מגע של צבע
+newtab-wallpaper-onboarding-subtitle = ניתן לבחור בתמונת רקע כדי לתת ללשונית החדשה שלך מראה רענן.
+newtab-wallpaper-onboarding-primary-button-label = הגדרת תמונת רקע
 # System theme uses operating system color settings
 mr1-onboarding-theme-label-system = ערכת הנושא של המערכת
 mr1-onboarding-theme-label-light = בהירה
@@ -296,6 +299,8 @@ onboarding-easy-setup-security-and-privacy-title = אנחנו אוהבים לש�
 onboarding-easy-setup-security-and-privacy-subtitle = הדפדפן שלנו שמגובה בקרן ללא מטרות רווח מסייע למנוע מחברות לעקוב אחריך בסתר ברחבי הרשת.
 # Mobile download screen
 onboarding-mobile-download-security-and-privacy-title = להישאר מוצפן במעבר בין מכשירים
+# Gratitude screen
+onboarding-gratitude-security-and-privacy-title = { -brand-short-name } מאחוריך
 onboarding-gratitude-security-and-privacy-subtitle = תודה לך על השימוש ב־{ -brand-short-name }ֿ, שפועל בגיבוי קרן Mozilla. עם התמיכה שלך, אנו פועלים כדי להפוך את האינטרנט לבטוח ונגיש יותר למען הכלל.
 
 ## New user time and familiarity survey strings

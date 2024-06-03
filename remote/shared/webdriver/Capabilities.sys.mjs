@@ -445,6 +445,12 @@ export class Capabilities extends Map {
       ["timeouts", new Timeouts()],
       ["strictFileInteractability", false],
       ["unhandledPromptBehavior", UnhandledPromptBehavior.DismissAndNotify],
+      [
+        "userAgent",
+        Cc["@mozilla.org/network/protocol;1?name=http"].getService(
+          Ci.nsIHttpProtocolHandler
+        ).userAgent,
+      ],
       ["webSocketUrl", null],
 
       // proprietary
@@ -1025,7 +1031,10 @@ export function validateCapabilities(capabilities) {
  */
 export function processCapabilities(params) {
   const { capabilities } = params;
-  lazy.assert.object(capabilities);
+  lazy.assert.object(
+    capabilities,
+    lazy.pprint`Expected "capabilities" to be an object, got ${capabilities}`
+  );
 
   let {
     alwaysMatch: requiredCapabilities = {},

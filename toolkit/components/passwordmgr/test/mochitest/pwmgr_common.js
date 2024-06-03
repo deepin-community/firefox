@@ -25,20 +25,6 @@ const { LENGTH: GENERATED_PASSWORD_LENGTH, REGEX: GENERATED_PASSWORD_REGEX } =
 const LOGIN_FIELD_UTILS = LoginTestUtils.loginField;
 const TESTS_DIR = "/tests/toolkit/components/passwordmgr/test/";
 
-// Depending on pref state we either show auth prompts as windows or on tab level.
-let authPromptModalType = SpecialPowers.Services.prefs.getIntPref(
-  "prompts.modalType.httpAuth"
-);
-
-// Whether the auth prompt is a commonDialog.xhtml or a TabModalPrompt
-let authPromptIsCommonDialog =
-  authPromptModalType === SpecialPowers.Services.prompt.MODAL_TYPE_WINDOW ||
-  (authPromptModalType === SpecialPowers.Services.prompt.MODAL_TYPE_TAB &&
-    SpecialPowers.Services.prefs.getBoolPref(
-      "prompts.tabChromePromptSubDialog",
-      false
-    ));
-
 /**
  * Recreate a DOM tree using the outerHTML to ensure that any event listeners
  * and internal state for the elements are removed.
@@ -145,7 +131,7 @@ function setUserInputValues(parentNode, selectorValues, userInput = true) {
  */
 function getSubmitMessage(aFilterFn = undefined) {
   info("getSubmitMessage");
-  return new Promise((resolve, reject) => {
+  return new Promise(resolve => {
     PWMGR_COMMON_PARENT.addMessageListener(
       "formSubmissionProcessed",
       function processed(...args) {
@@ -170,7 +156,7 @@ function getSubmitMessage(aFilterFn = undefined) {
  */
 function getPasswordEditedMessage() {
   info("getPasswordEditedMessage");
-  return new Promise((resolve, reject) => {
+  return new Promise(resolve => {
     PWMGR_COMMON_PARENT.addMessageListener(
       "passwordEditedOrGenerated",
       function listener(...args) {
@@ -643,8 +629,8 @@ function registerRunTests(existingPasswordFieldsCount = 0, callback) {
 
       let foundForcer = false;
       var observer = SpecialPowers.wrapCallback(function (
-        subject,
-        topic,
+        _subject,
+        _topic,
         data
       ) {
         if (data === "observerforcer") {
@@ -714,8 +700,8 @@ function logoutPrimaryPassword() {
  */
 function promiseFormsProcessedInSameProcess(expectedCount = 1) {
   var processedCount = 0;
-  return new Promise((resolve, reject) => {
-    function onProcessedForm(subject, topic, data) {
+  return new Promise(resolve => {
+    function onProcessedForm(subject, _topic, data) {
       processedCount++;
       if (processedCount == expectedCount) {
         info(`${processedCount} form(s) processed`);
@@ -1060,6 +1046,23 @@ SimpleTest.registerCleanupFunction(() => {
   });
 });
 
+// This is a version of LoginHelper.loginToVanillaObject that is adapted to run
+// as content JS instead of chrome JS. This is needed to make it return a
+// content JS object because the structured cloning we use to send it over
+// JS IPC can't deal with a cross compartment wrapper.
+function loginToVanillaObject(login) {
+  let obj = {};
+  for (let i in SpecialPowers.do_QueryInterface(
+    login,
+    SpecialPowers.Ci.nsILoginMetaInfo
+  )) {
+    if (typeof login[i] !== "function") {
+      obj[i] = login[i];
+    }
+  }
+  return obj;
+}
+
 /**
  * Proxy for Services.logins (nsILoginManager).
  * Only supports arguments which support structured clone plus {nsILoginInfo}
@@ -1068,7 +1071,7 @@ SimpleTest.registerCleanupFunction(() => {
 this.LoginManager = new Proxy(
   {},
   {
-    get(target, prop, receiver) {
+    get(_target, prop, _receiver) {
       return (...args) => {
         let loginInfoIndices = [];
         let cloneableArgs = args.map((val, index) => {
@@ -1076,7 +1079,7 @@ this.LoginManager = new Proxy(
             SpecialPowers.call_Instanceof(val, SpecialPowers.Ci.nsILoginInfo)
           ) {
             loginInfoIndices.push(index);
-            return LoginHelper.loginToVanillaObject(val);
+            return loginToVanillaObject(val);
           }
 
           return val;
@@ -1159,7 +1162,7 @@ async function formAutofillResult(formId) {
     delete gPwmgrCommonCapturedAutofillResults[formId];
     return autofillResult;
   }
-  return new Promise((resolve, reject) => {
+  return new Promise(resolve => {
     PWMGR_COMMON_PARENT.addMessageListener(
       "formProcessed",
       ({ formId: id, autofillResult }) => {

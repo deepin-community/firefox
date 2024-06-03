@@ -430,11 +430,21 @@ function initPage() {
       tryAgain.hidden = true;
       break;
 
-    // Pinning errors are of type nssFailure2
+    // TLS errors and non-overridable certificate errors (e.g. pinning
+    // failures) are of type nssFailure2.
     case "nssFailure2": {
       learnMore.hidden = false;
 
       const errorCode = document.getNetErrorInfo().errorCodeString;
+      RPMRecordTelemetryEvent(
+        "security.ui.tlserror",
+        "load",
+        "abouttlserror",
+        errorCode,
+        {
+          is_frame: (window.parent != window).toString(),
+        }
+      );
       switch (errorCode) {
         case "SSL_ERROR_UNSUPPORTED_VERSION":
         case "SSL_ERROR_PROTOCOL_VERSION_ALERT": {
@@ -488,7 +498,7 @@ function initPage() {
       trrExceptionButton.addEventListener("click", () => {
         RPMSendQuery("Browser:AddTRRExcludedDomain", {
           hostname: HOST_NAME,
-        }).then(msg => {
+        }).then(() => {
           retryThis(trrExceptionButton);
         });
       });
@@ -1051,15 +1061,15 @@ function addCertException() {
     () => {
       location.reload();
     },
-    err => {}
+    () => {}
   );
 }
 
-function onReturnButtonClick(e) {
+function onReturnButtonClick() {
   RPMSendAsyncMessage("Browser:SSLErrorGoBack");
 }
 
-function copyPEMToClipboard(e) {
+function copyPEMToClipboard() {
   const errorText = document.getElementById("certificateErrorText");
   navigator.clipboard.writeText(errorText.textContent);
 }

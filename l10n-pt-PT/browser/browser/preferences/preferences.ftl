@@ -32,6 +32,8 @@ search-input-box2 =
     .style = width: 15.4em
     .placeholder = Procurar nas definições
 managed-notice = O seu navegador está a ser gerido pela sua organização.
+managed-notice-info-icon =
+    .alt = Informação
 category-list =
     .aria-label = Categorias
 pane-general-title = Geral
@@ -708,6 +710,13 @@ sync-mobile-promo = Transfira o Firefox para <img data-l10n-name="android-icon"/
 
 sync-profile-picture =
     .tooltiptext = Alterar imagem de perfil
+sync-profile-picture-with-alt =
+    .tooltiptext = Alterar imagem de perfil
+    .alt = Alterar imagem de perfil
+sync-profile-picture-account-problem =
+    .alt = Imagem de perfil da conta
+fxa-login-rejected-warning =
+    .alt = Aviso
 sync-sign-out =
     .label = Terminar sessão...
     .accesskey = T
@@ -1275,6 +1284,8 @@ addon-recommendations-link = Saber mais
 collection-health-report-disabled = A comunicação de dados está desativada para esta configuração da compilação
 collection-backlogged-crash-reports-with-link = Permitir que o { -brand-short-name } envie relatórios de falhas acumuladas em seu nome. <a data-l10n-name="crash-reports-link">Saber mais</a>
     .accesskey = f
+collection-backlogged-crash-reports = Permitir que o { -brand-short-name } envie relatórios de falhas acumuladas em seu nome.
+    .accesskey = f
 privacy-segmentation-section-header = Novas funcionalidades que melhoram a sua navegação
 privacy-segmentation-section-description = Quando oferecemos funcionalidades que utilizam os seus dados para fornecer uma experiência mais pessoal:
 privacy-segmentation-radio-off =
@@ -1329,7 +1340,7 @@ httpsonly-learn-more = Saber mais
 httpsonly-radio-enabled =
     .label = Ativar o modo apenas HTTPS em todas as janelas
 httpsonly-radio-enabled-pbm =
-    .label = Ativar o modo Apenas HTTPS somente em janelas privadas
+    .label = Ativar o modo apenas HTTPS somente em janelas privadas
 httpsonly-radio-disabled =
     .label = Não ativar o modo apenas HTTPS
 

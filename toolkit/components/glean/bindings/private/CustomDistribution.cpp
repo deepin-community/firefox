@@ -33,6 +33,15 @@ void CustomDistributionMetric::AccumulateSamples(
   fog_custom_distribution_accumulate_samples(mId, &aSamples);
 }
 
+void CustomDistributionMetric::AccumulateSingleSample(uint64_t aSample) const {
+  auto hgramId = HistogramIdForMetric(mId);
+  if (hgramId) {
+    auto id = hgramId.extract();
+    Telemetry::Accumulate(id, aSample);
+  }
+  fog_custom_distribution_accumulate_single_sample(mId, aSample);
+}
+
 void CustomDistributionMetric::AccumulateSamplesSigned(
     const nsTArray<int64_t>& aSamples) const {
   auto hgramId = HistogramIdForMetric(mId);
@@ -47,6 +56,16 @@ void CustomDistributionMetric::AccumulateSamplesSigned(
   fog_custom_distribution_accumulate_samples_signed(mId, &aSamples);
 }
 
+void CustomDistributionMetric::AccumulateSingleSampleSigned(
+    int64_t aSample) const {
+  auto hgramId = HistogramIdForMetric(mId);
+  if (hgramId) {
+    auto id = hgramId.extract();
+    Telemetry::Accumulate(id, aSample);
+  }
+  fog_custom_distribution_accumulate_single_sample_signed(mId, aSample);
+}
+
 Result<Maybe<DistributionData>, nsCString>
 CustomDistributionMetric::TestGetValue(const nsACString& aPingName) const {
   nsCString err;
@@ -59,9 +78,10 @@ CustomDistributionMetric::TestGetValue(const nsACString& aPingName) const {
   nsTArray<uint64_t> buckets;
   nsTArray<uint64_t> counts;
   uint64_t sum;
-  fog_custom_distribution_test_get_value(mId, &aPingName, &sum, &buckets,
-                                         &counts);
-  return Some(DistributionData(buckets, counts, sum));
+  uint64_t count;
+  fog_custom_distribution_test_get_value(mId, &aPingName, &sum, &count,
+                                         &buckets, &counts);
+  return Some(DistributionData(buckets, counts, sum, count));
 }
 
 }  // namespace impl
@@ -75,6 +95,10 @@ JSObject* GleanCustomDistribution::WrapObject(
 void GleanCustomDistribution::AccumulateSamples(
     const dom::Sequence<int64_t>& aSamples) {
   mCustomDist.AccumulateSamplesSigned(aSamples);
+}
+
+void GleanCustomDistribution::AccumulateSingleSample(const int64_t aSample) {
+  mCustomDist.AccumulateSingleSampleSigned(aSample);
 }
 
 void GleanCustomDistribution::TestGetValue(
@@ -92,6 +116,7 @@ void GleanCustomDistribution::TestGetValue(
 
   dom::GleanDistributionData ret;
   ret.mSum = optresult.ref().sum;
+  ret.mCount = optresult.ref().count;
   auto& data = optresult.ref().values;
   for (const auto& entry : data) {
     dom::binding_detail::RecordEntry<nsCString, uint64_t> bucket;

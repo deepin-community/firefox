@@ -30,6 +30,8 @@ static constexpr int kSmallCube = 4;
 static constexpr int kSmallCubeBits = 2;
 // kSmallCube ** 3
 static constexpr int kLargeCubeOffset = kSmallCube * kSmallCube * kSmallCube;
+static constexpr int kImplicitPaletteSize =
+    kLargeCubeOffset + kLargeCube * kLargeCube * kLargeCube;
 
 static inline pixel_type Scale(uint64_t value, uint64_t bit_depth,
                                uint64_t denom) {
@@ -101,6 +103,7 @@ GetPaletteValue(const pixel_type *const palette, int index, const size_t c,
     //               index >= kLargeCube ** 3 ?
     switch (c) {
       case 0:
+      default:
         break;
       case 1:
         index /= kLargeCube;

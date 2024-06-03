@@ -85,7 +85,9 @@ namespace mozilla {
 class Mutex;
 
 namespace layers {
+class Image;
 class MemoryOrShmem;
+class SurfaceDescriptor;
 class SurfaceDescriptorBuffer;
 class TextureData;
 }  // namespace layers
@@ -1416,6 +1418,15 @@ class DrawTarget : public external::AtomicRefCounted<DrawTarget> {
       const DrawSurfaceOptions& aSurfOptions = DrawSurfaceOptions(),
       const DrawOptions& aOptions = DrawOptions()) = 0;
 
+  virtual void DrawSurfaceDescriptor(
+      const layers::SurfaceDescriptor& aDesc,
+      const RefPtr<layers::Image>& aImageOfSurfaceDescriptor, const Rect& aDest,
+      const Rect& aSource,
+      const DrawSurfaceOptions& aSurfOptions = DrawSurfaceOptions(),
+      const DrawOptions& aOptions = DrawOptions()) {
+    MOZ_CRASH("GFX: DrawSurfaceDescriptor");
+  }
+
   /**
    * Draw a surface to the draw target, when the surface will be available
    * at a later time. This is only valid for recording DrawTargets.
@@ -1981,13 +1992,13 @@ class DrawTarget : public external::AtomicRefCounted<DrawTarget> {
   UserData mUserData;
   Matrix mTransform;
   IntRect mOpaqueRect;
-  bool mTransformDirty : 1;
+  mutable bool mTransformDirty : 1;
   bool mPermitSubpixelAA : 1;
 
   SurfaceFormat mFormat;
 };
 
-class DrawEventRecorder : public RefCounted<DrawEventRecorder> {
+class DrawEventRecorder : public external::AtomicRefCounted<DrawEventRecorder> {
  public:
   MOZ_DECLARE_REFCOUNTED_VIRTUAL_TYPENAME(DrawEventRecorder)
   virtual RecorderType GetRecorderType() const { return RecorderType::UNKNOWN; }
@@ -2159,6 +2170,9 @@ class GFX2D_API Factory {
       uint8_t* aData, int32_t aStride, const IntSize& aSize,
       SurfaceFormat aFormat, SourceSurfaceDeallocator aDeallocator = nullptr,
       void* aClosure = nullptr);
+
+  static already_AddRefed<DataSourceSurface> CopyDataSourceSurface(
+      DataSourceSurface* aSource);
 
   static void CopyDataSourceSurface(DataSourceSurface* aSource,
                                     DataSourceSurface* aDest);

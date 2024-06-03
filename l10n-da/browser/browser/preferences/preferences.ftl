@@ -32,6 +32,8 @@ search-input-box2 =
     .style = width: 15.4em
     .placeholder = Find i indstillinger
 managed-notice = Din browser bliver forvaltet af din organisation.
+managed-notice-info-icon =
+    .alt = Information
 category-list =
     .aria-label = Kategorier
 pane-general-title = Generelt
@@ -708,6 +710,13 @@ sync-mobile-promo = Hent Firefox til <img data-l10n-name="android-icon"/> <a dat
 
 sync-profile-picture =
     .tooltiptext = Skift profilbillede
+sync-profile-picture-with-alt =
+    .tooltiptext = Skift profilbillede
+    .alt = Skift profilbillede
+sync-profile-picture-account-problem =
+    .alt = Kontoens profilbillede
+fxa-login-rejected-warning =
+    .alt = Advarsel
 sync-sign-out =
     .label = Log ud…
     .accesskey = u
@@ -1274,6 +1283,8 @@ addon-recommendations-link = Læs mere
 # or builds with no Telemetry support available.
 collection-health-report-disabled = Data-rapportering er deaktiveret for denne build-konfiguration
 collection-backlogged-crash-reports-with-link = Tillad at { -brand-short-name } sender ophobede fejlrapporter på dine vegne <a data-l10n-name="crash-reports-link">Læs mere</a>
+    .accesskey = o
+collection-backlogged-crash-reports = Tillad at { -brand-short-name } sender ophobede fejlrapporter på dine vegne
     .accesskey = o
 privacy-segmentation-section-header = Nye funktioner, der forbedrer din browsing
 privacy-segmentation-section-description = Når vi tilbyder funktioner, der brugere dine data til at give dig en mere personlig oplevelse:

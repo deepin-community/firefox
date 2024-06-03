@@ -27,6 +27,7 @@
 #include "mozilla/gfx/gfxVars.h"
 #include "mozilla/ipc/CrossProcessSemaphore.h"
 #include "mozilla/ipc/SharedMemory.h"  // for SharedMemory, etc
+#include "mozilla/layers/CanvasRenderer.h"
 #include "mozilla/layers/CompositableForwarder.h"
 #include "mozilla/layers/ISurfaceAllocator.h"
 #include "mozilla/layers/ImageBridgeChild.h"
@@ -375,7 +376,8 @@ TextureData* TextureData::Create(TextureForwarder* aAllocator,
     RefPtr<CanvasChild> canvasChild = aAllocator->GetCanvasChild();
     if (canvasChild) {
       return new RecordedTextureData(canvasChild.forget(), aSize, aFormat,
-                                     textureType);
+                                     textureType,
+                                     layers::TexTypeForWebgl(aKnowsCompositor));
     }
     // If we must be remote, but there is no canvas child, then falling back
     // is not possible.
@@ -746,12 +748,10 @@ void TextureClient::ReadUnlock() {
 }
 
 bool TextureClient::Lock(OpenMode aMode) {
-  MOZ_ASSERT(IsValid());
-  MOZ_ASSERT(!mIsLocked);
-  if (!IsValid()) {
+  if (NS_WARN_IF(!IsValid())) {
     return false;
   }
-  if (mIsLocked) {
+  if (NS_WARN_IF(mIsLocked)) {
     return mOpenMode == aMode;
   }
 
@@ -1546,12 +1546,7 @@ TextureClient::TextureClient(TextureData* aData, TextureFlags aFlags,
       mUpdated(false),
       mAddedToCompositableClient(false),
       mFwdTransactionId(0),
-      mSerial(++sSerialCounter)
-#ifdef GFX_DEBUG_TRACK_CLIENTS_IN_POOL
-      ,
-      mPoolTracker(nullptr)
-#endif
-{
+      mSerial(++sSerialCounter) {
   mData->FillInfo(mInfo);
   mFlags |= mData->GetTextureFlags();
 }

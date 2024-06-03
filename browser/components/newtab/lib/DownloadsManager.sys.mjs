@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { actionTypes as at } from "resource://activity-stream/common/Actions.sys.mjs";
+import { actionTypes as at } from "resource://activity-stream/common/Actions.mjs";
 
 const lazy = {};
 
@@ -16,7 +16,7 @@ ChromeUtils.defineESModuleGetters(lazy, {
 const DOWNLOAD_CHANGED_DELAY_TIME = 1000; // time in ms to delay timer for downloads changed events
 
 export class DownloadsManager {
-  constructor(store) {
+  constructor() {
     this._downloadData = null;
     this._store = null;
     this._downloadItems = new Map();

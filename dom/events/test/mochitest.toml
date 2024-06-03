@@ -448,8 +448,6 @@ skip-if = [
 
 ["test_legacy_touch_api.html"]
 
-["test_marquee_events.html"]
-
 ["test_messageEvent.html"]
 
 ["test_messageEvent_init.html"]
@@ -471,6 +469,9 @@ skip-if = [
   "http3",
   "http2",
 ]
+
+["test_mouse_events_after_touchend.html"]
+skip-if = ["os == 'mac'"] # Bug 1881864
 
 ["test_mouse_over_at_removing_down_target.html"]
 

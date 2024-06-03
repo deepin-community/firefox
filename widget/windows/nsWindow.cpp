@@ -78,6 +78,7 @@
 #include <limits>
 
 #include "mozilla/widget/WinMessages.h"
+#include "nsLookAndFeel.h"
 #include "nsWindow.h"
 #include "nsWindowTaskbarConcealer.h"
 #include "nsAppRunner.h"
@@ -175,22 +176,23 @@
 #include <zmouse.h>
 #include <richedit.h>
 
-#if defined(ACCESSIBILITY)
-
+#ifdef ACCESSIBILITY
 #  ifdef DEBUG
 #    include "mozilla/a11y/Logging.h"
 #  endif
-
+#  include "mozilla/a11y/Compatibility.h"
 #  include "oleidl.h"
+#  include <uiautomation.h>
 #  include <winuser.h>
 #  include "nsAccessibilityService.h"
 #  include "mozilla/a11y/DocAccessible.h"
 #  include "mozilla/a11y/LazyInstantiator.h"
 #  include "mozilla/a11y/Platform.h"
+#  include "mozilla/StaticPrefs_accessibility.h"
 #  if !defined(WINABLEAPI)
 #    include <winable.h>
 #  endif  // !defined(WINABLEAPI)
-#endif    // defined(ACCESSIBILITY)
+#endif
 
 #include "WindowsUIUtils.h"
 
@@ -1221,18 +1223,19 @@ static LPWSTR const gStockApplicationIcon = MAKEINTRESOURCEW(32512);
 
 /* static */
 const wchar_t* nsWindow::ChooseWindowClass(WindowType aWindowType) {
-  switch (aWindowType) {
-    case WindowType::Invisible:
-      return RegisterWindowClass(kClassNameHidden, 0, gStockApplicationIcon);
-    case WindowType::Dialog:
-      return RegisterWindowClass(kClassNameDialog, 0, nullptr);
-    case WindowType::Popup:
-      return RegisterWindowClass(kClassNameDropShadow, 0,
-                                 gStockApplicationIcon);
-    default:
-      return RegisterWindowClass(GetMainWindowClass(), 0,
-                                 gStockApplicationIcon);
-  }
+  const wchar_t* className = [aWindowType] {
+    switch (aWindowType) {
+      case WindowType::Invisible:
+        return kClassNameHidden;
+      case WindowType::Dialog:
+        return kClassNameDialog;
+      case WindowType::Popup:
+        return kClassNameDropShadow;
+      default:
+        return GetMainWindowClass();
+    }
+  }();
+  return RegisterWindowClass(className, 0, gStockApplicationIcon);
 }
 
 /**************************************************************
@@ -1310,13 +1313,6 @@ DWORD nsWindow::WindowStyle() {
     if (mBorderStyle == BorderStyle::None ||
         !(mBorderStyle & BorderStyle::Maximize))
       style &= ~WS_MAXIMIZEBOX;
-
-    if (IsPopupWithTitleBar()) {
-      style |= WS_CAPTION;
-      if (mBorderStyle & BorderStyle::Close) {
-        style |= WS_SYSMENU;
-      }
-    }
   }
 
   if (mIsChildWindow) {
@@ -1332,7 +1328,6 @@ DWORD nsWindow::WindowStyle() {
 
 // Return nsWindow extended styles
 DWORD nsWindow::WindowExStyle() {
-  MOZ_ASSERT_IF(mIsAlert, mWindowType == WindowType::Dialog);
   switch (mWindowType) {
     case WindowType::Child:
       return 0;
@@ -1343,17 +1338,15 @@ DWORD nsWindow::WindowExStyle() {
       }
       return extendedStyle;
     }
-    case WindowType::Dialog: {
-      if (mIsAlert) {
-        return WS_EX_TOOLWINDOW | WS_EX_TOPMOST;
-      }
-      return WS_EX_WINDOWEDGE | WS_EX_DLGMODALFRAME;
-    }
-    case WindowType::Sheet:
-      MOZ_FALLTHROUGH_ASSERT("Sheets are macOS specific");
+    case WindowType::Dialog:
     case WindowType::TopLevel:
     case WindowType::Invisible:
       break;
+  }
+  if (mIsAlert) {
+    MOZ_ASSERT(mWindowType == WindowType::Dialog,
+               "Expect alert windows to have type=dialog");
+    return WS_EX_TOOLWINDOW | WS_EX_TOPMOST;
   }
   return WS_EX_WINDOWEDGE;
 }
@@ -1590,13 +1583,6 @@ void nsWindow::Show(bool bState) {
   // Set the status now so that anyone asking during ShowWindow or
   // SetWindowPos would get the correct answer.
   mIsVisible = bState;
-
-  // We may have cached an out of date visible state. This can happen
-  // when session restore sets the full screen mode.
-  if (mIsVisible)
-    mOldStyle |= WS_VISIBLE;
-  else
-    mOldStyle &= ~WS_VISIBLE;
 
   if (mWnd) {
     if (bState) {
@@ -2049,13 +2035,6 @@ void nsWindow::Resize(double aX, double aY, double aWidth, double aHeight,
   }
 
   if (aRepaint) Invalidate();
-}
-
-mozilla::Maybe<bool> nsWindow::IsResizingNativeWidget() {
-  if (mResizeState == RESIZING) {
-    return Some(true);
-  }
-  return Some(false);
 }
 
 /**************************************************************
@@ -3058,9 +3037,7 @@ void nsWindow::SetTransparencyMode(TransparencyMode aMode) {
 
 void nsWindow::UpdateWindowDraggingRegion(
     const LayoutDeviceIntRegion& aRegion) {
-  if (mDraggableRegion != aRegion) {
-    mDraggableRegion = aRegion;
-  }
+  mDraggableRegion = aRegion;
 }
 
 /**************************************************************
@@ -3080,34 +3057,85 @@ void nsWindow::HideWindowChrome(bool aShouldHide) {
 
   if (mHideChrome == aShouldHide) return;
 
-  DWORD_PTR style, exStyle;
-  mHideChrome = aShouldHide;
-  if (aShouldHide) {
-    DWORD_PTR tempStyle = ::GetWindowLongPtrW(hwnd, GWL_STYLE);
-    DWORD_PTR tempExStyle = ::GetWindowLongPtrW(hwnd, GWL_EXSTYLE);
-
-    style = tempStyle & ~(WS_CAPTION | WS_THICKFRAME);
-    exStyle = tempExStyle & ~(WS_EX_DLGMODALFRAME | WS_EX_WINDOWEDGE |
-                              WS_EX_CLIENTEDGE | WS_EX_STATICEDGE);
-
-    mOldStyle = tempStyle;
-    mOldExStyle = tempExStyle;
-  } else {
-    if (!mOldStyle || !mOldExStyle) {
-      mOldStyle = ::GetWindowLongPtrW(hwnd, GWL_STYLE);
-      mOldExStyle = ::GetWindowLongPtrW(hwnd, GWL_EXSTYLE);
+  // Data manipulation: styles + ex-styles, and bitmasking operations thereupon.
+  struct Styles {
+    LONG_PTR style, ex;
+    constexpr Styles operator|(Styles const& that) const {
+      return Styles{.style = style | that.style, .ex = ex | that.ex};
+    }
+    constexpr Styles operator&(Styles const& that) const {
+      return Styles{.style = style & that.style, .ex = ex & that.ex};
+    }
+    constexpr Styles operator~() const {
+      return Styles{.style = ~style, .ex = ~ex};
     }
 
-    style = mOldStyle;
-    exStyle = mOldExStyle;
+    // Compute a style-set which matches `zero` where the bits of `this` are 0
+    // and `one` where the bits of `this` are 1.
+    constexpr Styles merge(Styles zero, Styles one) const {
+      Styles const& mask = *this;
+      return (~mask & zero) | (mask & one);
+    }
+
+    // The dual of `merge`, above: returns a pair [zero, one] satisfying
+    // `a.merge(a.split(b)...) == b`. (Or its equivalent in valid C++.)
+    constexpr std::tuple<Styles, Styles> split(Styles data) const {
+      Styles const& mask = *this;
+      return {~mask & data, mask & data};
+    }
+  };
+
+  // Get styles from an HWND.
+  constexpr auto const GetStyles = [](HWND hwnd) {
+    return Styles{.style = ::GetWindowLongPtrW(hwnd, GWL_STYLE),
+                  .ex = ::GetWindowLongPtrW(hwnd, GWL_EXSTYLE)};
+  };
+  constexpr auto const SetStyles = [](HWND hwnd, Styles styles) {
+    VERIFY_WINDOW_STYLE(styles.style);
+    ::SetWindowLongPtrW(hwnd, GWL_STYLE, styles.style);
+    ::SetWindowLongPtrW(hwnd, GWL_EXSTYLE, styles.ex);
+  };
+
+  // Get styles from *this.
+  auto const GetCachedStyles = [&]() {
+    return mOldStyles.map([](auto const& m) {
+      return Styles{.style = m.style, .ex = m.exStyle};
+    });
+  };
+  auto const SetCachedStyles = [&](Styles styles) {
+    using WStyles = nsWindow::WindowStyles;
+    mOldStyles = Some(WStyles{.style = styles.style, .exStyle = styles.ex});
+  };
+
+  // The mask describing the "chrome" which this function is supposed to remove
+  // (or restore, as the case may be). Other style-flags will be left untouched.
+  constexpr static const Styles kChromeMask{
+      .style = WS_CAPTION | WS_THICKFRAME,
+      .ex = WS_EX_DLGMODALFRAME | WS_EX_WINDOWEDGE | WS_EX_CLIENTEDGE |
+            WS_EX_STATICEDGE};
+
+  // The desired style-flagset for fullscreen windows. (This happens to be all
+  // zeroes, but we don't need to rely on that.)
+  constexpr static const Styles kFullscreenChrome{.style = 0, .ex = 0};
+
+  auto const [chromeless, currentChrome] = kChromeMask.split(GetStyles(hwnd));
+  Styles newChrome{}, oldChrome{};
+
+  mHideChrome = aShouldHide;
+  if (aShouldHide) {
+    newChrome = kFullscreenChrome;
+    oldChrome = currentChrome;
+  } else {
+    // if there's nothing to "restore" it to, just use what's there now
+    oldChrome = GetCachedStyles().refOr(currentChrome);
+    newChrome = oldChrome;
     if (mFutureMarginsToUse) {
       SetNonClientMargins(mFutureMarginsOnceChromeShows);
     }
   }
 
-  VERIFY_WINDOW_STYLE(style);
-  ::SetWindowLongPtrW(hwnd, GWL_STYLE, style);
-  ::SetWindowLongPtrW(hwnd, GWL_EXSTYLE, exStyle);
+  SetCachedStyles(oldChrome);
+  SetStyles(hwnd, kChromeMask.merge(chromeless, newChrome));
 }
 
 /**************************************************************
@@ -3674,7 +3702,7 @@ LayoutDeviceIntPoint nsWindow::WidgetToScreenOffset() {
 }
 
 LayoutDeviceIntMargin nsWindow::ClientToWindowMargin() {
-  if (mWindowType == WindowType::Popup && !IsPopupWithTitleBar()) {
+  if (mWindowType == WindowType::Popup) {
     return {};
   }
 
@@ -4420,6 +4448,17 @@ HWND nsWindow::GetTopLevelForFocus(HWND aCurWnd) {
 }
 
 void nsWindow::DispatchFocusToTopLevelWindow(bool aIsActivate) {
+  if (aIsActivate && mPickerDisplayCount) {
+    // We disable the root window when a picker opens. See PickerOpen. When the
+    // picker closes (but before PickerClosed is called), our window will get
+    // focus, but it will still be disabled. This confuses the focus system.
+    // Therefore, we ignore this focus and explicitly call this function once
+    // we re-enable the window. Rarely, the picker seems to re-enable our root
+    // window before we do, but for simplicity, we always ignore focus before
+    // the final call to PickerClosed. See bug 1883568 for further details.
+    return;
+  }
+
   if (aIsActivate) {
     sJustGotActivate = false;
   }
@@ -4940,10 +4979,12 @@ bool nsWindow::ProcessMessageInternal(UINT msg, WPARAM& wParam, LPARAM& lParam,
 
     case WM_SETTINGCHANGE: {
       if (wParam == SPI_SETCLIENTAREAANIMATION ||
-          wParam == SPI_SETKEYBOARDDELAY || wParam == SPI_SETMOUSEVANISH) {
+          wParam == SPI_SETKEYBOARDDELAY || wParam == SPI_SETMOUSEVANISH ||
+          wParam == MOZ_SPI_SETCURSORSIZE) {
         // These need to update LookAndFeel cached values.
         // They affect reduced motion settings / caret blink count / show
-        // pointer while typing, so no need to invalidate style / layout.
+        // pointer while typing / tooltip offset, so no need to invalidate style
+        // / layout.
         NotifyThemeChanged(widget::ThemeChangeKind::MediaQueriesOnly);
         break;
       }
@@ -5038,6 +5079,44 @@ bool nsWindow::ProcessMessageInternal(UINT msg, WPARAM& wParam, LPARAM& lParam,
       }
       break;
     }
+
+    case WM_GETTITLEBARINFOEX: {
+      if (!mCustomNonClient) {
+        break;
+      }
+      auto* info = reinterpret_cast<TITLEBARINFOEX*>(lParam);
+      const LayoutDeviceIntPoint origin = WidgetToScreenOffset();
+      auto GeckoClientToWinScreenRect =
+          [&origin](LayoutDeviceIntRect aRect) -> RECT {
+        aRect.MoveBy(origin);
+        return {
+            .left = aRect.x,
+            .top = aRect.y,
+            .right = aRect.XMost(),
+            .bottom = aRect.YMost(),
+        };
+      };
+      auto SetButton = [&](size_t aIndex, WindowButtonType aType) {
+        info->rgrect[aIndex] =
+            GeckoClientToWinScreenRect(mWindowBtnRect[aType]);
+        DWORD& state = info->rgstate[aIndex];
+        if (mWindowBtnRect[aType].IsEmpty()) {
+          state = STATE_SYSTEM_INVISIBLE;
+        } else {
+          state = STATE_SYSTEM_FOCUSABLE;
+        }
+      };
+      info->rgrect[0] = info->rcTitleBar =
+          GeckoClientToWinScreenRect(mDraggableRegion.GetBounds());
+      info->rgstate[0] = 0;
+      SetButton(2, WindowButtonType::Minimize);
+      SetButton(3, WindowButtonType::Maximize);
+      SetButton(5, WindowButtonType::Close);
+      // We don't have a help button.
+      info->rgstate[4] = STATE_SYSTEM_INVISIBLE;
+      info->rgrect[4] = {0, 0, 0, 0};
+      result = true;
+    } break;
 
     case WM_NCHITTEST: {
       if (mInputRegion.mFullyTransparent) {
@@ -5846,6 +5925,20 @@ bool nsWindow::ProcessMessageInternal(UINT msg, WPARAM& wParam, LPARAM& lParam,
           a11y::LazyInstantiator::EnableBlindAggregation(mWnd);
           result = true;
         }
+      } else if (objId == UiaRootObjectId &&
+                 StaticPrefs::accessibility_uia_enable()) {
+        if (a11y::LocalAccessible* acc = GetAccessible()) {
+          RefPtr<IAccessible> ia;
+          acc->GetNativeInterface(getter_AddRefs(ia));
+          MOZ_ASSERT(ia);
+          RefPtr<IRawElementProviderSimple> uia;
+          ia->QueryInterface(IID_IRawElementProviderSimple,
+                             getter_AddRefs(uia));
+          if (uia) {
+            *aRetValue = UiaReturnRawElementProvider(mWnd, wParam, lParam, uia);
+            result = true;
+          }
+        }
       }
     } break;
 #endif
@@ -6169,6 +6262,9 @@ int32_t nsWindow::ClientMarginHitTestPoint(int32_t aX, int32_t aY) {
     if (mWindowBtnRect[WindowButtonType::Minimize].Contains(pt)) {
       testResult = HTMINBUTTON;
     } else if (mWindowBtnRect[WindowButtonType::Maximize].Contains(pt)) {
+#ifdef ACCESSIBILITY
+      a11y::Compatibility::SuppressA11yForSnapLayouts();
+#endif
       testResult = HTMAXBUTTON;
     } else if (mWindowBtnRect[WindowButtonType::Close].Contains(pt)) {
       testResult = HTCLOSE;
@@ -8168,8 +8264,23 @@ WPARAM nsWindow::wParamFromGlobalMouseState() {
   return result;
 }
 
+// WORKAROUND FOR UNDOCUMENTED BEHAVIOR: `IFileDialog::Show` disables the
+// top-level ancestor of its provided owner-window. If the modal window's
+// container process crashes, it will never get a chance to undo that.
+//
+// For simplicity's sake we simply unconditionally perform both the disabling
+// and reenabling here, synchronously, on the main thread, rather than leaving
+// it to happen in our asynchronously-operated IFileDialog.
+
 void nsWindow::PickerOpen() {
   AssertIsOnMainThread();
+
+  // Disable the root-level window synchronously before any file-dialogs get a
+  // chance to fight over doing it asynchronously.
+  if (!mPickerDisplayCount) {
+    ::EnableWindow(::GetAncestor(GetWindowHandle(), GA_ROOT), FALSE);
+  }
+
   mPickerDisplayCount++;
 }
 
@@ -8179,16 +8290,10 @@ void nsWindow::PickerClosed() {
   if (!mPickerDisplayCount) return;
   mPickerDisplayCount--;
 
-  // WORKAROUND FOR UNDOCUMENTED BEHAVIOR: `IFileDialog::Show` disables the
-  // top-level ancestor of its provided owner-window. If the modal window's
-  // container process crashes, it will never get a chance to undo that, so we
-  // do it manually here.
-  //
-  // Note that this may cause problems in the embedded case if you reparent a
-  // subtree of the native window hierarchy containing a Gecko window while that
-  // Gecko window has a file-dialog open.
+  // Once all the file-dialogs are gone, reenable the root-level window.
   if (!mPickerDisplayCount) {
     ::EnableWindow(::GetAncestor(GetWindowHandle(), GA_ROOT), TRUE);
+    DispatchFocusToTopLevelWindow(true);
   }
 
   if (!mPickerDisplayCount && mDestroyCalled) {
@@ -8528,6 +8633,7 @@ void nsWindow::ChangedDPI() {
       presShell->BackingScaleFactorChanged();
     }
   }
+  NotifyAPZOfDPIChange();
 }
 
 static Result<POINTER_FLAGS, nsresult> PointerStateToFlag(

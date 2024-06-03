@@ -15,7 +15,7 @@ about-logins-login-filter2 =
     .key = F
 create-login-button =
     .title = เพิ่มรหัสผ่าน
-fxaccounts-sign-in-text = รับรหัสผ่านของคุณบนอุปกรณ์อื่น ๆ ของคุณ
+fxaccounts-sign-in-text = ใช้รหัสผ่านของคุณในอุปกรณ์อื่นของคุณ
 fxaccounts-sign-in-sync-button = ลงชื่อเข้าใช้เพื่อซิงค์
 fxaccounts-avatar-button =
     .title = จัดการบัญชี
@@ -69,7 +69,7 @@ login-list-name-reverse-option = ชื่อ (Z-A)
 login-list-username-option = ชื่อผู้ใช้ (ก-ฮ)
 login-list-username-reverse-option = ชื่อผู้ใช้ (ฮ-ก)
 about-logins-login-list-alerts-option = การแจ้งเตือน
-login-list-last-changed-option = วันที่เปลี่ยนแปลงล่าสุด
+login-list-last-changed-option = ปรับเปลี่ยนล่าสุดเมื่อ
 login-list-last-used-option = วันที่ใช้ครั้งล่าสุด
 login-list-intro-title = ไม่พบการเข้าสู่ระบบ
 login-list-intro-title2 = ไม่มีรหัสผ่านที่บันทึกไว้
@@ -96,15 +96,15 @@ about-logins-list-section-week = 7 วันที่ผ่านมา
 
 about-logins-login-intro-heading-logged-out2 = กำลังมองหาการเข้าสู่ระบบที่คุณบันทึกไว้ใช่หรือไม่? เปิดการซิงค์หรือนำเข้า
 about-logins-login-intro-heading-logged-in = ไม่พบการเข้าสู่ระบบที่ซิงค์
-login-intro-description = หากคุณบันทึกการเข้าสู่ระบบของคุณไว้ที่ { -brand-product-name } บนอุปกรณ์อื่น ๆ คุณสามารถนำมาใช้บนอุปกรณ์นี้ได้ด้วยวิธีนี้:
+login-intro-description = ถ้าคุณบันทึกการเข้าสู่ระบบของคุณไว้ที่ { -brand-product-name } บนอุปกรณ์อื่นๆ คุณสามารถนำมาใช้ในอุปกรณ์นี้ได้ด้วยวิธีนี้:
 login-intro-instructions-fxa = สร้างหรือลงชื่อเข้า { -fxaccount-brand-name } ของคุณบนอุปกรณ์ที่บันทึกการเข้าสู่ระบบของคุณ
 about-logins-login-intro-heading-message = บันทึกรหัสผ่านของคุณไว้ในที่ปลอดภัย
-login-intro-description2 = รหัสผ่านทั้งหมดที่คุณบันทึกใน { -brand-product-name } จะถูกเข้ารหัส นอกจากนั้น เราจะคอยเฝ้าระวังการรั่วไหลและแจ้งเตือนคุณหากคุณได้รับผลกระทบ <a data-l10n-name="breach-alert-link">เรียนรู้เพิ่มเติม</a>
+login-intro-description2 = รหัสผ่านทั้งหมดที่คุณบันทึกใน { -brand-product-name } จะถูกเข้ารหัส นอกจากนั้น เราจะคอยเฝ้าระวังการรั่วไหลและแจ้งเตือนคุณถ้าคุณได้รับผลกระทบ <a data-l10n-name="breach-alert-link">เรียนรู้เพิ่มเติม</a>
 login-intro-instructions-fxa2 = สร้างหรือลงชื่อเข้าใช้บัญชีของคุณบนอุปกรณ์ที่บันทึกการเข้าสู่ระบบของคุณ
 login-intro-instructions-fxa-settings = ไปที่ การตั้งค่า > Sync > เปิดการซิงค์… แล้วเลือกกล่องกาเครื่องหมาย การเข้าสู่ระบบและรหัสผ่าน
 login-intro-instructions-fxa-passwords-help = ไปที่<a data-l10n-name="passwords-help-link">การช่วยเหลือรหัสผ่าน</a>สำหรับความช่วยเหลือเพิ่มเติม
-about-logins-intro-browser-only-import = หากการเข้าสู่ระบบของคุณถูกบันทึกไว้ในเบราว์เซอร์อื่น คุณสามารถ<a data-l10n-name="import-link">นำเข้าข้อมูลเหล่านี้ใน { -brand-product-name }</a> ได้
-about-logins-intro-import2 = หากการเข้าสู่ระบบของคุณถูกบันทึกไว้ภายนอก { -brand-product-name } คุณสามารถ<a data-l10n-name="import-browser-link">นำเข้าจากเบราว์เซอร์อื่น</a>หรือ<a data-l10n-name="import-file-link">จากไฟล์</a>ได้
+about-logins-intro-browser-only-import = ถ้าการเข้าสู่ระบบของคุณถูกบันทึกไว้ในเบราว์เซอร์อื่น คุณสามารถ<a data-l10n-name="import-link">นำเข้าข้อมูลเหล่านี้ใน { -brand-product-name }</a> ได้
+about-logins-intro-import2 = ถ้าการเข้าสู่ระบบของคุณถูกบันทึกไว้ภายนอก { -brand-product-name } คุณสามารถ<a data-l10n-name="import-browser-link">นำเข้าจากเบราว์เซอร์อื่น</a>หรือ<a data-l10n-name="import-file-link">จากไฟล์</a>ได้
 about-logins-intro-import3 = เลือกปุ่มเครื่องหมายบวกด้านบนเพื่อเพิ่มรหัสผ่านตอนนี้ คุณยังสามารถ<a data-l10n-name="import-browser-link">นำเข้ารหัสผ่านจากเบราว์เซอร์อื่น</a>หรือ<a data-l10n-name="import-file-link">จากไฟล์</a>ได้
 
 ## Login
@@ -158,32 +158,32 @@ about-logins-os-auth-dialog-caption = { -brand-full-name }
 ## notes are only valid for English. Please test in your respected locale.
 
 # This message can be seen when attempting to edit a login in about:logins on Windows.
-about-logins-edit-login-os-auth-dialog-message-win = หากต้องการแก้ไขการเข้าสู่ระบบของคุณ ให้ป้อนข้อมูลประจำตัวการเข้าสู่ระบบ Windows ของคุณ ซึ่งจะช่วยปกป้องความปลอดภัยให้กับบัญชีต่าง ๆ ของคุณ
+about-logins-edit-login-os-auth-dialog-message-win = ถ้าต้องการแก้ไขการเข้าสู่ระบบของคุณ ให้ป้อนข้อมูลรับรองสำหรับการเข้าสู่ระบบ Windows ของคุณ ซึ่งจะช่วยปกป้องความปลอดภัยให้กับบัญชีต่างๆ ของคุณ
 # This message can be seen when attempting to edit a login in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-edit-login-os-auth-dialog-message-macosx = แก้ไขการเข้าสู่ระบบที่บันทึกไว้
 # This message can be seen when attempting to edit a login in about:logins on Windows.
-about-logins-edit-login-os-auth-dialog-message2-win = หากต้องการแก้ไขรหัสผ่านของคุณ ให้ป้อนข้อมูลประจำตัวการเข้าสู่ระบบ Windows ของคุณ ซึ่งจะช่วยปกป้องความปลอดภัยให้กับบัญชีต่าง ๆ ของคุณ
+about-logins-edit-login-os-auth-dialog-message2-win = ถ้าต้องการแก้ไขรหัสผ่านของคุณ ให้ป้อนข้อมูลรับรองสำหรับการเข้าสู่ระบบ Windows ของคุณ ซึ่งจะช่วยปกป้องความปลอดภัยให้กับบัญชีต่างๆ ของคุณ
 # This message can be seen when attempting to edit a login in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-edit-login-os-auth-dialog-message2-macosx = แก้ไขรหัสผ่านที่บันทึกไว้
 # This message can be seen when attempting to reveal a password in about:logins on Windows.
-about-logins-reveal-password-os-auth-dialog-message-win = หากต้องการดูรหัสผ่านของคุณ ให้ป้อนข้อมูลประจำตัวการเข้าสู่ระบบ Windows ของคุณ ซึ่งจะช่วยปกป้องความปลอดภัยให้กับบัญชีต่าง ๆ ของคุณ
+about-logins-reveal-password-os-auth-dialog-message-win = ถ้าต้องการดูรหัสผ่านของคุณ ให้ป้อนข้อมูลรับรองสำหรับการเข้าสู่ระบบ Windows ของคุณ ซึ่งจะช่วยปกป้องความปลอดภัยให้กับบัญชีต่างๆ ของคุณ
 # This message can be seen when attempting to reveal a password in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-reveal-password-os-auth-dialog-message-macosx = เผยรหัสผ่านที่บันทึกไว้
 # This message can be seen when attempting to copy a password in about:logins on Windows.
-about-logins-copy-password-os-auth-dialog-message-win = หากต้องการคัดลอกรหัสผ่านของคุณ ให้ป้อนข้อมูลประจำตัวการเข้าสู่ระบบ Windows ของคุณ ซึ่งจะช่วยปกป้องความปลอดภัยให้กับบัญชีต่าง ๆ ของคุณ
+about-logins-copy-password-os-auth-dialog-message-win = ถ้าต้องการคัดลอกรหัสผ่านของคุณ ให้ป้อนข้อมูลรับรองสำหรับการเข้าสู่ระบบ Windows ของคุณ ซึ่งจะช่วยปกป้องความปลอดภัยให้กับบัญชีต่างๆ ของคุณ
 # This message can be seen when attempting to copy a password in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-copy-password-os-auth-dialog-message-macosx = คัดลอกรหัสผ่านที่บันทึกไว้
 # This message can be seen when attempting to export a password in about:logins on Windows.
-about-logins-export-password-os-auth-dialog-message-win = หากต้องการส่งออกการเข้าสู่ระบบของคุณ ให้ป้อนข้อมูลประจำตัวการเข้าสู่ระบบ Windows ของคุณ ซึ่งจะช่วยปกป้องความปลอดภัยให้กับบัญชีต่าง ๆ ของคุณ
+about-logins-export-password-os-auth-dialog-message-win = ถ้าต้องการส่งออกการเข้าสู่ระบบของคุณ ให้ป้อนข้อมูลรับรองสำหรับการเข้าสู่ระบบ Windows ของคุณ ซึ่งจะช่วยปกป้องความปลอดภัยให้กับบัญชีต่างๆ ของคุณ
 # This message can be seen when attempting to export a password in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-export-password-os-auth-dialog-message-macosx = ส่งออกการเข้าสู่ระบบและรหัสผ่านที่บันทึกไว้
 # This message can be seen when attempting to export a password in about:logins on Windows.
-about-logins-export-password-os-auth-dialog-message2-win = หากต้องการส่งออกรหัสผ่านของคุณ ให้ป้อนข้อมูลประจำตัวการเข้าสู่ระบบ Windows ของคุณ ซึ่งจะช่วยปกป้องความปลอดภัยให้กับบัญชีต่าง ๆ ของคุณ
+about-logins-export-password-os-auth-dialog-message2-win = ถ้าต้องการส่งออกรหัสผ่านของคุณ ให้ป้อนข้อมูลรับรองสำหรับการเข้าสู่ระบบ Windows ของคุณ ซึ่งจะช่วยปกป้องความปลอดภัยให้กับบัญชีต่างๆ ของคุณ
 # This message can be seen when attempting to export a password in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-export-password-os-auth-dialog-message2-macosx = ส่งออกรหัสผ่านที่บันทึกไว้
@@ -227,8 +227,8 @@ about-logins-confirm-remove-all-dialog-title =
     }
 about-logins-confirm-remove-all-dialog-message =
     { $count ->
-        [1] การดำเนินการนี้จะลบการเข้าสู่ระบบที่คุณบันทึกไว้ใน { -brand-short-name } และการแจ้งเตือนเกี่ยวกับการรั่วไหลใด ๆ ที่ปรากฏที่นี่ออก คุณจะไม่สามารถยกเลิกการดำเนินการนี้ได้
-       *[other] การดำเนินการนี้จะลบการเข้าสู่ระบบที่คุณบันทึกไว้ใน { -brand-short-name } และการแจ้งเตือนเกี่ยวกับการรั่วไหลใด ๆ ที่ปรากฏที่นี่ออก คุณจะไม่สามารถยกเลิกการดำเนินการนี้ได้
+        [1] การกระทำนี้จะลบการเข้าสู่ระบบที่คุณบันทึกไว้ใน { -brand-short-name } และการแจ้งเตือนเกี่ยวกับการรั่วไหลทั้งหมดที่ปรากฏที่นี่ออก คุณจะไม่สามารถยกเลิกการกระทำนี้ได้
+       *[other] การกระทำนี้จะลบการเข้าสู่ระบบที่คุณบันทึกไว้ใน { -brand-short-name } และการแจ้งเตือนเกี่ยวกับการรั่วไหลทั้งหมดที่ปรากฏที่นี่ออก คุณจะไม่สามารถยกเลิกการกระทำนี้ได้
     }
 about-logins-confirm-remove-all-sync-dialog-title =
     { $count ->
@@ -236,13 +236,8 @@ about-logins-confirm-remove-all-sync-dialog-title =
     }
 about-logins-confirm-remove-all-sync-dialog-message =
     { $count ->
-        [1] การดำเนินการนี้จะลบการเข้าสู่ระบบที่คุณบันทึกไว้ใน { -brand-short-name } บนอุปกรณ์ทั้งหมดที่ซิงค์กับ{ -fxaccount-brand-name } ของคุณออก และจะเอาการแจ้งเตือนเกี่ยวกับการรั่วไหลที่ปรากฏที่นี่ออกด้วย คุณจะไม่สามารถยกเลิกการดำเนินการนี้ได้
-       *[other] การดำเนินการนี้จะลบการเข้าสู่ระบบที่คุณบันทึกไว้ใน { -brand-short-name } บนอุปกรณ์ทั้งหมดที่ซิงค์กับ{ -fxaccount-brand-name } ของคุณออก และจะเอาการแจ้งเตือนเกี่ยวกับการรั่วไหลที่ปรากฏที่นี่ออกด้วย คุณจะไม่สามารถยกเลิกการดำเนินการนี้ได้
-    }
-about-logins-confirm-remove-all-sync-dialog-message2 =
-    { $count ->
-        [1] การดำเนินการนี้จะลบการเข้าสู่ระบบที่คุณบันทึกไว้ใน { -brand-short-name } บนอุปกรณ์ทั้งหมดที่ซิงค์กับบัญชีของคุณออก การดำเนินการนี้จะเอาการแจ้งเตือนเกี่ยวกับการรั่วไหลที่ปรากฏที่นี่ออกด้วย คุณจะไม่สามารถยกเลิกการดำเนินการนี้ได้
-       *[other] การดำเนินการนี้จะลบการเข้าสู่ระบบทั้งหมดที่คุณบันทึกไว้ใน { -brand-short-name } บนอุปกรณ์ทั้งหมดที่ซิงค์กับบัญชีของคุณออก การดำเนินการนี้จะเอาการแจ้งเตือนเกี่ยวกับการรั่วไหลที่ปรากฏที่นี่ออกด้วย คุณจะไม่สามารถยกเลิกการดำเนินการนี้ได้
+        [1] การกระทำนี้จะลบการเข้าสู่ระบบที่คุณบันทึกไว้ใน { -brand-short-name } บนอุปกรณ์ทั้งหมดที่ซิงค์กับ{ -fxaccount-brand-name } ของคุณออก และจะเอาการแจ้งเตือนเกี่ยวกับการรั่วไหลที่ปรากฏที่นี่ออกด้วย คุณจะไม่สามารถยกเลิกการกระทำนี้ได้
+       *[other] การกระทำนี้จะลบการเข้าสู่ระบบที่คุณบันทึกไว้ใน { -brand-short-name } บนอุปกรณ์ทั้งหมดที่ซิงค์กับ{ -fxaccount-brand-name } ของคุณออก และจะเอาการแจ้งเตือนเกี่ยวกับการรั่วไหลที่ปรากฏที่นี่ออกด้วย คุณจะไม่สามารถยกเลิกการกระทำนี้ได้
     }
 # Checkbox for modal to confirm the removal of saved passwords
 about-logins-confirm-remove-all-dialog-checkbox-label2 =
@@ -400,7 +395,7 @@ about-logins-import-dialog-error-title = ข้อผิดพลาดในก
 about-logins-import-dialog-error-conflicting-values-title = มีค่าขัดแย้งหลายค่าสำหรับการเข้าสู่ระบบครั้งเดียว
 about-logins-import-dialog-error-conflicting-values-description = ตัวอย่างเช่น: หลายชื่อผู้ใช้ รหัสผ่าน URL ฯลฯ สำหรับการเข้าสู่ระบบของผู้ใช้คนเดียว
 about-logins-import-dialog-error-file-format-title = ปัญหารูปแบบไฟล์
-about-logins-import-dialog-error-file-format-description = เฮดเดอร์คอลัมน์ไม่ถูกต้องหรือขาดหายไป ตรวจสอบว่าไฟล์มีคอลัมน์สำหรับชื่อผู้ใช้ รหัสผ่านและ URL
+about-logins-import-dialog-error-file-format-description = ส่วนหัวคอลัมน์ไม่ถูกต้องหรือขาดหายไป ตรวจสอบว่าไฟล์มีคอลัมน์สำหรับชื่อผู้ใช้ รหัสผ่านและ URL
 about-logins-import-dialog-error-file-permission-title = ไม่สามารถอ่านไฟล์
 about-logins-import-dialog-error-file-permission-description = { -brand-short-name } ไม่มีสิทธิ์อ่านไฟล์ ให้ลองเปลี่ยนสิทธิ์ของไฟล์ดู
 about-logins-import-dialog-error-unable-to-read-title = ไม่สามารถแยกวิเคราะห์ไฟล์

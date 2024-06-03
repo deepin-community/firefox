@@ -45,6 +45,7 @@ newtab-topsites-add-search-engine-header = Adicionar mecanismo de pesquisa
 newtab-topsites-add-shortcut-header = Novo atalho
 newtab-topsites-edit-topsites-header = Editar site preferido
 newtab-topsites-edit-shortcut-header = Editar atalho
+newtab-topsites-add-shortcut-label = Adicionar atalho
 newtab-topsites-title-label = Título
 newtab-topsites-title-input =
     .placeholder = Digite um título
@@ -257,9 +258,6 @@ newtab-custom-row-selector =
 newtab-custom-sponsored-sites = Atalhos patrocinados
 newtab-custom-pocket-title = Recomendado pelo { -pocket-brand-name }
 newtab-custom-pocket-subtitle = Conteúdo excepcional selecionado pelo { -pocket-brand-name }, parte da família { -brand-product-name }
-newtab-custom-pocket-toggle =
-    .label = Recomendado pelo { -pocket-brand-name }
-    .description = Conteúdo excepcional selecionado pelo { -pocket-brand-name }, parte da família { -brand-product-name }
 newtab-custom-stories-toggle =
     .label = Histórias recomendadas
     .description = Conteúdo excepcional escolhido pela família { -brand-product-name }
@@ -272,3 +270,24 @@ newtab-custom-recent-toggle =
     .description = Uma seleção de sites e conteúdos recentes
 newtab-custom-close-button = Fechar
 newtab-custom-settings = Gerenciar mais configurações
+
+## New Tab Wallpapers
+
+newtab-wallpaper-title = Imagens de fundo
+newtab-wallpaper-reset = Restaurar padrão
+newtab-wallpaper-light-red-panda = Panda vermelho
+newtab-wallpaper-light-mountain = Montanha branca
+newtab-wallpaper-light-sky = Céu com nuvens violeta e rosa
+newtab-wallpaper-light-color = Formas azul, rosa e amarelo
+newtab-wallpaper-light-landscape = Paisagem azul montanhosa com neblina
+newtab-wallpaper-light-beach = Praia com palmeira
+newtab-wallpaper-dark-aurora = Aurora boreal
+newtab-wallpaper-dark-color = Formas vermelho e azul
+newtab-wallpaper-dark-panda = Panda vermelho escondido na floresta
+newtab-wallpaper-dark-sky = Paisagem de cidade com céu noturno
+newtab-wallpaper-dark-mountain = Paisagem com montanhas
+newtab-wallpaper-dark-city = Paisagem de cidade em tonalidade violeta
+# Variables
+#   $author_string (String) - The name of the creator of the photo.
+#   $webpage_string (String) - The name of the webpage where the photo is located.
+newtab-wallpaper-attribution = Foto de <a data-l10n-name="name-link">{ $author_string }</a> em <a data-l10n-name="webpage-link">{ $webpage_string }</a>

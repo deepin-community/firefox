@@ -232,7 +232,7 @@ notes = "The Glean SDKs are maintained by the Glean Team at Mozilla."
 [[wildcard-audits.glean]]
 who = "Travis Long <tlong@mozilla.com>"
 criteria = "safe-to-deploy"
-user-id = 66068 # Travis Long (travis79)
+user-id = 66068
 start = "2024-02-12"
 end = "2025-02-13"
 
@@ -247,7 +247,7 @@ notes = "The Glean SDKs are maintained by the Glean Team at Mozilla."
 [[wildcard-audits.glean-core]]
 who = "Travis Long <tlong@mozilla.com>"
 criteria = "safe-to-deploy"
-user-id = 66068 # Travis Long (travis79)
+user-id = 66068
 start = "2020-07-10"
 end = "2025-02-13"
 
@@ -528,6 +528,11 @@ who = "Lee Salzman <lsalzman@mozilla.com>"
 criteria = "safe-to-deploy"
 version = "0.1.0"
 notes = "Written and maintained by Gfx team at Mozilla."
+
+[[audits.ahash]]
+who = "Mike Hommey <mh+mozilla@glandium.org>"
+criteria = "safe-to-deploy"
+delta = "0.7.6 -> 0.7.8"
 
 [[audits.aho-corasick]]
 who = "Mike Hommey <mh+mozilla@glandium.org>"
@@ -1318,13 +1323,13 @@ delta = "0.5.0 -> 0.7.0"
 [[audits.d3d12]]
 who = [
     "Erich Gubler <egubler@mozilla.com>",
-    "Teodor Tanasoaia <ttanasoaia@mozilla.com>",
-    "Erich Gubler <erichdongubler@gmail.com>",
     "Jim Blandy <jimb@red-bean.com>",
     "Nicolas Silva <nical@fastmail.com>",
+    "Teodor Tanasoaia <ttanasoaia@mozilla.com>",
+    "Erich Gubler <erichdongubler@gmail.com>",
 ]
 criteria = "safe-to-deploy"
-delta = "0.7.0 -> 0.19.0@git:07e59eb6fc7de3f682f1c401b9cf9f0da9ee4b4a"
+delta = "0.7.0 -> 0.19.0@git:0c5bebca514eb06d9387f87666c1c658f3f673b4"
 importable = false
 
 [[audits.darling]]
@@ -1491,6 +1496,11 @@ who = "Mike Hommey <mh+mozilla@glandium.org>"
 criteria = "safe-to-deploy"
 delta = "0.2.3 -> 0.2.4"
 
+[[audits.document-features]]
+who = "Erich Gubler <erichdongubler@gmail.com>"
+criteria = "safe-to-deploy"
+version = "0.2.8"
+
 [[audits.dogear]]
 who = "Sammy Khamis <skhamis@mozilla.com>"
 criteria = "safe-to-deploy"
@@ -1522,6 +1532,12 @@ delta = "1.7.0 -> 1.8.0"
 who = "Mike Hommey <mh+mozilla@glandium.org>"
 criteria = "safe-to-deploy"
 delta = "1.8.0 -> 1.8.1"
+
+[[audits.embed-manifest]]
+who = "Alex Franchuk <afranchuk@mozilla.com>"
+criteria = "safe-to-deploy"
+version = "1.4.0"
+notes = "Necessary dependencies, all environment variable access is for build script vars set by cargo."
 
 [[audits.encoding_c]]
 who = "Henri Sivonen <hsivonen@hsivonen.fi>"
@@ -2377,6 +2393,12 @@ version = "0.5.4"
 notes = "I own this crate (I am contain-rs) and 0.5.4 passes miri. This code is very old and used by lots of people, so I'm pretty confident in it, even though it's in maintenance-mode and missing some nice-to-have APIs."
 
 [[audits.linked-hash-map]]
+who = "Alex Franchuk <afranchuk@mozilla.com>"
+criteria = "safe-to-deploy"
+delta = "0.5.4 -> 0.5.6"
+notes = "New unsafe code has debug assertions and meets invariants. All other changes are formatting-related."
+
+[[audits.linked-hash-map]]
 who = "Mike Hommey <mh+mozilla@glandium.org>"
 criteria = "safe-to-run"
 delta = "0.5.4 -> 0.5.6"
@@ -2391,6 +2413,11 @@ notes = "This crete has no unsafe code, no file acceess and no network access."
 who = "Makoto Kato <m_kato@ga2.so-net.ne.jp>"
 criteria = "safe-to-deploy"
 delta = "0.7.0 -> 0.7.2"
+
+[[audits.litrs]]
+who = "Erich Gubler <erichdongubler@gmail.com>"
+criteria = "safe-to-deploy"
+version = "0.4.1"
 
 [[audits.lmdb-rkv]]
 who = "Bobby Holley <bobbyholley@gmail.com>"
@@ -2650,13 +2677,13 @@ delta = "0.13.0 -> 0.14.0"
 
 [[audits.naga]]
 who = [
-    "Teodor Tanasoaia <ttanasoaia@mozilla.com>",
-    "Erich Gubler <erichdongubler@gmail.com>",
     "Jim Blandy <jimb@red-bean.com>",
     "Nicolas Silva <nical@fastmail.com>",
+    "Teodor Tanasoaia <ttanasoaia@mozilla.com>",
+    "Erich Gubler <erichdongubler@gmail.com>",
 ]
 criteria = "safe-to-deploy"
-delta = "0.14.0 -> 0.19.0@git:07e59eb6fc7de3f682f1c401b9cf9f0da9ee4b4a"
+delta = "0.14.0 -> 0.19.0@git:0c5bebca514eb06d9387f87666c1c658f3f673b4"
 importable = false
 
 [[audits.net2]]
@@ -3127,8 +3154,7 @@ delta = "0.9.0 -> 0.11.0"
 [[audits.qlog]]
 who = "Kershaw Chang <kershaw@mozilla.com>"
 criteria = "safe-to-deploy"
-delta = "0.11.0 -> 0.11.0@git:09ea4b244096a013071cfe2175bbf2945fb7f8d1"
-importable = false
+delta = "0.11.0 -> 0.12.0"
 
 [[audits.quote]]
 who = "Nika Layzell <nika@thelayzells.com>"
@@ -3724,6 +3750,11 @@ who = "Mike Hommey <mh+mozilla@glandium.org>"
 criteria = "safe-to-deploy"
 delta = "0.15.2 -> 0.16.0"
 
+[[audits.textwrap]]
+who = "Jan-Erik Rediger <jrediger@mozilla.com>"
+criteria = "safe-to-deploy"
+delta = "0.16.0 -> 0.16.1"
+
 [[audits.thin-vec]]
 who = "Aria Beingessner <a.beingessner@gmail.com>"
 criteria = "safe-to-deploy"
@@ -4006,6 +4037,12 @@ notes = "I am the author of the bulk of the upstream changes in this version, an
 who = "Jonathan Kew <jfkthame@gmail.com>"
 criteria = "safe-to-deploy"
 delta = "0.3.14 -> 0.3.15"
+
+[[audits.unicode-bidi]]
+who = "Jonathan Kew <jfkthame@gmail.com>"
+criteria = "safe-to-deploy"
+delta = "0.3.15 -> 0.3.15@git:ca612daf1c08c53abe07327cb3e6ef6e0a760f0c"
+importable = false
 
 [[audits.unicode-ident]]
 who = "Mike Hommey <mh+mozilla@glandium.org>"
@@ -4459,13 +4496,13 @@ delta = "0.17.0 -> 0.18.0"
 
 [[audits.wgpu-core]]
 who = [
-    "Teodor Tanasoaia <ttanasoaia@mozilla.com>",
-    "Erich Gubler <erichdongubler@gmail.com>",
     "Jim Blandy <jimb@red-bean.com>",
     "Nicolas Silva <nical@fastmail.com>",
+    "Teodor Tanasoaia <ttanasoaia@mozilla.com>",
+    "Erich Gubler <erichdongubler@gmail.com>",
 ]
 criteria = "safe-to-deploy"
-delta = "0.18.0 -> 0.19.0@git:07e59eb6fc7de3f682f1c401b9cf9f0da9ee4b4a"
+delta = "0.18.0 -> 0.19.0@git:0c5bebca514eb06d9387f87666c1c658f3f673b4"
 importable = false
 
 [[audits.wgpu-hal]]
@@ -4513,13 +4550,13 @@ delta = "0.17.0 -> 0.18.0"
 
 [[audits.wgpu-hal]]
 who = [
-    "Teodor Tanasoaia <ttanasoaia@mozilla.com>",
-    "Erich Gubler <erichdongubler@gmail.com>",
     "Jim Blandy <jimb@red-bean.com>",
     "Nicolas Silva <nical@fastmail.com>",
+    "Teodor Tanasoaia <ttanasoaia@mozilla.com>",
+    "Erich Gubler <erichdongubler@gmail.com>",
 ]
 criteria = "safe-to-deploy"
-delta = "0.18.0 -> 0.19.0@git:07e59eb6fc7de3f682f1c401b9cf9f0da9ee4b4a"
+delta = "0.18.0 -> 0.19.0@git:0c5bebca514eb06d9387f87666c1c658f3f673b4"
 importable = false
 
 [[audits.wgpu-types]]
@@ -4567,13 +4604,13 @@ delta = "0.17.0 -> 0.18.0"
 
 [[audits.wgpu-types]]
 who = [
-    "Teodor Tanasoaia <ttanasoaia@mozilla.com>",
-    "Erich Gubler <erichdongubler@gmail.com>",
     "Jim Blandy <jimb@red-bean.com>",
     "Nicolas Silva <nical@fastmail.com>",
+    "Teodor Tanasoaia <ttanasoaia@mozilla.com>",
+    "Erich Gubler <erichdongubler@gmail.com>",
 ]
 criteria = "safe-to-deploy"
-delta = "0.18.0 -> 0.19.0@git:07e59eb6fc7de3f682f1c401b9cf9f0da9ee4b4a"
+delta = "0.18.0 -> 0.19.0@git:0c5bebca514eb06d9387f87666c1c658f3f673b4"
 importable = false
 
 [[audits.whatsys]]
@@ -4689,6 +4726,15 @@ criteria = "safe-to-deploy"
 version = "0.10.1"
 
 [[audits.zip]]
+who = "Alex Franchuk <afranchuk@mozilla.com>"
+criteria = "safe-to-deploy"
+version = "0.6.4"
+notes = """
+No unsafe code nor unwarranted dependencies. Side-effectful std usage is only
+present where expected (zip archive reading/writing and unpacking)
+"""
+
+[[audits.zip]]
 who = "Mike Hommey <mh+mozilla@glandium.org>"
 criteria = "safe-to-run"
 delta = "0.6.2 -> 0.6.3"
@@ -4733,6 +4779,12 @@ criteria = "safe-to-deploy"
 user-id = 6741 # Alice Ryhl (Darksonn)
 start = "2021-01-11"
 end = "2024-05-05"
+
+[[trusted.cc]]
+criteria = "safe-to-deploy"
+user-id = 2915 # Amanieu d'Antras (Amanieu)
+start = "2024-02-20"
+end = "2025-02-26"
 
 [[trusted.clap]]
 criteria = "safe-to-deploy"
@@ -5081,6 +5133,24 @@ criteria = "safe-to-deploy"
 user-id = 1 # Alex Crichton (alexcrichton)
 start = "2020-06-03"
 end = "2024-05-05"
+
+[[trusted.wasm-encoder]]
+criteria = "safe-to-deploy"
+user-id = 73222 # wasmtime-publish
+start = "2024-02-15"
+end = "2025-03-11"
+
+[[trusted.wasm-smith]]
+criteria = "safe-to-deploy"
+user-id = 73222 # wasmtime-publish
+start = "2024-02-15"
+end = "2025-03-11"
+
+[[trusted.wast]]
+criteria = "safe-to-deploy"
+user-id = 73222 # wasmtime-publish
+start = "2024-02-15"
+end = "2025-03-11"
 
 [[trusted.winapi-util]]
 criteria = "safe-to-deploy"

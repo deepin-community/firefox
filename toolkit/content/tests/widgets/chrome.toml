@@ -5,7 +5,7 @@ support-files = [
   "popup_shared.js",
   "window_label_checkbox.xhtml",
   "window_menubar.xhtml",
-  "seek_with_sound.ogg",
+  "seek_with_sound.webm",
 ]
 prefs = ["app.support.baseURL='https://support.mozilla.org/'"]
 
@@ -22,6 +22,8 @@ skip-if = ["os == 'linux'"] # Bug 1116215
 ["test_menubar.xhtml"]
 skip-if = ["os == 'mac'"]
 
+["test_moz_button.html"]
+
 ["test_moz_button_group.html"]
 
 ["test_moz_card.html"]
@@ -31,6 +33,8 @@ skip-if = ["os == 'mac'"]
 ["test_moz_label.html"]
 
 ["test_moz_message_bar.html"]
+
+["test_moz_page_nav.html"]
 
 ["test_moz_support_link.html"]
 
@@ -59,10 +63,11 @@ skip-if = [
 ["test_videocontrols_focus.html"]
 support-files = [
   "head.js",
-  "video.ogg",
+  "video.webm",
 ]
 skip-if = [
   "os == 'android'",
   "os == 'linux' && debug", # Bug 1765783
 ]
+
 ["test_videocontrols_onclickplay.html"]

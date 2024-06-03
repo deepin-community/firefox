@@ -12,6 +12,10 @@ protocolhandler-mailto-os-handler-no-button = Ikke nå
 
 protocolhandler-mailto-handler-notificationbox-always = Åpne alltid e-postlenker med { $url }?
 protocolhandler-mailto-handler-yes-confirm = { $url } er nå ditt standardnettsted for å åpne lenker som sender e-post.
+protocolhandler-mailto-handler-set-message = Bruke <strong>{ $url } i { -brand-short-name }</strong> hver gang du klikker på en kobling som åpner e-posten din?
+protocolhandler-mailto-handler-confirm-message = <strong>{ $url } i { -brand-short-name }</strong> er nå datamaskinens standard e-postbehandler.
+protocolhandler-mailto-handler-set = Bruk <strong>{ -brand-short-name } for å åpne { $url }</strong> hver gang du klikker på en lenke som åpner e-posten din?
+protocolhandler-mailto-handler-confirm = <strong>{ -brand-short-name } vil åpne { $url }</strong> hver gang du klikker på en lenke som sender e-post.
 
 ##
 

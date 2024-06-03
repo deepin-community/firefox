@@ -294,7 +294,7 @@ function closeMenus(node) {
  *        to check if the close command key was pressed in aEvent.
  */
 function eventMatchesKey(aEvent, aKey) {
-  let keyPressed = aKey.getAttribute("key").toLowerCase();
+  let keyPressed = (aKey.getAttribute("key") || "").toLowerCase();
   let keyModifiers = aKey.getAttribute("modifiers");
   let modifiers = ["Alt", "Control", "Meta", "Shift"];
 
@@ -341,7 +341,7 @@ function gatherTextUnder(root) {
     } else if (HTMLImageElement.isInstance(node)) {
       // If it has an "alt" attribute, add that.
       var altText = node.getAttribute("alt");
-      if (altText && altText != "") {
+      if (altText) {
         text += " " + altText;
       }
     }
@@ -431,8 +431,7 @@ async function openPreferences(paneID, extraArgs) {
       }
     }
   }
-  let preferencesURL =
-    "about:preferences" +
+  let preferencesURLSuffix =
     (params ? "?" + params : "") +
     (friendlyCategoryName ? "#" + friendlyCategoryName : "");
   let newLoad = true;
@@ -444,7 +443,7 @@ async function openPreferences(paneID, extraArgs) {
     let supportsStringPrefURL = Cc[
       "@mozilla.org/supports-string;1"
     ].createInstance(Ci.nsISupportsString);
-    supportsStringPrefURL.data = preferencesURL;
+    supportsStringPrefURL.data = "about:preferences" + preferencesURLSuffix;
     windowArguments.appendElement(supportsStringPrefURL);
 
     win = Services.ww.openWindow(
@@ -458,11 +457,28 @@ async function openPreferences(paneID, extraArgs) {
     let shouldReplaceFragment = friendlyCategoryName
       ? "whenComparingAndReplace"
       : "whenComparing";
-    newLoad = !win.switchToTabHavingURI(preferencesURL, true, {
-      ignoreFragment: shouldReplaceFragment,
-      replaceQueryString: true,
-      triggeringPrincipal: Services.scriptSecurityManager.getSystemPrincipal(),
-    });
+    newLoad = !win.switchToTabHavingURI(
+      "about:settings" + preferencesURLSuffix,
+      false,
+      {
+        ignoreFragment: shouldReplaceFragment,
+        replaceQueryString: true,
+        triggeringPrincipal:
+          Services.scriptSecurityManager.getSystemPrincipal(),
+      }
+    );
+    if (newLoad) {
+      newLoad = !win.switchToTabHavingURI(
+        "about:preferences" + preferencesURLSuffix,
+        true,
+        {
+          ignoreFragment: shouldReplaceFragment,
+          replaceQueryString: true,
+          triggeringPrincipal:
+            Services.scriptSecurityManager.getSystemPrincipal(),
+        }
+      );
+    }
     browser = win.gBrowser.selectedBrowser;
   }
 
@@ -532,11 +548,6 @@ function buildHelpMenu() {
   // Enable/disable the "Report Web Forgery" menu item.
   if (typeof gSafeBrowsing != "undefined") {
     gSafeBrowsing.setReportPhishingMenu();
-  }
-
-  if (NimbusFeatures.deviceMigration.getVariable("helpMenuHidden")) {
-    let helpMenuItem = document.getElementById("helpSwitchDevice");
-    helpMenuItem.hidden = true;
   }
 }
 

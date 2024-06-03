@@ -390,11 +390,12 @@ def cargo_vet(command_context, arguments, stdout=None, env=os.environ):
 
     locked = "--locked" in arguments
     if locked:
-        # The use of --locked requires .cargo/config to exist, but other things,
+        # The use of --locked requires .cargo/config.toml to exist, but other things,
         # like cargo update, don't want it there, so remove it once we're done.
         topsrcdir = Path(command_context.topsrcdir)
         shutil.copyfile(
-            topsrcdir / ".cargo" / "config.in", topsrcdir / ".cargo" / "config"
+            topsrcdir / ".cargo" / "config.toml.in",
+            topsrcdir / ".cargo" / "config.toml",
         )
 
     try:
@@ -406,7 +407,7 @@ def cargo_vet(command_context, arguments, stdout=None, env=os.environ):
         )
     finally:
         if locked:
-            (topsrcdir / ".cargo" / "config").unlink()
+            (topsrcdir / ".cargo" / "config.toml").unlink()
 
     # When the function is invoked without stdout set (the default when running
     # as a mach subcommand), exit with the returncode from cargo vet.
@@ -2621,6 +2622,13 @@ def repackage_msi(
     help="Sign repackaged MSIX with self-signed certificate for local testing. "
     "(Default: false)",
 )
+@CommandArgument(
+    "--unsigned",
+    default=False,
+    action="store_true",
+    help="Support `Add-AppxPackage ... -AllowUnsigned` on Windows 11."
+    "(Default: false)",
+)
 def repackage_msix(
     command_context,
     input,
@@ -2636,6 +2644,7 @@ def repackage_msix(
     output=None,
     makeappx=None,
     sign=False,
+    unsigned=False,
 ):
     from mozbuild.repackaging.msix import repackage_msix
 
@@ -2699,6 +2708,20 @@ def repackage_msix(
                 "Please pass --arch",
             )
             return 1
+
+    if unsigned:
+        if sign:
+            command_context.log(
+                logging.ERROR,
+                "repackage-msix-signed-and-unsigned",
+                {},
+                "--sign and --unsigned are mutually exclusive",
+            )
+            return 1
+
+        # Support `Add-AppxPackage ... -AllowUnsigned` on Windows 11.  See
+        # https://github.com/MicrosoftDocs/msix-docs/blob/769dee9364df2b6fd0b78000774f8d14de8fe814/msix-src/package/unsigned-package.md.
+        publisher = f"{publisher}, OID.2.25.311729368913984317654407730594956997722=1"
 
     output = repackage_msix(
         input,

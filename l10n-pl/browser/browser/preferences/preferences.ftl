@@ -32,6 +32,8 @@ search-input-box2 =
     .style = width: 15.4em
     .placeholder = Szukaj w ustawieniach
 managed-notice = Przeglądarka jest zarządzana przez Twoją organizację
+managed-notice-info-icon =
+    .alt = Informacje
 category-list =
     .aria-label = Kategorie
 pane-general-title = Ogólne
@@ -712,6 +714,13 @@ sync-mobile-promo = Firefox na <a data-l10n-name="android-link">Androida</a> <
 
 sync-profile-picture =
     .tooltiptext = Zmień zdjęcie profilowe
+sync-profile-picture-with-alt =
+    .tooltiptext = Zmień zdjęcie profilowe
+    .alt = Zmień zdjęcie profilowe
+sync-profile-picture-account-problem =
+    .alt = Zdjęcie profilowe konta
+fxa-login-rejected-warning =
+    .alt = Ostrzeżenie
 sync-sign-out =
     .label = Wyloguj się…
     .accesskey = W
@@ -1278,6 +1287,8 @@ addon-recommendations-link = Więcej informacji
 # or builds with no Telemetry support available.
 collection-health-report-disabled = Przesyłanie danych jest wyłączone przy tej konfiguracji programu
 collection-backlogged-crash-reports-with-link = Przesyłanie zgromadzonych zgłoszeń awarii przeglądarki { -brand-short-name }. <a data-l10n-name="crash-reports-link">Więcej informacji</a>
+    .accesskey = o
+collection-backlogged-crash-reports = Przesyłanie zgromadzonych zgłoszeń awarii przeglądarki { -brand-short-name }.
     .accesskey = o
 privacy-segmentation-section-header = Nowe funkcje usprawniające przeglądanie
 privacy-segmentation-section-description = Kiedy oferujemy funkcje wykorzystujące Twoje dane do zapewniania bardziej spersonalizowanej przeglądarki:

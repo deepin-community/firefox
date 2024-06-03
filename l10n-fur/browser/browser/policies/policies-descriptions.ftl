@@ -28,6 +28,7 @@ policy-BlockAboutSupport = Bloche l'acès ae pagjine about:support.
 policy-Bookmarks = Cree i segnelibris te sbare dai segneliris, tal menù segnelibris o intune specifiche cartele che ur sta dentri.
 policy-CaptivePortal = Abilite o disabilite il supuart pal portâl presonîr (captive portal).
 policy-CertificatesDescription = Zonte certificâts o dopre i certificâts integrâts.
+policy-ContentAnalysis = Ative o disative la conession al agjent pe prevenzion des pierditis di dâts.
 policy-Cookies = Permet o dinee ai sîts web di definî cookies.
 # Containers in this context is referring to container tabs in Firefox.
 policy-Containers = Stabilìs lis politichis relativis ai contignidôrs.
@@ -38,8 +39,11 @@ policy-DisableAppUpdate = Impedìs al navigadôr di inzornâsi.
 policy-DisableBuiltinPDFViewer = Disabilite PDF.js, il visualizadôr PDF integrât in { -brand-short-name }.
 policy-DisableDefaultBrowserAgent = Impedìs al agjent predefinît dal navigadôr di cjapâ iniziativis e realizâ cualsisei azion. Si pues aplicâ dome su Windows; chês altris plateformis no àn l'agjent.
 policy-DisableDeveloperTools = Bloche l'acès ai struments di disvilup.
+policy-DisableEncryptedClientHello = Disative la funzion TLS “Encrypted Client Hello” (ECH).
 policy-DisableFeedbackCommands = Disabilite i comants par inviâ opinions dal menù Jutori (Invie opinion e Segnale sît ingjanôs).
 policy-DisableFirefoxAccounts = Disabilite i servizis basâts su { -fxaccount-brand-name }, includût Sync.
+# This string is in the process of being deprecated in favor of policy-DisableAccounts.
+policy-DisableFirefoxAccounts1 = Disative i servizis basâts sui accounts, sincronizazion includude.
 # Firefox Screenshots is the name of the feature, and should not be translated.
 policy-DisableFirefoxScreenshots = Disabilite la funzionalitât Firefox Screenshots.
 policy-DisableFirefoxStudies = Impedìs a { -brand-short-name } di puartâ indenant studis.
@@ -124,6 +128,7 @@ policy-SSLVersionMax = Stabilìs la massime version di SSL.
 policy-SSLVersionMin = Stabilìs la minime version di SSL.
 policy-StartDownloadsInTempDirectory = Sfuarce l'inviament dai discjariaments intune cartele locâl temporanie invezit che te cartele predefinide pai file discjariâts.
 policy-SupportMenu = Zonte un element personalizât dal menù di supuart al menù di jutori.
+policy-TranslateEnabled = Ative o disative la traduzion des pagjinis web.
 policy-UserMessaging = No sta mostrâ cierts messaçs al utent.
 policy-UseSystemPrintDialog = Stampe doprant il dialic di stampe dal sisteme.
 # “format” refers to the format used for the value of this policy.

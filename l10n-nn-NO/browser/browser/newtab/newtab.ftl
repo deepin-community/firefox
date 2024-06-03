@@ -45,6 +45,7 @@ newtab-topsites-add-search-engine-header = Legg til søkjemotor
 newtab-topsites-add-shortcut-header = Ny snarveg
 newtab-topsites-edit-topsites-header = Rediger Mest besøkt
 newtab-topsites-edit-shortcut-header = Rediger snarveg
+newtab-topsites-add-shortcut-label = Legg til snarveg
 newtab-topsites-title-label = Tittel
 newtab-topsites-title-input =
     .placeholder = Skriv inn ein tittel
@@ -197,6 +198,7 @@ newtab-section-header-recent-activity = Nyleg aktivitet
 # Variables:
 #   $provider (string) - Name of the corresponding content provider.
 newtab-section-header-pocket = Tilrådd av { $provider }
+newtab-section-header-stories = Tankevekkjande artiklar
 
 ## Empty Section States: These show when there are no more items in a section. Ex. When there are no more Pocket story recommendations, in the space where there would have been stories, this is shown instead.
 
@@ -205,6 +207,8 @@ newtab-empty-section-highlights = Begynn å surfe, og vi vil vise deg nokre av d
 # Variables:
 #   $provider (string) - Name of the content provider for this section, e.g "Pocket".
 newtab-empty-section-topstories = Det finst ikkje fleire. Kom tilbake seinare for fleire topphistoriar frå { $provider }. Kan du ikkje vente? Vel eit populært emne for å finne fleire gode artiklar frå heile nettet.
+# Ex. When there are no more story recommendations, in the space where there would have been stories, this is shown instead.
+newtab-empty-section-topstories-generic = Du har no lest alt. Kom tilbake seinare for fleire artiklar. Kan du ikkje vente? Vel eit populært emne for å finne fleire flotte artiklar frå nettet.
 
 ## Empty Section (Content Discovery Experience). These show when there are no more stories or when some stories fail to load.
 
@@ -257,9 +261,9 @@ newtab-custom-row-selector =
 newtab-custom-sponsored-sites = Sponsa snarvegar
 newtab-custom-pocket-title = Tilrådd av { -pocket-brand-name }
 newtab-custom-pocket-subtitle = Eksepsjonelt innhald sett saman av { -pocket-brand-name }, ein del av { -brand-product-name }-familien
-newtab-custom-pocket-toggle =
-    .label = Tilrådd av { -pocket-brand-name }
-    .description = Eksepsjonelt innhald sett saman av { -pocket-brand-name }, ein del av { -brand-product-name }-familien
+newtab-custom-stories-toggle =
+    .label = Tilrådde artiklar
+    .description = Eineståande innhald utvalt av { -brand-product-name } familien
 newtab-custom-pocket-sponsored = Sponsa historier
 newtab-custom-pocket-show-recent-saves = Vis siste lagra
 newtab-custom-recent-title = Nyleg aktivitet
@@ -269,3 +273,20 @@ newtab-custom-recent-toggle =
     .description = Eit utval av nylege nettstadar og innhald
 newtab-custom-close-button = Lat att
 newtab-custom-settings = Handsam fleire innstillingar
+
+## New Tab Wallpapers
+
+newtab-wallpaper-title = Bakgrunnsbilde
+newtab-wallpaper-reset = Still tilbake til standard
+newtab-wallpaper-light-red-panda = Raudpanda
+newtab-wallpaper-light-mountain = Kvitt fjell
+newtab-wallpaper-light-sky = Himmel med lilla og rosa skyer
+newtab-wallpaper-light-color = Blå, rosa og gule former
+newtab-wallpaper-light-landscape = Fjellandskap med blå tåke
+newtab-wallpaper-light-beach = Strand med palmetre
+newtab-wallpaper-dark-aurora = Nordlys
+newtab-wallpaper-dark-color = Raude og blå former
+newtab-wallpaper-dark-panda = Raudpanda gøymt i skogen
+newtab-wallpaper-dark-sky = Bylandskap med nattehimmel
+newtab-wallpaper-dark-mountain = Fjellandskap
+newtab-wallpaper-dark-city = Lilla bylandskap

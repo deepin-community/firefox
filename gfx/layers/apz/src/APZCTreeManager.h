@@ -190,18 +190,19 @@ class APZCTreeManager : public IAPZCTreeManager, public APZInputBridge {
    *                             this layer update. Note that every child
    *                             process' layer subtree has its own sequence
    *                             numbers.
+   * @return OriginatingLayersIdUpdated whether the given
+   * |aOriginatingLayersId|'s data was processed.
    */
-  void UpdateHitTestingTree(const WebRenderScrollDataWrapper& aRoot,
-                            bool aIsFirstPaint, LayersId aOriginatingLayersId,
-                            uint32_t aPaintSequenceNumber);
+  enum class OriginatingLayersIdUpdated : bool { No, Yes };
+  OriginatingLayersIdUpdated UpdateHitTestingTree(
+      const WebRenderScrollDataWrapper& aRoot, bool aIsFirstPaint,
+      LayersId aOriginatingLayersId, uint32_t aPaintSequenceNumber);
 
   /**
-   * Called when webrender is enabled, from the sampler thread. This function
-   * populates the provided transaction with any async scroll offsets needed.
-   * It also advances APZ animations to the specified sample time, and requests
-   * another composite if there are still active animations.
-   * In effect it is the webrender equivalent of (part of) the code in
-   * AsyncCompositionManager.
+   * Called from the sampler thread. This function populates the provided
+   * transaction with any async scroll offsets needed. It also advances APZ
+   * animations to the specified sample time, and requests another composite if
+   * there are still active animations.
    */
   void SampleForWebRender(const Maybe<VsyncId>& aVsyncId,
                           wr::TransactionWrapper& aTxn,
@@ -506,7 +507,7 @@ class APZCTreeManager : public IAPZCTreeManager, public APZInputBridge {
   void AssertOnUpdaterThread();
 
   // Returns a pointer to the WebRenderAPI this APZCTreeManager is for.
-  // This might be null (for example, if WebRender is not enabled).
+  // This might be null (for example, during GTests).
   already_AddRefed<wr::WebRenderAPI> GetWebRenderAPI() const;
 
  protected:
@@ -676,12 +677,8 @@ class APZCTreeManager : public IAPZCTreeManager, public APZInputBridge {
   struct FixedPositionInfo;
   struct StickyPositionInfo;
 
-  // Returns true if |aNode| is a fixed layer that is fixed to the root content
-  // APZC.
-  // The map lock is required within these functions; if the map lock is already
-  // being held by the caller, the second overload should be used. If the map
-  // lock is not being held at the call site, the first overload should be used.
-  bool IsFixedToRootContent(const HitTestingTreeNode* aNode) const;
+  // Returns true if |aFixedInfo| represents a layer that is fixed to the root
+  // content APZC.
   bool IsFixedToRootContent(const FixedPositionInfo& aFixedInfo,
                             const MutexAutoLock& aProofOfMapLock) const;
 
@@ -916,15 +913,14 @@ class APZCTreeManager : public IAPZCTreeManager, public APZInputBridge {
     }
   };
   /**
-   * If this APZCTreeManager is being used with WebRender, this vector gets
-   * populated during a layers update. It holds a package of information needed
-   * to compute and set the async transforms on scroll thumbs. This information
-   * is extracted from the HitTestingTreeNodes for the WebRender case because
-   * accessing the HitTestingTreeNodes requires holding the tree lock which
-   * we cannot do on the WR sampler thread. mScrollThumbInfo, however, can
+   * This vector gets populated during a layers update. It holds a package of
+   * information needed to compute and set the async transforms on scroll
+   * thumbs. This information is extracted from the HitTestingTreeNodes because
+   * accessing the HitTestingTreeNodes requires holding the tree lock which we
+   * cannot do on the WebRender sampler thread. mScrollThumbInfo, however, can
    * be accessed while just holding the mMapLock which is safe to do on the
-   * sampler thread.
-   * mMapLock must be acquired while accessing or modifying mScrollThumbInfo.
+   * sampler thread. mMapLock must be acquired while accessing or modifying
+   * mScrollThumbInfo.
    */
   std::vector<ScrollThumbInfo> mScrollThumbInfo;
 
@@ -942,12 +938,11 @@ class APZCTreeManager : public IAPZCTreeManager, public APZInputBridge {
           mScrollDirection(aScrollDirection) {}
   };
   /**
-   * If this APZCTreeManager is being used with WebRender, this vector gets
-   * populated during a layers update. It holds a package of information needed
-   * to compute and set the async transforms on root scrollbars. This
-   * information is extracted from the HitTestingTreeNodes for the WebRender
-   * case because accessing the HitTestingTreeNodes requires holding the tree
-   * lock which we cannot do on the WR sampler thread. mRootScrollbarInfo,
+   * This vector gets populated during a layers update. It holds a package of
+   * information needed to compute and set the async transforms on root
+   * scrollbars. This information is extracted from the HitTestingTreeNodes
+   * because accessing the HitTestingTreeNodes requires holding the tree lock
+   * which we cannot do on the WebRender sampler thread. mRootScrollbarInfo,
    * however, can be accessed while just holding the mMapLock which is safe to
    * do on the sampler thread.
    * mMapLock must be acquired while accessing or modifying mRootScrollbarInfo.
@@ -967,15 +962,14 @@ class APZCTreeManager : public IAPZCTreeManager, public APZInputBridge {
     explicit FixedPositionInfo(const HitTestingTreeNode* aNode);
   };
   /**
-   * If this APZCTreeManager is being used with WebRender, this vector gets
-   * populated during a layers update. It holds a package of information needed
-   * to compute and set the async transforms on fixed position content. This
-   * information is extracted from the HitTestingTreeNodes for the WebRender
-   * case because accessing the HitTestingTreeNodes requires holding the tree
-   * lock which we cannot do on the WR sampler thread. mFixedPositionInfo,
-   * however, can be accessed while just holding the mMapLock which is safe to
-   * do on the sampler thread. mMapLock must be acquired while accessing or
-   * modifying mFixedPositionInfo.
+   * This vector gets populated during a layers update. It holds a package of
+   * information needed to compute and set the async transforms on fixed
+   * position content. This information is extracted from the
+   * HitTestingTreeNodes because accessing the HitTestingTreeNodes requires
+   * holding the tree lock which we cannot do on the WebRender sampler thread.
+   * mFixedPositionInfo, however, can be accessed while just holding the
+   * mMapLock which is safe to do on the sampler thread. mMapLock must be
+   * acquired while accessing or modifying mFixedPositionInfo.
    */
   std::vector<FixedPositionInfo> mFixedPositionInfo;
 
@@ -994,15 +988,14 @@ class APZCTreeManager : public IAPZCTreeManager, public APZInputBridge {
     explicit StickyPositionInfo(const HitTestingTreeNode* aNode);
   };
   /**
-   * If this APZCTreeManager is being used with WebRender, this vector gets
-   * populated during a layers update. It holds a package of information needed
-   * to compute and set the async transforms on sticky position content. This
-   * information is extracted from the HitTestingTreeNodes for the WebRender
-   * case because accessing the HitTestingTreeNodes requires holding the tree
-   * lock which we cannot do on the WR sampler thread. mStickyPositionInfo,
-   * however, can be accessed while just holding the mMapLock which is safe to
-   * do on the sampler thread. mMapLock must be acquired while accessing or
-   * modifying mStickyPositionInfo.
+   * This vector gets populated during a layers update. It holds a package of
+   * information needed to compute and set the async transforms on sticky
+   * position content. This information is extracted from the
+   * HitTestingTreeNodes because accessing the HitTestingTreeNodes requires
+   * holding the tree lock which we cannot do on the WebRender sampler thread.
+   * mStickyPositionInfo, however, can be accessed while just holding the
+   * mMapLock which is safe to do on the sampler thread. mMapLock must be
+   * acquired while accessing or modifying mStickyPositionInfo.
    */
   std::vector<StickyPositionInfo> mStickyPositionInfo;
 

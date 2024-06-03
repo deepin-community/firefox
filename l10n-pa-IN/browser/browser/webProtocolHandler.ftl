@@ -12,6 +12,10 @@ protocolhandler-mailto-os-handler-no-button = ਹੁਣੇ ਨਹੀਂ
 
 protocolhandler-mailto-handler-notificationbox-always = ਕੀ ਈਮੇਲ ਖੋਲ੍ਹਣ ਲਈ { $url } ਵਰਤ ਕੇ ਖੋਲ੍ਹਣੇ ਹਨ?
 protocolhandler-mailto-handler-yes-confirm = { $url } ਹੁਣ ਈਮੇਲ ਭੇਜਣ ਵਾਲੇ ਲਿੰਕ ਖੋਲ੍ਹਣ ਵਾਲੀ ਤੁਹਾਡੀ ਮੂਲ ਸਾਈਟ ਹੈ।
+protocolhandler-mailto-handler-set-message = ਜਦੋਂ ਵੀ ਤੁਹਾਡੀ ਈਮੇਲ ਨੂੰ ਖੋਲ੍ਹਣ ਵਾਲੇ ਲਿੰਕ ਨੂੰ ਤੁਸੀਂ ਕਲਿੱਕ ਕਰਦੇ ਹੋ ਤਾਂ ਹਰ ਵਾਰ <strong>{ $url } ਨੂੰ { -brand-short-name }</strong> ਨਾਲ ਖੋਲ੍ਹਣਾ ਹੈ?
+protocolhandler-mailto-handler-confirm-message = <strong>{ -brand-short-name } ਵਿੱਚ { $url }</strong> ਹੁਣ ਤੁਹਾਡੇ ਕੰਪਿਊਟਰ ਦਾ ਮੂਲ ਈਮੇਲ ਹੈਂਡਲਰ ਹੈ।
+protocolhandler-mailto-handler-set = ਜਦੋਂ ਵੀ ਤੁਹਾਡੀ ਈਮੇਲ ਨੂੰ ਖੋਲ੍ਹਣ ਵਾਲੇ ਲਿੰਕ ਨੂੰ ਤੁਸੀਂ ਕਲਿੱਕ ਕਰਦੇ ਹੋ ਤਾਂ ਹਰ ਵਾਰ <strong>{ $url } ਨੂੰ { -brand-short-name } ਨਾਲ ਖੋਲ੍ਹਣਾ </strong> ਹੈ?
+protocolhandler-mailto-handler-confirm = ਜਦੋਂ ਵੀ ਤੁਸੀਂ ਈਮੇਲ ਨੂੰ ਭੇਜਣ ਵਾਲਾ ਲਿੰਕ ਨੂੰ ਕਲਿੱਕ ਕਰਦੇ ਹੋ ਤਾਂ <strong>{ -brand-short-name } ਹਰ ਵਾਰ { $url } ਨੂੰ ਨੂੰ ਖੋਲ੍ਹੇਗਾ</strong>।
 
 ##
 

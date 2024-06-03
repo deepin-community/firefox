@@ -12,6 +12,9 @@ permissions-address = Կայքի հասցեն
 permissions-block =
     .label = Արգելել
     .accesskey = Ա
+permissions-disable-etp =
+    .label = Ավելացնել բացառություն
+    .accesskey = E
 permissions-session =
     .label = Թույլատրել աշխատաշրջանում
     .accesskey = ա
@@ -21,6 +24,9 @@ permissions-allow =
 permissions-button-off =
     .label = Անջատել
     .accesskey = O
+permissions-button-off-temporarily =
+    .label = Ժամանակավորապես անջատել
+    .accesskey = T
 permissions-site-name =
     .label = Կայք
 permissions-status =
@@ -57,6 +63,8 @@ permissions-capabilities-listitem-allow-session =
     .value = Թույլատրել աշխատաշրջանում
 permissions-capabilities-listitem-off =
     .value = Անջ.
+permissions-capabilities-listitem-off-temporarily =
+    .value = Ժ.-ապես անջ.-ել
 
 ## Invalid Hostname Dialog
 
@@ -95,6 +103,13 @@ permissions-exceptions-saved-logins-window2 =
     .title = Բացառություններ՝ պահված մուտքագրումներ
     .style = { permissions-window2.style }
 permissions-exceptions-saved-logins-desc = Հետևյալ կայքերի մուտքագրումները չեն պահպանվի
+
+## Exceptions - Saved Passwords
+
+permissions-exceptions-saved-passwords-window =
+    .title = Բացառություններ. պահված գաղտնաբառեր
+    .style = { permissions-window2.style }
+permissions-exceptions-saved-passwords-desc = { -brand-short-name }-ը չի պահի այստեղ թվարկված կայքերի գաղտնաբառերը:
 
 ## Exceptions - Add-ons
 
@@ -153,7 +168,7 @@ permissions-site-camera-disable-desc = Սա կկանխի ցանկում չնշվ
 ## Site Permissions - Microphone
 
 permissions-site-microphone-window2 =
-    .title = Կարգավորումներ՝ խոսափողի թույլտվություններ
+    .title = Կարգավորումներ. խոսափողի թույլտվություններ
     .style = { permissions-window2.style }
 permissions-site-microphone-desc = Հետևյալ կայքերը ձեր խոսափողը մատչելու հարցում են կատարել: Դուք կարող եք հատկորոշել, թե որ կայքերը կարող են մատչել ձեր խոսափողը: Նաև՝ կարող եք արգելափակել ձեր խոսափողը մատչելու նոր հարցումները:
 permissions-site-microphone-disable-label =
@@ -164,7 +179,24 @@ permissions-site-microphone-disable-desc = Սա կկանխի ցանկում չն
 ##
 ## "Speaker" refers to an audio output device.
 
+permissions-site-speaker-window =
+    .title = Կարգավորումներ. բարձրախոսի թույլտվություններ
+    .style = { permissions-window2.style }
+permissions-site-speaker-desc = Հետևյալ կայքերը պահանջել են ընտրել ձայնանյութի արտածման սարքը: Դուք կարող եք որոշել, թե որ կայքերին են թույլատրվում ընտրել ձայնանյութի արտածման սարքը:
 permissions-exceptions-doh-window =
     .title = Կայքի բացառություններ DNS՝ HTTPS-ի միջոցով
     .style = { permissions-window2.style }
 permissions-exceptions-manage-doh-desc = { -brand-short-name }-ը չի օգտագործում անվտանգ DNS այս կայքերում և դրա ենթատիրույթներում:
+permissions-doh-entry-field = Մուտքագրեք վեբ-կայքի տիրույթի անունը
+    .accesskey = տ
+permissions-doh-add-exception =
+    .label = Ավելացնել
+    .accesskey = A
+permissions-doh-col =
+    .label = Տիրույթ
+permissions-doh-remove =
+    .label = Հեռացնել
+    .accesskey = R
+permissions-doh-remove-all =
+    .label = Հեռացնել բոլորը
+    .accesskey = e

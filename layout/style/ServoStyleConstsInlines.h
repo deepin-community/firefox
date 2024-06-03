@@ -53,6 +53,8 @@ template struct StyleStrong<StyleFontPaletteValuesRule>;
 template struct StyleStrong<StyleLockedFontFaceRule>;
 template struct StyleStrong<StyleLockedCounterStyleRule>;
 template struct StyleStrong<StyleContainerRule>;
+template struct StyleStrong<StyleScopeRule>;
+template struct StyleStrong<StyleStartingStyleRule>;
 
 template <typename T>
 inline void StyleOwnedSlice<T>::Clear() {
@@ -507,20 +509,15 @@ StyleCSSPixelLength StyleCSSPixelLength::ScaledBy(float aScale) const {
   return FromPixels(ToCSSPixels() * aScale);
 }
 
-nscoord StyleCSSPixelLength::ToAppUnits() const {
-  // We want to resolve the length part of the calc() expression rounding 0.5
-  // away from zero, instead of the default behavior of
-  // NSToCoordRound{,WithClamp} which do floor(x + 0.5).
-  //
-  // This is what the rust code in the app_units crate does, and not doing this
-  // would regress bug 1323735, for example.
-  //
-  // FIXME(emilio, bug 1528114): Probably we should do something smarter.
-  if (IsZero()) {
-    // Avoid the expensive FP math below.
-    return 0;
-  }
-  float length = _0 * float(mozilla::AppUnitsPerCSSPixel());
+namespace detail {
+static inline nscoord DefaultPercentLengthToAppUnits(float aPixelLength) {
+  return NSToCoordTruncClamped(aPixelLength);
+}
+
+static inline nscoord DefaultLengthToAppUnits(float aPixelLength) {
+  // We want to round lengths rounding 0.5 away from zero, instead of the
+  // default behavior of NSToCoordRound{,WithClamp} which do floor(x + 0.5).
+  float length = aPixelLength * float(mozilla::AppUnitsPerCSSPixel());
   if (length >= float(nscoord_MAX)) {
     return nscoord_MAX;
   }
@@ -528,6 +525,15 @@ nscoord StyleCSSPixelLength::ToAppUnits() const {
     return nscoord_MIN;
   }
   return NSToIntRound(length);
+}
+}  // namespace detail
+
+nscoord StyleCSSPixelLength::ToAppUnits() const {
+  if (IsZero()) {
+    // Avoid the expensive FP math below.
+    return 0;
+  }
+  return detail::DefaultLengthToAppUnits(_0);
 }
 
 bool LengthPercentage::IsLength() const { return Tag() == TAG_LENGTH; }
@@ -693,6 +699,14 @@ CSSCoord StyleCalcLengthPercentage::ResolveToCSSPixels(CSSCoord aBasis) const {
   return Servo_ResolveCalcLengthPercentage(this, aBasis);
 }
 
+template <typename Rounder>
+nscoord StyleCalcLengthPercentage::Resolve(nscoord aBasis,
+                                           Rounder aRounder) const {
+  static_assert(std::is_same_v<decltype(aRounder(1.0f)), nscoord>);
+  CSSCoord result = ResolveToCSSPixels(CSSPixel::FromAppUnits(aBasis));
+  return aRounder(result * AppUnitsPerCSSPixel());
+}
+
 template <>
 void StyleCalcNode::ScaleLengthsBy(float);
 
@@ -708,20 +722,17 @@ CSSCoord LengthPercentage::ResolveToCSSPixels(CSSCoord aPercentageBasis) const {
 
 template <typename T>
 CSSCoord LengthPercentage::ResolveToCSSPixelsWith(T aPercentageGetter) const {
-  static_assert(std::is_same<decltype(aPercentageGetter()), CSSCoord>::value,
-                "Should return CSS pixels");
+  static_assert(std::is_same_v<decltype(aPercentageGetter()), CSSCoord>);
   if (ConvertsToLength()) {
     return ToLengthInCSSPixels();
   }
   return ResolveToCSSPixels(aPercentageGetter());
 }
 
-template <typename T, typename U>
-nscoord LengthPercentage::Resolve(T aPercentageGetter, U aRounder) const {
-  static_assert(std::is_same<decltype(aPercentageGetter()), nscoord>::value,
-                "Should return app units");
-  static_assert(std::is_same<decltype(aRounder(1.0f)), nscoord>::value,
-                "Should return app units");
+template <typename T, typename Rounder>
+nscoord LengthPercentage::Resolve(T aPercentageGetter, Rounder aRounder) const {
+  static_assert(std::is_same_v<decltype(aPercentageGetter()), nscoord>);
+  static_assert(std::is_same_v<decltype(aRounder(1.0f)), nscoord>);
   if (ConvertsToLength()) {
     return ToLength();
   }
@@ -735,24 +746,20 @@ nscoord LengthPercentage::Resolve(T aPercentageGetter, U aRounder) const {
   return AsCalc().Resolve(basis, aRounder);
 }
 
-// Note: the static_cast<> wrappers below are needed to disambiguate between
-// the versions of NSToCoordTruncClamped that take float vs. double as the arg.
 nscoord LengthPercentage::Resolve(nscoord aPercentageBasis) const {
   return Resolve([=] { return aPercentageBasis; },
-                 static_cast<nscoord (*)(float)>(NSToCoordTruncClamped));
+                 detail::DefaultPercentLengthToAppUnits);
 }
 
 template <typename T>
 nscoord LengthPercentage::Resolve(T aPercentageGetter) const {
-  return Resolve(aPercentageGetter,
-                 static_cast<nscoord (*)(float)>(NSToCoordTruncClamped));
+  return Resolve(aPercentageGetter, detail::DefaultPercentLengthToAppUnits);
 }
 
-template <typename T>
+template <typename Rounder>
 nscoord LengthPercentage::Resolve(nscoord aPercentageBasis,
-                                  T aPercentageRounder) const {
-  return Resolve([aPercentageBasis] { return aPercentageBasis; },
-                 aPercentageRounder);
+                                  Rounder aRounder) const {
+  return Resolve([aPercentageBasis] { return aPercentageBasis; }, aRounder);
 }
 
 void LengthPercentage::ScaleLengthsBy(float aScale) {
@@ -1195,6 +1202,20 @@ inline nsRect StyleZoom::Unzoom(const nsRect& aValue) const {
   }
   return nsRect(UnzoomCoord(aValue.X()), UnzoomCoord(aValue.Y()),
                 UnzoomCoord(aValue.Width()), UnzoomCoord(aValue.Height()));
+}
+
+template <>
+inline gfx::Point StyleCoordinatePair<StyleCSSFloat>::ToGfxPoint(
+    const CSSSize* aBasis) const {
+  return gfx::Point(x, y);
+}
+
+template <>
+inline gfx::Point StyleCoordinatePair<LengthPercentage>::ToGfxPoint(
+    const CSSSize* aBasis) const {
+  MOZ_ASSERT(aBasis);
+  return gfx::Point(x.ResolveToCSSPixels(aBasis->Width()),
+                    y.ResolveToCSSPixels(aBasis->Height()));
 }
 
 }  // namespace mozilla

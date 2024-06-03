@@ -704,6 +704,9 @@ sync-mobile-promo = Iscàrriga Firefox pro <img data-l10n-name="android-icon"/> 
 
 sync-profile-picture =
     .tooltiptext = Muda s'immàgine de su profilu
+sync-profile-picture-with-alt =
+    .tooltiptext = Muda s'immàgine de su profilu
+    .alt = Muda s'immàgine de su profilu
 sync-sign-out =
     .label = Serra sa sessione…
     .accesskey = s
@@ -1270,6 +1273,8 @@ addon-recommendations-link = Àteras informatziones
 # or builds with no Telemetry support available.
 collection-health-report-disabled = S'informe de datos est disativadu in sa cunfiguratzione de custa versione
 collection-backlogged-crash-reports-with-link = Permite a { -brand-short-name } de t'imbiare informes de faddina in suspesu <a data-l10n-name="crash-reports-link">Àteras informatziones</a>
+    .accesskey = i
+collection-backlogged-crash-reports = Permite a { -brand-short-name } de t'imbiare informes de faddina in suspesu
     .accesskey = i
 privacy-segmentation-section-header = Caraterìsticas noas pro megiorare sa navigatzione
 privacy-segmentation-section-description = Cando oferimus caraterìsticas chi impreant is datos tuos pro ti donare un'esperièntzia prus personale:

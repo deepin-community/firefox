@@ -53,6 +53,9 @@ mr1-onboarding-import-primary-button-label-attribution = { $previous } tarayıc�
 mr1-onboarding-theme-header = Zevkinize göre ayarlayın
 mr1-onboarding-theme-subtitle = { -brand-short-name } tarayıcınızı bir temayla kişiselleştirin.
 mr1-onboarding-theme-secondary-button-label = Şimdi değil
+newtab-wallpaper-onboarding-title = Farklı renkleri deneyin
+newtab-wallpaper-onboarding-subtitle = Yeni Sekme sayfanıza yeni bir görünüm kazandırmak için bir duvar kâğıdı seçin.
+newtab-wallpaper-onboarding-primary-button-label = Duvar kâğıdını ayarla
 # System theme uses operating system color settings
 mr1-onboarding-theme-label-system = Sistem teması
 mr1-onboarding-theme-label-light = Açık
@@ -352,6 +355,7 @@ onboarding-new-user-familiarity-based-survey-title = { -brand-short-name } taray
 onboarding-new-user-survey-subtitle = Geri bildiriminiz { -brand-short-name } tarayıcısını daha da iyileştirmemize yardımcı oluyor.
 # When translating "next" it means the next screen in onboarding.
 onboarding-new-user-survey-next-button-label = İleri
+onboarding-new-user-survey-legal-link-label = “{ onboarding-new-user-survey-next-button-label }”ye tıkladığınızda { -brand-product-name } <a data-l10n-name="privacy_notice">Gizlilik Bildirimi</a>’ni kabul etmiş sayılırsınız
 # When translating "brand new" it means completely new.
 onboarding-new-user-survey-time-based-option-1 = Yeni kullanmaya başladım
 onboarding-new-user-survey-time-based-option-2 = 1 aydan az

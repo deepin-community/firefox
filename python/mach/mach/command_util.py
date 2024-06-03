@@ -48,6 +48,7 @@ class MachCommandReference:
 
 
 MACH_COMMANDS = {
+    "addstory": MachCommandReference("toolkit/content/widgets/mach_commands.py"),
     "addtest": MachCommandReference("testing/mach_commands.py"),
     "addwidget": MachCommandReference("toolkit/content/widgets/mach_commands.py"),
     "android": MachCommandReference("mobile/android/mach_commands.py"),
@@ -67,6 +68,7 @@ MACH_COMMANDS = {
         "python/mozbuild/mozbuild/build_commands.py",
     ),
     "buildsymbols": MachCommandReference("python/mozbuild/mozbuild/mach_commands.py"),
+    "buildtokens": MachCommandReference("toolkit/content/widgets/mach_commands.py"),
     "busted": MachCommandReference("tools/mach_commands.py"),
     "cargo": MachCommandReference("python/mozbuild/mozbuild/mach_commands.py"),
     "clang-format": MachCommandReference(
@@ -92,6 +94,9 @@ MACH_COMMANDS = {
     "environment": MachCommandReference("python/mozbuild/mozbuild/mach_commands.py"),
     "eslint": MachCommandReference("tools/lint/mach_commands.py"),
     "esmify": MachCommandReference("tools/esmify/mach_commands.py"),
+    "event-into-legacy": MachCommandReference(
+        "toolkit/components/glean/build_scripts/mach_commands.py"
+    ),
     "fetch-condprofile": MachCommandReference("testing/condprofile/mach_commands.py"),
     "file-info": MachCommandReference(
         "python/mozbuild/mozbuild/frontend/mach_commands.py"
@@ -134,6 +139,7 @@ MACH_COMMANDS = {
     "mach-debug-commands": MachCommandReference(
         "python/mach/mach/commands/commandinfo.py"
     ),
+    "macos-sign": MachCommandReference("tools/signing/macos/mach_commands.py"),
     "manifest": MachCommandReference("testing/mach_commands.py"),
     "marionette-test": MachCommandReference("testing/marionette/mach_commands.py"),
     "mochitest": MachCommandReference("testing/mochitest/mach_commands.py", ["test"]),
@@ -203,6 +209,7 @@ MACH_COMMANDS = {
     ),
     "tps-build": MachCommandReference("testing/tps/mach_commands.py"),
     "try": MachCommandReference("tools/tryselect/mach_commands.py"),
+    "ts": MachCommandReference("tools/ts/mach_commands.py"),
     "uniffi": MachCommandReference(
         "toolkit/components/uniffi-bindgen-gecko-js/mach_commands.py"
     ),
