@@ -90,6 +90,14 @@
       }
     },
 
+    "AutofillAddressEnabled": {
+      "type": "boolean"
+    },
+
+    "AutofillCreditCardEnabled": {
+      "type": "boolean"
+    },
+
     "AutoLaunchProtocolsFromOrigins": {
       "type": ["array", "JSON"],
       "items": {
@@ -223,6 +231,42 @@
             },
             "type": "object"
           }
+        }
+      }
+    },
+
+    "ContentAnalysis": {
+      "type": "object",
+      "properties": {
+        "Enabled": {
+          "type": "boolean"
+        },
+        "PipePathName": {
+          "type": "string"
+        },
+        "AgentTimeout": {
+          "type": "number"
+        },
+        "AllowUrlRegexList": {
+          "type": "string"
+        },
+        "DenyUrlRegexList": {
+          "type": "string"
+        },
+        "AgentName": {
+          "type": "string"
+        },
+        "ClientSignature": {
+          "type": "string"
+        },
+        "IsPerUser": {
+          "type": "boolean"
+        },
+        "ShowBlockedResult": {
+          "type": "boolean"
+        },
+        "DefaultAllow": {
+          "type": "boolean"
         }
       }
     },
@@ -624,6 +668,9 @@
               "items": {
                 "type": "string"
               }
+            },
+            "temporarily_allow_weak_signatures": {
+              "type": "boolean"
             }
           }
         }
@@ -653,6 +700,9 @@
             "default_area": {
               "type": "string",
               "enum": ["navbar", "menupanel"]
+            },
+            "temporarily_allow_weak_signatures": {
+              "type": "boolean"
             }
           }
         }
@@ -1382,6 +1432,10 @@
         }
       },
       "required": ["Title", "URL"]
+    },
+
+    "TranslateEnabled": {
+      "type": "boolean"
     },
 
     "UserMessaging": {

@@ -217,6 +217,13 @@ nsresult nsHttpTransaction::Init(
 
   LOG1(("nsHttpTransaction::Init [this=%p caps=%x]\n", this, caps));
 
+  if (AppShutdown::IsInOrBeyond(ShutdownPhase::AppShutdownConfirmed)) {
+    LOG(
+        ("nsHttpTransaction aborting init because of app"
+         "shutdown"));
+    return NS_ERROR_ILLEGAL_DURING_SHUTDOWN;
+  }
+
   MOZ_ASSERT(cinfo);
   MOZ_ASSERT(requestHead);
   MOZ_ASSERT(target);
@@ -1334,7 +1341,7 @@ bool nsHttpTransaction::ShouldRestartOn0RttError(nsresult reason) {
        "mEarlyDataWasAvailable=%d error=%" PRIx32 "]\n",
        this, mEarlyDataWasAvailable, static_cast<uint32_t>(reason)));
   return StaticPrefs::network_http_early_data_disable_on_error() &&
-         mEarlyDataWasAvailable && SecurityErrorThatMayNeedRestart(reason);
+         mEarlyDataWasAvailable && PossibleZeroRTTRetryError(reason);
 }
 
 static void MaybeRemoveSSLToken(nsITransportSecurityInfo* aSecurityInfo) {
@@ -1501,7 +1508,7 @@ void nsHttpTransaction::Close(nsresult reason) {
 
     if (reason ==
             psm::GetXPCOMFromNSSError(SSL_ERROR_DOWNGRADE_WITH_EARLY_DATA) ||
-        reason == psm::GetXPCOMFromNSSError(SSL_ERROR_PROTOCOL_VERSION_ALERT) ||
+        PossibleZeroRTTRetryError(reason) ||
         (!mReceivedData && ((mRequestHead && mRequestHead->IsSafeMethod()) ||
                             !reallySentData || connReused)) ||
         shouldRestartTransactionForHTTPSRR) {
@@ -1542,9 +1549,8 @@ void nsHttpTransaction::Close(nsresult reason) {
       } else if (reason == psm::GetXPCOMFromNSSError(
                                SSL_ERROR_DOWNGRADE_WITH_EARLY_DATA)) {
         SetRestartReason(TRANSACTION_RESTART_DOWNGRADE_WITH_EARLY_DATA);
-      } else if (reason ==
-                 psm::GetXPCOMFromNSSError(SSL_ERROR_PROTOCOL_VERSION_ALERT)) {
-        SetRestartReason(TRANSACTION_RESTART_PROTOCOL_VERSION_ALERT);
+      } else if (PossibleZeroRTTRetryError(reason)) {
+        SetRestartReason(TRANSACTION_RESTART_POSSIBLE_0RTT_ERROR);
       }
       // if restarting fails, then we must proceed to close the pipe,
       // which will notify the channel that the transaction failed.
@@ -1678,16 +1684,16 @@ void nsHttpTransaction::Close(nsresult reason) {
       switch (mHttpVersion) {
         case HttpVersion::v1_0:
         case HttpVersion::v1_1:
-          glean::networking::http_1_download_throughput.AccumulateSamples(
-              {mpbs});
+          glean::networking::http_1_download_throughput.AccumulateSingleSample(
+              mpbs);
           break;
         case HttpVersion::v2_0:
-          glean::networking::http_2_download_throughput.AccumulateSamples(
-              {mpbs});
+          glean::networking::http_2_download_throughput.AccumulateSingleSample(
+              mpbs);
           break;
         case HttpVersion::v3_0:
-          glean::networking::http_3_download_throughput.AccumulateSamples(
-              {mpbs});
+          glean::networking::http_3_download_throughput.AccumulateSingleSample(
+              mpbs);
           break;
         default:
           break;
@@ -2520,7 +2526,7 @@ nsresult nsHttpTransaction::ProcessData(char* buf, uint32_t count,
 
     mCurrentHttpResponseHeaderSize += bytesConsumed;
     if (mCurrentHttpResponseHeaderSize >
-        gHttpHandler->MaxHttpResponseHeaderSize()) {
+        StaticPrefs::network_http_max_response_header_size()) {
       LOG(("nsHttpTransaction %p The response header exceeds the limit.\n",
            this));
       return NS_ERROR_FILE_TOO_BIG;
@@ -3568,42 +3574,42 @@ void nsHttpTransaction::CollectTelemetryForUploads() {
   switch (mHttpVersion) {
     case HttpVersion::v1_0:
     case HttpVersion::v1_1:
-      glean::networking::http_1_upload_throughput.AccumulateSamples({mpbs});
+      glean::networking::http_1_upload_throughput.AccumulateSingleSample(mpbs);
       if (mRequestSize <= TELEMETRY_REQUEST_SIZE_50M) {
-        glean::networking::http_1_upload_throughput_10_50.AccumulateSamples(
-            {mpbs});
+        glean::networking::http_1_upload_throughput_10_50
+            .AccumulateSingleSample(mpbs);
       } else if (mRequestSize <= TELEMETRY_REQUEST_SIZE_100M) {
-        glean::networking::http_1_upload_throughput_50_100.AccumulateSamples(
-            {mpbs});
+        glean::networking::http_1_upload_throughput_50_100
+            .AccumulateSingleSample(mpbs);
       } else {
-        glean::networking::http_1_upload_throughput_100.AccumulateSamples(
-            {mpbs});
+        glean::networking::http_1_upload_throughput_100.AccumulateSingleSample(
+            mpbs);
       }
       break;
     case HttpVersion::v2_0:
-      glean::networking::http_2_upload_throughput.AccumulateSamples({mpbs});
+      glean::networking::http_2_upload_throughput.AccumulateSingleSample(mpbs);
       if (mRequestSize <= TELEMETRY_REQUEST_SIZE_50M) {
-        glean::networking::http_2_upload_throughput_10_50.AccumulateSamples(
-            {mpbs});
+        glean::networking::http_2_upload_throughput_10_50
+            .AccumulateSingleSample(mpbs);
       } else if (mRequestSize <= TELEMETRY_REQUEST_SIZE_100M) {
-        glean::networking::http_2_upload_throughput_50_100.AccumulateSamples(
-            {mpbs});
+        glean::networking::http_2_upload_throughput_50_100
+            .AccumulateSingleSample(mpbs);
       } else {
-        glean::networking::http_2_upload_throughput_100.AccumulateSamples(
-            {mpbs});
+        glean::networking::http_2_upload_throughput_100.AccumulateSingleSample(
+            mpbs);
       }
       break;
     case HttpVersion::v3_0:
-      glean::networking::http_3_upload_throughput.AccumulateSamples({mpbs});
+      glean::networking::http_3_upload_throughput.AccumulateSingleSample(mpbs);
       if (mRequestSize <= TELEMETRY_REQUEST_SIZE_50M) {
-        glean::networking::http_3_upload_throughput_10_50.AccumulateSamples(
-            {mpbs});
+        glean::networking::http_3_upload_throughput_10_50
+            .AccumulateSingleSample(mpbs);
       } else if (mRequestSize <= TELEMETRY_REQUEST_SIZE_100M) {
-        glean::networking::http_3_upload_throughput_50_100.AccumulateSamples(
-            {mpbs});
+        glean::networking::http_3_upload_throughput_50_100
+            .AccumulateSingleSample(mpbs);
       } else {
-        glean::networking::http_3_upload_throughput_100.AccumulateSamples(
-            {mpbs});
+        glean::networking::http_3_upload_throughput_100.AccumulateSingleSample(
+            mpbs);
       }
       break;
     default:

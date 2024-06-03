@@ -32,6 +32,8 @@ search-input-box2 =
     .style = width: 16em
     .placeholder = Cîr tes impostazions
 managed-notice = Il to navigadôr al ven gjestît de tô organizazion.
+managed-notice-info-icon =
+    .alt = Informazion
 category-list =
     .aria-label = Categoriis
 pane-general-title = Gjenerâl
@@ -708,6 +710,13 @@ sync-mobile-promo = Discjame Firefox par <img data-l10n-name="android-icon"/> <a
 
 sync-profile-picture =
     .tooltiptext = Cambie la imagjin dal profîl
+sync-profile-picture-with-alt =
+    .tooltiptext = Cambie la imagjin dal profîl
+    .alt = Cambie la imagjin dal profîl
+sync-profile-picture-account-problem =
+    .alt = Imagjin dal profîl pal account
+fxa-login-rejected-warning =
+    .alt = Avertiment
 sync-sign-out =
     .label = Disconet…
     .accesskey = g
@@ -1274,6 +1283,8 @@ addon-recommendations-link = Plui informazions
 # or builds with no Telemetry support available.
 collection-health-report-disabled = La segnalazion di dâts e je stade disativade te configurazion di cheste compilazion
 collection-backlogged-crash-reports-with-link = Permet a { -brand-short-name } di inviâ a to non segnalazions di colàs regjistradis in precedence <a data-l10n-name="crash-reports-link">Plui informazions</a>
+    .accesskey = c
+collection-backlogged-crash-reports = Permet a { -brand-short-name } di inviâ a to non segnalazions di colàs regjistradis in precedence
     .accesskey = c
 privacy-segmentation-section-header = Gnovis funzionalitâts che a miorin la navigazion
 privacy-segmentation-section-description = Cuant che us ufrìn funzionalitâts che a doprin i vuestris dâts par dâus esperience plui personâl:

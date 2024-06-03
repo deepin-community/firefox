@@ -12,6 +12,10 @@ protocolhandler-mailto-os-handler-no-button = Nicht jetzt
 
 protocolhandler-mailto-handler-notificationbox-always = E-Mail-Links immer mit { $url } öffnen?
 protocolhandler-mailto-handler-yes-confirm = { $url } ist jetzt Ihre Standard-Website zum Öffnen von Links, die E-Mails senden.
+protocolhandler-mailto-handler-set-message = <strong>{ $url } in { -brand-short-name }</strong> verwenden, wenn Sie auf einen Link klicken, der Ihre E-Mail öffnet?
+protocolhandler-mailto-handler-confirm-message = <strong>{ $url } in { -brand-short-name }</strong> ist jetzt der Standard-E-Mail-Handler Ihres Computers.
+protocolhandler-mailto-handler-set = <strong>{ -brand-short-name } zum Öffnen von { $url }</strong> verwenden, wenn Sie auf einen Link klicken, der Ihre E-Mail öffnet?
+protocolhandler-mailto-handler-confirm = <strong>{ -brand-short-name } öffnet { $url }</strong> jedes Mal, wenn Sie auf einen Link klicken, der eine E-Mail sendet.
 
 ##
 

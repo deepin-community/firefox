@@ -46,7 +46,7 @@ module.exports = {
     {
       // Use a configuration that's appropriate for modules, workers and
       // non-production files.
-      files: ["modules/*.jsm", "tests/**"],
+      files: ["tests/**"],
       rules: {
         "no-implicit-globals": "off",
       },
@@ -80,8 +80,6 @@ module.exports = {
     },
   ],
   rules: {
-    "fetch-options/no-fetch-credentials": "error",
-
     "react/jsx-boolean-value": ["error", "always"],
     "react/jsx-key": "error",
     "react/jsx-no-bind": [
@@ -113,6 +111,8 @@ module.exports = {
           "layout",
           "pos",
           "hide-secondary-section",
+          "reverse-split",
+          "no-rdm",
         ],
       },
     ],
@@ -124,15 +124,12 @@ module.exports = {
     "consistent-this": ["error", "use-bind"],
     eqeqeq: "error",
     "func-name-matching": "error",
-    "getter-return": "error",
     "guard-for-in": "error",
-    "max-depth": ["error", 4],
     "max-nested-callbacks": ["error", 4],
     "max-params": ["error", 6],
     "max-statements": ["error", 50],
     "new-cap": ["error", { newIsCap: true, capIsNew: false }],
     "no-alert": "error",
-    "no-console": ["error", { allow: ["error"] }],
     "no-div-regex": "error",
     "no-duplicate-imports": "error",
     "no-eq-null": "error",

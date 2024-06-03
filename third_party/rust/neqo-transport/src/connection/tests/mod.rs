@@ -4,12 +4,9 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-#![deny(clippy::pedantic)]
-
 use std::{
     cell::RefCell,
     cmp::min,
-    convert::TryFrom,
     mem,
     rc::Rc,
     time::{Duration, Instant},
@@ -18,7 +15,7 @@ use std::{
 use enum_map::enum_map;
 use neqo_common::{event::Provider, qdebug, qtrace, Datagram, Decoder, Role};
 use neqo_crypto::{random, AllowZeroRtt, AuthenticationStatus, ResumptionToken};
-use test_fixture::{self, addr, fixture_init, new_neqo_qlog, now};
+use test_fixture::{fixture_init, new_neqo_qlog, now, DEFAULT_ADDR};
 
 use super::{Connection, ConnectionError, ConnectionId, Output, State};
 use crate::{
@@ -40,11 +37,11 @@ mod ackrate;
 mod cc;
 mod close;
 mod datagram;
-mod fuzzing;
 mod handshake;
 mod idle;
 mod keys;
 mod migration;
+mod null;
 mod priority;
 mod recovery;
 mod resumption;
@@ -79,7 +76,7 @@ impl ConnectionIdDecoder for CountingConnectionIdGenerator {
 
 impl ConnectionIdGenerator for CountingConnectionIdGenerator {
     fn generate_cid(&mut self) -> Option<ConnectionId> {
-        let mut r = random(20);
+        let mut r = random::<20>();
         r[0] = 8;
         r[1] = u8::try_from(self.counter >> 24).unwrap();
         r[2] = u8::try_from((self.counter >> 16) & 0xff).unwrap();
@@ -107,8 +104,8 @@ pub fn new_client(params: ConnectionParameters) -> Connection {
         test_fixture::DEFAULT_SERVER_NAME,
         test_fixture::DEFAULT_ALPN,
         Rc::new(RefCell::new(CountingConnectionIdGenerator::default())),
-        addr(),
-        addr(),
+        DEFAULT_ADDR,
+        DEFAULT_ADDR,
         params,
         now(),
     )
@@ -173,12 +170,17 @@ impl crate::connection::test_internal::FrameWriter for PingWriter {
     }
 }
 
+trait DatagramModifier: FnMut(Datagram) -> Option<Datagram> {}
+
+impl<T> DatagramModifier for T where T: FnMut(Datagram) -> Option<Datagram> {}
+
 /// Drive the handshake between the client and server.
-fn handshake(
+fn handshake_with_modifier(
     client: &mut Connection,
     server: &mut Connection,
     now: Instant,
     rtt: Duration,
+    mut modifier: impl DatagramModifier,
 ) -> Instant {
     let mut a = client;
     let mut b = server;
@@ -215,7 +217,11 @@ fn handshake(
             did_ping[a.role()] = true;
         }
         assert!(had_input || output.is_some());
-        input = output;
+        if let Some(d) = output {
+            input = modifier(d);
+        } else {
+            input = output;
+        }
         qtrace!("handshake: t += {:?}", rtt / 2);
         now += rtt / 2;
         mem::swap(&mut a, &mut b);
@@ -224,6 +230,15 @@ fn handshake(
         a.process_input(&d, now);
     }
     now
+}
+
+fn handshake(
+    client: &mut Connection,
+    server: &mut Connection,
+    now: Instant,
+    rtt: Duration,
+) -> Instant {
+    handshake_with_modifier(client, server, now, rtt, Some)
 }
 
 fn connect_fail(
@@ -237,11 +252,12 @@ fn connect_fail(
     assert_error(server, &ConnectionError::Transport(server_error));
 }
 
-fn connect_with_rtt(
+fn connect_with_rtt_and_modifier(
     client: &mut Connection,
     server: &mut Connection,
     now: Instant,
     rtt: Duration,
+    modifier: impl DatagramModifier,
 ) -> Instant {
     fn check_rtt(stats: &Stats, rtt: Duration) {
         assert_eq!(stats.rtt, rtt);
@@ -249,13 +265,22 @@ fn connect_with_rtt(
         let n = stats.frame_rx.ack + usize::from(stats.rtt_init_guess);
         assert_eq!(stats.rttvar, rttvar_after_n_updates(n, rtt));
     }
-    let now = handshake(client, server, now, rtt);
+    let now = handshake_with_modifier(client, server, now, rtt, modifier);
     assert_eq!(*client.state(), State::Confirmed);
     assert_eq!(*server.state(), State::Confirmed);
 
     check_rtt(&client.stats(), rtt);
     check_rtt(&server.stats(), rtt);
     now
+}
+
+fn connect_with_rtt(
+    client: &mut Connection,
+    server: &mut Connection,
+    now: Instant,
+    rtt: Duration,
+) -> Instant {
+    connect_with_rtt_and_modifier(client, server, now, rtt, Some)
 }
 
 fn connect(client: &mut Connection, server: &mut Connection) {
@@ -278,7 +303,7 @@ fn exchange_ticket(
 ) -> ResumptionToken {
     let validation = AddressValidation::new(now, ValidateAddress::NoToken).unwrap();
     let validation = Rc::new(RefCell::new(validation));
-    server.set_validation(Rc::clone(&validation));
+    server.set_validation(&validation);
     server.send_ticket(now, &[]).expect("can send ticket");
     let ticket = server.process_output(now).dgram();
     assert!(ticket.is_some());
@@ -304,8 +329,13 @@ fn assert_idle(client: &mut Connection, server: &mut Connection, rtt: Duration, 
 }
 
 /// Connect with an RTT and then force both peers to be idle.
-fn connect_rtt_idle(client: &mut Connection, server: &mut Connection, rtt: Duration) -> Instant {
-    let now = connect_with_rtt(client, server, now(), rtt);
+fn connect_rtt_idle_with_modifier(
+    client: &mut Connection,
+    server: &mut Connection,
+    rtt: Duration,
+    modifier: impl DatagramModifier,
+) -> Instant {
+    let now = connect_with_rtt_and_modifier(client, server, now(), rtt, modifier);
     assert_idle(client, server, rtt, now);
     // Drain events from both as well.
     _ = client.events().count();
@@ -314,8 +344,20 @@ fn connect_rtt_idle(client: &mut Connection, server: &mut Connection, rtt: Durat
     now
 }
 
+fn connect_rtt_idle(client: &mut Connection, server: &mut Connection, rtt: Duration) -> Instant {
+    connect_rtt_idle_with_modifier(client, server, rtt, Some)
+}
+
+fn connect_force_idle_with_modifier(
+    client: &mut Connection,
+    server: &mut Connection,
+    modifier: impl DatagramModifier,
+) {
+    connect_rtt_idle_with_modifier(client, server, Duration::new(0, 0), modifier);
+}
+
 fn connect_force_idle(client: &mut Connection, server: &mut Connection) {
-    connect_rtt_idle(client, server, Duration::new(0, 0));
+    connect_force_idle_with_modifier(client, server, Some);
 }
 
 fn fill_stream(c: &mut Connection, stream: StreamId) {
@@ -527,12 +569,14 @@ fn assert_full_cwnd(packets: &[Datagram], cwnd: usize) {
 }
 
 /// Send something on a stream from `sender` to `receiver`, maybe allowing for pacing.
+/// Takes a modifier function that can be used to modify the datagram before it is sent.
 /// Return the resulting datagram and the new time.
 #[must_use]
-fn send_something_paced(
+fn send_something_paced_with_modifier(
     sender: &mut Connection,
     mut now: Instant,
     allow_pacing: bool,
+    mut modifier: impl DatagramModifier,
 ) -> (Datagram, Instant) {
     let stream_id = sender.stream_create(StreamType::UniDi).unwrap();
     assert!(sender.stream_send(stream_id, DEFAULT_STREAM_DATA).is_ok());
@@ -547,16 +591,32 @@ fn send_something_paced(
                 .dgram()
                 .expect("send_something: should have something to send")
         }
-        Output::Datagram(d) => d,
+        Output::Datagram(d) => modifier(d).unwrap(),
         Output::None => panic!("send_something: got Output::None"),
     };
     (dgram, now)
 }
 
+fn send_something_paced(
+    sender: &mut Connection,
+    now: Instant,
+    allow_pacing: bool,
+) -> (Datagram, Instant) {
+    send_something_paced_with_modifier(sender, now, allow_pacing, Some)
+}
+
+fn send_something_with_modifier(
+    sender: &mut Connection,
+    now: Instant,
+    modifier: impl DatagramModifier,
+) -> Datagram {
+    send_something_paced_with_modifier(sender, now, false, modifier).0
+}
+
 /// Send something on a stream from `sender` to `receiver`.
 /// Return the resulting datagram.
 fn send_something(sender: &mut Connection, now: Instant) -> Datagram {
-    send_something_paced(sender, now, false).0
+    send_something_with_modifier(sender, now, Some)
 }
 
 /// Send something on a stream from `sender` to `receiver`.

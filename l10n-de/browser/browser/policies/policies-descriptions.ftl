@@ -28,6 +28,7 @@ policy-BlockAboutSupport = about:support-Seitenzugriff (Informationen zur Fehler
 policy-Bookmarks = Lesezeichen erstellen in der Lesezeichen-Symbolleiste, im Lesezeichen-Menü oder in einem vorgegebenen Ordner in diesen
 policy-CaptivePortal = Erkennung von Anmelde- oder Bestätigungspflicht für Internetzugriff aktivieren oder deaktivieren
 policy-CertificatesDescription = Zertifikate hinzufügen oder eingebaute Zertifikate verwenden
+policy-ContentAnalysis = Verbindung mit Datenverlustverhinderungsagent aktivieren oder deaktivieren
 policy-Cookies = Cookies setzen durch Websites erlauben oder verbieten
 # Containers in this context is referring to container tabs in Firefox.
 policy-Containers = Richtlinien für Umgebungen festlegen
@@ -38,8 +39,11 @@ policy-DisableAppUpdate = Browser-Updates deaktivieren
 policy-DisableBuiltinPDFViewer = Eingebauten PDF-Betrachter von { -brand-short-name } (PDF.js) deaktivieren
 policy-DisableDefaultBrowserAgent = Aktionen des Programms zur Erkennung des Standardbrowsers deaktivieren. Findet nur unter Windows Anwendung, da andere Betriebssysteme nicht über dieses Programm verfügen.
 policy-DisableDeveloperTools = Zugriff auf Entwicklerwerkzeuge deaktivieren
+policy-DisableEncryptedClientHello = Verwendung der TLS-Funktion Encrypted Client Hello (ECH) deaktivieren
 policy-DisableFeedbackCommands = Feedback senden über "Hilfe"-Menü deaktivieren ("Feedback senden…" und "Betrügerische Website melden…")
 policy-DisableFirefoxAccounts = { -fxaccount-brand-name }-basierte Dienste (z.B. Sync) deaktivieren
+# This string is in the process of being deprecated in favor of policy-DisableAccounts.
+policy-DisableFirefoxAccounts1 = Kontobasierte Dienste, einschließlich Synchronisation, deaktivieren
 # Firefox Screenshots is the name of the feature, and should not be translated.
 policy-DisableFirefoxScreenshots = "Firefox Screenshots"-Funktion deaktivieren
 policy-DisableFirefoxStudies = { -brand-short-name } keine Studien durchführen lassen
@@ -124,6 +128,7 @@ policy-SSLVersionMax = Höchste zu verwendende SSL-Version festlegen
 policy-SSLVersionMin = Niedrigste zu verwendende SSL-Version festlegen
 policy-StartDownloadsInTempDirectory = Erzwingen, dass Downloads an einem lokalen, temporären Speicherort und nicht im Standard-Download-Verzeichnis beginnen
 policy-SupportMenu = Benutzerdefinierten Eintrag zum Menü "Hilfe" hinzufügen
+policy-TranslateEnabled = Übersetzung von Webseiten aktivieren oder deaktivieren
 policy-UserMessaging = Anzeige von bestimmten Nachrichten deaktivieren
 policy-UseSystemPrintDialog = Mit Druckdialog des Systems drucken
 # “format” refers to the format used for the value of this policy.

@@ -13,6 +13,11 @@ downloads-panel =
 
 ##
 
+# The style attribute has the width of the Downloads Panel expressed using
+# a CSS unit. The longest labels that should fit are usually those of
+# in-progress and blocked downloads.
+downloads-panel-items =
+    .style = width: 35em
 downloads-cmd-pause =
     .label = Pauziraj
     .accesskey = P
@@ -32,7 +37,8 @@ downloads-cmd-cancel-panel =
 downloads-cmd-use-system-default =
     .label = Otvori u sistemskom pregledniku
     .accesskey = V
-
+# We can use the same accesskey as downloads-cmd-always-open-similar-files.
+# Both should not be visible in the downloads context menu at the same time.
 downloads-cmd-always-use-system-default =
     .label = Uvijek otvaraj u sistemskom pregledniku
     .accesskey = w
@@ -60,42 +66,33 @@ downloads-cmd-clear-list =
 downloads-cmd-clear-downloads =
     .label = Obriši preuzimanja
     .accesskey = p
-
 # This command is shown in the context menu when downloads are blocked.
 downloads-cmd-unblock =
     .label = Dozvoli preuzimanje
     .accesskey = o
-
 # This is the tooltip of the action button shown when malware is blocked.
 downloads-cmd-remove-file =
     .tooltiptext = Ukloni fajl
-
 downloads-cmd-remove-file-panel =
     .aria-label = Ukloni fajl
-
 # This is the tooltip of the action button shown when potentially unwanted
 # downloads are blocked. This opens a dialog where the user can choose
 # whether to unblock or remove the download. Removing is the default option.
 downloads-cmd-choose-unblock =
     .tooltiptext = Ukloni fajl ili dozvoli preuzimanje
-
 downloads-cmd-choose-unblock-panel =
     .aria-label = Ukloni fajl ili dozvoli preuzimanje
-
 # This is the tooltip of the action button shown when uncommon downloads are
 # blocked.This opens a dialog where the user can choose whether to open the
 # file or remove the download. Opening is the default option.
 downloads-cmd-choose-open =
     .tooltiptext = Otvori ili ukloni fajl
-
 downloads-cmd-choose-open-panel =
     .aria-label = Otvori ili ukloni fajl
-
 # Displayed when hovering a blocked download, indicates that it's possible to
 # show more information for user to take the next action.
 downloads-show-more-information =
     .value = Prikaži više informacija
-
 # Displayed when hovering a complete download, indicates that it's possible to
 # open the file using an app available in the system.
 downloads-open-file =
@@ -109,6 +106,18 @@ downloads-open-file =
 ##   $seconds (number) - Amount of seconds left till the file opens.
 ##   $minutes (number) - Amount of minutes till the file opens.
 
+downloading-file-opens-in-hours-and-minutes-2 =
+    .value = Otvaranje za { $hours }h { $minutes }m…
+downloading-file-opens-in-minutes-2 =
+    .value = Otvaranje za { $minutes }m…
+downloading-file-opens-in-minutes-and-seconds-2 =
+    .value = Otvaranje za { $minutes }m { $seconds }s…
+downloading-file-opens-in-seconds-2 =
+    .value = Otvaranje za { $seconds }s…
+downloading-file-opens-in-some-time-2 =
+    .value = Otvara se kada se završi…
+downloading-file-click-to-open =
+    .value = Otvorite kada završite
 
 ##
 
@@ -116,20 +125,17 @@ downloads-open-file =
 # indicates that it's possible to download this file again.
 downloads-retry-download =
     .value = Ponovo pokušaj preuzimanje
-
 # Displayed when hovering a download which is able to be cancelled by users,
 # indicates that it's possible to cancel and stop the download.
 downloads-cancel-download =
     .value = Otkaži preuzimanje
-
 # This string is shown at the bottom of the Downloads Panel when all the
 # downloads fit in the available space, or when there are no downloads in
 # the panel at all.
 downloads-history =
     .label = Prikaži sva preuzimanja
     .accesskey = s
-
-# This string is shown at the top of the Download Details Panel, to indicate
+# This string is shown at the top of the download details sub-panel to indicate
 # that we are showing the details of a single download.
 downloads-details =
     .title = Detalji preuzimanja
@@ -139,18 +145,18 @@ downloads-details =
 ##   $num (number) - Number of blocked downloads.
 ##   $url (string) - The url of the suspicious site, stripped of http, https and www prefix.
 
+downloads-blocked-from-url = Preuzimanja blokirana sa { $url }.
+downloads-blocked-download-detailed-info = { $url } je pokušao automatski preuzeti više datoteka. Stranica je možda pokvarena ili pokušava pohraniti spam datoteke na vaš uređaj.
 
 ##
 
 downloads-clear-downloads-button =
     .label = Obriši preuzimanja
     .tooltiptext = Briše završena, otkazana i neuspješna preuzimanja
-
 # This string is shown when there are no items in the Downloads view, when it
 # is displayed inside a browser tab.
 downloads-list-empty =
     .value = Nema preuzimanja.
-
 # This string is shown when there are no items in the Downloads Panel.
 downloads-panel-empty =
     .value = Nema preuzimanja u ovoj sesiji.
@@ -158,6 +164,11 @@ downloads-panel-empty =
 ## Download errors
 
 downloads-error-alert-title = Greška pri preuzimanju
+# Variables:
+#   $extension (String): the name of the blocking extension.
+downloads-error-blocked-by = Preuzimanje se ne može sačuvati jer ga blokira { $extension }.
+# Used when the name of the blocking extension is unavailable.
+downloads-error-extension = Preuzimanje nije moguće sačuvati jer je blokirano ekstenzijom.
 # Line breaks in this message are meaningful, and should be maintained.
 downloads-error-generic =
     Preuzimanje ne može biti spašeno jer se desila nepoznata greška.

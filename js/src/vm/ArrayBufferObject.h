@@ -566,6 +566,12 @@ class ArrayBufferObject : public ArrayBufferObjectMaybeShared {
   void setDataPointer(BufferContents contents);
   void setByteLength(size_t length);
 
+  /**
+   * Return the byte length for fixed-length buffers or the maximum byte length
+   * for resizable buffers.
+   */
+  inline size_t maxByteLength() const;
+
   size_t associatedBytes() const;
 
   uint32_t flags() const;
@@ -703,6 +709,13 @@ class ResizableArrayBufferObject : public ArrayBufferObject {
       JS::Handle<ResizableArrayBufferObject*> source);
 };
 
+size_t ArrayBufferObject::maxByteLength() const {
+  if (isResizable()) {
+    return as<ResizableArrayBufferObject>().maxByteLength();
+  }
+  return byteLength();
+}
+
 // Create a buffer for a wasm memory, whose type is determined by
 // memory.indexType().
 ArrayBufferObjectMaybeShared* CreateWasmBuffer(JSContext* cx,
@@ -747,15 +760,19 @@ class InnerViewTable {
                 StableCellHasher<JSObject*>, ZoneAllocPolicy>;
   ArrayBufferViewMap map;
 
-  // List of keys from innerViews where either the source or at least one
-  // target is in the nursery. The raw pointer to a JSObject is allowed here
-  // because this vector is cleared after every minor collection. Users in
-  // sweepAfterMinorCollection must be careful to use MaybeForwarded before
-  // touching these pointers.
-  Vector<ArrayBufferObject*, 0, SystemAllocPolicy> nurseryKeys;
+  // List of keys from map where either the source or at least one target is in
+  // the nursery. The raw pointer to a JSObject is allowed here because this
+  // vector is cleared after every minor collection. Users in sweepAfterMinorGC
+  // must be careful to use MaybeForwarded before touching these pointers.
+  using NurseryKeysVector =
+      GCVector<UnsafeBarePtr<ArrayBufferObject*>, 0, SystemAllocPolicy>;
+  NurseryKeysVector nurseryKeys;
 
   // Whether nurseryKeys is a complete list.
   bool nurseryKeysValid = true;
+
+  bool sweepMapEntryAfterMinorGC(UnsafeBarePtr<JSObject*>& buffer,
+                                 ViewVector& views);
 
  public:
   explicit InnerViewTable(Zone* zone) : map(zone) {}
@@ -775,10 +792,14 @@ class InnerViewTable {
 
  private:
   friend class ArrayBufferObject;
+  friend class ResizableArrayBufferObject;
   bool addView(JSContext* cx, ArrayBufferObject* buffer,
                ArrayBufferViewObject* view);
   ViewVector* maybeViewsUnbarriered(ArrayBufferObject* buffer);
   void removeViews(ArrayBufferObject* buffer);
+
+  bool sweepViewsAfterMinorGC(JSTracer* trc, ArrayBufferObject* buffer,
+                              Views& views);
 };
 
 template <typename Wrapper>

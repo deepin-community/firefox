@@ -54,7 +54,7 @@ class WithCommonStyles extends MozLitElement {
       font: message-box;
       font-size: var(--font-size-root);
       appearance: none;
-      background-color: var(--color-canvas);
+      background-color: var(--background-color-canvas);
       color: var(--text-color);
       -moz-box-layout: flex;
     }
@@ -94,15 +94,28 @@ class WithCommonStyles extends MozLitElement {
 customElements.define("with-common-styles", WithCommonStyles);
 
 // Wrap all stories in `with-common-styles`.
-export const decorators = [
-  (story, context) =>
-    html`
-      <with-common-styles
-        .story=${story}
-        .context=${context}
-      ></with-common-styles>
-    `,
-];
+export default {
+  decorators: [
+    (story, context) =>
+      html`
+        <with-common-styles
+          .story=${story}
+          .context=${context}
+        ></with-common-styles>
+      `,
+  ],
+  parameters: {
+    docs: {
+      toc: {
+        disable: false,
+        headingSelector: "h2, h3",
+        ignoreSelector: "h2.text-truncated-ellipsis, .toc-ignore",
+        title: "On this page",
+      },
+    },
+    options: { showPanel: true },
+  },
+};
 
 // Enable props tables documentation.
 setCustomElementsManifest(customElementsManifest);

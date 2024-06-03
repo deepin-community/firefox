@@ -17,7 +17,6 @@
 
 use std::borrow::Cow;
 use std::collections::HashMap;
-use std::convert::TryFrom;
 use std::fmt;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};
@@ -25,7 +24,7 @@ use std::thread;
 use std::time::Duration;
 
 use crossbeam_channel::unbounded;
-use log::{self, LevelFilter};
+use log::LevelFilter;
 use once_cell::sync::{Lazy, OnceCell};
 use uuid::Uuid;
 
@@ -91,12 +90,12 @@ pub(crate) const DELETION_REQUEST_PINGS_DIRECTORY: &str = "deletion_request";
 static INITIALIZE_CALLED: AtomicBool = AtomicBool::new(false);
 
 /// Keep track of the debug features before Glean is initialized.
-static PRE_INIT_DEBUG_VIEW_TAG: OnceCell<Mutex<String>> = OnceCell::new();
+static PRE_INIT_DEBUG_VIEW_TAG: Mutex<String> = Mutex::new(String::new());
 static PRE_INIT_LOG_PINGS: AtomicBool = AtomicBool::new(false);
-static PRE_INIT_SOURCE_TAGS: OnceCell<Mutex<Vec<String>>> = OnceCell::new();
+static PRE_INIT_SOURCE_TAGS: Mutex<Vec<String>> = Mutex::new(Vec::new());
 
 /// Keep track of pings registered before Glean is initialized.
-static PRE_INIT_PING_REGISTRATION: OnceCell<Mutex<Vec<metrics::PingType>>> = OnceCell::new();
+static PRE_INIT_PING_REGISTRATION: Mutex<Vec<metrics::PingType>> = Mutex::new(Vec::new());
 
 /// Global singleton of the handles of the glean.init threads.
 /// For joining. For tests.
@@ -136,6 +135,8 @@ pub struct InternalConfiguration {
     /// be noted that this has an underlying StringMetric and so should conform to the limitations that
     /// StringMetric places on length, etc.
     pub experimentation_id: Option<String>,
+    /// Whether to enable internal pings. Default: true
+    pub enable_internal_pings: bool,
 }
 
 /// How to specify the rate at which pings may be uploaded before they are throttled.
@@ -396,11 +397,9 @@ fn initialize_inner(
             core::with_glean_mut(|glean| {
                 // The debug view tag might have been set before initialize,
                 // get the cached value and set it.
-                if let Some(tag) = PRE_INIT_DEBUG_VIEW_TAG.get() {
-                    let lock = tag.try_lock();
-                    if let Ok(ref debug_tag) = lock {
-                        glean.set_debug_view_tag(debug_tag);
-                    }
+                let debug_tag = PRE_INIT_DEBUG_VIEW_TAG.lock().unwrap();
+                if debug_tag.len() > 0 {
+                    glean.set_debug_view_tag(&debug_tag);
                 }
 
                 // The log pings debug option might have been set before initialize,
@@ -412,11 +411,9 @@ fn initialize_inner(
 
                 // The source tags might have been set before initialize,
                 // get the cached value and set them.
-                if let Some(tags) = PRE_INIT_SOURCE_TAGS.get() {
-                    let lock = tags.try_lock();
-                    if let Ok(ref source_tags) = lock {
-                        glean.set_source_tags(source_tags.to_vec());
-                    }
+                let source_tags = PRE_INIT_SOURCE_TAGS.lock().unwrap();
+                if source_tags.len() > 0 {
+                    glean.set_source_tags(source_tags.to_vec());
                 }
 
                 // Get the current value of the dirty flag so we know whether to
@@ -428,13 +425,9 @@ fn initialize_inner(
 
                 // Perform registration of pings that were attempted to be
                 // registered before init.
-                if let Some(tags) = PRE_INIT_PING_REGISTRATION.get() {
-                    let lock = tags.try_lock();
-                    if let Ok(pings) = lock {
-                        for ping in &*pings {
-                            glean.register_ping_type(ping);
-                        }
-                    }
+                let pings = PRE_INIT_PING_REGISTRATION.lock().unwrap();
+                for ping in pings.iter() {
+                    glean.register_ping_type(ping);
                 }
 
                 // If this is the first time ever the Glean SDK runs, make sure to set
@@ -861,7 +854,7 @@ pub(crate) fn register_ping_type(ping: &PingType) {
         // if ping registration is attempted before Glean initializes.
         // This state is kept across Glean resets, which should only ever happen in test mode.
         // It's a set and keeping them around forever should not have much of an impact.
-        let m = PRE_INIT_PING_REGISTRATION.get_or_init(Default::default);
+        let m = &PRE_INIT_PING_REGISTRATION;
         let mut lock = m.lock().unwrap();
         lock.push(ping.clone());
     }
@@ -956,7 +949,7 @@ pub fn glean_set_debug_view_tag(tag: String) -> bool {
         true
     } else {
         // Glean has not been initialized yet. Cache the provided tag value.
-        let m = PRE_INIT_DEBUG_VIEW_TAG.get_or_init(Default::default);
+        let m = &PRE_INIT_DEBUG_VIEW_TAG;
         let mut lock = m.lock().unwrap();
         *lock = tag;
         // When setting the debug view tag before initialization,
@@ -984,7 +977,7 @@ pub fn glean_set_source_tags(tags: Vec<String>) -> bool {
         true
     } else {
         // Glean has not been initialized yet. Cache the provided source tags.
-        let m = PRE_INIT_SOURCE_TAGS.get_or_init(Default::default);
+        let m = &PRE_INIT_SOURCE_TAGS;
         let mut lock = m.lock().unwrap();
         *lock = tags;
         // When setting the source tags before initialization,

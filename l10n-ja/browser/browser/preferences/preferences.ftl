@@ -32,6 +32,8 @@ search-input-box2 =
     .style = width: 15.4em
     .placeholder = 設定を検索
 managed-notice = ご使用のブラウザーはあなたの所属組織に管理されています。
+managed-notice-info-icon =
+    .alt = 情報
 category-list =
     .aria-label = カテゴリー
 pane-general-title = 一般
@@ -691,7 +693,14 @@ sync-mobile-promo = Firefox for <img data-l10n-name="android-icon"/> <a data-l10
 ## Firefox account - Signed in
 
 sync-profile-picture =
-    .tooltiptext = プロフィール写真を変更します
+    .tooltiptext = プロファイル写真を変更します
+sync-profile-picture-with-alt =
+    .tooltiptext = プロファイル写真を変更します
+    .alt = プロファイル写真を変更します
+sync-profile-picture-account-problem =
+    .alt = アカウントのプロファイル写真
+fxa-login-rejected-warning =
+    .alt = 警告
 sync-sign-out =
     .label = ログアウト...
     .accesskey = g
@@ -1257,6 +1266,8 @@ addon-recommendations-link = 詳細情報
 collection-health-report-disabled = このビルド設定ではヘルスレポートが無効化されています
 collection-backlogged-crash-reports-with-link = { -brand-short-name } があなたに代わって未送信のクラッシュレポートを送信することを許可する <a data-l10n-name="crash-reports-link">詳細情報</a>
     .accesskey = c
+collection-backlogged-crash-reports = { -brand-short-name } があなたに代わって未送信のクラッシュレポートを送信することを許可する
+    .accesskey = c
 privacy-segmentation-section-header = ブラウジング体験を向上させる新機能
 privacy-segmentation-section-description = より良いユーザー体験のために、あなたのデータを使用する機能を提案されたとき:
 privacy-segmentation-radio-off =
@@ -1366,7 +1377,7 @@ preferences-doh-setting-off =
     .accesskey = O
 preferences-doh-off-desc = 既定の DNS リゾルバーを使用します
 preferences-doh-checkbox-warn =
-    .label = 第三者が安全な DNS を妨げている時に警告する
+    .label = 第三者が安全な DNS を妨げているときに警告する
     .accesskey = W
 preferences-doh-select-resolver = プロバイダーを選択:
 preferences-doh-exceptions-description = { -brand-short-name } はこれらのサイトで安全な DNS を使用しません

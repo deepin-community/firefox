@@ -16,9 +16,7 @@ namespace gfx {
 
 DrawEventRecorderPrivate::DrawEventRecorderPrivate() : mExternalFonts(false) {}
 
-DrawEventRecorderPrivate::~DrawEventRecorderPrivate() {
-  NS_ASSERT_OWNINGTHREAD(DrawEventRecorderPrivate);
-}
+DrawEventRecorderPrivate::~DrawEventRecorderPrivate() = default;
 
 void DrawEventRecorderPrivate::SetDrawTarget(ReferencePtr aDT) {
   NS_ASSERT_OWNINGTHREAD(DrawEventRecorderPrivate);
@@ -33,6 +31,13 @@ void DrawEventRecorderPrivate::StoreExternalSurfaceRecording(
 
   RecordEvent(RecordedExternalSurfaceCreation(aSurface, aKey));
   mExternalSurfaces.push_back({aSurface});
+}
+
+void DrawEventRecorderPrivate::StoreExternalImageRecording(
+    const RefPtr<layers::Image>& aImageOfSurfaceDescriptor) {
+  NS_ASSERT_OWNINGTHREAD(DrawEventRecorderPrivate);
+
+  mExternalImages.push_back({aImageOfSurfaceDescriptor});
 }
 
 void DrawEventRecorderPrivate::StoreSourceSurfaceRecording(

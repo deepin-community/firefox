@@ -32,6 +32,8 @@ search-input-box2 =
     .style = width: 15.4em
     .placeholder = Søk i innstillinger
 managed-notice = Nettleseren din administreres av organisasjonen din.
+managed-notice-info-icon =
+    .alt = Informasjon
 category-list =
     .aria-label = Kategorier
 pane-general-title = Generelt
@@ -708,6 +710,13 @@ sync-mobile-promo = Last ned Firefox for <img data-l10n-name="android-icon"/> <a
 
 sync-profile-picture =
     .tooltiptext = Endre profilbilde
+sync-profile-picture-with-alt =
+    .tooltiptext = Endre profilbilde
+    .alt = Endre profilbilde
+sync-profile-picture-account-problem =
+    .alt = Kontoprofilbilde
+fxa-login-rejected-warning =
+    .alt = Advarsel
 sync-sign-out =
     .label = Logg ut…
     .accesskey = g
@@ -1275,6 +1284,8 @@ addon-recommendations-link = Les mer
 collection-health-report-disabled = Datarapportering er deaktivert for denne byggekonfigurasjonen
 collection-backlogged-crash-reports-with-link = Tillat { -brand-short-name } å sende etterslepne krasjrapporter på dine vegne <a data-l10n-name="crash-reports-link">Les mer</a>
     .accesskey = T
+collection-backlogged-crash-reports = Tillat { -brand-short-name } å sende etterslepne krasjrapporter på dine vegne
+    .accesskey = s
 privacy-segmentation-section-header = Nye funksjoner som forbedrer surfingen din
 privacy-segmentation-section-description = Når vi tilbyr funksjoner som bruker dine data for å gi deg en mer personlig opplevelse:
 privacy-segmentation-radio-off =

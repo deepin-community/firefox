@@ -5,7 +5,6 @@
 // except according to those terms.
 
 // Congestion control
-#![deny(clippy::pedantic)]
 
 use std::{
     cmp::{max, min},
@@ -165,7 +164,7 @@ impl<T: WindowAdjustment> CongestionControl for ClassicCongestionControl<T> {
         let mut is_app_limited = true;
         let mut new_acked = 0;
         for pkt in acked_pkts {
-            qinfo!(
+            qdebug!(
                 "packet_acked this={:p}, pn={}, ps={}, ignored={}, lost={}, rtt_est={:?}",
                 self,
                 pkt.pn,
@@ -180,8 +179,9 @@ impl<T: WindowAdjustment> CongestionControl for ClassicCongestionControl<T> {
             if pkt.pn < self.first_app_limited {
                 is_app_limited = false;
             }
-            assert!(self.bytes_in_flight >= pkt.size);
-            self.bytes_in_flight -= pkt.size;
+            // BIF is set to 0 on a path change, but in case that was because of a simple rebinding
+            // event, we may still get ACKs for packets sent before the rebinding.
+            self.bytes_in_flight = self.bytes_in_flight.saturating_sub(pkt.size);
 
             if !self.after_recovery_start(pkt) {
                 // Do not increase congestion window for packets sent before
@@ -199,7 +199,7 @@ impl<T: WindowAdjustment> CongestionControl for ClassicCongestionControl<T> {
 
         if is_app_limited {
             self.cc_algorithm.on_app_limited();
-            qinfo!("on_packets_acked this={:p}, limited=1, bytes_in_flight={}, cwnd={}, state={:?}, new_acked={}", self, self.bytes_in_flight, self.congestion_window, self.state, new_acked);
+            qdebug!("on_packets_acked this={:p}, limited=1, bytes_in_flight={}, cwnd={}, state={:?}, new_acked={}", self, self.bytes_in_flight, self.congestion_window, self.state, new_acked);
             return;
         }
 
@@ -209,7 +209,7 @@ impl<T: WindowAdjustment> CongestionControl for ClassicCongestionControl<T> {
             let increase = min(self.ssthresh - self.congestion_window, self.acked_bytes);
             self.congestion_window += increase;
             self.acked_bytes -= increase;
-            qinfo!([self], "slow start += {}", increase);
+            qdebug!([self], "slow start += {}", increase);
             if self.congestion_window == self.ssthresh {
                 // This doesn't look like it is necessary, but it can happen
                 // after persistent congestion.
@@ -250,7 +250,7 @@ impl<T: WindowAdjustment> CongestionControl for ClassicCongestionControl<T> {
                 QlogMetric::BytesInFlight(self.bytes_in_flight),
             ],
         );
-        qinfo!([self], "on_packets_acked this={:p}, limited=0, bytes_in_flight={}, cwnd={}, state={:?}, new_acked={}", self, self.bytes_in_flight, self.congestion_window, self.state, new_acked);
+        qdebug!([self], "on_packets_acked this={:p}, limited=0, bytes_in_flight={}, cwnd={}, state={:?}, new_acked={}", self, self.bytes_in_flight, self.congestion_window, self.state, new_acked);
     }
 
     /// Update congestion controller state based on lost packets.
@@ -266,14 +266,15 @@ impl<T: WindowAdjustment> CongestionControl for ClassicCongestionControl<T> {
         }
 
         for pkt in lost_packets.iter().filter(|pkt| pkt.cc_in_flight()) {
-            qinfo!(
+            qdebug!(
                 "packet_lost this={:p}, pn={}, ps={}",
                 self,
                 pkt.pn,
                 pkt.size
             );
-            assert!(self.bytes_in_flight >= pkt.size);
-            self.bytes_in_flight -= pkt.size;
+            // BIF is set to 0 on a path change, but in case that was because of a simple rebinding
+            // event, we may still declare packets lost that were sent before the rebinding.
+            self.bytes_in_flight = self.bytes_in_flight.saturating_sub(pkt.size);
         }
         qlog::metrics_updated(
             &mut self.qlog,
@@ -287,7 +288,7 @@ impl<T: WindowAdjustment> CongestionControl for ClassicCongestionControl<T> {
             pto,
             lost_packets,
         );
-        qinfo!(
+        qdebug!(
             "on_packets_lost this={:p}, bytes_in_flight={}, cwnd={}, state={:?}",
             self,
             self.bytes_in_flight,
@@ -336,7 +337,7 @@ impl<T: WindowAdjustment> CongestionControl for ClassicCongestionControl<T> {
         }
 
         self.bytes_in_flight += pkt.size;
-        qinfo!(
+        qdebug!(
             "packet_sent this={:p}, pn={}, ps={}",
             self,
             pkt.pn,
@@ -499,7 +500,7 @@ impl<T: WindowAdjustment> ClassicCongestionControl<T> {
         self.congestion_window = max(cwnd, CWND_MIN);
         self.acked_bytes = acked_bytes;
         self.ssthresh = self.congestion_window;
-        qinfo!(
+        qdebug!(
             [self],
             "Cong event -> recovery; cwnd {}, ssthresh {}",
             self.congestion_window,
@@ -517,7 +518,6 @@ impl<T: WindowAdjustment> ClassicCongestionControl<T> {
         true
     }
 
-    #[allow(clippy::unused_self)]
     fn app_limited(&self) -> bool {
         if self.bytes_in_flight >= self.congestion_window {
             false
@@ -536,10 +536,7 @@ impl<T: WindowAdjustment> ClassicCongestionControl<T> {
 
 #[cfg(test)]
 mod tests {
-    use std::{
-        convert::TryFrom,
-        time::{Duration, Instant},
-    };
+    use std::time::{Duration, Instant};
 
     use neqo_common::qinfo;
     use test_fixture::now;

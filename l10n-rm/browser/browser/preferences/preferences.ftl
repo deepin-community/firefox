@@ -32,6 +32,8 @@ search-input-box2 =
     .style = width: 15.4em
     .placeholder = Tschertgar en ils parameters
 managed-notice = Tes navigatur vegn administrà da tia organisaziun.
+managed-notice-info-icon =
+    .alt = Infurmaziuns
 category-list =
     .aria-label = Categorias
 pane-general-title = General
@@ -261,6 +263,8 @@ preferences-default-zoom-value =
 preferences-zoom-text-only =
     .label = Zoomar mo il text
     .accesskey = t
+preferences-text-zoom-override-warning =
+    .message = Attenziun: Sche ti tschernas «Zoomar mo il text» e tes zoom predefinì n’è betg 100%, na funcziunan tschertas websites u tschert cuntegn eventualmain betg endretg.
 language-header = Lingua
 choose-language-description = Tscherna tia lingua preferida per la visualisaziun da websites
 choose-button =
@@ -566,6 +570,9 @@ home-prefs-shortcuts-by-option-sponsored =
 home-prefs-recommended-by-header =
     .label = Recumandà da { $provider }
 home-prefs-recommended-by-description-new = Cuntegn spezial, tschernì da { $provider } che fa part da { -brand-product-name }
+home-prefs-recommended-by-header-generic =
+    .label = Artitgels recumandads
+home-prefs-recommended-by-description-generic = Cuntegns excepziunals tschernids da la famiglia da products { -brand-product-name }
 
 ##
 
@@ -703,6 +710,13 @@ sync-mobile-promo = Telechargiar Firefox per <img data-l10n-name="android-icon"/
 
 sync-profile-picture =
     .tooltiptext = Midar il maletg da profil
+sync-profile-picture-with-alt =
+    .tooltiptext = Midar il maletg da profil
+    .alt = Midar il maletg da profil
+sync-profile-picture-account-problem =
+    .alt = Maletg da profil dal conto
+fxa-login-rejected-warning =
+    .alt = Attenziun
 sync-sign-out =
     .label = Sortir…
     .accesskey = o
@@ -1269,6 +1283,8 @@ addon-recommendations-link = Ulteriuras infurmaziuns
 # or builds with no Telemetry support available.
 collection-health-report-disabled = Rapports da datas èn deactivads per questa configuraziun da compilaziun
 collection-backlogged-crash-reports-with-link = Permetter a { -brand-short-name } da trametter tes rapports da collaps che spetgan <a data-l10n-name="crash-reports-link">Ulteriuras infurmaziuns</a>
+    .accesskey = c
+collection-backlogged-crash-reports = Permetter a { -brand-short-name } da trametter tes rapports da collaps che spetgan
     .accesskey = c
 privacy-segmentation-section-header = Novas funcziuns che megliereschan tia navigaziun
 privacy-segmentation-section-description = Cura che nus offrin funcziuns che utiliseschan tias datas per ta pussibilitar ina experientscha pli persunala:

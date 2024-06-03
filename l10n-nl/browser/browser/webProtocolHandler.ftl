@@ -12,6 +12,10 @@ protocolhandler-mailto-os-handler-no-button = Niet nu
 
 protocolhandler-mailto-handler-notificationbox-always = E-mailkoppelingen altijd openen met { $url }?
 protocolhandler-mailto-handler-yes-confirm = { $url } is nu uw standaardwebsite voor het openen van koppelingen die e-mail verzenden.
+protocolhandler-mailto-handler-set-message = Telkens <strong>{ $url } in { -brand-short-name }</strong> gebruiken als u op een koppeling klikt die uw e-mail opent?
+protocolhandler-mailto-handler-confirm-message = <strong>{ $url } in { -brand-short-name }</strong> is nu het standaard e-mailprogramma op uw computer.
+protocolhandler-mailto-handler-set = Telkens <strong>{ -brand-short-name } gebruiken om { $url } te openen</strong> als u op een koppeling klikt die uw e-mail opent?
+protocolhandler-mailto-handler-confirm = <strong>{ -brand-short-name } opent { $url }</strong> telkens wanneer u op een koppeling klikt die e-mail verzendt.
 
 ##
 

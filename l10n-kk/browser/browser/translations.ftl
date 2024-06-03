@@ -126,8 +126,6 @@ translations-manage-description = Желіден тыс аударма үшін 
 translations-manage-all-language = Барлық тілдер
 translations-manage-download-button = Жүктеп алу
 translations-manage-delete-button = Өшіру
-translations-manage-error-download = Тілдік файлды жүктеп алу кезінде мәселе орын алды. Қайталап көріңіз.
-translations-manage-error-delete = Тілдік файлдарды өшіру кезінде қате орын алды. Қайталап көріңіз.
 translations-manage-intro = Тілді және сайт аудармасының баптауларын орнатыңыз және желіден тыс аударма үшін орнатылған тілдерді басқарыңыз.
 translations-manage-install-description = Желіден тыс аударма үшін тілдерді орнату
 translations-manage-language-install-button =
@@ -135,12 +133,21 @@ translations-manage-language-install-button =
 translations-manage-language-install-all-button =
     .label = Барлығын орнату
     .accesskey = о
+translations-manage-intro-2 = Тілді және сайт аудармасының баптауларын орнатыңыз және желіден тыс аударма үшін жүктеліп алынған тілдерді басқарыңыз.
+translations-manage-download-description = Желіден тыс аударма үшін тілдерді жүктеп алу
+translations-manage-language-download-button =
+    .label = Жүктеп алу
+translations-manage-language-download-all-button =
+    .label = Барлығын жүктеп алу
+    .accesskey = ж
 translations-manage-language-remove-button =
     .label = Өшіру
 translations-manage-language-remove-all-button =
     .label = Барлығын өшіру
     .accesskey = ш
 translations-manage-error-install = Тілдік файлды орнату кезінде мәселе орын алды. Қайталап көріңіз.
+translations-manage-error-download = Тілдік файлды жүктеп алу кезінде мәселе орын алды. Қайталап көріңіз.
+translations-manage-error-delete = Тілдік файлдарды өшіру кезінде қате орын алды. Қайталап көріңіз.
 translations-manage-error-remove = Тілдік файлдарды өшіру кезінде қате орын алды. Қайталап көріңіз.
 translations-manage-error-list = Аударма үшін қолжетімді тілдер тізімін алу сәтсіз аяқталды. Әрекетті қайталау үшін бетті жаңартыңыз.
 translations-settings-title =
@@ -170,3 +177,75 @@ translations-settings-remove-all-sites-button =
 translations-settings-close-dialog =
     .buttonlabelaccept = Жабу
     .buttonaccesskeyaccept = ж
+# Text displayed in the right-click context menu for translating
+# selected text to a yet-to-be-determined language.
+main-context-menu-translate-selection =
+    .label = Таңдалғанды аудару…
+    .accesskey = д
+# Text displayed in the right-click context menu for translating
+# selected text to a target language.
+#
+# Variables:
+#   $language (string) - The localized display name of the target language
+main-context-menu-translate-selection-to-language =
+    .label = Таңдалғанды { $language } тіліне аудару
+    .accesskey = н
+# Text displayed in the right-click context menu for translating
+# the text of a hyperlink to a yet-to-be-determined language.
+main-context-menu-translate-link-text =
+    .label = Сілтеме мәтінін аудару…
+    .accesskey = н
+# Text displayed in the right-click context menu for translating
+# the text of a hyperlink to a target language.
+#
+# Variables:
+#   $language (string) - The localized display name of the target language
+main-context-menu-translate-link-text-to-language =
+    .label = Сілтеме мәтінін { $language } тіліне аудару
+    .accesskey = н
+# Text displayed in the select translations panel header.
+select-translations-panel-header = Аударма
+# Text displayed above the from-language dropdown menu.
+select-translations-panel-from-label = Қай тілден
+# Text displayed above the to-language dropdown menu.
+select-translations-panel-to-label = Қай тілге
+# Text displayed above the try-another-source-language dropdown menu.
+select-translations-panel-try-another-language-label = Басқа бастапқы тілді қолданып көру
+select-translations-panel-cancel-button =
+    .label = Бас тарту
+# Text displayed on the copy button before it is clicked.
+select-translations-panel-copy-button =
+    .label = Көшіріп алу
+# Text displayed on the copy button after it is clicked.
+select-translations-panel-copy-button-copied =
+    .label = Көшірілді
+select-translations-panel-done-button =
+    .label = Дайын
+select-translations-panel-translate-full-page-button =
+    .label = Толық парақты аудару
+select-translations-panel-translate-button =
+    .label = Аудару
+select-translations-panel-try-again-button =
+    .label = Қайтадан көру
+# Text displayed as a placeholder when the panel is idle.
+select-translations-panel-idle-placeholder-text = Аударылған мәтін осы жерде көрсетілетін болады.
+# Text displayed as a placeholder when the panel is actively translating.
+select-translations-panel-translating-placeholder-text = Аударуда…
+select-translations-panel-init-failure-message =
+    .message = Тілдер жүктелмеді. Интернет байланысын тексеріп, әрекетті қайталаңыз.
+# Text displayed when the translation fails to complete.
+select-translations-panel-translation-failure-message =
+    .message = Аудару кезінде мәселе орын алды. Қайталап көріңіз.
+# If your language requires declining the language name, a possible solution
+# is to adapt the structure of the phrase, or use a support noun, e.g.
+# `Sorry, we don't support the language yet: { $language }
+#
+# Variables:
+#   $language (string) - The language of the document.
+select-translations-panel-unsupported-language-message-known =
+    .message = Кешіріңіз, { $language } тіліне қолдау әлі жоқ.
+select-translations-panel-unsupported-language-message-unknown =
+    .message = Кешіріңіз, бұл тілге қолдау әлі жоқ.
+# Text displayed on the menuitem that opens the Translation Settings page.
+select-translations-panel-open-translations-settings-menuitem =
+    .label = Аударма баптаулары

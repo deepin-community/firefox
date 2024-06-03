@@ -92,19 +92,28 @@ about-logins-login-intro-heading-logged-in = Nema pronađenih sinhronizovanih pr
 login-intro-description = Ako ste spasili prijave u { -brand-product-name } na drugom uređaju, evo kako im možete pristupiti:
 login-intro-instructions-fxa = Kreirajte ili prijavite se na svoj { -fxaccount-brand-name } na uređaju gdje su sačuvane vaše prijave.
 about-logins-login-intro-heading-message = Sačuvajte svoje lozinke na sigurnom mjestu
+login-intro-description2 = Sve lozinke koje sačuvate na { -brand-product-name }u su šifrovane. Osim toga, pazimo na kršenja i upozoravamo vas ako ste pogođeni. <a data-l10n-name="breach-alert-link">Saznajte više</a>
 login-intro-instructions-fxa2 = Kreirajte ili se prijavite na vaš račun na uređaju na kojem su sačuvane vaše prijave.
 login-intro-instructions-fxa-settings = Idite na Postavke > Sinhronizacija > Uključi sinhronizaciju… Označite polje za potvrdu Prijava i lozinke.
 login-intro-instructions-fxa-passwords-help = Posjetite <a data-l10n-name="passwords-help-link">podršku za lozinke</a> za dodatnu pomoć.
 about-logins-intro-browser-only-import = Ako su vaše prijave sačuvane u drugom pretraživaču, možete ih <a data-l10n-name="import-link">uvesti u { -brand-product-name }</a>
 about-logins-intro-import2 = Ako su tvoje prijave spremljene izvan { -brand-product-name }a, možeš ih <a data-l10n-name="import-browser-link">uvesti iz jednog drugog browsera</a> ili <a data-l10n-name="import-file-link">iz jedne datoteke</a>
+about-logins-intro-import3 = Odaberite dugme sa znakom plus iznad da biste odmah dodali lozinku. Također možete <a data-l10n-name="import-browser-link">uvesti lozinke iz drugog pretraživača</a> ili <a data-l10n-name="import-file-link">iz fajla</a> a>.
 
 ## Login
 
 login-item-new-login-title = Kreiraj novu prijavu
+# Header for adding a password
+about-logins-login-item-new-login-title = Dodaj lozinku
 login-item-edit-button = Uredi
 about-logins-login-item-remove-button = Ukloni
 login-item-origin-label = Adresa web stranice
 login-item-tooltip-message = Provjeri podudara li se adresa web stranice na kojoj se prijavljuješ.
+about-logins-origin-tooltip2 = Unesite punu adresu i provjerite da li se tačno podudara s onom na koju se prijavljujete.
+# Variables
+#   $webTitle (String) - Website title of the password being changed.
+about-logins-edit-password-tooltip = Provjerite jeste li sačuvali svoju trenutnu lozinku za ovu stranicu. Promjena lozinke ovdje ne mijenja je sa { $webTitle }.
+about-logins-add-password-tooltip = Provjerite jeste li sačuvali svoju trenutnu lozinku za ovu stranicu.
 login-item-origin =
     .placeholder = https://www.example.com
 login-item-username-label = Korisničko ime
@@ -118,6 +127,7 @@ login-item-password-reveal-checkbox =
 login-item-copy-password-button-text = Kopiraj
 login-item-copied-password-button-text = Kopirano!
 login-item-save-changes-button = Spasi promjene
+about-logins-login-item-save-changes-button = Sačuvaj
 login-item-save-new-button = Spasi
 login-item-cancel-button = Otkaži
 
@@ -145,6 +155,11 @@ about-logins-edit-login-os-auth-dialog-message-win = Za uređivanje prijave, une
 # This message can be seen when attempting to edit a login in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-edit-login-os-auth-dialog-message-macosx = uredite sačuvanu prijavu
+# This message can be seen when attempting to edit a login in about:logins on Windows.
+about-logins-edit-login-os-auth-dialog-message2-win = Da biste uredili lozinku, unesite svoje podatke za prijavu na Windows. Ovo pomaže u zaštiti sigurnosti vaših računa.
+# This message can be seen when attempting to edit a login in about:logins
+# On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
+about-logins-edit-login-os-auth-dialog-message2-macosx = uredite sačuvanu lozinku
 # This message can be seen when attempting to reveal a password in about:logins on Windows.
 about-logins-reveal-password-os-auth-dialog-message-win = Za prikaz vaše lozinke, unesite svoje podatke za prijavu na Windows. To pomaže zaštiti sigurnost vaših računa.
 # This message can be seen when attempting to reveal a password in about:logins
@@ -160,6 +175,11 @@ about-logins-export-password-os-auth-dialog-message-win = Da biste izvezli svoje
 # This message can be seen when attempting to export a password in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-export-password-os-auth-dialog-message-macosx = izvezi spašene prijave i lozinke
+# This message can be seen when attempting to export a password in about:logins on Windows.
+about-logins-export-password-os-auth-dialog-message2-win = Da biste izvezli svoje lozinke, unesite svoje Windows akreditive za prijavu. Ovo pomaže u zaštiti sigurnosti vaših računa.
+# This message can be seen when attempting to export a password in about:logins
+# On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
+about-logins-export-password-os-auth-dialog-message2-macosx = izvoz sačuvanih lozinki
 
 ## Primary Password notification
 
@@ -175,6 +195,10 @@ confirmation-dialog-dismiss-button =
     .title = Otkaži
 about-logins-confirm-remove-dialog-title = Ukloniti ovu prijavu?
 confirm-delete-dialog-message = Ova radnja se ne može poništiti.
+# Title for modal to confirm the removal of one saved password
+about-logins-confirm-delete-dialog-title = Ukloniti lozinku?
+# Message for modal to confirm the removal of one saved password
+about-logins-confirm-delete-dialog-message = Ne možete poništiti ovu radnju.
 about-logins-confirm-remove-dialog-confirm-button = Ukloni
 
 ## Variables
@@ -184,7 +208,13 @@ about-logins-confirm-remove-dialog-confirm-button = Ukloni
 ##
 
 about-logins-confirm-export-dialog-title = Izvezi prijave i lozinke
+about-logins-confirm-export-dialog-message = Vaše lozinke će biti sačuvane kao čitljivi tekst (npr. BadP@ssw0rd) tako da svako ko može da otvori izvezenu datoteku može da ih vidi.
 about-logins-confirm-export-dialog-confirm-button = Izvoz…
+about-logins-confirm-export-dialog-title2 = Napomena o izvozu lozinki
+about-logins-confirm-export-dialog-message2 =
+    Kada izvezete, vaše lozinke se spremaju u datoteku s čitljivim tekstom.
+    Kada završite s korištenjem datoteke, preporučujemo da je izbrišete kako drugi koji koriste ovaj uređaj ne bi mogli vidjeti vaše lozinke.
+about-logins-confirm-export-dialog-confirm-button2 = Nastavite sa izvozom
 about-logins-alert-import-title = Uvoz završen
 about-logins-alert-import-message = Pogledajte detaljan sažetak uvoza
 confirm-discard-changes-dialog-title = Odbaci nespašene promjene?
@@ -226,6 +256,11 @@ about-logins-export-file-picker-title = Izvezi fajl s prijavama
 # The default file name shown in the file picker when exporting saved logins.
 # This must end in .csv
 about-logins-export-file-picker-default-filename = prijave.csv
+# Title of the file picker dialog
+about-logins-export-file-picker-title2 = Izvezite lozinke iz { -brand-short-name }a
+# The default file name shown in the file picker when exporting saved logins.
+# This must end in .csv
+about-logins-export-file-picker-default-filename2 = passwords.csv
 about-logins-export-file-picker-export-button = Izvezi
 # A description for the .csv file format that may be shown as the file type
 # filter by the operating system.
@@ -239,6 +274,8 @@ about-logins-export-file-picker-csv-filter-title =
 
 # Title of the file picker dialog
 about-logins-import-file-picker-title = Uvezi fajl s prijavama
+# Title of the file picker dialog
+about-logins-import-file-picker-title2 = Uvezite lozinke u { -brand-short-name }
 about-logins-import-file-picker-import-button = Uvezi
 # A description for the .csv file format that may be shown as the file type
 # filter by the operating system.
@@ -269,6 +306,7 @@ about-logins-import-dialog-error-try-import-again = Pokušaj ponovo uvesti…
 about-logins-import-dialog-error-cancel = Otkaži
 about-logins-import-report-title = Sažetak uvoza
 about-logins-import-report-description = Prijave i lozinke uvezene u { -brand-short-name }.
+about-logins-import-report-description2 = Lozinke uvezene u { -brand-short-name }.
 #
 # Variables:
 #  $number (number) - The number of the row
@@ -276,6 +314,9 @@ about-logins-import-report-row-index = Red { $number }
 about-logins-import-report-row-description-no-change = Duplikat: Tačno podudaranje postojeće prijave
 about-logins-import-report-row-description-modified = Postojeća prijava je ažurirana
 about-logins-import-report-row-description-added = Dodana je nova prijava
+about-logins-import-report-row-description-no-change2 = Duplikat: Tačno podudaranje postojećeg unosa
+about-logins-import-report-row-description-modified2 = Postojeći unos je ažuriran
+about-logins-import-report-row-description-added2 = Nova lozinka dodana
 about-logins-import-report-row-description-error = Greška: nedostaje polje
 
 ##

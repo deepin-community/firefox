@@ -1,7 +1,4 @@
-import {
-  CONTENT_MESSAGE_TYPE,
-  MAIN_MESSAGE_TYPE,
-} from "common/Actions.sys.mjs";
+import { CONTENT_MESSAGE_TYPE, MAIN_MESSAGE_TYPE } from "common/Actions.mjs";
 import Joi from "joi-browser";
 
 export const baseKeys = {
@@ -143,7 +140,7 @@ export const UTSessionPing = Joi.array().items(
   eventsTelemetryExtraKeys
 );
 
-export function chaiAssertions(_chai, utils) {
+export function chaiAssertions(_chai) {
   const { Assertion } = _chai;
 
   Assertion.addMethod("validate", function (schema, schemaName) {

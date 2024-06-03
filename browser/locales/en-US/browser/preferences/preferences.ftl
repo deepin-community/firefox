@@ -38,6 +38,8 @@ search-input-box2 =
     .placeholder = Find in Settings
 
 managed-notice = Your browser is being managed by your organization.
+managed-notice-info-icon =
+    .alt = Information
 
 category-list =
     .aria-label = Categories
@@ -287,7 +289,8 @@ preferences-web-appearance-choice-input-dark =
 
 # This can appear when using windows HCM or "Override colors: always" without
 # system colors.
-preferences-web-appearance-override-warning = Your color selections are overriding website appearance. <a data-l10n-name="colors-link">Manage colors</a>
+preferences-web-appearance-override-warning2 =
+    .message = Your color selections are overriding website appearance.
 
 # This message contains one link. It can be moved within the sentence as needed
 # to adapt to your language, but should not be changed.
@@ -852,8 +855,15 @@ sync-mobile-promo = Download Firefox for <img data-l10n-name="android-icon"/> <a
 
 ## Firefox account - Signed in
 
-sync-profile-picture =
+sync-profile-picture-with-alt =
     .tooltiptext = Change profile picture
+    .alt = Change profile picture
+
+sync-profile-picture-account-problem =
+    .alt = Account profile picture
+
+fxa-login-rejected-warning =
+    .alt = Warning
 
 sync-sign-out =
     .label = Sign Out…
@@ -1441,7 +1451,7 @@ addon-recommendations-link = Learn more
 # or builds with no Telemetry support available.
 collection-health-report-disabled = Data reporting is disabled for this build configuration
 
-collection-backlogged-crash-reports-with-link = Allow { -brand-short-name } to send backlogged crash reports on your behalf <a data-l10n-name="crash-reports-link">Learn more</a>
+collection-backlogged-crash-reports = Allow { -brand-short-name } to send backlogged crash reports on your behalf
     .accesskey = c
 
 privacy-segmentation-section-header = New features that enhance your browsing
@@ -1584,8 +1594,6 @@ preferences-doh-checkbox-warn =
     .accesskey = W
 
 preferences-doh-select-resolver = Choose provider:
-
-preferences-doh-exceptions-description = { -brand-short-name } won’t use secure DNS on these sites
 
 preferences-doh-manage-exceptions =
     .label = Manage Exceptions…

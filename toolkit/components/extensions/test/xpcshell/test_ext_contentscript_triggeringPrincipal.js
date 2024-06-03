@@ -30,7 +30,7 @@ Services.prefs.setBoolPref(
   false
 );
 
-// ExtensionContent.jsm needs to know when it's running from xpcshell,
+// ExtensionContent.sys.mjs needs to know when it's running from xpcshell,
 // to use the right timeout for content scripts executed at document_idle.
 ExtensionTestUtils.mockAppInfo();
 
@@ -989,7 +989,7 @@ function awaitLoads(urlsPromise, origins) {
       }
     });
 
-    observer = (channel, topic, data) => {
+    observer = channel => {
       if (expectedURLs) {
         checkChannel(channel.QueryInterface(Ci.nsIChannel));
       } else {

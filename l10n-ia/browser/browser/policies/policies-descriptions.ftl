@@ -28,6 +28,7 @@ policy-BlockAboutSupport = Blocar accesso al pagina about:support.
 policy-Bookmarks = Crear marcapaginas in le barra de marcapaginas, in le menu de marcapaginas o in un dossier specific intra illos.
 policy-CaptivePortal = Activar o disactivar supporto pro portal captive.
 policy-CertificatesDescription = Adde certificatos o usa certificatos integrate.
+policy-ContentAnalysis = Activar o disactivar le connexion con le agente de prevention del perdita de datos.
 policy-Cookies = Permitter o refusar al sitos web de deponer cookies.
 # Containers in this context is referring to container tabs in Firefox.
 policy-Containers = Predefinir criterios re le contentores.
@@ -38,8 +39,11 @@ policy-DisableAppUpdate = Impedir le actualisation del navigator.
 policy-DisableBuiltinPDFViewer = Disactivar PDF.js, le visor de PDF integrate in { -brand-short-name }.
 policy-DisableDefaultBrowserAgent = Impedir que le agente de navigator predefinite exeque alcun action. Applicabile solo a Windows; altere platteformas non ha iste agente.
 policy-DisableDeveloperTools = Blocar le accesso al instrumentos del disveloppamento.
+policy-DisableEncryptedClientHello = Disactivar le uso del function TLS Encrypted Client Hello (ECH).
 policy-DisableFeedbackCommands = Disactivar le commandos pro submitter tu commentarios in le menu Adjuta (Submitter tu opinion e Denunciar sito fraudulente).
 policy-DisableFirefoxAccounts = Disactivar le servicios basate sur { -fxaccount-brand-name }, comprendite Sync.
+# This string is in the process of being deprecated in favor of policy-DisableAccounts.
+policy-DisableFirefoxAccounts1 = Disactiva servicios que require un conto, synchronisation incluse.
 # Firefox Screenshots is the name of the feature, and should not be translated.
 policy-DisableFirefoxScreenshots = Disactivar le function Firefox Screenshots.
 policy-DisableFirefoxStudies = Impedir a { -brand-short-name } de exequer studios.
@@ -124,6 +128,7 @@ policy-SSLVersionMax = Stabilir le version SSL maxime.
 policy-SSLVersionMin = Stabilir le version SSL minime.
 policy-StartDownloadsInTempDirectory = Fortiar le discargamento in un plica local temporari, plus tosto que in le directorio ordinari.
 policy-SupportMenu = Adder un selection de supporto personalisate al menu de adjuta.
+policy-TranslateEnabled = Activar o disactivar le traduction del pagina web.
 policy-UserMessaging = Non monstrar al usator certe messages.
 policy-UseSystemPrintDialog = Imprimer usante le fenestra de impression del systema…
 # “format” refers to the format used for the value of this policy.

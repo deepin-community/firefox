@@ -10,7 +10,9 @@
 // META: variant=?21-25
 // META: variant=?26-30
 // META: variant=?31-35
-// META: variant=?36-last
+// META: variant=?36-40
+// META: variant=?40-45
+// META: variant=?46-last
 
 "use strict;"
 
@@ -86,6 +88,14 @@ const EXPECT_NO_WINNER = auctionResult => {
   assert_equals(auctionResult, null, 'Auction unexpected had a winner');
 };
 
+// Expect a winner (FencedFrameConfig).
+const EXPECT_WINNER =
+    auctionResult => {
+      assert_true(
+          auctionResult instanceof FencedFrameConfig,
+          'Auction did not return expected FencedFrameConfig');
+    }
+
 // Expect an exception of the given type.
 const EXPECT_EXCEPTION = exceptionType => auctionResult => {
   assert_not_equals(auctionResult, null, "got null instead of expected error");
@@ -127,6 +137,50 @@ makeTest({
   name: 'trustedScoringSignalsURL is invalid',
   expect: EXPECT_EXCEPTION(TypeError),
   auctionConfigOverrides: { trustedScoringSignalsURL: "https://foo:99999999999" },
+});
+
+makeTest({
+  name: 'valid trustedScoringSignalsURL',
+  expect: EXPECT_WINNER,
+  auctionConfigOverrides:
+      {trustedScoringSignalsURL: window.location.origin + '/resource.json'}
+});
+
+makeTest({
+  name: 'trustedScoringSignalsURL should not have a fragment',
+  expect: EXPECT_EXCEPTION(TypeError),
+  auctionConfigOverrides:
+      {trustedScoringSignalsURL: window.location.origin + '/resource.json#foo'}
+});
+
+makeTest({
+  name: 'trustedScoringSignalsURL with an empty fragment is not OK',
+  expect: EXPECT_EXCEPTION(TypeError),
+  auctionConfigOverrides:
+      {trustedScoringSignalsURL: window.location.origin + '/resource.json#'}
+});
+
+makeTest({
+  name: 'trustedScoringSignalsURL should not have a query',
+  expect: EXPECT_EXCEPTION(TypeError),
+  auctionConfigOverrides:
+      {trustedScoringSignalsURL: window.location.origin + '/resource.json?foo'}
+});
+
+makeTest({
+  name: 'trustedScoringSignalsURL with an empty query is not OK',
+  expect: EXPECT_EXCEPTION(TypeError),
+  auctionConfigOverrides:
+      {trustedScoringSignalsURL: window.location.origin + '/resource.json?'}
+});
+
+makeTest({
+  name: 'trustedScoringSignalsURL should not have embedded credentials',
+  expect: EXPECT_EXCEPTION(TypeError),
+  auctionConfigOverrides: {
+    trustedScoringSignalsURL: (window.location.origin + '/resource.json')
+                                  .replace('https://', 'https://user:pass@')
+  }
 });
 
 makeTest({
@@ -390,3 +444,80 @@ makeTest({
                             [{width: '100', height: '100'},
                              {width: '200furlongs', height: '200'}]}
 });
+
+subsetTest(promise_test, async test => {
+  const uuid = generateUuid(test);
+
+  // The renderURL / report URLs for the first/second iterations of the auction.
+  let renderURL = createRenderURL(uuid);
+  let bidderReportURL1 = createBidderReportURL(uuid, /*id=*/ 1);
+  let bidderReportURL2 = createBidderReportURL(uuid, /*id=*/ 2);
+  let bidderDebugReportURL =
+      createBidderReportURL(uuid, /*id=*/ 'forDebuggingOnly');
+  let sellerReportURL1 = createSellerReportURL(uuid, /*id=*/ 1);
+  let sellerReportURL2 = createSellerReportURL(uuid, /*id=*/ 2);
+  let sellerDebugReportURL =
+      createSellerReportURL(uuid, /*id=*/ 'forDebuggingOnly');
+
+  // reportWin() sends "bidderReportURL1" if
+  // browserSignals.forDebuggingOnlyInCooldownOrLockout is true,
+  // "bidderReportURL2" otherwise.
+  await joinInterestGroup(test, uuid, {
+    ads: [{renderURL: renderURL}],
+    biddingLogicURL: createBiddingScriptURL({
+      generateBid: `
+        forDebuggingOnly.reportAdAuctionWin('${bidderDebugReportURL}');
+        if (!browserSignals.hasOwnProperty(
+          'forDebuggingOnlyInCooldownOrLockout')) {
+          throw "Missing forDebuggingOnlyInCooldownOrLockout in browserSignals";
+        }
+        let bid = browserSignals.forDebuggingOnlyInCooldownOrLockout ? 1 : 2;
+        return {bid: bid, render: '${renderURL}'};`,
+      reportWin: `
+        if (browserSignals.bid === 1)
+          sendReportTo('${bidderReportURL1}');
+        if (browserSignals.bid === 2)
+          sendReportTo('${bidderReportURL2}');`
+
+    })
+  });
+
+  // reportResult() sends "sellerReportURL1" if
+  // browserSignals.forDebuggingOnlyInCooldownOrLockout in scoreAd() is true,
+  // "sellerReportURL2" otherwise.
+  const auctionConfigOverrides = {
+    decisionLogicURL: createDecisionScriptURL(uuid, {
+      scoreAd: `
+        forDebuggingOnly.reportAdAuctionWin('${sellerDebugReportURL}');
+        if (!browserSignals.hasOwnProperty(
+          'forDebuggingOnlyInCooldownOrLockout')) {
+          throw "Missing forDebuggingOnlyInCooldownOrLockout in browserSignals";
+        }
+        let desirability =
+            browserSignals.forDebuggingOnlyInCooldownOrLockout ? 1 : 2;
+        return {desirability: desirability};`,
+      reportResult: `
+        if (browserSignals.desirability === 1)
+          sendReportTo('${sellerReportURL1}');
+        if (browserSignals.desirability === 2)
+          sendReportTo('${sellerReportURL2}');`
+    })
+  };
+
+  // In the first auction, browserSignals.forDebuggingOnlyInCooldownOrLockout in
+  // generateBid() and scoreAd() should both be false. After the auction,
+  // lockout and cooldowns should be updated.
+  await runBasicFledgeAuctionAndNavigate(test, uuid, auctionConfigOverrides);
+  await waitForObservedRequestsIgnoreDebugOnlyReports(
+      uuid, [bidderReportURL2, sellerReportURL2]);
+
+  // In the second auction, browserSignals.forDebuggingOnlyInCooldownOrLockout
+  // in generateBid() and scoreAd() should both be true, since both the buyer
+  // and seller called forDebuggingOnly API in the first auction, so they are in
+  // cooldowns at least (and also in lockout if a debug report is allowed to be
+  // sent).
+  await runBasicFledgeAuctionAndNavigate(test, uuid, auctionConfigOverrides);
+  await waitForObservedRequestsIgnoreDebugOnlyReports(
+    uuid,
+    [bidderReportURL2, sellerReportURL2, bidderReportURL1, sellerReportURL1]);
+}, `forDebuggingOnly lockout and cooldowns updating in one auction, read in another's.`);

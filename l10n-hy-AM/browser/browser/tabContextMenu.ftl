@@ -26,12 +26,12 @@ duplicate-tabs =
 # The following string is displayed on a menuitem that will close the tabs from the start of the tabstrip to the currently targeted tab (excluding the currently targeted and any other selected tabs).
 # In left-to-right languages this should use "Left" and in right-to-left languages this should use "Right".
 close-tabs-to-the-start =
-    .label = Փակել ներդիրները դեպի ձախ
+    .label = Փակել ներդիրները՝ ձախից
     .accesskey = l
 # The following string is displayed on a menuitem that will close the tabs from the end of the tabstrip to the currently targeted tab (excluding the currently targeted and any other selected tabs).
 # In left-to-right languages this should use "Right" and in right-to-left languages this should use "Left".
 close-tabs-to-the-end =
-    .label = Փակել ներդիրները աջից
+    .label = Փակել ներդիրները՝ աջից
     .accesskey = ջ
 close-other-tabs =
     .label = Փակել մյուս ներդիրները
@@ -54,17 +54,20 @@ unpin-selected-tabs =
 bookmark-selected-tabs =
     .label = Էջանշել ներդիրները
     .accesskey = B
+tab-context-bookmark-tab =
+    .label = Էջանշել ներդիրը...
+    .accesskey = B
 tab-context-open-in-new-container-tab =
-    .label = Բացել Նոր Պարունակ Ներդիրում
+    .label = Բացել նոր պարունակ ներդիրում
     .accesskey = e
 move-to-start =
-    .label = Տեղափոխել Մեկնարկ
+    .label = Տեղափոխել սկիզբ
     .accesskey = S
 move-to-end =
     .label = Տեղափոխել վերջ
     .accesskey = E
 move-to-new-window =
-    .label = Տեղափոխել Նոր Պատուհան
+    .label = Տեղափոխել նոր պատուհան
     .accesskey = Պ
 tab-context-close-multiple-tabs =
     .label = Փակել բազմակի ներդիրները
@@ -100,7 +103,6 @@ tab-context-move-tabs =
            *[other] Տեղափոխել ներդիրները
         }
     .accesskey = v
-
 tab-context-send-tabs-to-device =
     .label =
         { $tabCount ->

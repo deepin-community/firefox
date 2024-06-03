@@ -276,7 +276,7 @@ async function typeAndCommand(eventType, details = {}) {
 async function triggerCommand(eventType, details = {}) {
   Assert.equal(
     await UrlbarTestUtils.promiseUserContextId(window),
-    gBrowser.selectedTab.getAttribute("usercontextid"),
+    gBrowser.selectedTab.getAttribute("usercontextid") || "",
     "userContextId must be the same as the originating tab"
   );
 
@@ -299,7 +299,7 @@ async function triggerCommand(eventType, details = {}) {
 function promiseLoadStarted() {
   return new Promise(resolve => {
     gBrowser.addTabsProgressListener({
-      onStateChange(browser, webProgress, req, flags, status) {
+      onStateChange(browser, webProgress, req, flags) {
         if (flags & Ci.nsIWebProgressListener.STATE_START) {
           gBrowser.removeTabsProgressListener(this);
           resolve();

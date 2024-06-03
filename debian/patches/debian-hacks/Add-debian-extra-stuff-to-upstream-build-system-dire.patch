@@ -7,10 +7,10 @@ Subject: Add debian/extra-stuff to upstream build system directory traversal
  1 file changed, 3 insertions(+)
 
 diff --git a/moz.build b/moz.build
-index 5af3642..6c9e879 100644
+index 9db27fd..8bca490 100644
 --- a/moz.build
 +++ b/moz.build
-@@ -217,4 +217,7 @@ SPHINX_TREES["mots"] = "docs/mots"
+@@ -219,4 +219,7 @@ SPHINX_TREES["mots"] = "docs/mots"
  
  SPHINX_TREES["update-infrastructure"] = "docs/update-infrastructure"
  

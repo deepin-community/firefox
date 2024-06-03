@@ -126,8 +126,6 @@ translations-manage-description = Discjame lis lenghis pe traduzion fûr rêt.
 translations-manage-all-language = Dutis lis lenghis
 translations-manage-download-button = Discjame
 translations-manage-delete-button = Elimine
-translations-manage-error-download = Al è vignût fûr un probleme tal discjariâ i files de lenghe. Torne prove.
-translations-manage-error-delete = Al è vignût fûr un probleme tal eliminâ i files de lenghe. Torne prove.
 translations-manage-intro = Configure lis tôs preferencis relativis a lenghe e traduzion dai sîts e gjestìs lis lenghis instaladis pe traduzion fûr rêt.
 translations-manage-install-description = Instale lenghis pe traduzion fûr rêt
 translations-manage-language-install-button =
@@ -135,12 +133,21 @@ translations-manage-language-install-button =
 translations-manage-language-install-all-button =
     .label = Instale dutis
     .accesskey = I
+translations-manage-intro-2 = Stabilìs la tô lenghe e lis preferencis di traduzion dai sîts, gjestìs lis lenghis discjariadis pe traduzion fûr rêt.
+translations-manage-download-description = Discjame lenghis pe traduzion fûr rêt
+translations-manage-language-download-button =
+    .label = Discjame
+translations-manage-language-download-all-button =
+    .label = Discjame dutis
+    .accesskey = D
 translations-manage-language-remove-button =
     .label = Gjave
 translations-manage-language-remove-all-button =
     .label = Gjave dutis
     .accesskey = e
 translations-manage-error-install = Al è vignût fûr un probleme tal instalâ i files de lenghe. Torne prove.
+translations-manage-error-download = Al è vignût fûr un probleme tal discjariâ i files de lenghe. Torne prove.
+translations-manage-error-delete = Al è vignût fûr un probleme tal eliminâ i files de lenghe. Torne prove.
 translations-manage-error-remove = Al è vignût fûr un probleme tal gjavâi i files de lenghe. Torne prove.
 translations-manage-error-list = Impussibil otignî la liste des lenghis disponibilis pe traduzion. Inzorne la pagjine par tornâ a provâ.
 translations-settings-title =
@@ -170,3 +177,75 @@ translations-settings-remove-all-sites-button =
 translations-settings-close-dialog =
     .buttonlabelaccept = Siere
     .buttonaccesskeyaccept = C
+# Text displayed in the right-click context menu for translating
+# selected text to a yet-to-be-determined language.
+main-context-menu-translate-selection =
+    .label = Tradûs selezion…
+    .accesskey = n
+# Text displayed in the right-click context menu for translating
+# selected text to a target language.
+#
+# Variables:
+#   $language (string) - The localized display name of the target language
+main-context-menu-translate-selection-to-language =
+    .label = Tradûs selezion par { $language }
+    .accesskey = n
+# Text displayed in the right-click context menu for translating
+# the text of a hyperlink to a yet-to-be-determined language.
+main-context-menu-translate-link-text =
+    .label = Tradûs test dal colegament…
+    .accesskey = n
+# Text displayed in the right-click context menu for translating
+# the text of a hyperlink to a target language.
+#
+# Variables:
+#   $language (string) - The localized display name of the target language
+main-context-menu-translate-link-text-to-language =
+    .label = Tradûs test dal colegament par { $language }
+    .accesskey = n
+# Text displayed in the select translations panel header.
+select-translations-panel-header = Traduzion
+# Text displayed above the from-language dropdown menu.
+select-translations-panel-from-label = Di
+# Text displayed above the to-language dropdown menu.
+select-translations-panel-to-label = A
+# Text displayed above the try-another-source-language dropdown menu.
+select-translations-panel-try-another-language-label = Prove une altre lenghe di origjin
+select-translations-panel-cancel-button =
+    .label = Anule
+# Text displayed on the copy button before it is clicked.
+select-translations-panel-copy-button =
+    .label = Copie
+# Text displayed on the copy button after it is clicked.
+select-translations-panel-copy-button-copied =
+    .label = Copiât
+select-translations-panel-done-button =
+    .label = Fat
+select-translations-panel-translate-full-page-button =
+    .label = Tradûs dute la pagjine
+select-translations-panel-translate-button =
+    .label = Tradûs
+select-translations-panel-try-again-button =
+    .label = Torne prove
+# Text displayed as a placeholder when the panel is idle.
+select-translations-panel-idle-placeholder-text = Il test voltât al vignarà fûr achì.
+# Text displayed as a placeholder when the panel is actively translating.
+select-translations-panel-translating-placeholder-text = Daûr a tradusi…
+select-translations-panel-init-failure-message =
+    .message = Impussibil cjariâ lis lenghis. Controle la tô conession a internet e torne prove.
+# Text displayed when the translation fails to complete.
+select-translations-panel-translation-failure-message =
+    .message = Al è vignût fûr un probleme tal tradusi. Torne prove.
+# If your language requires declining the language name, a possible solution
+# is to adapt the structure of the phrase, or use a support noun, e.g.
+# `Sorry, we don't support the language yet: { $language }
+#
+# Variables:
+#   $language (string) - The language of the document.
+select-translations-panel-unsupported-language-message-known =
+    .message = Nus displâs, { $language } nol è ancjemò supuartât.
+select-translations-panel-unsupported-language-message-unknown =
+    .message = Nus displâs, no supuartìn ancjemò cheste lenghe.
+# Text displayed on the menuitem that opens the Translation Settings page.
+select-translations-panel-open-translations-settings-menuitem =
+    .label = Impostazions di traduzion

@@ -562,6 +562,8 @@ enum class LayoutFrameClassFlags : uint16_t {
   SupportsContainLayoutAndPaint = 1 << 13,
   // Whether this frame class supports the `aspect-ratio` property.
   SupportsAspectRatio = 1 << 14,
+  // Whether this frame class is always a BFC.
+  BlockFormattingContext = 1 << 15,
 };
 
 MOZ_MAKE_ENUM_CLASS_BITWISE_OPERATORS(LayoutFrameClassFlags)
@@ -934,6 +936,8 @@ class nsIFrame : public nsQueryFrame {
 
   already_AddRefed<ComputedStyle> ComputeHighlightSelectionStyle(
       nsAtom* aHighlightName);
+
+  already_AddRefed<ComputedStyle> ComputeTargetTextStyle() const;
 
   /**
    * Accessor functions for geometric parent.
@@ -1380,6 +1384,8 @@ class nsIFrame : public nsQueryFrame {
     return nullptr;
   }
 
+  bool HasUnreflowedContainerQueryAncestor() const;
+
  private:
   // The value that the CSS page-name "auto" keyword resolves to for children
   // of this frame.
@@ -1582,6 +1588,11 @@ class nsIFrame : public nsQueryFrame {
   bool GetShapeBoxBorderRadii(nscoord aRadii[8]) const;
 
   /**
+   * Returns one em unit, adjusted for font inflation if needed, in app units.
+   */
+  nscoord OneEmInAppUnits() const;
+
+  /**
    * `GetNaturalBaselineBOffset`, but determines the baseline sharing group
    * through `GetDefaultBaselineSharingGroup` (If not specified), assuming line
    * layout context, and never fails, returning a synthesized baseline through
@@ -1643,7 +1654,13 @@ class nsIFrame : public nsQueryFrame {
   // This is intended to be used either on the root frame to find the first
   // page's page-name, or on a newly created continuation to find what the new
   // page's page-name will be.
-  const nsAtom* ComputePageValue() const MOZ_NONNULL_RETURN;
+  //
+  // The auto page value can be set by the caller. This is useful when trying
+  // to compute a page value in the middle of a frame tree. In that case the
+  // auto value can be found from the AutoPageValue frame property of the
+  // parent frame. A null auto value is interpreted as the empty-string atom.
+  const nsAtom* ComputePageValue(const nsAtom* aAutoValue = nullptr) const
+      MOZ_NONNULL_RETURN;
 
   ///////////////////////////////////////////////////////////////////////////////
   // The public visibility API.
@@ -3027,6 +3044,9 @@ class nsIFrame : public nsQueryFrame {
   nsSize OverflowClipMargin(PhysicalAxes aClipAxes) const;
   // Returns the axes on which this frame should apply overflow clipping.
   PhysicalAxes ShouldApplyOverflowClipping(const nsStyleDisplay* aDisp) const;
+  // Returns whether this frame is a block that was supposed to be a
+  // scrollframe, but that was suppressed for print.
+  bool IsSuppressedScrollableBlockForPrint() const;
 
   /**
    * Helper method used by block reflow to identify runs of text so
@@ -3919,6 +3939,9 @@ class nsIFrame : public nsQueryFrame {
  public:
   // given a frame five me the first/last leaf available
   // XXX Robert O'Callahan wants to move these elsewhere
+  // FIXME: Only GetLastLeaf() never returns a leaf frame in native anonymous
+  // subtrees under aFrame.  However, GetFirstLeaf() may return a leaf frame
+  // in a native anonymous subtree.
   static void GetLastLeaf(nsIFrame** aFrame);
   static void GetFirstLeaf(nsIFrame** aFrame);
 
@@ -5468,25 +5491,6 @@ class nsIFrame : public nsQueryFrame {
   // Helper function that verifies that each frame in the list has the
   // NS_FRAME_IS_DIRTY bit set
   static void VerifyDirtyBitSet(const nsFrameList& aFrameList);
-
-  // Display Reflow Debugging
-  static void* DisplayReflowEnter(nsPresContext* aPresContext, nsIFrame* aFrame,
-                                  const ReflowInput& aReflowInput);
-  static void* DisplayLayoutEnter(nsIFrame* aFrame);
-  static void* DisplayIntrinsicISizeEnter(nsIFrame* aFrame, const char* aType);
-  static void* DisplayIntrinsicSizeEnter(nsIFrame* aFrame, const char* aType);
-  static void DisplayReflowExit(nsPresContext* aPresContext, nsIFrame* aFrame,
-                                ReflowOutput& aMetrics,
-                                const nsReflowStatus& aStatus,
-                                void* aFrameTreeNode);
-  static void DisplayLayoutExit(nsIFrame* aFrame, void* aFrameTreeNode);
-  static void DisplayIntrinsicISizeExit(nsIFrame* aFrame, const char* aType,
-                                        nscoord aResult, void* aFrameTreeNode);
-  static void DisplayIntrinsicSizeExit(nsIFrame* aFrame, const char* aType,
-                                       nsSize aResult, void* aFrameTreeNode);
-
-  static void DisplayReflowStartup();
-  static void DisplayReflowShutdown();
 
   static mozilla::LazyLogModule sFrameLogModule;
 #endif

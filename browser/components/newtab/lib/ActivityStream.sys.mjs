@@ -36,6 +36,7 @@ ChromeUtils.defineESModuleGetters(lazy, {
   TelemetryFeed: "resource://activity-stream/lib/TelemetryFeed.sys.mjs",
   TopSitesFeed: "resource://activity-stream/lib/TopSitesFeed.sys.mjs",
   TopStoriesFeed: "resource://activity-stream/lib/TopStoriesFeed.sys.mjs",
+  WallpaperFeed: "resource://activity-stream/lib/WallpaperFeed.sys.mjs",
 });
 
 // NB: Eagerly load modules that will be loaded/constructed/initialized in the
@@ -43,7 +44,7 @@ ChromeUtils.defineESModuleGetters(lazy, {
 import {
   actionCreators as ac,
   actionTypes as at,
-} from "resource://activity-stream/common/Actions.sys.mjs";
+} from "resource://activity-stream/common/Actions.mjs";
 
 const REGION_BASIC_CONFIG =
   "browser.newtabpage.activity-stream.discoverystream.region-basic-config";
@@ -233,6 +234,27 @@ export const PREFS_CONFIG = new Map([
     },
   ],
   [
+    "newtabWallpapers.enabled",
+    {
+      title: "Boolean flag to turn wallpaper functionality on and off",
+      value: true,
+    },
+  ],
+  [
+    "newtabWallpapers.wallpaper-light",
+    {
+      title: "Currently set light wallpaper",
+      value: "",
+    },
+  ],
+  [
+    "newtabWallpapers.wallpaper-dark",
+    {
+      title: "Currently set dark wallpaper",
+      value: "",
+    },
+  ],
+  [
     "improvesearch.noDefaultSearchTile",
     {
       title: "Remove tiles that are the same as the default search",
@@ -306,7 +328,7 @@ export const PREFS_CONFIG = new Map([
     "discoverystream.config",
     {
       title: "Configuration for the new pocket new tab",
-      getValue: ({ geo, locale }) => {
+      getValue: () => {
         return JSON.stringify({
           api_key_pref: "extensions.pocket.oAuthConsumerKey",
           collapsible: true,
@@ -524,6 +546,12 @@ const FEEDS_DATA = [
     title: "Handles new pocket ui for the new tab page",
     value: true,
   },
+  {
+    name: "wallpaperfeed",
+    factory: () => new lazy.WallpaperFeed(),
+    title: "Handles fetching and managing wallpaper data from RemoteSettings",
+    value: true,
+  },
 ];
 
 const FEEDS_CONFIG = new Map();
@@ -689,7 +717,7 @@ export class ActivityStream {
     }
   }
 
-  observe(subject, topic, data) {
+  observe(subject, topic) {
     switch (topic) {
       case "intl:app-locales-changed":
       case lazy.Region.REGION_TOPIC:

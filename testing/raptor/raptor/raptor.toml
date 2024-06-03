@@ -9,6 +9,10 @@
 
 ["include:tests/benchmarks/matrix-react-bench.toml"]
 
+["include:tests/benchmarks/motionmark-1-3-desktop.toml"]
+
+["include:tests/benchmarks/motionmark-1-3-mobile.toml"]
+
 ["include:tests/benchmarks/motionmark-animometer-desktop.toml"]
 
 ["include:tests/benchmarks/motionmark-animometer-mobile.toml"]
@@ -95,6 +99,9 @@
 
 ["include:tests/tp6/mobile/browsertime-tp6m.toml"]
 # raptor-browsertime android page-load tests
+
+["include:tests/tp7/desktop/browsertime-tp7.toml"]
+# raptor-browsertime desktop page-load tests
 
 ["include:tests/unittests/browsertime-tp6-unittest.toml"]
 # raptor-browsertime unit tests

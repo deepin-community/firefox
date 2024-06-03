@@ -32,6 +32,8 @@ search-input-box2 =
     .style = width: 15.4em
     .placeholder = Buscar en Ajustes
 managed-notice = Tu navegador está siendo administrado por tu organización.
+managed-notice-info-icon =
+    .alt = Información
 category-list =
     .aria-label = Categorías
 pane-general-title = General
@@ -708,6 +710,13 @@ sync-mobile-promo = Descarga Firefox para <img data-l10n-name="android-icon"/> <
 
 sync-profile-picture =
     .tooltiptext = Cambiar imagen de perfil
+sync-profile-picture-with-alt =
+    .tooltiptext = Cambiar imagen de perfil
+    .alt = Cambiar imagen de perfil
+sync-profile-picture-account-problem =
+    .alt = imagen de perfil de la cuenta
+fxa-login-rejected-warning =
+    .alt = Advertencia
 sync-sign-out =
     .label = Salir…
     .accesskey = g
@@ -1274,6 +1283,8 @@ addon-recommendations-link = Aprender más
 # or builds with no Telemetry support available.
 collection-health-report-disabled = El reporte de datos está deshabilitado para esta configuración de compilación
 collection-backlogged-crash-reports-with-link = Permitir a { -brand-short-name } enviar reportes de fallos acumulados a tu nombre <a data-l10n-name="crash-reports-link">Aprender más</a>
+    .accesskey = c
+collection-backlogged-crash-reports = Permitir a { -brand-short-name } enviar reportes de fallos acumulados a tu nombre
     .accesskey = c
 privacy-segmentation-section-header = Nuevas funcionalidades que mejoran tu navegación
 privacy-segmentation-section-description = Cuando ofrezcamos funcionalidades que usen tus datos para brindarte una experiencia más personal:

@@ -651,6 +651,9 @@ sync-mobile-promo = Hangi Firefox <img data-l10n-name="android-icon"/> <a data-l
 
 sync-profile-picture =
     .tooltiptext = Muuda profiilipilti
+sync-profile-picture-with-alt =
+    .tooltiptext = Muuda profiilipilti
+    .alt = Muuda profiilipilti
 sync-sign-out =
     .label = Logi välja…
     .accesskey = o
@@ -1108,6 +1111,8 @@ addon-recommendations-link = Rohkem teavet
 # or builds with no Telemetry support available.
 collection-health-report-disabled = Selle kompileerimise konfiguratsiooniga on andmete raporteerimine keelatud
 collection-backlogged-crash-reports-with-link = Luba { -brand-short-name }il sinu eest saata varasemad vearaportid <a data-l10n-name="crash-reports-link">Rohkem teavet</a>
+    .accesskey = L
+collection-backlogged-crash-reports = Luba { -brand-short-name }il sinu eest saata varasemad vearaportid
     .accesskey = L
 
 ## Privacy Section - Security

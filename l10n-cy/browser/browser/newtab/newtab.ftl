@@ -45,6 +45,7 @@ newtab-topsites-add-search-engine-header = Ychwanegu Peiriant Chwilio
 newtab-topsites-add-shortcut-header = Llwybr Byr Newydd
 newtab-topsites-edit-topsites-header = Golygu'r Hoff Wefan
 newtab-topsites-edit-shortcut-header = Golygu Llwybr Byr
+newtab-topsites-add-shortcut-label = Ychwanegu Llwybr Byr
 newtab-topsites-title-label = Teitl
 newtab-topsites-title-input =
     .placeholder = Rhoi teitl
@@ -266,9 +267,6 @@ newtab-custom-row-selector =
 newtab-custom-sponsored-sites = Llwybrau byr wedi'u noddi
 newtab-custom-pocket-title = Argymhellir gan  { -pocket-brand-name }
 newtab-custom-pocket-subtitle = Cynnwys eithriadol wedi'i guradu gan { -pocket-brand-name }, rhan o deulu { -brand-product-name }
-newtab-custom-pocket-toggle =
-    .label = Argymhellir gan  { -pocket-brand-name }
-    .description = Cynnwys eithriadol wedi'i guradu gan { -pocket-brand-name }, rhan o deulu { -brand-product-name }
 newtab-custom-stories-toggle =
     .label = Straeon cymeradwy
     .description = Cynnwys eithriadol wedi'i gasglu gan deulu { -brand-product-name }
@@ -281,3 +279,24 @@ newtab-custom-recent-toggle =
     .description = Detholiad o wefannau a chynnwys diweddar
 newtab-custom-close-button = Cau
 newtab-custom-settings = Rheoli rhagor o osodiadau
+
+## New Tab Wallpapers
+
+newtab-wallpaper-title = Papurau wal
+newtab-wallpaper-reset = Ailosod i'r rhagosodiad
+newtab-wallpaper-light-red-panda = Panda coch
+newtab-wallpaper-light-mountain = Mynydd gwyn
+newtab-wallpaper-light-sky = Awyr gyda chymylau porffor a phinc
+newtab-wallpaper-light-color = Siapiau glas, pinc a melyn
+newtab-wallpaper-light-landscape = Tirwedd mynydd a niwlen las
+newtab-wallpaper-light-beach = Traeth gyda phalmwydd
+newtab-wallpaper-dark-aurora = Aurora Borealis
+newtab-wallpaper-dark-color = Siapiau coch a glas
+newtab-wallpaper-dark-panda = Panda coch wedi'i guddio yn y goedwig
+newtab-wallpaper-dark-sky = Tirwedd y ddinas gydag awyr y nos
+newtab-wallpaper-dark-mountain = Tirwedd mynydd
+newtab-wallpaper-dark-city = Tirwedd dinas borffor
+# Variables
+#   $author_string (String) - The name of the creator of the photo.
+#   $webpage_string (String) - The name of the webpage where the photo is located.
+newtab-wallpaper-attribution = Llun gan <a data-l10n-name="name-link">{ $author_string }</a> ar <a data-l10n-name="webpage-link">{ $webpage_string }</a>

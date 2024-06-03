@@ -262,9 +262,6 @@ newtab-custom-row-selector =
 newtab-custom-sponsored-sites = Gesponserte Verknüpfungen
 newtab-custom-pocket-title = Empfohlen von { -pocket-brand-name }
 newtab-custom-pocket-subtitle = Besondere Inhalte ausgewählt von { -pocket-brand-name }, Teil der { -brand-product-name }-Familie
-newtab-custom-pocket-toggle =
-    .label = Empfohlen von { -pocket-brand-name }
-    .description = Besondere Inhalte ausgewählt von { -pocket-brand-name }, Teil der { -brand-product-name }-Familie
 newtab-custom-stories-toggle =
     .label = Empfohlene Geschichten
     .description = Besondere Inhalte ausgewählt von der { -brand-product-name }-Familie
@@ -277,3 +274,24 @@ newtab-custom-recent-toggle =
     .description = Eine Auswahl kürzlich besuchter Websites und Inhalte
 newtab-custom-close-button = Schließen
 newtab-custom-settings = Weitere Einstellungen verwalten
+
+## New Tab Wallpapers
+
+newtab-wallpaper-title = Hintergrundbilder
+newtab-wallpaper-reset = Standard wiederherstellen
+newtab-wallpaper-light-red-panda = Roter Panda
+newtab-wallpaper-light-mountain = Weißer Berg
+newtab-wallpaper-light-sky = Himmel mit violetten und rosafarbenen Wolken
+newtab-wallpaper-light-color = Blaue, rosa und gelbe Formen
+newtab-wallpaper-light-landscape = Berglandschaft mit blauem Nebel
+newtab-wallpaper-light-beach = Strand mit Palme
+newtab-wallpaper-dark-aurora = Aurora Borealis
+newtab-wallpaper-dark-color = Rote und blaue Formen
+newtab-wallpaper-dark-panda = Roter Panda im Wald versteckt
+newtab-wallpaper-dark-sky = Stadtlandschaft mit Nachthimmel
+newtab-wallpaper-dark-mountain = Berg in der Landschaft
+newtab-wallpaper-dark-city = Violette Stadtlandschaft
+# Variables
+#   $author_string (String) - The name of the creator of the photo.
+#   $webpage_string (String) - The name of the webpage where the photo is located.
+newtab-wallpaper-attribution = Foto von <a data-l10n-name="name-link">{ $author_string }</a> auf <a data-l10n-name="webpage-link">{ $webpage_string }</a>

@@ -54,7 +54,7 @@ add_task(async function test_sidebarpanels_click() {
     async selectNode(tree) {
       tree.selectItems([this._bookmark.guid]);
     },
-    cleanup(aCallback) {
+    cleanup() {
       return PlacesUtils.bookmarks.remove(this._bookmark);
     },
     sidebarName: BOOKMARKS_SIDEBAR_ID,
@@ -84,7 +84,7 @@ add_task(async function test_sidebarpanels_click() {
       );
       is(tree.selectedNode.itemId, -1, "The selected node is not bookmarked");
     },
-    cleanup(aCallback) {
+    cleanup() {
       return PlacesUtils.history.clear();
     },
     sidebarName: HISTORY_SIDEBAR_ID,
@@ -157,16 +157,10 @@ function promiseAlertDialogObserved() {
     async function observer(subject) {
       info("alert dialog observed as expected");
       Services.obs.removeObserver(observer, "common-dialog-loaded");
-      Services.obs.removeObserver(observer, "tabmodal-dialog-loaded");
 
-      if (subject.Dialog) {
-        subject.Dialog.ui.button0.click();
-      } else {
-        subject.querySelector(".tabmodalprompt-button0").click();
-      }
+      subject.Dialog.ui.button0.click();
       resolve();
     }
     Services.obs.addObserver(observer, "common-dialog-loaded");
-    Services.obs.addObserver(observer, "tabmodal-dialog-loaded");
   });
 }

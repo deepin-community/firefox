@@ -8,13 +8,13 @@
 
 #include "mozilla/ArrayUtils.h"
 #include "mozilla/AutoRestore.h"
+#include "mozilla/AppShutdown.h"
 #include "mozilla/MemoryReporting.h"
 #include "mozilla/UniquePtr.h"
 
 #include "xpcprivate.h"
 #include "xpcpublic.h"
 #include "XPCMaps.h"
-#include "XPCWrapper.h"
 #include "XPCJSMemoryReporter.h"
 #include "XrayWrapper.h"
 #include "WrapperFactory.h"
@@ -28,11 +28,9 @@
 #include "nsIObserverService.h"
 #include "mozilla/dom/Document.h"
 #include "nsIRunnable.h"
-#include "nsIPlatformInfo.h"
 #include "nsPIDOMWindow.h"
 #include "nsPrintfCString.h"
 #include "nsScriptSecurityManager.h"
-#include "nsThreadPool.h"
 #include "nsWindowSizes.h"
 #include "mozilla/BasePrincipal.h"
 #include "mozilla/Preferences.h"
@@ -40,6 +38,7 @@
 #include "mozilla/Services.h"
 #include "mozilla/dom/ScriptLoader.h"
 #include "mozilla/dom/ScriptSettings.h"
+#include "mozilla/glean/GleanMetrics.h"
 
 #include "nsContentUtils.h"
 #include "nsCCUncollectableMarker.h"
@@ -613,9 +612,13 @@ JSObject* NACScope(JSObject* global) {
   return scope;
 }
 
-JSObject* PrivilegedJunkScope() { return XPCJSRuntime::Get()->LoaderGlobal(); }
+JSObject* PrivilegedJunkScope() {
+  return mozJSModuleLoader::Get()->GetSharedGlobal();
+}
 
-JSObject* CompilationScope() { return XPCJSRuntime::Get()->LoaderGlobal(); }
+JSObject* CompilationScope() {
+  return mozJSModuleLoader::Get()->GetSharedGlobal();
+}
 
 nsGlobalWindowInner* WindowOrNull(JSObject* aObj) {
   MOZ_ASSERT(aObj);
@@ -1453,6 +1456,9 @@ static void ReportZoneStats(const JS::ZoneStats& zStats,
   ZRREPORT_BYTES(pathPrefix + "regexp-shareds/malloc-heap"_ns,
                  zStats.regExpSharedsMallocHeap,
                  "Shared compiled regexp data.");
+
+  ZRREPORT_BYTES(pathPrefix + "zone-object"_ns, zStats.zoneObject,
+                 "The JS::Zone object itself.");
 
   ZRREPORT_BYTES(pathPrefix + "regexp-zone"_ns, zStats.regexpZone,
                  "The regexp zone and regexp data.");
@@ -2579,16 +2585,20 @@ static void AccumulateTelemetryCallback(JSMetric id, uint32_t sample) {
   // clang-format on
 
   switch (id) {
+// Disable clone.deserialize metrics on Android for perf (bug 1898515).
+#ifndef MOZ_WIDGET_ANDROID
     case JSMetric::DESERIALIZE_BYTES:
       glean::performance_clone_deserialize::size.Accumulate(sample);
       break;
     case JSMetric::DESERIALIZE_ITEMS:
-      glean::performance_clone_deserialize::items.AccumulateSamples({sample});
+      glean::performance_clone_deserialize::items.AccumulateSingleSample(
+          sample);
       break;
     case JSMetric::DESERIALIZE_US:
       glean::performance_clone_deserialize::time.AccumulateRawDuration(
           TimeDuration::FromMicroseconds(sample));
       break;
+#endif  // MOZ_WIDGET_ANDROID
     case JSMetric::GC_MS:
       glean::javascript_gc::total_time.AccumulateRawDuration(
           TimeDuration::FromMilliseconds(sample));
@@ -2637,9 +2647,6 @@ static void SetUseCounterCallback(JSObject* obj, JSUseCounter counter) {
       break;
     case JSUseCounter::WASM_LEGACY_EXCEPTIONS:
       SetUseCounter(obj, eUseCounter_custom_JS_wasm_legacy_exceptions);
-      break;
-    case JSUseCounter::LATE_WEEKDAY:
-      SetUseCounter(obj, eUseCounter_custom_JS_late_weekday);
       break;
     default:
       MOZ_ASSERT_UNREACHABLE("Unexpected JSUseCounter id");
@@ -2905,8 +2912,6 @@ void ConstructUbiNode(void* storage, JSObject* ptr) {
 }
 
 void XPCJSRuntime::Initialize(JSContext* cx) {
-  mLoaderGlobal.init(cx, nullptr);
-
   // these jsids filled in later when we have a JSContext to work with.
   mStrIDs[0] = JS::PropertyKey::Void();
 
@@ -3191,20 +3196,6 @@ void XPCJSRuntime::DeleteSingletonScopes() {
     sandbox->ReleaseWrapper(sandbox);
     mUnprivilegedJunkScope = nullptr;
   }
-  mLoaderGlobal = nullptr;
-}
-
-JSObject* XPCJSRuntime::LoaderGlobal() {
-  if (!mLoaderGlobal) {
-    RefPtr loader = mozJSModuleLoader::Get();
-
-    dom::AutoJSAPI jsapi;
-    jsapi.Init();
-
-    mLoaderGlobal = loader->GetSharedGlobal(jsapi.cx());
-    MOZ_RELEASE_ASSERT(!JS_IsExceptionPending(jsapi.cx()));
-  }
-  return mLoaderGlobal;
 }
 
 uint32_t GetAndClampCPUCount() {

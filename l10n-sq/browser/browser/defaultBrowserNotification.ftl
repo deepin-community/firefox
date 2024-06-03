@@ -21,3 +21,20 @@ default-browser-prompt-message-alt = Përfitoni shpejtësi, siguri dhe privatës
 default-browser-prompt-button-primary-alt = Vëre si shfletuesin parazgjedhje
 default-browser-prompt-checkbox-not-again-label = Mos e shfaq sërish këtë mesazh
 default-browser-prompt-button-secondary = Jo tani
+
+## Strings for a Windows native guidance notification when the user is forced to
+## use Windows Settings to set the default browser. Instructions differ for
+## Windows 10 and 11.
+
+default-browser-guidance-notification-title = Përfundoni bërjen e { -brand-short-name }-it parazgjedhje tuajën
+# Quoted text are keywords to look for in the Windows Settings app.
+default-browser-guidance-notification-body-instruction-win10 =
+    Hapi 1: Kaloni te Rregullime > Aplikacione parazgjedhje
+    Hapi 2: Shkoni poshtë te “Shletues web”
+    Hapi 3: Përzgjidhni dhe zgjidhni { -brand-short-name }
+# Quoted text are keywords to look for in the Windows Settings app.
+default-browser-guidance-notification-body-instruction-win11 =
+    Hapi 1: Kaloni te Rregullime > Aplikacione parazgjedhje
+    Hapi 2: Përzgjidhni “Vëre si parazgjedhje” për { -brand-short-name }-in
+default-browser-guidance-notification-info-page = Tregomëni
+default-browser-guidance-notification-dismiss = U bë

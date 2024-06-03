@@ -82,7 +82,6 @@ JXL_GTEST_INSTANTIATE_TEST_SUITE_P(
 
 TEST_P(SpeedTierTest, Roundtrip) {
   const SpeedTierTestParams& params = GetParam();
-  test::ThreadPoolForTests pool(8);
   const std::vector<uint8_t> orig = jxl::test::ReadTestData(
       "external/wesaturate/500px/u76c0g_bliznaca_srgb8.png");
   test::TestImage t;
@@ -105,7 +104,7 @@ TEST_P(SpeedTierTest, Roundtrip) {
   {
     extras::PackedPixelFile ppf_out;
     test::Roundtrip(t.ppf(), cparams, dparams, nullptr, &ppf_out);
-    EXPECT_LE(test::ButteraugliDistance(t.ppf(), ppf_out), 1.6);
+    EXPECT_LE(test::ButteraugliDistance(t.ppf(), ppf_out), 2.0);
   }
   if (params.shrink8) {
     cparams.distance = 0.0f;

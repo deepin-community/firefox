@@ -16,6 +16,22 @@ protocolhandler-mailto-os-handler-no-button = Teď ne
 
 protocolhandler-mailto-handler-notificationbox-always = Vždy otevírat e-mailové odkazy pomocí { $url }?
 protocolhandler-mailto-handler-yes-confirm = { $url } je nyní výchozí stránkou pro otevírání odkazů, které odesílají e-maily.
+protocolhandler-mailto-handler-set-message =
+    { -brand-short-name.case-status ->
+        [with-cases] Chcete použít adresu <strong>{ $url } ve { -brand-short-name(case: "loc") }</strong> pokaždé, když klepnete na odkaz otevírající váš e-mail?
+       *[no-cases] Chcete použít adresu <strong>{ $url } v aplikaci { -brand-short-name }</strong> pokaždé, když klepnete na odkaz otevírající váš e-mail?
+    }
+protocolhandler-mailto-handler-confirm-message =
+    { -brand-short-name.case-status ->
+        [with-cases] <strong>{ $url } ve { -brand-short-name(case: "loc") }</strong> je nyní výchozím obslužným programem pro poštu ve vašem počítači.
+       *[no-cases] <strong>{ $url } v aplikaci { -brand-short-name }</strong> je nyní výchozím obslužným programem pro poštu ve vašem počítači.
+    }
+protocolhandler-mailto-handler-set =
+    { -brand-short-name.case-status ->
+        [with-cases] Použít <strong>{ -brand-short-name(case: "gen") } pro otevření { $url }</strong> pokaždé, když klepnete na odkaz otevírající váš e-mail?
+       *[no-cases] Použít aplikaci <strong>{ -brand-short-name } pro otevření { $url }</strong> pokaždé, když klepnete na odkaz otevírající váš e-mail?
+    }
+protocolhandler-mailto-handler-confirm = <strong>{ -brand-short-name } otevře { $url }</strong> při každém klepnutím na odkaz, který odesílá e-mail.
 
 ##
 

@@ -1,4 +1,4 @@
-import { CONTENT_MESSAGE_TYPE } from "common/Actions.sys.mjs";
+import { CONTENT_MESSAGE_TYPE } from "common/Actions.mjs";
 import { ActivityStream, PREFS_CONFIG } from "lib/ActivityStream.sys.mjs";
 import { GlobalOverrider } from "test/unit/utils";
 
@@ -417,13 +417,11 @@ describe("ActivityStream", () => {
       clock = sinon.useFakeTimers();
 
       // Have addObserver cause prefHasUserValue to now return true then observe
-      sandbox
-        .stub(global.Services.obs, "addObserver")
-        .callsFake((pref, obs) => {
-          setTimeout(() => {
-            Services.obs.notifyObservers("US", "browser-region-updated");
-          });
+      sandbox.stub(global.Services.obs, "addObserver").callsFake(() => {
+        setTimeout(() => {
+          Services.obs.notifyObservers("US", "browser-region-updated");
         });
+      });
     });
     afterEach(() => clock.restore());
 

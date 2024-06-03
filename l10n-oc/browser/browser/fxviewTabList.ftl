@@ -15,6 +15,10 @@ fxviewtabrow-time = { DATETIME($time, timeStyle: "short") }
 fxviewtabrow-tabs-list-tab =
     .title = Dobrir { $targetURI } dins un onglet novèl
 # Variables:
+#   $tabTitle (string) - Title of tab being closed
+fxviewtabrow-close-tab-button =
+    .title = Tampar { $tabTitle }
+# Variables:
 #   $tabTitle (string) - Title of tab being dismissed
 fxviewtabrow-dismiss-tab-button =
     .title = Tampar { $tabTitle }
@@ -51,7 +55,30 @@ fxviewtabrow-move-tab-window = Desplaçar cap a una fenèstra novèla
     .accesskey = n
 fxviewtabrow-send-tab = Enviar l'onglet al periferic
     .accesskey = a
+fxviewtabrow-pin-tab = Penjar l’onglets
+    .accesskey = P
+fxviewtabrow-unpin-tab = Despenjar l’onglet
+    .accesskey = p
+fxviewtabrow-mute-tab = Amudir l'onglet
+    .accesskey = A
+fxviewtabrow-unmute-tab = Restablir lo son de l’onglets
+    .accesskey = e
 # Variables:
 #   $tabTitle (string) - Title of the tab to which the context menu is associated
 fxviewtabrow-options-menu-button =
     .title = Opcions per { $tabTitle }
+# Variables:
+#   $tabTitle (string) - Title of tab being muted
+fxviewtabrow-mute-tab-button =
+    .title = Amudir { $tabTitle }
+# Variables:
+#   $tabTitle (string) - Title of tab being unmuted
+fxviewtabrow-unmute-tab-button =
+    .title = Tornar lo son { $tabTitle }
+
+## Strings below are to be used without context (tab title/URL) on mute/unmute buttons
+
+fxviewtabrow-mute-tab-button-no-context =
+    .title = Rendre l'onglet mut
+fxviewtabrow-unmute-tab-button-no-context =
+    .title = Restablir lo son de l’onglet

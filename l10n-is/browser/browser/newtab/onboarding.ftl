@@ -23,7 +23,7 @@ return-to-amo-subtitle = Frábært, þú ert með { -brand-short-name }
 # Variables:
 #   $addon-name (String) - Name of the add-on
 return-to-amo-addon-title = Nú skulum við ná í handa þér <img data-l10n-name="icon"/> <b>{ $addon-name }</b>.
-return-to-amo-add-extension-label = Bæta inn viðbótinni
+return-to-amo-add-extension-label = Bæta inn forritsaukanum
 return-to-amo-add-theme-label = Bæta við þemanu
 
 ##  Variables: $addon-name (String) - Name of the add-on to be installed
@@ -53,6 +53,9 @@ mr1-onboarding-import-primary-button-label-attribution = Flytja inn úr { $previ
 mr1-onboarding-theme-header = Gerðu það að þínu eigin
 mr1-onboarding-theme-subtitle = Sérsníddu { -brand-short-name } með þema.
 mr1-onboarding-theme-secondary-button-label = Ekki núna
+newtab-wallpaper-onboarding-title = Prófaðu skvettu af lit
+newtab-wallpaper-onboarding-subtitle = Veldu bakgrunn til að gefa nýja flipanum þínum ferskt útlit.
+newtab-wallpaper-onboarding-primary-button-label = Stilla bakgrunn
 # System theme uses operating system color settings
 mr1-onboarding-theme-label-system = Kerfisþema
 mr1-onboarding-theme-label-light = Ljóst

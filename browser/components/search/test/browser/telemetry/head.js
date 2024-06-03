@@ -4,11 +4,14 @@
 ChromeUtils.defineESModuleGetters(this, {
   ADLINK_CHECK_TIMEOUT_MS:
     "resource:///actors/SearchSERPTelemetryChild.sys.mjs",
+  CATEGORIZATION_SETTINGS: "resource:///modules/SearchSERPTelemetry.sys.mjs",
   CustomizableUITestUtils:
     "resource://testing-common/CustomizableUITestUtils.sys.mjs",
   Region: "resource://gre/modules/Region.sys.mjs",
   RemoteSettings: "resource://services-settings/remote-settings.sys.mjs",
   SEARCH_TELEMETRY_SHARED: "resource:///modules/SearchSERPTelemetry.sys.mjs",
+  SearchSERPDomainToCategoriesMap:
+    "resource:///modules/SearchSERPTelemetry.sys.mjs",
   SearchSERPTelemetry: "resource:///modules/SearchSERPTelemetry.sys.mjs",
   SearchSERPTelemetryUtils: "resource:///modules/SearchSERPTelemetry.sys.mjs",
   SearchTestUtils: "resource://testing-common/SearchTestUtils.sys.mjs",
@@ -43,6 +46,10 @@ ChromeUtils.defineLazyGetter(this, "SEARCH_AD_CLICK_SCALARS", () => {
     ...sources.map(v => `browser.search.withads.${v}`),
     ...sources.map(v => `browser.search.adclicks.${v}`),
   ];
+});
+
+ChromeUtils.defineLazyGetter(this, "gCryptoHash", () => {
+  return Cc["@mozilla.org/security/hash;1"].createInstance(Ci.nsICryptoHash);
 });
 
 // For use with categorization.
@@ -189,11 +196,10 @@ async function assertSearchSourcesTelemetry(
 }
 
 function resetTelemetry() {
-  // TODO Bug 1868476: Replace when we're using Glean telemetry.
-  fakeTelemetryStorage = [];
   searchCounts.clear();
   Services.telemetry.clearScalars();
   Services.fog.testResetFOG();
+  SERPCategorizationRecorder.testReset();
 }
 
 /**
@@ -207,6 +213,11 @@ function resetTelemetry() {
  * values we use to validate the recorded Glean impression events.
  */
 function assertSERPTelemetry(expectedEvents) {
+  // Do a deep copy of impressions in case the input is using constants, as
+  // we insert impression id into the expected events to make it easier to
+  // run Assert.deepEqual() on the expected and actual result.
+  expectedEvents = JSON.parse(JSON.stringify(expectedEvents));
+
   // A single test might run assertImpressionEvents more than once
   // so the Set needs to be cleared or else the impression event
   // check will throw.
@@ -368,30 +379,52 @@ function assertSERPTelemetry(expectedEvents) {
   );
 }
 
-// TODO Bug 1868476: Replace when we're using Glean telemetry.
-let categorizationSandbox;
-let fakeTelemetryStorage = [];
-add_setup(function () {
-  categorizationSandbox = sinon.createSandbox();
-  categorizationSandbox
-    .stub(SERPCategorizationRecorder, "recordCategorizationTelemetry")
-    .callsFake(input => {
-      fakeTelemetryStorage.push(input);
-    });
+async function openSerpInNewTab(url, expectedAds = true) {
+  let promise;
+  if (expectedAds) {
+    promise = waitForPageWithAdImpressions();
+  }
+  let tab = await BrowserTestUtils.openNewForegroundTab(gBrowser, url);
+  await promise;
 
-  registerCleanupFunction(() => {
-    categorizationSandbox.restore();
-    fakeTelemetryStorage = [];
-  });
-});
+  let cleanup = async () => {
+    await BrowserTestUtils.removeTab(tab);
+    resetTelemetry();
+  };
+
+  return { tab, cleanup };
+}
+
+async function synthesizePageAction({
+  selector,
+  event = {},
+  tab,
+  expectEngagement = true,
+} = {}) {
+  let promise;
+  if (expectEngagement) {
+    promise = waitForPageWithAction();
+  } else {
+    // Wait roughly around how much it might take for a possible page action
+    // to be registered in telemetry.
+    /* eslint-disable-next-line mozilla/no-arbitrary-setTimeout */
+    promise = new Promise(resolve => setTimeout(resolve, 50));
+  }
+  await BrowserTestUtils.synthesizeMouseAtCenter(
+    selector,
+    event,
+    tab.linkedBrowser
+  );
+
+  await promise;
+}
 
 function assertCategorizationValues(expectedResults) {
-  // TODO Bug 1868476: Replace with calls to Glean telemetry.
-  let actualResults = [...fakeTelemetryStorage];
+  let actualResults = Glean.serp.categorization.testGetValue() ?? [];
 
   Assert.equal(
-    expectedResults.length,
     actualResults.length,
+    expectedResults.length,
     "Should have the correct number of categorization impressions."
   );
 
@@ -409,7 +442,7 @@ function assertCategorizationValues(expectedResults) {
     }
   }
   for (let actual of actualResults) {
-    for (let key in actual) {
+    for (let key in actual.extra) {
       keys.add(key);
     }
   }
@@ -418,14 +451,21 @@ function assertCategorizationValues(expectedResults) {
   for (let index = 0; index < expectedResults.length; ++index) {
     info(`Checking categorization at index: ${index}`);
     let expected = expectedResults[index];
-    let actual = actualResults[index];
+    let actual = actualResults[index].extra;
+
+    Assert.ok(
+      Number(actual?.organic_num_domains) <=
+        CATEGORIZATION_SETTINGS.MAX_DOMAINS_TO_CATEGORIZE,
+      "Number of organic domains categorized should not exceed threshold."
+    );
+
+    Assert.ok(
+      Number(actual?.sponsored_num_domains) <=
+        CATEGORIZATION_SETTINGS.MAX_DOMAINS_TO_CATEGORIZE,
+      "Number of sponsored domains categorized should not exceed threshold."
+    );
+
     for (let key of keys) {
-      // TODO Bug 1868476: This conversion to strings is to mimic Glean
-      // converting all values into strings. Once we receive real values from
-      // Glean, it can be removed.
-      if (actual[key] != null && typeof actual[key] !== "string") {
-        actual[key] = actual[key].toString();
-      }
       Assert.equal(
         actual[key],
         expected[key],
@@ -433,6 +473,10 @@ function assertCategorizationValues(expectedResults) {
       );
     }
   }
+}
+
+function waitForPageWithAction() {
+  return TestUtils.topicObserved("reported-page-with-action");
 }
 
 function waitForPageWithAdImpressions() {
@@ -455,14 +499,21 @@ function waitForDomainToCategoriesUpdate() {
   return TestUtils.topicObserved("domain-to-categories-map-update-complete");
 }
 
+function waitForDomainToCategoriesInit() {
+  return TestUtils.topicObserved("domain-to-categories-map-init");
+}
+
+function waitForDomainToCategoriesUninit() {
+  return TestUtils.topicObserved("domain-to-categories-map-uninit");
+}
+
 registerCleanupFunction(async () => {
   await PlacesUtils.history.clear();
 });
 
-async function mockRecordWithAttachment({ id, version, filename }) {
+async function mockRecordWithAttachment({ id, version, filename, mapping }) {
   // Get the bytes of the file for the hash and size for attachment metadata.
-  let data = await IOUtils.readUTF8(getTestFilePath(filename));
-  let buffer = new TextEncoder().encode(data).buffer;
+  let buffer = new TextEncoder().encode(JSON.stringify(mapping)).buffer;
   let stream = Cc["@mozilla.org/io/arraybuffer-input-stream;1"].createInstance(
     Ci.nsIArrayBufferInputStream
   );
@@ -506,6 +557,30 @@ async function resetCategorizationCollection(record) {
   await client.db.importChanges({}, Date.now());
 }
 
+const MOCK_ATTACHMENT_VALUES = {
+  "abc.com": [2, 95],
+  "abc.org": [4, 90],
+  "def.com": [2, 78, 4, 10],
+  "def.org": [4, 90],
+  "foobar.org": [3, 90],
+};
+
+const CONVERTED_ATTACHMENT_VALUES = convertDomainsToHashes(
+  MOCK_ATTACHMENT_VALUES
+);
+
+function convertDomainsToHashes(domainsToCategories) {
+  let newObj = {};
+  for (let [key, value] of Object.entries(domainsToCategories)) {
+    gCryptoHash.init(gCryptoHash.SHA256);
+    let bytes = new TextEncoder().encode(key);
+    gCryptoHash.update(bytes, key.length);
+    let hash = gCryptoHash.finish(true);
+    newObj[hash] = value;
+  }
+  return newObj;
+}
+
 async function insertRecordIntoCollection() {
   const client = RemoteSettings(TELEMETRY_CATEGORIZATION_KEY);
   const db = client.db;
@@ -515,6 +590,7 @@ async function insertRecordIntoCollection() {
     id: "example_id",
     version: 1,
     filename: "domain_category_mappings.json",
+    mapping: CONVERTED_ATTACHMENT_VALUES,
   });
   await db.create(record);
   await client.attachments.cacheImpl.set(record.id, attachment);

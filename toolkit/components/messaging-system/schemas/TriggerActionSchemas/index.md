@@ -44,6 +44,7 @@ let patterns: string[];
 * [formAutofill](#formautofill)
 * [contentBlocking](#contentblocking)
 * [defaultBrowserCheck](#defaultbrowsercheck)
+* [deeplinkedToWindowsSettingsUI](#deeplinkedtowindowssettingsui)
 * [captivePortalLogin](#captiveportallogin)
 * [preferenceObserver](#preferenceobserver)
 * [featureCalloutCheck](#featurecalloutcheck)
@@ -114,7 +115,7 @@ same reason, the trigger only fires after a 10-second delay. The trigger context
 includes an `event` and `type` that can be used in targeting. Possible events
 include `add`, `update`, and `use`. Possible types are `card` and `address`.
 This trigger is especially intended to be used in tandem with the
-`creditCardsSaved` and `addressesSaved` [targeting attributes](../../../../../browser/components/newtab/content-src/asrouter/docs/targeting-attributes.md).
+`creditCardsSaved` and `addressesSaved` [targeting attributes](/browser/components/asrouter/docs/targeting-attributes.md).
 
 ```js
 {
@@ -160,6 +161,12 @@ let willShowDefaultPrompt = boolean | undefined;
   targeting: "source == 'startup' && !willShowDefaultPrompt"
 }
 ```
+
+### `deeplinkedToWindowsSettingsUI`
+
+Triggers when the user has indicated they want to set Firefox as the default web
+browser and interaction with Windows Settings is necessary to finish setting
+Firefox as default.
 
 ### `captivePortalLogin`
 

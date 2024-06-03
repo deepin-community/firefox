@@ -14,6 +14,34 @@ about-reader-color-scheme-sepia = Seppia
 about-reader-color-scheme-auto = Automatico
     .title = Combinazione colori automatica
 
+about-reader-color-theme-light = Chiaro
+    .title = Tema con colori chiari
+about-reader-color-theme-dark = Scuro
+    .title = Tema con colori scuri
+about-reader-color-theme-sepia = Seppia
+    .title = Tema con colori seppia
+about-reader-color-theme-auto = Automatico
+    .title = Tema con colori scelti automaticamente
+about-reader-color-theme-gray = Grigio
+    .title = Tema con colori grigi
+about-reader-color-theme-contrast = Contrasto
+    .title = Tema con colori a contrasto elevato
+about-reader-color-theme-custom = Colori personalizzati
+    .title = Tema con colori personalizzati
+
+about-reader-color-light-theme = Chiaro
+    .title = Tema chiaro
+about-reader-color-dark-theme = Scuro
+    .title = Tema scuro
+about-reader-color-sepia-theme = Seppia
+    .title = Tema seppia
+about-reader-color-auto-theme = Automatico
+    .title = Tema automatico
+about-reader-color-gray-theme = Grigio
+    .title = Tema grigio
+about-reader-color-contrast-theme = Contrasto
+    .title = Tema ad alto contrasto
+
 # An estimate for how long it takes to read an article,
 # expressed as a range covering both slow and fast readers.
 # Variables:
@@ -49,4 +77,62 @@ about-reader-font-type-sans-serif = Senza grazie
 
 about-reader-toolbar-close = Chiudi Modalità lettura
 about-reader-toolbar-type-controls = Controlli carattere
+about-reader-toolbar-color-controls = Colori
+about-reader-toolbar-text-layout-controls = Testo e layout
+about-reader-toolbar-theme-controls = Tema
 about-reader-toolbar-savetopocket = Salva in { -pocket-brand-name }
+
+## Reader View colors menu
+
+about-reader-colors-menu-header = Tema
+
+about-reader-fxtheme-tab = Predefinito
+about-reader-customtheme-tab = Personalizzato
+
+## These are used as labels for the custom theme color pickers.
+## The .title element is used to make the editing functionality
+## clear and give context for screen reader users.
+
+about-reader-custom-colors-foreground = Testo
+    .title = Modifica colore
+about-reader-custom-colors-background = Sfondo
+    .title = Modifica colore
+
+about-reader-custom-colors-unvisited-links = Link non visitati
+    .title = Modifica colore
+about-reader-custom-colors-visited-links = Link visitati
+    .title = Modifica colore
+
+about-reader-custom-colors-selection-highlight = Evidenziatore per lettura ad alta voce
+    .title = Modifica colore
+
+about-reader-custom-colors-reset-button = Ripristina predefiniti
+
+## Reader View improved text and layout menu
+
+about-reader-layout-header = Layout
+about-reader-advanced-layout-header = Avanzate
+
+about-reader-slider-label-width-narrow = Stretta
+about-reader-slider-label-width-wide = Larga
+about-reader-slider-label-spacing-narrow = Ridotta
+about-reader-slider-label-spacing-standard = Normale
+about-reader-slider-label-spacing-wide = Espansa
+
+about-reader-content-width-label =
+  .label = Larghezza contenuto
+about-reader-line-spacing-label =
+  .label = Interlinea
+
+about-reader-character-spacing-label =
+  .label = Spaziatura caratteri
+about-reader-word-spacing-label =
+  .label = Spaziatura parole
+
+about-reader-text-alignment-label = Allineamento del testo
+about-reader-text-alignment-left =
+    .title = Allinea il testo a sinistra
+about-reader-text-alignment-center =
+    .title = Allinea il testo al centro
+about-reader-text-alignment-right =
+    .title = Allinea il testo a destra

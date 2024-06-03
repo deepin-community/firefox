@@ -32,6 +32,8 @@ search-input-box2 =
     .style = width: 15.4em
     .placeholder = Zoeken in Instellingen
 managed-notice = Uw browser wordt door uw organisatie beheerd.
+managed-notice-info-icon =
+    .alt = Informatie
 category-list =
     .aria-label = Categorieën
 pane-general-title = Algemeen
@@ -708,6 +710,13 @@ sync-mobile-promo = Download Firefox voor <img data-l10n-name="android-icon"/> <
 
 sync-profile-picture =
     .tooltiptext = Profielafbeelding wijzigen
+sync-profile-picture-with-alt =
+    .tooltiptext = Profielafbeelding wijzigen
+    .alt = Profielafbeelding wijzigen
+sync-profile-picture-account-problem =
+    .alt = Accountprofielafbeelding
+fxa-login-rejected-warning =
+    .alt = Waarschuwing
 sync-sign-out =
     .label = Afmelden…
     .accesskey = f
@@ -1274,6 +1283,8 @@ addon-recommendations-link = Meer info
 # or builds with no Telemetry support available.
 collection-health-report-disabled = Gegevensrapportage is uitgeschakeld voor deze buildconfiguratie
 collection-backlogged-crash-reports-with-link = { -brand-short-name } toestaan om namens u achterstallige crashrapporten te verzenden. <a data-l10n-name="crash-reports-link">Meer info</a>
+    .accesskey = c
+collection-backlogged-crash-reports = { -brand-short-name } toestaan om namens u achterstallige crashrapporten te verzenden.
     .accesskey = c
 privacy-segmentation-section-header = Nieuwe functies die uw browsen verbeteren
 privacy-segmentation-section-description = Wanneer we functies aanbieden die uw gegevens gebruiken om u een meer persoonlijke ervaring te bieden:

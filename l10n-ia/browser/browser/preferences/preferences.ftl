@@ -32,6 +32,8 @@ search-input-box2 =
     .style = width: 16em
     .placeholder = Cercar in parametros
 managed-notice = Tu navigator debe ser gerite per tu organisation.
+managed-notice-info-icon =
+    .alt = Information
 category-list =
     .aria-label = Categorias
 pane-general-title = General
@@ -261,6 +263,8 @@ preferences-default-zoom-value =
 preferences-zoom-text-only =
     .label = Zoom del texto solmente
     .accesskey = t
+preferences-text-zoom-override-warning =
+    .message = ATTENTION: Si tu elige “Facer zoom solo texto” e tu zoom predefinite non es configurate a 100%, isto pote causar que alcun sitos o contento collabe.
 language-header = Lingua
 choose-language-description = Elige tu lingua preferite pro presentar le paginas
 choose-button =
@@ -568,6 +572,7 @@ home-prefs-recommended-by-header =
 home-prefs-recommended-by-description-new = Contento exceptional a cura de { $provider }, parte del familia { -brand-product-name }
 home-prefs-recommended-by-header-generic =
     .label = Historias recommendate
+home-prefs-recommended-by-description-generic = Contento exceptional curate per le familia de { -brand-product-name }
 
 ##
 
@@ -705,6 +710,13 @@ sync-mobile-promo = Discarga Firefox pro <img data-l10n-name="android-icon"/> <a
 
 sync-profile-picture =
     .tooltiptext = Cambiar le imagine del profilo
+sync-profile-picture-with-alt =
+    .tooltiptext = Cambiar le imagine del profilo
+    .alt = Cambiar le imagine del profilo
+sync-profile-picture-account-problem =
+    .alt = Imagine del profilo del conto
+fxa-login-rejected-warning =
+    .alt = Advertentia
 sync-sign-out =
     .label = Clauder session…
     .accesskey = C
@@ -1271,6 +1283,8 @@ addon-recommendations-link = Saper plus
 # or builds with no Telemetry support available.
 collection-health-report-disabled = Le reporto de datos es inactive pro iste configuration de compilation
 collection-backlogged-crash-reports-with-link = Permitter que { -brand-short-name } invia in tu nomine le reportos accumulate de crash <a data-l10n-name="crash-reports-link">saper plus</a>
+    .accesskey = P
+collection-backlogged-crash-reports = Permitter que { -brand-short-name } invia in tu nomine le reportos accumulate de crash
     .accesskey = P
 privacy-segmentation-section-header = Nove functiones que meliora tu navigation
 privacy-segmentation-section-description = Quando nos offere functiones que usa tu datos pro dar te un experientia plus personal:

@@ -31,7 +31,7 @@ toolbar-button-back-2 =
 # Variables
 #   $shortcut (String) - A keyboard shortcut for the Go Forward command.
 main-context-menu-forward-2 =
-    .tooltiptext = Գնալ Հաջորդ Էջ ({ $shortcut })
+    .tooltiptext = Գնալ մեկ Էջ առաջ ({ $shortcut })
     .aria-label = Հաջորդը
     .accesskey = F
 # This menuitem is only visible on macOS
@@ -92,11 +92,43 @@ main-context-menu-page-save =
 
 ## Simple menu items
 
+main-context-menu-bookmark-page =
+    .aria-label = Էջանշել...
+    .accesskey = m
+    .tooltiptext = Էջանշել
+# This menuitem is only visible on macOS
+# Cannot be shown at the same time as main-context-menu-edit-bookmark-mac,
+# so should probably have the same access key if possible.
+main-context-menu-bookmark-page-mac =
+    .label = Էջանշել…
+    .accesskey = m
+# This menuitem is only visible on macOS
+# Cannot be shown at the same time as main-context-menu-bookmark-page-mac,
+# so should probably have the same access key if possible.
+main-context-menu-edit-bookmark-mac =
+    .label = Խմբագրել Էջանիշը…
+    .accesskey = m
+# Variables
+#   $shortcut (String) - A keyboard shortcut for the add bookmark command.
+main-context-menu-bookmark-page-with-shortcut =
+    .aria-label = Էջանշել էջը…
+    .accesskey = m
+    .tooltiptext = Էջանշել { $shortcut } էջը
+main-context-menu-edit-bookmark =
+    .aria-label = Խմբագրել Էջանիշը…
+    .accesskey = m
+    .tooltiptext = Խմբագրել Էջանիշը
+# Variables
+#   $shortcut (String) - A keyboard shortcut for the edit bookmark command.
+main-context-menu-edit-bookmark-with-shortcut =
+    .aria-label = Խմբագրել Էջանիշը…
+    .accesskey = m
+    .tooltiptext = Խմբագրել { $shortcut } Էջանիշը
 main-context-menu-open-link =
-    .label = Բացել Հղումը
+    .label = Բացել հղումը
     .accesskey = Բ
 main-context-menu-open-link-new-tab =
-    .label = Հղումը Բացել Նոր Ներդիրում
+    .label = Բացել հղումը նոր ներդիրում
     .accesskey = Բ
 main-context-menu-open-link-container-tab =
     .label = Բացել հղումը Նոր Պարունակ Ներդիրում
@@ -178,10 +210,10 @@ main-context-menu-media-loop =
 ## because the two context-menu items are mutually exclusive.
 
 main-context-menu-media-show-controls =
-    .label = Ցուցադրել ղեկավարիչներին
+    .label = Ցուցադրել կառավարները
     .accesskey = Ց
 main-context-menu-media-hide-controls =
-    .label = Թաքցնել ղեկավարիչները
+    .label = Թաքցնել կառավարները
     .accesskey = Թ
 
 ##
@@ -192,6 +224,11 @@ main-context-menu-media-video-fullscreen =
 main-context-menu-media-video-leave-fullscreen =
     .label = Դուրս գալ Լիաէկրան վիճակից
     .accesskey = Լ
+# This is used when right-clicking on a video in the
+# content area when the Picture-in-Picture feature is enabled.
+main-context-menu-media-watch-pip =
+    .label = Նայել «Նկարը Նկարում»-ով
+    .accesskey = u
 main-context-menu-image-reload =
     .label = Կրկին բեռնել Նկարը
     .accesskey = Կ
@@ -199,10 +236,10 @@ main-context-menu-image-view-new-tab =
     .label = Բացել պատկերը նոր ներդիրում
     .accesskey = I
 main-context-menu-video-view-new-tab =
-    .label = Բացել Տեսանյութը նոր ներդիրում
-    .accesskey = i
+    .label = Բացել տեսանյութը նոր ներդիրում
+    .accesskey = ն
 main-context-menu-image-copy =
-    .label = Կրկնօրինակել Նկարը
+    .label = Պատճենել նկարը
     .accesskey = ր
 main-context-menu-image-copy-link =
     .label = Պատճենել պատկերի հղումը
@@ -222,6 +259,9 @@ main-context-menu-image-email =
 main-context-menu-image-set-image-as-background =
     .label = Պահպանել պատկերը որպես Աշխատասեղանի նկար…
     .accesskey = S
+main-context-menu-image-copy-text =
+    .label = Պատճենել տեքստը պատկերից
+    .accesskey = x
 main-context-menu-image-info =
     .label = Տեղեկություն Նկարի Մասին
     .accesskey = Տ
@@ -229,7 +269,7 @@ main-context-menu-image-desc =
     .label = Դիտել նկարագրությունը
     .accesskey = ն
 main-context-menu-video-save-as =
-    .label = Պահպանել Տեսանյութը Որպես...
+    .label = Պահպանել տեսանյութը որպես...
     .accesskey = լ
 main-context-menu-audio-save-as =
     .label = Պահպանել ձայնանյութը որպես...
@@ -241,8 +281,8 @@ main-context-menu-video-email =
     .label = Տեսանյութը ուղարկել էլ. փոստով...
     .accesskey = ս
 main-context-menu-audio-email =
-    .label = Ուղարկել էլ. փոստով...
-    .accesskey = ր
+    .label = Ուղարկել ձայնանյութն էլ. փոստով...
+    .accesskey = ձ
 main-context-menu-save-to-pocket =
     .label = Պահպանել էջը { -pocket-brand-name }-ում
     .accesskey = k
@@ -254,6 +294,9 @@ main-context-menu-send-to-device =
 ## should be the same if possible; the two context menu items
 ## are mutually exclusive.
 
+main-context-menu-use-saved-login =
+    .label = Օգտագործեք պահված մուտքագրումը
+    .accesskey = o
 # Displayed when there are saved passwords and the user clicks inside a username or password field
 main-context-menu-use-saved-password =
     .label = Օգտագործեք պահված գաղտնաբառը
@@ -261,6 +304,9 @@ main-context-menu-use-saved-password =
 
 ##
 
+main-context-menu-use-relay-mask =
+    .label = Օգտագործեք { -relay-brand-short-name } Էլ․ փոստի դիմակը
+    .accesskey = E
 main-context-menu-suggest-strong-password =
     .label = Առաջարկել ուժեղ գաղտնաբառ…
     .accesskey = S
@@ -291,6 +337,9 @@ main-context-menu-frame-open-window =
 main-context-menu-frame-reload =
     .label = Կրկին բեռնել շրջանակը
     .accesskey = Կ
+main-context-menu-frame-add-bookmark =
+    .label = Էջանշել շրջանակը...
+    .accesskey = m
 main-context-menu-frame-save-as =
     .label = Պահպանել շրջանակը որպես…
     .accesskey = Պ
@@ -307,7 +356,7 @@ main-context-menu-print-selection-2 =
     .label = Տպել ընտրությունը…
     .accesskey = r
 main-context-menu-view-selection-source =
-    .label = Դիտել Նշված Մասի Կոդը
+    .label = Դիտել նշվածի կոդը
     .accesskey = e
 main-context-menu-take-screenshot =
     .label = Ստանալ էկրանի հանույթը
@@ -319,16 +368,24 @@ main-context-menu-view-page-source =
     .label = Դիտել Էջի Կոդը
     .accesskey = Դ
 main-context-menu-bidi-switch-text =
-    .label = Փոխել Տեքստի Ուղղությունը
+    .label = Փոխարկել տեքստի ուղղությունը
     .accesskey = ո
 main-context-menu-bidi-switch-page =
-    .label = Փոխել Էջի Ուղղությունը
+    .label = Փոխարկել էջի ուղղությունը
     .accesskey = Ո
 main-context-menu-inspect =
     .label = Զննել
     .accesskey = Q
 main-context-menu-inspect-a11y-properties =
-    .label = Ստուգել մատչելիության հատկությունները
+    .label = Զննել մատչելիության հատկությունները
 main-context-menu-eme-learn-more =
     .label = Իմանալ ավելին DRM-ի մասին...
     .accesskey = D
+# Variables
+#   $containerName (String): The name of the current container
+main-context-menu-open-link-in-container-tab =
+    .label = Բացել հղումը նոր { $containerName } ներդիրում
+    .accesskey = T
+main-context-menu-reveal-password =
+    .label = Բացահայտել գաղտնաբառը
+    .accesskey = v

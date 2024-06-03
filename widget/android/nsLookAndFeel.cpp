@@ -253,6 +253,7 @@ nsresult nsLookAndFeel::NativeGetColor(ColorID aID, ColorScheme aColorScheme,
       break;
     case ColorID::Marktext:
     case ColorID::Mark:
+    case ColorID::MozAutofillBackground:
     case ColorID::SpellCheckerUnderline:
       aColor = GetStandinForNativeColor(aID, aColorScheme);
       break;
@@ -298,10 +299,6 @@ nsresult nsLookAndFeel::NativeGetInt(IntID aID, int32_t& aResult) {
       aResult = 1;
       break;
 
-    case IntID::ShowCaretDuringSelection:
-      aResult = 0;
-      break;
-
     case IntID::SelectTextfieldsOnKeyFocus:
       // Select textfield content when focused by kbd
       // used by EventStateManager::sTextfieldSelectModel
@@ -310,10 +307,6 @@ nsresult nsLookAndFeel::NativeGetInt(IntID aID, int32_t& aResult) {
 
     case IntID::SubmenuDelay:
       aResult = 200;
-      break;
-
-    case IntID::TooltipDelay:
-      aResult = 500;
       break;
 
     case IntID::MenusCanOverlapOSBar:

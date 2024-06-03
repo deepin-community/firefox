@@ -21,3 +21,20 @@ default-browser-prompt-message-alt = Әр шолудағы жылдамдық, �
 default-browser-prompt-button-primary-alt = Негізгі браузер қылу
 default-browser-prompt-checkbox-not-again-label = Бұл хабарламаны енді көрсетпеу
 default-browser-prompt-button-secondary = Қазір емес
+
+## Strings for a Windows native guidance notification when the user is forced to
+## use Windows Settings to set the default browser. Instructions differ for
+## Windows 10 and 11.
+
+default-browser-guidance-notification-title = { -brand-short-name } өнімін негізгі браузер қылып аяқтау
+# Quoted text are keywords to look for in the Windows Settings app.
+default-browser-guidance-notification-body-instruction-win10 =
+    1-қадам: Баптаулар > Үнсіз келісім қолданбаларына өтіңіз
+    2-қадам: “Веб-браузері” дейін төмен айналдырыңыз
+    3-қадам: { -brand-short-name } ерекшелеп, таңдаңыз
+# Quoted text are keywords to look for in the Windows Settings app.
+default-browser-guidance-notification-body-instruction-win11 =
+    1-қадам: Баптаулар > Үнсіз келісім қолданбаларына өтіңіз
+    2-қадам: { -brand-short-name } үшін “Негізгі қылу” таңдаңыз
+default-browser-guidance-notification-info-page = Маған көрсету
+default-browser-guidance-notification-dismiss = Дайын

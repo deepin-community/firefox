@@ -32,6 +32,8 @@ search-input-box2 =
     .style = width: 15.4em
     .placeholder = Ayarlarda ara
 managed-notice = Tarayıcınız kuruluşunuz tarafından yönetiliyor.
+managed-notice-info-icon =
+    .alt = Bilgi
 category-list =
     .aria-label = Kategoriler
 pane-general-title = Genel
@@ -708,6 +710,13 @@ sync-mobile-promo = Mobil cihazınızla eşitleme yapmak isterseniz <img data-l1
 
 sync-profile-picture =
     .tooltiptext = Profil resmini değiştir
+sync-profile-picture-with-alt =
+    .tooltiptext = Profil resmini değiştir
+    .alt = Profil resmini değiştir
+sync-profile-picture-account-problem =
+    .alt = Hesap profil resmi
+fxa-login-rejected-warning =
+    .alt = Uyarı
 sync-sign-out =
     .label = Çıkış yap…
     .accesskey = k
@@ -1274,6 +1283,8 @@ addon-recommendations-link = Daha fazla bilgi al
 # or builds with no Telemetry support available.
 collection-health-report-disabled = Bu yapılandırma için veri raporlama devre dışı bırakılmış
 collection-backlogged-crash-reports-with-link = { -brand-short-name } geriye dönük çökme raporlarını benim adıma gönderebilir <a data-l10n-name="crash-reports-link">Daha fazla bilgi al</a>
+    .accesskey = d
+collection-backlogged-crash-reports = { -brand-short-name } geriye dönük çökme raporlarını benim adıma gönderebilir
     .accesskey = d
 privacy-segmentation-section-header = Gezintinizi iyileştiren yeni özellikler
 privacy-segmentation-section-description = Size daha kişisel bir deneyim sunmak için verilerinizi kullanan özellikler sunduğumuzda:

@@ -337,29 +337,38 @@ impl ShaderModuleCompilationMessage {
     fn set_error(&mut self, error: &CreateShaderModuleError, source: &str) {
         // The WebGPU spec says that if the message doesn't point to a particular position in
         // the source, the line number, position, offset and lengths should be zero.
-        self.line_number = 0;
-        self.line_pos = 0;
-        self.utf16_offset = 0;
-        self.utf16_length = 0;
+        let line_number;
+        let line_pos;
+        let utf16_offset;
+        let utf16_length;
 
         if let Some(location) = error.location(source) {
-            self.line_number = location.line_number as u64;
-            self.line_pos = location.line_position as u64;
-
+            let len_utf16 = |s: &str| s.chars().map(|c| c.len_utf16() as u64).sum();
             let start = location.offset as usize;
             let end = start + location.length as usize;
-            self.utf16_offset = source[0..start].chars().map(|c| c.len_utf16() as u64).sum();
-            self.utf16_length = source[start..end]
-                .chars()
-                .map(|c| c.len_utf16() as u64)
-                .sum();
+            utf16_offset = len_utf16(&source[0..start]);
+            utf16_length = len_utf16(&source[start..end]);
+
+            line_number = location.line_number as u64;
+            // Naga reports a `line_pos` using UTF-8 bytes, so we cannot use it.
+            let line_start = source[0..start].rfind('\n').map(|pos| pos + 1).unwrap_or(0);
+            line_pos = len_utf16(&source[line_start..start]) + 1;
+        } else {
+            line_number = 0;
+            line_pos = 0;
+            utf16_offset = 0;
+            utf16_length = 0;
         }
 
-        let error_string = error.to_string();
+        let message = nsString::from(&error.to_string());
 
-        if !error_string.is_empty() {
-            self.message = nsString::from(&error_string[..]);
-        }
+        *self = Self {
+            line_number,
+            line_pos,
+            utf16_offset,
+            utf16_length,
+            message,
+        };
     }
 }
 
@@ -410,7 +419,9 @@ pub extern "C" fn wgpu_server_device_create_shader_module(
     if let Some(err) = error {
         out_message.set_error(&err, &source_str[..]);
         let err_type = match &err {
-            CreateShaderModuleError::Device(DeviceError::OutOfMemory) => ErrorBufferType::OutOfMemory,
+            CreateShaderModuleError::Device(DeviceError::OutOfMemory) => {
+                ErrorBufferType::OutOfMemory
+            }
             CreateShaderModuleError::Device(DeviceError::Lost) => ErrorBufferType::DeviceLost,
             _ => ErrorBufferType::Validation,
         };
@@ -497,7 +508,8 @@ pub unsafe extern "C" fn wgpu_server_buffer_map(
     // the returned value of buffer_map_async.
     let result = gfx_select!(buffer_id => global.buffer_map_async(
         buffer_id,
-        start .. start + size,
+        start,
+        Some(size),
         operation
     ));
 
@@ -580,9 +592,10 @@ pub extern "C" fn wgpu_server_get_device_fence_handle(
     if device_id.backend() == wgt::Backend::Dx12 {
         let mut handle = ptr::null_mut();
         let dx12_device = unsafe {
-            global.device_as_hal::<wgc::api::Dx12, _, Option<d3d12::Device>>(device_id, |hal_device| {
-                hal_device.map(|device| device.raw_device().clone())
-            })
+            global.device_as_hal::<wgc::api::Dx12, _, Option<d3d12::Device>>(
+                device_id,
+                |hal_device| hal_device.map(|device| device.raw_device().clone()),
+            )
         };
         let dx12_device = match dx12_device {
             Some(device) => device,
@@ -592,9 +605,10 @@ pub extern "C" fn wgpu_server_get_device_fence_handle(
         };
 
         let dx12_fence = unsafe {
-            global.device_fence_as_hal::<wgc::api::Dx12, _, Option<d3d12::Fence>>(device_id, |hal_fence| {
-                hal_fence.map(|fence| fence.raw_fence().clone())
-            })
+            global.device_fence_as_hal::<wgc::api::Dx12, _, Option<d3d12::Fence>>(
+                device_id,
+                |hal_fence| hal_fence.map(|fence| fence.raw_fence().clone()),
+            )
         };
         let dx12_fence = match dx12_fence {
             Some(fence) => fence,
@@ -1051,6 +1065,32 @@ pub unsafe extern "C" fn wgpu_server_command_encoder_action(
 ) {
     let action = bincode::deserialize(byte_buf.as_slice()).unwrap();
     gfx_select!(self_id => global.command_encoder_action(self_id, action, error_buf));
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn wgpu_server_render_pass(
+    global: &Global,
+    encoder_id: id::CommandEncoderId,
+    byte_buf: &ByteBuf,
+    error_buf: ErrorBuffer,
+) {
+    let pass = bincode::deserialize(byte_buf.as_slice()).unwrap();
+    let action = crate::command::replay_render_pass(encoder_id, &pass).into_command();
+
+    gfx_select!(encoder_id => global.command_encoder_action(encoder_id, action, error_buf));
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn wgpu_server_compute_pass(
+    global: &Global,
+    encoder_id: id::CommandEncoderId,
+    byte_buf: &ByteBuf,
+    error_buf: ErrorBuffer,
+) {
+    let pass = bincode::deserialize(byte_buf.as_slice()).unwrap();
+    let action = crate::command::replay_compute_pass(encoder_id, &pass).into_command();
+
+    gfx_select!(encoder_id => global.command_encoder_action(encoder_id, action, error_buf));
 }
 
 #[no_mangle]

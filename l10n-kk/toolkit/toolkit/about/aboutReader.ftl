@@ -4,7 +4,6 @@
 
 about-reader-loading = Жүктеу…
 about-reader-load-error = Парақтан мақаланы жүктеу сәтсіз
-
 about-reader-color-scheme-light = Ашық түсті
     .title = Ашық түстер схемасы
 about-reader-color-scheme-dark = Күңгірт
@@ -13,7 +12,32 @@ about-reader-color-scheme-sepia = Сепия
     .title = Сепия түстер схемасы
 about-reader-color-scheme-auto = Автоматты түрде
     .title = Түс схемасы "Авто"
-
+about-reader-color-theme-light = Ашық түсті
+    .title = Ашық түсті түстер схемасы
+about-reader-color-theme-dark = Күңгірт түсті
+    .title = Күңгірт түсті түстер схемасы
+about-reader-color-theme-sepia = Сепия
+    .title = Сепия түстер схемасы
+about-reader-color-theme-auto = Автоматты түрде
+    .title = Автоматты түрде түстер схемасы
+about-reader-color-theme-gray = Сұр түсті
+    .title = Сұр түсті түстер схемасы
+about-reader-color-theme-contrast = Контрастты
+    .title = Контрассты түстер схемасы
+about-reader-color-theme-custom = Таңдауыңызша түсті
+    .title = Таңдауыңызша түсті түстер схемасы
+about-reader-color-light-theme = Ашық түсті
+    .title = Ашық түсті тема
+about-reader-color-dark-theme = Күңгірт түсті
+    .title = Күңгірт түсті тема
+about-reader-color-sepia-theme = Сепия
+    .title = Сепия темасы
+about-reader-color-auto-theme = Автоматты түрде
+    .title = Автоматты түрде тема
+about-reader-color-gray-theme = Сұр түсті
+    .title = Сұр түсті тема
+about-reader-color-contrast-theme = Контрастты
+    .title = Контрастты тема
 # An estimate for how long it takes to read an article,
 # expressed as a range covering both slow and fast readers.
 # Variables:
@@ -49,4 +73,54 @@ about-reader-font-type-sans-serif = Sans-serif
 
 about-reader-toolbar-close = Оқу режимін жабу
 about-reader-toolbar-type-controls = Қаріптерді баптау
+about-reader-toolbar-color-controls = Түстер
+about-reader-toolbar-text-layout-controls = Мәтін және жайма
+about-reader-toolbar-theme-controls = Тема
 about-reader-toolbar-savetopocket = { -pocket-brand-name } ішіне сақтау
+
+## Reader View colors menu
+
+about-reader-colors-menu-header = Тема
+about-reader-fxtheme-tab = Үнсiз келiсiм бойынша
+about-reader-customtheme-tab = Таңдауыңызша
+
+## These are used as labels for the custom theme color pickers.
+## The .title element is used to make the editing functionality
+## clear and give context for screen reader users.
+
+about-reader-custom-colors-foreground = Мәтін
+    .title = Түсті түзету
+about-reader-custom-colors-background = Фон
+    .title = Түсті түзету
+about-reader-custom-colors-unvisited-links = Ашылмаған сілтемелер
+    .title = Түсті түзету
+about-reader-custom-colors-visited-links = Ашылған сілтемелер
+    .title = Түсті түзету
+about-reader-custom-colors-selection-highlight = Дауыстап оқуға арналған ерекшелегіш
+    .title = Түсті түзету
+about-reader-custom-colors-reset-button = Бастапқы түріне қайтару
+
+## Reader View improved text and layout menu
+
+about-reader-layout-header = Жайма
+about-reader-advanced-layout-header = Кеңейтілген
+about-reader-slider-label-width-narrow = Тар
+about-reader-slider-label-width-wide = Кең
+about-reader-slider-label-spacing-narrow = Тар
+about-reader-slider-label-spacing-standard = Қалыпты
+about-reader-slider-label-spacing-wide = Кең
+about-reader-content-width-label =
+    .label = Құраманың ені
+about-reader-line-spacing-label =
+    .label = Жол аралығы
+about-reader-character-spacing-label =
+    .label = Таңбалар аралығы
+about-reader-word-spacing-label =
+    .label = Сөз аралығы
+about-reader-text-alignment-label = Мәтінді туралау
+about-reader-text-alignment-left =
+    .title = Мәтінді солға туралау
+about-reader-text-alignment-center =
+    .title = Мәтінді ортасымен туралау
+about-reader-text-alignment-right =
+    .title = Мәтінді оңға туралау

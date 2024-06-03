@@ -80,6 +80,13 @@ XPCOMUtils.defineLazyPreferenceGetter(
   val => Services.io.newURI(val)
 );
 
+XPCOMUtils.defineLazyPreferenceGetter(
+  lazy,
+  "oauthEnabled",
+  "identity.fxaccounts.oauth.enabled",
+  false
+);
+
 // These engines were added years after Sync had been introduced, they need
 // special handling since they are system add-ons and are un-available on
 // older versions of Firefox.
@@ -431,7 +438,7 @@ FxAccountsWebChannelHelpers.prototype = {
     // A sync-specific hack - we want to ensure sync has been initialized
     // before we set the signed-in user.
     // XXX - probably not true any more, especially now we have observerPreloads
-    // in FxAccounts.jsm?
+    // in FxAccounts.sys.mjs?
     let xps =
       this._weaveXPCOM ||
       Cc["@mozilla.org/weave/service;1"].getService(Ci.nsISupports)
@@ -487,16 +494,19 @@ FxAccountsWebChannelHelpers.prototype = {
       "webchannel"
     );
 
-    const xps = await this._initializeSync();
-    await this._fxAccounts._internal.setSignedInUser(accountData);
-
-    if (requestedServices) {
-      // User has enabled Sync.
-      if (requestedServices.sync) {
-        const { offeredEngines, declinedEngines } = requestedServices.sync;
-        this._setEnabledEngines(offeredEngines, declinedEngines);
-        log.debug("Webchannel is enabling sync");
-        await xps.Weave.Service.configure();
+    if (lazy.oauthEnabled) {
+      await this._fxAccounts._internal.setSignedInUser(accountData);
+    } else {
+      const xps = await this._initializeSync();
+      await this._fxAccounts._internal.setSignedInUser(accountData);
+      if (requestedServices) {
+        // User has enabled Sync.
+        if (requestedServices.sync) {
+          const { offeredEngines, declinedEngines } = requestedServices.sync;
+          this._setEnabledEngines(offeredEngines, declinedEngines);
+          log.debug("Webchannel is enabling sync");
+          await xps.Weave.Service.configure();
+        }
       }
     }
   },
@@ -628,9 +638,7 @@ FxAccountsWebChannelHelpers.prototype = {
     };
   },
   _getCapabilities() {
-    if (
-      Services.prefs.getBoolPref("identity.fxaccounts.oauth.enabled", false)
-    ) {
+    if (lazy.oauthEnabled) {
       return {
         multiService: true,
         pairing: lazy.pairingEnabled,

@@ -20,7 +20,6 @@
 #include "gc/GCEnum.h"
 #include "gc/Memory.h"
 #include "irregexp/RegExpTypes.h"
-#include "jit/PcScriptCache.h"
 #include "js/ContextOptions.h"  // JS::ContextOptions
 #include "js/Exception.h"
 #include "js/GCVector.h"
@@ -90,11 +89,14 @@ class InternalJobQueue : public JS::JobQueue {
                          JS::HandleObject incumbentGlobal) override;
   void runJobs(JSContext* cx) override;
   bool empty() const override;
+  bool isDrainingStopped() const override { return interrupted_; }
 
   // If we are currently in a call to runJobs(), make that call stop processing
   // jobs once the current one finishes, and return. If we are not currently in
   // a call to runJobs, make all future calls return immediately.
   void interrupt() { interrupted_ = true; }
+
+  void uninterrupt() { interrupted_ = false; }
 
   // Return the front element of the queue, or nullptr if the queue is empty.
   // This is only used by shell testing functions.
@@ -426,6 +428,7 @@ struct JS_PUBLIC_API JSContext : public JS::RootingContext,
 #ifdef DEBUG
   js::ContextData<uint32_t> inUnsafeCallWithABI;
   js::ContextData<bool> hasAutoUnsafeCallWithABI;
+  js::ContextData<uint32_t> liveArraySortDataInstances;
 #endif
 
 #ifdef JS_SIMULATOR
@@ -507,6 +510,9 @@ struct JS_PUBLIC_API JSContext : public JS::RootingContext,
     return offsetof(JSContext, regExpSearcherLastLimit);
   }
 
+  // Whether we are currently executing the top level of a module.
+  js::ContextData<uint32_t> isEvaluatingModule;
+
  private:
   // Pools used for recycling name maps and vectors when parsing and
   // emitting bytecode. Purged on GC when there are no active script
@@ -562,9 +568,6 @@ struct JS_PUBLIC_API JSContext : public JS::RootingContext,
   const js::LifoAlloc& tempLifoAlloc() const { return tempLifoAlloc_.ref(); }
 
   js::ContextData<uint32_t> debuggerMutations;
-
-  // Cache for jit::GetPcScript().
-  js::ContextData<js::UniquePtr<js::jit::PcScriptCache>> ionPcScriptCache;
 
  private:
   // Indicates if an exception is pending and the reason for it.
@@ -693,9 +696,9 @@ struct JS_PUBLIC_API JSContext : public JS::RootingContext,
    * overridden by passing AllowCrossRealm::Allow.
    */
   enum class AllowCrossRealm { DontAllow = false, Allow = true };
-  inline JSScript* currentScript(
-      jsbytecode** pc = nullptr,
-      AllowCrossRealm allowCrossRealm = AllowCrossRealm::DontAllow) const;
+  JSScript* currentScript(
+      jsbytecode** ppc = nullptr,
+      AllowCrossRealm allowCrossRealm = AllowCrossRealm::DontAllow);
 
   inline void minorGC(JS::GCReason reason);
 
@@ -722,6 +725,13 @@ struct JS_PUBLIC_API JSContext : public JS::RootingContext,
    * attached.
    */
   js::SavedFrame* getPendingExceptionStack();
+
+#ifdef DEBUG
+  /**
+   * Return the pending exception (without wrapping).
+   */
+  const JS::Value& getPendingExceptionUnwrapped();
+#endif
 
   bool isThrowingDebuggeeWouldRun();
   bool isClosingGenerator();

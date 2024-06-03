@@ -126,8 +126,6 @@ translations-manage-description = Hent sprog til oversættelse offline.
 translations-manage-all-language = Alle sprog
 translations-manage-download-button = Hent
 translations-manage-delete-button = Slet
-translations-manage-error-download = Der opstod et problem med at hente sprogfilerne. Prøv igen.
-translations-manage-error-delete = Der opstod en fejl under sletningen af sprogfilerne. Prøv igen.
 translations-manage-intro = Vælg dit sprog, indstillinger for oversættelser af websteder og håndter sprog installeret til brug for oversættelse offline.
 translations-manage-install-description = Installer sprog til offline oversættelse
 translations-manage-language-install-button =
@@ -135,12 +133,21 @@ translations-manage-language-install-button =
 translations-manage-language-install-all-button =
     .label = Installer alle
     .accesskey = a
+translations-manage-intro-2 = Indstil dine præferencer for sprog og oversættelse af websteder og håndter sprog som er blevet hentet for at oversætte sider, når du ikke er online.
+translations-manage-download-description = Hent sprog for at oversætte sider, når du er offline
+translations-manage-language-download-button =
+    .label = Hent
+translations-manage-language-download-all-button =
+    .label = Hent alle
+    .accesskey = H
 translations-manage-language-remove-button =
     .label = Fjern
 translations-manage-language-remove-all-button =
     .label = Fjern alle
     .accesskey = e
 translations-manage-error-install = Der opstod et problem med at installere sprogfilerne. Prøv igen.
+translations-manage-error-download = Der opstod et problem med at hente sprogfilerne. Prøv igen.
+translations-manage-error-delete = Der opstod en fejl under sletningen af sprogfilerne. Prøv igen.
 translations-manage-error-remove = Der opstod en fejl med at fjerne sprogfilerne. Prøv igen.
 translations-manage-error-list = Kunne ikke hente listen med tilgængelige sprog til oversættelse. Genindlæs siden for at prøve igen.
 translations-settings-title =
@@ -170,3 +177,75 @@ translations-settings-remove-all-sites-button =
 translations-settings-close-dialog =
     .buttonlabelaccept = Luk
     .buttonaccesskeyaccept = L
+# Text displayed in the right-click context menu for translating
+# selected text to a yet-to-be-determined language.
+main-context-menu-translate-selection =
+    .label = Oversæt det markerede…
+    .accesskey = e
+# Text displayed in the right-click context menu for translating
+# selected text to a target language.
+#
+# Variables:
+#   $language (string) - The localized display name of the target language
+main-context-menu-translate-selection-to-language =
+    .label = Oversæt det markerede til { $language }
+    .accesskey = e
+# Text displayed in the right-click context menu for translating
+# the text of a hyperlink to a yet-to-be-determined language.
+main-context-menu-translate-link-text =
+    .label = Oversæt linktekst…
+    .accesskey = e
+# Text displayed in the right-click context menu for translating
+# the text of a hyperlink to a target language.
+#
+# Variables:
+#   $language (string) - The localized display name of the target language
+main-context-menu-translate-link-text-to-language =
+    .label = Oversæt linktekst til { $language }
+    .accesskey = e
+# Text displayed in the select translations panel header.
+select-translations-panel-header = Oversættelse
+# Text displayed above the from-language dropdown menu.
+select-translations-panel-from-label = Fra
+# Text displayed above the to-language dropdown menu.
+select-translations-panel-to-label = Til
+# Text displayed above the try-another-source-language dropdown menu.
+select-translations-panel-try-another-language-label = Prøv et andet kildesprog
+select-translations-panel-cancel-button =
+    .label = Annuller
+# Text displayed on the copy button before it is clicked.
+select-translations-panel-copy-button =
+    .label = Kopier
+# Text displayed on the copy button after it is clicked.
+select-translations-panel-copy-button-copied =
+    .label = Kopieret
+select-translations-panel-done-button =
+    .label = Færdig
+select-translations-panel-translate-full-page-button =
+    .label = Oversæt hele siden
+select-translations-panel-translate-button =
+    .label = Oversæt
+select-translations-panel-try-again-button =
+    .label = Prøv igen
+# Text displayed as a placeholder when the panel is idle.
+select-translations-panel-idle-placeholder-text = Oversat tekst vil blive vist her.
+# Text displayed as a placeholder when the panel is actively translating.
+select-translations-panel-translating-placeholder-text = Oversætter…
+select-translations-panel-init-failure-message =
+    .message = Kunne ikke indlæse sprog. Kontroller din internetforbindelse, og prøv igen.
+# Text displayed when the translation fails to complete.
+select-translations-panel-translation-failure-message =
+    .message = Der opstod et problem med at oversætte. Prøv igen.
+# If your language requires declining the language name, a possible solution
+# is to adapt the structure of the phrase, or use a support noun, e.g.
+# `Sorry, we don't support the language yet: { $language }
+#
+# Variables:
+#   $language (string) - The language of the document.
+select-translations-panel-unsupported-language-message-known =
+    .message = Beklager, vi understøtter ikke { $language } endnu.
+select-translations-panel-unsupported-language-message-unknown =
+    .message = Beklager, vi understøtter ikke dette sprog endnu.
+# Text displayed on the menuitem that opens the Translation Settings page.
+select-translations-panel-open-translations-settings-menuitem =
+    .label = Oversættelses-indstillinger

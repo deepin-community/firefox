@@ -539,7 +539,8 @@
 - name: LoadScriptedProxyHandler
   operands:
     object: Object
-  result_type: Value
+  result_type: Object
+  guard: true
   congruent_to: if_operands_equal
   alias_set: none
 
@@ -1331,7 +1332,6 @@
   folds_to: custom
   congruent_to: if_operands_equal
   alias_set: none
-  movable: true
   can_recover: true
 
 - name: ModuleMetadata
@@ -1422,8 +1422,6 @@
     index: Int32
   type_policy: none
   alias_set: custom
-  # By default no, unless built as a recovered instruction.
-  can_recover: custom
 
 # Load the function length. Bails for functions with lazy scripts or a
 # resolved "length" property.
@@ -1492,6 +1490,54 @@
   alias_set: custom
   clone: true
 
+# Implements the TypedArrayByteOffset intrinsic for resizable typed arrays,
+# which calls TypedArrayObject::byteOffsetMaybeOutOfBounds().
+- name: ResizableTypedArrayByteOffsetMaybeOutOfBounds
+  operands:
+    object: Object
+  result_type: IntPtr
+  movable: true
+  congruent_to: if_operands_equal
+  alias_set: custom
+  compute_range: custom
+
+# Read the length of a resizable typed array.
+- name: ResizableTypedArrayLength
+  operands:
+    object: Object
+  arguments:
+    requiresMemoryBarrier: MemoryBarrierRequirement
+  result_type: IntPtr
+  # Not removable or movable when a barrier is needed.
+  guard: true
+  movable: false
+  congruent_to: custom
+  alias_set: custom
+  compute_range: custom
+
+# Read the byteLength of a resizable dataview.
+- name: ResizableDataViewByteLength
+  operands:
+    object: Object
+  arguments:
+    requiresMemoryBarrier: MemoryBarrierRequirement
+  result_type: IntPtr
+  # Not removable or movable when a barrier is needed.
+  guard: true
+  movable: false
+  congruent_to: custom
+  alias_set: custom
+  compute_range: custom
+
+# Read the byte length of a growable shared array buffer as IntPtr.
+- name: GrowableSharedArrayBufferByteLength
+  operands:
+    object: Object
+  result_type: IntPtr
+  guard: true
+  movable: false
+  alias_set: custom
+
 # Return the element size of a typed array.
 - name: TypedArrayElementSize
   operands:
@@ -1505,6 +1551,26 @@
 
 # Guard an ArrayBufferView has an attached ArrayBuffer.
 - name: GuardHasAttachedArrayBuffer
+  operands:
+    object: Object
+  result_type: Object
+  guard: true
+  movable: true
+  congruent_to: if_operands_equal
+  alias_set: custom
+
+# Guard a resizable typed array is in-bounds.
+- name: GuardResizableArrayBufferViewInBounds
+  operands:
+    object: Object
+  result_type: Object
+  guard: true
+  movable: true
+  congruent_to: if_operands_equal
+  alias_set: custom
+
+# Guard a resizable typed array is in-bounds or detached.
+- name: GuardResizableArrayBufferViewInBoundsOrDetached
   operands:
     object: Object
   result_type: Object
@@ -1665,7 +1731,6 @@
   movable: false
   congruent_to: if_operands_equal
   alias_set: custom
-  compute_range: custom
   clone: true
 
 - name: LoadUnboxedScalar
@@ -1944,6 +2009,15 @@
   alias_set: none
 
 - name: GuardIsFixedLengthTypedArray
+  operands:
+    object: Object
+  result_type: Object
+  guard: true
+  movable: true
+  congruent_to: if_operands_equal
+  alias_set: none
+
+- name: GuardIsResizableTypedArray
   operands:
     object: Object
   result_type: Object
@@ -2511,6 +2585,9 @@
 - name: GuardToClass
   gen_boilerplate: false
 
+- name: GuardToEitherClass
+  gen_boilerplate: false
+
 - name: GuardToFunction
   gen_boilerplate: false
 
@@ -2732,13 +2809,16 @@
   alias_set: none
 
 # Load the target object from a proxy wrapper. The target is stored in the
-# proxy object's private slot.
+# proxy object's private slot. This operation is fallible if the proxy can
+# be revoked.
 - name: LoadWrapperTarget
   operands:
     object: Object
+  arguments:
+    fallible: bool
   result_type: Object
   movable: true
-  congruent_to: if_operands_equal
+  congruent_to: custom
   # Can't use |AliasSet::None| because the target changes on navigation.
   # TODO: Investigate using a narrower or a custom alias set.
   alias_set: custom
@@ -3106,6 +3186,9 @@
   movable: true
   congruent_to: if_operands_equal
   alias_set: custom
+
+- name: PostIntPtrConversion
+  gen_boilerplate: false
 
 - name: WasmNeg
   gen_boilerplate: false

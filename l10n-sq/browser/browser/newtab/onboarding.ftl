@@ -53,6 +53,9 @@ mr1-onboarding-import-primary-button-label-attribution = Importo prej { $previou
 mr1-onboarding-theme-header = Bëjeni tuajin
 mr1-onboarding-theme-subtitle = Personalizojeni { -brand-short-name }-in me një temë.
 mr1-onboarding-theme-secondary-button-label = Jo tani
+newtab-wallpaper-onboarding-title = Shtoni pakëz ngjyrë
+newtab-wallpaper-onboarding-subtitle = Zgjidhni një sfond, për t’i dhënë një pamje të re Skedës tuaj të Re.
+newtab-wallpaper-onboarding-primary-button-label = Caktoni sfond
 # System theme uses operating system color settings
 mr1-onboarding-theme-label-system = Temë sistemi
 mr1-onboarding-theme-label-light = E çelët
@@ -347,6 +350,9 @@ onboarding-gratitude-security-and-privacy-subtitle = Faleminderit që përdorni 
 onboarding-new-user-time-based-survey-title = Prej sa kohësh e përdorni { -brand-short-name }-in?
 onboarding-new-user-familiarity-based-survey-title = Sa i familjarizuar jeni me { -brand-short-name }-in?
 onboarding-new-user-survey-subtitle = Përshtypjet tuaja ndihmojnë për ta bërë { -brand-short-name }-in edhe më të mirë.
+# When translating "next" it means the next screen in onboarding.
+onboarding-new-user-survey-next-button-label = Pasuesi
+onboarding-new-user-survey-legal-link-label = Duke përzgjedhur “{ onboarding-new-user-survey-next-button-label },” pajtoheni me { -brand-product-name }’s <a data-l10n-name="privacy_notice">Shënim Privatësie</a>
 # When translating "brand new" it means completely new.
 onboarding-new-user-survey-time-based-option-1 = Jam fringo i ri
 onboarding-new-user-survey-time-based-option-2 = Më pak se 1 muaj

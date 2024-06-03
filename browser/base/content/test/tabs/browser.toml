@@ -76,6 +76,8 @@ support-files = ["tab_that_closes.html"]
 
 ["browser_hiddentab_contextmenu.js"]
 
+["browser_lastSeenActive.js"]
+
 ["browser_lazy_tab_browser_events.js"]
 
 ["browser_link_in_tab_title_and_url_prefilled_blank_page.js"]
@@ -236,7 +238,6 @@ support-files = [
 ]
 
 ["browser_overflowScroll.js"]
-fail-if = ["a11y_checks"] # Bugs 1854233 and 1873049 scrollbutton-down/up are not labeled
 skip-if = [
   "win11_2009", # Bug 1797751
 ]

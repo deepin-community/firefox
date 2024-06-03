@@ -428,3 +428,15 @@ pointing-device-mouse = Egér
 pointing-device-touchscreen = Érintőképernyő
 pointing-device-pen-digitizer = Digitalizáló toll
 pointing-device-none = Nincsenek mutatóeszközök
+
+## Content Analysis (DLP)
+
+# DLP stands for Data Loss Prevention, an industry term for external software
+# that enterprises can set up to prevent sensitive data from being transferred
+# to external websites.
+content-analysis-title = Tartalomelemzés (DLP)
+content-analysis-active = Aktív
+content-analysis-connected-to-agent = Kapcsolódva az ügynökhöz
+content-analysis-agent-path = Ügynök útvonala
+content-analysis-agent-failed-signature-verification = Az ügynök nem ment át az aláírás-ellenőrzésen
+content-analysis-request-count = Kérések száma

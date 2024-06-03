@@ -126,8 +126,6 @@ translations-manage-description = Môžete si stiahnuť jazyky na prekladanie v 
 translations-manage-all-language = Všetky jazyky
 translations-manage-download-button = Stiahnuť
 translations-manage-delete-button = Odstrániť
-translations-manage-error-download = Pri sťahovaní jazykových súborov sa vyskytol problém. Prosím skúste to znova.
-translations-manage-error-delete = Pri odstraňovaní jazykových súborov sa vyskytla chyba. Prosím skúste to znova.
 translations-manage-intro = Nastavte si jazyk a predvoľby prekladu stránok a spravujte jazyky nainštalované na preklad v režime offline.
 translations-manage-install-description = Nainštalujte jazyky na preklad v režime offline
 translations-manage-language-install-button =
@@ -135,12 +133,21 @@ translations-manage-language-install-button =
 translations-manage-language-install-all-button =
     .label = Nainštalovať všetky
     .accesskey = a
+translations-manage-intro-2 = Nastavte si jazyk a predvoľby prekladu stránok a spravujte jazyky stiahnuté na preklad v režime offline.
+translations-manage-download-description = Môžete si stiahnuť jazyky na prekladanie v režime offline
+translations-manage-language-download-button =
+    .label = Stiahnuť
+translations-manage-language-download-all-button =
+    .label = Stiahnuť všetky
+    .accesskey = S
 translations-manage-language-remove-button =
     .label = Odstrániť
 translations-manage-language-remove-all-button =
     .label = Odstrániť všetky
     .accesskey = d
 translations-manage-error-install = Pri inštalácii jazykových súborov sa vyskytol problém. Prosím skúste to znova.
+translations-manage-error-download = Pri sťahovaní jazykových súborov sa vyskytol problém. Prosím skúste to znova.
+translations-manage-error-delete = Pri odstraňovaní jazykových súborov sa vyskytla chyba. Prosím skúste to znova.
 translations-manage-error-remove = Pri odstraňovaní jazykových súborov sa vyskytla chyba. Prosím skúste to znova.
 translations-manage-error-list = Nepodarilo sa získať zoznam dostupných jazykov na preklad. Obnovte stránku a skúste to znova.
 translations-settings-title =
@@ -170,3 +177,75 @@ translations-settings-remove-all-sites-button =
 translations-settings-close-dialog =
     .buttonlabelaccept = Zavrieť
     .buttonaccesskeyaccept = Z
+# Text displayed in the right-click context menu for translating
+# selected text to a yet-to-be-determined language.
+main-context-menu-translate-selection =
+    .label = Preložiť označený text…
+    .accesskey = P
+# Text displayed in the right-click context menu for translating
+# selected text to a target language.
+#
+# Variables:
+#   $language (string) - The localized display name of the target language
+main-context-menu-translate-selection-to-language =
+    .label = Preložiť označený text do jazyka { $language }
+    .accesskey = l
+# Text displayed in the right-click context menu for translating
+# the text of a hyperlink to a yet-to-be-determined language.
+main-context-menu-translate-link-text =
+    .label = Preložiť text odkazu…
+    .accesskey = P
+# Text displayed in the right-click context menu for translating
+# the text of a hyperlink to a target language.
+#
+# Variables:
+#   $language (string) - The localized display name of the target language
+main-context-menu-translate-link-text-to-language =
+    .label = Preložiť text odkazu do jazyka { $language }
+    .accesskey = l
+# Text displayed in the select translations panel header.
+select-translations-panel-header = Preklady
+# Text displayed above the from-language dropdown menu.
+select-translations-panel-from-label = Z jazyka
+# Text displayed above the to-language dropdown menu.
+select-translations-panel-to-label = Do jazyka
+# Text displayed above the try-another-source-language dropdown menu.
+select-translations-panel-try-another-language-label = Skúste iný zdrojový jazyk
+select-translations-panel-cancel-button =
+    .label = Zrušiť
+# Text displayed on the copy button before it is clicked.
+select-translations-panel-copy-button =
+    .label = Kopírovať
+# Text displayed on the copy button after it is clicked.
+select-translations-panel-copy-button-copied =
+    .label = Skopírované
+select-translations-panel-done-button =
+    .label = Hotovo
+select-translations-panel-translate-full-page-button =
+    .label = Preložiť celú stránku
+select-translations-panel-translate-button =
+    .label = Preložiť
+select-translations-panel-try-again-button =
+    .label = Skúsiť znova
+# Text displayed as a placeholder when the panel is idle.
+select-translations-panel-idle-placeholder-text = Tu sa zobrazí preložený text.
+# Text displayed as a placeholder when the panel is actively translating.
+select-translations-panel-translating-placeholder-text = Prebieha preklad…
+select-translations-panel-init-failure-message =
+    .message = Nepodarilo sa načítať jazyky. Skontrolujte svoje internetové pripojenie a skúste to znova.
+# Text displayed when the translation fails to complete.
+select-translations-panel-translation-failure-message =
+    .message = Pri preklade sa vyskytol problém. Prosím skúste to znova.
+# If your language requires declining the language name, a possible solution
+# is to adapt the structure of the phrase, or use a support noun, e.g.
+# `Sorry, we don't support the language yet: { $language }
+#
+# Variables:
+#   $language (string) - The language of the document.
+select-translations-panel-unsupported-language-message-known =
+    .message = Ľutujeme, jazyk { $language } zatiaľ nepodporujeme.
+select-translations-panel-unsupported-language-message-unknown =
+    .message = Ľutujeme, tento jazyk zatiaľ nepodporujeme.
+# Text displayed on the menuitem that opens the Translation Settings page.
+select-translations-panel-open-translations-settings-menuitem =
+    .label = Nastavenia prekladov

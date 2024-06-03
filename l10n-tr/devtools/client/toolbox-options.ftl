@@ -46,6 +46,8 @@ options-inspector-simplified-highlighters-tooltip =
 # The label for the checkbox option to make the Enter key move the focus to the next input
 # when editing a property name or value in the Inspector rules view
 options-inspector-rules-focus-next-on-enter-label = <kbd>Enter</kbd> tuşuna basıldığında bir sonraki girdi alanına odaklan
+options-inspector-rules-focus-next-on-enter-tooltip =
+    .title = Bu ayar etkinse, bir seçiciyi, özellik adını veya değeri düzenlerken Enter tuşuna bastığınızda bir sonraki girdi alanına odaklanılır.
 
 ## "Default Color Unit" options for the Inspector
 
@@ -56,6 +58,15 @@ options-default-color-unit-hsl = HSL(A)
 options-default-color-unit-rgb = RGB(A)
 options-default-color-unit-hwb = HWB
 options-default-color-unit-name = Renk adları
+
+## Web Console section
+
+# The heading
+options-webconsole-label = Web konsolu
+# The label for the checkbox that toggle whether the Split console is enabled
+options-webconsole-split-console-label = Ayrık konsolu etkinleştir
+options-webconsole-split-console-tooltip =
+    .title = Ayrık konsolu Escape tuşuyla aç
 
 ## Style Editor section
 

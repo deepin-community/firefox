@@ -428,3 +428,15 @@ pointing-device-mouse = Mus
 pointing-device-touchscreen = Trykkskjerm
 pointing-device-pen-digitizer = Digitalpenn
 pointing-device-none = Ingen peke-enheter
+
+## Content Analysis (DLP)
+
+# DLP stands for Data Loss Prevention, an industry term for external software
+# that enterprises can set up to prevent sensitive data from being transferred
+# to external websites.
+content-analysis-title = Innholdsanalyse (DLP)
+content-analysis-active = Aktiv
+content-analysis-connected-to-agent = Tilkoblet agent
+content-analysis-agent-path = Sti til agent
+content-analysis-agent-failed-signature-verification = Agenten kunne ikke verifisere signaturen
+content-analysis-request-count = Antall forespørsler

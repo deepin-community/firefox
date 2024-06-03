@@ -10,6 +10,7 @@ Services.scriptloader.loadSubScript(
 
 ChromeUtils.defineESModuleGetters(this, {
   QuickSuggest: "resource:///modules/QuickSuggest.sys.mjs",
+  sinon: "resource://testing-common/Sinon.sys.mjs",
 });
 
 const lazy = {};
@@ -56,10 +57,6 @@ function assertAbandonmentTelemetry(expectedExtraList) {
 
 function assertEngagementTelemetry(expectedExtraList) {
   _assertGleanTelemetry("engagement", expectedExtraList);
-}
-
-function assertImpressionTelemetry(expectedExtraList) {
-  _assertGleanTelemetry("impression", expectedExtraList);
 }
 
 function assertExposureTelemetry(expectedExtraList) {
@@ -204,12 +201,6 @@ async function doPasteAndGo(data) {
 async function doTest(testFn) {
   await Services.fog.testFlushAllChildren();
   Services.fog.testResetFOG();
-  // Enable recording telemetry for impression, as it is disabled by default.
-  Services.fog.setMetricsFeatureConfig(
-    JSON.stringify({
-      "urlbar.impression": true,
-    })
-  );
 
   gURLBar.controller.engagementEvent.reset();
   await PlacesUtils.history.clear();
@@ -220,12 +211,7 @@ async function doTest(testFn) {
   await QuickSuggest.blockedSuggestions.clear();
   await QuickSuggest.blockedSuggestions._test_readyPromise;
   await updateTopSites(() => true);
-
-  try {
-    await BrowserTestUtils.withNewTab(gBrowser, testFn);
-  } finally {
-    Services.fog.setMetricsFeatureConfig("{}");
-  }
+  await BrowserTestUtils.withNewTab(gBrowser, testFn);
 }
 
 async function initGroupTest() {
@@ -423,10 +409,6 @@ async function setup() {
       ["browser.urlbar.quickactions.minimumSearchString", 0],
       ["browser.urlbar.suggest.quickactions", true],
       ["browser.urlbar.shortcuts.quickactions", true],
-      [
-        "browser.urlbar.searchEngagementTelemetry.pauseImpressionIntervalMs",
-        100,
-      ],
     ],
   });
 
@@ -460,14 +442,4 @@ async function showResultByArrowDown() {
     EventUtils.synthesizeKey("KEY_ArrowDown");
   });
   await UrlbarTestUtils.promiseSearchComplete(window);
-}
-
-async function waitForPauseImpression() {
-  await new Promise(r =>
-    setTimeout(
-      r,
-      UrlbarPrefs.get("searchEngagementTelemetry.pauseImpressionIntervalMs")
-    )
-  );
-  await Services.fog.testFlushAllChildren();
 }

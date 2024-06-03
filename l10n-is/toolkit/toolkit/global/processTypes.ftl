@@ -14,9 +14,11 @@ process-type-privilegedabout = Forréttindi þarf fyrir 'about'-síður
 # process used to run privileged mozilla pages,
 # such as accounts.firefox.com
 process-type-privilegedmozilla = Efni sem Mozilla gefur forgang
-process-type-extension = Viðbót
+process-type-extension = Forritsauki
 # process used to open file:// URLs
 process-type-file = Staðbundin skrá
+# process used to instantiate new child processes
+process-type-forkserver = Netþjónn kvíslar
 # process used to isolate a webpage from other web pages
 # to improve security
 process-type-webisolated = Einangrað vefefni

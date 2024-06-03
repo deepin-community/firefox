@@ -640,6 +640,7 @@ class GCRuntime {
                          const AutoLockHelperThreadState& lock);
 
   // Parallel marking.
+  bool setParallelMarkingEnabled(bool enabled);
   bool initOrDisableParallelMarking();
   [[nodiscard]] bool updateMarkersVector();
   size_t markingWorkerCount() const;
@@ -799,8 +800,11 @@ class GCRuntime {
       ParallelMarking allowParallelMarking = SingleThreadedMarking,
       ShouldReportMarkTime reportTime = ReportMarkTime);
   bool canMarkInParallel() const;
-  bool initParallelMarkers();
+  bool initParallelMarking();
   void finishParallelMarkers();
+
+  bool reserveMarkingThreads(size_t count);
+  void releaseMarkingThreads();
 
   bool hasMarkingWork(MarkColor color) const;
 
@@ -1120,6 +1124,13 @@ class GCRuntime {
   /* Incremented on every GC slice. */
   MainThreadData<uint64_t> sliceNumber;
 
+  /*
+   * This runtime's current contribution to the global number of helper threads
+   * 'reserved' for parallel marking. Does not affect other uses of helper
+   * threads.
+   */
+  MainThreadData<size_t> reservedMarkingThreads;
+
   /* Whether the currently running GC can finish in multiple slices. */
   MainThreadOrGCTaskData<bool> isIncremental;
 
@@ -1194,7 +1205,8 @@ class GCRuntime {
    * a background thread.
    */
   HelperThreadLockData<LifoAlloc> lifoBlocksToFree;
-  MainThreadData<LifoAlloc> lifoBlocksToFreeAfterMinorGC;
+  MainThreadData<LifoAlloc> lifoBlocksToFreeAfterFullMinorGC;
+  MainThreadData<LifoAlloc> lifoBlocksToFreeAfterNextMinorGC;
   HelperThreadLockData<Nursery::BufferSet> buffersToFreeAfterMinorGC;
 
   /* Index of current sweep group (for stats). */

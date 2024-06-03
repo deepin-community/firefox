@@ -18,7 +18,7 @@ Build-Depends: autotools-dev,
                python3 (>= 3.6),
                dpkg-dev,
                libnspr4-dev (>= 2:4.32~),
-               libnss3-dev (>= 2:3.98~),
+               libnss3-dev (>= 2:3.99~),
                libvpx-dev (>= 1.10.0),
                libdbus-glib-1-dev,
                libffi-dev,
@@ -63,7 +63,7 @@ Depends: ${shlibs:Depends},
          procps,
          debianutils (>= 1.16),
          libnspr4 (>= 2:4.32~),
-         libnss3 (>= 2:3.98~)
+         libnss3 (>= 2:3.99~)
 Recommends: libavcodec60 | libavcodec-extra60 | libavcodec59 | libavcodec-extra59 | libavcodec58 | libavcodec-extra58 | libavcodec57 | libavcodec-extra57 | libavcodec56 | libavcodec-extra56 | libavcodec55 | libavcodec-extra55 | libavcodec54 | libavcodec-extra54 | libavcodec53 | libavcodec-extra53
 Suggests: fonts-stix | otf-stix,
           fonts-lmodern,

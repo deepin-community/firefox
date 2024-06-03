@@ -46,6 +46,8 @@ options-inspector-simplified-highlighters-tooltip =
 # The label for the checkbox option to make the Enter key move the focus to the next input
 # when editing a property name or value in the Inspector rules view
 options-inspector-rules-focus-next-on-enter-label = Přepnout na další vstup pomocí klávesy <kbd>Enter</kbd>
+options-inspector-rules-focus-next-on-enter-tooltip =
+    .title = Pokud je tato funkce povolena, stisknutí klávesy Enter při úpravě selektoru, názvu vlastnosti nebo hodnoty přesune fokus na další vstup.
 
 ## "Default Color Unit" options for the Inspector
 
@@ -56,6 +58,15 @@ options-default-color-unit-hsl = HSL(A)
 options-default-color-unit-rgb = RGB(A)
 options-default-color-unit-hwb = HWB
 options-default-color-unit-name = Názvy barev
+
+## Web Console section
+
+# The heading
+options-webconsole-label = Webová konzole
+# The label for the checkbox that toggle whether the Split console is enabled
+options-webconsole-split-console-label = Povolit rozdělení konzole
+options-webconsole-split-console-tooltip =
+    .title = Pomocí klávesy Escape otevírat rozdělenou konzoli
 
 ## Style Editor section
 

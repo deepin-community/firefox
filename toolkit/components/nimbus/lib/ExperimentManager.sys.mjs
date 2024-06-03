@@ -32,6 +32,25 @@ const STUDIES_OPT_OUT_PREF = "app.shield.optoutstudies.enabled";
 
 const STUDIES_ENABLED_CHANGED = "nimbus:studies-enabled-changed";
 
+const ENROLLMENT_STATUS = {
+  ENROLLED: "Enrolled",
+  NOT_ENROLLED: "NotEnrolled",
+  DISQUALIFIED: "Disqualified",
+  WAS_ENROLLED: "WasEnrolled",
+  ERROR: "Error",
+};
+
+const ENROLLMENT_STATUS_REASONS = {
+  QUALIFIED: "Qualified",
+  OPT_IN: "OptIn",
+  OPT_OUT: "OptOut",
+  NOT_SELECTED: "NotSelected",
+  NOT_TARGETED: "NotTargeted",
+  ENROLLMENTS_PAUSED: "EnrollmentsPaused",
+  FEATURE_CONFLICT: "FeatureConflict",
+  ERROR: "Error",
+};
+
 function featuresCompat(branch) {
   if (!branch || (!branch.feature && !branch.features)) {
     return [];
@@ -76,8 +95,8 @@ export class _ExperimentManager {
 
   get studiesEnabled() {
     return (
-      Services.prefs.getBoolPref(UPLOAD_ENABLED_PREF) &&
-      Services.prefs.getBoolPref(STUDIES_OPT_OUT_PREF)
+      Services.prefs.getBoolPref(UPLOAD_ENABLED_PREF, false) &&
+      Services.prefs.getBoolPref(STUDIES_OPT_OUT_PREF, false)
     );
   }
 
@@ -182,6 +201,14 @@ export class _ExperimentManager {
     }
 
     this.observe();
+
+    lazy.NimbusFeatures.nimbusTelemetry.onUpdate(() => {
+      const cfg =
+        lazy.NimbusFeatures.nimbusTelemetry.getVariable(
+          "gleanMetricConfiguration"
+        ) ?? {};
+      Services.fog.setMetricsFeatureConfig(JSON.stringify(cfg));
+    });
   }
 
   /**
@@ -223,16 +250,22 @@ export class _ExperimentManager {
     missingL10nIds
   ) {
     for (const enrollment of enrollments) {
-      const { slug, source } = enrollment;
+      const { slug, source, branch } = enrollment;
       if (sourceToCheck !== source) {
         continue;
       }
+      const statusTelemetry = {
+        slug,
+        branch: branch.slug,
+      };
       if (!this.sessions.get(source)?.has(slug)) {
         lazy.log.debug(`Stopping study for recipe ${slug}`);
         try {
           let reason;
           if (recipeMismatches.includes(slug)) {
             reason = "targeting-mismatch";
+            statusTelemetry.status = ENROLLMENT_STATUS.DISQUALIFIED;
+            statusTelemetry.reason = ENROLLMENT_STATUS_REASONS.NOT_TARGETED;
           } else if (invalidRecipes.includes(slug)) {
             reason = "invalid-recipe";
           } else if (invalidBranches.has(slug) || invalidFeatures.has(slug)) {
@@ -243,12 +276,23 @@ export class _ExperimentManager {
             reason = "l10n-missing-entry";
           } else {
             reason = "recipe-not-seen";
+            statusTelemetry.status = ENROLLMENT_STATUS.WAS_ENROLLED;
+            statusTelemetry.branch = branch.slug;
+          }
+          if (!statusTelemetry.status) {
+            statusTelemetry.status = ENROLLMENT_STATUS.DISQUALIFIED;
+            statusTelemetry.reason = ENROLLMENT_STATUS_REASONS.ERROR;
+            statusTelemetry.error_string = reason;
           }
           this.unenroll(slug, reason);
         } catch (err) {
           console.error(err);
         }
+      } else {
+        statusTelemetry.status = ENROLLMENT_STATUS.ENROLLED;
+        statusTelemetry.reason = ENROLLMENT_STATUS_REASONS.QUALIFIED;
       }
+      this.sendEnrollmentStatusTelemetry(statusTelemetry);
     }
   }
 
@@ -685,7 +729,7 @@ export class _ExperimentManager {
   /**
    * Unenroll from all active studies if user opts out.
    */
-  observe(aSubject, aTopic, aPrefName) {
+  observe() {
     if (!this.studiesEnabled) {
       for (const { slug } of this.store.getAllActiveExperiments()) {
         this.unenroll(slug, "studies-opt-out");
@@ -752,6 +796,34 @@ export class _ExperimentManager {
       experiment: slug,
       branch: branch.slug,
       experiment_type: experimentType,
+    });
+  }
+
+  /**
+   *
+   * @param {object} enrollmentStatus
+   * @param {string} enrollmentStatus.slug
+   * @param {string} enrollmentStatus.status
+   * @param {string?} enrollmentStatus.reason
+   * @param {string?} enrollmentStatus.branch
+   * @param {string?} enrollmentStatus.error_string
+   * @param {string?} enrollmentStatus.conflict_slug
+   */
+  sendEnrollmentStatusTelemetry({
+    slug,
+    status,
+    reason,
+    branch,
+    error_string,
+    conflict_slug,
+  }) {
+    Glean.nimbusEvents.enrollmentStatus.record({
+      slug,
+      status,
+      reason,
+      branch,
+      error_string,
+      conflict_slug,
     });
   }
 
@@ -902,7 +974,7 @@ export class _ExperimentManager {
       // need to check if we have another enrollment for the same feature.
       const conflictingEnrollment = getConflictingEnrollment(featureId);
 
-      for (const [variable, value] of Object.entries(featureValue)) {
+      for (let [variable, value] of Object.entries(featureValue)) {
         const setPref = feature.getSetPref(variable);
 
         if (setPref) {
@@ -940,6 +1012,13 @@ export class _ExperimentManager {
 
           // An experiment takes precedence if there is already a pref set.
           if (!isRollout || !conflictingPref) {
+            if (
+              lazy.NimbusFeatures[featureId].manifest.variables[variable]
+                .type === "json"
+            ) {
+              value = JSON.stringify(value);
+            }
+
             prefsToSet.push({
               name: prefName,
               value,
@@ -1178,7 +1257,13 @@ export class _ExperimentManager {
         }
       }
 
-      const value = featuresById[featureId].value[variable];
+      let value = featuresById[featureId].value[variable];
+      if (
+        lazy.NimbusFeatures[featureId].manifest.variables[variable].type ===
+        "json"
+      ) {
+        value = JSON.stringify(value);
+      }
 
       if (prefBranch !== "user") {
         lazy.PrefUtils.setPref(name, value, { branch: prefBranch });

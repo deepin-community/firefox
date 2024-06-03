@@ -16,6 +16,9 @@ process-type-extension = Estensione
 
 process-type-file = File locale
 
+# process used to instantiate new child processes
+process-type-forkserver = Fork server
+
 process-type-webisolated = Contenuti web isolati
 
 process-type-webserviceworker = Service worker isolato

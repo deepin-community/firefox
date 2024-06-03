@@ -654,12 +654,23 @@ void LIRGenerator::visitApplyArgs(MApplyArgs* apply) {
   static_assert(CallTempReg2 != JSReturnReg_Type);
   static_assert(CallTempReg2 != JSReturnReg_Data);
 
-  LApplyArgsGeneric* lir = new (alloc()) LApplyArgsGeneric(
-      useFixedAtStart(apply->getFunction(), CallTempReg3),
-      useFixedAtStart(apply->getArgc(), CallTempReg0),
-      useBoxFixedAtStart(apply->getThis(), CallTempReg4, CallTempReg5),
-      tempFixed(CallTempReg1),   // object register
-      tempFixed(CallTempReg2));  // stack counter register
+  auto function = useFixedAtStart(apply->getFunction(), CallTempReg3);
+  auto argc = useFixedAtStart(apply->getArgc(), CallTempReg0);
+  auto thisValue =
+      useBoxFixedAtStart(apply->getThis(), CallTempReg4, CallTempReg5);
+  auto tempObj = tempFixed(CallTempReg1);   // object register
+  auto tempCopy = tempFixed(CallTempReg2);  // copy register
+
+  auto* target = apply->getSingleTarget();
+
+  LInstruction* lir;
+  if (target && target->isNativeWithoutJitEntry()) {
+    lir = new (alloc())
+        LApplyArgsNative(function, argc, thisValue, tempObj, tempCopy);
+  } else {
+    lir = new (alloc())
+        LApplyArgsGeneric(function, argc, thisValue, tempObj, tempCopy);
+  }
 
   // Bailout is needed in the case of too many values in the arguments array.
   assignSnapshot(lir, apply->bailoutKind());
@@ -675,12 +686,23 @@ void LIRGenerator::visitApplyArgsObj(MApplyArgsObj* apply) {
   static_assert(CallTempReg2 != JSReturnReg_Type);
   static_assert(CallTempReg2 != JSReturnReg_Data);
 
-  LApplyArgsObj* lir = new (alloc()) LApplyArgsObj(
-      useFixedAtStart(apply->getFunction(), CallTempReg3),
-      useFixedAtStart(apply->getArgsObj(), CallTempReg0),
-      useBoxFixedAtStart(apply->getThis(), CallTempReg4, CallTempReg5),
-      tempFixed(CallTempReg1),   // object register
-      tempFixed(CallTempReg2));  // stack counter register
+  auto function = useFixedAtStart(apply->getFunction(), CallTempReg3);
+  auto argsObj = useFixedAtStart(apply->getArgsObj(), CallTempReg0);
+  auto thisValue =
+      useBoxFixedAtStart(apply->getThis(), CallTempReg4, CallTempReg5);
+  auto tempObj = tempFixed(CallTempReg1);   // object register
+  auto tempCopy = tempFixed(CallTempReg2);  // copy register
+
+  auto* target = apply->getSingleTarget();
+
+  LInstruction* lir;
+  if (target && target->isNativeWithoutJitEntry()) {
+    lir = new (alloc())
+        LApplyArgsObjNative(function, argsObj, thisValue, tempObj, tempCopy);
+  } else {
+    lir = new (alloc())
+        LApplyArgsObj(function, argsObj, thisValue, tempObj, tempCopy);
+  }
 
   // Bailout is needed in the case of too many values in the arguments array.
   assignSnapshot(lir, apply->bailoutKind());
@@ -696,12 +718,23 @@ void LIRGenerator::visitApplyArray(MApplyArray* apply) {
   static_assert(CallTempReg2 != JSReturnReg_Type);
   static_assert(CallTempReg2 != JSReturnReg_Data);
 
-  LApplyArrayGeneric* lir = new (alloc()) LApplyArrayGeneric(
-      useFixedAtStart(apply->getFunction(), CallTempReg3),
-      useFixedAtStart(apply->getElements(), CallTempReg0),
-      useBoxFixedAtStart(apply->getThis(), CallTempReg4, CallTempReg5),
-      tempFixed(CallTempReg1),   // object register
-      tempFixed(CallTempReg2));  // stack counter register
+  auto function = useFixedAtStart(apply->getFunction(), CallTempReg3);
+  auto elements = useFixedAtStart(apply->getElements(), CallTempReg0);
+  auto thisValue =
+      useBoxFixedAtStart(apply->getThis(), CallTempReg4, CallTempReg5);
+  auto tempObj = tempFixed(CallTempReg1);   // object register
+  auto tempCopy = tempFixed(CallTempReg2);  // copy register
+
+  auto* target = apply->getSingleTarget();
+
+  LInstruction* lir;
+  if (target && target->isNativeWithoutJitEntry()) {
+    lir = new (alloc())
+        LApplyArrayNative(function, elements, thisValue, tempObj, tempCopy);
+  } else {
+    lir = new (alloc())
+        LApplyArrayGeneric(function, elements, thisValue, tempObj, tempCopy);
+  }
 
   // Bailout is needed in the case of too many values in the array, or empty
   // space at the end of the array.
@@ -721,12 +754,26 @@ void LIRGenerator::visitConstructArgs(MConstructArgs* mir) {
   static_assert(CallTempReg2 != JSReturnReg_Type);
   static_assert(CallTempReg2 != JSReturnReg_Data);
 
-  auto* lir = new (alloc()) LConstructArgsGeneric(
-      useFixedAtStart(mir->getFunction(), CallTempReg3),
-      useFixedAtStart(mir->getArgc(), CallTempReg0),
-      useFixedAtStart(mir->getNewTarget(), CallTempReg1),
-      useBoxFixedAtStart(mir->getThis(), CallTempReg4, CallTempReg5),
-      tempFixed(CallTempReg2));
+  auto function = useFixedAtStart(mir->getFunction(), CallTempReg3);
+  auto argc = useFixedAtStart(mir->getArgc(), CallTempReg0);
+  auto newTarget = useFixedAtStart(mir->getNewTarget(), CallTempReg1);
+  auto temp = tempFixed(CallTempReg2);
+
+  auto* target = mir->getSingleTarget();
+
+  LInstruction* lir;
+  if (target && target->isNativeWithoutJitEntry()) {
+    auto temp2 = tempFixed(CallTempReg4);
+
+    lir = new (alloc())
+        LConstructArgsNative(function, argc, newTarget, temp, temp2);
+  } else {
+    auto thisValue =
+        useBoxFixedAtStart(mir->getThis(), CallTempReg4, CallTempReg5);
+
+    lir = new (alloc())
+        LConstructArgsGeneric(function, argc, newTarget, thisValue, temp);
+  }
 
   // Bailout is needed in the case of too many values in the arguments array.
   assignSnapshot(lir, mir->bailoutKind());
@@ -745,12 +792,26 @@ void LIRGenerator::visitConstructArray(MConstructArray* mir) {
   static_assert(CallTempReg2 != JSReturnReg_Type);
   static_assert(CallTempReg2 != JSReturnReg_Data);
 
-  auto* lir = new (alloc()) LConstructArrayGeneric(
-      useFixedAtStart(mir->getFunction(), CallTempReg3),
-      useFixedAtStart(mir->getElements(), CallTempReg0),
-      useFixedAtStart(mir->getNewTarget(), CallTempReg1),
-      useBoxFixedAtStart(mir->getThis(), CallTempReg4, CallTempReg5),
-      tempFixed(CallTempReg2));
+  auto function = useFixedAtStart(mir->getFunction(), CallTempReg3);
+  auto elements = useFixedAtStart(mir->getElements(), CallTempReg0);
+  auto newTarget = useFixedAtStart(mir->getNewTarget(), CallTempReg1);
+  auto temp = tempFixed(CallTempReg2);
+
+  auto* target = mir->getSingleTarget();
+
+  LInstruction* lir;
+  if (target && target->isNativeWithoutJitEntry()) {
+    auto temp2 = tempFixed(CallTempReg4);
+
+    lir = new (alloc())
+        LConstructArrayNative(function, elements, newTarget, temp, temp2);
+  } else {
+    auto thisValue =
+        useBoxFixedAtStart(mir->getThis(), CallTempReg4, CallTempReg5);
+
+    lir = new (alloc())
+        LConstructArrayGeneric(function, elements, newTarget, thisValue, temp);
+  }
 
   // Bailout is needed in the case of too many values in the array, or empty
   // space at the end of the array.
@@ -3241,7 +3302,9 @@ void LIRGenerator::visitWasmAnyRefFromJSString(MWasmAnyRefFromJSString* ins) {
 }
 
 void LIRGenerator::visitWasmNewI31Ref(MWasmNewI31Ref* ins) {
-  LWasmNewI31Ref* lir = new (alloc()) LWasmNewI31Ref(useRegister(ins->input()));
+  // If it's a constant, it will be put directly into the register.
+  LWasmNewI31Ref* lir =
+      new (alloc()) LWasmNewI31Ref(useRegisterOrConstant(ins->input()));
   define(lir, ins);
 }
 
@@ -3828,6 +3891,20 @@ void LIRGenerator::visitGetNextEntryForIterator(MGetNextEntryForIterator* ins) {
   define(lir, ins);
 }
 
+static auto SynchronizeLoad(MemoryBarrierRequirement requiresBarrier) {
+  if (requiresBarrier == MemoryBarrierRequirement::Required) {
+    return Synchronization::Load();
+  }
+  return Synchronization::None();
+}
+
+static auto SynchronizeStore(MemoryBarrierRequirement requiresBarrier) {
+  if (requiresBarrier == MemoryBarrierRequirement::Required) {
+    return Synchronization::Store();
+  }
+  return Synchronization::None();
+}
+
 void LIRGenerator::visitArrayBufferByteLength(MArrayBufferByteLength* ins) {
   MOZ_ASSERT(ins->object()->type() == MIRType::Object);
   MOZ_ASSERT(ins->type() == MIRType::IntPtr);
@@ -3868,6 +3945,70 @@ void LIRGenerator::visitTypedArrayElementSize(MTypedArrayElementSize* ins) {
   define(new (alloc())
              LTypedArrayElementSize(useRegisterAtStart(ins->object())),
          ins);
+}
+
+void LIRGenerator::visitResizableTypedArrayLength(
+    MResizableTypedArrayLength* ins) {
+  MOZ_ASSERT(ins->object()->type() == MIRType::Object);
+  MOZ_ASSERT(ins->type() == MIRType::IntPtr);
+
+  auto sync = SynchronizeLoad(ins->requiresMemoryBarrier());
+  auto* lir = new (alloc())
+      LResizableTypedArrayLength(useRegister(ins->object()), temp(), sync);
+  define(lir, ins);
+}
+
+void LIRGenerator::visitResizableTypedArrayByteOffsetMaybeOutOfBounds(
+    MResizableTypedArrayByteOffsetMaybeOutOfBounds* ins) {
+  MOZ_ASSERT(ins->object()->type() == MIRType::Object);
+  MOZ_ASSERT(ins->type() == MIRType::IntPtr);
+
+  auto* lir = new (alloc()) LResizableTypedArrayByteOffsetMaybeOutOfBounds(
+      useRegister(ins->object()), temp());
+  define(lir, ins);
+}
+
+void LIRGenerator::visitResizableDataViewByteLength(
+    MResizableDataViewByteLength* ins) {
+  MOZ_ASSERT(ins->object()->type() == MIRType::Object);
+  MOZ_ASSERT(ins->type() == MIRType::IntPtr);
+
+  auto sync = SynchronizeLoad(ins->requiresMemoryBarrier());
+  auto* lir = new (alloc())
+      LResizableDataViewByteLength(useRegister(ins->object()), temp(), sync);
+  define(lir, ins);
+}
+
+void LIRGenerator::visitGrowableSharedArrayBufferByteLength(
+    MGrowableSharedArrayBufferByteLength* ins) {
+  MOZ_ASSERT(ins->object()->type() == MIRType::Object);
+  MOZ_ASSERT(ins->type() == MIRType::IntPtr);
+
+  auto* lir = new (alloc())
+      LGrowableSharedArrayBufferByteLength(useRegisterAtStart(ins->object()));
+  define(lir, ins);
+}
+
+void LIRGenerator::visitGuardResizableArrayBufferViewInBounds(
+    MGuardResizableArrayBufferViewInBounds* ins) {
+  MOZ_ASSERT(ins->object()->type() == MIRType::Object);
+
+  auto* lir = new (alloc()) LGuardResizableArrayBufferViewInBounds(
+      useRegister(ins->object()), temp());
+  assignSnapshot(lir, ins->bailoutKind());
+  add(lir, ins);
+  redefine(ins, ins->object());
+}
+
+void LIRGenerator::visitGuardResizableArrayBufferViewInBoundsOrDetached(
+    MGuardResizableArrayBufferViewInBoundsOrDetached* ins) {
+  MOZ_ASSERT(ins->object()->type() == MIRType::Object);
+
+  auto* lir = new (alloc()) LGuardResizableArrayBufferViewInBoundsOrDetached(
+      useRegister(ins->object()), temp());
+  assignSnapshot(lir, ins->bailoutKind());
+  add(lir, ins);
+  redefine(ins, ins->object());
 }
 
 void LIRGenerator::visitGuardHasAttachedArrayBuffer(
@@ -4298,8 +4439,9 @@ void LIRGenerator::visitLoadUnboxedScalar(MLoadUnboxedScalar* ins) {
   MOZ_ASSERT(ins->index()->type() == MIRType::IntPtr);
   MOZ_ASSERT(IsNumericType(ins->type()) || ins->type() == MIRType::Boolean);
 
-  if (Scalar::isBigIntType(ins->storageType()) &&
-      ins->requiresMemoryBarrier()) {
+  auto sync = SynchronizeLoad(ins->requiresMemoryBarrier());
+
+  if (Scalar::isBigIntType(ins->storageType()) && !sync.isNone()) {
     lowerAtomicLoad64(ins);
     return;
   }
@@ -4310,8 +4452,7 @@ void LIRGenerator::visitLoadUnboxedScalar(MLoadUnboxedScalar* ins) {
 
   // NOTE: the generated code must match the assembly code in gen_load in
   // GenerateAtomicOperations.py
-  Synchronization sync = Synchronization::Load();
-  if (ins->requiresMemoryBarrier()) {
+  if (!sync.isNone()) {
     LMemoryBarrier* fence = new (alloc()) LMemoryBarrier(sync.barrierBefore);
     add(fence, ins);
   }
@@ -4338,7 +4479,7 @@ void LIRGenerator::visitLoadUnboxedScalar(MLoadUnboxedScalar* ins) {
     assignSafepoint(lir, ins);
   }
 
-  if (ins->requiresMemoryBarrier()) {
+  if (!sync.isNone()) {
     LMemoryBarrier* fence = new (alloc()) LMemoryBarrier(sync.barrierAfter);
     add(fence, ins);
   }
@@ -4431,29 +4572,32 @@ void LIRGenerator::visitClampToUint8(MClampToUint8* ins) {
 
 void LIRGenerator::visitLoadTypedArrayElementHole(
     MLoadTypedArrayElementHole* ins) {
-  MOZ_ASSERT(ins->object()->type() == MIRType::Object);
+  MOZ_ASSERT(ins->elements()->type() == MIRType::Elements);
   MOZ_ASSERT(ins->index()->type() == MIRType::IntPtr);
+  MOZ_ASSERT(ins->length()->type() == MIRType::IntPtr);
 
   MOZ_ASSERT(ins->type() == MIRType::Value);
 
-  const LUse object = useRegister(ins->object());
+  const LUse elements = useRegister(ins->elements());
   const LAllocation index = useRegister(ins->index());
+  const LAllocation length = useRegister(ins->length());
 
   if (!Scalar::isBigIntType(ins->arrayType())) {
-    auto* lir = new (alloc()) LLoadTypedArrayElementHole(object, index, temp());
+    auto* lir =
+        new (alloc()) LLoadTypedArrayElementHole(elements, index, length);
     if (ins->fallible()) {
       assignSnapshot(lir, ins->bailoutKind());
     }
     defineBox(lir, ins);
   } else {
 #ifdef JS_CODEGEN_X86
-    LDefinition tmp = LDefinition::BogusTemp();
+    LInt64Definition temp64 = LInt64Definition::BogusTemp();
 #else
-    LDefinition tmp = temp();
+    LInt64Definition temp64 = tempInt64();
 #endif
 
-    auto* lir = new (alloc())
-        LLoadTypedArrayElementHoleBigInt(object, index, tmp, tempInt64());
+    auto* lir = new (alloc()) LLoadTypedArrayElementHoleBigInt(
+        elements, index, length, temp(), temp64);
     defineBox(lir, ins);
     assignSafepoint(lir, ins);
   }
@@ -4474,7 +4618,9 @@ void LIRGenerator::visitStoreUnboxedScalar(MStoreUnboxedScalar* ins) {
     MOZ_ASSERT(ins->value()->type() == MIRType::Int32);
   }
 
-  if (ins->isBigIntWrite() && ins->requiresMemoryBarrier()) {
+  auto sync = SynchronizeStore(ins->requiresMemoryBarrier());
+
+  if (ins->isBigIntWrite() && !sync.isNone()) {
     lowerAtomicStore64(ins);
     return;
   }
@@ -4500,8 +4646,7 @@ void LIRGenerator::visitStoreUnboxedScalar(MStoreUnboxedScalar* ins) {
   //
   // NOTE: the generated code must match the assembly code in gen_store in
   // GenerateAtomicOperations.py
-  Synchronization sync = Synchronization::Store();
-  if (ins->requiresMemoryBarrier()) {
+  if (!sync.isNone()) {
     LMemoryBarrier* fence = new (alloc()) LMemoryBarrier(sync.barrierBefore);
     add(fence, ins);
   }
@@ -4511,7 +4656,7 @@ void LIRGenerator::visitStoreUnboxedScalar(MStoreUnboxedScalar* ins) {
     add(new (alloc()) LStoreUnboxedBigInt(elements, index, value, tempInt64()),
         ins);
   }
-  if (ins->requiresMemoryBarrier()) {
+  if (!sync.isNone()) {
     LMemoryBarrier* fence = new (alloc()) LMemoryBarrier(sync.barrierAfter);
     add(fence, ins);
   }
@@ -4604,7 +4749,8 @@ void LIRGenerator::visitLoadScriptedProxyHandler(
     MLoadScriptedProxyHandler* ins) {
   LLoadScriptedProxyHandler* lir = new (alloc())
       LLoadScriptedProxyHandler(useRegisterAtStart(ins->object()));
-  defineBox(lir, ins);
+  assignSnapshot(lir, ins->bailoutKind());
+  define(lir, ins);
 }
 
 void LIRGenerator::visitIdToStringOrSymbol(MIdToStringOrSymbol* ins) {
@@ -5154,6 +5300,17 @@ void LIRGenerator::visitGuardIsFixedLengthTypedArray(
   redefine(ins, ins->object());
 }
 
+void LIRGenerator::visitGuardIsResizableTypedArray(
+    MGuardIsResizableTypedArray* ins) {
+  MOZ_ASSERT(ins->object()->type() == MIRType::Object);
+
+  auto* lir = new (alloc())
+      LGuardIsResizableTypedArray(useRegister(ins->object()), temp());
+  assignSnapshot(lir, ins->bailoutKind());
+  add(lir, ins);
+  redefine(ins, ins->object());
+}
+
 void LIRGenerator::visitGuardHasProxyHandler(MGuardHasProxyHandler* ins) {
   MOZ_ASSERT(ins->object()->type() == MIRType::Object);
 
@@ -5690,6 +5847,15 @@ void LIRGenerator::visitGuardToClass(MGuardToClass* ins) {
   MOZ_ASSERT(ins->type() == MIRType::Object);
   LGuardToClass* lir =
       new (alloc()) LGuardToClass(useRegisterAtStart(ins->object()), temp());
+  assignSnapshot(lir, ins->bailoutKind());
+  defineReuseInput(lir, ins, 0);
+}
+
+void LIRGenerator::visitGuardToEitherClass(MGuardToEitherClass* ins) {
+  MOZ_ASSERT(ins->object()->type() == MIRType::Object);
+  MOZ_ASSERT(ins->type() == MIRType::Object);
+  auto* lir = new (alloc())
+      LGuardToEitherClass(useRegisterAtStart(ins->object()), temp());
   assignSnapshot(lir, ins->bailoutKind());
   defineReuseInput(lir, ins, 0);
 }
@@ -6648,7 +6814,11 @@ void LIRGenerator::visitLoadWrapperTarget(MLoadWrapperTarget* ins) {
   MDefinition* object = ins->object();
   MOZ_ASSERT(object->type() == MIRType::Object);
 
-  define(new (alloc()) LLoadWrapperTarget(useRegisterAtStart(object)), ins);
+  auto* lir = new (alloc()) LLoadWrapperTarget(useRegisterAtStart(object));
+  if (ins->fallible()) {
+    assignSnapshot(lir, ins->bailoutKind());
+  }
+  define(lir, ins);
 }
 
 void LIRGenerator::visitGuardHasGetterSetter(MGuardHasGetterSetter* ins) {
@@ -7016,6 +7186,11 @@ void LIRGenerator::visitMapObjectGetValueVMCall(MMapObjectGetValueVMCall* ins) {
 void LIRGenerator::visitMapObjectSize(MMapObjectSize* ins) {
   auto* lir = new (alloc()) LMapObjectSize(useRegisterAtStart(ins->map()));
   define(lir, ins);
+}
+
+void LIRGenerator::visitPostIntPtrConversion(MPostIntPtrConversion* ins) {
+  // This operation is a no-op.
+  redefine(ins, ins->input());
 }
 
 void LIRGenerator::visitConstant(MConstant* ins) {

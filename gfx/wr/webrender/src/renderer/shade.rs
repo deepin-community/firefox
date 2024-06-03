@@ -6,6 +6,7 @@ use api::{ImageBufferKind, units::DeviceSize};
 use crate::batch::{BatchKey, BatchKind, BrushBatchKind, BatchFeatures};
 use crate::composite::{CompositeFeatures, CompositeSurfaceFormat};
 use crate::device::{Device, Program, ShaderError};
+use crate::pattern::PatternKind;
 use euclid::default::Transform3D;
 use glyph_rasterizer::GlyphFormat;
 use crate::renderer::{
@@ -254,7 +255,6 @@ impl LazilyCompiledShader {
                 VertexArrayKind::RadialGradient => &desc::RADIAL_GRADIENT,
                 VertexArrayKind::ConicGradient => &desc::CONIC_GRADIENT,
                 VertexArrayKind::Blur => &desc::BLUR,
-                VertexArrayKind::ClipImage => &desc::CLIP_IMAGE,
                 VertexArrayKind::ClipRect => &desc::CLIP_RECT,
                 VertexArrayKind::ClipBoxShadow => &desc::CLIP_BOX_SHADOW,
                 VertexArrayKind::VectorStencil => &desc::VECTOR_STENCIL,
@@ -282,7 +282,8 @@ impl LazilyCompiledShader {
                             ("sGpuCache", TextureSampler::GpuCache),
                             ("sPrimitiveHeadersF", TextureSampler::PrimitiveHeadersF),
                             ("sPrimitiveHeadersI", TextureSampler::PrimitiveHeadersI),
-                            ("sGpuBuffer", TextureSampler::GpuBuffer),
+                            ("sGpuBufferF", TextureSampler::GpuBufferF),
+                            ("sGpuBufferI", TextureSampler::GpuBufferI),
                         ],
                     );
                 }
@@ -300,7 +301,8 @@ impl LazilyCompiledShader {
                             ("sPrimitiveHeadersF", TextureSampler::PrimitiveHeadersF),
                             ("sPrimitiveHeadersI", TextureSampler::PrimitiveHeadersI),
                             ("sClipMask", TextureSampler::ClipMask),
-                            ("sGpuBuffer", TextureSampler::GpuBuffer),
+                            ("sGpuBufferF", TextureSampler::GpuBufferF),
+                            ("sGpuBufferI", TextureSampler::GpuBufferI),
                         ],
                     );
                 }
@@ -617,7 +619,6 @@ pub struct Shaders {
     pub cs_clip_rectangle_slow: LazilyCompiledShader,
     pub cs_clip_rectangle_fast: LazilyCompiledShader,
     pub cs_clip_box_shadow: LazilyCompiledShader,
-    pub cs_clip_image: LazilyCompiledShader,
 
     // The are "primitive shaders". These shaders draw and blend
     // final results on screen. They are aware of tile boundaries.
@@ -810,16 +811,6 @@ impl Shaders {
         let cs_clip_box_shadow = LazilyCompiledShader::new(
             ShaderKind::ClipCache(VertexArrayKind::ClipBoxShadow),
             "cs_clip_box_shadow",
-            &["TEXTURE_2D"],
-            device,
-            options.precache_flags,
-            &shader_list,
-            profile,
-        )?;
-
-        let cs_clip_image = LazilyCompiledShader::new(
-            ShaderKind::ClipCache(VertexArrayKind::ClipImage),
-            "cs_clip_image",
             &["TEXTURE_2D"],
             device,
             options.precache_flags,
@@ -1128,7 +1119,6 @@ impl Shaders {
             cs_clip_rectangle_slow,
             cs_clip_rectangle_fast,
             cs_clip_box_shadow,
-            cs_clip_image,
             ps_text_run,
             ps_text_run_dual_source,
             ps_quad_textured,
@@ -1164,6 +1154,16 @@ impl Shaders {
             .expect("bug: unsupported scale shader requested")
     }
 
+    pub fn get_quad_shader(
+        &mut self,
+        pattern: PatternKind
+    ) -> &mut LazilyCompiledShader {
+        match pattern {
+            PatternKind::ColorOrTexture => &mut self.ps_quad_textured,
+            PatternKind::Mask => unreachable!(),
+        }
+    }
+
     pub fn get(&
         mut self,
         key: &BatchKey,
@@ -1172,8 +1172,11 @@ impl Shaders {
         device: &Device,
     ) -> &mut LazilyCompiledShader {
         match key.kind {
-            BatchKind::Primitive => {
+            BatchKind::Quad(PatternKind::ColorOrTexture) => {
                 &mut self.ps_quad_textured
+            }
+            BatchKind::Quad(PatternKind::Mask) => {
+                unreachable!();
             }
             BatchKind::SplitComposite => {
                 &mut self.ps_split_composite
@@ -1274,7 +1277,6 @@ impl Shaders {
         self.cs_clip_rectangle_slow.deinit(device);
         self.cs_clip_rectangle_fast.deinit(device);
         self.cs_clip_box_shadow.deinit(device);
-        self.cs_clip_image.deinit(device);
         self.ps_text_run.deinit(device);
         if let Some(shader) = self.ps_text_run_dual_source {
             shader.deinit(device);

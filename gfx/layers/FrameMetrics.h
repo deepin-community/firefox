@@ -243,11 +243,9 @@ struct FrameMetrics {
   }
 
   /*
-   * Returns true if the layout scroll offset or visual scroll offset changed
-   * and returns the visual scroll offset change delta.
+   * Returns true if the layout scroll offset or visual scroll offset changed.
    */
-  std::pair<bool, CSSPoint> ApplyAbsoluteScrollUpdateFrom(
-      const ScrollPositionUpdate& aUpdate);
+  bool ApplyScrollUpdateFrom(const ScrollPositionUpdate& aUpdate);
 
   /**
    * Applies the relative scroll offset update contained in aOther to the
@@ -702,7 +700,7 @@ MOZ_DEFINE_ENUM_CLASS_WITH_BASE(
 std::ostream& operator<<(std::ostream& aStream,
                          const OverscrollBehavior& aBehavior);
 
-struct OverscrollBehaviorInfo {
+struct OverscrollBehaviorInfo final {
   OverscrollBehaviorInfo();
 
   // Construct from StyleOverscrollBehavior values.
@@ -712,6 +710,8 @@ struct OverscrollBehaviorInfo {
   bool operator==(const OverscrollBehaviorInfo& aOther) const;
   friend std::ostream& operator<<(std::ostream& aStream,
                                   const OverscrollBehaviorInfo& aInfo);
+
+  auto MutTiedFields() { return std::tie(mBehaviorX, mBehaviorY); }
 
   OverscrollBehavior mBehaviorX;
   OverscrollBehavior mBehaviorY;
@@ -891,6 +891,12 @@ struct ScrollMetadata {
     mDidContentGetPainted = false;
     mScrollUpdates.Clear();
     mScrollUpdates.AppendElements(std::move(aUpdates));
+  }
+
+  void PrependUpdates(const nsTArray<ScrollPositionUpdate>& aUpdates) {
+    MOZ_ASSERT(!aUpdates.IsEmpty());
+
+    mScrollUpdates.InsertElementsAt(0, aUpdates);
   }
 
  private:

@@ -32,6 +32,8 @@ search-input-box2 =
     .style = width: 15.4em
     .placeholder = Keresés a Beállításokban
 managed-notice = A böngészőjét a szervezete kezeli.
+managed-notice-info-icon =
+    .alt = Információ
 category-list =
     .aria-label = Kategóriák
 pane-general-title = Általános
@@ -708,6 +710,13 @@ sync-mobile-promo = Töltse le a Firefox for <img data-l10n-name="android-icon"/
 
 sync-profile-picture =
     .tooltiptext = Profilkép módosítása
+sync-profile-picture-with-alt =
+    .tooltiptext = Profilkép módosítása
+    .alt = Profilkép módosítása
+sync-profile-picture-account-problem =
+    .alt = Fiók profilképe
+fxa-login-rejected-warning =
+    .alt = Figyelmeztetés
 sync-sign-out =
     .label = Kijelentkezés…
     .accesskey = K
@@ -1274,6 +1283,8 @@ addon-recommendations-link = További tudnivalók
 # or builds with no Telemetry support available.
 collection-health-report-disabled = Az adatjelentést letiltották ehhez a binárishoz
 collection-backlogged-crash-reports-with-link = Engedélyezés, hogy a { -brand-short-name } elküldje az elmaradt összeomlás-jelentéseket az Ön nevében <a data-l10n-name="crash-reports-link">További tudnivalók</a>
+    .accesskey = o
+collection-backlogged-crash-reports = Engedélyezés, hogy a { -brand-short-name } elküldje az elmaradt összeomlás-jelentéseket az Ön nevében
     .accesskey = o
 privacy-segmentation-section-header = Új funkciók, amelyek még jobbá teszik a böngészést
 privacy-segmentation-section-description = Amikor olyan funkciókat kínálunk, amelyek az Ön adatait használja, akkor a személyesebb élmény biztosítására használjuk fel:

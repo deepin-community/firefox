@@ -72,8 +72,8 @@ nsresult HTMLAreaElement::BindToTree(BindContext& aContext, nsINode& aParent) {
   return rv;
 }
 
-void HTMLAreaElement::UnbindFromTree(bool aNullParent) {
-  nsGenericHTMLElement::UnbindFromTree(aNullParent);
+void HTMLAreaElement::UnbindFromTree(UnbindContext& aContext) {
+  nsGenericHTMLElement::UnbindFromTree(aContext);
   // Without removing the link state we risk a dangling pointer in the
   // mStyledLinks hashtable
   Link::UnbindFromTree();
@@ -91,8 +91,6 @@ void HTMLAreaElement::AfterSetAttr(int32_t aNamespaceID, nsAtom* aName,
   return nsGenericHTMLElement::AfterSetAttr(
       aNamespaceID, aName, aValue, aOldValue, aSubjectPrincipal, aNotify);
 }
-
-void HTMLAreaElement::ToString(nsAString& aSource) { GetHref(aSource); }
 
 already_AddRefed<nsIURI> HTMLAreaElement::GetHrefURI() const {
   if (nsCOMPtr<nsIURI> uri = GetCachedURI()) {

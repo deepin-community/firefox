@@ -208,10 +208,10 @@ search-one-offs-context-open-new-tab =
     .label = Пошук в новій вкладці
     .accesskey = в
 search-one-offs-context-set-as-default =
-    .label = Встановити типовим засобом пошуку
+    .label = Встановити типовою пошуковою системою
     .accesskey = т
 search-one-offs-context-set-as-default-private =
-    .label = Встановити типовим засобом пошуку для приватних вікон
+    .label = Встановити типовою пошуковою системою для приватних вікон
     .accesskey = х
 # Search engine one-off buttons with an @alias shortcut/keyword.
 # Variables:
@@ -225,12 +225,12 @@ search-one-offs-engine-with-alias =
 #  $engineName (String): The name of the engine.
 search-one-offs-add-engine =
     .label = Додати “{ $engineName }”
-    .tooltiptext = Додати засіб пошуку “{ $engineName }”
-    .aria-label = Додати засіб пошуку “{ $engineName }”
+    .tooltiptext = Додати пошукову систему “{ $engineName }”
+    .aria-label = Додати пошукову систему “{ $engineName }”
 # When more than 5 engines are offered by a web page, they are grouped in a
 # submenu using this as its label.
 search-one-offs-add-engine-menu =
-    .label = Додати засіб пошуку
+    .label = Додати пошукову систему
 
 ## Local search mode one-off buttons
 ## Variables:
@@ -392,10 +392,10 @@ identity-description-insecure-login-forms = Введені на цій стор�
 identity-description-weak-cipher-intro = Ваше з'єднання з цим вебсайтом використовує слабке шифрування і не є приватним.
 identity-description-weak-cipher-risk = Інші люди можуть переглядати вашу інформацію чи змінювати поведінку вебсайту.
 identity-description-active-blocked2 = { -brand-short-name } заблокував незахищені частини цієї сторінки.
-identity-description-passive-loaded = Ваше з'єднання не є приватним й інформація, якою ви ділитесь з сайтом може бути переглянута іншими.
+identity-description-passive-loaded = Ваше з'єднання не є приватним, тому інформація, якою ви ділитесь з сайтом, може бути переглянута іншими.
 identity-description-passive-loaded-insecure2 = Цей вебсайт містить незахищений вміст (наприклад, зображення).
 identity-description-passive-loaded-mixed2 = Хоча { -brand-short-name } заблокував деякий вміст, на сторінці все ще є незахищений вміст (наприклад, зображення).
-identity-description-active-loaded = Цей вебсайт має вміст, що не є безпечним (наприклад, сценарії) і ваше з'єднання з ним не є приватним.
+identity-description-active-loaded = Цей вебсайт має вміст, що не є безпечним (як-от скрипти) і ваше з'єднання з ним не є приватним.
 identity-description-active-loaded-insecure = Інформація, якою ви ділитесь з цим сайтом, може бути переглянута іншими (наприклад, паролі, повідомлення, дані кредитних карт та ін.).
 identity-disable-mixed-content-blocking =
     .label = Тимчасово вимкнути захист
@@ -606,6 +606,12 @@ urlbar-result-action-copy-to-clipboard = Копіювати
 #  $result (String): the string representation for a formula result
 urlbar-result-action-calculator-result = = { $result }
 
+## Strings used for buttons in the urlbar
+
+# Label prompting user to search with a particular search engine.
+#  $engine (String): the name of a search engine that searches a specific site
+urlbar-result-search-with = Шукати за допомогою { $engine }
+
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
 ## In these actions "Search" is a verb, followed by where the search is performed.
@@ -654,8 +660,8 @@ picture-in-picture-urlbar-button-open =
 picture-in-picture-urlbar-button-close =
     .tooltiptext = Закрити Зображення в зображенні ({ $shortcut })
 picture-in-picture-panel-header = Зображення в зображенні
-picture-in-picture-panel-headline = Цей вебсайт не рекомендує використовувати режим «Зображення в зображенні».
-picture-in-picture-panel-body = Відео може мати вигляд не такий, як передбачалося розробником, якщо увімкнено функцію «Зображення в зображенні».
+picture-in-picture-panel-headline = Цей вебсайт не рекомендує використовувати режим "Зображення в зображенні".
+picture-in-picture-panel-body = Відео може мати вигляд не такий, як передбачалося розробником, якщо увімкнено функцію "Зображення в зображенні".
 picture-in-picture-enable-toggle =
     .label = Усе одно ввімкнути
 
@@ -912,6 +918,15 @@ data-reporting-notification-button =
     .accesskey = В
 # Label for the indicator shown in the private browsing window titlebar.
 private-browsing-indicator-label = Приватний перегляд
+# Tooltip for the indicator shown in the window titlebar when content analysis is active.
+# Variables:
+#   $agentName (String): The name of the DLP agent that is connected
+content-analysis-indicator-tooltip =
+    .tooltiptext = Запобігання втраті даних (DLP) від { $agentName }. Натисніть, щоб дізнатися більше.
+content-analysis-panel-title = Захист даних
+# Variables:
+#   $agentName (String): The name of the DLP agent that is connected
+content-analysis-panel-text = Ваша організація використовує { $agentName } для захисту від втрати даних. <a data-l10n-name="info">Докладніше</a>
 
 ## Unified extensions (toolbar) button
 
@@ -1010,4 +1025,4 @@ popup-warning-button =
 # Variables:
 #   $popupURI (String): the URI for the pop-up window
 popup-show-popup-menuitem =
-    .label = Показати '{ $popupURI }'
+    .label = Показати “{ $popupURI }”

@@ -23,16 +23,17 @@ namespace InspectorUtils {
   unsigned long getRelativeRuleLine(CSSRule rule);
   sequence<unsigned long> getRuleIndex(CSSRule rule);
   boolean hasRulesModifiedByCSSOM(CSSStyleSheet sheet);
-  // Get a flat list of all rules (including nested ones) of a given stylesheet.
-  // Useful for DevTools as this is faster than in JS where we'd have a lot of
-  // proxy access overhead building the same list.
-  sequence<CSSRule> getAllStyleSheetCSSStyleRules(CSSStyleSheet sheet);
+  // Get a flat list of specific at-rules (including nested ones) of a given stylesheet.
+  // Useful for DevTools (StyleEditor at-rules sidebar) as this is faster than in JS
+  // where we'd have a lot of proxy access overhead building the same list.
+  InspectorStyleSheetRuleCountAndAtRulesResult getStyleSheetRuleCountAndAtRules(CSSStyleSheet sheet);
   boolean isInheritedProperty(Document document, UTF8String property);
   sequence<DOMString> getCSSPropertyNames(optional PropertyNamesOptions options = {});
   sequence<PropertyPref> getCSSPropertyPrefs();
   [Throws] sequence<DOMString> getCSSValuesForProperty(UTF8String property);
   UTF8String rgbToColorName(octet r, octet g, octet b);
   InspectorRGBATuple? colorToRGBA(UTF8String colorString, optional Document? doc = null);
+  InspectorColorToResult? colorTo(UTF8String fromColor, UTF8String toColorSpace);
   boolean isValidCSSColor(UTF8String colorString);
   [Throws] sequence<DOMString> getSubpropertiesForCSSProperty(UTF8String property);
   [Throws] boolean cssPropertyIsShorthand(UTF8String property);
@@ -87,6 +88,25 @@ namespace InspectorUtils {
   [NewObject] NodeList getOverflowingChildrenOfElement(Element element);
   sequence<DOMString> getRegisteredCssHighlights(Document document, optional boolean activeOnly = false);
   sequence<InspectorCSSPropertyDefinition> getCSSRegisteredProperties(Document document);
+
+  // Get the first rule body text within initialText
+  // Consider the following example:
+  // p {
+  //  line-height: 2em;
+  //  color: blue;
+  // }
+  // Calling the function with the whole text above would return:
+  // "line-height: 2em; color: blue;"
+  // Returns null when opening curly bracket wasn't found in initialText
+  UTF8String? getRuleBodyText(UTF8String initialText);
+
+  // Returns string where the rule body text at passed line and column in styleSheetText
+  // is replaced by newBodyText.
+  UTF8String? replaceBlockRuleBodyTextInStylesheet(
+    UTF8String styleSheetText,
+    unsigned long line,
+    unsigned long column,
+    UTF8String newBodyText);
 };
 
 dictionary SupportsOptions {
@@ -117,6 +137,12 @@ dictionary InspectorRGBATuple {
   double g = 0;
   double b = 0;
   double a = 1;
+};
+
+dictionary InspectorColorToResult {
+  required DOMString color;
+  required sequence<float> components;
+  required boolean adjusted;
 };
 
 // Any update to this enum should probably also update
@@ -157,6 +183,11 @@ dictionary InspectorCSSPropertyDefinition {
   required boolean inherits;
   required UTF8String? initialValue;
   required boolean fromJS;
+};
+
+dictionary InspectorStyleSheetRuleCountAndAtRulesResult {
+  required sequence<CSSRule> atRules;
+  required unsigned long ruleCount;
 };
 
 [Func="nsContentUtils::IsCallerChromeOrFuzzingEnabled",

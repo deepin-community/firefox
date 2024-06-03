@@ -313,6 +313,9 @@
       <menuitem id="context-selectall"
                 data-l10n-id="text-action-select-all"
                 command="cmd_selectAll"/>
+      <menuitem id="context-pdfjs-highlight-selection"
+                data-l10n-id="text-action-highlight-selection"
+                oncommand="gContextMenu.pdfJSCmd('highlightSelection');"/>
       <menuitem id="context-reveal-password"
                 type="checkbox"
                 data-l10n-id="main-context-menu-reveal-password"
@@ -358,7 +361,8 @@
       <menuitem id="context-searchselect-private"
                 oncommand="BrowserSearch.loadSearchFromContext(this.searchTerms, true, this.principal, this.csp, event);"/>
       <menuitem id="context-translate-selection"
-                data-l10n-id="main-context-menu-translate-selection"/>
+                data-l10n-id="main-context-menu-translate-selection"
+                oncommand="gContextMenu.openSelectTranslationsPanel(event);"/>
 
       <menuseparator id="frame-sep"/>
       <menu id="frame" data-l10n-id="main-context-menu-frame">
@@ -435,7 +439,7 @@
                 oncommand="gContextMenu.viewPartialSource();"/>
       <menuitem id="context-viewsource"
                 data-l10n-id="main-context-menu-view-page-source"
-                oncommand="BrowserViewSource(gContextMenu.browser);"/>
+                oncommand="BrowserCommands.viewSource(gContextMenu.browser);"/>
       <menuitem id="context-inspect-a11y"
                 hidden="true"
                 data-l10n-id="main-context-menu-inspect-a11y-properties"

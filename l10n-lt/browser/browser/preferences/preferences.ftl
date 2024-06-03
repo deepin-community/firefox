@@ -675,6 +675,9 @@ sync-mobile-promo = Parsisiųskite „Firefox“, skirtą <img data-l10n-name="a
 
 sync-profile-picture =
     .tooltiptext = Keisti profilio nuotrauką
+sync-profile-picture-with-alt =
+    .tooltiptext = Keisti profilio nuotrauką
+    .alt = Keisti profilio nuotrauką
 sync-sign-out =
     .label = Atsijungti…
     .accesskey = g
@@ -1137,6 +1140,8 @@ addon-recommendations-link = Sužinoti daugiau
 # or builds with no Telemetry support available.
 collection-health-report-disabled = Duomenų siuntimas šiai darinio sąrankai yra išjungtas
 collection-backlogged-crash-reports-with-link = Leisti „{ -brand-short-name }“ siųsti sukauptus strigčių pranešimus jūsų vardu. <a data-l10n-name="crash-reports-link">Sužinoti daugiau</a>
+    .accesskey = s
+collection-backlogged-crash-reports = Leisti „{ -brand-short-name }“ siųsti sukauptus strigčių pranešimus jūsų vardu.
     .accesskey = s
 privacy-segmentation-section-header = Naujos funkcijos, kurios pagerina jūsų naršymą
 privacy-segmentation-section-description = Kai siūlome funkcijas, kurios naudoja jūsų duomenis, kad suteiktų jums asmeniškesnės patirties:

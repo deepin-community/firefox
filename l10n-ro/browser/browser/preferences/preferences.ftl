@@ -645,6 +645,9 @@ sync-mobile-promo = Descarcă Firefox pentru <img data-l10n-name="android-icon"/
 
 sync-profile-picture =
     .tooltiptext = Schimbă fotografia de profil
+sync-profile-picture-with-alt =
+    .tooltiptext = Schimbă fotografia de profil
+    .alt = Schimbă fotografia de profil
 sync-sign-out =
     .label = Deconectează-te…
     .accesskey = g
@@ -1115,6 +1118,8 @@ addon-recommendations-link = Află mai multe
 # or builds with no Telemetry support available.
 collection-health-report-disabled = Raportarea datelor este dezactivată în configurația folosită
 collection-backlogged-crash-reports-with-link = Permite ca { -brand-short-name } să trimită în numele tău rapoarte de defecțiuni înregistrate în jurnal <a data-l10n-name="crash-reports-link">Află mai multe</a>
+    .accesskey = c
+collection-backlogged-crash-reports = Permite ca { -brand-short-name } să trimită în numele tău rapoarte de defecțiuni înregistrate în jurnal
     .accesskey = c
 
 ## Privacy Section - Security

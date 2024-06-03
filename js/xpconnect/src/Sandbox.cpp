@@ -50,6 +50,7 @@
 #include "mozilla/dom/DOMParserBinding.h"
 #include "mozilla/dom/DOMTokenListBinding.h"
 #include "mozilla/dom/ElementBinding.h"
+#include "mozilla/dom/ElementInternalsBinding.h"
 #include "mozilla/dom/EventBinding.h"
 #include "mozilla/dom/Exceptions.h"
 #include "mozilla/dom/IndexedDatabaseManager.h"
@@ -310,7 +311,7 @@ static bool SandboxFetch(JSContext* cx, JS::HandleObject scope,
   }
 
   BindingCallContext callCx(cx, "fetch");
-  RequestOrUSVString request;
+  RequestOrUTF8String request;
   if (!request.Init(callCx, args[0], "Argument 1")) {
     return false;
   }
@@ -901,6 +902,8 @@ bool xpc::GlobalProperties::Parse(JSContext* cx, JS::HandleObject obj) {
       CSS = true;
     } else if (JS_LinearStringEqualsLiteral(nameStr, "CSSRule")) {
       CSSRule = true;
+    } else if (JS_LinearStringEqualsLiteral(nameStr, "CustomStateSet")) {
+      CustomStateSet = true;
     } else if (JS_LinearStringEqualsLiteral(nameStr, "Document")) {
       Document = true;
     } else if (JS_LinearStringEqualsLiteral(nameStr, "Directory")) {
@@ -1024,6 +1027,11 @@ bool xpc::GlobalProperties::Define(JSContext* cx, JS::HandleObject obj) {
   }
 
   if (CSSRule && !dom::CSSRule_Binding::GetConstructorObject(cx)) {
+    return false;
+  }
+
+  if (CustomStateSet &&
+      !dom::CustomStateSet_Binding::GetConstructorObject(cx)) {
     return false;
   }
 
@@ -1266,7 +1274,7 @@ nsresult ApplyAddonContentScriptCSP(nsISupports* prinOrSop) {
 
   csp = new nsCSPContext();
   MOZ_TRY(
-      csp->SetRequestContextWithPrincipal(clonedPrincipal, selfURI, u""_ns, 0));
+      csp->SetRequestContextWithPrincipal(clonedPrincipal, selfURI, ""_ns, 0));
 
   MOZ_TRY(csp->AppendPolicy(baseCSP, false, false));
 

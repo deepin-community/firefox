@@ -9,18 +9,19 @@
 
 #include <inttypes.h>
 
-#include "DocumentChannelParent.h"
 #include "mozilla/ScopeExit.h"
 #include "mozilla/Sprintf.h"
 #include "mozilla/dom/nsCSPContext.h"
-#include "mozilla/dom/nsCSPService.h"
+#include "mozilla/glean/GleanMetrics.h"
 #include "mozilla/StoragePrincipalHelper.h"
 
+#include "nsCOMPtr.h"
 #include "nsContentSecurityUtils.h"
 #include "nsHttp.h"
 #include "nsHttpChannel.h"
 #include "nsHttpChannelAuthProvider.h"
 #include "nsHttpHandler.h"
+#include "nsIStreamConverter.h"
 #include "nsString.h"
 #include "nsICacheStorageService.h"
 #include "nsICacheStorage.h"
@@ -29,7 +30,6 @@
 #include "nsIEffectiveTLDService.h"
 #include "nsIHttpHeaderVisitor.h"
 #include "nsINetworkInterceptController.h"
-#include "nsINSSErrorsService.h"
 #include "nsIStringBundle.h"
 #include "nsIStreamListenerTee.h"
 #include "nsISeekableStream.h"
@@ -40,7 +40,6 @@
 #include "nsMimeTypes.h"
 #include "nsNetCID.h"
 #include "nsNetUtil.h"
-#include "nsIURL.h"
 #include "nsIStreamTransportService.h"
 #include "prnetdb.h"
 #include "nsEscape.h"
@@ -63,11 +62,8 @@
 #include "mozilla/BasePrincipal.h"
 #include "mozilla/DebugOnly.h"
 #include "mozilla/PerfStats.h"
-#include "mozilla/Preferences.h"
 #include "mozilla/ProfilerLabels.h"
 #include "mozilla/Components.h"
-#include "mozilla/StaticPrefs_browser.h"
-#include "mozilla/StaticPrefs_fission.h"
 #include "mozilla/StaticPrefs_network.h"
 #include "mozilla/StaticPrefs_privacy.h"
 #include "mozilla/StaticPrefs_security.h"
@@ -93,15 +89,12 @@
 #include "nsIStreamConverterService.h"
 #include "nsISiteSecurityService.h"
 #include "nsString.h"
-#include "CacheObserver.h"
 #include "mozilla/dom/PerformanceStorage.h"
 #include "mozilla/dom/ReferrerInfo.h"
 #include "mozilla/Telemetry.h"
 #include "AlternateServices.h"
 #include "NetworkMarker.h"
 #include "nsIHttpPushListener.h"
-#include "nsIX509Cert.h"
-#include "ScopedNSSTypes.h"
 #include "nsIDNSRecord.h"
 #include "mozilla/dom/Document.h"
 #include "nsICompressConvStats.h"
@@ -116,14 +109,11 @@
 #include "CacheStorageService.h"
 #include "HttpChannelParent.h"
 #include "HttpTransactionParent.h"
-#include "ParentChannelListener.h"
 #include "ThirdPartyUtil.h"
 #include "InterceptedHttpChannel.h"
 #include "../../cache2/CacheFileUtils.h"
-#include "nsIMultiplexInputStream.h"
 #include "nsINetworkLinkService.h"
 #include "mozilla/ContentBlockingAllowList.h"
-#include "mozilla/dom/Promise.h"
 #include "mozilla/dom/ServiceWorkerUtils.h"
 #include "mozilla/dom/nsHTTPSOnlyStreamListener.h"
 #include "mozilla/dom/nsHTTPSOnlyUtils.h"
@@ -134,7 +124,6 @@
 #include "mozilla/net/UrlClassifierFeatureFactory.h"
 #include "HttpTrafficAnalyzer.h"
 #include "mozilla/net/SocketProcessParent.h"
-#include "js/Conversions.h"
 #include "mozilla/dom/SecFetch.h"
 #include "mozilla/net/TRRService.h"
 #include "nsUnknownDecoder.h"
@@ -496,6 +485,25 @@ void nsHttpChannel::HandleContinueCancellingByURLClassifier(
   ContinueCancellingByURLClassifier(aErrorCode);
 }
 
+void nsHttpChannel::SetPriorityHeader() {
+  uint8_t urgency = nsHttpHandler::UrgencyFromCoSFlags(mClassOfService.Flags());
+  bool incremental = mClassOfService.Incremental();
+
+  nsPrintfCString value(
+      "%s", urgency != 3 ? nsPrintfCString("u=%d", urgency).get() : "");
+
+  if (incremental) {
+    if (!value.IsEmpty()) {
+      value.Append(", ");
+    }
+    value.Append("i");
+  }
+
+  if (!value.IsEmpty()) {
+    SetRequestHeader("Priority"_ns, value, false);
+  }
+}
+
 nsresult nsHttpChannel::OnBeforeConnect() {
   nsresult rv = NS_OK;
 
@@ -560,7 +568,8 @@ nsresult nsHttpChannel::OnBeforeConnect() {
   }
   rv = sss->IsSecureURI(mURI, originAttributes, &isSecureURI);
   NS_ENSURE_SUCCESS(rv, rv);
-  // Save that on the loadInfo so it can later be consumed by SecurityInfo.jsm
+  // Save that on the loadInfo so it can later be consumed by
+  // SecurityInfo.sys.mjs
   mLoadInfo->SetHstsStatus(isSecureURI);
 
   RefPtr<mozilla::dom::BrowsingContext> bc;
@@ -796,6 +805,19 @@ nsresult nsHttpChannel::ContinueOnBeforeConnect(bool aShouldUpgrade,
   mConnectionInfo->SetIPv6Disabled(mCaps & NS_HTTP_DISABLE_IPV6);
   mConnectionInfo->SetAnonymousAllowClientCert(
       (mLoadFlags & LOAD_ANONYMOUS_ALLOW_CLIENT_CERT) != 0);
+
+  if (mWebTransportSessionEventListener) {
+    nsTArray<RefPtr<nsIWebTransportHash>> aServerCertHashes;
+    nsresult rv;
+    nsCOMPtr<WebTransportConnectionSettings> wtconSettings =
+        do_QueryInterface(mWebTransportSessionEventListener, &rv);
+    NS_ENSURE_SUCCESS(rv, rv);
+
+    wtconSettings->GetServerCertificateHashes(aServerCertHashes);
+    gHttpHandler->ConnMgr()->StoreServerCertHashes(
+        mConnectionInfo, gHttpHandler->IsHttp2Excluded(mConnectionInfo),
+        !Http3Allowed(), std::move(aServerCertHashes));
+  }
 
   // notify "http-on-before-connect" observers
   gHttpHandler->OnBeforeConnect(this);
@@ -1200,6 +1222,10 @@ nsresult nsHttpChannel::SetupTransaction() {
   nsresult rv;
 
   mozilla::MutexAutoLock lock(mRCWNLock);
+
+  if (StaticPrefs::network_http_priority_header_enabled()) {
+    SetPriorityHeader();
+  }
 
   // If we're racing cache with network, conditional or byte range header
   // could be added in OnCacheEntryCheck. We cannot send conditional request
@@ -1809,6 +1835,7 @@ nsresult nsHttpChannel::CallOnStartRequest() {
                  "converter in this case.");
       mListener = listener;
       mCompressListener = listener;
+
       StoreHasAppliedConversion(true);
     }
   }
@@ -2277,8 +2304,10 @@ nsresult nsHttpChannel::ContinueProcessResponse1() {
 
     // Given a successful connection, process any STS or PKP data that's
     // relevant.
-    DebugOnly<nsresult> rv = ProcessSecurityHeaders();
-    MOZ_ASSERT(NS_SUCCEEDED(rv), "ProcessSTSHeader failed, continuing load.");
+    nsresult rv = ProcessSecurityHeaders();
+    if (NS_FAILED(rv)) {
+      NS_WARNING("ProcessSTSHeader failed, continuing load.");
+    }
 
     if ((httpStatus < 500) && (httpStatus != 421)) {
       ProcessAltService();
@@ -2400,7 +2429,6 @@ nsresult nsHttpChannel::ContinueProcessResponse3(nsresult rv) {
         rv = ProcessNormal();
       }
       break;
-    case 300:
     case 301:
     case 302:
     case 307:
@@ -6443,6 +6471,16 @@ nsresult nsHttpChannel::BeginConnect() {
       connInfo =
           new nsHttpConnectionInfo(host, port, "h3"_ns, mUsername, proxyInfo,
                                    originAttributes, isHttps, true, true);
+      bool dedicated = true;
+      nsresult rv;
+      nsCOMPtr<WebTransportConnectionSettings> wtconSettings =
+          do_QueryInterface(mWebTransportSessionEventListener, &rv);
+      NS_ENSURE_SUCCESS(rv, rv);
+      wtconSettings->GetDedicated(&dedicated);
+      if (dedicated) {
+        connInfo->SetWebTransportId(
+            gHttpHandler->ConnMgr()->GenerateNewWebTransportId());
+      }
     } else {
       connInfo = new nsHttpConnectionInfo(host, port, ""_ns, mUsername,
                                           proxyInfo, originAttributes, isHttps);
@@ -6954,7 +6992,54 @@ nsHttpChannel::OnProxyAvailable(nsICancelable* request, nsIChannel* channel,
   // request was canceled.  We just failover to DIRECT when proxy resolution
   // fails (failure can mean that the PAC URL could not be loaded).
 
-  if (NS_SUCCEEDED(status)) mProxyInfo = pi;
+  if (NS_SUCCEEDED(status)) {
+    mProxyInfo = pi;
+
+    if (mProxyInfo) {
+      nsAutoCStringN<8> type;
+      mProxyInfo->GetType(type);
+      uint32_t flags = 0;
+      mProxyInfo->GetFlags(&flags);
+
+      if (type.EqualsLiteral("socks")) {
+        if (flags & nsIProxyInfo::TRANSPARENT_PROXY_RESOLVES_HOST) {
+          glean::networking::proxy_info_type
+              .EnumGet(glean::networking::ProxyInfoTypeLabel::eSocks5h)
+              .Add(1);
+        } else {
+          glean::networking::proxy_info_type
+              .EnumGet(glean::networking::ProxyInfoTypeLabel::eSocks5)
+              .Add(1);
+        }
+      } else if (type.EqualsLiteral("socks4")) {
+        if (flags & nsIProxyInfo::TRANSPARENT_PROXY_RESOLVES_HOST) {
+          glean::networking::proxy_info_type
+              .EnumGet(glean::networking::ProxyInfoTypeLabel::eSocks4a)
+              .Add(1);
+        } else {
+          glean::networking::proxy_info_type
+              .EnumGet(glean::networking::ProxyInfoTypeLabel::eSocks4)
+              .Add(1);
+        }
+      } else if (type.EqualsLiteral("http")) {
+        glean::networking::proxy_info_type
+            .EnumGet(glean::networking::ProxyInfoTypeLabel::eHttp)
+            .Add(1);
+      } else if (type.EqualsLiteral("https")) {
+        glean::networking::proxy_info_type
+            .EnumGet(glean::networking::ProxyInfoTypeLabel::eHttps)
+            .Add(1);
+      } else if (type.EqualsLiteral("direct")) {
+        glean::networking::proxy_info_type
+            .EnumGet(glean::networking::ProxyInfoTypeLabel::eDirect)
+            .Add(1);
+      } else {
+        glean::networking::proxy_info_type
+            .EnumGet(glean::networking::ProxyInfoTypeLabel::eUnknown)
+            .Add(1);
+      }
+    }
+  }
 
   if (!gHttpHandler->Active()) {
     LOG(
@@ -7605,6 +7690,7 @@ static nsLiteralCString ContentTypeToTelemetryLabel(nsHttpChannel* aChannel) {
       return "proxy"_ns;
     }
     if (contentType.EqualsLiteral(APPLICATION_BROTLI) ||
+        contentType.EqualsLiteral(APPLICATION_ZSTD) ||
         contentType.Find("zip") != kNotFound ||
         contentType.Find("compress") != kNotFound) {
       return "compressed"_ns;
@@ -8203,6 +8289,10 @@ nsresult nsHttpChannel::ContinueOnStopRequest(nsresult aStatus, bool aIsFromNet,
     }
     mAuthRetryPending = false;
   }
+
+  // notify "http-on-before-stop-request" observers
+  gHttpHandler->OnBeforeStopRequest(this);
+
   if (mListener) {
     LOG(("nsHttpChannel %p calling OnStopRequest\n", this));
     MOZ_ASSERT(LoadOnStartRequestCalled(),
@@ -8219,7 +8309,7 @@ nsresult nsHttpChannel::ContinueOnStopRequest(nsresult aStatus, bool aIsFromNet,
 
   mRedirectChannel = nullptr;
 
-  // notify "http-on-stop-connect" observers
+  // notify "http-on-stop-request" observers
   gHttpHandler->OnStopRequest(this);
 
   RemoveAsNonTailRequest();
@@ -9342,8 +9432,8 @@ nsresult nsHttpChannel::OnPush(uint32_t aPushedStreamId, const nsACString& aUrl,
 // static
 bool nsHttpChannel::IsRedirectStatus(uint32_t status) {
   // 305 disabled as a security measure (see bug 187996).
-  return status == 300 || status == 301 || status == 302 || status == 303 ||
-         status == 307 || status == 308;
+  return status == 301 || status == 302 || status == 303 || status == 307 ||
+         status == 308;
 }
 
 void nsHttpChannel::SetCouldBeSynthesized() {

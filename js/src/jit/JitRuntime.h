@@ -27,6 +27,7 @@
 #include "jit/JitCode.h"
 #include "jit/JitHints.h"
 #include "jit/shared/Assembler-shared.h"
+#include "jit/TrampolineNatives.h"
 #include "js/AllocPolicy.h"
 #include "js/ProfilingFrameIterator.h"
 #include "js/TypeDecls.h"
@@ -75,15 +76,15 @@ enum class BailoutReturnKind {
 class BaselineICFallbackCode {
   JitCode* code_ = nullptr;
   using OffsetArray =
-      mozilla::EnumeratedArray<BaselineICFallbackKind,
-                               BaselineICFallbackKind::Count, uint32_t>;
+      mozilla::EnumeratedArray<BaselineICFallbackKind, uint32_t,
+                               size_t(BaselineICFallbackKind::Count)>;
   OffsetArray offsets_ = {};
 
   // Keep track of offset into various baseline stubs' code at return
   // point from called script.
   using BailoutReturnArray =
-      mozilla::EnumeratedArray<BailoutReturnKind, BailoutReturnKind::Count,
-                               uint32_t>;
+      mozilla::EnumeratedArray<BailoutReturnKind, uint32_t,
+                               size_t(BailoutReturnKind::Count)>;
   BailoutReturnArray bailoutReturnOffsets_ = {};
 
  public:
@@ -175,13 +176,13 @@ class JitRuntime {
   WriteOnceData<uint32_t> doubleToInt32ValueStubOffset_{0};
 
   // Thunk to do a generic call from Ion.
-  mozilla::EnumeratedArray<IonGenericCallKind, IonGenericCallKind::Count,
-                           WriteOnceData<uint32_t>>
+  mozilla::EnumeratedArray<IonGenericCallKind, WriteOnceData<uint32_t>,
+                           size_t(IonGenericCallKind::Count)>
       ionGenericCallStubOffset_;
 
   // Thunk used by the debugger for breakpoint and step mode.
-  mozilla::EnumeratedArray<DebugTrapHandlerKind, DebugTrapHandlerKind::Count,
-                           WriteOnceData<JitCode*>>
+  mozilla::EnumeratedArray<DebugTrapHandlerKind, WriteOnceData<JitCode*>,
+                           size_t(DebugTrapHandlerKind::Count)>
       debugTrapHandlers_;
 
   // BaselineInterpreter state.
@@ -233,6 +234,13 @@ class JitRuntime {
   using IonCompileTaskList = mozilla::LinkedList<js::jit::IonCompileTask>;
   MainThreadData<IonCompileTaskList> ionLazyLinkList_;
   MainThreadData<size_t> ionLazyLinkListSize_{0};
+
+  // Pointer to trampoline code for each TrampolineNative. The JSFunction has
+  // a JitEntry pointer that points to an item in this array.
+  using TrampolineNativeJitEntryArray =
+      mozilla::EnumeratedArray<TrampolineNative, void*,
+                               size_t(TrampolineNative::Count)>;
+  TrampolineNativeJitEntryArray trampolineNativeJitEntries_{};
 
 #ifdef DEBUG
   // Flag that can be set from JIT code to indicate it's invalid to call
@@ -292,6 +300,14 @@ class JitRuntime {
 
   void generateBaselineInterpreterEntryTrampoline(MacroAssembler& masm);
   void generateInterpreterEntryTrampoline(MacroAssembler& masm);
+
+  using TrampolineNativeJitEntryOffsets =
+      mozilla::EnumeratedArray<TrampolineNative, uint32_t,
+                               size_t(TrampolineNative::Count)>;
+  void generateTrampolineNatives(MacroAssembler& masm,
+                                 TrampolineNativeJitEntryOffsets& offsets,
+                                 PerfSpewerRangeRecorder& rangeRecorder);
+  uint32_t generateArraySortTrampoline(MacroAssembler& masm);
 
   void bindLabelToOffset(Label* label, uint32_t offset) {
     MOZ_ASSERT(!trampolineCode_);
@@ -416,6 +432,20 @@ class JitRuntime {
 
   TrampolinePtr getIonGenericCallStub(IonGenericCallKind kind) const {
     return trampolineCode(ionGenericCallStubOffset_[kind]);
+  }
+
+  void** trampolineNativeJitEntry(TrampolineNative native) {
+    void** jitEntry = &trampolineNativeJitEntries_[native];
+    MOZ_ASSERT(*jitEntry >= trampolineCode_->raw());
+    MOZ_ASSERT(*jitEntry <
+               trampolineCode_->raw() + trampolineCode_->instructionsSize());
+    return jitEntry;
+  }
+  TrampolineNative trampolineNativeForJitEntry(void** entry) {
+    MOZ_RELEASE_ASSERT(entry >= trampolineNativeJitEntries_.begin());
+    size_t index = entry - trampolineNativeJitEntries_.begin();
+    MOZ_RELEASE_ASSERT(index < size_t(TrampolineNative::Count));
+    return TrampolineNative(index);
   }
 
   bool hasJitcodeGlobalTable() const { return jitcodeGlobalTable_ != nullptr; }

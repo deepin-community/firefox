@@ -95,12 +95,13 @@ class nsHTTPSOnlyUtils {
   /**
    * Determines if the request was previously upgraded with HTTPS-First, creates
    * a downgraded URI and logs to console.
-   * @param  aStatus   Status code
-   * @param  aChannel Failed channel
-   * @return          URI with http-scheme or nullptr
+   * @param  aStatus               Status code
+   * @param  aDocumentLoadListener Failed document load listener
+   * @return                       URI with http-scheme or nullptr
    */
   static already_AddRefed<nsIURI> PotentiallyDowngradeHttpsFirstRequest(
-      nsIChannel* aChannel, nsresult aStatus);
+      mozilla::net::DocumentLoadListener* aDocumentLoadListener,
+      nsresult aStatus);
 
   /**
    * Checks if the error code is on a block-list of codes that are probably
@@ -162,6 +163,18 @@ class nsHTTPSOnlyUtils {
   static bool IsEqualURIExceptSchemeAndRef(nsIURI* aHTTPSSchemeURI,
                                            nsIURI* aOtherURI,
                                            nsILoadInfo* aLoadInfo);
+
+  /**
+   * Determines which HTTPS-Only status flags should get propagated to
+   * sub-resources or sub-documents. As sub-resources and sub-documents are
+   * exempt when the top-level document is exempt, we need to copy the "exempt"
+   * flag. The HTTPS-First "upgraded" flag should not be copied to prevent a
+   * unwanted downgrade (Bug 1885949).
+   * @param aHttpsOnlyStatus The HTTPS-Only status of the top-level document.
+   * @return The HTTPS-Only status that the sub-resource/document should
+   * receive.
+   */
+  static uint32_t GetStatusForSubresourceLoad(uint32_t aHttpsOnlyStatus);
 
  private:
   /**

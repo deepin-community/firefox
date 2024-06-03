@@ -98,7 +98,7 @@ places-delete-page =
            *[other] ลบหน้า
         }
     .accesskey = ล
-# Managed bookmarks are created by an administrator and cannot be changed by the user.
+# Managed bookmarks are created by enterprise policy and cannot be changed by the user.
 managed-bookmarks =
     .label = ที่คั่นหน้าที่ถูกจัดการ
 # This label is used when a managed bookmarks folder doesn't have a name.
@@ -137,7 +137,7 @@ places-manage-bookmarks =
 places-forget-about-this-site-confirmation-title = ลืมเกี่ยวกับไซต์นี้
 # Variables:
 # $hostOrBaseDomain (string) - The base domain (or host in case there is no base domain) for which data is being removed
-places-forget-about-this-site-confirmation-msg = การดำเนินการนี้จะลบข้อมูลที่เกี่ยวข้องกับ { $hostOrBaseDomain } รวมถึงประวัติ คุกกี้ แคช และการกำหนดลักษณะเนื้อหา ที่คั่นหน้าและรหัสผ่านที่เกี่ยวข้องจะไม่ถูกลบ คุณแน่ใจหรือไม่ว่าต้องการดำเนินการต่อ
+places-forget-about-this-site-confirmation-msg = การกระทำนี้จะลบข้อมูลที่เกี่ยวข้องกับ { $hostOrBaseDomain } รวมถึงประวัติ คุกกี้ แคช และค่าปรับแต่งเนื้อหา ที่คั่นหน้าและรหัสผ่านที่เกี่ยวข้องจะไม่ถูกลบ คุณแน่ใจหรือไม่ว่าต้องการดำเนินการต่อ
 places-forget-about-this-site-forget = ลืม
 places-library3 =
     .title = ห้องสมุด
@@ -213,7 +213,7 @@ places-view-sort-col-visit-count =
 places-view-sort-col-date-added =
     .label = วันที่เพิ่ม
 places-view-sort-col-last-modified =
-    .label = วันที่เปลี่ยนแปลงล่าสุด
+    .label = ปรับเปลี่ยนล่าสุดเมื่อ
 places-view-sortby-name =
     .label = เรียงตามชื่อ
     .accesskey = ร
@@ -230,7 +230,7 @@ places-view-sortby-date-added =
     .label = เรียงตามวันที่เพิ่ม
     .accesskey = ว
 places-view-sortby-last-modified =
-    .label = เรียงตามวันที่เปลี่ยนแปลงล่าสุด
+    .label = เรียงตามเวลาที่ปรับเปลี่ยนล่าสุด
     .accesskey = น
 places-view-sortby-tags =
     .label = เรียงตามป้ายกำกับ

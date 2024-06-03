@@ -397,9 +397,9 @@ const SymbolicAddressSignature SASigArrayCopy = {
 #define VISIT_BUILTIN_FUNC(op, export, sa_name, ...)   \
   const SymbolicAddressSignature SASig##sa_name = {    \
       SymbolicAddress::sa_name,                        \
-      DECLARE_BUILTIN_MODULE_FUNC_RESULT_SASTYPE_##op, \
+      DECLARE_BUILTIN_MODULE_FUNC_RESULT_MIRTYPE_##op, \
       DECLARE_BUILTIN_MODULE_FUNC_FAILMODE_##op,       \
-      DECLARE_BUILTIN_MODULE_FUNC_PARAM_SASTYPES_##op};
+      DECLARE_BUILTIN_MODULE_FUNC_PARAM_MIRTYPES_##op};
 
 FOR_EACH_BUILTIN_MODULE_FUNC(VISIT_BUILTIN_FUNC)
 #undef VISIT_BUILTIN_FUNC
@@ -628,6 +628,22 @@ static WasmExceptionObject* GetOrWrapWasmException(JitActivation* activation,
   return nullptr;
 }
 
+static const wasm::TryNote* FindNonDelegateTryNote(const wasm::Code& code,
+                                                   const uint8_t* pc,
+                                                   Tier* tier) {
+  const wasm::TryNote* tryNote = code.lookupTryNote((void*)pc, tier);
+  while (tryNote && tryNote->isDelegate()) {
+    const wasm::CodeTier& codeTier = code.codeTier(*tier);
+    pc = codeTier.segment().base() + tryNote->delegateOffset();
+    const wasm::TryNote* delegateTryNote = code.lookupTryNote((void*)pc, tier);
+    MOZ_RELEASE_ASSERT(delegateTryNote == nullptr ||
+                       delegateTryNote->tryBodyBegin() <
+                           tryNote->tryBodyBegin());
+    tryNote = delegateTryNote;
+  }
+  return tryNote;
+}
+
 // Unwind the entire activation in response to a thrown exception. This function
 // is responsible for notifying the debugger of each unwound frame. The return
 // value is the new stack address which the calling stub will set to the sp
@@ -674,10 +690,10 @@ bool wasm::HandleThrow(JSContext* cx, WasmFrameIter& iter,
 
     // Only look for an exception handler if there's a catchable exception.
     if (wasmExn) {
+      Tier tier;
       const wasm::Code& code = iter.instance()->code();
       const uint8_t* pc = iter.resumePCinCurrentFrame();
-      Tier tier;
-      const wasm::TryNote* tryNote = code.lookupTryNote((void*)pc, &tier);
+      const wasm::TryNote* tryNote = FindNonDelegateTryNote(code, pc, &tier);
 
       if (tryNote) {
 #ifdef ENABLE_WASM_TAIL_CALLS
@@ -751,8 +767,8 @@ bool wasm::HandleThrow(JSContext* cx, WasmFrameIter& iter,
   // Assert that any pending exception escaping to non-wasm code is not a
   // wrapper exception object
 #ifdef DEBUG
-  Rooted<Value> pendingException(cx);
-  if (cx->isExceptionPending() && cx->getPendingException(&pendingException)) {
+  if (cx->isExceptionPending()) {
+    Rooted<Value> pendingException(cx, cx->getPendingExceptionUnwrapped());
     MOZ_ASSERT_IF(pendingException.isObject() &&
                       pendingException.toObject().is<WasmExceptionObject>(),
                   !pendingException.toObject()
@@ -1839,7 +1855,7 @@ using TypedNativeToCodeRangeMap =
     HashMap<TypedNative, uint32_t, TypedNative, SystemAllocPolicy>;
 
 using SymbolicAddressToCodeRangeArray =
-    EnumeratedArray<SymbolicAddress, SymbolicAddress::Limit, uint32_t>;
+    EnumeratedArray<SymbolicAddress, uint32_t, size_t(SymbolicAddress::Limit)>;
 
 struct BuiltinThunks {
   uint8_t* codeBase;

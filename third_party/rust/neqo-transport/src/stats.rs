@@ -5,7 +5,6 @@
 // except according to those terms.
 
 // Tracking of some useful statistics.
-#![deny(clippy::pedantic)]
 
 use std::{
     cell::RefCell,
@@ -15,7 +14,7 @@ use std::{
     time::Duration,
 };
 
-use neqo_common::qinfo;
+use neqo_common::qwarn;
 
 use crate::packet::PacketNumber;
 
@@ -169,7 +168,7 @@ impl Stats {
 
     pub fn pkt_dropped(&mut self, reason: impl AsRef<str>) {
         self.dropped_rx += 1;
-        qinfo!(
+        qwarn!(
             [self.info],
             "Dropped received packet: {}; Total: {}",
             reason.as_ref(),
@@ -207,7 +206,7 @@ impl Debug for Stats {
             "  tx: {} lost {} lateack {} ptoack {}",
             self.packets_tx, self.lost, self.late_ack, self.pto_ack
         )?;
-        writeln!(f, "  resumed: {} ", self.resumed)?;
+        writeln!(f, "  resumed: {}", self.resumed)?;
         writeln!(f, "  frames rx:")?;
         self.frame_rx.fmt(f)?;
         writeln!(f, "  frames tx:")?;

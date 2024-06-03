@@ -67,8 +67,12 @@ global.openOptionsPage = extension => {
     return Promise.reject({ message: "No browser window available" });
   }
 
-  if (extension.manifest.options_ui.open_in_tab) {
-    window.switchToTabHavingURI(extension.manifest.options_ui.page, true, {
+  const { optionsPageProperties } = extension;
+  if (!optionsPageProperties) {
+    return Promise.reject({ message: "No options page" });
+  }
+  if (optionsPageProperties.open_in_tab) {
+    window.switchToTabHavingURI(optionsPageProperties.page, true, {
       triggeringPrincipal: extension.principal,
     });
     return Promise.resolve();
@@ -108,7 +112,7 @@ global.clickModifiersFromEvent = event => {
 global.waitForTabLoaded = (tab, url) => {
   return new Promise(resolve => {
     windowTracker.addListener("progress", {
-      onLocationChange(browser, webProgress, request, locationURI, flags) {
+      onLocationChange(browser, webProgress, request, locationURI) {
         if (
           webProgress.isTopLevel &&
           browser.ownerGlobal.gBrowser.getTabForBrowser(browser) == tab &&

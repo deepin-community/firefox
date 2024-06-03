@@ -80,8 +80,9 @@ function clickOnElement(selector) {
   SimpleTest.executeSoon(() => element.click());
 }
 
-// The equivalent helper function to getAdaptedProfiles in FormAutofillHandler.jsm that
-// transforms the given profile to expected filled profile.
+// The equivalent helper function to getAdaptedProfiles in
+// FormAutofillSection.sys.mjs that transforms the given profile to expected
+// filled profile.
 function _getAdaptedProfile(profile) {
   const adaptedProfile = Object.assign({}, profile);
 
@@ -104,27 +105,6 @@ async function checkFieldHighlighted(elem, expectedValue) {
   is(isHighlightApplied, expectedValue, `Checking #${elem.id} highlight style`);
 }
 
-async function checkFieldPreview(elem, expectedValue) {
-  is(
-    SpecialPowers.wrap(elem).previewValue,
-    expectedValue,
-    `Checking #${elem.id} previewValue`
-  );
-  let isTextColorApplied;
-  await SimpleTest.promiseWaitForCondition(function checkPreview() {
-    const computedStyle = window.getComputedStyle(elem);
-    const actualColor = computedStyle.getPropertyValue("color");
-    if (elem.disabled) {
-      isTextColorApplied = actualColor !== defaultDisabledTextColor;
-    } else {
-      isTextColorApplied = actualColor !== defaultTextColor;
-    }
-    return isTextColorApplied === !!expectedValue;
-  }, `Checking #${elem.id} preview style`);
-
-  is(isTextColorApplied, !!expectedValue, `Checking #${elem.id} preview style`);
-}
-
 async function checkFormFieldsStyle(profile, isPreviewing = true) {
   const elems = document.querySelectorAll("input, select");
 
@@ -143,7 +123,6 @@ async function checkFormFieldsStyle(profile, isPreviewing = true) {
         (isPreviewing && fillableValue?.toString().replaceAll("*", "•")) || "";
     }
     await checkFieldHighlighted(elem, !!fillableValue);
-    await checkFieldPreview(elem, previewValue);
   }
 }
 
@@ -292,12 +271,18 @@ async function onStorageChanged(type) {
   });
 }
 
-function checkMenuEntries(expectedValues, isFormAutofillResult = true) {
+function makeAddressLabel({ primary, secondary, status }) {
+  return JSON.stringify({
+    primary,
+    secondary,
+    status,
+    ariaLabel: primary + " " + secondary + " " + status,
+  });
+}
+
+function checkMenuEntries(expectedValues, extraRows = 1) {
   let actualValues = getMenuEntries();
-  // Expect one more item would appear at the bottom as the footer if the result is from form autofill.
-  let expectedLength = isFormAutofillResult
-    ? expectedValues.length + 1
-    : expectedValues.length;
+  let expectedLength = expectedValues.length + extraRows;
 
   is(actualValues.length, expectedLength, " Checking length of expected menu");
   for (let i = 0; i < expectedValues.length; i++) {

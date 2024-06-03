@@ -29,10 +29,8 @@ usr/lib/@browser@/libreplace_jemalloc.so
 usr/lib/@browser@/libmozgtk.so
 usr/lib/@browser@/libmozwayland.so
 usr/lib/@browser@/liblgpllibs.so
-%if MOZ_FFVPX
 usr/lib/@browser@/libmozavcodec.so
 usr/lib/@browser@/libmozavutil.so
-%endif
 %if DEB_HOST_ARCH == i386 || DEB_HOST_ARCH == amd64 || DEB_HOST_ARCH == arm64 || DEB_HOST_ARCH == armhf || DEB_HOST_ARCH == armel
 usr/lib/@browser@/libmozsandbox.so
 %endif
@@ -67,9 +65,6 @@ usr/lib/@browser@/gmp-clearkey/0.1/libclearkey.so
 %if CRASH_REPORTER
 usr/lib/@browser@/crashreporter
 usr/lib/@browser@/minidump-analyzer
-usr/lib/@browser@/Throbber-small.gif
-usr/lib/@browser@/crashreporter.ini
-usr/lib/@browser@/browser/crashreporter-override.ini
 %endif
 
 usr/lib/@browser@/fonts/TwemojiMozilla.ttf

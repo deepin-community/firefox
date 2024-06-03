@@ -206,8 +206,8 @@ macosx64-custom-car:
     treeherder:
         symbol: TM(custom-car)
     worker:
-        max-run-time: 35000
-    use-system-python: false
+        max-run-time: 40000
+    use-python: default
     run-on-projects: []
     run:
         script: build-custom-car.sh
@@ -231,7 +231,7 @@ macosx64-custom-car:
         toolchain-artifact: public/build/car_macosx.tar.zst
     fetches:
         toolchain:
-            - macosx64-sdk-14.2
+            - macosx64-sdk-14.4
 
 macosx-arm64-custom-car:
     description: "Custom chromium-as-release build for mac (apple silicon)"
@@ -243,7 +243,7 @@ macosx-arm64-custom-car:
         tier: 2
     worker:
         max-run-time: 50000
-    use-system-python: false
+    use-python: default
     run-on-projects: []
     run:
         script: build-custom-car.sh
@@ -267,7 +267,7 @@ macosx-arm64-custom-car:
         toolchain-artifact: public/build/car_macosx_arm.tar.zst
     fetches:
         toolchain:
-            - macosx64-sdk-14.2
+            - macosx64-sdk-14.4
 
 android-custom-car:
     description: "Custom chromium-as-release build for Android"
@@ -278,7 +278,7 @@ android-custom-car:
     worker:
         docker-image: {in-tree: custom-car-android}
         max-run-time: 20000
-    use-system-python: false
+    use-python: default
     run-on-projects: []
     run:
         script: build-custom-car.sh
@@ -313,7 +313,7 @@ linux64-custom-car:
     worker:
         docker-image: {in-tree: custom-car-linux}
         max-run-time: 16200
-    use-system-python: false
+    use-python: default
     run-on-projects: []
     run:
         script: build-custom-car.sh
@@ -347,7 +347,7 @@ win64-custom-car:
         max-run-time: 16200
         env:
             MSYSTEM: "MINGW64"
-    use-system-python: false
+    use-python: default
     run-on-projects: []
     run:
         script: build-custom-car.sh
@@ -387,7 +387,7 @@ browsertime:
         toolchain-artifact: public/build/browsertime.tar.zst
     fetches:
         toolchain:
-            - linux64-node-16
+            - linux64-node
 
 wrench-deps:
     description: "Downloads all the crates needed for building wrench"
@@ -508,26 +508,6 @@ nsis:
             - linux64-clang-toolchain
             - sysroot-x86_64-linux-gnu
 
-win64-vs2019:
-    description: "VS 2019"
-    attributes:
-        local-toolchain: true
-    treeherder:
-        symbol: TW64(msvc2019)
-    worker:
-        env:
-            MACH_BUILD_PYTHON_NATIVE_PACKAGE_SOURCE: system
-    run:
-        script: get_vs.py
-        arguments:
-            - build/vs/vs2019.yaml
-        resources:
-            - build/vs/vs2019.yaml
-        toolchain-artifact: project/gecko/vs/vs.tar.zst
-        toolchain-alias:
-            - vs
-            - vs-toolchain
-
 win64-vs2022:
     description: "VS 2022"
     attributes:
@@ -544,6 +524,9 @@ win64-vs2022:
         resources:
             - build/vs/vs2022.yaml
         toolchain-artifact: project/gecko/vs/vs.tar.zst
+        toolchain-alias:
+            - vs
+            - vs-toolchain
 
 linux64-afl-instrumentation-4.0:
     description: "AFL++ instrumentation toolchain build"
@@ -603,3 +586,35 @@ windows-rs:
             - artifact: windows-rs.tar.zst
               extract: false
               dest: ../artifacts
+
+win64-libxml2:
+    description: "libxml2 toolchain build"
+    treeherder:
+        symbol: TW64(libxml2)
+    run:
+        script: build-libxml2.sh
+        toolchain-artifact: public/build/libxml2.tar.zst
+    fetches:
+        fetch:
+            - libxml2
+        toolchain:
+            - linux64-clang-toolchain
+            - vs-toolchain
+
+talos-pdfs:
+    description: "Gathers all the PDFs needed for the pdfpaint test"
+    attributes:
+        local-toolchain: true
+    treeherder:
+        symbol: TL(talos-pdfs)
+    worker:
+        max-run-time: 3600
+    run:
+        script: run-fetch-talos-pdfs.sh
+        sparse-profile: null
+        resources:
+            - 'taskcluster/scripts/misc/fetch-talos-pdfs.py'
+        toolchain-artifact: public/build/talos-pdfs.tar.zst
+    fetches:
+        fetch:
+            - mozilla-pdf.js

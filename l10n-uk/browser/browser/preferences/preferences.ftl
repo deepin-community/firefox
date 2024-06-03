@@ -32,6 +32,8 @@ search-input-box2 =
     .style = width: 15.4em
     .placeholder = Знайти в налаштуваннях
 managed-notice = Вашим браузером керує ваша організація.
+managed-notice-info-icon =
+    .alt = Інформація
 category-list =
     .aria-label = Категорії
 pane-general-title = Загальні
@@ -617,12 +619,12 @@ search-bar-hidden =
     .label = Використовувати панель адреси для пошуку та навігації
 search-bar-shown =
     .label = Додати панель пошуку на панель інструментів
-search-engine-default-header = Типовий засіб пошуку
-search-engine-default-desc-2 = Це ваш типовий засіб пошуку в панелі адреси та пошуку. Ви можете будь-коли змінити його.
-search-engine-default-private-desc-2 = Оберіть інший типовий засіб пошуку лише для приватних вікон
+search-engine-default-header = Типова пошукова система
+search-engine-default-desc-2 = Це ваша типова пошукова система в панелі адреси та пошуку. Ви можете будь-коли її змінити.
+search-engine-default-private-desc-2 = Оберіть іншу типову пошукову систему лише для приватних вікон
 search-separate-default-engine =
-    .label = Використовувати цей засіб пошуку в приватному режимі
-    .accesskey = з
+    .label = Використовувати цю пошукову систему в приватному режимі
+    .accesskey = п
 search-suggestions-header = Пошукові пропозиції
 search-suggestions-desc = Оберіть спосіб показу пошукових пропозицій.
 search-suggestions-option =
@@ -638,7 +640,7 @@ search-show-suggestions-url-bar-option =
 # the URL will be replaced by the search terms in the address bar
 # when using the current default search engine.
 search-show-search-term-option =
-    .label = Показувати пошуковий запит замість URL-адреси на сторінці результатів типового засобу пошуку
+    .label = Показувати пошуковий запит замість URL-адреси на сторінці результатів типової пошукової системи
 # This string describes what the user will observe when the system
 # prioritizes search suggestions over browsing history in the results
 # that extend down from the address bar. In the original English string,
@@ -651,13 +653,13 @@ search-show-suggestions-private-windows =
 suggestions-addressbar-settings-generic2 = Змінити налаштування для інших пропозицій панелі адреси
 search-suggestions-cant-show = Пошукові пропозиції не будуть показуватись в панелі адреси, тому що ви налаштували { -brand-short-name } ніколи не запам'ятовувати історію.
 search-one-click-header2 = Пошукові скорочення
-search-one-click-desc = Оберіть альтернативні пошукові засоби, що з'являються під рядками адреси і пошуку, коли ви починаєте вводити запит.
+search-one-click-desc = Оберіть альтернативні пошукові системи, що з'являються під рядками адреси і пошуку, коли ви починаєте вводити запит.
 search-choose-engine-column =
-    .label = Засіб пошуку
+    .label = Пошукова система
 search-choose-keyword-column =
     .label = Скорочення
 search-restore-default =
-    .label = Відновити типові засоби пошуку
+    .label = Відновити типові пошукові системи
     .accesskey = с
 search-remove-engine =
     .label = Прибрати
@@ -665,7 +667,7 @@ search-remove-engine =
 search-add-engine =
     .label = Додати
     .accesskey = т
-search-find-more-link = Знайти інші засоби пошуку
+search-find-more-link = Знайти інші пошукові системи
 # This warning is displayed when the chosen keyword is already in use
 # ('Duplicate' is an adjective)
 search-keyword-warning-title = Це скорочення вже використовується
@@ -712,6 +714,13 @@ sync-mobile-promo = Завантажте Firefox для <img data-l10n-name="and
 
 sync-profile-picture =
     .tooltiptext = Змінити зображення профілю
+sync-profile-picture-with-alt =
+    .tooltiptext = Змінити зображення профілю
+    .alt = Змінити зображення профілю
+sync-profile-picture-account-problem =
+    .alt = Зображення профілю облікового запису
+fxa-login-rejected-warning =
+    .alt = Попередження
 sync-sign-out =
     .label = Вийти…
     .accesskey = В
@@ -1088,12 +1097,12 @@ addressbar-locbar-topsites-option =
     .label = Популярні сайти
     .accesskey = с
 addressbar-locbar-engines-option =
-    .label = Засоби пошуку
+    .label = Пошукові системи
     .accesskey = ш
 addressbar-locbar-quickactions-option =
     .label = Швидкі дії
     .accesskey = Ш
-addressbar-suggestions-settings = Змінити налаштування пропозицій засобів пошуку
+addressbar-suggestions-settings = Змінити налаштування пропозицій пошукових систем
 addressbar-locbar-showrecentsearches-option =
     .label = Показати останні пошуки
     .accesskey = о
@@ -1278,6 +1287,8 @@ addon-recommendations-link = Докладніше
 # or builds with no Telemetry support available.
 collection-health-report-disabled = Відправлення даних вимкнено для цієї конфігурації збірки
 collection-backlogged-crash-reports-with-link = Дозволити { -brand-short-name } надсилати звіти про збої від вашого імені <a data-l10n-name="crash-reports-link">Докладніше</a>
+    .accesskey = м
+collection-backlogged-crash-reports = Дозволити { -brand-short-name } надсилати звіти про збої від вашого імені
     .accesskey = м
 privacy-segmentation-section-header = Нові функції, які покращують ваш перегляд
 privacy-segmentation-section-description = Коли ми пропонуємо функції, які використовують ваші дані для кращої персоналізації браузера:

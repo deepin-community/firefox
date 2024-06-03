@@ -32,6 +32,8 @@ search-input-box2 =
     .style = width: 19em
     .placeholder = Rechercher dans les paramètres
 managed-notice = Votre navigateur est géré par votre organisation.
+managed-notice-info-icon =
+    .alt = Informations
 category-list =
     .aria-label = Catégories
 pane-general-title = Général
@@ -570,6 +572,7 @@ home-prefs-recommended-by-header =
 home-prefs-recommended-by-description-new = Contenu exceptionnel sélectionné par { $provider }, membre de la famille { -brand-product-name }
 home-prefs-recommended-by-header-generic =
     .label = Articles recommandés
+home-prefs-recommended-by-description-generic = Contenu exceptionnel sélectionné par les membres de la gamme de produits { -brand-product-name }
 
 ##
 
@@ -707,6 +710,13 @@ sync-mobile-promo = Téléchargez Firefox pour <img data-l10n-name="android-icon
 
 sync-profile-picture =
     .tooltiptext = Changer la photo de profil
+sync-profile-picture-with-alt =
+    .tooltiptext = Changer la photo de profil
+    .alt = Changer la photo de profil
+sync-profile-picture-account-problem =
+    .alt = Image de profil du compte
+fxa-login-rejected-warning =
+    .alt = Avertissement
 sync-sign-out =
     .label = Se déconnecter…
     .accesskey = d
@@ -1273,6 +1283,8 @@ addon-recommendations-link = En savoir plus
 # or builds with no Telemetry support available.
 collection-health-report-disabled = L’envoi de données est désactivé pour cette configuration de compilation
 collection-backlogged-crash-reports-with-link = Autoriser { -brand-short-name } à envoyer des rapports de plantage en attente en votre nom <a data-l10n-name="crash-reports-link">En savoir plus</a>
+    .accesskey = v
+collection-backlogged-crash-reports = Autoriser { -brand-short-name } à envoyer des rapports de plantage en attente en votre nom
     .accesskey = v
 privacy-segmentation-section-header = De nouvelles fonctionnalités qui améliorent votre navigation
 privacy-segmentation-section-description = Lorsque nous proposons des fonctionnalités qui utilisent vos données pour vous offrir une expérience plus personnelle :

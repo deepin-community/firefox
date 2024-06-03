@@ -64,7 +64,11 @@ shopping-message-bar-analysis-in-progress-with-amount = Санҷиши сифа�
 shopping-message-bar-page-not-supported =
     .heading = Мо ин тақризҳоро тафтиш карда наметавонем
     .message = Мутаассифона, мо наметавонем сифати тақризҳоро барои баъзе намудҳои маҳсулот тафтиш кунем. Масалан, барои кортҳои ёдгорӣ, видеоҳои пахши мустақим, мусиқӣ ва бозиҳо.
+shopping-message-bar-keep-closed-header =
+    .heading = Пӯшида нигоҳ медоред?
+    .message = Шумо метавонед танзимоти худро аз нав танзим кунед, то ки Абзори тафтиши тақризҳо ба сурати пешфарз пӯшида нигоҳ дошта шавад. Ҳоли ҳозир, он ба таври худкор кушода мешавад.
 shopping-message-bar-keep-closed-dismiss-button = Не, ташаккур
+shopping-message-bar-keep-closed-accept-button = Бале, пӯшида нигоҳ доред
 
 ## Strings for the product review snippets card
 
@@ -90,6 +94,19 @@ shopping-settings-recommendations-toggle =
 shopping-settings-recommendations-learn-more2 = Баъзе вақт шумо рекламаи тасодуфиро барои маҳсулоти дахлдор мебинед. Мо танҳо он маҳсулотеро таблиғ мекунем, ки дорои тақризҳои боэътимод мебошад. <a data-l10n-name="review-quality-url">Маълумоти бештар</a>
 shopping-settings-opt-out-button = Ғайрифаъол кардани абзори тафтиши тақризҳо
 powered-by-fakespot = Абзори тафтиши тақризҳо аз ҷониби «<a data-l10n-name="fakespot-link">{ -fakespot-brand-full-name }</a>» таҳия карда шудааст
+shopping-settings-auto-open-toggle =
+    .label = Ба таври худкор кушодани Абзори тафтиши тақризҳо
+# Description text for regions where we support three sites. Sites are limited to Amazon, Walmart and Best Buy.
+# Variables:
+#   $firstSite (String) - The first shopping page name
+#   $secondSite (String) - The second shopping page name
+#   $thirdSite (String) - The third shopping page name
+shopping-settings-auto-open-description-three-sites = Ҳангоми дидани маҳсулот дар { $firstSite }, { $secondSite } ва { $thirdSite }
+# Description text for regions where we support only one site (e.g. currently used in FR/DE with Amazon).
+# Variables:
+#   $currentSite (String) - The current shopping page name
+shopping-settings-auto-open-description-single-site = Ҳангоми дидани маҳсулот дар { $currentSite }
+shopping-settings-sidebar-enabled-state = Абзори тафтиши тақризҳо <strong>фаъол аст</strong>
 
 ## Strings for the adjusted rating component
 
@@ -172,10 +189,21 @@ shopping-callout-pdp-opted-in-title = Оё ин тақризҳо боэътим�
 shopping-callout-pdp-opted-in-subtitle = Барои дидани баҳодиҳии санҷида дурустшуда бо тақризҳои беэътимоде, ки тоза карда шудаанд, Абзори тафтиши тақризҳоро кушоед. Илова бар ин, нуқтаҳои асосиро аз тақризҳои боэътимоди охирин аз назар гузаронед.
 shopping-callout-closed-not-opted-in-title = Барои гирифтани тақризҳои боэътимод танҳо як маротиба зер кунед
 shopping-callout-closed-not-opted-in-subtitle = Ҳар вақте ки шумо барчаспи нархро мебинед, истифодаи абзори тафтиши тақризҳоро кӯшиш намоед. Пеш аз хирид — маълумоти таҷрибавиро аз харидорони воқеи ба даст оред.
+shopping-callout-closed-not-opted-in-revised-title = Барои гирифтани тақризҳои боэътимод танҳо як маротиба зер кунед
+shopping-callout-closed-not-opted-in-revised-subtitle = Барои бозгашт ба Абзори тафтиши тақризҳо, танҳо нишони барчаспи нархро дар навори нишонӣ зер кунед.
 shopping-callout-closed-not-opted-in-revised-button = Фаҳмидам
+shopping-callout-not-opted-in-reminder-title = Бо эътимод харид кунед
+shopping-callout-not-opted-in-reminder-subtitle = Шумо боварӣ надоред, ки тақризҳои маҳсул ҳақиқӣ ё қалбақӣ мебошад? Абзори тафтиши тақризҳо аз «{ -brand-product-name }» метавонад ба шумо кумак расонад.
+shopping-callout-not-opted-in-reminder-open-button = Кушодани абзори тафтиши тақризҳо
 shopping-callout-not-opted-in-reminder-close-button = Нодида гузарондан
 shopping-callout-not-opted-in-reminder-ignore-checkbox = Дигар нишон дода нашавад
+shopping-callout-not-opted-in-reminder-img-alt =
+    .aria-label = Тасвири намунавӣ барои се тақризи маҳсул. Яке аз онҳо дорои аломати огоҳӣ мебошад, ки нишон медиҳад, ки тақриз метавонад беэътимод бошад.
+shopping-callout-disabled-auto-open-title = Акнун Абзори тафтиши тақризҳо ба сурати пешфарз пӯшида аст
+shopping-callout-disabled-auto-open-subtitle = Ҳар вақте ки, шумо мехоҳед бинед, ки агар тавонед ба тақризи маҳсул эътимод дошта бошед, нишони барчаспи нархро дар навори нишонӣ зер кунед.
 shopping-callout-disabled-auto-open-button = Фаҳмидам
+shopping-callout-opted-out-title = Абзори тафтиши тақризҳо хомӯш аст
+shopping-callout-opted-out-subtitle = Барои аз нав фаъол кардани ин имкон, нишони барчаспи нархро дар навори нишонӣ зер кунед ва дастурҳоро иҷро намоед.
 shopping-callout-opted-out-button = Фаҳмидам
 
 ## Onboarding message strings.
@@ -187,7 +215,12 @@ shopping-onboarding-headline = Дастури моро дар бораи эът�
 #   $secondSite (str) - A second shopping page name
 #   $thirdSite (str) - A third shopping page name
 shopping-onboarding-dynamic-subtitle-1 = Пеш аз хариди маҳсул, дар <b>{ $currentSite }</b> аз назар гузаронед, ки то чӣ андоза тақризҳо дар бораи ин маҳсул боэътимод мебошанд. Абзори тафтиши тақризҳо ҳамчун хусусияти озмоишӣ аз тарафи «{ -brand-product-name }» бевосита ба браузер дарунсохт карда шудааст — ва ин хусусият ҳам дар <b>{ $secondSite }</b> ва ҳам дар <b>{ $thirdSite }</b> кор мекунад.
+# Subtitle for countries where we only support one shopping website (e.g. currently used in FR/DE with Amazon)
+# Variables:
+#   $currentSite (str) - The current shopping page name
+shopping-onboarding-single-subtitle = Пеш аз хариди маҳсул, дар «<b>{ $currentSite }</b>» аз назар гузаронед, ки то чӣ андоза тақризҳо дар бораи ин маҳсул боэътимод мебошанд. Абзори тафтиши тақризҳо ҳамчун хусусияти озмоишӣ аз тарафи «{ -brand-product-name }» ба браузер дарунсохт карда шудааст.
 shopping-onboarding-body = Бо истифода аз «{ -fakespot-brand-full-name }», мо ба шумо барои истисно кардани тақризҳои ғаразнок ва ғайримуқаррарӣ кумак мекунем. Намунаи зеҳни сунъии (AI)-ии мо барои муҳофизат кардани раванди харидории шумо доим такмил дода мешавад. <a data-l10n-name="learn_more">Маълумоти бештар</a>
+shopping-onboarding-opt-in-privacy-policy-and-terms-of-use3 = Бо интихоб кардани «{ shopping-onboarding-opt-in-button }» шумо бо <a data-l10n-name="privacy_policy">сиёсати махфияти</a> «{ -brand-product-name }» ва <a data-l10n-name="terms_of_use">шартҳои истифодаи</a> «{ -fakespot-brand-name }» розӣ мешавед.
 shopping-onboarding-opt-in-button = Ҳа, озмоед
 shopping-onboarding-not-now-button = Ҳоло не
 shopping-onboarding-dialog-close-button =

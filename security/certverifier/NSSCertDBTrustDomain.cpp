@@ -28,18 +28,19 @@
 #include "mozilla/SyncRunnable.h"
 #include "mozilla/TimeStamp.h"
 #include "mozilla/Unused.h"
+#include "mozilla/glean/GleanMetrics.h"
 #include "mozpkix/Result.h"
 #include "mozpkix/pkix.h"
 #include "mozpkix/pkixnss.h"
 #include "mozpkix/pkixutil.h"
 #include "nsCRTGlue.h"
 #include "nsIObserverService.h"
-#include "nsNetCID.h"
 #include "nsNSSCallbacks.h"
 #include "nsNSSCertHelper.h"
 #include "nsNSSCertificate.h"
 #include "nsNSSCertificateDB.h"
 #include "nsNSSIOLayer.h"
+#include "nsNetCID.h"
 #include "nsPrintfCString.h"
 #include "nsServiceManagerUtils.h"
 #include "nsThreadUtils.h"
@@ -475,9 +476,22 @@ Result NSSCertDBTrustDomain::GetCertTrust(EndEntityOrCA endEntityOrCA,
         // candidate certificate is a third-party certificate, above.
         SECItem candidateCertDERSECItem =
             UnsafeMapInputToSECItem(candidateCertDER);
+
+    // This metric can be evaluated as many as 600 times during a cnn.com
+    // load so we avoid measuring it on Android because of the high
+    // cost of serializing the db everytime we measure.
+#ifndef MOZ_WIDGET_ANDROID
+        auto timerId =
+            mozilla::glean::cert_verifier::cert_trust_evaluation_time.Start();
+#endif
         UniqueCERTCertificate candidateCert(CERT_NewTempCertificate(
             CERT_GetDefaultCertDB(), &candidateCertDERSECItem, nullptr, false,
             true));
+
+#ifndef MOZ_WIDGET_ANDROID
+        mozilla::glean::cert_verifier::cert_trust_evaluation_time
+            .StopAndAccumulate(std::move(timerId));
+#endif
         if (!candidateCert) {
           result = MapPRErrorCodeToResult(PR_GetError());
           return;
@@ -487,6 +501,7 @@ Result NSSCertDBTrustDomain::GetCertTrust(EndEntityOrCA endEntityOrCA,
         // means there is not a trust record. I looked at NSS's internal uses of
         // CERT_GetCertTrust, and all that code uses the result as a boolean
         // meaning "We have a trust record."
+
         CERTCertTrust trust;
         if (CERT_GetCertTrust(candidateCert.get(), &trust) == SECSuccess) {
           uint32_t flags = SEC_GET_TRUST_FLAGS(&trust, mCertDBTrustType);
@@ -664,6 +679,8 @@ Result NSSCertDBTrustDomain::CheckCRLiteStash(
     MOZ_LOG(gCertVerifierLog, LogLevel::Debug,
             ("NSSCertDBTrustDomain::CheckCRLiteStash: IsCertRevokedByStash "
              "returned true"));
+    mozilla::glean::cert_verifier::crlite_status.Get("revoked_in_stash"_ns)
+        .Add(1);
     return Result::ERROR_REVOKED_CERTIFICATE;
   }
   return Success;
@@ -693,18 +710,25 @@ Result NSSCertDBTrustDomain::CheckCRLite(
   switch (crliteRevocationState) {
     case nsICertStorage::STATE_ENFORCE:
       filterCoversCertificate = true;
+      mozilla::glean::cert_verifier::crlite_status.Get("revoked_in_filter"_ns)
+          .Add(1);
       return Result::ERROR_REVOKED_CERTIFICATE;
     case nsICertStorage::STATE_UNSET:
       filterCoversCertificate = true;
+      mozilla::glean::cert_verifier::crlite_status.Get("not_revoked"_ns).Add(1);
       return Success;
     case nsICertStorage::STATE_NOT_ENROLLED:
       filterCoversCertificate = false;
+      mozilla::glean::cert_verifier::crlite_status.Get("not_enrolled"_ns)
+          .Add(1);
       return Success;
     case nsICertStorage::STATE_NOT_COVERED:
       filterCoversCertificate = false;
+      mozilla::glean::cert_verifier::crlite_status.Get("not_covered"_ns).Add(1);
       return Success;
     case nsICertStorage::STATE_NO_FILTER:
       filterCoversCertificate = false;
+      mozilla::glean::cert_verifier::crlite_status.Get("no_filter"_ns).Add(1);
       return Success;
     default:
       MOZ_LOG(gCertVerifierLog, LogLevel::Debug,
@@ -861,10 +885,9 @@ Result NSSCertDBTrustDomain::CheckRevocationByOCSP(
   Result stapledOCSPResponseResult = Success;
   if (stapledOCSPResponse) {
     bool expired;
-    uint32_t ageInHours;
     stapledOCSPResponseResult = VerifyAndMaybeCacheEncodedOCSPResponse(
         certID, time, maxOCSPLifetimeInDays, *stapledOCSPResponse,
-        ResponseWasStapled, expired, ageInHours);
+        ResponseWasStapled, expired);
     Telemetry::AccumulateCategorical(
         Telemetry::LABELS_CERT_REVOCATION_MECHANISMS::StapledOCSP);
     if (stapledOCSPResponseResult == Success) {
@@ -1087,10 +1110,9 @@ Result NSSCertDBTrustDomain::SynchronousCheckRevocationWithServer(
   // or unknown certificate, PR_GetError() will return the appropriate error.
   // We actually ignore expired here.
   bool expired;
-  uint32_t ageInHours;
-  rv = VerifyAndMaybeCacheEncodedOCSPResponse(
-      certID, time, maxOCSPLifetimeInDays, response, ResponseIsFromNetwork,
-      expired, ageInHours);
+  rv = VerifyAndMaybeCacheEncodedOCSPResponse(certID, time,
+                                              maxOCSPLifetimeInDays, response,
+                                              ResponseIsFromNetwork, expired);
 
   // If the CRLite filter covers the certificate, compare the CRLite result
   // with the OCSP fetching result. OCSP may have succeeded, said the
@@ -1109,11 +1131,6 @@ Result NSSCertDBTrustDomain::SynchronousCheckRevocationWithServer(
         // CRLite says the certificate is revoked, but OCSP says it is OK.
         Telemetry::AccumulateCategorical(
             Telemetry::LABELS_CRLITE_VS_OCSP_RESULT::CRLiteRevOCSPOk);
-
-        if (mCRLiteMode == CRLiteMode::ConfirmRevocations) {
-          Telemetry::Accumulate(Telemetry::OCSP_AGE_AT_CRLITE_OVERRIDE,
-                                ageInHours);
-        }
       }
     } else if (rv == Result::ERROR_REVOKED_CERTIFICATE) {
       if (crliteResult == Success) {
@@ -1209,8 +1226,7 @@ Result NSSCertDBTrustDomain::HandleOCSPFailure(
 Result NSSCertDBTrustDomain::VerifyAndMaybeCacheEncodedOCSPResponse(
     const CertID& certID, Time time, uint16_t maxLifetimeInDays,
     Input encodedResponse, EncodedResponseSource responseSource,
-    /*out*/ bool& expired,
-    /*out*/ uint32_t& ageInHours) {
+    /*out*/ bool& expired) {
   Time thisUpdate(Time::uninitialized);
   Time validThrough(Time::uninitialized);
 
@@ -1233,30 +1249,6 @@ Result NSSCertDBTrustDomain::VerifyAndMaybeCacheEncodedOCSPResponse(
     if (validThrough.AddSeconds(ServerFailureDelaySeconds) != Success) {
       return Result::FATAL_ERROR_LIBRARY_FAILURE;  // integer overflow
     }
-  }
-  // The `thisUpdate` field holds the latest time at which the server knew the
-  // response was correct. The age of the response is the time that has elapsed
-  // since. We only use this for the telemetry defined in Bug 1794479.
-  uint64_t timeInSeconds;
-  uint64_t thisUpdateInSeconds;
-  uint64_t ageInSeconds;
-  SecondsSinceEpochFromTime(time, &timeInSeconds);
-  SecondsSinceEpochFromTime(thisUpdate, &thisUpdateInSeconds);
-  if (timeInSeconds >= thisUpdateInSeconds) {
-    ageInSeconds = timeInSeconds - thisUpdateInSeconds;
-    // ageInHours is 32 bits because of the telemetry api.
-    if (ageInSeconds > UINT32_MAX) {
-      // We could divide by 3600 before checking the UINT32_MAX bound, but if
-      // ageInSeconds is more than UINT32_MAX then there's been some sort of
-      // error.
-      ageInHours = UINT32_MAX;
-    } else {
-      // We start at 1 and divide with truncation to reserve ageInHours=0 for
-      // the case where `thisUpdate` is in the future.
-      ageInHours = 1 + ageInSeconds / (60 * 60);
-    }
-  } else {
-    ageInHours = 0;
   }
   if (responseSource == ResponseIsFromNetwork || rv == Success ||
       rv == Result::ERROR_REVOKED_CERTIFICATE ||

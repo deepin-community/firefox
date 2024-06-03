@@ -10,7 +10,6 @@
 
 #include "DecoderDoctorDiagnostics.h"
 #include "DecoderTraits.h"
-#include "KeySystemConfig.h"
 #include "MP4Decoder.h"
 #include "MediaContainerType.h"
 #include "WebMDecoder.h"
@@ -19,6 +18,7 @@
 #include "mozilla/Preferences.h"
 #include "mozilla/Services.h"
 #include "mozilla/StaticPrefs_media.h"
+#include "mozilla/dom/Document.h"
 #include "mozilla/dom/KeySystemNames.h"
 #include "mozilla/dom/MediaKeySession.h"
 #include "mozilla/dom/MediaKeySystemAccessBinding.h"
@@ -214,6 +214,9 @@ static KeySystemConfig::EMECodecString ToEMEAPICodecString(
   if (IsH264CodecString(aCodec)) {
     return KeySystemConfig::EME_CODEC_H264;
   }
+  if (IsAV1CodecString(aCodec)) {
+    return KeySystemConfig::EME_CODEC_AV1;
+  }
   if (IsVP8CodecString(aCodec)) {
     return KeySystemConfig::EME_CODEC_VP8;
   }
@@ -228,52 +231,83 @@ static KeySystemConfig::EMECodecString ToEMEAPICodecString(
   return ""_ns;
 }
 
-static nsTArray<KeySystemConfig> GetSupportedKeySystems() {
-  nsTArray<KeySystemConfig> keySystemConfigs;
+static RefPtr<KeySystemConfig::SupportedConfigsPromise>
+GetSupportedKeySystemConfigs(const nsAString& aKeySystem,
+                             bool aIsHardwareDecryption) {
+  using DecryptionInfo = KeySystemConfig::DecryptionInfo;
+  nsTArray<KeySystemConfigRequest> requests;
 
-  const nsTArray<nsString> keySystemNames{
-      NS_ConvertUTF8toUTF16(kClearKeyKeySystemName),
-      NS_ConvertUTF8toUTF16(kWidevineKeySystemName),
-#ifdef MOZ_WMF_CDM
-      NS_ConvertUTF8toUTF16(kPlayReadyKeySystemName),
-      NS_ConvertUTF8toUTF16(kPlayReadyKeySystemHardware),
-      NS_ConvertUTF8toUTF16(kPlayReadyHardwareClearLeadKeySystemName),
-      NS_ConvertUTF8toUTF16(kWidevineExperimentKeySystemName),
-      NS_ConvertUTF8toUTF16(kWidevineExperiment2KeySystemName),
-#endif
-  };
-  for (const auto& name : keySystemNames) {
-    Unused << KeySystemConfig::CreateKeySystemConfigs(name, keySystemConfigs);
+  // Software Widevine and Clearkey
+  if (IsWidevineKeySystem(aKeySystem) || IsClearkeyKeySystem(aKeySystem)) {
+    requests.AppendElement(
+        KeySystemConfigRequest{aKeySystem, DecryptionInfo::Software});
   }
-  return keySystemConfigs;
-}
-
-static bool GetKeySystemConfigs(
-    const nsAString& aKeySystem,
-    nsTArray<KeySystemConfig>& aOutKeySystemConfig) {
-  bool foundConfigs = false;
-  for (auto& config : GetSupportedKeySystems()) {
-    if (config.IsSameKeySystem(aKeySystem)) {
-      aOutKeySystemConfig.AppendElement(std::move(config));
-      foundConfigs = true;
+#ifdef MOZ_WMF_CDM
+  if (IsPlayReadyEnabled()) {
+    // PlayReady software and hardware
+    if (aKeySystem.EqualsLiteral(kPlayReadyKeySystemName) ||
+        aKeySystem.EqualsLiteral(kPlayReadyKeySystemHardware)) {
+      requests.AppendElement(
+          KeySystemConfigRequest{NS_ConvertUTF8toUTF16(kPlayReadyKeySystemName),
+                                 DecryptionInfo::Software});
+      if (aIsHardwareDecryption) {
+        requests.AppendElement(KeySystemConfigRequest{
+            NS_ConvertUTF8toUTF16(kPlayReadyKeySystemName),
+            DecryptionInfo::Hardware});
+        requests.AppendElement(KeySystemConfigRequest{
+            NS_ConvertUTF8toUTF16(kPlayReadyKeySystemHardware),
+            DecryptionInfo::Hardware});
+      }
+    }
+    // PlayReady clearlead
+    if (aKeySystem.EqualsLiteral(kPlayReadyHardwareClearLeadKeySystemName)) {
+      requests.AppendElement(KeySystemConfigRequest{
+          NS_ConvertUTF8toUTF16(kPlayReadyHardwareClearLeadKeySystemName),
+          DecryptionInfo::Hardware});
     }
   }
-  return foundConfigs;
+
+  if (IsWidevineHardwareDecryptionEnabled()) {
+    // Widevine hardware
+    if (aKeySystem.EqualsLiteral(kWidevineExperimentKeySystemName) ||
+        (IsWidevineKeySystem(aKeySystem) && aIsHardwareDecryption)) {
+      requests.AppendElement(KeySystemConfigRequest{
+          NS_ConvertUTF8toUTF16(kWidevineExperimentKeySystemName),
+          DecryptionInfo::Hardware});
+    }
+    // Widevine clearlead
+    if (aKeySystem.EqualsLiteral(kWidevineExperiment2KeySystemName)) {
+      requests.AppendElement(KeySystemConfigRequest{
+          NS_ConvertUTF8toUTF16(kWidevineExperiment2KeySystemName),
+          DecryptionInfo::Hardware});
+    }
+  }
+#endif
+  return KeySystemConfig::CreateKeySystemConfigs(requests);
 }
 
 /* static */
-bool MediaKeySystemAccess::KeySystemSupportsInitDataType(
-    const nsAString& aKeySystem, const nsAString& aInitDataType) {
-  nsTArray<KeySystemConfig> implementations;
-  GetKeySystemConfigs(aKeySystem, implementations);
-  bool containInitType = false;
-  for (const auto& config : implementations) {
-    if (config.mInitDataTypes.Contains(aInitDataType)) {
-      containInitType = true;
-      break;
-    }
-  }
-  return containInitType;
+RefPtr<GenericPromise> MediaKeySystemAccess::KeySystemSupportsInitDataType(
+    const nsAString& aKeySystem, const nsAString& aInitDataType,
+    bool aIsHardwareDecryption) {
+  RefPtr<GenericPromise::Private> promise =
+      new GenericPromise::Private(__func__);
+  GetSupportedKeySystemConfigs(aKeySystem, aIsHardwareDecryption)
+      ->Then(GetMainThreadSerialEventTarget(), __func__,
+             [promise, initDataType = nsString{std::move(aInitDataType)}](
+                 const KeySystemConfig::SupportedConfigsPromise::
+                     ResolveOrRejectValue& aResult) {
+               if (aResult.IsResolve()) {
+                 for (const auto& config : aResult.ResolveValue()) {
+                   if (config.mInitDataTypes.Contains(initDataType)) {
+                     promise->Resolve(true, __func__);
+                     return;
+                   }
+                 }
+               }
+               promise->Reject(NS_ERROR_DOM_MEDIA_CDM_ERR, __func__);
+             });
+  return promise.forget();
 }
 
 enum CodecType { Audio, Video, Invalid };
@@ -352,15 +386,13 @@ static bool SupportsEncryptionScheme(
 
 static bool ToSessionType(const nsAString& aSessionType,
                           MediaKeySessionType& aOutType) {
-  if (aSessionType.Equals(ToString(MediaKeySessionType::Temporary))) {
-    aOutType = MediaKeySessionType::Temporary;
-    return true;
+  Maybe<MediaKeySessionType> type =
+      StringToEnum<MediaKeySessionType>(aSessionType);
+  if (type.isNothing()) {
+    return false;
   }
-  if (aSessionType.Equals(ToString(MediaKeySessionType::Persistent_license))) {
-    aOutType = MediaKeySessionType::Persistent_license;
-    return true;
-  }
-  return false;
+  aOutType = type.value();
+  return true;
 }
 
 // 5.1.1 Is persistent session type?
@@ -395,6 +427,7 @@ static CodecType GetCodecType(const KeySystemConfig::EMECodecString& aCodec) {
     return Audio;
   }
   if (aCodec.Equals(KeySystemConfig::EME_CODEC_H264) ||
+      aCodec.Equals(KeySystemConfig::EME_CODEC_AV1) ||
       aCodec.Equals(KeySystemConfig::EME_CODEC_VP8) ||
       aCodec.Equals(KeySystemConfig::EME_CODEC_VP9) ||
       aCodec.Equals(KeySystemConfig::EME_CODEC_HEVC)) {
@@ -449,7 +482,7 @@ static Sequence<MediaKeySystemMediaCapability> GetSupportedCapabilities(
     const nsTArray<MediaKeySystemMediaCapability>& aRequestedCapabilities,
     const MediaKeySystemConfiguration& aPartialConfig,
     const KeySystemConfig& aKeySystem, DecoderDoctorDiagnostics* aDiagnostics,
-    const std::function<void(const char*)>& aDeprecationLogFn) {
+    const Document* aDocument) {
   // Let local accumulated configuration be a local copy of partial
   // configuration. (Note: It's not necessary for us to maintain a local copy,
   // as we don't need to test whether capabilites from previous calls to this
@@ -584,7 +617,7 @@ static Sequence<MediaKeySystemMediaCapability> GetSupportedCapabilities(
     // If media types is empty:
     if (codecs.IsEmpty()) {
       // Log deprecation warning to encourage authors to not do this!
-      aDeprecationLogFn("MediaEMENoCodecsDeprecatedWarning");
+      DeprecationWarningLog(aDocument, "MediaEMENoCodecsDeprecatedWarning");
       // TODO: Remove this once we're sure it doesn't break the web.
       // If container normatively implies a specific set of codecs and codec
       // constraints: Let parameters be that set.
@@ -783,12 +816,12 @@ static Sequence<nsString> UnboxSessionTypes(
 }
 
 // 3.1.1.2 Get Supported Configuration and Consent
-static bool GetSupportedConfig(
-    const KeySystemConfig& aKeySystem,
-    const MediaKeySystemConfiguration& aCandidate,
-    MediaKeySystemConfiguration& aOutConfig,
-    DecoderDoctorDiagnostics* aDiagnostics, bool aInPrivateBrowsing,
-    const std::function<void(const char*)>& aDeprecationLogFn) {
+static bool GetSupportedConfig(const KeySystemConfig& aKeySystem,
+                               const MediaKeySystemConfiguration& aCandidate,
+                               MediaKeySystemConfiguration& aOutConfig,
+                               DecoderDoctorDiagnostics* aDiagnostics,
+                               bool aInPrivateBrowsing,
+                               const Document* aDocument) {
   EME_LOG("Compare implementation '%s'\n with request '%s'",
           NS_ConvertUTF16toUTF8(aKeySystem.GetDebugInfo()).get(),
           ToCString(aCandidate).get());
@@ -916,7 +949,7 @@ static bool GetSupportedConfig(
     // TODO: Most sites using EME still don't pass capabilities, so we
     // can't reject on it yet without breaking them. So add this later.
     // Log deprecation warning to encourage authors to not do this!
-    aDeprecationLogFn("MediaEMENoCapabilitiesDeprecatedWarning");
+    DeprecationWarningLog(aDocument, "MediaEMENoCapabilitiesDeprecatedWarning");
   }
 
   // If the videoCapabilities member in candidate configuration is non-empty:
@@ -927,7 +960,7 @@ static bool GetSupportedConfig(
     // and restrictions.
     Sequence<MediaKeySystemMediaCapability> caps =
         GetSupportedCapabilities(Video, aCandidate.mVideoCapabilities, config,
-                                 aKeySystem, aDiagnostics, aDeprecationLogFn);
+                                 aKeySystem, aDiagnostics, aDocument);
     // If video capabilities is null, return NotSupported.
     if (caps.IsEmpty()) {
       EME_LOG(
@@ -953,7 +986,7 @@ static bool GetSupportedConfig(
     // restrictions.
     Sequence<MediaKeySystemMediaCapability> caps =
         GetSupportedCapabilities(Audio, aCandidate.mAudioCapabilities, config,
-                                 aKeySystem, aDiagnostics, aDeprecationLogFn);
+                                 aKeySystem, aDiagnostics, aDocument);
     // If audio capabilities is null, return NotSupported.
     if (caps.IsEmpty()) {
       EME_LOG(
@@ -1033,26 +1066,42 @@ static bool GetSupportedConfig(
 }
 
 /* static */
-bool MediaKeySystemAccess::GetSupportedConfig(
-    const nsAString& aKeySystem,
-    const Sequence<MediaKeySystemConfiguration>& aConfigs,
-    MediaKeySystemConfiguration& aOutConfig,
-    DecoderDoctorDiagnostics* aDiagnostics, bool aIsPrivateBrowsing,
-    const std::function<void(const char*)>& aDeprecationLogFn) {
+RefPtr<KeySystemConfig::KeySystemConfigPromise>
+MediaKeySystemAccess::GetSupportedConfig(MediaKeySystemAccessRequest* aRequest,
+                                         bool aIsPrivateBrowsing,
+                                         const Document* aDocument) {
   nsTArray<KeySystemConfig> implementations;
-  if (!GetKeySystemConfigs(aKeySystem, implementations)) {
-    return false;
-  }
-  for (const auto& implementation : implementations) {
-    for (const MediaKeySystemConfiguration& candidate : aConfigs) {
-      if (mozilla::dom::GetSupportedConfig(
-              implementation, candidate, aOutConfig, aDiagnostics,
-              aIsPrivateBrowsing, aDeprecationLogFn)) {
-        return true;
-      }
-    }
-  }
-  return false;
+  const bool isHardwareDecryptionRequest =
+      CheckIfHarewareDRMConfigExists(aRequest->mConfigs) ||
+      DoesKeySystemSupportHardwareDecryption(aRequest->mKeySystem);
+
+  RefPtr<KeySystemConfig::KeySystemConfigPromise::Private> promise =
+      new KeySystemConfig::KeySystemConfigPromise::Private(__func__);
+  GetSupportedKeySystemConfigs(aRequest->mKeySystem,
+                               isHardwareDecryptionRequest)
+      ->Then(GetMainThreadSerialEventTarget(), __func__,
+             [promise, aRequest, aIsPrivateBrowsing,
+              document = RefPtr<const Document>{aDocument}](
+                 const KeySystemConfig::SupportedConfigsPromise::
+                     ResolveOrRejectValue& aResult) {
+               if (aResult.IsResolve()) {
+                 MediaKeySystemConfiguration outConfig;
+                 for (const auto& implementation : aResult.ResolveValue()) {
+                   for (const MediaKeySystemConfiguration& candidate :
+                        aRequest->mConfigs) {
+                     if (mozilla::dom::GetSupportedConfig(
+                             implementation, candidate, outConfig,
+                             &aRequest->mDiagnostics, aIsPrivateBrowsing,
+                             document)) {
+                       promise->Resolve(std::move(outConfig), __func__);
+                       return;
+                     }
+                   }
+                 }
+               }
+               promise->Reject(false, __func__);
+             });
+  return promise.forget();
 }
 
 /* static */
@@ -1082,7 +1131,7 @@ static nsCString ToCString(const nsString& aString) {
 
 static nsCString ToCString(const MediaKeysRequirement aValue) {
   nsCString str("'");
-  str.AppendASCII(MediaKeysRequirementValues::GetString(aValue));
+  str.AppendASCII(GetEnumString(aValue));
   str.AppendLiteral("'");
   return str;
 }

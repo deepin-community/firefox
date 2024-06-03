@@ -32,6 +32,8 @@ search-input-box2 =
     .style = width: 15.4em
     .placeholder = Canfod yn y Gosodiadau
 managed-notice = Mae eich porwr yn cael ei reoli gan eich sefydliad.
+managed-notice-info-icon =
+    .alt = Manylion
 category-list =
     .aria-label = Categorïau
 pane-general-title = Cyffredinol
@@ -588,7 +590,7 @@ home-prefs-recommended-by-description-generic = Cynnwys eithriadol wedi'i gasglu
 
 home-prefs-recommended-by-learn-more = Sut mae'n gweithio
 home-prefs-recommended-by-option-sponsored-stories =
-    .label = Straeon wedi eu Noddi
+    .label = Straeon wedi’u noddi
 home-prefs-recommended-by-option-recent-saves =
     .label = Dangos Eitemau wedi'u Cadw'n Diweddar
 home-prefs-highlights-option-visited-pages =
@@ -724,6 +726,13 @@ sync-mobile-promo = Llwytho Firefox i lawr ar gyfer <img data-l10n-name="android
 
 sync-profile-picture =
     .tooltiptext = Newid llun proffil
+sync-profile-picture-with-alt =
+    .tooltiptext = Newid llun proffil
+    .alt = Newid llun proffil
+sync-profile-picture-account-problem =
+    .alt = Llun proffil cyfrif
+fxa-login-rejected-warning =
+    .alt = Rhybudd
 sync-sign-out =
     .label = Allgofnodi…
     .accesskey = A
@@ -897,7 +906,7 @@ forms-breach-alerts =
     .accesskey = r
 forms-breach-alerts-learn-more-link = Darllen rhagor
 preferences-relay-integration-checkbox =
-    .label = Awgrymu arallewnau e-byst { -relay-brand-name } i ddiogelu eich cyfeiriad e-bost
+    .label = Awgrymu arallenwau e-byst { -relay-brand-name } i ddiogelu eich cyfeiriad e-bost
 preferences-relay-integration-checkbox2 =
     .label = Awgrymu arallenwau e-byst { -relay-brand-name } i ddiogelu eich cyfeiriad e-bost
     .accesskey = w
@@ -1290,6 +1299,8 @@ addon-recommendations-link = Darllen rhagor
 # or builds with no Telemetry support available.
 collection-health-report-disabled = Mae adrodd ar ddata wedi ei analluogi ar gyfer ffurfweddiad yr adeiledd hwn
 collection-backlogged-crash-reports-with-link = Caniatáu i { -brand-short-name } anfon adroddiadau chwalu sydd wedi'u crynhoi ar eich rhan <a data-l10n-name="crash-reports-link">Darllen rhagor</a>
+    .accesskey = C
+collection-backlogged-crash-reports = Caniatáu i { -brand-short-name } anfon adroddiadau chwalu sydd wedi'u crynhoi ar eich rhan
     .accesskey = C
 privacy-segmentation-section-header = Nodweddion newydd sy'n gwella eich pori
 privacy-segmentation-section-description = Pan fyddwn yn cynnig nodweddion sy'n defnyddio'ch data i roi profiad mwy personol i chi:

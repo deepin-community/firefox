@@ -604,15 +604,6 @@ static bool GetBuildConfiguration(JSContext* cx, unsigned argc, Value* vp) {
     return false;
   }
 
-#ifdef ENABLE_JSON_PARSE_WITH_SOURCE
-  value = BooleanValue(true);
-#else
-  value = BooleanValue(false);
-#endif
-  if (!JS_SetProperty(cx, info, "json-parse-with-source", value)) {
-    return false;
-  }
-
 #ifdef FUZZING
   value = BooleanValue(true);
 #else
@@ -1595,16 +1586,19 @@ static bool WasmLosslessInvoke(JSContext* cx, unsigned argc, Value* vp) {
     JS_ReportErrorASCII(cx, "not enough arguments");
     return false;
   }
-  if (!args.get(0).isObject()) {
+  if (!args.get(0).isObject() || !args.get(0).toObject().is<JSFunction>()) {
     JS_ReportErrorASCII(cx, "argument is not an object");
     return false;
   }
 
-  RootedFunction func(cx, args[0].toObject().maybeUnwrapIf<JSFunction>());
+  RootedFunction func(cx, &args[0].toObject().as<JSFunction>());
   if (!func || !wasm::IsWasmExportedFunction(func)) {
     JS_ReportErrorASCII(cx, "argument is not an exported wasm function");
     return false;
   }
+
+  // Switch to the function's realm
+  AutoRealm ar(cx, func);
 
   // Get the instance and funcIndex for calling the function
   wasm::Instance& instance = wasm::ExportedFunctionToInstance(func);
@@ -1617,7 +1611,7 @@ static bool WasmLosslessInvoke(JSContext* cx, unsigned argc, Value* vp) {
   if (!wasmCallFrame.resize(len)) {
     return false;
   }
-  wasmCallFrame[0].set(args.calleev());
+  wasmCallFrame[0].set(ObjectValue(*func));
   wasmCallFrame[1].set(args.thisv());
   // Copy over the arguments needed to invoke the provided wasm function,
   // skipping the wasm function we're calling that is at `args.get(0)`.
@@ -2042,6 +2036,95 @@ static bool WasmDisassemble(JSContext* cx, unsigned argc, Value* vp) {
   return false;
 }
 
+static bool ToIonDumpContents(JSContext* cx, HandleValue value,
+                              wasm::IonDumpContents* contents) {
+  RootedString option(cx, JS::ToString(cx, value));
+
+  if (!option) {
+    return false;
+  }
+
+  bool isEqual = false;
+  if (!JS_StringEqualsLiteral(cx, option, "mir", &isEqual) || isEqual) {
+    *contents = wasm::IonDumpContents::UnoptimizedMIR;
+    return isEqual;
+  } else if (!JS_StringEqualsLiteral(cx, option, "unopt-mir", &isEqual) ||
+             isEqual) {
+    *contents = wasm::IonDumpContents::UnoptimizedMIR;
+    return isEqual;
+  } else if (!JS_StringEqualsLiteral(cx, option, "opt-mir", &isEqual) ||
+             isEqual) {
+    *contents = wasm::IonDumpContents::OptimizedMIR;
+    return isEqual;
+  } else if (!JS_StringEqualsLiteral(cx, option, "lir", &isEqual) || isEqual) {
+    *contents = wasm::IonDumpContents::LIR;
+    return isEqual;
+  } else {
+    return false;
+  }
+}
+
+static bool WasmDumpIon(JSContext* cx, unsigned argc, Value* vp) {
+  if (!wasm::HasSupport(cx)) {
+    JS_ReportErrorASCII(cx, "wasm support unavailable");
+    return false;
+  }
+
+  CallArgs args = CallArgsFromVp(argc, vp);
+
+  args.rval().set(UndefinedValue());
+
+  SharedMem<uint8_t*> dataPointer;
+  size_t byteLength;
+  if (!args.get(0).isObject() || !IsBufferSource(args.get(0).toObjectOrNull(),
+                                                 &dataPointer, &byteLength)) {
+    JS_ReportErrorASCII(cx, "argument is not a buffer source");
+    return false;
+  }
+
+  uint32_t targetFuncIndex;
+  if (!ToUint32(cx, args.get(1), &targetFuncIndex)) {
+    JS_ReportErrorASCII(cx, "argument is not a func index");
+    return false;
+  }
+
+  wasm::IonDumpContents contents = wasm::IonDumpContents::Default;
+  if (args.length() > 2 && !ToIonDumpContents(cx, args.get(2), &contents)) {
+    JS_ReportErrorASCII(cx, "argument is not a valid dump contents");
+    return false;
+  }
+
+  wasm::MutableBytes bytecode = cx->new_<wasm::ShareableBytes>();
+  if (!bytecode) {
+    return false;
+  }
+  if (!bytecode->append(dataPointer.unwrap(), byteLength)) {
+    ReportOutOfMemory(cx);
+    return false;
+  }
+
+  UniqueChars error;
+  JSSprinter out(cx);
+  if (!out.init()) {
+    ReportOutOfMemory(cx);
+    return false;
+  }
+
+  if (!wasm::DumpIonFunctionInModule(*bytecode, targetFuncIndex, contents, out,
+                                     &error)) {
+    if (error) {
+      JS_ReportErrorNumberUTF8(cx, GetErrorMessage, nullptr,
+                               JSMSG_WASM_COMPILE_ERROR, error.get());
+      return false;
+    }
+    ReportOutOfMemory(cx);
+    return false;
+  }
+
+  args.rval().set(StringValue(out.release(cx)));
+  return true;
+}
+
 enum class Flag { Tier2Complete, Deserialized };
 
 static bool WasmReturnFlag(JSContext* cx, unsigned argc, Value* vp, Flag flag) {
@@ -2073,16 +2156,11 @@ static bool WasmReturnFlag(JSContext* cx, unsigned argc, Value* vp, Flag flag) {
   return true;
 }
 
-#if defined(DEBUG)
 static bool wasmMetadataAnalysis(JSContext* cx, unsigned argc, Value* vp) {
   CallArgs args = CallArgsFromVp(argc, vp);
 
   if (!args.get(0).isObject()) {
     JS_ReportErrorASCII(cx, "argument is not an object");
-    return false;
-  }
-
-  if (!cx->options().wasmTestMetadata()) {
     return false;
   }
 
@@ -2096,6 +2174,7 @@ static bool wasmMetadataAnalysis(JSContext* cx, unsigned argc, Value* vp) {
                       .metadataAnalysis(cx);
     if (hashmap.empty()) {
       JS_ReportErrorASCII(cx, "Metadata analysis has failed");
+      return false;
     }
 
     // metadataAnalysis returned a map of {key, value} with various statistics
@@ -2107,16 +2186,21 @@ static bool wasmMetadataAnalysis(JSContext* cx, unsigned argc, Value* vp) {
       auto value = iter.get().value();
 
       JSString* string = JS_NewStringCopyZ(cx, key);
+      if (!string) {
+        return false;
+      }
+
       if (!props.append(
               IdValuePair(NameToId(string->asLinear().toPropertyName(cx)),
                           NumberValue(value)))) {
-        ReportOutOfMemory(cx);
         return false;
       }
     }
 
-    JSObject* results =
-        NewPlainObjectWithUniqueNames(cx, props.begin(), props.length());
+    JSObject* results = NewPlainObjectWithUniqueNames(cx, props);
+    if (!results) {
+      return false;
+    }
     args.rval().setObject(*results);
 
     return true;
@@ -2127,7 +2211,6 @@ static bool wasmMetadataAnalysis(JSContext* cx, unsigned argc, Value* vp) {
 
   return false;
 }
-#endif
 
 static bool WasmHasTier2CompilationCompleted(JSContext* cx, unsigned argc,
                                              Value* vp) {
@@ -3622,6 +3705,85 @@ static bool NewString(JSContext* cx, unsigned argc, Value* vp) {
   return true;
 }
 
+static bool NewDependentString(JSContext* cx, unsigned argc, Value* vp) {
+  CallArgs args = CallArgsFromVp(argc, vp);
+
+  RootedString src(cx, ToString(cx, args.get(0)));
+  if (!src) {
+    return false;
+  }
+
+  uint64_t indexStart = 0;
+  mozilla::Maybe<uint64_t> indexEnd;
+  gc::Heap heap = gc::Heap::Default;
+  mozilla::Maybe<gc::Heap> requiredHeap;
+
+  if (!ToIndex(cx, args.get(1), &indexStart)) {
+    return false;
+  }
+
+  Rooted<Value> options(cx);
+  if (args.get(2).isObject()) {
+    options = args[2];
+  } else {
+    uint64_t idx;
+    if (args.hasDefined(2)) {
+      if (!ToIndex(cx, args.get(2), &idx)) {
+        return false;
+      }
+      indexEnd.emplace(idx);
+    }
+    options = args.get(3);
+  }
+
+  if (options.isObject()) {
+    Rooted<Value> v(cx);
+    Rooted<JSObject*> optObj(cx, &options.toObject());
+    if (!JS_GetProperty(cx, optObj, "tenured", &v)) {
+      return false;
+    }
+    if (v.isBoolean()) {
+      requiredHeap.emplace(v.toBoolean() ? gc::Heap::Tenured
+                                         : gc::Heap::Default);
+      heap = *requiredHeap;
+    }
+  }
+
+  if (indexEnd.isNothing()) {
+    // Read the length now that no more JS code can run.
+    indexEnd.emplace(src->length());
+  }
+  if (indexStart > src->length() || *indexEnd > src->length() ||
+      indexStart >= *indexEnd) {
+    JS_ReportErrorASCII(cx, "invalid dependent string bounds");
+    return false;
+  }
+  if (!src->ensureLinear(cx)) {
+    return false;
+  }
+  Rooted<JSString*> result(
+      cx, js::NewDependentString(cx, src, indexStart, *indexEnd - indexStart,
+                                 heap));
+  if (!result) {
+    return false;
+  }
+  if (!result->isDependent()) {
+    JS_ReportErrorASCII(cx, "resulting string is not dependent (too short?)");
+    return false;
+  }
+
+  if (requiredHeap.isSome()) {
+    MOZ_ASSERT_IF(*requiredHeap == gc::Heap::Tenured, result->isTenured());
+    if ((*requiredHeap == gc::Heap::Default) && result->isTenured()) {
+      JS_ReportErrorASCII(cx, "nursery string created in tenured heap");
+      return false;
+    }
+  }
+
+  args.rval().setString(result);
+  return true;
+}
+
 // Warning! This will let you create ropes that I'm not sure would be possible
 // otherwise, specifically:
 //
@@ -4523,7 +4685,9 @@ static bool ReadGeckoProfilingStack(JSContext* cx, unsigned argc, Value* vp) {
         case JS::ProfilingFrameIterator::Frame_Ion:
           frameKindStr = "ion";
           break;
-        case JS::ProfilingFrameIterator::Frame_Wasm:
+        case JS::ProfilingFrameIterator::Frame_WasmBaseline:
+        case JS::ProfilingFrameIterator::Frame_WasmIon:
+        case JS::ProfilingFrameIterator::Frame_WasmOther:
           frameKindStr = "wasm";
           break;
         default:
@@ -5264,15 +5428,17 @@ class CustomSerializableObject : public NativeObject {
     static ActivityLog* getThreadLog() {
       if (!self.initialized() || !self.get()) {
         self.infallibleInit();
+        AutoEnterOOMUnsafeRegion oomUnsafe;
         self.set(js_new<ActivityLog>());
-        MOZ_RELEASE_ASSERT(self.get());
+        if (!self.get()) {
+          oomUnsafe.crash("allocating activity log");
+        }
         if (!TlsContext.get()->runtime()->atExit(
                 [](void* vpData) {
                   auto* log = static_cast<ActivityLog*>(vpData);
                   js_delete(log);
                 },
                 self.get())) {
-          AutoEnterOOMUnsafeRegion oomUnsafe;
           oomUnsafe.crash("atExit");
         }
       }
@@ -7087,7 +7253,7 @@ static bool SetImmutablePrototype(JSContext* cx, unsigned argc, Value* vp) {
   return true;
 }
 
-#ifdef DEBUG
+#if defined(DEBUG) || defined(JS_JITSPEW)
 static bool DumpStringRepresentation(JSContext* cx, unsigned argc, Value* vp) {
   CallArgs args = CallArgsFromVp(argc, vp);
 
@@ -7125,7 +7291,6 @@ static bool GetStringRepresentation(JSContext* cx, unsigned argc, Value* vp) {
   args.rval().setString(rep);
   return true;
 }
-
 #endif
 
 static bool ParseCompileOptionsForModule(JSContext* cx,
@@ -7141,9 +7306,7 @@ static bool ParseCompileOptionsForModule(JSContext* cx,
     options.setModule();
     isModule = true;
 
-    // js::ParseCompileOptions should already be called.
-    if (options.lineno == 0) {
-      JS_ReportErrorASCII(cx, "Module cannot be compiled with lineNumber == 0");
+    if (!ValidateModuleCompileOptions(cx, options)) {
       return false;
     }
   } else {
@@ -7199,6 +7362,8 @@ static bool CompileToStencil(JSContext* cx, uint32_t argc, Value* vp) {
   }
 
   CompileOptions options(cx);
+  options.setFile("<compileToStencil>");
+
   RootedString displayURL(cx);
   RootedString sourceMapURL(cx);
   UniqueChars fileNameBytes;
@@ -7230,13 +7395,10 @@ static bool CompileToStencil(JSContext* cx, uint32_t argc, Value* vp) {
 
   AutoReportFrontendContext fc(cx);
   RefPtr<JS::Stencil> stencil;
-  JS::CompilationStorage compileStorage;
   if (isModule) {
-    stencil =
-        JS::CompileModuleScriptToStencil(&fc, options, srcBuf, compileStorage);
+    stencil = JS::CompileModuleScriptToStencil(&fc, options, srcBuf);
   } else {
-    stencil =
-        JS::CompileGlobalScriptToStencil(&fc, options, srcBuf, compileStorage);
+    stencil = JS::CompileGlobalScriptToStencil(&fc, options, srcBuf);
   }
   if (!stencil) {
     return false;
@@ -7368,6 +7530,8 @@ static bool CompileToStencilXDR(JSContext* cx, uint32_t argc, Value* vp) {
   }
 
   CompileOptions options(cx);
+  options.setFile("<compileToStencilXDR>");
+
   RootedString displayURL(cx);
   RootedString sourceMapURL(cx);
   UniqueChars fileNameBytes;
@@ -9338,6 +9502,15 @@ static const JSFunctionSpecWithHelp TestingFunctions[] = {
 "   - maybeExternal: create an external string, unless the data fits within an\n"
 "     inline string. Inline strings may be nursery-allocated."),
 
+    JS_FN_HELP("newDependentString", NewDependentString, 2, 0,
+"newDependentString(str, indexStart[, indexEnd] [, options])",
+"  Essentially the same as str.substring() but insist on\n"
+"  creating a dependent string and failing if not. Also has options to\n"
+"  control the heap the string object is allocated into:\n"
+"  \n"
+"   - tenured: if true, allocate in the tenured heap or throw. If false,\n"
+"     allocate in the nursery or throw."),
+
     JS_FN_HELP("ensureLinearString", EnsureLinearString, 1, 0,
 "ensureLinearString(str)",
 "  Ensures str is a linear (non-rope) string and returns it."),
@@ -9750,6 +9923,15 @@ JS_FOR_WASM_FEATURES(WASM_FEATURE)
 "      ImportJitExit    - wasm-to-jitted-JS stubs\n"
 "      all              - all kinds, including obscure ones\n"),
 
+    JS_FN_HELP("wasmDumpIon", WasmDumpIon, 2, 0,
+"wasmDumpIon(bytecode, funcIndex, [, contents])\n",
+"wasmDumpIon(bytecode, funcIndex, [, contents])"
+"  Returns a dump of compiling a function in the specified module with Ion."
+"  The `contents` flag controls what is dumped. one of:"
+"    `mir` | `unopt-mir`: Unoptimized MIR (the default)"
+"    `opt-mir`: Optimized MIR"
+"    `lir`: LIR"),
+
     JS_FN_HELP("wasmHasTier2CompilationCompleted", WasmHasTier2CompilationCompleted, 1, 0,
 "wasmHasTier2CompilationCompleted(module)",
 "  Returns a boolean indicating whether a given module has finished compiled code for tier2. \n"
@@ -9948,25 +10130,9 @@ JS_FOR_WASM_FEATURES(WASM_FEATURE)
 "  element's edge is the node of the i+1'th array element; the destination of\n"
 "  the last array element is implicitly |target|.\n"),
 
-#if defined(DEBUG)
     JS_FN_HELP("wasmMetadataAnalysis", wasmMetadataAnalysis, 1, 0,
 "wasmMetadataAnalysis(wasmObject)",
 "  Prints an analysis of the size of metadata on this wasm object.\n"),
-#endif
-
-#if defined(DEBUG) || defined(JS_JITSPEW)
-    JS_FN_HELP("dumpObject", DumpObject, 1, 0,
-"dumpObject(obj)",
-"  Dump an internal representation of an object."),
-
-    JS_FN_HELP("dumpValue", DumpValue, 1, 0,
-"dumpValue(v)",
-"  Dump an internal representation of a value."),
-
-    JS_FN_HELP("dumpValueToString", DumpValueToString, 1, 0,
-"dumpValue(v)",
-"  Return a dump of an internal representation of a value."),
-#endif
 
     JS_FN_HELP("sharedMemoryEnabled", SharedMemoryEnabled, 0, 0,
 "sharedMemoryEnabled()",
@@ -10024,17 +10190,6 @@ JS_FOR_WASM_FEATURES(WASM_FEATURE)
 "  immutable (or if it already was immutable), false otherwise.  Throws in case\n"
 "  of internal error, or if the operation doesn't even make sense (for example,\n"
 "  because the object is a revoked proxy)."),
-
-#ifdef DEBUG
-    JS_FN_HELP("dumpStringRepresentation", DumpStringRepresentation, 1, 0,
-"dumpStringRepresentation(str)",
-"  Print a human-readable description of how the string |str| is represented.\n"),
-
-    JS_FN_HELP("stringRepresentation", GetStringRepresentation, 1, 0,
-"stringRepresentation(str)",
-"  Return a human-readable description of how the string |str| is represented.\n"),
-
-#endif
 
     JS_FN_HELP("allocationMarker", AllocationMarker, 0, 0,
 "allocationMarker([options])",
@@ -10323,6 +10478,29 @@ JS_FN_HELP("getEnvironmentObjectType", GetEnvironmentObjectType, 1, 0,
       "getFuseState()",
       "  Return an object describing the calling realm's fuse state, "
       "as well as the state of any runtime fuses."),
+
+#if defined(DEBUG) || defined(JS_JITSPEW)
+    JS_FN_HELP("dumpObject", DumpObject, 1, 0,
+"dumpObject(obj)",
+"  Dump an internal representation of an object."),
+
+    JS_FN_HELP("dumpValue", DumpValue, 1, 0,
+"dumpValue(v)",
+"  Dump an internal representation of a value."),
+
+    JS_FN_HELP("dumpValueToString", DumpValueToString, 1, 0,
+"dumpValue(v)",
+"  Return a dump of an internal representation of a value."),
+
+    JS_FN_HELP("dumpStringRepresentation", DumpStringRepresentation, 1, 0,
+"dumpStringRepresentation(str)",
+"  Print a human-readable description of how the string |str| is represented.\n"),
+
+    JS_FN_HELP("stringRepresentation", GetStringRepresentation, 1, 0,
+"stringRepresentation(str)",
+"  Return a human-readable description of how the string |str| is represented.\n"),
+
+#endif
 
     JS_FS_HELP_END
 };

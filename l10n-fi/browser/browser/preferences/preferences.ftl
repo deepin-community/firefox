@@ -32,6 +32,8 @@ search-input-box2 =
     .style = width: 15.4em
     .placeholder = Hae asetuksista
 managed-notice = Organisaatiosi hallitsee selaimesi asetuksia.
+managed-notice-info-icon =
+    .alt = Tietoa
 category-list =
     .aria-label = Luokat
 pane-general-title = Yleiset
@@ -261,6 +263,8 @@ preferences-default-zoom-value =
 preferences-zoom-text-only =
     .label = Muuta vain tekstin kokoa
     .accesskey = M
+preferences-text-zoom-override-warning =
+    .message = Varoitus: Jos valitset "Muuta vain tekstin kokoa" ja oletussuurennusta ei ole asetettu 100 %:iin, jotkin sivustot tai sisällöt saattavat rikkoutua.
 language-header = Kieli
 choose-language-description = Valitse kielet, joilla sivut näytetään
 choose-button =
@@ -706,6 +710,13 @@ sync-mobile-promo = Lataa Firefox <img data-l10n-name="android-icon"/> <a data-l
 
 sync-profile-picture =
     .tooltiptext = Vaihda kuva
+sync-profile-picture-with-alt =
+    .tooltiptext = Vaihda kuva
+    .alt = Vaihda kuva
+sync-profile-picture-account-problem =
+    .alt = Tilin profiilikuva
+fxa-login-rejected-warning =
+    .alt = Varoitus
 sync-sign-out =
     .label = Kirjaudu ulos…
     .accesskey = K
@@ -1272,6 +1283,8 @@ addon-recommendations-link = Lue lisää
 # or builds with no Telemetry support available.
 collection-health-report-disabled = Tietojen kerääminen ei ole käytössä tässä koostamiskokoonpanossa
 collection-backlogged-crash-reports-with-link = Salli, että { -brand-short-name } lähettää lähettämättömät kaatumisraportit puolestasi <a data-l10n-name="crash-reports-link">Lue lisää</a>
+    .accesskey = S
+collection-backlogged-crash-reports = Salli, että { -brand-short-name } lähettää lähettämättömät kaatumisraportit puolestasi
     .accesskey = S
 privacy-segmentation-section-header = Uudet selaamista parantavat ominaisuudet
 privacy-segmentation-section-description = Kun tarjoamme ominaisuuksia, jotka käyttävät tietojasi aiempaa henkilökohtaisemman käyttökokemuksen tarjoamiseksi:

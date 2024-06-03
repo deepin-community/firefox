@@ -303,6 +303,15 @@ class WebGLContext : public VRefCounted, public SupportsWeakPtr {
   uint64_t mNextFenceId = 1;
   uint64_t mCompletedFenceId = 0;
 
+  mutable std::list<WeakPtr<WebGLSync>> mPendingSyncs;
+  mutable RefPtr<nsIRunnable> mPollPendingSyncs_Pending;
+  static constexpr uint32_t kPollPendingSyncs_DelayMs =
+      4;  // Four times a frame.
+ public:
+  void EnsurePollPendingSyncs_Pending() const;
+  void PollPendingSyncs() const;
+
+ protected:
   std::unique_ptr<gl::Texture> mIncompleteTexOverride;
 
  public:
@@ -317,7 +326,8 @@ class WebGLContext : public VRefCounted, public SupportsWeakPtr {
                                      webgl::InitContextResult* out);
 
  private:
-  bool mIsRgb8Renderable = false;
+  webgl::OptionalRenderableFormatBits mOptionalRenderableFormatBits =
+      webgl::OptionalRenderableFormatBits{0};
   void FinishInit();
 
  protected:
@@ -667,7 +677,7 @@ class WebGLContext : public VRefCounted, public SupportsWeakPtr {
   //////////////////////////
 
   void UniformData(uint32_t loc, bool transpose,
-                   const Range<const webgl::UniformDataVal>& data) const;
+                   const Span<const webgl::UniformDataVal>& data) const;
 
   ////////////////////////////////////
 
@@ -755,8 +765,6 @@ class WebGLContext : public VRefCounted, public SupportsWeakPtr {
   virtual Maybe<double> GetParameter(GLenum pname);
   Maybe<std::string> GetString(GLenum pname) const;
 
-  bool IsEnabled(GLenum cap);
-
  private:
   static StaticMutex sLruMutex;
   static std::list<WebGLContext*> sLru MOZ_GUARDED_BY(sLruMutex);
@@ -779,8 +787,7 @@ class WebGLContext : public VRefCounted, public SupportsWeakPtr {
   };
   ScissorRect mScissorRect = {};
 
-  bool ValidateCapabilityEnum(GLenum cap);
-  bool* GetStateTrackingSlot(GLenum cap, GLuint i);
+  bool* GetStateTrackingSlot(GLenum cap);
 
   // Allocation debugging variables
   mutable uint64_t mDataAllocGLCallCount = 0;
@@ -968,8 +975,8 @@ class WebGLContext : public VRefCounted, public SupportsWeakPtr {
   // -------------------------------------------------------------------------
   // WebGL extensions (implemented in WebGLContextExtensions.cpp)
 
-  EnumeratedArray<WebGLExtensionID, WebGLExtensionID::Max,
-                  std::unique_ptr<WebGLExtensionBase>>
+  EnumeratedArray<WebGLExtensionID, std::unique_ptr<WebGLExtensionBase>,
+                  size_t(WebGLExtensionID::Max)>
       mExtensions;
 
  public:
@@ -1156,7 +1163,7 @@ class WebGLContext : public VRefCounted, public SupportsWeakPtr {
 
   bool ValidateFramebufferTarget(GLenum target) const;
   bool ValidateInvalidateFramebuffer(GLenum target,
-                                     const Range<const GLenum>& attachments,
+                                     const Span<const GLenum>& attachments,
                                      std::vector<GLenum>* const scopedVector,
                                      GLsizei* const out_glNumAttachments,
                                      const GLenum** const out_glAttachments);

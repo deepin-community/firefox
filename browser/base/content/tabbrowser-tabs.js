@@ -34,6 +34,7 @@
       this.addEventListener("drop", this);
       this.addEventListener("dragend", this);
       this.addEventListener("dragleave", this);
+      this.addEventListener("mouseleave", this);
     }
 
     init() {
@@ -61,6 +62,7 @@
       this._hiddenSoundPlayingTabs = new Set();
       this._allTabs = null;
       this._visibleTabs = null;
+      this._previewPanel = null;
 
       var tab = this.allTabs[0];
       tab.label = this.emptyTabTitle;
@@ -125,12 +127,12 @@
 
       this.configureTooltip = () => {
         // fall back to original tooltip behavior if pref is not set
-        this.tooltip = this._showCardPreviews ? null : "tabbrowser-tab-tooltip";
-
-        // activate new tooltip behavior if pref is set
-        document
-          .getElementById("tabbrowser-tab-preview")
-          .toggleAttribute("hidden", !this._showCardPreviews);
+        if (this._showCardPreviews) {
+          this.tooltip = null;
+        } else {
+          this.tooltip = "tabbrowser-tab-tooltip";
+          this._previewPanel = null;
+        }
       };
       XPCOMUtils.defineLazyPreferenceGetter(
         this,
@@ -142,7 +144,7 @@
       this.configureTooltip();
     }
 
-    on_TabSelect(event) {
+    on_TabSelect() {
       this._handleTabSelect();
     }
 
@@ -187,6 +189,26 @@
       this.updateTabIndicatorAttr(event.target);
     }
 
+    on_TabHoverStart(event) {
+      if (!this._showCardPreviews) {
+        return;
+      }
+      if (!this._previewPanel) {
+        // load the tab preview component
+        const TabPreviewPanel = ChromeUtils.importESModule(
+          "chrome://browser/content/tabpreview/tab-preview-panel.mjs"
+        ).default;
+        this._previewPanel = new TabPreviewPanel(
+          document.getElementById("tab-preview-panel")
+        );
+      }
+      this._previewPanel.activate(event.target);
+    }
+
+    on_TabHoverEnd(event) {
+      this._previewPanel?.deactivate(event.target);
+    }
+
     on_transitionend(event) {
       if (event.propertyName != "max-width") {
         return;
@@ -221,7 +243,7 @@
       }
 
       if (!this._blockDblClick) {
-        BrowserOpenTab();
+        BrowserCommands.openTab();
       }
 
       event.preventDefault();
@@ -313,7 +335,7 @@
             (!RTL_UI && event.clientX > endOfTab) ||
             (RTL_UI && event.clientX < endOfTab)
           ) {
-            BrowserOpenTab();
+            BrowserCommands.openTab();
           }
         } else {
           return;
@@ -430,6 +452,7 @@
         return;
       }
 
+      this._previewPanel?.deactivate();
       this.startTabDrag(event, tab);
     }
 
@@ -1072,6 +1095,10 @@
       return children;
     }
 
+    get previewPanel() {
+      return this._previewPanel;
+    }
+
     _getVisibleTabs() {
       if (!this._visibleTabs) {
         this._visibleTabs = Array.prototype.filter.call(
@@ -1185,7 +1212,7 @@
       };
     }
 
-    observe(aSubject, aTopic, aData) {
+    observe(aSubject, aTopic) {
       switch (aTopic) {
         case "nsPref:changed":
           // This is has to deal with changes in
@@ -1818,22 +1845,6 @@
 
     handleEvent(aEvent) {
       switch (aEvent.type) {
-        case "TabHoverStart":
-          if (this._showCardPreviews) {
-            const previewContainer = document.getElementById(
-              "tabbrowser-tab-preview"
-            );
-            previewContainer.tab = aEvent.target;
-          }
-          break;
-        case "TabHoverEnd":
-          if (this._showCardPreviews) {
-            const previewContainer = document.getElementById(
-              "tabbrowser-tab-preview"
-            );
-            previewContainer.tab = null;
-          }
-          break;
         case "mouseout":
           // If the "related target" (the node to which the pointer went) is not
           // a child of the current document, the mouse just left the window.
@@ -1846,6 +1857,9 @@
           if (document.getElementById("tabContextMenu").state != "open") {
             this._unlockTabSizing();
           }
+          break;
+        case "mouseleave":
+          this._previewPanel?.deactivate();
           break;
         default:
           let methodName = `on_${aEvent.type}`;

@@ -40,17 +40,6 @@ shopping-letter-grade-tooltip =
 
 shopping-message-bar-warning-stale-analysis-message-2 = Ny info å kontrollere
 shopping-message-bar-warning-stale-analysis-button = Kontroller no
-shopping-message-bar-generic-error-title2 = Ingen informasjon tilgjengeleg akkurat no
-shopping-message-bar-generic-error-message = Vi jobbar med å løyse problemet. Prøv på nytt, snart.
-shopping-message-bar-warning-not-enough-reviews-title = Ikkje nok vurderingar enno
-shopping-message-bar-warning-not-enough-reviews-message2 = Når dette produktet har fleire vurderingar, kan vi sjekke kvaliteten.
-shopping-message-bar-warning-product-not-available-title = Produktet er ikkje tilgjengeleg
-shopping-message-bar-warning-product-not-available-message2 = Om du ser at dette produktet er tilbake på lager, rapporter det, så jobbar vi med å kontrollere vurderingane.
-shopping-message-bar-warning-product-not-available-button = Rapporter at dette produktet er på lager igjen
-shopping-message-bar-thanks-for-reporting-title = Takk for at du rapporterer!
-shopping-message-bar-thanks-for-reporting-message2 = Vi bør ha informasjon om vurderingane til dette produktet innan 24 timar. Sjekk igjen litt seinare.
-shopping-message-bar-warning-product-not-available-reported-title2 = Info kjem snart
-shopping-message-bar-warning-product-not-available-reported-message2 = Vi bør ha informasjon om vurderingane til dette produktet innan 24 timar. Sjekk igjen litt seinare.
 shopping-message-bar-generic-error =
     .heading = Ingen informasjon tilgjengeleg akkurat no
     .message = Vi jobbar med å løyse problemet. Prøv på nytt, snart.
@@ -60,8 +49,11 @@ shopping-message-bar-warning-not-enough-reviews =
 shopping-message-bar-warning-product-not-available-button2 = Rapporter at produktet er på lager
 shopping-message-bar-analysis-in-progress-title2 = Kontrollerer kvaliteten på vurderinga
 shopping-message-bar-analysis-in-progress-message2 = Dette vil ta omlag 60 sekund.
-shopping-message-bar-page-not-supported-title = Vi klarer ikkje å kontrollere desse vurderingane
-shopping-message-bar-page-not-supported-message = Diverre kan vi ikkje kontrollere produktkvaliteten på enkelte produkttypar, som til dømes gåvekort, strøyme-video, musikk og spel.
+shopping-message-bar-keep-closed-header =
+    .heading = Halde attlaten?
+    .message = Du kan oppdatere innstillingane dine for å halde vurderingskontrolløren attlaten som standard. Akkurat no vert han opna automatisk.
+shopping-message-bar-keep-closed-dismiss-button = Nei takk
+shopping-message-bar-keep-closed-accept-button = Ja, la han vere attlaten
 
 ## Strings for the product review snippets card
 
@@ -84,8 +76,22 @@ shopping-settings-label =
     .label = Innstillingar
 shopping-settings-recommendations-toggle =
     .label = Vis annonsar i vurderingskontrolløren
+shopping-settings-recommendations-learn-more2 = Du ser sporadiske annonsar for relevante produkt. Vi annonserer berre produkt med pålitelege vurderingar. <a data-l10n-name="review-quality-url">Les meir</a>
 shopping-settings-opt-out-button = Slå av vurderingskontrolløren
 powered-by-fakespot = Vurderingskontrolløren vert driven av <a data-l10n-name="fakespot-link">{ -fakespot-brand-full-name }</a>.
+shopping-settings-auto-open-toggle =
+    .label = Opne vurderingskontrolløren automatisk
+# Description text for regions where we support three sites. Sites are limited to Amazon, Walmart and Best Buy.
+# Variables:
+#   $firstSite (String) - The first shopping page name
+#   $secondSite (String) - The second shopping page name
+#   $thirdSite (String) - The third shopping page name
+shopping-settings-auto-open-description-three-sites = Når du ser på produkt på { $firstSite }, { $secondSite } og { $thirdSite }
+# Description text for regions where we support only one site (e.g. currently used in FR/DE with Amazon).
+# Variables:
+#   $currentSite (String) - The current shopping page name
+shopping-settings-auto-open-description-single-site = Når du ser på produkt på { $currentSite }
+shopping-settings-sidebar-enabled-state = Vurderingskontrolløren er <strong>på</strong>
 
 ## Strings for the adjusted rating component
 
@@ -104,6 +110,7 @@ shopping-review-reliability-label =
 
 shopping-analysis-explainer-label =
     .label = Korleis vi bestemmer kvaliteten på ei vurdering
+shopping-analysis-explainer-intro2 = Vi brukar kunstig intelligens-teknologi (AI-teknologi) frå { -fakespot-brand-full-name } for å sjekke pålitelgheita til produktvurderingar. Dette vil berre hjelpe deg med å vurdere kvaliteten av vurderingar, ikkje kvaliteten på sjølve produktetet.
 shopping-analysis-explainer-adjusted-rating-description = Den <strong>justerte vurderinga</strong> er berre basert på vurderingar som vi meinar er pålitelege.
 shopping-analysis-explainer-review-grading-scale-reliable = Pålitelege vurderingar. Vi meinar at vureringane truleg kjem frå ekte kundar som har lagt att ærlege, upartiske vurderingar.
 shopping-analysis-explainer-review-grading-scale-mixed = Vi meinar at det finst ei blanding av pålitelege og upålitelege vurderingar.
@@ -120,7 +127,7 @@ shopping-sidebar-close-button2 =
 ## The word 'analyzer' when used here reflects what this tool is called on
 ## fakespot.com. If possible, a different word should be used for the Fakespot
 ## tool (the Fakespot by Mozilla 'analyzer') other than 'checker', which is
-## used in the name of the Firefox feature ('Review checker'). If that is not
+## used in the name of the Firefox feature ('Review Checker'). If that is not
 ## possible - if these terms are not meaningfully different - that is OK.
 
 shopping-unanalyzed-product-header-2 = Ingen informasjon om desse vurderingane enno
@@ -149,7 +156,6 @@ shopping-survey-q2-radio-3-label = Eg veit ikkje
 shopping-survey-next-button-label = Neste
 shopping-survey-submit-button-label = Send inn
 shopping-survey-terms-link = Brukarvilkår
-shopping-survey-thanks-message = Takk for tilbakemeldinga di!
 shopping-survey-thanks =
     .heading = Takk for tilbakemeldinga di!
 
@@ -159,6 +165,11 @@ shopping-survey-thanks =
 
 shopping-callout-pdp-opted-in-title = Er desse vurderingane pålitelege? Finn raskt ut av det.
 shopping-callout-closed-not-opted-in-title = Eitt klikk frå pålitelege vurderingar
+shopping-callout-closed-not-opted-in-revised-button = Eg forstår
+shopping-callout-not-opted-in-reminder-close-button = Ignorer
+shopping-callout-not-opted-in-reminder-ignore-checkbox = Ikkje vis igjen
+shopping-callout-disabled-auto-open-button = Eg forstår
+shopping-callout-opted-out-button = Eg forstår
 
 ## Onboarding message strings.
 

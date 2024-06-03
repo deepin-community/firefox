@@ -19,6 +19,7 @@
 #include "mozilla/BackgroundHangMonitor.h"
 #include "mozilla/Components.h"
 #include "mozilla/dom/BrowsingContext.h"
+#include "mozilla/dom/CanonicalBrowsingContext.h"
 #include "mozilla/dom/Directory.h"
 #include "mozilla/Logging.h"
 #include "mozilla/ipc/UtilityProcessManager.h"
@@ -94,19 +95,14 @@ nsFilePicker::nsFilePicker() : mSelectedType(1) {}
 NS_IMPL_ISUPPORTS(nsFilePicker, nsIFilePicker)
 
 NS_IMETHODIMP nsFilePicker::Init(
-    mozIDOMWindowProxy* aParent, const nsAString& aTitle,
-    nsIFilePicker::Mode aMode,
-    mozilla::dom::BrowsingContext* aBrowsingContext) {
+    mozilla::dom::BrowsingContext* aBrowsingContext, const nsAString& aTitle,
+    nsIFilePicker::Mode aMode) {
   // Don't attempt to open a real file-picker in headless mode.
   if (gfxPlatform::IsHeadless()) {
     return nsresult::NS_ERROR_NOT_AVAILABLE;
   }
 
-  nsCOMPtr<nsPIDOMWindowOuter> window = do_QueryInterface(aParent);
-  nsIDocShell* docShell = window ? window->GetDocShell() : nullptr;
-  mLoadContext = do_QueryInterface(docShell);
-
-  return nsBaseFilePicker::Init(aParent, aTitle, aMode, aBrowsingContext);
+  return nsBaseFilePicker::Init(aBrowsingContext, aTitle, aMode);
 }
 
 namespace mozilla::detail {
@@ -739,7 +735,11 @@ nsFilePicker::CheckContentAnalysisService() {
     auto contentAnalysisCallback =
         mozilla::MakeRefPtr<mozilla::contentanalysis::ContentAnalysisCallback>(
             [promise](nsIContentAnalysisResponse* aResponse) {
-              promise->Resolve(aResponse->GetShouldAllowContent(), __func__);
+              bool shouldAllow = false;
+              mozilla::DebugOnly<nsresult> rv =
+                  aResponse->GetShouldAllowContent(&shouldAllow);
+              MOZ_ASSERT(NS_SUCCEEDED(rv));
+              promise->Resolve(shouldAllow, __func__);
             },
             [promise](nsresult aError) { promise->Reject(aError, __func__); });
 
@@ -844,7 +844,7 @@ nsresult nsFilePicker::Open(nsIFilePickerShownCallback* aCallback) {
   auto promise = mMode == modeGetFolder ? ShowFolderPicker(initialDir)
                                         : ShowFilePicker(initialDir);
 
-  auto p2 = promise->Then(
+  promise->Then(
       mozilla::GetMainThreadSerialEventTarget(), __PRETTY_FUNCTION__,
       [self = RefPtr(this),
        callback = RefPtr(aCallback)](bool selectionMade) -> void {
@@ -1053,7 +1053,7 @@ void nsFilePicker::RememberLastUsedDirectory() {
 }
 
 bool nsFilePicker::IsPrivacyModeEnabled() {
-  return mLoadContext && mLoadContext->UsePrivateBrowsing();
+  return mBrowsingContext && mBrowsingContext->UsePrivateBrowsing();
 }
 
 bool nsFilePicker::IsDefaultPathLink() {

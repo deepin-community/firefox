@@ -28,6 +28,7 @@ policy-BlockAboutSupport = about:support ページへのアクセスをブロッ
 policy-Bookmarks = ブックマークツールバー、ブックマークメニュー、または指定のフォルダーの中にブックマークを作成します。
 policy-CaptivePortal = キャプティブポータルサポートを有効または無効にします。
 policy-CertificatesDescription = 証明書を追加、または組み込みの証明書を利用します。
+policy-ContentAnalysis = データ損失防止エージェントへの接続を有効または無効にします。
 policy-Cookies = ウェブサイトの Cookie の保存を許可するか拒否するか設定します。
 # Containers in this context is referring to container tabs in Firefox.
 policy-Containers = コンテナーに関連するポリシーを設定します。
@@ -38,8 +39,11 @@ policy-DisableAppUpdate = ブラウザの更新を抑止します。
 policy-DisableBuiltinPDFViewer = { -brand-short-name } 組み込みの PDF ビューアーの PDF.js を無効にします。
 policy-DisableDefaultBrowserAgent = Default Browser Agent のアクションをすべて抑止します。Windows のみ適用可能です。他のプラットフォームにはこのエージェントがありません。
 policy-DisableDeveloperTools = 開発ツールへのアクセスをブロックします。
+policy-DisableEncryptedClientHello = TLS の Encrypted Client Hello (ECH) 機能の使用を無効にします。
 policy-DisableFeedbackCommands = ヘルプメニューのフィードバックの送信 (フィードバックと詐欺サイトの報告の送信) を無効にします。
 policy-DisableFirefoxAccounts = Sync を含む { -fxaccount-brand-name } を利用したサービスを無効にします。
+# This string is in the process of being deprecated in favor of policy-DisableAccounts.
+policy-DisableFirefoxAccounts1 = Sync を含め、アカウントを利用したサービスを無効にします。
 # Firefox Screenshots is the name of the feature, and should not be translated.
 policy-DisableFirefoxScreenshots = Firefox Screenshots 機能を無効にします。
 policy-DisableFirefoxStudies = { -brand-short-name } による Shield 調査の実行を抑止します。
@@ -124,6 +128,7 @@ policy-SSLVersionMax = SSL の最高バージョンを設定します。
 policy-SSLVersionMin = SSL の最低バージョンを設定します。
 policy-StartDownloadsInTempDirectory = 既定のダウンロードディレクトリーではなく、ローカルの一時的な場所にダウンロードするよう強制します。
 policy-SupportMenu = ヘルプメニューにカスタムサポートメニューを追加します。
+policy-TranslateEnabled = ウェブページ翻訳を有効または無効にします。
 policy-UserMessaging = 特定のメッセージをユーザーに表示させないようにします。
 policy-UseSystemPrintDialog = システムの印刷ダイアログで印刷します。
 # “format” refers to the format used for the value of this policy.

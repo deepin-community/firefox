@@ -24,6 +24,8 @@ search-input-box2 =
     .style = width: 15.4em
     .placeholder = Klask en arventennoù
 managed-notice = Ardoet eo ho merdeer gant hoc'h aozadur.
+managed-notice-info-icon =
+    .alt = Titouroù
 category-list =
     .aria-label = Rummadoù
 pane-general-title = Hollek
@@ -149,7 +151,7 @@ warn-on-open-many-tabs =
     .label = Kas keloù din ma vez gorrekaet { -brand-short-name } gant digoradur meur a ivinell
     .accesskey = m
 switch-to-new-tabs =
-    .label = Pa tigorit un ere, skeudenn pe media en un ivinell nevez, mont warni ent emgefreek
+    .label = Pa zigorit un ere, ur skeudenn pe ur media en un ivinell nevez, mont warni ent emgefreek
     .accesskey = P
 show-tabs-in-taskbar =
     .label = Diskouez alberzioù an ivinelloù e-barzh barrenn an trevelloù
@@ -667,6 +669,11 @@ sync-mobile-promo = Pellgargañ Firefox evit <img data-l10n-name="android-icon"/
 
 sync-profile-picture =
     .tooltiptext = Kemmañ ar skeudenn aelad
+sync-profile-picture-with-alt =
+    .tooltiptext = Kemmañ ar skeudenn aelad
+    .alt = Kemmañ ar skeudenn aelad
+fxa-login-rejected-warning =
+    .alt = Diwallit
 sync-sign-out =
     .label = Digennaskañ…
     .accesskey = g
@@ -1181,6 +1188,8 @@ addon-recommendations-link = Gouzout hiroc’h
 # or builds with no Telemetry support available.
 collection-health-report-disabled = Diweredekaet eo an danevelliñ roadennoù evit kefluniadur ar c'hempunadur-mañ
 collection-backlogged-crash-reports-with-link = Aotren { -brand-short-name } da gas danevelloù sac’hadennoù en ho plas. <a data-l10n-name="crash-reports-link">Gouzout hiroc’h</a>
+    .accesskey = g
+collection-backlogged-crash-reports = Aotren { -brand-short-name } da gas danevelloù sac’hadennoù en ho plas.
     .accesskey = g
 privacy-segmentation-radio-off =
     .label = Ober gant alioù { -brand-product-name }

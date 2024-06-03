@@ -49,7 +49,6 @@ UNIFIED_SOURCES += [
     "/third_party/libwebrtc/video/transport_adapter.cc",
     "/third_party/libwebrtc/video/video_quality_observer2.cc",
     "/third_party/libwebrtc/video/video_receive_stream2.cc",
-    "/third_party/libwebrtc/video/video_send_stream.cc",
     "/third_party/libwebrtc/video/video_send_stream_impl.cc",
     "/third_party/libwebrtc/video/video_stream_decoder2.cc"
 ]
@@ -220,7 +219,6 @@ if CONFIG["MOZ_X11"] == "1" and CONFIG["OS_TARGET"] == "Linux":
 if CONFIG["OS_TARGET"] == "Android" and CONFIG["TARGET_CPU"] == "arm":
 
     OS_LIBS += [
-        "android_support",
         "unwind"
     ]
 
@@ -228,10 +226,6 @@ if CONFIG["OS_TARGET"] == "Android" and CONFIG["TARGET_CPU"] == "x86":
 
     CXXFLAGS += [
         "-msse2"
-    ]
-
-    OS_LIBS += [
-        "android_support"
     ]
 
 if CONFIG["OS_TARGET"] == "Linux" and CONFIG["TARGET_CPU"] == "aarch64":

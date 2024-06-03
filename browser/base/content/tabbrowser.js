@@ -119,8 +119,8 @@
 
       Services.obs.addObserver(this, "contextual-identity-updated");
 
-      Services.els.addSystemEventListener(document, "keydown", this, false);
-      Services.els.addSystemEventListener(document, "keypress", this, false);
+      document.addEventListener("keydown", this, { mozSystemGroup: true });
+      document.addEventListener("keypress", this, { mozSystemGroup: true });
       document.addEventListener("visibilitychange", this);
       window.addEventListener("framefocusrequested", this);
       window.addEventListener("activate", this);
@@ -893,14 +893,6 @@
         : "";
     },
 
-    getTabModalPromptBox(aBrowser) {
-      let browser = aBrowser || this.selectedBrowser;
-      if (!browser.tabModalPromptBox) {
-        browser.tabModalPromptBox = new TabModalPromptBox(browser);
-      }
-      return browser.tabModalPromptBox;
-    },
-
     getTabDialogBox(aBrowser) {
       if (!aBrowser) {
         throw new Error("aBrowser is required");
@@ -1320,31 +1312,6 @@
           this.addToMultiSelectedTabs(oldTab);
         }
 
-        if (oldBrowser != newBrowser && oldBrowser.getInPermitUnload) {
-          oldBrowser.getInPermitUnload(inPermitUnload => {
-            if (!inPermitUnload) {
-              return;
-            }
-            // Since the user is switching away from a tab that has
-            // a beforeunload prompt active, we remove the prompt.
-            // This prevents confusing user flows like the following:
-            //   1. User attempts to close Firefox
-            //   2. User switches tabs (ingoring a beforeunload prompt)
-            //   3. User returns to tab, presses "Leave page"
-            let promptBox = this.getTabModalPromptBox(oldBrowser);
-            let prompts = promptBox.listPrompts();
-            // There might not be any prompts here if the tab was closed
-            // while in an onbeforeunload prompt, which will have
-            // destroyed aforementioned prompt already, so check there's
-            // something to remove, first:
-            if (prompts.length) {
-              // NB: This code assumes that the beforeunload prompt
-              //     is the top-most prompt on the tab.
-              prompts[prompts.length - 1].abortPrompt();
-            }
-          });
-        }
-
         if (!gMultiProcessBrowser) {
           this._adjustFocusBeforeTabSwitch(oldTab, newTab);
           this._adjustFocusAfterTabSwitch(newTab);
@@ -1439,19 +1406,6 @@
         newBrowser.tabDialogBox.focus();
         return;
       }
-      if (newBrowser.hasAttribute("tabmodalPromptShowing")) {
-        // If there's a tabmodal prompt showing, focus it.
-        let prompts = newBrowser.tabModalPromptBox.listPrompts();
-        let prompt = prompts[prompts.length - 1];
-        // @tabmodalPromptShowing is also set for other tab modal prompts
-        // (e.g. the Payment Request dialog) so there may not be a <tabmodalprompt>.
-        // Bug 1492814 will implement this for the Payment Request dialog.
-        if (prompt) {
-          prompt.Dialog.setDefaultFocus();
-          return;
-        }
-      }
-
       // Focus the location bar if it was previously focused for that tab.
       // In full screen mode, only bother making the location bar visible
       // if the tab is a blank one.
@@ -2097,18 +2051,6 @@
       // doesn't keep the window alive.
       b.permanentKey = new (Cu.getGlobalForObject(Services).Object)();
 
-      // Ensure that SessionStore has flushed any session history state from the
-      // content process before we this browser's remoteness.
-      if (!Services.appinfo.sessionHistoryInParent) {
-        b.prepareToChangeRemoteness = () =>
-          SessionStore.prepareToChangeRemoteness(b);
-        b.afterChangeRemoteness = switchId => {
-          let tab = this.getTabForBrowser(b);
-          SessionStore.finishTabRemotenessChange(tab, switchId);
-          return true;
-        };
-      }
-
       const defaultBrowserAttributes = {
         contextmenu: "contentAreaContextMenu",
         message: "true",
@@ -2682,8 +2624,6 @@
           animate,
           userContextId,
           openerTab,
-          createLazyBrowser,
-          skipAnimation,
           pinned,
           noInitialLabel,
           skipBackgroundNotify,
@@ -2849,8 +2789,6 @@
       uriString,
       userContextId,
       openerTab,
-      createLazyBrowser,
-      skipAnimation,
       pinned,
       noInitialLabel,
       skipBackgroundNotify,
@@ -3367,7 +3305,7 @@
       Services.telemetry.setEventRecordingEnabled("close_tab_warning", true);
       let closeTabEnumKey =
         Object.entries(this.closingTabsEnum)
-          .find(([k, v]) => v == aCloseTabs)?.[0]
+          .find(([, v]) => v == aCloseTabs)?.[0]
           ?.toLowerCase() || "some";
 
       let warnCheckbox = warnOnClose.value ? "checked" : "unchecked";
@@ -3674,6 +3612,8 @@
       tabs,
       {
         animate,
+        // See bug 1883051
+        // eslint-disable-next-line no-unused-vars
         suppressWarnAboutClosingWindow,
         skipPermitUnload,
         skipRemoves,
@@ -4406,7 +4346,7 @@
       } // Do nothing
 
       if (event.button == 1) {
-        BrowserOpenTab({ event });
+        BrowserCommands.openTab({ event });
         // Stop the propagation of the click event, to prevent the event from being
         // handled more than once.
         // E.g. see https://bugzilla.mozilla.org/show_bug.cgi?id=1657992#c4
@@ -5849,7 +5789,7 @@
       }
     },
 
-    observe(aSubject, aTopic, aData) {
+    observe(aSubject, aTopic) {
       switch (aTopic) {
         case "contextual-identity-updated": {
           let identity = aSubject.wrappedJSObject;
@@ -5948,14 +5888,11 @@
         }
       }
 
-      Services.els.removeSystemEventListener(document, "keydown", this, false);
+      document.removeEventListener("keydown", this, { mozSystemGroup: true });
       if (AppConstants.platform == "macosx") {
-        Services.els.removeSystemEventListener(
-          document,
-          "keypress",
-          this,
-          false
-        );
+        document.removeEventListener("keypress", this, {
+          mozSystemGroup: true,
+        });
       }
       document.removeEventListener("visibilitychange", this);
       window.removeEventListener("framefocusrequested", this);
@@ -6108,12 +6045,7 @@
               );
               if (permission != Services.perms.ALLOW_ACTION) {
                 // Tell the prompt box we want to show the user a checkbox:
-                let tabPrompt = Services.prefs.getBoolPref(
-                  "prompts.contentPromptSubDialog"
-                )
-                  ? this.getTabDialogBox(tabForEvent.linkedBrowser)
-                  : this.getTabModalPromptBox(tabForEvent.linkedBrowser);
-
+                let tabPrompt = this.getTabDialogBox(tabForEvent.linkedBrowser);
                 tabPrompt.onNextPromptShowAllowFocusCheckboxFor(
                   promptPrincipal
                 );
@@ -6355,7 +6287,7 @@
         let oldUserTypedValue = browser.userTypedValue;
         let hadStartedLoad = browser.didStartLoadSinceLastUserTyping();
 
-        let didChange = didChangeEvent => {
+        let didChange = () => {
           browser.userTypedValue = oldUserTypedValue;
           if (hadStartedLoad) {
             browser.urlbarChangeTracker.startedLoad();
@@ -7464,7 +7396,7 @@ var TabBarVisibility = {
 
     toolbar.collapsed = collapse;
     let navbar = document.getElementById("nav-bar");
-    navbar.setAttribute("tabs-hidden", collapse);
+    navbar.toggleAttribute("tabs-hidden", collapse);
 
     document.getElementById("menu_closeWindow").hidden = collapse;
     document.l10n.setAttributes(
@@ -7788,7 +7720,7 @@ var TabContextMenu = {
     }
   },
 
-  closeContextTabs(event) {
+  closeContextTabs() {
     if (this.contextTab.multiselected) {
       gBrowser.removeMultiSelectedTabs();
     } else {

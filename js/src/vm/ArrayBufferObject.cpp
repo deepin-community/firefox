@@ -536,12 +536,7 @@ bool ArrayBufferObject::maxByteLengthGetterImpl(JSContext* cx,
   auto* buffer = &args.thisv().toObject().as<ArrayBufferObject>();
 
   // Steps 4-6.
-  size_t maxByteLength;
-  if (buffer->isResizable()) {
-    maxByteLength = buffer->as<ResizableArrayBufferObject>().maxByteLength();
-  } else {
-    maxByteLength = buffer->byteLength();
-  }
+  size_t maxByteLength = buffer->maxByteLength();
   MOZ_ASSERT_IF(buffer->isDetached(), maxByteLength == 0);
 
   // Step 7.
@@ -914,8 +909,6 @@ void ArrayBufferObject::detach(JSContext* cx,
 
   // Update all views of the buffer to account for the buffer having been
   // detached, and clear the buffer's data and list of views.
-  //
-  // Typed object buffers are not exposed and cannot be detached.
 
   auto& innerViews = ObjectRealm::get(buffer).innerViews.get();
   if (InnerViewTable::ViewVector* views =
@@ -962,6 +955,20 @@ void ResizableArrayBufferObject::resize(size_t newByteLength) {
   }
 
   setByteLength(newByteLength);
+
+  // Update all views of the buffer to account for the buffer having been
+  // resized.
+
+  auto& innerViews = ObjectRealm::get(this).innerViews.get();
+  if (InnerViewTable::ViewVector* views =
+          innerViews.maybeViewsUnbarriered(this)) {
+    for (auto& view : *views) {
+      view->notifyBufferResized();
+    }
+  }
+  if (auto* view = firstView()) {
+    view->as<ArrayBufferViewObject>().notifyBufferResized();
+  }
 }
 
 /* clang-format off */
@@ -1490,10 +1497,7 @@ size_t ArrayBufferObject::byteLength() const {
 
 inline size_t ArrayBufferObject::associatedBytes() const {
   if (isMalloced()) {
-    if (isResizable()) {
-      return as<ResizableArrayBufferObject>().maxByteLength();
-    }
-    return byteLength();
+    return maxByteLength();
   }
   if (isMapped()) {
     return RoundUp(byteLength(), js::gc::SystemPageSize());
@@ -2472,7 +2476,7 @@ bool ArrayBufferObject::ensureNonInline(JSContext* cx,
     return true;
   }
 
-  size_t nbytes = buffer->byteLength();
+  size_t nbytes = buffer->maxByteLength();
   ArrayBufferContents copy = NewCopiedBufferContents(cx, buffer);
   if (!copy) {
     return false;
@@ -2826,7 +2830,7 @@ bool InnerViewTable::addView(JSContext* cx, ArrayBufferObject* buffer,
   if (isNurseryView && !hadNurseryViews && nurseryKeysValid) {
 #ifdef DEBUG
     if (nurseryKeys.length() < 100) {
-      for (auto* key : nurseryKeys) {
+      for (const auto& key : nurseryKeys) {
         MOZ_ASSERT(key != buffer);
       }
     }
@@ -2855,31 +2859,53 @@ void InnerViewTable::removeViews(ArrayBufferObject* buffer) {
   map.remove(ptr);
 }
 
-bool InnerViewTable::traceWeak(JSTracer* trc) { return map.traceWeak(trc); }
+bool InnerViewTable::traceWeak(JSTracer* trc) {
+  nurseryKeys.traceWeak(trc);
+  map.traceWeak(trc);
+  return true;
+}
 
 void InnerViewTable::sweepAfterMinorGC(JSTracer* trc) {
   MOZ_ASSERT(needsSweepAfterMinorGC());
 
-  if (nurseryKeysValid) {
-    for (size_t i = 0; i < nurseryKeys.length(); i++) {
-      ArrayBufferObject* buffer = nurseryKeys[i];
+  NurseryKeysVector keys;
+  bool valid = true;
+  std::swap(nurseryKeys, keys);
+  std::swap(nurseryKeysValid, valid);
+
+  // Use nursery keys vector if possible.
+  if (valid) {
+    for (ArrayBufferObject* buffer : keys) {
       MOZ_ASSERT(!gc::IsInsideNursery(buffer));
       auto ptr = map.lookup(buffer);
-      if (ptr && !ptr->value().sweepAfterMinorGC(trc)) {
+      if (ptr && !sweepViewsAfterMinorGC(trc, buffer, ptr->value())) {
         map.remove(ptr);
       }
     }
-  } else {
-    for (ArrayBufferViewMap::Enum e(map); !e.empty(); e.popFront()) {
-      MOZ_ASSERT(!gc::IsInsideNursery(e.front().key()));
-      if (!e.front().value().sweepAfterMinorGC(trc)) {
-        e.removeFront();
-      }
-    }
+    return;
   }
 
-  nurseryKeys.clear();
-  nurseryKeysValid = true;
+  // Otherwise look at every map entry.
+  for (ArrayBufferViewMap::Enum e(map); !e.empty(); e.popFront()) {
+    MOZ_ASSERT(!gc::IsInsideNursery(e.front().key()));
+    if (!sweepViewsAfterMinorGC(trc, e.front().key(), e.front().value())) {
+      e.removeFront();
+    }
+  }
+}
+
+bool InnerViewTable::sweepViewsAfterMinorGC(JSTracer* trc,
+                                            ArrayBufferObject* buffer,
+                                            Views& views) {
+  if (!views.sweepAfterMinorGC(trc)) {
+    return false;  // No more views.
+  }
+
+  if (views.hasNurseryViews() && !nurseryKeys.append(buffer)) {
+    nurseryKeysValid = false;
+  }
+
+  return true;
 }
 
 size_t InnerViewTable::sizeOfExcludingThis(mozilla::MallocSizeOf mallocSizeOf) {

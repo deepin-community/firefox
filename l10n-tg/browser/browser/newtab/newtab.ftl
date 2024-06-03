@@ -206,6 +206,8 @@ newtab-empty-section-highlights = Тамошокунии сомонаҳоро о
 # Variables:
 #   $provider (string) - Name of the content provider for this section, e.g "Pocket".
 newtab-empty-section-topstories = Шумо ҳамаро хондед. Барои хондани ҳикояҳои ҷолиби дигар аз «{ $provider }» дертар биёед. Интизор шуда наметавонед? Барои пайдо кардани ҳикояҳои бузург аз саросари Интернет, мавзуи маълумеро интихоб намоед.
+# Ex. When there are no more story recommendations, in the space where there would have been stories, this is shown instead.
+newtab-empty-section-topstories-generic = Шумо ҳамаро хондед. Барои хондани ҳикояҳои дигар дертар биёед. Интизор шуда наметавонед? Барои пайдо кардани ҳикояҳои бузург аз саросари Интернет, мавзуи маълумеро интихоб намоед.
 
 ## Empty Section (Content Discovery Experience). These show when there are no more stories or when some stories fail to load.
 
@@ -258,9 +260,9 @@ newtab-custom-row-selector =
 newtab-custom-sponsored-sites = Миёнбурҳои сарпарастӣ
 newtab-custom-pocket-title = Аз тарафи { -pocket-brand-name } тавсия дода мешавад
 newtab-custom-pocket-subtitle = Муҳтавои мустасно аз тарафи { -pocket-brand-name }, қисми оилаи { -brand-product-name } дастгирӣ карда мешавад
-newtab-custom-pocket-toggle =
-    .label = Аз тарафи { -pocket-brand-name } тавсия дода мешавад
-    .description = Муҳтавои мустасно аз тарафи { -pocket-brand-name }, қисми оилаи { -brand-product-name } дастгирӣ карда мешавад
+newtab-custom-stories-toggle =
+    .label = Ҳикояҳои тавсияшуда
+    .description = Маводҳои истисноӣ, ки аз ҷониби оилаи «{ -brand-product-name }» таҳия шудааст
 newtab-custom-pocket-sponsored = Мақолаҳои сарпарастӣ
 newtab-custom-pocket-show-recent-saves = Намоиш додани маводҳои охирин
 newtab-custom-recent-title = Фаъолияти охирин
@@ -270,3 +272,24 @@ newtab-custom-recent-toggle =
     .description = Интихоби сомонаҳо ва муҳтавои охирин
 newtab-custom-close-button = Пӯшидан
 newtab-custom-settings = Идоракунии танзимоти бештар
+
+## New Tab Wallpapers
+
+newtab-wallpaper-title = Тасвирҳои замина
+newtab-wallpaper-reset = Ба ҳолати пешфарз барқарор кунед
+newtab-wallpaper-light-red-panda = Пандаи сурх
+newtab-wallpaper-light-mountain = Кӯҳи сафед
+newtab-wallpaper-light-sky = Осмон бо абрҳои лоҷувард ва гулобӣ
+newtab-wallpaper-light-color = Шаклҳои кабуд, гулобӣ ва зард
+newtab-wallpaper-light-landscape = Манзараи кӯҳӣ бо тумани кабуд
+newtab-wallpaper-light-beach = Соҳил бо дарахти хурмо
+newtab-wallpaper-dark-aurora = Дурахши қутбӣ
+newtab-wallpaper-dark-color = Шаклҳои сурх ва кабуд
+newtab-wallpaper-dark-panda = Пандаи сурх дар ҷангал пинҳон шудааст
+newtab-wallpaper-dark-sky = Манзараи шаҳр бо осмони шабона
+newtab-wallpaper-dark-mountain = Манзараи кӯҳӣ
+newtab-wallpaper-dark-city = Манзараи шаҳри лоҷувард
+# Variables
+#   $author_string (String) - The name of the creator of the photo.
+#   $webpage_string (String) - The name of the webpage where the photo is located.
+newtab-wallpaper-attribution = Акс аз ҷониби <a data-l10n-name="name-link">{ $author_string }</a> дар <a data-l10n-name="webpage-link">{ $webpage_string }</a>

@@ -36,13 +36,19 @@ impl From<IpTosEcn> for u8 {
 
 impl From<u8> for IpTosEcn {
     fn from(v: u8) -> Self {
-        match v & 0b11 {
+        match v & 0b0000_0011 {
             0b00 => IpTosEcn::NotEct,
             0b01 => IpTosEcn::Ect1,
             0b10 => IpTosEcn::Ect0,
             0b11 => IpTosEcn::Ce,
             _ => unreachable!(),
         }
+    }
+}
+
+impl From<IpTos> for IpTosEcn {
+    fn from(v: IpTos) -> Self {
+        IpTosEcn::from(u8::from(v))
     }
 }
 
@@ -159,9 +165,14 @@ impl From<u8> for IpTosDscp {
     }
 }
 
+impl From<IpTos> for IpTosDscp {
+    fn from(v: IpTos) -> Self {
+        IpTosDscp::from(u8::from(v))
+    }
+}
+
 /// The type-of-service field in an IP packet.
-#[allow(clippy::module_name_repetitions)]
-#[derive(Copy, Clone, PartialEq, Eq)]
+#[derive(Copy, Clone, PartialEq, Eq, Default)]
 pub struct IpTos(u8);
 
 impl From<IpTosEcn> for IpTos {
@@ -169,40 +180,59 @@ impl From<IpTosEcn> for IpTos {
         Self(u8::from(v))
     }
 }
+
 impl From<IpTosDscp> for IpTos {
     fn from(v: IpTosDscp) -> Self {
         Self(u8::from(v))
     }
 }
+
 impl From<(IpTosDscp, IpTosEcn)> for IpTos {
     fn from(v: (IpTosDscp, IpTosEcn)) -> Self {
         Self(u8::from(v.0) | u8::from(v.1))
     }
 }
+
+impl From<(IpTosEcn, IpTosDscp)> for IpTos {
+    fn from(v: (IpTosEcn, IpTosDscp)) -> Self {
+        Self(u8::from(v.0) | u8::from(v.1))
+    }
+}
+
 impl From<IpTos> for u8 {
     fn from(v: IpTos) -> Self {
         v.0
     }
 }
 
+impl From<u8> for IpTos {
+    fn from(v: u8) -> Self {
+        Self(v)
+    }
+}
+
 impl Debug for IpTos {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_tuple("IpTos")
-            .field(&IpTosDscp::from(self.0 & 0xfc))
-            .field(&IpTosEcn::from(self.0 & 0x3))
+            .field(&IpTosDscp::from(*self))
+            .field(&IpTosEcn::from(*self))
             .finish()
     }
 }
 
-impl Default for IpTos {
-    fn default() -> Self {
-        (IpTosDscp::default(), IpTosEcn::default()).into()
+impl IpTos {
+    pub fn set_ecn(&mut self, ecn: IpTosEcn) {
+        self.0 = u8::from(IpTosDscp::from(*self)) | u8::from(ecn);
+    }
+
+    pub fn set_dscp(&mut self, dscp: IpTosDscp) {
+        self.0 = u8::from(IpTosEcn::from(*self)) | u8::from(dscp);
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use crate::{IpTos, IpTosDscp, IpTosEcn};
 
     #[test]
     fn iptosecn_into_u8() {
@@ -286,5 +316,34 @@ mod tests {
         let dscp = IpTosDscp::default();
         let iptos_dscp: IpTos = dscp.into();
         assert_eq!(u8::from(iptos_dscp), dscp as u8);
+    }
+
+    #[test]
+    fn u8_to_iptos() {
+        let tos = 0x8b;
+        let iptos: IpTos = (IpTosEcn::Ce, IpTosDscp::Af41).into();
+        assert_eq!(tos, u8::from(iptos));
+        assert_eq!(IpTos::from(tos), iptos);
+    }
+
+    #[test]
+    fn iptos_to_iptosdscp() {
+        let tos = IpTos::from((IpTosDscp::Af41, IpTosEcn::NotEct));
+        let dscp = IpTosDscp::from(tos);
+        assert_eq!(dscp, IpTosDscp::Af41);
+    }
+
+    #[test]
+    fn tos_modify_ecn() {
+        let mut iptos: IpTos = (IpTosDscp::Af41, IpTosEcn::NotEct).into();
+        iptos.set_ecn(IpTosEcn::Ce);
+        assert_eq!(u8::from(iptos), 0b1000_1011);
+    }
+
+    #[test]
+    fn tos_modify_dscp() {
+        let mut iptos: IpTos = (IpTosDscp::Af41, IpTosEcn::Ect1).into();
+        iptos.set_dscp(IpTosDscp::Le);
+        assert_eq!(u8::from(iptos), 0b0000_0101);
     }
 }

@@ -32,6 +32,8 @@ search-input-box2 =
     .style = width: 15.4em
     .placeholder = Hitta i inställningar
 managed-notice = Din webbläsare hanteras av din organisation.
+managed-notice-info-icon =
+    .alt = Information
 category-list =
     .aria-label = Kategorier
 pane-general-title = Allmänt
@@ -708,6 +710,13 @@ sync-mobile-promo = Hämta Firefox för <img data-l10n-name="android-icon"/> <a 
 
 sync-profile-picture =
     .tooltiptext = Ändra profilbild
+sync-profile-picture-with-alt =
+    .tooltiptext = Ändra profilbild
+    .alt = Ändra profilbild
+sync-profile-picture-account-problem =
+    .alt = Kontots profilbild
+fxa-login-rejected-warning =
+    .alt = Varning
 sync-sign-out =
     .label = Logga ut…
     .accesskey = g
@@ -1274,6 +1283,8 @@ addon-recommendations-link = Läs mer
 # or builds with no Telemetry support available.
 collection-health-report-disabled = Datarapportering är inaktiverad för den här byggkonfigurationen
 collection-backlogged-crash-reports-with-link = Tillåt { -brand-short-name } att skicka eftersläpande felrapporter för din räkning <a data-l10n-name="crash-reports-link">Läs mer</a>
+    .accesskey = f
+collection-backlogged-crash-reports = Tillåt { -brand-short-name } att skicka eftersläpande felrapporter för din räkning
     .accesskey = f
 privacy-segmentation-section-header = Nya funktioner som förbättrar din surfning
 privacy-segmentation-section-description = När vi erbjuder funktioner som använder din data för att ge dig en mer personlig upplevelse:

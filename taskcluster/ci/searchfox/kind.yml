@@ -24,7 +24,7 @@ job-defaults:
         tier: 2
     run-on-projects: ['mozilla-central']
     optimization: null
-    use-system-python: false
+    use-python: default
     # These builds don't use sccache because otherwise we wouldn't index
     # the files that sccache optimizes away compilation for.
     use-sccache: false
@@ -99,6 +99,46 @@ jobs:
                 - sysroot-x86_64-linux-gnu
                 - sysroot-wasm32-wasi
 
+    ios-searchfox/debug:
+        description: "ios Debug Cross-compile Searchfox"
+        index:
+            job-name: ios-searchfox-debug
+        treeherder:
+            platform: ios/debug
+        worker-type: b-linux-gcp
+        worker:
+            max-run-time: 10800
+            env:
+                PERFHERDER_EXTRA_OPTIONS: searchfox
+                MOZSEARCH_PLATFORM: "ios"
+        run:
+            using: mozharness
+            actions: [get-secrets, build]
+            config:
+                - builds/releng_base_firefox.py
+            script: "mozharness/scripts/fx_desktop_build.py"
+            secrets: true
+            keep-artifacts: false
+            extra-config:
+                app_name: mobile/ios
+                stage_platform: ios
+                mozconfig_platform: ios
+                disable_package_metrics: true
+            mozconfig-variant: debug-searchfox
+        fetches:
+            toolchain:
+                - linux64-clang
+                - linux64-hfsplus
+                - linux64-libdmg
+                - linux64-nasm
+                - linux64-node
+                - linux64-rust-ios
+                - linux64-cbindgen
+                - linux64-dump_syms
+                - ios-sdk
+                - sysroot-x86_64-linux-gnu
+                - sysroot-wasm32-wasi
+
     win64-searchfox/debug:
         description: "Win64 Searchfox Debug (clang-cl)"
         index:
@@ -169,6 +209,7 @@ jobs:
         fetches:
             toolchain:
                 - android-gradle-dependencies
+                - android-gradle-python-envs
                 - android-ndk-linux
                 - android-sdk-linux
                 - linux64-jdk

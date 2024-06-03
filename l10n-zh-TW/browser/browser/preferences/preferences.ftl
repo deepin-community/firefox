@@ -32,6 +32,8 @@ search-input-box2 =
     .style = width: 15.4em
     .placeholder = 搜尋選項
 managed-notice = 您的瀏覽器受到組織管理。
+managed-notice-info-icon =
+    .alt = 資訊
 category-list =
     .aria-label = 分類
 pane-general-title = 一般
@@ -696,6 +698,13 @@ sync-mobile-promo = 下載 Firefox for<img data-l10n-name="android-icon"/> <a da
 
 sync-profile-picture =
     .tooltiptext = 更改個人資料照片
+sync-profile-picture-with-alt =
+    .tooltiptext = 更改個人資料照片
+    .alt = 更改個人資料照片
+sync-profile-picture-account-problem =
+    .alt = 帳號個人資料照片
+fxa-login-rejected-warning =
+    .alt = 警告
 sync-sign-out =
     .label = 登出…
     .accesskey = g
@@ -1262,6 +1271,8 @@ addon-recommendations-link = 了解更多
 # or builds with no Telemetry support available.
 collection-health-report-disabled = 進行編譯設定時，已停用了資料回報功能
 collection-backlogged-crash-reports-with-link = 允許 { -brand-short-name } 以您的身分自動回報錯誤報告<a data-l10n-name="crash-reports-link">了解更多資訊</a>
+    .accesskey = c
+collection-backlogged-crash-reports = 允許 { -brand-short-name } 以您的身分自動回報錯誤報告
     .accesskey = c
 privacy-segmentation-section-header = 能加強您上網體驗的新功能
 privacy-segmentation-section-description = 當我們推出會使用您的資料來提供更個人化的上網體驗的新功能時：

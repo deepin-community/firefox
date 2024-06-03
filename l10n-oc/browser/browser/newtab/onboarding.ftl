@@ -338,5 +338,11 @@ onboarding-device-migration-primary-button-label = Se connectar
 onboarding-easy-setup-security-and-privacy-title = Nos impòrta vòstra vida privada
 # Mobile download screen
 onboarding-mobile-download-security-and-privacy-title = Demoratz en lòc segur amb lo chiframent quand basculatz d’aparelh
+onboarding-mobile-download-security-and-privacy-subtitle = Quand la sincronizacion es activada, { -brand-short-name } chifra vòstres senhals, vòstres marcapaginas e encara mai. Amai podètz recuperar vòstres onglets de vòstres autres aparelhs.
 # Gratitude screen
 onboarding-gratitude-security-and-privacy-title = { -brand-short-name } es totjorn aquí per vos
+
+## New user time and familiarity survey strings
+
+# When translating "next" it means the next screen in onboarding.
+onboarding-new-user-survey-next-button-label = Seguent

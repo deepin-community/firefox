@@ -196,7 +196,7 @@ add_task(async function test_initial_closed_tab() {
   await withFirefoxView({}, async browser => {
     const { document } = browser.contentWindow;
     is(document.location.href, getFirefoxViewURL());
-    await navigateToCategoryAndWait(document, "recentlyclosed");
+    await navigateToViewAndWait(document, "recentlyclosed");
     let { cleanup } = await prepareSingleClosedTab();
     await switchToFxViewTab(window);
     let [listItems] = await waitForRecentlyClosedTabsList(document);
@@ -220,7 +220,7 @@ add_task(async function test_list_ordering() {
   await withFirefoxView({}, async browser => {
     const { document } = browser.contentWindow;
     await clearAllParentTelemetryEvents();
-    navigateToCategory(document, "recentlyclosed");
+    await navigateToViewAndWait(document, "recentlyclosed");
     let [cardMainSlotNode, listItems] = await waitForRecentlyClosedTabsList(
       document
     );
@@ -248,7 +248,7 @@ add_task(async function test_list_updates() {
 
   await withFirefoxView({}, async browser => {
     const { document } = browser.contentWindow;
-    navigateToCategory(document, "recentlyclosed");
+    await navigateToViewAndWait(document, "recentlyclosed");
 
     let [listElem, listItems] = await waitForRecentlyClosedTabsList(document);
     Assert.deepEqual(
@@ -321,7 +321,7 @@ add_task(async function test_restore_tab() {
 
   await withFirefoxView({}, async browser => {
     const { document } = browser.contentWindow;
-    navigateToCategory(document, "recentlyclosed");
+    await navigateToViewAndWait(document, "recentlyclosed");
 
     let [listElem, listItems] = await waitForRecentlyClosedTabsList(document);
     Assert.deepEqual(
@@ -365,13 +365,19 @@ add_task(async function test_dismiss_tab() {
 
   await withFirefoxView({}, async browser => {
     const { document } = browser.contentWindow;
-    navigateToCategory(document, "recentlyclosed");
+    await navigateToViewAndWait(document, "recentlyclosed");
 
     let [listElem, listItems] = await waitForRecentlyClosedTabsList(document);
     await clearAllParentTelemetryEvents();
 
     info("calling dismiss_tab on the top, most-recently closed tab");
     let closedTabItem = listItems[0];
+    // the most recently closed tab was in window 3 which got closed
+    // so we expect a sourceClosedId on the item element
+    ok(
+      !isNaN(closedTabItem.sourceClosedId),
+      "Item has a sourceClosedId property"
+    );
 
     // dismiss the first tab and verify the list is correctly updated
     await dismiss_tab(closedTabItem);
@@ -390,6 +396,12 @@ add_task(async function test_dismiss_tab() {
 
     // dismiss the last tab and verify the list is correctly updated
     closedTabItem = listItems[listItems.length - 1];
+    ok(
+      isNaN(closedTabItem.sourceClosedId),
+      "Item does not have a sourceClosedId property"
+    );
+    ok(closedTabItem.sourceWindowId, "Item has a sourceWindowId property");
+
     await dismiss_tab(closedTabItem);
     await listElem.getUpdateComplete;
 
@@ -429,7 +441,7 @@ add_task(async function test_empty_states() {
     const { document } = browser.contentWindow;
     is(document.location.href, "about:firefoxview");
 
-    navigateToCategory(document, "recentlyclosed");
+    await navigateToViewAndWait(document, "recentlyclosed");
     let recentlyClosedComponent = document.querySelector(
       "view-recentlyclosed:not([slot=recentlyclosed])"
     );
@@ -479,7 +491,7 @@ add_task(async function test_observers_removed_when_view_is_hidden() {
 
   await withFirefoxView({}, async function (browser) {
     const { document } = browser.contentWindow;
-    navigateToCategory(document, "recentlyclosed");
+    await navigateToViewAndWait(document, "recentlyclosed");
     const [listElem] = await waitForRecentlyClosedTabsList(document);
     is(listElem.rowEls.length, 1);
 
@@ -510,7 +522,7 @@ add_task(async function test_search() {
   let { cleanup, expectedURLs } = await prepareClosedTabs();
   await withFirefoxView({}, async browser => {
     const { document } = browser.contentWindow;
-    navigateToCategory(document, "recentlyclosed");
+    await navigateToViewAndWait(document, "recentlyclosed");
     const [listElem] = await waitForRecentlyClosedTabsList(document);
     const recentlyClosedComponent = document.querySelector(
       "view-recentlyclosed:not([slot=recentlyclosed])"
@@ -569,7 +581,7 @@ add_task(async function test_search_recent_browsing() {
     const { document } = browser.contentWindow;
 
     info("Input a search query.");
-    await navigateToCategoryAndWait(document, "recentbrowsing");
+    await navigateToViewAndWait(document, "recentbrowsing");
     const recentBrowsing = document.querySelector("view-recentbrowsing");
     EventUtils.synthesizeMouseAtCenter(
       recentBrowsing.searchTextbox,

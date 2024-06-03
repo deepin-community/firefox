@@ -297,7 +297,10 @@ class JSString : public js::gc::CellWithLengthAndFlags {
    * If LATIN1_CHARS_BIT is set, the string's characters are stored as Latin1
    * instead of TwoByte. This flag can also be set for ropes, if both the
    * left and right nodes are Latin1. Flattening will result in a Latin1
-   * string in this case.
+   * string in this case. When we flatten a TwoByte rope, we turn child ropes
+   * (including Latin1 ropes) into TwoByte dependent strings. If one of these
+   * strings is also part of another Latin1 rope tree, we can have a Latin1 rope
+   * with a TwoByte descendent.
    *
    * The other flags store the string's type. Instead of using a dense index
    * to represent the most-derived type, string types are encoded to allow
@@ -385,6 +388,15 @@ class JSString : public js::gc::CellWithLengthAndFlags {
   static_assert((TYPE_FLAGS_MASK & js::gc::HeaderWord::RESERVED_MASK) == 0,
                 "GC reserved bits must not be used for Strings");
 
+  // Linear strings:
+  // - Content and representation are Latin-1 characters.
+  // - Unmodifiable after construction.
+  //
+  // Ropes:
+  // - Content are Latin-1 characters.
+  // - Flag may be cleared when the rope is changed into a dependent string.
+  //
+  // Also see LATIN1_CHARS_BIT description under "Flag Encoding".
   static const uint32_t LATIN1_CHARS_BIT = js::Bit(9);
 
   // Whether this atom's characters store an uint32 index value less than or
@@ -395,8 +407,10 @@ class JSString : public js::gc::CellWithLengthAndFlags {
   static const uint32_t INDEX_VALUE_BIT = js::Bit(11);
   static const uint32_t INDEX_VALUE_SHIFT = 16;
 
-  // NON_DEDUP_BIT is used in string deduplication during tenuring.
-  static const uint32_t NON_DEDUP_BIT = js::Bit(12);
+  // NON_DEDUP_BIT is used in string deduplication during tenuring. This bit is
+  // shared with both FLATTEN_FINISH_NODE and ATOM_IS_PERMANENT_BIT, since it
+  // only applies to linear non-atoms.
+  static const uint32_t NON_DEDUP_BIT = js::Bit(15);
 
   // If IN_STRING_TO_ATOM_CACHE is set, this string had an entry in the
   // StringToAtomCache at some point. Note that GC can purge the cache without
@@ -615,13 +629,27 @@ class JSString : public js::gc::CellWithLengthAndFlags {
   }
 
   MOZ_ALWAYS_INLINE
-  void setNonDeduplicatable() { setFlagBit(NON_DEDUP_BIT); }
+  void setNonDeduplicatable() {
+    MOZ_ASSERT(isLinear());
+    MOZ_ASSERT(!isAtom());
+    setFlagBit(NON_DEDUP_BIT);
+  }
 
+  // After copying a string from the nursery to the tenured heap, adjust bits
+  // that no longer apply.
   MOZ_ALWAYS_INLINE
-  void clearNonDeduplicatable() { clearFlagBit(NON_DEDUP_BIT); }
+  void clearBitsOnTenure() {
+    MOZ_ASSERT(!isAtom());
+    clearFlagBit(NON_DEDUP_BIT | IN_STRING_TO_ATOM_CACHE);
+  }
 
+  // NON_DEDUP_BIT is only valid for linear non-atoms.
   MOZ_ALWAYS_INLINE
-  bool isDeduplicatable() { return !(flags() & NON_DEDUP_BIT); }
+  bool isDeduplicatable() {
+    MOZ_ASSERT(isLinear());
+    MOZ_ASSERT(!isAtom());
+    return !(flags() & NON_DEDUP_BIT);
+  }
 
   void setInStringToAtomCache() {
     MOZ_ASSERT(!isAtom());
@@ -647,6 +675,7 @@ class JSString : public js::gc::CellWithLengthAndFlags {
 
   inline bool canOwnDependentChars() const;
 
+  // Only called by the GC during nursery collection.
   inline void setBase(JSLinearString* newBase);
 
   void traceBase(JSTracer* trc);
@@ -768,6 +797,8 @@ class JSString : public js::gc::CellWithLengthAndFlags {
 #endif
 
   void traceChildren(JSTracer* trc);
+
+  inline void traceBaseFromStoreBuffer(JSTracer* trc);
 
   // Override base class implementation to tell GC about permanent atoms.
   bool isPermanentAndMayBeShared() const { return isPermanentAtom(); }
@@ -918,6 +949,7 @@ class JSLinearString : public JSString {
   friend class JS::AutoStableStringChars;
   friend class js::gc::TenuringTracer;
   friend class js::gc::CellAllocator;
+  friend class JSDependentString;  // To allow access when used as base.
 
   /* Vacuous and therefore unimplemented. */
   JSLinearString* ensureLinear(JSContext* cx) = delete;
@@ -1125,6 +1157,13 @@ class JSDependentString : public JSLinearString {
   void relocateNonInlineChars(T chars, size_t offset) {
     setNonInlineChars(chars + offset);
   }
+
+  inline JSLinearString* rootBaseDuringMinorGC();
+
+  template <typename CharT>
+  inline void sweepTypedAfterMinorGC();
+
+  inline void sweepAfterMinorGC();
 
 #if defined(DEBUG) || defined(JS_JITSPEW) || defined(JS_CACHEIR_SPEW)
   void dumpOwnRepresentationFields(js::JSONPrinter& json) const;
@@ -2248,14 +2287,17 @@ class StringRelocationOverlay : public RelocationOverlay {
   MOZ_ALWAYS_INLINE const CharT* savedNurseryChars() const;
 
   const MOZ_ALWAYS_INLINE JS::Latin1Char* savedNurseryCharsLatin1() const {
+    MOZ_ASSERT(!forwardingAddress()->as<JSString>()->hasBase());
     return nurseryCharsLatin1;
   }
 
   const MOZ_ALWAYS_INLINE char16_t* savedNurseryCharsTwoByte() const {
+    MOZ_ASSERT(!forwardingAddress()->as<JSString>()->hasBase());
     return nurseryCharsTwoByte;
   }
 
   JSLinearString* savedNurseryBaseOrRelocOverlay() const {
+    MOZ_ASSERT(forwardingAddress()->as<JSString>()->hasBase());
     return nurseryBaseOrRelocOverlay;
   }
 

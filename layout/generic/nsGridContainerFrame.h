@@ -106,12 +106,10 @@ class nsGridContainerFrame final : public nsContainerFrame,
   using NamedArea = mozilla::StyleNamedArea;
 
   template <typename T>
-  using PerBaseline = mozilla::EnumeratedArray<BaselineSharingGroup,
-                                               BaselineSharingGroup(2), T>;
+  using PerBaseline = mozilla::EnumeratedArray<BaselineSharingGroup, T, 2>;
 
   template <typename T>
-  using PerLogicalAxis =
-      mozilla::EnumeratedArray<LogicalAxis, LogicalAxis(2), T>;
+  using PerLogicalAxis = mozilla::EnumeratedArray<LogicalAxis, T, 2>;
 
   // nsIFrame overrides
   void Reflow(nsPresContext* aPresContext, ReflowOutput& aDesiredSize,
@@ -235,12 +233,12 @@ class nsGridContainerFrame final : public nsContainerFrame,
 
   /** Return true if this frame is subgridded in its aAxis. */
   bool IsSubgrid(LogicalAxis aAxis) const {
-    return HasAnyStateBits(aAxis == mozilla::eLogicalAxisBlock
+    return HasAnyStateBits(aAxis == mozilla::LogicalAxis::Block
                                ? NS_STATE_GRID_IS_ROW_SUBGRID
                                : NS_STATE_GRID_IS_COL_SUBGRID);
   }
-  bool IsColSubgrid() const { return IsSubgrid(mozilla::eLogicalAxisInline); }
-  bool IsRowSubgrid() const { return IsSubgrid(mozilla::eLogicalAxisBlock); }
+  bool IsColSubgrid() const { return IsSubgrid(mozilla::LogicalAxis::Inline); }
+  bool IsRowSubgrid() const { return IsSubgrid(mozilla::LogicalAxis::Block); }
   /** Return true if this frame is subgridded in any axis. */
   bool IsSubgrid() const {
     return HasAnyStateBits(NS_STATE_GRID_IS_ROW_SUBGRID |
@@ -249,7 +247,7 @@ class nsGridContainerFrame final : public nsContainerFrame,
 
   /** Return true if this frame has an item that is subgridded in our aAxis. */
   bool HasSubgridItems(LogicalAxis aAxis) const {
-    return HasAnyStateBits(aAxis == mozilla::eLogicalAxisBlock
+    return HasAnyStateBits(aAxis == mozilla::LogicalAxis::Block
                                ? NS_STATE_GRID_HAS_ROW_SUBGRID_ITEM
                                : NS_STATE_GRID_HAS_COL_SUBGRID_ITEM);
   }
@@ -377,10 +375,10 @@ class nsGridContainerFrame final : public nsContainerFrame,
                          mozilla::IntrinsicISizeType aConstraint);
 
   nscoord GetBBaseline(BaselineSharingGroup aBaselineGroup) const {
-    return mBaseline[mozilla::eLogicalAxisBlock][aBaselineGroup];
+    return mBaseline[mozilla::LogicalAxis::Block][aBaselineGroup];
   }
   nscoord GetIBaseline(BaselineSharingGroup aBaselineGroup) const {
-    return mBaseline[mozilla::eLogicalAxisInline][aBaselineGroup];
+    return mBaseline[mozilla::LogicalAxis::Inline][aBaselineGroup];
   }
 
   /**

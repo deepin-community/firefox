@@ -627,7 +627,7 @@ export class UrlbarInput {
   handleNavigation({ event, oneOffParams, triggeringPrincipal }) {
     let element = this.view.selectedElement;
     let result = this.view.getResultFromElement(element);
-    let openParams = oneOffParams?.openParams || {};
+    let openParams = oneOffParams?.openParams || { triggeringPrincipal };
 
     // If the value was submitted during composition, the result may not have
     // been updated yet, because the input event happens after composition end.
@@ -794,7 +794,7 @@ export class UrlbarInput {
           this.pickResult(newResult, event, null, browser);
         }
       })
-      .catch(ex => {
+      .catch(() => {
         if (url) {
           // Something went wrong, we should always have a heuristic result,
           // otherwise it means we're not able to search at all, maybe because
@@ -923,25 +923,9 @@ export class UrlbarInput {
       return;
     }
 
-    let urlOverride;
     if (element?.dataset.command) {
-      this.controller.engagementEvent.record(event, {
-        result,
-        element,
-        searchString: this._lastSearchString,
-        selType:
-          element.dataset.command == "help" &&
-          result.type == lazy.UrlbarUtils.RESULT_TYPE.TIP
-            ? "tiphelp"
-            : element.dataset.command,
-      });
-      if (element.dataset.command == "help") {
-        urlOverride = result.payload.helpUrl;
-      }
-      urlOverride ||= element.dataset.url;
-      if (!urlOverride) {
-        return;
-      }
+      this.#pickMenuResult(result, event, element, browser);
+      return;
     }
 
     // When a one-off is selected, we restyle heuristic results to look like
@@ -976,9 +960,13 @@ export class UrlbarInput {
       return;
     }
 
-    urlOverride ||= element?.dataset.url;
+    let resultUrl = element?.dataset.url;
     let originalUntrimmedValue = this.untrimmedValue;
-    let isCanonized = this.setValueFromResult({ result, event, urlOverride });
+    let isCanonized = this.setValueFromResult({
+      result,
+      event,
+      urlOverride: resultUrl,
+    });
     let where = this._whereToOpen(event);
     let openParams = {
       allowInheritPrincipal: false,
@@ -992,7 +980,7 @@ export class UrlbarInput {
     };
 
     if (
-      urlOverride &&
+      resultUrl &&
       result.type != lazy.UrlbarUtils.RESULT_TYPE.TIP &&
       where == "current"
     ) {
@@ -1018,8 +1006,8 @@ export class UrlbarInput {
       return;
     }
 
-    let { url, postData } = urlOverride
-      ? { url: urlOverride, postData: null }
+    let { url, postData } = resultUrl
+      ? { url: resultUrl, postData: null }
       : lazy.UrlbarUtils.getUrlFromResult(result);
     openParams.postData = postData;
 
@@ -1162,7 +1150,7 @@ export class UrlbarInput {
           // to the list that we use to make decisions.
           // Because we are directly asking for a search here, bypassing the
           // docShell, we need to do the same ourselves.
-          // See also URIFixupChild.jsm and keyword-uri-fixup.
+          // See also URIFixupChild.sys.mjs and keyword-uri-fixup.
           let fixupInfo = this._getURIFixupInfo(originalUntrimmedValue.trim());
           if (fixupInfo) {
             this.window.gKeywordURIFixup.check(
@@ -1196,10 +1184,7 @@ export class UrlbarInput {
         break;
       }
       case lazy.UrlbarUtils.RESULT_TYPE.TIP: {
-        let scalarName =
-          element.dataset.command == "help"
-            ? `${result.payload.type}-help`
-            : `${result.payload.type}-picked`;
+        let scalarName = `${result.payload.type}-picked`;
         Services.telemetry.keyedScalarAdd("urlbar.tips", scalarName, 1);
         if (url) {
           break;
@@ -1379,7 +1364,7 @@ export class UrlbarInput {
     // The value setter clobbers the actiontype attribute, so we need this
     // helper to restore it afterwards.
     const setValueAndRestoreActionType = (value, allowTrim) => {
-      this._setValue(value, allowTrim);
+      this._setValue(value, { allowTrim });
 
       switch (result.type) {
         case lazy.UrlbarUtils.RESULT_TYPE.TAB_SWITCH:
@@ -1570,7 +1555,7 @@ export class UrlbarInput {
       !this.value.endsWith(" ")
     ) {
       this._autofillPlaceholder = null;
-      this._setValue(this.window.gBrowser.userTypedValue, false);
+      this._setValue(this.window.gBrowser.userTypedValue);
     }
 
     return false;
@@ -1955,7 +1940,7 @@ export class UrlbarInput {
   }
 
   set value(val) {
-    this._setValue(val, true);
+    this._setValue(val, { allowTrim: true });
   }
 
   get lastSearchString() {
@@ -2122,7 +2107,7 @@ export class UrlbarInput {
     this.searchMode = searchMode;
 
     let value = result.payload.query?.trimStart() || "";
-    this._setValue(value, false);
+    this._setValue(value);
 
     if (startQuery) {
       this.startQuery({ allowAutofill: false });
@@ -2219,11 +2204,24 @@ export class UrlbarInput {
     this.formatValue();
     this._resetSearchState();
 
-    // Switching tabs doesn't always change urlbar focus, so we must try to
-    // reopen here too, not just on focus.
     // We don't use the original TabSelect event because caching it causes
     // leaks on MacOS.
-    if (this.view.autoOpen({ event: new CustomEvent("tabswitch") })) {
+    const event = new CustomEvent("tabswitch");
+    // If the urlbar is focused after a tab switch, record a potential
+    // engagement event. When switching from a focused to a non-focused urlbar,
+    // the blur event would record the abandonment. When switching from an
+    // unfocused to a focused urlbar, there should be no search session ongoing,
+    // so this will be a no-op.
+    if (this.focused) {
+      this.controller.engagementEvent.record(event, {
+        searchString: this._lastSearchString,
+        searchSource: this.getSearchSource(event),
+      });
+    }
+
+    // Switching tabs doesn't always change urlbar focus, so we must try to
+    // reopen here too, not just on focus.
+    if (this.view.autoOpen({ event })) {
       return;
     }
     // The input may retain focus when switching tabs in which case we
@@ -2255,10 +2253,6 @@ export class UrlbarInput {
           "--urlbar-height",
           px(getBoundsWithoutFlushing(this.textbox).height)
         );
-        this.textbox.style.setProperty(
-          "--urlbar-toolbar-height",
-          px(getBoundsWithoutFlushing(this._toolbar).height)
-        );
 
         this.setAttribute("breakout", "true");
         this.textbox.parentNode.setAttribute("breakout", "true");
@@ -2268,7 +2262,16 @@ export class UrlbarInput {
     });
   }
 
-  _setValue(val, allowTrim) {
+  /**
+   * Sets the input field value.
+   *
+   * @param {string} val The new value to set.
+   * @param {object} [options] Options for setting.
+   * @param {boolean} [options.allowTrim] Whether the value can be trimmed.
+   *
+   * @returns {string} The set value.
+   */
+  _setValue(val, { allowTrim = false } = {}) {
     // Don't expose internal about:reader URLs to the user.
     let originalUrl = lazy.ReaderMode.getOriginalUrlObjectForDisplay(val);
     if (originalUrl) {
@@ -2732,7 +2735,7 @@ export class UrlbarInput {
   }) {
     // The autofilled value may be a URL that includes a scheme at the
     // beginning.  Do not allow it to be trimmed.
-    this._setValue(value, false);
+    this._setValue(value);
     this.inputField.setSelectionRange(selectionStart, selectionEnd);
     this._autofillPlaceholder = {
       value,
@@ -2741,6 +2744,71 @@ export class UrlbarInput {
       selectionStart,
       selectionEnd,
     };
+  }
+
+  /**
+   * Called when a menu item from results menu is picked.
+   *
+   * @param {UrlbarResult} result The result that was picked.
+   * @param {Event} event The event that picked the result.
+   * @param {DOMElement} element the picked view element, if available.
+   * @param {object} browser The browser to use for the load.
+   */
+  #pickMenuResult(result, event, element, browser) {
+    this.controller.engagementEvent.record(event, {
+      result,
+      element,
+      searchString: this._lastSearchString,
+      selType:
+        element.dataset.command == "help" &&
+        result.type == lazy.UrlbarUtils.RESULT_TYPE.TIP
+          ? "tiphelp"
+          : element.dataset.command,
+    });
+
+    if (element.dataset.command == "manage") {
+      this.window.openPreferences("search-locationBar");
+      return;
+    }
+
+    let url;
+    if (element.dataset.command == "help") {
+      url = result.payload.helpUrl;
+    }
+    url ||= element.dataset.url;
+
+    if (!url) {
+      return;
+    }
+
+    let where = this._whereToOpen(event);
+    if (result.type != lazy.UrlbarUtils.RESULT_TYPE.TIP && where == "current") {
+      // Open non-tip help links in a new tab unless the user held a modifier.
+      // TODO (bug 1696232): Do this for tip help links, too.
+      where = "tab";
+    }
+
+    this.view.close({ elementPicked: true });
+
+    if (result.type == lazy.UrlbarUtils.RESULT_TYPE.TIP) {
+      let scalarName = `${result.payload.type}-help`;
+      Services.telemetry.keyedScalarAdd("urlbar.tips", scalarName, 1);
+    }
+
+    this._loadURL(
+      url,
+      event,
+      where,
+      {
+        allowInheritPrincipal: false,
+        private: this.isPrivate,
+      },
+      {
+        source: result.source,
+        type: result.type,
+      },
+      browser
+    );
   }
 
   /**
@@ -3089,8 +3157,8 @@ export class UrlbarInput {
       this.select();
       this.window.goDoCommand("cmd_paste");
       this.setResultForCurrentValue(null);
-      this.controller.clearLastQueryContextCache();
       this.handleCommand();
+      this.controller.clearLastQueryContextCache();
 
       this._suppressStartQuery = false;
     });
@@ -3441,7 +3509,7 @@ export class UrlbarInput {
       }
       if (untrim) {
         this._focusUntrimmedValue = this._untrimmedValue;
-        this._setValue(this._focusUntrimmedValue, false);
+        this._setValue(this._focusUntrimmedValue);
       }
     }
 
@@ -3465,11 +3533,11 @@ export class UrlbarInput {
     Services.obs.notifyObservers(null, "urlbar-focus");
   }
 
-  _on_mouseover(event) {
+  _on_mouseover() {
     this._updateUrlTooltip();
   }
 
-  _on_draggableregionleftmousedown(event) {
+  _on_draggableregionleftmousedown() {
     if (!lazy.UrlbarPrefs.get("ui.popup.disable_autohide")) {
       this.view.close();
     }
@@ -3477,7 +3545,7 @@ export class UrlbarInput {
 
   _on_mousedown(event) {
     switch (event.currentTarget) {
-      case this.textbox:
+      case this.textbox: {
         this._mousedownOnUrlbarDescendant = true;
 
         if (
@@ -3522,6 +3590,7 @@ export class UrlbarInput {
           });
         }
         break;
+      }
       case this.window:
         if (this._mousedownOnUrlbarDescendant) {
           this._mousedownOnUrlbarDescendant = false;
@@ -3643,7 +3712,7 @@ export class UrlbarInput {
     });
   }
 
-  _on_selectionchange(event) {
+  _on_selectionchange() {
     // Confirm placeholder as user text if it gets explicitly deselected. This
     // happens when the user wants to modify the autofilled text by either
     // clicking on it, or pressing HOME, END, RIGHT, …
@@ -3658,7 +3727,7 @@ export class UrlbarInput {
     }
   }
 
-  _on_select(event) {
+  _on_select() {
     // On certain user input, AutoCopyListener::OnSelectionChange() updates
     // the primary selection with user-selected text (when supported).
     // Selection::NotifySelectionListeners() then dispatches a "select" event
@@ -3827,8 +3896,9 @@ export class UrlbarInput {
       isPrivate: this.isPrivate,
       maxResults: lazy.UrlbarPrefs.get("maxRichResults"),
       searchString,
-      userContextId:
-        this.window.gBrowser.selectedBrowser.getAttribute("usercontextid"),
+      userContextId: parseInt(
+        this.window.gBrowser.selectedBrowser.getAttribute("usercontextid") || 0
+      ),
       currentPage: this.window.gBrowser.currentURI.spec,
       formHistoryName: this.formHistoryName,
       prohibitRemoteResults:
@@ -3848,11 +3918,11 @@ export class UrlbarInput {
     return new lazy.UrlbarQueryContext(options);
   }
 
-  _on_scrollend(event) {
+  _on_scrollend() {
     this.updateTextOverflow();
   }
 
-  _on_TabSelect(event) {
+  _on_TabSelect() {
     this._gotTabSelect = true;
     this._afterTabSelectAndFocusChange();
   }
@@ -3927,7 +3997,7 @@ export class UrlbarInput {
     }
   }
 
-  _on_compositionstart(event) {
+  _on_compositionstart() {
     if (this._compositionState == lazy.UrlbarUtils.COMPOSITION.COMPOSING) {
       throw new Error("Trying to start a nested composition?");
     }

@@ -2,6 +2,10 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
 
+// This file is loaded in a `spawn` context sometimes which doesn't have,
+// `Assert`, so we can't use its comparison functions.
+/* eslint-disable mozilla/no-comparison-or-assignment-inside-ok */
+
 /**
  * Helper methods to drive with the debugger during mochitests. This file can be safely
  * required from other panel test files.
@@ -50,8 +54,8 @@ const {
 } = require("devtools/client/debugger/src/utils/prefs");
 
 const {
-  safeDecodeItemName,
-} = require("devtools/client/debugger/src/utils/sources-tree/utils");
+  getUnicodeUrlPath,
+} = require("resource://devtools/client/shared/unicode-url.js");
 
 const {
   isGeneratedId,
@@ -64,25 +68,27 @@ const DEBUGGER_L10N = new LocalizationHelper(
 /**
  * Waits for `predicate()` to be true. `state` is the redux app state.
  *
- * @memberof mochitest/waits
  * @param {Object} dbg
  * @param {Function} predicate
+ * @param {String} msg
  * @return {Promise}
- * @static
  */
-function waitForState(dbg, predicate, msg) {
+function waitForState(dbg, predicate, msg = "") {
   return new Promise(resolve => {
-    info(`Waiting for state change: ${msg || ""}`);
-    if (predicate(dbg.store.getState())) {
-      info(`Finished waiting for state change: ${msg || ""}`);
-      resolve();
+    info(`Waiting for state change: ${msg}`);
+    let result = predicate(dbg.store.getState());
+    if (result) {
+      info(
+        `--> The state was immediately correct (should rather do an immediate assertion?)`
+      );
+      resolve(result);
       return;
     }
 
     const unsubscribe = dbg.store.subscribe(() => {
-      const result = predicate(dbg.store.getState());
+      result = predicate(dbg.store.getState());
       if (result) {
-        info(`Finished waiting for state change: ${msg || ""}`);
+        info(`Finished waiting for state change: ${msg}`);
         unsubscribe();
         resolve(result);
       }
@@ -133,7 +139,7 @@ async function waitForSources(dbg, ...sources) {
 function waitForSource(dbg, url) {
   return waitForState(
     dbg,
-    state => findSource(dbg, url, { silent: true }),
+    () => findSource(dbg, url, { silent: true }),
     "source exists"
   );
 }
@@ -185,7 +191,7 @@ function assertClass(el, className, exists = true) {
 }
 
 function waitForSelectedLocation(dbg, line, column) {
-  return waitForState(dbg, state => {
+  return waitForState(dbg, () => {
     const location = dbg.selectors.getSelectedLocation();
     return (
       location &&
@@ -216,7 +222,7 @@ function waitForSelectedSource(dbg, sourceOrUrl) {
 
   return waitForState(
     dbg,
-    state => {
+    () => {
       const location = dbg.selectors.getSelectedLocation() || {};
       const sourceTextContent = getSelectedSourceTextContent();
       if (!sourceTextContent) {
@@ -504,10 +510,7 @@ async function waitForLoadedScopes(dbg) {
 }
 
 function waitForBreakpointCount(dbg, count) {
-  return waitForState(
-    dbg,
-    state => dbg.selectors.getBreakpointCount() == count
-  );
+  return waitForState(dbg, () => dbg.selectors.getBreakpointCount() == count);
 }
 
 function waitForBreakpoint(dbg, url, line) {
@@ -569,7 +572,7 @@ async function waitForPaused(
 
   await waitForState(
     dbg,
-    state => isPaused(dbg) && !!getSelectedScope(getCurrentThread()),
+    () => isPaused(dbg) && !!getSelectedScope(getCurrentThread()),
     "paused"
   );
 
@@ -588,7 +591,7 @@ async function waitForPaused(
  */
 function waitForResumed(dbg) {
   info("Waiting for the debugger to resume");
-  return waitForState(dbg, state => !dbg.selectors.getIsCurrentThreadPaused());
+  return waitForState(dbg, () => !dbg.selectors.getIsCurrentThreadPaused());
 }
 
 function waitForInlinePreviews(dbg) {
@@ -596,7 +599,7 @@ function waitForInlinePreviews(dbg) {
 }
 
 function waitForCondition(dbg, condition) {
-  return waitForState(dbg, state =>
+  return waitForState(dbg, () =>
     dbg.selectors
       .getBreakpointsList()
       .find(bp => bp.options.condition == condition)
@@ -604,7 +607,7 @@ function waitForCondition(dbg, condition) {
 }
 
 function waitForLog(dbg, logValue) {
-  return waitForState(dbg, state =>
+  return waitForState(dbg, () =>
     dbg.selectors
       .getBreakpointsList()
       .find(bp => bp.options.logValue == logValue)
@@ -612,10 +615,10 @@ function waitForLog(dbg, logValue) {
 }
 
 async function waitForPausedThread(dbg, thread) {
-  return waitForState(dbg, state => dbg.selectors.getIsPaused(thread));
+  return waitForState(dbg, () => dbg.selectors.getIsPaused(thread));
 }
 
-function isSelectedFrameSelected(dbg, state) {
+function isSelectedFrameSelected(dbg) {
   const frame = dbg.selectors.getVisibleSelectedFrame();
 
   // Make sure the source text is completely loaded for the
@@ -733,7 +736,7 @@ function findSource(
   const source = sources.find(s => {
     // Sources don't have a file name attribute, we need to compute it here:
     const sourceFileName = s.url
-      ? safeDecodeItemName(s.url.substring(s.url.lastIndexOf("/") + 1))
+      ? getUnicodeUrlPath(s.url.substring(s.url.lastIndexOf("/") + 1))
       : "";
 
     // The input argument may either be only the filename, or the complete URL
@@ -784,7 +787,7 @@ function sourceExists(dbg, url) {
 function waitForLoadedSource(dbg, url) {
   return waitForState(
     dbg,
-    state => {
+    () => {
       const source = findSource(dbg, url, { silent: true });
       return (
         source &&
@@ -1772,6 +1775,7 @@ const selectors = {
   prettyPrintButton: ".source-footer .prettyPrint",
   mappedSourceLink: ".source-footer .mapped-source",
   sourcesFooter: ".sources-panel .source-footer",
+  sourceMapFooterButton: ".debugger-source-map-button",
   editorFooter: ".editor-pane .source-footer",
   sourceNode: i => `.sources-list .tree-node:nth-child(${i}) .node`,
   sourceNodes: ".sources-list .tree-node",
@@ -2202,8 +2206,9 @@ async function clickAtPos(dbg, pos) {
       bubbles: true,
       cancelable: true,
       view: dbg.win,
-      clientX: left,
-      clientY: top,
+      // Shift by one as we might be on the edge of the element and click on previous line/column
+      clientX: left + 1,
+      clientY: top + 1,
     })
   );
 }
@@ -2570,14 +2575,13 @@ async function assertPreviews(dbg, previews) {
  * @param {Number} column
  * @param {Object} options
  * @param {String}  options.result - Expected text shown in the preview
- * @param {String}  options.expression - The expression hovered over
  * @param {Array}  options.fields - The expected stacktrace information
  */
 async function assertInlineExceptionPreview(
   dbg,
   line,
   column,
-  { expression, result, fields }
+  { result, fields }
 ) {
   info(" # Assert preview on " + line + ":" + column);
   const { element: popupEl, tokenEl } = await tryHovering(
@@ -2628,7 +2632,7 @@ async function assertInlineExceptionPreview(
 async function waitForBreakableLine(dbg, source, lineNumber) {
   await waitForState(
     dbg,
-    state => {
+    () => {
       const currentSource = findSource(dbg, source);
 
       const breakableLines =
@@ -2944,6 +2948,33 @@ async function toggleDebbuggerSettingsMenuItem(dbg, { className, isChecked }) {
   await waitFor(() => menuButton.getAttribute("aria-expanded") === "false");
 }
 
+/**
+ * Click on the source map button in the editor's footer
+ * and wait for its context menu to be rendered before clicking
+ * on one menuitem of it.
+ *
+ * @param {Object} dbg
+ * @param {String} className
+ *        The class name of the menuitem to click in the context menu.
+ */
+async function clickOnSourceMapMenuItem(dbg, className) {
+  const menuButton = findElement(dbg, "sourceMapFooterButton");
+  const { parent } = dbg.panel.panelWin;
+  const { document } = parent;
+
+  menuButton.click();
+  // Waits for the debugger settings panel to appear.
+  await waitFor(() => {
+    const menuListEl = document.querySelector("#debugger-source-map-list");
+    // Lets check the offsetParent property to make sure the menu list is actually visible
+    // by its parents display property being no longer "none".
+    return menuListEl && menuListEl.offsetParent !== null;
+  });
+
+  const menuItem = document.querySelector(className);
+  menuItem.click();
+}
+
 async function setLogPoint(dbg, index, value) {
   rightClickElement(dbg, "gutter", index);
   await waitForContextMenu(dbg);
@@ -2964,10 +2995,7 @@ async function setLogPoint(dbg, index, value) {
 function openProjectSearch(dbg) {
   info("Opening the project search panel");
   synthesizeKeyShortcut("CmdOrCtrl+Shift+F");
-  return waitForState(
-    dbg,
-    state => dbg.selectors.getActiveSearch() === "project"
-  );
+  return waitForState(dbg, () => dbg.selectors.getActiveSearch() === "project");
 }
 
 /**
@@ -3076,6 +3104,7 @@ async function selectBlackBoxContextMenuItem(dbg, itemName) {
 }
 
 function openOutlinePanel(dbg, waitForOutlineList = true) {
+  info("Select the outline panel");
   const outlineTab = findElementWithSelector(dbg, ".outline-tab a");
   EventUtils.synthesizeMouseAtCenter(outlineTab, {}, outlineTab.ownerGlobal);
 
@@ -3105,7 +3134,7 @@ function assertOutlineItems(dbg, expectedItems) {
 async function checkAdditionalThreadCount(dbg, count) {
   await waitForState(
     dbg,
-    state => {
+    () => {
       return dbg.selectors.getThreads().length == count;
     },
     "Have the expected number of additional threads"

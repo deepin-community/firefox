@@ -251,3 +251,25 @@ firefoxview-recentlyclosed-empty-description-two = Pour retrouver des onglets pl
 
 firefoxview-syncedtabs-device-notabs = Aucun onglet ouvert sur cet appareil
 firefoxview-syncedtabs-connect-another-device = Connecter un autre appareil
+firefoxview-pinned-tabs =
+    .title = Onglets épinglés
+firefoxview-tabs =
+    .title = Onglets
+
+## These tooltips will be displayed when hovering over a pinned tab on the Open Tabs page
+## Variables:
+##  $tabTitle (string) - Title of pinned tab that will be opened when selected
+
+firefoxview-opentabs-pinned-tab =
+    .title = Aller sur { $tabTitle }
+# This tooltip will be shown for a pinned tab whose URL is currently bookmarked.
+firefoxview-opentabs-bookmarked-pinned-tab =
+    .title = Aller sur { $tabTitle } (dans les marque-pages)
+
+## These tooltips will be displayed when hovering over an unpinned Open Tab
+## Variables:
+##   $url (string) - URL of tab that will be opened when selected
+
+# This tooltip will be shown for an unpinned tab whose URL is currently bookmarked.
+firefoxview-opentabs-bookmarked-tab =
+    .title = { $url } (dans les marque-pages)

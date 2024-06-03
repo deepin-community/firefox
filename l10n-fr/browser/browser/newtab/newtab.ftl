@@ -45,6 +45,7 @@ newtab-topsites-add-search-engine-header = Ajouter un moteur de recherche
 newtab-topsites-add-shortcut-header = Nouveau raccourci
 newtab-topsites-edit-topsites-header = Modifier le site populaire
 newtab-topsites-edit-shortcut-header = Modifier le raccourci
+newtab-topsites-add-shortcut-label = Ajouter un raccourci
 newtab-topsites-title-label = Titre
 newtab-topsites-title-input =
     .placeholder = Saisir un titre
@@ -257,9 +258,9 @@ newtab-custom-row-selector =
 newtab-custom-sponsored-sites = Raccourcis sponsorisés
 newtab-custom-pocket-title = Recommandé par { -pocket-brand-name }
 newtab-custom-pocket-subtitle = Contenu exceptionnel sélectionné par { -pocket-brand-name }, membre de la famille { -brand-product-name }
-newtab-custom-pocket-toggle =
-    .label = Recommandé par { -pocket-brand-name }
-    .description = Contenu exceptionnel sélectionné par { -pocket-brand-name }, membre de la famille { -brand-product-name }
+newtab-custom-stories-toggle =
+    .label = Articles recommandés
+    .description = Contenu exceptionnel sélectionné par les membres de la gamme de produits { -brand-product-name }
 newtab-custom-pocket-sponsored = Articles sponsorisés
 newtab-custom-pocket-show-recent-saves = Afficher les éléments enregistrés récemment
 newtab-custom-recent-title = Activité récente
@@ -269,3 +270,24 @@ newtab-custom-recent-toggle =
     .description = Une sélection de sites et de contenus récents
 newtab-custom-close-button = Fermer
 newtab-custom-settings = Gérer plus de paramètres
+
+## New Tab Wallpapers
+
+newtab-wallpaper-title = Fonds d’écran
+newtab-wallpaper-reset = Réinitialiser
+newtab-wallpaper-light-red-panda = Panda roux
+newtab-wallpaper-light-mountain = Montagne blanche
+newtab-wallpaper-light-sky = Ciel avec des nuages violets et roses
+newtab-wallpaper-light-color = Formes bleues, roses et jaunes
+newtab-wallpaper-light-landscape = Paysage de montagne avec une brume bleue
+newtab-wallpaper-light-beach = Plage avec palmier
+newtab-wallpaper-dark-aurora = Aurores boréales
+newtab-wallpaper-dark-color = Formes rouges et bleues
+newtab-wallpaper-dark-panda = Panda roux caché dans la forêt
+newtab-wallpaper-dark-sky = Paysage de ville avec un ciel nocturne
+newtab-wallpaper-dark-mountain = Paysage de montagne
+newtab-wallpaper-dark-city = Paysage de ville avec une teinte violette
+# Variables
+#   $author_string (String) - The name of the creator of the photo.
+#   $webpage_string (String) - The name of the webpage where the photo is located.
+newtab-wallpaper-attribution = Photo de <a data-l10n-name="name-link">{ $author_string }</a> sur <a data-l10n-name="webpage-link">{ $webpage_string }</a>

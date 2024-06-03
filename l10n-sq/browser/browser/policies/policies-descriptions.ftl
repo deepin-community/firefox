@@ -17,6 +17,8 @@ policy-AppAutoUpdate = Aktivizoni ose çaktivizoni përditësime të vetvetishme
 policy-AppUpdatePin = Pengoje { -brand-short-name }-in të përditësohet tej versionit të treguar.
 policy-AppUpdateURL = Caktoni URL vetjake përditësimi aplikacioni.
 policy-Authentication = Formësoni mirëfilltësim të integruar për sajte që e mbulojnë atë.
+policy-AutofillAddressEnabled = Aktivizo vetëplotësim për adresa.
+policy-AutofillCreditCardEnabled = Aktivizo vetëplotësim për metoda pagesash.
 policy-AutoLaunchProtocolsFromOrigins = Përcaktoni një listë protokollesh të jashtë që mund të përdoren prej origjinash të treguara, pa pyetur përdoruesin.
 policy-BackgroundAppUpdate2 = Aktivizoni ose çaktivizoni përditësuesin në prapaskenë.
 policy-BlockAboutAddons = Bllokoni hyrje te Përgjegjësi i Shtesave (about:addons).
@@ -26,6 +28,7 @@ policy-BlockAboutSupport = Bllokoni hyrje te faqja about:support.
 policy-Bookmarks = Krijoni faqerojtës te paneli Faqerojtës, menuja Faqerojtës, ose te një dosje e caktuar brenda tyre.
 policy-CaptivePortal = Aktivizoni ose çaktivizoni mbulim për captive portal.
 policy-CertificatesDescription = Shtoni dëshmi ose përdorni dëshmi të brendshme të programit.
+policy-ContentAnalysis = Aktivizoni, ose çaktivizoni lidhje me agjent parandalimi humbjeje të dhënash.
 policy-Cookies = Lejoni ose jo që sajte të depozitojnë “cookies”.
 # Containers in this context is referring to container tabs in Firefox.
 policy-Containers = Caktoni rregulla lidhur me kontejnerët.
@@ -36,8 +39,11 @@ policy-DisableAppUpdate = Pengoje shfletuesin të përditësohet.
 policy-DisableBuiltinPDFViewer = Çaktivizoni PDF.js, parësin e brendshëm të PDF-ve në { -brand-short-name }.
 policy-DisableDefaultBrowserAgent = Pengo agjent shfletuesi parazgjedhje të ndërmarrë ndonjë veprim. E zbatueshme vetëm për Windows; platformat e tjera s’e kanë agjentin.
 policy-DisableDeveloperTools = Bllokoni hyrje te mjetet për zhvillues.
+policy-DisableEncryptedClientHello = Çaktivizoni përdorimin e veçorisë “Encrypted Client Hello” (ECH) TLS.
 policy-DisableFeedbackCommands = Çaktivizoni te menuja Ndihmë urdhra për dërgim përshtypjesh (Parashtroni Përshtypje dhe  Raportoni Sajt të Rrejshëm).
 policy-DisableFirefoxAccounts = Çaktivizoni shërbime me bazë { -fxaccount-brand-name }, përfshi Sync-un.
+# This string is in the process of being deprecated in favor of policy-DisableAccounts.
+policy-DisableFirefoxAccounts1 = Çaktivizo shërbime të bazuara në llogari, përfshi njëkohësimin.
 # Firefox Screenshots is the name of the feature, and should not be translated.
 policy-DisableFirefoxScreenshots = Çaktivizoni veçorinë Foto Ekrani Firefox.
 policy-DisableFirefoxStudies = Pengojani { -brand-short-name }-it xhirimin e studimeve.
@@ -122,6 +128,7 @@ policy-SSLVersionMax = Caktoni version maksimum SSL-je.
 policy-SSLVersionMin = Caktoni version minimum SSL-je.
 policy-StartDownloadsInTempDirectory = Detyroji shkarkimet të nisin në një vendndodhje lokale të përkohshme, në vend se në drejtorinë parazgjedhje të shkarkimeve.
 policy-SupportMenu = Shtoni te menuja e ndihmës një element vetjak menuje asistence.
+policy-TranslateEnabled = Aktivizoni, ose çaktivizoni përkthim faqesh web.
 policy-UserMessaging = Mos i shfaq përdoruesit disa mesazhe të caktuara
 policy-UseSystemPrintDialog = Shtype duke përdorur dialogun e sistemit për shtypje.
 # “format” refers to the format used for the value of this policy.

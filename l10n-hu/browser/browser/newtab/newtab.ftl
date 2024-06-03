@@ -45,6 +45,7 @@ newtab-topsites-add-search-engine-header = Keresőszolgáltatás hozzáadása
 newtab-topsites-add-shortcut-header = Új gyorskereső
 newtab-topsites-edit-topsites-header = Népszerű oldal szerkesztése
 newtab-topsites-edit-shortcut-header = Gyorskereső szerkesztése
+newtab-topsites-add-shortcut-label = Indítóikon hozzáadása
 newtab-topsites-title-label = Cím
 newtab-topsites-title-input =
     .placeholder = Cím megadása
@@ -261,9 +262,6 @@ newtab-custom-row-selector =
 newtab-custom-sponsored-sites = Szponzorált gyorskeresők
 newtab-custom-pocket-title = A { -pocket-brand-name } által ajánlott
 newtab-custom-pocket-subtitle = Kivételes tartalmak a { -pocket-brand-name } válogatásában, amely a { -brand-product-name } család része
-newtab-custom-pocket-toggle =
-    .label = A { -pocket-brand-name } által ajánlott
-    .description = Kivételes tartalmak a { -pocket-brand-name } válogatásában, amely a { -brand-product-name } család része
 newtab-custom-stories-toggle =
     .label = Ajánlott történetek
     .description = Kivételes tartalmak a { -brand-product-name } család válogatásában
@@ -276,3 +274,24 @@ newtab-custom-recent-toggle =
     .description = Válogatás a legutóbbi webhelyekből és tartalmakból
 newtab-custom-close-button = Bezárás
 newtab-custom-settings = További beállítások kezelése
+
+## New Tab Wallpapers
+
+newtab-wallpaper-title = Háttérképek
+newtab-wallpaper-reset = Visszaállítás az alapértelmezésre
+newtab-wallpaper-light-red-panda = Vörös panda
+newtab-wallpaper-light-mountain = Fehér hegy
+newtab-wallpaper-light-sky = Ég, lila és rózsaszín felhőkkel
+newtab-wallpaper-light-color = Kék, rózsaszín és sárga alakzatok
+newtab-wallpaper-light-landscape = Kék ködös hegyi táj
+newtab-wallpaper-light-beach = Strand pálmafával
+newtab-wallpaper-dark-aurora = Sarki fény
+newtab-wallpaper-dark-color = Vörös és kék alakzatok
+newtab-wallpaper-dark-panda = Vörös panda elrejtve az erdőben
+newtab-wallpaper-dark-sky = Városi táj éjszakai égbolttal
+newtab-wallpaper-dark-mountain = Hegyvidéki táj
+newtab-wallpaper-dark-city = Lila városi táj
+# Variables
+#   $author_string (String) - The name of the creator of the photo.
+#   $webpage_string (String) - The name of the webpage where the photo is located.
+newtab-wallpaper-attribution = Fénykép: <a data-l10n-name="name-link">{ $author_string }</a> itt: <a data-l10n-name="webpage-link">{ $webpage_string }</a>

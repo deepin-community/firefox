@@ -32,6 +32,8 @@ search-input-box2 =
     .style = width: 15.4em
     .placeholder = Tìm kiếm trong Cài đặt
 managed-notice = Trình duyệt của bạn đang được quản lý bởi tổ chức của bạn.
+managed-notice-info-icon =
+    .alt = Thông tin
 category-list =
     .aria-label = Thể loại
 pane-general-title = Tổng quát
@@ -692,6 +694,13 @@ sync-mobile-promo = Tải Firefox cho <img data-l10n-name="android-icon"/> <a da
 
 sync-profile-picture =
     .tooltiptext = Đổi hình hồ sơ
+sync-profile-picture-with-alt =
+    .tooltiptext = Đổi hình hồ sơ
+    .alt = Đổi hình hồ sơ
+sync-profile-picture-account-problem =
+    .alt = Ảnh đại diện cho tài khoản
+fxa-login-rejected-warning =
+    .alt = Cảnh báo
 sync-sign-out =
     .label = Đăng xuất…
     .accesskey = g
@@ -1055,7 +1064,7 @@ addressbar-locbar-bookmarks-option =
     .label = Dấu trang
     .accesskey = k
 addressbar-locbar-clipboard-option =
-    .label = Khay nhớ tạm
+    .label = Bộ nhớ tạm
     .accesskey = C
 addressbar-locbar-openpage-option =
     .label = Các thẻ đang mở
@@ -1258,6 +1267,8 @@ addon-recommendations-link = Tìm hiểu thêm
 # or builds with no Telemetry support available.
 collection-health-report-disabled = Dữ liệu báo cáo bị vô hiệu hóa với cấu hình này
 collection-backlogged-crash-reports-with-link = Cho phép { -brand-short-name } thay mặt bạn gửi báo cáo sự cố tồn đọng <a data-l10n-name="crash-reports-link">Tìm hiểu thêm</a>
+    .accesskey = c
+collection-backlogged-crash-reports = Cho phép { -brand-short-name } thay mặt bạn gửi báo cáo sự cố tồn đọng
     .accesskey = c
 privacy-segmentation-section-header = Các tính năng mới nâng cao khả năng duyệt web của bạn
 privacy-segmentation-section-description = Khi chúng tôi cung cấp các tính năng sử dụng dữ liệu của bạn để mang lại cho bạn trải nghiệm cá nhân hơn:

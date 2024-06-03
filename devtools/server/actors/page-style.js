@@ -704,6 +704,7 @@ class PageStyleActor extends Actor {
       case "::first-line":
       case "::selection":
       case "::highlight":
+      case "::target-text":
         return true;
       case "::marker":
         return this._nodeIsListItem(node);
@@ -727,9 +728,13 @@ class PageStyleActor extends Actor {
       case "::-moz-range-progress":
       case "::-moz-range-thumb":
       case "::-moz-range-track":
+      case "::slider-fill":
+      case "::slider-thumb":
+      case "::slider-track":
         return node.nodeName == "INPUT" && node.type == "range";
       default:
-        throw Error("Unhandled pseudo-element " + pseudo);
+        console.error("Unhandled pseudo-element " + pseudo);
+        return false;
     }
   }
 

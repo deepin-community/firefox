@@ -8,6 +8,3 @@ pref("devtools.webide.autoinstallFxdtAdapters", false);
 pref("extensions.unsignedScopes", 12);
 
 pref("spellchecker.dictionary_path", "/usr/share/hunspell");
-
-// Enable Hardware acceleration.
-pref("media.ffmpeg.vaapi.enabled", true);

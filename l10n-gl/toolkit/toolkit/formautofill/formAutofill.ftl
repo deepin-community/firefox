@@ -18,6 +18,8 @@ credit-card-save-doorhanger-header = Gardar esta tarxeta de forma segura?
 
 credit-card-update-doorhanger-header = Actualizar a tarxeta?
 credit-card-update-doorhanger-description = Tarxeta para actualizar:
+# Label for the button in the dropdown menu used to clear the populated form.
+autofill-clear-form-label = Borrar o completado automático do formulario
 # Used as a label for the button, displayed at the bottom of the dropdown suggestion, to open Form Autofill browser preferences.
 autofill-manage-addresses-label = Xestionar enderezos
 # Used as a label for the button, displayed at the bottom of the dropdown suggestion, to open Form Autofill browser preferences.
@@ -34,3 +36,19 @@ autofill-card-network-mastercard = MasterCard
 autofill-card-network-mir = MIR
 autofill-card-network-unionpay = Union Pay
 autofill-card-network-visa = Visa
+# The warning text that is displayed for informing users what categories are
+# about to be filled.  The text would be, for example,
+#   Also autofills organization, phone, email.
+# Variables:
+#   $categories - one or more of the categories, see autofill-category-X below
+autofill-phishing-warningmessage-extracategory = Tamén completa automaticamente { $categories }
+# Variation when all are in the same category.
+# Variables:
+#   $categories - one or more of the categories
+autofill-phishing-warningmessage = Completa automaticamente { $categories }
+# Used in autofill drop down suggestion to indicate what other categories Form Autofill will attempt to fill.
+autofill-category-address = enderezo
+autofill-category-name = nome
+autofill-category-organization = organización
+autofill-category-tel = teléfono
+autofill-category-email = correo electrónico

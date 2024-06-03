@@ -63,6 +63,7 @@ cfr-doorhanger-extension-total-users =
 
 cfr-doorhanger-bookmark-fxa-header = Yer imlerinize her yerden ulaşın.
 cfr-doorhanger-bookmark-fxa-body = Bu yer imine mobil cihazlarınızdan da ulaşmak istemez miydiniz? Hemen { -fxaccount-brand-name } açın.
+cfr-doorhanger-bookmark-fxa-body-2 = Bu yer imine mobil cihazlarınızdan da ulaşmak istemez miydiniz? Hemen hesap açın.
 cfr-doorhanger-bookmark-fxa-link-text = Yer imlerini eşitle…
 cfr-doorhanger-bookmark-fxa-close-btn-tooltip =
     .aria-label = Kapat düğmesi
@@ -137,7 +138,7 @@ spotlight-peace-mind-header = Yanınızdayız
 spotlight-peace-mind-body = { -brand-short-name } her ay kullanıcı başına ortalama 3.000 takip kodunu engelliyor. Çünkü bizce hiçbir şey, özellikle takip kodları gibi can sıkıcı unsurlar, iyi bir internetle aranıza girmemeli.
 spotlight-pin-primary-button =
     { PLATFORM() ->
-        [macos] Dock’a sabitle
+        [macos] Dock’ta tut
        *[other] Görev çubuğuna sabitle
     }
 spotlight-pin-secondary-button = Şimdi değil
@@ -230,7 +231,7 @@ set-default-pdf-handler-primary = Anladım
 fxa-sync-cfr-header = Yeni bir cihaza geçmeyi düşünüyor musunuz?
 fxa-sync-cfr-body = { -brand-product-name } tarayıcısını yüklediğiniz her yere yer imleriniz, parolalarınız ve sekmeleriniz de sizinle birlikte gelsin.
 fxa-sync-cfr-primary = Bilgi al
-    .accesskey = D
+    .accesskey = B
 fxa-sync-cfr-secondary = Daha sonra hatırlat
     .accesskey = D
 

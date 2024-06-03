@@ -32,6 +32,8 @@ search-input-box2 =
     .style = width: 15.4em
     .placeholder = Najdi v nastavitvah
 managed-notice = Vaš brskalnik upravlja vaša organizacija.
+managed-notice-info-icon =
+    .alt = Informacije
 category-list =
     .aria-label = Kategorije
 pane-general-title = Splošno
@@ -716,6 +718,13 @@ sync-mobile-promo = Prenesite Firefox za <img data-l10n-name="android-icon"/> <a
 
 sync-profile-picture =
     .tooltiptext = Spremeni sliko profila
+sync-profile-picture-with-alt =
+    .tooltiptext = Spremeni sliko profila
+    .alt = Spremeni sliko profila
+sync-profile-picture-account-problem =
+    .alt = Profilna slika računa
+fxa-login-rejected-warning =
+    .alt = Opozorilo
 sync-sign-out =
     .label = Odjava …
     .accesskey = j
@@ -1273,6 +1282,8 @@ addon-recommendations-link = Več o tem
 # or builds with no Telemetry support available.
 collection-health-report-disabled = Pošiljanje podatkov je onemogočeno za to nastavitev graditve
 collection-backlogged-crash-reports-with-link = { -brand-short-name(sklon: "dajalnik") } dovoli, da v vašem imenu pošilja poročila o sesutjih iz zaloge <a data-l10n-name="crash-reports-link">Več o tem</a>
+    .accesskey = z
+collection-backlogged-crash-reports = { -brand-short-name(sklon: "dajalnik") } dovoli, da v vašem imenu pošilja poročila o sesutjih iz zaloge
     .accesskey = z
 privacy-segmentation-section-header = Nove zmožnosti, ki izboljšajo vaše brskanje
 privacy-segmentation-section-description = Ko ponujamo zmogljivosti, ki uporabljajo vaše podatke, da vam omogočijo bolj osebno izkušnjo:

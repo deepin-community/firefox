@@ -32,6 +32,8 @@ search-input-box2 =
     .style = width: 15.4em
     .placeholder = Najít nastavení
 managed-notice = Tento prohlížeč je spravován vaší organizací.
+managed-notice-info-icon =
+    .alt = Informace
 category-list =
     .aria-label = Kategorie
 pane-general-title = Obecné
@@ -316,6 +318,8 @@ preferences-default-zoom-value =
 preferences-zoom-text-only =
     .label = Pouze velikost textu
     .accesskey = t
+preferences-text-zoom-override-warning =
+    .message = Varování: Pokud zvolíte „Pouze velikost textu“ a vaše výchozí velikost není nastavena na 100%, může to způsobit chybné fungování některých stránek nebo obsahu.
 language-header = Jazyk
 choose-language-description = Vyberte jazyky pro zobrazování webových stránek
 choose-button =
@@ -675,6 +679,7 @@ home-prefs-recommended-by-header =
 home-prefs-recommended-by-description-new = Výjimečný obsah vybraný společností { $provider }, která je součástí rodiny { -brand-product-name(case: "gen") }
 home-prefs-recommended-by-header-generic =
     .label = Doporučené příběhy
+home-prefs-recommended-by-description-generic = Výjimečný obsah od rodiny { -brand-product-name(case: "gen") }
 
 ##
 
@@ -821,6 +826,13 @@ sync-mobile-promo = Stáhněte si Firefox pro <img data-l10n-name="android-icon
 
 sync-profile-picture =
     .tooltiptext = Změnit profilový obrázek
+sync-profile-picture-with-alt =
+    .tooltiptext = Změnit profilový obrázek
+    .alt = Změnit profilový obrázek
+sync-profile-picture-account-problem =
+    .alt = Profilový obrázek účtu
+fxa-login-rejected-warning =
+    .alt = Varování
 sync-sign-out =
     .label = Odhlásit se…
     .accesskey = O
@@ -1438,6 +1450,12 @@ collection-backlogged-crash-reports-with-link =
     { -brand-short-name.case-status ->
         [with-cases] Odesílat nevyřízená hlášení o pádech { -brand-short-name(case: "gen") } za vás <a data-l10n-name="crash-reports-link">Zjistit více</a>
        *[no-cases] Odesílat nevyřízená hlášení o pádech aplikace za vás <a data-l10n-name="crash-reports-link">Zjistit více</a>
+    }
+    .accesskey = c
+collection-backlogged-crash-reports =
+    { -brand-short-name.case-status ->
+        [with-cases] Odesílat nevyřízená hlášení o pádech { -brand-short-name(case: "gen") } za vás
+       *[no-cases] Odesílat nevyřízená hlášení o pádech aplikace za vás
     }
     .accesskey = c
 privacy-segmentation-section-header = Nové funkce, které zlepšují vaše prohlížení

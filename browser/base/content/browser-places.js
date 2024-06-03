@@ -17,7 +17,7 @@ XPCOMUtils.defineLazyPreferenceGetter(
   "SHOW_OTHER_BOOKMARKS",
   "browser.toolbars.bookmarks.showOtherBookmarks",
   true,
-  (aPref, aPrevVal, aNewVal) => {
+  () => {
     BookmarkingUI.maybeShowOtherBookmarksFolder().then(() => {
       document
         .getElementById("PlacesToolbar")
@@ -253,7 +253,7 @@ var StarUI = {
       }
       target.addEventListener(
         "popupshown",
-        function (event) {
+        function () {
           fn();
         },
         { capture: true, once: true }
@@ -392,7 +392,7 @@ var PlacesCommandHook = {
    */
   async bookmarkPage() {
     let browser = gBrowser.selectedBrowser;
-    let url = URL.fromURI(browser.currentURI);
+    let url = URL.fromURI(Services.io.createExposableURI(browser.currentURI));
     let info = await PlacesUtils.bookmarks.fetch({ url });
     let isNewBookmark = !info;
     let showEditUI = !isNewBookmark || StarUI.showForNewBookmarks;
@@ -490,6 +490,21 @@ var PlacesCommandHook = {
   },
 
   /**
+   * Bookmarks the given tabs loaded in the current browser.
+   * @param {Array} tabs
+   *        If no given tabs, bookmark all current tabs.
+   */
+  async bookmarkTabs(tabs) {
+    tabs = tabs ?? gBrowser.visibleTabs.filter(tab => !tab.pinned);
+    let pages = PlacesCommandHook.getUniquePages(tabs).map(
+      // Bookmark exposable url.
+      page =>
+        Object.assign(page, { uri: Services.io.createExposableURI(page.uri) })
+    );
+    await PlacesUIUtils.showBookmarkPagesDialog(pages);
+  },
+
+  /**
    * List of nsIURI objects characterizing tabs given in param.
    * Duplicates are discarded.
    */
@@ -508,24 +523,6 @@ var PlacesCommandHook = {
       }
     });
     return URIs;
-  },
-
-  /**
-   * List of nsIURI objects characterizing the tabs currently open in the
-   * browser, modulo pinned tabs. The URIs will be in the order in which their
-   * corresponding tabs appeared and duplicates are discarded.
-   */
-  get uniqueCurrentPages() {
-    let visibleUnpinnedTabs = gBrowser.visibleTabs.filter(tab => !tab.pinned);
-    return this.getUniquePages(visibleUnpinnedTabs);
-  },
-
-  /**
-   * List of nsIURI objects characterizing the tabs currently
-   * selected in the window. Duplicates are discarded.
-   */
-  get uniqueSelectedPages() {
-    return this.getUniquePages(gBrowser.selectedTabs);
   },
 
   /**
@@ -1177,7 +1174,7 @@ var PlacesToolbarHelper = {
     return null;
   },
 
-  onWidgetUnderflow(aNode, aContainer) {
+  onWidgetUnderflow(aNode) {
     // The view gets broken by being removed and reinserted by the overflowable
     // toolbar, so we have to force an uninit and reinit.
     let win = aNode.ownerGlobal;
@@ -1186,7 +1183,7 @@ var PlacesToolbarHelper = {
     }
   },
 
-  onWidgetAdded(aWidgetId, aArea, aPosition) {
+  onWidgetAdded(aWidgetId) {
     if (aWidgetId == "personal-bookmarks" && !this._isCustomizing) {
       // It's possible (with the "Add to Menu", "Add to Toolbar" context
       // options) that the Places Toolbar Items have been moved without
@@ -1662,13 +1659,13 @@ var BookmarkingUI = {
     }
   },
 
-  onWidgetReset: function BUI_widgetReset(aNode, aContainer) {
+  onWidgetReset: function BUI_widgetReset(aNode) {
     if (aNode == this.button) {
       this._onWidgetWasMoved();
     }
   },
 
-  onWidgetUndoMove: function BUI_undoWidgetUndoMove(aNode, aContainer) {
+  onWidgetUndoMove: function BUI_undoWidgetUndoMove(aNode) {
     if (aNode == this.button) {
       this._onWidgetWasMoved();
     }
@@ -2158,7 +2155,7 @@ var BookmarkingUI = {
     });
   },
 
-  onWidgetUnderflow(aNode, aContainer) {
+  onWidgetUnderflow(aNode) {
     let win = aNode.ownerGlobal;
     if (aNode.id != this.BOOKMARK_BUTTON_ID || win != window) {
       return;

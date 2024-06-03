@@ -32,6 +32,8 @@ search-input-box2 =
     .style = width: 15.4em
     .placeholder = Find in Settings
 managed-notice = Your browser is being managed by your organisation.
+managed-notice-info-icon =
+    .alt = Information
 category-list =
     .aria-label = Categories
 pane-general-title = General
@@ -576,17 +578,17 @@ home-prefs-recommended-by-description-generic = Exceptional content curated by t
 
 home-prefs-recommended-by-learn-more = How it works
 home-prefs-recommended-by-option-sponsored-stories =
-    .label = Sponsored Stories
+    .label = Sponsored stories
 home-prefs-recommended-by-option-recent-saves =
     .label = Show Recent Saves
 home-prefs-highlights-option-visited-pages =
-    .label = Visited Pages
+    .label = Visited pages
 home-prefs-highlights-options-bookmarks =
     .label = Bookmarks
 home-prefs-highlights-option-most-recent-download =
-    .label = Most Recent Download
+    .label = Most recent download
 home-prefs-highlights-option-saved-to-pocket =
-    .label = Pages Saved to { -pocket-brand-name }
+    .label = Pages saved to { -pocket-brand-name }
 home-prefs-recent-activity-header =
     .label = Recent activity
 home-prefs-recent-activity-description = A selection of recent sites and content
@@ -708,6 +710,13 @@ sync-mobile-promo = Download Firefox for <img data-l10n-name="android-icon"/> <a
 
 sync-profile-picture =
     .tooltiptext = Change profile picture
+sync-profile-picture-with-alt =
+    .tooltiptext = Change profile picture
+    .alt = Change profile picture
+sync-profile-picture-account-problem =
+    .alt = Account profile picture
+fxa-login-rejected-warning =
+    .alt = Warning
 sync-sign-out =
     .label = Sign Out…
     .accesskey = g
@@ -1274,6 +1283,8 @@ addon-recommendations-link = Learn more
 # or builds with no Telemetry support available.
 collection-health-report-disabled = Data reporting is disabled for this build configuration
 collection-backlogged-crash-reports-with-link = Allow { -brand-short-name } to send backlogged crash reports on your behalf <a data-l10n-name="crash-reports-link">Learn more</a>
+    .accesskey = c
+collection-backlogged-crash-reports = Allow { -brand-short-name } to send backlogged crash reports on your behalf
     .accesskey = c
 privacy-segmentation-section-header = New features that enhance your browsing
 privacy-segmentation-section-description = When we offer features that use your data to give you a more personal experience:

@@ -32,6 +32,8 @@ search-input-box2 =
     .style = width: 15.4em
     .placeholder = 在设置中查找
 managed-notice = 您的浏览器正由组织管理。
+managed-notice-info-icon =
+    .alt = 信息
 category-list =
     .aria-label = 分类
 pane-general-title = 常规
@@ -340,7 +342,7 @@ applications-use-os-default =
         }
 applications-use-other =
     .label = 使用其他…
-applications-select-helper = 选择助手应用程序
+applications-select-helper = 选择对应应用程序
 applications-manage-app =
     .label = 应用程序详细信息…
 applications-always-ask =
@@ -700,6 +702,13 @@ sync-mobile-promo = 在 <img data-l10n-name="android-icon"/> <a data-l10n-name="
 
 sync-profile-picture =
     .tooltiptext = 更改头像
+sync-profile-picture-with-alt =
+    .tooltiptext = 更改头像
+    .alt = 更改头像
+sync-profile-picture-account-problem =
+    .alt = 账户头像
+fxa-login-rejected-warning =
+    .alt = 警告
 sync-sign-out =
     .label = 退出登录…
     .accesskey = g
@@ -931,7 +940,7 @@ master-password-os-auth-dialog-caption = { -brand-full-name }
 ## Privacy section - Autofill
 
 pane-privacy-autofill-header = 自动填写
-autofill-addresses-checkbox = 保存和自动填写密码
+autofill-addresses-checkbox = 保存和自动填写地址
     .accesskey = a
 autofill-saved-addresses-button = 保存的地址
     .accesskey = S
@@ -1266,6 +1275,8 @@ addon-recommendations-link = 详细了解
 # or builds with no Telemetry support available.
 collection-health-report-disabled = 在此构建配置下数据反馈被禁用
 collection-backlogged-crash-reports-with-link = 允许 { -brand-short-name } 代您发送积压的崩溃报告 <a data-l10n-name="crash-reports-link">详细了解</a>
+    .accesskey = c
+collection-backlogged-crash-reports = 允许 { -brand-short-name } 代您发送积压的崩溃报告
     .accesskey = c
 privacy-segmentation-section-header = 增强浏览体验的新功能
 privacy-segmentation-section-description = 当我们推出需使用您数据以提供更个性化的上网体验的新功能时：

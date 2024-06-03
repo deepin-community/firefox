@@ -263,9 +263,6 @@ newtab-custom-row-selector =
 newtab-custom-sponsored-sites = Scurtis sponsorizadis
 newtab-custom-pocket-title = Conseâts di { -pocket-brand-name }
 newtab-custom-pocket-subtitle = Contignûts ecezionâi curâts di { -pocket-brand-name }, part de famee { -brand-product-name }
-newtab-custom-pocket-toggle =
-    .label = Conseâts di { -pocket-brand-name }
-    .description = Contignûts ecezionâi curâts di { -pocket-brand-name }, part de famee { -brand-product-name }
 newtab-custom-stories-toggle =
     .label = Storiis conseadis
     .description = Contignûts ecezionâl curât de famee di prodots { -brand-product-name }
@@ -278,3 +275,24 @@ newtab-custom-recent-toggle =
     .description = Une selezion di sîts e contignûts resints
 newtab-custom-close-button = Siere
 newtab-custom-settings = Gjestìs plui impostazions
+
+## New Tab Wallpapers
+
+newtab-wallpaper-title = Fonts
+newtab-wallpaper-reset = Ripristine predefinît
+newtab-wallpaper-light-red-panda = Panda ros
+newtab-wallpaper-light-mountain = Montagne blancje
+newtab-wallpaper-light-sky = Cîl cun nui viole e rose
+newtab-wallpaper-light-color = Formis zalis, blu e rose
+newtab-wallpaper-light-landscape = Paisaç cun montagne involuçât intune fumate blu
+newtab-wallpaper-light-beach = Splaze cun palmis
+newtab-wallpaper-dark-aurora = Aurore boreâl
+newtab-wallpaper-dark-color = Formis rossis e blu
+newtab-wallpaper-dark-panda = Panda ros platât tal bosc
+newtab-wallpaper-dark-sky = Paisaç di citât cun cîl di gnot
+newtab-wallpaper-dark-mountain = Paisaç cun montagne
+newtab-wallpaper-dark-city = Paisaç citadin cun tonalitât viole
+# Variables
+#   $author_string (String) - The name of the creator of the photo.
+#   $webpage_string (String) - The name of the webpage where the photo is located.
+newtab-wallpaper-attribution = Foto di <a data-l10n-name="name-link">{ $author_string }</a> su <a data-l10n-name="webpage-link">{ $webpage_string }</a>

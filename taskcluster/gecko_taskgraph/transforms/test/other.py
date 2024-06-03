@@ -2,6 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+import copy
 import hashlib
 import json
 import re
@@ -12,10 +13,15 @@ from taskgraph.transforms.base import TransformSequence
 from taskgraph.util.attributes import keymatch
 from taskgraph.util.keyed_by import evaluate_keyed_by
 from taskgraph.util.schema import Schema, resolve_keyed_by
-from taskgraph.util.taskcluster import get_artifact_path, get_index_url
+from taskgraph.util.taskcluster import (
+    get_artifact_path,
+    get_artifact_url,
+    get_index_url,
+)
 from voluptuous import Any, Optional, Required
 
 from gecko_taskgraph.transforms.test.variant import TEST_VARIANTS
+from gecko_taskgraph.util.perftest import is_external_browser
 from gecko_taskgraph.util.platforms import platform_family
 from gecko_taskgraph.util.templates import merge
 
@@ -97,6 +103,25 @@ def setup_talos(config, tasks):
 
         if config.params.get("project", None):
             extra_options.append("--project=%s" % config.params["project"])
+
+        if "pdfpaint" in task["try-name"]:
+            max_chunks = 10
+            for chunk in range(1, max_chunks + 1):
+                new_task = copy.deepcopy(task)
+                new_task["mozharness"]["extra-options"].append(
+                    f"--pdfPaintChunk={chunk}"
+                )
+                new_task["test-name"] = task["test-name"].replace(
+                    "pdfpaint", f"pdfpaint-{chunk}"
+                )
+                new_task["try-name"] = task["try-name"].replace(
+                    "pdfpaint", f"pdfpaint-{chunk}"
+                )
+                new_task["treeherder-symbol"] = task["treeherder-symbol"].replace(
+                    "pdfpaint", f"pdfpaint-{chunk}"
+                )
+                yield new_task
+            continue
 
         yield task
 
@@ -245,6 +270,7 @@ def handle_keyed_by(config, tasks):
         "webrender-run-on-projects",
         "mozharness.requires-signed-builds",
         "build-signing-label",
+        "dependencies",
     ]
     for task in tasks:
         for field in fields:
@@ -256,6 +282,20 @@ def handle_keyed_by(config, tasks):
                 project=config.params["project"],
                 variant=task["attributes"].get("unittest_variant"),
             )
+        yield task
+
+
+@transforms.add
+def setup_raptor_external_browser_platforms(config, tasks):
+    for task in tasks:
+        if task["suite"] != "raptor":
+            yield task
+            continue
+
+        if is_external_browser(task["try-name"]):
+            task["build-platform"] = "linux64/opt"
+            task["build-label"] = "build-linux64/opt"
+
         yield task
 
 
@@ -277,10 +317,17 @@ def set_target(config, tasks):
                 target = "target.tar.bz2"
 
         if isinstance(target, dict):
-            # TODO Remove hardcoded mobile artifact prefix
-            index_url = get_index_url(target["index"])
-            installer_url = "{}/artifacts/public/{}".format(index_url, target["name"])
-            task["mozharness"]["installer-url"] = installer_url
+            if "index" in target:
+                # TODO Remove hardcoded mobile artifact prefix
+                index_url = get_index_url(target["index"])
+                installer_url = "{}/artifacts/public/{}".format(
+                    index_url, target["name"]
+                )
+                task["mozharness"]["installer-url"] = installer_url
+            else:
+                task["mozharness"]["installer-url"] = get_artifact_url(
+                    f'<{target["upstream-task"]}>', target["name"]
+                )
         else:
             task["mozharness"]["build-artifact-name"] = get_artifact_path(task, target)
 
@@ -308,25 +355,25 @@ def setup_browsertime(config, tasks):
 
         ts = {
             "by-test-platform": {
-                "android.*": ["browsertime", "linux64-geckodriver", "linux64-node-16"],
-                "linux.*": ["browsertime", "linux64-geckodriver", "linux64-node-16"],
+                "android.*": ["browsertime", "linux64-geckodriver", "linux64-node"],
+                "linux.*": ["browsertime", "linux64-geckodriver", "linux64-node"],
                 "macosx1015.*": [
                     "browsertime",
                     "macosx64-geckodriver",
-                    "macosx64-node-16",
+                    "macosx64-node",
                 ],
                 "macosx1400.*": [
                     "browsertime",
                     "macosx64-aarch64-geckodriver",
-                    "macosx64-aarch64-node-16",
+                    "macosx64-aarch64-node",
                 ],
                 "windows.*aarch64.*": [
                     "browsertime",
                     "win32-geckodriver",
-                    "win32-node-16",
+                    "win32-node",
                 ],
-                "windows.*-32.*": ["browsertime", "win32-geckodriver", "win32-node-16"],
-                "windows.*-64.*": ["browsertime", "win64-geckodriver", "win64-node-16"],
+                "windows.*-32.*": ["browsertime", "win32-geckodriver", "win32-node"],
+                "windows.*-64.*": ["browsertime", "win64-geckodriver", "win64-node"],
             },
         }
 
@@ -348,39 +395,39 @@ def setup_browsertime(config, tasks):
 
         cd_fetches = {
             "android.*": [
-                "linux64-chromedriver-120",
-                "linux64-chromedriver-121",
                 "linux64-chromedriver-122",
+                "linux64-chromedriver-123",
+                "linux64-chromedriver-124",
             ],
             "linux.*": [
-                "linux64-chromedriver-120",
-                "linux64-chromedriver-121",
                 "linux64-chromedriver-122",
+                "linux64-chromedriver-123",
+                "linux64-chromedriver-124",
             ],
             "macosx1015.*": [
-                "mac64-chromedriver-120",
-                "mac64-chromedriver-121",
                 "mac64-chromedriver-122",
+                "mac64-chromedriver-123",
+                "mac64-chromedriver-124",
             ],
             "macosx1400.*": [
-                "mac-arm-chromedriver-120",
-                "mac-arm-chromedriver-121",
                 "mac-arm-chromedriver-122",
+                "mac-arm-chromedriver-123",
+                "mac-arm-chromedriver-124",
             ],
             "windows.*aarch64.*": [
-                "win32-chromedriver-120",
                 "win32-chromedriver-121",
                 "win32-chromedriver-122",
+                "win32-chromedriver-123",
             ],
             "windows.*-32.*": [
-                "win32-chromedriver-120",
-                "win32-chromedriver-121",
                 "win32-chromedriver-122",
+                "win32-chromedriver-123",
+                "win32-chromedriver-124",
             ],
             "windows.*-64.*": [
-                "win32-chromedriver-120",
-                "win32-chromedriver-121",
                 "win32-chromedriver-122",
+                "win32-chromedriver-123",
+                "win64-chromedriver-124",
             ],
         }
 
@@ -404,11 +451,7 @@ def setup_browsertime(config, tasks):
             # Only add the chromedriver fetches when chrome is running
             for platform in cd_fetches:
                 fs["by-test-platform"][platform].extend(cd_fetches[platform])
-        if (
-            "--app=chromium" in extra_options
-            or "--app=custom-car" in extra_options
-            or "--app=cstm-car-m" in extra_options
-        ):
+        if "--app=custom-car" in extra_options or "--app=cstm-car-m" in extra_options:
             for platform in chromium_fetches:
                 fs["by-test-platform"][platform].extend(chromium_fetches[platform])
 
@@ -776,7 +819,7 @@ test_setting_description_schema = Schema(
             },
             Optional("device"): str,
             Optional("display"): "wayland",
-            Optional("machine"): Any("ref-hw-2017", "hw-ref"),
+            Optional("machine"): "hw-ref",
         },
         "build": {
             Required("type"): Any("opt", "debug", "debug-isolated-process"),
@@ -837,7 +880,6 @@ def set_test_setting(config, tasks):
     # TODO Rename these so they don't have a dash.
     dash_attrs = [
         "clang-trunk",
-        "ref-hw-2017",
         "hw-ref",
     ]
     dash_token = "%D%"
@@ -892,9 +934,6 @@ def set_test_setting(config, tasks):
             arch = parts.pop(0)
             if parts[0].isdigit():
                 os_build = parts.pop(0)
-
-            if parts and parts[0] == "ref-hw-2017":
-                machine = parts.pop(0)
 
             if parts and parts[0] == "hw-ref":
                 machine = parts.pop(0)
@@ -1087,6 +1126,7 @@ def set_schedules_components(config, tasks):
 
         schedules.add(category)
         schedules.add(platform_family(task["build-platform"]))
+        schedules.add("firefox")
 
         task["schedules-component"] = sorted(schedules)
         yield task

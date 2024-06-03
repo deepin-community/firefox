@@ -204,6 +204,9 @@ media-cdm-capabilities = Имкониятҳо
 # are not encrypted. It allows playback to start without having to wait for
 # license response, improving video start time and user experience.
 media-cdm-clear-lead = Оғози рамзгузоринашуда
+# We choose 2.2 as this is the version which the video provider usually want to have in order to stream 4K video securely
+# HDCP version https://w3c.github.io/encrypted-media/#idl-def-hdcpversion
+media-hdcp-22-compatible = Мувофиқ ба «HDCP 2.2»
 
 ##
 
@@ -428,3 +431,15 @@ pointing-device-mouse = Муш
 pointing-device-touchscreen = Экрани ламсӣ
 pointing-device-pen-digitizer = Планшети расмкашии рақамӣ
 pointing-device-none = Ягон дастгоҳҳои нуқтагузорӣ нест
+
+## Content Analysis (DLP)
+
+# DLP stands for Data Loss Prevention, an industry term for external software
+# that enterprises can set up to prevent sensitive data from being transferred
+# to external websites.
+content-analysis-title = Таҳлили муҳтаво (DLP)
+content-analysis-active = Фаъол
+content-analysis-connected-to-agent = Ба омил пайваст шуд
+content-analysis-agent-path = Масир ба омил
+content-analysis-agent-failed-signature-verification = Омил имзоро тасдиқ карда натавонист
+content-analysis-request-count = Шумораи дархостҳо

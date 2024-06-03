@@ -20,7 +20,7 @@ options-select-additional-tools-label = เครื่องมือนัก�
 # tool buttons.
 options-select-enabled-toolbox-buttons-label = ปุ่มกล่องเครื่องมือที่มี
 # The label for the heading of the radiobox corresponding to the theme
-options-select-dev-tools-theme-label = ชุดรูปแบบ
+options-select-dev-tools-theme-label = ชุดตกแต่ง
 
 ## Inspector section
 
@@ -43,6 +43,11 @@ options-inspector-draggable-properties-tooltip =
 options-inspector-simplified-highlighters-label = ใช้ตัวเน้นสีแบบง่ายขึ้นด้วย prefers-reduced-motion
 options-inspector-simplified-highlighters-tooltip =
     .title = เปิดใช้งานตัวเน้นสีแบบง่ายเมื่อ prefers-reduced-motion เปิดใช้งาน วาดเส้นแทนสี่เหลี่ยมเติมสีรอบๆ อิลิเมนต์ที่เน้นสีไว้เพื่อหลีกเลี่ยงเอฟเฟกต์กะพริบ
+# The label for the checkbox option to make the Enter key move the focus to the next input
+# when editing a property name or value in the Inspector rules view
+options-inspector-rules-focus-next-on-enter-label = โฟกัสที่อินพุตถัดไปเมื่อมีการกด <kbd>Enter</kbd>
+options-inspector-rules-focus-next-on-enter-tooltip =
+    .title = เมื่อเปิดใช้งาน การกดแป้น Enter เมื่อกำลังแก้ไขเครื่องมือเลือก ชื่อคุณสมบัติหรือค่าจะย้ายโฟกัสไปที่อินพุตถัดไป
 
 ## "Default Color Unit" options for the Inspector
 
@@ -53,6 +58,15 @@ options-default-color-unit-hsl = HSL(A)
 options-default-color-unit-rgb = RGB(A)
 options-default-color-unit-hwb = HWB
 options-default-color-unit-name = ชื่อสี
+
+## Web Console section
+
+# The heading
+options-webconsole-label = คอนโซลเว็บ
+# The label for the checkbox that toggle whether the Split console is enabled
+options-webconsole-split-console-label = เปิดใช้งานคอนโซลแยก
+options-webconsole-split-console-tooltip =
+    .title = เปิดคอนโซลแยกด้วยแป้น Escape
 
 ## Style Editor section
 
@@ -118,9 +132,9 @@ options-enable-f12-label = ใช้แป้น F12 เพื่อเปิด
 options-enable-f12-tooltip =
     .title = การเปิดใช้ตัวเลือกนี้จะผูกแป้น F12 เพื่อใช้เปิดหรือปิดกล่องเครื่องมือของ DevTools
 # The label for checkbox that toggles custom formatters for objects
-options-enable-custom-formatters-label = เปิดใช้งานตัวจัดรูปแบบที่กำหนดเอง
+options-enable-custom-formatters-label = เปิดใช้งานเครื่องมือจัดรูปแบบกำหนดเอง
 options-enable-custom-formatters-tooltip =
-    .title = การเปิดตัวเลือกนี้จะทำให้ไซต์ต่าง ๆ สามารถกำหนดตัวจัดรูปแบบที่กำหนดเองสำหรับวัตถุ DOM ได้
+    .title = การเปิดใช้ตัวเลือกนี้จะทำให้ไซต์ต่างๆ สามารถกำหนดเครื่องมือจัดรูปแบบให้กับวัตถุ DOM เองได้
 # The label for checkbox that toggles the service workers testing over HTTP on or off.
 options-enable-service-workers-http-label = เปิดใช้งาน Service Workers over HTTP (เมื่อกล่องเครื่องมือเปิดอยู่)
 options-enable-service-workers-http-tooltip =
@@ -128,6 +142,6 @@ options-enable-service-workers-http-tooltip =
 # The label for the checkbox that toggles source maps in all tools.
 options-source-maps-label = เปิดใช้งานการแมปต้นฉบับ
 options-source-maps-tooltip =
-    .title = หากคุณเปิดใช้งานตัวเลือกนี้ ต้นฉบับจะถูกแมปในเครื่องมือ
+    .title = ถ้าคุณเปิดใช้งานตัวเลือกนี้ ต้นฉบับจะถูกแมปในเครื่องมือ
 # The message shown for settings that trigger page reload
 options-context-triggers-page-refresh = *เรียกหน้าเว็บใหม่เฉพาะวาระปัจจุบันเท่านั้น

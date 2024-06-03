@@ -59,6 +59,15 @@ options-default-color-unit-rgb = RGB(A)
 options-default-color-unit-hwb = HWB
 options-default-color-unit-name = Назви кольорів
 
+## Web Console section
+
+# The heading
+options-webconsole-label = Вебконсоль
+# The label for the checkbox that toggle whether the Split console is enabled
+options-webconsole-split-console-label = Увімкнути розділену консоль
+options-webconsole-split-console-tooltip =
+    .title = Відкривати розділену консоль за допомогою клавіші Escape
+
 ## Style Editor section
 
 # The heading
@@ -123,9 +132,9 @@ options-enable-f12-label = Використовуйте клавішу F12, що
 options-enable-f12-tooltip =
     .title = Якщо ввімкнути цей параметр, клавіша F12 відкриватиме чи закриватиме панель інструментів розробника
 # The label for checkbox that toggles custom formatters for objects
-options-enable-custom-formatters-label = Увімкнути спеціальні форматувальники
+options-enable-custom-formatters-label = Увімкнути користувацькі засоби форматування
 options-enable-custom-formatters-tooltip =
-    .title = Увімкнення цього параметра дозволить сайтам визначати спеціальні форматувальники для об'єктів DOM
+    .title = Увімкнення цього параметра дозволить сайтам визначати користувацькі засоби форматування для об'єктів DOM
 # The label for checkbox that toggles the service workers testing over HTTP on or off.
 options-enable-service-workers-http-label = Увімкнути Service Workers поверх HTTP (коли відкрита панель інструментів)
 options-enable-service-workers-http-tooltip =

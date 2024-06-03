@@ -8,8 +8,6 @@
 "use strict";
 
 ChromeUtils.defineESModuleGetters(this, {
-  CONTEXTUAL_SERVICES_PING_TYPES:
-    "resource:///modules/PartnerLinkAttribution.sys.mjs",
   UrlbarView: "resource:///modules/UrlbarView.sys.mjs",
   sinon: "resource://testing-common/Sinon.sys.mjs",
 });
@@ -172,7 +170,7 @@ add_task(async function hiddenRow() {
   // mutation listener to the view so we can tell when the quick suggest row is
   // added.
   let mutationPromise = new Promise(resolve => {
-    let observer = new MutationObserver(mutations => {
+    let observer = new MutationObserver(() => {
       let rows = UrlbarTestUtils.getResultsContainer(window).children;
       for (let row of rows) {
         if (row.result.providerName == "UrlbarProviderQuickSuggest") {
@@ -376,8 +374,11 @@ async function doEngagementWithoutAddingResultToView(
   let getPriorityStub = sandbox.stub(UrlbarProviderQuickSuggest, "getPriority");
   getPriorityStub.returns(Infinity);
 
-  // Spy on `UrlbarProviderQuickSuggest.onEngagement()`.
-  let onEngagementSpy = sandbox.spy(UrlbarProviderQuickSuggest, "onEngagement");
+  // Spy on `UrlbarProviderQuickSuggest.onLegacyEngagement()`.
+  let onLegacyEngagementSpy = sandbox.spy(
+    UrlbarProviderQuickSuggest,
+    "onLegacyEngagement"
+  );
 
   let sandboxCleanup = () => {
     getPriorityStub?.restore();
@@ -454,7 +455,7 @@ async function doEngagementWithoutAddingResultToView(
   });
   await loadPromise;
 
-  let engagementCalls = onEngagementSpy.getCalls().filter(call => {
+  let engagementCalls = onLegacyEngagementSpy.getCalls().filter(call => {
     let state = call.args[0];
     return state == "engagement";
   });

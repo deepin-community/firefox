@@ -126,8 +126,6 @@ translations-manage-description = Descargar idiomas para traducción sin conexi�
 translations-manage-all-language = Todos los idiomas
 translations-manage-download-button = Descargar
 translations-manage-delete-button = Borrar
-translations-manage-error-download = Hubo un problema descargando los archivos de idioma. Intente nuevamente.
-translations-manage-error-delete = Hubo un error borrando los archivos de idioma. Intente nuevamente.
 translations-manage-intro = Establecer preferencias de idioma y traducción del sitio y administrar los idiomas instalados para traducción sin conexión.
 translations-manage-install-description = Instalar idiomas para traducción sin conexión
 translations-manage-language-install-button =
@@ -135,12 +133,21 @@ translations-manage-language-install-button =
 translations-manage-language-install-all-button =
     .label = Instalar todo
     .accesskey = I
+translations-manage-intro-2 = Establecer preferencias de idioma y traducción del sitio y administrar los idiomas descargados para traducción sin conexión.
+translations-manage-download-description = Descargar idiomas para traducción sin conexión
+translations-manage-language-download-button =
+    .label = Descargar
+translations-manage-language-download-all-button =
+    .label = Descargar todo
+    .accesskey = D
 translations-manage-language-remove-button =
     .label = Eliminar
 translations-manage-language-remove-all-button =
     .label = Eliminar todo
     .accesskey = E
 translations-manage-error-install = Hubo un problema instalando los archivos de idioma. Intente nuevamente.
+translations-manage-error-download = Hubo un problema descargando los archivos de idioma. Intente nuevamente.
+translations-manage-error-delete = Hubo un error borrando los archivos de idioma. Intente nuevamente.
 translations-manage-error-remove = Hubo un error eliminando los archivos de idioma. Intente nuevamente.
 translations-manage-error-list = No se pudo obtener la lista de idiomas disponibles para la traducción. Actualice la página para volver a intentarlo.
 translations-settings-title =
@@ -170,3 +177,75 @@ translations-settings-remove-all-sites-button =
 translations-settings-close-dialog =
     .buttonlabelaccept = Cerrar
     .buttonaccesskeyaccept = C
+# Text displayed in the right-click context menu for translating
+# selected text to a yet-to-be-determined language.
+main-context-menu-translate-selection =
+    .label = Traducir selección…
+    .accesskey = n
+# Text displayed in the right-click context menu for translating
+# selected text to a target language.
+#
+# Variables:
+#   $language (string) - The localized display name of the target language
+main-context-menu-translate-selection-to-language =
+    .label = Traducir selección al { $language }
+    .accesskey = n
+# Text displayed in the right-click context menu for translating
+# the text of a hyperlink to a yet-to-be-determined language.
+main-context-menu-translate-link-text =
+    .label = Traducir texto del enlace…
+    .accesskey = n
+# Text displayed in the right-click context menu for translating
+# the text of a hyperlink to a target language.
+#
+# Variables:
+#   $language (string) - The localized display name of the target language
+main-context-menu-translate-link-text-to-language =
+    .label = Traducir texto del enlace al { $language }
+    .accesskey = n
+# Text displayed in the select translations panel header.
+select-translations-panel-header = Traducción
+# Text displayed above the from-language dropdown menu.
+select-translations-panel-from-label = De
+# Text displayed above the to-language dropdown menu.
+select-translations-panel-to-label = A
+# Text displayed above the try-another-source-language dropdown menu.
+select-translations-panel-try-another-language-label = Probar otro idioma fuente
+select-translations-panel-cancel-button =
+    .label = Cancelar
+# Text displayed on the copy button before it is clicked.
+select-translations-panel-copy-button =
+    .label = Copiar
+# Text displayed on the copy button after it is clicked.
+select-translations-panel-copy-button-copied =
+    .label = Copiado
+select-translations-panel-done-button =
+    .label = Listo
+select-translations-panel-translate-full-page-button =
+    .label = Traducir página completa
+select-translations-panel-translate-button =
+    .label = Traducir
+select-translations-panel-try-again-button =
+    .label = Intentar nuevamente
+# Text displayed as a placeholder when the panel is idle.
+select-translations-panel-idle-placeholder-text = El texto traducido aparecerá acá.
+# Text displayed as a placeholder when the panel is actively translating.
+select-translations-panel-translating-placeholder-text = Traduciendo…
+select-translations-panel-init-failure-message =
+    .message = No se pudieron cargar los idiomas. Verifique la conexión a Internet y pruebe de nuevo.
+# Text displayed when the translation fails to complete.
+select-translations-panel-translation-failure-message =
+    .message = Hubo un problema al traducir. Intente nuevamente.
+# If your language requires declining the language name, a possible solution
+# is to adapt the structure of the phrase, or use a support noun, e.g.
+# `Sorry, we don't support the language yet: { $language }
+#
+# Variables:
+#   $language (string) - The language of the document.
+select-translations-panel-unsupported-language-message-known =
+    .message = Lo sentimos, { $language } todavía no está soportado.
+select-translations-panel-unsupported-language-message-unknown =
+    .message = Lo sentimos, este idioma todavía no está soportado.
+# Text displayed on the menuitem that opens the Translation Settings page.
+select-translations-panel-open-translations-settings-menuitem =
+    .label = Configuración de traducción

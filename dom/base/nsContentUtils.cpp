@@ -1767,6 +1767,17 @@ bool nsContentUtils::IsAlphanumericOrSymbol(uint32_t aChar) {
          cat == nsUGenCategory::kSymbol;
 }
 
+// static
+bool nsContentUtils::IsHyphen(uint32_t aChar) {
+  // Characters treated as hyphens for the purpose of "emergency" breaking
+  // when the content would otherwise overflow.
+  return aChar == uint32_t('-') ||  // HYPHEN-MINUS
+         aChar == 0x2010 ||         // HYPHEN
+         aChar == 0x2012 ||         // FIGURE DASH
+         aChar == 0x2013 ||         // EN DASH
+         aChar == 0x058A;           // ARMENIAN HYPHEN
+}
+
 /* static */
 bool nsContentUtils::IsHTMLWhitespace(char16_t aChar) {
   return aChar == char16_t(0x0009) || aChar == char16_t(0x000A) ||
@@ -3008,6 +3019,15 @@ nsIContent* nsContentUtils::GetCommonFlattenedTreeAncestorHelper(
 }
 
 /* static */
+nsIContent* nsContentUtils::GetCommonFlattenedTreeAncestorForSelection(
+    nsIContent* aContent1, nsIContent* aContent2) {
+  return GetCommonAncestorInternal(
+      aContent1, aContent2, [](nsIContent* aContent) {
+        return aContent->GetFlattenedTreeParentNodeForSelection();
+      });
+}
+
+/* static */
 Element* nsContentUtils::GetCommonFlattenedTreeAncestorForStyle(
     Element* aElement1, Element* aElement2) {
   return GetCommonAncestorInternal(aElement1, aElement2, [](Element* aElement) {
@@ -3027,13 +3047,15 @@ bool nsContentUtils::PositionIsBefore(nsINode* aNode1, nsINode* aNode2,
 }
 
 /* static */
-Maybe<int32_t> nsContentUtils::ComparePoints(
-    const nsINode* aParent1, uint32_t aOffset1, const nsINode* aParent2,
-    uint32_t aOffset2, ComparePointsCache* aParent1Cache) {
+Maybe<int32_t> nsContentUtils::ComparePoints(const nsINode* aParent1,
+                                             uint32_t aOffset1,
+                                             const nsINode* aParent2,
+                                             uint32_t aOffset2,
+                                             NodeIndexCache* aIndexCache) {
   bool disconnected{false};
 
   const int32_t order = ComparePoints_Deprecated(
-      aParent1, aOffset1, aParent2, aOffset2, &disconnected, aParent1Cache);
+      aParent1, aOffset1, aParent2, aOffset2, &disconnected, aIndexCache);
   if (disconnected) {
     return Nothing();
   }
@@ -3044,7 +3066,7 @@ Maybe<int32_t> nsContentUtils::ComparePoints(
 /* static */
 int32_t nsContentUtils::ComparePoints_Deprecated(
     const nsINode* aParent1, uint32_t aOffset1, const nsINode* aParent2,
-    uint32_t aOffset2, bool* aDisconnected, ComparePointsCache* aParent1Cache) {
+    uint32_t aOffset2, bool* aDisconnected, NodeIndexCache* aIndexCache) {
   if (aParent1 == aParent2) {
     return aOffset1 < aOffset2 ? -1 : aOffset1 > aOffset2 ? 1 : 0;
   }
@@ -3089,10 +3111,15 @@ int32_t nsContentUtils::ComparePoints_Deprecated(
       if (MOZ_UNLIKELY(child2->IsShadowRoot())) {
         return 1;
       }
-      const Maybe<uint32_t> child1Index =
-          aParent1Cache ? aParent1Cache->ComputeIndexOf(parent, child1)
-                        : parent->ComputeIndexOf(child1);
-      const Maybe<uint32_t> child2Index = parent->ComputeIndexOf(child2);
+      Maybe<uint32_t> child1Index;
+      Maybe<uint32_t> child2Index;
+      if (aIndexCache) {
+        aIndexCache->ComputeIndicesOf(parent, child1, child2, child1Index,
+                                      child2Index);
+      } else {
+        child1Index = parent->ComputeIndexOf(child1);
+        child2Index = parent->ComputeIndexOf(child2);
+      }
       if (MOZ_LIKELY(child1Index.isSome() && child2Index.isSome())) {
         return *child1Index < *child2Index ? -1 : 1;
       }
@@ -3110,7 +3137,9 @@ int32_t nsContentUtils::ComparePoints_Deprecated(
 
   if (!pos1) {
     const nsINode* child2 = parents2.ElementAt(--pos2);
-    const Maybe<uint32_t> child2Index = parent->ComputeIndexOf(child2);
+    const Maybe<uint32_t> child2Index =
+        aIndexCache ? aIndexCache->ComputeIndexOf(parent, child2)
+                    : parent->ComputeIndexOf(child2);
     if (MOZ_UNLIKELY(NS_WARN_IF(child2Index.isNothing()))) {
       return 1;
     }
@@ -3119,8 +3148,8 @@ int32_t nsContentUtils::ComparePoints_Deprecated(
 
   const nsINode* child1 = parents1.ElementAt(--pos1);
   const Maybe<uint32_t> child1Index =
-      aParent1Cache ? aParent1Cache->ComputeIndexOf(parent, child1)
-                    : parent->ComputeIndexOf(child1);
+      aIndexCache ? aIndexCache->ComputeIndexOf(parent, child1)
+                  : parent->ComputeIndexOf(child1);
   if (MOZ_UNLIKELY(NS_WARN_IF(child1Index.isNothing()))) {
     return -1;
   }
@@ -4004,7 +4033,8 @@ nsresult nsContentUtils::LoadImage(
     int32_t aLoadFlags, const nsAString& initiatorType,
     imgRequestProxy** aRequest, nsContentPolicyType aContentPolicyType,
     bool aUseUrgentStartForChannel, bool aLinkPreload,
-    uint64_t aEarlyHintPreloaderId) {
+    uint64_t aEarlyHintPreloaderId,
+    mozilla::dom::FetchPriority aFetchPriority) {
   MOZ_ASSERT(aURI, "Must have a URI");
   MOZ_ASSERT(aContext, "Must have a context");
   MOZ_ASSERT(aLoadingDocument, "Must have a document");
@@ -4041,7 +4071,7 @@ nsresult nsContentUtils::LoadImage(
                               initiatorType,      /* the load initiator */
                               aUseUrgentStartForChannel, /* urgent-start flag */
                               aLinkPreload, /* <link preload> initiator */
-                              aEarlyHintPreloaderId, aRequest);
+                              aEarlyHintPreloaderId, aFetchPriority, aRequest);
 }
 
 // static
@@ -11331,7 +11361,7 @@ int32_t nsContentUtils::CompareTreePosition(const nsINode* aNode1,
   MOZ_ASSERT(aNode1, "aNode1 must not be null");
   MOZ_ASSERT(aNode2, "aNode2 must not be null");
 
-  if (MOZ_UNLIKELY(NS_WARN_IF(aNode1 == aNode2))) {
+  if (NS_WARN_IF(aNode1 == aNode2)) {
     return 0;
   }
 
@@ -11426,9 +11456,11 @@ int32_t nsContentUtils::CompareTreePosition(const nsINode* aNode1,
 
 nsIContent* nsContentUtils::AttachDeclarativeShadowRoot(nsIContent* aHost,
                                                         ShadowRootMode aMode,
+                                                        bool aIsClonable,
                                                         bool aDelegatesFocus) {
   RefPtr<Element> host = mozilla::dom::Element::FromNodeOrNull(aHost);
-  if (!host) {
+  if (!host || host->GetShadowRoot()) {
+    // https://html.spec.whatwg.org/#parsing-main-inhead:shadow-host
     return nullptr;
   }
 
@@ -11436,11 +11468,12 @@ nsIContent* nsContentUtils::AttachDeclarativeShadowRoot(nsIContent* aHost,
   init.mMode = aMode;
   init.mDelegatesFocus = aDelegatesFocus;
   init.mSlotAssignment = SlotAssignmentMode::Named;
-  init.mClonable = true;
+  init.mClonable = aIsClonable;
 
-  RefPtr shadowRoot = host->AttachShadow(init, IgnoreErrors(),
-                                         Element::ShadowRootDeclarative::Yes);
+  RefPtr shadowRoot = host->AttachShadow(init, IgnoreErrors());
   if (shadowRoot) {
+    shadowRoot->SetIsDeclarative(
+        nsGenericHTMLFormControlElement::ShadowRootDeclarative::Yes);
     // https://html.spec.whatwg.org/#parsing-main-inhead:available-to-element-internals
     shadowRoot->SetAvailableToElementInternals();
   }

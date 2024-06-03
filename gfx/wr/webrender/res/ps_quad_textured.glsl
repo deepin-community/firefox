@@ -2,32 +2,12 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+/// This shader renders solid colors or simple images in a color or alpha target.
+
 #include ps_quad
 
-#ifndef SWGL_ANTIALIAS
-varying highp vec2 vLocalPos;
-#endif
-
 #ifdef WR_VERTEX_SHADER
-void main(void) {
-    PrimitiveInfo info = ps_quad_main();
-
-#ifndef SWGL_ANTIALIAS
-    RectWithEndpoint xf_bounds = RectWithEndpoint(
-        max(info.local_prim_rect.p0, info.local_clip_rect.p0),
-        min(info.local_prim_rect.p1, info.local_clip_rect.p1)
-    );
-    vTransformBounds = vec4(xf_bounds.p0, xf_bounds.p1);
-
-    vLocalPos = info.local_pos;
-
-    if (info.edge_flags == 0) {
-        v_flags.x = 0;
-    } else {
-        v_flags.x = 1;
-    }
-#endif
-
+void pattern_vertex(PrimitiveInfo info) {
     if ((info.quad_flags & QF_SAMPLE_AS_MASK) != 0) {
         v_flags.z = 1;
     } else {
@@ -37,16 +17,7 @@ void main(void) {
 #endif
 
 #ifdef WR_FRAGMENT_SHADER
-void main(void) {
-    vec4 color = v_color;
-
-#ifndef SWGL_ANTIALIAS
-    if (v_flags.x != 0) {
-        float alpha = init_transform_fs(vLocalPos);
-        color *= alpha;
-    }
-#endif
-
+vec4 pattern_fragment(vec4 color) {
     if (v_flags.y != 0) {
         vec2 uv = clamp(v_uv, v_uv_sample_bounds.xy, v_uv_sample_bounds.zw);
         vec4 texel = TEX_SAMPLE(sColor0, uv);
@@ -56,7 +27,7 @@ void main(void) {
         color *= texel;
     }
 
-    oFragColor = color;
+    return color;
 }
 
 #if defined(SWGL_DRAW_SPAN)

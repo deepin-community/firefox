@@ -46,3 +46,46 @@ screenshots-generic-error-title = Ой! { -screenshots-brand-name } вышли �
 screenshots-generic-error-details = Мы не уверены, в чём проблема. Попробовать ещё раз или сделать снимок другой страницы?
 screenshots-too-large-error-title = Ваш снимок экрана был обрезан, потому что он был слишком большим
 screenshots-too-large-error-details = Попытайтесь выбрать область размером менее 32 700 пикселей по самой длинной стороне или общей площадью менее 124 900 000 пикселей.
+screenshots-component-retry-button =
+    .title = Повторить снимок экрана
+    .aria-label = Повторить снимок экрана
+screenshots-component-cancel-button =
+    .title =
+        { PLATFORM() ->
+            [macos] Отмена (esc)
+           *[other] Отмена (Esc)
+        }
+    .aria-label = Отмена
+# Variables
+#   $shortcut (String) - A keyboard shortcut for copying the screenshot.
+screenshots-component-copy-button =
+    .title = Копировать ({ $shortcut })
+    .aria-label = Копировать
+screenshots-component-copy-button-label = Копировать
+# Variables
+#   $shortcut (String) - A keyboard shortcut for saving/downloading the screenshot.
+screenshots-component-download-button =
+    .title = Загрузить ({ $shortcut })
+    .aria-label = Загрузить
+screenshots-component-download-button-label = Загрузить
+
+## The below strings are used to capture keydown events so the strings should
+## not be changed unless the keyboard layout in the locale requires it.
+
+screenshots-component-download-key = S
+screenshots-component-copy-key = C
+
+##
+
+# This string represents the selection size area
+# "x" here represents "by" (i.e 123 by 456)
+# Variables:
+#   $width (Number) - The width of the selection region in pixels
+#   $height (Number) - The height of the selection region in pixels
+screenshots-overlay-selection-region-size-2 = { $width } x { $height }
+# This string represents the selection size area
+# "×" here represents "by" (i.e 123 by 456)
+# Variables:
+#   $width (Number) - The width of the selection region in pixels
+#   $height (Number) - The height of the selection region in pixels
+screenshots-overlay-selection-region-size-3 = { $width } × { $height }

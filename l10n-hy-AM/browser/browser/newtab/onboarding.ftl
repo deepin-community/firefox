@@ -28,6 +28,7 @@ return-to-amo-add-theme-label = Ավելացնել ոճ
 
 ##  Variables: $addon-name (String) - Name of the add-on to be installed
 
+mr1-return-to-amo-subtitle = Ասեք ողջույն { -brand-short-name }-ին
 mr1-return-to-amo-add-extension-label = Ավելացնել { $addon-name }
 
 ## Multistage onboarding strings (about:welcome pages)
@@ -51,6 +52,7 @@ mr1-onboarding-import-primary-button-label-attribution = Ներմուծել { $p
 mr1-onboarding-theme-header = Դարձրեք այն ձերը
 mr1-onboarding-theme-subtitle = Անհատականացրեք { -brand-short-name }-ը ոճով:
 mr1-onboarding-theme-secondary-button-label = Ոչ հիմա
+newtab-wallpaper-onboarding-primary-button-label = Կայել պաստառ
 # System theme uses operating system color settings
 mr1-onboarding-theme-label-system = Համակարգային
 mr1-onboarding-theme-label-light = Լուսավոր
@@ -161,8 +163,12 @@ mr2022-onboarding-secondary-skip-button-label = Բաց թողնել այս քա�
 
 ## MR2022 New User Easy Setup screen strings
 
+# Primary button string used on new user onboarding first screen showing multiple actions such as Set Default, Import from previous browser.
+mr2022-onboarding-easy-setup-primary-button-label = Պահել և շարունակել
 # Set Default action checkbox label used on new user onboarding first screen
 mr2022-onboarding-easy-setup-set-default-checkbox-label = Կայել { -brand-short-name }-ը որպես սկզբնադիր զննիչ
+# Import action checkbox label used on new user onboarding first screen
+mr2022-onboarding-easy-setup-import-checkbox-label = Ներմուծել նախորդ դիտարկիչից
 
 ## MR2022 New User Pin Firefox screen strings
 
@@ -183,7 +189,7 @@ mr2022-onboarding-pin-primary-button-label =
 # has not set it as their default browser.
 # When translating "zip", please feel free to pick a verb that signifies movement and/or exploration
 # and makes sense in the context of navigating the web.
-mr2022-onboarding-set-default-only-subtitle = Սկսեք զննարկիչով, որն ապահովված է շահույթ չհետապնդող կազմակերպության կողմից: Մենք պաշտպանում ենք ձեր գաղտնիությունը, մինչ դուք զիփում եք համացանցում:
+mr2022-onboarding-set-default-only-subtitle = Սկսեք դիտարկիչով, որն ապահովված է շահույթ չհետապնդող կազմակերպության կողմից: Մենք պաշտպանում ենք ձեր գաղտնիությունը, մինչ դուք զիփում եք համացանցում:
 
 ## MR2022 Existing User Pin Firefox Screen Strings
 
@@ -194,7 +200,7 @@ mr2022-onboarding-existing-pin-subtitle = Գործարկեք ավելի առող
 # Subtitle will be used on the welcome screen for existing users
 # when they already have Firefox pinned but not set as default
 mr2022-onboarding-existing-set-default-only-subtitle = Օգտագործեք զննիչ, որը պաշտպանում է ձեր գաղտնիությունը համացանցում սեղմելով: Մեր վերջին թարմացումը լի է այն բաներով, որոնք դուք պաշտում եք:
-mr2022-onboarding-existing-pin-checkbox-label = Նաև ավելացրեք { -brand-short-name } մասնավոր զննում
+mr2022-onboarding-existing-pin-checkbox-label = Նաև ավելացրեք { -brand-short-name }-ի գաղտնի դիտարկում
 
 ## MR2022 New User Set Default screen strings
 
@@ -213,6 +219,7 @@ mr2022-onboarding-get-started-primary-button-label = Տեղակայեք վայր
 
 ## MR2022 Import Settings screen strings
 
+mr2022-onboarding-import-primary-button-label-no-attribution = Ներմուծել նախորդ դիտարկիչից
 
 ## If your language uses grammatical genders, in the description for the
 ## colorway feel free to switch from "You are a X. You…" (e.g. "You are a
@@ -222,12 +229,18 @@ mr2022-onboarding-get-started-primary-button-label = Տեղակայեք վայր
 mr2022-onboarding-colorway-title = Ընտրեք այն գույնը, որը ձեզ ոգեշնչում է
 mr2022-onboarding-colorway-subtitle = Անկախ ձայները կարող են փոխել մշակույթը:
 mr2022-onboarding-colorway-primary-button-label-continue = Սահմանել և շարունակել
+mr2022-onboarding-existing-colorway-checkbox-label = Դարձրեք { -firefox-home-brand-name }-ը Ձեր գունավոր տնէջը
 mr2022-onboarding-colorway-label-default = Սկզբնադիր
+mr2022-onboarding-colorway-tooltip-default2 =
+    .title = { -brand-short-name }-ի գործող գույները
 mr2022-onboarding-colorway-label-playmaker = Փլեյմեյքեր
 mr2022-onboarding-colorway-tooltip-playmaker2 =
     .title = Փլեյմեյքեր (կարմիր)
 mr2022-onboarding-colorway-description-playmaker = <b>Դուք փլեյմեյքեր եք:</b> Դուք հնարավորություններ եք ստեղծում հաղթելու և օգնում եք ձեր շրջապատի բոլորին բարձրացնել իրենց խաղը:
 mr2022-onboarding-colorway-description-visionary = <b>Դուք տեսաբան եք:</b> Դուք կասկածի տակ եք դնում ստատուս քվոն և դրդում ուրիշներին պատկերացնել ավելի լավ ապագա:
+mr2022-onboarding-colorway-label-activist = Ակտիվիստ
+mr2022-onboarding-colorway-tooltip-activist2 =
+    .title = Ակտիվիստ (կապույտ)
 mr2022-onboarding-colorway-description-innovator = <b>Դուք նորարար եք:</b> Դուք տեսնում եք հնարավորություններ ամենուր և ազդեցություն եք թողնում ձեր շրջապատի բոլոր մարդկանց կյանքի վրա:
 
 ## MR2022 Multistage Mobile Download screen strings
@@ -237,21 +250,24 @@ mr2022-onboarding-mobile-download-title = Անցեք լափթոփից հեռախ
 ## MR2022 Upgrade Dialog screens
 ## Pin private window screen shown only for users who don't have Firefox private pinned
 
-mr2022-upgrade-onboarding-pin-private-window-header = Ստացեք մասնավոր զննման ազատություն մեկ քլիքով
+mr2022-upgrade-onboarding-pin-private-window-header = Ստացեք գաղտնի դիտարկման ազատություն մեկ կտտոցով
 mr2022-upgrade-onboarding-pin-private-window-subtitle = Ոչ մի պահված թխուկ կամ պատմություն: Աշխատեք այնպես, կարծես ոչ ոք չի հետևում Ձեզ:
 mr2022-upgrade-onboarding-pin-private-window-primary-button-label =
     { PLATFORM() ->
-        [macos] Պահեք { -brand-short-name }-ի մասնավոր զննումը ամրակցված
-       *[other] Ամրացրեք { -brand-short-name }-ի մասնավոր զննումը Խնդրագոտուն
+        [macos] Պահեք { -brand-short-name }-ի գաղտնի դիտարկումն ամրակցված
+       *[other] Ամրացրեք { -brand-short-name }-ի գաղտնի դիտարկումը Խնդրագոտուն
     }
 
 ## MR2022 Privacy Segmentation screen strings
 
+mr2022-onboarding-privacy-segmentation-button-primary-label = Օգտվել { -brand-product-name }-ի խորհուրդներից
+mr2022-onboarding-privacy-segmentation-button-secondary-label = Ցուցադրել մանրամասն տեղեկություն
 
 ## MR2022 Multistage Gratitude screen strings
 
 mr2022-onboarding-gratitude-title = Դուք օգնում եք մեզ կառուցել ավելի լավ համացանց
 mr2022-onboarding-gratitude-subtitle = Շնորհակալություն { -brand-short-name }-ը օգտագործելու համար, Mozilla Foundation-ի կողմից: Ձեր աջակցությամբ մենք աշխատում ենք համացանցը դարձնել ավելի բաց, մատչելի և լավ բոլորի համար:
+mr2022-onboarding-gratitude-primary-button-label = Տեսեք, թե ինչն է նոր
 mr2022-onboarding-gratitude-secondary-button-label = Սկսեք զննարկել
 
 ## Onboarding spotlight for infrequent users
@@ -265,13 +281,27 @@ onboarding-infrequent-import-primary-button = Ներմուծել { -brand-short-
 ## Device migration onboarding
 
 onboarding-device-migration-title = Բարի վերադարձ
+onboarding-device-migration-primary-button-label = Մուտք գործել
 
 ## The following screens have been updated to use security and privacy focused strings:
 
+# Gratitude screen
+onboarding-gratitude-security-and-privacy-title = { -brand-short-name }-ը Ձեր ողնաշարն է
 
 ## New user time and familiarity survey strings
 
+onboarding-new-user-time-based-survey-title = Որքա՞ն ժամանակ եք օգտագործում { -brand-short-name }-ը:
+onboarding-new-user-familiarity-based-survey-title = Որքանո՞վ եք ծանոթ { -brand-short-name }-ին:
+onboarding-new-user-survey-subtitle = Ձեր արձգանքն օգնում է ավելի լավը դարձնել { -brand-short-name }-ը:
+# When translating "next" it means the next screen in onboarding.
+onboarding-new-user-survey-next-button-label = Հաջորդը
+# When translating "brand new" it means completely new.
+onboarding-new-user-survey-time-based-option-1 = Բոլորովին նոր եմ
 onboarding-new-user-survey-time-based-option-2 = 1 ամսից պակաս
+onboarding-new-user-survey-time-based-option-3 = 1 ամսից ավելի՝ պարբերաբար
+onboarding-new-user-survey-time-based-option-4 = 1 ամսից ավելի՝ երբեմն
 # When translating "brand new" it means completely new.
 onboarding-new-user-survey-familiarity-based-option-1 = Ես բոլորովին նոր եմ
+onboarding-new-user-survey-familiarity-based-option-2 = Օգտագործել եմ մի քանի անգամ
 onboarding-new-user-survey-familiarity-based-option-3 = Ես շատ ծանոթ եմ դրան
+onboarding-new-user-survey-familiarity-based-option-4 = Օգտագործել եմ նախկինում, բայց երկար ժամանակ է անցել

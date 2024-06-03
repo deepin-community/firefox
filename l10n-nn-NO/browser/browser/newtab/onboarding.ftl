@@ -53,6 +53,7 @@ mr1-onboarding-import-primary-button-label-attribution = Importer frå { $previo
 mr1-onboarding-theme-header = Gjer han til din eigen
 mr1-onboarding-theme-subtitle = Tilpass { -brand-short-name } med eit tema.
 mr1-onboarding-theme-secondary-button-label = Ikkje no
+newtab-wallpaper-onboarding-primary-button-label = Vel bakgrunnsbilde
 # System theme uses operating system color settings
 mr1-onboarding-theme-label-system = Systemtema
 mr1-onboarding-theme-label-light = Lyst
@@ -349,6 +350,8 @@ onboarding-gratitude-security-and-privacy-subtitle = Takk for at du brukar { -br
 onboarding-new-user-time-based-survey-title = Kor lenge har du brukt { -brand-short-name }?
 onboarding-new-user-familiarity-based-survey-title = Kor godt kjend er du med { -brand-short-name }?
 onboarding-new-user-survey-subtitle = Tilbakemeldinga di bidreg til å gjere { -brand-short-name } endå betre.
+# When translating "next" it means the next screen in onboarding.
+onboarding-new-user-survey-next-button-label = Neste
 # When translating "brand new" it means completely new.
 onboarding-new-user-survey-time-based-option-1 = Eg er heilt ny
 onboarding-new-user-survey-time-based-option-2 = Mindre enn 1 månad

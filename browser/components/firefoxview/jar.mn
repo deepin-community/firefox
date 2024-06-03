@@ -9,15 +9,13 @@ browser.jar:
     content/browser/firefoxview/firefoxview.mjs
     content/browser/firefoxview/history.css
     content/browser/firefoxview/history.mjs
+    content/browser/firefoxview/HistoryController.mjs
     content/browser/firefoxview/opentabs.mjs
     content/browser/firefoxview/view-opentabs.css
     content/browser/firefoxview/syncedtabs.mjs
     content/browser/firefoxview/view-syncedtabs.css
     content/browser/firefoxview/recentbrowsing.mjs
     content/browser/firefoxview/firefoxview.css
-    content/browser/firefoxview/fxview-category-button.css
-    content/browser/firefoxview/fxview-category-navigation.css
-    content/browser/firefoxview/fxview-category-navigation.mjs
     content/browser/firefoxview/fxview-empty-state.css
     content/browser/firefoxview/fxview-empty-state.mjs
     content/browser/firefoxview/helpers.mjs
@@ -26,15 +24,18 @@ browser.jar:
     content/browser/firefoxview/fxview-tab-list.css
     content/browser/firefoxview/fxview-tab-list.mjs
     content/browser/firefoxview/fxview-tab-row.css
+    content/browser/firefoxview/opentabs-tab-list.css
+    content/browser/firefoxview/opentabs-tab-list.mjs
+    content/browser/firefoxview/opentabs-tab-row.css
     content/browser/firefoxview/recentlyclosed.mjs
     content/browser/firefoxview/viewpage.mjs
     content/browser/firefoxview/history-empty.svg (content/history-empty.svg)
-    content/browser/firefoxview/category-history.svg (content/category-history.svg)
-    content/browser/firefoxview/category-opentabs.svg (content/category-opentabs.svg)
-    content/browser/firefoxview/category-recentbrowsing.svg (content/category-recentbrowsing.svg)
-    content/browser/firefoxview/category-recentlyclosed.svg (content/category-recentlyclosed.svg)
-    content/browser/firefoxview/category-syncedtabs.svg (content/category-syncedtabs.svg)
     content/browser/firefoxview/recentlyclosed-empty.svg (content/recentlyclosed-empty.svg)
     content/browser/firefoxview/synced-tabs-error.svg (content/synced-tabs-error.svg)
     content/browser/callout-tab-pickup.svg (content/callout-tab-pickup.svg)
     content/browser/callout-tab-pickup-dark.svg (content/callout-tab-pickup-dark.svg)
+    content/browser/firefoxview/view-history.svg (content/view-history.svg)
+    content/browser/firefoxview/view-opentabs.svg (content/view-opentabs.svg)
+    content/browser/firefoxview/view-recentbrowsing.svg (content/view-recentbrowsing.svg)
+    content/browser/firefoxview/view-recentlyclosed.svg (content/view-recentlyclosed.svg)
+    content/browser/firefoxview/view-syncedtabs.svg (content/view-syncedtabs.svg)

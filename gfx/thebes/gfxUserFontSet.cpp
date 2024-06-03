@@ -20,6 +20,7 @@
 #include "mozilla/PostTraversalTask.h"
 #include "mozilla/dom/WorkerCommon.h"
 #include "gfxOTSUtils.h"
+#include "nsFontFaceLoader.h"
 #include "nsIFontLoadCompleteCallback.h"
 #include "nsProxyRelease.h"
 #include "nsContentUtils.h"
@@ -392,6 +393,12 @@ void gfxUserFontEntry::LoadNextSrc() {
 }
 
 void gfxUserFontEntry::ContinueLoad() {
+  if (mUserFontLoadState == STATUS_NOT_LOADED) {
+    // We must have been cancelled (possibly due to a font-list refresh) while
+    // the runnable was pending, so just bail out.
+    return;
+  }
+
   MOZ_ASSERT(mUserFontLoadState == STATUS_LOAD_PENDING);
   MOZ_ASSERT(mSrcList[mCurrentSrcIndex].mSourceType ==
              gfxFontFaceSrc::eSourceType_URL);
@@ -492,38 +499,54 @@ void gfxUserFontEntry::DoLoadNextSrc(bool aIsContinue) {
     else if (currSrc.mSourceType == gfxFontFaceSrc::eSourceType_URL) {
       if (gfxPlatform::GetPlatform()->IsFontFormatSupported(
               currSrc.mFormatHint, currSrc.mTechFlags)) {
-        if (ServoStyleSet* set = gfxFontUtils::CurrentServoStyleSet()) {
-          // Only support style worker threads synchronously getting
-          // entries from the font cache when it's not a data: URI
-          // @font-face that came from UA or user sheets, since we
-          // were not able to call IsFontLoadAllowed ahead of time
-          // for these entries.
-          if (currSrc.mUseOriginPrincipal && IgnorePrincipal(currSrc.mURI)) {
-            set->AppendTask(PostTraversalTask::LoadFontEntry(this));
-            SetLoadState(STATUS_LOAD_PENDING);
-            return;
+        // TODO(emilio): Make UserFontCache thread-safe maybe? But we need to
+        // potentially do CSP checks so maybe not trivial.
+        const bool canCheckCache = [&] {
+          if (NS_IsMainThread()) {
+            return true;
           }
-        }
+          if (gfxFontUtils::CurrentServoStyleSet()) {
+            // Only support style worker threads synchronously getting entries
+            // from the font cache when it's not a data: URI @font-face that
+            // came from UA or user sheets, since we were not able to call
+            // IsFontLoadAllowed ahead of time for these entries.
+            return !currSrc.mUseOriginPrincipal ||
+                   !IgnorePrincipal(currSrc.mURI);
+          }
+          return false;
+        }();
 
         // see if we have an existing entry for this source
-        gfxFontEntry* fe =
-            gfxUserFontSet::UserFontCache::GetFont(currSrc, *this);
-        if (fe) {
-          mPlatformFontEntry = fe;
-          SetLoadState(STATUS_LOADED);
-          LOG(
-              ("userfonts (%p) [src %d] "
-               "loaded uri from cache: (%s) for (%s)\n",
-               fontSet.get(), mCurrentSrcIndex,
-               currSrc.mURI->GetSpecOrDefault().get(), mFamilyName.get()));
-          return;
+        if (canCheckCache) {
+          gfxFontEntry* fe =
+              gfxUserFontSet::UserFontCache::GetFont(currSrc, *this);
+          if (fe) {
+            mPlatformFontEntry = fe;
+            SetLoadState(STATUS_LOADED);
+            LOG(
+                ("userfonts (%p) [src %d] "
+                 "loaded uri from cache: (%s) for (%s)\n",
+                 fontSet.get(), mCurrentSrcIndex,
+                 currSrc.mURI->GetSpecOrDefault().get(), mFamilyName.get()));
+            return;
+          }
         }
 
         if (ServoStyleSet* set = gfxFontUtils::CurrentServoStyleSet()) {
           // If we need to start a font load and we're on a style
           // worker thread, we have to defer it.
-          set->AppendTask(PostTraversalTask::LoadFontEntry(this));
           SetLoadState(STATUS_LOAD_PENDING);
+          set->AppendTask(PostTraversalTask::LoadFontEntry(this));
+          return;
+        }
+
+        if (dom::IsCurrentThreadRunningWorker()) {
+          // TODO: Maybe support loading the font entry in workers, at least for
+          // buffers or other sync sources?
+          SetLoadState(STATUS_LOAD_PENDING);
+          NS_DispatchToMainThread(
+              NewRunnableMethod("gfxUserFontEntry::ContinueLoad", this,
+                                &gfxUserFontEntry::ContinueLoad));
           return;
         }
 
@@ -551,9 +574,9 @@ void gfxUserFontEntry::DoLoadNextSrc(bool aIsContinue) {
           fontSet->LogMessage(this, mCurrentSrcIndex, "font load failed",
                               nsIScriptError::errorFlag, rv);
         } else if (!aIsContinue) {
-          RefPtr<nsIRunnable> runnable = NS_NewRunnableFunction(
-              "gfxUserFontSet::AsyncContinueLoad",
-              [loader = RefPtr{this}] { loader->ContinueLoad(); });
+          RefPtr<nsIRunnable> runnable =
+              NewRunnableMethod("gfxUserFontEntry::ContinueLoad", this,
+                                &gfxUserFontEntry::ContinueLoad);
           SetLoadState(STATUS_LOAD_PENDING);
           // We don't want to trigger the channel open at random points in
           // time, because it can run privileged JS.
@@ -817,13 +840,6 @@ void gfxUserFontEntry::Load() {
   if (mUserFontLoadState != STATUS_NOT_LOADED) {
     return;
   }
-  if (dom::IsCurrentThreadRunningWorker()) {
-    // TODO: Maybe support loading the font entry in workers, at least for
-    // buffers or other sync sources?
-    NS_DispatchToMainThread(NewRunnableMethod("gfxUserFontEntry::Load", this,
-                                              &gfxUserFontEntry::Load));
-    return;
-  }
   LoadNextSrc();
 }
 
@@ -965,7 +981,8 @@ gfxUserFontSet::gfxUserFontSet()
       mLocalRulesUsed(false),
       mRebuildLocalRules(false),
       mDownloadCount(0),
-      mDownloadSize(0) {
+      mDownloadSize(0),
+      mMutex("gfxUserFontSet") {
   IncrementGeneration(true);
 }
 
@@ -1048,7 +1065,7 @@ void gfxUserFontSet::AddUserFontEntry(const nsCString& aFamilyName,
   }
 }
 
-void gfxUserFontSet::IncrementGeneration(bool aIsRebuild) {
+void gfxUserFontSet::IncrementGenerationLocked(bool aIsRebuild) {
   // add one, increment again if zero
   do {
     mGeneration = ++sFontSetGeneration;
@@ -1088,6 +1105,10 @@ void gfxUserFontSet::ForgetLocalFaces() {
 }
 
 void gfxUserFontSet::ForgetLocalFace(gfxUserFontFamily* aFontFamily) {
+  // Entries for which we might need to cancel a current loader.
+  AutoTArray<RefPtr<gfxUserFontEntry>, 8> entriesToCancel;
+
+  // Lock the font family while we iterate over its entries.
   aFontFamily->ReadLock();
   const auto& fonts = aFontFamily->GetFontList();
   for (const auto& f : fonts) {
@@ -1098,14 +1119,28 @@ void gfxUserFontSet::ForgetLocalFace(gfxUserFontFamily* aFontFamily) {
         ufe->GetPlatformFontEntry()->IsLocalUserFont()) {
       ufe->mPlatformFontEntry = nullptr;
     }
-    // We need to re-evaluate the source list in the context of the new
-    // platform fontlist, whether or not the entry actually used a local()
-    // source last time, as one might be newly available.
+    // If the entry had a local source, we need to re-evaluate the source list
+    // in the context of the new platform fontlist, whether or not the entry
+    // actually used a local() source last time, as one might have been added.
     if (ufe->mSeenLocalSource) {
-      ufe->LoadCanceled();
+      entriesToCancel.AppendElement(ufe);
     }
   }
   aFontFamily->ReadUnlock();
+
+  // Cancel any current loaders and reset the state of the affected entries.
+  for (auto& ufe : entriesToCancel) {
+    if (auto* loader = ufe->GetLoader()) {
+      // If there's a loader, we need to cancel it, because we'll trigger a
+      // fresh load if required when we re-resolve the font...
+      loader->Cancel();
+      RemoveLoader(loader);
+    } else {
+      // ...otherwise, just reset our state so that we'll re-evaluate the
+      // source list from the beginning.
+      ufe->LoadCanceled();
+    }
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1200,7 +1235,7 @@ void gfxUserFontSet::UserFontCache::CacheFont(gfxFontEntry* aFontEntry) {
                "caching a font associated with no family yet");
 
   // if caching is disabled, simply return
-  if (Preferences::GetBool("gfx.downloadable_fonts.disable_cache")) {
+  if (StaticPrefs::gfx_downloadable_fonts_disable_cache()) {
     return;
   }
 
@@ -1273,8 +1308,7 @@ void gfxUserFontSet::UserFontCache::ForgetFont(gfxFontEntry* aFontEntry) {
 
 gfxFontEntry* gfxUserFontSet::UserFontCache::GetFont(
     const gfxFontFaceSrc& aSrc, const gfxUserFontEntry& aUserFontEntry) {
-  if (!sUserFonts ||
-      Preferences::GetBool("gfx.downloadable_fonts.disable_cache")) {
+  if (!sUserFonts || StaticPrefs::gfx_downloadable_fonts_disable_cache()) {
     return nullptr;
   }
 

@@ -27,6 +27,7 @@
 #include "mozilla/dom/BrowserChild.h"
 #include "mozilla/dom/MouseEventBinding.h"
 #include "mozilla/layers/APZCCallbackHelper.h"
+#include "mozilla/layers/APZUtils.h"
 #include "mozilla/layers/IAPZCTreeManager.h"
 #include "mozilla/widget/nsAutoRollup.h"
 #include "nsCOMPtr.h"
@@ -101,7 +102,7 @@ APZEventState::APZEventState(nsIWidget* aWidget,
       mContentReceivedInputBlockCallback(std::move(aCallback)),
       mPendingTouchPreventedResponse(false),
       mPendingTouchPreventedBlockId(0),
-      mEndTouchIsClick(false),
+      mEndTouchState(apz::SingleTapState::NotClick),
       mFirstTouchCancelled(false),
       mTouchEndCancelled(false),
       mReceivedNonTouchStart(false),
@@ -240,7 +241,7 @@ void APZEventState::ProcessLongTap(PresShell* aPresShell,
       false;
 #elif defined(MOZ_WIDGET_ANDROID)
       // On Android, GeckoView calls preventDefault() in a JSActor
-      // (ContentDelegateChild.jsm) when opening context menu so that we can
+      // (ContentDelegateChild.sys.mjs) when opening context menu so that we can
       // tell whether contextmenu opens in response to the contextmenu event by
       // checking where preventDefault() got called.
       preventDefaultResult == PreventDefaultResult::ByChrome;
@@ -349,11 +350,13 @@ void APZEventState::ProcessTouchEvent(
     case eTouchEnd:
       if (isTouchPrevented) {
         mTouchEndCancelled = true;
-        mEndTouchIsClick = false;
+        mEndTouchState = apz::SingleTapState::NotClick;
       }
       [[fallthrough]];
     case eTouchCancel:
-      mActiveElementManager->HandleTouchEndEvent(mEndTouchIsClick);
+      if (mActiveElementManager->HandleTouchEndEvent(mEndTouchState)) {
+        mEndTouchState = apz::SingleTapState::NotClick;
+      }
       [[fallthrough]];
     case eTouchMove: {
       if (!mReceivedNonTouchStart) {
@@ -515,13 +518,13 @@ void APZEventState::ProcessAPZStateChange(ViewID aViewId,
       break;
     }
     case APZStateChange::eStartTouch: {
-      bool canBePan = aArg;
-      mActiveElementManager->HandleTouchStart(canBePan);
+      bool canBePanOrZoom = aArg;
+      mActiveElementManager->HandleTouchStart(canBePanOrZoom);
       // If this is a non-scrollable content, set a timer for the amount of
       // time specified by ui.touch_activation.duration_ms to clear the
       // active element state.
-      APZES_LOG("%s: can-be-pan=%d", __FUNCTION__, aArg);
-      if (!canBePan) {
+      APZES_LOG("%s: can-be-pan-or-zoom=%d", __FUNCTION__, aArg);
+      if (!canBePanOrZoom) {
         MOZ_ASSERT(aInputBlockId.isSome());
       }
       break;
@@ -532,8 +535,10 @@ void APZEventState::ProcessAPZStateChange(ViewID aViewId,
       break;
     }
     case APZStateChange::eEndTouch: {
-      mEndTouchIsClick = aArg;
-      mActiveElementManager->HandleTouchEnd();
+      mEndTouchState = static_cast<apz::SingleTapState>(aArg);
+      if (mActiveElementManager->HandleTouchEnd(mEndTouchState)) {
+        mEndTouchState = apz::SingleTapState::NotClick;
+      }
       break;
     }
   }

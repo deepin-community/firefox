@@ -69,12 +69,12 @@ class TenuredChunk;
   _("parallelMarkingEnabled", JSGC_PARALLEL_MARKING_ENABLED, true)          \
   _("parallelMarkingThresholdMB", JSGC_PARALLEL_MARKING_THRESHOLD_MB, true) \
   _("minLastDitchGCPeriod", JSGC_MIN_LAST_DITCH_GC_PERIOD, true)            \
-  _("nurseryFreeThresholdForIdleCollection",                                \
-    JSGC_NURSERY_FREE_THRESHOLD_FOR_IDLE_COLLECTION, true)                  \
-  _("nurseryFreeThresholdForIdleCollectionPercent",                         \
-    JSGC_NURSERY_FREE_THRESHOLD_FOR_IDLE_COLLECTION_PERCENT, true)          \
-  _("nurseryTimeoutForIdleCollectionMS",                                    \
-    JSGC_NURSERY_TIMEOUT_FOR_IDLE_COLLECTION_MS, true)                      \
+  _("nurseryEagerCollectionThresholdKB",                                    \
+    JSGC_NURSERY_EAGER_COLLECTION_THRESHOLD_KB, true)                       \
+  _("nurseryEagerCollectionThresholdPercent",                               \
+    JSGC_NURSERY_EAGER_COLLECTION_THRESHOLD_PERCENT, true)                  \
+  _("nurseryEagerCollectionTimeoutMS",                                      \
+    JSGC_NURSERY_EAGER_COLLECTION_TIMEOUT_MS, true)                         \
   _("zoneAllocDelayKB", JSGC_ZONE_ALLOC_DELAY_KB, true)                     \
   _("mallocThresholdBase", JSGC_MALLOC_THRESHOLD_BASE, true)                \
   _("urgentThreshold", JSGC_URGENT_THRESHOLD_MB, true)                      \
@@ -83,7 +83,8 @@ class TenuredChunk;
   _("maxHelperThreads", JSGC_MAX_HELPER_THREADS, true)                      \
   _("helperThreadCount", JSGC_HELPER_THREAD_COUNT, false)                   \
   _("markingThreadCount", JSGC_MARKING_THREAD_COUNT, true)                  \
-  _("systemPageSizeKB", JSGC_SYSTEM_PAGE_SIZE_KB, false)
+  _("systemPageSizeKB", JSGC_SYSTEM_PAGE_SIZE_KB, false)                    \
+  _("semispaceNurseryEnabled", JSGC_SEMISPACE_NURSERY_ENABLED, true)
 
 // Get the key and writability give a GC parameter name.
 extern bool GetGCParameterInfo(const char* name, JSGCParamKey* keyOut,

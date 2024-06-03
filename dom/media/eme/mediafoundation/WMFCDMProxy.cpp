@@ -158,7 +158,7 @@ void WMFCDMProxy::ResolvePromiseWithKeyStatus(
     RETURN_IF_SHUTDOWN();
     EME_LOG("WMFCDMProxy::ResolvePromiseWithKeyStatus(this=%p, pid=%" PRIu32
             ", status=%s)",
-            this, aId, ToMediaKeyStatusStr(aStatus));
+            this, aId, dom::GetEnumString(aStatus).get());
     if (!mKeys.IsNull()) {
       mKeys->ResolvePromiseWithKeyStatus(aId, aStatus);
     } else {
@@ -381,8 +381,7 @@ void WMFCDMProxy::GetStatusForPolicy(PromiseId aPromiseId,
   RETURN_IF_SHUTDOWN();
   EME_LOG("WMFCDMProxy::GetStatusForPolicy(this=%p, pid=%" PRIu32
           ", minHDCP=%s)",
-          this, aPromiseId,
-          dom::HDCPVersionValues::GetString(aMinHdcpVersion).data());
+          this, aPromiseId, dom::GetEnumString(aMinHdcpVersion).get());
   mCDM->GetStatusForPolicy(aPromiseId, aMinHdcpVersion)
       ->Then(
           mMainThread, __func__,

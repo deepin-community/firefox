@@ -15,6 +15,18 @@ const Row = props => (
   </tr>
 );
 
+// Convert a UTF-8 string to a string in which only one byte of each
+// 16-bit unit is occupied. This is necessary to comply with `btoa` API constraints.
+export function toBinary(string) {
+  const codeUnits = new Uint16Array(string.length);
+  for (let i = 0; i < codeUnits.length; i++) {
+    codeUnits[i] = string.charCodeAt(i);
+  }
+  return btoa(
+    String.fromCharCode(...Array.from(new Uint8Array(codeUnits.buffer)))
+  );
+}
+
 function relativeTime(timestamp) {
   if (!timestamp) {
     return "";
@@ -258,7 +270,7 @@ export class ASRouterAdminInner extends React.PureComponent {
     ASRouterUtils.sendMessage({ type: "RESET_PROVIDER_PREF" });
   }
 
-  resetGroups(id, value) {
+  resetGroups() {
     ASRouterUtils.sendMessage({
       type: "RESET_GROUPS_STATE",
     }).then(this.setStateFromParent);
@@ -387,7 +399,7 @@ export class ASRouterAdminInner extends React.PureComponent {
   }
 
   // Simulate a copy event that sets to clipboard all targeting paramters and values
-  onCopyTargetingParams(event) {
+  onCopyTargetingParams() {
     const stringTargetingParameters = {
       ...this.state.stringTargetingParameters,
     };
@@ -507,7 +519,7 @@ export class ASRouterAdminInner extends React.PureComponent {
             isBlocked ? null : isModified ? (
               <button
                 className="button restore"
-                onClick={e => this.resetJSON(msg)}
+                onClick={() => this.resetJSON(msg)}
               >
                 Reset
               </button>
@@ -523,7 +535,7 @@ export class ASRouterAdminInner extends React.PureComponent {
           {isBlocked ? null : (
             <button
               className="button modify"
-              onClick={e => this.modifyJson(msg)}
+              onClick={() => this.modifyJson(msg)}
             >
               Modify
             </button>
@@ -531,7 +543,9 @@ export class ASRouterAdminInner extends React.PureComponent {
           {aboutMessagePreviewSupported ? (
             <CopyButton
               transformer={text =>
-                `about:messagepreview?json=${encodeURIComponent(btoa(text))}`
+                `about:messagepreview?json=${encodeURIComponent(
+                  toBinary(text)
+                )}`
               }
               label="Share"
               copiedLabel="Copied!"
@@ -557,7 +571,7 @@ export class ASRouterAdminInner extends React.PureComponent {
                 name={msg.id}
                 className="general-textarea"
                 disabled={isBlocked}
-                onChange={e => this.handleChange(msg.id)}
+                onChange={() => this.handleChange(msg.id)}
               >
                 {JSON.stringify(msg, null, 2)}
               </textarea>
@@ -647,7 +661,7 @@ export class ASRouterAdminInner extends React.PureComponent {
           </button>
           <button
             className="ASRouterButton slim button"
-            onClick={e => this.resetPBJSON(msg)}
+            onClick={() => this.resetPBJSON(msg)}
           >
             Reset JSON
           </button>
@@ -698,7 +712,7 @@ export class ASRouterAdminInner extends React.PureComponent {
       <div>
         <button
           className="ASRouterButton slim"
-          onClick={e => this.toggleAllMessages(messagesToShow)}
+          onClick={() => this.toggleAllMessages(messagesToShow)}
         >
           Collapse/Expand All
         </button>
@@ -1046,7 +1060,7 @@ export class ASRouterAdminInner extends React.PureComponent {
     });
   }
 
-  setAttribution(e) {
+  setAttribution() {
     ASRouterUtils.sendMessage({
       type: "FORCE_ATTRIBUTION",
       data: this.state.attributionParameters,
@@ -1307,7 +1321,7 @@ export class ASRouterAdminInner extends React.PureComponent {
           <h2>Messages</h2>
           <button
             className="ASRouterButton slim button"
-            onClick={e => this.toggleAllMessages(messagesToShow)}
+            onClick={() => this.toggleAllMessages(messagesToShow)}
           >
             Collapse/Expand All
           </button>
@@ -1359,10 +1373,7 @@ export class ASRouterAdminInner extends React.PureComponent {
               <tbody>
                 {this.state.groups &&
                   this.state.groups.map(
-                    (
-                      { id, enabled, frequency, userPreferences = [] },
-                      index
-                    ) => (
+                    ({ id, enabled, frequency, userPreferences = [] }) => (
                       <Row key={id}>
                         <td>
                           <TogglePrefCheckbox
@@ -1473,7 +1484,7 @@ export class ASRouterAdminInner extends React.PureComponent {
               Need help using these tools? Check out our{" "}
               <a
                 target="blank"
-                href="https://firefox-source-docs.mozilla.org/browser/components/newtab/content-src/asrouter/docs/debugging-docs.html"
+                href="https://firefox-source-docs.mozilla.org/browser/components/asrouter/docs/debugging-docs.html"
               >
                 documentation
               </a>

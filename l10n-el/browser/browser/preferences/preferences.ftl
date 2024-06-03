@@ -32,6 +32,8 @@ search-input-box2 =
     .style = width: 15.4em
     .placeholder = Εύρεση στις ρυθμίσεις
 managed-notice = Το πρόγραμμα περιήγησής σας ρυθμίζεται από τον οργανισμό σας.
+managed-notice-info-icon =
+    .alt = Πληροφορίες
 category-list =
     .aria-label = Κατηγορίες
 pane-general-title = Γενικά
@@ -708,6 +710,13 @@ sync-mobile-promo = Κάντε λήψη του Firefox για <img data-l10n-na
 
 sync-profile-picture =
     .tooltiptext = Αλλαγή εικόνας προφίλ
+sync-profile-picture-with-alt =
+    .tooltiptext = Αλλαγή εικόνας προφίλ
+    .alt = Αλλαγή εικόνας προφίλ
+sync-profile-picture-account-problem =
+    .alt = Εικόνα προφίλ λογαριασμού
+fxa-login-rejected-warning =
+    .alt = Προειδοποίηση
 sync-sign-out =
     .label = Αποσύνδεση…
     .accesskey = ν
@@ -1274,6 +1283,8 @@ addon-recommendations-link = Μάθετε περισσότερα
 # or builds with no Telemetry support available.
 collection-health-report-disabled = Η αναφορά δεδομένων είναι ανενεργή για αυτήν τη ρύθμιση δομής
 collection-backlogged-crash-reports-with-link = Να επιτρέπεται στο { -brand-short-name } η αποστολή αναφορών καταρρεύσεων με καθυστέρηση <a data-l10n-name="crash-reports-link">Μάθετε περισσότερα</a>
+    .accesskey = κ
+collection-backlogged-crash-reports = Να επιτρέπεται στο { -brand-short-name } η αποστολή αναφορών καταρρεύσεων με καθυστέρηση
     .accesskey = κ
 privacy-segmentation-section-header = Νέες λειτουργίες που βελτιώνουν την περιήγησή σας
 privacy-segmentation-section-description = Όταν προσφέρουμε λειτουργίες που χρησιμοποιούν τα δεδομένα σας για μια πιο εξατομικευμένη εμπειρία:

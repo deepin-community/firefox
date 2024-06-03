@@ -204,6 +204,9 @@ containers-remove-alert-msg =
     }
 containers-remove-ok-button = أزل الحاوية
 containers-remove-cancel-button = لا تزِل هذه الحاوية
+settings-tabs-show-image-in-preview =
+    .label = أظهِر معاينة الصورة عند التحويم فوق اللسان
+    .accessKey = ع
 
 ## General Section - Language & Appearance
 
@@ -702,6 +705,9 @@ sync-mobile-promo = نزّل Firefox لنظامي <img data-l10n-name="android-i
 
 sync-profile-picture =
     .tooltiptext = غيّر صورة الحساب
+sync-profile-picture-with-alt =
+    .tooltiptext = غيّر صورة الحساب
+    .alt = غيّر صورة الحساب
 sync-sign-out =
     .label = اخرج…
     .accesskey = خ
@@ -849,6 +855,10 @@ forms-ask-to-save-logins =
 
 ## Privacy Section - Passwords
 
+# "Logins" is the former term for "Passwords". Users should find password settings
+# by searching for the former term "logins". It's not displayed in the UI.
+pane-privacy-passwords-header = كلمات السر
+    .searchkeywords = س
 forms-exceptions =
     .label = الاستثناءات…
     .accesskey = س
@@ -1169,7 +1179,7 @@ permissions-block-popups =
 # "pop-up" so it's included as a search keyword, not displayed in the UI.
 permissions-block-popups-exceptions-button =
     .label = الاستثناءات…
-    .accesskey = س
+    .accesskey = ت
     .searchkeywords = popups
 permissions-addon-install-warning =
     .label = حذّرني عندما يحاول موقع وِب تثبيت إضافات

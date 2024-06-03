@@ -204,7 +204,10 @@ function init_all() {
   register_module("paneSearch", gSearchPane);
   register_module("panePrivacy", gPrivacyPane);
   register_module("paneContainers", gContainersPane);
-  register_module("paneTranslations", gTranslationsPane);
+
+  if (Services.prefs.getBoolPref("browser.translations.newSettingsUI.enable")) {
+    register_module("paneTranslations", gTranslationsPane);
+  }
   if (Services.prefs.getBoolPref("browser.preferences.experimental")) {
     // Set hidden based on previous load's hidden value.
     document.getElementById("category-experimental").hidden =
@@ -271,22 +274,6 @@ function init_all() {
       })
     );
   });
-}
-
-function telemetryBucketForCategory(category) {
-  category = category.toLowerCase();
-  switch (category) {
-    case "containers":
-    case "general":
-    case "home":
-    case "privacy":
-    case "search":
-    case "sync":
-    case "searchresults":
-      return category;
-    default:
-      return "unknown";
-  }
 }
 
 function onHashChange() {
@@ -451,16 +438,6 @@ function search(aQuery, aAttribute) {
     }
     element.classList.remove("visually-hidden");
   }
-
-  let keysets = mainPrefPane.getElementsByTagName("keyset");
-  for (let element of keysets) {
-    let attributeValue = element.getAttribute(aAttribute);
-    if (attributeValue == aQuery) {
-      element.removeAttribute("disabled");
-    } else {
-      element.setAttribute("disabled", true);
-    }
-  }
 }
 
 async function spotlight(subcategory, category) {
@@ -475,7 +452,7 @@ async function spotlight(subcategory, category) {
   }
 }
 
-async function scrollAndHighlight(subcategory, category) {
+async function scrollAndHighlight(subcategory) {
   let element = document.querySelector(`[data-subcategory="${subcategory}"]`);
   if (!element) {
     return;
@@ -643,7 +620,7 @@ async function ensureScrollPadding() {
   let stickyContainer = document.querySelector(".sticky-container");
   let height = await window.browsingContext.topChromeWindow
     .promiseDocumentFlushed(() => stickyContainer.clientHeight)
-    .catch(err => Cu.reportError); // Can reject if the window goes away.
+    .catch(() => Cu.reportError); // Can reject if the window goes away.
 
   // Make it a bit more, to ensure focus rectangles etc. don't get cut off.
   // This being 8px causes us to end up with 90px if the policies container

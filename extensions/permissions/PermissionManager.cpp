@@ -308,17 +308,6 @@ nsresult GetPrincipalFromOrigin(const nsACString& aOrigin, bool aForceStripOA,
   return NS_OK;
 }
 
-nsresult GetPrincipal(nsIURI* aURI, bool aIsInIsolatedMozBrowserElement,
-                      nsIPrincipal** aPrincipal) {
-  OriginAttributes attrs(aIsInIsolatedMozBrowserElement);
-  nsCOMPtr<nsIPrincipal> principal =
-      BasePrincipal::CreateContentPrincipal(aURI, attrs);
-  NS_ENSURE_TRUE(principal, NS_ERROR_FAILURE);
-
-  principal.forget(aPrincipal);
-  return NS_OK;
-}
-
 nsresult GetPrincipal(nsIURI* aURI, nsIPrincipal** aPrincipal) {
   OriginAttributes attrs;
   nsCOMPtr<nsIPrincipal> principal =
@@ -369,7 +358,6 @@ already_AddRefed<nsIURI> GetNextSubDomainURI(nsIURI* aURI) {
 nsresult UpgradeHostToOriginAndInsert(
     const nsACString& aHost, const nsCString& aType, uint32_t aPermission,
     uint32_t aExpireType, int64_t aExpireTime, int64_t aModificationTime,
-    bool aIsInIsolatedMozBrowserElement,
     std::function<nsresult(const nsACString& aOrigin, const nsCString& aType,
                            uint32_t aPermission, uint32_t aExpireType,
                            int64_t aExpireTime, int64_t aModificationTime)>&&
@@ -396,8 +384,7 @@ nsresult UpgradeHostToOriginAndInsert(
     }
 
     nsCOMPtr<nsIPrincipal> principal;
-    rv = GetPrincipal(uri, aIsInIsolatedMozBrowserElement,
-                      getter_AddRefs(principal));
+    rv = GetPrincipal(uri, getter_AddRefs(principal));
     NS_ENSURE_SUCCESS(rv, rv);
 
     nsAutoCString origin;
@@ -512,8 +499,7 @@ nsresult UpgradeHostToOriginAndInsert(
 
       // We now have a URI which we can make a nsIPrincipal out of
       nsCOMPtr<nsIPrincipal> principal;
-      rv = GetPrincipal(uri, aIsInIsolatedMozBrowserElement,
-                        getter_AddRefs(principal));
+      rv = GetPrincipal(uri, getter_AddRefs(principal));
       if (NS_WARN_IF(NS_FAILED(rv))) continue;
 
       nsAutoCString origin;
@@ -560,8 +546,7 @@ nsresult UpgradeHostToOriginAndInsert(
     rv = NS_NewURI(getter_AddRefs(uri), "http://"_ns + hostSegment);
     NS_ENSURE_SUCCESS(rv, rv);
 
-    rv = GetPrincipal(uri, aIsInIsolatedMozBrowserElement,
-                      getter_AddRefs(principal));
+    rv = GetPrincipal(uri, getter_AddRefs(principal));
     NS_ENSURE_SUCCESS(rv, rv);
 
     rv = GetOriginFromPrincipal(principal, IsOAForceStripPermission(aType),
@@ -575,8 +560,7 @@ nsresult UpgradeHostToOriginAndInsert(
     rv = NS_NewURI(getter_AddRefs(uri), "https://"_ns + hostSegment);
     NS_ENSURE_SUCCESS(rv, rv);
 
-    rv = GetPrincipal(uri, aIsInIsolatedMozBrowserElement,
-                      getter_AddRefs(principal));
+    rv = GetPrincipal(uri, getter_AddRefs(principal));
     NS_ENSURE_SUCCESS(rv, rv);
 
     rv = GetOriginFromPrincipal(principal, IsOAForceStripPermission(aType),
@@ -1224,7 +1208,6 @@ nsresult PermissionManager::TryInitDB(bool aRemoveFile,
             entry.mExpireType = stmt->AsInt32(3);
             entry.mExpireTime = stmt->AsInt64(4);
             entry.mModificationTime = stmt->AsInt64(5);
-            entry.mIsInBrowserElement = static_cast<bool>(stmt->AsInt32(6));
 
             mMigrationEntries.AppendElement(entry);
           }
@@ -1379,7 +1362,6 @@ nsresult PermissionManager::TryInitDB(bool aRemoveFile,
             entry.mExpireType = stmt->AsInt32(3);
             entry.mExpireTime = stmt->AsInt64(4);
             entry.mModificationTime = stmt->AsInt64(5);
-            entry.mIsInBrowserElement = static_cast<bool>(stmt->AsInt32(6));
 
             mMigrationEntries.AppendElement(entry);
           }
@@ -1700,22 +1682,15 @@ NS_IMETHODIMP
 PermissionManager::AddFromPrincipalAndPersistInPrivateBrowsing(
     nsIPrincipal* aPrincipal, const nsACString& aType, uint32_t aPermission) {
   ENSURE_NOT_CHILD_PROCESS;
-  NS_ENSURE_ARG_POINTER(aPrincipal);
-  // We don't add the system principal because it actually has no URI and we
-  // always allow action for them.
-  if (aPrincipal->IsSystemPrincipal()) {
-    return NS_OK;
-  }
 
-  // Null principals can't meaningfully have persisted permissions attached to
-  // them, so we don't allow adding permissions for them.
-  if (aPrincipal->GetIsNullPrincipal()) {
-    return NS_OK;
-  }
+  bool isValidPermissionPrincipal = false;
+  nsresult rv = ShouldHandlePrincipalForPermission(aPrincipal,
+                                                   isValidPermissionPrincipal);
 
-  // Permissions may not be added to expanded principals.
-  if (IsExpandedPrincipal(aPrincipal)) {
-    return NS_ERROR_INVALID_ARG;
+  NS_ENSURE_SUCCESS(rv, rv);
+  if (!isValidPermissionPrincipal) {
+    // return early if the principal is invalid for permissions
+    return rv;
   }
 
   // A modificationTime of zero will cause AddInternal to use now().
@@ -1735,7 +1710,6 @@ PermissionManager::AddFromPrincipal(nsIPrincipal* aPrincipal,
                                     uint32_t aPermission, uint32_t aExpireType,
                                     int64_t aExpireTime) {
   ENSURE_NOT_CHILD_PROCESS;
-  NS_ENSURE_ARG_POINTER(aPrincipal);
   NS_ENSURE_TRUE(aExpireType == nsIPermissionManager::EXPIRE_NEVER ||
                      aExpireType == nsIPermissionManager::EXPIRE_TIME ||
                      aExpireType == nsIPermissionManager::EXPIRE_SESSION ||
@@ -1747,21 +1721,14 @@ PermissionManager::AddFromPrincipal(nsIPrincipal* aPrincipal,
     return NS_OK;
   }
 
-  // We don't add the system principal because it actually has no URI and we
-  // always allow action for them.
-  if (aPrincipal->IsSystemPrincipal()) {
-    return NS_OK;
-  }
+  bool isValidPermissionPrincipal = false;
+  nsresult rv = ShouldHandlePrincipalForPermission(aPrincipal,
+                                                   isValidPermissionPrincipal);
 
-  // Null principals can't meaningfully have persisted permissions attached to
-  // them, so we don't allow adding permissions for them.
-  if (aPrincipal->GetIsNullPrincipal()) {
-    return NS_OK;
-  }
-
-  // Permissions may not be added to expanded principals.
-  if (IsExpandedPrincipal(aPrincipal)) {
-    return NS_ERROR_INVALID_ARG;
+  NS_ENSURE_SUCCESS(rv, rv);
+  if (!isValidPermissionPrincipal) {
+    // return early if the principal is invalid for permissions
+    return rv;
   }
 
   // A modificationTime of zero will cause AddInternal to use now().
@@ -1769,6 +1736,28 @@ PermissionManager::AddFromPrincipal(nsIPrincipal* aPrincipal,
 
   return AddInternal(aPrincipal, aType, aPermission, 0, aExpireType,
                      aExpireTime, modificationTime, eNotify, eWriteToDB);
+}
+
+NS_IMETHODIMP
+PermissionManager::TestAddFromPrincipalByTime(nsIPrincipal* aPrincipal,
+                                              const nsACString& aType,
+                                              uint32_t aPermission,
+                                              int64_t aModificationTime) {
+  ENSURE_NOT_CHILD_PROCESS;
+
+  bool isValidPermissionPrincipal = false;
+  nsresult rv = ShouldHandlePrincipalForPermission(aPrincipal,
+                                                   isValidPermissionPrincipal);
+
+  NS_ENSURE_SUCCESS(rv, rv);
+  if (!isValidPermissionPrincipal) {
+    // return early if the principal is invalid for permissions
+    return rv;
+  }
+
+  return AddInternal(aPrincipal, aType, aPermission, 0,
+                     nsIPermissionManager::EXPIRE_NEVER, 0, aModificationTime,
+                     eNotify, eWriteToDB);
 }
 
 nsresult PermissionManager::AddInternal(
@@ -2565,6 +2554,34 @@ NS_IMETHODIMP PermissionManager::GetAllByTypes(
       aResult);
 }
 
+nsresult PermissionManager::ShouldHandlePrincipalForPermission(
+    nsIPrincipal* aPrincipal, bool& aIsPermissionPrincipalValid) {
+  NS_ENSURE_ARG_POINTER(aPrincipal);
+  // We don't add the system principal because it actually has no URI and we
+  // always allow action for them.
+  if (aPrincipal->IsSystemPrincipal()) {
+    aIsPermissionPrincipalValid = false;
+    return NS_OK;
+  }
+
+  // Null principals can't meaningfully have persisted permissions attached to
+  // them, so we don't allow adding permissions for them.
+  if (aPrincipal->GetIsNullPrincipal()) {
+    aIsPermissionPrincipalValid = false;
+    return NS_OK;
+  }
+
+  // Permissions may not be added to expanded principals.
+  if (IsExpandedPrincipal(aPrincipal)) {
+    aIsPermissionPrincipalValid = false;
+    return NS_ERROR_INVALID_ARG;
+  }
+
+  // Permission principal is valid
+  aIsPermissionPrincipalValid = true;
+  return NS_OK;
+}
+
 nsresult PermissionManager::GetAllForPrincipalHelper(
     nsIPrincipal* aPrincipal, bool aSiteScopePermissions,
     nsTArray<RefPtr<nsIPermission>>& aResult) {
@@ -3068,7 +3085,7 @@ void PermissionManager::CompleteMigrations() {
   for (const MigrationEntry& entry : entries) {
     rv = UpgradeHostToOriginAndInsert(
         entry.mHost, entry.mType, entry.mPermission, entry.mExpireType,
-        entry.mExpireTime, entry.mModificationTime, entry.mIsInBrowserElement,
+        entry.mExpireTime, entry.mModificationTime,
         [&](const nsACString& aOrigin, const nsCString& aType,
             uint32_t aPermission, uint32_t aExpireType, int64_t aExpireTime,
             int64_t aModificationTime) {
@@ -3689,7 +3706,7 @@ nsresult PermissionManager::ImportLatestDefaults() {
 
       rv = UpgradeHostToOriginAndInsert(
           entry.mHostOrOrigin, entry.mType, entry.mPermission,
-          nsIPermissionManager::EXPIRE_NEVER, 0, modificationTime, false,
+          nsIPermissionManager::EXPIRE_NEVER, 0, modificationTime,
           [&](const nsACString& aOrigin, const nsCString& aType,
               uint32_t aPermission, uint32_t aExpireType, int64_t aExpireTime,
               int64_t aModificationTime) {

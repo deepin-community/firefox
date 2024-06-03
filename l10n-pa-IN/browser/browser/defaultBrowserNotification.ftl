@@ -21,3 +21,20 @@ default-browser-prompt-message-alt = ਜਦੋਂ ਵੀ ਤੁਸੀਂ ਬਰ�
 default-browser-prompt-button-primary-alt = ਮੂਲ ਬਰਾਊਜ਼ਰ ਵਜੋਂ ਨਿਯਤ ਕਰੋ
 default-browser-prompt-checkbox-not-again-label = ਇਹ ਸੁਨੇਹਾ ਮੁੜ ਨਾ ਦਿਖਾਓ
 default-browser-prompt-button-secondary = ਹੁਣੇ ਨਹੀਂ
+
+## Strings for a Windows native guidance notification when the user is forced to
+## use Windows Settings to set the default browser. Instructions differ for
+## Windows 10 and 11.
+
+default-browser-guidance-notification-title = { -brand-short-name } ਨੂੰ ਆਪਣਾ ਮੂਲ ਬਣਾਉਣਾ ਪੂਰਾ ਕਰੋ
+# Quoted text are keywords to look for in the Windows Settings app.
+default-browser-guidance-notification-body-instruction-win10 =
+    ਪੜਾਅ 1: Settings (ਸੈਟਿੰਗਾਂ) > Default apps (ਮੂਲ ਐਪਾਂ) ਉੱਤੇ ਜਾਓ
+    ਪੜਾਅ 2: “Web Browser (ਵੈੱਬ ਬਰਾਊਜ਼ਰ” ਉੱਤੇ ਹੇਠਾਂ ਵੱਲ ਸਕਰਾਓ
+    ਪੜਾਅ 3: ਚੋਣ ਕਰੋ ਅਤੇ { -brand-short-name } ਨੂੰ ਚੁਣੋ
+# Quoted text are keywords to look for in the Windows Settings app.
+default-browser-guidance-notification-body-instruction-win11 =
+    ਪੜਾਅ 1: Settings (ਸੈਟਿੰਗਾਂ) > Default apps (ਮੂਲ ਐਪਾਂ) ਉੱਤੇ ਜਾਓ
+    ਪੜਾਅ 2: { -brand-short-name } ਨੂੰ “Set default (ਮੂਲ ਸੈੱਟ ਕਰੋ)“ ਚੁਣੋ
+default-browser-guidance-notification-info-page = ਮੈਨੂੰ ਵੇਖਾਓ
+default-browser-guidance-notification-dismiss = ਮੁਕੰਮਲ

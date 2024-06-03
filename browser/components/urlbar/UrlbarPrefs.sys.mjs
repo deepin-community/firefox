@@ -65,7 +65,7 @@ const PREF_URLBAR_DEFAULTS = new Map([
   ["autoFill.stddevMultiplier", [0.0, "float"]],
 
   // Feature gate pref for clipboard suggestions in the urlbar.
-  ["clipboard.featureGate", true],
+  ["clipboard.featureGate", false],
 
   // Whether to show a link for using the search functionality provided by the
   // active view if the the view utilizes OpenSearch.
@@ -317,9 +317,6 @@ const PREF_URLBAR_DEFAULTS = new Map([
   // If true, we show tail suggestions when available.
   ["richSuggestions.tail", true],
 
-  // Interval time until taking pause impression telemetry.
-  ["searchEngagementTelemetry.pauseImpressionIntervalMs", 1000],
-
   // Hidden pref. Disables checks that prevent search tips being shown, thus
   // showing them every time the newtab page or the default search engine
   // homepage is opened.
@@ -426,7 +423,7 @@ const PREF_URLBAR_DEFAULTS = new Map([
 
   // Controls whether searching for open tabs returns tabs from any container
   // or only from the current container.
-  ["switchTabs.searchAllContainers", false],
+  ["switchTabs.searchAllContainers", true],
 
   // The number of remaining times the user can interact with tab-to-search
   // onboarding results before we stop showing them.
@@ -488,9 +485,9 @@ const PREF_URLBAR_DEFAULTS = new Map([
   // Feature gate pref for Yelp suggestions in the urlbar.
   ["yelp.featureGate", false],
 
-  // The minimum number of characters the user must type to trigger a Yelp
-  // suggestion (excluding full keywords that are shorter than this).
-  ["yelp.minKeywordLength", 5],
+  // The minimum prefix length of a Yelp keyword the user must type to trigger
+  // the suggestion. 0 means the min length should be taken from Nimbus.
+  ["yelp.minKeywordLength", 0],
 
   // Whether Yelp suggestions should be shown as top picks. This is a fallback
   // pref for the `yelpSuggestPriority` Nimbus variable.
@@ -528,6 +525,8 @@ const NIMBUS_DEFAULTS = {
   weatherKeywords: null,
   weatherKeywordsMinimumLength: 0,
   weatherKeywordsMinimumLengthCap: 0,
+  weatherSimpleUI: false,
+  yelpMinKeywordLength: 0,
 };
 
 // Maps preferences under browser.urlbar.suggest to behavior names, as defined
@@ -1271,7 +1270,7 @@ class Preferences {
     }
   }
 
-  _migrateFirefoxSuggestPrefsTo_2(scenario) {
+  _migrateFirefoxSuggestPrefsTo_2() {
     // In previous versions of the prefs for online, suggestions were disabled
     // by default; in version 2, they're enabled by default. For users who were
     // already in online and did not enable suggestions (because they did not
@@ -1508,12 +1507,28 @@ class Preferences {
         return this.shouldHandOffToSearchModePrefs.some(
           prefName => !this.get(prefName)
         );
-      case "autoFillAdaptiveHistoryUseCountThreshold":
+      case "autoFillAdaptiveHistoryUseCountThreshold": {
         const nimbusValue =
           this._nimbus.autoFillAdaptiveHistoryUseCountThreshold;
         return nimbusValue === undefined
           ? this.get("autoFill.adaptiveHistory.useCountThreshold")
           : parseFloat(nimbusValue);
+      }
+      case "potentialExposureKeywords": {
+        // Get the keywords array from Nimbus or prefs and convert it to a Set.
+        // If the value comes from Nimbus, it will already be an array. If it
+        // comes from prefs, it should be a stringified array.
+        let value = this._readPref(pref);
+        if (typeof value == "string") {
+          try {
+            value = JSON.parse(value);
+          } catch (e) {}
+        }
+        if (!Array.isArray(value)) {
+          value = null;
+        }
+        return new Set(value);
+      }
     }
     return this._readPref(pref);
   }

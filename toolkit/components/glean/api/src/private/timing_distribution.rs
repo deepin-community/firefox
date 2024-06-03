@@ -374,6 +374,18 @@ impl TimingDistribution for TimingDistributionMetric {
         }
     }
 
+    pub fn accumulate_single_sample(&self, sample: i64) {
+        match self {
+            TimingDistributionMetric::Parent { id: _id, inner } => {
+                inner.accumulate_single_sample(sample)
+            }
+            TimingDistributionMetric::Child(_c) => {
+                // TODO: Instrument this error
+                log::error!("Can't record samples for a timing distribution from a child metric");
+            }
+        }
+    }
+
     /// **Exported for test purposes.**
     ///
     /// Gets the currently stored value of the metric.

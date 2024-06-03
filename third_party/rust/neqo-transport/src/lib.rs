@@ -4,10 +4,9 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-#![cfg_attr(feature = "deny-warnings", deny(warnings))]
-#![warn(clippy::use_self)]
+#![allow(clippy::module_name_repetitions)] // This lint doesn't work here.
 
-use neqo_common::qinfo;
+use neqo_common::qwarn;
 use neqo_crypto::Error as CryptoError;
 
 mod ackrate;
@@ -30,6 +29,9 @@ pub mod recv_stream;
 #[cfg(not(feature = "bench"))]
 mod recv_stream;
 mod rtt;
+#[cfg(feature = "bench")]
+pub mod send_stream;
+#[cfg(not(feature = "bench"))]
 mod send_stream;
 mod sender;
 pub mod server;
@@ -68,8 +70,8 @@ const ERROR_AEAD_LIMIT_REACHED: TransportError = 15;
 #[derive(Clone, Debug, PartialEq, PartialOrd, Ord, Eq)]
 pub enum Error {
     NoError,
-    // Each time tihe error is return a different parameter is supply.
-    // This will be use to distinguish each occurance of this error.
+    // Each time this error is returned a different parameter is supplied.
+    // This will be used to distinguish each occurance of this error.
     InternalError,
     ConnectionRefused,
     FlowControlError,
@@ -130,6 +132,7 @@ pub enum Error {
 }
 
 impl Error {
+    #[must_use]
     pub fn code(&self) -> TransportError {
         match self {
             Self::NoError
@@ -162,7 +165,7 @@ impl Error {
 
 impl From<CryptoError> for Error {
     fn from(err: CryptoError) -> Self {
-        qinfo!("Crypto operation failed {:?}", err);
+        qwarn!("Crypto operation failed {:?}", err);
         match err {
             CryptoError::EchRetry(config) => Self::EchRetry(config),
             _ => Self::CryptoError(err),
@@ -206,6 +209,7 @@ pub enum ConnectionError {
 }
 
 impl ConnectionError {
+    #[must_use]
     pub fn app_code(&self) -> Option<AppError> {
         match self {
             Self::Application(e) => Some(*e),

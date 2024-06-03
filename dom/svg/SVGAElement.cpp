@@ -149,8 +149,8 @@ nsresult SVGAElement::BindToTree(BindContext& aContext, nsINode& aParent) {
   return NS_OK;
 }
 
-void SVGAElement::UnbindFromTree(bool aNullParent) {
-  SVGAElementBase::UnbindFromTree(aNullParent);
+void SVGAElement::UnbindFromTree(UnbindContext& aContext) {
+  SVGAElementBase::UnbindFromTree(aContext);
   // Without removing the link state we risk a dangling pointer
   // in the mStyledLinks hashtable
   Link::UnbindFromTree();
@@ -255,6 +255,16 @@ void SVGAElement::AfterSetAttr(int32_t aNameSpaceID, nsAtom* aName,
 SVGElement::StringAttributesInfo SVGAElement::GetStringInfo() {
   return StringAttributesInfo(mStringAttributes, sStringInfo,
                               ArrayLength(sStringInfo));
+}
+
+void SVGAElement::DidAnimateAttribute(int32_t aNameSpaceID,
+                                      nsAtom* aAttribute) {
+  if ((aNameSpaceID == kNameSpaceID_None ||
+       aNameSpaceID == kNameSpaceID_XLink) &&
+      aAttribute == nsGkAtoms::href) {
+    Link::ResetLinkState(true, Link::ElementHasHref());
+  }
+  SVGAElementBase::DidAnimateAttribute(aNameSpaceID, aAttribute);
 }
 
 }  // namespace mozilla::dom

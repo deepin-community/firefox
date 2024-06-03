@@ -23,6 +23,10 @@ policy-AppUpdateURL = Set custom app update URL.
 
 policy-Authentication = Configure integrated authentication for websites that support it.
 
+policy-AutofillAddressEnabled = Enable autofill for addresses.
+
+policy-AutofillCreditCardEnabled = Enable autofill for payment methods.
+
 policy-AutoLaunchProtocolsFromOrigins = Define a list of external protocols that can be used from listed origins without prompting the user.
 
 policy-BackgroundAppUpdate2 = Enable or disable the background updater.
@@ -40,6 +44,8 @@ policy-Bookmarks = Create bookmarks in the Bookmarks toolbar, Bookmarks menu, or
 policy-CaptivePortal = Enable or disable captive portal support.
 
 policy-CertificatesDescription = Add certificates or use built-in certificates.
+
+policy-ContentAnalysis = Enable or disable connection to data-loss-prevention agent.
 
 policy-Cookies = Allow or deny websites to set cookies.
 
@@ -214,6 +220,8 @@ policy-SSLVersionMin = Set the minimum SSL version.
 policy-StartDownloadsInTempDirectory = Force downloads to start off in a local, temporary location rather than the default download directory.
 
 policy-SupportMenu = Add a custom support menu item to the help menu.
+
+policy-TranslateEnabled = Enable or disable webpage translation.
 
 policy-UserMessaging = Don’t show certain messages to the user.
 

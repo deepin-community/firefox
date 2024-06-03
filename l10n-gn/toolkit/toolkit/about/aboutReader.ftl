@@ -12,6 +12,32 @@ about-reader-color-scheme-sepia = Sepia
     .title = Sa’yjungýva raity
 about-reader-color-scheme-auto = Jehegui
     .title = Sa’y raity ijeheguíva
+about-reader-color-theme-light = Tesakã
+    .title = Tesakã isa’ýva
+about-reader-color-theme-dark = Ypytũ
+    .title = Ypytũ isa’ýva
+about-reader-color-theme-sepia = Sepia
+    .title = Sepia isa’ýva
+about-reader-color-theme-auto = Jehegui
+    .title = Jehegui isa’ýva
+about-reader-color-theme-gray = Hũngy
+    .title = Hũngy isa’ýva
+about-reader-color-theme-contrast = Mbojovake
+    .title = Mbojovake isa’ýva
+about-reader-color-theme-custom = Sa’ykuéra momba’epyre
+    .title = Sa’ykuéra momba’epyre téma
+about-reader-color-light-theme = Tesakã
+    .title = Téma vevúi
+about-reader-color-dark-theme = Ypytũ
+    .title = Táma ypytũ
+about-reader-color-sepia-theme = Sepia
+    .title = Téma Sepia
+about-reader-color-auto-theme = Jehegui
+    .title = Téma jehegui
+about-reader-color-gray-theme = Hũngy
+    .title = Téma hũngy
+about-reader-color-contrast-theme = Mbojuavy
+    .title = Téma mbojuavy
 # An estimate for how long it takes to read an article,
 # expressed as a range covering both slow and fast readers.
 # Variables:
@@ -47,4 +73,54 @@ about-reader-font-type-sans-serif = Sans Serif
 
 about-reader-toolbar-close = Moñe’ẽha jehechágui ñesẽ
 about-reader-toolbar-type-controls = Taity ha Tugua Ñangarekoha
+about-reader-toolbar-color-controls = Sa’ykuéra
+about-reader-toolbar-text-layout-controls = Tetepy ha moha’ãnga
+about-reader-toolbar-theme-controls = Téma
 about-reader-toolbar-savetopocket = Eñongatu { -pocket-brand-name }-pe
+
+## Reader View colors menu
+
+about-reader-colors-menu-header = Téma
+about-reader-fxtheme-tab = Ijypykue
+about-reader-customtheme-tab = Ñemomba’epyre
+
+## These are used as labels for the custom theme color pickers.
+## The .title element is used to make the editing functionality
+## clear and give context for screen reader users.
+
+about-reader-custom-colors-foreground = Moñe’ẽrã
+    .title = Embosako’i sa’y
+about-reader-custom-colors-background = Tugua
+    .title = Embosako’i sa’y
+about-reader-custom-colors-unvisited-links = Juajuha ojeporu’ỹva
+    .title = Embosako’i sa’y
+about-reader-custom-colors-visited-links = Juajuha ojeporúva
+    .title = Embosako’i sa’y
+about-reader-custom-colors-selection-highlight = Mbosa’y emoñe’ẽ hag̃ua ayvúpe
+    .title = Embosako’i sa’y
+about-reader-custom-colors-reset-button = Erujey ijypykuéva
+
+## Reader View improved text and layout menu
+
+about-reader-layout-header = Moha’ãnga
+about-reader-advanced-layout-header = Opapotáva
+about-reader-slider-label-width-narrow = Po’i
+about-reader-slider-label-width-wide = Ipéva
+about-reader-slider-label-spacing-narrow = Po’i
+about-reader-slider-label-spacing-standard = Ypykue
+about-reader-slider-label-spacing-wide = Ipéva
+about-reader-content-width-label =
+    .label = Tetepy pekue
+about-reader-line-spacing-label =
+    .label = Tairenda ipa’ũva
+about-reader-character-spacing-label =
+    .label = Taikuéra ipa’ũva
+about-reader-word-spacing-label =
+    .label = Ñemomonbyry ñe’ẽ pa’ũme
+about-reader-text-alignment-label = Moñe’ẽrã ñealinea
+about-reader-text-alignment-left =
+    .title = Moñe’ẽrã ñealinea asu gotyo
+about-reader-text-alignment-center =
+    .title = Moñe’ẽrã ñealinea mbytépe
+about-reader-text-alignment-right =
+    .title = Moñe’ẽrã ñealinea akatúa gotyo

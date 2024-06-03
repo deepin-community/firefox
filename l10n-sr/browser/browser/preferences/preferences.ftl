@@ -733,6 +733,9 @@ sync-mobile-promo = Преузмите Firefox за <img data-l10n-name="android
 
 sync-profile-picture =
     .tooltiptext = Промени профилну слику
+sync-profile-picture-with-alt =
+    .tooltiptext = Промени профилну слику
+    .alt = Промени профилну слику
 sync-sign-out =
     .label = Одјави ме…
     .accesskey = О
@@ -1236,6 +1239,8 @@ addon-recommendations-link = Сазнајте више
 # or builds with no Telemetry support available.
 collection-health-report-disabled = У овој верзији је слање података онемогућено.
 collection-backlogged-crash-reports-with-link = Дозволи да { -brand-short-name } шаље заостале извештаје о отказивању у моје име <a data-l10n-name="crash-reports-link">Сазнајте више</a>
+    .accesskey = љ
+collection-backlogged-crash-reports = Дозволи да { -brand-short-name } шаље заостале извештаје о отказивању у моје име
     .accesskey = љ
 privacy-segmentation-section-header = Нове функције које побољшавају ваше прегледање
 privacy-segmentation-section-description = Када нудимо функције које користе ваше податке да би вам пружиле личније искуство:

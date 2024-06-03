@@ -3,6 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 tabbrowser-empty-tab-title = Նոր ներդիր
+tabbrowser-empty-private-tab-title = Նոր գաղտնի ներդիր
 tabbrowser-menuitem-close-tab =
     .label = Փակել ներդիրը
 tabbrowser-menuitem-close =
@@ -72,6 +73,15 @@ tabbrowser-confirm-close-tabs-checkbox = Զգուշացնել բազմակի ն�
 
 ## Confirmation dialog when quitting using the menu and multiple windows are open.
 
+# The forms for 0 or 1 items are not considered since this string is used only for
+# multiple windows.
+# Variables:
+#   $windowCount (Number): The number of windows that will be closed.
+tabbrowser-confirm-close-windows-title =
+    { $windowCount ->
+        [one] Փակե՞լ { $windowCount } պատուհան
+       *[other] Փակե՞լ { $windowCount } պատուհան
+    }
 tabbrowser-confirm-close-windows-button =
     { PLATFORM() ->
         [windows] Փակեք և դուրս եկեք
@@ -81,7 +91,11 @@ tabbrowser-confirm-close-windows-button =
 ## Confirmation dialog when quitting using the keyboard shortcut (Ctrl/Cmd+Q)
 ## Windows does not show a prompt on quit when using the keyboard shortcut by default.
 
+tabbrowser-confirm-close-tabs-with-key-title = Փակե՞լ պատուհանը և լքել { -brand-short-name }-ը:
 tabbrowser-confirm-close-tabs-with-key-button = Փակել { -brand-short-name }-ը
+# Variables:
+#   $quitKey (String): the text of the keyboard shortcut for quitting.
+tabbrowser-confirm-close-tabs-with-key-checkbox = Հաստատեք նախքան { $quitKey }-ով լքելը
 
 ## Confirmation dialog when opening multiple tabs simultaneously
 
@@ -121,6 +135,8 @@ tabbrowser-context-mute-selected-tabs =
 tabbrowser-context-unmute-selected-tabs =
     .label = Ապալռեցնել ներդիրները
     .accesskey = m
+# This string is used as an additional tooltip and accessibility description for tabs playing audio
+tabbrowser-tab-audio-playing-description = Նվագարկում է ձայնանյութ
 
 ## Ctrl-Tab dialog
 

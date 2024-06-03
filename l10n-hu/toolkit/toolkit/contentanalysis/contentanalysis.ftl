@@ -6,10 +6,6 @@ contentanalysis-alert-title = Tartalomelemzés
 # Variables:
 #   $content - Description of the content being warned about, such as "clipboard" or "aFile.txt"
 contentanalysis-slow-agent-notification = A tartalomelemző eszköznek sokáig tart, amíg válaszol a(z) „{ $content }” erőforráshoz
-contentanalysis-slow-agent-dialog-title = Tartalomelemzés folyamatban
-# Variables:
-#   $content - Description of the content being warned about, such as "clipboard" or "aFile.txt"
-contentanalysis-slow-agent-dialog-body = A tartalomelemzés a(z) „{ $content }” erőforrást elemzi
 contentanalysis-slow-agent-dialog-header = Keresés folyamatban
 # Variables:
 #   $agent - The name of the DLP agent doing the analysis
@@ -22,8 +18,14 @@ contentanalysis-slow-agent-dialog-body-clipboard = A(z) { $agent } ellenőrzi, h
 # Variables:
 #   $agent - The name of the DLP agent doing the analysis
 contentanalysis-slow-agent-dialog-body-dropped-text = A(z) { $agent } ellenőrzi, hogy az ideejtett szöveg ellentétes-e a szervezete adatházirendjeivel. Ez eltarthat egy darabig.
+# Variables:
+#   $agent - The name of the DLP agent doing the analysis
+contentanalysis-slow-agent-dialog-body-print = A(z) { $agent } ellenőrzi, hogy amit nyomtatott ellentétes-e a szervezete adatházirendjeivel. Ez eltarthat egy darabig.
 contentanalysis-operationtype-clipboard = vágólap
 contentanalysis-operationtype-dropped-text = fogd és vidd művelettel átdobott szöveg
+contentanalysis-operationtype-print = nyomtatás
+#   $filename - The filename associated with the request, such as "aFile.txt"
+contentanalysis-customdisplaystring-description = „{ $filename }” feltöltése
 contentanalysis-warndialogtitle = Ez a tartalom lehet, hogy nem biztonságos
 # Variables:
 #   $content - Description of the content being warned about, such as "clipboard" or "aFile.txt"
@@ -41,3 +43,28 @@ contentanalysis-block-message = A szervezete olyan adatvesztés-megelőzési szo
 # Variables:
 #   $content - Description of the content being blocked, such as "clipboard" or "aFile.txt"
 contentanalysis-error-message = Hiba történt az adatvesztés-megelőzési szoftverrel való kommunikáció közben. A következő erőforrás átvitele megtagadva: { $content }.
+# Variables:
+#   $agent - The name of the DLP agent doing the analysis
+#   $content - Description of the content being blocked, such as "clipboard" or "aFile.txt"
+contentanalysis-unspecified-error-message = Hiba történt a(z) { $agent } ügynökkel való kommunikáció során. A következő erőforrás átvitele megtagadva: { $content }.
+# Variables:
+#   $agent - The name of the DLP agent doing the analysis
+#   $content - Description of the content being blocked, such as "clipboard" or "aFile.txt"
+contentanalysis-no-agent-connected-message = Nem lehet a következőhöz kapcsolódni: { $agent }. A következő erőforrás átvitele megtagadva: { $content }.
+# Variables:
+#   $agent - The name of the DLP agent doing the analysis
+#   $content - Description of the content being blocked, such as "clipboard" or "aFile.txt"
+contentanalysis-invalid-agent-signature-message = Nem sikerült az aláírás-ellenőrzés a következőnél: { $agent }. A következő erőforrás átvitele megtagadva: { $content }.
+contentanalysis-block-dialog-title-upload-file = Ezt a fájlt nem töltheti fel
+# Variables:
+#   $filename - Name of the file that was blocked, such as "aFile.txt"
+contentanalysis-block-dialog-body-upload-file = A szervezete adatbiztonsági irányelvei értelmében nem töltheti fel a(z) „{ $filename }” fájlt. További információkért forduljon a rendszergazdához.
+contentanalysis-block-dialog-title-clipboard = Ezt a tartalmat nem illesztheti be
+contentanalysis-block-dialog-body-clipboard = A szervezete adatbiztonsági irányelvei értelmében nem illesztheti be ezt a tartalmat. További információkért forduljon a rendszergazdához.
+contentanalysis-block-dialog-title-dropped-text = Ezt a tartalmat nem húzhatja ide
+contentanalysis-block-dialog-body-dropped-text = A szervezete adatbiztonsági irányelvei értelmében nem húzhatja ide ezt a tartalmat. További információkért forduljon a rendszergazdához.
+contentanalysis-block-dialog-title-print = Ezt a dokumentumot nem nyomtathatja ki
+contentanalysis-block-dialog-body-print = A szervezete adatbiztonsági irányelvei értelmében nem nyomtathatja ki ezt a dokumentumot. További információkért forduljon a rendszergazdához.
+contentanalysis-inprogress-quit-title = Kilépés a { -brand-shorter-name }ból?
+contentanalysis-inprogress-quit-message = Számos művelet van folyamatban. Ha kilép a { -brand-shorter-name }ból, akkor ezek a műveletek nem fejeződnek be.
+contentanalysis-inprogress-quit-yesbutton = Igen, kilépés

@@ -17,6 +17,8 @@ policy-AppAutoUpdate = Awtomatiske aktualizacije nałoženjow zmóžnić abo znj
 policy-AppUpdatePin = Zadźěwać tomu, zo so { -brand-short-name } wyše podateje wersije aktualizuje.
 policy-AppUpdateURL = Swójski aktualizowanski URL za nałoženje nastajić.
 policy-Authentication = Integrowanu awtentifikaciju za websydła konfigurować, kotrež ju podpěruja.
+policy-AutofillAddressEnabled = Awtomatiske wupjelnjenje za adresy zmóžnić.
+policy-AutofillCreditCardEnabled = Awtomatiske wupjelnjenje za płaćenske metody zmóžnić.
 policy-AutoLaunchProtocolsFromOrigins = Definujće lisćinu protokolow, kotrež dadźa so z nalistowanych žórłow wužiwać, bjeztoho zo by so dyrbjało wužiwarja prašeć.
 policy-BackgroundAppUpdate2 = Pozadkowe aktualizowanje zmóžnić abo znjemóžnić.
 policy-BlockAboutAddons = Přistup k zrjadowakej přidatkow (about:addons) blokować.
@@ -26,6 +28,7 @@ policy-BlockAboutSupport = Přistup k stronje about:support blokować.
 policy-Bookmarks = Zapołožki w symbolowej lajsće zapołožkow, w meniju zapołožkow abo w podatym rjadowaku znutřka njeju wutworić.
 policy-CaptivePortal = Kaptiwny portal zmóžnić abo znjemóžnić
 policy-CertificatesDescription = Certifikaty přidać abo zatwarjene certifikaty wužiwać.
+policy-ContentAnalysis = Zwisk z agentom zadźěwanja datowe straty zmóžnić abo znjemóžnić.
 policy-Cookies = Websydłam dowolić abo zakazać, placki składować.
 # Containers in this context is referring to container tabs in Firefox.
 policy-Containers = Prawidła nastupajo kontejnery postajić
@@ -36,8 +39,11 @@ policy-DisableAppUpdate = Wobhladowakej aktualizowanje zakazać.
 policy-DisableBuiltinPDFViewer = PDF.js znjemóžnić, zatwarjeny PDF-wobhladowak w { -brand-short-name }.
 policy-DisableDefaultBrowserAgent = Haćće standardny agent wobhladowaka při wuwjedźenju akcijow. To je jenoz za Windows k dispoziciji; druhe platformy agent nimaja.
 policy-DisableDeveloperTools = Přistup k wuwiwarskim nastrojam blokować.
+policy-DisableEncryptedClientHello = Wužiwanje TLS-funkcije Encrfypted Client Hello (ECH) znjemóžnić.
 policy-DisableFeedbackCommands = Přikazy znjemóžnić, kotrež komentary z menija Pomoc sćelu (Posudk pósłać a Wobšudne sydło zdźělić)
 policy-DisableFirefoxAccounts = Słužby na zakładźe { -fxaccount-brand-name } znjemóžnić, inkluziwnje Sync.
+# This string is in the process of being deprecated in favor of policy-DisableAccounts.
+policy-DisableFirefoxAccounts1 = Słužby znjemóžnić, kotrež na konće bazuja, mjez nimi synchronizaciju.
 # Firefox Screenshots is the name of the feature, and should not be translated.
 policy-DisableFirefoxScreenshots = Funkciju Firefox Screenshots znjemóžnić.
 policy-DisableFirefoxStudies = { -brand-short-name } zakazać, studije wuwjesć.
@@ -122,6 +128,7 @@ policy-SSLVersionMax = Nastajće maksimalnu SSL-wersiju.
 policy-SSLVersionMin = Nastajće minimalnu SSL-wersiju.
 policy-StartDownloadsInTempDirectory = Sćehnjenja nućić, zo bychu w lokalnym, nachwilnym městnje město w standardnym zapisu sćehnjenjow započeli.
 policy-SupportMenu = Swójski menijowy zapisk pomocy menijej pomocy přidać.
+policy-TranslateEnabled = Přełožowanje webstronow zmóžnić abo znjemóžnić.
 policy-UserMessaging = Wužiwarjej wěste powěsće njepokazać
 policy-UseSystemPrintDialog = Z pomocu systemoweho ćišćerskeho dialoga ćišćeć.
 # “format” refers to the format used for the value of this policy.

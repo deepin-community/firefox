@@ -22,7 +22,6 @@ include("/tools/fuzzing/libfuzzer-config.mozbuild")
 XPIDL_SOURCES += [
     "mozIDOMWindow.idl",
     "nsIContentPolicy.idl",
-    "nsIDOMRequestService.idl",
     "nsIDroppedLinkHandler.idl",
     "nsIEventSourceEventService.idl",
     "nsIImageLoadingContent.idl",
@@ -51,7 +50,6 @@ EXPORTS += [
     "nsAttrValueInlines.h",
     "nsCaseTreatment.h",
     "nsChildContentList.h",
-    "nsContentCID.h",
     "nsContentCreatorFunctions.h",
     "nsContentList.h",
     "nsContentListDeclarations.h",
@@ -187,7 +185,6 @@ EXPORTS.mozilla.dom += [
     "DOMPoint.h",
     "DOMQuad.h",
     "DOMRect.h",
-    "DOMRequest.h",
     "DOMStringList.h",
     "DOMTokenListSupportedTokens.h",
     "Element.h",
@@ -197,6 +194,7 @@ EXPORTS.mozilla.dom += [
     "External.h",
     "FilteredNodeIterator.h",
     "FormData.h",
+    "FragmentDirective.h",
     "FragmentOrElement.h",
     "FromParser.h",
     "GeneratedImageContent.h",
@@ -240,6 +238,7 @@ EXPORTS.mozilla.dom += [
     "PlacesBookmarkTitle.h",
     "PlacesBookmarkUrl.h",
     "PlacesEvent.h",
+    "PlacesEventCounts.h",
     "PlacesFavicon.h",
     "PlacesHistoryCleared.h",
     "PlacesObservers.h",
@@ -283,6 +282,7 @@ EXPORTS.mozilla.dom += [
     "TreeOrderedArrayInlines.h",
     "TreeWalker.h",
     "UIDirectionManager.h",
+    "UnbindContext.h",
     "UseCounterMetrics.h",
     "UserActivation.h",
     "ViewportMetaData.h",
@@ -298,6 +298,7 @@ if CONFIG["FUZZING"]:
 
 if CONFIG["COMPILE_ENVIRONMENT"]:
     EXPORTS.mozilla.dom += [
+        "!fragmentdirectives_ffi_generated.h",
         "!GeneratedElementDocumentState.h",
         "RustTypes.h",
     ]
@@ -305,6 +306,11 @@ if CONFIG["COMPILE_ENVIRONMENT"]:
     CbindgenHeader(
         "GeneratedElementDocumentState.h",
         inputs=["rust"],
+    )
+
+    CbindgenHeader(
+        "fragmentdirectives_ffi_generated.h",
+        inputs=["fragmentdirectives"],
     )
 
 UNIFIED_SOURCES += [
@@ -345,13 +351,13 @@ UNIFIED_SOURCES += [
     "DOMPoint.cpp",
     "DOMQuad.cpp",
     "DOMRect.cpp",
-    "DOMRequest.cpp",
     "DOMStringList.cpp",
     "Element.cpp",
     "EventSource.cpp",
     "EventSourceEventService.cpp",
     "External.cpp",
     "FormData.cpp",
+    "FragmentDirective.cpp",
     "FragmentOrElement.cpp",
     "GeneratedImageContent.cpp",
     "GlobalTeardownObserver.cpp",
@@ -492,6 +498,7 @@ if CONFIG["FUZZING"]:
 if CONFIG["MOZ_PLACES"]:
     UNIFIED_SOURCES += [
         "PlacesEvent.cpp",
+        "PlacesEventCounts.cpp",
         "PlacesObservers.cpp",
         "PlacesWeakCallbackWrapper.cpp",
     ]
@@ -545,7 +552,6 @@ if CONFIG["TARGET_CPU"].startswith("ppc"):
 
 EXTRA_JS_MODULES += [
     "ContentAreaDropListener.sys.mjs",
-    "DOMRequestHelper.sys.mjs",
     "IndexedDBHelper.sys.mjs",
     "LocationHelper.sys.mjs",
     "ProcessSelector.sys.mjs",

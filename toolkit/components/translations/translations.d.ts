@@ -187,7 +187,7 @@ export namespace Bergamot {
 
 /**
  * The client to interact with RemoteSettings.
- * See services/settings/RemoteSettingsClient.jsm
+ * See services/settings/RemoteSettingsClient.sys.mjs
  */
 interface RemoteSettingsClient {
   on: Function,
@@ -269,3 +269,10 @@ export interface SupportedLanguages {
 }
 
 export type TranslationErrors = "engine-load-error";
+
+export type SelectTranslationsPanelState =
+  | { phase: "closed"; }
+  | { phase: "idle"; fromLanguage: string; toLanguage: string, sourceText: string, }
+  | { phase: "translatable"; fromLanguage: string; toLanguage: string, sourceText: string, }
+  | { phase: "translating"; fromLanguage: string; toLanguage: string, sourceText: string, }
+  | { phase: "translated"; fromLanguage: string; toLanguage: string, sourceText: string, translatedText: string, }

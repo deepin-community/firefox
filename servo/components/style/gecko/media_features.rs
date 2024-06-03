@@ -8,13 +8,14 @@ use crate::gecko_bindings::bindings;
 use crate::gecko_bindings::structs;
 use crate::gecko_bindings::structs::ScreenColorGamut;
 use crate::media_queries::{Device, MediaType};
-use crate::queries::condition::KleeneValue;
+use crate::parser::ParserContext;
 use crate::queries::feature::{AllowsRanges, Evaluator, FeatureFlags, QueryFeatureDescription};
 use crate::queries::values::Orientation;
 use crate::values::computed::{CSSPixelLength, Context, Ratio, Resolution};
 use crate::values::AtomString;
 use app_units::Au;
 use euclid::default::Size2D;
+use selectors::kleene_value::KleeneValue;
 
 fn device_size(device: &Device) -> Size2D<Au> {
     let mut width = 0;
@@ -169,8 +170,7 @@ fn eval_color_gamut(context: &Context, query_value: Option<ColorGamut>) -> bool 
     // Match if our color gamut is at least as wide as the query value
     query_value <=
         match color_gamut {
-            // EndGuard_ is not a valid color gamut, so the default color-gamut is used.
-            ScreenColorGamut::Srgb | ScreenColorGamut::EndGuard_ => ColorGamut::Srgb,
+            ScreenColorGamut::Srgb => ColorGamut::Srgb,
             ScreenColorGamut::P3 => ColorGamut::P3,
             ScreenColorGamut::Rec2020 => ColorGamut::Rec2020,
         }
@@ -287,16 +287,26 @@ fn eval_prefers_contrast(context: &Context, query_value: Option<PrefersContrast>
 pub enum ForcedColors {
     /// Page colors are not being forced.
     None,
+    /// Page colors would be forced in content.
+    #[parse(condition = "ParserContext::chrome_rules_enabled")]
+    Requested,
     /// Page colors are being forced.
     Active,
 }
 
+impl ForcedColors {
+    /// Returns whether forced-colors is active for this page.
+    pub fn is_active(self) -> bool {
+        matches!(self, Self::Active)
+    }
+}
+
 /// https://drafts.csswg.org/mediaqueries-5/#forced-colors
 fn eval_forced_colors(context: &Context, query_value: Option<ForcedColors>) -> bool {
-    let forced = !context.device().use_document_colors();
+    let forced = context.device().forced_colors();
     match query_value {
-        Some(query_value) => forced == (query_value == ForcedColors::Active),
-        None => forced,
+        Some(query_value) => query_value == forced,
+        None => forced != ForcedColors::None,
     }
 }
 
@@ -566,6 +576,8 @@ pub enum Platform {
     /// platforms and they already use the "linux" string elsewhere (e.g.,
     /// toolkit/themes/linux).
     Linux,
+    /// Matches any iOS version.
+    Ios,
     /// Matches any macOS version.
     Macos,
     /// Matches any Windows version.

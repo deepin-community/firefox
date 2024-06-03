@@ -28,6 +28,7 @@ policy-BlockAboutSupport = Loka aðgangi að about:support síðu.
 policy-Bookmarks = Búa til bókamerki í bókamerkjastiku, bókamerkjalistanum eða tiltekinni möppu inni í þeim.
 policy-CaptivePortal = Virkja eða slökkva á þjónustuaðgangi.
 policy-CertificatesDescription = Bæta við skilríki eða nota innbyggða skilríkið.
+policy-ContentAnalysis = Kveikja eða slökkva á tengingu við vörn gegn gagnatapi.
 policy-Cookies = Leyfa eða neita vefsvæðum um að setja vefkökur.
 # Containers in this context is referring to container tabs in Firefox.
 policy-Containers = Stilltu reglur sem tengjast gagnagámum.
@@ -38,8 +39,11 @@ policy-DisableAppUpdate = Koma í veg fyrir að vafrinn uppfærist.
 policy-DisableBuiltinPDFViewer = Óvirkja PDF.js, innbyggða PDF-lesarann í { -brand-short-name }.
 policy-DisableDefaultBrowserAgent = Koma í veg fyrir að sjálfgefið vafrakenni (browser agent) grípi til aðgerða. Gildir aðeins fyrir Windows; önnur stýrikerfi hafa ekki slíkt kenni.
 policy-DisableDeveloperTools = Loka aðgangi að þróunartólum.
+policy-DisableEncryptedClientHello = Gerðu óvirka notkun TLS-eiginleikans Encrypted Client Hello (ECH).
 policy-DisableFeedbackCommands = Slökkva á "Senda viðbrögð" og "Tilkynna svindlsvæði" í hjálparvalmyndinni.
 policy-DisableFirefoxAccounts = Slökkva á { -fxaccount-brand-name } tengdri þjónustu, m.a. Sync.
+# This string is in the process of being deprecated in favor of policy-DisableAccounts.
+policy-DisableFirefoxAccounts1 = Slökkva á reikningstengdum þjónustum, þar með talið samstillingu.
 # Firefox Screenshots is the name of the feature, and should not be translated.
 policy-DisableFirefoxScreenshots = Slökkva á eiginleikum Firefox skjámynda.
 policy-DisableFirefoxStudies = Hamla aðgang að könnunum frá { -brand-short-name }
@@ -72,7 +76,7 @@ policy-ExemptDomainFileTypePairsFromFileTypeDownloadWarnings = Slökkva á aðv�
 # English or translate them as verbs.
 policy-Extensions = Setja upp, fjarlægja eða læsa forritsaukum. Uppsetningarvalkosturinn samþykkir vefslóðir og leiðir sem breytur. Valkostir um að fjarlægja viðauka eða læstir valkostir krefjast auðkennis viðaukans.
 policy-ExtensionSettings = Stjórnaðu öllum uppsetningarþáttum forritsauka.
-policy-ExtensionUpdate = Virkja eða slökkva á sjálfvirkri uppfærslu á viðbótum.
+policy-ExtensionUpdate = Virkja eða slökkva á sjálfvirkri uppfærslu á forritsaukum.
 policy-FirefoxHome2 = Stilla { -firefox-home-brand-name }.
 policy-FirefoxSuggest = Stilla { -firefox-suggest-brand-name }.
 policy-GoToIntranetSiteForSingleWordEntryInAddressBar = Þvinga beint innranetsflakk í stað þess að leita að stökum orðum sem sett eru inn í veffangastikuna.
@@ -124,6 +128,7 @@ policy-SSLVersionMax = Stilltu hámarks SSL útgáfu.
 policy-SSLVersionMin = Stilltu lágmarks SSL útgáfuna.
 policy-StartDownloadsInTempDirectory = Þvinga niðurhal til að hefjast á staðbundinni, bráðabirgðastaðsetningu frekar en sjálfgefnu niðurhalsmöppunni.
 policy-SupportMenu = Bæta sérsniðinni færslu fyrir aðstoð í hjálparvalmyndina.
+policy-TranslateEnabled = Virkja eða gera þýðingu á vefsíðu óvirka.
 policy-UserMessaging = Ekki sýna notandanum ákveðin skilaboð.
 policy-UseSystemPrintDialog = Prenta með prentglugga kerfisins.
 # “format” refers to the format used for the value of this policy.

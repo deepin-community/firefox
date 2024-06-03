@@ -32,6 +32,8 @@ search-input-box2 =
     .style = width: 15.4em
     .placeholder = Gjej në Rregullime
 managed-notice = Shfletuesi juaj administrohet nga enti juaj.
+managed-notice-info-icon =
+    .alt = Informacion
 category-list =
     .aria-label = Kategori
 pane-general-title = Të përgjithshme
@@ -708,6 +710,13 @@ sync-mobile-promo = Që të kryeni njëkohësim te pajisja juaj celulare, shkark
 
 sync-profile-picture =
     .tooltiptext = Ndryshoni foto profili
+sync-profile-picture-with-alt =
+    .tooltiptext = Ndryshoni foto profili
+    .alt = Ndryshoni foto profili
+sync-profile-picture-account-problem =
+    .alt = Foto profili llogarie
+fxa-login-rejected-warning =
+    .alt = Kujdes
 sync-sign-out =
     .label = Dilni…
     .accesskey = D
@@ -1274,6 +1283,8 @@ addon-recommendations-link = Mësoni më tepër
 # or builds with no Telemetry support available.
 collection-health-report-disabled = Raportimi i të dhënave është i çaktivizuar për këtë formësim montimi
 collection-backlogged-crash-reports-with-link = Lejojeni { -brand-short-name }-in të dërgojë raporte vithisjesh të mëparshme në emrin tuaj <a data-l10n-name="crash-reports-link">Mësoni më tepër</a>
+    .accesskey = c
+collection-backlogged-crash-reports = Lejojeni { -brand-short-name }-in të dërgojë raporte vithisjesh të mëparshme në emrin tuaj
     .accesskey = c
 privacy-segmentation-section-header = Veçori të reja që thellojnë shfletimin tuaj
 privacy-segmentation-section-description = Kur ofrojmë veçori që përdorin të dhënat tuaja për t’ju dhënë ju një punim më personal:

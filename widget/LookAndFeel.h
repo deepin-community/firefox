@@ -53,8 +53,6 @@ class LookAndFeel {
     CaretBlinkCount,
     // pixel width of caret
     CaretWidth,
-    // show the caret when text is selected?
-    ShowCaretDuringSelection,
     // select textfields when focused via tab/accesskey?
     SelectTextfieldsOnKeyFocus,
     // delay before submenus open
@@ -119,6 +117,9 @@ class LookAndFeel {
      */
     MacRTL,
 
+    /* Native macOS titlebar height. */
+    MacTitlebarHeight,
+
     /*
      * AlertNotificationOrigin indicates from which corner of the
      * screen alerts slide in, and from which direction (horizontal/vertical).
@@ -163,10 +164,6 @@ class LookAndFeel {
      * 1: scrollbar button repeats to scroll even if cursor is outside of it.
      */
     ScrollbarButtonAutoRepeatBehavior,
-    /**
-     * Delay before showing a tooltip.
-     */
-    TooltipDelay,
     /*
      * A Boolean value to determine whether swipe animations should be used.
      */
@@ -190,6 +187,7 @@ class LookAndFeel {
      */
     ContextMenuOffsetVertical,
     ContextMenuOffsetHorizontal,
+    TooltipOffsetVertical,
 
     /*
      * A boolean value indicating whether client-side decorations are
@@ -293,6 +291,9 @@ class LookAndFeel {
     /** GTK titlebar radius */
     TitlebarRadius,
 
+    /** GTK button-to-button spacing in the inline axis */
+    TitlebarButtonSpacing,
+
     /**
      * Corresponding to dynamic-range.
      * https://drafts.csswg.org/mediaqueries-5/#dynamic-range
@@ -300,7 +301,6 @@ class LookAndFeel {
      * 1: High
      */
     DynamicRange,
-    VideoDynamicRange,
 
     /** Whether XUL panel animations are enabled. */
     PanelAnimations,
@@ -320,6 +320,11 @@ class LookAndFeel {
   // This is a common enough integer that seems worth the shortcut.
   static bool UseOverlayScrollbars() {
     return GetInt(IntID::UseOverlayScrollbars);
+  }
+
+  static constexpr int32_t kDefaultTooltipOffset = 21;
+  static int32_t TooltipOffsetVertical() {
+    return GetInt(IntID::TooltipOffsetVertical, kDefaultTooltipOffset);
   }
 
   // Returns keyCode value of a modifier key which is used for accesskey.

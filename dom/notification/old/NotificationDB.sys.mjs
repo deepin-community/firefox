@@ -2,10 +2,18 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-const DEBUG = false;
-function debug(s) {
-  dump("-*- NotificationDB component: " + s + "\n");
-}
+const lazy = {};
+
+ChromeUtils.defineESModuleGetters(lazy, {
+  AsyncShutdown: "resource://gre/modules/AsyncShutdown.sys.mjs",
+});
+
+ChromeUtils.defineLazyGetter(lazy, "console", () => {
+  return console.createInstance({
+    prefix: "NotificationDB",
+    maxLogLevelPref: "dom.webnotifications.loglevel",
+  });
+});
 
 const NOTIFICATION_STORE_DIR = PathUtils.profileDir;
 const NOTIFICATION_STORE_PATH = PathUtils.join(
@@ -23,6 +31,11 @@ var NotificationDB = {
   // Ensure we won't call init() while xpcom-shutdown is performed
   _shutdownInProgress: false,
 
+  // A promise that resolves once the ongoing task queue has been drained.
+  // The value will be reset when the queue starts again.
+  _queueDrainedPromise: null,
+  _queueDrainedPromiseResolve: null,
+
   init() {
     if (this._shutdownInProgress) {
       return;
@@ -37,6 +50,13 @@ var NotificationDB = {
 
     Services.obs.addObserver(this, "xpcom-shutdown");
     this.registerListeners();
+
+    // This assumes that nothing will queue a new task at profile-change-teardown phase,
+    // potentially replacing the _queueDrainedPromise if there was no existing task run.
+    lazy.AsyncShutdown.profileChangeTeardown.addBlocker(
+      "NotificationDB: Need to make sure that all notification messages are processed",
+      () => this._queueDrainedPromise
+    );
   },
 
   registerListeners() {
@@ -51,10 +71,8 @@ var NotificationDB = {
     }
   },
 
-  observe(aSubject, aTopic, aData) {
-    if (DEBUG) {
-      debug("Topic: " + aTopic);
-    }
+  observe(aSubject, aTopic) {
+    lazy.console.debug(`Topic: ${aTopic}`);
     if (aTopic == "xpcom-shutdown") {
       this._shutdownInProgress = true;
       Services.obs.removeObserver(this, "xpcom-shutdown");
@@ -74,11 +92,9 @@ var NotificationDB = {
         }
       }
       if (persistentNotificationCount == 0) {
-        if (DEBUG) {
-          debug(
-            "Origin " + origin + " is not linked to an app manifest, deleting."
-          );
-        }
+        lazy.console.debug(
+          `Origin ${origin} is not linked to an app manifest, deleting.`
+        );
         delete result[origin];
       }
     }
@@ -114,7 +130,7 @@ var NotificationDB = {
       },
 
       // If read failed, we assume we have no notifications to load.
-      reason => {
+      () => {
         this.loaded = true;
         return this.createStore();
       }
@@ -153,9 +169,7 @@ var NotificationDB = {
   },
 
   receiveMessage(message) {
-    if (DEBUG) {
-      debug("Received message:" + message.name);
-    }
+    lazy.console.debug(`Received message: ${message.name}`);
 
     // sendAsyncMessage can fail if the child process exits during a
     // notification storage operation, so always wrap it in a try/catch.
@@ -163,9 +177,7 @@ var NotificationDB = {
       try {
         message.target.sendAsyncMessage(name, data);
       } catch (e) {
-        if (DEBUG) {
-          debug("Return message failed, " + name);
-        }
+        lazy.console.debug(`Return message failed, ${name}`);
       }
     }
 
@@ -219,18 +231,14 @@ var NotificationDB = {
         break;
 
       default:
-        if (DEBUG) {
-          debug("Invalid message name" + message.name);
-        }
+        lazy.console.debug(`Invalid message name ${message.name}`);
     }
   },
 
   // We need to make sure any read/write operations are atomic,
   // so use a queue to run each operation sequentially.
   queueTask(operation, data) {
-    if (DEBUG) {
-      debug("Queueing task: " + operation);
-    }
+    lazy.console.debug(`Queueing task: ${operation}`);
 
     var defer = {};
 
@@ -247,10 +255,11 @@ var NotificationDB = {
 
     // Only run immediately if we aren't currently running another task.
     if (!this.runningTask) {
-      if (DEBUG) {
-        debug("Task queue was not running, starting now...");
-      }
+      lazy.console.debug("Task queue was not running, starting now...");
       this.runNextTask();
+      this._queueDrainedPromise = new Promise(resolve => {
+        this._queueDrainedPromiseResolve = resolve;
+      });
     }
 
     return promise;
@@ -258,10 +267,15 @@ var NotificationDB = {
 
   runNextTask() {
     if (this.tasks.length === 0) {
-      if (DEBUG) {
-        debug("No more tasks to run, queue depleted");
-      }
+      lazy.console.debug("No more tasks to run, queue depleted");
       this.runningTask = null;
+      if (this._queueDrainedPromiseResolve) {
+        this._queueDrainedPromiseResolve();
+      } else {
+        lazy.console.debug(
+          "_queueDrainedPromiseResolve was null somehow, no promise to resolve"
+        );
+      }
       return;
     }
     this.runningTask = this.tasks.shift();
@@ -288,17 +302,13 @@ var NotificationDB = {
         }
       })
       .then(payload => {
-        if (DEBUG) {
-          debug("Finishing task: " + this.runningTask.operation);
-        }
+        lazy.console.debug(`Finishing task: ${this.runningTask.operation}`);
         this.runningTask.defer.resolve(payload);
       })
       .catch(err => {
-        if (DEBUG) {
-          debug(
-            "Error while running " + this.runningTask.operation + ": " + err
-          );
-        }
+        lazy.console.debug(
+          `Error while running ${this.runningTask.operation}: ${err}`
+        );
         this.runningTask.defer.reject(err);
       })
       .then(() => {
@@ -307,9 +317,7 @@ var NotificationDB = {
   },
 
   taskGetAll(data) {
-    if (DEBUG) {
-      debug("Task, getting all");
-    }
+    lazy.console.debug("Task, getting all");
     var origin = data.origin;
     var notifications = [];
     // Grab only the notifications for specified origin.
@@ -329,9 +337,7 @@ var NotificationDB = {
   },
 
   taskSave(data) {
-    if (DEBUG) {
-      debug("Task, saving");
-    }
+    lazy.console.debug("Task, saving");
     var origin = data.origin;
     var notification = data.notification;
     if (!this.notifications[origin]) {
@@ -354,24 +360,18 @@ var NotificationDB = {
   },
 
   taskDelete(data) {
-    if (DEBUG) {
-      debug("Task, deleting");
-    }
+    lazy.console.debug("Task, deleting");
     var origin = data.origin;
     var id = data.id;
     if (!this.notifications[origin]) {
-      if (DEBUG) {
-        debug("No notifications found for origin: " + origin);
-      }
+      lazy.console.debug(`No notifications found for origin: ${origin}`);
       return Promise.resolve();
     }
 
     // Make sure we can find the notification to delete.
     var oldNotification = this.notifications[origin][id];
     if (!oldNotification) {
-      if (DEBUG) {
-        debug("No notification found with id: " + id);
-      }
+      lazy.console.debug(`No notification found with id: ${id}`);
       return Promise.resolve();
     }
 

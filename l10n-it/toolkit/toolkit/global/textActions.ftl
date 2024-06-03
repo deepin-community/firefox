@@ -84,3 +84,6 @@ text-action-spell-dictionaries =
 text-action-search-text-box-clear =
     .title = Cancella
 
+text-action-highlight-selection =
+    .label = Evidenzia selezione
+

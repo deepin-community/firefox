@@ -29,7 +29,7 @@ ChromeUtils.defineLazyGetter(lazy, "log", () => {
     "resource://gre/modules/Console.sys.mjs"
   );
   return new ConsoleAPI({
-    prefix: "RemoteSecuritySettings.jsm",
+    prefix: "RemoteSecuritySettings",
     // tip: set maxLogLevel to "debug" and use log.debug() to create detailed
     // messages during development. See LOG_LEVELS in Console.sys.mjs for details.
     maxLogLevel: "error",
@@ -393,7 +393,7 @@ class IntermediatePreloads {
     );
   }
 
-  async onObservePollEnd(subject, topic, data) {
+  async onObservePollEnd(subject, topic) {
     lazy.log.debug(`onObservePollEnd ${subject} ${topic}`);
 
     try {
@@ -404,7 +404,7 @@ class IntermediatePreloads {
   }
 
   // This method returns a promise to RemoteSettingsClient.maybeSync method.
-  async onSync({ data: { current, created, updated, deleted } }) {
+  async onSync({ data: { deleted } }) {
     if (!Services.prefs.getBoolPref(INTERMEDIATES_ENABLED_PREF, true)) {
       lazy.log.debug("Intermediate Preloading is disabled");
       return;
@@ -450,7 +450,7 @@ class IntermediatePreloads {
     try {
       // split off the header and footer
       certBase64 = dataAsString.split("-----")[2].replace(/\s/g, "");
-      // get an array of bytes so we can use X509.jsm
+      // get an array of bytes so we can use X509.sys.mjs
       let certBytes = stringToBytes(atob(certBase64));
       let cert = new X509.Certificate();
       cert.parse(certBytes);
@@ -538,7 +538,7 @@ class CRLiteFilters {
     }
   }
 
-  async onObservePollEnd(subject, topic, data) {
+  async onObservePollEnd() {
     if (!Services.prefs.getBoolPref(CRLITE_FILTERS_ENABLED_PREF, true)) {
       lazy.log.debug("CRLite filter downloading is disabled");
       Services.obs.notifyObservers(

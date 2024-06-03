@@ -126,8 +126,6 @@ translations-manage-description = Барои тарҷума дар реҷаи о
 translations-manage-all-language = Ҳамаи забонҳо
 translations-manage-download-button = Боргирӣ кардан
 translations-manage-delete-button = Нест кардан
-translations-manage-error-download = Ҳангоми боргирӣ кардани файлҳои забонӣ мушкилие ба миён омад. Лутфан, аз нав кӯшиш кунед.
-translations-manage-error-delete = Ҳангоми несткунии файлҳои забонӣ мушкилие ба миён омад. Лутфан, аз нав кӯшиш кунед.
 translations-manage-intro = Хусусиятҳои забон ва тарҷумаи сомонаро танзим кунед ва забонҳои насбшударо барои тарҷумаҳои офлайн идора намоед.
 translations-manage-install-description = Барои тарҷума дар реҷаи офлайн бе пайвасти Интернет забонҳоро насб намоед.
 translations-manage-language-install-button =
@@ -135,12 +133,21 @@ translations-manage-language-install-button =
 translations-manage-language-install-all-button =
     .label = Ҳамаро насб кардан
     .accesskey = Ҳ
+translations-manage-intro-2 = Хусусиятҳои забон ва тарҷумаи сомонаро танзим кунед ва забонҳои боргиришударо барои тарҷумаҳои офлайн идора намоед.
+translations-manage-download-description = Барои тарҷума дар реҷаи офлайн бе пайвасти Интернет забонҳоро боргирӣ намоед
+translations-manage-language-download-button =
+    .label = Боргирӣ кардан
+translations-manage-language-download-all-button =
+    .label = Ҳамаро боргирӣ кардан
+    .accesskey = Ҳ
 translations-manage-language-remove-button =
     .label = Тоза кардан
 translations-manage-language-remove-all-button =
     .label = Ҳамаро тоза кардан
     .accesskey = Ҳ
 translations-manage-error-install = Ҳангоми насб кардани файлҳои забонӣ мушкилие ба миён омад. Лутфан, аз нав кӯшиш кунед.
+translations-manage-error-download = Ҳангоми боргирӣ кардани файлҳои забонӣ мушкилие ба миён омад. Лутфан, аз нав кӯшиш кунед.
+translations-manage-error-delete = Ҳангоми несткунии файлҳои забонӣ мушкилие ба миён омад. Лутфан, аз нав кӯшиш кунед.
 translations-manage-error-remove = Ҳангоми тоза кардани файлҳои забонӣ мушкилие ба миён омад. Лутфан, аз нав кӯшиш кунед.
 translations-manage-error-list = Рӯйхати забонҳои дастрас барои тарҷума ба даст оварда нашуд. Саҳифаро аз нав бор карда, аз нав кӯшиш намоед.
 translations-settings-title =
@@ -170,3 +177,75 @@ translations-settings-remove-all-sites-button =
 translations-settings-close-dialog =
     .buttonlabelaccept = Пӯшидан
     .buttonaccesskeyaccept = П
+# Text displayed in the right-click context menu for translating
+# selected text to a yet-to-be-determined language.
+main-context-menu-translate-selection =
+    .label = Тарҷума кардани интихоб…
+    .accesskey = Т
+# Text displayed in the right-click context menu for translating
+# selected text to a target language.
+#
+# Variables:
+#   $language (string) - The localized display name of the target language
+main-context-menu-translate-selection-to-language =
+    .label = Тарҷума кардани интихоб ба забони { $language }
+    .accesskey = Т
+# Text displayed in the right-click context menu for translating
+# the text of a hyperlink to a yet-to-be-determined language.
+main-context-menu-translate-link-text =
+    .label = Тарҷума кардани матни пайванд…
+    .accesskey = Т
+# Text displayed in the right-click context menu for translating
+# the text of a hyperlink to a target language.
+#
+# Variables:
+#   $language (string) - The localized display name of the target language
+main-context-menu-translate-link-text-to-language =
+    .label = Тарҷума кардани матни пайванд ба забони { $language }
+    .accesskey = Т
+# Text displayed in the select translations panel header.
+select-translations-panel-header = Тарҷума
+# Text displayed above the from-language dropdown menu.
+select-translations-panel-from-label = Аз
+# Text displayed above the to-language dropdown menu.
+select-translations-panel-to-label = Ба
+# Text displayed above the try-another-source-language dropdown menu.
+select-translations-panel-try-another-language-label = Забони матни аслии дигарро кӯшиш кунед
+select-translations-panel-cancel-button =
+    .label = Бекор кардан
+# Text displayed on the copy button before it is clicked.
+select-translations-panel-copy-button =
+    .label = Нусха бардоштан
+# Text displayed on the copy button after it is clicked.
+select-translations-panel-copy-button-copied =
+    .label = Нусха бардошта шуд
+select-translations-panel-done-button =
+    .label = Тайёр
+select-translations-panel-translate-full-page-button =
+    .label = Тарҷума кардани саҳифаи пурра
+select-translations-panel-translate-button =
+    .label = Тарҷума кунед
+select-translations-panel-try-again-button =
+    .label = Аз нав кӯшиш кардан
+# Text displayed as a placeholder when the panel is idle.
+select-translations-panel-idle-placeholder-text = Матни тарҷумашуда дар ин ҷой пайдо мешавад.
+# Text displayed as a placeholder when the panel is actively translating.
+select-translations-panel-translating-placeholder-text = Дар ҳоли тарҷума…
+select-translations-panel-init-failure-message =
+    .message = Забонҳоро бор карда натавонист. Пайвасти интернети худро санҷед ва аз нав кӯшиш намоед.
+# Text displayed when the translation fails to complete.
+select-translations-panel-translation-failure-message =
+    .message = Ҳангоми тарҷума мушкилие ба миён омад. Лутфан, аз нав кӯшиш кунед.
+# If your language requires declining the language name, a possible solution
+# is to adapt the structure of the phrase, or use a support noun, e.g.
+# `Sorry, we don't support the language yet: { $language }
+#
+# Variables:
+#   $language (string) - The language of the document.
+select-translations-panel-unsupported-language-message-known =
+    .message = Мутаассифона, айни ҳол забони «{ $language }» дастгирӣ намешавад.
+select-translations-panel-unsupported-language-message-unknown =
+    .message = Мутаассифона, айни ҳол ин забон дастгирӣ намешавад.
+# Text displayed on the menuitem that opens the Translation Settings page.
+select-translations-panel-open-translations-settings-menuitem =
+    .label = Танзимоти тарҷума

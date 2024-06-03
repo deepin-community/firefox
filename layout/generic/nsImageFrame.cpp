@@ -18,6 +18,7 @@
 #include "mozilla/DebugOnly.h"
 #include "mozilla/Encoding.h"
 #include "mozilla/HTMLEditor.h"
+#include "mozilla/dom/FetchPriority.h"
 #include "mozilla/dom/ImageTracker.h"
 #include "mozilla/gfx/2D.h"
 #include "mozilla/gfx/Helpers.h"
@@ -268,7 +269,7 @@ BrokenImageIcon::BrokenImageIcon(const nsImageFrame& aFrame) {
                     loadFlags, nullptr, contentPolicyType, u""_ns,
                     false, /* aUseUrgentStartForChannel */
                     false, /* aLinkPreload */
-                    0, getter_AddRefs(mImage));
+                    0, FetchPriority::Auto, getter_AddRefs(mImage));
   Unused << NS_WARN_IF(NS_FAILED(rv));
 }
 
@@ -554,15 +555,16 @@ void nsImageFrame::DidSetComputedStyle(ComputedStyle* aOldStyle) {
   //
   // TODO(emilio): We might want to do the same for regular list-style-image or
   // even simple content: url() changes.
-  if (mKind == Kind::XULImage) {
-    if (!mContent->AsElement()->HasNonEmptyAttr(nsGkAtoms::src) && aOldStyle &&
+  if (mKind == Kind::XULImage && aOldStyle) {
+    if (!mContent->AsElement()->HasNonEmptyAttr(nsGkAtoms::src) &&
         aOldStyle->StyleList()->mListStyleImage !=
             StyleList()->mListStyleImage) {
       UpdateXULImage();
     }
-    if (!mOwnedRequest && aOldStyle &&
-        aOldStyle->StyleDisplay()->EffectiveAppearance() !=
-            StyleDisplay()->EffectiveAppearance()) {
+    // If we have no image our intrinsic size might be themed. We need to
+    // update the size even if the effective appearance hasn't changed to
+    // deal correctly with theme changes.
+    if (!mOwnedRequest) {
       UpdateIntrinsicSize();
     }
   }
@@ -1474,8 +1476,6 @@ nscoord nsImageFrame::GetContinuationOffset() const {
 nscoord nsImageFrame::GetMinISize(gfxContext* aRenderingContext) {
   // XXX The caller doesn't account for constraints of the block-size,
   // min-block-size, and max-block-size properties.
-  DebugOnly<nscoord> result;
-  DISPLAY_MIN_INLINE_SIZE(this, result);
   EnsureIntrinsicSizeAndRatio();
   const auto& iSize = GetWritingMode().IsVertical() ? mIntrinsicSize.height
                                                     : mIntrinsicSize.width;
@@ -1485,8 +1485,6 @@ nscoord nsImageFrame::GetMinISize(gfxContext* aRenderingContext) {
 nscoord nsImageFrame::GetPrefISize(gfxContext* aRenderingContext) {
   // XXX The caller doesn't account for constraints of the block-size,
   // min-block-size, and max-block-size properties.
-  DebugOnly<nscoord> result;
-  DISPLAY_PREF_INLINE_SIZE(this, result);
   EnsureIntrinsicSizeAndRatio();
   const auto& iSize = GetWritingMode().IsVertical() ? mIntrinsicSize.height
                                                     : mIntrinsicSize.width;
@@ -1524,7 +1522,6 @@ void nsImageFrame::Reflow(nsPresContext* aPresContext, ReflowOutput& aMetrics,
                           nsReflowStatus& aStatus) {
   MarkInReflow();
   DO_GLOBAL_REFLOW_COUNT("nsImageFrame");
-  DISPLAY_REFLOW(aPresContext, this, aReflowInput, aMetrics, aStatus);
   MOZ_ASSERT(aStatus.IsEmpty(), "Caller should pass a fresh reflow status!");
   NS_FRAME_TRACE(
       NS_FRAME_TRACE_CALLS,

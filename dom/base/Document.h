@@ -57,7 +57,6 @@
 #include "mozilla/dom/LargestContentfulPaint.h"
 #include "mozilla/dom/UserActivation.h"
 #include "mozilla/dom/WakeLockBinding.h"
-#include "mozilla/glean/GleanMetrics.h"
 #include "nsAtom.h"
 #include "nsCOMArray.h"
 #include "nsCOMPtr.h"
@@ -245,6 +244,7 @@ class EventListener;
 struct FailedCertSecurityInfo;
 class FeaturePolicy;
 class FontFaceSet;
+class FragmentDirective;
 class FrameRequestCallback;
 class ImageTracker;
 class HighlightRegistry;
@@ -320,6 +320,9 @@ enum BFCacheStatus {
 };
 
 }  // namespace dom
+namespace glean::perf {
+struct PageLoadExtra;
+}
 }  // namespace mozilla
 
 namespace mozilla::net {
@@ -2930,10 +2933,11 @@ class Document : public nsINode,
    */
   void MaybePreLoadImage(nsIURI* uri, const nsAString& aCrossOriginAttr,
                          ReferrerPolicyEnum aReferrerPolicy, bool aIsImgSet,
-                         bool aLinkPreload);
+                         bool aLinkPreload, const nsAString& aFetchPriority);
   void PreLoadImage(nsIURI* uri, const nsAString& aCrossOriginAttr,
                     ReferrerPolicyEnum aReferrerPolicy, bool aIsImgSet,
-                    bool aLinkPreload, uint64_t aEarlyHintPreloaderId);
+                    bool aLinkPreload, uint64_t aEarlyHintPreloaderId,
+                    const nsAString& aFetchPriority);
 
   /**
    * Called by images to forget an image preload when they start doing
@@ -2987,15 +2991,6 @@ class Document : public nsINode,
    */
   void SetStateObjectFrom(Document* aDocument) {
     SetStateObject(aDocument->mStateObjectContainer);
-  }
-
-  /**
-   * Returns true if there is a lightweight theme specified. This is used to
-   * determine the state of the :-moz-lwtheme pseudo-class.
-   */
-  bool ComputeDocumentLWTheme() const;
-  void ResetDocumentLWTheme() {
-    UpdateDocumentStates(DocumentState::LWTHEME, true);
   }
 
   // Whether we're a media document or not.
@@ -3278,7 +3273,7 @@ class Document : public nsINode,
   void SetDomain(const nsAString& aDomain, mozilla::ErrorResult& rv);
   void GetCookie(nsAString& aCookie, mozilla::ErrorResult& rv);
   void SetCookie(const nsAString& aCookie, mozilla::ErrorResult& rv);
-  void GetReferrer(nsAString& aReferrer) const;
+  void GetReferrer(nsACString& aReferrer) const;
   void GetLastModified(nsAString& aLastModified) const;
   void GetReadyState(nsAString& aReadyState) const;
 
@@ -3374,7 +3369,6 @@ class Document : public nsINode,
                                                bool aFocusPreviousElement,
                                                bool aFireEvents);
 
-  MOZ_CAN_RUN_SCRIPT_BOUNDARY void HideAllPopoversWithoutRunningScript();
   // Hides the given popover element, see
   // https://html.spec.whatwg.org/multipage/popover.html#hide-popover-algorithm
   MOZ_CAN_RUN_SCRIPT void HidePopover(Element& popover,
@@ -3722,12 +3716,12 @@ class Document : public nsINode,
   DOMIntersectionObserver* GetLazyLoadObserver() { return mLazyLoadObserver; }
   DOMIntersectionObserver& EnsureLazyLoadObserver();
 
-  ResizeObserver* GetLastRememberedSizeObserver() {
-    return mLastRememberedSizeObserver;
+  bool HasElementsWithLastRememberedSize() const {
+    return !mElementsObservedForLastRememberedSize.IsEmpty();
   }
-  ResizeObserver& EnsureLastRememberedSizeObserver();
   void ObserveForLastRememberedSize(Element&);
   void UnobserveForLastRememberedSize(Element&);
+  void UpdateLastRememberedSizes();
 
   // Dispatch a runnable related to the document.
   nsresult Dispatch(already_AddRefed<nsIRunnable>&& aRunnable) const;
@@ -3874,6 +3868,17 @@ class Document : public nsINode,
 
   void SetAllowDeclarativeShadowRoots(bool aAllowDeclarativeShadowRoots);
   bool AllowsDeclarativeShadowRoots() const;
+
+  void SuspendDOMNotifications() {
+    MOZ_ASSERT(IsHTMLDocument(),
+               "Currently suspending DOM notifications is supported only on "
+               "HTML documents.");
+    mSuspendDOMNotifications = true;
+  }
+
+  void ResumeDOMNotifications() { mSuspendDOMNotifications = false; }
+
+  bool DOMNotificationsSuspended() const { return mSuspendDOMNotifications; }
 
  protected:
   RefPtr<DocumentL10n> mDocumentL10n;
@@ -4086,6 +4091,13 @@ class Document : public nsINode,
    */
   class HighlightRegistry& HighlightRegistry();
 
+  /**
+   * @brief Returns the `FragmentDirective` object which contains information
+   * and functionality to extract or create text directives.
+   * Guaranteed to be non-null.
+   */
+  class FragmentDirective* FragmentDirective();
+
   bool ShouldResistFingerprinting(RFPTarget aTarget) const;
   bool IsInPrivateBrowsing() const;
 
@@ -4145,7 +4157,8 @@ class Document : public nsINode,
   // Apply the fullscreen state to the document, and trigger related
   // events. It returns false if the fullscreen element ready check
   // fails and nothing gets changed.
-  bool ApplyFullscreen(UniquePtr<FullscreenRequest>);
+  MOZ_CAN_RUN_SCRIPT_BOUNDARY bool ApplyFullscreen(
+      UniquePtr<FullscreenRequest>);
 
   void RemoveDocStyleSheetsFromStyleSets();
   void ResetStylesheetsToURI(nsIURI* aURI);
@@ -4866,6 +4879,8 @@ class Document : public nsINode,
 
   bool mAllowDeclarativeShadowRoots : 1;
 
+  bool mSuspendDOMNotifications : 1;
+
   // The fingerprinting protections overrides for this document. The value will
   // override the default enabled fingerprinting protections for this document.
   // This will only get populated if these is one that comes from the local
@@ -5125,7 +5140,11 @@ class Document : public nsINode,
   // https://drafts.csswg.org/css-round-display/#viewport-fit-descriptor
   ViewportFitType mViewportFit;
 
-  PLDHashTable* mSubDocuments;
+  // XXXdholbert This should really be modernized to a nsTHashMap or similar,
+  // though note that the modernization will need to take care to also convert
+  // the special hash_table_ops logic (e.g. how SubDocClearEntry clears the
+  // parent document as part of cleaning up an entry in this table).
+  UniquePtr<PLDHashTable> mSubDocuments;
 
   class HeaderData;
   UniquePtr<HeaderData> mHeaderData;
@@ -5162,9 +5181,9 @@ class Document : public nsINode,
 
   RefPtr<DOMIntersectionObserver> mLazyLoadObserver;
 
-  // ResizeObserver for storing and removing the last remembered size.
+  // Elements observed for a last remembered size.
   // @see {@link https://drafts.csswg.org/css-sizing-4/#last-remembered}
-  RefPtr<ResizeObserver> mLastRememberedSizeObserver;
+  nsTHashSet<RefPtr<Element>> mElementsObservedForLastRememberedSize;
 
   // Stack of top layer elements.
   nsTArray<nsWeakPtr> mTopLayer;
@@ -5294,9 +5313,6 @@ class Document : public nsINode,
   // Pres shell resolution saved before entering fullscreen mode.
   float mSavedResolution;
 
-  // Pres shell resolution saved before creating a MobileViewportManager.
-  float mSavedResolutionBeforeMVM;
-
   nsCOMPtr<nsICookieJarSettings> mCookieJarSettings;
 
   bool mHasStoragePermission;
@@ -5361,6 +5377,7 @@ class Document : public nsINode,
   nsTArray<CanvasUsage> mCanvasUsage;
   uint64_t mLastCanvasUsage = 0;
 
+  RefPtr<class FragmentDirective> mFragmentDirective;
   UniquePtr<RadioGroupContainer> mRadioGroupContainer;
 
  public:
@@ -5371,11 +5388,6 @@ class Document : public nsINode,
 
   nsRefPtrHashtable<nsRefPtrHashKey<Element>, nsXULPrototypeElement>
       mL10nProtoElements;
-
-  float GetSavedResolutionBeforeMVM() { return mSavedResolutionBeforeMVM; }
-  void SetSavedResolutionBeforeMVM(float aResolution) {
-    mSavedResolutionBeforeMVM = aResolution;
-  }
 
   void LoadEventFired();
 

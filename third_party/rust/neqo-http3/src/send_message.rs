@@ -4,11 +4,11 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-use std::{any::Any, cell::RefCell, cmp::min, fmt::Debug, rc::Rc};
+use std::{cell::RefCell, cmp::min, fmt::Debug, rc::Rc};
 
-use neqo_common::{qdebug, qinfo, qtrace, Encoder, Header, MessageType};
+use neqo_common::{qdebug, qtrace, Encoder, Header, MessageType};
 use neqo_qpack::encoder::QPackEncoder;
-use neqo_transport::{streams::SendOrder, Connection, StreamId};
+use neqo_transport::{Connection, StreamId};
 
 use crate::{
     frames::HFrame,
@@ -119,7 +119,7 @@ impl SendMessage {
         encoder: Rc<RefCell<QPackEncoder>>,
         conn_events: Box<dyn SendStreamEvents>,
     ) -> Self {
-        qinfo!("Create a request stream_id={}", stream_id);
+        qdebug!("Create a request stream_id={}", stream_id);
         Self {
             state: MessageState::WaitingForHeaders,
             message_type,
@@ -193,7 +193,7 @@ impl SendStream for SendMessage {
             min(buf.len(), available - 9)
         };
 
-        qinfo!(
+        qdebug!(
             [self],
             "send_request_body: available={} to_send={}.",
             available,
@@ -270,16 +270,6 @@ impl SendStream for SendMessage {
         self.stream.has_buffered_data()
     }
 
-    fn set_sendorder(&mut self, _conn: &mut Connection, _sendorder: Option<SendOrder>) -> Res<()> {
-        // Not relevant for SendMessage
-        Ok(())
-    }
-
-    fn set_fairness(&mut self, _conn: &mut Connection, _fairness: bool) -> Res<()> {
-        // Not relevant for SendMessage
-        Ok(())
-    }
-
     fn close(&mut self, conn: &mut Connection) -> Res<()> {
         self.state.fin()?;
         if !self.stream.has_buffered_data() {
@@ -331,10 +321,6 @@ impl HttpSendStream for SendMessage {
     fn set_new_listener(&mut self, conn_events: Box<dyn SendStreamEvents>) {
         self.stream_type = Http3StreamType::ExtendedConnect;
         self.conn_events = conn_events;
-    }
-
-    fn any(&self) -> &dyn Any {
-        self
     }
 }
 

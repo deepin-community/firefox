@@ -4,7 +4,6 @@
 
 #include "VideoUtils.h"
 
-#include <functional>
 #include <stdint.h>
 
 #include "CubebUtils.h"
@@ -19,7 +18,6 @@
 #include "mozilla/StaticPrefs_accessibility.h"
 #include "mozilla/StaticPrefs_media.h"
 #include "mozilla/TaskQueue.h"
-#include "mozilla/Telemetry.h"
 #include "nsCharSeparatedTokenizer.h"
 #include "nsContentTypeParser.h"
 #include "nsIConsoleService.h"
@@ -29,7 +27,6 @@
 #include "nsNetCID.h"
 #include "nsServiceManagerUtils.h"
 #include "nsThreadUtils.h"
-#include "AudioStream.h"
 
 namespace mozilla {
 
@@ -191,12 +188,13 @@ uint32_t DecideAudioPlaybackSampleRate(const AudioInfo& aInfo,
     rate = 48000;
   } else if (aInfo.mRate >= 44100) {
     // The original rate is of good quality and we want to minimize unecessary
-    // resampling, so we let cubeb decide how to resample (if needed).
-    rate = aInfo.mRate;
+    // resampling, so we let cubeb decide how to resample (if needed). Cap to
+    // 384kHz for good measure.
+    rate = std::min<unsigned>(aInfo.mRate, 384000u);
   } else {
     // We will resample all data to match cubeb's preferred sampling rate.
     rate = CubebUtils::PreferredSampleRate(aShouldResistFingerprinting);
-    if (rate > 384000) {
+    if (rate > 768000) {
       // bogus rate, fall back to something else;
       rate = 48000;
     }

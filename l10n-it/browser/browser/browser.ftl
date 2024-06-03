@@ -102,7 +102,7 @@ urlbar-persistent-storage-notification-anchor =
 urlbar-addons-notification-anchor =
     .tooltiptext = Apri il pannello con il messaggio di installazione componente aggiuntivo
 urlbar-tip-help-icon =
-    .title = Ottieni assistenza
+    .title = Ricevi assistenza
 urlbar-search-tips-confirm = OK
 urlbar-search-tips-confirm-short = OK
 # Read out before Urlbar Tip text content so screenreader users know the
@@ -121,7 +121,7 @@ urlbar-result-menu-remove-from-history =
     .label = Rimuovi dalla cronologia
     .accesskey = R
 urlbar-result-menu-tip-get-help =
-    .label = Ottieni assistenza
+    .label = Ricevi assistenza
     .accesskey = a
 
 ## Prompts users to use the Urlbar when they open a new tab or visit the
@@ -602,6 +602,12 @@ urlbar-result-action-copy-to-clipboard = Copia
 #  $result (String): the string representation for a formula result
 urlbar-result-action-calculator-result = = { $result }
 
+## Strings used for buttons in the urlbar
+
+# Label prompting user to search with a particular search engine.
+#  $engine (String): the name of a search engine that searches a specific site
+urlbar-result-search-with = Cerca con { $engine }
+
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
 ## In these actions "Search" is a verb, followed by where the search is performed.
@@ -909,6 +915,16 @@ data-reporting-notification-button =
 # Label for the indicator shown in the private browsing window titlebar.
 private-browsing-indicator-label = Navigazione anonima
 
+# Tooltip for the indicator shown in the window titlebar when content analysis is active.
+# Variables:
+#   $agentName (String): The name of the DLP agent that is connected
+content-analysis-indicator-tooltip =
+    .tooltiptext = Prevenzione perdita dati (DLP) tramite { $agentName }. Fai clic per ulteriori informazioni.
+content-analysis-panel-title = Protezione dati
+# Variables:
+#   $agentName (String): The name of the DLP agent that is connected
+content-analysis-panel-text = La tua organizzazione utilizza { $agentName } per proteggersi da eventuali perdite di dati. <a data-l10n-name="info">Ulteriori informazioni</a>
+
 ## Unified extensions (toolbar) button
 
 unified-extensions-button =
@@ -1001,4 +1017,3 @@ popup-warning-button =
 #   $popupURI (String): the URI for the pop-up window
 popup-show-popup-menuitem =
     .label = Visualizza “{ $popupURI }”
-

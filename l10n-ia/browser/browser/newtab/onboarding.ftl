@@ -53,6 +53,9 @@ mr1-onboarding-import-primary-button-label-attribution = Importar de { $previous
 mr1-onboarding-theme-header = Personalisa lo
 mr1-onboarding-theme-subtitle = Personalisa { -brand-short-name } con un thema.
 mr1-onboarding-theme-secondary-button-label = Non ora
+newtab-wallpaper-onboarding-title = Prova un tocco de color
+newtab-wallpaper-onboarding-subtitle = Eliger un fundo pro dar a tu Nove scheda un apparentia fresc.
+newtab-wallpaper-onboarding-primary-button-label = Fixar un fundo de schermo
 # System theme uses operating system color settings
 mr1-onboarding-theme-label-system = Thema del systema
 mr1-onboarding-theme-label-light = Clar
@@ -351,6 +354,7 @@ onboarding-new-user-familiarity-based-survey-title = Quanto sape tu re { -brand-
 onboarding-new-user-survey-subtitle = Tu commentarios adjuta nos a render { -brand-short-name } sempre melior.
 # When translating "next" it means the next screen in onboarding.
 onboarding-new-user-survey-next-button-label = Sequente
+onboarding-new-user-survey-legal-link-label = Seligente “{ onboarding-new-user-survey-next-button-label },” tu concorda con le { -brand-product-name }’s <a data-l10n-name="privacy_notice">Aviso de confidentialitate</a>
 # When translating "brand new" it means completely new.
 onboarding-new-user-survey-time-based-option-1 = Io justo comenciava
 onboarding-new-user-survey-time-based-option-2 = Minus que 1 mense

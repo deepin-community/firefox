@@ -43,6 +43,11 @@ options-inspector-draggable-properties-tooltip =
 options-inspector-simplified-highlighters-label = Eiporu jehechaukaha’i prefers-reduced-motion ndive
 options-inspector-simplified-highlighters-tooltip =
     .title = Emyandy mba’erechaukaha momichĩmbyre oñembojurujávo prefers-reduced-motion. Ehai línea rectángulo henyhẽmbyréva rendaguépe mba’eporu jerére ani hag̃ua ikangy.
+# The label for the checkbox option to make the Enter key move the focus to the next input
+# when editing a property name or value in the Inspector rules view
+options-inspector-rules-focus-next-on-enter-label = Embohasa ambue jeikehápe <kbd>Enter</kbd>
+options-inspector-rules-focus-next-on-enter-tooltip =
+    .title = Hendy jave, eikutúvo pe Enter embosako’ívo poravoha, mba’erepy jára térã tepykue, oku’éta kóva ambue korápe.
 
 ## "Default Color Unit" options for the Inspector
 
@@ -53,6 +58,15 @@ options-default-color-unit-hsl = HSL(A)
 options-default-color-unit-rgb = RGB(A)
 options-default-color-unit-hwb = HWB
 options-default-color-unit-name = Sa’ykuéra réra
+
+## Web Console section
+
+# The heading
+options-webconsole-label = Mba’e’okarupa
+# The label for the checkbox that toggle whether the Split console is enabled
+options-webconsole-split-console-label = Emyandy mba’e’oka mboja’opyre
+options-webconsole-split-console-tooltip =
+    .title = Embojuruja mba’e’okarupa ivoréva Esc tairenda ndive
 
 ## Style Editor section
 

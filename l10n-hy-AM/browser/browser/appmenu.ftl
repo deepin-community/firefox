@@ -16,11 +16,11 @@ appmenuitem-banner-update-unsupported =
 appmenuitem-banner-update-restart =
     .label = Մատչելի է արդիացում՝ վերագործարկեք
 appmenuitem-new-tab =
-    .label = Նոր Ներդիր
+    .label = Նոր ներդիր
 appmenuitem-new-window =
-    .label = Նոր Պատուհան
+    .label = Նոր պատուհան
 appmenuitem-new-private-window =
-    .label = Սկսել Գաղտնի դիտարկում
+    .label = Սկսել գաղտնի դիտարկում
 appmenuitem-history =
     .label = Պատմություն
 appmenuitem-downloads =
@@ -73,6 +73,20 @@ appmenu-remote-tabs-sign-into-sync =
     .label = Մուտք գործեք՝ համաժամեցնելու համար…
 appmenu-remote-tabs-turn-on-sync =
     .label = Միացնել համաժամեցումը…
+# This is shown after the tabs list if we can display more tabs by clicking on the button
+appmenu-remote-tabs-showmore =
+    .label = Ցուցադրել ավելի շատ ներդիրներ
+    .tooltiptext = Ցուցադրել ավելի շատ ներդիրներ այս սարքի համար
+# This is shown when there are inactive tabs which are not being shown.
+# Variables
+# $count (Number) - The number of inactive tabs which are not being shown (at least 1)
+appmenu-remote-tabs-showinactive =
+    .label =
+        { $count ->
+            [one] Ցուցադրել մեկ ոչ ակտիվ ներդիր
+           *[other] Ցուցադրել { $count } ոչ ակտիվ ներդիրներ
+        }
+    .tooltiptext = Ցուցադրել ոչ ակտիվ ներդիրներն այս սարքում
 # This is shown beneath the name of a device when that device has no open tabs
 appmenu-remote-tabs-notabs = Չկան բաց ներդիրներ
 # This is shown when Sync is configured but syncing tabs is disabled.
@@ -119,7 +133,14 @@ whatsnew-panel-footer-checkbox =
 profiler-popup-button-idle =
     .label = Հատկագրող
     .tooltiptext = Գրառել իրականացման հատկագիրը
+profiler-popup-button-recording =
+    .label = Հատկագրիչ
+    .tooltiptext = Հատկագրիչը գրանցում է պրոֆիլը
 profiler-popup-header-text = { -profiler-brand-name }
+profiler-popup-reveal-description-button =
+    .aria-label = Ցուցադրել առավել շատ տեղեկություն
+profiler-popup-description-title =
+    .value = Գրանցել, վերլուծել, կիսվել
 profiler-popup-learn-more-button =
     .label = Իմանալ ավելին
 profiler-popup-settings =
@@ -218,6 +239,9 @@ appmenu-help-switch-device =
 appmenu-help-enter-troubleshoot-mode2 =
     .label = Խափանաշտկման կերպ…
     .accesskey = M
+appmenu-help-exit-troubleshoot-mode =
+    .label = Անջատել խափանաշտկումը
+    .accesskey = M
 
 ## appmenu-help-report-deceptive-site and appmenu-help-not-deceptive
 ## are mutually exclusive, so it's possible to use the same accesskey for both.
@@ -236,7 +260,15 @@ appmenu-customizetoolbar =
 appmenu-developer-tools-subheader = Զննիչի գործիքներ
 appmenu-developer-tools-extensions =
     .label = Ընդլայնումներ մշակողների համար
+appmenuitem-report-broken-site =
+    .label = Զեկուցել խոտանված կայքի մասին
 
 ## Panel for privacy and security products
 
+appmenuitem-sign-in-account = Մուտք գործեք ձեր հաշիվ
+appmenuitem-monitor-title = { -monitor-brand-short-name }
+appmenuitem-monitor-description = Ստացեք ծանուցումներ տվյալների արտահոսման մասին
+appmenuitem-relay-title = { -relay-brand-short-name }
+appmenuitem-relay-description = Քողարկեք ձեր իրական էլ. փոստը և հեռախոսը
+appmenuitem-vpn-title = { -mozilla-vpn-brand-name }
 appmenuitem-vpn-description = Պաշտպանեք ձեր առցանց գործունեությունը

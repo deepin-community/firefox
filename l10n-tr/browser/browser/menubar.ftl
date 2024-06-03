@@ -146,11 +146,13 @@ menu-view-history-button =
     .label = Geçmiş
 menu-view-synced-tabs-sidebar =
     .label = Eşitlenmiş sekmeler
+menu-view-megalist-sidebar =
+    .label = Parolalar
 menu-view-full-zoom =
     .label = Yakınlaştırma
     .accesskey = Y
 menu-view-full-zoom-enlarge =
-    .label = Yaklaştır
+    .label = Yakınlaştır
     .accesskey = Y
 menu-view-full-zoom-reduce =
     .label = Uzaklaştır
@@ -195,7 +197,7 @@ menu-view-enter-readerview =
     .accesskey = O
 # This should match reader-view-close-button in browser.ftl
 menu-view-close-readerview =
-    .label = Okuyucu Görünümü'nü kapat
+    .label = Okuyucu görünümünü kapat
     .accesskey = O
 
 ##

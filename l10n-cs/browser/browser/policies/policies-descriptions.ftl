@@ -21,6 +21,8 @@ policy-AppUpdatePin =
     }
 policy-AppUpdateURL = Nastavení vlastní URL pro aktualizace aplikace.
 policy-Authentication = Konfigurace integrované autentizace webových stránek, které ji podporují.
+policy-AutofillAddressEnabled = Povolí automatické doplňování adres.
+policy-AutofillCreditCardEnabled = Povolí automatické vyplňování metod platby.
 policy-AutoLaunchProtocolsFromOrigins = Seznam externích protokolů, které lze použít z uvedených originů bez varování uživatele.
 policy-BackgroundAppUpdate2 = Povolení nebo zákaz aktualizací na pozadí.
 policy-BlockAboutAddons = Zablokování přístupu do správce doplňků (about:addons).
@@ -30,6 +32,7 @@ policy-BlockAboutSupport = Zablokování přístupu na stránku s technickými i
 policy-Bookmarks = Vytvoření záložek na liště, v nabídce nebo vybrané složce.
 policy-CaptivePortal = Povolení nebo zakázání podpory captive portálů.
 policy-CertificatesDescription = Přidat certifikáty nebo použít vestavěné certifikáty.
+policy-ContentAnalysis = Povolení nebo zakázání připojení k agentovi pro prevenci ztráty dat.
 policy-Cookies = Pravidla pro ukládání nebo blokování cookies.
 # Containers in this context is referring to container tabs in Firefox.
 policy-Containers = Nastavení pravidel souvisejících s kontejnery.
@@ -44,8 +47,11 @@ policy-DisableBuiltinPDFViewer =
     }
 policy-DisableDefaultBrowserAgent = Zabraňuje „výchozímu agentovi prohlížeče“ provádět jakékoliv akce. Dostupné pouze pro Windows, ostatní platformy agenty nemají.
 policy-DisableDeveloperTools = Blokování přístupu k nástrojům pro vývojáře.
+policy-DisableEncryptedClientHello = Zakáže použití funkce TLS Encrypted Client Hello (ECH).
 policy-DisableFeedbackCommands = Blokování odeslání zpětné vazby z nabídky Nápověda (volby Odeslat zpětnou vazbu a Nahlásit klamavou stránku).
 policy-DisableFirefoxAccounts = Vypnutí služeb používajících { -fxaccount-brand-name(case: "acc", capitalization: "lower") }, včetně Syncu.
+# This string is in the process of being deprecated in favor of policy-DisableAccounts.
+policy-DisableFirefoxAccounts1 = Zakáže služby vyžadující účty, včetně synchronizace.
 # Firefox Screenshots is the name of the feature, and should not be translated.
 policy-DisableFirefoxScreenshots = Vypnutí funkce Firefox Screenshots.
 policy-DisableFirefoxStudies =
@@ -154,6 +160,7 @@ policy-SSLVersionMax = Nastavení maximální verze SSL.
 policy-SSLVersionMin = Nastavení minimální verze SSL.
 policy-StartDownloadsInTempDirectory = Vynutí spuštění stahování v místním dočasném umístění místo výchozího adresáře pro stažené soubory.
 policy-SupportMenu = Přidání vlastní položky nabídky s nápovědou.
+policy-TranslateEnabled = Povolí nebo zakáže překlad webových stránek.
 policy-UserMessaging = Nezobrazovat uživateli určité zprávy.
 policy-UseSystemPrintDialog = Vytisknout pomocí systémového dialogu.
 # “format” refers to the format used for the value of this policy.

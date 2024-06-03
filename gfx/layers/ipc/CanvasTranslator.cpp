@@ -13,6 +13,7 @@
 #include "mozilla/gfx/DrawTargetWebgl.h"
 #include "mozilla/gfx/gfxVars.h"
 #include "mozilla/gfx/GPUParent.h"
+#include "mozilla/gfx/GPUProcessManager.h"
 #include "mozilla/gfx/Logging.h"
 #include "mozilla/ipc/Endpoint.h"
 #include "mozilla/layers/BufferTexture.h"
@@ -20,6 +21,7 @@
 #include "mozilla/layers/ImageDataSerializer.h"
 #include "mozilla/layers/SharedSurfacesParent.h"
 #include "mozilla/layers/TextureClient.h"
+#include "mozilla/layers/VideoBridgeParent.h"
 #include "mozilla/StaticPrefs_gfx.h"
 #include "mozilla/SyncRunnable.h"
 #include "mozilla/TaskQueue.h"
@@ -111,6 +113,8 @@ static bool CreateAndMapShmem(RefPtr<ipc::SharedMemoryBasic>& aShmem,
   return true;
 }
 
+StaticRefPtr<gfx::SharedContextWebgl> CanvasTranslator::sSharedContext;
+
 bool CanvasTranslator::EnsureSharedContextWebgl() {
   if (!mSharedContext || mSharedContext->IsContextLost()) {
     if (mSharedContext) {
@@ -120,7 +124,14 @@ bool CanvasTranslator::EnsureSharedContextWebgl() {
         mRemoteTextureOwner->ClearRecycledTextures();
       }
     }
-    mSharedContext = gfx::SharedContextWebgl::Create();
+    // Check if the global shared context is still valid. If not, instantiate
+    // a new one before we try to use it.
+    if (!sSharedContext || sSharedContext->IsContextLost()) {
+      sSharedContext = gfx::SharedContextWebgl::Create();
+    }
+    mSharedContext = sSharedContext;
+    // If we can't get a new context, then the only thing left to do is block
+    // new canvases.
     if (!mSharedContext || mSharedContext->IsContextLost()) {
       mSharedContext = nullptr;
       BlockCanvas();
@@ -130,16 +141,25 @@ bool CanvasTranslator::EnsureSharedContextWebgl() {
   return true;
 }
 
+void CanvasTranslator::Shutdown() {
+  if (sSharedContext) {
+    gfx::CanvasRenderThread::Dispatch(NS_NewRunnableFunction(
+        "CanvasTranslator::Shutdown", []() { sSharedContext = nullptr; }));
+  }
+}
+
 mozilla::ipc::IPCResult CanvasTranslator::RecvInitTranslator(
-    TextureType aTextureType, gfx::BackendType aBackendType,
-    Handle&& aReadHandle, nsTArray<Handle>&& aBufferHandles,
-    uint64_t aBufferSize, CrossProcessSemaphoreHandle&& aReaderSem,
+    TextureType aTextureType, TextureType aWebglTextureType,
+    gfx::BackendType aBackendType, Handle&& aReadHandle,
+    nsTArray<Handle>&& aBufferHandles, uint64_t aBufferSize,
+    CrossProcessSemaphoreHandle&& aReaderSem,
     CrossProcessSemaphoreHandle&& aWriterSem) {
   if (mHeaderShmem) {
     return IPC_FAIL(this, "RecvInitTranslator called twice.");
   }
 
   mTextureType = aTextureType;
+  mWebglTextureType = aWebglTextureType;
   mBackendType = aBackendType;
   mOtherPid = OtherPid();
 
@@ -637,7 +657,11 @@ bool CanvasTranslator::HandleExtensionEvent(int32_t aType) {
   }
 }
 
-void CanvasTranslator::BeginTransaction() { mIsInTransaction = true; }
+void CanvasTranslator::BeginTransaction() {
+  PROFILER_MARKER_TEXT("CanvasTranslator", GRAPHICS, {},
+                       "CanvasTranslator::BeginTransaction"_ns);
+  mIsInTransaction = true;
+}
 
 void CanvasTranslator::Flush() {
 #if defined(XP_WIN)
@@ -728,9 +752,15 @@ bool CanvasTranslator::CheckForFreshCanvasDevice(int aLineNumber) {
     NotifyDeviceChanged();
   }
 
-  RefPtr<Runnable> runnable = NS_NewRunnableFunction(
-      "CanvasTranslator NotifyDeviceReset",
-      []() { gfx::GPUParent::GetSingleton()->NotifyDeviceReset(); });
+  RefPtr<Runnable> runnable =
+      NS_NewRunnableFunction("CanvasTranslator NotifyDeviceReset", []() {
+        if (XRE_IsGPUProcess()) {
+          gfx::GPUParent::GetSingleton()->NotifyDeviceReset();
+        } else {
+          gfx::GPUProcessManager::Get()->OnInProcessDeviceReset(
+              /* aTrackThreshold */ false);
+        }
+      });
 
   // It is safe to wait here because only the Compositor thread waits on us and
   // the main thread doesn't wait on the compositor thread in the GPU process.
@@ -1025,6 +1055,8 @@ bool CanvasTranslator::UnlockTexture(int64_t aTextureId) {
 }
 
 bool CanvasTranslator::PresentTexture(int64_t aTextureId, RemoteTextureId aId) {
+  AUTO_PROFILER_MARKER_TEXT("CanvasTranslator", GRAPHICS, {},
+                            "CanvasTranslator::PresentTexture"_ns);
   auto result = mTextureInfo.find(aTextureId);
   if (result == mTextureInfo.end()) {
     return false;
@@ -1033,7 +1065,8 @@ bool CanvasTranslator::PresentTexture(int64_t aTextureId, RemoteTextureId aId) {
   RemoteTextureOwnerId ownerId = info.mRemoteTextureOwnerId;
   if (gfx::DrawTargetWebgl* webgl = info.GetDrawTargetWebgl()) {
     EnsureRemoteTextureOwner(ownerId);
-    if (webgl->CopyToSwapChain(aId, ownerId, mRemoteTextureOwner)) {
+    if (webgl->CopyToSwapChain(mWebglTextureType, aId, ownerId,
+                               mRemoteTextureOwner)) {
       return true;
     }
     if (mSharedContext && mSharedContext->IsContextLost()) {
@@ -1128,6 +1161,13 @@ void CanvasTranslator::ClearTextureInfo() {
   mTextureInfo.clear();
   mDrawTargets.Clear();
   mSharedContext = nullptr;
+  // If the global shared context's ref is the last ref left, then clear out
+  // any internal caches and textures from the context, but still keep it
+  // alive. This saves on startup costs while not contributing significantly
+  // to memory usage.
+  if (sSharedContext && sSharedContext->hasOneRef()) {
+    sSharedContext->ClearCaches();
+  }
   mBaseDT = nullptr;
   if (mReferenceTextureData) {
     mReferenceTextureData->Unlock();
@@ -1145,6 +1185,46 @@ void CanvasTranslator::ClearTextureInfo() {
 already_AddRefed<gfx::SourceSurface> CanvasTranslator::LookupExternalSurface(
     uint64_t aKey) {
   return mSharedSurfacesHolder->Get(wr::ToExternalImageId(aKey));
+}
+
+// Check if the surface descriptor describes a GPUVideo texture for which we
+// only have an opaque source/handle from SurfaceDescriptorRemoteDecoder to
+// derive the actual texture from.
+static bool SDIsNullRemoteDecoder(const SurfaceDescriptor& sd) {
+  return sd.type() == SurfaceDescriptor::TSurfaceDescriptorGPUVideo &&
+         sd.get_SurfaceDescriptorGPUVideo()
+                 .get_SurfaceDescriptorRemoteDecoder()
+                 .subdesc()
+                 .type() == RemoteDecoderVideoSubDescriptor::Tnull_t;
+}
+
+already_AddRefed<gfx::SourceSurface>
+CanvasTranslator::LookupSourceSurfaceFromSurfaceDescriptor(
+    const SurfaceDescriptor& aDesc) {
+  if (!SDIsNullRemoteDecoder(aDesc)) {
+    return nullptr;
+  }
+
+  const auto& sdrd = aDesc.get_SurfaceDescriptorGPUVideo()
+                         .get_SurfaceDescriptorRemoteDecoder();
+  RefPtr<VideoBridgeParent> parent =
+      VideoBridgeParent::GetSingleton(sdrd.source());
+  if (!parent) {
+    MOZ_ASSERT_UNREACHABLE("unexpected to be called");
+    gfxCriticalNote << "TexUnpackSurface failed to get VideoBridgeParent";
+    return nullptr;
+  }
+  RefPtr<TextureHost> texture =
+      parent->LookupTexture(mContentId, sdrd.handle());
+  if (!texture) {
+    MOZ_ASSERT_UNREACHABLE("unexpected to be called");
+    gfxCriticalNote << "TexUnpackSurface failed to get TextureHost";
+    return nullptr;
+  }
+
+  RefPtr<gfx::DataSourceSurface> surf = texture->GetAsSurface();
+
+  return surf.forget();
 }
 
 void CanvasTranslator::CheckpointReached() { CheckAndSignalWriter(); }
