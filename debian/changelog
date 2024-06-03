@@ -1,3 +1,10 @@
+firefox (126.0.1-1deepin1) unstable; urgency=medium
+
+  * Import LoongArch patches from https://github.com/AOSC-Tracking/firefox @ aosc/v126.0.1.
+  * Allow AMD GPUs to use VA-API for accelerated video decoding.
+
+ -- Mingcong Bai <baimingcong@uniontech.com>  Mon, 03 Jun 2024 08:30:52 +0200
+
 firefox (126.0.1-1) unstable; urgency=medium
 
   * New upstream release.
