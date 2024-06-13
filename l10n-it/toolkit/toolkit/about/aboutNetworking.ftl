@@ -4,6 +4,7 @@
 
 about-networking-title = Informazioni sulla rete
 about-networking-http = HTTP
+about-networking-http-clear-cache-button = Cancella cache HTTP
 about-networking-sockets = Socket
 about-networking-dns = DNS
 about-networking-dns-clear-cache-button = Cancella cache DNS
@@ -65,3 +66,4 @@ about-networking-networkid-is-up = Il collegamento è attivo
 about-networking-networkid-status-known = Lo stato del collegamento è noto
 
 ##
+

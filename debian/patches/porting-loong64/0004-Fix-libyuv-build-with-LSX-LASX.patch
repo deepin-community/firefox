@@ -1,4 +1,4 @@
-From 8a4c78334f464a369da16006aea0661224e8131d Mon Sep 17 00:00:00 2001
+From e67deef1678a29a30d672ec9ef33c01ae18381aa Mon Sep 17 00:00:00 2001
 From: WANG Xuerui <xen0n@gentoo.org>
 Date: Sun, 31 Dec 2023 13:16:33 +0800
 Subject: [PATCH 4/9] Fix libyuv build with LSX & LASX

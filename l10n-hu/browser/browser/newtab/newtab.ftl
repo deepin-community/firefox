@@ -272,6 +272,9 @@ newtab-custom-recent-subtitle = Válogatás a legutóbbi webhelyekből és tarta
 newtab-custom-recent-toggle =
     .label = Legutóbbi tevékenység
     .description = Válogatás a legutóbbi webhelyekből és tartalmakból
+newtab-custom-weather-toggle =
+    .label = Időjárás
+    .description = A mai előrejelzés egy pillantásra
 newtab-custom-close-button = Bezárás
 newtab-custom-settings = További beállítások kezelése
 
@@ -295,3 +298,32 @@ newtab-wallpaper-dark-city = Lila városi táj
 #   $author_string (String) - The name of the creator of the photo.
 #   $webpage_string (String) - The name of the webpage where the photo is located.
 newtab-wallpaper-attribution = Fénykép: <a data-l10n-name="name-link">{ $author_string }</a> itt: <a data-l10n-name="webpage-link">{ $webpage_string }</a>
+
+## New Tab Weather
+
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-see-forecast =
+    .title = Előrejelzés megtekintése itt: { $provider }
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-sponsored = { $provider } ∙ Szponzorálva
+newtab-weather-menu-change-location = Hely módosítása
+newtab-weather-change-location-search-input = Keresési hely
+newtab-weather-menu-weather-display = Időjárás-kijelző
+# Display options are:
+# - Simple: Displays a current weather condition icon and the current temperature
+# - Detailed: Include simple information plus a short text summary: e.g. "Mostly cloudy"
+newtab-weather-menu-weather-display-option-simple = Egyszerű
+newtab-weather-menu-change-weather-display-simple = Átváltás egyszerű nézetre
+newtab-weather-menu-weather-display-option-detailed = Részletek
+newtab-weather-menu-change-weather-display-detailed = Átváltás részletes nézetre
+newtab-weather-menu-temperature-units = Hőmérséklet-egységek
+newtab-weather-menu-temperature-option-fahrenheit = Fahrenheit
+newtab-weather-menu-temperature-option-celsius = Celsius
+newtab-weather-menu-change-temperature-units-fahrenheit = Váltás Fahrenheitre
+newtab-weather-menu-change-temperature-units-celsius = Váltás Celsiusra
+newtab-weather-menu-hide-weather = Időjárás elrejtése az Új lapon
+newtab-weather-menu-learn-more = További tudnivalók
+# This message is shown if user is working offline
+newtab-weather-error-not-available = Az időjárásadatok most nem érhetők el

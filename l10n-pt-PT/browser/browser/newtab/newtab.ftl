@@ -262,9 +262,6 @@ newtab-custom-row-selector =
 newtab-custom-sponsored-sites = Atalhos patrocinados
 newtab-custom-pocket-title = Recomendado por { -pocket-brand-name }
 newtab-custom-pocket-subtitle = Conteúdo excecional com curadoria de { -pocket-brand-name }, parte da família { -brand-product-name }
-newtab-custom-pocket-toggle =
-    .label = Recomendado por { -pocket-brand-name }
-    .description = Conteúdo excecional com curadoria de { -pocket-brand-name }, parte da família { -brand-product-name }
 newtab-custom-stories-toggle =
     .label = Histórias recomendadas
     .description = Conteúdo excepcional com curadoria da família { -brand-product-name }
@@ -275,5 +272,58 @@ newtab-custom-recent-subtitle = Uma seleção de sites e conteúdos recentes
 newtab-custom-recent-toggle =
     .label = Atividade recente
     .description = Uma seleção de sites e conteúdos recentes
+newtab-custom-weather-toggle =
+    .label = Meteorologia
+    .description = Visão geral da meteorologia para hoje
 newtab-custom-close-button = Fechar
 newtab-custom-settings = Gerir mais definições
+
+## New Tab Wallpapers
+
+newtab-wallpaper-title = Fundos
+newtab-wallpaper-reset = Repor predefinições
+newtab-wallpaper-light-red-panda = Panda vermelho
+newtab-wallpaper-light-mountain = Montanha Branca
+newtab-wallpaper-light-sky = Céu com nuvens cor-de-rosa e roxas.
+newtab-wallpaper-light-color = Formas azuis, cor-de-rosa e amarelas.
+newtab-wallpaper-light-landscape = Paisagem montanhosa envolta em névoa azul.
+newtab-wallpaper-light-beach = Praia com uma palmeira
+newtab-wallpaper-dark-aurora = Aurora Boreal
+newtab-wallpaper-dark-color = Formas em vermelho e azul
+newtab-wallpaper-dark-panda = Panda-vermelho escondido na floresta
+newtab-wallpaper-dark-sky = Paisagem da cidade com um pôr do sol
+newtab-wallpaper-dark-mountain = Paisagem montanhosa
+newtab-wallpaper-dark-city = Paisagem urbana em tons de roxo
+# Variables
+#   $author_string (String) - The name of the creator of the photo.
+#   $webpage_string (String) - The name of the webpage where the photo is located.
+newtab-wallpaper-attribution = Fotografia de <a data-l10n-name="name-link">{ $author_string }</a> em <a data-l10n-name="webpage-link">{ $webpage_string }</a>
+
+## New Tab Weather
+
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-see-forecast =
+    .title = Ver a previsão em { $provider }
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-sponsored = { $provider } · Patrocinado
+newtab-weather-menu-change-location = Alterar localização
+newtab-weather-change-location-search-input = Pesquisar localização
+newtab-weather-menu-weather-display = Apresentação da meteorologia
+# Display options are:
+# - Simple: Displays a current weather condition icon and the current temperature
+# - Detailed: Include simple information plus a short text summary: e.g. "Mostly cloudy"
+newtab-weather-menu-weather-display-option-simple = Simples
+newtab-weather-menu-change-weather-display-simple = Alterar para a vista simples
+newtab-weather-menu-weather-display-option-detailed = Detalhada
+newtab-weather-menu-change-weather-display-detailed = Alterar para a vista detalhada
+newtab-weather-menu-temperature-units = Unidades de temperatura
+newtab-weather-menu-temperature-option-fahrenheit = Fahrenheit
+newtab-weather-menu-temperature-option-celsius = Celsius
+newtab-weather-menu-change-temperature-units-fahrenheit = Alterar para Fahrenheit
+newtab-weather-menu-change-temperature-units-celsius = Alterar para Celsius
+newtab-weather-menu-hide-weather = Ocultar a meteorologia no novo separador
+newtab-weather-menu-learn-more = Saber mais
+# This message is shown if user is working offline
+newtab-weather-error-not-available = Atualmente não estão disponíveis informações de meteorologia.

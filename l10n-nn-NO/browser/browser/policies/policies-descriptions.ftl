@@ -39,8 +39,11 @@ policy-DisableAppUpdate = Hindre oppdatering av nettlesaren.
 policy-DisableBuiltinPDFViewer = Deaktiver PDF.js, det innebygde PDF-visingsprogrammet i { -brand-short-name }
 policy-DisableDefaultBrowserAgent = Hindre at standardnettlesaren gjer noko. Dette gjeld berre Windows; andre plattformer har ikkje agenten.
 policy-DisableDeveloperTools = Blokker tilgang til utviklarverktøya.
+policy-DisableEncryptedClientHello = Deaktiver bruk av TLS-funksjonen Encrypted Client Hello (ECH).
 policy-DisableFeedbackCommands = Deaktiver kommandoar for å sende tilbakemelding frå Hjelp-menyen (Gje tilbakemelding og Rapporter villeiande nettstad).
 policy-DisableFirefoxAccounts = Deaktiver { -fxaccount-brand-name }-baserte tenester, inkludert Sync.
+# This string is in the process of being deprecated in favor of policy-DisableAccounts.
+policy-DisableFirefoxAccounts1 = Deaktiver kontobaserte tenester, inkludert synkronisering.
 # Firefox Screenshots is the name of the feature, and should not be translated.
 policy-DisableFirefoxScreenshots = Deaktiver funksjonen Firefox Screenshots
 policy-DisableFirefoxStudies = Hindre { -brand-short-name } frå å køyre undersøkingar.
@@ -81,6 +84,8 @@ policy-Handlers = Konfigurer standard applikasjonshandsamar.
 policy-HardwareAcceleration = Om inaktiv, slå av maskinvareakselerasjon.
 # “lock” means that the user won’t be able to change this setting
 policy-Homepage = Still inn og eventuelt lås startsida.
+policy-HttpAllowlist = Opphav som ikkje vil bli oppgradert til HTTPS.
+policy-HttpsOnlyMode = Tillat at berre-HTTPS-modus vert aktivert.
 policy-InstallAddonsPermission = Tillat visse nettstadar å installere tillegg.
 policy-LegacyProfiles = Slå av funksjonen som tvingar fram ein eigen profil for kvar installasjon
 
@@ -105,6 +110,9 @@ policy-OverrideFirstRunPage = Erstatt sida som vert vist ved første oppstart. L
 policy-OverridePostUpdatePage = Byt ut «Kva er nytt»-sida som vert vist etter ei oppdatering. La policyen stå tom viss sida etter ei oppdatering skal deaktiverast.
 policy-PasswordManagerEnabled = Slå på lagring av passord til passordhandsamaren.
 policy-PasswordManagerExceptions = Hindre { -brand-short-name } frå å lagre passord for bestemte nettstadar.
+# Post-quantum refers to cryptography that is safe from attacks by quantum
+# computers. See https://en.wikipedia.org/wiki/Post-quantum_cryptography
+policy-PostQuantumKeyAgreementEnabled = Aktiver post-kvantenøkkelavtale for TLS.
 # PDF.js and PDF should not be translated
 policy-PDFjs = Deaktiver eller konfigurer PDF.js, det innebygde PDF-visingsprogrammet i { -brand-short-name }.
 policy-Permissions2 = Konfigurer løyve for kamera, mikrofon, plassering, varsel og auto-avspeling.

@@ -1,4 +1,4 @@
-From 49689db5adbc39e570659fe72b49d7ea27833f4b Mon Sep 17 00:00:00 2001
+From bf3e7aec47504c75c176542850e917e29465f41d Mon Sep 17 00:00:00 2001
 From: Icenowy Zheng <uwu@icenowy.me>
 Date: Fri, 8 Mar 2024 17:24:55 +0800
 Subject: [PATCH 6/9] Keep unsigned 32-bit parameter sign-extended in register.

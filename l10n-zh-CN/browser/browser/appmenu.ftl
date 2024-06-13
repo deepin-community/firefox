@@ -83,6 +83,10 @@ appmenu-remote-tabs-showmore =
 appmenu-remote-tabs-showinactive =
     .label = 显示 { $count } 个休眠标签页
     .tooltiptext = 显示此设备上的休眠标签页
+# This is shown as the label for an element to show inactive tabs from this device.
+appmenu-remote-tabs-show-inactive-tabs =
+    .label = 休眠标签页
+    .tooltiptext = 查看本设备的休眠标签页
 # This is shown beneath the name of a device when that device has no open tabs
 appmenu-remote-tabs-notabs = 没有打开的标签页
 # This is shown when Sync is configured but syncing tabs is disabled.
@@ -275,6 +279,6 @@ appmenuitem-sign-in-account = 登录账户
 appmenuitem-monitor-title = { -monitor-brand-short-name }
 appmenuitem-monitor-description = 接收数据外泄警报
 appmenuitem-relay-title = { -relay-brand-short-name }
-appmenuitem-relay-description = 隐藏真实邮箱地址和电话号码
+appmenuitem-relay-description = 掩藏真实邮箱地址和电话号码
 appmenuitem-vpn-title = { -mozilla-vpn-brand-name }
 appmenuitem-vpn-description = 保护在线活动

@@ -271,6 +271,9 @@ newtab-custom-recent-subtitle = Et utvalg av nylige nettsteder og innhold
 newtab-custom-recent-toggle =
     .label = Nylig aktivitet
     .description = Et utvalg av nylige nettsteder og innhold
+newtab-custom-weather-toggle =
+    .label = Vær
+    .description = Dagens værmelding i korte trekk
 newtab-custom-close-button = Lukk
 newtab-custom-settings = Behandle flere innstillinger
 
@@ -294,3 +297,32 @@ newtab-wallpaper-dark-city = Lilla bylandskap
 #   $author_string (String) - The name of the creator of the photo.
 #   $webpage_string (String) - The name of the webpage where the photo is located.
 newtab-wallpaper-attribution = Bilde av <a data-l10n-name="name-link">{ $author_string }</a> på <a data-l10n-name="webpage-link">{ $webpage_string }</a>
+
+## New Tab Weather
+
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-see-forecast =
+    .title = Se værmelding hos { $provider }.
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-sponsored = { $provider } ∙ Sponset
+newtab-weather-menu-change-location = Endre plassering
+newtab-weather-change-location-search-input = Søk plassering
+newtab-weather-menu-weather-display = Værvisning
+# Display options are:
+# - Simple: Displays a current weather condition icon and the current temperature
+# - Detailed: Include simple information plus a short text summary: e.g. "Mostly cloudy"
+newtab-weather-menu-weather-display-option-simple = Enkel
+newtab-weather-menu-change-weather-display-simple = Bytt til enkel visning
+newtab-weather-menu-weather-display-option-detailed = Detaljert
+newtab-weather-menu-change-weather-display-detailed = Bytt til detaljert visning
+newtab-weather-menu-temperature-units = Temperaturenheter
+newtab-weather-menu-temperature-option-fahrenheit = Fahrenheit
+newtab-weather-menu-temperature-option-celsius = Celsius
+newtab-weather-menu-change-temperature-units-fahrenheit = Bytt til Fahrenheit
+newtab-weather-menu-change-temperature-units-celsius = Bytt til Celsius
+newtab-weather-menu-hide-weather = Skjul været på ny fane
+newtab-weather-menu-learn-more = Les mer
+# This message is shown if user is working offline
+newtab-weather-error-not-available = Værdata er ikke tilgjengelig akkurat nå.

@@ -205,6 +205,9 @@ containers-remove-alert-msg =
     }
 containers-remove-ok-button = Fjern denne behaldaren
 containers-remove-cancel-button = Ikkje fjern denne behaldaren
+settings-tabs-show-image-in-preview =
+    .label = Vis ei førehandsvising av eit bilde når du held musepeikaren på ei fane
+    .accessKey = f
 
 ## General Section - Language & Appearance
 
@@ -596,6 +599,10 @@ home-prefs-recent-activity-description = Eit utval av nylige nettstadar og innha
 home-prefs-snippets-header =
     .label = Snuttar
 home-prefs-snippets-description-new = Tips og nyheiter frå { -vendor-short-name } og { -brand-product-name }
+home-prefs-weather-header =
+    .label = Vêr
+home-prefs-weather-description = Vêrmeldinga i dag, i korte trekk
+home-prefs-weather-learn-more-link = Les meir
 # Variables:
 #   $num (number) - Number of rows displayed
 home-prefs-sections-rows-option =
@@ -710,6 +717,8 @@ sync-profile-picture =
 sync-profile-picture-with-alt =
     .tooltiptext = Endre profilbilde
     .alt = Endre profilbilde
+sync-profile-picture-account-problem =
+    .alt = Kontoprofilbilde
 fxa-login-rejected-warning =
     .alt = Åtvaring
 sync-sign-out =
@@ -886,6 +895,9 @@ forms-breach-alerts =
 forms-breach-alerts-learn-more-link = Les meir
 preferences-relay-integration-checkbox =
     .label = Foreslå { -relay-brand-name } e-postalias for å beskytte e-postadressa di
+preferences-relay-integration-checkbox2 =
+    .label = Føreslå { -relay-brand-name } e-postalias for å beskytte e-postadressa di
+    .accesskey = F
 relay-integration-learn-more-link = Les meir
 # Checkbox which controls filling saved logins into fields automatically when they appear, in some cases without user interaction.
 forms-fill-logins-and-passwords =
@@ -894,12 +906,19 @@ forms-fill-logins-and-passwords =
 forms-saved-logins =
     .label = Lagre innloggingar…
     .accesskey = L
+# Checkbox which controls filling saved logins into fields automatically when they appear, in some cases without user interaction.
+forms-fill-usernames-and-passwords =
+    .label = Fyll ut brukarnamn og passord automatisk
+    .accesskey = F
 forms-saved-passwords =
     .label = Lagra passord
     .accesskey = L
 forms-primary-pw-use =
     .label = Bruk eit hovudpassord
     .accesskey = B
+# This operation requires the user to authenticate with the operating system (device sign-in)
+forms-os-reauth =
+    .label = Krev einingsinnlogging for å fylle ut og behandle passord
 forms-primary-pw-learn-more-link = Les meir
 # This string uses the former name of the Primary Password feature
 # ("Master Password" in English) so that the preferences can be found
@@ -932,14 +951,38 @@ primary-password-os-auth-dialog-message-win = Skriv inn innloggingsinformasjonen
 # notes are only valid for English. Please test in your locale.
 primary-password-os-auth-dialog-message-macosx = lag eit hovudpassord
 master-password-os-auth-dialog-caption = { -brand-full-name }
+# The macOS string is preceded by the operating system with "Firefox is trying to ".
+autofill-creditcard-os-dialog-message =
+    { PLATFORM() ->
+        [macos] endre innstillingane for betalingsmåtar
+       *[other] { -brand-short-name } prøver å endre innstillingane for betalingsmåtar. Bruk einingsinnlogginga di for å tillate dette.
+    }
+autofill-creditcard-os-auth-dialog-caption = { -brand-full-name }
 
 ## Privacy section - Autofill
 
 pane-privacy-autofill-header = Autofyll
+autofill-addresses-checkbox = Lagre og fyll ut adresser
+    .accesskey = L
 autofill-saved-addresses-button = Lagra adresser
     .accesskey = L
+autofill-payment-methods-checkbox-message = Lagre og fyll inn betalingsmåtar
+    .accesskey = L
+autofill-payment-methods-checkbox-submessage = Inkluderer kreditt- og debetkort
+    .accesskey = I
 autofill-saved-payment-methods-button = Lagra betaslingsmetodar
     .accesskey = a
+autofill-reauth-checkbox =
+    { PLATFORM() ->
+        [macos] Krev macOS-autentisering for å fylle ut og redigere betalingsmåtar.
+        [windows] Krev Windows-autentisering for å fylle ut og redigere betalingsmåtar.
+        [linux] Krev Linux-autentisering for å fylle ut og redigere betalingsmåtar.
+       *[other] Krev autentisering for å fylle ut og redigere betalingsmåtar.
+    }
+    .accesskey = a
+# This operation requires the user to authenticate with the operating system (device sign-in)
+autofill-reauth-payment-methods-checkbox = Krev einingsinnlogging for å fylle ut og behandle betalingsmåtar
+    .accesskey = o
 
 ## Privacy Section - History
 
@@ -995,6 +1038,7 @@ sitedata-delete-on-close =
     .label = Slett infokapslar og nettstaddata når { -brand-short-name } stenger
     .accesskey = S
 sitedata-delete-on-close-private-browsing = I permanent privat nettlesingsmodus vil infokapslar og nettstaddata alltid bli sletta når { -brand-short-name } er avslutta.
+sitedata-delete-on-close-private-browsing2 = Basert på historikkinnstillingane dine, slettar { -brand-short-name } infokapslar og nettstadsdata frå økta di når du lèt att nettlesaren.
 sitedata-allow-cookies-option =
     .label = Tillat infokapslar og nettsidedata
     .accesskey = a
@@ -1035,6 +1079,7 @@ cookie-banner-handling-description = { -brand-short-name } prøver automatisk å
 ## Privacy Section - Cookie Banner Blocking
 
 cookie-banner-blocker-header = Blokkering av infokapselbanner
+cookie-banner-blocker-description = Når ein nettstad spør om dei kan bruke infokapslar i privat nettlesingsmodus, så avviser { -brand-short-name } førespurnaden automatisk for deg. Berre på støtta nettstadar.
 cookie-banner-learn-more = Les meir
 forms-handle-cookie-banners =
     .label = Reduser infokapselbanner
@@ -1320,6 +1365,7 @@ httpsonly-radio-disabled =
 
 preferences-doh-header = DNS over HTTPS
 preferences-doh-description = Domain Name System (DNS) over HTTPS sender førespurnaden din om eit domennamn via ei kryptert tilkopling, lagar ein sikker DNS og gjer det vanskelegare for andre å sjå kva for nettstad du er i ferd med å besøkje.
+preferences-doh-description2 = Domain Name System (DNS) over HTTPS sender førespurnaden din om eit domenenamn gjennom ei kryptert tilkopling, og gir eit sikkert DNS og gjer det vanskelegare for andre å sjå kva for nettstad du er i ferd med å besøke.
 # Variables:
 #   $status (string) - The status of the DoH connection
 preferences-doh-status = Status: { $status }

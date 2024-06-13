@@ -84,6 +84,8 @@ policy-Handlers = Nastaví predvolené aplikácie pre odkazy a typy súborov.
 policy-HardwareAcceleration = Ak je nastavená hodnota false, vypne hardvérové urýchľovanie.
 # “lock” means that the user won’t be able to change this setting
 policy-Homepage = Nastaví a v prípade potreby uzamkne domovskú stránku.
+policy-HttpAllowlist = Zdroje, ktoré nebudú inovované na HTTPS.
+policy-HttpsOnlyMode = Povolí zapnutie režimu "Len HTTPS".
 policy-InstallAddonsPermission = Povolí určitým webovým stránkam inštalovať doplnky.
 policy-LegacyProfiles = Vypne funkciu, ktorá vynucuje samostatný profil pre každú inštaláciu aplikácie.
 
@@ -108,6 +110,9 @@ policy-OverrideFirstRunPage = Nastaví vlastnú stránku pri prvom spustení. Ak
 policy-OverridePostUpdatePage = Nastaví vlastnú stránku po aktualizácii aplikácie. Ak nechcete po aktualizácii zobrazovať žiadnu stránku, nastavte toto pravidlo ako prázdne.
 policy-PasswordManagerEnabled = Povolí ukladanie hesiel do správcu hesiel.
 policy-PasswordManagerExceptions = Zabráni { -brand-short-name(case: "gen") } ukladať heslá pre konkrétne stránky.
+# Post-quantum refers to cryptography that is safe from attacks by quantum
+# computers. See https://en.wikipedia.org/wiki/Post-quantum_cryptography
+policy-PostQuantumKeyAgreementEnabled = Povolí postkvantovú dohodu o kľúčoch pre TLS.
 # PDF.js and PDF should not be translated
 policy-PDFjs = Zablokuje alebo nastaví PDF prehliadač PDF.js zabudovaný v prehliadači { -brand-short-name }.
 policy-Permissions2 = Nastaví povolenia pre kameru, mikrofón, polohu, upozornenia a automatické prehrávanie.

@@ -84,6 +84,8 @@ policy-Handlers = Standaard toepassinghandlers configureren
 policy-HardwareAcceleration = Wanneer false, hardwareversnelling uitschakelen.
 # “lock” means that the user won’t be able to change this setting
 policy-Homepage = De startpagina instellen en optioneel vergrendelen.
+policy-HttpAllowlist = Oorspronkelijke bronnen die niet naar HTTPS worden geüpgraded.
+policy-HttpsOnlyMode = Alleen-HTTPS-modus toestaan om in te schakelen.
 policy-InstallAddonsPermission = Toestaan dat bepaalde websites add-ons installeren.
 policy-LegacyProfiles = Functie om een afzonderlijk profiel voor elke installatie af te dwingen uitschakelen
 
@@ -108,6 +110,9 @@ policy-OverrideFirstRunPage = De pagina voor eerste keer uitvoeren vervangen. St
 policy-OverridePostUpdatePage = De pagina ‘Wat is er nieuw’ na een update vervangen. Stel deze beleidsregel in op leeg als u de betreffende pagina wilt uitschakelen.
 policy-PasswordManagerEnabled = Opslaan van wachtwoorden in de wachtwoordenbeheerder inschakelen.
 policy-PasswordManagerExceptions = Voorkomen dat { -brand-short-name } wachtwoorden voor specifieke websites opslaat.
+# Post-quantum refers to cryptography that is safe from attacks by quantum
+# computers. See https://en.wikipedia.org/wiki/Post-quantum_cryptography
+policy-PostQuantumKeyAgreementEnabled = Post-kwantumsleutelovereenkomst voor TLS inschakelen.
 # PDF.js and PDF should not be translated
 policy-PDFjs = PDF.js, de in { -brand-short-name } ingebouwde PDF-lezer, uitschakelen of instellen.
 policy-Permissions2 = Toestemmingen voor camera, microfoon, locatie, notificaties en automatisch afspelen configureren.

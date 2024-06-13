@@ -84,6 +84,8 @@ policy-Handlers = Konfiguracja domyślnych aplikacji obsługujących typy plikó
 policy-HardwareAcceleration = Wartość „fałsz” wyłącza przyspieszanie sprzętowe.
 # “lock” means that the user won’t be able to change this setting
 policy-Homepage = Ustawienie i opcjonalna blokada strony startowej.
+policy-HttpAllowlist = Źródła, które nie będą przełączane na protokół HTTPS.
+policy-HttpsOnlyMode = Zezwalanie na włączenie trybu używania wyłącznie protokołu HTTPS.
 policy-InstallAddonsPermission = Zezwalanie pewnym witrynom na instalowanie dodatków.
 policy-LegacyProfiles = Wyłączenie funkcji wymuszającej oddzielny profil dla każdej instalacji.
 
@@ -108,6 +110,9 @@ policy-OverrideFirstRunPage = Zastąpienie strony pierwszego uruchomienia. Ustaw
 policy-OverridePostUpdatePage = Zastąpienie strony „Co nowego” wyświetlanej po aktualizacji. Ustawienie tej zasady na pustą wyłączy stronę wyświetlaną po aktualizacji.
 policy-PasswordManagerEnabled = Włączenie zachowywania haseł w menedżerze haseł.
 policy-PasswordManagerExceptions = Uniemożliwienie zachowywania haseł do podanych witryn przez program { -brand-short-name }.
+# Post-quantum refers to cryptography that is safe from attacks by quantum
+# computers. See https://en.wikipedia.org/wiki/Post-quantum_cryptography
+policy-PostQuantumKeyAgreementEnabled = Włączenie postkwantowego uzgadniania klucza protokołu TLS.
 # PDF.js and PDF should not be translated
 policy-PDFjs = Wyłączenie lub konfiguracja PDF.js, wbudowanej przeglądarki plików PDF w programie { -brand-short-name }.
 policy-Permissions2 = Konfiguracja uprawnień kamery, mikrofonu, położenia, powiadomień i automatycznego odtwarzania.

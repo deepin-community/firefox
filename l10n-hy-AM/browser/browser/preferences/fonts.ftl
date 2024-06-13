@@ -18,9 +18,9 @@ fonts-langgroup-armenian =
 fonts-langgroup-bengali =
     .label = Բենգալի
 fonts-langgroup-simpl-chinese =
-    .label = Պարզեցված Չիներեն
+    .label = Պարզեցված Չինարեն
 fonts-langgroup-trad-chinese-hk =
-    .label = Ավանդական Չիներեն (Հոնգ­Կոնգ)
+    .label = Ավանդական Չինարեն (­Հոնկոնգ)
 fonts-langgroup-trad-chinese =
     .label = Ավանդական Չիներեն (Թայվան)
 fonts-langgroup-cyrillic =
@@ -99,6 +99,6 @@ fonts-allow-own =
 # Variables:
 #   $name {string, "Arial"} - Name of the default font
 fonts-label-default =
-    .label = Հիմնական՝ ({ $name })
+    .label = Սկզբնադիր ({ $name })
 fonts-label-default-unnamed =
-    .label = Լռելյայն
+    .label = Սկզբնադիր

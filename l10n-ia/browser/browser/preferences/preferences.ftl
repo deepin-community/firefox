@@ -599,6 +599,10 @@ home-prefs-recent-activity-description = Un selection de sitos e contento recent
 home-prefs-snippets-header =
     .label = Breve novas
 home-prefs-snippets-description-new = Consilios e notitias de { -vendor-short-name } e { -brand-product-name }
+home-prefs-weather-header =
+    .label = Meteo
+home-prefs-weather-description = Prevision hodierne a un colpo de oculos
+home-prefs-weather-learn-more-link = Pro saper plus
 # Variables:
 #   $num (number) - Number of rows displayed
 home-prefs-sections-rows-option =
@@ -912,6 +916,9 @@ forms-saved-passwords =
 forms-primary-pw-use =
     .label = Usar un contrasigno primari
     .accesskey = U
+# This operation requires the user to authenticate with the operating system (device sign-in)
+forms-os-reauth =
+    .label = Requirer accesso al apparato pro compilar e gerer le contrasignos
 forms-primary-pw-learn-more-link = Saper plus
 # This string uses the former name of the Primary Password feature
 # ("Master Password" in English) so that the preferences can be found
@@ -944,6 +951,13 @@ primary-password-os-auth-dialog-message-win = Pro crear un contrasigno primari, 
 # notes are only valid for English. Please test in your locale.
 primary-password-os-auth-dialog-message-macosx = Crear un contrasigno primari
 master-password-os-auth-dialog-caption = { -brand-full-name }
+# The macOS string is preceded by the operating system with "Firefox is trying to ".
+autofill-creditcard-os-dialog-message =
+    { PLATFORM() ->
+        [macos] cambiar le parametros pro le methodos de pagamento
+       *[other] { -brand-short-name } tenta cambiar le parametros pro methodos de pagamento.
+    }
+autofill-creditcard-os-auth-dialog-caption = { -brand-full-name }
 
 ## Privacy section - Autofill
 
@@ -965,6 +979,9 @@ autofill-reauth-checkbox =
         [linux] Require le authentication de Linux pro compilar e modificar le methodos de pagamento.
        *[other] Require le authentication pro compilar e modificar le methodos de pagamento.
     }
+    .accesskey = o
+# This operation requires the user to authenticate with the operating system (device sign-in)
+autofill-reauth-payment-methods-checkbox = Requirer accesso al apparato pro compilar e gerer methodos de pagamento
     .accesskey = o
 
 ## Privacy Section - History

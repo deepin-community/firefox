@@ -268,6 +268,9 @@ newtab-custom-recent-subtitle = Un selection de sitos e contento recente
 newtab-custom-recent-toggle =
     .label = Activitate recente
     .description = Un selection de sitos e contento recente
+newtab-custom-weather-toggle =
+    .label = Meteo
+    .description = Prevision hodierne a un colpo de oculos
 newtab-custom-close-button = Clauder
 newtab-custom-settings = Gerer altere parametros
 
@@ -291,3 +294,32 @@ newtab-wallpaper-dark-city = Paisage urban purpuree
 #   $author_string (String) - The name of the creator of the photo.
 #   $webpage_string (String) - The name of the webpage where the photo is located.
 newtab-wallpaper-attribution = Photo per <a data-l10n-name="name-link">{ $author_string }</a> sur <a data-l10n-name="webpage-link">{ $webpage_string }</a>
+
+## New Tab Weather
+
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-see-forecast =
+    .title = Vider prevision in { $provider }
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-sponsored = { $provider } ∙ Sponsorisate
+newtab-weather-menu-change-location = Cambiar loco
+newtab-weather-change-location-search-input = Cercar loco
+newtab-weather-menu-weather-display = Visualisation meteo
+# Display options are:
+# - Simple: Displays a current weather condition icon and the current temperature
+# - Detailed: Include simple information plus a short text summary: e.g. "Mostly cloudy"
+newtab-weather-menu-weather-display-option-simple = Simple
+newtab-weather-menu-change-weather-display-simple = Passar al vista simple
+newtab-weather-menu-weather-display-option-detailed = Detaliate
+newtab-weather-menu-change-weather-display-detailed = Passar al vista detaliate
+newtab-weather-menu-temperature-units = Unitates de temperatura
+newtab-weather-menu-temperature-option-fahrenheit = Fahrenheit
+newtab-weather-menu-temperature-option-celsius = Celsius
+newtab-weather-menu-change-temperature-units-fahrenheit = Passar a Fahrenheit
+newtab-weather-menu-change-temperature-units-celsius = Passar a Celsius
+newtab-weather-menu-hide-weather = Celar meteo sur Nove scheda
+newtab-weather-menu-learn-more = Pro saper plus
+# This message is shown if user is working offline
+newtab-weather-error-not-available = Datos meteo non es disponibile al momento.

@@ -53,6 +53,7 @@ mr1-onboarding-import-primary-button-label-attribution = Inportatu { $previous }
 mr1-onboarding-theme-header = Moldatu zure erara
 mr1-onboarding-theme-subtitle = Pertsonalizatu { -brand-short-name } itxura batekin.
 mr1-onboarding-theme-secondary-button-label = Une honetan ez
+newtab-wallpaper-onboarding-title = Probatu kolore ukitu bat
 # System theme uses operating system color settings
 mr1-onboarding-theme-label-system = Sistemaren itxura
 mr1-onboarding-theme-label-light = Argia
@@ -328,3 +329,11 @@ mr2022-onboarding-colorways-image-alt =
 
 onboarding-device-migration-title = Ongi etorri!
 onboarding-device-migration-primary-button-label = Hasi saioa
+
+## The following screens have been updated to use security and privacy focused strings:
+
+
+## New user time and familiarity survey strings
+
+# When translating "next" it means the next screen in onboarding.
+onboarding-new-user-survey-next-button-label = Hurrengoa

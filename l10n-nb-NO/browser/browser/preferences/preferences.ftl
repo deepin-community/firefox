@@ -599,6 +599,10 @@ home-prefs-recent-activity-description = Et utvalg av nylige nettsteder og innho
 home-prefs-snippets-header =
     .label = Snutter
 home-prefs-snippets-description-new = Tips og nyheter fra { -vendor-short-name } og { -brand-product-name }
+home-prefs-weather-header =
+    .label = Vær
+home-prefs-weather-description = Dagens værmelding i korte trekk
+home-prefs-weather-learn-more-link = Les mer
 # Variables:
 #   $num (number) - Number of rows displayed
 home-prefs-sections-rows-option =
@@ -912,6 +916,9 @@ forms-saved-passwords =
 forms-primary-pw-use =
     .label = Bruk et hovedpassord
     .accesskey = B
+# This operation requires the user to authenticate with the operating system (device sign-in)
+forms-os-reauth =
+    .label = Krev enhetsinnlogging for å fylle ut og behandle passord
 forms-primary-pw-learn-more-link = Les mer
 # This string uses the former name of the Primary Password feature
 # ("Master Password" in English) so that the preferences can be found
@@ -944,6 +951,13 @@ primary-password-os-auth-dialog-message-win = Skriv inn innloggingsinformasjonen
 # notes are only valid for English. Please test in your locale.
 primary-password-os-auth-dialog-message-macosx = opprett et hovedpassord
 master-password-os-auth-dialog-caption = { -brand-full-name }
+# The macOS string is preceded by the operating system with "Firefox is trying to ".
+autofill-creditcard-os-dialog-message =
+    { PLATFORM() ->
+        [macos] endre innstillingene for betalingsmåter
+       *[other] { -brand-short-name } prøver å endre innstillingene for betalingsmåter. Bruk din enhetsinnlogging for å tillate dette.
+    }
+autofill-creditcard-os-auth-dialog-caption = { -brand-full-name }
 
 ## Privacy section - Autofill
 
@@ -966,6 +980,9 @@ autofill-reauth-checkbox =
        *[other] Krev autentisering for å fylle ut og redigere betalingsmåter.
     }
     .accesskey = a
+# This operation requires the user to authenticate with the operating system (device sign-in)
+autofill-reauth-payment-methods-checkbox = Krev enhetsinnlogging for å fylle ut og behandle betalingsmåter
+    .accesskey = o
 
 ## Privacy Section - History
 

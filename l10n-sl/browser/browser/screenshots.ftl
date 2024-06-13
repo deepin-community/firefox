@@ -49,8 +49,35 @@ screenshots-too-large-error-details = Poskusite izbrati območje, manjše od 32.
 screenshots-component-retry-button =
     .title = Zajemi nov posnetek
     .aria-label = Zajemi nov posnetek
+screenshots-component-cancel-button =
+    .title =
+        { PLATFORM() ->
+            [macos] Prekliči (Esc)
+           *[other] Prekliči (Esc)
+        }
+    .aria-label = Prekliči
+# Variables
+#   $shortcut (String) - A keyboard shortcut for copying the screenshot.
+screenshots-component-copy-button =
+    .title = Kopiraj ({ $shortcut })
+    .aria-label = Kopiraj
 screenshots-component-copy-button-label = Kopiraj
+# Variables
+#   $shortcut (String) - A keyboard shortcut for saving/downloading the screenshot.
+screenshots-component-download-button =
+    .title = Prenesi ({ $shortcut })
+    .aria-label = Prenesi
 screenshots-component-download-button-label = Prenesi
+# Variables
+#   $shortcut (String) - A keyboard shortcut for copying the screenshot.
+screenshots-component-copy-button-2 = Kopiraj
+    .title = Kopiraj ({ $shortcut })
+    .aria-label = Kopiraj
+# Variables
+#   $shortcut (String) - A keyboard shortcut for saving/downloading the screenshot.
+screenshots-component-download-button-2 = Prenesi
+    .title = Prenesi ({ $shortcut })
+    .aria-label = Prenesi
 
 ## The below strings are used to capture keydown events so the strings should
 ## not be changed unless the keyboard layout in the locale requires it.

@@ -14,12 +14,11 @@ debian-hacks/Allow-.js-preference-files-to-set-locked-prefs-with-.patch
 debian-hacks/Set-DPI-to-system-settings.patch
 debian-hacks/Don-t-auto-disable-extensions-in-system-directories.patch
 debian-hacks/Work-around-GCC-ICE-on-ppc64el.patch
-debian-hacks/Relax-cargo-version-requirement.patch
 debian-hacks/Adjust-our-gfx-skia-moz.build-patch-to-upstream-chan.patch
-debian-hacks/Relax-minimum-supported-rust-version-to-1.70.patch
-debian-hacks/Relax-minimum-supported-rust-version-to-1.70-for-new.patch
-deepin-fixes/0005-Enable-VA-API-support-for-AMD-GPUs.patch
-porting-loong64/0009-Add-missing-loongarch-lsx-code-for-libpng.patch
-porting-loong64/0004-Fix-libyuv-build-with-LSX-LASX.patch
+debian-hacks/Relax-minimum-supported-rust-version-to-1.75.patch
 porting-loong64/0001-Add-support-for-LoongArch64.patch
+porting-loong64/0003-Enable-WebRTC-for-LoongArch.patch
+porting-loong64/0004-Fix-libyuv-build-with-LSX-LASX.patch
+porting-loong64/0005-Enable-VA-API-support-for-AMD-GPUs.patch
 porting-loong64/0006-Keep-unsigned-32-bit-parameter-sign-extended-in-regi.patch
+porting-loong64/0009-Add-missing-loongarch-lsx-code-for-libpng.patch

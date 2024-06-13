@@ -1,9 +1,36 @@
-firefox (126.0.1-1deepin1) unstable; urgency=medium
+firefox (127.0-1deepin1) unstable; urgency=medium
 
-  * Import LoongArch patches from https://github.com/AOSC-Tracking/firefox @ aosc/v126.0.1.
-  * Allow AMD GPUs to use VA-API for accelerated video decoding.
+  * Rebase LoongArch patches against 127.0.
+  * Rebase vendor.js for VA-API defaults.
 
- -- Mingcong Bai <baimingcong@uniontech.com>  Mon, 03 Jun 2024 08:30:52 +0200
+ -- Mingcong Bai <baimingcong@uniontech.com>  Thu, 13 Jun 2024 14:10:59 +0800
+
+firefox (127.0-1) unstable; urgency=medium
+
+  * New upstream release.
+  * Fixes for mfsa2024-25, also known as:
+    CVE-2024-5688, CVE-2024-5689, CVE-2024-5690, CVE-2024-5691,
+    CVE-2024-5693, CVE-2024-5694, CVE-2024-5695, CVE-2024-5696,
+    CVE-2024-5697, CVE-2024-5698, CVE-2024-5699, CVE-2024-5700,
+    CVE-2024-5701.
+
+  * debian/control*: Bump rustc, cargo and nss build dependencies.
+
+  * python/mozboot/mozboot/util.py,
+    third_party/rust/neqo-common/.cargo-checksum.json,
+    third_party/rust/neqo-common/Cargo.toml,
+    third_party/rust/neqo-crypto/.cargo-checksum.json,
+    third_party/rust/neqo-crypto/Cargo.toml,
+    third_party/rust/neqo-crypto/src/agentio.rs,
+    third_party/rust/neqo-http3/.cargo-checksum.json,
+    third_party/rust/neqo-http3/Cargo.toml,
+    third_party/rust/neqo-qpack/.cargo-checksum.json,
+    third_party/rust/neqo-qpack/Cargo.toml,
+    third_party/rust/neqo-transport/.cargo-checksum.json,
+    third_party/rust/neqo-transport/Cargo.toml: Relax minimum supported
+    rust version to 1.75
+
+ -- Mike Hommey <glandium@debian.org>  Wed, 12 Jun 2024 06:09:08 +0900
 
 firefox (126.0.1-1) unstable; urgency=medium
 

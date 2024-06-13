@@ -602,6 +602,12 @@ urlbar-result-action-copy-to-clipboard = Còpia
 #  $result (String): the string representation for a formula result
 urlbar-result-action-calculator-result = = { $result }
 
+## Strings used for buttons in the urlbar
+
+# Label prompting user to search with a particular search engine.
+#  $engine (String): the name of a search engine that searches a specific site
+urlbar-result-search-with = Chirca cun { $engine }
+
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
 ## In these actions "Search" is a verb, followed by where the search is performed.
@@ -908,6 +914,15 @@ data-reporting-notification-button =
     .accesskey = S
 # Label for the indicator shown in the private browsing window titlebar.
 private-browsing-indicator-label = Navigatzione privada
+# Tooltip for the indicator shown in the window titlebar when content analysis is active.
+# Variables:
+#   $agentName (String): The name of the DLP agent that is connected
+content-analysis-indicator-tooltip =
+    .tooltiptext = Preventzione pèrdida datos dae { $agentName }. Incarca pro àteras informatziones.
+content-analysis-panel-title = Protetzione datos
+# Variables:
+#   $agentName (String): The name of the DLP agent that is connected
+content-analysis-panel-text = S'organizatzione tua impreat { $agentName } pro protègere dae sa pèrdida de datos. <a data-l10n-name="info">Àteras informatziones</a>
 
 ## Unified extensions (toolbar) button
 
