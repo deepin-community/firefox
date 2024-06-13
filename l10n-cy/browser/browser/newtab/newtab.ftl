@@ -277,6 +277,9 @@ newtab-custom-recent-subtitle = Detholiad o wefannau a chynnwys diweddar
 newtab-custom-recent-toggle =
     .label = Gweithgaredd diweddar
     .description = Detholiad o wefannau a chynnwys diweddar
+newtab-custom-weather-toggle =
+    .label = Y Tywydd
+    .description = Cip ar ragolygon y tywydd heddiw
 newtab-custom-close-button = Cau
 newtab-custom-settings = Rheoli rhagor o osodiadau
 
@@ -300,3 +303,32 @@ newtab-wallpaper-dark-city = Tirwedd dinas borffor
 #   $author_string (String) - The name of the creator of the photo.
 #   $webpage_string (String) - The name of the webpage where the photo is located.
 newtab-wallpaper-attribution = Llun gan <a data-l10n-name="name-link">{ $author_string }</a> ar <a data-l10n-name="webpage-link">{ $webpage_string }</a>
+
+## New Tab Weather
+
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-see-forecast =
+    .title = Gweld y rhagolygon yn { $provider }
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-sponsored = { $provider } ∙ Wedi'i noddi
+newtab-weather-menu-change-location = Newid lleoliad
+newtab-weather-change-location-search-input = Chwilio am leoliad
+newtab-weather-menu-weather-display = Dangos y tywydd
+# Display options are:
+# - Simple: Displays a current weather condition icon and the current temperature
+# - Detailed: Include simple information plus a short text summary: e.g. "Mostly cloudy"
+newtab-weather-menu-weather-display-option-simple = Syml
+newtab-weather-menu-change-weather-display-simple = Newid i'r golwg syml
+newtab-weather-menu-weather-display-option-detailed = Manwl
+newtab-weather-menu-change-weather-display-detailed = Newid i'r golwg manwl
+newtab-weather-menu-temperature-units = Unedau tymheredd
+newtab-weather-menu-temperature-option-fahrenheit = Fahrenheit
+newtab-weather-menu-temperature-option-celsius = Celsius
+newtab-weather-menu-change-temperature-units-fahrenheit = Newid i Fahrenheit
+newtab-weather-menu-change-temperature-units-celsius = Newid i Celsius
+newtab-weather-menu-hide-weather = Cuddio'r tywydd ar Dab Newydd
+newtab-weather-menu-learn-more = Dysgu rhagor
+# This message is shown if user is working offline
+newtab-weather-error-not-available = Nid yw data tywydd ar gael ar hyn o bryd.

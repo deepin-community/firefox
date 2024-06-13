@@ -1,4 +1,4 @@
-From e4e598890a0e699b1258ac74445704dbfec7d545 Mon Sep 17 00:00:00 2001
+From 59f9bcf05632184a92f531ffd0ebba38d53f5280 Mon Sep 17 00:00:00 2001
 From: Jiajie Chen <c@jia.je>
 Date: Tue, 14 May 2024 16:36:09 -0700
 Subject: [PATCH 9/9] Add missing loongarch lsx code for libpng

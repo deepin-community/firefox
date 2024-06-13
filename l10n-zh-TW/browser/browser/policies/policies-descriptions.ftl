@@ -55,7 +55,7 @@ policy-DisablePocket2 = 停用儲存網頁到 { -pocket-brand-name } 的功能�
 policy-DisablePrivateBrowsing = 停用隱私瀏覽功能。
 policy-DisableProfileImport = 停用自其他瀏覽器匯入資料的選單功能。
 policy-DisableProfileRefresh = 停用 about:support 頁面中的「重新整理 { -brand-short-name }」按鈕。
-policy-DisableSafeMode = 停用以安全模式重新啟動的功能。註: 啟動時按住 Shift 鍵進入安全模式的功能，僅能於 Windows 使用群組原則停用。
+policy-DisableSafeMode = 停用以安全模式重新啟動的功能。註：啟動時按住 Shift 鍵進入安全模式的功能，僅能於 Windows 使用群組原則停用。
 policy-DisableSecurityBypass = 防止使用者忽略某些安全性警告。
 policy-DisableSetAsDesktopBackground = 停用將圖片「設為桌布」的選單功能。
 policy-DisableSystemAddonUpdate = 防止瀏覽器安裝或更新系統附加元件。
@@ -84,6 +84,8 @@ policy-Handlers = 設定預設應用程式處理方式。
 policy-HardwareAcceleration = 若為 false，就會關閉硬體加速。
 # “lock” means that the user won’t be able to change this setting
 policy-Homepage = 設定或鎖定首頁。
+policy-HttpAllowlist = 不升級為 HTTPS 連線的來源。
+policy-HttpsOnlyMode = 允許開啟僅 HTTPS 模式。
 policy-InstallAddonsPermission = 允許某些網站安裝附加元件。
 policy-LegacyProfiles = 停用「於每一套安裝使用不同設定檔」的功能。
 
@@ -101,13 +103,16 @@ policy-PrimaryPassword = 要求使用或不允許使用主控密碼。
 policy-PrintingEnabled = 啟用或停用列印功能。
 policy-NetworkPrediction = 開啟或關閉網路預測（DNS 預讀）功能。
 policy-NewTabPage = 啟用或停用「新分頁」頁面。
-policy-NoDefaultBookmarks = 停止建立 { -brand-short-name } 內建的預設書籤及智慧書籤（最常造訪、最近新增的標籤）。註: 此原則僅在設定檔首次啟動前設定才有效。
+policy-NoDefaultBookmarks = 停止建立 { -brand-short-name } 內建的預設書籤及智慧書籤（最常造訪、最近新增的標籤）。註：此原則僅在設定檔首次啟動前設定才有效。
 policy-OfferToSaveLogins = 強制允許 { -brand-short-name } 提供記住登入資訊與密碼的設定。true 與 false 設定都接受。
 policy-OfferToSaveLoginsDefault = 允許 { -brand-short-name } 提供記住儲存登入帳號與密碼的功能。true 與 false 值都接受。
 policy-OverrideFirstRunPage = 覆蓋「首次執行」頁面。若您想停用首次執行頁面，請將原則設為空白。
 policy-OverridePostUpdatePage = 覆蓋更新後會開啟的「有什麼新鮮事」頁面。若您想停用此頁面，請將原則設為空白。
 policy-PasswordManagerEnabled = 允許使用密碼管理員來儲存密碼。
 policy-PasswordManagerExceptions = 防止 { -brand-short-name } 儲存特定網站的密碼。
+# Post-quantum refers to cryptography that is safe from attacks by quantum
+# computers. See https://en.wikipedia.org/wiki/Post-quantum_cryptography
+policy-PostQuantumKeyAgreementEnabled = 開啟 TLS 的後量子金鑰協定。
 # PDF.js and PDF should not be translated
 policy-PDFjs = 停用或設定 { -brand-short-name } 內建的 PDF 閱讀器 PDF.js。
 policy-Permissions2 = 設定攝影機、麥克風、地理位置、通知、自動播放等權限。

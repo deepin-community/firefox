@@ -26,6 +26,18 @@ about-reader-color-theme-contrast = Kontrast
     .title = Fargetema kontrast
 about-reader-color-theme-custom = Egendefinerte farger
     .title = Fargetema egendefinerte farger
+about-reader-color-light-theme = Lyst
+    .title = Lyst tema
+about-reader-color-dark-theme = Mørkt
+    .title = Mørkt tema
+about-reader-color-sepia-theme = Sepia
+    .title = Sepiatema
+about-reader-color-auto-theme = Automatisk
+    .title = Automatisk tema
+about-reader-color-gray-theme = Grått
+    .title = Grått tema
+about-reader-color-contrast-theme = Kontrast
+    .title = Kontrast tema
 # An estimate for how long it takes to read an article,
 # expressed as a range covering both slow and fast readers.
 # Variables:
@@ -56,12 +68,15 @@ about-reader-toolbar-lineheightplus =
 
 about-reader-font-type-serif = Serif
 about-reader-font-type-sans-serif = Sans-serif
+about-reader-font-type-monospace = Fast bredde
 
 ## Reader View toolbar buttons
 
 about-reader-toolbar-close = Lukk lesevisning
 about-reader-toolbar-type-controls = Skriftinnstillinger
 about-reader-toolbar-color-controls = Farger
+about-reader-toolbar-text-layout-controls = Tekst og utforming
+about-reader-toolbar-theme-controls = Tema
 about-reader-toolbar-savetopocket = Lagre til { -pocket-brand-name }
 
 ## Reader View colors menu
@@ -85,3 +100,36 @@ about-reader-custom-colors-visited-links = Besøkte lenker
 about-reader-custom-colors-selection-highlight = Markering for høytlesning
     .title = Endre farge
 about-reader-custom-colors-reset-button = Tilbakestill standardverdier
+about-reader-reset-button = Tilbakestill standardverdier
+
+## Reader View improved text and layout menu
+
+about-reader-text-header = Tekst
+about-reader-text-size-label = Tekststørrelse
+about-reader-font-type-selector-label = Skrifttype
+about-reader-font-weight-selector-label = Skriftvekt
+about-reader-font-weight-light = Tynn
+about-reader-font-weight-regular = Vanlig
+about-reader-font-weight-bold = Fet
+about-reader-layout-header = Utforming
+about-reader-slider-label-spacing-standard = Standard
+about-reader-slider-label-spacing-wide = Bred
+about-reader-content-width-label =
+    .label = Innholdsbredde
+about-reader-line-spacing-label =
+    .label = Linjeavstand
+about-reader-advanced-layout-header = Avansert
+about-reader-slider-label-width-narrow = Smal
+about-reader-slider-label-width-wide = Bred
+about-reader-slider-label-spacing-narrow = Smal
+about-reader-character-spacing-label =
+    .label = Tegnavstand
+about-reader-word-spacing-label =
+    .label = Ordavstand
+about-reader-text-alignment-label = Tekstjustering
+about-reader-text-alignment-left =
+    .title = Venstrejuster tekst
+about-reader-text-alignment-center =
+    .title = Midtstill tekst
+about-reader-text-alignment-right =
+    .title = Høyrejuster tekst

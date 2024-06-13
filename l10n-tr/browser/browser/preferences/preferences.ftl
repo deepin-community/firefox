@@ -599,6 +599,10 @@ home-prefs-recent-activity-description = Son kullanılan siteler ve içeriklerde
 home-prefs-snippets-header =
     .label = Duyurular
 home-prefs-snippets-description-new = { -vendor-short-name } ve { -brand-product-name }’tan ipuçları ve haberler
+home-prefs-weather-header =
+    .label = Hava durumu
+home-prefs-weather-description = Bugünkü hava durumu tahmini
+home-prefs-weather-learn-more-link = Daha fazla bilgi al
 # Variables:
 #   $num (number) - Number of rows displayed
 home-prefs-sections-rows-option =
@@ -912,6 +916,9 @@ forms-saved-passwords =
 forms-primary-pw-use =
     .label = Ana parola kullan
     .accesskey = n
+# This operation requires the user to authenticate with the operating system (device sign-in)
+forms-os-reauth =
+    .label = Parolaları doldurmak ve yönetmek için cihazdan giriş yapmayı zorunlu tut
 forms-primary-pw-learn-more-link = Daha fazla bilgi al
 # This string uses the former name of the Primary Password feature
 # ("Master Password" in English) so that the preferences can be found
@@ -944,6 +951,13 @@ primary-password-os-auth-dialog-message-win = Ana parola oluşturmak için Windo
 # notes are only valid for English. Please test in your locale.
 primary-password-os-auth-dialog-message-macosx = ana parola oluşturma
 master-password-os-auth-dialog-caption = { -brand-full-name }
+# The macOS string is preceded by the operating system with "Firefox is trying to ".
+autofill-creditcard-os-dialog-message =
+    { PLATFORM() ->
+        [macos] ödeme yöntemi ayarlarını değiştirme
+       *[other] { -brand-short-name }, ödeme yöntemi ayarlarını değiştirmeye çalışıyor. Buna izin vermek için cihazınızdan giriş yapın.
+    }
+autofill-creditcard-os-auth-dialog-caption = { -brand-full-name }
 
 ## Privacy section - Autofill
 
@@ -966,6 +980,9 @@ autofill-reauth-checkbox =
        *[other] Ödeme yöntemlerini doldurmak ve düzenlemek için kimlik doğrulaması iste.
     }
     .accesskey = o
+# This operation requires the user to authenticate with the operating system (device sign-in)
+autofill-reauth-payment-methods-checkbox = Ödeme yöntemlerini doldurmak ve yönetmek için cihazdan giriş yapmayı zorunlu tut
+    .accesskey = Ö
 
 ## Privacy Section - History
 

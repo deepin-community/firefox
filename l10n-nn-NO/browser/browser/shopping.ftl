@@ -46,9 +46,21 @@ shopping-message-bar-generic-error =
 shopping-message-bar-warning-not-enough-reviews =
     .heading = Ikkje nok vurderingar enno
     .message = Når dette produktet har fleire vurderingar, kan vi sjekke kvaliteten.
+shopping-message-bar-warning-product-not-available =
+    .heading = Produktet er ikkje tilgjengeleg
+    .message = Om du ser at dette produkter er på lager, rapporter det til oss, så skal vi sjekke produktvurderingane.
 shopping-message-bar-warning-product-not-available-button2 = Rapporter at produktet er på lager
+shopping-message-bar-thanks-for-reporting =
+    .heading = Takk for at du rapporterte!
+    .message = Vi bør ha informasjon om vurderingar av dette produktet innan 24 timer. Sjekk gjerne seinare.
+shopping-message-bar-warning-product-not-available-reported =
+    .heading = Info kjem snart
+    .message = Vi bør ha informasjon om vurderinger av dette produktet innan 24 timar. Sjekk gjerne seinare.
 shopping-message-bar-analysis-in-progress-title2 = Kontrollerer kvaliteten på vurderinga
 shopping-message-bar-analysis-in-progress-message2 = Dette vil ta omlag 60 sekund.
+# Variables:
+#  $percentage (Number) - The percentage complete that the analysis is, per our servers.
+shopping-message-bar-analysis-in-progress-with-amount = Kontrollerer vurderingsskvalitet ({ $percentage }%)
 shopping-message-bar-keep-closed-header =
     .heading = Halde attlaten?
     .message = Du kan oppdatere innstillingane dine for å halde vurderingskontrolløren attlaten som standard. Akkurat no vert han opna automatisk.
@@ -112,6 +124,10 @@ shopping-analysis-explainer-label =
     .label = Korleis vi bestemmer kvaliteten på ei vurdering
 shopping-analysis-explainer-intro2 = Vi brukar kunstig intelligens-teknologi (AI-teknologi) frå { -fakespot-brand-full-name } for å sjekke pålitelgheita til produktvurderingar. Dette vil berre hjelpe deg med å vurdere kvaliteten av vurderingar, ikkje kvaliteten på sjølve produktetet.
 shopping-analysis-explainer-adjusted-rating-description = Den <strong>justerte vurderinga</strong> er berre basert på vurderingar som vi meinar er pålitelege.
+# This string includes the short brand name of one of the three supported
+# websites, which will be inserted without being translated.
+#  $retailer (String) - capitalized name of the shopping website, for example, "Amazon".
+shopping-analysis-explainer-highlights-description = <strong>Høgdepunkt</strong> er frå { $retailer }-vurderingar i løpet av dei siste 80 dagane som vi meinar er pålitelege.
 shopping-analysis-explainer-review-grading-scale-reliable = Pålitelege vurderingar. Vi meinar at vureringane truleg kjem frå ekte kundar som har lagt att ærlege, upartiske vurderingar.
 shopping-analysis-explainer-review-grading-scale-mixed = Vi meinar at det finst ei blanding av pålitelege og upålitelege vurderingar.
 shopping-analysis-explainer-review-grading-scale-unreliable = Upålitelege vurderingar. Vi meinar at vurderingane sannsynlegvis er falske eller frå partiske vurderarar.
@@ -164,11 +180,15 @@ shopping-survey-thanks =
 ## access the feature.
 
 shopping-callout-pdp-opted-in-title = Er desse vurderingane pålitelege? Finn raskt ut av det.
+shopping-callout-pdp-opted-in-subtitle = Opne vurderingskontrolløren for å sjå ei justert vurdering med upålitelege vurderingar fjerna. I tillegg kan du sjå høgdepunkt frå nylege autentiske vurderingar.
 shopping-callout-closed-not-opted-in-title = Eitt klikk frå pålitelege vurderingar
 shopping-callout-closed-not-opted-in-revised-button = Eg forstår
+shopping-callout-not-opted-in-reminder-title = Handle med sjølvtillit
+shopping-callout-not-opted-in-reminder-open-button = Opne vurderingskontrolløren
 shopping-callout-not-opted-in-reminder-close-button = Ignorer
 shopping-callout-not-opted-in-reminder-ignore-checkbox = Ikkje vis igjen
 shopping-callout-disabled-auto-open-button = Eg forstår
+shopping-callout-opted-out-title = Vurderingskontrolløren er av
 shopping-callout-opted-out-button = Eg forstår
 
 ## Onboarding message strings.

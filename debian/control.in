@@ -24,7 +24,7 @@ Build-Depends: autotools-dev,
                libnspr4-dev (>= 2:@NSPR_VERSION@~),
 %endif
 %if USE_SYSTEM_NSS
-%define NSS_VERSION 3.99
+%define NSS_VERSION 3.100
                libnss3-dev (>= 2:@NSS_VERSION@~),
 %endif
 %if USE_SYSTEM_VPX
@@ -42,14 +42,11 @@ Build-Depends: autotools-dev,
                yasm,
                nasm (>= 2.14) [amd64 i386],
 %if DIST == bookworm || DIST == bullseye || DIST == buster
-               rustc-mozilla (>= 1.70),
+               rustc-mozilla (>= 1.75),
+               cargo-mozilla (>= 1.75),
 %else
-               rustc (>= 1.70),
-%endif
-%if DIST == bullseye || DIST == buster
-               cargo-mozilla (>= 0.66),
-%else
-               cargo (>= 0.66),
+               rustc (>= 1.75),
+               cargo (>= 1.75),
 %endif
                llvm-dev,
                libclang-dev,

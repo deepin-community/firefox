@@ -84,6 +84,8 @@ policy-Handlers = Standardne nałožeńske pśeźěłaki konfigurěrowaś
 policy-HardwareAcceleration = Jolic njewěrno, hardwarowe póspěšenje znjemóžniś.
 # “lock” means that the user won’t be able to change this setting
 policy-Homepage = Startowy bok nastajiś a na žycenje zastajiś.
+policy-HttpAllowlist = Póchady, kótarež njebudu se na HTTPS aktualizěrowaś.
+policy-HttpsOnlyMode = Zmóžnjanje modusa Jano-HTTPS dowóliś.
 policy-InstallAddonsPermission = Wěstym websedłam dowóliś, dodanki instalěrowaś.
 policy-LegacyProfiles = Funkciju znjemóžniś, kótaraž separatny profil za kuždu instalaciju wunuźijo
 
@@ -108,6 +110,9 @@ policy-OverrideFirstRunPage = Bok pśepisaś, kótaryž se pśi prědnom starśe
 policy-OverridePostUpdatePage = Bok Nowe funkcije a změny pó aktualizaciji pśepisaś. Stajśo toś to pšawidło na prozne, jolic cośo toś ten bok znjemóžniś.
 policy-PasswordManagerEnabled = Składowanje gronidłow do zastojnika gronidłow zmóžniś.
 policy-PasswordManagerExceptions = { -brand-short-name } zakazaś, gronidła za wěste sedła składowaś.
+# Post-quantum refers to cryptography that is safe from attacks by quantum
+# computers. See https://en.wikipedia.org/wiki/Post-quantum_cryptography
+policy-PostQuantumKeyAgreementEnabled = Dojadnanje wó postkwantowem klucu za TLS zmóžniś.
 # PDF.js and PDF should not be translated
 policy-PDFjs = PDF.js znjemóžniś abo konfigurěrowaś, zatwarjony PDF-wobglědowak w { -brand-short-name }.
 policy-Permissions2 = Pšawa za kameru, mikrofon, stojnišćo, powěźeńki a awtomatiske wótgraśe konfigurěrowaś.

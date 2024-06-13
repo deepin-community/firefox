@@ -15,6 +15,8 @@ screenshots-download-button = Ներբեռնել
 screenshots-download-button-tooltip = Ներբեռնել էկրանի կորզումը
 screenshots-copy-button = Պատճենել
 screenshots-copy-button-tooltip = Պատճենել էկրանի կորզումը սեղմատախտակին
+screenshots-download-button-title =
+    .title = Ներբեռնել էկրանակադրը
 screenshots-copy-button-title =
     .title = Պատճենել էկրանակադրը սեղմատախտակին
 screenshots-cancel-button-title =
@@ -64,6 +66,16 @@ screenshots-component-download-button =
     .title = Ներբեռնել ({ $shortcut })
     .aria-label = Ներբեռնել
 screenshots-component-download-button-label = Ներբեռնել
+# Variables
+#   $shortcut (String) - A keyboard shortcut for copying the screenshot.
+screenshots-component-copy-button-2 = Պատճենել
+    .title = Պատճենել ({ $shortcut })
+    .aria-label = Պատճենել
+# Variables
+#   $shortcut (String) - A keyboard shortcut for saving/downloading the screenshot.
+screenshots-component-download-button-2 = Ներբեռնել
+    .title = Ներբեռնել ({ $shortcut })
+    .aria-label = Ներբեռնել
 
 ## The below strings are used to capture keydown events so the strings should
 ## not be changed unless the keyboard layout in the locale requires it.

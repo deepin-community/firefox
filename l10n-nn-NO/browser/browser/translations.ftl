@@ -126,6 +126,20 @@ translations-manage-description = Last ned språk for fråkopla-omsetting.
 translations-manage-all-language = Alle språk
 translations-manage-download-button = Last ned
 translations-manage-delete-button = Slett
+translations-manage-intro = Vel innstillingane for språk og nettstadomsetjing og behandle språk som er installert for fråkopla omsetjing.
+translations-manage-install-description = Installer språk for fråkopla-omsetjing.
+translations-manage-language-install-button =
+    .label = Installer
+translations-manage-language-install-all-button =
+    .label = Installer alle
+    .accesskey = a
+translations-manage-intro-2 = Angje innstillingar for språk og nettstadomsetting og behandle språk som er lasta ned for fråkopla omsetting.
+translations-manage-download-description = Last ned språk for fråkopla omsetting
+translations-manage-language-download-button =
+    .label = Last ned
+translations-manage-language-download-all-button =
+    .label = Last ned alle
+    .accesskey = L
 translations-manage-language-remove-button =
     .label = Fjern
 translations-manage-language-remove-all-button =
@@ -134,13 +148,6 @@ translations-manage-language-remove-all-button =
 translations-manage-error-install = Klarte ikkje å installere språkfilene. Prøv på nytt.
 translations-manage-error-download = Klarte ikkje å laste ned språkfilene. Prøv på nytt.
 translations-manage-error-delete = Det oppstod ein feil ved sletting av språkfilene. Prøv på nytt.
-translations-manage-intro = Vel innstillingane for språk og nettstadomsetjing og behandle språk som er installert for fråkopla omsetjing.
-translations-manage-install-description = Installer språk for fråkopla-omsetjing.
-translations-manage-language-install-button =
-    .label = Installer
-translations-manage-language-install-all-button =
-    .label = Installer alle
-    .accesskey = a
 translations-manage-error-remove = Det oppstod ein feil ved sletting av språkfilene. Prøv på nytt.
 translations-manage-error-list = Klarte ikkje å hente lista over tilgjengelege språk for omsetjing. Oppdater sida for å prøve på nytt.
 translations-settings-title =
@@ -170,12 +177,62 @@ translations-settings-remove-all-sites-button =
 translations-settings-close-dialog =
     .buttonlabelaccept = Lat att
     .buttonaccesskeyaccept = L
+# Text displayed in the right-click context menu for translating
+# selected text to a yet-to-be-determined language.
+main-context-menu-translate-selection =
+    .label = Omset det markerte…
+    .accesskey = m
+# Text displayed in the right-click context menu for translating
+# selected text to a target language.
+#
+# Variables:
+#   $language (string) - The localized display name of the target language
+main-context-menu-translate-selection-to-language =
+    .label = Omset det markerte til { $language }
+    .accesskey = m
+# Text displayed in the right-click context menu for translating
+# the text of a hyperlink to a yet-to-be-determined language.
+main-context-menu-translate-link-text =
+    .label = Omset lenketekst…
+    .accesskey = m
+# Text displayed in the right-click context menu for translating
+# the text of a hyperlink to a target language.
+#
+# Variables:
+#   $language (string) - The localized display name of the target language
+main-context-menu-translate-link-text-to-language =
+    .label = Omset lenketekst til { $language }
+    .accesskey = m
+# Text displayed in the select translations panel header.
+select-translations-panel-header = Omsetting
+# Text displayed above the from-language dropdown menu.
+select-translations-panel-from-label = Frå
+# Text displayed above the to-language dropdown menu.
+select-translations-panel-to-label = Til
+# Text displayed above the try-another-source-language dropdown menu.
+select-translations-panel-try-another-language-label = Prøv eit anna kjeldespråk
 select-translations-panel-cancel-button =
     .label = Avbryt
+# Text displayed on the copy button before it is clicked.
+select-translations-panel-copy-button =
+    .label = Kopier
+# Text displayed on the copy button after it is clicked.
+select-translations-panel-copy-button-copied =
+    .label = Kopiert
+select-translations-panel-done-button =
+    .label = Ferdig
+select-translations-panel-translate-full-page-button =
+    .label = Omset heile sida
 select-translations-panel-translate-button =
     .label = Omset
 select-translations-panel-try-again-button =
     .label = Prøv på nytt
+# Text displayed as a placeholder when the panel is idle.
+select-translations-panel-idle-placeholder-text = Omsett tekst vil visast her.
+# Text displayed as a placeholder when the panel is actively translating.
+select-translations-panel-translating-placeholder-text = Omset…
+select-translations-panel-init-failure-message =
+    .message = Klarte ikkje å laste inn språk. Sjekk Internett-tilkoplinga di og prøv igjen.
 # Text displayed when the translation fails to complete.
 select-translations-panel-translation-failure-message =
     .message = Det oppstod eit problem med å omsetje. Prøv på nytt.
@@ -189,3 +246,8 @@ select-translations-panel-unsupported-language-message-known =
     .message = Beklagar, støttar ikkje { $language } enno.
 select-translations-panel-unsupported-language-message-unknown =
     .message = Beklagar, vi støttar ikkje dette språket enno.
+# Text displayed on the menuitem that opens the Translation Settings page.
+select-translations-panel-open-translations-settings-menuitem =
+    .label = Innstillingar for omsetjing
+# An announcement made to assistive technology when the translation is complete
+select-translations-panel-translation-complete-announcement = Omsettinga er fullført

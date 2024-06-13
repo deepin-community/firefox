@@ -84,6 +84,8 @@ policy-Handlers = Configurar manipuladores de aplicativos padrão.
 policy-HardwareAcceleration = Caso definido como "false", desativar a aceleração de hardware.
 # “lock” means that the user won’t be able to change this setting
 policy-Homepage = Definir a página inicial e, opcionalmente, impedir que seja alterada.
+policy-HttpAllowlist = Origens que não mudam para HTTPS.
+policy-HttpsOnlyMode = Permitir ativar o modo somente HTTPS.
 policy-InstallAddonsPermission = Permitir que determinados sites instalem extensões.
 policy-LegacyProfiles = Desativar o recurso de impor um perfil separado para cada instalação.
 
@@ -108,6 +110,9 @@ policy-OverrideFirstRunPage = Substituir a página de primeira execução. Defin
 policy-OverridePostUpdatePage = Substituir a página “Novidades” exibida após uma atualização. Defina esta diretiva como vazia se quiser desativar a exibição de uma página após atualizações.
 policy-PasswordManagerEnabled = Ativar salvamento de senhas no gerenciador de senhas.
 policy-PasswordManagerExceptions = Impedir que o { -brand-short-name } salve senhas de sites específicos.
+# Post-quantum refers to cryptography that is safe from attacks by quantum
+# computers. See https://en.wikipedia.org/wiki/Post-quantum_cryptography
+policy-PostQuantumKeyAgreementEnabled = Ativar aceitação de chave pós-quantum para TLS.
 # PDF.js and PDF should not be translated
 policy-PDFjs = Desativar ou configurar o PDF.js, o visor de PDF integrado no { -brand-short-name }.
 policy-Permissions2 = Configurar permissões de câmera, microfone, localização, notificações e reprodução automática.

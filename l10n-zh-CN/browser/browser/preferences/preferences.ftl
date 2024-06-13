@@ -595,6 +595,10 @@ home-prefs-recent-activity-description = 近期访问的网站与内容精选
 home-prefs-snippets-header =
     .label = 只言片语
 home-prefs-snippets-description-new = 来自 { -vendor-short-name } 和 { -brand-product-name } 的使用窍门与快讯
+home-prefs-weather-header =
+    .label = 天气
+home-prefs-weather-description = 速览今日天气预报
+home-prefs-weather-learn-more-link = 详细了解
 # Variables:
 #   $num (number) - Number of rows displayed
 home-prefs-sections-rows-option =
@@ -904,6 +908,9 @@ forms-saved-passwords =
 forms-primary-pw-use =
     .label = 使用主密码
     .accesskey = U
+# This operation requires the user to authenticate with the operating system (device sign-in)
+forms-os-reauth =
+    .label = 要填写或管理密码，需登录设备验证身份
 forms-primary-pw-learn-more-link = 详细了解
 # This string uses the former name of the Primary Password feature
 # ("Master Password" in English) so that the preferences can be found
@@ -936,6 +943,13 @@ primary-password-os-auth-dialog-message-win = 请输入 Windows 登录凭据，�
 # notes are only valid for English. Please test in your locale.
 primary-password-os-auth-dialog-message-macosx = 创建主密码
 master-password-os-auth-dialog-caption = { -brand-full-name }
+# The macOS string is preceded by the operating system with "Firefox is trying to ".
+autofill-creditcard-os-dialog-message =
+    { PLATFORM() ->
+        [macos] 更改付款方式设置
+       *[other] { -brand-short-name } 正尝试更改付款方式设置，请登录设备以允许此操作。
+    }
+autofill-creditcard-os-auth-dialog-caption = { -brand-full-name }
 
 ## Privacy section - Autofill
 
@@ -957,6 +971,9 @@ autofill-reauth-checkbox =
         [linux] 需要进行 Linux 身份验证以填写和编辑付款方式。
        *[other] 需要进行身份验证以填写和编辑付款方式。
     }
+    .accesskey = o
+# This operation requires the user to authenticate with the operating system (device sign-in)
+autofill-reauth-payment-methods-checkbox = 要填写和管理付款方式，需登录设备验证身份。
     .accesskey = o
 
 ## Privacy Section - History

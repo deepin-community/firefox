@@ -542,8 +542,8 @@ choose-bookmark =
 
 ## Home Section - Firefox Home Content Customization
 
-home-prefs-content-header2 = { -firefox-home-brand-name } 內容
-home-prefs-content-description2 = 選擇要在您的 { -firefox-home-brand-name } 畫面顯示哪些內容。
+home-prefs-content-header2 = { -firefox-home-brand-name }內容
+home-prefs-content-description2 = 選擇要在您的 { -firefox-home-brand-name }畫面顯示哪些內容。
 home-prefs-search-header =
     .label = 網頁搜尋
 home-prefs-shortcuts-header =
@@ -587,6 +587,10 @@ home-prefs-recent-activity-description = 近期造訪過的網站與內容精選
 home-prefs-snippets-header =
     .label = 隻字片語
 home-prefs-snippets-description-new = 來自 { -vendor-short-name } 及 { -brand-product-name } 的使用秘訣與新聞
+home-prefs-weather-header =
+    .label = 天氣
+home-prefs-weather-description = 讓您一目了然今天的天氣預報
+home-prefs-weather-learn-more-link = 更多資訊
 # Variables:
 #   $num (number) - Number of rows displayed
 home-prefs-sections-rows-option =
@@ -734,8 +738,8 @@ sync-sign-in =
 
 ## Sync section - enabling or disabling sync.
 
-prefs-syncing-on = 同步: 開啟
-prefs-syncing-off = 同步: 關閉
+prefs-syncing-on = 同步：開啟
+prefs-syncing-off = 同步：關閉
 prefs-sync-turn-on-syncing =
     .label = 開啟同步…
     .accesskey = s
@@ -752,7 +756,7 @@ prefs-syncing-button =
 
 ## The list of things currently syncing.
 
-sync-syncing-across-devices-heading = 您連線的裝置會同步下列項目:
+sync-syncing-across-devices-heading = 您連線的裝置會同步下列項目：
 sync-currently-syncing-bookmarks = 書籤
 sync-currently-syncing-history = 瀏覽紀錄
 sync-currently-syncing-tabs = 開啟的分頁
@@ -900,6 +904,9 @@ forms-saved-passwords =
 forms-primary-pw-use =
     .label = 使用主控密碼
     .accesskey = U
+# This operation requires the user to authenticate with the operating system (device sign-in)
+forms-os-reauth =
+    .label = 需要裝置登入才能填寫與管理密碼
 forms-primary-pw-learn-more-link = 了解更多
 # This string uses the former name of the Primary Password feature
 # ("Master Password" in English) so that the preferences can be found
@@ -932,6 +939,13 @@ primary-password-os-auth-dialog-message-win = 請在下方輸入您的 Windows �
 # notes are only valid for English. Please test in your locale.
 primary-password-os-auth-dialog-message-macosx = 建立主控密碼
 master-password-os-auth-dialog-caption = { -brand-full-name }
+# The macOS string is preceded by the operating system with "Firefox is trying to ".
+autofill-creditcard-os-dialog-message =
+    { PLATFORM() ->
+        [macos] 更改付款方式的選項
+       *[other] { -brand-short-name } 正嘗試更改付款方式的選項，請使用您的裝置登入後允許此動作。
+    }
+autofill-creditcard-os-auth-dialog-caption = { -brand-full-name }
 
 ## Privacy section - Autofill
 
@@ -953,6 +967,9 @@ autofill-reauth-checkbox =
         [linux] 需要進行 Linux 驗證才能填寫或編輯付款方式資訊。
        *[other] 需要進行驗證才能填寫或編輯付款方式資訊。
     }
+    .accesskey = o
+# This operation requires the user to authenticate with the operating system (device sign-in)
+autofill-reauth-payment-methods-checkbox = 需要裝置登入才能填寫與管理付款資訊
     .accesskey = o
 
 ## Privacy Section - History
@@ -1122,7 +1139,7 @@ enhanced-tracking-protection-setting-custom =
 content-blocking-etp-standard-desc = 兼顧保護與效能。網站可正常運作。
 content-blocking-etp-strict-desc = 保護更強大，但可能會導致某些網站或內容故障。
 content-blocking-etp-custom-desc = 選擇要封鎖哪些追蹤器與指令碼。
-content-blocking-etp-blocking-desc = { -brand-short-name } 封鎖下列項目:
+content-blocking-etp-blocking-desc = { -brand-short-name } 會封鎖下列項目：
 content-blocking-private-windows = 隱私視窗中的追蹤內容
 content-blocking-cross-site-cookies-in-all-windows2 = 所有視窗中的跨網站 Cookie
 content-blocking-cross-site-tracking-cookies = 跨網站追蹤 Cookie

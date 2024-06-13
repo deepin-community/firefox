@@ -597,6 +597,12 @@ urlbar-result-action-copy-to-clipboard = Kopiatu
 #  $result (String): the string representation for a formula result
 urlbar-result-action-calculator-result = = { $result }
 
+## Strings used for buttons in the urlbar
+
+# Label prompting user to search with a particular search engine.
+#  $engine (String): the name of a search engine that searches a specific site
+urlbar-result-search-with = Bilatu { $engine } erabiliz
+
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
 ## In these actions "Search" is a verb, followed by where the search is performed.
@@ -891,6 +897,9 @@ tabs-toolbar-list-all-tabs =
 restore-session-startup-suggestion-message = <strong>Ireki aurreko fitxak?</strong> Aurreko zure saioa berrezar dezakezu { -brand-short-name } aplikazio-menutik <img data-l10n-name="icon"/>, Historia barnean.
 restore-session-startup-suggestion-button = Erakuts iezadazu nola
 
+## Infobar shown when the user tries to open a file picker and file pickers are blocked by enterprise policy
+
+
 ## Mozilla data reporting notification (Telemetry, Firefox Health Report, etc)
 
 data-reporting-notification-message = { -brand-short-name }(e)k zenbait datu automatikoki bidaltzen ditu { -vendor-short-name }(e)ra zure esperientzia hobetzeko.
@@ -899,6 +908,7 @@ data-reporting-notification-button =
     .accesskey = A
 # Label for the indicator shown in the private browsing window titlebar.
 private-browsing-indicator-label = Nabigatze pribatua
+content-analysis-panel-title = Datuen babesa
 
 ## Unified extensions (toolbar) button
 
@@ -952,6 +962,11 @@ refresh-blocked-allow =
 
 ## Firefox Relay integration
 
+firefox-relay-offer-why-to-use-relay = Gure maskara seguru eta erabilerrazak zure identitatea babesten du eta spama saihesten du zure helbide elektronikoa ezkutatuz.
+# Variables:
+#  $useremail (String): user email that will receive messages
+firefox-relay-offer-what-relay-provides = Zure helbide elektronikoko maskaretara bidalitako mezu elektroniko guztiak <strong>{ $useremail }</strong> helbidera birbidaliko dira (blokeatzea erabaki ezean).
+firefox-relay-offer-legal-notice = "Erabili posta-maskara" aukeratzean, <label data-l10n-name="tos-url">Zerbitzu-baldintzak</label> eta <label data-l10n-name="privacy-url">Pribatutasun-oharra </label> onartzen dituzu.
 
 ## Add-on Pop-up Notifications
 

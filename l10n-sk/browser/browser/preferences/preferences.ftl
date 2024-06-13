@@ -602,6 +602,10 @@ home-prefs-recent-activity-description = Výber z nedávno navštívených strá
 home-prefs-snippets-header =
     .label = Snippety
 home-prefs-snippets-description-new = Tipy a novinky od spoločnosti { -vendor-short-name } a aplikácie { -brand-product-name }
+home-prefs-weather-header =
+    .label = Počasie
+home-prefs-weather-description = Dnešná predpoveď v skratke
+home-prefs-weather-learn-more-link = Ďalšie informácie
 # Variables:
 #   $num (number) - Number of rows displayed
 home-prefs-sections-rows-option =
@@ -916,6 +920,9 @@ forms-saved-passwords =
 forms-primary-pw-use =
     .label = Používať hlavné heslo
     .accesskey = h
+# This operation requires the user to authenticate with the operating system (device sign-in)
+forms-os-reauth =
+    .label = Vyžadovať heslo k účtu na zariadení na vyplnenie a správu hesiel
 forms-primary-pw-learn-more-link = Ďalšie informácie
 # This string uses the former name of the Primary Password feature
 # ("Master Password" in English) so that the preferences can be found
@@ -948,6 +955,13 @@ primary-password-os-auth-dialog-message-win = Ak chcete vytvoriť hlavné heslo,
 # notes are only valid for English. Please test in your locale.
 primary-password-os-auth-dialog-message-macosx = vytvoriť hlavné heslo
 master-password-os-auth-dialog-caption = { -brand-full-name }
+# The macOS string is preceded by the operating system with "Firefox is trying to ".
+autofill-creditcard-os-dialog-message =
+    { PLATFORM() ->
+        [macos] zmeniť nastavenie pre spôsoby platby
+       *[other] { -brand-short-name } sa pokúša zmeniť nastavenie pre spôsoby platby. Ak to chcete povoliť, použite heslo k účtu na svojom zariadení.
+    }
+autofill-creditcard-os-auth-dialog-caption = { -brand-full-name }
 
 ## Privacy section - Autofill
 
@@ -970,6 +984,9 @@ autofill-reauth-checkbox =
        *[other] Vyžadovať prihlasovacie údaje pri dopĺňaní a úprave spôsobov platby.
     }
     .accesskey = V
+# This operation requires the user to authenticate with the operating system (device sign-in)
+autofill-reauth-payment-methods-checkbox = Vyžadovať heslo k účtu na zariadení na vyplnenie a správu spôsobov platby
+    .accesskey = u
 
 ## Privacy Section - History
 

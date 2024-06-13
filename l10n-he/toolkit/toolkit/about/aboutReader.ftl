@@ -68,6 +68,7 @@ about-reader-toolbar-lineheightplus =
 
 about-reader-font-type-serif = סריף
 about-reader-font-type-sans-serif = Sans-serif
+about-reader-font-type-monospace = רוחב קבוע
 
 ## Reader View toolbar buttons
 
@@ -99,20 +100,28 @@ about-reader-custom-colors-visited-links = קישורים שביקרת בהם
 about-reader-custom-colors-selection-highlight = מדגיש להקראה בקול
     .title = עריכת צבע
 about-reader-custom-colors-reset-button = איפוס לברירות המחדל
+about-reader-reset-button = איפוס לברירות המחדל
 
 ## Reader View improved text and layout menu
 
+about-reader-text-header = טקסט
+about-reader-text-size-label = גודל טקסט
+about-reader-font-type-selector-label = גופן
+about-reader-font-weight-selector-label = משקל גופן
+about-reader-font-weight-light = קל
+about-reader-font-weight-regular = רגיל
+about-reader-font-weight-bold = מודגש
 about-reader-layout-header = פריסה
-about-reader-advanced-layout-header = מתקדם
-about-reader-slider-label-width-narrow = צר
-about-reader-slider-label-width-wide = רחב
-about-reader-slider-label-spacing-narrow = צר
 about-reader-slider-label-spacing-standard = רגיל
 about-reader-slider-label-spacing-wide = רחב
 about-reader-content-width-label =
     .label = רוחב התוכן
 about-reader-line-spacing-label =
     .label = מרווח בין שורות
+about-reader-advanced-layout-header = מתקדם
+about-reader-slider-label-width-narrow = צר
+about-reader-slider-label-width-wide = רחב
+about-reader-slider-label-spacing-narrow = צר
 about-reader-character-spacing-label =
     .label = מרווח בין תווים
 about-reader-word-spacing-label =
