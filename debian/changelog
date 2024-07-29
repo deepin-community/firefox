@@ -1,3 +1,10 @@
+firefox (128.0.3-1deepin1) unstable; urgency=medium
+
+  * Sync patches from AOSC-Tracking/firefox @ aosc/128.0.3.
+  * Use Clang to fix build on loong64.
+
+ -- Mingcong Bai <baimingcong@uniontech.com>  Tue, 30 Jul 2024 16:24:56 +0800
+
 firefox (128.0.3-1) unstable; urgency=medium
 
   * New upstream release.
