@@ -1,7 +1,8 @@
-From 49689db5adbc39e570659fe72b49d7ea27833f4b Mon Sep 17 00:00:00 2001
+From 86171d5beb97ff4d63b3b637892d84cc1689e03e Mon Sep 17 00:00:00 2001
 From: Icenowy Zheng <uwu@icenowy.me>
 Date: Fri, 8 Mar 2024 17:24:55 +0800
-Subject: [PATCH 6/9] Keep unsigned 32-bit parameter sign-extended in register.
+Subject: [PATCH 06/11] Keep unsigned 32-bit parameter sign-extended in
+ register.
 
 On riscv64, 32-bit value in 64-bit register should be sign-extended, even
 when it's type is unsigned.
@@ -27,5 +28,5 @@ index ddd6692156..ee2f7ff767 100644
          case nsXPTType::T_U64:
            value = s->val.u64;
 -- 
-2.43.4
+2.46.0.rc2.windows.1
 

@@ -378,7 +378,7 @@ identity-permissions-storage-access-hint = Αυτά τα μέρη μπορούν
 identity-permissions-storage-access-learn-more = Μάθετε περισσότερα
 identity-permissions-reload-hint = Ίσως χρειαστεί να επαναφορτώσετε τη σελίδα για εφαρμογή των αλλαγών.
 identity-clear-site-data =
-    .label = Διαγραφή cookie και δεδομένων ιστοτόπου…
+    .label = Απαλοιφή cookie και δεδομένων ιστοτόπου…
 identity-connection-not-secure-security-view = Η σύνδεσή σας με αυτόν τον ιστότοπο δεν είναι ασφαλής.
 identity-connection-verified = Η σύνδεσή σας με αυτόν τον ιστότοπο είναι ασφαλής.
 identity-ev-owner-label = Το πιστοποιητικό εκδόθηκε για:
@@ -637,6 +637,21 @@ urlbar-group-quickactions =
 #  $engine (String): the name of the search engine used to search.
 urlbar-group-recent-searches =
     .label = Πρόσφατες αναζητήσεις
+# The header shown above trending results.
+# Variables:
+#  $engine (String): the name of the search engine providing the trending suggestions
+urlbar-group-trending =
+    .label = Τάσεις στο { $engine }
+# The result menu labels shown next to trending results.
+urlbar-result-menu-trending-dont-show =
+    .label = Απόκρυψη δημοφιλών αναζητήσεων
+    .accesskey = Α
+urlbar-result-menu-trending-why =
+    .label = Γιατί το βλέπω αυτό;
+    .accesskey = Γ
+# A message that replaces a result when the user dismisses all suggestions of a
+# particular type.
+urlbar-trending-dismissal-acknowledgment = Ευχαριστούμε για τα σχόλιά σας. Δεν θα βλέπετε πλέον δημοφιλείς αναζητήσεις.
 
 ## Reader View toolbar buttons
 
@@ -987,6 +1002,10 @@ firefox-relay-offer-legal-notice = Κάνοντας κλικ στο «Χρήση
 popup-notification-addon-install-unsigned =
     .value = (Μη επαληθευμένο)
 popup-notification-xpinstall-prompt-learn-more = Μάθετε περισσότερα σχετικά με την ασφαλή εγκατάσταση πρόσθετων
+# Note: Access key is set to P to match "Private" in the corresponding localized label.
+popup-notification-addon-privatebrowsing-checkbox =
+    .label = Εκτέλεση σε ιδιωτικά παράθυρα
+    .accesskey = Ε
 
 ## Pop-up warning
 
@@ -1016,3 +1035,24 @@ popup-warning-button =
 #   $popupURI (String): the URI for the pop-up window
 popup-show-popup-menuitem =
     .label = Εμφάνιση του «{ $popupURI }»
+
+## File-picker crash notification ("FilePickerCrashed.sys.mjs")
+
+file-picker-failed-open = Δεν ήταν δυνατό το άνοιγμα του παραθύρου διαλόγου αρχείων των Windows. Δεν ήταν δυνατή η επιλογή αρχείου ή φακέλου.
+#   $path (string): The full path to which the file will be saved (e.g., 'C:\Users\Default User\Downloads\readme.txt').
+file-picker-failed-save-somewhere = Δεν ήταν δυνατό το άνοιγμα του παραθύρου διαλόγου αρχείων των Windows. Το αρχείο θα αποθηκευτεί στο { $path }.
+file-picker-failed-save-nowhere = Δεν ήταν δυνατό το άνοιγμα του παραθύρου διαλόγου αρχείων των Windows. Δεν ήταν δυνατή η εύρεση προεπιλεγμένου φακέλου· το αρχείο δεν θα αποθηκευτεί.
+file-picker-crashed-open = Το παράθυρο διαλόγου αρχείων των Windows κατέρρευσε. Δεν ήταν δυνατή η επιλογή αρχείου ή φακέλου.
+#   $path (string): The full path to which the file will be saved (e.g., 'C:\Users\Default User\Downloads\readme.txt').
+file-picker-crashed-save-somewhere = Το παράθυρο διαλόγου αρχείων των Windows κατέρρευσε. Το αρχείο θα αποθηκευτεί στο { $path }.
+file-picker-crashed-save-nowhere = Το παράθυρο διαλόγου αρχείων των Windows κατέρρευσε. Δεν ήταν δυνατή η εύρεση προεπιλεγμένου φακέλου· το αρχείο δεν θα αποθηκευτεί.
+
+# Button used with file-picker-crashed-save-default. Opens the folder in Windows
+# Explorer, with the saved file selected and in focus.
+#
+# The wording here should be consistent with the Windows variant of
+# `downloads-cmd-show-menuitem-2` and similar messages.
+
+file-picker-crashed-show-in-folder =
+    .label = Εμφάνιση στον φάκελο
+    .accessKey = φ

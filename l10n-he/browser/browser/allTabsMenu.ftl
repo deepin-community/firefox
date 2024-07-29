@@ -5,13 +5,14 @@
 # "Search" is a verb, as in "Search through tabs".
 all-tabs-menu-search-tabs =
     .label = חיפוש לשוניות
-
 all-tabs-menu-new-user-context =
     .label = מגירת לשוניות חדשה
-
 all-tabs-menu-hidden-tabs =
     .label = לשוניות מוסתרות
-
 all-tabs-menu-manage-user-context =
     .label = ניהול מגירות
     .accesskey = ג
+all-tabs-menu-close-duplicate-tabs =
+    .label = סגירת לשוניות כפולות
+all-tabs-menu-close-all-duplicate-tabs =
+    .label = סגירת כל הלשוניות הכפולות

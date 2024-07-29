@@ -45,6 +45,7 @@ newtab-topsites-add-search-engine-header = Afegeix un motor de cerca
 newtab-topsites-add-shortcut-header = Drecera nova
 newtab-topsites-edit-topsites-header = Edita el lloc principal
 newtab-topsites-edit-shortcut-header = Edita la drecera
+newtab-topsites-add-shortcut-label = Afegeix una drecera
 newtab-topsites-title-label = Títol
 newtab-topsites-title-input =
     .placeholder = Escriviu el títol
@@ -198,6 +199,7 @@ newtab-section-header-recent-activity = Activitat recent
 # Variables:
 #   $provider (string) - Name of the corresponding content provider.
 newtab-section-header-pocket = Recomanat per { $provider }
+newtab-section-header-stories = Articles suggerents
 
 ## Empty Section States: These show when there are no more items in a section. Ex. When there are no more Pocket story recommendations, in the space where there would have been stories, this is shown instead.
 
@@ -206,6 +208,8 @@ newtab-empty-section-highlights = Comenceu a navegar i aquí us mostrarem els mi
 # Variables:
 #   $provider (string) - Name of the content provider for this section, e.g "Pocket".
 newtab-empty-section-topstories = Ja esteu al dia. Torneu més tard per veure més articles populars de { $provider }. No podeu esperar? Trieu un tema popular per descobrir els articles més interessants de tot el web.
+# Ex. When there are no more story recommendations, in the space where there would have been stories, this is shown instead.
+newtab-empty-section-topstories-generic = Ja esteu al dia. Torneu més tard per veure més articles. No podeu esperar? Trieu un tema popular per descobrir els articles més interessants de tot el web.
 
 ## Empty Section (Content Discovery Experience). These show when there are no more stories or when some stories fail to load.
 
@@ -258,9 +262,9 @@ newtab-custom-row-selector =
 newtab-custom-sponsored-sites = Dreceres patrocinades
 newtab-custom-pocket-title = Recomanat per { -pocket-brand-name }
 newtab-custom-pocket-subtitle = Contingut excepcional seleccionat per { -pocket-brand-name }, part de la família de { -brand-product-name }
-newtab-custom-pocket-toggle =
-    .label = Recomanat per { -pocket-brand-name }
-    .description = Contingut excepcional seleccionat per { -pocket-brand-name }, part de la família de { -brand-product-name }
+newtab-custom-stories-toggle =
+    .label = Articles recomanats
+    .description = Contingut excepcional seleccionat per la família del { -brand-product-name }
 newtab-custom-pocket-sponsored = Articles patrocinats
 newtab-custom-pocket-show-recent-saves = Mostra els elements desats recentment
 newtab-custom-recent-title = Activitat recent
@@ -270,3 +274,102 @@ newtab-custom-recent-toggle =
     .description = Una selecció de llocs i continguts recents
 newtab-custom-close-button = Tanca
 newtab-custom-settings = Gestiona més paràmetres
+
+## New Tab Wallpapers
+
+newtab-wallpaper-title = Fons de pantalla
+newtab-wallpaper-reset = Reinicia als valors per defecte
+newtab-wallpaper-light-red-panda = Panda vermell
+newtab-wallpaper-light-mountain = Muntanya blanca
+newtab-wallpaper-light-sky = Cel amb núvols roses i liles
+newtab-wallpaper-light-color = Formes blaves, roses i grogues
+newtab-wallpaper-light-landscape = Paisatge de muntanya amb boirina blava
+newtab-wallpaper-light-beach = Platja amb palmera
+newtab-wallpaper-dark-aurora = Aurora boreal
+newtab-wallpaper-dark-color = Formes vermelles i blaves
+newtab-wallpaper-dark-panda = Panda vermell amagat al bosc
+newtab-wallpaper-dark-sky = Paisatge urbà amb un cel nocturn
+newtab-wallpaper-dark-mountain = Paisatge de muntanya
+newtab-wallpaper-dark-city = Paisatge urbà porpra
+
+## Solid Colors
+
+newtab-wallpaper-category-title-colors = Colors sòlids
+newtab-wallpaper-blue = Blau
+newtab-wallpaper-light-blue = Blau clar
+newtab-wallpaper-light-purple = Lila clar
+newtab-wallpaper-light-green = Verd clar
+newtab-wallpaper-green = Verd
+newtab-wallpaper-beige = Beix
+newtab-wallpaper-yellow = Groc
+newtab-wallpaper-orange = Taronja
+newtab-wallpaper-pink = Rosa
+newtab-wallpaper-light-pink = Rosa clar
+newtab-wallpaper-red = Vermell
+newtab-wallpaper-dark-blue = Blau fosc
+newtab-wallpaper-dark-purple = Lila fosc
+newtab-wallpaper-dark-green = Verd fosc
+newtab-wallpaper-brown = Marró
+
+## Abstract
+
+newtab-wallpaper-category-title-abstract = Abstracte
+newtab-wallpaper-abstract-green = Formes verdes
+newtab-wallpaper-abstract-blue = Formes blaves
+newtab-wallpaper-abstract-purple = Formes liles
+newtab-wallpaper-abstract-orange = Formes taronges
+newtab-wallpaper-gradient-orange = Degradat taronja i rosa
+newtab-wallpaper-abstract-blue-purple = Formes blaves i liles
+
+## Photographs
+
+newtab-wallpaper-category-title-photographs = Fotografies
+newtab-wallpaper-beach-at-sunrise = Platja a l'alba
+newtab-wallpaper-beach-at-sunset = Platja al capvespre
+newtab-wallpaper-storm-sky = Cel tempestuós
+newtab-wallpaper-sky-with-pink-clouds = Cel amb núvols rosats
+newtab-wallpaper-red-panda-yawns-in-a-tree = Un panda vermell badalla en un arbre
+newtab-wallpaper-white-mountains = Muntanyes blanques
+# Variables
+#   $author_string (String) - The name of the creator of the photo.
+#   $webpage_string (String) - The name of the webpage where the photo is located.
+newtab-wallpaper-attribution = Foto de <a data-l10n-name="name-link">{ $author_string }</a> a <a data-l10n-name="webpage-link">{ $webpage_string }</a>
+newtab-wallpaper-feature-highlight-header = Afegiu-hi un toc de color
+newtab-wallpaper-feature-highlight-content = Doneu un aspecte més fresc a les pestanyes noves amb els fons de pantalla.
+newtab-wallpaper-feature-highlight-button = Entesos
+# Tooltip for dismiss button
+feature-highlight-dismiss-button =
+    .title = Tanca
+    .aria-label = Tanca la finestra emergent
+feature-highlight-wallpaper =
+    .title = { -newtab-wallpaper-feature-highlight-header }
+    .aria-label = { -newtab-wallpaper-feature-highlight-content }
+
+## New Tab Weather
+
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-see-forecast =
+    .title = Mostra la previsió meteorològica de { $provider }
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-sponsored = { $provider } ∙ Patrocinat
+newtab-weather-menu-change-location = Canvia la ubicació
+newtab-weather-change-location-search-input = Cerca la ubicació
+newtab-weather-menu-weather-display = Visualització de la informació meteorològica
+# Display options are:
+# - Simple: Displays a current weather condition icon and the current temperature
+# - Detailed: Include simple information plus a short text summary: e.g. "Mostly cloudy"
+newtab-weather-menu-weather-display-option-simple = Senzilla
+newtab-weather-menu-change-weather-display-simple = Canvia a la vista senzilla
+newtab-weather-menu-weather-display-option-detailed = Detallada
+newtab-weather-menu-change-weather-display-detailed = Canvia a la vista detallada
+newtab-weather-menu-temperature-units = Unitats de temperatura
+newtab-weather-menu-temperature-option-fahrenheit = Fahrenheit
+newtab-weather-menu-temperature-option-celsius = Celsius
+newtab-weather-menu-change-temperature-units-fahrenheit = Canvia a Fahrenheit
+newtab-weather-menu-change-temperature-units-celsius = Canvia a Celsius
+newtab-weather-menu-hide-weather = Amaga la informació meteorològica en les pestanyes noves
+newtab-weather-menu-learn-more = Més informació
+# This message is shown if user is working offline
+newtab-weather-error-not-available = La informació meteorològica no està disponible ara mateix.

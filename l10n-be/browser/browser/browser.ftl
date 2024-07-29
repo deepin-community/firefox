@@ -644,6 +644,21 @@ urlbar-group-quickactions =
 #  $engine (String): the name of the search engine used to search.
 urlbar-group-recent-searches =
     .label = Нядаўнія пошукі
+# The header shown above trending results.
+# Variables:
+#  $engine (String): the name of the search engine providing the trending suggestions
+urlbar-group-trending =
+    .label = Папулярныя на { $engine }
+# The result menu labels shown next to trending results.
+urlbar-result-menu-trending-dont-show =
+    .label = Не паказваць папулярныя пошукавыя запыты
+    .accesskey = в
+urlbar-result-menu-trending-why =
+    .label = Чаму я бачу гэта?
+    .accesskey = Ч
+# A message that replaces a result when the user dismisses all suggestions of a
+# particular type.
+urlbar-trending-dismissal-acknowledgment = Дзякуй за ваш водгук. Вы больш не будзеце бачыць папулярныя пошукавыя запыты.
 
 ## Reader View toolbar buttons
 
@@ -994,6 +1009,10 @@ firefox-relay-offer-legal-notice = Націскаючы «Выкарыстоўв
 popup-notification-addon-install-unsigned =
     .value = (Неправерана)
 popup-notification-xpinstall-prompt-learn-more = Даведацца больш пра бяспечнае ўсталяванне дадаткаў
+# Note: Access key is set to P to match "Private" in the corresponding localized label.
+popup-notification-addon-privatebrowsing-checkbox =
+    .label = Задзейнічаць у прыватных вокнах
+    .accesskey = п
 
 ## Pop-up warning
 
@@ -1029,3 +1048,24 @@ popup-warning-button =
 #   $popupURI (String): the URI for the pop-up window
 popup-show-popup-menuitem =
     .label = Паказаць '{ $popupURI }'
+
+## File-picker crash notification ("FilePickerCrashed.sys.mjs")
+
+file-picker-failed-open = Не ўдалося адкрыць дыялогавае акно файла Windows. Немагчыма выбраць файл або папку.
+#   $path (string): The full path to which the file will be saved (e.g., 'C:\Users\Default User\Downloads\readme.txt').
+file-picker-failed-save-somewhere = Не ўдалося адкрыць дыялогавае акно файла Windows. Файл будзе захаваны ў { $path }.
+file-picker-failed-save-nowhere = Не ўдалося адкрыць дыялогавае акно файла Windows. Прадвызначаная папка не знойдзена; файл не будзе захаваны.
+file-picker-crashed-open = Здарыўся крах дыялогавага акна файла Windows. Немагчыма выбраць файл або папку.
+#   $path (string): The full path to which the file will be saved (e.g., 'C:\Users\Default User\Downloads\readme.txt').
+file-picker-crashed-save-somewhere = Здарыўся крах дыялогавага акна файла Windows. Файл будзе захаваны ў { $path }.
+file-picker-crashed-save-nowhere = Здарыўся крах дыялогавага акна файла Windows. Прадвызначаная папка не знойдзена; файл не будзе захаваны.
+
+# Button used with file-picker-crashed-save-default. Opens the folder in Windows
+# Explorer, with the saved file selected and in focus.
+#
+# The wording here should be consistent with the Windows variant of
+# `downloads-cmd-show-menuitem-2` and similar messages.
+
+file-picker-crashed-show-in-folder =
+    .label = Паказаць у папцы
+    .accessKey = а

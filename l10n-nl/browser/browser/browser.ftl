@@ -640,6 +640,21 @@ urlbar-group-quickactions =
 #  $engine (String): the name of the search engine used to search.
 urlbar-group-recent-searches =
     .label = Recente zoekopdrachten
+# The header shown above trending results.
+# Variables:
+#  $engine (String): the name of the search engine providing the trending suggestions
+urlbar-group-trending =
+    .label = Trending op { $engine }
+# The result menu labels shown next to trending results.
+urlbar-result-menu-trending-dont-show =
+    .label = Geen trending zoekopdrachten tonen
+    .accesskey = G
+urlbar-result-menu-trending-why =
+    .label = Waarom zie ik dit?
+    .accesskey = W
+# A message that replaces a result when the user dismisses all suggestions of a
+# particular type.
+urlbar-trending-dismissal-acknowledgment = Bedankt voor uw feedback. U ziet geen trending zoekopdrachten meer.
 
 ## Reader View toolbar buttons
 
@@ -990,6 +1005,10 @@ firefox-relay-offer-legal-notice = Door op ‘E-mailmasker gebruiken’ te klikk
 popup-notification-addon-install-unsigned =
     .value = (Niet geverifieerd)
 popup-notification-xpinstall-prompt-learn-more = Meer info over het veilig installeren van add-ons
+# Note: Access key is set to P to match "Private" in the corresponding localized label.
+popup-notification-addon-privatebrowsing-checkbox =
+    .label = Uitvoeren in privévensters
+    .accesskey = p
 
 ## Pop-up warning
 
@@ -1019,3 +1038,24 @@ popup-warning-button =
 #   $popupURI (String): the URI for the pop-up window
 popup-show-popup-menuitem =
     .label = “{ $popupURI }” tonen
+
+## File-picker crash notification ("FilePickerCrashed.sys.mjs")
+
+file-picker-failed-open = Het Windows-bestandsdialoogvenster kon niet worden geopend. Er is geen bestand of map geselecteerd.
+#   $path (string): The full path to which the file will be saved (e.g., 'C:\Users\Default User\Downloads\readme.txt').
+file-picker-failed-save-somewhere = Het Windows-bestandsdialoogvenster kon niet worden geopend. Het bestand wordt opgeslagen in { $path }.
+file-picker-failed-save-nowhere = Het Windows-bestandsdialoogvenster kon niet worden geopend. Er is geen standaardmap gevonden; het bestand zal niet worden opgeslagen.
+file-picker-crashed-open = Het Windows-bestandsdialoogvenster is gecrasht. Er is geen bestand of map geselecteerd.
+#   $path (string): The full path to which the file will be saved (e.g., 'C:\Users\Default User\Downloads\readme.txt').
+file-picker-crashed-save-somewhere = Het Windows-bestandsdialoogvenster is gecrasht. Het bestand wordt opgeslagen in { $path }.
+file-picker-crashed-save-nowhere = Het Windows-bestandsdialoogvenster is gecrasht. Er is geen standaardmap gevonden; het bestand zal niet worden opgeslagen.
+
+# Button used with file-picker-crashed-save-default. Opens the folder in Windows
+# Explorer, with the saved file selected and in focus.
+#
+# The wording here should be consistent with the Windows variant of
+# `downloads-cmd-show-menuitem-2` and similar messages.
+
+file-picker-crashed-show-in-folder =
+    .label = In map tonen
+    .accessKey = m

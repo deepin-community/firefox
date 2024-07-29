@@ -234,6 +234,19 @@ newtab-pocket-pocket-firefox-family = { -pocket-brand-name } jo źěl swójźby 
 newtab-pocket-save = Składowaś
 newtab-pocket-saved = Skłaźony
 
+## Thumbs up and down buttons that shows over a newtab stories card thumbnail on hover.
+
+# Clicking the thumbs up button for this story will result in more stories like this one being recommended
+newtab-pocket-thumbs-up-tooltip =
+    .title = Wěcej ako ta
+# Clicking the thumbs down button for this story informs us that the user does not feel like the story is interesting for them
+newtab-pocket-thumbs-down-tooltip =
+    .title = Nic za mnjo
+newtab-toast-thumbs-up-or-down = Źěkujomy se. Wašo měnjenje buźo nam pomagaś, waš kanal pólěpšyś.
+newtab-toast-dismiss-button =
+    .title = Zachyśiś
+    .aria-label = Zachyśiś
+
 ## Pocket content onboarding experience dialog and modal for new users seeing the Pocket section for the first time, shown as the first item in the Pocket section.
 
 newtab-pocket-onboarding-discover = Wuslěźćo nejlěpše interneta
@@ -274,6 +287,9 @@ newtab-custom-recent-subtitle = Wuběrk nejnowšych sedłow a nejnowšego wopśi
 newtab-custom-recent-toggle =
     .label = Nejnowša aktiwita
     .description = Wuběrk nejnowšych sedłow a nejnowšego wopśimjeśa
+newtab-custom-weather-toggle =
+    .label = Wjedro
+    .description = Źinsajšna wjedrowa pśedpowěsć
 newtab-custom-close-button = Zacyniś
 newtab-custom-settings = Dalšne nastajenja zastojaś
 
@@ -293,7 +309,85 @@ newtab-wallpaper-dark-panda = Cerwjeny panda w lěsu schowany
 newtab-wallpaper-dark-sky = Měsćańska krajina z nocnym njebjom
 newtab-wallpaper-dark-mountain = Górinowa krajina
 newtab-wallpaper-dark-city = Wioletna měsćańska krajina
+
+## Solid Colors
+
+newtab-wallpaper-category-title-colors = Jadnotne barwy
+newtab-wallpaper-blue = Módry
+newtab-wallpaper-light-blue = Swětłomódry
+newtab-wallpaper-light-purple = Swětłowioletny
+newtab-wallpaper-light-green = Swětłozeleny
+newtab-wallpaper-green = Zeleny
+newtab-wallpaper-beige = Beige
+newtab-wallpaper-yellow = Žołty
+newtab-wallpaper-orange = Oranžowy
+newtab-wallpaper-pink = Pink
+newtab-wallpaper-light-pink = Swětłopink
+newtab-wallpaper-red = Cerwjeny
+newtab-wallpaper-dark-blue = Śamnomódry
+newtab-wallpaper-dark-purple = Śamnowioletny
+newtab-wallpaper-dark-green = Śamnozeleny
+newtab-wallpaper-brown = Bruny
+
+## Abstract
+
+newtab-wallpaper-category-title-abstract = Abstraktne
+newtab-wallpaper-abstract-green = Zelene formy
+newtab-wallpaper-abstract-blue = Módre formy
+newtab-wallpaper-abstract-purple = Wioletne formy
+newtab-wallpaper-abstract-orange = Oranžowe formy
+newtab-wallpaper-gradient-orange = Woběžk oranžowy a pink
+newtab-wallpaper-abstract-blue-purple = Módre a wioletne formy
+
+## Photographs
+
+newtab-wallpaper-category-title-photographs = Fota
+newtab-wallpaper-beach-at-sunrise = Pśibrjog pśi zejźenju słyńca
+newtab-wallpaper-beach-at-sunset = Pśibrjog pśi schowanju słyńca
+newtab-wallpaper-storm-sky = Wichorowe njebjo
+newtab-wallpaper-sky-with-pink-clouds = Njebjo z rožowymi mrokami
+newtab-wallpaper-red-panda-yawns-in-a-tree = Cerwjeny panda w bomje zewa
+newtab-wallpaper-white-mountains = Běłe góry
 # Variables
 #   $author_string (String) - The name of the creator of the photo.
 #   $webpage_string (String) - The name of the webpage where the photo is located.
 newtab-wallpaper-attribution = Foto wót <a data-l10n-name="name-link">{ $author_string }</a> na <a data-l10n-name="webpage-link">{ $webpage_string }</a>
+newtab-wallpaper-feature-highlight-header = Wopytajśo chrapku barwy
+newtab-wallpaper-feature-highlight-content = Dajśo swójomu rejtarikoju fryšne wuglědanje ze slězynowymi wobrazami.
+newtab-wallpaper-feature-highlight-button = Som zrozměł
+# Tooltip for dismiss button
+feature-highlight-dismiss-button =
+    .title = Zachyśiś
+    .aria-label = Wóskokujuce wokno zacyniś
+feature-highlight-wallpaper =
+    .title = { -newtab-wallpaper-feature-highlight-header }
+    .aria-label = { -newtab-wallpaper-feature-highlight-content }
+
+## New Tab Weather
+
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-see-forecast =
+    .title = Wjedrowu pśedpowěsć w { $provider } pokazaś
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-sponsored = { $provider } ∙ sponserowany
+newtab-weather-menu-change-location = Městno změniś
+newtab-weather-change-location-search-input = Městno pytaś
+newtab-weather-menu-weather-display = Wjedrowe pokazanje
+# Display options are:
+# - Simple: Displays a current weather condition icon and the current temperature
+# - Detailed: Include simple information plus a short text summary: e.g. "Mostly cloudy"
+newtab-weather-menu-weather-display-option-simple = Jadnory
+newtab-weather-menu-change-weather-display-simple = Jadnory naglěd wužywaś
+newtab-weather-menu-weather-display-option-detailed = Detailěrowany
+newtab-weather-menu-change-weather-display-detailed = Detailěrowany naglěd wužywaś
+newtab-weather-menu-temperature-units = Temperaturowe jadnotki
+newtab-weather-menu-temperature-option-fahrenheit = Fahrenheit
+newtab-weather-menu-temperature-option-celsius = Celsius
+newtab-weather-menu-change-temperature-units-fahrenheit = Fahrenheit wužywaś
+newtab-weather-menu-change-temperature-units-celsius = Celsius wužywaś
+newtab-weather-menu-hide-weather = Wjedro na nowem rejtariku schowaś
+newtab-weather-menu-learn-more = Dalšne informacije
+# This message is shown if user is working offline
+newtab-weather-error-not-available = Wjedrowe daty njejsu tuchylu k dispoziciji

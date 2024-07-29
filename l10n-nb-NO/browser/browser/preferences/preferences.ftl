@@ -57,6 +57,10 @@ category-experimental =
 pane-experimental-subtitle = Fortsett med forsiktighet
 pane-experimental-search-results-header = { -brand-short-name }-eksperimenter: Fortsett med forsiktighet
 pane-experimental-description2 = Endrer du avanserte konfigurasjonsinnstillinger kan det påvirke ytelse eller sikkerhet i { -brand-short-name }.
+settings-pane-labs-title = { -firefoxlabs-brand-name }
+settings-category-labs =
+    .tooltiptext = { -firefoxlabs-brand-name }
+pane-experimental-description3 = Prøv våre eksperimentelle funksjoner! De er fortsatt under utvikling og forbedres kontinuerlig, noe som kan påvirke hvordan { -brand-short-name } fungerer.
 pane-experimental-reset =
     .label = Gjenopprett standard
     .accesskey = G
@@ -599,6 +603,10 @@ home-prefs-recent-activity-description = Et utvalg av nylige nettsteder og innho
 home-prefs-snippets-header =
     .label = Snutter
 home-prefs-snippets-description-new = Tips og nyheter fra { -vendor-short-name } og { -brand-product-name }
+home-prefs-weather-header =
+    .label = Vær
+home-prefs-weather-description = Dagens værmelding i korte trekk
+home-prefs-weather-learn-more-link = Les mer
 # Variables:
 #   $num (number) - Number of rows displayed
 home-prefs-sections-rows-option =
@@ -912,6 +920,9 @@ forms-saved-passwords =
 forms-primary-pw-use =
     .label = Bruk et hovedpassord
     .accesskey = B
+# This operation requires the user to authenticate with the operating system (device sign-in)
+forms-os-reauth =
+    .label = Krev enhetsinnlogging for å fylle ut og behandle passord
 forms-primary-pw-learn-more-link = Les mer
 # This string uses the former name of the Primary Password feature
 # ("Master Password" in English) so that the preferences can be found
@@ -944,6 +955,13 @@ primary-password-os-auth-dialog-message-win = Skriv inn innloggingsinformasjonen
 # notes are only valid for English. Please test in your locale.
 primary-password-os-auth-dialog-message-macosx = opprett et hovedpassord
 master-password-os-auth-dialog-caption = { -brand-full-name }
+# The macOS string is preceded by the operating system with "Firefox is trying to ".
+autofill-creditcard-os-dialog-message =
+    { PLATFORM() ->
+        [macos] endre innstillingene for betalingsmåter
+       *[other] { -brand-short-name } prøver å endre innstillingene for betalingsmåter. Bruk din enhetsinnlogging for å tillate dette.
+    }
+autofill-creditcard-os-auth-dialog-caption = { -brand-full-name }
 
 ## Privacy section - Autofill
 
@@ -958,14 +976,9 @@ autofill-payment-methods-checkbox-submessage = Inkluderer kreditt- og debetkort
     .accesskey = I
 autofill-saved-payment-methods-button = Lagrede betalingsmåter
     .accesskey = e
-autofill-reauth-checkbox =
-    { PLATFORM() ->
-        [macos] Krev macOS-autentisering for å fylle ut og redigere betalingsmåter.
-        [windows] Krev Windows-autentisering for å fylle ut og redigere betalingsmåter.
-        [linux] Krev Linux-autentisering for å fylle ut og redigere betalingsmåter.
-       *[other] Krev autentisering for å fylle ut og redigere betalingsmåter.
-    }
-    .accesskey = a
+# This operation requires the user to authenticate with the operating system (device sign-in)
+autofill-reauth-payment-methods-checkbox = Krev enhetsinnlogging for å fylle ut og behandle betalingsmåter
+    .accesskey = o
 
 ## Privacy Section - History
 
@@ -1292,6 +1305,14 @@ privacy-segmentation-radio-off =
     .label = Bruk { -brand-product-name }-anbefalinger
 privacy-segmentation-radio-on =
     .label = Vis detaljert informasjon
+
+## Privacy Section - Website Advertising Preferences
+
+website-advertising-header = Annonseinnstillinger for nettsted
+website-advertising-private-attribution =
+    .label = Tillat nettsteder å utføre personvernbevarende annonsemåling
+    .accesskey = a
+website-advertising-private-attribution-description = Dette hjelper nettsteder med å forstå hvordan annonsene deres fungerer uten å samle inn data om deg.
 
 ## Privacy Section - Security
 ##

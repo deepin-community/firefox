@@ -230,6 +230,19 @@ newtab-pocket-pocket-firefox-family = { -pocket-brand-name } 是 { -brand-produc
 newtab-pocket-save = 保存
 newtab-pocket-saved = 已保存
 
+## Thumbs up and down buttons that shows over a newtab stories card thumbnail on hover.
+
+# Clicking the thumbs up button for this story will result in more stories like this one being recommended
+newtab-pocket-thumbs-up-tooltip =
+    .title = 相似推荐
+# Clicking the thumbs down button for this story informs us that the user does not feel like the story is interesting for them
+newtab-pocket-thumbs-down-tooltip =
+    .title = 不感兴趣
+newtab-toast-thumbs-up-or-down = 谢谢，您的反馈有助于我们改进为您提供的推送。
+newtab-toast-dismiss-button =
+    .title = 知道了
+    .aria-label = 知道了
+
 ## Pocket content onboarding experience dialog and modal for new users seeing the Pocket section for the first time, shown as the first item in the Pocket section.
 
 newtab-pocket-onboarding-discover = 发现最好的网络
@@ -267,6 +280,9 @@ newtab-custom-recent-subtitle = 近期访问的网站与内容精选
 newtab-custom-recent-toggle =
     .label = 近期动态
     .description = 近期访问的网站与内容精选
+newtab-custom-weather-toggle =
+    .label = 天气
+    .description = 速览今日天气预报
 newtab-custom-close-button = 关闭
 newtab-custom-settings = 管理更多设置
 
@@ -286,7 +302,85 @@ newtab-wallpaper-dark-panda = 躲在森林里的小熊猫
 newtab-wallpaper-dark-sky = 夜空下的城市景观
 newtab-wallpaper-dark-mountain = 山地景观
 newtab-wallpaper-dark-city = 紫色城市景观
+
+## Solid Colors
+
+newtab-wallpaper-category-title-colors = 纯色
+newtab-wallpaper-blue = 蓝色
+newtab-wallpaper-light-blue = 淡蓝色
+newtab-wallpaper-light-purple = 淡紫色
+newtab-wallpaper-light-green = 淡绿色
+newtab-wallpaper-green = 绿色
+newtab-wallpaper-beige = 米色
+newtab-wallpaper-yellow = 黄色
+newtab-wallpaper-orange = 橙色
+newtab-wallpaper-pink = 粉色
+newtab-wallpaper-light-pink = 淡粉色
+newtab-wallpaper-red = 红色
+newtab-wallpaper-dark-blue = 深蓝色
+newtab-wallpaper-dark-purple = 深紫色
+newtab-wallpaper-dark-green = 深绿色
+newtab-wallpaper-brown = 棕色
+
+## Abstract
+
+newtab-wallpaper-category-title-abstract = 抽象
+newtab-wallpaper-abstract-green = 绿色形状
+newtab-wallpaper-abstract-blue = 蓝色形状
+newtab-wallpaper-abstract-purple = 紫色形状
+newtab-wallpaper-abstract-orange = 橙色形状
+newtab-wallpaper-gradient-orange = 橙粉渐变
+newtab-wallpaper-abstract-blue-purple = 蓝紫渐变
+
+## Photographs
+
+newtab-wallpaper-category-title-photographs = 摄影
+newtab-wallpaper-beach-at-sunrise = 海滩日出
+newtab-wallpaper-beach-at-sunset = 海滩日落
+newtab-wallpaper-storm-sky = 电闪雷鸣
+newtab-wallpaper-sky-with-pink-clouds = 飘着粉色云朵的天空
+newtab-wallpaper-red-panda-yawns-in-a-tree = 在树上打哈欠的小熊猫
+newtab-wallpaper-white-mountains = 皑白山脉
 # Variables
 #   $author_string (String) - The name of the creator of the photo.
 #   $webpage_string (String) - The name of the webpage where the photo is located.
-newtab-wallpaper-attribution = 照片由 <a data-l10n-name="name-link">{ $author_string }</a> 提供，来源：<a data-l10n-name="webpage-link">{ $webpage_string }</a>
+newtab-wallpaper-attribution = 照片由 <a data-l10n-name="name-link">{ $author_string }</a> 在 <a data-l10n-name="webpage-link">{ $webpage_string }</a> 上发布
+newtab-wallpaper-feature-highlight-header = 试用新色彩
+newtab-wallpaper-feature-highlight-content = 选张壁纸，给新标签页加点新鲜感。
+newtab-wallpaper-feature-highlight-button = 知道了
+# Tooltip for dismiss button
+feature-highlight-dismiss-button =
+    .title = 知道了
+    .aria-label = 关闭弹窗
+feature-highlight-wallpaper =
+    .title = { -newtab-wallpaper-feature-highlight-header }
+    .aria-label = { -newtab-wallpaper-feature-highlight-content }
+
+## New Tab Weather
+
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-see-forecast =
+    .title = 在“{ $provider }”上查看天气预报
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-sponsored = { $provider } ∙ 赞助
+newtab-weather-menu-change-location = 更改位置
+newtab-weather-change-location-search-input = 搜索位置
+newtab-weather-menu-weather-display = 天气信息显示方式
+# Display options are:
+# - Simple: Displays a current weather condition icon and the current temperature
+# - Detailed: Include simple information plus a short text summary: e.g. "Mostly cloudy"
+newtab-weather-menu-weather-display-option-simple = 简明
+newtab-weather-menu-change-weather-display-simple = 切换到简明视图
+newtab-weather-menu-weather-display-option-detailed = 详细
+newtab-weather-menu-change-weather-display-detailed = 切换到详细视图
+newtab-weather-menu-temperature-units = 温度单位
+newtab-weather-menu-temperature-option-fahrenheit = 华氏度
+newtab-weather-menu-temperature-option-celsius = 摄氏度
+newtab-weather-menu-change-temperature-units-fahrenheit = 切换为华氏度
+newtab-weather-menu-change-temperature-units-celsius = 切换为摄氏度
+newtab-weather-menu-hide-weather = 隐藏新标签页上的天气信息
+newtab-weather-menu-learn-more = 详细了解
+# This message is shown if user is working offline
+newtab-weather-error-not-available = 目前无法获取天气数据。

@@ -417,6 +417,20 @@ support-printing-modified-settings = Spremenjene nastavitve tiskanja
 support-printing-prefs-name = Ime
 support-printing-prefs-value = Vrednost
 
+## Remote Settings sections
+
+support-remote-settings-title = Oddaljene nastavitve
+support-remote-settings-status = Stanje
+support-remote-settings-status-ok = V redu
+# Status when synchronization is not working.
+support-remote-settings-status-broken = Ne deluje
+support-remote-settings-last-check = Zadnje preverjanje
+support-remote-settings-local-timestamp = Lokalni časovni žig
+support-remote-settings-sync-history = Zgodovina
+support-remote-settings-sync-history-status = Stanje
+support-remote-settings-sync-history-datetime = Datum
+support-remote-settings-sync-history-infos = Informacije
+
 ## Normandy sections
 
 support-remote-experiments-title = Oddaljeni poskusi
@@ -433,3 +447,15 @@ pointing-device-mouse = Miška
 pointing-device-touchscreen = Zaslon na dotik
 pointing-device-pen-digitizer = Digitalno pisalo
 pointing-device-none = Ni kazalnih naprav
+
+## Content Analysis (DLP)
+
+# DLP stands for Data Loss Prevention, an industry term for external software
+# that enterprises can set up to prevent sensitive data from being transferred
+# to external websites.
+content-analysis-title = Analiza vsebine (DLP)
+content-analysis-active = Aktivna
+content-analysis-connected-to-agent = Povezava z agentom
+content-analysis-agent-path = Pot agenta
+content-analysis-agent-failed-signature-verification = Preverjanje podpisa agenta ni uspelo
+content-analysis-request-count = Število zahtevkov

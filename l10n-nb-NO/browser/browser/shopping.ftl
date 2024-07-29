@@ -115,6 +115,7 @@ shopping-settings-sidebar-enabled-state = Vurderingskontrollør er <strong>på</
 shopping-adjusted-rating-label =
     .label = Justert vurdering
 shopping-adjusted-rating-unreliable-reviews = Upålitelige vuderinger er fjernet
+shopping-adjusted-rating-based-reliable-reviews = Basert på pålitelige vurderinger
 
 ## Strings for the review reliability component
 
@@ -133,6 +134,8 @@ shopping-analysis-explainer-learn-more2 = Les mer om <a data-l10n-name="review-q
 # websites, which will be inserted without being translated.
 #  $retailer (String) - capitalized name of the shopping website, for example, "Amazon".
 shopping-analysis-explainer-highlights-description = <strong>Høydepunkter</strong> er fra { $retailer }-vurderinger i løpet av de siste 80 dagene som vi mener er pålitelige.
+# Fallback for analysis highlights explainer if the retailer is ever unknown
+shopping-analysis-explainer-highlights-description-unknown-retailer = <strong>Høydepunkter</strong> er fra vurderinger i løpet av de siste 80 dagene som vi mener er pålitelige.
 shopping-analysis-explainer-review-grading-scale-reliable = Pålitelige vurderinger. Vi tror at vurderingene sannsynligvis kommer fra ekte kunder som har gitt ærlige, objektive vurderinger.
 shopping-analysis-explainer-review-grading-scale-mixed = Vi tror det er en blanding av pålitelige og upålitelige vurderinger.
 shopping-analysis-explainer-review-grading-scale-unreliable = Upålitelige vurderinger. Vi mener vurderingene sannsynligvis er falske eller fra partiske vurderere.

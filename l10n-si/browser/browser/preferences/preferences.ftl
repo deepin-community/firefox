@@ -3,11 +3,18 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 do-not-track-description = ඔබව ලුහුබඳිනවාට අකමැති බව ලුහු නොබඳින්න සංඥාවකින් අඩවි වෙත දන්වන්න
+do-not-track-description2 =
+    .label = අඩවි වෙත "ලුහුබඳින්න එපා" ඉල්ලීමක් යවන්න
+    .accesskey = d
 do-not-track-learn-more = තව දැනගන්න
 do-not-track-option-default-content-blocking-known =
     .label = දන්නා ලුහුබැඳීම් බාධනයට { -brand-short-name } සකසා ඇති විට පමණි
 do-not-track-option-always =
     .label = සැමවිට
+global-privacy-control-description =
+    .label = මාගේ දත්ත විකිණීමෙන් හෝ බෙදා ගැනීමෙන් වළකින ලෙස අඩවි වලට පවසන්න
+    .accesskey = s
+non-technical-privacy-header = අඩවි‌ සඳහා පෞද්ගලිකත්ව අභිප්‍රේත
 settings-page-title = සැකසුම්
 # This is used to determine the width of the search field in about:preferences,
 # in order to make the entire placeholder string visible
@@ -44,6 +51,9 @@ category-experimental =
 pane-experimental-subtitle = ප්‍රවේශම්ව ඉදිරියට යන්න
 pane-experimental-search-results-header = { -brand-short-name } අත්හදා බැලීම්: ප්‍රවේශම්ව ඉදිරියට යන්න
 pane-experimental-description2 = වැඩිදුර වින්‍යාස සැකසුම් වෙනස් කිරීම { -brand-short-name } කාර්ය සාධනයට හෝ ආරක්‍ෂාවට බලපෑ හැකිය.
+settings-pane-labs-title = { -firefoxlabs-brand-name }
+settings-category-labs =
+    .tooltiptext = { -firefoxlabs-brand-name }
 pane-experimental-reset =
     .label = පෙරනිමියට ප්‍රත්‍යර්පණය
     .accesskey = R
@@ -116,6 +126,9 @@ set-as-my-default-browser =
 startup-restore-windows-and-tabs =
     .label = කලින් කවුළු හා පටිති අරින්න
     .accesskey = s
+windows-launch-on-login =
+    .label = ඔබගේ පරිගණකය ඇරඹෙන විට ස්වයංක්‍රීයව { -brand-short-name } අරින්න
+    .accesskey = O
 startup-restore-warn-on-quit =
     .label = අතිරික්සුවෙන් ඉවත් වන විට දන්වන්න
 disable-extension =
@@ -453,6 +466,9 @@ browsing-use-smooth-scrolling =
 browsing-gtk-use-non-overlay-scrollbars =
     .label = සැමවිට අනුචලන තීරු පෙන්වන්න
     .accesskey = o
+browsing-always-underline-links =
+    .label = සැමවිට සබැඳි යටින් ඉරි අඳින්න
+    .accesskey = u
 browsing-use-onscreen-keyboard =
     .label = අවශ්‍ය විටක ස්පර්ශක යතුරු පුවරුව පෙන්වන්න
     .accesskey = k
@@ -595,6 +611,9 @@ search-suggestions-desc = සෙවුම් යන්ත්‍ර වලින�
 search-suggestions-option =
     .label = සෙවුම් යෝජනා ලබාදෙන්න
     .accesskey = s
+search-show-suggestions-option =
+    .label = සෙවුම් යෝජනා පෙන්වන්න
+    .accesskey = S
 search-show-suggestions-url-bar-option =
     .label = සෙවුම් යෝජනා ලිපින තීරුවේ පෙන්වන්න
     .accesskey = I
@@ -728,6 +747,7 @@ sync-currently-syncing-bookmarks = පොත්යොමු
 sync-currently-syncing-history = ඉතිහාසය
 sync-currently-syncing-tabs = පටිති අරිින්න
 sync-currently-syncing-logins-passwords = පිවිසුම් සහ මුරපද
+sync-currently-syncing-passwords = මුරපද
 sync-currently-syncing-addresses = ලිපින
 sync-currently-syncing-creditcards = ණය පත්
 sync-currently-syncing-addons = එක්කහු
@@ -760,6 +780,10 @@ sync-engine-logins-passwords =
     .label = පිවිසුම් සහ මුරපද
     .tooltiptext = ඔබ සුරැකි පිවිසුම් සහ මුරපද
     .accesskey = L
+sync-engine-passwords =
+    .label = මුරපද
+    .tooltiptext = ඔබ සුරැකි මුරපද
+    .accesskey = P
 sync-engine-addresses =
     .label = ලිපින
     .tooltiptext = සුරකින ලද තැපැල් ලිපින (වැඩතලයට පමණි)
@@ -817,12 +841,23 @@ forms-ask-to-save-logins =
 
 ## Privacy Section - Passwords
 
+# "Logins" is the former term for "Passwords". Users should find password settings
+# by searching for the former term "logins". It's not displayed in the UI.
+pane-privacy-passwords-header = මුරපද
+    .searchkeywords = පිවිසුම්
+# Checkbox to control whether UI is shown to users to save or fill logins/passwords.
+forms-ask-to-save-passwords =
+    .label = මුරපද සුරැකීමට අසන්න
+    .accesskey = A
 forms-exceptions =
     .label = හැරදැමීම්...
     .accesskey = x
 forms-generate-passwords =
     .label = ශක්තිමත් මුරපද යෝජනා කර උත්පාදනය කරන්න
     .accesskey = u
+forms-suggest-passwords =
+    .label = ශක්තිමත් මුරපද යෝජනා කරන්න
+    .accesskey = S
 forms-breach-alerts =
     .label = උල්ලංඝනය වූ අඩවිවල මුරපද පිළිබඳව ඇඟවීම් පෙන්වන්න
     .accesskey = b
@@ -837,6 +872,13 @@ forms-fill-logins-and-passwords =
 forms-saved-logins =
     .label = සුරැකි පිවිසුම්…
     .accesskey = L
+# Checkbox which controls filling saved logins into fields automatically when they appear, in some cases without user interaction.
+forms-fill-usernames-and-passwords =
+    .label = පරිශ්‍රීලක නාම සහ මුරපද ස්වයංක්‍රීයව පුරවන්න
+    .accesskey = F
+forms-saved-passwords =
+    .label = සුරැකි මුරපද
+    .accesskey = d
 forms-primary-pw-use =
     .label = ප්‍රාථමික මුරපදයක් යොදා ගන්න
     .accesskey = U
@@ -972,6 +1014,7 @@ cookie-banner-handling-description = { -brand-short-name } සහාය දක�
 
 ## Privacy Section - Cookie Banner Blocking
 
+cookie-banner-blocker-description = පෞද්ගලික පිරික්සුම් ප්‍රකාරයේ දත්තකඩ භාවිතා කළ හැකිදැයි අඩවියක් අසන විට { -brand-short-name } ස්වයංක්‍රීයව ප්‍රතික්ෂේප කරයි. සහාය දක්වන අඩවි වලට පමණි.
 cookie-banner-learn-more = තව දැනගන්න
 forms-handle-cookie-banners =
     .label = දත්තකඩ පතාක අවම කරන්න
@@ -986,6 +1029,9 @@ addressbar-locbar-history-option =
 addressbar-locbar-bookmarks-option =
     .label = පොත්යොමු
     .accesskey = k
+addressbar-locbar-clipboard-option =
+    .label = පසුරු පුවරුව
+    .accesskey = C
 addressbar-locbar-openpage-option =
     .label = විවෘත පටිති
     .accesskey = O
@@ -1003,6 +1049,12 @@ addressbar-locbar-quickactions-option =
     .label = ඉක්මන් ක්‍රියාමාර්ග
     .accesskey = Q
 addressbar-suggestions-settings = සෙවුම් යන්ත්‍රයේ යෝජනා සඳහා අභිප්‍රේත වෙනස් කරන්න
+addressbar-locbar-showrecentsearches-option =
+    .label = මෑත සෙවුම් පෙන්වන්න
+    .accesskey = r
+addressbar-locbar-showtrendingsuggestions-option =
+    .label = නැගීඑන සෙවුම් යෝජනා පෙන්වන්න
+    .accesskey = t
 addressbar-quickactions-learn-more = තව දැනගන්න
 
 ## Privacy Section - Content Blocking
@@ -1182,6 +1234,13 @@ privacy-segmentation-radio-off =
 privacy-segmentation-radio-on =
     .label = විස්තරාත්මක තොරතුරු පෙන්වන්න
 
+## Privacy Section - Website Advertising Preferences
+
+website-advertising-header = අඩවි දැන්වීම්කරණ අභිප්‍රේත
+website-advertising-private-attribution =
+    .label = අඩවි වලට රහස්‍යතා ප්‍රරක්ෂණ දැන්වීම් මාපනයට ඉඩදෙන්න
+    .accesskey = a
+
 ## Privacy Section - Security
 ##
 ## It is important that wording follows the guidelines outlined on this page:
@@ -1234,6 +1293,7 @@ httpsonly-radio-disabled =
 
 preferences-doh-header = HTTPS හරහා ව.නා.ප.
 preferences-doh-description = HTTPS හරහා ව.නා.ප. සංකේතිත සම්බන්ධතාවයක් මගින් වසම් නාම සඳහා ඔබගේ ඉල්ලීම් යවයි. එය ආරක්‍ෂිත වසම් නාම පද්ධතියක් (DNS) සාදමින් ඔබ ගොඩවැදීමට සැරසෙන අඩවි මොනවාදැයි අන් අයට බැලීමට අපහසු කරයි.
+preferences-doh-description2 = HTTPS හරහා ව.නා.ප. සංකේතිත සම්බන්ධතාවයක් මගින් වසම් නාම සඳහා ඔබගේ ඉල්ලීම් යවයි. එය ආරක්‍ෂිත වසම් නාම පද්ධතියක් (DNS) සපයමින් ඔබ ගොඩවැදීමට සැරසෙන අඩවි මොනවාදැයි අන් අයට බැලීමට අපහසු කරයි.
 # Variables:
 #   $status (string) - The status of the DoH connection
 preferences-doh-status = තත්‍වය: { $status }
@@ -1250,6 +1310,7 @@ preferences-doh-status-disabled = අක්‍රියයි
 #   $reason (string) - A string representation of the reason DoH is not active. For example NS_ERROR_UNKNOWN_HOST or TRR_RCODE_FAIL.
 preferences-doh-status-not-active = සක්‍රිය නැත ({ $reason })
 preferences-doh-group-message = මෙයින් ආරක්‍ෂිත ව.නා.ප. සබල කරන්න:
+preferences-doh-group-message2 = මෙලෙස HTTPS මගින් ව.නා.ප. සබල කරන්න:
 preferences-doh-expand-section =
     .tooltiptext = තවත් තොරතුරු
 preferences-doh-setting-default =

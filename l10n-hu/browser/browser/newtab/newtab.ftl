@@ -234,6 +234,15 @@ newtab-pocket-pocket-firefox-family = A { -pocket-brand-name } a { -brand-produc
 newtab-pocket-save = Mentés
 newtab-pocket-saved = Mentve
 
+## Thumbs up and down buttons that shows over a newtab stories card thumbnail on hover.
+
+# Clicking the thumbs up button for this story will result in more stories like this one being recommended
+newtab-pocket-thumbs-up-tooltip =
+    .title = Több hasonló
+newtab-toast-dismiss-button =
+    .title = Eltüntetés
+    .aria-label = Eltüntetés
+
 ## Pocket content onboarding experience dialog and modal for new users seeing the Pocket section for the first time, shown as the first item in the Pocket section.
 
 newtab-pocket-onboarding-discover = Fedezze fel a web legjavát
@@ -272,6 +281,9 @@ newtab-custom-recent-subtitle = Válogatás a legutóbbi webhelyekből és tarta
 newtab-custom-recent-toggle =
     .label = Legutóbbi tevékenység
     .description = Válogatás a legutóbbi webhelyekből és tartalmakból
+newtab-custom-weather-toggle =
+    .label = Időjárás
+    .description = A mai előrejelzés egy pillantásra
 newtab-custom-close-button = Bezárás
 newtab-custom-settings = További beállítások kezelése
 
@@ -291,7 +303,85 @@ newtab-wallpaper-dark-panda = Vörös panda elrejtve az erdőben
 newtab-wallpaper-dark-sky = Városi táj éjszakai égbolttal
 newtab-wallpaper-dark-mountain = Hegyvidéki táj
 newtab-wallpaper-dark-city = Lila városi táj
+
+## Solid Colors
+
+newtab-wallpaper-category-title-colors = Egyszínű színek
+newtab-wallpaper-blue = Kék
+newtab-wallpaper-light-blue = Világoskék
+newtab-wallpaper-light-purple = Világoslila
+newtab-wallpaper-light-green = Világoszöld
+newtab-wallpaper-green = Zöld
+newtab-wallpaper-beige = Bézs
+newtab-wallpaper-yellow = Sárga
+newtab-wallpaper-orange = Narancssárga
+newtab-wallpaper-pink = Rózsaszín
+newtab-wallpaper-light-pink = Világos rózsaszín
+newtab-wallpaper-red = Vörös
+newtab-wallpaper-dark-blue = Sötétkék
+newtab-wallpaper-dark-purple = Sötétlila
+newtab-wallpaper-dark-green = Sötétzöld
+newtab-wallpaper-brown = Barna
+
+## Abstract
+
+newtab-wallpaper-category-title-abstract = Absztrakt
+newtab-wallpaper-abstract-green = Zöld alakzatok
+newtab-wallpaper-abstract-blue = Kék alakzatok
+newtab-wallpaper-abstract-purple = Lila alakzatok
+newtab-wallpaper-abstract-orange = Narancssárga alakzatok
+newtab-wallpaper-gradient-orange = Narancssárga és rózsaszín átmenet
+newtab-wallpaper-abstract-blue-purple = Kék és lila alakzatok
+
+## Photographs
+
+newtab-wallpaper-category-title-photographs = Fényképek
+newtab-wallpaper-beach-at-sunrise = Strand napkeltekor
+newtab-wallpaper-beach-at-sunset = Strand naplementekor
+newtab-wallpaper-storm-sky = Viharos égbolt
+newtab-wallpaper-sky-with-pink-clouds = Égbolt rózsaszín felhőkkel
+newtab-wallpaper-red-panda-yawns-in-a-tree = Vörös panda ásít egy fán
+newtab-wallpaper-white-mountains = Fehér hegyek
 # Variables
 #   $author_string (String) - The name of the creator of the photo.
 #   $webpage_string (String) - The name of the webpage where the photo is located.
 newtab-wallpaper-attribution = Fénykép: <a data-l10n-name="name-link">{ $author_string }</a> itt: <a data-l10n-name="webpage-link">{ $webpage_string }</a>
+newtab-wallpaper-feature-highlight-header = Próbáljon ki egy kis színt
+newtab-wallpaper-feature-highlight-content = Adjon friss külsőt az Új lap oldalnak háttérképekkel.
+newtab-wallpaper-feature-highlight-button = Megértettem!
+# Tooltip for dismiss button
+feature-highlight-dismiss-button =
+    .title = Eltüntetés
+    .aria-label = Felugró ablak bezárása
+feature-highlight-wallpaper =
+    .title = { -newtab-wallpaper-feature-highlight-header }
+    .aria-label = { -newtab-wallpaper-feature-highlight-content }
+
+## New Tab Weather
+
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-see-forecast =
+    .title = Előrejelzés megtekintése itt: { $provider }
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-sponsored = { $provider } ∙ Szponzorálva
+newtab-weather-menu-change-location = Hely módosítása
+newtab-weather-change-location-search-input = Keresési hely
+newtab-weather-menu-weather-display = Időjárás-kijelző
+# Display options are:
+# - Simple: Displays a current weather condition icon and the current temperature
+# - Detailed: Include simple information plus a short text summary: e.g. "Mostly cloudy"
+newtab-weather-menu-weather-display-option-simple = Egyszerű
+newtab-weather-menu-change-weather-display-simple = Átváltás egyszerű nézetre
+newtab-weather-menu-weather-display-option-detailed = Részletek
+newtab-weather-menu-change-weather-display-detailed = Átváltás részletes nézetre
+newtab-weather-menu-temperature-units = Hőmérséklet-egységek
+newtab-weather-menu-temperature-option-fahrenheit = Fahrenheit
+newtab-weather-menu-temperature-option-celsius = Celsius
+newtab-weather-menu-change-temperature-units-fahrenheit = Váltás Fahrenheitre
+newtab-weather-menu-change-temperature-units-celsius = Váltás Celsiusra
+newtab-weather-menu-hide-weather = Időjárás elrejtése az Új lapon
+newtab-weather-menu-learn-more = További tudnivalók
+# This message is shown if user is working offline
+newtab-weather-error-not-available = Az időjárásadatok most nem érhetők el

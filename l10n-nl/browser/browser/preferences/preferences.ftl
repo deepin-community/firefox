@@ -57,6 +57,10 @@ category-experimental =
 pane-experimental-subtitle = Ga voorzichtig verder
 pane-experimental-search-results-header = { -brand-short-name }-experimenten: voorzichtigheid geadviseerd
 pane-experimental-description2 = Het wijzigen van geavanceerde configuratie-instellingen kan de prestaties of veiligheid van { -brand-short-name } beïnvloeden.
+settings-pane-labs-title = { -firefoxlabs-brand-name }
+settings-category-labs =
+    .tooltiptext = { -firefoxlabs-brand-name }
+pane-experimental-description3 = Probeer onze experimentele functies! Ze zijn in ontwikkeling en worden steeds beter, wat van invloed kan zijn op de manier waarop { -brand-short-name } werkt.
 pane-experimental-reset =
     .label = Standaardwaarden herstellen
     .accesskey = h
@@ -599,6 +603,10 @@ home-prefs-recent-activity-description = Een selectie van recente websites en in
 home-prefs-snippets-header =
     .label = Snippets
 home-prefs-snippets-description-new = Tips en nieuws van { -vendor-short-name } en { -brand-product-name }
+home-prefs-weather-header =
+    .label = Weer
+home-prefs-weather-description = De weersverwachting van vandaag in een oogopslag.
+home-prefs-weather-learn-more-link = Meer info
 # Variables:
 #   $num (number) - Number of rows displayed
 home-prefs-sections-rows-option =
@@ -912,6 +920,9 @@ forms-saved-passwords =
 forms-primary-pw-use =
     .label = Een hoofdwachtwoord gebruiken
     .accesskey = h
+# This operation requires the user to authenticate with the operating system (device sign-in)
+forms-os-reauth =
+    .label = Apparaataanmelding voor invullen en beheren van wachtwoorden vereisen
 forms-primary-pw-learn-more-link = Meer info
 # This string uses the former name of the Primary Password feature
 # ("Master Password" in English) so that the preferences can be found
@@ -944,6 +955,13 @@ primary-password-os-auth-dialog-message-win = Voer uw aanmeldgegevens voor Windo
 # notes are only valid for English. Please test in your locale.
 primary-password-os-auth-dialog-message-macosx = een hoofdwachtwoord aanmaken
 master-password-os-auth-dialog-caption = { -brand-full-name }
+# The macOS string is preceded by the operating system with "Firefox is trying to ".
+autofill-creditcard-os-dialog-message =
+    { PLATFORM() ->
+        [macos] instellingen voor betalingsmethoden wijzigen
+       *[other] { -brand-short-name } probeert de instellingen voor betalingsmethoden te wijzigen. Gebruik uw apparaataanmelding om dit toe te staan.
+    }
+autofill-creditcard-os-auth-dialog-caption = { -brand-full-name }
 
 ## Privacy section - Autofill
 
@@ -958,14 +976,9 @@ autofill-payment-methods-checkbox-submessage = Omvat creditcards en bankpassen
     .accesskey = a
 autofill-saved-payment-methods-button = Opgeslagen betalingsmethoden
     .accesskey = l
-autofill-reauth-checkbox =
-    { PLATFORM() ->
-        [macos] macOS-authenticatie vereisen voor het invullen en bewerken van betalingsmethoden.
-        [windows] Windows-authenticatie vereisen voor het invullen en bewerken van betalingsmethoden.
-        [linux] Linux-authenticatie vereisen voor het invullen en bewerken van betalingsmethoden.
-       *[other] Authenticatie vereisen voor het invullen en bewerken van betalingsmethoden.
-    }
-    .accesskey = o
+# This operation requires the user to authenticate with the operating system (device sign-in)
+autofill-reauth-payment-methods-checkbox = Apparaataanmelding voor invullen en beheren van betalingsmethoden vereisen
+    .accesskey = m
 
 ## Privacy Section - History
 
@@ -1102,6 +1115,9 @@ addressbar-suggestions-settings = Voorkeuren voor zoekmachinesuggesties wijzigen
 addressbar-locbar-showrecentsearches-option =
     .label = Recente zoekopdrachten tonen
     .accesskey = R
+addressbar-locbar-showtrendingsuggestions-option =
+    .label = Trending zoeksuggesties tonen
+    .accesskey = T
 addressbar-quickactions-learn-more = Meer info
 
 ## Privacy Section - Content Blocking
@@ -1292,6 +1308,14 @@ privacy-segmentation-radio-off =
     .label = { -brand-product-name }-aanbevelingen gebruiken
 privacy-segmentation-radio-on =
     .label = Detailinformatie tonen
+
+## Privacy Section - Website Advertising Preferences
+
+website-advertising-header = Website-advertentievoorkeuren
+website-advertising-private-attribution =
+    .label = Websites toestaan privacybeschermende advertentiemetingen uit te voeren
+    .accesskey = a
+website-advertising-private-attribution-description = Dit helpt websites te begrijpen hoe hun advertenties presteren zonder gegevens over u te verzamelen.
 
 ## Privacy Section - Security
 ##

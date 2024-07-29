@@ -234,6 +234,19 @@ newtab-pocket-pocket-firefox-family = { -pocket-brand-name } là một phần c�
 newtab-pocket-save = Lưu
 newtab-pocket-saved = Đã lưu
 
+## Thumbs up and down buttons that shows over a newtab stories card thumbnail on hover.
+
+# Clicking the thumbs up button for this story will result in more stories like this one being recommended
+newtab-pocket-thumbs-up-tooltip =
+    .title = Thêm những nội dung giống thế này
+# Clicking the thumbs down button for this story informs us that the user does not feel like the story is interesting for them
+newtab-pocket-thumbs-down-tooltip =
+    .title = Không hợp với tôi
+newtab-toast-thumbs-up-or-down = Cảm ơn. Những phản hồi của bạn sẽ giúp chúng tôi cải thiện bản tin của bạn.
+newtab-toast-dismiss-button =
+    .title = Bỏ qua
+    .aria-label = Bỏ qua
+
 ## Pocket content onboarding experience dialog and modal for new users seeing the Pocket section for the first time, shown as the first item in the Pocket section.
 
 newtab-pocket-onboarding-discover = Khám phá những điều tốt nhất của web
@@ -271,6 +284,9 @@ newtab-custom-recent-subtitle = Tuyển chọn các trang và nội dung gần �
 newtab-custom-recent-toggle =
     .label = Hoạt động gần đây
     .description = Tuyển chọn các trang và nội dung gần đây
+newtab-custom-weather-toggle =
+    .label = Thời tiết
+    .description = Sơ lược về dự báo hôm nay
 newtab-custom-close-button = Đóng
 newtab-custom-settings = Quản lý các cài đặt khác
 
@@ -290,7 +306,85 @@ newtab-wallpaper-dark-panda = Gấu trúc đỏ ẩn trong rừng
 newtab-wallpaper-dark-sky = Cảnh quan thành phố với bầu trời đêm
 newtab-wallpaper-dark-mountain = Phong cảnh núi
 newtab-wallpaper-dark-city = Phong cảnh thành phố màu tím
+
+## Solid Colors
+
+newtab-wallpaper-category-title-colors = Màu
+newtab-wallpaper-blue = Xanh dương
+newtab-wallpaper-light-blue = Xanh dương nhạt
+newtab-wallpaper-light-purple = Tím nhạt
+newtab-wallpaper-light-green = Xanh lục nhạt
+newtab-wallpaper-green = Xanh lục
+newtab-wallpaper-beige = Be
+newtab-wallpaper-yellow = Vàng
+newtab-wallpaper-orange = Da cam
+newtab-wallpaper-pink = Hồng
+newtab-wallpaper-light-pink = Hồng nhạt
+newtab-wallpaper-red = Đỏ
+newtab-wallpaper-dark-blue = Xanh dương đậm
+newtab-wallpaper-dark-purple = Tím đậm
+newtab-wallpaper-dark-green = Xanh lục đậm
+newtab-wallpaper-brown = Nâu
+
+## Abstract
+
+newtab-wallpaper-category-title-abstract = Trừu tượng
+newtab-wallpaper-abstract-green = Hình dạng màu xanh lục
+newtab-wallpaper-abstract-blue = Hình dạng màu xanh dương
+newtab-wallpaper-abstract-purple = Hình dạng màu tím
+newtab-wallpaper-abstract-orange = Hình dạng màu cam
+newtab-wallpaper-gradient-orange = Gradient màu cam và màu hồng
+newtab-wallpaper-abstract-blue-purple = Hình dạng màu xanh dương và màu tím
+
+## Photographs
+
+newtab-wallpaper-category-title-photographs = Hình ảnh
+newtab-wallpaper-beach-at-sunrise = Bãi biển lúc bình minh
+newtab-wallpaper-beach-at-sunset = Bãi biển lúc hoàng hôn
+newtab-wallpaper-storm-sky = Trời giông bão
+newtab-wallpaper-sky-with-pink-clouds = Bầu trời với đám mây màu hồng
+newtab-wallpaper-red-panda-yawns-in-a-tree = Gấu trúc đỏ ngáp trên cây
+newtab-wallpaper-white-mountains = Núi trắng
 # Variables
 #   $author_string (String) - The name of the creator of the photo.
 #   $webpage_string (String) - The name of the webpage where the photo is located.
 newtab-wallpaper-attribution = Hình ảnh bởi <a data-l10n-name="name-link">{ $author_string }</a> trên <a data-l10n-name="webpage-link">{ $webpage_string }</a>
+newtab-wallpaper-feature-highlight-header = Thử một chút màu sắc
+newtab-wallpaper-feature-highlight-content = Mang lại diện mạo mới cho thẻ mới của bạn bằng hình nền.
+newtab-wallpaper-feature-highlight-button = Đã hiểu
+# Tooltip for dismiss button
+feature-highlight-dismiss-button =
+    .title = Bỏ qua
+    .aria-label = Đóng cửa sổ bật lên
+feature-highlight-wallpaper =
+    .title = { -newtab-wallpaper-feature-highlight-header }
+    .aria-label = { -newtab-wallpaper-feature-highlight-content }
+
+## New Tab Weather
+
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-see-forecast =
+    .title = Xem dự báo với { $provider }
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-sponsored = { $provider } ∙ Được tài trợ
+newtab-weather-menu-change-location = Thay đổi khu vực
+newtab-weather-change-location-search-input = Tìm kiếm khu vực
+newtab-weather-menu-weather-display = Cách hiển thị thời tiết
+# Display options are:
+# - Simple: Displays a current weather condition icon and the current temperature
+# - Detailed: Include simple information plus a short text summary: e.g. "Mostly cloudy"
+newtab-weather-menu-weather-display-option-simple = Đơn giản
+newtab-weather-menu-change-weather-display-simple = Chuyển sang xem đơn giản
+newtab-weather-menu-weather-display-option-detailed = Chi tiết
+newtab-weather-menu-change-weather-display-detailed = Chuyển sang xem chi tiết
+newtab-weather-menu-temperature-units = Đơn vị nhiệt độ
+newtab-weather-menu-temperature-option-fahrenheit = Độ F
+newtab-weather-menu-temperature-option-celsius = Độ C
+newtab-weather-menu-change-temperature-units-fahrenheit = Chuyển sang độ F
+newtab-weather-menu-change-temperature-units-celsius = Chuyển sang độ C
+newtab-weather-menu-hide-weather = Ẩn thời tiết trên thẻ mới
+newtab-weather-menu-learn-more = Tìm hiểu thêm
+# This message is shown if user is working offline
+newtab-weather-error-not-available = Dữ liệu thời tiết hiện không có sẵn.

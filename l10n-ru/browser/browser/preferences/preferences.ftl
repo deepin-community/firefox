@@ -57,6 +57,10 @@ category-experimental =
 pane-experimental-subtitle = Используйте с осторожностью
 pane-experimental-search-results-header = Эксперименты { -brand-short-name }: Используйте с осторожностью
 pane-experimental-description2 = Изменение расширенных настроек может затронуть производительность или безопасность { -brand-short-name }.
+settings-pane-labs-title = { -firefoxlabs-brand-name }
+settings-category-labs =
+    .tooltiptext = { -firefoxlabs-brand-name }
+pane-experimental-description3 = Попробуйте наши экспериментальные возможности! Они находятся в разработке и развитии, что может повлиять на работу { -brand-short-name }.
 pane-experimental-reset =
     .label = Восстановить значения по умолчанию
     .accesskey = с
@@ -481,7 +485,7 @@ browsing-gtk-use-non-overlay-scrollbars =
     .label = Всегда показывать полосы прокрутки
     .accesskey = о
 browsing-always-underline-links =
-    .label = Всегда подчеркивайте ссылки
+    .label = Всегда подчёркивать ссылки
     .accesskey = е
 browsing-use-onscreen-keyboard =
     .label = При необходимости показывать сенсорную клавиатуру
@@ -602,6 +606,10 @@ home-prefs-recent-activity-description = Подборка недавних са�
 home-prefs-snippets-header =
     .label = Заметки
 home-prefs-snippets-description-new = Советы и новости от { -vendor-short-name } и { -brand-product-name }
+home-prefs-weather-header =
+    .label = Погода
+home-prefs-weather-description = Краткий прогноз на сегодня
+home-prefs-weather-learn-more-link = Подробнее
 # Variables:
 #   $num (number) - Number of rows displayed
 home-prefs-sections-rows-option =
@@ -916,6 +924,9 @@ forms-saved-passwords =
 forms-primary-pw-use =
     .label = Использовать основной пароль
     .accesskey = с
+# This operation requires the user to authenticate with the operating system (device sign-in)
+forms-os-reauth =
+    .label = Требовать вход на устройстве для заполнения и управления паролями
 forms-primary-pw-learn-more-link = Подробнее
 # This string uses the former name of the Primary Password feature
 # ("Master Password" in English) so that the preferences can be found
@@ -948,6 +959,13 @@ primary-password-os-auth-dialog-message-win = Чтобы создать осно
 # notes are only valid for English. Please test in your locale.
 primary-password-os-auth-dialog-message-macosx = создать основной пароль
 master-password-os-auth-dialog-caption = { -brand-full-name }
+# The macOS string is preceded by the operating system with "Firefox is trying to ".
+autofill-creditcard-os-dialog-message =
+    { PLATFORM() ->
+        [macos] изменить настройки способов оплаты
+       *[other] { -brand-short-name } пытается изменить настройки способов оплаты. Используйте вход на устройстве, чтобы разрешить это.
+    }
+autofill-creditcard-os-auth-dialog-caption = { -brand-full-name }
 
 ## Privacy section - Autofill
 
@@ -962,13 +980,8 @@ autofill-payment-methods-checkbox-submessage = Включая кредитные
     .accesskey = ш
 autofill-saved-payment-methods-button = Сохраненные способы оплаты
     .accesskey = м
-autofill-reauth-checkbox =
-    { PLATFORM() ->
-        [macos] Требовать аутентификацию macOS для заполнения и изменения способов оплаты.
-        [windows] Требовать аутентификацию Windows для заполнения и изменения способов оплаты.
-        [linux] Требовать аутентификацию Linux для заполнения и изменения способов оплаты.
-       *[other] Требовать аутентификацию для заполнения и изменения способов оплаты.
-    }
+# This operation requires the user to authenticate with the operating system (device sign-in)
+autofill-reauth-payment-methods-checkbox = Требовать вход на устройстве для заполнения и управления способами оплаты
     .accesskey = щ
 
 ## Privacy Section - History
@@ -1106,6 +1119,9 @@ addressbar-suggestions-settings = Изменить настройки для п�
 addressbar-locbar-showrecentsearches-option =
     .label = Показать недавние поисковые запросы
     .accesskey = к
+addressbar-locbar-showtrendingsuggestions-option =
+    .label = Отображать популярные поисковые предложения
+    .accesskey = е
 addressbar-quickactions-learn-more = Подробнее
 
 ## Privacy Section - Content Blocking
@@ -1296,6 +1312,14 @@ privacy-segmentation-radio-off =
     .label = Использовать советы { -brand-product-name }
 privacy-segmentation-radio-on =
     .label = Показать подробные сведения
+
+## Privacy Section - Website Advertising Preferences
+
+website-advertising-header = Настройки рекламы для веб-сайтов
+website-advertising-private-attribution =
+    .label = Разрешить веб-сайтам проводить измерение рекламы с сохранением приватности
+    .accesskey = ф
+website-advertising-private-attribution-description = Это помогает сайтам понять, как работает их реклама, без сбора данных о вас.
 
 ## Privacy Section - Security
 ##

@@ -45,7 +45,7 @@ newtab-topsites-add-search-engine-header = 検索エンジンを追加
 newtab-topsites-add-shortcut-header = 新しいショートカット
 newtab-topsites-edit-topsites-header = トップサイトを編集
 newtab-topsites-edit-shortcut-header = ショートカットを編集
-newtab-topsites-add-shortcut-label = ショートカットを追加
+newtab-topsites-add-shortcut-label = ショートカット追加
 newtab-topsites-title-label = タイトル
 newtab-topsites-title-input =
     .placeholder = タイトルを入力
@@ -266,6 +266,9 @@ newtab-custom-recent-subtitle = 最近のサイトとコンテンツの抜粋
 newtab-custom-recent-toggle =
     .label = 最近のアクティビティ
     .description = 最近のサイトとコンテンツの抜粋
+newtab-custom-weather-toggle =
+    .label = 天気予報
+    .description = 一目でわかる今日の天気
 newtab-custom-close-button = 閉じる
 newtab-custom-settings = 他の設定を管理
 
@@ -285,7 +288,85 @@ newtab-wallpaper-dark-panda = 森に隠れるレッサーパンダ
 newtab-wallpaper-dark-sky = 夜空と街の景色
 newtab-wallpaper-dark-mountain = 山の景色
 newtab-wallpaper-dark-city = 紫色の街の景色
+
+## Solid Colors
+
+newtab-wallpaper-category-title-colors = 無地
+newtab-wallpaper-blue = 空色
+newtab-wallpaper-light-blue = 白藍色
+newtab-wallpaper-light-purple = 紅藤
+newtab-wallpaper-light-green = 白緑
+newtab-wallpaper-green = 若緑
+newtab-wallpaper-beige = 肌色
+newtab-wallpaper-yellow = 女郎花
+newtab-wallpaper-orange = 柑子色
+newtab-wallpaper-pink = 牡丹色
+newtab-wallpaper-light-pink = 桜色
+newtab-wallpaper-red = 茜色
+newtab-wallpaper-dark-blue = 紺色
+newtab-wallpaper-dark-purple = 小紫
+newtab-wallpaper-dark-green = 深緑
+newtab-wallpaper-brown = 栗色
+
+## Abstract
+
+newtab-wallpaper-category-title-abstract = 抽象的
+newtab-wallpaper-abstract-green = 緑色の形状
+newtab-wallpaper-abstract-blue = 青色の形状
+newtab-wallpaper-abstract-purple = 紫色の形状
+newtab-wallpaper-abstract-orange = オレンジ色の形状
+newtab-wallpaper-gradient-orange = オレンジとピンクのグラデーション
+newtab-wallpaper-abstract-blue-purple = 青色と紫色の形状
+
+## Photographs
+
+newtab-wallpaper-category-title-photographs = 写真
+newtab-wallpaper-beach-at-sunrise = 早朝の砂浜
+newtab-wallpaper-beach-at-sunset = 夕暮れの砂浜
+newtab-wallpaper-storm-sky = 嵐の空
+newtab-wallpaper-sky-with-pink-clouds = ピンク色に染まる雲
+newtab-wallpaper-red-panda-yawns-in-a-tree = あくびをするレッサーパンダ
+newtab-wallpaper-white-mountains = 白い雪山
 # Variables
 #   $author_string (String) - The name of the creator of the photo.
 #   $webpage_string (String) - The name of the webpage where the photo is located.
 newtab-wallpaper-attribution = 写真提供: <a data-l10n-name="name-link">{ $author_string }</a> (<a data-l10n-name="webpage-link">{ $webpage_string }</a>)
+newtab-wallpaper-feature-highlight-header = カラフルな壁紙を試しましょう
+newtab-wallpaper-feature-highlight-content = 壁紙で新しいタブをカラフルに彩りましょう。
+newtab-wallpaper-feature-highlight-button = 了解
+# Tooltip for dismiss button
+feature-highlight-dismiss-button =
+    .title = 閉じる
+    .aria-label = ポップアップを閉じます
+feature-highlight-wallpaper =
+    .title = { -newtab-wallpaper-feature-highlight-header }
+    .aria-label = { -newtab-wallpaper-feature-highlight-content }
+
+## New Tab Weather
+
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-see-forecast =
+    .title = { $provider } による天気予報を表示します
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-sponsored = 提供: { $provider }
+newtab-weather-menu-change-location = 予報地点を変更
+newtab-weather-change-location-search-input = 場所を検索
+newtab-weather-menu-weather-display = 天気表示
+# Display options are:
+# - Simple: Displays a current weather condition icon and the current temperature
+# - Detailed: Include simple information plus a short text summary: e.g. "Mostly cloudy"
+newtab-weather-menu-weather-display-option-simple = シンプル
+newtab-weather-menu-change-weather-display-simple = シンプル表示に切り替えます
+newtab-weather-menu-weather-display-option-detailed = 詳細
+newtab-weather-menu-change-weather-display-detailed = 詳細表示に切り替えます
+newtab-weather-menu-temperature-units = 温度の単位
+newtab-weather-menu-temperature-option-fahrenheit = 華氏 (℉)
+newtab-weather-menu-temperature-option-celsius = 摂氏 (℃)
+newtab-weather-menu-change-temperature-units-fahrenheit = ファーレンハイト度に切り替えます
+newtab-weather-menu-change-temperature-units-celsius = セルシウス度に切り替えます
+newtab-weather-menu-hide-weather = 新しいタブの天気表示を隠す
+newtab-weather-menu-learn-more = 詳細情報
+# This message is shown if user is working offline
+newtab-weather-error-not-available = 現在、天気データが利用できません。

@@ -638,6 +638,24 @@ urlbar-group-quickactions =
 urlbar-group-recent-searches =
     .label = Ricerche recenti
 
+# The header shown above trending results.
+# Variables:
+#  $engine (String): the name of the search engine providing the trending suggestions
+urlbar-group-trending =
+  .label = Di tendenza su { $engine }
+
+# The result menu labels shown next to trending results.
+urlbar-result-menu-trending-dont-show =
+    .label = Non mostrare ricerche di tendenza
+    .accesskey = z
+urlbar-result-menu-trending-why =
+    .label = Perché viene visualizzato questo elemento?
+    .accesskey = P
+
+# A message that replaces a result when the user dismisses all suggestions of a
+# particular type.
+urlbar-trending-dismissal-acknowledgment = Grazie per il tuo feedback. Le ricerche di tendenza non verranno più visualizzate.
+
 ## Reader View toolbar buttons
 
 # This should match menu-view-enter-readerview in menubar.ftl
@@ -989,6 +1007,11 @@ popup-notification-addon-install-unsigned =
     .value = (non verificato)
 popup-notification-xpinstall-prompt-learn-more = Scopri come installare componenti aggiuntivi in completa sicurezza
 
+# Note: Access key is set to P to match "Private" in the corresponding localized label.
+popup-notification-addon-privatebrowsing-checkbox =
+    .label = Esegui in finestre anonime
+    .accesskey = a
+
 ## Pop-up warning
 
 # Variables:
@@ -1017,3 +1040,25 @@ popup-warning-button =
 #   $popupURI (String): the URI for the pop-up window
 popup-show-popup-menuitem =
     .label = Visualizza “{ $popupURI }”
+
+## File-picker crash notification ("FilePickerCrashed.sys.mjs")
+
+file-picker-failed-open = Impossibile aprire la finestra di selezione file di Windows. Non è stato selezionato alcun file o cartella.
+#   $path (string): The full path to which the file will be saved (e.g., 'C:\Users\Default User\Downloads\readme.txt').
+file-picker-failed-save-somewhere = Impossibile aprire la finestra di selezione file di Windows. Il file verrà salvato come { $path }.
+file-picker-failed-save-nowhere = Impossibile aprire la finestra di selezione file di Windows. Non è stata trovata una cartella predefinita e il file non verrà salvato.
+
+file-picker-crashed-open = La finestra di selezione file di Windows si è chiusa in modo anomalo. Non è stato selezionato alcun file o cartella.
+#   $path (string): The full path to which the file will be saved (e.g., 'C:\Users\Default User\Downloads\readme.txt').
+file-picker-crashed-save-somewhere = La finestra di selezione file di Windows si è chiusa in modo anomalo. Il file verrà salvato come { $path }.
+file-picker-crashed-save-nowhere = La finestra di selezione file di Windows si è chiusa in modo anomalo. Non è stata trovata una cartella predefinita e il file non verrà salvato.
+
+# Button used with file-picker-crashed-save-default. Opens the folder in Windows
+# Explorer, with the saved file selected and in focus.
+#
+# The wording here should be consistent with the Windows variant of
+# `downloads-cmd-show-menuitem-2` and similar messages.
+
+file-picker-crashed-show-in-folder =
+    .label = Mostra nella cartella
+    .accessKey = M

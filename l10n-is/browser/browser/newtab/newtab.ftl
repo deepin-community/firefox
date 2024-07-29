@@ -48,7 +48,7 @@ newtab-topsites-edit-shortcut-header = Breyta flýtilykli
 newtab-topsites-add-shortcut-label = Bæta við flýtileið
 newtab-topsites-title-label = Titill
 newtab-topsites-title-input =
-    .placeholder = Sláðu inn titil
+    .placeholder = Settu inn titil
 newtab-topsites-url-label = Vefslóð
 newtab-topsites-url-input =
     .placeholder = Slá inn eða líma vefslóð
@@ -234,6 +234,19 @@ newtab-pocket-pocket-firefox-family = { -pocket-brand-name } er hluti af { -bran
 newtab-pocket-save = Vista
 newtab-pocket-saved = Vistað
 
+## Thumbs up and down buttons that shows over a newtab stories card thumbnail on hover.
+
+# Clicking the thumbs up button for this story will result in more stories like this one being recommended
+newtab-pocket-thumbs-up-tooltip =
+    .title = Meira svona
+# Clicking the thumbs down button for this story informs us that the user does not feel like the story is interesting for them
+newtab-pocket-thumbs-down-tooltip =
+    .title = Ekki fyrir mig
+newtab-toast-thumbs-up-or-down = Takk. Álit þitt mun hjálpa okkur að bæta streymið þitt.
+newtab-toast-dismiss-button =
+    .title = Afgreiða
+    .aria-label = Afgreiða
+
 ## Pocket content onboarding experience dialog and modal for new users seeing the Pocket section for the first time, shown as the first item in the Pocket section.
 
 newtab-pocket-onboarding-discover = Uppgötvaðu það besta á vefnum
@@ -272,6 +285,9 @@ newtab-custom-recent-subtitle = Úrval af nýlegum síðum og efni
 newtab-custom-recent-toggle =
     .label = Nýleg virkni
     .description = Úrval af nýlegum síðum og efni
+newtab-custom-weather-toggle =
+    .label = Veður
+    .description = Veðurspá dagsins í skyndi
 newtab-custom-close-button = Loka
 newtab-custom-settings = Sýsla með fleiri stillingar
 
@@ -291,7 +307,85 @@ newtab-wallpaper-dark-panda = Rauð panda falin í skógi
 newtab-wallpaper-dark-sky = Borgarlandslag með næturhimni
 newtab-wallpaper-dark-mountain = Fjöllótt landslag
 newtab-wallpaper-dark-city = Fjólublátt borgarlandslag
+
+## Solid Colors
+
+newtab-wallpaper-category-title-colors = Heillitir
+newtab-wallpaper-blue = Blátt
+newtab-wallpaper-light-blue = Ljósblátt
+newtab-wallpaper-light-purple = Ljósfjólublátt
+newtab-wallpaper-light-green = Ljósgrænt
+newtab-wallpaper-green = Grænt
+newtab-wallpaper-beige = Beislitt
+newtab-wallpaper-yellow = Gult
+newtab-wallpaper-orange = Appelsínugult
+newtab-wallpaper-pink = Bleikt
+newtab-wallpaper-light-pink = Ljósbleikt
+newtab-wallpaper-red = Rautt
+newtab-wallpaper-dark-blue = Dökkblátt
+newtab-wallpaper-dark-purple = Dökkfjólublátt
+newtab-wallpaper-dark-green = Dökkgrænt
+newtab-wallpaper-brown = Brúnt
+
+## Abstract
+
+newtab-wallpaper-category-title-abstract = Óhlutbundið
+newtab-wallpaper-abstract-green = Græn form
+newtab-wallpaper-abstract-blue = Blá form
+newtab-wallpaper-abstract-purple = Fjólublá form
+newtab-wallpaper-abstract-orange = Appelsínugul form
+newtab-wallpaper-gradient-orange = Litstigull appelsínugult og bleikt
+newtab-wallpaper-abstract-blue-purple = Blá og fjólublá form
+
+## Photographs
+
+newtab-wallpaper-category-title-photographs = Ljósmyndir
+newtab-wallpaper-beach-at-sunrise = Strönd við sólarupprás
+newtab-wallpaper-beach-at-sunset = Strönd við sólsetur
+newtab-wallpaper-storm-sky = Stormský
+newtab-wallpaper-sky-with-pink-clouds = Himinn með bleikum skýjum
+newtab-wallpaper-red-panda-yawns-in-a-tree = Rauð panda geispar í tré
+newtab-wallpaper-white-mountains = Hvít fjöll
 # Variables
 #   $author_string (String) - The name of the creator of the photo.
 #   $webpage_string (String) - The name of the webpage where the photo is located.
 newtab-wallpaper-attribution = Ljósmynd eftir <a data-l10n-name="name-link">{ $author_string }</a> á <a data-l10n-name="webpage-link">{ $webpage_string }</a>
+newtab-wallpaper-feature-highlight-header = Prófaðu skvettu af lit
+newtab-wallpaper-feature-highlight-content = Gefðu nýja flipanum þínum ferskt útlit með bakgrunnum.
+newtab-wallpaper-feature-highlight-button = Ég skil!
+# Tooltip for dismiss button
+feature-highlight-dismiss-button =
+    .title = Afgreiða
+    .aria-label = Loka sprettglugga
+feature-highlight-wallpaper =
+    .title = { -newtab-wallpaper-feature-highlight-header }
+    .aria-label = { -newtab-wallpaper-feature-highlight-content }
+
+## New Tab Weather
+
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-see-forecast =
+    .title = Sjá veðurspá í { $provider }
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-sponsored = { $provider } ∙ Kostað
+newtab-weather-menu-change-location = Breyta staðsetningu
+newtab-weather-change-location-search-input = Leita að staðsetningu
+newtab-weather-menu-weather-display = Birting veðurs
+# Display options are:
+# - Simple: Displays a current weather condition icon and the current temperature
+# - Detailed: Include simple information plus a short text summary: e.g. "Mostly cloudy"
+newtab-weather-menu-weather-display-option-simple = Einfalt
+newtab-weather-menu-change-weather-display-simple = Skipta yfir í einfalda sýn
+newtab-weather-menu-weather-display-option-detailed = Ítarleg
+newtab-weather-menu-change-weather-display-detailed = Skipta yfir í nákvæma sýn
+newtab-weather-menu-temperature-units = Hitastigseiningar
+newtab-weather-menu-temperature-option-fahrenheit = Fahrenheit
+newtab-weather-menu-temperature-option-celsius = Selsíus
+newtab-weather-menu-change-temperature-units-fahrenheit = Skipta yfir í Fahrenheit
+newtab-weather-menu-change-temperature-units-celsius = Skipta yfir í Selsíus
+newtab-weather-menu-hide-weather = Fela veður á nýjum flipa
+newtab-weather-menu-learn-more = Kanna nánar
+# This message is shown if user is working offline
+newtab-weather-error-not-available = Veðurgögn eru ekki tiltæk í augnablikinu.

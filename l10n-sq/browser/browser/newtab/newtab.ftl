@@ -230,6 +230,19 @@ newtab-pocket-pocket-firefox-family = { -pocket-brand-name } është pjesë e fa
 newtab-pocket-save = Ruaje
 newtab-pocket-saved = U ruajt
 
+## Thumbs up and down buttons that shows over a newtab stories card thumbnail on hover.
+
+# Clicking the thumbs up button for this story will result in more stories like this one being recommended
+newtab-pocket-thumbs-up-tooltip =
+    .title = Më tepër si kjo
+# Clicking the thumbs down button for this story informs us that the user does not feel like the story is interesting for them
+newtab-pocket-thumbs-down-tooltip =
+    .title = Jo për mua
+newtab-toast-thumbs-up-or-down = Faleminderit. Përshtypjet tuaja do të na ndihmojnë të përmirësojmë prurjen për ju.
+newtab-toast-dismiss-button =
+    .title = Hidhe tej
+    .aria-label = Hidhe tej
+
 ## Pocket content onboarding experience dialog and modal for new users seeing the Pocket section for the first time, shown as the first item in the Pocket section.
 
 newtab-pocket-onboarding-discover = Zbuloni më të mirat e internetit
@@ -268,6 +281,9 @@ newtab-custom-recent-subtitle = Një përzgjedhje sajtesh dhe lënde së fundi
 newtab-custom-recent-toggle =
     .label = Veprimtari së fundi
     .description = Një përzgjedhje sajtesh dhe lënde së fundi
+newtab-custom-weather-toggle =
+    .label = Moti
+    .description = Parashikimi i motit për sot me një vështrim
 newtab-custom-close-button = Mbylle
 newtab-custom-settings = Administroni më tepër rregullime
 
@@ -287,7 +303,85 @@ newtab-wallpaper-dark-panda = Panda e kuqe e fshehur në pyll
 newtab-wallpaper-dark-sky = Reliev qyteti me qiell nate
 newtab-wallpaper-dark-mountain = Peizazh malor
 newtab-wallpaper-dark-city = Peizazh qyteti i purpurt
+
+## Solid Colors
+
+newtab-wallpaper-category-title-colors = Ngjyra të plota
+newtab-wallpaper-blue = Blu
+newtab-wallpaper-light-blue = Blu e çelët
+newtab-wallpaper-light-purple = E purpur e çelët
+newtab-wallpaper-light-green = E gjelbër e çelët
+newtab-wallpaper-green = E gjelbër
+newtab-wallpaper-beige = Bezhë
+newtab-wallpaper-yellow = E verdhë
+newtab-wallpaper-orange = Portokalli
+newtab-wallpaper-pink = Rozë
+newtab-wallpaper-light-pink = Rozë e çelët
+newtab-wallpaper-red = E kuqe
+newtab-wallpaper-dark-blue = Blu e errët
+newtab-wallpaper-dark-purple = E purpur e errët
+newtab-wallpaper-dark-green = E gjelbër e errët
+newtab-wallpaper-brown = Bojë kafe
+
+## Abstract
+
+newtab-wallpaper-category-title-abstract = Abstrakte
+newtab-wallpaper-abstract-green = Forma të gjelbra
+newtab-wallpaper-abstract-blue = Forma blu
+newtab-wallpaper-abstract-purple = Forma të purpurta
+newtab-wallpaper-abstract-orange = Forma portokalli
+newtab-wallpaper-gradient-orange = Gradient portokalli dhe rozë
+newtab-wallpaper-abstract-blue-purple = Forma blu dhe të purpurta
+
+## Photographs
+
+newtab-wallpaper-category-title-photographs = Fotografi
+newtab-wallpaper-beach-at-sunrise = Plazh në agim
+newtab-wallpaper-beach-at-sunset = Plazh në perëndim
+newtab-wallpaper-storm-sky = Qiell me furtunë
+newtab-wallpaper-sky-with-pink-clouds = Qiell me re rozë
+newtab-wallpaper-red-panda-yawns-in-a-tree = Pandë e kuqe në majë të pemës
+newtab-wallpaper-white-mountains = Male të bardhë
 # Variables
 #   $author_string (String) - The name of the creator of the photo.
 #   $webpage_string (String) - The name of the webpage where the photo is located.
 newtab-wallpaper-attribution = Foto nga <a data-l10n-name="name-link">{ $author_string }</a> on <a data-l10n-name="webpage-link">{ $webpage_string }</a>
+newtab-wallpaper-feature-highlight-header = Shtoni pakëz ngjyrë
+newtab-wallpaper-feature-highlight-content = Jepini Skedës tuaj të Re një pamje të freskët me sfonde.
+newtab-wallpaper-feature-highlight-button = E mora vesh
+# Tooltip for dismiss button
+feature-highlight-dismiss-button =
+    .title = Hidhe tej
+    .aria-label = Mbylleni flluskën
+feature-highlight-wallpaper =
+    .title = { -newtab-wallpaper-feature-highlight-header }
+    .aria-label = { -newtab-wallpaper-feature-highlight-content }
+
+## New Tab Weather
+
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-see-forecast =
+    .title = Shihni parashikimin në { $provider }
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-sponsored = { $provider } ∙ E sponsorizuar
+newtab-weather-menu-change-location = Ndryshoni vendndodhje
+newtab-weather-change-location-search-input = Kërkoni për vendndodhje
+newtab-weather-menu-weather-display = Shfaqje moti
+# Display options are:
+# - Simple: Displays a current weather condition icon and the current temperature
+# - Detailed: Include simple information plus a short text summary: e.g. "Mostly cloudy"
+newtab-weather-menu-weather-display-option-simple = E thjeshtë
+newtab-weather-menu-change-weather-display-simple = Kalo te shfaqje e thjeshtë
+newtab-weather-menu-weather-display-option-detailed = E hollësishme
+newtab-weather-menu-change-weather-display-detailed = Kalo te shfaqje e hollësishme
+newtab-weather-menu-temperature-units = Njësi temperature
+newtab-weather-menu-temperature-option-fahrenheit = Farenajt
+newtab-weather-menu-temperature-option-celsius = Celsius
+newtab-weather-menu-change-temperature-units-fahrenheit = Kalo në Farenajt
+newtab-weather-menu-change-temperature-units-celsius = Kalo në Celsius
+newtab-weather-menu-hide-weather = Fshihe motin në Skedë të Re
+newtab-weather-menu-learn-more = Mësoni më tepër
+# This message is shown if user is working offline
+newtab-weather-error-not-available = S’ka të dhëna moti tani për tani.

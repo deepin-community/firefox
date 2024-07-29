@@ -57,6 +57,10 @@ category-experimental =
 pane-experimental-subtitle = Ejapóke mbeguekatu
 pane-experimental-search-results-header = { -brand-short-name } Mba’epyahu: Ejapo mbeguekatu
 pane-experimental-description2 = Emoambue umi moĩporã ñemboheko ombyaikuaáava { -brand-short-name } rembiapokue ýrõ hekorosã.
+settings-pane-labs-title = { -firefoxlabs-brand-name }
+settings-category-labs =
+    .tooltiptext = { -firefoxlabs-brand-name }
+pane-experimental-description3 = ¡Eiporu ore rembiapokue ipyahuvéva! Oñemboguata ha okakuaahína, ikatúva ojehecha { -brand-short-name } jeporukuévo.
 pane-experimental-reset =
     .label = Embojevy tekoypykue
     .accesskey = R
@@ -599,6 +603,10 @@ home-prefs-recent-activity-description = Tenda jeporavo ha tetepy ramovegua
 home-prefs-snippets-header =
     .label = Mba’epehẽ
 home-prefs-snippets-description-new = Ñemoñe’ẽ ha marandu { -vendor-short-name } ha { -brand-product-name } rehegua
+home-prefs-weather-header =
+    .label = Arapytu
+home-prefs-weather-description = Ehecha arapytu reko ko ára rehegua
+home-prefs-weather-learn-more-link = Eikuaave
 # Variables:
 #   $num (number) - Number of rows displayed
 home-prefs-sections-rows-option =
@@ -912,6 +920,9 @@ forms-saved-passwords =
 forms-primary-pw-use =
     .label = Eiporu ñe’ẽñemi ñepyrũgua
     .accesskey = U
+# This operation requires the user to authenticate with the operating system (device sign-in)
+forms-os-reauth =
+    .label = Emoñepyrũ tembiapo mba’e’okápe emoinge ha eñangareko hag̃ua ñe’ẽñemíre
 forms-primary-pw-learn-more-link = Eikuaave
 # This string uses the former name of the Primary Password feature
 # ("Master Password" in English) so that the preferences can be found
@@ -944,6 +955,13 @@ primary-password-os-auth-dialog-message-win = Emoheñói hag̃ua ñe’ẽñemi 
 # notes are only valid for English. Please test in your locale.
 primary-password-os-auth-dialog-message-macosx = emoheñói Ñe’ẽñemi Ñepyrũgua
 master-password-os-auth-dialog-caption = { -brand-full-name }
+# The macOS string is preceded by the operating system with "Firefox is trying to ".
+autofill-creditcard-os-dialog-message =
+    { PLATFORM() ->
+        [macos] emoambue jehepyme’ẽrã ñemboheko
+       *[other] { -brand-short-name } omoambuese jehepyme’ẽrã ñemboheko. Emoñepyrũ tembiapo ne mba’e’okápe emoneĩ hag̃ua ko jeku’e.
+    }
+autofill-creditcard-os-auth-dialog-caption = { -brand-full-name }
 
 ## Privacy section - Autofill
 
@@ -958,13 +976,8 @@ autofill-payment-methods-checkbox-submessage = Oike kuatia’atã ñemurã ha vi
     .accesskey = I
 autofill-saved-payment-methods-button = Mba’éicha ehepyme’ẽta ñongatupyre
     .accesskey = v
-autofill-reauth-checkbox =
-    { PLATFORM() ->
-        [macos] Ejerure macOS ñemoneĩ emyanehẽ hag̃ua ha embosako’i mba’éicha ehepyme’ẽta.
-        [windows] Ejerure Windows ñemoneĩ emyanehẽ hag̃ua ha embosako’i mba’éicha ehepyme’ẽta.
-        [linux] Ejerure Linux ñemoneĩ emyanehẽ hag̃ua ha embosako’i mba’éicha ehepyme’ẽta.
-       *[other] Ejerure ñemoneĩ emyanehẽ hag̃ua ha embosako’i mba’éicha ehepyme’ẽta.
-    }
+# This operation requires the user to authenticate with the operating system (device sign-in)
+autofill-reauth-payment-methods-checkbox = Emoñepyrũ tembiapo mba’e’okápe emoinge ha eñangareko hag̃ua jehepyme’ẽrã
     .accesskey = o
 
 ## Privacy Section - History
@@ -1113,7 +1126,7 @@ content-blocking-fpi-incompatibility-warning = Eiporuhína First Party Isolation
 # There is no need to translate "Resist Fingerprinting (RFP)". This is a
 # feature that can only be enabled via about:config, and it's not exposed to
 # standard users (e.g. via Settings).
-content-blocking-rfp-incompatibility-warning = Eiporu Resist Fingerprinting (RFP), omyengoviáva peteĩva umi kuãhũ ñemboheko mo’ãha { -brand-short-name } mba’évape. Kóva omoapañuãikuaa tendakuérape.
+content-blocking-rfp-incompatibility-warning = Eiporu Resist Fingerprinting (RFP), omyengoviáva peteĩva umi kuãhũ ñemboheko mo’ãha { -brand-short-name } mba’évape. Kóva omoapañuaikuaa tendakuérape.
 
 ## These strings are used to define the different levels of
 ## Enhanced Tracking Protection.
@@ -1293,6 +1306,14 @@ privacy-segmentation-radio-off =
 privacy-segmentation-radio-on =
     .label = Eike marandurenda hesa’ỹijopyrévape
 
+## Privacy Section - Website Advertising Preferences
+
+website-advertising-header = Ñanduti rogue maranduñemurãva
+website-advertising-private-attribution =
+    .label = Emoneĩ ñanduti rogue oha’ãvo maranduñemurã omomba’évo tekoñemi
+    .accesskey = a
+website-advertising-private-attribution-description = Kóva oipytyvõta tendakuérape oikumbývo maranduñemurã ombyaty’ỹre poruhára mba’ekuaarã.
+
 ## Privacy Section - Security
 ##
 ## It is important that wording follows the guidelines outlined on this page:
@@ -1373,7 +1394,7 @@ preferences-doh-setting-default =
     .accesskey = D
 preferences-doh-default-desc = { -brand-short-name } oikuaa oiporúta vove DNS hekorosãva omo’ã hag̃ua nde rekoñemi.
 preferences-doh-default-detailed-desc-1 = Eiporu DNS hekorosãva tendaguasu ikatuhápe
-preferences-doh-default-detailed-desc-2 = Eiporu DNS rechaporãha ijypykuéva oĩramo apañuãi DNS hekorosãva me’ẽhára ndive
+preferences-doh-default-detailed-desc-2 = Eiporu DNS rechaporãha ijypykuéva oĩramo apañuái DNS hekorosãva me’ẽhára ndive
 preferences-doh-default-detailed-desc-3 = Eiporu me’ẽhára ag̃uigua ikatúrõ
 preferences-doh-default-detailed-desc-4 = Eipe’a pe VPN, pehẽngue jehecharã térã mba’apohaguasu oñemyandývo
 preferences-doh-default-detailed-desc-5 = Eipe’a pe pyha he’ívo { -brand-short-name }-pe ani hag̃ua oiporu DNS hekorosãva
@@ -1382,7 +1403,7 @@ preferences-doh-setting-enabled =
     .accesskey = I
 preferences-doh-enabled-desc = Nde eikuaáta araka’e eiporúta DNS hekorosãva ha eiporavo me’ẽhára.
 preferences-doh-enabled-detailed-desc-1 = Eiporu me’ẽhára poravopyre
-preferences-doh-enabled-detailed-desc-2 = Eiporu DNS rechaporãha ijypykuéva oĩramo apañuãi DNS hekorosãva me’ẽhára ndive
+preferences-doh-enabled-detailed-desc-2 = Eiporu DNS rechaporãha ijypykuéva oĩramo apañuái DNS hekorosãva me’ẽhára ndive
 preferences-doh-setting-strict =
     .label = Ñemo’ã tuichavéva
     .accesskey = M

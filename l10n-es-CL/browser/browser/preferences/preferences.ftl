@@ -57,6 +57,10 @@ category-experimental =
 pane-experimental-subtitle = Proceder con precaución
 pane-experimental-search-results-header = Experimentos de { -brand-short-name }: proceder con precaución
 pane-experimental-description2 = Cambiar los ajustes de configuración avanzada puede afectar el rendimiento o la seguridad de { -brand-short-name }.
+settings-pane-labs-title = { -firefoxlabs-brand-name }
+settings-category-labs =
+    .tooltiptext = { -firefoxlabs-brand-name }
+pane-experimental-description3 = ¡Prueba nuestras funcionalidades experimentales! Están en desarrollo y evolucionando, lo que podría afectar como funciona { -brand-short-name }.
 pane-experimental-reset =
     .label = Restaurar predeterminados
     .accesskey = R
@@ -599,6 +603,10 @@ home-prefs-recent-activity-description = Una selección de sitios y contenidos r
 home-prefs-snippets-header =
     .label = Fragmentos
 home-prefs-snippets-description-new = Consejos y noticias de { -vendor-short-name } y { -brand-product-name }
+home-prefs-weather-header =
+    .label = Clima
+home-prefs-weather-description = El pronóstico de hoy de un vistazo
+home-prefs-weather-learn-more-link = Aprender más
 # Variables:
 #   $num (number) - Number of rows displayed
 home-prefs-sections-rows-option =
@@ -912,6 +920,9 @@ forms-saved-passwords =
 forms-primary-pw-use =
     .label = Usar una contraseña primaria
     .accesskey = U
+# This operation requires the user to authenticate with the operating system (device sign-in)
+forms-os-reauth =
+    .label = Requerir la autenticación del sistema para completar y administrar contraseñas
 forms-primary-pw-learn-more-link = Aprender más
 # This string uses the former name of the Primary Password feature
 # ("Master Password" in English) so that the preferences can be found
@@ -944,6 +955,13 @@ primary-password-os-auth-dialog-message-win = Para crear una contraseña primari
 # notes are only valid for English. Please test in your locale.
 primary-password-os-auth-dialog-message-macosx = crear una contraseña primaria
 master-password-os-auth-dialog-caption = { -brand-full-name }
+# The macOS string is preceded by the operating system with "Firefox is trying to ".
+autofill-creditcard-os-dialog-message =
+    { PLATFORM() ->
+        [macos] cambiar los ajustes para métodos de pago
+       *[other] { -brand-short-name } está intentando cambiar los ajustes para los métodos de pago. Utiliza tus credenciales del sistema para permitir esto.
+    }
+autofill-creditcard-os-auth-dialog-caption = { -brand-full-name }
 
 ## Privacy section - Autofill
 
@@ -958,13 +976,8 @@ autofill-payment-methods-checkbox-submessage = Incluye tarjetas de crédito y d�
     .accesskey = I
 autofill-saved-payment-methods-button = Métodos de pago guardados
     .accesskey = v
-autofill-reauth-checkbox =
-    { PLATFORM() ->
-        [macos] Requerir autenticación de macOS para completar y editar métodos de pago.
-        [windows] Requerir autenticación de Windows para completar y editar métodos de pago.
-        [linux] Requerir autenticación de Linux para completar y editar métodos de pago.
-       *[other] Requerir autenticación para completar y editar métodos de pago.
-    }
+# This operation requires the user to authenticate with the operating system (device sign-in)
+autofill-reauth-payment-methods-checkbox = Requerir la autenticación del sistema para completar y administrar métodos de pago
     .accesskey = o
 
 ## Privacy Section - History
@@ -1102,6 +1115,9 @@ addressbar-suggestions-settings = Cambia las preferencias para las sugerencias d
 addressbar-locbar-showrecentsearches-option =
     .label = Mostrar guardados recientes
     .accesskey = r
+addressbar-locbar-showtrendingsuggestions-option =
+    .label = Mostrar las sugerencias de búsqueda más populares
+    .accesskey = t
 addressbar-quickactions-learn-more = Aprender más
 
 ## Privacy Section - Content Blocking
@@ -1292,6 +1308,14 @@ privacy-segmentation-radio-off =
     .label = Usar recomendaciones de { -brand-product-name }
 privacy-segmentation-radio-on =
     .label = Mostrar información detallada
+
+## Privacy Section - Website Advertising Preferences
+
+website-advertising-header = Preferencias de publicidad del sitio web
+website-advertising-private-attribution =
+    .label = Permitir que los sitios web realicen mediciones de anuncios que preservan la privacidad
+    .accesskey = a
+website-advertising-private-attribution-description = Esto ayuda a los sitios a comprender el rendimiento de sus anuncios sin recopilar datos sobre ti.
 
 ## Privacy Section - Security
 ##

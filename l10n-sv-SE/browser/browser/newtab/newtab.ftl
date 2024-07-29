@@ -234,6 +234,19 @@ newtab-pocket-pocket-firefox-family = { -pocket-brand-name } är en del av famil
 newtab-pocket-save = Spara
 newtab-pocket-saved = Sparad
 
+## Thumbs up and down buttons that shows over a newtab stories card thumbnail on hover.
+
+# Clicking the thumbs up button for this story will result in more stories like this one being recommended
+newtab-pocket-thumbs-up-tooltip =
+    .title = Mer sådana här
+# Clicking the thumbs down button for this story informs us that the user does not feel like the story is interesting for them
+newtab-pocket-thumbs-down-tooltip =
+    .title = Inte för mig
+newtab-toast-thumbs-up-or-down = Tack. Din feedback hjälper oss att förbättra ditt flöde.
+newtab-toast-dismiss-button =
+    .title = Ignorera
+    .aria-label = Ignorera
+
 ## Pocket content onboarding experience dialog and modal for new users seeing the Pocket section for the first time, shown as the first item in the Pocket section.
 
 newtab-pocket-onboarding-discover = Upptäck det bästa från webben
@@ -272,6 +285,9 @@ newtab-custom-recent-subtitle = Ett urval av senaste webbplatser och innehåll
 newtab-custom-recent-toggle =
     .label = Senaste aktivitet
     .description = Ett urval av senaste webbplatser och innehåll
+newtab-custom-weather-toggle =
+    .label = Väder
+    .description = Dagens prognos i korthet
 newtab-custom-close-button = Stäng
 newtab-custom-settings = Hantera fler inställningar
 
@@ -291,7 +307,85 @@ newtab-wallpaper-dark-panda = Röd panda dold i skogen
 newtab-wallpaper-dark-sky = Stadslandskap med en natthimmel
 newtab-wallpaper-dark-mountain = Landskap med berg
 newtab-wallpaper-dark-city = Lila stadslandskap
+
+## Solid Colors
+
+newtab-wallpaper-category-title-colors = Enfärgade färger
+newtab-wallpaper-blue = Blå
+newtab-wallpaper-light-blue = Ljusblå
+newtab-wallpaper-light-purple = Ljuslila
+newtab-wallpaper-light-green = Ljusgrön
+newtab-wallpaper-green = Grön
+newtab-wallpaper-beige = Beige
+newtab-wallpaper-yellow = Gul
+newtab-wallpaper-orange = Orange
+newtab-wallpaper-pink = Rosa
+newtab-wallpaper-light-pink = Ljusrosa
+newtab-wallpaper-red = Röd
+newtab-wallpaper-dark-blue = Mörkblå
+newtab-wallpaper-dark-purple = Mörklila
+newtab-wallpaper-dark-green = Mörkgrön
+newtab-wallpaper-brown = Brun
+
+## Abstract
+
+newtab-wallpaper-category-title-abstract = Abstrakt
+newtab-wallpaper-abstract-green = Gröna former
+newtab-wallpaper-abstract-blue = Blå former
+newtab-wallpaper-abstract-purple = Lila former
+newtab-wallpaper-abstract-orange = Orange former
+newtab-wallpaper-gradient-orange = Gradient orange och rosa
+newtab-wallpaper-abstract-blue-purple = Blå och lila former
+
+## Photographs
+
+newtab-wallpaper-category-title-photographs = Fotografier
+newtab-wallpaper-beach-at-sunrise = Strand vid soluppgång
+newtab-wallpaper-beach-at-sunset = Strand vid solnedgång
+newtab-wallpaper-storm-sky = Stormhimlen
+newtab-wallpaper-sky-with-pink-clouds = Himmel med rosa moln
+newtab-wallpaper-red-panda-yawns-in-a-tree = Röd panda gäspar i ett träd
+newtab-wallpaper-white-mountains = Vita berg
 # Variables
 #   $author_string (String) - The name of the creator of the photo.
 #   $webpage_string (String) - The name of the webpage where the photo is located.
 newtab-wallpaper-attribution = Foto av <a data-l10n-name="name-link">{ $author_string }</a> från <a data-l10n-name="webpage-link">{ $webpage_string }</a>
+newtab-wallpaper-feature-highlight-header = Prova en skvätt färg
+newtab-wallpaper-feature-highlight-content = Ge din Nya flik ett fräscht utseende med bakgrundsbilder.
+newtab-wallpaper-feature-highlight-button = Jag förstår
+# Tooltip for dismiss button
+feature-highlight-dismiss-button =
+    .title = Ignorera
+    .aria-label = Stäng popup
+feature-highlight-wallpaper =
+    .title = { -newtab-wallpaper-feature-highlight-header }
+    .aria-label = { -newtab-wallpaper-feature-highlight-content }
+
+## New Tab Weather
+
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-see-forecast =
+    .title = Se prognos i { $provider }
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-sponsored = { $provider } ∙ Sponsrad
+newtab-weather-menu-change-location = Ändra plats
+newtab-weather-change-location-search-input = Sök plats
+newtab-weather-menu-weather-display = Vädervisning
+# Display options are:
+# - Simple: Displays a current weather condition icon and the current temperature
+# - Detailed: Include simple information plus a short text summary: e.g. "Mostly cloudy"
+newtab-weather-menu-weather-display-option-simple = Enkel
+newtab-weather-menu-change-weather-display-simple = Växla till enkel vy
+newtab-weather-menu-weather-display-option-detailed = Detaljerad
+newtab-weather-menu-change-weather-display-detailed = Växla till detaljerad vy
+newtab-weather-menu-temperature-units = Temperaturenheter
+newtab-weather-menu-temperature-option-fahrenheit = Fahrenheit
+newtab-weather-menu-temperature-option-celsius = Celsius
+newtab-weather-menu-change-temperature-units-fahrenheit = Byt till Fahrenheit
+newtab-weather-menu-change-temperature-units-celsius = Byt till Celsius
+newtab-weather-menu-hide-weather = Dölj väder på ny flik
+newtab-weather-menu-learn-more = Läs mer
+# This message is shown if user is working offline
+newtab-weather-error-not-available = Väderdata är inte tillgänglig just nu.

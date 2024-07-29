@@ -96,3 +96,15 @@ account-multiple-tabs-arriving-from-unknown-device =
         [one] { $tabCount } faneblad er modtaget
        *[other] { $tabCount } faneblade er modtaget
     }
+
+## These strings are used in notifications in which the user remotely closed
+## tabs from other devices
+## Variables:
+##   $closedCount (Number): the number of tabs closed
+
+account-view-recently-closed-tabs = Vis nyligt lukkede faneblade
+account-tabs-closed-remotely =
+    { $closedCount ->
+        [one] { $closedCount } faneblad i { -brand-short-name } lukket
+       *[other] { $closedCount } faneblade i { -brand-short-name } lukket
+    }

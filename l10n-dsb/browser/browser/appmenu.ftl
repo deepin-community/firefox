@@ -77,18 +77,10 @@ appmenu-remote-tabs-turn-on-sync =
 appmenu-remote-tabs-showmore =
     .label = Dalšne rejtariki pokazaś
     .tooltiptext = Dalšne rejtariki z toś togo rěda pokazaś
-# This is shown when there are inactive tabs which are not being shown.
-# Variables
-# $count (Number) - The number of inactive tabs which are not being shown (at least 1)
-appmenu-remote-tabs-showinactive =
-    .label =
-        { $count ->
-            [one] { $count } inaktiwny rejtarik pokazaś
-            [two] { $count } inaktiwnej rejtarika pokazaś
-            [few] { $count } inaktiwne rejtarik pokazaś
-           *[other] { $count } inaktiwnych rejtarikow pokazaś
-        }
-    .tooltiptext = Inaktiwne rejtariki na toś tom rěźe pokazaś
+# This is shown as the label for an element to show inactive tabs from this device.
+appmenu-remote-tabs-show-inactive-tabs =
+    .label = Inaktiwne rejtariki
+    .tooltiptext = Glejśo inaktiwne rejtariki na toś tom rěźe
 # This is shown beneath the name of a device when that device has no open tabs
 appmenu-remote-tabs-notabs = Žedne wócynjone rejtariki
 # This is shown when Sync is configured but syncing tabs is disabled.
@@ -204,6 +196,9 @@ profiler-popup-presets-power-description = Pśednastajenje za wuslěźenje zmóy
 # "Power" is used in the sense of energy (electricity used by the computer).
 profiler-popup-presets-power-label =
     .label = Energija
+profiler-popup-presets-debug-description = Pśednastajenje za pytanje zmólkow w { -brand-shorter-name }. Wusoka dodatna śěža, njewužywajśo jo za wugbaśowe źěło, ale wužywajśo jo, aby se na rozměśe zaźaržanja wobglědowaka fokusěrował.
+profiler-popup-presets-debug-label =
+    .label = Za zmólkami pytaś
 profiler-popup-presets-custom-label =
     .label = Swójski
 

@@ -115,6 +115,7 @@ shopping-settings-sidebar-enabled-state = Kontrola pógódnośenjow jo <strong>z
 shopping-adjusted-rating-label =
     .label = Pśměrjone pógódnośowanje
 shopping-adjusted-rating-unreliable-reviews = Njespušćobne pógódnośenja wótwónoźone
+shopping-adjusted-rating-based-reliable-reviews = Bazěrujo na spušćobnych pógódnośenjach
 
 ## Strings for the review reliability component
 
@@ -135,6 +136,8 @@ shopping-analysis-explainer-learn-more2 = Zgóńśo wěcej wó tom, <a data-l10n
 # websites, which will be inserted without being translated.
 #  $retailer (String) - capitalized name of the shopping website, for example, "Amazon".
 shopping-analysis-explainer-highlights-description = <strong>Wjerški</strong> su z pógódnośenjow { $retailer } w běgu slědnych 80 dnjow, kótarež mamy za spušćobne.
+# Fallback for analysis highlights explainer if the retailer is ever unknown
+shopping-analysis-explainer-highlights-description-unknown-retailer = <strong>Wjerški</strong> su z pógódnośenjow w běgu slědnych 80 dnjow, kótarež mamy za spušćobne.
 shopping-analysis-explainer-review-grading-scale-reliable = Spušćobne pógódnośenja. Myslimy se, až pógódnośenja su nejskerjej wót wopšawdnych kupcow, kótarež su zawóstajili spšawne, bźezpśedsudkowe pógódnośenja.
 shopping-analysis-explainer-review-grading-scale-mixed = Wěrimy, až dajo měšańcu spušćobnych a njespušćobnych pógódnośenjow.
 shopping-analysis-explainer-review-grading-scale-unreliable = Njespušćobne pógódnośenja. Myslimy se, až pógódnośenja su nejskerjej sfalšowane abo wót pógódnośujucych z pśedsudkami.

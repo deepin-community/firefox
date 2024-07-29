@@ -18,6 +18,7 @@
 
 namespace mozilla {
 class PresShell;
+class ScrollContainerFrame;
 }  // namespace mozilla
 
 /**
@@ -45,7 +46,7 @@ class nsTableCellFrame : public nsContainerFrame,
   NS_DECL_QUERYFRAME
   NS_DECL_FRAMEARENA_HELPERS(nsTableCellFrame)
 
-  nsIScrollableFrame* GetScrollTargetFrame() const final;
+  mozilla::ScrollContainerFrame* GetScrollTargetFrame() const final;
 
   nsTableRowFrame* GetTableRowFrame() const {
     nsIFrame* parent = GetParent();
@@ -215,6 +216,7 @@ class nsTableCellFrame : public nsContainerFrame,
   }
 
   virtual mozilla::LogicalMargin GetBorderWidth(mozilla::WritingMode aWM) const;
+  virtual bool BCBordersChanged() const { return false; }
 
   void DecorateForSelection(DrawTarget* aDrawTarget, nsPoint aPt);
 
@@ -264,20 +266,25 @@ class nsBCTableCellFrame final : public nsTableCellFrame {
   NS_DECL_FRAMEARENA_HELPERS(nsBCTableCellFrame)
 
   nsBCTableCellFrame(ComputedStyle* aStyle, nsTableFrame* aTableFrame);
+  void Reflow(nsPresContext*, ReflowOutput&, const ReflowInput&,
+              nsReflowStatus&) override;
 
   ~nsBCTableCellFrame();
 
   nsMargin GetUsedBorder() const override;
+  bool BCBordersChanged() const override {
+    return GetUsedBorder() != mLastUsedBorder;
+  }
 
   // Get the *inner half of the border only*, in twips.
   mozilla::LogicalMargin GetBorderWidth(
       mozilla::WritingMode aWM) const override;
 
-  // Get the *inner half of the border only*, in pixels.
-  BCPixelSize GetBorderWidth(mozilla::LogicalSide aSide) const;
+  // Get the *inner half of the border only*
+  nscoord GetBorderWidth(mozilla::LogicalSide aSide) const;
 
   // Set the full (both halves) width of the border
-  void SetBorderWidth(mozilla::LogicalSide aSide, BCPixelSize aPixelValue);
+  void SetBorderWidth(mozilla::LogicalSide aSide, nscoord aValue);
 
   nsMargin GetBorderOverflow() override;
 
@@ -288,10 +295,12 @@ class nsBCTableCellFrame final : public nsTableCellFrame {
  private:
   // These are the entire width of the border (the cell edge contains only
   // the inner half).
-  BCPixelSize mBStartBorder;
-  BCPixelSize mIEndBorder;
-  BCPixelSize mBEndBorder;
-  BCPixelSize mIStartBorder;
+  nscoord mBStartBorder = 0;
+  nscoord mIEndBorder = 0;
+  nscoord mBEndBorder = 0;
+  nscoord mIStartBorder = 0;
+
+  nsMargin mLastUsedBorder;
 };
 
 // Implemented here because that's a sane-ish way to make the includes work out.

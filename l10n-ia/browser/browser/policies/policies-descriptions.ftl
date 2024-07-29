@@ -84,6 +84,8 @@ policy-Handlers = Configurar gestores de application predefinite.
 policy-HardwareAcceleration = Si false, disactivar le acceleration hardware.
 # “lock” means that the user won’t be able to change this setting
 policy-Homepage = Definir e optionalmente blocar le pagina principal.
+policy-HttpAllowlist = Origines que non sera promovite a HTTPS.
+policy-HttpsOnlyMode = Permitter al modo solo-HTTPS de esser activate.
 policy-InstallAddonsPermission = Permitter a certe sitos web de installar additivos.
 policy-LegacyProfiles = Disactivar le function que fortia le creation de un profilo separate pro cata installation
 
@@ -108,6 +110,9 @@ policy-OverrideFirstRunPage = Supplantar le pagina de prime uso. Vacua le valor 
 policy-OverridePostUpdatePage = Supplantar le pagina de “Novas” post-actualisation. Defini iste criterio a blanc si tu desira disactivar le pagina de post-actualisation.
 policy-PasswordManagerEnabled = Activar salvamento de contrasignos al gestor de contrasignos.
 policy-PasswordManagerExceptions = Impedir a { -brand-short-name } de salvar le contrasigno pro sitos specific.
+# Post-quantum refers to cryptography that is safe from attacks by quantum
+# computers. See https://en.wikipedia.org/wiki/Post-quantum_cryptography
+policy-PostQuantumKeyAgreementEnabled = Activar le acceptation de clave post-quantic pro TLS.
 # PDF.js and PDF should not be translated
 policy-PDFjs = Disactivar o configurar PDF.js, le visor de PDF integrate in { -brand-short-name }.
 policy-Permissions2 = Configurar le permissiones pro camera, microphono, position, notificationes e autoreproduction.
@@ -126,7 +131,7 @@ policy-SecurityDevices2 = Adder o deler modulos PKCS #11.
 policy-ShowHomeButton = Monstrar le button casa sur le barra de utensiles.
 policy-SSLVersionMax = Stabilir le version SSL maxime.
 policy-SSLVersionMin = Stabilir le version SSL minime.
-policy-StartDownloadsInTempDirectory = Fortiar le discargamento in un plica local temporari, plus tosto que in le directorio ordinari.
+policy-StartDownloadsInTempDirectory = Fortiar que le discargamentos comencia in un directorio local temporari e non in le directorio de discargamento predefinite.
 policy-SupportMenu = Adder un selection de supporto personalisate al menu de adjuta.
 policy-TranslateEnabled = Activar o disactivar le traduction del pagina web.
 policy-UserMessaging = Non monstrar al usator certe messages.

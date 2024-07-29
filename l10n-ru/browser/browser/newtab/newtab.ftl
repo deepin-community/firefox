@@ -234,6 +234,19 @@ newtab-pocket-pocket-firefox-family = { -pocket-brand-name } является ч
 newtab-pocket-save = Сохранить
 newtab-pocket-saved = Сохранено
 
+## Thumbs up and down buttons that shows over a newtab stories card thumbnail on hover.
+
+# Clicking the thumbs up button for this story will result in more stories like this one being recommended
+newtab-pocket-thumbs-up-tooltip =
+    .title = Больше похожих
+# Clicking the thumbs down button for this story informs us that the user does not feel like the story is interesting for them
+newtab-pocket-thumbs-down-tooltip =
+    .title = Не для меня
+newtab-toast-thumbs-up-or-down = Спасибо. Ваш отзыв поможет нам улучшить вашу ленту.
+newtab-toast-dismiss-button =
+    .title = Убрать
+    .aria-label = Убрать
+
 ## Pocket content onboarding experience dialog and modal for new users seeing the Pocket section for the first time, shown as the first item in the Pocket section.
 
 newtab-pocket-onboarding-discover = Находите лучшее в сети
@@ -273,6 +286,9 @@ newtab-custom-recent-subtitle = Подборка недавних сайтов �
 newtab-custom-recent-toggle =
     .label = Последние действия
     .description = Подборка недавних сайтов и контента
+newtab-custom-weather-toggle =
+    .label = Погода
+    .description = Краткий прогноз на сегодня
 newtab-custom-close-button = Закрыть
 newtab-custom-settings = Управление дополнительными настройками
 
@@ -292,7 +308,85 @@ newtab-wallpaper-dark-panda = Красная панда, прячущаяся в
 newtab-wallpaper-dark-sky = Городской пейзаж с ночным небом
 newtab-wallpaper-dark-mountain = Горный пейзаж
 newtab-wallpaper-dark-city = Фиолетовый городской пейзаж
+
+## Solid Colors
+
+newtab-wallpaper-category-title-colors = Сплошные цвета
+newtab-wallpaper-blue = Синий
+newtab-wallpaper-light-blue = Голубой
+newtab-wallpaper-light-purple = Светло-фиолетовый
+newtab-wallpaper-light-green = Светло-зеленый
+newtab-wallpaper-green = Зелёный
+newtab-wallpaper-beige = Бежевый
+newtab-wallpaper-yellow = Жёлтый
+newtab-wallpaper-orange = Оранжевый
+newtab-wallpaper-pink = Розовый
+newtab-wallpaper-light-pink = Светло-розовый
+newtab-wallpaper-red = Красный
+newtab-wallpaper-dark-blue = Темно-синий
+newtab-wallpaper-dark-purple = Темно-фиолетовый
+newtab-wallpaper-dark-green = Темно-зеленый
+newtab-wallpaper-brown = Коричневый
+
+## Abstract
+
+newtab-wallpaper-category-title-abstract = Абстракция
+newtab-wallpaper-abstract-green = Зеленые формы
+newtab-wallpaper-abstract-blue = Синие формы
+newtab-wallpaper-abstract-purple = Фиолетовые формы
+newtab-wallpaper-abstract-orange = Оранжевые формы
+newtab-wallpaper-gradient-orange = Градиент оранжевого и розового
+newtab-wallpaper-abstract-blue-purple = Синие и фиолетовые формы
+
+## Photographs
+
+newtab-wallpaper-category-title-photographs = Фотографии
+newtab-wallpaper-beach-at-sunrise = Пляж на восходе
+newtab-wallpaper-beach-at-sunset = Пляж на закате
+newtab-wallpaper-storm-sky = Грозовое небо
+newtab-wallpaper-sky-with-pink-clouds = Небо с розовыми облаками
+newtab-wallpaper-red-panda-yawns-in-a-tree = Красная панда зевает на дереве
+newtab-wallpaper-white-mountains = Белые горы
 # Variables
 #   $author_string (String) - The name of the creator of the photo.
 #   $webpage_string (String) - The name of the webpage where the photo is located.
 newtab-wallpaper-attribution = Фото <a data-l10n-name="name-link">{ $author_string }</a> на <a data-l10n-name="webpage-link">{ $webpage_string }</a>
+newtab-wallpaper-feature-highlight-header = Попробуйте всплеск цвета
+newtab-wallpaper-feature-highlight-content = Обновите вид Новой вкладки с помощью обоев.
+newtab-wallpaper-feature-highlight-button = Понятно
+# Tooltip for dismiss button
+feature-highlight-dismiss-button =
+    .title = Убрать
+    .aria-label = Закрыть окно
+feature-highlight-wallpaper =
+    .title = { -newtab-wallpaper-feature-highlight-header }
+    .aria-label = { -newtab-wallpaper-feature-highlight-content }
+
+## New Tab Weather
+
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-see-forecast =
+    .title = Посмотреть прогноз в { $provider }
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-sponsored = { $provider } ∙ На правах рекламы
+newtab-weather-menu-change-location = Изменить местоположение
+newtab-weather-change-location-search-input = Поиск местоположения
+newtab-weather-menu-weather-display = Отображение погоды
+# Display options are:
+# - Simple: Displays a current weather condition icon and the current temperature
+# - Detailed: Include simple information plus a short text summary: e.g. "Mostly cloudy"
+newtab-weather-menu-weather-display-option-simple = Простой
+newtab-weather-menu-change-weather-display-simple = Переключиться в простой вид
+newtab-weather-menu-weather-display-option-detailed = Подробный
+newtab-weather-menu-change-weather-display-detailed = Переключиться в подробный вид
+newtab-weather-menu-temperature-units = Единицы измерения температуры
+newtab-weather-menu-temperature-option-fahrenheit = Фаренгейт
+newtab-weather-menu-temperature-option-celsius = Цельсий
+newtab-weather-menu-change-temperature-units-fahrenheit = Переключиться на градусы Фаренгейта
+newtab-weather-menu-change-temperature-units-celsius = Переключиться на градусы Цельсия
+newtab-weather-menu-hide-weather = Скрыть погоду на новой вкладке
+newtab-weather-menu-learn-more = Подробнее
+# This message is shown if user is working offline
+newtab-weather-error-not-available = Данные о погоде сейчас недоступны.

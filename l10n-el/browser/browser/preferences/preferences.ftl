@@ -57,6 +57,10 @@ category-experimental =
 pane-experimental-subtitle = Συνεχίστε με προσοχή
 pane-experimental-search-results-header = Πειράματα { -brand-short-name }: Συνεχίστε με προσοχή
 pane-experimental-description2 = Η αλλαγή παραμέτρων των σύνθετων ρυθμίσεων μπορεί να επηρεάσει την απόδοση ή την ασφάλεια του { -brand-short-name }.
+settings-pane-labs-title = { -firefoxlabs-brand-name }
+settings-category-labs =
+    .tooltiptext = { -firefoxlabs-brand-name }
+pane-experimental-description3 = Δοκιμάστε τις νέες μας λειτουργίες! Βρίσκονται υπό ανάπτυξη και εξέλιξη, γεγονός που θα μπορούσε να επηρεάσει τον τρόπο λειτουργίας του { -brand-short-name }.
 pane-experimental-reset =
     .label = Επαναφορά προεπιλογών
     .accesskey = Ε
@@ -599,6 +603,10 @@ home-prefs-recent-activity-description = Μια συλλογή πρόσφατω�
 home-prefs-snippets-header =
     .label = Αποσπάσματα
 home-prefs-snippets-description-new = Συμβουλές και νέα από τη { -vendor-short-name } και το { -brand-product-name }
+home-prefs-weather-header =
+    .label = Καιρός
+home-prefs-weather-description = Σημερινή πρόγνωση με μια ματιά
+home-prefs-weather-learn-more-link = Μάθετε περισσότερα
 # Variables:
 #   $num (number) - Number of rows displayed
 home-prefs-sections-rows-option =
@@ -912,6 +920,9 @@ forms-saved-passwords =
 forms-primary-pw-use =
     .label = Χρήση κύριου κωδικού πρόσβασης
     .accesskey = Χ
+# This operation requires the user to authenticate with the operating system (device sign-in)
+forms-os-reauth =
+    .label = Απαίτηση σύνδεσης μέσω συσκευής για συμπλήρωση και διαχείριση κωδικών πρόσβασης
 forms-primary-pw-learn-more-link = Μάθετε περισσότερα
 # This string uses the former name of the Primary Password feature
 # ("Master Password" in English) so that the preferences can be found
@@ -944,6 +955,13 @@ primary-password-os-auth-dialog-message-win = Για να δημιουργήσε
 # notes are only valid for English. Please test in your locale.
 primary-password-os-auth-dialog-message-macosx = δημιουργήσει κύριο κωδικό πρόσβασης
 master-password-os-auth-dialog-caption = { -brand-full-name }
+# The macOS string is preceded by the operating system with "Firefox is trying to ".
+autofill-creditcard-os-dialog-message =
+    { PLATFORM() ->
+        [macos] αλλάξει τις ρυθμίσεις των μεθόδων πληρωμής
+       *[other] Το { -brand-short-name } προσπαθεί να αλλάξει τις ρυθμίσεις των μεθόδων πληρωμής. Χρησιμοποιήστε τη σύνδεση μέσω της συσκευής σας για να το επιτρέψετε.
+    }
+autofill-creditcard-os-auth-dialog-caption = { -brand-full-name }
 
 ## Privacy section - Autofill
 
@@ -958,14 +976,9 @@ autofill-payment-methods-checkbox-submessage = Περιλαμβάνει πιστ
     .accesskey = Π
 autofill-saved-payment-methods-button = Αποθηκευμένες μέθοδοι πληρωμής
     .accesskey = κ
-autofill-reauth-checkbox =
-    { PLATFORM() ->
-        [macos] Απαίτηση ελέγχου ταυτότητας από το macOS για τη συμπλήρωση και την επεξεργασία των μεθόδων πληρωμής.
-        [windows] Απαίτηση ελέγχου ταυτότητας από τα Windows για τη συμπλήρωση και την επεξεργασία των μεθόδων πληρωμής.
-        [linux] Απαίτηση ελέγχου ταυτότητας από το Linux για τη συμπλήρωση και την επεξεργασία των μεθόδων πληρωμής.
-       *[other] Απαίτηση ελέγχου ταυτότητας για τη συμπλήρωση και την επεξεργασία των μεθόδων πληρωμής.
-    }
-    .accesskey = ο
+# This operation requires the user to authenticate with the operating system (device sign-in)
+autofill-reauth-payment-methods-checkbox = Απαίτηση σύνδεσης μέσω συσκευής για συμπλήρωση και διαχείριση μεθόδων πληρωμής
+    .accesskey = σ
 
 ## Privacy Section - History
 
@@ -1101,6 +1114,9 @@ addressbar-locbar-quickactions-option =
 addressbar-suggestions-settings = Αλλαγή προτιμήσεων για τις προτάσεις μηχανών αναζήτησης
 addressbar-locbar-showrecentsearches-option =
     .label = Εμφάνιση πρόσφατων αναζητήσεων
+    .accesskey = φ
+addressbar-locbar-showtrendingsuggestions-option =
+    .label = Εμφάνιση δημοφιλών προτάσεων αναζήτησης
     .accesskey = φ
 addressbar-quickactions-learn-more = Μάθετε περισσότερα
 
@@ -1292,6 +1308,14 @@ privacy-segmentation-radio-off =
     .label = Χρήση προτάσεων του { -brand-product-name }
 privacy-segmentation-radio-on =
     .label = Εμφάνιση λεπτομερών πληροφοριών
+
+## Privacy Section - Website Advertising Preferences
+
+website-advertising-header = Προτιμήσεις διαφημίσεων ιστοτόπων
+website-advertising-private-attribution =
+    .label = Να επιτρέπεται στους ιστοτόπους η εκτέλεση διαφημιστικών μετρήσεων με σεβασμό στο απόρρητο
+    .accesskey = α
+website-advertising-private-attribution-description = Αυτή η επιλογή βοηθά τους ιστοτόπους να κατανοήσουν την απόδοση των διαφημίσεών τους, χωρίς να συλλέγονται δεδομένα σχετικά με εσάς.
 
 ## Privacy Section - Security
 ##

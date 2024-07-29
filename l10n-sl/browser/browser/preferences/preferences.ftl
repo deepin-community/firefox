@@ -57,6 +57,9 @@ category-experimental =
 pane-experimental-subtitle = Nadaljujte previdno
 pane-experimental-search-results-header = { -brand-short-name }ovi poskusi: nadaljujte previdno
 pane-experimental-description2 = Spreminjanje naprednih nastavitev lahko vpliva na delovanje ali varnost { -brand-short-name(sklon: "rodilnik") }.
+settings-pane-labs-title = { -firefoxlabs-brand-name }
+settings-category-labs =
+    .tooltiptext = { -firefoxlabs-brand-name }
 pane-experimental-reset =
     .label = Ponastavi privzeto
     .accesskey = P
@@ -605,6 +608,9 @@ home-prefs-recent-activity-description = Izbor nedavnih spletnih mest in vsebin
 home-prefs-snippets-header =
     .label = Izrezki
 home-prefs-snippets-description-new = Nasveti in novice od { -vendor-short-name(sklon: "rodilnik") } in { -brand-product-name(sklon: "rodilnik") }
+home-prefs-weather-header =
+    .label = Vreme
+home-prefs-weather-learn-more-link = Več o tem
 # Variables:
 #   $num (number) - Number of rows displayed
 home-prefs-sections-rows-option =
@@ -920,6 +926,9 @@ forms-saved-passwords =
 forms-primary-pw-use =
     .label = Uporabi glavno geslo
     .accesskey = U
+# This operation requires the user to authenticate with the operating system (device sign-in)
+forms-os-reauth =
+    .label = Zahtevaj prijavo v napravi za izpolnjevanje in upravljanje gesel
 forms-primary-pw-learn-more-link = Več o tem
 # This string uses the former name of the Primary Password feature
 # ("Master Password" in English) so that the preferences can be found
@@ -951,6 +960,7 @@ primary-password-os-auth-dialog-message-win = Če želite ustvariti glavno geslo
 # notes are only valid for English. Please test in your locale.
 primary-password-os-auth-dialog-message-macosx = create a Primary Password
 master-password-os-auth-dialog-caption = { -brand-full-name }
+autofill-creditcard-os-auth-dialog-caption = { -brand-full-name }
 
 ## Privacy section - Autofill
 
@@ -1291,6 +1301,10 @@ privacy-segmentation-radio-off =
     .label = Uporabi priporočila { -brand-product-name(sklon: "rodilnik") }
 privacy-segmentation-radio-on =
     .label = Prikaži podrobne informacije
+
+## Privacy Section - Website Advertising Preferences
+
+website-advertising-header = Nastavitve oglaševanja spletnih mest
 
 ## Privacy Section - Security
 ##

@@ -44,6 +44,9 @@ category-experimental =
 pane-experimental-subtitle = Продължете с повишено внимание
 pane-experimental-search-results-header = Опити с { -brand-short-name }: Продължете с повишено внимание
 pane-experimental-description2 = Промяната на разширените настройки може да повлияе на производителността или сигурността на { -brand-short-name }.
+settings-pane-labs-title = { -firefoxlabs-brand-name }
+settings-category-labs =
+    .tooltiptext = { -firefoxlabs-brand-name }
 pane-experimental-reset =
     .label = Възстановяване на стандартните настройки
     .accesskey = С
@@ -116,6 +119,9 @@ set-as-my-default-browser =
 startup-restore-windows-and-tabs =
     .label = Отваряне на последните прозорци и раздели
     .accesskey = п
+windows-launch-on-login =
+    .label = Автоматично отваряне на { -brand-short-name } при стартиране на компютъра
+    .accesskey = А
 startup-restore-warn-on-quit =
     .label = Предупреждаване при затваряне на четеца
 disable-extension =
@@ -360,6 +366,9 @@ applications-handle-new-file-types-description = Какво да направи 
 applications-save-for-new-types =
     .label = Запазване на файлове
     .accesskey = з
+applications-ask-before-handling =
+    .label = Питане за отваряне или за запазване на файловете
+    .accesskey = П
 drm-content-header = Съдържание с цифрови права (DRM)
 play-drm-content =
     .label = Изпълняване на съдържание под DRM
@@ -984,8 +993,9 @@ enhanced-tracking-protection-setting-custom =
 content-blocking-etp-standard-desc = Баланс между защита и бързодействие. Страниците ще се зареждат нормално.
 content-blocking-etp-strict-desc = По-високо ниво на защита, но някои страници може да не работят.
 content-blocking-etp-custom-desc = Изберете какво проследяване и кои скриптове да спрете.
-content-blocking-etp-blocking-desc = { -brand-short-name } спира следните:
+content-blocking-etp-blocking-desc = { -brand-short-name } ще спира следните неща:
 content-blocking-private-windows = Проследяващо съдържание в поверителните прозорци
+content-blocking-cross-site-cookies-in-all-windows2 = Междусайтови бисквитки във всички прозорци
 content-blocking-cross-site-tracking-cookies = Бисквитки за следене в различни сайтове
 content-blocking-all-cross-site-cookies-private-windows = Междусайтови бисквитки в поверителни прозорци
 content-blocking-social-media-trackers = Проследяване от социални мрежи
@@ -1105,6 +1115,9 @@ addon-recommendations-link = Научете повече
 # This message is displayed above disabled data sharing options in developer builds
 # or builds with no Telemetry support available.
 collection-health-report-disabled = Докладването да данни е изключено за тази конфигурация на изданието
+
+## Privacy Section - Website Advertising Preferences
+
 
 ## Privacy Section - Security
 ##

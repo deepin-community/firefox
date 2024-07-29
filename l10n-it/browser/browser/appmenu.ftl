@@ -77,16 +77,6 @@ appmenu-remote-tabs-showmore =
 appmenu-remote-tabs-show-inactive-tabs =
   .label = Schede inattive
   .tooltiptext = Visualizza le schede inattive su questo dispositivo
-# This is shown when there are inactive tabs which are not being shown.
-# Variables
-# $count (Number) - The number of inactive tabs which are not being shown (at least 1)
-appmenu-remote-tabs-showinactive =
-    .label =
-        { $count ->
-            [one] Mostra scheda inattiva
-           *[other] Mostra { $count } schede inattive
-        }
-    .tooltiptext = Mostra le schede inattive su questo dispositivo
 # This is shown beneath the name of a device when that device has no open tabs
 appmenu-remote-tabs-notabs = Nessuna scheda aperta
 # This is shown when Sync is configured but syncing tabs is disabled.
@@ -202,6 +192,11 @@ profiler-popup-presets-power-description = Preset per la diagnosi di problemi re
 # "Power" is used in the sense of energy (electricity used by the computer).
 profiler-popup-presets-power-label =
     .label = Energia
+
+profiler-popup-presets-debug-description = Preset per il debug di { -brand-shorter-name }. Overhead elevato, non utilizzare per analisi delle prestazioni ma solo per comprendere il comportamento del browser.
+profiler-popup-presets-debug-label =
+  .label = Debug
+
 profiler-popup-presets-custom-label =
     .label = Personalizzato
 
@@ -282,3 +277,4 @@ appmenuitem-relay-title = { -relay-brand-short-name }
 appmenuitem-relay-description = Mantieni al sicuro il tuo indirizzo email e telefono
 appmenuitem-vpn-title = { -mozilla-vpn-brand-name }
 appmenuitem-vpn-description = Proteggi la tua attività online
+

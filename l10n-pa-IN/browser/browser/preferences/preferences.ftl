@@ -57,6 +57,10 @@ category-experimental =
 pane-experimental-subtitle = ਧਿਆਨ ਨਾਲ ਅੱਗੇ ਵਧੋ
 pane-experimental-search-results-header = { -brand-short-name } ਤਜਰਬਾ: ਧਿਆਨ ਨਾਲ ਜਾਰੀ ਰੱਖੋ
 pane-experimental-description2 = ਤਕਨੀਕੀ ਸੈਟਿੰਗਾਂ ਬਦਲਣ ਨਾਲ { -brand-short-name } ਦੀ ਕਾਰਗੁਜ਼ਾਰੀ ਜਾਂ ਸੁਰੱਖਿਆ ਪ੍ਰਭਾਵਿਤ ਹੋ ਸਕਦੀ ਹੈ।
+settings-pane-labs-title = { -firefoxlabs-brand-name }
+settings-category-labs =
+    .tooltiptext = { -firefoxlabs-brand-name }
+pane-experimental-description3 = ਸਾਡੇ ਤਜਰਬੇ ਅਧੀਨ ਫ਼ੀਚਰਾਂ ਨੂੰ ਅਜ਼ਮਾ ਕੇ ਵੇਖੋ! ਇਹ ਵਿਕਾਸ ਅਧੀਨ ਹਨ ਅਤੇ ਸੁਧਾਰੇ ਜਾ ਰਹੇ ਹਨ, ਜੋ ਕਿ { -brand-short-name } ਦੇ ਕੰਮ ਕਰਨ ਉੱਤੇ ਅਸਰ ਪਾ ਸਕਦੇ ਹਨ।
 pane-experimental-reset =
     .label = ਮੂਲ ਨੂੰ ਬਹਾਲ ਕਰੋ
     .accesskey = R
@@ -599,6 +603,10 @@ home-prefs-recent-activity-description = ਤਾਜ਼ਾ ਸਾਈਟਾਂ ਤੇ 
 home-prefs-snippets-header =
     .label = ਛੋਟੇ ਟੋਟੇ
 home-prefs-snippets-description-new = { -vendor-short-name } ਅਤੇ { -brand-product-name } ਵਲੋਂ ਟੋਟਕੇ ਤੇ ਖ਼ਬਰਾਂ
+home-prefs-weather-header =
+    .label = ਮੌਸਮ
+home-prefs-weather-description = ਅੱਜ ਦੀ ਭਵਿੱਖਬਾਣੀ ਲਈ ਨਜ਼ਰਸਾਨੀ
+home-prefs-weather-learn-more-link = ਹੋਰ ਜਾਣੋ
 # Variables:
 #   $num (number) - Number of rows displayed
 home-prefs-sections-rows-option =
@@ -912,6 +920,9 @@ forms-saved-passwords =
 forms-primary-pw-use =
     .label = ਮੁੱਖ ਪਾਸਵਰਡ ਵਰਤੋਂ
     .accesskey = U
+# This operation requires the user to authenticate with the operating system (device sign-in)
+forms-os-reauth =
+    .label = ਪਾਸਵਰਡ ਭਰਨ ਅਤੇ ਇੰਤਜ਼ਾਮ ਕਰਨ ਲਈ ਡਿਵਾਈਸ ਲਾਗਇਨ ਚਾਹੀਦਾ ਹੈ
 forms-primary-pw-learn-more-link = ਹੋਰ ਜਾਣੋ
 # This string uses the former name of the Primary Password feature
 # ("Master Password" in English) so that the preferences can be found
@@ -944,6 +955,13 @@ primary-password-os-auth-dialog-message-win = ਮੁੱਖ ਪਾਸਵਰਡ �
 # notes are only valid for English. Please test in your locale.
 primary-password-os-auth-dialog-message-macosx = ਮੁੱਖ ਪਾਸਵਰਡ ਬਣਾਓ
 master-password-os-auth-dialog-caption = { -brand-full-name }
+# The macOS string is preceded by the operating system with "Firefox is trying to ".
+autofill-creditcard-os-dialog-message =
+    { PLATFORM() ->
+        [macos] ਭੁਗਤਾਨ ਢੰਗਾਂ ਲਈ ਸੈਟਿੰਗਾਂ ਨੂੰ ਬਦਲਣਾ
+       *[other] { -brand-short-name } ਭੁਗਤਾਨ ਦੇ ਢੰਗਾਂ ਲਈ ਸੈਟਿੰਗਾਂ ਨੂੰ ਬਦਲਣ ਦੀ ਕੋਸ਼ਿਸ਼ ਕਰ ਰਿਹਾ ਹੈ। ਇਸ ਦੀ ਮਨਜ਼ੂਰੀ ਦੇਣ ਲਈ ਆਪਣੇ ਡਿਵਾਈਸ ਸਾਈਨ ਇਨ ਨੂੰ ਵਰਤੋਂ।
+    }
+autofill-creditcard-os-auth-dialog-caption = { -brand-full-name }
 
 ## Privacy section - Autofill
 
@@ -958,13 +976,8 @@ autofill-payment-methods-checkbox-submessage = ਕਰੈਡਿਟ ਅਤੇ ਡ�
     .accesskey = I
 autofill-saved-payment-methods-button = ਸੰਭਾਲੇ ਹੋਏ ਭੁਗਤਾਨ ਦੇ ਢੰਗ
     .accesskey = v
-autofill-reauth-checkbox =
-    { PLATFORM() ->
-        [macos] ਭੁਗਤਾਨ ਦੇ ਢੰਗ ਭਰਨ ਅਤੇ ਸੰਭਾਲਣ ਲਈ macOS ਪਰਮਾਣਕਿਤਾ ਚਾਹੀਦੀ ਹੈ।
-        [windows] ਭੁਗਤਾਨ ਦੇ ਢੰਗ ਭਰਨ ਅਤੇ ਸੰਭਾਲਣ ਲਈ Windows ਪਰਮਾਣਕਿਤਾ ਚਾਹੀਦੀ ਹੈ।
-        [linux] ਭੁਗਤਾਨ ਦੇ ਢੰਗ ਭਰਨ ਅਤੇ ਸੰਭਾਲਣ ਲਈ ਲੀਨਸ ਪਰਮਾਣਕਿਤਾ ਚਾਹੀਦੀ ਹੈ।
-       *[other] ਭੁਗਤਾਨ ਦੇ ਢੰਗ ਭਰਨ ਅਤੇ ਸੰਭਾਲਣ ਲਈ ਪਰਮਾਣਕਿਤਾ ਚਾਹੀਦੀ ਹੈ।
-    }
+# This operation requires the user to authenticate with the operating system (device sign-in)
+autofill-reauth-payment-methods-checkbox = ਭੁਗਤਾਨ ਦੇ ਢੰਗਾਂ ਨੂੰ ਭਰਨ ਅਤੇ ਇੰਤਜ਼ਾਮ ਕਰਨ ਲਈ ਡਿਵਾਈਸ ਲਾਗਇਨ ਚਾਹੀਦਾ ਹੈ
     .accesskey = o
 
 ## Privacy Section - History
@@ -1102,6 +1115,9 @@ addressbar-suggestions-settings = ਖੋਜ ਇੰਜਣ ਸੁਝਾਵਾਂ �
 addressbar-locbar-showrecentsearches-option =
     .label = ਸੱਜਰੀਆਂ ਖੋਜਾਂ ਵੇਖਾਓ
     .accesskey = r
+addressbar-locbar-showtrendingsuggestions-option =
+    .label = ਖੋਜ ਸੁਝਾਆਵਾਂ ਦੇ ਰੁਝਾਨਾਂ ਨੂੰ ਵੇਖੋ
+    .accesskey = t
 addressbar-quickactions-learn-more = ਹੋਰ ਜਾਣੋ
 
 ## Privacy Section - Content Blocking
@@ -1297,6 +1313,14 @@ privacy-segmentation-radio-off =
     .label = { -brand-product-name } ਸਿਫ਼ਾਰਸ਼ਾਂ ਨੂੰ ਵਰਤੋਂ
 privacy-segmentation-radio-on =
     .label = ਵੇਰਵੇ ਸਮੇਤ ਜਾਣਕਾਰੀ ਵੇਖਾਓ
+
+## Privacy Section - Website Advertising Preferences
+
+website-advertising-header = ਵੈੱਬਸਾਈਟ ਇਸ਼ਤਿਹਾਰਬਾਜ਼ੀ ਪਸੰਦਾਂ
+website-advertising-private-attribution =
+    .label = ਵੈੱਬਸਾਈਟਾਂ ਨੂੰ ਪਰਦੇਦਾਰੀ-ਸੁਰੱਖਿਆ ਇਸ਼ਤਿਹਾਰ ਕਦਮ ਚੁੱਕਣ ਦੀ ਇਜਾਜ਼ਤ ਦਿਓ
+    .accesskey = a
+website-advertising-private-attribution-description = ਇਹ ਸਾਈਟਾਂ ਨੂੰ ਤੁਹਾਡਾ ਡਾਟਾ ਇਕੱਤਰ ਕੀਤੇ ਬਗ਼ੈਰ ਉਹਨਾਂ ਦੇ ਇਸ਼ਤਿਹਾਰਾਂ ਦੀ ਕਾਰਗੁਜ਼ਾਰੀ ਬਾਰੇ ਸਮਝਣ ਦੀ ਮਦਦ ਕਰਦਾ ਹੈ।
 
 ## Privacy Section - Security
 ##

@@ -228,6 +228,19 @@ newtab-pocket-pocket-firefox-family = ‏{ -pocket-brand-name } הוא חלק מ
 newtab-pocket-save = שמירה
 newtab-pocket-saved = נשמר
 
+## Thumbs up and down buttons that shows over a newtab stories card thumbnail on hover.
+
+# Clicking the thumbs up button for this story will result in more stories like this one being recommended
+newtab-pocket-thumbs-up-tooltip =
+    .title = ארצה עוד כאלה
+# Clicking the thumbs down button for this story informs us that the user does not feel like the story is interesting for them
+newtab-pocket-thumbs-down-tooltip =
+    .title = לא בשבילי
+newtab-toast-thumbs-up-or-down = תודה. המשוב שלך יעזור לנו לשפר את הפיד שלך.
+newtab-toast-dismiss-button =
+    .title = סגירה
+    .aria-label = סגירה
+
 ## Pocket content onboarding experience dialog and modal for new users seeing the Pocket section for the first time, shown as the first item in the Pocket section.
 
 newtab-pocket-onboarding-discover = לגלות את המיטב של האינטרנט
@@ -266,6 +279,9 @@ newtab-custom-recent-subtitle = מבחר של אתרים ותכנים אחרונ
 newtab-custom-recent-toggle =
     .label = פעילות אחרונה
     .description = מבחר של אתרים ותכנים אחרונים
+newtab-custom-weather-toggle =
+    .label = מזג אוויר
+    .description = התחזית של היום
 newtab-custom-close-button = סגירה
 newtab-custom-settings = ניהול הגדרות נוספות
 
@@ -285,7 +301,85 @@ newtab-wallpaper-dark-panda = פנדה אדומה חבויה ביער
 newtab-wallpaper-dark-sky = נוף עיר עם שמי לילה
 newtab-wallpaper-dark-mountain = נוף הררי
 newtab-wallpaper-dark-city = נוף עירוני סגול
+
+## Solid Colors
+
+newtab-wallpaper-category-title-colors = צבעים אחידים
+newtab-wallpaper-blue = כחול
+newtab-wallpaper-light-blue = כחול בהיר
+newtab-wallpaper-light-purple = סגול בהיר
+newtab-wallpaper-light-green = ירוק בהיר
+newtab-wallpaper-green = ירוק
+newtab-wallpaper-beige = בז’
+newtab-wallpaper-yellow = צהוב
+newtab-wallpaper-orange = כתום
+newtab-wallpaper-pink = ורוד
+newtab-wallpaper-light-pink = ורוד בהיר
+newtab-wallpaper-red = אדום
+newtab-wallpaper-dark-blue = כחול כהה
+newtab-wallpaper-dark-purple = סגול כהה
+newtab-wallpaper-dark-green = ירוק כהה
+newtab-wallpaper-brown = חום
+
+## Abstract
+
+newtab-wallpaper-category-title-abstract = מופשט
+newtab-wallpaper-abstract-green = צורות ירוקות
+newtab-wallpaper-abstract-blue = צורות כחולות
+newtab-wallpaper-abstract-purple = צורות סגולות
+newtab-wallpaper-abstract-orange = צורות כתומות
+newtab-wallpaper-gradient-orange = מעברי צבע כתום וורוד
+newtab-wallpaper-abstract-blue-purple = צורות כחולות וסגולות
+
+## Photographs
+
+newtab-wallpaper-category-title-photographs = תצלומים
+newtab-wallpaper-beach-at-sunrise = זריחה בחוף הים
+newtab-wallpaper-beach-at-sunset = שקיעה בחוף הים
+newtab-wallpaper-storm-sky = שמיים סוערים
+newtab-wallpaper-sky-with-pink-clouds = שמיים עם עננים ורודים
+newtab-wallpaper-red-panda-yawns-in-a-tree = פנדה אדומה מפהקת בעץ
+newtab-wallpaper-white-mountains = הרים לבנים
 # Variables
 #   $author_string (String) - The name of the creator of the photo.
 #   $webpage_string (String) - The name of the webpage where the photo is located.
 newtab-wallpaper-attribution = תמונה מאת <a data-l10n-name="name-link">{ $author_string }</a> ב־<a data-l10n-name="webpage-link">{ $webpage_string }</a>
+newtab-wallpaper-feature-highlight-header = אולי איזה מגע של צבע
+newtab-wallpaper-feature-highlight-content = תנו ללשונית החדשה שלכם מראה רענן עם תמונות רקע.
+newtab-wallpaper-feature-highlight-button = הבנתי
+# Tooltip for dismiss button
+feature-highlight-dismiss-button =
+    .title = סגירה
+    .aria-label = סגירת ההודעה הקופצת
+feature-highlight-wallpaper =
+    .title = { -newtab-wallpaper-feature-highlight-header }
+    .aria-label = { -newtab-wallpaper-feature-highlight-content }
+
+## New Tab Weather
+
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-see-forecast =
+    .title = הצגת התחזית ב־{ $provider }
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-sponsored = ‏{ $provider } ∙ ממומן
+newtab-weather-menu-change-location = שינוי מקום
+newtab-weather-change-location-search-input = חיפוש מקום
+newtab-weather-menu-weather-display = תצוגת מזג אוויר
+# Display options are:
+# - Simple: Displays a current weather condition icon and the current temperature
+# - Detailed: Include simple information plus a short text summary: e.g. "Mostly cloudy"
+newtab-weather-menu-weather-display-option-simple = פשוטה
+newtab-weather-menu-change-weather-display-simple = מעבר לתצוגה פשוטה
+newtab-weather-menu-weather-display-option-detailed = מפורטת
+newtab-weather-menu-change-weather-display-detailed = מעבר לתצוגה מפורטת
+newtab-weather-menu-temperature-units = יחידות טמפרטורה
+newtab-weather-menu-temperature-option-fahrenheit = פרנהייט
+newtab-weather-menu-temperature-option-celsius = צלזיוס
+newtab-weather-menu-change-temperature-units-fahrenheit = מעבר לפרנהייט
+newtab-weather-menu-change-temperature-units-celsius = מעבר לצלזיוס
+newtab-weather-menu-hide-weather = הסתרת מזג האוויר בלשונית החדשה
+newtab-weather-menu-learn-more = מידע נוסף
+# This message is shown if user is working offline
+newtab-weather-error-not-available = נתוני מזג האוויר אינם זמינים כעת.

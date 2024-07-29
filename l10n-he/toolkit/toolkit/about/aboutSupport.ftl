@@ -308,6 +308,9 @@ loaded-lib-versions = גרסה שבשימוש
 has-seccomp-bpf = Seccomp-BPF (System Call Filtering)
 has-user-namespaces = מרחב שמות משתמש
 has-privileged-user-namespaces = מרחב שמות משתמש לתהליכים מורשים
+# Variables
+# $status (string) - Boolean value of hasUserNamespaces (should only be false when support-user-namespaces-unavailable is used)
+support-user-namespaces-unavailable = { $status } - תכונה זו אינה מותרת על־ידי המערכת שלך. זה יכול להגביל את יכולות האבטחה של { -brand-short-name }.
 can-sandbox-content = ארגז חול לתהליכי תוכן
 can-sandbox-media = ארגז חול לתוספים חיצוניים עבור מדיה
 support-sandbox-gpu-level = רמת ארגז חול של תהליך GPU
@@ -366,6 +369,20 @@ support-printing-clear-settings-button = ניקוי הגדרות הדפסה שמ
 support-printing-modified-settings = הגדרות הדפסה ששונו
 support-printing-prefs-name = שם
 support-printing-prefs-value = ערך
+
+## Remote Settings sections
+
+support-remote-settings-title = הגדרות מרוחקות
+support-remote-settings-status = מצב
+support-remote-settings-status-ok = בסדר
+# Status when synchronization is not working.
+support-remote-settings-status-broken = לא עובד
+support-remote-settings-last-check = הבדיקה האחרונה
+support-remote-settings-local-timestamp = חותמת זמן מקומית
+support-remote-settings-sync-history = היסטוריה
+support-remote-settings-sync-history-status = מצב
+support-remote-settings-sync-history-datetime = תאריך
+support-remote-settings-sync-history-infos = מידע
 
 ## Normandy sections
 

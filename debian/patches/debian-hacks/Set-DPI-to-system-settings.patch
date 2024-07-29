@@ -7,10 +7,10 @@ Subject: Set DPI to system settings
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/modules/libpref/init/StaticPrefList.yaml b/modules/libpref/init/StaticPrefList.yaml
-index f32e8a9..c07f0f00 100644
+index 60919f2..02c28d1 100644
 --- a/modules/libpref/init/StaticPrefList.yaml
 +++ b/modules/libpref/init/StaticPrefList.yaml
-@@ -8340,7 +8340,7 @@
+@@ -8486,7 +8486,7 @@
  # interpretation of physical units such as "pt".
  - name: layout.css.dpi
    type: int32_t

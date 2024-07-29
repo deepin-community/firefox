@@ -11,7 +11,7 @@ create-new-login-button =
     .title = Criar nova credencial
 about-logins-page-title-name = Palavras-passe
 about-logins-login-filter2 =
-    .placeholder = Procurar palavras-passe
+    .placeholder = Pesquisar palavras-passe
     .key = F
 create-login-button =
     .title = Adicionar palavra-passe
@@ -172,6 +172,13 @@ about-logins-edit-login-os-auth-dialog-message-win = Para editar a sua credencia
 # This message can be seen when attempting to edit a login in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-edit-login-os-auth-dialog-message-macosx = editar a credencial guardada
+# The macOS strings are preceded by the operating system with "Firefox is trying to ".
+# This message can be seen when attempting to disable osauth in about:preferences.
+about-logins-os-auth-dialog-message =
+    { PLATFORM() ->
+        [macos] alterar as definições das palavras-passe
+       *[other] O { -brand-short-name } está a tentar alterar as definições das palavras-passe. Utilize o início de sessão do seu dispositivo para permitir isto.
+    }
 # This message can be seen when attempting to edit a login in about:logins on Windows.
 about-logins-edit-login-os-auth-dialog-message2-win = Para editar a sua palavra-passe, insira as suas credenciais de autenticação do Windows. Isto ajuda a proteger a segurança das suas contas.
 # This message can be seen when attempting to edit a login in about:logins

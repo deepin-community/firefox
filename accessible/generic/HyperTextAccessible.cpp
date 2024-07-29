@@ -15,6 +15,7 @@
 #include "mozilla/a11y/Role.h"
 #include "States.h"
 #include "TextAttrs.h"
+#include "TextLeafRange.h"
 #include "TextRange.h"
 #include "TreeWalker.h"
 
@@ -26,7 +27,6 @@
 #include "nsContainerFrame.h"
 #include "nsFrameSelection.h"
 #include "nsILineIterator.h"
-#include "nsIScrollableFrame.h"
 #include "nsIMathMLFrame.h"
 #include "nsLayoutUtils.h"
 #include "nsRange.h"
@@ -35,6 +35,7 @@
 #include "mozilla/HTMLEditor.h"
 #include "mozilla/IntegerRange.h"
 #include "mozilla/PresShell.h"
+#include "mozilla/ScrollContainerFrame.h"
 #include "mozilla/SelectionMovementUtils.h"
 #include "mozilla/dom/Element.h"
 #include "mozilla/dom/HTMLBRElement.h"
@@ -755,6 +756,35 @@ LayoutDeviceIntRect HyperTextAccessible::GetCaretRect(nsIWidget** aWidget) {
   return caretRect;
 }
 
+bool HyperTextAccessible::IsCaretAtEndOfLine() const {
+  RefPtr<nsFrameSelection> frameSelection = FrameSelection();
+  if (!frameSelection ||
+      frameSelection->GetHint() != CaretAssociationHint::Before) {
+    return false;
+  }
+  // CaretAssociationHint::Before can mean that the caret is at the end of
+  // a line. However, it can also mean that the caret is before the start
+  // of a node in the middle of a line. This happens when moving the cursor
+  // forward to a new node.
+  int32_t caret = CaretOffset();
+  if (caret == -1) {
+    return false;
+  }
+  TextLeafPoint point =
+      const_cast<HyperTextAccessible*>(this)->ToTextLeafPoint(caret);
+  if (!point) {
+    return false;
+  }
+  if (point.mOffset != 0) {
+    // This isn't the start of a node, so we must be at the end of a line.
+    return true;
+  }
+  // The caret is before the start of a node. The caret is at the end of a
+  // line if the node is at the start of a line but not at the start of a
+  // paragraph.
+  return point.FindPrevLineStartSameLocalAcc(true) && !point.IsParagraphStart();
+}
+
 void HyperTextAccessible::GetSelectionDOMRanges(SelectionType aSelectionType,
                                                 nsTArray<nsRange*>* aRanges) {
   if (IsDoc() && !AsDoc()->HasLoadState(DocAccessible::eTreeConstructed)) {
@@ -894,8 +924,7 @@ void HyperTextAccessible::ScrollSubstringToPoint(int32_t aStartOffset,
   bool initialScrolled = false;
   nsIFrame* parentFrame = frame;
   while ((parentFrame = parentFrame->GetParent())) {
-    nsIScrollableFrame* scrollableFrame = do_QueryFrame(parentFrame);
-    if (scrollableFrame) {
+    if (parentFrame->IsScrollContainerOrSubclass()) {
       if (!initialScrolled) {
         // Scroll substring to the given point. Turn the point into percents
         // relative scrollable area to use nsCoreUtils::ScrollSubstringTo.

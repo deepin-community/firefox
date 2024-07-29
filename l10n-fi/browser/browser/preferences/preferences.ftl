@@ -57,6 +57,10 @@ category-experimental =
 pane-experimental-subtitle = Jatka varoen
 pane-experimental-search-results-header = { -brand-short-name }-kokeilut: jatka varoen
 pane-experimental-description2 = Lisäasetusten muuttaminen voi vaikuttaa { -brand-short-name }in suorituskykyyn tai tietoturvaan.
+settings-pane-labs-title = { -firefoxlabs-brand-name }
+settings-category-labs =
+    .tooltiptext = { -firefoxlabs-brand-name }
+pane-experimental-description3 = Kokeile kokeellisia ominaisuuksiamme! Niitä kehitetään, mikä saattaa vaikuttaa siihen, miten { -brand-short-name } toimii.
 pane-experimental-reset =
     .label = Palauta oletukset
     .accesskey = P
@@ -599,6 +603,10 @@ home-prefs-recent-activity-description = Valikoima viimeisimpiä sivustoja ja si
 home-prefs-snippets-header =
     .label = Tiedonmuruset
 home-prefs-snippets-description-new = Vinkit ja uutiset { -vendor-short-name }lta ja { -brand-product-name }ilta
+home-prefs-weather-header =
+    .label = Sää
+home-prefs-weather-description = Tämän päivän ennuste yhdellä vilkaisulla
+home-prefs-weather-learn-more-link = Lue lisää
 # Variables:
 #   $num (number) - Number of rows displayed
 home-prefs-sections-rows-option =
@@ -912,6 +920,9 @@ forms-saved-passwords =
 forms-primary-pw-use =
     .label = Käytä pääsalasanaa
     .accesskey = K
+# This operation requires the user to authenticate with the operating system (device sign-in)
+forms-os-reauth =
+    .label = Vaadi laitteen sisäänkirjautuminen salasanojen täyttämistä ja hallintaa varten
 forms-primary-pw-learn-more-link = Lue lisää
 # This string uses the former name of the Primary Password feature
 # ("Master Password" in English) so that the preferences can be found
@@ -944,6 +955,13 @@ primary-password-os-auth-dialog-message-win = Luo pääsalasana kirjoittamalla W
 # notes are only valid for English. Please test in your locale.
 primary-password-os-auth-dialog-message-macosx = asettaa pääsalasanan
 master-password-os-auth-dialog-caption = { -brand-full-name }
+# The macOS string is preceded by the operating system with "Firefox is trying to ".
+autofill-creditcard-os-dialog-message =
+    { PLATFORM() ->
+        [macos] muuttaa maksutapojen asetuksia
+       *[other] { -brand-short-name } yrittää muuttaa maksutapojen asetuksia. Käytä laitteen sisäänkirjautumista salliaksesi tämän.
+    }
+autofill-creditcard-os-auth-dialog-caption = { -brand-full-name }
 
 ## Privacy section - Autofill
 
@@ -958,13 +976,8 @@ autofill-payment-methods-checkbox-submessage = Sisältää luotto- ja pankkikort
     .accesskey = l
 autofill-saved-payment-methods-button = Tallennetut maksutavat
     .accesskey = v
-autofill-reauth-checkbox =
-    { PLATFORM() ->
-        [macos] Vaadi macOS-tunnistautuminen maksutapojen täyttämiseksi ja muokkaamiseksi.
-        [windows] Vaadi Windows-tunnistautuminen maksutapojen täyttämiseksi ja muokkaamiseksi.
-        [linux] Vaadi Linux-tunnistautuminen maksutapojen täyttämiseksi ja muokkaamiseksi.
-       *[other] Vaadi tunnistautuminen maksutapojen täyttämiseksi ja muokkaamiseksi.
-    }
+# This operation requires the user to authenticate with the operating system (device sign-in)
+autofill-reauth-payment-methods-checkbox = Vaadi laitteen sisäänkirjautumista maksutapojen täyttämiseksi ja hallitsemiseksi
     .accesskey = o
 
 ## Privacy Section - History
@@ -1102,6 +1115,9 @@ addressbar-suggestions-settings = Muuta hakukoneiden ehdotusten asetuksia
 addressbar-locbar-showrecentsearches-option =
     .label = Näytä viimeisimmät haut
     .accesskey = h
+addressbar-locbar-showtrendingsuggestions-option =
+    .label = Näytä suositut hakuehdotukset
+    .accesskey = t
 addressbar-quickactions-learn-more = Lue lisää
 
 ## Privacy Section - Content Blocking
@@ -1292,6 +1308,14 @@ privacy-segmentation-radio-off =
     .label = Käytä { -brand-product-name }-suosituksia
 privacy-segmentation-radio-on =
     .label = Näytä yksityiskohtaiset tiedot
+
+## Privacy Section - Website Advertising Preferences
+
+website-advertising-header = Verkkosivustojen mainosasetukset
+website-advertising-private-attribution =
+    .label = Salli verkkosivustojen suorittaa yksityisyyden säilyttävien mainosten mittausta
+    .accesskey = a
+website-advertising-private-attribution-description = Tämä auttaa sivustoja ymmärtämään, kuinka heidän mainokset toimivat keräämättä tietoja sinusta.
 
 ## Privacy Section - Security
 ##

@@ -4,7 +4,7 @@
 
 crashreporter-branded-title = Reporter de crash de { -brand-short-name }
 crashreporter-apology = Nos regretta
-crashreporter-crashed-and-restore = { -brand-short-name } habeva un problema e collabeva. Nos tentara de restaurar tu schedas e fenestras quando illo se reinitiara.
+crashreporter-crashed-and-restore = { -brand-short-name } ha incontrate un problema e ha collabite. Nos tentara restaurar tu schedas e fenestras quando illo se reinitiara.
 crashreporter-plea = Pro adjutar nos a diagnosticar e corriger le problema, tu pote inviar nos un reporto de collapso.
 crashreporter-information = Iste application es exequite post un crash pro reportar le problema a { -vendor-short-name }. Illo non deberea esser exequite directemente.
 crashreporter-error = { -brand-short-name } habeva un problema e collabeva. Infortunatemente, le reporter de crash  non pote inviar un reporto pro iste crash.
@@ -15,12 +15,12 @@ crashreporter-button-details = Detalios…
 crashreporter-loading-details = Cargante…
 crashreporter-view-report-title = Contento del reporto
 crashreporter-comment-prompt = Adder un commento (le commentos es visibile a omnes)
-crashreporter-report-info = Iste reporto etiam contine informationes technic sur le stato del application quando illo collabeva.
-crashreporter-send-report = Conta a { -vendor-short-name } re iste crash assi illes pote corriger lo.
-crashreporter-include-url = Includer le adresse del pagina ubi io era.
+crashreporter-report-info = Iste reporto etiam contine informationes technic sur le stato del application al momento del collapso.
+crashreporter-send-report = Informar { -vendor-short-name } sur iste collapso a fin que illes pote corriger lo
+crashreporter-include-url = Includer le adresse del pagina visitate.
 crashreporter-submit-status = Tu reporto de collapso essera submittite ante le clausura o le re-lanceamento del programma.
-crashreporter-submit-in-progress = Submittente tu reporto…
-crashreporter-submit-success = Reporto submittite con successo!
+crashreporter-submit-in-progress = Inviante tu reporto…
+crashreporter-submit-success = Reporto inviate con successo!
 crashreporter-submit-failure = Il ha habite un problema durante le submission de tu reporto.
 crashreporter-resubmit-status = Reinviante reportos cuje tentativas de invio precedente falleva…
 crashreporter-button-quit = Quitar { -brand-short-name }

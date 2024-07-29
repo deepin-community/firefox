@@ -41,7 +41,7 @@ shopping-letter-grade-tooltip =
 shopping-message-bar-warning-stale-analysis-message-2 = Marandu pyahu ehechajey hag̃ua
 shopping-message-bar-warning-stale-analysis-button = Ehechajey ko’ág̃a
 shopping-message-bar-generic-error =
-    .heading = Ndaipóri marandu ko’ág̃aite
+    .heading = Ndaipóri marandu ko’ag̃aite
     .message = Romba’apo opa hag̃ua apañuãi. Ikatúpiko, eha’ãjey ag̃ave.
 shopping-message-bar-warning-not-enough-reviews =
     .heading = Noĩri gueteri heta marandu’i
@@ -115,6 +115,7 @@ shopping-settings-sidebar-enabled-state = Pe marandu’i rechajeyha <strong>hend
 shopping-adjusted-rating-label =
     .label = Ñeha’ãmby ha’etéva
 shopping-adjusted-rating-unreliable-reviews = Oñemboguéta marandu’i jerovia’ỹha
+shopping-adjusted-rating-based-reliable-reviews = Oiko hechajey jeroviahápe
 
 ## Strings for the review reliability component
 
@@ -133,6 +134,8 @@ shopping-analysis-explainer-learn-more2 = Eikuaave <a data-l10n-name="review-qua
 # websites, which will be inserted without being translated.
 #  $retailer (String) - capitalized name of the shopping website, for example, "Amazon".
 shopping-analysis-explainer-highlights-description = Umi <strong>momba’eguasupyre</strong> ou { $retailer } jehechajeýgui 80 ára ohasaramóvape roikuaáva ejeroviakuaaha.
+# Fallback for analysis highlights explainer if the retailer is ever unknown
+shopping-analysis-explainer-highlights-description-unknown-retailer = Umi <strong>mba’eguasúva</strong> ou jehechajey 80 ára ohasaramovévagui ikatúvare ejerovia.
 shopping-analysis-explainer-review-grading-scale-reliable = Hechajey jeroviaha. Roguerovia marandu’i ouha joguaháragui ohejáva umi marandu’i oñanduháicha ha ñaña’ỹre.
 shopping-analysis-explainer-review-grading-scale-mixed = Roikuaa oĩha marandu’i jeroviaha ha jerovia’ỹha.
 shopping-analysis-explainer-review-grading-scale-unreliable = Marandu’i jerovia’iveha. Roikuaa marandu’i ikatuha japu térã ou hechajeyhára iñañávagui.

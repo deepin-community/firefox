@@ -135,6 +135,16 @@ tabbrowser-confirm-caretbrowsing-title = Tastaturowa nawigacija
 tabbrowser-confirm-caretbrowsing-message = Tłóčenje tasty F7 zapina abo wupina tastaturowu nawigaciju. Tuta funkcija staja pohibliwy kursor do webstronow a dowola wam tekst z tastaturu wubrać. Chceće nětko tastaturowu nawigaciju zapinać?
 tabbrowser-confirm-caretbrowsing-checkbox = Tutón dialogowy kašćik wjace njepokazać.
 
+## Confirmation dialog for closing all duplicate tabs
+
+tabbrowser-confirm-close-duplicate-tabs-title = Kedźbu
+tabbrowser-confirm-close-duplicate-tabs-text = Wostajimy posledni aktiwny rajtark wočinjeny
+tabbrowser-confirm-close-all-duplicate-tabs-title = Dwójne rajtarki začinić?
+tabbrowser-confirm-close-all-duplicate-tabs-text =
+    Začinimy dwójne rajtarki w tutym woknje. Posledni aktiwny
+    rajtark wostanje wočinjeny.
+tabbrowser-confirm-close-all-duplicate-tabs-button-closetabs = Rajtarki začinić
+
 ##
 
 # Variables:

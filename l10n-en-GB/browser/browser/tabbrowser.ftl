@@ -4,18 +4,15 @@
 
 tabbrowser-empty-tab-title = New Tab
 tabbrowser-empty-private-tab-title = New Private Tab
-
 tabbrowser-menuitem-close-tab =
     .label = Close Tab
 tabbrowser-menuitem-close =
     .label = Close
-
 # Displayed as a tooltip on container tabs
 # Variables:
 #   $title (String): the title of the current tab.
 #   $containerName (String): the name of the current container.
 tabbrowser-container-tab-title = { $title } — { $containerName }
-
 # Variables:
 #   $tabCount (Number): The number of tabs that will be closed.
 tabbrowser-close-tabs-tooltip =
@@ -114,13 +111,22 @@ tabbrowser-confirm-caretbrowsing-title = Caret Browsing
 tabbrowser-confirm-caretbrowsing-message = Pressing F7 turns Caret Browsing on or off. This feature places a moveable cursor in web pages, allowing you to select text with the keyboard. Do you want to turn Caret Browsing on?
 tabbrowser-confirm-caretbrowsing-checkbox = Do not show me this dialog box again.
 
+## Confirmation dialog for closing all duplicate tabs
+
+tabbrowser-confirm-close-duplicate-tabs-title = Heads up
+tabbrowser-confirm-close-duplicate-tabs-text = We’ll keep open the last active tab
+tabbrowser-confirm-close-all-duplicate-tabs-title = Close duplicate tabs?
+tabbrowser-confirm-close-all-duplicate-tabs-text =
+    We’ll close duplicate tabs in this window. The last active
+    tab will stay open.
+tabbrowser-confirm-close-all-duplicate-tabs-button-closetabs = Close tabs
+
 ##
 
 # Variables:
 #   $domain (String): URL of the page that is trying to steal focus.
 tabbrowser-allow-dialogs-to-get-focus =
     .label = Allow notifications like this from { $domain } to take you to their tab
-
 tabbrowser-customizemode-tab-title = Customise { -brand-short-name }
 
 ## Context menu buttons, of which only one will be visible at a time
@@ -139,7 +145,6 @@ tabbrowser-context-mute-selected-tabs =
 tabbrowser-context-unmute-selected-tabs =
     .label = Unmute Tabs
     .accesskey = m
-
 # This string is used as an additional tooltip and accessibility description for tabs playing audio
 tabbrowser-tab-audio-playing-description = Playing audio
 

@@ -633,6 +633,21 @@ urlbar-group-quickactions =
 #  $engine (String): the name of the search engine used to search.
 urlbar-group-recent-searches =
     .label = 최근 검색
+# The header shown above trending results.
+# Variables:
+#  $engine (String): the name of the search engine providing the trending suggestions
+urlbar-group-trending =
+    .label = { $engine } 인기
+# The result menu labels shown next to trending results.
+urlbar-result-menu-trending-dont-show =
+    .label = 인기 검색어를 표시하지 않음
+    .accesskey = D
+urlbar-result-menu-trending-why =
+    .label = 왜 이게 표시되나요?
+    .accesskey = W
+# A message that replaces a result when the user dismisses all suggestions of a
+# particular type.
+urlbar-trending-dismissal-acknowledgment = 의견을 보내주셔서 감사합니다. 더 이상 인기 검색어가 표시되지 않습니다.
 
 ## Reader View toolbar buttons
 
@@ -679,7 +694,7 @@ bookmarks-manage-bookmarks =
     .label = 북마크 관리
 bookmarks-recent-bookmarks-panel-subheader = 최근 북마크
 bookmarks-toolbar-chevron =
-    .tooltiptext = 북마크 더보기
+    .tooltiptext = 북마크 더 보기
 bookmarks-sidebar-content =
     .aria-label = 북마크
 bookmarks-menu-button =
@@ -983,6 +998,10 @@ firefox-relay-offer-legal-notice = "이메일 가리기 사용"을 클릭하면,
 popup-notification-addon-install-unsigned =
     .value = (확인되지 않음)
 popup-notification-xpinstall-prompt-learn-more = 부가 기능을 안전하게 설치하는 방법에 대해 더 알아보기
+# Note: Access key is set to P to match "Private" in the corresponding localized label.
+popup-notification-addon-privatebrowsing-checkbox =
+    .label = 사생활 보호 창에서 실행
+    .accesskey = P
 
 ## Pop-up warning
 
@@ -1008,3 +1027,24 @@ popup-warning-button =
 #   $popupURI (String): the URI for the pop-up window
 popup-show-popup-menuitem =
     .label = 표시: “{ $popupURI }”
+
+## File-picker crash notification ("FilePickerCrashed.sys.mjs")
+
+file-picker-failed-open = Windows 파일 대화 상자를 열 수 없습니다. 파일이나 폴더를 선택할 수 없습니다.
+#   $path (string): The full path to which the file will be saved (e.g., 'C:\Users\Default User\Downloads\readme.txt').
+file-picker-failed-save-somewhere = Windows 파일 대화 상자를 열 수 없습니다. 파일은 { $path }에 저장됩니다.
+file-picker-failed-save-nowhere = Windows 파일 대화 상자를 열 수 없습니다. 기본 폴더를 찾을 수 없습니다. 파일은 저장되지 않습니다.
+file-picker-crashed-open = Windows 파일 대화 상자가 충돌했습니다. 파일이나 폴더를 선택할 수 없습니다.
+#   $path (string): The full path to which the file will be saved (e.g., 'C:\Users\Default User\Downloads\readme.txt').
+file-picker-crashed-save-somewhere = Windows 파일 대화 상자가 충돌했습니다. 파일은 { $path }에 저장됩니다.
+file-picker-crashed-save-nowhere = Windows 파일 대화 상자가 충돌했습니다. 기본 폴더를 찾을 수 없습니다. 파일은 저장되지 않습니다.
+
+# Button used with file-picker-crashed-save-default. Opens the folder in Windows
+# Explorer, with the saved file selected and in focus.
+#
+# The wording here should be consistent with the Windows variant of
+# `downloads-cmd-show-menuitem-2` and similar messages.
+
+file-picker-crashed-show-in-folder =
+    .label = 폴더에서 보기
+    .accessKey = F

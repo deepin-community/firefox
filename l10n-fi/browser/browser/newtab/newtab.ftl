@@ -234,6 +234,19 @@ newtab-pocket-pocket-firefox-family = { -pocket-brand-name } on osa { -brand-pro
 newtab-pocket-save = Tallenna
 newtab-pocket-saved = Tallennettu
 
+## Thumbs up and down buttons that shows over a newtab stories card thumbnail on hover.
+
+# Clicking the thumbs up button for this story will result in more stories like this one being recommended
+newtab-pocket-thumbs-up-tooltip =
+    .title = Lisää tällaista
+# Clicking the thumbs down button for this story informs us that the user does not feel like the story is interesting for them
+newtab-pocket-thumbs-down-tooltip =
+    .title = Ei minulle
+newtab-toast-thumbs-up-or-down = Kiitos. Palautteesi auttaa meitä parantamaan syötettäsi.
+newtab-toast-dismiss-button =
+    .title = Hylkää
+    .aria-label = Hylkää
+
 ## Pocket content onboarding experience dialog and modal for new users seeing the Pocket section for the first time, shown as the first item in the Pocket section.
 
 newtab-pocket-onboarding-discover = Löydä verkon parhaat puolet
@@ -272,6 +285,9 @@ newtab-custom-recent-subtitle = Valikoima viimeisimpiä sivustoja ja sisältöä
 newtab-custom-recent-toggle =
     .label = Viimeisin toiminta
     .description = Valikoima viimeisimpiä sivustoja ja sisältöä
+newtab-custom-weather-toggle =
+    .label = Sää
+    .description = Päivän sääennuste yhdellä vilkaisulla
 newtab-custom-close-button = Sulje
 newtab-custom-settings = Muokkaa lisää asetuksia
 
@@ -291,7 +307,85 @@ newtab-wallpaper-dark-panda = Kultapanda metsän piilossa
 newtab-wallpaper-dark-sky = Kaupunkimaisema ja yötaivas
 newtab-wallpaper-dark-mountain = Vuorimaisema
 newtab-wallpaper-dark-city = Purppura kaupunkimaisema
+
+## Solid Colors
+
+newtab-wallpaper-category-title-colors = Yhtenäiset värit
+newtab-wallpaper-blue = Sininen
+newtab-wallpaper-light-blue = Vaaleansininen
+newtab-wallpaper-light-purple = Vaaleanvioletti
+newtab-wallpaper-light-green = Vaaleanvihreä
+newtab-wallpaper-green = Vihreä
+newtab-wallpaper-beige = Beige
+newtab-wallpaper-yellow = Keltainen
+newtab-wallpaper-orange = Oranssi
+newtab-wallpaper-pink = Pinkki
+newtab-wallpaper-light-pink = Vaaleanpinkki
+newtab-wallpaper-red = Punainen
+newtab-wallpaper-dark-blue = Tummansininen
+newtab-wallpaper-dark-purple = Tummanvioletti
+newtab-wallpaper-dark-green = Tummanvihreä
+newtab-wallpaper-brown = Ruskea
+
+## Abstract
+
+newtab-wallpaper-category-title-abstract = Abstrakti
+newtab-wallpaper-abstract-green = Vihreät muodot
+newtab-wallpaper-abstract-blue = Siniset muodot
+newtab-wallpaper-abstract-purple = Violetit muodot
+newtab-wallpaper-abstract-orange = Oranssit muodot
+newtab-wallpaper-gradient-orange = Oranssi ja pinkki liukuväreissä
+newtab-wallpaper-abstract-blue-purple = Sinisiä ja violetteja muotoja
+
+## Photographs
+
+newtab-wallpaper-category-title-photographs = Valokuvat
+newtab-wallpaper-beach-at-sunrise = Ranta auringonnousun aikaan
+newtab-wallpaper-beach-at-sunset = Ranta auringonlaskun aikaan
+newtab-wallpaper-storm-sky = Myrskyinen taivas
+newtab-wallpaper-sky-with-pink-clouds = Taivas ja vaaleanpunaiset pilvet
+newtab-wallpaper-red-panda-yawns-in-a-tree = Kultapanda haukottelee puussa
+newtab-wallpaper-white-mountains = Valkoiset vuoret
 # Variables
 #   $author_string (String) - The name of the creator of the photo.
 #   $webpage_string (String) - The name of the webpage where the photo is located.
 newtab-wallpaper-attribution = Kuva: <a data-l10n-name="name-link">{ $author_string }</a> sivustolla <a data-l10n-name="webpage-link">{ $webpage_string }</a>
+newtab-wallpaper-feature-highlight-header = Lisää ripaus väriä
+newtab-wallpaper-feature-highlight-content = Anna uudelle välilehdelle uusi ilme taustakuvien avulla.
+newtab-wallpaper-feature-highlight-button = Selvä
+# Tooltip for dismiss button
+feature-highlight-dismiss-button =
+    .title = Hylkää
+    .aria-label = Sulje ilmoitus
+feature-highlight-wallpaper =
+    .title = { -newtab-wallpaper-feature-highlight-header }
+    .aria-label = { -newtab-wallpaper-feature-highlight-content }
+
+## New Tab Weather
+
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-see-forecast =
+    .title = Katso ennuste palvelussa { $provider }
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-sponsored = { $provider } ∙ Sponsoroitu
+newtab-weather-menu-change-location = Vaihda sijaintia
+newtab-weather-change-location-search-input = Hae sijaintia
+newtab-weather-menu-weather-display = Sään näkymä
+# Display options are:
+# - Simple: Displays a current weather condition icon and the current temperature
+# - Detailed: Include simple information plus a short text summary: e.g. "Mostly cloudy"
+newtab-weather-menu-weather-display-option-simple = Yksinkertainen
+newtab-weather-menu-change-weather-display-simple = Vaihda yksinkertaiseen näkymään
+newtab-weather-menu-weather-display-option-detailed = Yksityiskohtainen
+newtab-weather-menu-change-weather-display-detailed = Vaihda yksityiskohtaiseen näkymään
+newtab-weather-menu-temperature-units = Lämpötilayksiköt
+newtab-weather-menu-temperature-option-fahrenheit = Fahrenheit
+newtab-weather-menu-temperature-option-celsius = Celsius
+newtab-weather-menu-change-temperature-units-fahrenheit = Vaihda Fahrenheitiin
+newtab-weather-menu-change-temperature-units-celsius = Vaihda Celsiukseen
+newtab-weather-menu-hide-weather = Piilota sää uudessa välilehdessä
+newtab-weather-menu-learn-more = Lue lisää
+# This message is shown if user is working offline
+newtab-weather-error-not-available = Säätiedot eivät ole tällä hetkellä saatavilla.

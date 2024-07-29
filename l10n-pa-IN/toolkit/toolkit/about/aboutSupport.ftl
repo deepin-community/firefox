@@ -344,6 +344,9 @@ has-seccomp-bpf = Seccomp-BPF (ਸਿਸਟਮ ਕਾਲ ਫਿਲਟਰ ਕਰ�
 has-seccomp-tsync = Seccomp ਥਰਿੱਡ ਸੈਕਰੋਨਾਈਜ਼ੇਸ਼ਨ
 has-user-namespaces = ਵਰਤੋਂਕਾਰ ਨੇਮ-ਸਪੇਸ
 has-privileged-user-namespaces = ਅਧਿਕਾਰ ਪ੍ਰਾਪਤ ਕਾਰਵਾਈਆਂ ਲਈ ਵਰਤੋਂਕਾਰ ਨੇਮਸਪੇਸ
+# Variables
+# $status (string) - Boolean value of hasUserNamespaces (should only be false when support-user-namespaces-unavailable is used)
+support-user-namespaces-unavailable = { $status } — ਇਹ ਫ਼ੀਚਰ ਨੂੰ ਤੁਹਾਡੇ ਸਿਸਟਮ ਵਲੋਂ ਮਨਜ਼ੂਰੀ ਨਹੀਂ ਮਿਲੀ ਹੈ। ਇਹ { -brand-short-name } ਦੇ ਸੁਰੱਖਿਆ ਫ਼ੀਚਰਾਂ ਨੂੰ ਸੀਮਿਤ ਕਰ ਸਕਦਾ ਹੈ।
 can-sandbox-content = ਪ੍ਰਸੰਗ ਕਾਰਵਾਈ ਸੈਂਡਬੌਕਸਿੰਗ
 can-sandbox-media = ਮੀਡੀਆ ਪਲੱਗਇਨ ਸੈਂਡਬੌਕਸਿੰਗ
 content-sandbox-level = ਪ੍ਰਸੰਗ ਪਰੋਸੈਸ ਸੈਂਡਬਾਕਸ ਪੱਧਰ
@@ -411,6 +414,20 @@ support-printing-clear-settings-button = ਸੰਭਾਲੀਆਂ ਪਰਿੰ�
 support-printing-modified-settings = ਸੋਧੀਆਂ ਪਰਿੰਟ ਸੈਟਿੰਗਾਂ
 support-printing-prefs-name = ਨਾਂ
 support-printing-prefs-value = ਮੁੱਲ
+
+## Remote Settings sections
+
+support-remote-settings-title = ਰਿਮੋਟ ਸੈਟਿੰਗਾਂ
+support-remote-settings-status = ਹਾਲਤ
+support-remote-settings-status-ok = ਠੀਕ ਹੈ
+# Status when synchronization is not working.
+support-remote-settings-status-broken = ਨਹੀਂ ਕੰਮ ਕਰਦਾ
+support-remote-settings-last-check = ਆਖਰੀ ਵਾਰ ਜਾਂਚ
+support-remote-settings-local-timestamp = ਲੋਕਲ ਸਮਾਂ
+support-remote-settings-sync-history = ਅਤੀਤ
+support-remote-settings-sync-history-status = ਹਾਲਤ
+support-remote-settings-sync-history-datetime = ਤਾਰੀਖ
+support-remote-settings-sync-history-infos = ਜਾਣਕਾਰੀ
 
 ## Normandy sections
 

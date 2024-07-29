@@ -87,6 +87,14 @@ tabbrowser-confirm-caretbrowsing-title = 鍵盤瀏覽
 tabbrowser-confirm-caretbrowsing-message = 按 F7 鍵可切換「鍵盤瀏覽」功能開關。此功能會在網頁上顯示游標，讓您只用鍵盤就能選取文字或瀏覽網頁。確定要開啟「鍵盤瀏覽」功能嗎？
 tabbrowser-confirm-caretbrowsing-checkbox = 下次不要再顯示此對話方塊。
 
+## Confirmation dialog for closing all duplicate tabs
+
+tabbrowser-confirm-close-duplicate-tabs-title = 請注意
+tabbrowser-confirm-close-duplicate-tabs-text = 將只保留最後開啟的分頁
+tabbrowser-confirm-close-all-duplicate-tabs-title = 要關閉重複開啟的分頁嗎？
+tabbrowser-confirm-close-all-duplicate-tabs-text = 將關閉此視窗中重複的分頁，只保留最後一個開啟的分頁。
+tabbrowser-confirm-close-all-duplicate-tabs-button-closetabs = 關閉分頁
+
 ##
 
 # Variables:

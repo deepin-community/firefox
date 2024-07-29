@@ -5,13 +5,14 @@
 # "Search" is a verb, as in "Search through tabs".
 all-tabs-menu-search-tabs =
     .label = Tab suchen
-
 all-tabs-menu-new-user-context =
     .label = Neuer Tab in Umgebung
-
 all-tabs-menu-hidden-tabs =
     .label = Ausgeblendete Tabs
-
 all-tabs-menu-manage-user-context =
     .label = Tab-Umgebungen verwalten
     .accesskey = v
+all-tabs-menu-close-duplicate-tabs =
+    .label = Doppelte Tabs schließen
+all-tabs-menu-close-all-duplicate-tabs =
+    .label = Alle doppelten Tabs schließen

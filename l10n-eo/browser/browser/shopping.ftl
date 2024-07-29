@@ -115,6 +115,7 @@ shopping-settings-sidebar-enabled-state = La kontrolilo de recenzoj estas <stron
 shopping-adjusted-rating-label =
     .label = Alĝustigita taksado
 shopping-adjusted-rating-unreliable-reviews = Nefidindaj recenzoj forigitaj
+shopping-adjusted-rating-based-reliable-reviews = Bazita sur fidindaj recenzoj
 
 ## Strings for the review reliability component
 

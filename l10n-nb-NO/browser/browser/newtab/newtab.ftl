@@ -271,6 +271,9 @@ newtab-custom-recent-subtitle = Et utvalg av nylige nettsteder og innhold
 newtab-custom-recent-toggle =
     .label = Nylig aktivitet
     .description = Et utvalg av nylige nettsteder og innhold
+newtab-custom-weather-toggle =
+    .label = Vær
+    .description = Dagens værmelding i korte trekk
 newtab-custom-close-button = Lukk
 newtab-custom-settings = Behandle flere innstillinger
 
@@ -290,7 +293,85 @@ newtab-wallpaper-dark-panda = Rødpanda gjemt i skogen
 newtab-wallpaper-dark-sky = Bylandskap med nattehimmel
 newtab-wallpaper-dark-mountain = Landskap fjell
 newtab-wallpaper-dark-city = Lilla bylandskap
+
+## Solid Colors
+
+newtab-wallpaper-category-title-colors = Solide farger
+newtab-wallpaper-blue = Blå
+newtab-wallpaper-light-blue = Lyseblå
+newtab-wallpaper-light-purple = Lyselilla
+newtab-wallpaper-light-green = Lysegrønn
+newtab-wallpaper-green = Grønn
+newtab-wallpaper-beige = Beige
+newtab-wallpaper-yellow = Gul
+newtab-wallpaper-orange = Oransje
+newtab-wallpaper-pink = Rosa
+newtab-wallpaper-light-pink = Lyserosa
+newtab-wallpaper-red = Rød
+newtab-wallpaper-dark-blue = Mørkeblå
+newtab-wallpaper-dark-purple = Mørkelilla
+newtab-wallpaper-dark-green = Mørkegrønn
+newtab-wallpaper-brown = Brun
+
+## Abstract
+
+newtab-wallpaper-category-title-abstract = Abstrakt
+newtab-wallpaper-abstract-green = Grønne former
+newtab-wallpaper-abstract-blue = Blåe former
+newtab-wallpaper-abstract-purple = Lilla former
+newtab-wallpaper-abstract-orange = Oransje former
+newtab-wallpaper-gradient-orange = Fargeovergang oransje og rosa
+newtab-wallpaper-abstract-blue-purple = Blå og lilla former
+
+## Photographs
+
+newtab-wallpaper-category-title-photographs = Fotografier
+newtab-wallpaper-beach-at-sunrise = Strand ved soloppgang
+newtab-wallpaper-beach-at-sunset = Strand ved solnedgang
+newtab-wallpaper-storm-sky = Stormhimmel
+newtab-wallpaper-sky-with-pink-clouds = Himmel med rosa skyer
+newtab-wallpaper-red-panda-yawns-in-a-tree = Rød panda som gjesper i et tre
+newtab-wallpaper-white-mountains = Hvite fjell
 # Variables
 #   $author_string (String) - The name of the creator of the photo.
 #   $webpage_string (String) - The name of the webpage where the photo is located.
 newtab-wallpaper-attribution = Bilde av <a data-l10n-name="name-link">{ $author_string }</a> på <a data-l10n-name="webpage-link">{ $webpage_string }</a>
+newtab-wallpaper-feature-highlight-header = Prøv en fargeklatt
+newtab-wallpaper-feature-highlight-content = Gi ny fane-siden et friskt utseende med bakgrunnsbilder.
+newtab-wallpaper-feature-highlight-button = Jeg forstår
+# Tooltip for dismiss button
+feature-highlight-dismiss-button =
+    .title = Lukk
+    .aria-label = Lukk sprettoppvindu
+feature-highlight-wallpaper =
+    .title = { -newtab-wallpaper-feature-highlight-header }
+    .aria-label = { -newtab-wallpaper-feature-highlight-content }
+
+## New Tab Weather
+
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-see-forecast =
+    .title = Se værmelding hos { $provider }.
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-sponsored = { $provider } ∙ Sponset
+newtab-weather-menu-change-location = Endre plassering
+newtab-weather-change-location-search-input = Søk plassering
+newtab-weather-menu-weather-display = Værvisning
+# Display options are:
+# - Simple: Displays a current weather condition icon and the current temperature
+# - Detailed: Include simple information plus a short text summary: e.g. "Mostly cloudy"
+newtab-weather-menu-weather-display-option-simple = Enkel
+newtab-weather-menu-change-weather-display-simple = Bytt til enkel visning
+newtab-weather-menu-weather-display-option-detailed = Detaljert
+newtab-weather-menu-change-weather-display-detailed = Bytt til detaljert visning
+newtab-weather-menu-temperature-units = Temperaturenheter
+newtab-weather-menu-temperature-option-fahrenheit = Fahrenheit
+newtab-weather-menu-temperature-option-celsius = Celsius
+newtab-weather-menu-change-temperature-units-fahrenheit = Bytt til Fahrenheit
+newtab-weather-menu-change-temperature-units-celsius = Bytt til Celsius
+newtab-weather-menu-hide-weather = Skjul været på ny fane
+newtab-weather-menu-learn-more = Les mer
+# This message is shown if user is working offline
+newtab-weather-error-not-available = Værdata er ikke tilgjengelig akkurat nå.

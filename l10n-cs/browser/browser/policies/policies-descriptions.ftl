@@ -104,6 +104,8 @@ policy-Handlers = Nastavení výchozích aplikací pro odkazy a typy souborů.
 policy-HardwareAcceleration = Hodnota false vypne použití hardwarové akcelerace.
 # “lock” means that the user won’t be able to change this setting
 policy-Homepage = Nastavení a případné uzamčení domovské stránky.
+policy-HttpAllowlist = Zdroje, které nebudou povýšeny na HTTPS.
+policy-HttpsOnlyMode = Povolení režimu pouze HTTPS.
 policy-InstallAddonsPermission = Povolení instalace doplňků z vybraných webových stránek.
 policy-LegacyProfiles = Vypnutí funkce vynucující samostatný profil pro každou instalaci aplikace.
 
@@ -136,6 +138,9 @@ policy-OverrideFirstRunPage = Nastavení vlastní stránky při prvním spuště
 policy-OverridePostUpdatePage = Nastavení vlastní stránky po aktualizaci. Pokud nechcete po aktualizaci zobrazovat žádnou stránku, nastavte toto pravidlo jako prázdné.
 policy-PasswordManagerEnabled = Povolení ukládat hesla do správce hesel.
 policy-PasswordManagerExceptions = Zabrání { -brand-short-name(case: "dat") } ukládat heslo pro vybrané servery.
+# Post-quantum refers to cryptography that is safe from attacks by quantum
+# computers. See https://en.wikipedia.org/wiki/Post-quantum_cryptography
+policy-PostQuantumKeyAgreementEnabled = Povolí postkvantovou dohodu o klíčích pro TLS.
 # PDF.js and PDF should not be translated
 policy-PDFjs =
     { -brand-short-name.case-status ->

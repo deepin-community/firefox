@@ -66,6 +66,7 @@ firefoxview-tabpickup-password-locked-header = Masukkan Sandi Utama Anda untuk m
 firefoxview-tabpickup-password-locked-description = Untuk mengambil tab Anda, Anda harus memasukkan Sandi Utama untuk { -brand-short-name }.
 firefoxview-tabpickup-password-locked-link = Pelajari lebih lanjut
 firefoxview-tabpickup-password-locked-primarybutton = Masukkan Sandi Utama
+firefoxview-syncedtab-password-locked-link = <a data-l10n-name="syncedtab-password-locked-link">Pelajari lebih lanjut</a>
 firefoxview-tabpickup-signed-out-header = Masuk untuk menghubungkan ulang
 firefoxview-tabpickup-signed-out-description = Untuk menyambungkan ulang dan mengambil tab Anda, masuk ke { -fxaccount-brand-name } Anda.
 firefoxview-tabpickup-signed-out-primarybutton = Masuk
@@ -104,6 +105,8 @@ firefoxview-collapse-button-hide =
     .title = Sembunyikan daftar
 firefoxview-overview-nav = Baru saja dijelajahi
     .title = Baru saja dijelajahi
+firefoxview-overview-header = Baru saja dijelajahi
+    .title = Baru saja dijelajahi
 
 ## History in this context refers to browser history
 
@@ -121,6 +124,9 @@ firefoxview-opentabs-header = Tab terbuka
 
 ## Recently closed tabs in this context refers to recently closed tabs from all windows
 
+firefoxview-recently-closed-nav = Tab yang baru saja ditutup
+    .title = Tab yang baru saja ditutup
+firefoxview-recently-closed-header = Tab yang Baru Saja Ditutup
 
 ## Tabs from other devices refers in this context refers to synced tabs from other devices
 
@@ -136,6 +142,10 @@ firefoxview-view-all-link = Tampilkan semua
 #   $winID (Number) - The index of the owner window for this set of tabs
 firefoxview-opentabs-window-header =
     .title = Jendela { $winID }
+# Variables:
+#   $winID (Number) - The index of the owner window (which is currently focused) for this set of tabs
+firefoxview-opentabs-current-window-header =
+    .title = Jendela { $winID } (Saat Ini)
 firefoxview-opentabs-focus-tab =
     .title = Pindah ke tab ini
 firefoxview-show-more = Tampilkan lebih banyak
@@ -149,18 +159,58 @@ firefoxview-search-text-box-recentbrowsing =
 # Placeholder for the input field to search in history ("search" is a verb).
 firefoxview-search-text-box-history =
     .placeholder = Riwayat pencarian
+# Placeholder for the input field to search in recently closed tabs ("search" is a verb).
+firefoxview-search-text-box-recentlyclosed =
+    .placeholder = Cari tab yang baru saja ditutup
+# Placeholder for the input field to search in tabs from other devices ("search" is a verb).
+firefoxview-search-text-box-syncedtabs =
+    .placeholder = Cari tab tersinkron
+# Placeholder for the input field to search in open tabs ("search" is a verb).
+firefoxview-search-text-box-opentabs =
+    .placeholder = Cari tab terbuka
+# "Search" is a noun (as in "Results of the search for")
+# Variables:
+#   $query (String) - The search query used for searching through browser history.
+firefoxview-search-results-header = Hasil pencarian untuk “{ $query }”
+# Variables:
+#   $count (Number) - The number of visits matching the search query.
+firefoxview-search-results-count =
+    { $count ->
+        [one] { $count } situs
+       *[other] { $count } situs
+    }
+# Message displayed when a search is performed and no matching results were found.
+# Variables:
+#   $query (String) - The search query.
+firefoxview-search-results-empty = Tak ada hasil untuk “{ $query }”
 firefoxview-sort-history-by-date-label = Urut berdasarkan tanggal
 firefoxview-sort-history-by-site-label = Urut berdasarkan situs
+firefoxview-sort-open-tabs-by-recency-label = Sortir berdasarkan aktivitas terbaru
+firefoxview-sort-open-tabs-by-order-label = Sortir berdasarkan urutan tab
+# Variables:
+#   $url (string) - URL that will be opened in the new tab
+firefoxview-opentabs-tab-row =
+    .title = Beralih ke { $url }
 
 ## Variables:
 ##   $date (string) - Date to be formatted based on locale
 
+firefoxview-history-date-today = Hari ini - { DATETIME($date, dateStyle: "full") }
+firefoxview-history-date-yesterday = Kemarin - { DATETIME($date, dateStyle: "full") }
+# When history is sorted by site, this heading is used in place of a domain, in
+# order to group sites that do not come from an outside host.
+# For example, this would be the heading for all file:/// URLs in history.
+firefoxview-history-site-localhost = (berkas lokal)
 
 ##
 
+firefoxview-show-all-history = Tampilkan seluruh riwayat
+firefoxview-view-more-browsing-history = Tampilkan lebih banyak riwayat penelusuran
 
 ## Message displayed in Firefox View when the user has no history data
 
+firefoxview-history-empty-header = Kembali ke tempat Anda sebelumnya
+firefoxview-history-empty-description = Saat Anda menjelajah, laman yang Anda kunjungi akan terdaftar di sini.
 
 ##
 
@@ -171,6 +221,7 @@ firefoxview-choose-browser-button = Pilih peramban
 ## Message displayed in Firefox View when the user has chosen to never remember History
 
 firefoxview-dont-remember-history-empty-header = Tidak ada yang ditampilkan
+firefoxview-dont-remember-history-empty-description = Melindungi privasi Anda adalah inti dari apa yang kami lakukan. Itu sebabnya Anda dapat mengendalikan aktivitas yang diingat { -brand-short-name }.
 
 ##
 
@@ -185,6 +236,31 @@ firefoxview-import-history-header = Impor riwayat dari peramban lainnya
 
 ## Message displayed in Firefox View when the user has no recently closed tabs data
 
+firefoxview-recentlyclosed-empty-header = Menutup tab terlalu cepat?
 
 ## This message is displayed below the name of another connected device when it doesn't have any open tabs.
 
+firefoxview-syncedtabs-device-notabs = Tak ada tab terbuka di perangkat ini
+firefoxview-syncedtabs-connect-another-device = Hubungkan perangkat lain
+firefoxview-pinned-tabs =
+    .title = Tab Tersemat
+firefoxview-tabs =
+    .title = Tab
+
+## These tooltips will be displayed when hovering over a pinned tab on the Open Tabs page
+## Variables:
+##  $tabTitle (string) - Title of pinned tab that will be opened when selected
+
+firefoxview-opentabs-pinned-tab =
+    .title = Beralih ke { $tabTitle }
+# This tooltip will be shown for a pinned tab whose URL is currently bookmarked.
+firefoxview-opentabs-bookmarked-pinned-tab =
+    .title = Beralih ke (Ditandai) { $tabTitle }
+
+## These tooltips will be displayed when hovering over an unpinned Open Tab
+## Variables:
+##   $url (string) - URL of tab that will be opened when selected
+
+# This tooltip will be shown for an unpinned tab whose URL is currently bookmarked.
+firefoxview-opentabs-bookmarked-tab =
+    .title = (Ditandai) { $url }

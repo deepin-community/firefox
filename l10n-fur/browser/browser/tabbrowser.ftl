@@ -4,18 +4,15 @@
 
 tabbrowser-empty-tab-title = Gnove schede
 tabbrowser-empty-private-tab-title = Gnove schede privade
-
 tabbrowser-menuitem-close-tab =
     .label = Siere schede
 tabbrowser-menuitem-close =
     .label = Siere
-
 # Displayed as a tooltip on container tabs
 # Variables:
 #   $title (String): the title of the current tab.
 #   $containerName (String): the name of the current container.
 tabbrowser-container-tab-title = { $title } — { $containerName }
-
 # Variables:
 #   $tabCount (Number): The number of tabs that will be closed.
 tabbrowser-close-tabs-tooltip =
@@ -114,13 +111,20 @@ tabbrowser-confirm-caretbrowsing-title = Navigazion a cursôr
 tabbrowser-confirm-caretbrowsing-message = Fracant F7 si ative o disative la navigazion a cursôr. Cheste funzion e met un cursôr tes pagjinis web che tu puedis movi, chest ti permet di selezionâ test cu la tastiere.  Vuelistu ativâ la navigazion a cursôr?
 tabbrowser-confirm-caretbrowsing-checkbox = No sta mostrâmi plui chest dialic
 
+## Confirmation dialog for closing all duplicate tabs
+
+tabbrowser-confirm-close-duplicate-tabs-title = Atenzion
+tabbrowser-confirm-close-duplicate-tabs-text = O tignarìn vierte la ultime schede ative
+tabbrowser-confirm-close-all-duplicate-tabs-title = Sierâ lis schedis doplis?
+tabbrowser-confirm-close-all-duplicate-tabs-text = O sierarìn lis schedis doplis in chest barcon. E restarà vierte la ultime schede ative.
+tabbrowser-confirm-close-all-duplicate-tabs-button-closetabs = Siere schedis
+
 ##
 
 # Variables:
 #   $domain (String): URL of the page that is trying to steal focus.
 tabbrowser-allow-dialogs-to-get-focus =
     .label = Permet aes notifichis come cheste di { $domain } di puartâti ae sô schede
-
 tabbrowser-customizemode-tab-title = Personalize { -brand-short-name }
 
 ## Context menu buttons, of which only one will be visible at a time
@@ -139,7 +143,6 @@ tabbrowser-context-mute-selected-tabs =
 tabbrowser-context-unmute-selected-tabs =
     .label = Ative audio tes schedis
     .accesskey = a
-
 # This string is used as an additional tooltip and accessibility description for tabs playing audio
 tabbrowser-tab-audio-playing-description = Riproduzion audio
 

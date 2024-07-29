@@ -637,6 +637,18 @@ urlbar-group-quickactions =
 #  $engine (String): the name of the search engine used to search.
 urlbar-group-recent-searches =
     .label = Nylege søk
+# The header shown above trending results.
+# Variables:
+#  $engine (String): the name of the search engine providing the trending suggestions
+urlbar-group-trending =
+    .label = Populær på { $engine }
+# The result menu labels shown next to trending results.
+urlbar-result-menu-trending-dont-show =
+    .label = Ikkje vis populære søk
+    .accesskey = v
+urlbar-result-menu-trending-why =
+    .label = Kvifor ser eg dette?
+    .accesskey = K
 
 ## Reader View toolbar buttons
 
@@ -914,7 +926,15 @@ data-reporting-notification-button =
     .accesskey = V
 # Label for the indicator shown in the private browsing window titlebar.
 private-browsing-indicator-label = Privat nettlesing
+# Tooltip for the indicator shown in the window titlebar when content analysis is active.
+# Variables:
+#   $agentName (String): The name of the DLP agent that is connected
+content-analysis-indicator-tooltip =
+    .tooltiptext = Førebygging av datatap (DLP) av { $agentName }. Klikk for meir info.
 content-analysis-panel-title = Datavern
+# Variables:
+#   $agentName (String): The name of the DLP agent that is connected
+content-analysis-panel-text = Organisasjonen din brukar { $agentName } for å beskytte mot tap av data. <a data-l10n-name="info">Les meir</a>
 
 ## Unified extensions (toolbar) button
 
@@ -1008,3 +1028,13 @@ popup-warning-button =
 #   $popupURI (String): the URI for the pop-up window
 popup-show-popup-menuitem =
     .label = Vis «{ $popupURI }»
+
+## File-picker crash notification ("FilePickerCrashed.sys.mjs")
+
+
+# Button used with file-picker-crashed-save-default. Opens the folder in Windows
+# Explorer, with the saved file selected and in focus.
+#
+# The wording here should be consistent with the Windows variant of
+# `downloads-cmd-show-menuitem-2` and similar messages.
+

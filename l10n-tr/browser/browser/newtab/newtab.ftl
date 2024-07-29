@@ -230,6 +230,19 @@ newtab-pocket-pocket-firefox-family = { -pocket-brand-name }, { -brand-product-n
 newtab-pocket-save = Kaydet
 newtab-pocket-saved = Kaydedildi
 
+## Thumbs up and down buttons that shows over a newtab stories card thumbnail on hover.
+
+# Clicking the thumbs up button for this story will result in more stories like this one being recommended
+newtab-pocket-thumbs-up-tooltip =
+    .title = Bunun gibi daha fazla
+# Clicking the thumbs down button for this story informs us that the user does not feel like the story is interesting for them
+newtab-pocket-thumbs-down-tooltip =
+    .title = Bana göre değil
+newtab-toast-thumbs-up-or-down = Teşekkürler. Geri bildiriminiz akışınızı geliştirmemize yardımcı olacak.
+newtab-toast-dismiss-button =
+    .title = Kapat
+    .aria-label = Kapat
+
 ## Pocket content onboarding experience dialog and modal for new users seeing the Pocket section for the first time, shown as the first item in the Pocket section.
 
 newtab-pocket-onboarding-discover = Web’deki en iyi içerikleri keşfedin
@@ -268,6 +281,9 @@ newtab-custom-recent-subtitle = Son kullanılan siteler ve içeriklerden bir se�
 newtab-custom-recent-toggle =
     .label = Son etkinlikler
     .description = Son kullanılan siteler ve içeriklerden bir seçki
+newtab-custom-weather-toggle =
+    .label = Hava durumu
+    .description = Bugünkü hava durumu tahmini
 newtab-custom-close-button = Kapat
 newtab-custom-settings = Diğer ayarları yönet
 
@@ -287,7 +303,85 @@ newtab-wallpaper-dark-panda = Ormanda saklanan kızıl panda
 newtab-wallpaper-dark-sky = Gece gökyüzüyle şehir manzarası
 newtab-wallpaper-dark-mountain = Manzaralı dağ
 newtab-wallpaper-dark-city = Mor şehir manzarası
+
+## Solid Colors
+
+newtab-wallpaper-category-title-colors = Düz renkler
+newtab-wallpaper-blue = Mavi
+newtab-wallpaper-light-blue = Açık mavi
+newtab-wallpaper-light-purple = Açık mor
+newtab-wallpaper-light-green = Açık yeşil
+newtab-wallpaper-green = Yeşil
+newtab-wallpaper-beige = Bej
+newtab-wallpaper-yellow = Sarı
+newtab-wallpaper-orange = Turuncu
+newtab-wallpaper-pink = Pembe
+newtab-wallpaper-light-pink = Açık pembe
+newtab-wallpaper-red = Kırmızı
+newtab-wallpaper-dark-blue = Koyu mavi
+newtab-wallpaper-dark-purple = Koyu mor
+newtab-wallpaper-dark-green = Koyu yeşil
+newtab-wallpaper-brown = Kahverengi
+
+## Abstract
+
+newtab-wallpaper-category-title-abstract = Soyut
+newtab-wallpaper-abstract-green = Yeşil şekiller
+newtab-wallpaper-abstract-blue = Mavi şekiller
+newtab-wallpaper-abstract-purple = Mor şekiller
+newtab-wallpaper-abstract-orange = Turuncu şekiller
+newtab-wallpaper-gradient-orange = Turuncu ve pembe renk geçişi
+newtab-wallpaper-abstract-blue-purple = Mavi ve mor şekiller
+
+## Photographs
+
+newtab-wallpaper-category-title-photographs = Fotoğraflar
+newtab-wallpaper-beach-at-sunrise = Gün doğumunda sahil
+newtab-wallpaper-beach-at-sunset = Gün batımında sahil
+newtab-wallpaper-storm-sky = Fırtınalı gökyüzü
+newtab-wallpaper-sky-with-pink-clouds = Pembe bulutlarla kaplı gökyüzü
+newtab-wallpaper-red-panda-yawns-in-a-tree = Ağaçta esneyen kızıl panda
+newtab-wallpaper-white-mountains = Beyaz dağlar
 # Variables
 #   $author_string (String) - The name of the creator of the photo.
 #   $webpage_string (String) - The name of the webpage where the photo is located.
 newtab-wallpaper-attribution = Fotoğraf: <a data-l10n-name="name-link">{ $author_string }</a> / <a data-l10n-name="webpage-link">{ $webpage_string }</a>
+newtab-wallpaper-feature-highlight-header = Farklı renkleri deneyin
+newtab-wallpaper-feature-highlight-content = Duvar kâğıtlarıyla yeni sekme sayfanıza yeni bir görünüm kazandırın.
+newtab-wallpaper-feature-highlight-button = Anladım
+# Tooltip for dismiss button
+feature-highlight-dismiss-button =
+    .title = Kapat
+    .aria-label = Açılır pencereyi kapat
+feature-highlight-wallpaper =
+    .title = { -newtab-wallpaper-feature-highlight-header }
+    .aria-label = { -newtab-wallpaper-feature-highlight-content }
+
+## New Tab Weather
+
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-see-forecast =
+    .title = { $provider } tahminlerine bak
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-sponsored = { $provider } ∙ Sponsorlu
+newtab-weather-menu-change-location = Konumu değiştir
+newtab-weather-change-location-search-input = Konum ara
+newtab-weather-menu-weather-display = Hava durumu göstergesi
+# Display options are:
+# - Simple: Displays a current weather condition icon and the current temperature
+# - Detailed: Include simple information plus a short text summary: e.g. "Mostly cloudy"
+newtab-weather-menu-weather-display-option-simple = Basit
+newtab-weather-menu-change-weather-display-simple = Basit görünüme geç
+newtab-weather-menu-weather-display-option-detailed = Ayrıntılı
+newtab-weather-menu-change-weather-display-detailed = Ayrıntılı görünüme geç
+newtab-weather-menu-temperature-units = Sıcaklık birimi
+newtab-weather-menu-temperature-option-fahrenheit = Fahrenhayt
+newtab-weather-menu-temperature-option-celsius = Celcius
+newtab-weather-menu-change-temperature-units-fahrenheit = Fahrenhayta geç
+newtab-weather-menu-change-temperature-units-celsius = Celsius’a geç
+newtab-weather-menu-hide-weather = Yeni sekmede hava durumunu gizle
+newtab-weather-menu-learn-more = Daha fazla bilgi al
+# This message is shown if user is working offline
+newtab-weather-error-not-available = Hava durumu verileri şu anda mevcut değil.

@@ -108,7 +108,7 @@ about-logins-login-intro-heading-logged-in = Engar samstilltar innskráningar fu
 login-intro-description = Ef þú vistaðir innskráningar þínar á { -brand-product-name } á öðru tæki, muntu geta náð í þær svona:
 login-intro-instructions-fxa = Búðu til eða skráðu þig inn á { -fxaccount-brand-name } á tækinu þar sem innskráningar þínar eru vistaðar.
 about-logins-login-intro-heading-message = Vistaðu lykilorðin þín á öruggum stað
-login-intro-description2 = Öll lykilorð sem þú vistar á { -brand-product-name } eru dulrituð. Auk þess fylgjumst við með gagnaþjófnuðum og látum þig vita ef þú kemur við sögu. <a data-l10n-name="breach-alert-link">Frekari upplýsingar</a>
+login-intro-description2 = Öll lykilorð sem þú vistar á { -brand-product-name } eru dulrituð. Auk þess fylgjumst við með gagnaránum og látum þig vita ef þú kemur við sögu. <a data-l10n-name="breach-alert-link">Frekari upplýsingar</a>
 login-intro-instructions-fxa2 = Búðu til eða skráðu þig inn á reikninginn þinn á tækinu þar sem innskráningar þínar eru vistaðar.
 login-intro-instructions-fxa-settings = Farðu í Stillingar > Samstilling > Kveikja á samstillingu... Veldu gátreitinn fyrir innskráningar og lykilorð.
 login-intro-instructions-fxa-passwords-help = Farðu í <a data-l10n-name="passwords-help-link">aðstoð fyrir lykilorð</a> til að fá frekari hjálp.
@@ -171,6 +171,13 @@ about-logins-edit-login-os-auth-dialog-message-win = Til að breyta innskráning
 # This message can be seen when attempting to edit a login in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-edit-login-os-auth-dialog-message-macosx = breyta vistuðu innskráningunni
+# The macOS strings are preceded by the operating system with "Firefox is trying to ".
+# This message can be seen when attempting to disable osauth in about:preferences.
+about-logins-os-auth-dialog-message =
+    { PLATFORM() ->
+        [macos] breyttu stillingum lykilorða
+       *[other] { -brand-short-name } er að reyna að breyta stillingum lykilorða. Notaðu innskráningu tækisins til að leyfa þetta.
+    }
 # This message can be seen when attempting to edit a login in about:logins on Windows.
 about-logins-edit-login-os-auth-dialog-message2-win = Til að breyta lykilorðinu þínu, skaltu setja inn Windows-innskráningarauðkennin þín. Þetta hjálpar til við að tryggja öryggi reikninganna þinna.
 # This message can be seen when attempting to edit a login in about:logins
@@ -253,12 +260,6 @@ about-logins-confirm-remove-all-sync-dialog-message =
         [1] Þetta mun fjarlægja innskráninguna sem þú vistaðir í { -brand-short-name } á öllum tækjum sem eru samstillt við { -fxaccount-brand-name }. Þetta mun einnig fjarlægja innbrotaviðvaranir sem birtast hér. Þú munt ekki geta afturkallað þessa aðgerð.
         [one] Þetta mun fjarlægja innskráninguna sem þú vistaðir í { -brand-short-name } á öllum tækjum sem eru samstillt við { -fxaccount-brand-name }. Þetta mun einnig fjarlægja innbrotaviðvaranir sem birtast hér. Þú munt ekki geta afturkallað þessa aðgerð.
        *[other] Þetta mun fjarlægja allar innskráningar sem þú hefur vistað á { -brand-short-name } á öllum tækjum sem eru samstillt við { -fxaccount-brand-name }. Þetta mun einnig fjarlægja innbrotaviðvaranir sem birtast hér. Þú munt ekki geta afturkallað þessa aðgerð.
-    }
-about-logins-confirm-remove-all-sync-dialog-message2 =
-    { $count ->
-        [1] Þetta mun fjarlægja innskráningar sem þú hefur vistað á { -brand-short-name } á öllum tækjum sem eru samstillt við aðganginn þinn. Þetta mun einnig fjarlægja innbrotaviðvaranir sem birtast hér. Þú munt ekki geta afturkallað þessa aðgerð.
-        [one] Þetta mun fjarlægja innskráninguna sem þú hefur vistað á { -brand-short-name } á öllum tækjum sem eru samstillt við aðganginn þinn. Þetta mun einnig fjarlægja innbrotaviðvaranir sem birtast hér. Þú munt ekki geta afturkallað þessa aðgerð.
-       *[other] Þetta mun fjarlægja allar innskráningar sem þú hefur vistað á { -brand-short-name } á öllum tækjum sem eru samstillt við aðganginn þinn. Þetta mun einnig fjarlægja innbrotaviðvaranir sem birtast hér. Þú munt ekki geta afturkallað þessa aðgerð.
     }
 # Checkbox for modal to confirm the removal of saved passwords
 about-logins-confirm-remove-all-dialog-checkbox-label2 =

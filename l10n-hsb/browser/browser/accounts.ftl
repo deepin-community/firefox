@@ -102,3 +102,17 @@ account-multiple-tabs-arriving-from-unknown-device =
         [few] { $tabCount } rajtarki su přišli
        *[other] { $tabCount } rajtarkow je přišło
     }
+
+## These strings are used in notifications in which the user remotely closed
+## tabs from other devices
+## Variables:
+##   $closedCount (Number): the number of tabs closed
+
+account-view-recently-closed-tabs = Runje začinjene rajtarki pokazać
+account-tabs-closed-remotely =
+    { $closedCount ->
+        [one] { $closedCount } rajtark { -brand-short-name } začinjeny
+        [two] { $closedCount } rajtarkaj { -brand-short-name } začinjenej
+        [few] { $closedCount } rajtarki { -brand-short-name } začinjene
+       *[other] { $closedCount } rajtarkow { -brand-short-name } začinjene
+    }

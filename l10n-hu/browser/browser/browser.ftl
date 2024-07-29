@@ -640,6 +640,21 @@ urlbar-group-quickactions =
 #  $engine (String): the name of the search engine used to search.
 urlbar-group-recent-searches =
     .label = Legutóbbi keresések
+# The header shown above trending results.
+# Variables:
+#  $engine (String): the name of the search engine providing the trending suggestions
+urlbar-group-trending =
+    .label = Felkapott ebben: { $engine }
+# The result menu labels shown next to trending results.
+urlbar-result-menu-trending-dont-show =
+    .label = Ne jelenítse meg a felkapott kereséseket
+    .accesskey = N
+urlbar-result-menu-trending-why =
+    .label = Miért látom ezt?
+    .accesskey = M
+# A message that replaces a result when the user dismisses all suggestions of a
+# particular type.
+urlbar-trending-dismissal-acknowledgment = Köszönjük visszajelzését. Többé nem fogja látni a felkapott kereséseket.
 
 ## Reader View toolbar buttons
 
@@ -990,6 +1005,10 @@ firefox-relay-offer-legal-notice = Az „E-mail-maszk használata” gombra katt
 popup-notification-addon-install-unsigned =
     .value = (Ellenőrizetlen)
 popup-notification-xpinstall-prompt-learn-more = Tudjon meg többet a bővítmények biztonságos telepítéséről
+# Note: Access key is set to P to match "Private" in the corresponding localized label.
+popup-notification-addon-privatebrowsing-checkbox =
+    .label = Futtatás privát ablakokban
+    .accesskey = F
 
 ## Pop-up warning
 

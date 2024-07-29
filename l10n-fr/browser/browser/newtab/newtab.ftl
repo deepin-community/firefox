@@ -230,6 +230,19 @@ newtab-pocket-pocket-firefox-family = { -pocket-brand-name } fait partie de la f
 newtab-pocket-save = Enregistrer
 newtab-pocket-saved = Enregistrée
 
+## Thumbs up and down buttons that shows over a newtab stories card thumbnail on hover.
+
+# Clicking the thumbs up button for this story will result in more stories like this one being recommended
+newtab-pocket-thumbs-up-tooltip =
+    .title = Plus comme celui-ci
+# Clicking the thumbs down button for this story informs us that the user does not feel like the story is interesting for them
+newtab-pocket-thumbs-down-tooltip =
+    .title = Pas pour moi
+newtab-toast-thumbs-up-or-down = Merci. Votre retour nous aide à améliorer votre flux.
+newtab-toast-dismiss-button =
+    .title = Ignorer
+    .aria-label = Ignorer
+
 ## Pocket content onboarding experience dialog and modal for new users seeing the Pocket section for the first time, shown as the first item in the Pocket section.
 
 newtab-pocket-onboarding-discover = Découvrez le meilleur du Web
@@ -268,6 +281,9 @@ newtab-custom-recent-subtitle = Une sélection de sites et de contenus récents
 newtab-custom-recent-toggle =
     .label = Activité récente
     .description = Une sélection de sites et de contenus récents
+newtab-custom-weather-toggle =
+    .label = Météo
+    .description = Les prévisions du jour en un coup d’œil
 newtab-custom-close-button = Fermer
 newtab-custom-settings = Gérer plus de paramètres
 
@@ -287,7 +303,85 @@ newtab-wallpaper-dark-panda = Panda roux caché dans la forêt
 newtab-wallpaper-dark-sky = Paysage de ville avec un ciel nocturne
 newtab-wallpaper-dark-mountain = Paysage de montagne
 newtab-wallpaper-dark-city = Paysage de ville avec une teinte violette
+
+## Solid Colors
+
+newtab-wallpaper-category-title-colors = Couleurs unies
+newtab-wallpaper-blue = Bleu
+newtab-wallpaper-light-blue = Bleu clair
+newtab-wallpaper-light-purple = Violet clair
+newtab-wallpaper-light-green = Vert clair
+newtab-wallpaper-green = Vert
+newtab-wallpaper-beige = Beige
+newtab-wallpaper-yellow = Jaune
+newtab-wallpaper-orange = Orange
+newtab-wallpaper-pink = Rose
+newtab-wallpaper-light-pink = Rose clair
+newtab-wallpaper-red = Rouge
+newtab-wallpaper-dark-blue = Bleu foncé
+newtab-wallpaper-dark-purple = Violet foncé
+newtab-wallpaper-dark-green = Vert foncé
+newtab-wallpaper-brown = Marron
+
+## Abstract
+
+newtab-wallpaper-category-title-abstract = Abstrait
+newtab-wallpaper-abstract-green = Formes vertes
+newtab-wallpaper-abstract-blue = Formes bleues
+newtab-wallpaper-abstract-purple = Formes violettes
+newtab-wallpaper-abstract-orange = Formes oranges
+newtab-wallpaper-gradient-orange = Dégradé d’orange et de rose
+newtab-wallpaper-abstract-blue-purple = Formes bleues et violettes
+
+## Photographs
+
+newtab-wallpaper-category-title-photographs = Photos
+newtab-wallpaper-beach-at-sunrise = Plage au lever du soleil
+newtab-wallpaper-beach-at-sunset = Plage au coucher du soleil
+newtab-wallpaper-storm-sky = Ciel orageux
+newtab-wallpaper-sky-with-pink-clouds = Ciel avec des nuages roses
+newtab-wallpaper-red-panda-yawns-in-a-tree = Un panda roux qui baille sur un arbre
+newtab-wallpaper-white-mountains = Montagnes blanches
 # Variables
 #   $author_string (String) - The name of the creator of the photo.
 #   $webpage_string (String) - The name of the webpage where the photo is located.
 newtab-wallpaper-attribution = Photo de <a data-l10n-name="name-link">{ $author_string }</a> sur <a data-l10n-name="webpage-link">{ $webpage_string }</a>
+newtab-wallpaper-feature-highlight-header = Essayez une touche de couleur
+newtab-wallpaper-feature-highlight-content = Donnez un nouveau look à votre page Nouvel onglet avec des fonds d’écran.
+newtab-wallpaper-feature-highlight-button = J’ai compris
+# Tooltip for dismiss button
+feature-highlight-dismiss-button =
+    .title = Ignorer
+    .aria-label = Fermer la pop-up
+feature-highlight-wallpaper =
+    .title = { -newtab-wallpaper-feature-highlight-header }
+    .aria-label = { -newtab-wallpaper-feature-highlight-content }
+
+## New Tab Weather
+
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-see-forecast =
+    .title = Voir les prévisions sur { $provider }
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-sponsored = { $provider } ∙ Sponsorisé
+newtab-weather-menu-change-location = Changer de lieu
+newtab-weather-change-location-search-input = Rechercher un lieu
+newtab-weather-menu-weather-display = Affichage météo
+# Display options are:
+# - Simple: Displays a current weather condition icon and the current temperature
+# - Detailed: Include simple information plus a short text summary: e.g. "Mostly cloudy"
+newtab-weather-menu-weather-display-option-simple = Vue simplifiée
+newtab-weather-menu-change-weather-display-simple = Afficher la vue simplifiée
+newtab-weather-menu-weather-display-option-detailed = Vue détaillée
+newtab-weather-menu-change-weather-display-detailed = Afficher la vue détaillée
+newtab-weather-menu-temperature-units = Unité des températures
+newtab-weather-menu-temperature-option-fahrenheit = Fahrenheit
+newtab-weather-menu-temperature-option-celsius = Celsius
+newtab-weather-menu-change-temperature-units-fahrenheit = Passer en Fahrenheit
+newtab-weather-menu-change-temperature-units-celsius = Passer en Celsius
+newtab-weather-menu-hide-weather = Masquer la météo sur la page Nouvel onglet
+newtab-weather-menu-learn-more = En savoir plus
+# This message is shown if user is working offline
+newtab-weather-error-not-available = Les données météo ne sont pas disponibles pour le moment.

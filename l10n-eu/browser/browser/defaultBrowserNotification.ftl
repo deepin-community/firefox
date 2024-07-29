@@ -21,3 +21,20 @@ default-browser-prompt-message-alt = Eskuratu abiadura, segurtasuna eta pribatut
 default-browser-prompt-button-primary-alt = Ezarri nabigatzaile lehenetsi gisa
 default-browser-prompt-checkbox-not-again-label = Ez erakutsi mezu hau berriro
 default-browser-prompt-button-secondary = Une honetan ez
+
+## Strings for a Windows native guidance notification when the user is forced to
+## use Windows Settings to set the default browser. Instructions differ for
+## Windows 10 and 11.
+
+default-browser-guidance-notification-title = Amaitu { -brand-short-name } zure nabigatzaile lehenetsia eginez
+# Quoted text are keywords to look for in the Windows Settings app.
+default-browser-guidance-notification-body-instruction-win10 =
+    1. urratsa: joan Ezarpenak > Lehenetsitako aplikazioak atalera
+    2. urratsa: korritu behera eta aurkitu “Web nabigatzailea”
+    3. urratsa: hautatu eta aukeratu { -brand-short-name }
+# Quoted text are keywords to look for in the Windows Settings app.
+default-browser-guidance-notification-body-instruction-win11 =
+    1. urratsa: joan Ezarpenak > Lehenetsitako aplikazioak atalera
+    2. urratsa: hautatu "Ezarri lehenetsia" eta aukeratu { -brand-short-name }
+default-browser-guidance-notification-info-page = Erakuts iezadazu
+default-browser-guidance-notification-dismiss = Eginda

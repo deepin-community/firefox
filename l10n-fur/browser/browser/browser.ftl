@@ -638,6 +638,21 @@ urlbar-group-quickactions =
 #  $engine (String): the name of the search engine used to search.
 urlbar-group-recent-searches =
     .label = Ricercjis resintis
+# The header shown above trending results.
+# Variables:
+#  $engine (String): the name of the search engine providing the trending suggestions
+urlbar-group-trending =
+    .label = Di tindince su { $engine }
+# The result menu labels shown next to trending results.
+urlbar-result-menu-trending-dont-show =
+    .label = No sta mostrâ ricercjis di tindince
+    .accesskey = D
+urlbar-result-menu-trending-why =
+    .label = Parcè viodio chest element?
+    .accesskey = v
+# A message that replaces a result when the user dismisses all suggestions of a
+# particular type.
+urlbar-trending-dismissal-acknowledgment = Graciis pe tô rispueste. No tu viodarâs plui ricercjis di tindince.
 
 ## Reader View toolbar buttons
 
@@ -988,6 +1003,10 @@ firefox-relay-offer-legal-notice = Fasint clic su “Dopre mascare di pueste ele
 popup-notification-addon-install-unsigned =
     .value = (No verificât)
 popup-notification-xpinstall-prompt-learn-more = Scuvierç di plui su la instalazion di components adizionâi in sigurece
+# Note: Access key is set to P to match "Private" in the corresponding localized label.
+popup-notification-addon-privatebrowsing-checkbox =
+    .label = Eseguìs in barcons privâts
+    .accesskey = P
 
 ## Pop-up warning
 
@@ -1017,3 +1036,24 @@ popup-warning-button =
 #   $popupURI (String): the URI for the pop-up window
 popup-show-popup-menuitem =
     .label = Mostre “{ $popupURI }”
+
+## File-picker crash notification ("FilePickerCrashed.sys.mjs")
+
+file-picker-failed-open = Nol è stât pussibil vierzi il dialic di Windows pe selezion dai files. Nol è stât selezionât nissun file o cartele.
+#   $path (string): The full path to which the file will be saved (e.g., 'C:\Users\Default User\Downloads\readme.txt').
+file-picker-failed-save-somewhere = Nol è stât pussibil vierzi il dialic di Windows pe selezion dai files. Il file al vignarà salvât come { $path },
+file-picker-failed-save-nowhere = Nol è stât pussibil vierzi il dialic di Windows pe selezion dai files. No je stade cjatade nissune cartele predefinide e il file nol vignarà salvât.
+file-picker-crashed-open = Il dialic di Windows pe selezion dai files al è colassât. Nol è stât selezionât nissun file o cartele.
+#   $path (string): The full path to which the file will be saved (e.g., 'C:\Users\Default User\Downloads\readme.txt').
+file-picker-crashed-save-somewhere = Il dialic di Windows pe selezion dai files al è colassât. Il file al vignarà salvât come { $path }.
+file-picker-crashed-save-nowhere = Il dialic di Windows pe selezion dai files al è colassât. No je stade cjatade nissune cartele predefinide e il file nol vignarà salvât.
+
+# Button used with file-picker-crashed-save-default. Opens the folder in Windows
+# Explorer, with the saved file selected and in focus.
+#
+# The wording here should be consistent with the Windows variant of
+# `downloads-cmd-show-menuitem-2` and similar messages.
+
+file-picker-crashed-show-in-folder =
+    .label = Mostre te cartele
+    .accessKey = F

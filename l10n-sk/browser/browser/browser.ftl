@@ -644,6 +644,21 @@ urlbar-group-quickactions =
 #  $engine (String): the name of the search engine used to search.
 urlbar-group-recent-searches =
     .label = Nedávne vyhľadávania
+# The header shown above trending results.
+# Variables:
+#  $engine (String): the name of the search engine providing the trending suggestions
+urlbar-group-trending =
+    .label = Populárne na { $engine }
+# The result menu labels shown next to trending results.
+urlbar-result-menu-trending-dont-show =
+    .label = Nezobrazovať populárne vyhľadávania
+    .accesskey = N
+urlbar-result-menu-trending-why =
+    .label = Prečo sa mi toto zobrazuje?
+    .accesskey = P
+# A message that replaces a result when the user dismisses all suggestions of a
+# particular type.
+urlbar-trending-dismissal-acknowledgment = Ďakujem za spätnú väzbu. Už sa vám nebudú zobrazovať populárne vyhľadávania.
 
 ## Reader View toolbar buttons
 
@@ -994,6 +1009,10 @@ firefox-relay-offer-legal-notice = Kliknutím na „Použiť e‑mailovú masku�
 popup-notification-addon-install-unsigned =
     .value = (neoverený)
 popup-notification-xpinstall-prompt-learn-more = Ďalšie informácie o bezpečnej inštalácii doplnkov
+# Note: Access key is set to P to match "Private" in the corresponding localized label.
+popup-notification-addon-privatebrowsing-checkbox =
+    .label = Povoliť v súkromných oknách
+    .accesskey = s
 
 ## Pop-up warning
 
@@ -1029,3 +1048,24 @@ popup-warning-button =
 #   $popupURI (String): the URI for the pop-up window
 popup-show-popup-menuitem =
     .label = Zobraziť { $popupURI }
+
+## File-picker crash notification ("FilePickerCrashed.sys.mjs")
+
+file-picker-failed-open = Súborové dialógové okno systému Windows sa nepodarilo otvoriť. Nepodarilo sa vybrať žiadny súbor ani priečinok.
+#   $path (string): The full path to which the file will be saved (e.g., 'C:\Users\Default User\Downloads\readme.txt').
+file-picker-failed-save-somewhere = Súborové dialógové okno systému Windows sa nepodarilo otvoriť. Súbor sa uloží do { $path }.
+file-picker-failed-save-nowhere = Súborové dialógové okno systému Windows sa nepodarilo otvoriť. Nenašiel sa žiadny predvolený priečinok; súbor sa neuloží.
+file-picker-crashed-open = Súborové dialógové okno systému Windows zlyhalo. Nepodarilo sa vybrať žiadny súbor ani priečinok.
+#   $path (string): The full path to which the file will be saved (e.g., 'C:\Users\Default User\Downloads\readme.txt').
+file-picker-crashed-save-somewhere = Súborové dialógové okno systému Windows zlyhalo. Súbor sa uloží do { $path }.
+file-picker-crashed-save-nowhere = Súborové dialógové okno systému Windows zlyhalo. Nenašiel sa žiadny predvolený priečinok; súbor sa neuloží.
+
+# Button used with file-picker-crashed-save-default. Opens the folder in Windows
+# Explorer, with the saved file selected and in focus.
+#
+# The wording here should be consistent with the Windows variant of
+# `downloads-cmd-show-menuitem-2` and similar messages.
+
+file-picker-crashed-show-in-folder =
+    .label = Zobraziť v priečinku
+    .accessKey = b

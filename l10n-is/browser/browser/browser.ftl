@@ -640,6 +640,21 @@ urlbar-group-quickactions =
 #  $engine (String): the name of the search engine used to search.
 urlbar-group-recent-searches =
     .label = Nýlegar leitir
+# The header shown above trending results.
+# Variables:
+#  $engine (String): the name of the search engine providing the trending suggestions
+urlbar-group-trending =
+    .label = Vinsælt á { $engine }
+# The result menu labels shown next to trending results.
+urlbar-result-menu-trending-dont-show =
+    .label = Ekki sýna vinsælar leitir
+    .accesskey = k
+urlbar-result-menu-trending-why =
+    .label = Hvers vegna er ég að sjá þetta?
+    .accesskey = v
+# A message that replaces a result when the user dismisses all suggestions of a
+# particular type.
+urlbar-trending-dismissal-acknowledgment = Takk fyrir álit þitt. Þú munt ekki lengur sjá vinsælar leitir.
 
 ## Reader View toolbar buttons
 
@@ -990,6 +1005,10 @@ firefox-relay-offer-legal-notice = Með því að smella á „Nota tölvupósth
 popup-notification-addon-install-unsigned =
     .value = (Óstaðfest)
 popup-notification-xpinstall-prompt-learn-more = Sjáðu meira um að setja upp viðbætur á öruggan hátt
+# Note: Access key is set to P to match "Private" in the corresponding localized label.
+popup-notification-addon-privatebrowsing-checkbox =
+    .label = Keyra í huliðsgluggum
+    .accesskey = h
 
 ## Pop-up warning
 
@@ -1019,3 +1038,24 @@ popup-warning-button =
 #   $popupURI (String): the URI for the pop-up window
 popup-show-popup-menuitem =
     .label = Sýna “{ $popupURI }”
+
+## File-picker crash notification ("FilePickerCrashed.sys.mjs")
+
+file-picker-failed-open = Ekki var hægt að opna Windows-skráagluggann. Ekki var hægt að velja neina skrá eða möppu.
+#   $path (string): The full path to which the file will be saved (e.g., 'C:\Users\Default User\Downloads\readme.txt').
+file-picker-failed-save-somewhere = Ekki var hægt að opna Windows-skráagluggann. Skráin verður vistuð í { $path }.
+file-picker-failed-save-nowhere = Ekki var hægt að opna Windows-skráagluggann. Engin sjálfgefin mappa fannst; skráin verður ekki vistuð.
+file-picker-crashed-open = Windows-skráaglugginn hefur hrunið. Ekki var hægt að velja neina skrá eða möppu.
+#   $path (string): The full path to which the file will be saved (e.g., 'C:\Users\Default User\Downloads\readme.txt').
+file-picker-crashed-save-somewhere = Windows-skráaglugginn hefur hrunið. Skráin verður vistuð í { $path }.
+file-picker-crashed-save-nowhere = Windows-skráaglugginn hefur hrunið. Engin sjálfgefin mappa fannst; skráin verður ekki vistuð.
+
+# Button used with file-picker-crashed-save-default. Opens the folder in Windows
+# Explorer, with the saved file selected and in focus.
+#
+# The wording here should be consistent with the Windows variant of
+# `downloads-cmd-show-menuitem-2` and similar messages.
+
+file-picker-crashed-show-in-folder =
+    .label = Sýna í möppu
+    .accessKey = m

@@ -344,6 +344,9 @@ has-seccomp-bpf = Seccomp-BPF (Systemanropsfiltrering)
 has-seccomp-tsync = Seccomp-trådsynkronisering
 has-user-namespaces = Användarnamnområden
 has-privileged-user-namespaces = Användarnamnområden för privilegierade processer
+# Variables
+# $status (string) - Boolean value of hasUserNamespaces (should only be false when support-user-namespaces-unavailable is used)
+support-user-namespaces-unavailable = { $status } — Den här funktionen är inte tillåten i ditt system. Detta kan begränsa säkerhetsfunktionerna i { -brand-short-name }.
 can-sandbox-content = Sandlåda för innehållsprocesser
 can-sandbox-media = Sandlåda för insticksmodul media
 content-sandbox-level = Sandlådenivå för innehållsprocess
@@ -411,6 +414,20 @@ support-printing-clear-settings-button = Rensa sparade utskriftsinställningar
 support-printing-modified-settings = Ändrade utskriftsinställningar
 support-printing-prefs-name = Namn
 support-printing-prefs-value = Värde
+
+## Remote Settings sections
+
+support-remote-settings-title = Fjärrinställningar
+support-remote-settings-status = Status
+support-remote-settings-status-ok = OK
+# Status when synchronization is not working.
+support-remote-settings-status-broken = Fungerar inte
+support-remote-settings-last-check = Sista kontrollen
+support-remote-settings-local-timestamp = Lokal tidsstämpel
+support-remote-settings-sync-history = Historik
+support-remote-settings-sync-history-status = Status
+support-remote-settings-sync-history-datetime = Datum
+support-remote-settings-sync-history-infos = Info
 
 ## Normandy sections
 

@@ -14,21 +14,6 @@ about-reader-color-scheme-sepia = Seppia
 about-reader-color-scheme-auto = Automatico
     .title = Combinazione colori automatica
 
-about-reader-color-theme-light = Chiaro
-    .title = Tema con colori chiari
-about-reader-color-theme-dark = Scuro
-    .title = Tema con colori scuri
-about-reader-color-theme-sepia = Seppia
-    .title = Tema con colori seppia
-about-reader-color-theme-auto = Automatico
-    .title = Tema con colori scelti automaticamente
-about-reader-color-theme-gray = Grigio
-    .title = Tema con colori grigi
-about-reader-color-theme-contrast = Contrasto
-    .title = Tema con colori a contrasto elevato
-about-reader-color-theme-custom = Colori personalizzati
-    .title = Tema con colori personalizzati
-
 about-reader-color-light-theme = Chiaro
     .title = Tema chiaro
 about-reader-color-dark-theme = Scuro
@@ -72,12 +57,12 @@ about-reader-toolbar-lineheightplus =
 
 about-reader-font-type-serif = Con grazie
 about-reader-font-type-sans-serif = Senza grazie
+about-reader-font-type-monospace = Larghezza fissa
 
 ## Reader View toolbar buttons
 
 about-reader-toolbar-close = Chiudi Modalità lettura
 about-reader-toolbar-type-controls = Controlli carattere
-about-reader-toolbar-color-controls = Colori
 about-reader-toolbar-text-layout-controls = Testo e layout
 about-reader-toolbar-theme-controls = Tema
 about-reader-toolbar-savetopocket = Salva in { -pocket-brand-name }
@@ -106,16 +91,22 @@ about-reader-custom-colors-visited-links = Link visitati
 about-reader-custom-colors-selection-highlight = Evidenziatore per lettura ad alta voce
     .title = Modifica colore
 
-about-reader-custom-colors-reset-button = Ripristina predefiniti
+about-reader-reset-button = Ripristina predefiniti
 
 ## Reader View improved text and layout menu
+
+about-reader-text-header = Testo
+
+about-reader-text-size-label = Dimensione del testo
+about-reader-font-type-selector-label = Carattere
+about-reader-font-weight-selector-label = Spessore carattere
+about-reader-font-weight-light = Sottile
+about-reader-font-weight-regular = Normale
+about-reader-font-weight-bold = Grassetto
 
 about-reader-layout-header = Layout
 about-reader-advanced-layout-header = Avanzate
 
-about-reader-slider-label-width-narrow = Stretta
-about-reader-slider-label-width-wide = Larga
-about-reader-slider-label-spacing-narrow = Ridotta
 about-reader-slider-label-spacing-standard = Normale
 about-reader-slider-label-spacing-wide = Espansa
 
@@ -136,3 +127,4 @@ about-reader-text-alignment-center =
     .title = Allinea il testo al centro
 about-reader-text-alignment-right =
     .title = Allinea il testo a destra
+

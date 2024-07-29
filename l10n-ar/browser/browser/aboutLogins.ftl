@@ -65,6 +65,17 @@ login-list-filtered-count =
         [many] { $count } من أصل { $total } جلسات الولوج
        *[other] { $count } من أصل { $total } جلسات الولوج
     }
+# Variables
+#   $count (number) - Number of logins
+login-list-count2 =
+    { $count ->
+        [zero] ولا كلمة مرور
+        [one] كلمة مرور واحدة
+        [two] كلمتا مرور
+        [few] { $count } كلمات مرور
+        [many] { $count } كلمة مرور
+       *[other] { $count } كلمة مرور
+    }
 login-list-sort-label-text = افرز حسب:
 login-list-name-option = الاسم (ا-ي)
 login-list-name-reverse-option = الاسم (ي-ا)
@@ -99,6 +110,7 @@ about-logins-login-intro-heading-logged-out2 = أتبحث عن جلسات ولو
 about-logins-login-intro-heading-logged-in = لم نجد أيّ جلسة ولوج متزامنة.
 login-intro-description = إن حفظت جلسات ولوجك في { -brand-product-name } على جهاز آخر، فهكذا يمكنك أن تزامنها هنا:
 login-intro-instructions-fxa = أنشِئ أو لِج إلى { -fxaccount-brand-name } على الأجهزة التي لديك عليها جلسات ولوج محفوظة
+about-logins-login-intro-heading-message = احفظ كلمات مرورك في مكان آمن
 login-intro-instructions-fxa2 = أنشئ أو لج إلى حسابك على الأجهزة التي لديك عليها جلسات ولوج محفوظة.
 login-intro-instructions-fxa-settings = انتقل إلى ”الإعدادات > المزامنة > فعّل المزامنة…“ وضَع علامة على ”جلسات الولوج وكلمات السر“.
 login-intro-instructions-fxa-passwords-help = زُر <a data-l10n-name="passwords-help-link">دعم كلمات السر</a> لمزيد من المساعدة.
@@ -127,6 +139,7 @@ login-item-password-reveal-checkbox =
 login-item-copy-password-button-text = انسخ
 login-item-copied-password-button-text = نُسخ.
 login-item-save-changes-button = احفظ التغييرات
+about-logins-login-item-save-changes-button = احفظ
 login-item-save-new-button = احفظ
 login-item-cancel-button = ألغِ
 
@@ -154,6 +167,9 @@ about-logins-edit-login-os-auth-dialog-message-win = أدخِل معلومات �
 # This message can be seen when attempting to edit a login in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-edit-login-os-auth-dialog-message-macosx = تحرير جلسة الولوج المحفوظة
+# This message can be seen when attempting to edit a login in about:logins
+# On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
+about-logins-edit-login-os-auth-dialog-message2-macosx = تحرير كلمة المرور المحفوظة
 # This message can be seen when attempting to reveal a password in about:logins on Windows.
 about-logins-reveal-password-os-auth-dialog-message-win = أدخِل معلومات ولوج وِندوز لتعرض كلمة السر. يساعد هذا الأمر على حماية أمن حساباتك.
 # This message can be seen when attempting to reveal a password in about:logins

@@ -115,6 +115,7 @@ shopping-settings-sidebar-enabled-state = O verificador de avaliações está <s
 shopping-adjusted-rating-label =
     .label = Classificação ajustada
 shopping-adjusted-rating-unreliable-reviews = Avaliações não confiáveis removidas
+shopping-adjusted-rating-based-reliable-reviews = Com base em avaliações confiáveis
 
 ## Strings for the review reliability component
 
@@ -133,6 +134,8 @@ shopping-analysis-explainer-learn-more2 = Saiba mais sobre <a data-l10n-name="re
 # websites, which will be inserted without being translated.
 #  $retailer (String) - capitalized name of the shopping website, for example, "Amazon".
 shopping-analysis-explainer-highlights-description = Os <strong>destaques</strong> são provenientes de avaliações de { $retailer } feitas nos últimos 80 dias e que acreditamos ser confiáveis.
+# Fallback for analysis highlights explainer if the retailer is ever unknown
+shopping-analysis-explainer-highlights-description-unknown-retailer = Os <strong>destaques</strong> são provenientes de avaliações feitas nos últimos 80 dias e que acreditamos ser confiáveis.
 shopping-analysis-explainer-review-grading-scale-reliable = Avaliações confiáveis. Acreditamos que as avaliações provavelmente são de consumidores reais que deixaram avaliações honestas e imparciais.
 shopping-analysis-explainer-review-grading-scale-mixed = Acreditamos que há uma mistura de avaliações confiáveis e não confiáveis.
 shopping-analysis-explainer-review-grading-scale-unreliable = Avaliações não confiáveis. Acreditamos que as avaliações provavelmente são falsas ou de avaliadores tendenciosos.

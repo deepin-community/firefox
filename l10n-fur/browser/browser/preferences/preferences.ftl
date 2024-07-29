@@ -57,6 +57,10 @@ category-experimental =
 pane-experimental-subtitle = Continue cun cautele
 pane-experimental-search-results-header = Esperiments di { -brand-short-name }: continue cun cautele
 pane-experimental-description2 = La modifiche des impostazions di configurazion avanzadis e pues influî su lis prestazions o la sigurece di { -brand-short-name }.
+settings-pane-labs-title = { -firefoxlabs-brand-name }
+settings-category-labs =
+    .tooltiptext = { -firefoxlabs-brand-name }
+pane-experimental-description3 = Prove lis nestris funzions sperimentâls! A son in disvilup e in continue evoluzion, chest al podarès lâ a tocjâ il mût di funzionâ di { -brand-short-name }.
 pane-experimental-reset =
     .label = Ripristine predefinîts
     .accesskey = R
@@ -599,6 +603,10 @@ home-prefs-recent-activity-description = Une selezion di sîts e contignûts res
 home-prefs-snippets-header =
     .label = Piçulis notis
 home-prefs-snippets-description-new = Sugjeriments e novitâts di { -vendor-short-name } e { -brand-product-name }
+home-prefs-weather-header =
+    .label = Meteo
+home-prefs-weather-description = Previsions par vuê cuntune voglade
+home-prefs-weather-learn-more-link = Plui informazions
 # Variables:
 #   $num (number) - Number of rows displayed
 home-prefs-sections-rows-option =
@@ -912,6 +920,9 @@ forms-saved-passwords =
 forms-primary-pw-use =
     .label = Dopre une password primarie
     .accesskey = U
+# This operation requires the user to authenticate with the operating system (device sign-in)
+forms-os-reauth =
+    .label = Domande la conferme dal acès al dispositîf par compilâ in automatic e gjestî lis passwords
 forms-primary-pw-learn-more-link = Plui informazions
 # This string uses the former name of the Primary Password feature
 # ("Master Password" in English) so that the preferences can be found
@@ -944,6 +955,13 @@ primary-password-os-auth-dialog-message-win = Par creâ une password primarie, i
 # notes are only valid for English. Please test in your locale.
 primary-password-os-auth-dialog-message-macosx = creâ une password primarie
 master-password-os-auth-dialog-caption = { -brand-full-name }
+# The macOS string is preceded by the operating system with "Firefox is trying to ".
+autofill-creditcard-os-dialog-message =
+    { PLATFORM() ->
+        [macos] cambiâ lis impostazions pai metodis di paiament
+       *[other] { -brand-short-name } al sta cirint di modificâ lis impostazions pai metodis di paiament. Par permeti la operazion, conferme l’acès al dispositîf.
+    }
+autofill-creditcard-os-auth-dialog-caption = { -brand-full-name }
 
 ## Privacy section - Autofill
 
@@ -958,13 +976,8 @@ autofill-payment-methods-checkbox-submessage = Al inclût cjartis di credit e di
     .accesskey = I
 autofill-saved-payment-methods-button = Metodis di paiament salvâts
     .accesskey = v
-autofill-reauth-checkbox =
-    { PLATFORM() ->
-        [macos] Domande la autenticazion di macOS par compilâ e modificâ metodis di paiament.
-        [windows] Domande la autenticazion di Windows par compilâ e modificâ metodis di paiament.
-        [linux] Domande la autenticazion di Linux par compilâ e modificâ metodis di paiament.
-       *[other] Domande la autenticazion par compilâ e modificâ metodis di paiament.
-    }
+# This operation requires the user to authenticate with the operating system (device sign-in)
+autofill-reauth-payment-methods-checkbox = Domande la conferme dal acès al dispositîf par compilâ in automatic e gjestî i metodis di paiament
     .accesskey = o
 
 ## Privacy Section - History
@@ -1102,6 +1115,9 @@ addressbar-suggestions-settings = Modifiche lis preferencis pai sugjeriments dai
 addressbar-locbar-showrecentsearches-option =
     .label = Mostre ricercjis resintis
     .accesskey = r
+addressbar-locbar-showtrendingsuggestions-option =
+    .label = Mostre sugjeriments di ricercje di tindince
+    .accesskey = t
 addressbar-quickactions-learn-more = Plui informazions
 
 ## Privacy Section - Content Blocking
@@ -1292,6 +1308,14 @@ privacy-segmentation-radio-off =
     .label = Dopre lis impostazions conseadis di { -brand-product-name }
 privacy-segmentation-radio-on =
     .label = Mostre informazions detaiadis
+
+## Privacy Section - Website Advertising Preferences
+
+website-advertising-header = Impostazions pes publicitâts tai sîts web
+website-advertising-private-attribution =
+    .label = Permet ai sîts web di fâ misurazions publicitariis tal rispiet de riservatece
+    .accesskey = a
+website-advertising-private-attribution-description = Chest al permet ai sîts di valutâ lis prestazions dai lôr anuncis cence tirâ dongje dâts personâi.
 
 ## Privacy Section - Security
 ##

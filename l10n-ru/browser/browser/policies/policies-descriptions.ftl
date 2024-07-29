@@ -84,6 +84,8 @@ policy-Handlers = Настраивает обработчики приложен
 policy-HardwareAcceleration = Отключает аппаратное ускорение, если установлена в false.
 # “lock” means that the user won’t be able to change this setting
 policy-Homepage = Устанавливает домашнюю страницу и, по желанию, блокирует её смену.
+policy-HttpAllowlist = Источники, которые не будут обновлены до HTTPS.
+policy-HttpsOnlyMode = Разрешает включить режим «Только HTTPS».
 policy-InstallAddonsPermission = Разрешает некоторым веб-сайтам устанавливать дополнения.
 policy-LegacyProfiles = Отключает функцию для принудительного создания отдельного профиля для каждой установки
 
@@ -108,6 +110,9 @@ policy-OverrideFirstRunPage = Переопределяет первую стра
 policy-OverridePostUpdatePage = Переопределяет страницу «Что нового», открывающуюся после обновления. Установите эту политику в пустую, если хотите отключить страницу, открывающуюся после обновления.
 policy-PasswordManagerEnabled = Включает сохранение паролей в менеджере паролей.
 policy-PasswordManagerExceptions = Запрещает { -brand-short-name } сохранять пароли для определенных сайтов.
+# Post-quantum refers to cryptography that is safe from attacks by quantum
+# computers. See https://en.wikipedia.org/wiki/Post-quantum_cryptography
+policy-PostQuantumKeyAgreementEnabled = Включает постквантовое согласование ключей для TLS.
 # PDF.js and PDF should not be translated
 policy-PDFjs = Отключает или настраивает PDF.js, встроенный просмотрщик PDF в { -brand-short-name }.
 policy-Permissions2 = Настраивает разрешения для камеры, микрофона, местоположения, уведомлений и автовоспроизведения.

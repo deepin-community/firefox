@@ -77,16 +77,10 @@ appmenu-remote-tabs-turn-on-sync =
 appmenu-remote-tabs-showmore =
     .label = Birta fleiri flipa
     .tooltiptext = Birta fleiri flipa af þessu tæki
-# This is shown when there are inactive tabs which are not being shown.
-# Variables
-# $count (Number) - The number of inactive tabs which are not being shown (at least 1)
-appmenu-remote-tabs-showinactive =
-    .label =
-        { $count ->
-            [one] Sýna einn óvirkan flipa
-           *[other] Sýna { $count } óvirka flipa
-        }
-    .tooltiptext = Sýna óvirku flipana á þessu tæki
+# This is shown as the label for an element to show inactive tabs from this device.
+appmenu-remote-tabs-show-inactive-tabs =
+    .label = Óvirkir flipar
+    .tooltiptext = Skoða óvirka flipa á þessu tæki
 # This is shown beneath the name of a device when that device has no open tabs
 appmenu-remote-tabs-notabs = Engir opnir flipar
 # This is shown when Sync is configured but syncing tabs is disabled.
@@ -202,6 +196,9 @@ profiler-popup-presets-power-description = Forstilling til að rannsaka orkunotk
 # "Power" is used in the sense of energy (electricity used by the computer).
 profiler-popup-presets-power-label =
     .label = Afl
+profiler-popup-presets-debug-description = Forstillt fyrir villuleit í { -brand-shorter-name }. Kemur niður á afköstum, ekki notað fyrir verk sem krefjast mikilla afkasta heldur til að einbeita sér að því að greina hegðun vafrans.
+profiler-popup-presets-debug-label =
+    .label = Villuleita
 profiler-popup-presets-custom-label =
     .label = Sérsniðið
 
@@ -277,7 +274,7 @@ appmenuitem-report-broken-site =
 
 appmenuitem-sign-in-account = Skráðu þig inn á notandaaðganginn þinn
 appmenuitem-monitor-title = { -monitor-brand-short-name }
-appmenuitem-monitor-description = Fáðu tilkynningar um gagnainnbrot
+appmenuitem-monitor-description = Fáðu tilkynningar um gagnarán
 appmenuitem-relay-title = { -relay-brand-short-name }
 appmenuitem-relay-description = Hyldu raunverulegt tölvupóstfang og símanúmerið þitt
 appmenuitem-vpn-title = { -mozilla-vpn-brand-name }

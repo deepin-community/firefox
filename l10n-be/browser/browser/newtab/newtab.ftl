@@ -234,6 +234,19 @@ newtab-pocket-pocket-firefox-family = { -pocket-brand-name } уваходзіц�
 newtab-pocket-save = Захаваць
 newtab-pocket-saved = Захавана
 
+## Thumbs up and down buttons that shows over a newtab stories card thumbnail on hover.
+
+# Clicking the thumbs up button for this story will result in more stories like this one being recommended
+newtab-pocket-thumbs-up-tooltip =
+    .title = Больш падобных
+# Clicking the thumbs down button for this story informs us that the user does not feel like the story is interesting for them
+newtab-pocket-thumbs-down-tooltip =
+    .title = Не для мяне
+newtab-toast-thumbs-up-or-down = Дзякуй. Ваш водгук дапаможа нам палепшыць вашу стужку.
+newtab-toast-dismiss-button =
+    .title = Схаваць
+    .aria-label = Схаваць
+
 ## Pocket content onboarding experience dialog and modal for new users seeing the Pocket section for the first time, shown as the first item in the Pocket section.
 
 newtab-pocket-onboarding-discover = Адкрыйце для сябе лепшае з Інтэрнэту
@@ -273,6 +286,9 @@ newtab-custom-recent-subtitle = Падборка нядаўніх сайтаў �
 newtab-custom-recent-toggle =
     .label = Апошняя актыўнасць
     .description = Падборка нядаўніх сайтаў і змесціва
+newtab-custom-weather-toggle =
+    .label = Надвор'е
+    .description = Кароткі прагноз на сёння
 newtab-custom-close-button = Закрыць
 newtab-custom-settings = Кіраваць дадатковымі наладамі
 
@@ -292,7 +308,85 @@ newtab-wallpaper-dark-panda = Чырвоная панда схаваная ў л
 newtab-wallpaper-dark-sky = Гарадскі пейзаж з начным небам
 newtab-wallpaper-dark-mountain = Горны пейзаж
 newtab-wallpaper-dark-city = Пурпурны гарадскі пейзаж
+
+## Solid Colors
+
+newtab-wallpaper-category-title-colors = Аднатонныя колеры
+newtab-wallpaper-blue = Сіні
+newtab-wallpaper-light-blue = Блакітны
+newtab-wallpaper-light-purple = Светла-фіялетавы
+newtab-wallpaper-light-green = Светла-зялёны
+newtab-wallpaper-green = Зялёны
+newtab-wallpaper-beige = Бэжавы
+newtab-wallpaper-yellow = Жоўты
+newtab-wallpaper-orange = Аранжавы
+newtab-wallpaper-pink = Ружовы
+newtab-wallpaper-light-pink = Светла-ружовы
+newtab-wallpaper-red = Чырвоны
+newtab-wallpaper-dark-blue = Цёмна-сіні
+newtab-wallpaper-dark-purple = Цёмна-фіялетавы
+newtab-wallpaper-dark-green = Цёмна-зялёны
+newtab-wallpaper-brown = Карычневы
+
+## Abstract
+
+newtab-wallpaper-category-title-abstract = Абстракцыя
+newtab-wallpaper-abstract-green = Зялёныя формы
+newtab-wallpaper-abstract-blue = Сінія формы
+newtab-wallpaper-abstract-purple = Фіялетавыя формы
+newtab-wallpaper-abstract-orange = Аранжавыя формы
+newtab-wallpaper-gradient-orange = Градыент аранжавага і ружовага
+newtab-wallpaper-abstract-blue-purple = Сінія і фіялетавыя формы
+
+## Photographs
+
+newtab-wallpaper-category-title-photographs = Фатаграфіі
+newtab-wallpaper-beach-at-sunrise = Пляж на ўсходзе сонца
+newtab-wallpaper-beach-at-sunset = Пляж на заходзе сонца
+newtab-wallpaper-storm-sky = Навальнічнае неба
+newtab-wallpaper-sky-with-pink-clouds = Неба з ружовымі аблокамі
+newtab-wallpaper-red-panda-yawns-in-a-tree = Чырвоная панда пазяхае на дрэве
+newtab-wallpaper-white-mountains = Белыя горы
 # Variables
 #   $author_string (String) - The name of the creator of the photo.
 #   $webpage_string (String) - The name of the webpage where the photo is located.
 newtab-wallpaper-attribution = Фота <a data-l10n-name="name-link">{ $author_string }</a> з <a data-l10n-name="webpage-link">{ $webpage_string }</a>
+newtab-wallpaper-feature-highlight-header = Паспрабуйце ўсплёск колеру
+newtab-wallpaper-feature-highlight-content = Абнавіце выгляд новай карткі з дапамогай шпалер.
+newtab-wallpaper-feature-highlight-button = Зразумела
+# Tooltip for dismiss button
+feature-highlight-dismiss-button =
+    .title = Адхіліць
+    .aria-label = Закрыць выплыўное акно
+feature-highlight-wallpaper =
+    .title = { -newtab-wallpaper-feature-highlight-header }
+    .aria-label = { -newtab-wallpaper-feature-highlight-content }
+
+## New Tab Weather
+
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-see-forecast =
+    .title = Паглядзець прагноз у { $provider }
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-sponsored = { $provider } ∙ Спонсар
+newtab-weather-menu-change-location = Змяніць месцазнаходжанне
+newtab-weather-change-location-search-input = Шукаць месцазнаходжанне
+newtab-weather-menu-weather-display = Паказ надвор'я
+# Display options are:
+# - Simple: Displays a current weather condition icon and the current temperature
+# - Detailed: Include simple information plus a short text summary: e.g. "Mostly cloudy"
+newtab-weather-menu-weather-display-option-simple = Просты
+newtab-weather-menu-change-weather-display-simple = Пераключыцца на просты выгляд
+newtab-weather-menu-weather-display-option-detailed = Падрабязны
+newtab-weather-menu-change-weather-display-detailed = Пераключыцца на падрабязны выгляд
+newtab-weather-menu-temperature-units = Адзінкі вымярэння тэмпературы
+newtab-weather-menu-temperature-option-fahrenheit = Фарэнгейт
+newtab-weather-menu-temperature-option-celsius = Цэльсій
+newtab-weather-menu-change-temperature-units-fahrenheit = Пераключыць на фарэнгейты
+newtab-weather-menu-change-temperature-units-celsius = Пераключыць на градусы Цэльсія
+newtab-weather-menu-hide-weather = Схаваць надвор'е на новай картцы
+newtab-weather-menu-learn-more = Даведацца больш
+# This message is shown if user is working offline
+newtab-weather-error-not-available = Звесткі пра надвор'е зараз недаступныя.

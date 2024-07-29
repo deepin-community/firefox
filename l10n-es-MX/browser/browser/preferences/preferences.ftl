@@ -21,6 +21,8 @@ search-input-box2 =
     .style = width: 15.4em
     .placeholder = Buscar en ajustes
 managed-notice = Tu organización gestiona el navegador.
+managed-notice-info-icon =
+    .alt = Información
 category-list =
     .aria-label = Categorías
 pane-general-title = General
@@ -44,6 +46,9 @@ category-experimental =
 pane-experimental-subtitle = Continuar con precaución
 pane-experimental-search-results-header = Experimentos de { -brand-short-name }: proceder con precaución
 pane-experimental-description2 = Modificar los parámetros de la configuración avanzada puede afectar el rendimiento o la seguridad de { -brand-short-name }.
+settings-pane-labs-title = { -firefoxlabs-brand-name }
+settings-category-labs =
+    .tooltiptext = { -firefoxlabs-brand-name }
 pane-experimental-reset =
     .label = Restaurar predeterminados
     .accesskey = R
@@ -455,6 +460,9 @@ browsing-use-smooth-scrolling =
 browsing-gtk-use-non-overlay-scrollbars =
     .label = Mostrar siempre las barras de desplazamiento
     .accesskey = o
+browsing-always-underline-links =
+    .label = Siempre subrayar enlaces
+    .accesskey = u
 browsing-use-onscreen-keyboard =
     .label = Mostrar el teclado táctil cuando sea necesario
     .accesskey = t
@@ -542,6 +550,9 @@ home-prefs-shortcuts-by-option-sponsored =
 home-prefs-recommended-by-header =
     .label = Recomendado por { $provider }
 home-prefs-recommended-by-description-new = Contenido excepcional seleccionado por { $provider }, parte de la familia { -brand-product-name }
+home-prefs-recommended-by-header-generic =
+    .label = Historias recomendadas
+home-prefs-recommended-by-description-generic = Contenido excepcional seleccionado por la familia { -brand-product-name }
 
 ##
 
@@ -568,6 +579,10 @@ home-prefs-recent-activity-description = Una selección de sitios y contenidos r
 home-prefs-snippets-header =
     .label = Fragmentos
 home-prefs-snippets-description-new = Consejos y noticias de { -vendor-short-name } y { -brand-product-name }
+home-prefs-weather-header =
+    .label = Clima
+home-prefs-weather-description = Pronóstico estimado para hoy
+home-prefs-weather-learn-more-link = Saber más
 # Variables:
 #   $num (number) - Number of rows displayed
 home-prefs-sections-rows-option =
@@ -595,6 +610,9 @@ search-suggestions-desc = Seleccionar como las sugerencias del motor búsqueda a
 search-suggestions-option =
     .label = Proporcionar sugerencias de búsqueda
     .accesskey = s
+search-show-suggestions-option =
+    .label = Mostrar sugerencias de búsqueda
+    .accesskey = S
 search-show-suggestions-url-bar-option =
     .label = Mostrar sugerencias de búsqueda en los resultados de la barra de direcciones
     .accesskey = l
@@ -679,6 +697,10 @@ sync-profile-picture =
 sync-profile-picture-with-alt =
     .tooltiptext = Cambiar imagen de perfil
     .alt = Cambiar imagen de perfil
+sync-profile-picture-account-problem =
+    .alt = Foto de perfil de cuenta
+fxa-login-rejected-warning =
+    .alt = Advertencia
 sync-sign-out =
     .label = Salir…
     .accesskey = g
@@ -696,6 +718,9 @@ sync-signedin-login-failure = Inicia sesión para reconectar { $email } Favor de
 sync-resend-verification =
     .label = Enviar verificación nuevamente
     .accesskey = d
+sync-verify-account =
+    .label = Verificar cuenta
+    .accesskey = V
 sync-remove-account =
     .label = Eliminar cuenta
     .accesskey = R
@@ -728,8 +753,10 @@ sync-currently-syncing-bookmarks = Marcadores
 sync-currently-syncing-history = Historial
 sync-currently-syncing-tabs = Abrir pestañas
 sync-currently-syncing-logins-passwords = Inicios de sesión y contraseñas
+sync-currently-syncing-passwords = Contraseñas
 sync-currently-syncing-addresses = Direcciones
 sync-currently-syncing-creditcards = Tarjetas de crédito
+sync-currently-syncing-payment-methods = Métodos de pago
 sync-currently-syncing-addons = Complementos
 sync-currently-syncing-settings = Configuración
 sync-change-options =
@@ -760,6 +787,10 @@ sync-engine-logins-passwords =
     .label = Inicios de sesión y contraseñas
     .tooltiptext = Nombres de usuario y contraseñas guardadas
     .accesskey = L
+sync-engine-passwords =
+    .label = Contraseñas
+    .tooltiptext = Contraseñas que has guardado
+    .accesskey = P
 sync-engine-addresses =
     .label = Direcciones
     .tooltiptext = Direcciones postales que guardaste (sólo escritorio)
@@ -768,6 +799,10 @@ sync-engine-creditcards =
     .label = Tarjetas de crédito
     .tooltiptext = Nombre, números y fechas de expiración (sólo escritorio)
     .accesskey = C
+sync-engine-payment-methods2 =
+    .label = Métodos de pago
+    .tooltiptext = Nombres, números de tarjetas y fechas de vencimiento
+    .accesskey = n
 sync-engine-addons =
     .label = Complementos
     .tooltiptext = Extensiones y temas para Firefox para escritorio
@@ -817,12 +852,19 @@ forms-ask-to-save-logins =
 
 ## Privacy Section - Passwords
 
+# "Logins" is the former term for "Passwords". Users should find password settings
+# by searching for the former term "logins". It's not displayed in the UI.
+pane-privacy-passwords-header = Contraseñas
+    .searchkeywords = inicios de sesión
 forms-exceptions =
     .label = Excepciones…
     .accesskey = x
 forms-generate-passwords =
     .label = Sugiere y genera contraseñas fuertes
     .accesskey = u
+forms-suggest-passwords =
+    .label = Sugerir contraseñas seguras
+    .accesskey = S
 forms-breach-alerts =
     .label = Mostrar alertas sobre contraseñas para sitios web comprometidos
     .accesskey = b
@@ -872,6 +914,17 @@ master-password-os-auth-dialog-caption = { -brand-full-name }
 
 ## Privacy section - Autofill
 
+pane-privacy-autofill-header = Autocompletar
+autofill-addresses-checkbox = Guardar y completar direcciones
+    .accesskey = a
+autofill-saved-addresses-button = Direcciones guardadas
+    .accesskey = S
+autofill-payment-methods-checkbox-message = Guardar y completar métodos de pago
+    .accesskey = m
+autofill-payment-methods-checkbox-submessage = Incluye tarjetas de crédito y débito.
+    .accesskey = I
+autofill-saved-payment-methods-button = Métodos de pago guardados
+    .accesskey = v
 
 ## Privacy Section - History
 
@@ -966,6 +1019,7 @@ cookie-banner-handling-description = { -brand-short-name } rechaza automáticame
 
 ## Privacy Section - Cookie Banner Blocking
 
+cookie-banner-blocker-header = Bloqueador de banners de cookies
 cookie-banner-learn-more = Saber más
 forms-handle-cookie-banners =
     .label = Reducir los avisos de cookies
@@ -980,6 +1034,9 @@ addressbar-locbar-history-option =
 addressbar-locbar-bookmarks-option =
     .label = Marcadores
     .accesskey = M
+addressbar-locbar-clipboard-option =
+    .label = Portapapeles
+    .accesskey = C
 addressbar-locbar-openpage-option =
     .label = Abrir pestañas
     .accesskey = O
@@ -997,6 +1054,9 @@ addressbar-locbar-quickactions-option =
     .label = Acciones rápidas
     .accesskey = Q
 addressbar-suggestions-settings = Cambiar las preferencias para las sugerencias del motor de búsqueda
+addressbar-locbar-showrecentsearches-option =
+    .label = Mostrar búsquedas recientes
+    .accesskey = r
 addressbar-quickactions-learn-more = Saber más
 
 ## Privacy Section - Content Blocking
@@ -1165,6 +1225,10 @@ privacy-segmentation-radio-off =
     .label = Usa las recomendaciones de { -brand-product-name }
 privacy-segmentation-radio-on =
     .label = Mostrar información detallada
+
+## Privacy Section - Website Advertising Preferences
+
+website-advertising-header = Preferencias de publicidad para el sitio web
 
 ## Privacy Section - Security
 ##

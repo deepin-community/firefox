@@ -57,6 +57,10 @@ category-experimental =
 pane-experimental-subtitle = Proceder cun precauziun
 pane-experimental-search-results-header = Experiments da { -brand-short-name }: Cuntinuar cun precauziun
 pane-experimental-description2 = La modificaziun da la configuraziun dals parameters avanzads po cumprometter la prestaziun u la segirezza da { -brand-short-name }.
+settings-pane-labs-title = { -firefoxlabs-brand-name }
+settings-category-labs =
+    .tooltiptext = { -firefoxlabs-brand-name }
+pane-experimental-description3 = Emprova nossas funcziuns experimentalas! Ellas èn en svilup e sa midan, quai po influenzar il funcziunament da { -brand-short-name }.
 pane-experimental-reset =
     .label = Restaurar il standard
     .accesskey = R
@@ -599,6 +603,10 @@ home-prefs-recent-activity-description = Ina selecziun da websites e cuntegn vis
 home-prefs-snippets-header =
     .label = Zinslas
 home-prefs-snippets-description-new = Tips e novitads da { -vendor-short-name } e { -brand-product-name }
+home-prefs-weather-header =
+    .label = Aura
+home-prefs-weather-description = La previsiun da l’aura actuala en in’egliada
+home-prefs-weather-learn-more-link = Ulteriuras infurmaziuns
 # Variables:
 #   $num (number) - Number of rows displayed
 home-prefs-sections-rows-option =
@@ -912,6 +920,9 @@ forms-saved-passwords =
 forms-primary-pw-use =
     .label = Utilisar in pled-clav universal
     .accesskey = U
+# This operation requires the user to authenticate with the operating system (device sign-in)
+forms-os-reauth =
+    .label = Pretender l’endataziun da las datas d’annunzia da l’apparat per laschar endatar automaticamain pleds-clav e per als administrar
 forms-primary-pw-learn-more-link = Ulteriuras infurmaziuns
 # This string uses the former name of the Primary Password feature
 # ("Master Password" in English) so that the preferences can be found
@@ -944,6 +955,13 @@ primary-password-os-auth-dialog-message-win = Per crear in pled-clav universal, 
 # notes are only valid for English. Please test in your locale.
 primary-password-os-auth-dialog-message-macosx = crear in pled-clav universal
 master-password-os-auth-dialog-caption = { -brand-full-name }
+# The macOS string is preceded by the operating system with "Firefox is trying to ".
+autofill-creditcard-os-dialog-message =
+    { PLATFORM() ->
+        [macos] midar ils parameters per metodas da pajament
+       *[other] { -brand-short-name } emprova da midar ils parameters per las metodas da pajament. Permetta l’operaziun cun endatar las datas d’annunzia da l’apparat.
+    }
+autofill-creditcard-os-auth-dialog-caption = { -brand-full-name }
 
 ## Privacy section - Autofill
 
@@ -958,13 +976,8 @@ autofill-payment-methods-checkbox-submessage = Inclus cartas da credit e cartas 
     .accesskey = I
 autofill-saved-payment-methods-button = Metodas da pajament memorisadas
     .accesskey = p
-autofill-reauth-checkbox =
-    { PLATFORM() ->
-        [macos] Pretender ina autentificaziun da macOS per endatar automaticamain e modifitgar metodas da pajament.
-        [windows] Pretender ina autentificaziun da Windows per endatar automaticamain e modifitgar metodas da pajament.
-        [linux] Pretender ina autentificaziun da Linux per endatar automaticamain e modifitgar metodas da pajament.
-       *[other] Pretender ina autentificaziun per endatar automaticamain e modifitgar metodas da pajament.
-    }
+# This operation requires the user to authenticate with the operating system (device sign-in)
+autofill-reauth-payment-methods-checkbox = Pretender l’endataziun da las datas d’annunzia da l’apparat per laschar endatar automaticamain metodas da pajament e per las administrar
     .accesskey = o
 
 ## Privacy Section - History
@@ -1102,6 +1115,9 @@ addressbar-suggestions-settings = Midar las preferenzas per propostas da maschin
 addressbar-locbar-showrecentsearches-option =
     .label = Mussar las ultimas tschertgas
     .accesskey = r
+addressbar-locbar-showtrendingsuggestions-option =
+    .label = Mussar propostas da trends da tschertga
+    .accesskey = t
 addressbar-quickactions-learn-more = Ulteriuras infurmaziuns
 
 ## Privacy Section - Content Blocking
@@ -1292,6 +1308,14 @@ privacy-segmentation-radio-off =
     .label = Utilisar recumandaziuns da { -brand-product-name }
 privacy-segmentation-radio-on =
     .label = Mussar infurmaziuns detagliadas
+
+## Privacy Section - Website Advertising Preferences
+
+website-advertising-header = Preferenzas per la reclama sin websites
+website-advertising-private-attribution =
+    .label = Permetter a websites da mesirar reclamas cun respectar la protecziun da datas
+    .accesskey = a
+website-advertising-private-attribution-description = Quai gida a websites da valitar la prestaziun da lur reclamas senza rimnar datas persunalas.
 
 ## Privacy Section - Security
 ##

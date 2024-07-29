@@ -84,6 +84,8 @@ policy-Handlers = Stilla meðhöndlun með sjálfgefnum forritum.
 policy-HardwareAcceleration = Ef rangt, slökkva á hröðun vélbúnaðar.
 # “lock” means that the user won’t be able to change this setting
 policy-Homepage = Stilla og mögulega loka upphafssíðu.
+policy-HttpAllowlist = Upprunar sem verða ekki uppfærðir í HTTPS.
+policy-HttpsOnlyMode = Leyfa að Einungis-HTTPS-hamur sé virkjaður.
 policy-InstallAddonsPermission = Leyfa tilteknum vefsvæðum að setja upp viðbætur.
 policy-LegacyProfiles = Slökkva á eiginleikanum sem framfylgir sérstöku notandasniði fyrir hverja uppsetningu.
 
@@ -108,6 +110,9 @@ policy-OverrideFirstRunPage = Breyta upphafssíðu. Tómt gildi til að slökkva
 policy-OverridePostUpdatePage = Setja aðra síðu í stað "Hvað er nýtt"-síðunnar sem birtist eftir uppfærslur. Stilltu þetta á tómt gildi til að gera síðuna óvirka.
 policy-PasswordManagerEnabled = Virkja vistun lykilorða í lykilorðastýringunni.
 policy-PasswordManagerExceptions = Koma í veg fyrir að { -brand-short-name } visti lykilorð fyrir tiltekin vefsvæði.
+# Post-quantum refers to cryptography that is safe from attacks by quantum
+# computers. See https://en.wikipedia.org/wiki/Post-quantum_cryptography
+policy-PostQuantumKeyAgreementEnabled = Virkja samþykki fyrir skammtatölvulykla (post-quantum key) fyrir TLS.
 # PDF.js and PDF should not be translated
 policy-PDFjs = Stilla eða gera PDF.js óvirkt, innbyggða PDF-lesarann í { -brand-short-name }.
 policy-Permissions2 = Stilla heimildir fyrir myndavél, hljóðnema, staðsetningu, tilkynningar og sjálfvirka afspilun.

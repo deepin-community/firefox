@@ -67,11 +67,11 @@ item-cookies =
 #   $unit (String) - Abbreviation of the unit that $amount is in, e.g. "MB"
 item-cookies-site-data-with-size =
     .label = Cookies e dados de sites ({ $amount } { $unit })
-    .accesskey = e
+    .accesskey = k
 item-cookies-site-data =
     .label = Cookies e dados de sites
-    .accesskey = e
-item-cookies-site-data-description = Pode desconectar de contas de sites ou esvaziar carrinhos de compras
+    .accesskey = k
+item-cookies-site-data-description = Limpar pode desconectar de contas de sites ou esvaziar carrinhos de compras
 item-active-logins =
     .label = Contas de acesso ativas
     .accesskey = n
@@ -82,19 +82,19 @@ item-cache =
 #   $amount (Number) - Amount of cached data
 #   $unit (String) - Abbreviation of the unit that $amount is in, e.g. "MB"
 item-cached-content-with-size =
-    .label = Arquivos e páginas em cache temporário ({ $amount } { $unit })
-    .accesskey = h
+    .label = Cache temporário de arquivos e páginas ({ $amount } { $unit })
+    .accesskey = C
 item-cached-content =
-    .label = Arquivos e páginas temporariamente em cache
-    .accesskey = A
-item-cached-content-description = Limpa itens que ajudam a carregar sites mais rápido
+    .label = Cache temporário de arquivos e páginas
+    .accesskey = C
+item-cached-content-description = Limpa itens que foram salvos localmente (ajudam a carregar sites mais rápido, pois não precisa baixar novamente)
 item-form-search-history =
     .label = Histórico de formulários e pesquisa
     .accesskey = f
 item-site-prefs =
     .label = Configurações de sites
-    .accesskey = i
-item-site-prefs-description = Redefine suas permissões e preferências de sites para as configurações originais
+    .accesskey = f
+item-site-prefs-description = Redefine suas permissões e preferências de sites para a configuração original
 data-section-label = Dados
 item-site-settings =
     .label = Configurações de sites
@@ -122,4 +122,4 @@ sanitize-everything-warning = Todo o histórico será limpo.
 # Warning that appears when "Time range to clear" is set to "Everything" in Clear
 # Recent History dialog, provided that the user has modified the default set of
 # history items to clear.
-sanitize-selected-warning = Todos os itens selecionados serão limpos.
+sanitize-selected-warning = Será limpo tudo dos itens selecionados.

@@ -12,11 +12,15 @@ menu-tools-firefox-view =
     .label = { -firefoxview-brand-name }
     .accesskey = F
 firefoxview-page-title = { -firefoxview-brand-name }
+firefoxview-page-heading =
+    .heading = { -firefoxview-brand-name }
 firefoxview-page-label =
     .label = { -firefoxview-brand-name }
 firefoxview-close-button =
     .title = Tanca
     .aria-label = Tanca
+firefoxview-empty-state-icon =
+    .alt = Atenció:
 # Used instead of the localized relative time when a timestamp is within a minute or so of now
 firefoxview-just-now-timestamp = Ara mateix
 # This is a headline for an area in the product where users can resume and re-open tabs they have previously viewed on other devices.
@@ -49,6 +53,7 @@ firefoxview-syncedtabs-loading-header = S'està sincronitzant…
 firefoxview-syncedtabs-loading-description = Quan hagi acabat, veureu les pestanyes que tingueu obertes en altres dispositius. Torneu-ho a comprovar més tard.
 firefoxview-tabpickup-fxa-admin-disabled-header = La vostra organització ha desactivat la sincronització
 firefoxview-tabpickup-fxa-admin-disabled-description = El { -brand-short-name } no pot sincronitzar les pestanyes entre dispositius perquè el vostre administrador ha desactivat la sincronització.
+firefoxview-tabpickup-fxa-disabled-by-policy-description = El { -brand-short-name } no pot sincronitzar les pestanyes entre dispositius perquè la vostra organització ha desactivat la sincronització.
 firefoxview-tabpickup-network-offline-header = Comproveu la connexió a Internet
 firefoxview-tabpickup-network-offline-description = Si utilitzeu un tallafoc o un servidor intermediari, comproveu que el { -brand-short-name } tingui permís per accedir al web.
 firefoxview-tabpickup-network-offline-primarybutton = Torna-ho a provar
@@ -147,11 +152,24 @@ firefoxview-opentabs-focus-tab =
     .title = Canvia a aquesta pestanya
 firefoxview-show-more = Mostra'n més
 firefoxview-show-less = Mostra'n menys
+firefoxview-show-all = Mostra-ho tot
 firefoxview-search-text-box-clear-button =
     .title = Esborra
+# Placeholder for the input field to search in recent browsing ("search" is a verb).
+firefoxview-search-text-box-recentbrowsing =
+    .placeholder = Cerca
 # Placeholder for the input field to search in history ("search" is a verb).
 firefoxview-search-text-box-history =
     .placeholder = Cerca en l'historial
+# Placeholder for the input field to search in recently closed tabs ("search" is a verb).
+firefoxview-search-text-box-recentlyclosed =
+    .placeholder = Cerca en les pestanyes tancades recentment
+# Placeholder for the input field to search in tabs from other devices ("search" is a verb).
+firefoxview-search-text-box-syncedtabs =
+    .placeholder = Cerca en les pestanyes sincronitzades
+# Placeholder for the input field to search in open tabs ("search" is a verb).
+firefoxview-search-text-box-opentabs =
+    .placeholder = Cerca en les pestanyes obertes
 # "Search" is a noun (as in "Results of the search for")
 # Variables:
 #   $query (String) - The search query used for searching through browser history.
@@ -169,6 +187,8 @@ firefoxview-search-results-count =
 firefoxview-search-results-empty = No hi ha resultats per a «{ $query }»
 firefoxview-sort-history-by-date-label = Ordena per data
 firefoxview-sort-history-by-site-label = Ordena per lloc
+firefoxview-sort-open-tabs-by-recency-label = Ordena per activitat recent
+firefoxview-sort-open-tabs-by-order-label = Ordena per ordre de pestanyes
 # Variables:
 #   $url (string) - URL that will be opened in the new tab
 firefoxview-opentabs-tab-row =
@@ -231,3 +251,25 @@ firefoxview-recentlyclosed-empty-description-two = Per trobar pestanyes més ant
 
 firefoxview-syncedtabs-device-notabs = No hi ha cap pestanya oberta en aquest dispositiu
 firefoxview-syncedtabs-connect-another-device = Connecta un altre dispositiu
+firefoxview-pinned-tabs =
+    .title = Pestanyes fixes
+firefoxview-tabs =
+    .title = Pestanyes
+
+## These tooltips will be displayed when hovering over a pinned tab on the Open Tabs page
+## Variables:
+##  $tabTitle (string) - Title of pinned tab that will be opened when selected
+
+firefoxview-opentabs-pinned-tab =
+    .title = Canvia a { $tabTitle }
+# This tooltip will be shown for a pinned tab whose URL is currently bookmarked.
+firefoxview-opentabs-bookmarked-pinned-tab =
+    .title = Canvia a { $tabTitle } (adreça d'interès)
+
+## These tooltips will be displayed when hovering over an unpinned Open Tab
+## Variables:
+##   $url (string) - URL of tab that will be opened when selected
+
+# This tooltip will be shown for an unpinned tab whose URL is currently bookmarked.
+firefoxview-opentabs-bookmarked-tab =
+    .title = { $url } (adreça d'interès)

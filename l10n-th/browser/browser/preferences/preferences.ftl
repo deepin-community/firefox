@@ -57,6 +57,9 @@ category-experimental =
 pane-experimental-subtitle = ดำเนินการต่อด้วยความระมัดระวัง
 pane-experimental-search-results-header = คุณลักษณะทดลองของ { -brand-short-name }: ดำเนินการต่อด้วยความระมัดระวัง
 pane-experimental-description2 = การเปลี่ยนแปลงการตั้งค่าขั้นสูงอาจส่งผลต่อประสิทธิภาพหรือความปลอดภัยของ { -brand-short-name } ได้
+settings-pane-labs-title = { -firefoxlabs-brand-name }
+settings-category-labs =
+    .tooltiptext = { -firefoxlabs-brand-name }
 pane-experimental-reset =
     .label = เรียกคืนค่าเริ่มต้น
     .accesskey = R
@@ -587,6 +590,10 @@ home-prefs-recent-activity-description = ไซต์และเนื้อห
 home-prefs-snippets-header =
     .label = ส่วนย่อย
 home-prefs-snippets-description-new = เคล็ดลับและข่าวสารจาก { -vendor-short-name } และ { -brand-product-name }
+home-prefs-weather-header =
+    .label = พยากรณ์อากาศ
+home-prefs-weather-description = ดูพยากรณ์อากาศประจำวันนี้ได้อย่างรวดเร็ว
+home-prefs-weather-learn-more-link = เรียนรู้เพิ่มเติม
 # Variables:
 #   $num (number) - Number of rows displayed
 home-prefs-sections-rows-option =
@@ -896,6 +903,9 @@ forms-saved-passwords =
 forms-primary-pw-use =
     .label = ใช้รหัสผ่านหลัก
     .accesskey = ช
+# This operation requires the user to authenticate with the operating system (device sign-in)
+forms-os-reauth =
+    .label = กำหนดให้ต้องลงชื่อเข้าในอุปกรณ์เพื่อกรอกและจัดการรหัสผ่าน
 forms-primary-pw-learn-more-link = เรียนรู้เพิ่มเติม
 # This string uses the former name of the Primary Password feature
 # ("Master Password" in English) so that the preferences can be found
@@ -928,6 +938,13 @@ primary-password-os-auth-dialog-message-win = ถ้าต้องการส�
 # notes are only valid for English. Please test in your locale.
 primary-password-os-auth-dialog-message-macosx = สร้างรหัสผ่านหลัก
 master-password-os-auth-dialog-caption = { -brand-full-name }
+# The macOS string is preceded by the operating system with "Firefox is trying to ".
+autofill-creditcard-os-dialog-message =
+    { PLATFORM() ->
+        [macos] เปลี่ยนการตั้งค่าเกี่ยวกับวิธีการชำระเงิน
+       *[other] { -brand-short-name } กำลังพยายามที่จะเปลี่ยนการตั้งค่าเกี่ยวกับวิธีการชำระเงิน ให้ใช้อุปกรณ์ของคุณลงชื่อเข้าเพื่ออนุญาตการกระทำนี้
+    }
+autofill-creditcard-os-auth-dialog-caption = { -brand-full-name }
 
 ## Privacy section - Autofill
 
@@ -942,14 +959,9 @@ autofill-payment-methods-checkbox-submessage = รวมบัตรเครด
     .accesskey = ร
 autofill-saved-payment-methods-button = วิธีการชำระเงินที่บันทึกไว้
     .accesskey = ไ
-autofill-reauth-checkbox =
-    { PLATFORM() ->
-        [macos] ต้องยืนยันตัวตนกับ macOS เพื่อเติมและแก้ไขวิธีการชำระเงิน
-        [windows] ต้องยืนยันตัวตนกับ Windows เพื่อเติมและแก้ไขวิธีการชำระเงิน
-        [linux] ต้องยืนยันตัวตนกับ Linux เพื่อเติมและแก้ไขวิธีการชำระเงิน
-       *[other] ต้องยืนยันตัวตนเพื่อเติมและแก้ไขวิธีการชำระเงิน
-    }
-    .accesskey = ต
+# This operation requires the user to authenticate with the operating system (device sign-in)
+autofill-reauth-payment-methods-checkbox = กำหนดให้ต้องลงชื่อเข้าในอุปกรณ์เพื่อกรอกและจัดการวิธีการชำระเงิน
+    .accesskey = ก
 
 ## Privacy Section - History
 
@@ -1276,6 +1288,9 @@ privacy-segmentation-radio-off =
     .label = ใช้คำแนะนำจาก { -brand-product-name }
 privacy-segmentation-radio-on =
     .label = แสดงข้อมูลโดยละเอียด
+
+## Privacy Section - Website Advertising Preferences
+
 
 ## Privacy Section - Security
 ##

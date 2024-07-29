@@ -235,6 +235,19 @@ newtab-pocket-pocket-firefox-family = { -pocket-brand-name } al è part de famee
 newtab-pocket-save = Salve
 newtab-pocket-saved = Salvât
 
+## Thumbs up and down buttons that shows over a newtab stories card thumbnail on hover.
+
+# Clicking the thumbs up button for this story will result in more stories like this one being recommended
+newtab-pocket-thumbs-up-tooltip =
+    .title = Plui contignûts come chest
+# Clicking the thumbs down button for this story informs us that the user does not feel like the story is interesting for them
+newtab-pocket-thumbs-down-tooltip =
+    .title = No mi interesse
+newtab-toast-thumbs-up-or-down = Graciis. La tô opinion nus judarà a miorâ il to feed.
+newtab-toast-dismiss-button =
+    .title = Siere
+    .aria-label = Scarte
+
 ## Pocket content onboarding experience dialog and modal for new users seeing the Pocket section for the first time, shown as the first item in the Pocket section.
 
 newtab-pocket-onboarding-discover = Scuvierç il miôr dal web
@@ -273,6 +286,9 @@ newtab-custom-recent-subtitle = Une selezion di sîts e contignûts resints
 newtab-custom-recent-toggle =
     .label = Ativitât resinte
     .description = Une selezion di sîts e contignûts resints
+newtab-custom-weather-toggle =
+    .label = Meteo
+    .description = Previsions par vuê cuntune voglade
 newtab-custom-close-button = Siere
 newtab-custom-settings = Gjestìs plui impostazions
 
@@ -292,7 +308,85 @@ newtab-wallpaper-dark-panda = Panda ros platât tal bosc
 newtab-wallpaper-dark-sky = Paisaç di citât cun cîl di gnot
 newtab-wallpaper-dark-mountain = Paisaç cun montagne
 newtab-wallpaper-dark-city = Paisaç citadin cun tonalitât viole
+
+## Solid Colors
+
+newtab-wallpaper-category-title-colors = Colôr solit
+newtab-wallpaper-blue = Blu
+newtab-wallpaper-light-blue = Blu clâr
+newtab-wallpaper-light-purple = Viole clâr
+newtab-wallpaper-light-green = Vert clâr
+newtab-wallpaper-green = Vert
+newtab-wallpaper-beige = Beige
+newtab-wallpaper-yellow = Zâl
+newtab-wallpaper-orange = Naranç
+newtab-wallpaper-pink = Rose
+newtab-wallpaper-light-pink = Rose clâr
+newtab-wallpaper-red = Ros
+newtab-wallpaper-dark-blue = Blu scûr
+newtab-wallpaper-dark-purple = Viole scûr
+newtab-wallpaper-dark-green = Vert scûr
+newtab-wallpaper-brown = Maron
+
+## Abstract
+
+newtab-wallpaper-category-title-abstract = Astrat
+newtab-wallpaper-abstract-green = Formis verdis
+newtab-wallpaper-abstract-blue = Formis blu
+newtab-wallpaper-abstract-purple = Formis viole
+newtab-wallpaper-abstract-orange = Formis naranç
+newtab-wallpaper-gradient-orange = Gradient naranç e rose
+newtab-wallpaper-abstract-blue-purple = Formis blu e viole
+
+## Photographs
+
+newtab-wallpaper-category-title-photographs = Fotografiis
+newtab-wallpaper-beach-at-sunrise = Splaze al cricâ dal dì
+newtab-wallpaper-beach-at-sunset = Splaze al tramont
+newtab-wallpaper-storm-sky = Cîl di tampieste
+newtab-wallpaper-sky-with-pink-clouds = Cîl cun nui rose
+newtab-wallpaper-red-panda-yawns-in-a-tree = Panda ros che al sossede suntun arbul
+newtab-wallpaper-white-mountains = Montagnis blancjis
 # Variables
 #   $author_string (String) - The name of the creator of the photo.
 #   $webpage_string (String) - The name of the webpage where the photo is located.
 newtab-wallpaper-attribution = Foto di <a data-l10n-name="name-link">{ $author_string }</a> su <a data-l10n-name="webpage-link">{ $webpage_string }</a>
+newtab-wallpaper-feature-highlight-header = Prove une man di colôr
+newtab-wallpaper-feature-highlight-content = Da un aspiet diviers aes tôs gnovis schedis cui fonts.
+newtab-wallpaper-feature-highlight-button = Capît
+# Tooltip for dismiss button
+feature-highlight-dismiss-button =
+    .title = Siere
+    .aria-label = Siere barcon a comparse
+feature-highlight-wallpaper =
+    .title = { -newtab-wallpaper-feature-highlight-header }
+    .aria-label = { -newtab-wallpaper-feature-highlight-content }
+
+## New Tab Weather
+
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-see-forecast =
+    .title = Viôt lis previsions in { $provider }
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-sponsored = { $provider } ∙ Sponsorizât
+newtab-weather-menu-change-location = Cambie localitât
+newtab-weather-change-location-search-input = Cîr localitât
+newtab-weather-menu-weather-display = Visualizazion meteo
+# Display options are:
+# - Simple: Displays a current weather condition icon and the current temperature
+# - Detailed: Include simple information plus a short text summary: e.g. "Mostly cloudy"
+newtab-weather-menu-weather-display-option-simple = Sintetiche
+newtab-weather-menu-change-weather-display-simple = Passe ae viodude sintetiche
+newtab-weather-menu-weather-display-option-detailed = Detaiade
+newtab-weather-menu-change-weather-display-detailed = Passe ae viodude detaiade
+newtab-weather-menu-temperature-units = Unitâts di temperadure
+newtab-weather-menu-temperature-option-fahrenheit = Fahrenheit
+newtab-weather-menu-temperature-option-celsius = Celsius
+newtab-weather-menu-change-temperature-units-fahrenheit = Passe a Fahrenheit
+newtab-weather-menu-change-temperature-units-celsius = Passe a Celsius
+newtab-weather-menu-hide-weather = Plate il meteo ae Gnove schede
+newtab-weather-menu-learn-more = Plui informazions
+# This message is shown if user is working offline
+newtab-weather-error-not-available = I dâts sul meteo in chest moment no son disponibii.

@@ -637,6 +637,21 @@ urlbar-group-quickactions =
 #  $engine (String): the name of the search engine used to search.
 urlbar-group-recent-searches =
     .label = Senaste sökningar
+# The header shown above trending results.
+# Variables:
+#  $engine (String): the name of the search engine providing the trending suggestions
+urlbar-group-trending =
+    .label = Trender på { $engine }
+# The result menu labels shown next to trending results.
+urlbar-result-menu-trending-dont-show =
+    .label = Visa inte populära sökningar
+    .accesskey = V
+urlbar-result-menu-trending-why =
+    .label = Varför ser jag detta?
+    .accesskey = V
+# A message that replaces a result when the user dismisses all suggestions of a
+# particular type.
+urlbar-trending-dismissal-acknowledgment = Tack för din feedback. Du ser inte populära sökningar längre.
 
 ## Reader View toolbar buttons
 
@@ -987,6 +1002,10 @@ firefox-relay-offer-legal-notice = Genom att klicka på "Använd e-postalias" go
 popup-notification-addon-install-unsigned =
     .value = (Overifierad)
 popup-notification-xpinstall-prompt-learn-more = Läs mer om hur du installerar tillägg säkert
+# Note: Access key is set to P to match "Private" in the corresponding localized label.
+popup-notification-addon-privatebrowsing-checkbox =
+    .label = Kör i privata fönster
+    .accesskey = K
 
 ## Pop-up warning
 
@@ -1016,3 +1035,24 @@ popup-warning-button =
 #   $popupURI (String): the URI for the pop-up window
 popup-show-popup-menuitem =
     .label = Visa “{ $popupURI }”
+
+## File-picker crash notification ("FilePickerCrashed.sys.mjs")
+
+file-picker-failed-open = Windows fildialog kunde inte öppnas. Ingen fil eller mapp kunde väljas.
+#   $path (string): The full path to which the file will be saved (e.g., 'C:\Users\Default User\Downloads\readme.txt').
+file-picker-failed-save-somewhere = Windows fildialog kunde inte öppnas. Filen kommer att sparas till { $path }.
+file-picker-failed-save-nowhere = Windows fildialog kunde inte öppnas. Ingen standardmapp hittades. filen kommer inte att sparas.
+file-picker-crashed-open = Windows fildialog har kraschat. Ingen fil eller mapp kunde väljas.
+#   $path (string): The full path to which the file will be saved (e.g., 'C:\Users\Default User\Downloads\readme.txt').
+file-picker-crashed-save-somewhere = Windows fildialog har kraschat. Filen kommer att sparas till { $path }.
+file-picker-crashed-save-nowhere = Windows fildialog har kraschat. Ingen standardmapp hittades. filen kommer inte att sparas.
+
+# Button used with file-picker-crashed-save-default. Opens the folder in Windows
+# Explorer, with the saved file selected and in focus.
+#
+# The wording here should be consistent with the Windows variant of
+# `downloads-cmd-show-menuitem-2` and similar messages.
+
+file-picker-crashed-show-in-folder =
+    .label = Visa i mapp
+    .accessKey = F

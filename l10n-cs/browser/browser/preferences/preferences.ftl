@@ -61,6 +61,14 @@ pane-experimental-description2 =
         [with-cases] Změny v pokročilém nastavení mohou negativně ovlivnit výkon a bezpečnost { -brand-short-name(case: "gen") }.
        *[no-cases] Změny v pokročilém nastavení mohou negativně ovlivnit výkon a bezpečnost aplikace { -brand-short-name }.
     }
+settings-pane-labs-title = { -firefoxlabs-brand-name }
+settings-category-labs =
+    .tooltiptext = { -firefoxlabs-brand-name }
+pane-experimental-description3 =
+    { -brand-short-name.case-status ->
+        [with-cases] Vyzkoušejte naše experimentální funkce! Jsou ve vývoji a vyvíjejí se, což může ovlivnit fungování { -brand-short-name(case: "gen") }.
+       *[no-cases] Vyzkoušejte naše experimentální funkce! Jsou ve vývoji a vyvíjejí se, což může ovlivnit fungování aplikace { -brand-short-name }.
+    }
 pane-experimental-reset =
     .label = Obnovit výchozí nastavení
     .accesskey = O
@@ -710,6 +718,10 @@ home-prefs-snippets-description-new =
         [with-cases] Tipy a novinky od { -vendor-short-name(case: "gen") } a aplikace { -brand-product-name }
        *[no-cases] Tipy a novinky od organizace { -vendor-short-name } a aplikace { -brand-product-name }
     }
+home-prefs-weather-header =
+    .label = Počasí
+home-prefs-weather-description = Přehled dnešní předpovědi
+home-prefs-weather-learn-more-link = Zjistit více
 # Variables:
 #   $num (number) - Number of rows displayed
 home-prefs-sections-rows-option =
@@ -1028,6 +1040,9 @@ forms-saved-passwords =
 forms-primary-pw-use =
     .label = Použít hlavní heslo
     .accesskey = P
+# This operation requires the user to authenticate with the operating system (device sign-in)
+forms-os-reauth =
+    .label = Vyžadovat heslo k účtu na zařízení na vyplnění a správu hesel
 forms-primary-pw-learn-more-link = Zjistit více
 # This string uses the former name of the Primary Password feature
 # ("Master Password" in English) so that the preferences can be found
@@ -1060,6 +1075,13 @@ primary-password-os-auth-dialog-message-win = Pro nastavení hlavního hesla pro
 # notes are only valid for English. Please test in your locale.
 primary-password-os-auth-dialog-message-macosx = vytvořit hlavní heslo
 master-password-os-auth-dialog-caption = { -brand-full-name }
+# The macOS string is preceded by the operating system with "Firefox is trying to ".
+autofill-creditcard-os-dialog-message =
+    { PLATFORM() ->
+        [macos] změnit nastavení pro způsoby plateb
+       *[other] { -brand-short-name } se snaží změnit nastavení způsobů plateb. Pokud to chcete povolit, použijte heslo k účtu na svém zařízení.
+    }
+autofill-creditcard-os-auth-dialog-caption = { -brand-full-name }
 
 ## Privacy section - Autofill
 
@@ -1074,13 +1096,8 @@ autofill-payment-methods-checkbox-submessage = Zahrnuje kreditní a debetní kar
     .accesskey = Z
 autofill-saved-payment-methods-button = Uložené platební metody
     .accesskey = U
-autofill-reauth-checkbox =
-    { PLATFORM() ->
-        [macos] K vyplnění a úpravě způsobů platby vyžadovat ověření macOS.
-        [windows] K vyplnění a úpravě způsobů platby vyžadovat ověření Windows.
-        [linux] K vyplnění a úpravě způsobů platby vyžadovat ověření Linux.
-       *[other] K vyplnění a úpravě způsobů platby vyžadovat ověření.
-    }
+# This operation requires the user to authenticate with the operating system (device sign-in)
+autofill-reauth-payment-methods-checkbox = Vyžadovat heslo k účtu na zařízení na vyplnění a správu způsobů plateb
     .accesskey = o
 
 ## Privacy Section - History
@@ -1226,6 +1243,9 @@ addressbar-suggestions-settings = Nastavit našeptávání dotazů pro vyhledáv
 addressbar-locbar-showrecentsearches-option =
     .label = Zobrazit nedávná vyhledávání
     .accesskey = e
+addressbar-locbar-showtrendingsuggestions-option =
+    .label = Našeptávat návrhy populárních vyhledávání
+    .accesskey = p
 addressbar-quickactions-learn-more = Zjistit více
 
 ## Privacy Section - Content Blocking
@@ -1468,6 +1488,14 @@ privacy-segmentation-radio-off =
         }
 privacy-segmentation-radio-on =
     .label = Zobrazit podrobnosti
+
+## Privacy Section - Website Advertising Preferences
+
+website-advertising-header = Reklamní předvolby webových stránek
+website-advertising-private-attribution =
+    .label = Umožnit webům použití sledující reklamy, která je šetrná k soukromí
+    .accesskey = a
+website-advertising-private-attribution-description = Pomůžete tím webům pochopit, jak si jejich reklamy vedou, aniž by o vás shromažďovaly data.
 
 ## Privacy Section - Security
 ##

@@ -147,6 +147,10 @@ policy-HardwareAcceleration = Se “false”, disattiva l’accelerazione hardwa
 # “lock” means that the user won’t be able to change this setting
 policy-Homepage = Imposta la pagina iniziale ed eventualmente impedisci modifiche all’opzione.
 
+policy-HttpAllowlist = Origini che non verranno aggiornate a HTTPS.
+
+policy-HttpsOnlyMode = Consenti l’attivazione della modalità solo HTTPS.
+
 policy-InstallAddonsPermission = Consenti a determinati siti web di installare componenti aggiuntivi.
 
 policy-LegacyProfiles = Disattiva la funzione che impone profili separati per ogni installazione
@@ -199,6 +203,8 @@ policy-PictureInPicture = Attiva o disattiva Picture-in-Picture.
 policy-PopupBlocking = Consenti ad alcuni siti web di visualizzare finestre pop-up per impostazione predefinita.
 
 policy-Preferences = Imposta un gruppo di preferenze e bloccane il valore.
+
+policy-PrivateBrowsingModeAvailability = Imposta la disponibilità della modalità Navigazione anonima.
 
 policy-PromptForDownloadLocation = Chiedi dove salvare i file scaricati.
 

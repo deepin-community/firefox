@@ -49,6 +49,9 @@ category-experimental =
 pane-experimental-subtitle = Kendalc’hit gant evezh
 pane-experimental-search-results-header = Arnod { -brand-short-name } : Diwall mat
 pane-experimental-description2 = Kemmañ an arventennoù kefluniañ a c’hall kaout un efed war digonusted pe diogelroez { -brand-short-name }.
+settings-pane-labs-title = { -firefoxlabs-brand-name }
+settings-category-labs =
+    .tooltiptext = { -firefoxlabs-brand-name }
 pane-experimental-reset =
     .label = Assav an arventennoù dre ziouer
     .accesskey = A
@@ -560,6 +563,9 @@ home-prefs-recent-activity-description = Un dibab a lec’hiennoù ha danvez nev
 home-prefs-snippets-header =
     .label = Notennigoù
 home-prefs-snippets-description-new = Tunioù ha nevezinti gant { -vendor-short-name } ha { -brand-product-name }
+home-prefs-weather-header =
+    .label = Liv an amzer
+home-prefs-weather-learn-more-link = Gouzout hiroc’h
 # Variables:
 #   $num (number) - Number of rows displayed
 home-prefs-sections-rows-option =
@@ -672,6 +678,8 @@ sync-profile-picture =
 sync-profile-picture-with-alt =
     .tooltiptext = Kemmañ ar skeudenn aelad
     .alt = Kemmañ ar skeudenn aelad
+sync-profile-picture-account-problem =
+    .alt = Skeudenn profil ar gont
 fxa-login-rejected-warning =
     .alt = Diwallit
 sync-sign-out =
@@ -893,6 +901,7 @@ primary-password-os-auth-dialog-message-win = Evit krouiñ ur ger-tremen mestr, 
 # notes are only valid for English. Please test in your locale.
 primary-password-os-auth-dialog-message-macosx = krouiñ ur ger-tremen pennañ
 master-password-os-auth-dialog-caption = { -brand-full-name }
+autofill-creditcard-os-auth-dialog-caption = { -brand-full-name }
 
 ## Privacy section - Autofill
 
@@ -1195,6 +1204,9 @@ privacy-segmentation-radio-off =
     .label = Ober gant alioù { -brand-product-name }
 privacy-segmentation-radio-on =
     .label = Diskouez an titouroù dre ar munud
+
+## Privacy Section - Website Advertising Preferences
+
 
 ## Privacy Section - Security
 ##

@@ -84,6 +84,8 @@ policy-Handlers = Alapértelmezett alkalmazáskezelők beállítása
 policy-HardwareAcceleration = Ha hamis, akkor kikapcsolja a hardveres gyorsítást.
 # “lock” means that the user won’t be able to change this setting
 policy-Homepage = A kezdőlap beállítása, és választható módon, annak zárolása.
+policy-HttpAllowlist = Eredetek, amelyek nem lesznek HTTPS-re frissítve.
+policy-HttpsOnlyMode = A Csak HTTPS mód bekapcsolásának engedélyezése.
 policy-InstallAddonsPermission = Bizonyos weboldalak telepíthetnek kiegészítőket.
 policy-LegacyProfiles = A funkció letiltása, amely kikényszeríti, hogy minden telepítés külön profilt használjon
 
@@ -108,6 +110,9 @@ policy-OverrideFirstRunPage = Az első indítás oldal felülbírálása. Állí
 policy-OverridePostUpdatePage = A frissítés utáni „Újdonságok” oldal felülbírálása. Állítsa üres ezt a házirendet, ha azt szeretné, hogy ne legyen frissítés utáni oldal.
 policy-PasswordManagerEnabled = A jelszavak jelszókezelőbe történő mentésének engedélyezése.
 policy-PasswordManagerExceptions = A { -brand-short-name } megakadályozása abban, hogy egyes weboldalaknál mentse a jelszavakat.
+# Post-quantum refers to cryptography that is safe from attacks by quantum
+# computers. See https://en.wikipedia.org/wiki/Post-quantum_cryptography
+policy-PostQuantumKeyAgreementEnabled = Kvantumszámítógép-biztos kulcsmegállapodás engedélyezése a TLS-hez.
 # PDF.js and PDF should not be translated
 policy-PDFjs = A PDF.js-nek, a { -brand-short-name } beépített PDF-megjelenítőjének, letiltása vagy beállítása.
 policy-Permissions2 = A kamera, mikrofon, helyadatok, értesítések és automatikus lejátszás jogosultságának beállítása.

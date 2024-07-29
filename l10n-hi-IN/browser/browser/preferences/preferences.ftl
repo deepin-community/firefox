@@ -22,6 +22,9 @@ category-privacy =
     .tooltiptext = { pane-privacy-title }
 category-sync3 =
     .tooltiptext = { pane-sync-title3 }
+settings-pane-labs-title = { -firefoxlabs-brand-name }
+settings-category-labs =
+    .tooltiptext = { -firefoxlabs-brand-name }
 help-button-label = { -brand-short-name } समर्थन
 addons-button-label = एक्सटेंशन और थीम
 focus-search =
@@ -648,6 +651,7 @@ forms-windows-sso-learn-more-link = अधिक जानें
 ## OS Authentication dialog
 
 master-password-os-auth-dialog-caption = { -brand-full-name }
+autofill-creditcard-os-auth-dialog-caption = { -brand-full-name }
 
 ## Privacy section - Autofill
 
@@ -876,6 +880,9 @@ addon-recommendations-link = और जानें
 # This message is displayed above disabled data sharing options in developer builds
 # or builds with no Telemetry support available.
 collection-health-report-disabled = इस निर्मित विन्यास के लिए डेटा रिपोर्टिंग को असक्रिय किया हैं
+
+## Privacy Section - Website Advertising Preferences
+
 
 ## Privacy Section - Security
 ##

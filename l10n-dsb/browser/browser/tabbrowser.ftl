@@ -4,18 +4,15 @@
 
 tabbrowser-empty-tab-title = Nowy rejtarik
 tabbrowser-empty-private-tab-title = Nowy priwatny rejtarik
-
 tabbrowser-menuitem-close-tab =
     .label = Rejtarik zacyniś
 tabbrowser-menuitem-close =
     .label = Zacyniś
-
 # Displayed as a tooltip on container tabs
 # Variables:
 #   $title (String): the title of the current tab.
 #   $containerName (String): the name of the current container.
 tabbrowser-container-tab-title = { $title } - { $containerName }
-
 # Variables:
 #   $tabCount (Number): The number of tabs that will be closed.
 tabbrowser-close-tabs-tooltip =
@@ -84,6 +81,7 @@ tabbrowser-unblock-tab-audio-tooltip =
 #   $tabCount (Number): The number of tabs that will be closed.
 tabbrowser-confirm-close-tabs-title =
     { $tabCount ->
+        [one] { $tabCount } rejtarik zacyniś?
         [two] { $tabCount } rejtarika zacyniś?
         [few] { $tabCount } rejtariki zacyniś?
        *[other] { $tabCount } rejtarikow zacyniś?
@@ -99,6 +97,7 @@ tabbrowser-confirm-close-tabs-checkbox = Wobkšuśiś, nježli až se někotare 
 #   $windowCount (Number): The number of windows that will be closed.
 tabbrowser-confirm-close-windows-title =
     { $windowCount ->
+        [one] { $windowCount } wokno zacyniś?
         [two] { $windowCount } woknje zacyniś?
         [few] { $windowCount } wokna zacyniś?
        *[other] { $windowCount } woknow zacyniś?
@@ -136,13 +135,22 @@ tabbrowser-confirm-caretbrowsing-title = Tastaturowa nawigacija
 tabbrowser-confirm-caretbrowsing-message = Tłocenje tasty F7 zašaltujo abo wušaltujo tastaturowu nawigaciju. Toś ta funkcija staja pógibny kursor do webbokow a dowólujo wam tekst z tastaturu wubraś. Cośo něnto tastaturowu nawigaciju zašaltowaś?
 tabbrowser-confirm-caretbrowsing-checkbox = Toś ten dialogowy kašćik wěcej njepokazaś.
 
+## Confirmation dialog for closing all duplicate tabs
+
+tabbrowser-confirm-close-duplicate-tabs-title = Glědajśo
+tabbrowser-confirm-close-duplicate-tabs-text = Wóstajijomy slědny aktiwny rejtarik wócynjony
+tabbrowser-confirm-close-all-duplicate-tabs-title = Dwójne rejtariki zacyniś?
+tabbrowser-confirm-close-all-duplicate-tabs-text =
+    Zacynijomy dwójne rejtariki w toś tom woknje. Slědny aktiwny
+    rejtarik wóstanjo wócynjony.
+tabbrowser-confirm-close-all-duplicate-tabs-button-closetabs = Rejtariki zacyniś
+
 ##
 
 # Variables:
 #   $domain (String): URL of the page that is trying to steal focus.
 tabbrowser-allow-dialogs-to-get-focus =
     .label = Powěźeńki dowóliś ako tós tu wót { $domain }, aby k wótpowědnemu rejtarkoju dójšeł
-
 tabbrowser-customizemode-tab-title = { -brand-short-name } pśiměriś
 
 ## Context menu buttons, of which only one will be visible at a time
@@ -161,7 +169,6 @@ tabbrowser-context-mute-selected-tabs =
 tabbrowser-context-unmute-selected-tabs =
     .label = Rejtariki głosne cyniś
     .accesskey = o
-
 # This string is used as an additional tooltip and accessibility description for tabs playing audio
 tabbrowser-tab-audio-playing-description = Awdio wótgraś
 
@@ -172,6 +179,7 @@ tabbrowser-tab-audio-playing-description = Awdio wótgraś
 tabbrowser-ctrl-tab-list-all-tabs =
     .label =
         { $tabCount ->
+            [one] { $tabCount } rejtarik nalicyś
             [two] Wobej { $tabCount } rejtarika nalicyś
             [few] Wšě { $tabCount } rejtariki nalicyś
            *[other] Wšych { $tabCount } rejtarikow nalicyś

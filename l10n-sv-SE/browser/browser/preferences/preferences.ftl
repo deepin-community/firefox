@@ -57,6 +57,10 @@ category-experimental =
 pane-experimental-subtitle = Fortsätt med försiktighet
 pane-experimental-search-results-header = { -brand-short-name } Experiment: Fortsätt med försiktighet
 pane-experimental-description2 = Att ändra avancerade konfigurationsinställningar kan påverka prestanda eller säkerhet för { -brand-short-name }.
+settings-pane-labs-title = { -firefoxlabs-brand-name }
+settings-category-labs =
+    .tooltiptext = { -firefoxlabs-brand-name }
+pane-experimental-description3 = Ge våra experimentella funktioner ett försök! De är under utveckling och utvecklas, vilket kan påverka hur { -brand-short-name } fungerar.
 pane-experimental-reset =
     .label = Återställ standard
     .accesskey = t
@@ -599,6 +603,10 @@ home-prefs-recent-activity-description = Ett urval av senaste webbplatser och in
 home-prefs-snippets-header =
     .label = Kort information
 home-prefs-snippets-description-new = Tips och nyheter från { -vendor-short-name } och { -brand-product-name }
+home-prefs-weather-header =
+    .label = Väder
+home-prefs-weather-description = Dagens prognos i korthet
+home-prefs-weather-learn-more-link = Läs mer
 # Variables:
 #   $num (number) - Number of rows displayed
 home-prefs-sections-rows-option =
@@ -912,6 +920,9 @@ forms-saved-passwords =
 forms-primary-pw-use =
     .label = Använd ett huvudlösenord
     .accesskey = A
+# This operation requires the user to authenticate with the operating system (device sign-in)
+forms-os-reauth =
+    .label = Kräv enhetsinloggning för att fylla i och hantera lösenord
 forms-primary-pw-learn-more-link = Läs mer
 # This string uses the former name of the Primary Password feature
 # ("Master Password" in English) so that the preferences can be found
@@ -944,6 +955,13 @@ primary-password-os-auth-dialog-message-win = För att skapa ett huvudlösenord 
 # notes are only valid for English. Please test in your locale.
 primary-password-os-auth-dialog-message-macosx = skapa ett huvudlösenord
 master-password-os-auth-dialog-caption = { -brand-full-name }
+# The macOS string is preceded by the operating system with "Firefox is trying to ".
+autofill-creditcard-os-dialog-message =
+    { PLATFORM() ->
+        [macos] ändra inställningarna för betalningsmetoder
+       *[other] { -brand-short-name } försöker ändra inställningarna för betalningsmetoder. Använd din enhetsinloggning för att tillåta detta.
+    }
+autofill-creditcard-os-auth-dialog-caption = { -brand-full-name }
 
 ## Privacy section - Autofill
 
@@ -958,14 +976,9 @@ autofill-payment-methods-checkbox-submessage = Inkluderar kredit- och betalkort
     .accesskey = n
 autofill-saved-payment-methods-button = Sparade betalningsmetoder
     .accesskey = e
-autofill-reauth-checkbox =
-    { PLATFORM() ->
-        [macos] Kräv macOS-autentisering för att fylla och redigera betalningsmetoder.
-        [windows] Kräv Windows-autentisering för att fylla och redigera betalningsmetoder.
-        [linux] Kräv Linux-autentisering för att fylla och redigera betalningsmetoder.
-       *[other] Kräv autentisering för att fylla och redigera betalningsmetoder.
-    }
-    .accesskey = v
+# This operation requires the user to authenticate with the operating system (device sign-in)
+autofill-reauth-payment-methods-checkbox = Kräv enhetsinloggning för att fylla i och hantera betalningsmetoder
+    .accesskey = K
 
 ## Privacy Section - History
 
@@ -1102,6 +1115,9 @@ addressbar-suggestions-settings = Ändra inställningar för förslag från sök
 addressbar-locbar-showrecentsearches-option =
     .label = Visa senaste sökningar
     .accesskey = s
+addressbar-locbar-showtrendingsuggestions-option =
+    .label = Visa populära sökförslag
+    .accesskey = V
 addressbar-quickactions-learn-more = Läs mer
 
 ## Privacy Section - Content Blocking
@@ -1292,6 +1308,14 @@ privacy-segmentation-radio-off =
     .label = Använd rekommendationer från { -brand-product-name }
 privacy-segmentation-radio-on =
     .label = Visa detaljerad information
+
+## Privacy Section - Website Advertising Preferences
+
+website-advertising-header = Webbplatsens annonseringsinställningar
+website-advertising-private-attribution =
+    .label = Tillåt webbplatser att utföra integritetsbevarande annonsmätningar
+    .accesskey = T
+website-advertising-private-attribution-description = Detta hjälper webbplatser att förstå hur deras annonser fungerar utan att samla in data om dig.
 
 ## Privacy Section - Security
 ##

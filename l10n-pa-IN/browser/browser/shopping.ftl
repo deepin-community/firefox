@@ -115,6 +115,7 @@ shopping-settings-sidebar-enabled-state = ਰੀਵਿਊ ਚੈਕਰ <strong>�
 shopping-adjusted-rating-label =
     .label = ਅਡਜੱਸਟ ਕੀਤੀ ਰੇਟਿੰਗ
 shopping-adjusted-rating-unreliable-reviews = ਗ਼ੈਰ-ਭਰੋਸੇਯੋਗ ਰੀਵਿਊ ਹਟਾਏ
+shopping-adjusted-rating-based-reliable-reviews = ਭਰੋਸੇਯੋਗ ਰੀਵਿਊਆਂ ਉੱਤੇ ਅਧਾਰਿਤ
 
 ## Strings for the review reliability component
 
@@ -133,6 +134,8 @@ shopping-analysis-explainer-learn-more2 = ਜਾਣੋ ਕਿ <a data-l10n-name=
 # websites, which will be inserted without being translated.
 #  $retailer (String) - capitalized name of the shopping website, for example, "Amazon".
 shopping-analysis-explainer-highlights-description = ਪਿਛਲੇ 80 ਦਿਨਾਂ ਵਿੱਚ { $retailer } ਰੀਵਿਊਆਂ ਵਿੱਚੋਂ <strong>ਹਾਈਲਾਈਟ</strong> ਹਨ, ਜੋ ਸਾਨੂੰ ਜਾਪਦਾ ਹੈ ਕਿ ਭਰੋਸੇਯੋਗ ਹਨ।
+# Fallback for analysis highlights explainer if the retailer is ever unknown
+shopping-analysis-explainer-highlights-description-unknown-retailer = ਪਿਛਲੇ 80 ਦਿਨਾਂ ਵਿੱਚ ਰੀਵਿਊਆਂ ਵਿੱਚੋਂ <strong>ਹਾਈਲਾਈਟ</strong> ਹਨ, ਜੋ ਸਾਨੂੰ ਜਾਪਦਾ ਹੈ ਕਿ ਭਰੋਸੇਯੋਗ ਹਨ।
 shopping-analysis-explainer-review-grading-scale-reliable = ਭਰੋਸੇਯੋਗ ਰੀਵਿਊ। ਅਸੀਂ ਮੰਨਦੇ ਹਾਂ ਕਿ ਰੀਵਿਊ ਅਸਲ ਗਾਹਕ ਵਲੋਂ ਹਨ, ਜਿਸ ਨੇ ਇਮਾਨਦਾਰੀ ਨਾਲ ਨਿਰਪੱਖ ਰੀਵਿਊ ਦਿੱਤੇ ਹਨ।
 shopping-analysis-explainer-review-grading-scale-mixed = ਅਸੀਂ ਮੰਨਦੇ ਹਾਂ ਕਿ ਭਰੋਸੇਯੋਗ ਅਤੇ ਗ਼ੈਰ-ਭਰੋਸੇਯੋਗ ਰੀਵਿਊ ਰਲਵੇਂ ਰੂਪ ਵਿੱਚ ਹੁੰਦੇ ਹਨ।
 shopping-analysis-explainer-review-grading-scale-unreliable = ਗ਼ੈਰਭਰੋਸੇਯੋਗ ਰੀਵਿਊ। ਅਸੀਂ ਮੰਨਦੇ ਹਾਂ ਕਿ ਰੀਵਿਊ ਨਕਲੀ, ਫ਼ਰਜ਼ੀ ਹੋਣ ਜਾਂ ਪੱਖਪਾਤੀ ਰੀਵਿਊ ਦੇਣ ਵਾਲਿਆਂ ਵਲੋਂ ਹੋਣ ਸਕਦੇ ਹਨ।

@@ -637,6 +637,21 @@ urlbar-group-quickactions =
 #  $engine (String): the name of the search engine used to search.
 urlbar-group-recent-searches =
     .label = Жуырдағы іздеулер
+# The header shown above trending results.
+# Variables:
+#  $engine (String): the name of the search engine providing the trending suggestions
+urlbar-group-trending =
+    .label = { $engine } ішінде танымал
+# The result menu labels shown next to trending results.
+urlbar-result-menu-trending-dont-show =
+    .label = Танымал іздеулерді көрсетпеу
+    .accesskey = п
+urlbar-result-menu-trending-why =
+    .label = Мен бұны неге көріп отырмын?
+    .accesskey = н
+# A message that replaces a result when the user dismisses all suggestions of a
+# particular type.
+urlbar-trending-dismissal-acknowledgment = Пікіріңізге рахмет. Сіз енді танымал іздеулерді көрмейсіз.
 
 ## Reader View toolbar buttons
 
@@ -987,6 +1002,10 @@ firefox-relay-offer-legal-notice = "Электронды пошта маскас
 popup-notification-addon-install-unsigned =
     .value = (Тексерілмеген)
 popup-notification-xpinstall-prompt-learn-more = Қосымшаларды қауіпсіз орнату туралы көбірек біліңіз
+# Note: Access key is set to P to match "Private" in the corresponding localized label.
+popup-notification-addon-privatebrowsing-checkbox =
+    .label = Жекелік шолу режиміндегі терезелерде орындау
+    .accesskey = к
 
 ## Pop-up warning
 
@@ -1016,3 +1035,24 @@ popup-warning-button =
 #   $popupURI (String): the URI for the pop-up window
 popup-show-popup-menuitem =
     .label = "{ $popupURI }" көрсету
+
+## File-picker crash notification ("FilePickerCrashed.sys.mjs")
+
+file-picker-failed-open = Windows файл сұхбатын ашу мүмкін емес. Бірде-бір файл немесе буманы таңдау мүмкін емес.
+#   $path (string): The full path to which the file will be saved (e.g., 'C:\Users\Default User\Downloads\readme.txt').
+file-picker-failed-save-somewhere = Windows файл сұхбатын ашу мүмкін емес. Файл { $path } жеріне сақталатын болады.
+file-picker-failed-save-nowhere = Windows файл сұхбатын ашу мүмкін емес. Үнсіз келісім бумасын табу мүмкін емес, файл сақталмайтын болады.
+file-picker-crashed-open = Windows файл сұхбаты құлап түсті. Бірде-бір файл немесе буманы таңдау мүмкін емес.
+#   $path (string): The full path to which the file will be saved (e.g., 'C:\Users\Default User\Downloads\readme.txt').
+file-picker-crashed-save-somewhere = Windows файл сұхбаты құлап түсті. Файл { $path } жеріне сақталатын болады.
+file-picker-crashed-save-nowhere = Windows файл сұхбаты құлап түсті. Үнсіз келісім бумасын табу мүмкін емес, файл сақталмайтын болады.
+
+# Button used with file-picker-crashed-save-default. Opens the folder in Windows
+# Explorer, with the saved file selected and in focus.
+#
+# The wording here should be consistent with the Windows variant of
+# `downloads-cmd-show-menuitem-2` and similar messages.
+
+file-picker-crashed-show-in-folder =
+    .label = Бумада көрсету
+    .accessKey = Б

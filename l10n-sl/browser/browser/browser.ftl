@@ -613,6 +613,12 @@ urlbar-result-action-copy-to-clipboard = Kopiraj
 #  $result (String): the string representation for a formula result
 urlbar-result-action-calculator-result = = { $result }
 
+## Strings used for buttons in the urlbar
+
+# Label prompting user to search with a particular search engine.
+#  $engine (String): the name of a search engine that searches a specific site
+urlbar-result-search-with = Išči z iskalnikom { $engine }
+
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
 ## In these actions "Search" is a verb, followed by where the search is performed.
@@ -642,6 +648,21 @@ urlbar-group-quickactions =
 #  $engine (String): the name of the search engine used to search.
 urlbar-group-recent-searches =
     .label = Nedavna iskanja
+# The header shown above trending results.
+# Variables:
+#  $engine (String): the name of the search engine providing the trending suggestions
+urlbar-group-trending =
+    .label = Trenutno priljubljeno – { $engine }
+# The result menu labels shown next to trending results.
+urlbar-result-menu-trending-dont-show =
+    .label = Ne prikazuj trenutno priljubljenih iskanj
+    .accesskey = N
+urlbar-result-menu-trending-why =
+    .label = Zakaj se to prikazuje?
+    .accesskey = Z
+# A message that replaces a result when the user dismisses all suggestions of a
+# particular type.
+urlbar-trending-dismissal-acknowledgment = Hvala za povratne informacije. Trenutno priljubljena iskanja se ne bodo več prikazovala.
 
 ## Reader View toolbar buttons
 
@@ -919,6 +940,15 @@ data-reporting-notification-button =
     .accesskey = I
 # Label for the indicator shown in the private browsing window titlebar.
 private-browsing-indicator-label = Zasebno brskanje
+# Tooltip for the indicator shown in the window titlebar when content analysis is active.
+# Variables:
+#   $agentName (String): The name of the DLP agent that is connected
+content-analysis-indicator-tooltip =
+    .tooltiptext = Preprečevanje izgube podatkov, ki ga omogoča { $agentName }. Kliknite za več informacij.
+content-analysis-panel-title = Varstvo podatkov
+# Variables:
+#   $agentName (String): The name of the DLP agent that is connected
+content-analysis-panel-text = Vaša organizacija za zaščito pred izgubo podatkov uporablja { $agentName }. <a data-l10n-name="info">Več o tem</a>
 
 ## Unified extensions (toolbar) button
 
@@ -983,6 +1013,10 @@ firefox-relay-offer-legal-notice = S klikom na "Uporabi e-poštno masko" se stri
 popup-notification-addon-install-unsigned =
     .value = (Nepotrjeno)
 popup-notification-xpinstall-prompt-learn-more = Več o varni namestitvi dodatkov
+# Note: Access key is set to P to match "Private" in the corresponding localized label.
+popup-notification-addon-privatebrowsing-checkbox =
+    .label = Delovanje v zasebnih oknih
+    .accesskey = z
 
 ## Pop-up warning
 

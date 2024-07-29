@@ -148,9 +148,12 @@ endif
 
 L10N_REV = $(subst $1:,,$(filter $1:%,$(L10N_CHANGESETS)))
 L10N_LANGS = $(foreach lang,$(L10N_CHANGESETS),$(firstword $(subst :, ,$(lang))))
+L10N_REVS = $(sort $(foreach lang,$(L10N_LANGS),$(call L10N_REV,$(lang))))
+THE_L10N_REV = $(if $(filter 1,$(words $(L10N_REVS))),$(L10N_REVS),$(error multiple l10n revisions))
 
 ifneq (,$(filter dump dump-% import download,$(MAKECMDGOALS)))
-L10N_TARBALLS = $(foreach lang,$(L10N_LANGS),$(SOURCE_TARBALL_LOCATION)/$(SOURCE_TARBALL:%.orig.tar.$(SOURCE_TARBALL_EXT)=%.orig-l10n-$(lang).tar.bz2))
+L10N_TARBALL = $(SOURCE_TARBALL_LOCATION)/$(SOURCE_TARBALL:%.orig.tar.$(SOURCE_TARBALL_EXT)=%.orig-l10n-$1.tar.bz2)
+L10N_TARBALLS = $(foreach lang,$(L10N_LANGS),$(call L10N_TARBALL,$(lang)))
 
 ALL_TARBALLS = $(SOURCE_TARBALL_LOCATION)/$(SOURCE_TARBALL) $(L10N_TARBALLS)
 
@@ -163,7 +166,13 @@ $(SOURCE_TARBALL_LOCATION)/$(SOURCE_TARBALL): debian/source.filter
 	$(if $(filter-out $(VERSION),$(SOURCE_BUILD_VERSION)),$(error Downloaded version ($(SOURCE_BUILD_VERSION)) does not match requested version ($(VERSION))))
 	debian/repack.py -o $@ $(SOURCE_URL)
 
+ifneq (1,$(words $(L10N_REVS)))
 $(L10N_TARBALLS): $(SOURCE_TARBALL_LOCATION)/$(SOURCE_TARBALL:%.orig.tar.$(SOURCE_TARBALL_EXT)=%.orig-l10n-%.tar.bz2): debian/l10n.filter
 	debian/repack.py -o $@ -t $* -f debian/l10n.filter $(L10N_REPO)/$*/archive/$(call L10N_REV,$*).zip
+else
+COMMA=,
+$(subst -l10n-,%,$(L10N_TARBALLS)): debian/l10n.filter
+	debian/repack.py -o $(call L10N_TARBALL,%) --strip 1 --split-off $(subst $(NULL) $(NULL),$(COMMA),$(L10N_LANGS)) -t l10n-% -f debian/l10n.filter https://github.com/mozilla-l10n/firefox-l10n/archive/$(THE_L10N_REV).tar.gz
+endif
 endif
 .PHONY: download

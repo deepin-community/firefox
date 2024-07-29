@@ -57,6 +57,10 @@ category-experimental =
 pane-experimental-subtitle = Buďte obozretní
 pane-experimental-search-results-header = Experimenty prehliadača { -brand-short-name }: postupujte opatrne
 pane-experimental-description2 = Zmeny v pokročilej konfigurácii môžu ovplyvniť výkon a bezpečnosť prehliadača { -brand-short-name }.
+settings-pane-labs-title = { -firefoxlabs-brand-name }
+settings-category-labs =
+    .tooltiptext = { -firefoxlabs-brand-name }
+pane-experimental-description3 = Vyskúšajte naše experimentálne funkcie! Tieto funkcie sú vo vývoji a mohli by ovplyvniť fungovanie prehliadača { -brand-short-name }.
 pane-experimental-reset =
     .label = Obnoviť predvolené nastavenia
     .accesskey = O
@@ -602,6 +606,10 @@ home-prefs-recent-activity-description = Výber z nedávno navštívených strá
 home-prefs-snippets-header =
     .label = Snippety
 home-prefs-snippets-description-new = Tipy a novinky od spoločnosti { -vendor-short-name } a aplikácie { -brand-product-name }
+home-prefs-weather-header =
+    .label = Počasie
+home-prefs-weather-description = Dnešná predpoveď v skratke
+home-prefs-weather-learn-more-link = Ďalšie informácie
 # Variables:
 #   $num (number) - Number of rows displayed
 home-prefs-sections-rows-option =
@@ -916,6 +924,9 @@ forms-saved-passwords =
 forms-primary-pw-use =
     .label = Používať hlavné heslo
     .accesskey = h
+# This operation requires the user to authenticate with the operating system (device sign-in)
+forms-os-reauth =
+    .label = Vyžadovať heslo k účtu na zariadení na vyplnenie a správu hesiel
 forms-primary-pw-learn-more-link = Ďalšie informácie
 # This string uses the former name of the Primary Password feature
 # ("Master Password" in English) so that the preferences can be found
@@ -948,6 +959,13 @@ primary-password-os-auth-dialog-message-win = Ak chcete vytvoriť hlavné heslo,
 # notes are only valid for English. Please test in your locale.
 primary-password-os-auth-dialog-message-macosx = vytvoriť hlavné heslo
 master-password-os-auth-dialog-caption = { -brand-full-name }
+# The macOS string is preceded by the operating system with "Firefox is trying to ".
+autofill-creditcard-os-dialog-message =
+    { PLATFORM() ->
+        [macos] zmeniť nastavenie pre spôsoby platby
+       *[other] { -brand-short-name } sa pokúša zmeniť nastavenie pre spôsoby platby. Ak to chcete povoliť, použite heslo k účtu na svojom zariadení.
+    }
+autofill-creditcard-os-auth-dialog-caption = { -brand-full-name }
 
 ## Privacy section - Autofill
 
@@ -962,14 +980,9 @@ autofill-payment-methods-checkbox-submessage = Zahŕňa kreditné a debetné kar
     .accesskey = h
 autofill-saved-payment-methods-button = Uložené spôsoby platby
     .accesskey = l
-autofill-reauth-checkbox =
-    { PLATFORM() ->
-        [macos] Vyžadovať prihlasovacie údaje do systému macOS pri dopĺňaní a úprave spôsobov platby.
-        [windows] Vyžadovať prihlasovacie údaje do systému Windows pri dopĺňaní a úprave spôsobov platby.
-        [linux] Vyžadovať prihlasovacie údaje do systému Linux pri dopĺňaní a úprave spôsobov platby.
-       *[other] Vyžadovať prihlasovacie údaje pri dopĺňaní a úprave spôsobov platby.
-    }
-    .accesskey = V
+# This operation requires the user to authenticate with the operating system (device sign-in)
+autofill-reauth-payment-methods-checkbox = Vyžadovať heslo k účtu na zariadení na vyplnenie a správu spôsobov platby
+    .accesskey = u
 
 ## Privacy Section - History
 
@@ -1104,8 +1117,11 @@ addressbar-locbar-quickactions-option =
     .accesskey = r
 addressbar-suggestions-settings = Zmeniť nastavenia pre návrhy vyhľadávania
 addressbar-locbar-showrecentsearches-option =
-    .label = zobraziť nedávne vyhľadávania
+    .label = Zobrazovať nedávne vyhľadávania
     .accesskey = e
+addressbar-locbar-showtrendingsuggestions-option =
+    .label = Zobrazovať návrhy populárnych vyhľadávaní
+    .accesskey = n
 addressbar-quickactions-learn-more = Ďalšie informácie
 
 ## Privacy Section - Content Blocking
@@ -1296,6 +1312,14 @@ privacy-segmentation-radio-off =
     .label = Použiť odporúčania { -brand-product-name(case: "gen") }
 privacy-segmentation-radio-on =
     .label = Zobraziť podrobné informácie
+
+## Privacy Section - Website Advertising Preferences
+
+website-advertising-header = Predvoľby pre reklamu na webových stránkach
+website-advertising-private-attribution =
+    .label = Umožniť webovým stránkam vykonávať meranie ich reklám pri zachovaní vášho súkromia
+    .accesskey = w
+website-advertising-private-attribution-description = Toto pomáha webom pochopiť, ako fungujú ich reklamy bez toho, aby o vás zbierali údaje.
 
 ## Privacy Section - Security
 ##

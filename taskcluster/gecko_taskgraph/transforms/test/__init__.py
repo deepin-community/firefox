@@ -75,7 +75,7 @@ test_description_schema = Schema(
         # common attributes)
         Optional("attributes"): {str: object},
         # relative path (from config.path) to the file task was defined in
-        Optional("job-from"): str,
+        Optional("task-from"): str,
         # The `run_on_projects` attribute, defaulting to "all".  This dictates the
         # projects on which this task should be included in the target task set.
         # See the attributes documentation for details.
@@ -406,6 +406,7 @@ def run_remaining_transforms(config, tasks):
         ("other", None),
         ("worker", None),
         ("confirm_failure", None),
+        ("pernosco", lambda t: t["build-platform"].startswith("linux64")),
         # These transforms should always run last as there is never any
         # difference in configuration from one chunk to another (other than
         # chunk number).
@@ -485,7 +486,7 @@ def make_job_description(config, tasks):
         jobdesc["description"] = task["description"]
         jobdesc["attributes"] = attributes
         jobdesc["dependencies"] = {"build": build_label}
-        jobdesc["job-from"] = task["job-from"]
+        jobdesc["task-from"] = task["task-from"]
 
         if task.get("fetches"):
             jobdesc["fetches"] = task["fetches"]
@@ -499,7 +500,7 @@ def make_job_description(config, tasks):
         if "expires-after" in task:
             jobdesc["expires-after"] = task["expires-after"]
 
-        jobdesc["routes"] = []
+        jobdesc["routes"] = task.get("routes", [])
         jobdesc["run-on-projects"] = sorted(task["run-on-projects"])
         jobdesc["scopes"] = []
         jobdesc["tags"] = task.get("tags", {})

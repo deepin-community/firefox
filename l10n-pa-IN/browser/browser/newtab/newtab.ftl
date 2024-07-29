@@ -233,6 +233,19 @@ newtab-pocket-pocket-firefox-family = { -pocket-brand-name } { -brand-product-na
 newtab-pocket-save = ਸੰਭਾਲੋ
 newtab-pocket-saved = ਸੰਭਾਲਿਆ
 
+## Thumbs up and down buttons that shows over a newtab stories card thumbnail on hover.
+
+# Clicking the thumbs up button for this story will result in more stories like this one being recommended
+newtab-pocket-thumbs-up-tooltip =
+    .title = ਇਸ ਵਰਗੇ ਹੋਰ
+# Clicking the thumbs down button for this story informs us that the user does not feel like the story is interesting for them
+newtab-pocket-thumbs-down-tooltip =
+    .title = ਮੇਰੇ ਲਈ ਨਹੀਂ
+newtab-toast-thumbs-up-or-down = ਧੰਨਵਾਦ! ਤੁਹਾਡਾ ਸੁਝਾਅ ਸਾਡੀ ਫੀਡ ਸੁਧਾਰਨ ਲਈ ਮਦਦਗਾਰ ਹੋਵੇਗਾ।
+newtab-toast-dismiss-button =
+    .title = ਖ਼ਾਰਜ ਕਰੋ
+    .aria-label = ਖ਼ਾਰਜ ਕਰੋ
+
 ## Pocket content onboarding experience dialog and modal for new users seeing the Pocket section for the first time, shown as the first item in the Pocket section.
 
 newtab-pocket-onboarding-discover = ਵੈੱਬ ਤੋਂ ਸਭ ਤੋਂ ਵਧੀਆ ਖੋਜੋ
@@ -271,6 +284,9 @@ newtab-custom-recent-subtitle = ਤਾਜ਼ਾ ਸਾਈਟਾਂ ਤੇ ਸਮੱ
 newtab-custom-recent-toggle =
     .label = ਤਾਜ਼ਾ ਸਰਗਰਮੀ
     .description = ਤਾਜ਼ਾ ਸਾਈਟਾਂ ਤੇ ਸਮੱਗਰੀ ਦੀ ਚੋਣ
+newtab-custom-weather-toggle =
+    .label = ਮੌਸਮ
+    .description = ਅੱਜ ਦੇ ਮੌਸਮ ਬਾਰੇ ਝਾਤ
 newtab-custom-close-button = ਬੰਦ ਕਰੋ
 newtab-custom-settings = ਹੋਰ ਸੈਟਿੰਗਾਂ ਦਾ ਇੰਤਜ਼ਾਮ ਕਰੋ
 
@@ -290,7 +306,85 @@ newtab-wallpaper-dark-panda = ਜੰਗਲ ਵਿੱਚ ਲੁਕਿਆ ਫਿ�
 newtab-wallpaper-dark-sky = ਨੀਲੇ ਅੰਬਰ ਨਾਲ ਸ਼ਹਿਰ ਦਾ ਦ੍ਰਿਸ਼
 newtab-wallpaper-dark-mountain = ਲੈਂਡਸਕੇਪ ਪਹਾੜ
 newtab-wallpaper-dark-city = ਜਾਮਨੀ ਸ਼ਹਿਰੀ ਦ੍ਰਿਸ਼
+
+## Solid Colors
+
+newtab-wallpaper-category-title-colors = ਇਕਸਾਰ ਰੰਗ
+newtab-wallpaper-blue = ਨੀਲਾ
+newtab-wallpaper-light-blue = ਹਲਕਾ ਨੀਲਾ
+newtab-wallpaper-light-purple = ਹਲਕਾ ਜਾਮਨੀ
+newtab-wallpaper-light-green = ਹਲਕਾ ਹਰਾ
+newtab-wallpaper-green = ਹਰਾ
+newtab-wallpaper-beige = ਬਿਸਕੁਟੀ
+newtab-wallpaper-yellow = ਪੀਲਾ
+newtab-wallpaper-orange = ਸੰਤਰੀ
+newtab-wallpaper-pink = ਗੁਲਾਬੀ
+newtab-wallpaper-light-pink = ਹਲਕਾ ਗੁਲਾਬੀ
+newtab-wallpaper-red = ਲਾਲ
+newtab-wallpaper-dark-blue = ਗੂੜ੍ਹਾ ਨੀਲਾ
+newtab-wallpaper-dark-purple = ਗੂੜ੍ਹਾ ਜਾਮਨੀ
+newtab-wallpaper-dark-green = ਗੂੜ੍ਹਾ ਹਰਾ
+newtab-wallpaper-brown = ਭੂਰਾ
+
+## Abstract
+
+newtab-wallpaper-category-title-abstract = ਸੰਖੇਪ
+newtab-wallpaper-abstract-green = ਹਰੀਆਂ ਸ਼ਕਲਾਂ
+newtab-wallpaper-abstract-blue = ਨੀਲੀਆਂ ਸ਼ਕਲਾਂ
+newtab-wallpaper-abstract-purple = ਜਾਮਨੀ ਸ਼ਕਲਾਂ
+newtab-wallpaper-abstract-orange = ਸੰਤਰੀ ਸ਼ਕਲਾਂ
+newtab-wallpaper-gradient-orange = ਗਰੇਡੀਐਂਟ ਸੰਤਰੀ ਤੇ ਗੁਲਾਬੀ
+newtab-wallpaper-abstract-blue-purple = ਨੀਲੀਆਂ ਤੇ ਜਾਮਨੀ ਸ਼ਕਲਾਂ
+
+## Photographs
+
+newtab-wallpaper-category-title-photographs = ਫ਼ੋਟੋਗਰਾਫ਼
+newtab-wallpaper-beach-at-sunrise = ਬੀਚ ਉੱਤੇ ਚੜ੍ਹਦਾ ਸੂਰਜ
+newtab-wallpaper-beach-at-sunset = ਬੀਚ ਉੱਤੇ ਡੁੱਬਦਾ ਸੂਰਜ
+newtab-wallpaper-storm-sky = ਤੂਫ਼ਾਨੀ ਅੰਬਰ
+newtab-wallpaper-sky-with-pink-clouds = ਗੁਲਾਬੀ ਬੱਦਲਾਂ ਨਾਲ ਅੰਬਰ
+newtab-wallpaper-red-panda-yawns-in-a-tree = ਲਾਲ ਪਾਂਡਾ ਰੁੱਖ ਹੇਠ ਉਬਾਸੀਆਂ ਲੈਂਦਾ ਹੋਇਆ
+newtab-wallpaper-white-mountains = ਚਿੱਟੇ ਪਹਾੜ
 # Variables
 #   $author_string (String) - The name of the creator of the photo.
 #   $webpage_string (String) - The name of the webpage where the photo is located.
 newtab-wallpaper-attribution = <a data-l10n-name="name-link">{ $author_string }</a> ਵਲੋਂ <a data-l10n-name="webpage-link">{ $webpage_string }</a> ਉੱਤੇ ਪਾਈ ਫ਼ੋਟੋ
+newtab-wallpaper-feature-highlight-header = ਰੰਗ ਪਾ ਕੇ ਵੇਖੋ
+newtab-wallpaper-feature-highlight-content = ਆਪਣੀ ਨਵੀਂ ਟੈਬ ਨੂੰ ਵਾਲਪੇਪਰ ਨਾਲ ਤਾਜ਼ਾ ਦਿੱਖ ਦਿਓ।
+newtab-wallpaper-feature-highlight-button = ਸਮਝੇ
+# Tooltip for dismiss button
+feature-highlight-dismiss-button =
+    .title = ਖ਼ਾਰਜ ਕਰੋ
+    .aria-label = ਪੌਪ-ਅੱਪ ਨੂੰ ਬੰਦ ਕਰੋ
+feature-highlight-wallpaper =
+    .title = { -newtab-wallpaper-feature-highlight-header }
+    .aria-label = { -newtab-wallpaper-feature-highlight-content }
+
+## New Tab Weather
+
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-see-forecast =
+    .title = { $provider } ਵਿੱਚ ਭਵਿੱਖਬਾਣੀ ਵੇਖੋ
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-sponsored = { $provider } ∙ ਸਪਾਂਸਰ
+newtab-weather-menu-change-location = ਟਿਕਾਣੇ ਨੂੰ ਬਦਲੋ
+newtab-weather-change-location-search-input = ਟਿਕਾਣੇ ਨੂੰ ਖੋਜੋ
+newtab-weather-menu-weather-display = ਮੌਸਮ ਦੀ ਝਲਕ
+# Display options are:
+# - Simple: Displays a current weather condition icon and the current temperature
+# - Detailed: Include simple information plus a short text summary: e.g. "Mostly cloudy"
+newtab-weather-menu-weather-display-option-simple = ਸਧਾਰਨ
+newtab-weather-menu-change-weather-display-simple = ਸਰਲ ਝਲਕ ਲਈ ਬਦਲੋ
+newtab-weather-menu-weather-display-option-detailed = ਵੇਰਵੇ ਸਮੇਤ
+newtab-weather-menu-change-weather-display-detailed = ਵੇਰਵੇ ਸਮੇਤ ਝਲਕ ਲਈ ਬਦਲੋ
+newtab-weather-menu-temperature-units = ਤਾਪਮਾਨ ਦੀ ਇਕਾਈ
+newtab-weather-menu-temperature-option-fahrenheit = ਫਾਹਰਨਹੀਟ
+newtab-weather-menu-temperature-option-celsius = ਸੈਲਸੀਅਸ
+newtab-weather-menu-change-temperature-units-fahrenheit = ਫਾਹਰਨਹੀਟ ਵਿੱਚ ਬਦਲੋ
+newtab-weather-menu-change-temperature-units-celsius = ਸੈਲਸੀਅ ਵਿੱਚ ਬਦਲੋ
+newtab-weather-menu-hide-weather = ਨਵੀਂ ਟੈਬ ਉੱਤੇ ਮੌਸਮ ਨੂੰ ਲੁਕਾਓ
+newtab-weather-menu-learn-more = ਹੋਰ ਜਾਣੋ
+# This message is shown if user is working offline
+newtab-weather-error-not-available = ਮੌਸਮ ਦਾ ਡਾਟਾ ਹਾਲੇ ਮੌਜੂਦ ਨਹੀਂ ਹੈ।

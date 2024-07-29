@@ -324,6 +324,9 @@ has-seccomp-bpf = Seccomp-BPF (시스템 호출 필터링)
 has-seccomp-tsync = Seccomp 스레드 동기화
 has-user-namespaces = 사용자 네임스페이스
 has-privileged-user-namespaces = 권한있는 프로세스를 위한 사용자 네임스페이스
+# Variables
+# $status (string) - Boolean value of hasUserNamespaces (should only be false when support-user-namespaces-unavailable is used)
+support-user-namespaces-unavailable = { $status } — 이 기능은 사용자의 시스템에서 허용되지 않습니다. 이는 { -brand-short-name }의 보안 기능을 제한할 수 있습니다.
 can-sandbox-content = 콘텐트 프로세스 샌드박싱
 can-sandbox-media = 미디어 플러그인 샌드박싱
 content-sandbox-level = 콘텐츠 프로세스 샌드박스 수준
@@ -391,6 +394,20 @@ support-printing-clear-settings-button = 저장된 인쇄 설정 지우기
 support-printing-modified-settings = 수정한 인쇄 설정
 support-printing-prefs-name = 이름
 support-printing-prefs-value = 값
+
+## Remote Settings sections
+
+support-remote-settings-title = 원격 설정
+support-remote-settings-status = 상태
+support-remote-settings-status-ok = 확인
+# Status when synchronization is not working.
+support-remote-settings-status-broken = 작동 안 함
+support-remote-settings-last-check = 마지막 확인
+support-remote-settings-local-timestamp = 로컬 타임스탬프
+support-remote-settings-sync-history = 기록
+support-remote-settings-sync-history-status = 상태
+support-remote-settings-sync-history-datetime = 날짜
+support-remote-settings-sync-history-infos = 정보
 
 ## Normandy sections
 

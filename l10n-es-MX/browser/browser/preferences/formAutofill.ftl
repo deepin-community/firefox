@@ -7,27 +7,51 @@
 
 autofill-manage-addresses-title = Direcciones guardadas
 autofill-manage-addresses-list-header = Direcciones
-
 autofill-manage-credit-cards-title = Tarjetas de crédito guardadas
 autofill-manage-credit-cards-list-header = Tarjetas de crédito
-
+autofill-manage-payment-methods-title = Métodos de pago guardados
+autofill-manage-cards-list-header = Tarjetas
 autofill-manage-dialog =
     .style = min-width: 560px
 autofill-manage-remove-button = Eliminar
 autofill-manage-add-button = Agregar…
 autofill-manage-edit-button = Editar…
 
-##
+## The address capture doorhanger
 
+address-capture-save-doorhanger-header = ¿Guardar dirección?
+address-capture-update-doorhanger-header = ¿Actualizar dirección?
+address-capture-edit-doorhanger-header = Editar dirección
+address-capture-save-button =
+    .label = Guardar
+    .accessKey = S
+address-capture-not-now-button =
+    .label = Ahora no
+    .accessKey = N
+address-capture-cancel-button =
+    .label = Cancelar
+    .accessKey = C
+address-capture-update-button =
+    .label = Actualizar
+    .accessKey = U
+address-capture-manage-address-button =
+    .label = Ajustes de dirección
+address-capture-learn-more-button =
+    .label = Saber más
+address-capture-open-menu-button =
+    .aria-label = Abrir menú
+address-capture-edit-address-button =
+    .aria-label = Editar dirección
 # The dialog title for creating addresses in browser preferences.
-autofill-add-new-address-title = Agregar nueva dirección
+autofill-add-address-title = Agregar dirección
 # The dialog title for editing addresses in browser preferences.
 autofill-edit-address-title = Editar dirección
-
 autofill-address-given-name = Primer nombre
 autofill-address-additional-name = Segundo nombre
 autofill-address-family-name = Apellido
+autofill-address-name = Nombre
 autofill-address-organization = Organización
+autofill-address-street-address = Dirección
 autofill-address-street = Dirección de calle
 
 ## address-level-3 (Sublocality) names
@@ -81,19 +105,22 @@ autofill-address-eircode = Eircode
 
 ##
 
+
+##
+
+# The dialog title for creating addresses in browser preferences.
+autofill-add-new-address-title = Agregar nueva dirección
 autofill-address-country = País o región
+autofill-address-country-only = País
 autofill-address-tel = Teléfono
 autofill-address-email = Correo electrónico
-
 autofill-cancel-button = Cancelar
 autofill-save-button = Guardar
 autofill-country-warning-message = El autocompletado de formularios actualmente está disponible solo para algunos países.
-
 # The dialog title for creating credit cards in browser preferences.
 autofill-add-new-card-title = Agregar nueva tarjeta de crédito
 # The dialog title for editing credit cards in browser preferences.
 autofill-edit-card-title = Editar tarjeta de crédito
-
 # In macOS, this string is preceded by the operating system with "Firefox is trying to ",
 # and has a period added to its end. Make sure to test in your locale.
 autofill-edit-card-password-prompt =
@@ -102,7 +129,11 @@ autofill-edit-card-password-prompt =
         [windows] { -brand-short-name } está intentando mostrar información de la tarjeta de crédito. Confirma abajo el acceso a esta cuenta de Windows.
        *[other] { -brand-short-name } está intentando mostrar información de la tarjeta de crédito.
     }
-
+autofill-message-tooltip = Ver mensaje acerca de autocompletar
+# The dialog title for creating credit cards in browser preferences.
+autofill-add-card-title = Agregar tarjeta
+# The dialog title for editing credit cards in browser preferences.
+autofill-edit-card-title2 = Editar tarjeta
 autofill-card-number = Número de tarjeta de crédito
 autofill-card-invalid-number = Por favor, ingresa un número de tarjeta válido
 autofill-card-name-on-card = Nombre en la tarjeta

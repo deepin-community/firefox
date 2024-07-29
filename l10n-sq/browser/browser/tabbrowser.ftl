@@ -111,6 +111,14 @@ tabbrowser-confirm-caretbrowsing-title = Shfletim me Kursor
 tabbrowser-confirm-caretbrowsing-message = Shtypja e F7 aktivizon/çaktivizon Shfletimin me Kursor. Kjo veçori vendos në faqet web një kursor të lëvizshëm, duke ju lejuar të përzgjidhni tekst me tastierë. Doni të aktivizohet Shfletimi me Kursor?
 tabbrowser-confirm-caretbrowsing-checkbox = Mos ma shfaq më këtë kuti dialogu.
 
+## Confirmation dialog for closing all duplicate tabs
+
+tabbrowser-confirm-close-duplicate-tabs-title = Kujdes
+tabbrowser-confirm-close-duplicate-tabs-text = Do të mbajmë të hapur skedën e fundit aktive
+tabbrowser-confirm-close-all-duplicate-tabs-title = Të mbyllen skeda të përsëdytura?
+tabbrowser-confirm-close-all-duplicate-tabs-text = Do të mbyllim skeda të përsëdytura në këtë dritare. Skeda e fundit aktive do të mbesë hapur.
+tabbrowser-confirm-close-all-duplicate-tabs-button-closetabs = Mbylli skedat
+
 ##
 
 # Variables:

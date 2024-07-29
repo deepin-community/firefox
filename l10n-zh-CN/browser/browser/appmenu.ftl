@@ -77,12 +77,10 @@ appmenu-remote-tabs-turn-on-sync =
 appmenu-remote-tabs-showmore =
     .label = 显示更多标签页
     .tooltiptext = 显示此设备的更多标签页
-# This is shown when there are inactive tabs which are not being shown.
-# Variables
-# $count (Number) - The number of inactive tabs which are not being shown (at least 1)
-appmenu-remote-tabs-showinactive =
-    .label = 显示 { $count } 个休眠标签页
-    .tooltiptext = 显示此设备上的休眠标签页
+# This is shown as the label for an element to show inactive tabs from this device.
+appmenu-remote-tabs-show-inactive-tabs =
+    .label = 休眠标签页
+    .tooltiptext = 查看本设备的休眠标签页
 # This is shown beneath the name of a device when that device has no open tabs
 appmenu-remote-tabs-notabs = 没有打开的标签页
 # This is shown when Sync is configured but syncing tabs is disabled.
@@ -198,6 +196,9 @@ profiler-popup-presets-power-description = 排查 { -brand-shorter-name } 功耗
 # "Power" is used in the sense of energy (electricity used by the computer).
 profiler-popup-presets-power-label =
     .label = 功耗
+profiler-popup-presets-debug-description = 在 { -brand-shorter-name } 中调试时使用。开销较高，请勿用于性能用途，仅应用于了解浏览器行为。
+profiler-popup-presets-debug-label =
+    .label = 调试
 profiler-popup-presets-custom-label =
     .label = 自定义
 
@@ -275,6 +276,6 @@ appmenuitem-sign-in-account = 登录账户
 appmenuitem-monitor-title = { -monitor-brand-short-name }
 appmenuitem-monitor-description = 接收数据外泄警报
 appmenuitem-relay-title = { -relay-brand-short-name }
-appmenuitem-relay-description = 隐藏真实邮箱地址和电话号码
+appmenuitem-relay-description = 掩藏真实邮箱地址和电话号码
 appmenuitem-vpn-title = { -mozilla-vpn-brand-name }
 appmenuitem-vpn-description = 保护在线活动

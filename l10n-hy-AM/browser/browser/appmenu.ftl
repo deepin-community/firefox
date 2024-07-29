@@ -36,7 +36,7 @@ appmenuitem-find-in-page =
 appmenuitem-translate =
     .label = Թարգմանել էջը…
 appmenuitem-zoom =
-    .value = Մասշտաբը
+    .value = Դիտափոխում
 appmenuitem-more-tools =
     .label = Լրացուցիչ գործիքներ
 appmenuitem-help =
@@ -87,6 +87,10 @@ appmenu-remote-tabs-showinactive =
            *[other] Ցուցադրել { $count } ոչ ակտիվ ներդիրներ
         }
     .tooltiptext = Ցուցադրել ոչ ակտիվ ներդիրներն այս սարքում
+# This is shown as the label for an element to show inactive tabs from this device.
+appmenu-remote-tabs-show-inactive-tabs =
+    .label = Չգործող ներդիրներ
+    .tooltiptext = Տեսեք չգործող ներդիրներն այս սարքում
 # This is shown beneath the name of a device when that device has no open tabs
 appmenu-remote-tabs-notabs = Չկան բաց ներդիրներ
 # This is shown when Sync is configured but syncing tabs is disabled.
@@ -193,7 +197,7 @@ profiler-popup-presets-networking-label =
 profiler-popup-presets-power-label =
     .label = Հոսանք
 profiler-popup-presets-custom-label =
-    .label = Ընտրված
+    .label = Հարմարեցված
 
 ## History panel
 

@@ -335,6 +335,9 @@ has-seccomp-bpf = Seccomp-BPF (Filtrim Thirrjesh Sistemi)
 has-seccomp-tsync = Njëkohësim Seccomp Rrjedhe
 has-user-namespaces = Emërhapësira Përdoruesi
 has-privileged-user-namespaces = Emërhapësira Përdoruesi për procese të privilegjuar
+# Variables
+# $status (string) - Boolean value of hasUserNamespaces (should only be false when support-user-namespaces-unavailable is used)
+support-user-namespaces-unavailable = { $status } — Kjo veçori nuk lejohet nga sistemi juaj. Ky mund të kufizojë veçori sigurie të { -brand-short-name }-it.
 can-sandbox-content = Mbajtje Brenda Bankëprovës e Proceseve të Lëndës
 can-sandbox-media = Mbajtje Brenda Bankëprovës e Shtojcave Për Media
 content-sandbox-level = Shkallë Mbajtjeje Brenda Bankëprovës e Proceseve të Lëndës
@@ -401,6 +404,20 @@ support-printing-modified-settings = Rregullime shtypjeje të ndryshuara
 support-printing-prefs-name = Emër
 support-printing-prefs-value = Vlerë
 
+## Remote Settings sections
+
+support-remote-settings-title = Rregullime për të Largët
+support-remote-settings-status = Gjendje
+support-remote-settings-status-ok = OK
+# Status when synchronization is not working.
+support-remote-settings-status-broken = S’funksionon
+support-remote-settings-last-check = Kontrolli i fundit më
+support-remote-settings-local-timestamp = Vulë kohore vendore
+support-remote-settings-sync-history = Historik
+support-remote-settings-sync-history-status = Gjendje
+support-remote-settings-sync-history-datetime = Datë
+support-remote-settings-sync-history-infos = Hollësi
+
 ## Normandy sections
 
 support-remote-experiments-title = Eksperimente Së Largëti
@@ -426,3 +443,4 @@ content-analysis-active = Aktive
 content-analysis-connected-to-agent = I lidhur me Agjentin
 content-analysis-agent-path = Shteg Agjenti
 content-analysis-agent-failed-signature-verification = Dështoi Verifikim Nënshkrimi Për Agjentin
+content-analysis-request-count = Numër Kërkesash

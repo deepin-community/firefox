@@ -57,6 +57,10 @@ category-experimental =
 pane-experimental-subtitle = Haltu áfram með varúð
 pane-experimental-search-results-header = { -brand-short-name } tilraunir: Haltu áfram með varúð
 pane-experimental-description2 = Breyting á ítarlegum stillingum getur haft áhrif á afköst eða öryggi { -brand-short-name }.
+settings-pane-labs-title = { -firefoxlabs-brand-name }
+settings-category-labs =
+    .tooltiptext = { -firefoxlabs-brand-name }
+pane-experimental-description3 = Prófaðu tilraunaeiginleikana okkar! Þeir eru í vinnslu og þróun, sem gæti haft áhrif á hvernig { -brand-short-name } virkar.
 pane-experimental-reset =
     .label = Endurheimta sjálfgefin gildi
     .accesskey = r
@@ -599,6 +603,10 @@ home-prefs-recent-activity-description = Úrval af nýlegum síðum og efni
 home-prefs-snippets-header =
     .label = Molar
 home-prefs-snippets-description-new = Ábendingar og fréttir frá { -vendor-short-name } og { -brand-product-name }
+home-prefs-weather-header =
+    .label = Veður
+home-prefs-weather-description = Spá dagsins í hnotskurn
+home-prefs-weather-learn-more-link = Kanna nánar
 # Variables:
 #   $num (number) - Number of rows displayed
 home-prefs-sections-rows-option =
@@ -912,6 +920,9 @@ forms-saved-passwords =
 forms-primary-pw-use =
     .label = Nota aðallykilorð
     .accesskey = o
+# This operation requires the user to authenticate with the operating system (device sign-in)
+forms-os-reauth =
+    .label = Krefjast innskráningar tækis til að fylla út og sýsla með lykilorð
 forms-primary-pw-learn-more-link = Frekari upplýsingar
 # This string uses the former name of the Primary Password feature
 # ("Master Password" in English) so that the preferences can be found
@@ -944,6 +955,13 @@ primary-password-os-auth-dialog-message-win = Til að búa til aðallykilorð sk
 # notes are only valid for English. Please test in your locale.
 primary-password-os-auth-dialog-message-macosx = búa til aðallykilorð
 master-password-os-auth-dialog-caption = { -brand-full-name }
+# The macOS string is preceded by the operating system with "Firefox is trying to ".
+autofill-creditcard-os-dialog-message =
+    { PLATFORM() ->
+        [macos] breyttu stillingum fyrir greiðslumáta
+       *[other] { -brand-short-name } er að reyna að breyta stillingum fyrir greiðslumáta. Notaðu innskráningu tækisins til að leyfa þetta.
+    }
+autofill-creditcard-os-auth-dialog-caption = { -brand-full-name }
 
 ## Privacy section - Autofill
 
@@ -958,14 +976,9 @@ autofill-payment-methods-checkbox-submessage = Inniheldur kredit- og debetkort
     .accesskey = I
 autofill-saved-payment-methods-button = Vistaðir greiðslumátar
     .accesskey = V
-autofill-reauth-checkbox =
-    { PLATFORM() ->
-        [macos] Krefjast macOS-auðkenningar til að fylla út og breyta greiðslumáta.
-        [windows] Krefjast Windows-auðkenningar til að fylla út og breyta greiðslumáta.
-        [linux] Krefjast Linux-auðkenningar til að fylla út og breyta greiðslumáta.
-       *[other] Krefjast auðkenningar til að fylla út og breyta greiðslumáta.
-    }
-    .accesskey = K
+# This operation requires the user to authenticate with the operating system (device sign-in)
+autofill-reauth-payment-methods-checkbox = Krefjast innskráningar tækis til að fylla út og hafa umsjón með greiðslumátum
+    .accesskey = o
 
 ## Privacy Section - History
 
@@ -1102,6 +1115,9 @@ addressbar-suggestions-settings = Breyta stillingum fyrir ábendingar leitarvél
 addressbar-locbar-showrecentsearches-option =
     .label = Sýna nýlegar leitir
     .accesskey = r
+addressbar-locbar-showtrendingsuggestions-option =
+    .label = Sýna vinsælar leitartillögur
+    .accesskey = t
 addressbar-quickactions-learn-more = Kanna nánar
 
 ## Privacy Section - Content Blocking
@@ -1292,6 +1308,14 @@ privacy-segmentation-radio-off =
     .label = Nota ráðleggingar frá { -brand-product-name }
 privacy-segmentation-radio-on =
     .label = Sýna nánari upplýsingar
+
+## Privacy Section - Website Advertising Preferences
+
+website-advertising-header = Kjörstillingar fyrir auglýsingar vefsvæðis
+website-advertising-private-attribution =
+    .label = Leyfa vefsvæðum að framkvæma auglýsingamælingar sem varðveita persónuvernd
+    .accesskey = a
+website-advertising-private-attribution-description = Þetta hjálpar vefsvæðum að skilja hvernig auglýsingar þeirra skila árangri án þess að safna gögnum um þig.
 
 ## Privacy Section - Security
 ##
