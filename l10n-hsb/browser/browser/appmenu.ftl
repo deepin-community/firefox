@@ -77,18 +77,10 @@ appmenu-remote-tabs-turn-on-sync =
 appmenu-remote-tabs-showmore =
     .label = Dalše rajtarki pokazać
     .tooltiptext = Dalše rajtarki z tutoho grata pokazać
-# This is shown when there are inactive tabs which are not being shown.
-# Variables
-# $count (Number) - The number of inactive tabs which are not being shown (at least 1)
-appmenu-remote-tabs-showinactive =
-    .label =
-        { $count ->
-            [one] { $count } inaktiwny rajtark pokazać
-            [two] { $count } inaktiwnej rajtarkaj pokazać
-            [few] { $count } inaktiwne rajtarki pokazać
-           *[other] { $count } inaktiwnych rajtarkow pokazać
-        }
-    .tooltiptext = Inaktiwne rajtarki na tutym graće pokazać
+# This is shown as the label for an element to show inactive tabs from this device.
+appmenu-remote-tabs-show-inactive-tabs =
+    .label = Inaktiwne rajtarki
+    .tooltiptext = Hlejće inaktiwne rajtarki na tutym graće
 # This is shown beneath the name of a device when that device has no open tabs
 appmenu-remote-tabs-notabs = Žane wočinjene rajtarki
 # This is shown when Sync is configured but syncing tabs is disabled.
@@ -204,6 +196,9 @@ profiler-popup-presets-power-description = Přednastajenje za wuslědźenje zmyl
 # "Power" is used in the sense of energy (electricity used by the computer).
 profiler-popup-presets-power-label =
     .label = Energija
+profiler-popup-presets-debug-description = Přednastajenje za pytanje zmylkow w { -brand-shorter-name }. Wysoka přidatna ćeža, njewužiwajće jo za wukonowe dźěło, ale wužiwajće jo, zo byšće so na rozumjenje zadźerženja wobhladowaka fokusěrował.
+profiler-popup-presets-debug-label =
+    .label = Za zmylkami pytać
 profiler-popup-presets-custom-label =
     .label = Swójski
 

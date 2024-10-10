@@ -9,6 +9,12 @@
 # NOTE: For Engineers, please don't re-use these strings outside of the menubar.
 
 
+# NOTE: For English locales, strings in this file should be in APA-style Title Case.
+# See https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
+#
+# NOTE: For Engineers, please don't reuse these strings outside of the menubar.
+
+
 ## Application Menu (macOS only)
 
 menu-application-preferences =
@@ -38,11 +44,9 @@ menu-quit =
             [windows] х
            *[other] х
         }
-
 # This menu-quit-mac string is only used on macOS.
 menu-quit-mac =
     .label = Изход от { -brand-shorter-name }
-
 menu-about =
     .label = Относно { -brand-shorter-name }
     .accesskey = О
@@ -130,8 +134,8 @@ menu-view-toolbars-menu =
     .label = Ленти с инструменти
     .accesskey = и
 menu-view-customize-toolbar2 =
-    .label = Приспособяване на лентата…
-    .accesskey = л
+    .label = Персонализиране на лентата…
+    .accesskey = П
 menu-view-sidebar =
     .label = Странична лента
     .accesskey = С
@@ -141,6 +145,8 @@ menu-view-history-button =
     .label = История
 menu-view-synced-tabs-sidebar =
     .label = Синхронизирани раздели
+menu-view-megalist-sidebar =
+    .label = Пароли
 menu-view-full-zoom =
     .label = Мащабиране
     .accesskey = М
@@ -221,6 +227,9 @@ menu-history-undo-menu =
     .label = Последно затворени раздели
 menu-history-undo-window-menu =
     .label = Последно затворени прозорци
+# "Search" is a verb, as in "Search in History"
+menu-history-search =
+    .label = Търсене в историята
 
 ## Bookmarks Menu
 
@@ -233,6 +242,9 @@ menu-bookmark-tab =
     .label = Отмятане на текущия раздел…
 menu-edit-bookmark =
     .label = Промяна на отметка…
+# "Search" is a verb, as in "Search in bookmarks"
+menu-bookmarks-search =
+    .label = Търсене в отметките
 menu-bookmarks-all-tabs =
     .label = Отмятане на всички раздели…
 menu-bookmarks-toolbar =
@@ -326,6 +338,9 @@ menu-help-enter-troubleshoot-mode2 =
 menu-help-exit-troubleshoot-mode =
     .label = Изкл. режим за отстраняване на неизправности
     .accesskey = м
+menu-help-switch-device =
+    .label = Преминаване към ново устройство
+    .accesskey = у
 # Label of the Help menu item. Either this or
 # menu-help-notdeceptive is shown.
 menu-help-report-deceptive-site =
@@ -334,3 +349,5 @@ menu-help-report-deceptive-site =
 menu-help-not-deceptive =
     .label = Това не е измамническа страница…
     .accesskey = н
+menu-report-broken-site =
+    .label = Съобщаване за неработеща страница

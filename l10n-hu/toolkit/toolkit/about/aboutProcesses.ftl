@@ -12,6 +12,8 @@ about-processes-column-action =
 
 about-processes-shutdown-process =
     .title = Lapok eldobása és a folyamat kilövése
+about-processes-kill-process =
+    .title = Folyamat kilövése
 about-processes-shutdown-tab =
     .title = Lap bezárása
 # Profiler icons
@@ -51,6 +53,7 @@ about-processes-remote-sandbox-broker-process = Távoli homokozóbróker ({ $pid
 about-processes-fork-server-process = Fork kiszolgáló ({ $pid })
 about-processes-preallocated-process = Előre kiosztott ({ $pid })
 about-processes-utility-process = Segédprogram ({ $pid })
+about-processes-inference-process = Következtetés ({ $pid })
 # Unknown process names
 # Variables:
 #    $pid (String) The process id of this process, assigned by the OS.

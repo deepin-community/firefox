@@ -284,7 +284,7 @@ main-context-menu-audio-email =
     .label = Изпращане на аудио по мейл…
     .accesskey = у
 main-context-menu-save-to-pocket =
-    .label = Запазване на страница в { -pocket-brand-name }
+    .label = Запазване на страницата в { -pocket-brand-name }
     .accesskey = с
 main-context-menu-send-to-device =
     .label = Изпращане на страница до устройство
@@ -304,6 +304,9 @@ main-context-menu-use-saved-password =
 
 ##
 
+main-context-menu-use-relay-mask =
+    .label = Използвайте маскирането на имейл адреси с { -relay-brand-short-name }.
+    .accesskey = е
 main-context-menu-suggest-strong-password =
     .label = Предлагане на добра парола…
     .accesskey = а

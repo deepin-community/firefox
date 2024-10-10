@@ -13,6 +13,64 @@ exclude: true
 
 ⚠️  breaking change and deprecation notices
 
+## v131
+- Added [`GeckoDisplay.windowInsetsChanged`][131.1].
+- Added [`GeckoView.addWindowInsetsListener`][131.2] and [`GeckoView.removeWindowInsetsListener`][131.3] to allow listening WindowInsets changes of Activity's root window with multiple listeners.
+- ⚠️Increased `compileSdkVersion` to 35 (Android 15)
+- ️️⚠️ Removed deprecated [`GeckoSession.ContentDelegate.onProductUrl`][128.5].
+- Added support for controlling `toolkit.telemetry.user_characteristics_ping.current_version` via [`GeckoRuntimeSettings.setUserCharacteristicPingCurrentVersion`][131.4]
+
+[131.1]: {{javadoc_uri}}/GeckoDisplay.html#windowInsetsChanged
+[131.2]: {{javadoc_uri}}/GeckoView.html#addWindowInsetsListener
+[131.3]: {{javadoc_uri}}/GeckoView.html#removeWindowInsetsListener
+[131.4]: {{javadoc_uri}}/GeckoRuntimeSettings.html#setUserCharacteristicPingCurrentVersion
+
+## v130
+- ⚠️ Removed [`TranslationState`][127.4] constructor, please use the new [`TranslationState`][127.3] constructor with `hasVisibleChange`. ([bug 1895275]({{bugzilla}}1895275))
+- Added support for controlling `privacy.fingerprintingProtection` and `privacy.fingerprintingProtection.pbmode` via [`GeckoRuntimeSettings.setFingerprintingProtection`][130.1]
+- Added support for controlling `privacy.fingerprintingProtection.overrides` via [`GeckoRuntimeSettings.setFingerprintingProtectionOverrides`][130.2]
+- Added support for controlling `javascript.options.use_fdlibm_for_sin_cos_tan` via [`GeckoRuntimeSettings.setFdlibmMathEnabled`][130.3]
+
+[130.1]: {{javadoc_uri}}/GeckoRuntimeSettings.html#setFingerprintingProtection
+[130.2]: {{javadoc_uri}}/GeckoRuntimeSettings.html#setFingerprintingProtectionOverrides
+[130.3]: {{javadoc_uri}}/GeckoRuntimeSettings.html#setFdlibmMathEnabled
+
+## v129
+- Added [`ERROR_ADMIN_INSTALL_ONLY`][129.1] to `WebExtension.InstallException.ErrorCodes`. ([bug 1902222]({{bugzilla}}1902222))
+- Added [`ContentDelegate.onHideDynamicToolbar`][129.2] to notify
+  the app that it must fully-collapse its dynamic toolbar ([bug 1855990]({{bugzilla}}1855990))
+- Added [`PURGED_BOUNCETRACKER`][129.3] and [`BLOCKED_SUSPICIOUS_FINGERPRINTING`][129.4]
+  to `ContentBlockingController.Event`. ([bug 1901808]({{bugzilla}}1901808))
+
+[129.1]: {{javadoc_uri}}/WebExtension.InstallException.ErrorCodes.html#ERROR_ADMIN_INSTALL_ONLY
+[129.2]: {{javadoc_uri}}/GeckoSession.ContentDelegate.html#onHideDynamicToolbar(org.mozilla.geckoview.GeckoSession)
+[129.3]: {{javadoc_uri}}/ContentBlockingController.Event.html#PURGED_BOUNCETRACKER
+[129.4]: {{javadoc_uri}}/ContentBlockingController.Event.html#BLOCKED_SUSPICIOUS_FINGERPRINTING
+
+## v128
+- ⚠️ Removed deprecated [`GeckoSession.NavigationDelegate.onLocationChange`][128.1]
+- Reverted the change to the `WebExtension.MetaData` related to "prompt" permissions ([bug 1879543]({{bugzilla}}1879543)) and explicitly passed the permissions/origins into the `PromptDelegate` methods. Required permissions and origins are now available via [`WebExtension.MetaData.requiredPermissions`][128.2] and [`WebExtension.MetaData.requiredOrigins`][128.3].
+- Added additional [`Autocomplete.LoginSelectOption`][128.4] constructor that takes a `hint` ([bug 1877237]({{bugzilla}}1877237)).
+- ⚠️ Deprecated [`GeckoSession.ContentDelegate.onProductUrl`][128.5], will now be removed in v131.
+  ([bug 1898055]({{bugzilla}}1898055))
+
+[128.1]: {{javadoc_uri}}/GeckoSession.NavigationDelegate#onLocationChange(org.mozilla.geckoview.GeckoSession,java.lang.String,java.util.List)
+[128.2]: {{javadoc_uri}}/WebExtension.MetaData.html#promptPermissions
+[128.3]: {{javadoc_uri}}/WebExtension.MetaData.html#promptOrigins
+[128.4]: {{javadoc_uri}}/Autocomplete.LoginSelectOption.html#<init>(org.mozilla.geckoview.Autocomplete.LoginEntry,int)
+[128.5]: {{javadoc_uri}}/GeckoSession.ContentDelegate.html#onProductUrl(org.mozilla.geckoview.GeckoSession)
+
+## v127
+- ⚠️ Removed deprecated [`RuntimeTelemetry`][125.5], [`GeckoRuntimeSettings.getTelemetryDelegate`][125.6] and [`GeckoRuntimeSettings.telemetryDelegate`][125.7].
+- Added [FINDER_FIND_FORWARD][127.1]
+- Added [`WebExtensionController.AddonManagerDelegate.onOptionalPermissionsChanged`][127.2] ([bug 1892302]({{bugzilla}}1892302).
+- Added a new [`TranslationState`][127.3] constructor to add `hasVisibleChange` and deprecated the prior [`TranslationsState`][127.4] constructor to be removed in v130.
+
+[127.1]: {{javadoc_uri}}/GeckoSession.html#FINDER_FIND_FORWARD
+[127.2]: {{javadoc_uri}}/WebExtensionController.AddonManagerDelegate.html#onOptionalPermissionsChanged
+[127.3]: {{javadoc_uri}}/TranslationsController.SessionTranslation.TranslationState.html#%3Cinit%3E(org.mozilla.geckoview.TranslationsController.SessionTranslation.TranslationPair,java.lang.String,org.mozilla.geckoview.TranslationsController.SessionTranslation.DetectedLanguages,java.lang.Boolean,java.lang.Boolean)
+[127.4]: {{javadoc_uri}}/TranslationsController.SessionTranslation.TranslationState.html#<init>(org.mozilla.geckoview.TranslationsController.SessionTranslation.TranslationPair,java.lang.String,org.mozilla.geckoview.TranslationsController.SessionTranslation.DetectedLanguages,java.lang.Boolean)
+
 ## v125
 - ⚠️ Deprecated [`GeckoSession.NavigationDelegate.onLocationChange`][125.1], to be removed in v127.
 ([bug 1837601]({{bugzilla}}1837601))
@@ -1547,4 +1605,4 @@ to allow adding gecko profiler markers.
 [65.24]: {{javadoc_uri}}/CrashReporter.html#sendCrashReport(android.content.Context,android.os.Bundle,java.lang.String)
 [65.25]: {{javadoc_uri}}/GeckoResult.html
 
-[api-version]: 2c319e9f18adb4178ce09d71088a173b56d1a694
+[api-version]: 87b7eb1c251953b4a07f1a0c71ac1af4c73562b2

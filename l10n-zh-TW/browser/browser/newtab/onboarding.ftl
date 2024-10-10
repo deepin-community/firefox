@@ -159,7 +159,7 @@ mr2022-onboarding-easy-setup-primary-button-label = 儲存並繼續
 # Set Default action checkbox label used on new user onboarding first screen
 mr2022-onboarding-easy-setup-set-default-checkbox-label = 將 { -brand-short-name } 設為預設瀏覽器
 # Import action checkbox label used on new user onboarding first screen
-mr2022-onboarding-easy-setup-import-checkbox-label = 從先前使用的瀏覽器匯入
+mr2022-onboarding-easy-setup-import-checkbox-label = 從先前使用的瀏覽器匯入資料
 
 ## MR2022 New User Pin Firefox screen strings
 
@@ -176,6 +176,8 @@ mr2022-onboarding-pin-primary-button-label =
         [macos] 將 { -brand-short-name } 保留在 Dock
        *[other] 將 { -brand-short-name } 釘選到工具列
     }
+# Primary button string used on welcome page for when Firefox is not pinned on MSIX
+mr2022-onboarding-pin-primary-button-label-msix = 將 { -brand-short-name } 釘選到工具列與開始選單
 # Subtitle will be used when user already has Firefox pinned, but
 # has not set it as their default browser.
 # When translating "zip", please feel free to pick a verb that signifies movement and/or exploration
@@ -215,7 +217,7 @@ mr2022-onboarding-get-started-primary-button-label = 幾秒鐘就能設定完成
 
 mr2022-onboarding-import-header = 設定光速快
 mr2022-onboarding-import-subtitle = 根據您的喜好來設定 { -brand-short-name }。可從您的舊瀏覽器匯入書籤、密碼與更多資料。
-mr2022-onboarding-import-primary-button-label-no-attribution = 從先前使用的瀏覽器匯入
+mr2022-onboarding-import-primary-button-label-no-attribution = 從先前使用的瀏覽器匯入資料
 
 ## If your language uses grammatical genders, in the description for the
 ## colorway feel free to switch from "You are a X. You…" (e.g. "You are a
@@ -322,6 +324,14 @@ onboarding-device-migration-title = 歡迎回來！
 onboarding-device-migration-subtitle = 登入您的 { -fxaccount-brand-name(capitalization: "sentence") }後即可將書籤、密碼、瀏覽紀錄等資料帶到新裝置上。
 onboarding-device-migration-subtitle2 = 登入帳號後，即可將書籤、密碼、上網紀錄帶到新裝置。
 onboarding-device-migration-primary-button-label = 登入
+
+## Add-ons Picker screen
+
+amo-picker-title = 自訂您的 { -brand-short-name }
+amo-picker-subtitle = 擴充套件就像是在您的瀏覽器中安裝應用程式，這些套件可讓您保護密碼、下載影音內容、購物比價、封鎖討人厭的廣告、更改瀏覽器外觀等等功能。
+amo-picker-install-button-label = 新增至 { -brand-short-name }
+amo-picker-install-complete-label = 已安裝
+amo-picker-collection-link = 探索更多附加元件
 
 ## The following screens have been updated to use security and privacy focused strings:
 

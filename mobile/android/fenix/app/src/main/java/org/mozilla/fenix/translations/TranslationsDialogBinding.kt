@@ -8,7 +8,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChangedBy
 import kotlinx.coroutines.flow.mapNotNull
-import mozilla.components.browser.state.selector.findTab
+import mozilla.components.browser.state.selector.selectedTab
 import mozilla.components.browser.state.state.BrowserState
 import mozilla.components.browser.state.state.TabSessionState
 import mozilla.components.browser.state.state.TranslationsBrowserState
@@ -29,7 +29,6 @@ import java.util.Locale
 class TranslationsDialogBinding(
     browserStore: BrowserStore,
     private val translationsDialogStore: TranslationsDialogStore,
-    private val sessionId: String,
     private val getTranslatedPageTitle: (localizedFrom: String?, localizedTo: String?) -> String,
 ) : AbstractBinding<BrowserState>(browserStore) {
 
@@ -42,7 +41,7 @@ class TranslationsDialogBinding(
             }
 
         // Session level flows
-        val sessionFlow = flow.mapNotNull { state -> state.findTab(sessionId) }
+        val sessionFlow = flow.mapNotNull { state -> state.selectedTab }
             .distinctUntilChangedBy {
                 it.translationsState
             }
@@ -76,6 +75,12 @@ class TranslationsDialogBinding(
 
                 // Session Translations State Behavior (Tab)
                 val sessionTranslationsState = state.sessionState.translationsState
+
+                translationsDialogStore.dispatch(
+                    TranslationsDialogAction.UpdateTranslationInProgress(
+                        sessionTranslationsState.isTranslateProcessing,
+                    ),
+                )
 
                 val fromSelected =
                     sessionTranslationsState.translationEngineState?.initialFromLanguage(
@@ -120,7 +125,11 @@ class TranslationsDialogBinding(
                 }
 
                 if (sessionTranslationsState.isTranslateProcessing) {
-                    updateStoreIfIsTranslateProcessing()
+                    translationsDialogStore.dispatch(
+                        TranslationsDialogAction.DismissDialog(
+                            dismissDialogState = DismissDialogState.WaitingToBeDismissed,
+                        ),
+                    )
                 }
 
                 if (sessionTranslationsState.isTranslated && !sessionTranslationsState.isTranslateProcessing) {
@@ -164,6 +173,7 @@ class TranslationsDialogBinding(
      * @param browserState The browser state to consider when fetching information for errors.
 
      */
+    @Suppress("MaxLineLength")
     private fun updateTranslationError(
         sessionTranslationsState: TranslationsState,
         browserTranslationsState: TranslationsBrowserState,
@@ -207,26 +217,7 @@ class TranslationsDialogBinding(
         }
     }
 
-    private fun updateStoreIfIsTranslateProcessing() {
-        translationsDialogStore.dispatch(
-            TranslationsDialogAction.UpdateTranslationInProgress(
-                true,
-            ),
-        )
-        translationsDialogStore.dispatch(
-            TranslationsDialogAction.DismissDialog(
-                dismissDialogState = DismissDialogState.WaitingToBeDismissed,
-            ),
-        )
-    }
-
     private fun updateStoreIfTranslated() {
-        translationsDialogStore.dispatch(
-            TranslationsDialogAction.UpdateTranslationInProgress(
-                false,
-            ),
-        )
-
         if (!translationsDialogStore.state.isTranslated) {
             translationsDialogStore.dispatch(
                 TranslationsDialogAction.UpdateTranslated(

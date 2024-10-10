@@ -42,6 +42,7 @@ namespace mozilla {
 class Encoding;
 class HTMLEditor;
 class ObservedDocShell;
+class ScrollContainerFrame;
 enum class TaskCategory;
 namespace dom {
 class ClientInfo;
@@ -63,7 +64,6 @@ class nsIDocumentViewer;
 class nsIHttpChannel;
 class nsIMutableArray;
 class nsIPrompt;
-class nsIScrollableFrame;
 class nsIStringBundle;
 class nsIURIFixup;
 class nsIURIFixupInfo;
@@ -89,6 +89,8 @@ enum eCharsetReloadState {
   eCharsetReloadRequested,
   eCharsetReloadStopOrigional
 };
+
+struct SameDocumentNavigationState;
 
 class nsDocShell final : public nsDocLoader,
                          public nsIDocShell,
@@ -457,7 +459,7 @@ class nsDocShell final : public nsDocLoader,
   // navigation.
   static nsresult FilterStatusForErrorPage(
       nsresult aStatus, nsIChannel* aChannel, uint32_t aLoadType,
-      bool aIsTopFrame, bool aUseErrorPages, bool aIsInitialDocument,
+      bool aIsTopFrame, bool aUseErrorPages,
       bool* aSkippedUnknownProtocolNavigation = nullptr);
 
   // Notify consumers of a search being loaded through the observer service:
@@ -970,7 +972,7 @@ class nsDocShell final : public nsDocLoader,
   bool NavigationBlockedByPrinting(bool aDisplayErrorDialog = true);
   bool IsNavigationAllowed(bool aDisplayPrintErrorDialog = true,
                            bool aCheckIfUnloadFired = true);
-  nsIScrollableFrame* GetRootScrollFrame();
+  mozilla::ScrollContainerFrame* GetRootScrollContainerFrame();
   nsIChannel* GetCurrentDocChannel();
   nsresult EnsureScriptEnvironment();
   nsresult EnsureEditorData();
@@ -1031,16 +1033,6 @@ class nsDocShell final : public nsDocLoader,
   // If aFireFrameErrorEvent is true, then fires an error event at the
   // embedder element, for both in-process and OOP embedders.
   void UnblockEmbedderLoadEventForFailure(bool aFireFrameErrorEvent = false);
-
-  struct SameDocumentNavigationState {
-    nsAutoCString mCurrentHash;
-    nsAutoCString mNewHash;
-    bool mCurrentURIHasRef = false;
-    bool mNewURIHasRef = false;
-    bool mSameExceptHashes = false;
-    bool mSecureUpgradeURI = false;
-    bool mHistoryNavBetweenSameDoc = false;
-  };
 
   // Check to see if we're loading a prior history entry or doing a fragment
   // navigation in the same document.

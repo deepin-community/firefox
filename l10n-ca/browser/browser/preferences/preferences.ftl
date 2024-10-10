@@ -32,6 +32,8 @@ search-input-box2 =
     .style = width: 15.4em
     .placeholder = Cerca en els paràmetres
 managed-notice = El navegador està gestionat per la vostra organització.
+managed-notice-info-icon =
+    .alt = Informació
 category-list =
     .aria-label = Categories
 pane-general-title = General
@@ -55,6 +57,10 @@ category-experimental =
 pane-experimental-subtitle = Aneu amb compte
 pane-experimental-search-results-header = Experiments del { -brand-short-name }: Aneu amb compte
 pane-experimental-description2 = La modificació dels paràmetres avançats de configuració pot afectar el rendiment o la seguretat del { -brand-short-name }.
+settings-pane-labs-title = { -firefoxlabs-brand-name }
+settings-category-labs =
+    .tooltiptext = { -firefoxlabs-brand-name }
+pane-experimental-description3 = Proveu les nostres funcions experimentals! Estan en constant desenvolupament i evolució, i podrien afectar el funcionament del { -brand-short-name }.
 pane-experimental-reset =
     .label = Restaura els valors per defecte
     .accesskey = R
@@ -203,6 +209,9 @@ containers-remove-alert-msg =
     }
 containers-remove-ok-button = Elimina aquest contenidor
 containers-remove-cancel-button = No eliminis aquest contenidor
+settings-tabs-show-image-in-preview =
+    .label = Mostra una vista prèvia de la imatge en passar el cursor per sobre d'una pestanya
+    .accessKey = M
 
 ## General Section - Language & Appearance
 
@@ -258,6 +267,8 @@ preferences-default-zoom-value =
 preferences-zoom-text-only =
     .label = Amplia només el text
     .accesskey = t
+preferences-text-zoom-override-warning =
+    .message = Avís: si seleccioneu "Amplia només el text" i el zoom per defecte no és 100%, pot ser que alguns llocs o continguts no funcionin correctament.
 language-header = Llengua
 choose-language-description = Trieu la llengua en què es mostraran preferentment les pàgines
 choose-button =
@@ -563,6 +574,9 @@ home-prefs-shortcuts-by-option-sponsored =
 home-prefs-recommended-by-header =
     .label = Recomanat per { $provider }
 home-prefs-recommended-by-description-new = Contingut excepcional seleccionat per { $provider }, part de la família de { -brand-product-name }
+home-prefs-recommended-by-header-generic =
+    .label = Articles recomanats
+home-prefs-recommended-by-description-generic = Contingut excepcional seleccionat per la família del { -brand-product-name }
 
 ##
 
@@ -589,6 +603,10 @@ home-prefs-recent-activity-description = Una selecció de continguts i llocs rec
 home-prefs-snippets-header =
     .label = Retalls
 home-prefs-snippets-description-new = Consells i novetats de { -vendor-short-name } i del { -brand-product-name }
+home-prefs-weather-header =
+    .label = Informació meteorològica
+home-prefs-weather-description = La previsió d'avui d'un cop d'ull
+home-prefs-weather-learn-more-link = Més informació
 # Variables:
 #   $num (number) - Number of rows displayed
 home-prefs-sections-rows-option =
@@ -703,6 +721,10 @@ sync-profile-picture =
 sync-profile-picture-with-alt =
     .tooltiptext = Canvia la imatge de perfil
     .alt = Canvia la imatge de perfil
+sync-profile-picture-account-problem =
+    .alt = Imatge de perfil del compte
+fxa-login-rejected-warning =
+    .alt = Avís
 sync-sign-out =
     .label = Tanca la sessió…
     .accesskey = T
@@ -868,12 +890,18 @@ forms-exceptions =
 forms-generate-passwords =
     .label = Suggereix i genera contrasenyes segures
     .accesskey = u
+forms-suggest-passwords =
+    .label = Suggereix contrasenyes segures
+    .accesskey = S
 forms-breach-alerts =
     .label = Mostra alertes sobre contrasenyes per als llocs web relacionats amb filtracions de dades
     .accesskey = b
 forms-breach-alerts-learn-more-link = Més informació
 preferences-relay-integration-checkbox =
     .label = Suggereix màscares d'adreça electrònica del { -relay-brand-name } per a protegir la vostra adreça electrònica
+preferences-relay-integration-checkbox2 =
+    .label = Suggereix màscares d'adreça electrònica del { -relay-brand-name } per a protegir la vostra adreça electrònica
+    .accesskey = r
 relay-integration-learn-more-link = Més informació
 # Checkbox which controls filling saved logins into fields automatically when they appear, in some cases without user interaction.
 forms-fill-logins-and-passwords =
@@ -882,12 +910,19 @@ forms-fill-logins-and-passwords =
 forms-saved-logins =
     .label = Inicis de sessió desats…
     .accesskey = I
+# Checkbox which controls filling saved logins into fields automatically when they appear, in some cases without user interaction.
+forms-fill-usernames-and-passwords =
+    .label = Emplena automàticament els noms d'usuari i les contrasenyes
+    .accesskey = E
 forms-saved-passwords =
     .label = Contrasenyes desades
     .accesskey = d
 forms-primary-pw-use =
     .label = Utilitza una contrasenya principal
     .accesskey = U
+# This operation requires the user to authenticate with the operating system (device sign-in)
+forms-os-reauth =
+    .label = Demana iniciar la sessió en el dispositiu per emplenar i gestionar les contrasenyes
 forms-primary-pw-learn-more-link = Més informació
 # This string uses the former name of the Primary Password feature
 # ("Master Password" in English) so that the preferences can be found
@@ -908,6 +943,7 @@ forms-windows-sso =
     .label = Permet l'inici de sessió únic del Windows per a comptes laborals i acadèmics de Microsoft
 forms-windows-sso-learn-more-link = Més informació
 forms-windows-sso-desc = Gestioneu els comptes en els paràmetres del dispositiu
+windows-passkey-settings-label = Gestiona les claus d'accés en els paràmetres del sistema
 
 ## OS Authentication dialog
 
@@ -919,12 +955,30 @@ primary-password-os-auth-dialog-message-win = Per crear una contrasenya principa
 # notes are only valid for English. Please test in your locale.
 primary-password-os-auth-dialog-message-macosx = crear una contrasenya principal
 master-password-os-auth-dialog-caption = { -brand-full-name }
+# The macOS string is preceded by the operating system with "Firefox is trying to ".
+autofill-creditcard-os-dialog-message =
+    { PLATFORM() ->
+        [macos] canviar els paràmetres de les formes de pagament
+       *[other] El { -brand-short-name } està provant de canviar els paràmetres de les formes de pagament. Inicieu la sessió en el dispositiu per a permetre-ho.
+    }
+autofill-creditcard-os-auth-dialog-caption = { -brand-full-name }
 
 ## Privacy section - Autofill
 
 pane-privacy-autofill-header = Emplenament automàtic
+autofill-addresses-checkbox = Desa i emplena les adreces
+    .accesskey = a
 autofill-saved-addresses-button = Adreces desades
     .accesskey = d
+autofill-payment-methods-checkbox-message = Desa i emplena les formes de pagament
+    .accesskey = m
+autofill-payment-methods-checkbox-submessage = Inclou les targetes de crèdit i dèbit
+    .accesskey = I
+autofill-saved-payment-methods-button = Formes de pagament desades
+    .accesskey = F
+# This operation requires the user to authenticate with the operating system (device sign-in)
+autofill-reauth-payment-methods-checkbox = Demana iniciar la sessió en el dispositiu per emplenar i gestionar les formes de pagament
+    .accesskey = m
 
 ## Privacy Section - History
 
@@ -980,6 +1034,7 @@ sitedata-delete-on-close =
     .label = Suprimeix les galetes i les dades dels llocs web en tancar el { -brand-short-name }
     .accesskey = c
 sitedata-delete-on-close-private-browsing = En el mode de navegació privada permanent, les galetes i les dades dels llocs s'esborraran sempre en tancar el { -brand-short-name }.
+sitedata-delete-on-close-private-browsing2 = D'acord amb els paràmetres de l'historial, el { -brand-short-name } suprimirà les galetes i les dades dels llocs en tancar el navegador.
 sitedata-allow-cookies-option =
     .label = Accepta les galetes i dades dels llocs web
     .accesskey = A
@@ -1250,6 +1305,14 @@ privacy-segmentation-radio-off =
     .label = Utilitza les recomanacions del { -brand-product-name }
 privacy-segmentation-radio-on =
     .label = Mostra informació detallada
+
+## Privacy Section - Website Advertising Preferences
+
+website-advertising-header = Preferències de publicitat dels llocs web
+website-advertising-private-attribution =
+    .label = Permet que els llocs web facin mesures publicitàries que respectin la privadesa
+    .accesskey = P
+website-advertising-private-attribution-description = Això ajuda els llocs a entendre el rendiment dels seus anuncis sense recollir les vostres dades.
 
 ## Privacy Section - Security
 ##

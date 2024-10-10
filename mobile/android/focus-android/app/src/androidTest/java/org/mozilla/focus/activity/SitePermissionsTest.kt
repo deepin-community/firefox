@@ -8,6 +8,7 @@ import android.Manifest
 import android.content.Context
 import android.hardware.camera2.CameraManager
 import androidx.test.rule.GrantPermissionRule
+import mozilla.components.support.ktx.util.PromptAbuserDetector
 import okhttp3.mockwebserver.MockWebServer
 import org.junit.After
 import org.junit.Assume
@@ -57,12 +58,14 @@ class SitePermissionsTest {
             dispatcher = MockWebServerHelper.AndroidAssetDispatcher()
             start()
         }
+        PromptAbuserDetector.validationsEnabled = false
     }
 
     @After
     fun tearDown() {
         webServer.shutdown()
         featureSettingsHelper.resetAllFeatureFlags()
+        PromptAbuserDetector.validationsEnabled = true
     }
 
     @Test

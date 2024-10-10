@@ -12,6 +12,8 @@ about-processes-column-action =
 
 about-processes-shutdown-process =
     .title = Tabbladen leegmaken en proces beëindigen
+about-processes-kill-process =
+    .title = Proces beëindigen
 about-processes-shutdown-tab =
     .title = Tabblad sluiten
 # Profiler icons
@@ -51,6 +53,7 @@ about-processes-remote-sandbox-broker-process = Remote Sandbox Broker ({ $pid })
 about-processes-fork-server-process = Forkserver ({ $pid })
 about-processes-preallocated-process = Vooraf toegewezen ({ $pid })
 about-processes-utility-process = Hulpprogramma ({ $pid })
+about-processes-inference-process = Conclusie ({ $pid })
 # Unknown process names
 # Variables:
 #    $pid (String) The process id of this process, assigned by the OS.

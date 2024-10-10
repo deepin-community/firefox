@@ -7,13 +7,18 @@
 #include <stdint.h>
 
 #include "CubebUtils.h"
+#include "H264.h"
 #include "ImageContainer.h"
 #include "MediaContainerType.h"
 #include "MediaResource.h"
+#include "PDMFactory.h"
 #include "TimeUnits.h"
 #include "mozilla/Base64.h"
+#include "mozilla/EnumeratedRange.h"
 #include "mozilla/dom/ContentChild.h"
+#include "mozilla/gfx/gfxVars.h"
 #include "mozilla/SchedulerGroup.h"
+#include "mozilla/ScopeExit.h"
 #include "mozilla/SharedThreadPool.h"
 #include "mozilla/StaticPrefs_accessibility.h"
 #include "mozilla/StaticPrefs_media.h"
@@ -27,6 +32,10 @@
 #include "nsNetCID.h"
 #include "nsServiceManagerUtils.h"
 #include "nsThreadUtils.h"
+
+#ifdef XP_WIN
+#  include "WMFDecoderModule.h"
+#endif
 
 namespace mozilla {
 
@@ -440,7 +449,7 @@ bool ExtractVPXCodecDetails(const nsAString& aCodec, uint8_t& aProfile,
 }
 
 bool ExtractH264CodecDetails(const nsAString& aCodec, uint8_t& aProfile,
-                             uint8_t& aConstraint, uint8_t& aLevel) {
+                             uint8_t& aConstraint, H264_LEVEL& aLevel) {
   // H.264 codecs parameters have a type defined as avcN.PPCCLL, where
   // N = avc type. avc3 is avcc with SPS & PPS implicit (within stream)
   // PP = profile_idc, CC = constraint_set flags, LL = level_idc.
@@ -469,14 +478,16 @@ bool ExtractH264CodecDetails(const nsAString& aCodec, uint8_t& aProfile,
   aConstraint = Substring(aCodec, 7, 2).ToInteger(&rv, 16);
   NS_ENSURE_SUCCESS(rv, false);
 
-  aLevel = Substring(aCodec, 9, 2).ToInteger(&rv, 16);
+  uint8_t level = Substring(aCodec, 9, 2).ToInteger(&rv, 16);
   NS_ENSURE_SUCCESS(rv, false);
 
-  if (aLevel == 9) {
-    aLevel = H264_LEVEL_1_b;
-  } else if (aLevel <= 5) {
-    aLevel *= 10;
+  if (level == 9) {
+    level = static_cast<uint8_t>(H264_LEVEL::H264_LEVEL_1_b);
+  } else if (level <= 5) {
+    level *= 10;
   }
+
+  aLevel = static_cast<H264_LEVEL>(level);
 
   return true;
 }
@@ -1076,7 +1087,7 @@ static bool StartsWith(const nsACString& string, const char (&prefix)[N]) {
 bool IsH264CodecString(const nsAString& aCodec) {
   uint8_t profile = 0;
   uint8_t constraint = 0;
-  uint8_t level = 0;
+  H264_LEVEL level;
   return ExtractH264CodecDetails(aCodec, profile, constraint, level);
 }
 
@@ -1245,6 +1256,20 @@ void DetermineResolutionForTelemetry(const MediaInfo& aInfo,
     }
   }
   aResolutionOut.AppendASCII(resolution);
+}
+
+bool ContainHardwareCodecsSupported(
+    const media::MediaCodecsSupported& aSupport) {
+  return aSupport.contains(
+             mozilla::media::MediaCodecsSupport::H264HardwareDecode) ||
+         aSupport.contains(
+             mozilla::media::MediaCodecsSupport::VP8HardwareDecode) ||
+         aSupport.contains(
+             mozilla::media::MediaCodecsSupport::VP9HardwareDecode) ||
+         aSupport.contains(
+             mozilla::media::MediaCodecsSupport::AV1HardwareDecode) ||
+         aSupport.contains(
+             mozilla::media::MediaCodecsSupport::HEVCHardwareDecode);
 }
 
 }  // end namespace mozilla

@@ -344,6 +344,9 @@ has-seccomp-bpf = Seccomp-BPF (Жүйелік шақыруларды сүзгі�
 has-seccomp-tsync = Seccomp ағынының синхрондалуы
 has-user-namespaces = Пайдаланушының аттар кеңістіктері
 has-privileged-user-namespaces = Артықшылықты үрдістер үшін пайдаланушының аттар кеңістіктері
+# Variables
+# $status (string) - Boolean value of hasUserNamespaces (should only be false when support-user-namespaces-unavailable is used)
+support-user-namespaces-unavailable = { $status } — Бұл мүмкіндікке жүйеңіз рұқсат бермейді. Бұл { -brand-short-name } қауіпсіздік мүмкіндіктерін шектей алады.
 can-sandbox-content = Құраманың үрдісін құмсалғышта орындау
 can-sandbox-media = Медиа плагиндерін құмсалғышта орындау
 content-sandbox-level = Құрамасы бар үрдістер үшін шектеулер деңгейі
@@ -411,6 +414,20 @@ support-printing-clear-settings-button = Сақталған баспаға шы�
 support-printing-modified-settings = Баспаға шығарудың өзгертілген баптаулары
 support-printing-prefs-name = Аты
 support-printing-prefs-value = Мәні
+
+## Remote Settings sections
+
+support-remote-settings-title = Қашықтан басқару баптаулары
+support-remote-settings-status = Қалып-күйі
+support-remote-settings-status-ok = ОК
+# Status when synchronization is not working.
+support-remote-settings-status-broken = Жұмыс істемейді
+support-remote-settings-last-check = Соңғы тексеру
+support-remote-settings-local-timestamp = Жергілікті уақыт белгісі
+support-remote-settings-sync-history = Тарихы
+support-remote-settings-sync-history-status = Қалып-күйі
+support-remote-settings-sync-history-datetime = Күн
+support-remote-settings-sync-history-infos = Ақпарат
 
 ## Normandy sections
 

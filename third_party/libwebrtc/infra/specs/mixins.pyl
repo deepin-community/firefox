@@ -58,10 +58,10 @@
       'has_native_resultdb_integration': True
     }
   },
-  'ios-device-16.6': {
+  'ios-device-16.7': {
     'swarming': {
       'dimensions': {
-        'os': 'iOS-16.6',
+        'os': 'iOS-16.7.1',
         'pool': 'chrome.tests',
         'device_status': 'available'
       }
@@ -71,9 +71,9 @@
     'swarming': {
       'idempotent': False,
       'dimensions': {
-        'os': 'iOS-15.7.8',
+        'os': 'iOS-17.4.1',
         'pool': 'WebRTC',
-        'id': 'mac-254-e504',
+        'id': 'mac-438-e504',
         'device_status': 'available'
       }
     }
@@ -94,11 +94,11 @@
       }]
     }
   },
-  'ios_runtime_cache_17_0': {
+  'ios_runtime_cache_17_4': {
     'swarming': {
       'named_caches': [{
-        'name': 'runtime_ios_17_0',
-        'path': 'Runtime-ios-17.0'
+        'name': 'runtime_ios_17_4',
+        'path': 'Runtime-ios-17.4'
       }]
     }
   },
@@ -121,6 +121,13 @@
     'swarming': {
       'dimensions': {
         'os': 'Ubuntu-20.04'
+      }
+    }
+  },
+  'linux-jammy': {
+    'swarming': {
+      'dimensions': {
+        'os': 'Ubuntu-22.04'
       }
     }
   },
@@ -307,23 +314,11 @@
       }
     }
   },
-  'xcode_14_main': {
-    'args': ['--xcode-build-version', '14c18'],
-    'swarming': {
-      'dimensions': {
-        'caches': 'xcode_ios_14c18'
-      },
-      'named_caches': [{
-        'name': 'xcode_ios_14c18',
-        'path': 'Xcode.app'
-      }]
-    }
-  },
   'xcode_15_main': {
-    'args': ['--xcode-build-version', '15a507'],
+    'args': ['--xcode-build-version', '15c500b'],
     'swarming': {
       'named_caches': [{
-        'name': 'xcode_ios_15a507',
+        'name': 'xcode_ios_15c500b',
         'path': 'Xcode.app'
       }]
     }

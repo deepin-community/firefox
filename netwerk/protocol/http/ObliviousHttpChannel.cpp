@@ -351,6 +351,16 @@ ObliviousHttpChannel::UpgradeToSecure() {
 }
 
 NS_IMETHODIMP
+ObliviousHttpChannel::GetRequestObserversCalled(bool* aCalled) {
+  return mInnerChannel->GetRequestObserversCalled(aCalled);
+}
+
+NS_IMETHODIMP
+ObliviousHttpChannel::SetRequestObserversCalled(bool aCalled) {
+  return mInnerChannel->SetRequestObserversCalled(aCalled);
+}
+
+NS_IMETHODIMP
 ObliviousHttpChannel::GetRequestContextID(uint64_t* _retval) {
   return mInnerChannel->GetRequestContextID(_retval);
 }
@@ -792,7 +802,10 @@ NS_IMETHODIMP ObliviousHttpChannel::ExplicitSetUploadStream(
   if (mStreamListener) {
     return NS_ERROR_IN_PROGRESS;
   }
-  if (aMethod != "POST"_ns || aStreamHasHeaders) {
+  if (aMethod != "POST"_ns && aMethod != "PUT") {
+    return NS_ERROR_INVALID_ARG;
+  }
+  if (aStreamHasHeaders) {
     return NS_ERROR_INVALID_ARG;
   }
   mMethod.Assign(aMethod);

@@ -2,11 +2,13 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+/* eslint-env webextensions */
+
 /* Avoid adding ID selector rules in this style sheet, since they could
  * inadvertently match elements in the article content. */
 
 // Counts to three and sends a greeting via the browser action of a newly created tab.
-browser.tabs.onCreated.addListener((tab) => {
+browser.tabs.onCreated.addListener(tab => {
   let counter = 0;
   let intervalId = setInterval(() => {
     var message;
@@ -16,9 +18,12 @@ browser.tabs.onCreated.addListener((tab) => {
       message = "Hi!";
       clearInterval(intervalId);
     }
-    browser.browserAction.setBadgeTextColor({tabId: tab.id, color: "#FFFFFF"});
-    browser.browserAction.setBadgeText({tabId: tab.id, text: message});
+    browser.browserAction.setBadgeTextColor({
+      tabId: tab.id,
+      color: "#FFFFFF",
+    });
+    browser.browserAction.setBadgeText({ tabId: tab.id, text: message });
   }, 1000);
 });
 
-browser.browserAction.setBadgeBackgroundColor({color: "#AAAAAA"});
+browser.browserAction.setBadgeBackgroundColor({ color: "#AAAAAA" });

@@ -621,6 +621,8 @@ skip-if = [
 ["test_bug641219.html"]
 
 ["test_bug643051.html"]
+# This test fails with xorigin when 3pc are rejected by default (Bug 1873980).
+skip-if = ["xorigin"]
 
 ["test_bug646157.html"]
 
@@ -771,24 +773,10 @@ skip-if = [
 ]
 
 ["test_bug1261673.html"]
-skip-if = [
-  "os == 'android'",
-  "apple_catalina",
-  "apple_silicon",
-]
 
 ["test_bug1261674-1.html"]
-skip-if = [
-  "os == 'android'",
-  "apple_catalina",
-  "apple_silicon",
-]
 
 ["test_bug1261674-2.html"]
-skip-if = [
-  "apple_catalina",
-  "apple_silicon",
-]
 
 ["test_bug1264157.html"]
 

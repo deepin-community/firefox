@@ -148,7 +148,7 @@ nsresult MediaEngineWebRTCMicrophoneSource::Reconfigure(
 }
 
 AudioProcessing::Config AudioInputProcessing::ConfigForPrefs(
-    const MediaEnginePrefs& aPrefs) {
+    const MediaEnginePrefs& aPrefs) const {
   AudioProcessing::Config config;
 
   config.pipeline.multi_channel_render = true;
@@ -206,6 +206,19 @@ AudioProcessing::Config AudioInputProcessing::ConfigForPrefs(
   config.transient_suppression.enabled = aPrefs.mTransientOn;
 
   config.high_pass_filter.enabled = aPrefs.mHPFOn;
+
+  if (mPlatformProcessingSetParams &
+      CUBEB_INPUT_PROCESSING_PARAM_ECHO_CANCELLATION) {
+    config.echo_canceller.enabled = false;
+  }
+  if (mPlatformProcessingSetParams &
+      CUBEB_INPUT_PROCESSING_PARAM_AUTOMATIC_GAIN_CONTROL) {
+    config.gain_controller1.enabled = config.gain_controller2.enabled = false;
+  }
+  if (mPlatformProcessingSetParams &
+      CUBEB_INPUT_PROCESSING_PARAM_NOISE_SUPPRESSION) {
+    config.noise_suppression.enabled = false;
+  }
 
   return config;
 }
@@ -408,15 +421,76 @@ AudioInputProcessing::AudioInputProcessing(uint32_t aMaxChannelCount)
 }
 
 void AudioInputProcessing::Disconnect(MediaTrackGraph* aGraph) {
-  // This method is just for asserts.
   aGraph->AssertOnGraphThread();
+  mPlatformProcessingSetGeneration = 0;
+  mPlatformProcessingSetParams = CUBEB_INPUT_PROCESSING_PARAM_NONE;
+  ApplySettingsInternal(aGraph, mSettings);
+}
+
+void AudioInputProcessing::NotifySetRequestedInputProcessingParams(
+    MediaTrackGraph* aGraph, int aGeneration,
+    cubeb_input_processing_params aRequestedParams) {
+  aGraph->AssertOnGraphThread();
+  MOZ_ASSERT(aGeneration >= mPlatformProcessingSetGeneration);
+  if (aGeneration <= mPlatformProcessingSetGeneration) {
+    return;
+  }
+  mPlatformProcessingSetGeneration = aGeneration;
+  cubeb_input_processing_params intersection =
+      mPlatformProcessingSetParams & aRequestedParams;
+  LOG("AudioInputProcessing %p platform processing params being applied are "
+      "now %s (Gen %d). Assuming %s while waiting for the result.",
+      this, CubebUtils::ProcessingParamsToString(aRequestedParams).get(),
+      aGeneration, CubebUtils::ProcessingParamsToString(intersection).get());
+  if (mPlatformProcessingSetParams == intersection) {
+    LOG("AudioInputProcessing %p intersection %s of platform processing params "
+        "already applied. Doing nothing.",
+        this, CubebUtils::ProcessingParamsToString(intersection).get());
+    return;
+  }
+  mPlatformProcessingSetParams = intersection;
+  ApplySettingsInternal(aGraph, mSettings);
+}
+
+void AudioInputProcessing::NotifySetRequestedInputProcessingParamsResult(
+    MediaTrackGraph* aGraph, int aGeneration,
+    const Result<cubeb_input_processing_params, int>& aResult) {
+  aGraph->AssertOnGraphThread();
+  if (aGeneration != mPlatformProcessingSetGeneration) {
+    // This is a result from an old request, wait for a more recent one.
+    return;
+  }
+  if (aResult.isOk()) {
+    if (mPlatformProcessingSetParams == aResult.inspect()) {
+      // No change.
+      return;
+    }
+    mPlatformProcessingSetError = Nothing();
+    mPlatformProcessingSetParams = aResult.inspect();
+    LOG("AudioInputProcessing %p platform processing params are now %s.", this,
+        CubebUtils::ProcessingParamsToString(mPlatformProcessingSetParams)
+            .get());
+  } else {
+    mPlatformProcessingSetError = Some(aResult.inspectErr());
+    mPlatformProcessingSetParams = CUBEB_INPUT_PROCESSING_PARAM_NONE;
+    LOG("AudioInputProcessing %p platform processing params failed to apply. "
+        "Applying input processing config in libwebrtc.",
+        this);
+  }
+  ApplySettingsInternal(aGraph, mSettings);
 }
 
 bool AudioInputProcessing::IsPassThrough(MediaTrackGraph* aGraph) const {
   aGraph->AssertOnGraphThread();
   // The high-pass filter is not taken into account when activating the
   // pass through, since it's not controllable from content.
-  return !(mSettings.mAecOn || mSettings.mAgcOn || mSettings.mNoiseOn);
+  auto config = AppliedConfig(aGraph);
+  auto aec = [](const auto& config) { return config.echo_canceller.enabled; };
+  auto agc = [](const auto& config) {
+    return config.gain_controller1.enabled || config.gain_controller2.enabled;
+  };
+  auto ns = [](const auto& config) { return config.noise_suppression.enabled; };
+  return !(aec(config) || agc(config) || ns(config));
 }
 
 void AudioInputProcessing::PassThroughChanged(MediaTrackGraph* aGraph) {
@@ -438,7 +512,7 @@ void AudioInputProcessing::PassThroughChanged(MediaTrackGraph* aGraph) {
   }
 }
 
-uint32_t AudioInputProcessing::GetRequestedInputChannelCount() {
+uint32_t AudioInputProcessing::GetRequestedInputChannelCount() const {
   return mSettings.mChannels;
 }
 
@@ -668,6 +742,10 @@ void AudioInputProcessing::ProcessOutputData(AudioProcessingTrack* aTrack,
     return;
   }
 
+  if (aChunk.mDuration == 0) {
+    return;
+  }
+
   TrackRate sampleRate = aTrack->mSampleRate;
   uint32_t framesPerPacket = GetPacketSize(sampleRate);  // in frames
   // Downmix from aChannels to MAX_CHANNELS if needed.
@@ -815,20 +893,22 @@ void AudioInputProcessing::PacketizeAndProcess(AudioProcessingTrack* aTrack,
       }
     } else {
       channelCountInput = mPacketizerInput->mChannels;
-      // Deinterleave the input data
-      // Prepare an array pointing to deinterleaved channels.
+      webrtc::InterleavedView<const float> interleaved(
+          packet, mPacketizerInput->mPacketSize, channelCountInput);
+      webrtc::DeinterleavedView<float> deinterleaved(
+          mDeinterleavedBuffer.Data(), mPacketizerInput->mPacketSize,
+          channelCountInput);
+
+      Deinterleave(interleaved, deinterleaved);
+
+      // Set up pointers into the deinterleaved data for code below
       deinterleavedPacketizedInputDataChannelPointers.SetLength(
           channelCountInput);
-      offset = 0;
       for (size_t i = 0;
            i < deinterleavedPacketizedInputDataChannelPointers.Length(); ++i) {
         deinterleavedPacketizedInputDataChannelPointers[i] =
-            mDeinterleavedBuffer.Data() + offset;
-        offset += mPacketizerInput->mPacketSize;
+            deinterleaved[i].data();
       }
-      // Deinterleave to mInputBuffer, pointed to by inputBufferChannelPointers.
-      Deinterleave(packet, mPacketizerInput->mPacketSize, channelCountInput,
-                   deinterleavedPacketizedInputDataChannelPointers.Elements());
     }
 
     StreamConfig inputConfig(aTrack->mSampleRate, channelCountInput);
@@ -868,6 +948,7 @@ void AudioInputProcessing::PacketizeAndProcess(AudioProcessingTrack* aTrack,
         !(mPacketCount % 50)) {
       AudioProcessingStats stats = mAudioProcessing->GetStatistics();
       char msg[1024];
+      msg[0] = '\0';
       size_t offset = 0;
 #define AddIfValue(format, member)                                       \
   if (stats.member.has_value()) {                                        \
@@ -962,14 +1043,61 @@ void AudioInputProcessing::DeviceChanged(MediaTrackGraph* aGraph) {
       aGraph, aGraph->CurrentDriver(), this);
 }
 
+cubeb_input_processing_params
+AudioInputProcessing::RequestedInputProcessingParams(
+    MediaTrackGraph* aGraph) const {
+  aGraph->AssertOnGraphThread();
+  if (!mPlatformProcessingEnabled) {
+    return CUBEB_INPUT_PROCESSING_PARAM_NONE;
+  }
+  if (mPlatformProcessingSetError) {
+    return CUBEB_INPUT_PROCESSING_PARAM_NONE;
+  }
+  cubeb_input_processing_params params = CUBEB_INPUT_PROCESSING_PARAM_NONE;
+  if (mSettings.mAecOn) {
+    params |= CUBEB_INPUT_PROCESSING_PARAM_ECHO_CANCELLATION;
+  }
+  if (mSettings.mAgcOn) {
+    params |= CUBEB_INPUT_PROCESSING_PARAM_AUTOMATIC_GAIN_CONTROL;
+  }
+  if (mSettings.mNoiseOn) {
+    params |= CUBEB_INPUT_PROCESSING_PARAM_NOISE_SUPPRESSION;
+  }
+  return params;
+}
+
 void AudioInputProcessing::ApplySettings(MediaTrackGraph* aGraph,
                                          CubebUtils::AudioDeviceID aDeviceID,
                                          const MediaEnginePrefs& aSettings) {
   TRACE("AudioInputProcessing::ApplySettings");
   aGraph->AssertOnGraphThread();
 
+  // CUBEB_ERROR_NOT_SUPPORTED means the backend does not support platform
+  // processing. In that case, leave the error in place so we don't request
+  // processing anew.
+  if (mPlatformProcessingSetError.valueOr(CUBEB_OK) !=
+      CUBEB_ERROR_NOT_SUPPORTED) {
+    mPlatformProcessingSetError = Nothing();
+  }
+
   // Read previous state from mSettings.
   uint32_t oldChannelCount = GetRequestedInputChannelCount();
+
+  ApplySettingsInternal(aGraph, aSettings);
+
+  if (oldChannelCount != GetRequestedInputChannelCount()) {
+    RequestedInputChannelCountChanged(aGraph, aDeviceID);
+  }
+}
+
+void AudioInputProcessing::ApplySettingsInternal(
+    MediaTrackGraph* aGraph, const MediaEnginePrefs& aSettings) {
+  TRACE("AudioInputProcessing::ApplySettingsInternal");
+  aGraph->AssertOnGraphThread();
+
+  mPlatformProcessingEnabled = aSettings.mUsePlatformProcessing;
+
+  // Read previous state from the applied config.
   bool wasPassThrough = IsPassThrough(aGraph);
 
   mSettings = aSettings;
@@ -977,12 +1105,18 @@ void AudioInputProcessing::ApplySettings(MediaTrackGraph* aGraph,
     mAudioProcessing->ApplyConfig(ConfigForPrefs(aSettings));
   }
 
-  if (oldChannelCount != GetRequestedInputChannelCount()) {
-    RequestedInputChannelCountChanged(aGraph, aDeviceID);
-  }
   if (wasPassThrough != IsPassThrough(aGraph)) {
     PassThroughChanged(aGraph);
   }
+}
+
+webrtc::AudioProcessing::Config AudioInputProcessing::AppliedConfig(
+    MediaTrackGraph* aGraph) const {
+  aGraph->AssertOnGraphThread();
+  if (mAudioProcessing) {
+    return mAudioProcessing->GetConfig();
+  }
+  return ConfigForPrefs(mSettings);
 }
 
 void AudioInputProcessing::End() {
@@ -1078,7 +1212,6 @@ void AudioInputProcessing::EnsureAudioProcessing(AudioProcessingTrack* aTrack) {
 void AudioInputProcessing::ResetAudioProcessing(MediaTrackGraph* aGraph) {
   aGraph->AssertOnGraphThread();
   MOZ_ASSERT(IsPassThrough(aGraph) || !mEnabled);
-  MOZ_ASSERT(mPacketizerInput);
 
   LOG_FRAME(
       "(Graph %p, Driver %p) AudioInputProcessing %p Resetting audio "
@@ -1091,9 +1224,10 @@ void AudioInputProcessing::ResetAudioProcessing(MediaTrackGraph* aGraph) {
     mAudioProcessing->Initialize();
   }
 
-  MOZ_ASSERT(static_cast<uint32_t>(mSegment.GetDuration()) +
-                 mPacketizerInput->FramesAvailable() ==
-             mPacketizerInput->mPacketSize);
+  MOZ_ASSERT_IF(mPacketizerInput,
+                static_cast<uint32_t>(mSegment.GetDuration()) +
+                        mPacketizerInput->FramesAvailable() ==
+                    mPacketizerInput->mPacketSize);
 
   // It's ok to clear all the internal buffer here since we won't use mSegment
   // in pass-through mode or when audio processing is disabled.
@@ -1146,15 +1280,12 @@ void AudioProcessingTrack::ProcessInput(GraphTime aFrom, GraphTime aTo,
   TRACE_COMMENT("AudioProcessingTrack::ProcessInput", "AudioProcessingTrack %p",
                 this);
   MOZ_ASSERT(mInputProcessing);
+  MOZ_ASSERT(aFrom < aTo);
 
   LOG_FRAME(
       "(Graph %p, Driver %p) AudioProcessingTrack %p ProcessInput from %" PRId64
       " to %" PRId64 ", needs %" PRId64 " frames",
       mGraph, mGraph->CurrentDriver(), this, aFrom, aTo, aTo - aFrom);
-
-  if (aFrom >= aTo) {
-    return;
-  }
 
   if (!mInputProcessing->IsEnded()) {
     MOZ_ASSERT(TrackTimeToGraphTime(GetEnd()) == aFrom);

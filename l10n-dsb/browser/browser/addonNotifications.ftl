@@ -119,6 +119,7 @@ addon-confirm-install-unsigned-message =
 #   $addonCount (Number): the number of add-ons being installed (at least 2)
 addon-confirm-install-some-unsigned-message =
     { $addonCount ->
+        [one] Glědajśo: Toś to sedło by rady { $addonCount } dodank w { -brand-short-name } instalěrowało, někotare z nich su njewobkšuśone. Pókšacujśo z tym na swójo riziko.
         [two] Glědajśo: Toś to sedło by rady { $addonCount } dodanka w { -brand-short-name } instalěrowało, někotare z nich su njewobkšuśone. Pókšacujśo z tym na swójo riziko.
         [few] Glědajśo: Toś to sedło by rady { $addonCount } dodanki w { -brand-short-name } instalěrowało, někotare z nich su njewobkšuśone. Pókšacujśo z tym na swójo riziko.
        *[other] Glědajśo: Toś to sedło by rady { $addonCount } dodankow w { -brand-short-name } instalěrowało, někotare z nich su njewobkšuśone. Pókšacujśo z tym na swójo riziko.
@@ -131,15 +132,17 @@ addon-confirm-install-some-unsigned-message =
 addon-install-error-network-failure = Dodank njedajo se zwiskoweje zmólki dla ześěgnuś.
 addon-install-error-incorrect-hash = Toś ten dodank njedajo se instalěrowaś, dokulaž njewótpowědujo dodankoju, kótaryž jo { -brand-short-name } wótcakał.
 addon-install-error-corrupt-file = Dodank, kótaryž sćo z toś togo sedła ześěgnuł, njedajo se instalěrowaś, dokulaž zda se, až jo wobškóźony.
-addon-install-error-file-access = { $addonName } njedajo se instalěrowaś, dokulaž { -brand-short-name } njamóžo trěbnu dataju změniś.
+addon-install-error-file-access = { $addonName } njedajo se instalěrowaś, dokulaž { -brand-short-name } njamóžo trjebnu dataju změniś.
 addon-install-error-not-signed = { -brand-short-name } jo toś tomu sedłoju instalěrowanje njewobkšuśonego dodanka zawoborał.
 addon-install-error-invalid-domain = Dodank { $addonName } njedajo se z toś togo městna instalěrowaś.
 addon-local-install-error-network-failure = Toś ten dodank njedajo se systemoweje zmólki dla instalěrowaś.
 addon-local-install-error-incorrect-hash = Toś ten dodank njedajo se instalěrowaś, dokulaž njewótpowědujo dodankoju, kótaryž jo { -brand-short-name } wótcakał.
 addon-local-install-error-corrupt-file = Toś ten dodank njedajo se instalěrowaś, dokulaž zda se, až jo wobškóźony.
-addon-local-install-error-file-access = { $addonName } njedajo se instalěrowaś, dokulaž { -brand-short-name } njamóžo trěbnu dataju změniś.
+addon-local-install-error-file-access = { $addonName } njedajo se instalěrowaś, dokulaž { -brand-short-name } njamóžo trjebnu dataju změniś.
 addon-local-install-error-not-signed = Toś ten dodank njedajo se instalěrowaś, dokulaž zda se, až jo wobkšuśony.
 # Variables:
 #   $appVersion (String): the application version.
 addon-install-error-incompatible = { $addonName } njedajo se instalěrowaś, dokulaž njejo z { -brand-short-name } { $appVersion } kompatibelny.
 addon-install-error-blocklisted = { $addonName } njedajo se instalěrowaś, dokulaž jo wjelike riziko, až zawinujo stabilnostne abo wěstotne problemy.
+# Enterprise policies is a feature aimed at system administrators who want to deploy custom settings for Firefox.
+addon-install-error-admin-install-only = Njamóžośo { $addonName } ako kóńcny wužywaŕ instalěrowaś, dajo se jano wót organizacije z pomocu pśedewześowych pšawidłow instalěrowaś.

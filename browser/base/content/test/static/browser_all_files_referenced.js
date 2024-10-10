@@ -32,6 +32,7 @@ var gExceptionPaths = [
   "chrome://activity-stream/content/data/content/assets/remote/",
   "chrome://activity-stream/content/data/content/assets/mobile-download-qr-new-user-cn.svg",
   "chrome://activity-stream/content/data/content/assets/mobile-download-qr-existing-user-cn.svg",
+  "chrome://activity-stream/content/data/content/assets/mr-amo-collection.svg",
   "chrome://activity-stream/content/data/content/assets/person-typing.svg",
   "chrome://browser/content/assets/moz-vpn.svg",
   "chrome://browser/content/assets/vpn-logo.svg",
@@ -162,6 +163,9 @@ var allowlist = [
   // toolkit/mozapps/extensions/AddonContentPolicy.cpp
   { file: "resource://gre/localization/en-US/toolkit/global/cspErrors.ftl" },
 
+  // toolkit/components/antitracking/bouncetrackingprotection/BounceTrackingProtection.cpp
+  { file: "resource://gre/localization/en-US/toolkit/global/antiTracking.ftl" },
+
   // The l10n build system can't package string files only for some platforms.
   {
     file: "resource://gre/chrome/en-US/locale/en-US/global-platform/mac/accessible.properties",
@@ -276,12 +280,6 @@ var allowlist = [
   // find the references)
   { file: "chrome://browser/content/screenshots/copied-notification.svg" },
 
-  // Bug 1875361
-  { file: "chrome://global/content/ml/SummarizerModel.sys.mjs" },
-
-  // Bug 1886130
-  { file: "chrome://global/content/ml/ModelHub.sys.mjs" },
-
   // toolkit/xre/MacRunFromDmgUtils.mm
   { file: "resource://gre/localization/en-US/toolkit/global/run-from-dmg.ftl" },
 
@@ -290,6 +288,10 @@ var allowlist = [
   { file: "chrome://browser/content/screenshots/copy.svg" },
   { file: "chrome://browser/content/screenshots/download.svg" },
   { file: "chrome://browser/content/screenshots/download-white.svg" },
+
+  // Referenced programmatically
+  { file: "chrome://browser/content/backup/BackupManifest.1.schema.json" },
+  { file: "chrome://browser/content/backup/ArchiveJSONBlock.1.schema.json" },
 ];
 
 if (AppConstants.NIGHTLY_BUILD) {
@@ -358,9 +360,6 @@ const ignorableAllowlist = new Set([
 
   // dom/media/gmp/GMPParent.cpp
   "resource://gre/gmp-clearkey/0.1/manifest.json",
-
-  // Bug 1351669 - obsolete test file
-  "resource://gre/res/test.properties",
 ]);
 for (let entry of ignorableAllowlist) {
   allowlist.add(entry);

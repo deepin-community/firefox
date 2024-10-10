@@ -125,20 +125,20 @@ translations-manage-description = Telecargar de lengas per la traduccion fòra l
 translations-manage-all-language = Totas les lengas
 translations-manage-download-button = Telecargar
 translations-manage-delete-button = Suprimir
+translations-manage-intro-2 = Definissètz vòstras preferéncias de lenga e de traduccion dels sites, e gerissètz lo telecargament de las lengas per la traduccion fòra linha.
+translations-manage-download-description = Telecargar de lengas per la traduccion fòra linha
+translations-manage-language-download-button =
+    .label = Telecargar
+translations-manage-language-download-all-button =
+    .label = Tot telecargar
+    .accesskey = T
 translations-manage-language-remove-button =
     .label = Suprimir
 translations-manage-language-remove-all-button =
     .label = Tot suprimir
     .accesskey = T
-translations-manage-error-install = I a agut un problèma al moment d’installar los fichièrs de lenga. Ensajatz tornamai.
 translations-manage-error-download = I a agut un problèma al moment de telecargar los fichièrs de lenga. Ensajatz tornamai.
 translations-manage-error-delete = I a agut un problèma al moment de suprimir los fichièrs de lenga. Ensajatz tornamai.
-translations-manage-install-description = Installar de lengas per la traduccion fòra linha
-translations-manage-language-install-button =
-    .label = Installar
-translations-manage-language-install-all-button =
-    .label = Tot installar
-    .accesskey = i
 translations-manage-error-remove = I a agut un problèma al moment de levar los fichièrs de lenga. Ensajatz tornamai.
 translations-manage-error-list = Fracàs de la recuperacion de la lista de lengas disponiblas per la traduccion. Actualizatz la pagina e tornatz ensajar.
 translations-settings-title =
@@ -168,12 +168,22 @@ translations-settings-remove-all-sites-button =
 translations-settings-close-dialog =
     .buttonlabelaccept = Tampar
     .buttonaccesskeyaccept = T
+# Text displayed in the select translations panel header.
+select-translations-panel-header = Traduccion
 select-translations-panel-cancel-button =
     .label = Anullar
+# Text displayed on the copy button before it is clicked.
+select-translations-panel-copy-button =
+    .label = Copiar
+# Text displayed on the copy button after it is clicked.
+select-translations-panel-copy-button-copied =
+    .label = Copiat
 select-translations-panel-translate-button =
     .label = Traduire
 select-translations-panel-try-again-button =
     .label = Tornar ensajar
+# Text displayed as a placeholder when the panel is actively translating.
+select-translations-panel-translating-placeholder-text = Traduccions…
 # Text displayed when the translation fails to complete.
 select-translations-panel-translation-failure-message =
     .message = I a agut un problèma al moment de traduire. Ensajatz tornamai.
@@ -187,3 +197,6 @@ select-translations-panel-unsupported-language-message-known =
     .message = O planhèm, prenèm pas encara en carga lo { $language }.
 select-translations-panel-unsupported-language-message-unknown =
     .message = O planhèm, prenèm pas encara en carga aquesta lenga.
+# Text displayed on the menuitem that opens the Translation Settings page.
+select-translations-panel-open-translations-settings-menuitem =
+    .label = Paramètres de traduccion

@@ -227,7 +227,7 @@ intl-regional-prefs = Területi beállítások
 
 remote-debugging-title = Távoli hibakeresés (Chromium protokoll)
 remote-debugging-accepting-connections = Kapcsolatok elfogadása
-remote-debugging-url = URL
+remote-debugging-url = Webcím
 
 ##
 
@@ -344,6 +344,9 @@ has-seccomp-bpf = Seccomp-BPF (rendszerhívás-szűrés)
 has-seccomp-tsync = Seccomp szálszinkronizáció
 has-user-namespaces = Felhasználói névterek
 has-privileged-user-namespaces = Felhasználói névterek privilegizált folyamatokhoz
+# Variables
+# $status (string) - Boolean value of hasUserNamespaces (should only be false when support-user-namespaces-unavailable is used)
+support-user-namespaces-unavailable = { $status } – Ezt a funkciót a rendszer nem engedélyezi. Ez korlátozhatja a { -brand-short-name } biztonsági funkcióit.
 can-sandbox-content = Tartalomfolyamat homokozója
 can-sandbox-media = Médiabővítmény homokozója
 content-sandbox-level = Tartalomfolyamat homokozóhasználati szintje
@@ -411,6 +414,20 @@ support-printing-clear-settings-button = Mentett nyomtatási beállítások tör
 support-printing-modified-settings = Módosított nyomtatási beállítások
 support-printing-prefs-name = Név
 support-printing-prefs-value = Érték
+
+## Remote Settings sections
+
+support-remote-settings-title = Távoli beállítások
+support-remote-settings-status = Állapot
+support-remote-settings-status-ok = Rendben
+# Status when synchronization is not working.
+support-remote-settings-status-broken = Nem működik
+support-remote-settings-last-check = Utolsó ellenőrzés
+support-remote-settings-local-timestamp = Helyi időbélyeg
+support-remote-settings-sync-history = Előzmények
+support-remote-settings-sync-history-status = Állapot
+support-remote-settings-sync-history-datetime = Dátum
+support-remote-settings-sync-history-infos = Információk
 
 ## Normandy sections
 

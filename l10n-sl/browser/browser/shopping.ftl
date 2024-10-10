@@ -40,17 +40,6 @@ shopping-letter-grade-tooltip =
 
 shopping-message-bar-warning-stale-analysis-message-2 = Novi podatki za pregled
 shopping-message-bar-warning-stale-analysis-button = Preveri zdaj
-shopping-message-bar-generic-error-title2 = Trenutno ni na voljo nobenih podatkov
-shopping-message-bar-generic-error-message = Poskušamo odpraviti težavo. Preverite znova pozneje.
-shopping-message-bar-warning-not-enough-reviews-title = Ni še dovolj mnenj
-shopping-message-bar-warning-not-enough-reviews-message2 = Ko bo za ta izdelek na voljo več mnenj, bomo lahko preverili njihovo kakovost.
-shopping-message-bar-warning-product-not-available-title = Izdelek ni na voljo
-shopping-message-bar-warning-product-not-available-message2 = Če opazite, da je izdelek znova na zalogi, nam to sporočite in preverili bomo mnenja.
-shopping-message-bar-warning-product-not-available-button = Sporoči, da je izdelek znova na zalogi
-shopping-message-bar-thanks-for-reporting-title = Hvala za sporočilo!
-shopping-message-bar-thanks-for-reporting-message2 = Podatki o mnenjih za ta izdelek bi morali biti pripravljeni v 24 urah. Preverite znova kasneje.
-shopping-message-bar-warning-product-not-available-reported-title2 = Podatki bomo kmalu na voljo
-shopping-message-bar-warning-product-not-available-reported-message2 = Podatki o mnenjih za ta izdelek bi morali biti pripravljeni v 24 urah. Preverite znova kasneje.
 shopping-message-bar-generic-error =
     .heading = Trenutno ni na voljo nobenih podatkov
     .message = Poskušamo odpraviti težavo. Preverite znova kmalu.
@@ -69,11 +58,17 @@ shopping-message-bar-warning-product-not-available-reported =
     .message = Podatke o mnenjih za ta izdelek bi morali imeti v 24 urah. Preverite znova.
 shopping-message-bar-analysis-in-progress-title2 = Preverjanje kakovosti mnenj
 shopping-message-bar-analysis-in-progress-message2 = To lahko traja približno 60 sekund.
-shopping-message-bar-page-not-supported-title = Teh mnenj ne moremo preveriti
-shopping-message-bar-page-not-supported-message = Za nekatere vrste izdelkov žal ne moremo preveriti kakovosti mnenj. Na primer za darilne kartice ter pretočne videe, glasbo in igre.
+# Variables:
+#  $percentage (Number) - The percentage complete that the analysis is, per our servers.
+shopping-message-bar-analysis-in-progress-with-amount = Preverjanje kakovosti mnenj ({ $percentage } %)
 shopping-message-bar-page-not-supported =
     .heading = Teh mnenj ne moremo preveriti
     .message = Za nekatere vrste izdelkov žal ne moremo preveriti kakovosti mnenj. Na primer za darilne kartice ter pretočne videe, glasbo in igre.
+shopping-message-bar-keep-closed-header =
+    .heading = Ohranim zaprto?
+    .message = Nastavitve lahko spremenite tako, da je Pregledovalnik mnenj privzeto zaprt. Trenutno se samodejno odpre.
+shopping-message-bar-keep-closed-dismiss-button = Ne, hvala
+shopping-message-bar-keep-closed-accept-button = Da, pusti zaprto
 
 ## Strings for the product review snippets card
 
@@ -94,11 +89,27 @@ shopping-show-less-button = Prikaži manj
 
 shopping-settings-label =
     .label = Nastavitve
+shopping-settings-recommendations-toggle2 =
+    .label = Prikazuj priporočila in sponzorirano vsebino
+shopping-settings-recommendations-learn-more3 = { -brand-product-name } ne deli vaših osebnih podatkov, zato vam ta priporočila ne bodo sledila po internetu. <a data-l10n-name="review-quality-url">Več o tem</a>
 shopping-settings-recommendations-toggle =
     .label = Prikaži oglase v pregledovalniku mnenj
-shopping-settings-recommendations-learn-more = Občasno boste videli oglase za primerne izdelke. Vsi oglasi morajo izpolnjevati naše standarde kakovosti mnenj. <a data-l10n-name="review-quality-url">Več o tem</a>
+shopping-settings-recommendations-learn-more2 = Občasno boste videli oglase za primerne izdelke. Oglašujemo samo izdelke z zanesljivimi ocenami. <a data-l10n-name="review-quality-url">Več o tem</a>
 shopping-settings-opt-out-button = Izklopi pregledovalnik mnenj
 powered-by-fakespot = Pregledovalnik mnenj uporablja tehnologijo <a data-l10n-name="fakespot-link">{ -fakespot-brand-full-name }</a>.
+shopping-settings-auto-open-toggle =
+    .label = Samodejno odpri pregledovalnik mnenj
+# Description text for regions where we support three sites. Sites are limited to Amazon, Walmart and Best Buy.
+# Variables:
+#   $firstSite (String) - The first shopping page name
+#   $secondSite (String) - The second shopping page name
+#   $thirdSite (String) - The third shopping page name
+shopping-settings-auto-open-description-three-sites = Ko si ogledujete izdelke na { $firstSite }, { $secondSite } in { $thirdSite }
+# Description text for regions where we support only one site (e.g. currently used in FR/DE with Amazon).
+# Variables:
+#   $currentSite (String) - The current shopping page name
+shopping-settings-auto-open-description-single-site = Med ogledom izdelkov na { $currentSite }
+shopping-settings-sidebar-enabled-state = Pregledovalnik mnenj je <strong>vključen</strong>
 
 ## Strings for the adjusted rating component
 
@@ -107,6 +118,7 @@ powered-by-fakespot = Pregledovalnik mnenj uporablja tehnologijo <a data-l10n-na
 shopping-adjusted-rating-label =
     .label = Prilagojena ocena
 shopping-adjusted-rating-unreliable-reviews = Nezanesljiva mnenja odstranjena
+shopping-adjusted-rating-based-reliable-reviews = Temelji na zanesljivih mnenjih
 
 ## Strings for the review reliability component
 
@@ -120,11 +132,13 @@ shopping-analysis-explainer-label =
 shopping-analysis-explainer-intro2 = Za preverjanje zanesljivosti mnenj o izdelkih uporabljamo tehnologijo umetne inteligence podjetja { -fakespot-brand-full-name }. To vam bo pomagalo oceniti zgolj kakovost mnenja, ne pa tudi izdelka.
 shopping-analysis-explainer-grades-intro = Vsako mnenje o izdelku ocenimo s <strong>črkovno oceno</strong> od A do F.
 shopping-analysis-explainer-adjusted-rating-description = <strong>Prilagojena ocena</strong> temelji samo na mnenjih, za katere menimo, da so zanesljiva.
-shopping-analysis-explainer-learn-more = Spoznajte več o tem, <a data-l10n-name="review-quality-url">kako { -fakespot-brand-full-name } določa kakovost mnenj</a>.
+shopping-analysis-explainer-learn-more2 = Spoznajte več o tem, <a data-l10n-name="review-quality-url">kako { -fakespot-brand-name } določa kakovost mnenj</a>.
 # This string includes the short brand name of one of the three supported
 # websites, which will be inserted without being translated.
 #  $retailer (String) - capitalized name of the shopping website, for example, "Amazon".
 shopping-analysis-explainer-highlights-description = <strong>Poudarki</strong> so vzeti iz mnenj v trgovini { $retailer } v zadnjih 80 dneh, za katera menimo, da so zanesljiva.
+# Fallback for analysis highlights explainer if the retailer is ever unknown
+shopping-analysis-explainer-highlights-description-unknown-retailer = <strong>Poudarki</strong> so vzeti iz mnenj v zadnjih 80 dneh, za katera menimo, da so zanesljiva.
 shopping-analysis-explainer-review-grading-scale-reliable = Zanesljiva mnenja. Verjamemo, da so jih napisale resnične stranke, ki so pustile poštene in nepristranske ocene.
 shopping-analysis-explainer-review-grading-scale-mixed = Menimo, da obstaja mešanica zanesljivih in nezanesljivih mnenj.
 shopping-analysis-explainer-review-grading-scale-unreliable = Nezanesljiva mnenja. Menimo, da so verjetno lažna ali pa so jih napisali pristranski ocenjevalci.
@@ -140,7 +154,7 @@ shopping-sidebar-close-button2 =
 ## The word 'analyzer' when used here reflects what this tool is called on
 ## fakespot.com. If possible, a different word should be used for the Fakespot
 ## tool (the Fakespot by Mozilla 'analyzer') other than 'checker', which is
-## used in the name of the Firefox feature ('Review checker'). If that is not
+## used in the name of the Firefox feature ('Review Checker'). If that is not
 ## possible - if these terms are not meaningfully different - that is OK.
 
 shopping-unanalyzed-product-header-2 = O teh mnenjih še ni podatkov
@@ -151,6 +165,7 @@ shopping-unanalyzed-product-analyze-button = Preveri kakovost mnenj
 
 more-to-consider-ad-label =
     .label = Več za razmislek
+shopping-sponsored-label = Sponzorirano
 ad-by-fakespot = Oglas { -fakespot-brand-name }a
 
 ## Shopping survey strings.
@@ -169,7 +184,6 @@ shopping-survey-q2-radio-3-label = Ne vem
 shopping-survey-next-button-label = Naprej
 shopping-survey-submit-button-label = Pošlji
 shopping-survey-terms-link = Pogoji uporabe
-shopping-survey-thanks-message = Hvala za vaš komentar!
 shopping-survey-thanks =
     .heading = Hvala za vaš komentar!
 
@@ -182,6 +196,22 @@ shopping-callout-pdp-opted-in-title = Hitro ugotovite, ali so ta mnenja zaneslji
 shopping-callout-pdp-opted-in-subtitle = Odprite pregledovalnik mnenj in si oglejte prilagojeno oceno, iz katere so odstranjena nezanesljiva mnenja. Poleg tega si oglejte poudarke iz nedavnih verodostojnih mnenj.
 shopping-callout-closed-not-opted-in-title = En klik do zanesljivih mnenj
 shopping-callout-closed-not-opted-in-subtitle = Preizkusite pregledovalnik mnenj, ko vidite listek s ceno. Preden opravite nakup, pridobite vpogled v mnenja resničnih kupcev.
+shopping-callout-closed-not-opted-in-revised-title = En klik do zanesljivih mnenj
+shopping-callout-closed-not-opted-in-revised-subtitle = Preprosto kliknite ikono s ceno v naslovni vrstici, da se vrnete na Pregledovalnik mnenj.
+shopping-callout-closed-not-opted-in-revised-button = Razumem
+shopping-callout-not-opted-in-reminder-title = Nakupujte z zaupanjem
+shopping-callout-not-opted-in-reminder-subtitle = Niste prepričani, ali so mnenja o izdelku resnična ali lažna? Pomaga vam lahko Pregledovalnik mnenj { -brand-product-name(sklon: "rodilnik") }.
+shopping-callout-not-opted-in-reminder-open-button = Odpri pregledovalnik mnenj
+shopping-callout-not-opted-in-reminder-close-button = Opusti
+shopping-callout-not-opted-in-reminder-ignore-checkbox = Ne prikazuj več
+shopping-callout-not-opted-in-reminder-img-alt =
+    .aria-label = Abstraktna ilustracija treh mnenj o izdelku. Eno ima opozorilni simbol, torej morda ni vredno zaupanja.
+shopping-callout-disabled-auto-open-title = Pregledovalnik mnenj je zdaj privzeto zaprt
+shopping-callout-disabled-auto-open-subtitle = Kadarkoli želite preveriti, ali lahko zaupate mnenju o izdelku, kliknite na ikono listka s ceno v naslovni vrstici.
+shopping-callout-disabled-auto-open-button = Razumem
+shopping-callout-opted-out-title = Pregledovalnik mnenj je izključen
+shopping-callout-opted-out-subtitle = Če ga želite znova vključiti, kliknite ikono s ceno v naslovni vrstici in sledite navodilom.
+shopping-callout-opted-out-button = Razumem
 
 ## Onboarding message strings.
 
@@ -191,15 +221,13 @@ shopping-onboarding-headline = Preizkusite naš zaupanja vreden vodnik po ocenah
 #   $currentSite (str) - The current shopping page name
 #   $secondSite (str) - A second shopping page name
 #   $thirdSite (str) - A third shopping page name
-shopping-onboarding-dynamic-subtitle = Pred nakupom preverite, kako zanesljiva so mnenja o izdelkih v trgovini <b>{ $currentSite }</b>. Pregledovalnik mnenj, preizkusna zmogljivost { -vendor-short-name(sklon: "rodilnik") }, je vgrajen neposredno v { -brand-product-name } in deluje tudi v trgovinah <b>{ $secondSite }</b> in <b>{ $thirdSite }</b>.
-# Dynamic subtitle. Sites are limited to Amazon, Walmart or Best Buy.
+shopping-onboarding-dynamic-subtitle-1 = Pred nakupom preverite, kako zanesljiva so mnenja o izdelkih v trgovini <b>{ $currentSite }</b>. Pregledovalnik mnenj, preizkusna zmogljivost { -brand-product-name(sklon: "rodilnik") }, je vgrajen neposredno v brskalnik. Deluje tudi v trgovinah <b>{ $secondSite }</b> in <b>{ $thirdSite }</b>.
+# Subtitle for countries where we only support one shopping website (e.g. currently used in FR/DE with Amazon)
 # Variables:
 #   $currentSite (str) - The current shopping page name
-#   $secondSite (str) - A second shopping page name
-#   $thirdSite (str) - A third shopping page name
-shopping-onboarding-dynamic-subtitle-1 = Pred nakupom preverite, kako zanesljiva so mnenja o izdelkih v trgovini <b>{ $currentSite }</b>. Pregledovalnik mnenj, preizkusna zmogljivost { -brand-product-name(sklon: "rodilnik") }, je vgrajen neposredno v brskalnik. Deluje tudi v trgovinah <b>{ $secondSite }</b> in <b>{ $thirdSite }</b>.
+shopping-onboarding-single-subtitle = Pred nakupom preverite, kako zanesljiva so mnenja o izdelkih v trgovini <b>{ $currentSite }</b>. Pregledovalnik mnenj, preizkusna zmogljivost { -brand-product-name(sklon: "rodilnik") }, je vgrajen neposredno v brskalnik.
 shopping-onboarding-body = { -fakespot-brand-full-name } vam omogoča, da se izognete pristranskim in nepristnim mnenjem. Naš model umetne inteligence se nenehno izboljšuje, da vas ščiti med nakupovanjem. <a data-l10n-name="learn_more">Več o tem</a>
-shopping-onboarding-opt-in-privacy-policy-and-terms-of-use = Z izbiro “{ shopping-onboarding-opt-in-button }“ se strinjate s <a data-l10n-name="privacy_policy">politiko zasebnosti</a> in <a data-l10n-name="terms_of_use">pogoji uporabe { -fakespot-brand-full-name }.</a>
+shopping-onboarding-opt-in-privacy-policy-and-terms-of-use3 = Z izbiro “{ shopping-onboarding-opt-in-button }“ se strinjate s <a data-l10n-name="privacy_policy">politiko zasebnosti { -brand-product-name(sklon: "rodilnik") }</a> in <a data-l10n-name="terms_of_use">pogoji uporabe { -fakespot-brand-name(sklon: "rodilnik") }.</a>
 shopping-onboarding-opt-in-button = Da, poskusi
 shopping-onboarding-not-now-button = Ne zdaj
 shopping-onboarding-dialog-close-button =

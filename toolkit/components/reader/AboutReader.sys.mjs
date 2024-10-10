@@ -9,6 +9,10 @@ import { AppConstants } from "resource://gre/modules/AppConstants.sys.mjs";
 const lazy = {};
 let gScrollPositions = new Map();
 let lastSelectedTheme = "auto";
+let improvedTextMenuEnabled = Services.prefs.getBoolPref(
+  "reader.improved_text_menu.enabled",
+  false
+);
 
 ChromeUtils.defineESModuleGetters(lazy, {
   AsyncPrefs: "resource://gre/modules/AsyncPrefs.sys.mjs",
@@ -25,15 +29,42 @@ ChromeUtils.defineLazyGetter(
   "pluralRules",
   () => new Services.intl.PluralRules(undefined)
 );
+ChromeUtils.defineLazyGetter(
+  lazy,
+  "l10n",
+  () => new Localization(["toolkit/about/aboutReader.ftl"], true)
+);
+
+const FONT_TYPE_L10N_IDS = {
+  serif: "about-reader-font-type-serif",
+  "sans-serif": "about-reader-font-type-sans-serif",
+  monospace: "about-reader-font-type-monospace",
+};
+
+const FONT_WEIGHT_L10N_IDS = {
+  light: "about-reader-font-weight-light",
+  regular: "about-reader-font-weight-regular",
+  bold: "about-reader-font-weight-bold",
+};
+
+const DEFAULT_TEXT_LAYOUT = {
+  fontSize: 5,
+  fontType: "sans-serif",
+  fontWeight: "regular",
+  contentWidth: 3,
+  lineSpacing: 4,
+  characterSpacing: 1,
+  wordSpacing: 1,
+  textAlignment: "start",
+};
 
 const COLORSCHEME_L10N_IDS = {
-  auto: "about-reader-color-theme-auto",
-  light: "about-reader-color-theme-light",
-  dark: "about-reader-color-theme-dark",
-  sepia: "about-reader-color-theme-sepia",
-  contrast: "about-reader-color-theme-contrast",
-  gray: "about-reader-color-theme-gray",
-  custom: "about-reader-color-theme-custom",
+  auto: "about-reader-color-auto-theme",
+  light: "about-reader-color-light-theme",
+  dark: "about-reader-color-dark-theme",
+  sepia: "about-reader-color-sepia-theme",
+  contrast: "about-reader-color-contrast-theme",
+  gray: "about-reader-color-gray-theme",
 };
 
 const CUSTOM_THEME_COLOR_INPUTS = [
@@ -142,7 +173,9 @@ export var AboutReader = function (
   );
 
   doc.addEventListener("mousedown", this);
+  doc.addEventListener("keydown", this);
   doc.addEventListener("click", this);
+  doc.addEventListener("blur", this, true);
   doc.addEventListener("touchstart", this);
 
   win.addEventListener("pagehide", this);
@@ -201,6 +234,7 @@ export var AboutReader = function (
   if (Services.prefs.getBoolPref("reader.colors_menu.enabled", false)) {
     doc.getElementById("regular-color-scheme").hidden = true;
     doc.getElementById("custom-colors-color-scheme").hidden = false;
+
     this._setupSegmentedButton(
       "colors-menu-color-scheme-buttons",
       colorsMenuColorSchemeOptions,
@@ -216,6 +250,7 @@ export var AboutReader = function (
       "custom-colors-reset-button",
       this._resetCustomColors.bind(this)
     );
+    this._handleThemeFocus();
   } else {
     this._setupSegmentedButton(
       "color-scheme-buttons",
@@ -242,20 +277,205 @@ export var AboutReader = function (
     },
   ];
 
-  let fontType = Services.prefs.getCharPref("reader.font_type");
-  this._setupSegmentedButton(
-    "font-type-buttons",
-    fontTypeOptions,
-    fontType,
-    this._setFontType.bind(this)
+  // TODO: Move font type pref getting alongside other prefs when old menu is retired.
+  let fontType = Services.prefs.getCharPref("reader.font_type", "sans-serif");
+
+  // Differentiates between the tick mark labels for width vs spacing controls
+  // for localization purposes.
+  const [standardSpacingLabel, wideSpacingLabel] = lazy.l10n.formatMessagesSync(
+    [
+      "about-reader-slider-label-spacing-standard",
+      "about-reader-slider-label-spacing-wide",
+    ]
   );
-  this._setFontType(fontType);
+
+  let contentWidthSliderOptions = {
+    min: 1,
+    max: 9,
+    ticks: 9,
+    tickLabels: `[]`,
+    l10nId: "about-reader-content-width-label",
+    icon: "chrome://global/skin/reader/content-width-20.svg",
+    telemetryId: "content-width-slider",
+  };
+
+  let lineSpacingSliderOptions = {
+    min: 1,
+    max: 9,
+    ticks: 9,
+    tickLabels: `[]`,
+    l10nId: "about-reader-line-spacing-label",
+    icon: "chrome://global/skin/reader/line-spacing-20.svg",
+    telemetryId: "line-spacing-slider",
+  };
+
+  let characterSpacingSliderOptions = {
+    min: 1,
+    max: 9,
+    ticks: 9,
+    tickLabels: `["${standardSpacingLabel.value}", "${wideSpacingLabel.value}"]`,
+    l10nId: "about-reader-character-spacing-label",
+    icon: "chrome://global/skin/reader/character-spacing-20.svg",
+    telemetryId: "character-spacing-slider",
+  };
+
+  let wordSpacingSliderOptions = {
+    min: 1,
+    max: 9,
+    ticks: 9,
+    tickLabels: `["${standardSpacingLabel.value}", "${wideSpacingLabel.value}"]`,
+    l10nId: "about-reader-word-spacing-label",
+    icon: "chrome://global/skin/reader/word-spacing-20.svg",
+    telemetryId: "word-spacing-slider",
+  };
+
+  let textAlignmentOptions = [
+    {
+      l10nId: "about-reader-text-alignment-left",
+      groupName: "text-alignment",
+      value: "left",
+      itemClass: "left-align-button",
+    },
+    {
+      l10nId: "about-reader-text-alignment-center",
+      groupName: "text-alignment",
+      value: "center",
+      itemClass: "center-align-button",
+    },
+    {
+      l10nId: "about-reader-text-alignment-right",
+      groupName: "text-alignment",
+      value: "right",
+      itemClass: "right-align-button",
+    },
+  ];
+
+  // If the page is rtl, reverse order of text alignment options.
+  if (isAppLocaleRTL) {
+    textAlignmentOptions = textAlignmentOptions.reverse();
+  }
+
+  if (improvedTextMenuEnabled) {
+    doc.getElementById("regular-text-menu").hidden = true;
+    doc.getElementById("improved-text-menu").hidden = false;
+
+    let selectorFontTypeValues = ["sans-serif", "serif", "monospace"];
+    try {
+      selectorFontTypeValues = JSON.parse(
+        Services.prefs.getCharPref("reader.font_type.values")
+      );
+    } catch (e) {
+      console.error(
+        "There was an error fetching the font type values pref: ",
+        e.message
+      );
+    }
+    this._setupSelector(
+      "font-type",
+      selectorFontTypeValues,
+      fontType,
+      this._setFontTypeSelector.bind(this),
+      FONT_TYPE_L10N_IDS
+    );
+    this._setFontTypeSelector(fontType);
+
+    let fontWeightValues = ["regular", "light", "bold"];
+    try {
+      fontWeightValues = JSON.parse(
+        Services.prefs.getCharPref("reader.font_weight.values")
+      );
+    } catch (e) {
+      console.error(
+        "There was an error fetching the font weight values pref: ",
+        e.message
+      );
+    }
+    let fontWeight = Services.prefs.getCharPref(
+      "reader.font_weight",
+      "regular"
+    );
+    this._setupSelector(
+      "font-weight",
+      fontWeightValues,
+      fontWeight,
+      this._setFontWeight.bind(this),
+      FONT_WEIGHT_L10N_IDS
+    );
+    this._setFontWeight(fontWeight);
+
+    let contentWidth = Services.prefs.getIntPref("reader.content_width", 3);
+    this._setupSlider(
+      "content-width",
+      contentWidthSliderOptions,
+      contentWidth,
+      this._setContentWidthSlider.bind(this)
+    );
+    this._setContentWidthSlider(contentWidth);
+
+    let lineSpacing = Services.prefs.getIntPref("reader.line_height", 4);
+    this._setupSlider(
+      "line-spacing",
+      lineSpacingSliderOptions,
+      lineSpacing,
+      this._setLineSpacing.bind(this)
+    );
+    this._setLineSpacing(lineSpacing);
+
+    let characterSpacing = Services.prefs.getIntPref(
+      "reader.character_spacing",
+      1
+    );
+    this._setupSlider(
+      "character-spacing",
+      characterSpacingSliderOptions,
+      characterSpacing,
+      this._setCharacterSpacing.bind(this)
+    );
+    this._setCharacterSpacing(characterSpacing);
+
+    let wordSpacing = Services.prefs.getIntPref("reader.word_spacing", 1);
+    this._setupSlider(
+      "word-spacing",
+      wordSpacingSliderOptions,
+      wordSpacing,
+      this._setWordSpacing.bind(this)
+    );
+    this._setWordSpacing(wordSpacing);
+
+    let textAlignment = Services.prefs.getCharPref(
+      "reader.text_alignment",
+      "start"
+    );
+    this._setupSegmentedButton(
+      "text-alignment-buttons",
+      textAlignmentOptions,
+      textAlignment,
+      this._setTextAlignment.bind(this)
+    );
+    this._setTextAlignment(textAlignment);
+
+    this._setupButton(
+      "text-layout-reset-button",
+      this._resetTextLayout.bind(this)
+    );
+
+    this._handleTextLayoutFocus();
+  } else {
+    this._setupSegmentedButton(
+      "font-type-buttons",
+      fontTypeOptions,
+      fontType,
+      this._setFontType.bind(this)
+    );
+
+    this._setupContentWidthButtons();
+
+    this._setupLineHeightButtons();
+
+    this._setFontType(fontType);
+  }
 
   this._setupFontSizeButtons();
-
-  this._setupContentWidthButtons();
-
-  this._setupLineHeightButtons();
 
   if (win.speechSynthesis && Services.prefs.getBoolPref("narrate.enabled")) {
     new lazy.NarrateControls(win, this._languagePromise);
@@ -393,6 +613,16 @@ AboutReader.prototype = {
   },
 
   handleEvent(aEvent) {
+    // To avoid buttons that are programmatically clicked being counted twice,
+    // and account for controls that don't fire click events, define a set of
+    // blur only telemetry ids.
+    const blurTelemetryIds = new Set([
+      "colors-menu-custom-tab",
+      "left-align-button",
+      "font-type-selector",
+      "font-weight-selector",
+    ]);
+
     if (!aEvent.isTrusted) {
       return;
     }
@@ -411,18 +641,23 @@ AboutReader.prototype = {
           this._closeDropdowns();
         }
         break;
-      case "click":
-        const buttonLabel =
+      case "keydown":
+        if (aEvent.keyCode == 27) {
+          this._closeDropdowns();
+        }
+        break;
+      case "click": {
+        let clickTelemetryId =
           target.attributes.getNamedItem(`data-telemetry-id`)?.value;
 
-        if (buttonLabel) {
+        if (clickTelemetryId && !blurTelemetryIds.has(clickTelemetryId)) {
           Services.telemetry.recordEvent(
             "readermode",
             "button",
             "click",
             null,
             {
-              label: buttonLabel,
+              label: clickTelemetryId,
             }
           );
         }
@@ -431,7 +666,26 @@ AboutReader.prototype = {
           this._toggleDropdownClicked(aEvent);
         }
         break;
-      case "scroll":
+      }
+      case "blur":
+        if (HTMLElement.isInstance(target)) {
+          let blurTelemetryId =
+            target.attributes.getNamedItem(`data-telemetry-id`)?.value;
+
+          if (blurTelemetryId && blurTelemetryIds.has(blurTelemetryId)) {
+            Services.telemetry.recordEvent(
+              "readermode",
+              "button",
+              "click",
+              null,
+              {
+                label: blurTelemetryId,
+              }
+            );
+          }
+        }
+        break;
+      case "scroll": {
         let lastHeight = this._lastHeight;
         let { windowUtils } = this._win;
         this._lastHeight = windowUtils.getBoundsWithoutFlushing(
@@ -439,17 +693,20 @@ AboutReader.prototype = {
         ).height;
         // Only close dropdowns if the scroll events are not a result of line
         // height / font-size changes that caused a page height change.
-        if (lastHeight == this._lastHeight) {
+        // Prevent dropdowns from closing when scrolling within the popup.
+        let mouseInDropdown = !!this._doc.querySelector(".dropdown.open:hover");
+        if (lastHeight == this._lastHeight && !mouseInDropdown) {
           this._closeDropdowns(true);
         }
 
         break;
+      }
       case "resize":
         this._updateImageMargins();
         this._scheduleToolbarOverlapHandler();
         break;
 
-      case "wheel":
+      case "wheel": {
         let doZoom =
           (aEvent.ctrlKey && zoomOnCtrl) || (aEvent.metaKey && zoomOnMeta);
         if (!doZoom) {
@@ -478,6 +735,7 @@ AboutReader.prototype = {
           this._changeFontSize(-1);
         }
         break;
+      }
 
       case "pagehide":
         this._closeDropdowns();
@@ -494,7 +752,7 @@ AboutReader.prototype = {
 
         break;
 
-      case "change":
+      case "change": {
         let colorScheme;
         if (this.forcedColorsMediaList.matches) {
           colorScheme = "hcm";
@@ -509,6 +767,7 @@ AboutReader.prototype = {
         this._setColorScheme(colorScheme);
 
         break;
+      }
     }
   },
 
@@ -549,8 +808,15 @@ AboutReader.prototype = {
   },
 
   _setupFontSizeButtons() {
-    let plusButton = this._doc.querySelector(".plus-button");
-    let minusButton = this._doc.querySelector(".minus-button");
+    let plusButton, minusButton;
+
+    if (improvedTextMenuEnabled) {
+      plusButton = this._doc.querySelector(".text-size-plus-button");
+      minusButton = this._doc.querySelector(".text-size-minus-button");
+    } else {
+      plusButton = this._doc.querySelector(".plus-button");
+      minusButton = this._doc.querySelector(".minus-button");
+    }
 
     let currentSize = Services.prefs.getIntPref("reader.font_size");
     this._setFontSize(currentSize);
@@ -562,7 +828,6 @@ AboutReader.prototype = {
         if (!event.isTrusted) {
           return;
         }
-        event.stopPropagation();
         this._changeFontSize(+1);
       },
       true
@@ -574,7 +839,6 @@ AboutReader.prototype = {
         if (!event.isTrusted) {
           return;
         }
-        event.stopPropagation();
         this._changeFontSize(-1);
       },
       true
@@ -582,12 +846,18 @@ AboutReader.prototype = {
   },
 
   _updateFontSizeButtonControls() {
-    let plusButton = this._doc.querySelector(".plus-button");
-    let minusButton = this._doc.querySelector(".minus-button");
-
+    let plusButton, minusButton;
     let currentSize = this._fontSize;
-    let fontValue = this._doc.querySelector(".font-size-value");
-    fontValue.textContent = currentSize;
+
+    if (improvedTextMenuEnabled) {
+      plusButton = this._doc.querySelector(".text-size-plus-button");
+      minusButton = this._doc.querySelector(".text-size-minus-button");
+    } else {
+      plusButton = this._doc.querySelector(".plus-button");
+      minusButton = this._doc.querySelector(".minus-button");
+      let fontValue = this._doc.querySelector(".font-size-value");
+      fontValue.textContent = currentSize;
+    }
 
     if (currentSize === this.FONT_SIZE_MIN) {
       minusButton.setAttribute("disabled", true);
@@ -775,6 +1045,239 @@ AboutReader.prototype = {
     );
   },
 
+  _setupSelector(id, options, initialValue, callback, l10nIds) {
+    let doc = this._doc;
+    let selector = doc.getElementById(`${id}-selector`);
+
+    options.forEach(option => {
+      let selectorOption = doc.createElement("option");
+      let presetl10nId = l10nIds[option];
+      if (presetl10nId) {
+        doc.l10n.setAttributes(selectorOption, presetl10nId);
+      } else {
+        selectorOption.text = option;
+      }
+      selectorOption.value = option;
+      selector.appendChild(selectorOption);
+      if (option == initialValue) {
+        selectorOption.setAttribute("selected", true);
+      }
+    });
+
+    selector.addEventListener("change", e => {
+      callback(e.target.value);
+    });
+  },
+
+  _setFontTypeSelector(newFontType) {
+    if (newFontType === "sans-serif") {
+      this._doc.documentElement.style.setProperty(
+        "--font-family",
+        "Helvetica, Arial, sans-serif"
+      );
+    } else if (newFontType === "serif") {
+      this._doc.documentElement.style.setProperty(
+        "--font-family",
+        'Georgia, "Times New Roman", serif'
+      );
+    } else if (newFontType === "monospace") {
+      this._doc.documentElement.style.setProperty(
+        "--font-family",
+        '"Courier New", Courier, monospace'
+      );
+    } else {
+      this._doc.documentElement.style.setProperty(
+        "--font-family",
+        `"${newFontType}"`
+      );
+    }
+
+    lazy.AsyncPrefs.set("reader.font_type", newFontType);
+  },
+
+  _setFontWeight(newFontWeight) {
+    if (newFontWeight === "light") {
+      this._doc.documentElement.style.setProperty("--font-weight", "lighter");
+    } else if (newFontWeight === "regular") {
+      this._doc.documentElement.style.setProperty("--font-weight", "normal");
+    } else if (newFontWeight === "bold") {
+      this._doc.documentElement.style.setProperty("--font-weight", "bolder");
+    }
+
+    lazy.AsyncPrefs.set("reader.font_weight", newFontWeight);
+  },
+
+  _setupSlider(id, options, initialValue, callback) {
+    let doc = this._doc;
+    let slider = doc.createElement("moz-slider");
+
+    slider.setAttribute("min", options.min);
+    slider.setAttribute("max", options.max);
+    slider.setAttribute("value", initialValue);
+    slider.setAttribute("ticks", options.ticks);
+    slider.setAttribute("tick-labels", options.tickLabels);
+    slider.setAttribute("data-l10n-id", options.l10nId);
+    slider.setAttribute("data-l10n-attrs", "label");
+    slider.setAttribute("slider-icon", options.icon);
+    slider.setAttribute("data-telemetry-id", options.telemetryId);
+
+    slider.addEventListener("slider-changed", e => {
+      callback(e.detail);
+    });
+
+    let sliderContainer = doc.getElementById(`${id}-slider`);
+    sliderContainer.appendChild(slider);
+  },
+
+  // Rename this function to setContentWidth when the old menu is retired.
+  _setContentWidthSlider(newContentWidth) {
+    // We map the slider range [1-9] to 20-60em.
+    let width = 20 + 5 * (newContentWidth - 1) + "em";
+    this._doc.body.style.setProperty("--content-width", width);
+    this._scheduleToolbarOverlapHandler();
+    return lazy.AsyncPrefs.set(
+      "reader.content_width",
+      parseInt(newContentWidth)
+    );
+  },
+
+  _setLineSpacing(newLineSpacing) {
+    // We map the slider range [1-9] to 1-2.6em.
+    let spacing = 1 + 0.2 * (newLineSpacing - 1) + "em";
+    this._containerElement.style.setProperty("--line-height", spacing);
+    return lazy.AsyncPrefs.set("reader.line_height", parseInt(newLineSpacing));
+  },
+
+  _setCharacterSpacing(newCharSpacing) {
+    // We map the slider range [1-9] to 0-0.24em.
+    let spacing = (newCharSpacing - 1) * 0.03;
+    this._containerElement.style.setProperty(
+      "--letter-spacing",
+      `${parseFloat(spacing).toFixed(2)}em`
+    );
+    lazy.AsyncPrefs.set("reader.character_spacing", parseInt(newCharSpacing));
+  },
+
+  _setWordSpacing(newWordSpacing) {
+    // We map the slider range [1-9] to 0-0.4em.
+    let spacing = (newWordSpacing - 1) * 0.05;
+    this._containerElement.style.setProperty(
+      "--word-spacing",
+      `${parseFloat(spacing).toFixed(2)}em`
+    );
+    lazy.AsyncPrefs.set("reader.word_spacing", parseInt(newWordSpacing));
+  },
+
+  _setTextAlignment(newTextAlignment) {
+    if (this._textAlignment === newTextAlignment) {
+      return false;
+    }
+
+    const blockImageMarginRight = {
+      left: "auto",
+      center: "auto",
+      right: "0",
+      start: "unset",
+    };
+
+    const blockImageMarginLeft = {
+      left: "0",
+      center: "auto",
+      right: "auto",
+      start: "unset",
+    };
+
+    if (newTextAlignment === "start") {
+      let startAlignButton;
+      if (isAppLocaleRTL) {
+        startAlignButton = this._doc.querySelector(".right-align-button");
+      } else {
+        startAlignButton = this._doc.querySelector(".left-align-button");
+      }
+      startAlignButton.click();
+    }
+
+    this._containerElement.style.setProperty(
+      "--text-alignment",
+      newTextAlignment
+    );
+
+    this._containerElement.style.setProperty(
+      "--block-img-margin-right",
+      blockImageMarginRight[newTextAlignment]
+    );
+
+    this._containerElement.style.setProperty(
+      "--block-img-margin-left",
+      blockImageMarginLeft[newTextAlignment]
+    );
+
+    lazy.AsyncPrefs.set("reader.text_alignment", newTextAlignment);
+    return true;
+  },
+
+  async _resetTextLayout() {
+    let doc = this._doc;
+    const initial = DEFAULT_TEXT_LAYOUT;
+    const changeEvent = new Event("change", { bubbles: true });
+
+    this._resetFontSize();
+    let plusButton = this._doc.querySelector(".text-size-plus-button");
+    let minusButton = this._doc.querySelector(".text-size-minus-button");
+    plusButton.removeAttribute("disabled");
+    minusButton.removeAttribute("disabled");
+
+    let fontType = doc.getElementById("font-type-selector");
+    fontType.value = initial.fontType;
+    fontType.dispatchEvent(changeEvent);
+
+    let fontWeight = doc.getElementById("font-weight-selector");
+    fontWeight.value = initial.fontWeight;
+    fontWeight.dispatchEvent(changeEvent);
+
+    let contentWidth = doc.querySelector("#content-width-slider moz-slider");
+    contentWidth.setAttribute("value", initial.contentWidth);
+    this._setContentWidthSlider(initial.contentWidth);
+
+    let lineSpacing = doc.querySelector("#line-spacing-slider moz-slider");
+    lineSpacing.setAttribute("value", initial.lineSpacing);
+    this._setLineSpacing(initial.lineSpacing);
+
+    let characterSpacing = doc.querySelector(
+      "#character-spacing-slider moz-slider"
+    );
+    characterSpacing.setAttribute("value", initial.characterSpacing);
+    this._setCharacterSpacing(initial.characterSpacing);
+
+    let wordSpacing = doc.querySelector("#word-spacing-slider moz-slider");
+    wordSpacing.setAttribute("value", initial.wordSpacing);
+    this._setWordSpacing(initial.wordSpacing);
+
+    this._setTextAlignment(initial.textAlignment);
+  },
+
+  _handleTextLayoutFocus() {
+    // Retain focus inside the menu panel.
+    let doc = this._doc;
+    let accordion = doc.querySelector("#about-reader-advanced-layout");
+    let advancedHeader = doc.querySelector(".accordion-header");
+    let textResetButton = doc.querySelector(".text-layout-reset-button");
+    let textFirstFocusable = doc.querySelector(".text-size-minus-button");
+
+    textResetButton.addEventListener("keydown", e => {
+      if (e.key === "Tab" && !e.shiftKey) {
+        e.preventDefault();
+        textFirstFocusable.focus();
+      }
+    });
+    advancedHeader.addEventListener("keydown", e => {
+      if (!accordion.hasAttribute("open") && e.key === "Tab" && !e.shiftKey) {
+        e.preventDefault();
+        textFirstFocusable.focus();
+      }
+    });
+  },
+
   _setColorScheme(newColorScheme) {
     // There's nothing to change if the new color scheme is the same as our current scheme.
     if (this._colorScheme === newColorScheme) {
@@ -823,7 +1326,11 @@ AboutReader.prototype = {
     // The input event for the last selected segmented button is fired
     // upon loading a reader article in the same session. To prevent it
     // from overwriting custom colors, we return false.
-    if (this._colorScheme == "custom" && fromInputEvent) {
+    const colorsMenuEnabled = Services.prefs.getBoolPref(
+      "reader.colors_menu.enabled",
+      false
+    );
+    if (colorsMenuEnabled && this._colorScheme == "custom" && fromInputEvent) {
       lastSelectedTheme = colorSchemePref;
       return false;
     }
@@ -865,6 +1372,7 @@ AboutReader.prototype = {
       try {
         article = await ReaderMode.downloadAndParseDocument(
           url,
+          { ...this._doc.nodePrincipal?.originAttributes },
           docContentType
         );
       } catch (e) {
@@ -1160,6 +1668,7 @@ AboutReader.prototype = {
       radioButton.type = "radio";
       radioButton.classList.add("radio-button");
       radioButton.name = option.groupName;
+      radioButton.setAttribute("data-telemetry-id", option.itemClass);
       segmentedButton.appendChild(radioButton);
 
       let item = doc.createElement("label");
@@ -1216,6 +1725,11 @@ AboutReader.prototype = {
 
   _handleColorsTabClick(option) {
     let doc = this._doc;
+    let deck = doc.querySelector("named-deck");
+    if (option == deck.getAttribute("selected-view")) {
+      return;
+    }
+
     if (option == "customtheme") {
       this._setColorSchemePref("custom");
       lazy.AsyncPrefs.set("reader.color_scheme", "custom");
@@ -1230,8 +1744,7 @@ AboutReader.prototype = {
           lastSelectedTheme = label.className.split("-")[0];
         }
       });
-    }
-    if (option == "fxtheme") {
+    } else if (option == "fxtheme") {
       this._setColorSchemePref(lastSelectedTheme);
       lazy.AsyncPrefs.set("reader.color_scheme", lastSelectedTheme);
       // set the last selected button to checked.
@@ -1277,6 +1790,7 @@ AboutReader.prototype = {
     input.setAttribute("prop-name", prop);
     let labelL10nId = `about-reader-custom-colors-${prop}`;
     input.setAttribute("data-l10n-id", labelL10nId);
+    input.setAttribute("data-telemetry-id", `custom-color-picker-${prop}`);
 
     let pref = `reader.custom_colors.${prop}`;
     let customColor = Services.prefs.getStringPref(pref, "");
@@ -1326,6 +1840,32 @@ AboutReader.prototype = {
 
       let defaultColor = DEFAULT_COLORS[property];
       input.setAttribute("color", defaultColor);
+    });
+  },
+
+  _handleThemeFocus() {
+    // Retain focus inside the menu panel.
+    let doc = this._doc;
+    let themeButtons = doc.querySelector(".colors-menu-color-scheme-buttons");
+    let defaultThemeFirstFocusable = doc.querySelector(
+      "#tabs-deck-button-fxtheme"
+    );
+    let themeResetButton = doc.querySelector(".custom-colors-reset-button");
+    let customThemeFirstFocusable = doc.querySelector(
+      "#tabs-deck-button-customtheme"
+    );
+
+    themeButtons.addEventListener("keydown", e => {
+      if (e.key === "Tab" && !e.shiftKey) {
+        e.preventDefault();
+        defaultThemeFirstFocusable.focus();
+      }
+    });
+    themeResetButton.addEventListener("keydown", e => {
+      if (e.key === "Tab" && !e.shiftKey) {
+        e.preventDefault();
+        customThemeFirstFocusable.focus();
+      }
     });
   },
 

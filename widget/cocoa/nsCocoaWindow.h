@@ -42,6 +42,7 @@ enum class NativeKeyBindingsType : uint8_t;
   BOOL mDisabledNeedsDisplay;
 
   NSTrackingArea* mTrackingArea;
+  NSView* mViewWithTrackingArea;
 
   NSRect mDirtyRect;
 
@@ -70,8 +71,9 @@ enum class NativeKeyBindingsType : uint8_t;
 - (void)mouseEntered:(NSEvent*)aEvent;
 - (void)mouseExited:(NSEvent*)aEvent;
 - (void)mouseMoved:(NSEvent*)aEvent;
-- (void)updateTrackingArea;
 - (NSView*)trackingAreaView;
+- (void)createTrackingArea;
+- (void)removeTrackingArea;
 
 - (void)setBeingShown:(BOOL)aValue;
 - (BOOL)isBeingShown;
@@ -279,6 +281,7 @@ class nsCocoaWindow final : public nsBaseWidget {
   void SetInputRegion(const InputRegion&) override;
   void SetColorScheme(const mozilla::Maybe<mozilla::ColorScheme>&) override;
   void SetShowsToolbarButton(bool aShow) override;
+  bool GetSupportsNativeFullscreen();
   void SetSupportsNativeFullscreen(bool aShow) override;
   void SetWindowAnimationType(WindowAnimationType aType) override;
   void SetDrawsTitle(bool aDrawTitle) override;
@@ -366,7 +369,6 @@ class nsCocoaWindow final : public nsBaseWidget {
   void DestroyNativeWindow();
   void UpdateBounds();
   int32_t GetWorkspaceID();
-  void SendSetZLevelEvent();
 
   void DoResize(double aX, double aY, double aWidth, double aHeight,
                 bool aRepaint, bool aConstrainToCurrentScreen);
@@ -406,6 +408,10 @@ class nsCocoaWindow final : public nsBaseWidget {
 
   mozilla::Maybe<TransitionType> mTransitionCurrent;
   std::queue<TransitionType> mTransitionsPending;
+
+  // A runnable we might assign to run ProcessTransitions at a later event loop.
+  // Cancelable so we can cancel it in CancelAllTransitions(), if needed.
+  RefPtr<mozilla::CancelableRunnable> mProcessTransitionsPending;
 
   // Sometimes we add a transition that wasn't requested by a caller. We do this
   // to manage transitions between states that otherwise would be rejected by

@@ -11,6 +11,8 @@
 #  include "nsCocoaFeatures.h"
 #endif
 #include "PathSkia.h"
+#include "skia/include/core/SkFont.h"
+#include "skia/include/core/SkFontTypes.h"
 #include "skia/include/core/SkPaint.h"
 #include "skia/include/core/SkPath.h"
 #include "skia/include/ports/SkTypeface_mac.h"
@@ -466,7 +468,7 @@ bool ScaledFontMac::GetWRFontInstanceOptions(
     std::vector<FontVariation>* aOutVariations) {
   GetVariationsForCTFont(mCTFont, aOutVariations);
 
-  wr::FontInstanceOptions options;
+  wr::FontInstanceOptions options = {};
   options.render_mode = wr::FontRenderMode::Subpixel;
   options.flags = wr::FontInstanceFlags::SUBPIXEL_POSITION;
   if (mUseFontSmoothing) {

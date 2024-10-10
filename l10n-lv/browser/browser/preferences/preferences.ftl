@@ -57,6 +57,9 @@ category-experimental =
 pane-experimental-subtitle = Turpiniet piesardzīgi
 pane-experimental-search-results-header = { -brand-short-name } Eksperimenti: turpiniet piesardzīgi
 pane-experimental-description2 = Papildu konfigurācijas iestatījumu maiņa var ietekmēt { -brand-short-name } veiktspēju vai drošību.
+settings-pane-labs-title = { -firefoxlabs-brand-name }
+settings-category-labs =
+    .tooltiptext = { -firefoxlabs-brand-name }
 pane-experimental-reset =
     .label = Atjaunot noklusējumus
     .accesskey = n
@@ -602,6 +605,9 @@ home-prefs-recent-activity-description = Neseno vietņu un satura izlase
 home-prefs-snippets-header =
     .label = Fragmenti
 home-prefs-snippets-description-new = Padomi un jaunumi no { -vendor-short-name } un { -brand-product-name }
+home-prefs-weather-header =
+    .label = Laikapstākļi
+home-prefs-weather-learn-more-link = Uzzināt vairāk
 # Variables:
 #   $num (number) - Number of rows displayed
 home-prefs-sections-rows-option =
@@ -948,6 +954,7 @@ primary-password-os-auth-dialog-message-win = Lai izveidotu galveno paroli, ieva
 # notes are only valid for English. Please test in your locale.
 primary-password-os-auth-dialog-message-macosx = izveidot galveno paroli
 master-password-os-auth-dialog-caption = { -brand-full-name }
+autofill-creditcard-os-auth-dialog-caption = { -brand-full-name }
 
 ## Privacy section - Autofill
 
@@ -962,14 +969,6 @@ autofill-payment-methods-checkbox-submessage = Ietver kredītkartes un debetkart
     .accesskey = I
 autofill-saved-payment-methods-button = Saglabātās maksājumu metodes
     .accesskey = g
-autofill-reauth-checkbox =
-    { PLATFORM() ->
-        [macos] Lai aizpildītu un rediģētu maksājumu veidus, pieprasīt macOS autentifikāciju.
-        [windows] Lai aizpildītu un rediģētu maksājumu veidus, pieprasīt Windows autentifikāciju.
-        [linux] Lai aizpildītu un rediģētu maksājumu veidus, pieprasīt Linux autentifikāciju.
-       *[other] Lai aizpildītu un rediģētu maksājumu veidus, pieprasīt autentifikāciju.
-    }
-    .accesskey = O
 
 ## Privacy Section - History
 
@@ -1296,6 +1295,9 @@ privacy-segmentation-radio-off =
     .label = Izmantot { -brand-product-name } ieteikumus
 privacy-segmentation-radio-on =
     .label = Rādīt detalizētu informāciju
+
+## Privacy Section - Website Advertising Preferences
+
 
 ## Privacy Section - Security
 ##

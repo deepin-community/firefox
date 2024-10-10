@@ -13,6 +13,19 @@ tabbrowser-menuitem-close =
 #   $title (String): the title of the current tab.
 #   $containerName (String): the name of the current container.
 tabbrowser-container-tab-title = { $title } - { $containerName }
+# This text serves as an on-screen tooltip as well as an accessible name for
+# the "X" button that is shown on the active tab or, when multiple tabs are
+# selected, to all their "X" buttons.
+# Variables:
+#   $tabCount (Number): The number of tabs that will be closed.
+tabbrowser-close-tabs-button =
+    .tooltiptext =
+        { $tabCount ->
+            [one] { $tabCount } rajtark začinić
+            [two] { $tabCount } rajtarkaj začinić
+            [few] { $tabCount } rajtarki začinić
+           *[other] { $tabCount } rajtarkow začinić
+        }
 # Variables:
 #   $tabCount (Number): The number of tabs that will be closed.
 tabbrowser-close-tabs-tooltip =
@@ -134,6 +147,16 @@ tabbrowser-confirm-open-multiple-tabs-checkbox = Warnować, hdy so wočinjenje w
 tabbrowser-confirm-caretbrowsing-title = Tastaturowa nawigacija
 tabbrowser-confirm-caretbrowsing-message = Tłóčenje tasty F7 zapina abo wupina tastaturowu nawigaciju. Tuta funkcija staja pohibliwy kursor do webstronow a dowola wam tekst z tastaturu wubrać. Chceće nětko tastaturowu nawigaciju zapinać?
 tabbrowser-confirm-caretbrowsing-checkbox = Tutón dialogowy kašćik wjace njepokazać.
+
+## Confirmation dialog for closing all duplicate tabs
+
+tabbrowser-confirm-close-duplicate-tabs-title = Kedźbu
+tabbrowser-confirm-close-duplicate-tabs-text = Wostajimy posledni aktiwny rajtark wočinjeny
+tabbrowser-confirm-close-all-duplicate-tabs-title = Dwójne rajtarki začinić?
+tabbrowser-confirm-close-all-duplicate-tabs-text =
+    Začinimy dwójne rajtarki w tutym woknje. Posledni aktiwny
+    rajtark wostanje wočinjeny.
+tabbrowser-confirm-close-all-duplicate-tabs-button-closetabs = Rajtarki začinić
 
 ##
 

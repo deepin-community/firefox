@@ -57,6 +57,10 @@ category-experimental =
 pane-experimental-subtitle = Procedere con cautela
 pane-experimental-search-results-header = Esperimenti di { -brand-short-name }: procedere con cautela
 pane-experimental-description2 = La modifica delle impostazioni avanzate di configurazione può compromettere le prestazioni e la sicurezza di { -brand-short-name }.
+settings-pane-labs-title = { -firefoxlabs-brand-name }
+settings-category-labs =
+    .tooltiptext = { -firefoxlabs-brand-name }
+pane-experimental-description3 = Prova le nostre funzioni sperimentali. Sono in fase di sviluppo e in continua evoluzione, e questo potrebbe influire sul funzionamento di { -brand-short-name }.
 pane-experimental-reset =
     .label = Ripristina predefiniti
     .accesskey = R
@@ -232,6 +236,8 @@ preferences-web-appearance-choice-input-dark =
 # This can appear when using windows HCM or "Override colors: always" without
 # system colors.
 preferences-web-appearance-override-warning = Le impostazioni per l’aspetto dei siti web sono sostituite dall’attuale selezione di colori. <a data-l10n-name="colors-link">Gestisci colori</a>
+# This can appear when using windows HCM or "Override colors: always" without
+# system colors.
 preferences-web-appearance-override-warning2 =
     .message = Le impostazioni per l’aspetto dei siti web sono sostituite dall’attuale selezione di colori.
 # This message contains one link. It can be moved within the sentence as needed
@@ -597,6 +603,10 @@ home-prefs-recent-activity-description = Una selezione di siti e contenuti visua
 home-prefs-snippets-header =
     .label = Snippet
 home-prefs-snippets-description-new = Consigli e notizie da { -vendor-short-name } e { -brand-product-name }
+home-prefs-weather-header =
+    .label = Meteo
+home-prefs-weather-description = Panoramica delle previsioni meteo per oggi
+home-prefs-weather-learn-more-link = Ulteriori informazioni
 # Variables:
 #   $num (number) - Number of rows displayed
 home-prefs-sections-rows-option =
@@ -711,13 +721,10 @@ sync-profile-picture =
 sync-profile-picture-with-alt =
     .tooltiptext = Cambia l’immagine del profilo
     .alt = Cambia l’immagine del profilo
-
 sync-profile-picture-account-problem =
     .alt = Immagine del profilo per l’account
-
 fxa-login-rejected-warning =
     .alt = Avviso
-
 sync-sign-out =
     .label = Disconnetti…
     .accesskey = t
@@ -913,6 +920,9 @@ forms-saved-passwords =
 forms-primary-pw-use =
     .label = Utilizza una password principale
     .accesskey = U
+# This operation requires the user to authenticate with the operating system (device sign-in)
+forms-os-reauth =
+    .label = Richiedi conferma dell’accesso al dispositivo per compilare automaticamente e gestire le password
 forms-primary-pw-learn-more-link = Ulteriori informazioni
 # This string uses the former name of the Primary Password feature
 # ("Master Password" in English) so that the preferences can be found
@@ -945,6 +955,13 @@ primary-password-os-auth-dialog-message-win = Per creare una password principale
 # notes are only valid for English. Please test in your locale.
 primary-password-os-auth-dialog-message-macosx = creare una password principale
 master-password-os-auth-dialog-caption = { -brand-full-name }
+# The macOS string is preceded by the operating system with "Firefox is trying to ".
+autofill-creditcard-os-dialog-message =
+    { PLATFORM() ->
+        [macos] modificare le impostazioni relative ai metodi di pagamento
+       *[other] { -brand-short-name } sta cercando di modificare le impostazioni relative ai metodi di pagamento. Confermare l’accesso al dispositivo per consentire l’operazione.
+    }
+autofill-creditcard-os-auth-dialog-caption = { -brand-full-name }
 
 ## Privacy section - Autofill
 
@@ -959,13 +976,8 @@ autofill-payment-methods-checkbox-submessage = Include carte di credito e di deb
     .accesskey = d
 autofill-saved-payment-methods-button = Metodi di pagamento salvati
     .accesskey = o
-autofill-reauth-checkbox =
-    { PLATFORM() ->
-        [macos] Richiedi autenticazione con macOS per compilare e modificare i metodi di pagamento.
-        [windows] Richiedi autenticazione con Windows per compilare e modificare i metodi di pagamento.
-        [linux] Richiedi autenticazione con Linux per compilare e modificare i metodi di pagamento.
-       *[other] Richiedi autenticazione per compilare e modificare i metodi di pagamento.
-    }
+# This operation requires the user to authenticate with the operating system (device sign-in)
+autofill-reauth-payment-methods-checkbox = Richiedi conferma dell’accesso al dispositivo per compilare automaticamente e gestire i metodi di pagamento
     .accesskey = u
 
 ## Privacy Section - History
@@ -1103,6 +1115,9 @@ addressbar-suggestions-settings = Modifica le impostazioni relative ai suggerime
 addressbar-locbar-showrecentsearches-option =
     .label = Mostra ricerche recenti
     .accesskey = r
+addressbar-locbar-showtrendingsuggestions-option =
+    .label = Mostra suggerimenti di ricerca di tendenza
+    .accesskey = m
 addressbar-quickactions-learn-more = Ulteriori informazioni
 
 ## Privacy Section - Content Blocking
@@ -1294,6 +1309,14 @@ privacy-segmentation-radio-off =
 privacy-segmentation-radio-on =
     .label = Mostra informazioni dettagliate
 
+## Privacy Section - Website Advertising Preferences
+
+website-advertising-header = Impostazioni per le pubblicità nei siti web
+website-advertising-private-attribution =
+    .label = Permetti ai siti web di effettuare misurazioni pubblicitarie nel rispetto della privacy
+    .accesskey = a
+website-advertising-private-attribution-description = Questo permette ai siti di valutare le prestazioni dei loro annunci senza raccogliere dati personali.
+
 ## Privacy Section - Security
 ##
 ## It is important that wording follows the guidelines outlined on this page:
@@ -1344,6 +1367,14 @@ httpsonly-radio-enabled-pbm =
     .label = Attiva solo in finestre anonime
 httpsonly-radio-disabled =
     .label = Non attivare
+
+httpsonly-description2 = { -brand-short-name } crea connessioni sicure e crittate ai siti che visiti. Quando la modalità solo HTTPS è attiva, { -brand-short-name } ti avviserà se una connessione non è sicura.
+httpsonly-radio-enabled2 =
+    .label = Utilizza solo HTTPS in tutte le finestre
+httpsonly-radio-enabled-pbm2 =
+    .label = Utilizza solo HTTPS in finestre anonime
+httpsonly-radio-disabled2 =
+    .label = Prova prima HTTPS, ma consenti connessioni non sicure
 
 ## DoH Section
 
@@ -1409,4 +1440,3 @@ preferences-doh-manage-exceptions =
 desktop-folder-name = Desktop
 downloads-folder-name = Download
 choose-download-folder-title = Selezionare la cartella di download:
-

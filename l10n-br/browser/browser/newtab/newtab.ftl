@@ -228,6 +228,9 @@ newtab-pocket-pocket-firefox-family = { -pocket-brand-name } a zo ul lodenn eus 
 newtab-pocket-save = Enrollañ
 newtab-pocket-saved = Enrollet
 
+## Thumbs up and down buttons that shows over a newtab stories card thumbnail on hover.
+
+
 ## Pocket content onboarding experience dialog and modal for new users seeing the Pocket section for the first time, shown as the first item in the Pocket section.
 
 newtab-pocket-onboarding-discover = Dizoleiñ ar pep gwellañ eus ar web
@@ -276,7 +279,95 @@ newtab-wallpaper-light-red-panda = Panda ruz
 newtab-wallpaper-light-mountain = Menez gwenn
 newtab-wallpaper-light-sky = Oabl gant koumoul limestra ha roz
 newtab-wallpaper-light-color = Furmoù glas, roz ha melen
+newtab-wallpaper-light-landscape = Menezioù gant ur vrumenn c’hlas
 newtab-wallpaper-light-beach = Traezhenn gant ur balmezenn
 newtab-wallpaper-dark-aurora = Tarzh-gouloù
 newtab-wallpaper-dark-color = Furmoù ruz ha glas
 newtab-wallpaper-dark-panda = Panda ruz kuzhet er c’hoad
+newtab-wallpaper-dark-mountain = Menezioù
+
+## Solid Colors
+
+newtab-wallpaper-blue = Glas
+newtab-wallpaper-light-blue = Glas sklaer
+newtab-wallpaper-light-purple = Limestra sklaer
+newtab-wallpaper-light-green = Gwer sklaer
+newtab-wallpaper-green = Gwer
+newtab-wallpaper-yellow = Melen
+newtab-wallpaper-orange = Orañjez
+newtab-wallpaper-pink = Roz
+newtab-wallpaper-light-pink = Roz sklaer
+newtab-wallpaper-red = Ruz
+newtab-wallpaper-dark-blue = Glas teñval
+newtab-wallpaper-dark-purple = Limestra teñval
+newtab-wallpaper-dark-green = Gwer teñval
+newtab-wallpaper-brown = Gell
+
+## Abstract
+
+newtab-wallpaper-category-title-abstract = Difetis
+newtab-wallpaper-abstract-green = Furmoù gwer
+newtab-wallpaper-abstract-blue = Furmoù glas
+newtab-wallpaper-abstract-purple = Furmoù limestra
+newtab-wallpaper-abstract-orange = Furmoù orañjez
+newtab-wallpaper-abstract-blue-purple = Furmoù limestra hag orañjez
+
+## Photographs
+
+newtab-wallpaper-category-title-photographs = Fotoioù
+newtab-wallpaper-beach-at-sunrise = Traezhenn e-pad ar sav-heol
+newtab-wallpaper-beach-at-sunset = Traezhenn e-pad ar c’huzh-heol
+newtab-wallpaper-storm-sky = Oabl arnevek
+newtab-wallpaper-sky-with-pink-clouds = Oabl gant koumoul roz
+newtab-wallpaper-red-panda-yawns-in-a-tree = Panda ruz o vazailhat en ur wezenn
+newtab-wallpaper-white-mountains = Menezioù gwenn
+# Variables
+#   $author_string (String) - The name of the creator of the photo.
+#   $webpage_string (String) - The name of the webpage where the photo is located.
+newtab-wallpaper-attribution = Foto gant <a data-l10n-name="name-link">{ $author_string }</a> war <a data-l10n-name="webpage-link">{ $webpage_string }</a>
+newtab-wallpaper-feature-highlight-button = Komprenet am eus
+# Tooltip for dismiss button
+feature-highlight-dismiss-button =
+    .title = Argas
+    .aria-label = Serriñ an diflugell
+feature-highlight-wallpaper =
+    .title = { -newtab-wallpaper-feature-highlight-header }
+    .aria-label = { -newtab-wallpaper-feature-highlight-content }
+
+## New Tab Weather
+
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-sponsored = { $provider } ∙ Paeroniet
+newtab-weather-menu-change-location = Cheñch al lec’hiadur
+newtab-weather-change-location-search-input = Klask ul lec’h
+# Display options are:
+# - Simple: Displays a current weather condition icon and the current temperature
+# - Detailed: Include simple information plus a short text summary: e.g. "Mostly cloudy"
+newtab-weather-menu-weather-display-option-simple = Eeun
+newtab-weather-menu-temperature-units = Unanenn wrezverk
+newtab-weather-menu-temperature-option-fahrenheit = Fahrenheit
+newtab-weather-menu-temperature-option-celsius = Celsius
+newtab-weather-menu-learn-more = Gouzout hiroc’h
+
+## Topic Labels
+
+newtab-topic-label-education = Deskadurezh
+newtab-topic-label-arts = Dudi
+newtab-topic-label-food = Boued
+newtab-topic-label-health = Yec’hed
+newtab-topic-label-hobbies = C’hoarioù video
+# ”Money” = “Personal Finance”, refers to articles and stories that help readers better manage
+# and understand their personal finances – from saving money to buying a home. See the
+# “Curated by our editors“ section at the top of https://getpocket.com/explore/personal-finance for more context
+newtab-topic-label-finance = Arc’hant
+newtab-topic-label-government = Politikerezh
+newtab-topic-label-education-science = Skiantoù
+newtab-topic-label-sports = Sportoù
+newtab-topic-label-tech = Teknologiezh
+newtab-topic-label-travel = Beajiñ
+
+## Topic Selection Modal
+
+newtab-topic-selection-save-button = Enrollañ
+newtab-topic-selection-cancel-button = Nullañ

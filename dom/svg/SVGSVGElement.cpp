@@ -396,7 +396,7 @@ LengthPercentage SVGSVGElement::GetIntrinsicWidthOrHeight(int aAttr) {
   // that uses the passed argument as the context, but that's fine since we
   // know the length isn't a percentage so the context won't be used (and we
   // need to pass the element to be able to resolve em/ex units).
-  float rawSize = mLengthAttributes[aAttr].GetAnimValue(this);
+  float rawSize = mLengthAttributes[aAttr].GetAnimValueWithZoom(this);
   return LengthPercentage::FromPixels(rawSize);
 }
 
@@ -441,10 +441,19 @@ bool SVGSVGElement::WillBeOutermostSVG(nsINode& aParent) const {
   return true;
 }
 
+void SVGSVGElement::DidChangeSVGView() {
+  InvalidateTransformNotifyFrame();
+  // We map the SVGView transform as the transform css property, so need to
+  // schedule attribute mapping.
+  if (!IsPendingMappedAttributeEvaluation() &&
+      mAttrs.MarkAsPendingPresAttributeEvaluation()) {
+    OwnerDoc()->ScheduleForPresAttrEvaluation(this);
+  }
+}
+
 void SVGSVGElement::InvalidateTransformNotifyFrame() {
-  ISVGSVGFrame* svgframe = do_QueryFrame(GetPrimaryFrame());
   // might fail this check if we've failed conditional processing
-  if (svgframe) {
+  if (ISVGSVGFrame* svgframe = do_QueryFrame(GetPrimaryFrame())) {
     svgframe->NotifyViewportOrTransformChanged(
         ISVGDisplayableFrame::TRANSFORM_CHANGED);
   }
@@ -582,11 +591,6 @@ const SVGAnimatedViewBox& SVGSVGElement::GetViewBoxInternal() const {
   }
 
   return mViewBox;
-}
-
-SVGAnimatedTransformList* SVGSVGElement::GetTransformInternal() const {
-  return (mSVGView && mSVGView->mTransforms) ? mSVGView->mTransforms.get()
-                                             : mTransforms.get();
 }
 
 }  // namespace mozilla::dom

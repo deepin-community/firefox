@@ -95,8 +95,16 @@ export const LinkMenuOptions = {
         url: site.original_url || site.open_url || site.url,
         // pocket_id is only for pocket stories being in highlights, and then dismissed.
         pocket_id: site.pocket_id,
+        tile_id: site.tile_id,
+        recommendation_id: site.recommendation_id,
+        scheduled_corpus_item_id: site.scheduled_corpus_item_id,
+        received_rank: site.received_rank,
+        recommended_at: site.recommended_at,
         // used by PlacesFeed and TopSitesFeed for sponsored top sites blocking.
         isSponsoredTopSite: site.sponsored_position,
+        type: site.type,
+        card_type: site.card_type,
+        ...(site.shim && site.shim.delete ? { shim: site.shim.delete } : {}),
         ...(site.flight_id ? { flight_id: site.flight_id } : {}),
         // If not sponsored, hostname could be anything (Cat3 Data!).
         // So only put in advertiser_name for sponsored topsites.
@@ -306,4 +314,68 @@ export const LinkMenuOptions = {
       : LinkMenuOptions.EmptyItem(),
   OpenInPrivateWindow: (site, index, eventSource, isEnabled) =>
     isEnabled ? _OpenInPrivateWindow(site) : LinkMenuOptions.EmptyItem(),
+  ChangeWeatherLocation: () => ({
+    id: "newtab-weather-menu-change-location",
+    action: ac.BroadcastToContent({
+      type: at.WEATHER_SEARCH_ACTIVE,
+      data: true,
+    }),
+  }),
+  ChangeWeatherDisplaySimple: () => ({
+    id: "newtab-weather-menu-change-weather-display-simple",
+    action: ac.OnlyToMain({
+      type: at.SET_PREF,
+      data: {
+        name: "weather.display",
+        value: "simple",
+      },
+    }),
+  }),
+  ChangeWeatherDisplayDetailed: () => ({
+    id: "newtab-weather-menu-change-weather-display-detailed",
+    action: ac.OnlyToMain({
+      type: at.SET_PREF,
+      data: {
+        name: "weather.display",
+        value: "detailed",
+      },
+    }),
+  }),
+  ChangeTempUnitFahrenheit: () => ({
+    id: "newtab-weather-menu-change-temperature-units-fahrenheit",
+    action: ac.OnlyToMain({
+      type: at.SET_PREF,
+      data: {
+        name: "weather.temperatureUnits",
+        value: "f",
+      },
+    }),
+  }),
+  ChangeTempUnitCelsius: () => ({
+    id: "newtab-weather-menu-change-temperature-units-celsius",
+    action: ac.OnlyToMain({
+      type: at.SET_PREF,
+      data: {
+        name: "weather.temperatureUnits",
+        value: "c",
+      },
+    }),
+  }),
+  HideWeather: () => ({
+    id: "newtab-weather-menu-hide-weather",
+    action: ac.OnlyToMain({
+      type: at.SET_PREF,
+      data: {
+        name: "showWeather",
+        value: false,
+      },
+    }),
+  }),
+  OpenLearnMoreURL: site => ({
+    id: "newtab-weather-menu-learn-more",
+    action: ac.OnlyToMain({
+      type: at.OPEN_LINK,
+      data: { url: site.url },
+    }),
+  }),
 };

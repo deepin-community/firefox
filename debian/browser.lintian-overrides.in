@@ -1,17 +1,22 @@
-@browser@: embedded-library usr/lib/@browser@/libxul.so: libtheora
 # The embedded libjpeg is libjpeg-turbo, not libjpeg.
-@browser@: embedded-library usr/lib/@browser@/libxul.so: libjpeg
+@browser@: embedded-library libjpeg [usr/lib/@browser@/libxul.so]
 # The embedded libpng is patched for APNG support
-@browser@: embedded-library usr/lib/@browser@/libxul.so: libpng
-# Upstream code is not ready to use system library
-@browser@: embedded-library usr/lib/@browser@/libxul.so: srtp
+@browser@: embedded-library libpng [usr/lib/@browser@/libxul.so]
+# False positive from gfx/ots/src/name.cc
+@browser@: embedded-library freetype [usr/lib/@browser@/libxul.so]
+# A version without C++ exceptions
+@browser@: embedded-library libjsoncpp [usr/lib/@browser@/libxul.so]
 # This is a stripped down libavutil
-@browser@: embedded-library usr/lib/@browser@/libmozavutil.so: libavutil
+@browser@: embedded-library libavutil [usr/lib/@browser@/libmozavutil.so]
 %ifndef USE_SYSTEM_NSS
 # Debian doesn't have the right version.
-@browser@: embedded-library usr/lib/@browser@/libnss3.so: nss
+@browser@: embedded-library nss [usr/lib/@browser@/libnss3.so]
 %endif
 %ifndef USE_SYSTEM_NSPR
 # Debian doesn't have the right version.
-@browser@: embedded-library usr/lib/@browser@/libnspr4.so: nspr
+@browser@: embedded-library nspr [usr/lib/@browser@/libnspr4.so]
 %endif
+# The following libraries are stubs to help support both X11 and Wayland.
+@browser@: shared-library-lacks-prerequisites [usr/lib/@browser@/libmozwayland.so]
+@browser@: library-not-linked-against-libc [usr/lib/@browser@/libmozwayland.so]
+@browser@: library-not-linked-against-libc [usr/lib/@browser@/libmozgtk.so]

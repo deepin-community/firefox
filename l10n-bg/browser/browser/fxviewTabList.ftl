@@ -14,14 +14,29 @@ fxviewtabrow-time = { DATETIME($time, timeStyle: "short") }
 #   $targetURI (string) - URL of tab that will be opened in the new tab
 fxviewtabrow-tabs-list-tab =
     .title = Отваряне на { $targetURI } в нов раздел
+# Variables:
+#   $tabTitle (string) - Title of tab being closed
+fxviewtabrow-close-tab-button =
+    .title = Затваряне на { $tabTitle }
+# Used instead of the localized relative time when a timestamp is within a minute or so of now
+fxviewtabrow-just-now-timestamp = Току-що
 
 # Strings below are used for context menu options within panel-list.
 # For developers, this duplicates command because the label attribute is required.
 
+fxviewtabrow-delete = Изтриване
+    .accesskey = И
+fxviewtabrow-forget-about-this-site = Забравяне за този сайт…
+    .accesskey = З
 fxviewtabrow-open-in-window = Отваряне в нов прозорец
     .accesskey = О
 fxviewtabrow-open-in-private-window = Отваряне в поверителен прозорец
     .accesskey = я
+# “Bookmark” is a verb, as in "Bookmark this page" (add to bookmarks).
+fxviewtabrow-add-bookmark = Отмятане…
+    .accesskey = О
+fxviewtabrow-save-to-pocket = Запазване във { -pocket-brand-name }
+    .accesskey = п
 fxviewtabrow-copy-link = Копиране на препратката
     .accesskey = К
 fxviewtabrow-close-tab = Затваряне на раздела
@@ -36,7 +51,22 @@ fxviewtabrow-move-tab-window = Преместване в нов прозорец
     .accesskey = ц
 fxviewtabrow-send-tab = Изпращане на раздела до устройство
     .accesskey = у
+fxviewtabrow-pin-tab = Закачане на раздела
+    .accesskey = З
+fxviewtabrow-unpin-tab = Откачане на раздела
+    .accesskey = т
+fxviewtabrow-mute-tab = Заглушаване на раздела
+    .accesskey = г
+fxviewtabrow-unmute-tab = Включване звука на раздела
+    .accesskey = з
 # Variables:
 #   $tabTitle (string) - Title of the tab to which the context menu is associated
 fxviewtabrow-options-menu-button =
     .title = Опции за { $tabTitle }
+
+## Strings below are to be used without context (tab title/URL) on mute/unmute buttons
+
+fxviewtabrow-mute-tab-button-no-context =
+    .title = Заглушаване на раздела
+fxviewtabrow-unmute-tab-button-no-context =
+    .title = Включване звука на раздела

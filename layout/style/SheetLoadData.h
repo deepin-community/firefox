@@ -13,6 +13,7 @@
 #include "mozilla/PreloaderBase.h"
 #include "mozilla/SharedSubResourceCache.h"
 #include "mozilla/NotNull.h"
+#include "mozilla/dom/CacheExpirationTime.h"
 #include "nsProxyRelease.h"
 
 namespace mozilla {
@@ -123,7 +124,7 @@ class SheetLoadData final
 
   // The expiration time of the channel that has loaded this data, if
   // applicable.
-  uint32_t mExpirationTime = 0;
+  CacheExpirationTime mExpirationTime = CacheExpirationTime::Never();
 
   // Number of sheets we @import-ed that are still loading
   uint32_t mPendingChildren;
@@ -239,12 +240,15 @@ class SheetLoadData final
   // listening for the load.
   bool mIntentionallyDropped = false;
 
+  // The start timestamp for the load.
+  TimeStamp mLoadStart;
+
   const bool mRecordErrors;
 
   bool ShouldDefer() const { return mWasAlternate || !mMediaMatched; }
 
   RefPtr<StyleSheet> ValueForCache() const;
-  uint32_t ExpirationTime() const { return mExpirationTime; }
+  CacheExpirationTime ExpirationTime() const { return mExpirationTime; }
 
   // If there are no child sheets outstanding, mark us as complete.
   // Otherwise, the children are holding strong refs to the data
@@ -269,9 +273,14 @@ class SheetLoadData final
   bool IsLoading() const override { return mIsLoading; }
   bool IsCancelled() const override { return mIsCancelled; }
 
-  void StartLoading() override { mIsLoading = true; }
-  void SetLoadCompleted() override { mIsLoading = false; }
+  void StartLoading() override;
+  void SetLoadCompleted() override;
+
   void Cancel() override { mIsCancelled = true; }
+
+  void SetMinimumExpirationTime(const CacheExpirationTime& aExpirationTime) {
+    mExpirationTime.SetMinimum(aExpirationTime);
+  }
 
  private:
   const SheetLoadData& RootLoadData() const {

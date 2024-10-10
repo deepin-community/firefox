@@ -40,7 +40,7 @@ using hwy::HWY_NAMESPACE::Sub;
 
 // Given a set of DCT coefficients, this returns the result of performing cosine
 // interpolation on the original samples.
-float ContinuousIDCT(const Dct32& dct, const float t) {
+float ContinuousIDCT(const float dct[32], const float t) {
   // We compute here the DCT-3 of the `dct` vector, rescaled by a factor of
   // sqrt(32). This is such that an input vector vector {x, 0, ..., 0} produces
   // a constant result of x. dct[0] was scaled in Dequantize() to allow uniform
@@ -60,7 +60,7 @@ float ContinuousIDCT(const Dct32& dct, const float t) {
   for (int i = 0; i < 32; i += Lanes(df)) {
     auto cos_arg = Mul(LoadU(df, kMultipliers + i), tandhalf);
     auto cos = FastCosf(df, cos_arg);
-    auto local_res = Mul(LoadU(df, dct.data() + i), cos);
+    auto local_res = Mul(LoadU(df, dct + i), cos);
     result = MulAdd(Set(df, kSqrt2), local_res, result);
   }
   return GetLane(SumOfLanes(df, result));
@@ -94,11 +94,11 @@ void DrawSegment(DF df, const SplineSegment& segment, const bool add,
 
 void DrawSegment(const SplineSegment& segment, const bool add, const size_t y,
                  const ssize_t x0, ssize_t x1, float* JXL_RESTRICT rows[3]) {
-  ssize_t x = std::max<ssize_t>(
-      x0, std::llround(segment.center_x - segment.maximum_distance));
+  ssize_t x =
+      std::max<ssize_t>(x0, segment.center_x - segment.maximum_distance + 0.5f);
   // one-past-the-end
-  x1 = std::min<ssize_t>(
-      x1, std::llround(segment.center_x + segment.maximum_distance) + 1);
+  x1 =
+      std::min<ssize_t>(x1, segment.center_x + segment.maximum_distance + 1.5f);
   HWY_FULL(float) df;
   for (; x + static_cast<ssize_t>(Lanes(df)) <= x1; x += Lanes(df)) {
     DrawSegment(df, segment, add, y, x, rows);
@@ -550,8 +550,8 @@ Status QuantizedSpline::Decode(const std::vector<uint8_t>& context_map,
     }
     return true;
   };
-  for (auto& dct : color_dct_) {
-    JXL_RETURN_IF_ERROR(decode_dct(dct));
+  for (int c = 0; c < 3; ++c) {
+    JXL_RETURN_IF_ERROR(decode_dct(color_dct_[c]));
   }
   JXL_RETURN_IF_ERROR(decode_dct(sigma_dct_));
   return true;

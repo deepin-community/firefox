@@ -60,8 +60,9 @@ class CanvasChild final : public PCanvasChild, public SupportsWeakPtr {
    * Ensures that the DrawEventRecorder has been created.
    *
    * @params aTextureType the TextureType to create in the CanvasTranslator.
+   * @returns true if the recorder was successfully created
    */
-  void EnsureRecorder(gfx::IntSize aSize, gfx::SurfaceFormat aFormat,
+  bool EnsureRecorder(gfx::IntSize aSize, gfx::SurfaceFormat aFormat,
                       TextureType aTextureType, TextureType aWebglTextureType);
 
   /**
@@ -155,7 +156,7 @@ class CanvasChild final : public PCanvasChild, public SupportsWeakPtr {
   void CleanupTexture(int64_t aTextureId);
 
   void ReturnDataSurfaceShmem(
-      already_AddRefed<ipc::SharedMemoryBasic> aDataSurfaceShmem);
+      already_AddRefed<ipc::SharedMemory> aDataSurfaceShmem);
 
  protected:
   void ActorDestroy(ActorDestroyReason aWhy) final;
@@ -178,12 +179,12 @@ class CanvasChild final : public PCanvasChild, public SupportsWeakPtr {
   RefPtr<dom::ThreadSafeWorkerRef> mWorkerRef;
   RefPtr<CanvasDrawEventRecorder> mRecorder;
 
-  RefPtr<ipc::SharedMemoryBasic> mDataSurfaceShmem;
+  RefPtr<ipc::SharedMemory> mDataSurfaceShmem;
   bool mDataSurfaceShmemAvailable = false;
   int64_t mLastWriteLockCheckpoint = 0;
   uint32_t mTransactionsSinceGetDataSurface = kCacheDataSurfaceThreshold;
   struct TextureInfo {
-    RefPtr<mozilla::ipc::SharedMemoryBasic> mSnapshotShmem;
+    RefPtr<mozilla::ipc::SharedMemory> mSnapshotShmem;
     bool mRequiresRefresh = false;
   };
   std::unordered_map<int64_t, TextureInfo> mTextureInfo;

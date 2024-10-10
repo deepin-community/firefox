@@ -147,7 +147,7 @@ class LocalMediaDevice final : public nsIMediaDevice {
   nsresult Allocate(const dom::MediaTrackConstraints& aConstraints,
                     const MediaEnginePrefs& aPrefs, uint64_t aWindowId,
                     const char** aOutBadConstraint);
-  void SetTrack(const RefPtr<MediaTrack>& aTrack,
+  void SetTrack(const RefPtr<mozilla::MediaTrack>& aTrack,
                 const nsMainThreadPtrHandle<nsIPrincipal>& aPrincipal);
   nsresult Start();
   nsresult Reconfigure(const dom::MediaTrackConstraints& aConstraints,
@@ -220,7 +220,7 @@ class MediaManager final : public nsIMediaManagerService,
    * manager thread.
    */
   template <typename MozPromiseType, typename FunctionType>
-  static RefPtr<MozPromiseType> Dispatch(const char* aName,
+  static RefPtr<MozPromiseType> Dispatch(StaticString aName,
                                          FunctionType&& aFunction);
 
 #ifdef DEBUG

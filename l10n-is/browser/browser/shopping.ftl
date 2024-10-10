@@ -89,6 +89,9 @@ shopping-show-less-button = Sýna minna
 
 shopping-settings-label =
     .label = Stillingar
+shopping-settings-recommendations-toggle2 =
+    .label = Sýna tillögur og kostað efni
+shopping-settings-recommendations-learn-more3 = { -brand-product-name } deilir ekki persónulegum gögnum þínum, þannig að þessar ráðleggingar munu ekki fylgja þér á internetinu. <a data-l10n-name="review-quality-url">Frekari upplýsingar</a>
 shopping-settings-recommendations-toggle =
     .label = Birta auglýsingar í umsagnaskoðun
 shopping-settings-recommendations-learn-more2 = Þú munt sjá einstaka auglýsingar fyrir tengdar vörur. Allar auglýsingar verða að uppfylla gæðastaðla okkar vegna umsagna. <a data-l10n-name="review-quality-url">Frekari upplýsingar</a>
@@ -115,6 +118,7 @@ shopping-settings-sidebar-enabled-state = Umsagnaskoðun er <strong>virk</strong
 shopping-adjusted-rating-label =
     .label = Aðlöguð einkunn
 shopping-adjusted-rating-unreliable-reviews = Óáreiðanlegar umsagnir fjarlægðar
+shopping-adjusted-rating-based-reliable-reviews = Byggt á áreiðanlegum umsögnum
 
 ## Strings for the review reliability component
 
@@ -135,6 +139,8 @@ shopping-analysis-explainer-learn-more2 = Frekari upplýsingar um <a data-l10n-n
 # websites, which will be inserted without being translated.
 #  $retailer (String) - capitalized name of the shopping website, for example, "Amazon".
 shopping-analysis-explainer-highlights-description = <strong>Hápunktar</strong> eru úr umsögnum um { $retailer } frá síðustu 80 dögum sem við teljum vera áreiðanlegar.
+# Fallback for analysis highlights explainer if the retailer is ever unknown
+shopping-analysis-explainer-highlights-description-unknown-retailer = <strong>Hápunktar</strong> eru úr umsögnum frá síðustu 80 dögum sem við teljum vera áreiðanlegar.
 shopping-analysis-explainer-review-grading-scale-reliable = Áreiðanlegar umsagnir. Við teljum að umsagnirnar séu líklega frá raunverulegum viðskiptavinum sem hafa skilið eftir heiðarlegar og óhlutdrægar umsagnir.
 shopping-analysis-explainer-review-grading-scale-mixed = Við teljum að þarna sé blanda af áreiðanlegum og óáreiðanlegum umsögnum.
 shopping-analysis-explainer-review-grading-scale-unreliable = Óáreiðanlegar umsagnir. Við teljum að umsagnirnar séu líklega falsaðar eða frá hlutdrægum þátttakendum.
@@ -161,6 +167,7 @@ shopping-unanalyzed-product-analyze-button = Athugaðu gæði umsagna
 
 more-to-consider-ad-label =
     .label = Fleira sem mætti skoða
+shopping-sponsored-label = Kostað
 ad-by-fakespot = Auglýsing frá { -fakespot-brand-name }
 
 ## Shopping survey strings.

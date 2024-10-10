@@ -3,7 +3,6 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#include "AppearanceOverride.h"
 #include "mozilla/widget/ThemeChangeKind.h"
 #include "nsLookAndFeel.h"
 #include "nsCocoaFeatures.h"
@@ -19,8 +18,10 @@
 #include "mozilla/StaticPrefs_widget.h"
 #include "mozilla/Telemetry.h"
 #include "mozilla/widget/WidgetMessageUtils.h"
+#include "mozilla/MacStringHelpers.h"
 
 #import <Cocoa/Cocoa.h>
+#import <Carbon/Carbon.h>
 #import <AppKit/NSColor.h>
 
 // This must be included last:
@@ -239,9 +240,6 @@ nsresult nsLookAndFeel::NativeGetColor(ColorID aID, ColorScheme aScheme,
     case ColorID::MozButtonhoverface:
     case ColorID::MozButtonactiveface:
     case ColorID::MozButtondisabledface:
-    case ColorID::MozColheader:
-    case ColorID::MozColheaderhover:
-    case ColorID::MozColheaderactive:
       color = GetColorFromNSColor(NSColor.controlColor);
       if (!NS_GET_A(color)) {
         color = GetColorFromNSColor(NSColor.controlBackgroundColor);
@@ -301,9 +299,6 @@ nsresult nsLookAndFeel::NativeGetColor(ColorID aID, ColorScheme aScheme,
     case ColorID::Menutext:
     case ColorID::Infotext:
     case ColorID::MozCellhighlighttext:
-    case ColorID::MozColheadertext:
-    case ColorID::MozColheaderhovertext:
-    case ColorID::MozColheaderactivetext:
     case ColorID::MozSidebartext:
       color = GetColorFromNSColor(NSColor.controlTextColor);
       break;
@@ -319,6 +314,17 @@ nsresult nsLookAndFeel::NativeGetColor(ColorID aID, ColorScheme aScheme,
       // For inactive list selection
       color = GetColorFromNSColor(NSColor.secondarySelectedControlColor);
       break;
+    case ColorID::MozColheadertext:
+    case ColorID::MozColheaderhovertext:
+    case ColorID::MozColheaderactivetext:
+      color = GetColorFromNSColor(NSColor.headerTextColor);
+      break;
+    case ColorID::MozColheaderactive:
+      color = GetColorFromNSColor(
+          NSColor.unemphasizedSelectedContentBackgroundColor);
+      break;
+    case ColorID::MozColheader:
+    case ColorID::MozColheaderhover:
     case ColorID::MozEventreerow:
       // Background color of even list rows.
       color =
@@ -354,6 +360,8 @@ nsresult nsLookAndFeel::NativeGetColor(ColorID aID, ColorScheme aScheme,
     case ColorID::Activeborder:
     case ColorID::Inactiveborder:
     case ColorID::MozAutofillBackground:
+    case ColorID::TargetTextBackground:
+    case ColorID::TargetTextForeground:
       aColor = GetStandinForNativeColor(aID, aScheme);
       return NS_OK;
     default:
@@ -460,11 +468,6 @@ nsresult nsLookAndFeel::NativeGetInt(IntID aID, int32_t& aResult) {
     case IntID::AlertNotificationOrigin:
       aResult = NS_ALERT_TOP;
       break;
-    case IntID::TabFocusModel:
-      aResult = [NSApp isFullKeyboardAccessEnabled]
-                    ? nsIContent::eTabFocus_any
-                    : nsIContent::eTabFocus_textControlsMask;
-      break;
     case IntID::ScrollToClick: {
       aResult = [[NSUserDefaults standardUserDefaults]
           boolForKey:@"AppleScrollerPagingBehavior"];
@@ -514,6 +517,9 @@ nsresult nsLookAndFeel::NativeGetInt(IntID aID, int32_t& aResult) {
       break;
     case IntID::PanelAnimations:
       aResult = 1;
+      break;
+    case IntID::FullKeyboardAccess:
+      aResult = NSApp.isFullKeyboardAccessEnabled;
       break;
     default:
       aResult = 0;
@@ -577,6 +583,19 @@ void nsLookAndFeel::RecordAccessibilityTelemetry() {
   }
 }
 
+nsresult nsLookAndFeel::GetKeyboardLayoutImpl(nsACString& aLayout) {
+  TISInputSourceRef source = ::TISCopyCurrentKeyboardInputSource();
+  nsAutoString layout;
+
+  CFStringRef layoutName = static_cast<CFStringRef>(
+      ::TISGetInputSourceProperty(source, kTISPropertyLocalizedName));
+  CopyNSStringToXPCOMString((const NSString*)layoutName, layout);
+  aLayout.Assign(NS_ConvertUTF16toUTF8(layout));
+
+  ::CFRelease(source);
+  return NS_OK;
+}
+
 @implementation MOZLookAndFeelDynamicChangeObserver
 
 + (void)startObserving {
@@ -630,10 +649,6 @@ void nsLookAndFeel::RecordAccessibilityTelemetry() {
                   object:nil
       suspensionBehavior:NSNotificationSuspensionBehaviorDeliverImmediately];
 
-  [MOZGlobalAppearance.sharedInstance addObserver:self
-                                       forKeyPath:@"effectiveAppearance"
-                                          options:0
-                                          context:nil];
   [NSApp addObserver:self
           forKeyPath:@"effectiveAppearance"
              options:0

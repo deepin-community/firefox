@@ -76,8 +76,9 @@ dependencies {
         api getGeckoViewDependency()
     }
 
+    implementation ComponentsDependencies.androidx_core_ktx
     implementation ComponentsDependencies.androidx_paging
-    implementation ComponentsDependencies.androidx_data_store_preferences
+    implementation ComponentsDependencies.androidx_datastore_preferences
     implementation ComponentsDependencies.androidx_lifecycle_livedata
 
     testImplementation ComponentsDependencies.androidx_test_core
@@ -90,8 +91,8 @@ dependencies {
 
     // We only compile against Glean. It's up to the app to add those dependencies
     // if it wants to collect GeckoView telemetry through the Glean SDK.
-    compileOnly project(":service-glean")
-    testImplementation project(":service-glean")
+    compileOnly ComponentsDependencies.mozilla_glean
+    testImplementation ComponentsDependencies.mozilla_glean
     testImplementation ComponentsDependencies.androidx_work_testing
 
     androidTestImplementation ComponentsDependencies.androidx_test_core
@@ -100,6 +101,7 @@ dependencies {
     androidTestImplementation project(':tooling-fetch-tests')
 }
 
+ext.gleanNamespace = "mozilla.telemetry.glean"
 apply plugin: "org.mozilla.telemetry.glean-gradle-plugin"
 apply from: '../../../android-lint.gradle'
 apply from: '../../../publish.gradle'

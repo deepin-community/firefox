@@ -44,6 +44,10 @@ struct IDCompositionVirtualSurface;
 
 namespace mozilla {
 
+namespace gfx {
+color::ColorProfileDesc QueryOutputColorProfile();
+}
+
 namespace gl {
 class GLContext;
 }
@@ -59,6 +63,7 @@ class DCSurface;
 class DCSurfaceVideo;
 class DCSurfaceHandle;
 class RenderTextureHost;
+class RenderTextureHostUsageInfo;
 class RenderDcompSurfaceTextureHost;
 
 struct GpuOverlayInfo {
@@ -70,6 +75,9 @@ struct GpuOverlayInfo {
   UINT mYuy2OverlaySupportFlags = 0;
   UINT mBgra8OverlaySupportFlags = 0;
   UINT mRgb10a2OverlaySupportFlags = 0;
+
+  bool mSupportsVpSuperResolution = false;
+  bool mSupportsVpAutoHDR = false;
 };
 
 // -
@@ -248,8 +256,6 @@ class DCLayerTree {
 
   bool mPendingCommit;
 
-  static color::ColorProfileDesc QueryOutputColorProfile();
-
   mutable Maybe<color::ColorProfileDesc> mOutputColorProfile;
 
   DCompOverlayTypes mUsedOverlayTypesInFrame = DCompOverlayTypes::NO_OVERLAY;
@@ -258,7 +264,7 @@ class DCLayerTree {
  public:
   const color::ColorProfileDesc& OutputColorProfile() const {
     if (!mOutputColorProfile) {
-      mOutputColorProfile = Some(QueryOutputColorProfile());
+      mOutputColorProfile = Some(gfx::QueryOutputColorProfile());
     }
     return *mOutputColorProfile;
   }
@@ -389,6 +395,8 @@ class DCSurfaceVideo : public DCSurface {
 
   DCSurfaceVideo* AsDCSurfaceVideo() override { return this; }
 
+  void DisableVideoOverlay();
+
  protected:
   virtual ~DCSurfaceVideo();
 
@@ -409,6 +417,7 @@ class DCSurfaceVideo : public DCSurface {
   bool mFailedYuvSwapChain = false;
   RefPtr<RenderTextureHost> mRenderTextureHost;
   RefPtr<RenderTextureHost> mPrevTexture;
+  RefPtr<RenderTextureHostUsageInfo> mRenderTextureHostUsageInfo;
   int mSlowPresentCount = 0;
   bool mFirstPresent = true;
   const UINT mSwapChainBufferCount;

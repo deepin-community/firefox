@@ -190,6 +190,14 @@ class ChromeUtils {
 
   static void ClearStyleSheetCache(GlobalObject& aGlobal);
 
+  static void ClearScriptCacheByPrincipal(GlobalObject&,
+                                          nsIPrincipal* aForPrincipal);
+
+  static void ClearScriptCacheByBaseDomain(GlobalObject& aGlobal,
+                                           const nsACString& aBaseDomain);
+
+  static void ClearScriptCache(GlobalObject& aGlobal);
+
   static void SetPerfStatsCollectionMask(GlobalObject& aGlobal, uint64_t aMask);
 
   static already_AddRefed<Promise> CollectPerfStats(GlobalObject& aGlobal,
@@ -239,9 +247,6 @@ class ChromeUtils {
                           JS::Handle<JSObject*> stack,
                           JS::MutableHandle<JSObject*> aRetVal,
                           ErrorResult& aRv);
-
-  static already_AddRefed<Promise> RequestIOActivity(GlobalObject& aGlobal,
-                                                     ErrorResult& aRv);
 
   static bool HasReportingHeaderForOrigin(GlobalObject& global,
                                           const nsAString& aOrigin,

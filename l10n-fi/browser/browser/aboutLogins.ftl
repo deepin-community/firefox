@@ -136,6 +136,8 @@ login-item-copied-username-button-text = Kopioitu!
 login-item-password-label = Salasana
 login-item-password-reveal-checkbox =
     .aria-label = Näytä salasana
+login-item-password-conceal-checkbox =
+    .aria-label = Piilota salasana
 login-item-copy-password-button-text = Kopioi
 login-item-copied-password-button-text = Kopioitu!
 login-item-save-changes-button = Tallenna muutokset
@@ -167,6 +169,13 @@ about-logins-edit-login-os-auth-dialog-message-win = Jatka muokkaamaan kirjautum
 # This message can be seen when attempting to edit a login in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-edit-login-os-auth-dialog-message-macosx = muokata tallennettua kirjautumistietoa
+# The macOS strings are preceded by the operating system with "Firefox is trying to ".
+# This message can be seen when attempting to disable osauth in about:preferences.
+about-logins-os-auth-dialog-message =
+    { PLATFORM() ->
+        [macos] muuttaa salasanojen asetuksia
+       *[other] { -brand-short-name } yrittää muuttaa salasanojen asetuksia. Käytä laitteen sisäänkirjautumista salliaksesi tämän.
+    }
 # This message can be seen when attempting to edit a login in about:logins on Windows.
 about-logins-edit-login-os-auth-dialog-message2-win = Jos haluat muokata salasanaasi, anna Windows-kirjautumistietosi. Tämä auttaa suojaamaan tilisi.
 # This message can be seen when attempting to edit a login in about:logins
@@ -245,12 +254,6 @@ about-logins-confirm-remove-all-sync-dialog-message =
     { $count ->
         [1] Tämä poistaa kirjautumistiedon, jonka olet tallentanut { -brand-short-name }iin, kaikilta laitteilta, jotka on synkronoitu { -fxaccount-brand-name(case: "allative") }. Tämä poistaa myös tässä näkyvät vuotohälytykset. Tätä toimintoa ei voi kumota.
        *[other] Tämä poistaa kaikki kirjautumistiedot, jotka olet tallentanut { -brand-short-name }iin, kaikilta laitteilta, jotka on synkronoitu { -fxaccount-brand-name(case: "allative") }. Tämä poistaa myös tässä näkyvät vuotohälytykset. Tätä toimintoa ei voi kumota.
-    }
-about-logins-confirm-remove-all-sync-dialog-message2 =
-    { $count ->
-        [1] Tämä poistaa kirjautumistiedon, jonka olet tallentanut { -brand-short-name }iin, kaikilta laitteilta, jotka on synkronoitu tilillesi. Tämä poistaa myös tässä näkyvät vuotohälytykset. Tätä toimintoa ei voi kumota.
-        [one] Tämä poistaa kirjautumistiedon, jonka olet tallentanut { -brand-short-name }iin, kaikilta laitteilta, jotka on synkronoitu tilillesi. Tämä poistaa myös tässä näkyvät vuotohälytykset. Tätä toimintoa ei voi kumota.
-       *[other] Tämä poistaa kaikki kirjautumistiedot, jotka olet tallentanut { -brand-short-name }iin, kaikilta laitteilta, jotka on synkronoitu tilillesi. Tämä poistaa myös tässä näkyvät vuotohälytykset. Tätä toimintoa ei voi kumota.
     }
 # Checkbox for modal to confirm the removal of saved passwords
 about-logins-confirm-remove-all-dialog-checkbox-label2 =

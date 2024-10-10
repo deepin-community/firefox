@@ -138,16 +138,8 @@ translations-manage-language-remove-button =
 translations-manage-language-remove-all-button =
     .label = Rimuovi tutte
     .accesskey = e
-translations-manage-error-install = Si è verificato un errore durante l’installazione dei file di lingua. Riprova.
 translations-manage-error-download = Si è verificato un errore durante il download dei file di lingua. Riprova.
 translations-manage-error-delete = Si è verificato un errore durante l’eliminazione dei file di lingua. Riprova.
-translations-manage-intro = Imposta le tue preferenze relative alla lingua e alla traduzione dei siti, gestisci le lingue installate per la traduzione non in linea.
-translations-manage-install-description = Installa lingue per la traduzione non in linea
-translations-manage-language-install-button =
-    .label = Installa
-translations-manage-language-install-all-button =
-    .label = Installa tutte
-    .accesskey = I
 translations-manage-error-remove = Si è verificato un errore durante la rimozione dei file di lingua. Riprova.
 translations-manage-error-list = Impossibile ottenere l’elenco delle lingue disponibili per la traduzione. Aggiorna la pagina per riprovare.
 translations-settings-title =
@@ -265,3 +257,7 @@ select-translations-panel-unsupported-language-message-unknown =
 # Text displayed on the menuitem that opens the Translation Settings page.
 select-translations-panel-open-translations-settings-menuitem =
     .label = Impostazioni traduzione
+
+# An announcement made to assistive technology when the translation is complete
+select-translations-panel-translation-complete-announcement = Traduzione completata
+

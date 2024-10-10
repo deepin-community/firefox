@@ -106,12 +106,12 @@ NS_IMPL_RELEASE(SharedWorkerInterfaceRequestor)
 NS_IMPL_QUERY_INTERFACE(SharedWorkerInterfaceRequestor, nsIInterfaceRequestor)
 
 // Normal runnable because AddPortIdentifier() is going to exec JS code.
-class MessagePortIdentifierRunnable final : public WorkerRunnable {
+class MessagePortIdentifierRunnable final : public WorkerThreadRunnable {
  public:
   MessagePortIdentifierRunnable(WorkerPrivate* aWorkerPrivate,
                                 RemoteWorkerChild* aActor,
                                 const MessagePortIdentifier& aPortIdentifier)
-      : WorkerRunnable(aWorkerPrivate, "MessagePortIdentifierRunnable"),
+      : WorkerThreadRunnable("MessagePortIdentifierRunnable"),
         mActor(aActor),
         mPortIdentifier(aPortIdentifier) {}
 
@@ -136,7 +136,7 @@ class RemoteWorkerCSPEventListener final : public nsICSPEventListener {
   NS_DECL_ISUPPORTS
 
   explicit RemoteWorkerCSPEventListener(RemoteWorkerChild* aActor)
-      : mActor(aActor){};
+      : mActor(aActor) {};
 
   NS_IMETHOD OnCSPViolationEvent(const nsAString& aJSON) override {
     mActor->CSPViolationPropagationOnMainThread(aJSON);
@@ -593,7 +593,7 @@ void RemoteWorkerChild::ErrorPropagationOnMainThread(
   if (aIsErrorEvent) {
     ErrorData data(
         aReport->mIsWarning, aReport->mLineNumber, aReport->mColumnNumber,
-        aReport->mMessage, aReport->mFilename, aReport->mLine,
+        aReport->mMessage, aReport->mFilename,
         TransformIntoNewArray(aReport->mNotes, [](const WorkerErrorNote& note) {
           return ErrorDataNote(note.mLineNumber, note.mColumnNumber,
                                note.mMessage, note.mFilename);
@@ -933,7 +933,7 @@ class RemoteWorkerChild::SharedWorkerOp : public RemoteWorkerChild::Op {
           new MessagePortIdentifierRunnable(
               workerPrivate, aOwner,
               mOp.get_RemoteWorkerPortIdentifierOp().portIdentifier());
-      if (NS_WARN_IF(!r->Dispatch())) {
+      if (NS_WARN_IF(!r->Dispatch(workerPrivate))) {
         aOwner->ErrorPropagationDispatch(NS_ERROR_FAILURE);
       }
     } else if (mOp.type() == RemoteWorkerOp::TRemoteWorkerAddWindowIDOp) {

@@ -196,6 +196,8 @@ newtab-section-header-recent-activity = Recente activitate
 #   $provider (string) - Name of the corresponding content provider.
 newtab-section-header-pocket = Recommendate per { $provider }
 newtab-section-header-stories = Historias que face pensar
+# "picks" refers to recommended articles
+newtab-section-header-todays-picks = Selectiones hodierne pro te
 
 ## Empty Section States: These show when there are no more items in a section. Ex. When there are no more Pocket story recommendations, in the space where there would have been stories, this is shown instead.
 
@@ -229,6 +231,19 @@ newtab-pocket-pocket-firefox-family = { -pocket-brand-name } es parte del famili
 # A save to Pocket button that shows over the card thumbnail on hover.
 newtab-pocket-save = Salvar
 newtab-pocket-saved = Salvate
+
+## Thumbs up and down buttons that shows over a newtab stories card thumbnail on hover.
+
+# Clicking the thumbs up button for this story will result in more stories like this one being recommended
+newtab-pocket-thumbs-up-tooltip =
+    .title = Plus como isto
+# Clicking the thumbs down button for this story informs us that the user does not feel like the story is interesting for them
+newtab-pocket-thumbs-down-tooltip =
+    .title = Non me interessa
+newtab-toast-thumbs-up-or-down = Gratias. Cognoscer tu opinion nos adjuta a meliorar tu canal.
+newtab-toast-dismiss-button =
+    .title = Dimitter
+    .aria-label = Dimitter
 
 ## Pocket content onboarding experience dialog and modal for new users seeing the Pocket section for the first time, shown as the first item in the Pocket section.
 
@@ -268,6 +283,9 @@ newtab-custom-recent-subtitle = Un selection de sitos e contento recente
 newtab-custom-recent-toggle =
     .label = Activitate recente
     .description = Un selection de sitos e contento recente
+newtab-custom-weather-toggle =
+    .label = Meteo
+    .description = Prevision hodierne a un colpo de oculos
 newtab-custom-close-button = Clauder
 newtab-custom-settings = Gerer altere parametros
 
@@ -287,7 +305,125 @@ newtab-wallpaper-dark-panda = Panda rubie celate in bosco
 newtab-wallpaper-dark-sky = Paisage urban con un celo nocturne
 newtab-wallpaper-dark-mountain = Paisage montan
 newtab-wallpaper-dark-city = Paisage urban purpuree
+
+## Solid Colors
+
+newtab-wallpaper-category-title-colors = Colores unite
+newtab-wallpaper-blue = Blau
+newtab-wallpaper-light-blue = Blau clar
+newtab-wallpaper-light-purple = Violette clar
+newtab-wallpaper-light-green = Verde clar
+newtab-wallpaper-green = Verde
+newtab-wallpaper-beige = Beige
+newtab-wallpaper-yellow = Jalne
+newtab-wallpaper-orange = Orange
+newtab-wallpaper-pink = Rosate
+newtab-wallpaper-light-pink = Rosate clar
+newtab-wallpaper-red = Rubie
+newtab-wallpaper-dark-blue = Blau obscur
+newtab-wallpaper-dark-purple = Violette obscur
+newtab-wallpaper-dark-green = Verde obscur
+newtab-wallpaper-brown = Brun
+
+## Abstract
+
+newtab-wallpaper-category-title-abstract = Abstracte
+newtab-wallpaper-abstract-green = Formas verde
+newtab-wallpaper-abstract-blue = Formas blau
+newtab-wallpaper-abstract-purple = Formas violette
+newtab-wallpaper-abstract-orange = Formas orange
+newtab-wallpaper-gradient-orange = Gradiente orange e rosate
+newtab-wallpaper-abstract-blue-purple = Formas blau e violette
+
+## Photographs
+
+newtab-wallpaper-category-title-photographs = Photos
+newtab-wallpaper-beach-at-sunrise = Plagia al levar del sol
+newtab-wallpaper-beach-at-sunset = Plagia al poner del sol
+newtab-wallpaper-storm-sky = Celo tempestuose
+newtab-wallpaper-sky-with-pink-clouds = Celo con nubes rosate
+newtab-wallpaper-red-panda-yawns-in-a-tree = Un panda rubie que balla sur un arbore
+newtab-wallpaper-white-mountains = Montanias blanc
 # Variables
 #   $author_string (String) - The name of the creator of the photo.
 #   $webpage_string (String) - The name of the webpage where the photo is located.
 newtab-wallpaper-attribution = Photo per <a data-l10n-name="name-link">{ $author_string }</a> sur <a data-l10n-name="webpage-link">{ $webpage_string }</a>
+newtab-wallpaper-feature-highlight-header = Prova un tocco de color
+newtab-wallpaper-feature-highlight-content = Da a tu nove schedas un apparentia fresc con le fundos.
+newtab-wallpaper-feature-highlight-button = OK
+# Tooltip for dismiss button
+feature-highlight-dismiss-button =
+    .title = Dimitter
+    .aria-label = Claude le message comparente
+feature-highlight-wallpaper =
+    .title = { -newtab-wallpaper-feature-highlight-header }
+    .aria-label = { -newtab-wallpaper-feature-highlight-content }
+
+## New Tab Weather
+
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-see-forecast =
+    .title = Vider prevision in { $provider }
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-sponsored = { $provider } ∙ Sponsorisate
+newtab-weather-menu-change-location = Cambiar loco
+newtab-weather-change-location-search-input = Cercar loco
+newtab-weather-menu-weather-display = Visualisation meteo
+# Display options are:
+# - Simple: Displays a current weather condition icon and the current temperature
+# - Detailed: Include simple information plus a short text summary: e.g. "Mostly cloudy"
+newtab-weather-menu-weather-display-option-simple = Simple
+newtab-weather-menu-change-weather-display-simple = Passar al vista simple
+newtab-weather-menu-weather-display-option-detailed = Detaliate
+newtab-weather-menu-change-weather-display-detailed = Passar al vista detaliate
+newtab-weather-menu-temperature-units = Unitates de temperatura
+newtab-weather-menu-temperature-option-fahrenheit = Fahrenheit
+newtab-weather-menu-temperature-option-celsius = Celsius
+newtab-weather-menu-change-temperature-units-fahrenheit = Passar a Fahrenheit
+newtab-weather-menu-change-temperature-units-celsius = Passar a Celsius
+newtab-weather-menu-hide-weather = Celar meteo sur Nove scheda
+newtab-weather-menu-learn-more = Pro saper plus
+# This message is shown if user is working offline
+newtab-weather-error-not-available = Datos meteo non es disponibile al momento.
+
+## Topic Labels
+
+newtab-topic-label-business = Negotios
+newtab-topic-label-career = Carriera
+newtab-topic-label-education = Education
+newtab-topic-label-arts = Intertenimento
+newtab-topic-label-food = Alimentos
+newtab-topic-label-health = Sanitate
+newtab-topic-label-hobbies = Jocos
+# ”Money” = “Personal Finance”, refers to articles and stories that help readers better manage
+# and understand their personal finances – from saving money to buying a home. See the
+# “Curated by our editors“ section at the top of https://getpocket.com/explore/personal-finance for more context
+newtab-topic-label-finance = Moneta
+newtab-topic-label-society-parenting = Education
+newtab-topic-label-government = Politica
+newtab-topic-label-education-science = Scientia
+# ”Life Hacks” = “Self Improvement”, refers to articles and stories aimed at helping readers improve various
+# aspects of their lives – from mental health to  productivity. See the “Curated by our editors“ section
+# at the top of https://getpocket.com/explore/self-improvement for more context.
+newtab-topic-label-society = Auto-amelioration
+newtab-topic-label-sports = Sports
+newtab-topic-label-tech = Technologia
+newtab-topic-label-travel = Viages
+newtab-topic-label-home = Casa e jardin
+
+## Topic Selection Modal
+
+# “fine-tune” refers to the process of making small adjustments to something to get
+# the best or desired experience or performance.
+newtab-topic-selection-title = Selige le themas pro le accordo fin de tu fluxo
+# “tailored” refers to process of (a tailor) making (clothes) to fit individual customers.
+# In other words, “Our expert curators prioritize stories to fit your selected interests”
+newtab-topic-selection-subtitle = Selige duo o plus themas. Nostre curatores experte da prioritate al historias apte a tu interesses. Actualisa quando tu lo vole.
+newtab-topic-selection-save-button = Salvar
+newtab-topic-selection-cancel-button = Cancellar
+newtab-topic-selection-button-maybe-later = Forsan un altere vice
+newtab-topic-selection-privacy-link = Apprende como nos protege e gere le datos
+newtab-topic-selection-button-update-interests = Actualisa tu interesses
+newtab-topic-selection-button-pick-interests = Selige tu interesses

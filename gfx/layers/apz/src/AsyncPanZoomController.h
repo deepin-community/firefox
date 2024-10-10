@@ -7,6 +7,7 @@
 #ifndef mozilla_layers_AsyncPanZoomController_h
 #define mozilla_layers_AsyncPanZoomController_h
 
+#include "Units.h"
 #include "mozilla/layers/GeckoContentController.h"
 #include "mozilla/layers/RepaintRequest.h"
 #include "mozilla/layers/SampleTime.h"
@@ -41,7 +42,7 @@ namespace mozilla {
 
 namespace ipc {
 
-class SharedMemoryBasic;
+class SharedMemory;
 
 }  // namespace ipc
 
@@ -545,7 +546,8 @@ class AsyncPanZoomController {
 
   // Return the directions in which this APZC allows handoff (as governed by
   // overscroll-behavior).
-  ScrollDirections GetAllowedHandoffDirections() const;
+  ScrollDirections GetAllowedHandoffDirections(
+      HandoffConsumer aConsumer = HandoffConsumer::Scrolling) const;
 
   // Return the directions in which this APZC allows overscrolling.
   ScrollDirections GetOverscrollableDirections() const;
@@ -1373,6 +1375,8 @@ class AsyncPanZoomController {
   std::tuple<ParentLayerPoint, ScreenPoint> GetDisplacementsForPanGesture(
       const PanGestureInput& aEvent);
 
+  CSSCoord ToCSSPixels(ParentLayerCoord value) const;
+
  private:
   friend class AutoApplyAsyncTestAttributes;
 
@@ -1536,7 +1540,7 @@ class AsyncPanZoomController {
    * govern dynamic toolbar and pull-to-refresh behaviour).
    */
   PointerEventsConsumableFlags ArePointerEventsConsumable(
-      TouchBlockState* aBlock, const MultiTouchInput& aInput);
+      const TouchBlockState* aBlock, const MultiTouchInput& aInput) const;
 
   /**
    * Clear internal state relating to touch input handling.
@@ -1992,6 +1996,12 @@ class AsyncPanZoomController {
   Maybe<std::pair<MultiTouchInput, MultiTouchInput>> MaybeSplitTouchMoveEvent(
       const MultiTouchInput& aOriginalEvent, ScreenCoord aPanThreshold,
       float aVectorLength, ExternalPoint& aExtPoint);
+
+  // Fill out the overscroll gutter with the new expanded contents the
+  // overscroll amount is inside the new scroll range. Returns the scroll
+  // position change delta if filling out happened, CSSPoint() otherwise.
+  CSSPoint MaybeFillOutOverscrollGutter(
+      const RecursiveMutexAutoLock& aProofOfLock);
 
   friend std::ostream& operator<<(
       std::ostream& aOut, const AsyncPanZoomController::PanZoomState& aState);

@@ -7,6 +7,9 @@ sanitize-prefs2 =
     .style = min-width: 34em
 sanitize-prefs-style =
     .style = width: 17em
+sanitize-dialog-title2 =
+    .title = Slett nettlesardata og infokapslar
+    .style = min-width: 34em
 sanitize-dialog-title =
     .title = Slett nyleg historikk
     .style = min-width: 34em
@@ -16,6 +19,7 @@ sanitize-dialog-title-everything =
     .title = Slett all historikk
     .style = min-width: 34em
 clear-data-settings-label = Når { -brand-short-name } avsluttar, skal følgjande slettast automatisk
+sanitize-on-shutdown-description = Fjern automatisk alle avmerkte element når { -brand-short-name } vert attlaten.
 
 ## clear-time-duration-prefix is followed by a dropdown list, with
 ## values localized using clear-time-duration-value-* messages.
@@ -37,6 +41,10 @@ clear-time-duration-value-last-2-hours =
     .label = Dei siste to timane
 clear-time-duration-value-last-4-hours =
     .label = Dei siste 4 timane
+# Variables:
+#   $midnightTime (String) - Time of midnight (00:00 hours) - to inform the user that history will be cleared after midnight
+clear-time-duration-value-since-midnight =
+    .label = Sidan { $midnightTime }
 clear-time-duration-value-today =
     .label = I dag
 clear-time-duration-value-everything =
@@ -54,18 +62,43 @@ item-history-and-downloads =
 item-history-form-data-downloads =
     .label = Historikk
     .accesskey = H
+item-history-form-data-downloads-description = Reinsar nettstad- og nedlastingshistorikken, lagra skjemainformasjon og søk
 item-cookies =
     .label = Infokapslar
     .accesskey = I
+# Variables:
+#   $amount (Number) - Amount of site data currently stored on disk
+#   $unit (String) - Abbreviation of the unit that $amount is in, e.g. "MB"
+item-cookies-site-data-with-size =
+    .label = Infokapslar og nettstaddata ({ $amount } { $unit })
+    .accesskey = a
+item-cookies-site-data =
+    .label = Infokapsler og nettstedsdata
+    .accesskey = n
+item-cookies-site-data-description = Kan logge deg av nettstadar eller tøme handlekorger
 item-active-logins =
     .label = Aktive innloggingar
     .accesskey = A
 item-cache =
     .label = Snøgglager (Cache) for nettsider
     .accesskey = S
+# Variables:
+#   $amount (Number) - Amount of cached data
+#   $unit (String) - Abbreviation of the unit that $amount is in, e.g. "MB"
+item-cached-content-with-size =
+    .label = Mellombels bufra filer og sider ({ $amount } { $unit })
+    .accesskey = M
+item-cached-content =
+    .label = Mellombels bufra filer og sider
+    .accesskey = M
+item-cached-content-description = Fjernar element som hjelper nettstadar å laste raskare
 item-form-search-history =
     .label = Skjema og søkjehistorikk
     .accesskey = S
+item-site-prefs =
+    .label = Nettstadinnstillingar
+    .accesskey = e
+item-site-prefs-description = Tilbakestiller løyve og nettstadsinnstillingar til dei opphavlege innstillingane
 data-section-label = Data
 item-site-settings =
     .label = Nettstadinnstillingar

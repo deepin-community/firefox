@@ -20,7 +20,6 @@ const TELEMETRY_PREFIX = "contextual.services.quicksuggest";
 const TELEMETRY_SCALARS = {
   BLOCK: `${TELEMETRY_PREFIX}.block_weather`,
   CLICK: `${TELEMETRY_PREFIX}.click_weather`,
-  HELP: `${TELEMETRY_PREFIX}.help_weather`,
   IMPRESSION: `${TELEMETRY_PREFIX}.impression_weather`,
 };
 
@@ -79,8 +78,6 @@ class ProviderWeather extends UrlbarProvider {
    * @returns {boolean} Whether this provider should be invoked for the search.
    */
   isActive(queryContext) {
-    this.#resultFromLastQuery = null;
-
     // When Rust is enabled and keywords are not defined in Nimbus, weather
     // results are created by the quick suggest provider, not this one.
     if (
@@ -142,7 +139,6 @@ class ProviderWeather extends UrlbarProvider {
       result.payload.source = weather.suggestion.source;
       result.payload.provider = weather.suggestion.provider;
       addCallback(this, result);
-      this.#resultFromLastQuery = result;
     }
   }
 
@@ -163,58 +159,32 @@ class ProviderWeather extends UrlbarProvider {
     return lazy.QuickSuggest.weather.getViewUpdate(result);
   }
 
-  onLegacyEngagement(state, queryContext, details, controller) {
-    // Ignore engagements on other results that didn't end the session.
-    if (details.result?.providerName != this.name && details.isSessionOngoing) {
-      return;
-    }
+  onEngagement(queryContext, controller, details) {
+    this.#sessionResult = details.result;
+    this.#engagementSelType = details.selType;
 
-    // Impression and clicked telemetry are both recorded on engagement. We
-    // define "impression" to mean a weather result was present in the view when
-    // any result was picked.
-    if (state == "engagement" && queryContext) {
-      // Get the result that's visible in the view. `details.result` is the
-      // engaged result, if any; if it's from this provider, then that's the
-      // visible result. Otherwise fall back to #getVisibleResultFromLastQuery.
-      let { result } = details;
-      if (result?.providerName != this.name) {
-        result = this.#getVisibleResultFromLastQuery(controller.view);
-      }
+    this.#handlePossibleCommand(
+      controller.view,
+      details.result,
+      details.selType
+    );
+  }
 
-      if (result) {
-        this.#recordEngagementTelemetry(
-          result,
-          controller.input.isPrivate,
-          details.result == result ? details.selType : ""
-        );
-      }
-    }
+  onImpression(state, queryContext, controller, providerVisibleResults) {
+    this.#sessionResult = providerVisibleResults[0].result;
+  }
 
-    // Handle commands.
-    if (details.result?.providerName == this.name) {
-      this.#handlePossibleCommand(
-        controller.view,
-        details.result,
-        details.selType
+  onSearchSessionEnd(queryContext, _controller) {
+    if (this.#sessionResult) {
+      this.#recordEngagementTelemetry(
+        this.#sessionResult,
+        queryContext.isPrivate,
+        this.#engagementSelType
       );
     }
 
-    this.#resultFromLastQuery = null;
-  }
-
-  #getVisibleResultFromLastQuery(view) {
-    let result = this.#resultFromLastQuery;
-
-    if (
-      result?.rowIndex >= 0 &&
-      view?.visibleResults?.[result.rowIndex] == result
-    ) {
-      // The result was visible.
-      return result;
-    }
-
-    // Find a visible result.
-    return view?.visibleResults?.find(r => r.providerName == this.name);
+    this.#sessionResult = null;
+    this.#engagementSelType = null;
   }
 
   /**
@@ -233,7 +203,6 @@ class ProviderWeather extends UrlbarProvider {
    *
    *   - "": The user didn't pick the row or any part of it
    *   - "weather": The user picked the main part of the row
-   *   - "help": The user picked the help button
    *   - "dismiss": The user dismissed the result
    *
    *   An empty string means the user picked some other row to end the
@@ -243,7 +212,7 @@ class ProviderWeather extends UrlbarProvider {
    *   A non-empty string means the user picked the weather row or some part of
    *   it, and both impression and click telemetry will be recorded. The
    *   non-empty-string values come from the `details.selType` passed in to
-   *   `onLegacyEngagement()`; see `TelemetryEvent.typeFromElement()`.
+   *   `onEngagement()`; see `TelemetryEvent.typeFromElement()`.
    */
   #recordEngagementTelemetry(result, isPrivate, selType) {
     // Indexes recorded in quick suggest telemetry are 1-based, so add 1 to the
@@ -264,10 +233,6 @@ class ProviderWeather extends UrlbarProvider {
       case "weather":
         clickScalars.push(TELEMETRY_SCALARS.CLICK);
         eventObject = "click";
-        break;
-      case "help":
-        clickScalars.push(TELEMETRY_SCALARS.HELP);
-        eventObject = "help";
         break;
       case "dismiss":
         clickScalars.push(TELEMETRY_SCALARS.BLOCK);
@@ -302,8 +267,8 @@ class ProviderWeather extends UrlbarProvider {
     lazy.QuickSuggest.weather.handleCommand(view, result, selType);
   }
 
-  // The result we added during the most recent query.
-  #resultFromLastQuery = null;
+  #sessionResult;
+  #engagementSelType;
 }
 
 export var UrlbarProviderWeather = new ProviderWeather();

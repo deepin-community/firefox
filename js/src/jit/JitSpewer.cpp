@@ -360,10 +360,12 @@ static void PrintHelpAndExit(int status = 0) {
       "  pools         Literal Pools (ARM only for now)\n"
       "  cacheflush    Instruction Cache flushes (ARM only for now)\n"
       "  range         Range Analysis\n"
+      "  branch-hint   Wasm Branch Hinting\n"
       "  wasmbce       Wasm Bounds Check Elimination\n"
       "  shapeguards   Redundant shape guard elimination\n"
       "  gcbarriers    Redundant GC barrier elimination\n"
       "  loadkeys      Loads used as property keys\n"
+      "  stubfolding   CacheIR stub folding\n"
       "  logs          JSON visualization logging\n"
       "  logs-sync     Same as logs, but flushes between each pass (sync. "
       "compiled functions only).\n"
@@ -432,6 +434,8 @@ void jit::CheckLogging() {
       EnableChannel(JitSpew_Range);
     } else if (IsFlag(found, "wasmbce")) {
       EnableChannel(JitSpew_WasmBCE);
+    } else if (IsFlag(found, "branch-hint")) {
+      EnableChannel(JitSpew_BranchHint);
     } else if (IsFlag(found, "licm")) {
       EnableChannel(JitSpew_LICM);
     } else if (IsFlag(found, "flac")) {
@@ -466,6 +470,8 @@ void jit::CheckLogging() {
       EnableChannel(JitSpew_RedundantGCBarriers);
     } else if (IsFlag(found, "loadkeys")) {
       EnableChannel(JitSpew_MarkLoadsUsedAsPropertyKeys);
+    } else if (IsFlag(found, "stubfolding")) {
+      EnableChannel(JitSpew_StubFolding);
     } else if (IsFlag(found, "logs")) {
       EnableIonDebugAsyncLogging();
     } else if (IsFlag(found, "logs-sync")) {
@@ -569,6 +575,26 @@ void jit::JitSpew(JitSpewChannel channel, const char* fmt, ...) {
   va_list ap;
   va_start(ap, fmt);
   JitSpewVA(channel, fmt, ap);
+
+  // Suppress hazard analysis on logPrintVA function pointer.
+  JS::AutoSuppressGCAnalysis suppress;
+
+  switch (channel) {
+#  define SpewChannel(x)                                                   \
+    case JitSpew_##x:                                                      \
+      if (x##Module.shouldLog(mozilla::LogLevel::Debug)) {                 \
+        x##Module.interface.logPrintVA(x##Module.logger,                   \
+                                       mozilla::LogLevel::Debug, fmt, ap); \
+      }                                                                    \
+      break;
+
+    JITSPEW_CHANNEL_LIST(SpewChannel)
+
+#  undef SpewChannel
+    case JitSpew_Terminator:
+      MOZ_CRASH("Unexpected JitSpew");
+  }
+
   va_end(ap);
 }
 

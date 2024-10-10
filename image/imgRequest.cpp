@@ -579,9 +579,9 @@ void imgRequest::UpdateCacheEntrySize() {
 }
 
 void imgRequest::SetCacheValidation(imgCacheEntry* aCacheEntry,
-                                    nsIRequest* aRequest) {
-  /* get the expires info */
-  if (!aCacheEntry || aCacheEntry->GetExpiryTime() != 0) {
+                                    nsIRequest* aRequest,
+                                    bool aForceTouch /* = false */) {
+  if (!aCacheEntry) {
     return;
   }
 
@@ -602,10 +602,9 @@ void imgRequest::SetCacheValidation(imgCacheEntry* aCacheEntry,
   if (!info.mExpirationTime) {
     // If the channel doesn't support caching, then ensure this expires the
     // next time it is used.
-    info.mExpirationTime.emplace(nsContentUtils::SecondsFromPRTime(PR_Now()) -
-                                 1);
+    info.mExpirationTime.emplace(CacheExpirationTime::AlreadyExpired());
   }
-  aCacheEntry->SetExpiryTime(*info.mExpirationTime);
+  aCacheEntry->AccumulateExpiryTime(*info.mExpirationTime, aForceTouch);
   // Cache entries default to not needing to validate. We ensure that
   // multiple calls to this function don't override an earlier decision to
   // validate by making validation a one-way decision.
@@ -690,7 +689,7 @@ imgRequest::OnStartRequest(nsIRequest* aRequest) {
     }
   }
 
-  SetCacheValidation(mCacheEntry, aRequest);
+  SetCacheValidation(mCacheEntry, aRequest, /* aForceTouch = */ true);
 
   // Shouldn't we be dead already if this gets hit?
   // Probably multipart/x-mixed-replace...
@@ -732,8 +731,6 @@ imgRequest::OnStopRequest(nsIRequest* aRequest, nsresult status) {
   LOG_FUNC(gImgLog, "imgRequest::OnStopRequest");
   MOZ_ASSERT(NS_IsMainThread(), "Can't send notifications off-main-thread");
 
-  RefPtr<Image> image = GetImage();
-
   RefPtr<imgRequest> strongThis = this;
 
   bool isMultipart = false;
@@ -746,6 +743,9 @@ imgRequest::OnStopRequest(nsIRequest* aRequest, nsresult status) {
   if (isMultipart && newPartPending) {
     OnDataAvailable(aRequest, nullptr, 0, 0);
   }
+
+  // Get this after OnDataAvailable because that might have created the image.
+  RefPtr<Image> image = GetImage();
 
   // XXXldb What if this is a non-last part of a multipart request?
   // xxx before we release our reference to mRequest, lets

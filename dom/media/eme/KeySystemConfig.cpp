@@ -14,6 +14,7 @@
 #include "nsPrintfCString.h"
 
 #ifdef XP_WIN
+#  include "PDMFactory.h"
 #  include "WMFDecoderModule.h"
 #endif
 #ifdef MOZ_WIDGET_ANDROID
@@ -79,15 +80,13 @@ bool KeySystemConfig::Supports(const nsAString& aKeySystem) {
   config->mPersistentState = Requirement::Optional;
   config->mDistinctiveIdentifier = Requirement::NotAllowed;
   config->mSessionTypes.AppendElement(SessionType::Temporary);
-  config->mEncryptionSchemes.AppendElement(u"cenc"_ns);
-  config->mEncryptionSchemes.AppendElement(u"cbcs"_ns);
-  config->mEncryptionSchemes.AppendElement(u"cbcs-1-9"_ns);
   if (StaticPrefs::media_clearkey_persistent_license_enabled()) {
     config->mSessionTypes.AppendElement(SessionType::PersistentLicense);
   }
 #if defined(XP_WIN)
   // Clearkey CDM uses WMF's H.264 decoder on Windows.
-  if (WMFDecoderModule::CanCreateMFTDecoder(WMFStreamType::H264)) {
+  auto pdmFactory = MakeRefPtr<PDMFactory>();
+  if (!pdmFactory->SupportsMimeType("video/avc"_ns).isEmpty()) {
     config->mMP4.SetCanDecryptAndDecode(EME_CODEC_H264);
   } else {
     config->mMP4.SetCanDecrypt(EME_CODEC_H264);
@@ -137,9 +136,6 @@ bool KeySystemConfig::Supports(const nsAString& aKeySystem) {
   config->mAudioRobustness.AppendElement(u"SW_SECURE_CRYPTO"_ns);
   config->mVideoRobustness.AppendElement(u"SW_SECURE_CRYPTO"_ns);
   config->mVideoRobustness.AppendElement(u"SW_SECURE_DECODE"_ns);
-  config->mEncryptionSchemes.AppendElement(u"cenc"_ns);
-  config->mEncryptionSchemes.AppendElement(u"cbcs"_ns);
-  config->mEncryptionSchemes.AppendElement(u"cbcs-1-9"_ns);
 
 #if defined(MOZ_WIDGET_ANDROID)
   // MediaDrm.isCryptoSchemeSupported only allows passing
@@ -199,7 +195,8 @@ bool KeySystemConfig::Supports(const nsAString& aKeySystem) {
   // decode AAC, and a codec wasn't specified, be conservative
   // and reject the MediaKeys request, since we assume Widevine
   // will be used with AAC.
-  if (WMFDecoderModule::CanCreateMFTDecoder(WMFStreamType::AAC)) {
+  auto pdmFactory = MakeRefPtr<PDMFactory>();
+  if (!pdmFactory->SupportsMimeType("audio/mp4a-latm"_ns).isEmpty()) {
     config->mMP4.SetCanDecrypt(EME_CODEC_AAC);
   }
 #  else
@@ -295,8 +292,8 @@ void KeySystemConfig::GetGMPKeySystemConfigs(dom::Promise* aPromise) {
       continue;
     }
 #endif
-    requests.AppendElement(
-        KeySystemConfigRequest{keySystem, DecryptionInfo::Software});
+    requests.AppendElement(KeySystemConfigRequest{
+        keySystem, DecryptionInfo::Software, false /* IsPrivateBrowsing */});
   }
 
   // Get supported configs
@@ -338,17 +335,12 @@ nsString KeySystemConfig::GetDebugInfo() const {
     }
   }
   debugInfo.AppendLiteral("]");
-  debugInfo.AppendASCII(
-      nsPrintfCString(" persistent=%s", RequirementToStr(mPersistentState))
-          .get());
-  debugInfo.AppendASCII(
-      nsPrintfCString(" distinctive=%s",
-                      RequirementToStr(mDistinctiveIdentifier))
-          .get());
+  debugInfo.AppendPrintf(" persistent=%s", EnumValueToString(mPersistentState));
+  debugInfo.AppendPrintf(" distinctive=%s",
+                         EnumValueToString(mDistinctiveIdentifier));
   debugInfo.AppendLiteral(" sessionType=[");
   for (size_t idx = 0; idx < mSessionTypes.Length(); idx++) {
-    debugInfo.AppendASCII(
-        nsPrintfCString("%s", SessionTypeToStr(mSessionTypes[idx])).get());
+    debugInfo.AppendASCII(EnumValueToString(mSessionTypes[idx]));
     if (idx + 1 < mSessionTypes.Length()) {
       debugInfo.AppendLiteral(",");
     }
@@ -368,22 +360,13 @@ nsString KeySystemConfig::GetDebugInfo() const {
       debugInfo.AppendLiteral(",");
     }
   }
-  debugInfo.AppendLiteral(" scheme=[");
-  for (size_t idx = 0; idx < mEncryptionSchemes.Length(); idx++) {
-    debugInfo.Append(mEncryptionSchemes[idx]);
-    if (idx + 1 < mEncryptionSchemes.Length()) {
-      debugInfo.AppendLiteral(",");
-    }
-  }
-  debugInfo.AppendLiteral("]");
   debugInfo.AppendLiteral(" MP4={");
   debugInfo.Append(NS_ConvertUTF8toUTF16(mMP4.GetDebugInfo()));
   debugInfo.AppendLiteral("}");
   debugInfo.AppendLiteral(" WEBM={");
   debugInfo.Append(NS_ConvertUTF8toUTF16(mWebM.GetDebugInfo()));
   debugInfo.AppendLiteral("}");
-  debugInfo.AppendASCII(
-      nsPrintfCString(" isHDCP22Compatible=%d", mIsHDCP22Compatible));
+  debugInfo.AppendPrintf(" isHDCP22Compatible=%d", mIsHDCP22Compatible);
   return debugInfo;
 }
 
@@ -397,29 +380,6 @@ KeySystemConfig::SessionType ConvertToKeySystemConfigSessionType(
     default:
       MOZ_ASSERT_UNREACHABLE("Invalid session type");
       return KeySystemConfig::SessionType::Temporary;
-  }
-}
-
-const char* SessionTypeToStr(KeySystemConfig::SessionType aType) {
-  switch (aType) {
-    case KeySystemConfig::SessionType::Temporary:
-      return "Temporary";
-    case KeySystemConfig::SessionType::PersistentLicense:
-      return "PersistentLicense";
-    default:
-      MOZ_ASSERT_UNREACHABLE("Invalid session type");
-      return "Invalid";
-  }
-}
-
-const char* RequirementToStr(KeySystemConfig::Requirement aRequirement) {
-  switch (aRequirement) {
-    case KeySystemConfig::Requirement::Required:
-      return "required";
-    case KeySystemConfig::Requirement::Optional:
-      return "optional";
-    default:
-      return "not-allowed";
   }
 }
 

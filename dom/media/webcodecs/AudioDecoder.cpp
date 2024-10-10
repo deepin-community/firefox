@@ -75,7 +75,7 @@ AudioDecoderConfigInternal::AudioDecoderConfigInternal(
       mDescription(aDescription) {}
 
 /*static*/
-UniquePtr<AudioDecoderConfigInternal> AudioDecoderConfigInternal::Create(
+RefPtr<AudioDecoderConfigInternal> AudioDecoderConfigInternal::Create(
     const AudioDecoderConfig& aConfig) {
   nsCString errorMessage;
   if (!AudioDecoderTraits::Validate(aConfig, errorMessage)) {
@@ -98,9 +98,9 @@ UniquePtr<AudioDecoderConfigInternal> AudioDecoderConfigInternal::Create(
     description = rv.unwrap();
   }
 
-  return UniquePtr<AudioDecoderConfigInternal>(new AudioDecoderConfigInternal(
+  return MakeRefPtr<AudioDecoderConfigInternal>(
       aConfig.mCodec, aConfig.mSampleRate, aConfig.mNumberOfChannels,
-      description.forget()));
+      description.forget());
 }
 
 nsCString AudioDecoderConfigInternal::ToString() const {
@@ -311,11 +311,20 @@ bool AudioDecoderTraits::Validate(const AudioDecoderConfig& aConfig,
     return false;
   }
 
+  if (codec.value().EqualsLiteral("flac") ||
+      codec.value().EqualsLiteral("vorbis")) {
+    if (!aConfig.mDescription.WasPassed() ||
+        IsArrayBufferEmpty(aConfig.mDescription.Value())) {
+      LOGE("Description data is required for FLAC and Vorbis");
+      return false;
+    }
+  }
+
   return true;
 }
 
 /* static */
-UniquePtr<AudioDecoderConfigInternal> AudioDecoderTraits::CreateConfigInternal(
+RefPtr<AudioDecoderConfigInternal> AudioDecoderTraits::CreateConfigInternal(
     const AudioDecoderConfig& aConfig) {
   return AudioDecoderConfigInternal::Create(aConfig);
 }
@@ -447,7 +456,7 @@ already_AddRefed<MediaRawData> AudioDecoder::InputDataToMediaRawData(
 
 nsTArray<RefPtr<AudioData>> AudioDecoder::DecodedDataToOutputType(
     nsIGlobalObject* aGlobalObject, const nsTArray<RefPtr<MediaData>>&& aData,
-    AudioDecoderConfigInternal& aConfig) {
+    const AudioDecoderConfigInternal& aConfig) {
   AssertIsOnOwningThread();
 
   nsTArray<RefPtr<AudioData>> frames;

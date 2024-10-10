@@ -23,17 +23,25 @@ protections-panel-etp-more-info =
     .aria-label = Više informacija o poboljšanoj zaštiti od praćenja
 protections-panel-etp-on-header = Pojačana zaštita od praćenja je UKLJUČENA za ovu stranicu
 protections-panel-etp-off-header = Pojačana zaštita od praćenja je ISKLJUČENA za ovu stranicu
+# The link to be clicked to open the sub-panel view
+protections-panel-site-not-working = Stranica ne radi?
+# The heading/title of the sub-panel view
+protections-panel-site-not-working-view =
+    .title = Stranica ne radi?
 
 ## Text for the toggles shown when ETP is enabled/disabled for a given site.
 ## .description is transferred into a separate paragraph by the moz-toggle
 ## custom element code.
 ##   $host (String): the hostname of the site that is being displayed.
 
-# The link to be clicked to open the sub-panel view
-protections-panel-site-not-working = Stranica ne radi?
-# The heading/title of the sub-panel view
-protections-panel-site-not-working-view =
-    .title = Stranica ne radi?
+protections-panel-etp-toggle-on =
+    .label = Poboljšana zaštita od praćenja
+    .description = Uključeno za ovu web stranicu
+    .aria-label = Poboljšana zaštita od praćenja: Uključeno za { $host }
+protections-panel-etp-toggle-off =
+    .label = Poboljšana zaštita od praćenja
+    .description = Isključeno za ovu web stranicu
+    .aria-label = Poboljšana zaštita od praćenja: Isključeno za { $host }
 
 ## The "Allowed" header also includes a "Why?" link that, when hovered, shows
 ## a tooltip explaining why these items were not blocked in the page.
@@ -52,7 +60,7 @@ protections-panel-no-trackers-found = Programi za praćenje koji su poznati { -b
 protections-panel-content-blocking-tracking-protection = Praćenje sadržaja
 protections-panel-content-blocking-socialblock = Programi za praćenje s društvenih mreža
 protections-panel-content-blocking-cryptominers-label = Kripto-rudari
-protections-panel-content-blocking-fingerprinters-label = Jedinstveni otisci
+protections-panel-content-blocking-fingerprinters-label = Prikupljači digitalnih otisaka
 
 ## In the protections panel, Content Blocking category items are in three sections:
 ##   "Blocked" for categories being blocked in the current page,
@@ -75,18 +83,19 @@ protections-panel-protectionsdashboard-label = Nadzorna ploča zaštite
 # The header of the list
 protections-panel-site-not-working-view-header = Isključi zaštite ukoliko imaš problema s:
 # The list items, shown in a <ul>
-protections-panel-site-not-working-view-issue-list-login-fields = Poljem za prijavu
+protections-panel-site-not-working-view-issue-list-login-fields = Poljima prijave
 protections-panel-site-not-working-view-issue-list-forms = Obrascima
 protections-panel-site-not-working-view-issue-list-payments = Plaćanjima
 protections-panel-site-not-working-view-issue-list-comments = Komentarima
-protections-panel-site-not-working-view-issue-list-videos = Videom
-protections-panel-site-not-working-view-send-report = Pošaljite izvještaj
+protections-panel-site-not-working-view-issue-list-videos = Videima
+protections-panel-site-not-working-view-issue-list-fonts = Fontovima
+protections-panel-site-not-working-view-send-report = Pošalji izvještaj
 
 ##
 
 protections-panel-cross-site-tracking-cookies = Ovi kolačići te prate od stranice do stranice i prikupljaju podatke o tome što radiš na internetu. Postavljeni su od trećih strana kao što su oglašivači i analitičke tvrtke.
 protections-panel-cryptominers = Kripto rudari koriste računalnu snagu tvog sustava kako bi rudarili digitalni novac. Skripte za kripto rudarenje troše bateriju, usporavaju računalo i povećavaju račun za struju.
-protections-panel-fingerprinters = Čitači digitalnih otisaka prikupljaju postavke tvog preglednika i računala kako bi stvorili tvoj jedinstveni profil. Koristeći ovaj digitalni otisak, mogu te pratiti diljem raznih web stranica.
+protections-panel-fingerprinters = Prikupljači digitalnih otisaka prikupljaju postavke tvog preglednika i računala kako bi stvorili tvoj profil. Pomoću ovog digitalnog otiska mogu te pratiti na različitim web stranicama.
 protections-panel-tracking-content = Web stranice mogu učitati vanjske reklame, video materijal i drugi sadržaj koji sadržava kȏd za praćenje. Blokiranje praćenja sadržaja može ubrzati učitavanje stranica, ali neke tipke, obrasci ili polja za prijavu možda neće raditi.
 protections-panel-social-media-trackers = Društvene mreže postavljaju programe za praćenje na druge web stranice kako bi pratili što radiš, pregledavaš i vidiš na internetu. Ovo omogućava tvrtkama društvenih mreža o tebi saznati više od onoga što dijeliš na svom profilu.
 protections-panel-description-shim-allowed = Neki programi za praćenje označeni ispod djelomično su deblokirani na ovoj stranici jer ste bili u interakciji s njima.
@@ -97,15 +106,14 @@ protections-panel-content-blocking-manage-settings =
     .label = Upravljaj postavkama zaštite
     .accesskey = U
 protections-panel-content-blocking-breakage-report-view =
-    .title = Prijavi neispravnu web stranicu
+    .title = Prijavi neispravnu stranicu
 protections-panel-content-blocking-breakage-report-view-description = Blokiranje određenih programa za praćenje može uzrokovati probleme s nekim web stranicama. Prijavljivanjem ovih problema pomoći ćeš unaprijediti { -brand-short-name } za sve korisnike. Kad pošalješ ove prijavu, Mozilli ćeš poslati URL stranice i informacije o postavkama preglednika. <label data-l10n-name="learn-more">Saznaj više</label>
-protections-panel-content-blocking-breakage-report-view-description2 = Blokiranje određenih programa za praćenje može uzrokovati probleme s nekim web stranicama. Prijavljivanjem ovih problema pomoći ćeš unaprijediti { -brand-short-name } za sve korisnike. Kad pošalješ ove prijavu, poslati ćeš URL stranice i informacije o postavkama preglednika prema { -vendor-short-name }.
 protections-panel-content-blocking-breakage-report-view-collection-url = URL
 protections-panel-content-blocking-breakage-report-view-collection-url-label =
     .aria-label = URL
-protections-panel-content-blocking-breakage-report-view-collection-comments = Neobavezno: opišite problem
+protections-panel-content-blocking-breakage-report-view-collection-comments = Opcionalno: opiši problem
 protections-panel-content-blocking-breakage-report-view-collection-comments-label =
-    .aria-label = Neobavezno: opišite problem
+    .aria-label = Opcionalno: opiši problem
 protections-panel-content-blocking-breakage-report-view-cancel =
     .label = Odustani
 protections-panel-content-blocking-breakage-report-view-send-report =
@@ -113,6 +121,38 @@ protections-panel-content-blocking-breakage-report-view-send-report =
 
 # Cookie Banner Handling
 
+protections-panel-cookie-banner-handling-header = Smanjivanje broja dijaloga kolačića
+protections-panel-cookie-banner-blocker-header = Blokiranje dijaloga kolačića
+protections-panel-cookie-banner-handling-enabled = Uključeno za ovu stranicu
+protections-panel-cookie-banner-handling-disabled = Isključeno za ovu stranicu
+protections-panel-cookie-banner-handling-undetected = Stranica trenutačno nije podržana
+protections-panel-cookie-banner-view-title =
+    .title = Smanjivanje broja dijaloga kolačića
+# Variables
+#  $host (String): the hostname of the site that is being displayed.
+protections-panel-cookie-banner-view-turn-off-for-site = Isključiti smanjivanje broja dijaloga kolačića za { $host }?
+protections-panel-cookie-banner-view-turn-on-for-site = Uključiti smanjivanje broja dijaloga kolačića za ovu stranicu?
+protections-panel-cookie-banner-blocker-view-title =
+    .title = Blokiranje dijaloga kolačića
+# Variables
+#  $host (String): the hostname of the site that is being displayed.
+protections-panel-cookie-banner-blocker-view-turn-off-for-site = Isključiti blokiranje dijaloga kolačića za { $host }?
+protections-panel-cookie-banner-blocker-view-turn-on-for-site = Uključiti blokiranje dijaloga kolačića za ovu stranicu?
+protections-panel-cookie-banner-view-cookie-clear-warning = { -brand-short-name } će izbrisati kolačiće ove stranice i aktualizirati stranicu. Brisanje svih kolačića će te vjerojatno odjaviti sa stranice ili isprazniti tvoju košaricu.
+protections-panel-cookie-banner-view-turn-on-description = { -brand-short-name } pokušava automatski odbiti sve zahtjeve za kolačićima na podržanim stranicama.
+protections-panel-cookie-banner-view-cancel = Odustani
+protections-panel-cookie-banner-view-turn-off = Isključi
+protections-panel-cookie-banner-view-turn-on = Uključi
+protections-panel-cookie-banner-blocker-view-turn-on-description = Uključii i { -brand-short-name } će pokušati automatski odbiti dijaloge kolačića na ovoj stranici.
+protections-panel-cookie-banner-view-cancel-label =
+    .label = Odustani
+protections-panel-cookie-banner-view-turn-off-label =
+    .label = Isključi
+protections-panel-cookie-banner-view-turn-on-label =
+    .label = Uključi
+protections-panel-report-broken-site =
+    .label = Prijavi neispravnu stranicu
+    .title = Prijavi neispravnu stranicu
 
 ## Protections panel info message
 

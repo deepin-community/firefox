@@ -36,18 +36,15 @@ use std::cmp;
 use std::f32;
 use std::ops::{Add, Sub};
 
-#[cfg(feature = "gecko")]
 pub use self::align::{
-    AlignContent, AlignItems, AlignTracks, JustifyContent, JustifyItems, JustifyTracks,
-    SelfAlignment,
+    AlignContent, AlignItems, JustifyContent, JustifyItems, SelfAlignment,
 };
-#[cfg(feature = "gecko")]
 pub use self::align::{AlignSelf, JustifySelf};
 pub use self::angle::Angle;
 pub use self::animation::{
-    AnimationIterationCount, AnimationName, AnimationTimeline, AnimationPlayState,
-    AnimationFillMode, AnimationComposition, AnimationDirection, ScrollAxis,
-    ScrollTimelineName, TransitionBehavior, TransitionProperty, ViewTimelineInset
+    AnimationComposition, AnimationDirection, AnimationDuration, AnimationFillMode,
+    AnimationIterationCount, AnimationName, AnimationPlayState, AnimationTimeline, ScrollAxis,
+    TimelineName, TransitionBehavior, TransitionProperty, ViewTimelineInset, ViewTransitionName,
 };
 pub use self::background::{BackgroundRepeat, BackgroundSize};
 pub use self::basic_shape::FillRule;
@@ -88,16 +85,24 @@ pub use self::motion::{OffsetPath, OffsetPosition, OffsetRotate};
 pub use self::outline::OutlineStyle;
 pub use self::page::{PageName, PageOrientation, PageSize, PageSizeOrientation, PaperSize};
 pub use self::percentage::{NonNegativePercentage, Percentage};
+pub use self::position::AnchorName;
+pub use self::position::AnchorScope;
 pub use self::position::AspectRatio;
+pub use self::position::DashedIdentAndOrTryTactic;
+pub use self::position::PositionAnchor;
+pub use self::position::PositionTryFallbacks;
+pub use self::position::PositionTryOrder;
+pub use self::position::PositionVisibility;
 pub use self::position::{
     GridAutoFlow, GridTemplateAreas, MasonryAutoFlow, Position, PositionOrAuto, ZIndex,
 };
+pub use self::position::{PositionArea, PositionAreaKeyword};
 pub use self::ratio::Ratio;
 pub use self::rect::NonNegativeLengthOrNumberRect;
 pub use self::resolution::Resolution;
 pub use self::svg::{DProperty, MozContextProperties};
 pub use self::svg::{SVGLength, SVGOpacity, SVGPaint, SVGPaintKind};
-pub use self::svg::{SVGPaintOrder, SVGStrokeDashArray, SVGWidth};
+pub use self::svg::{SVGPaintOrder, SVGStrokeDashArray, SVGWidth, VectorEffect};
 pub use self::text::HyphenateCharacter;
 pub use self::text::TextUnderlinePosition;
 pub use self::text::{InitialLetter, LetterSpacing, LineBreak, TextIndent};
@@ -115,7 +120,6 @@ pub use super::specified::ViewportVariant;
 pub use super::specified::{BorderStyle, TextDecorationLine};
 pub use app_units::Au;
 
-#[cfg(feature = "gecko")]
 pub mod align;
 pub mod angle;
 pub mod animation;
@@ -614,19 +618,12 @@ where
 
     #[inline]
     fn to_computed_value(&self, context: &Context) -> Self::ComputedValue {
-        self.iter()
-            .map(|item| item.to_computed_value(context))
-            .collect::<Vec<_>>()
-            .into_boxed_slice()
+        self.iter().map(|item| item.to_computed_value(context)).collect()
     }
 
     #[inline]
     fn from_computed_value(computed: &Self::ComputedValue) -> Self {
-        computed
-            .iter()
-            .map(T::from_computed_value)
-            .collect::<Vec<_>>()
-            .into_boxed_slice()
+        computed.iter().map(T::from_computed_value).collect()
     }
 }
 
@@ -635,6 +632,25 @@ where
     T: ToComputedValue,
 {
     type ComputedValue = crate::OwnedSlice<<T as ToComputedValue>::ComputedValue>;
+
+    #[inline]
+    fn to_computed_value(&self, context: &Context) -> Self::ComputedValue {
+        self.iter()
+            .map(|item| item.to_computed_value(context))
+            .collect()
+    }
+
+    #[inline]
+    fn from_computed_value(computed: &Self::ComputedValue) -> Self {
+        computed.iter().map(T::from_computed_value).collect()
+    }
+}
+
+impl<T> ToComputedValue for thin_vec::ThinVec<T>
+where
+    T: ToComputedValue,
+{
+    type ComputedValue = thin_vec::ThinVec<<T as ToComputedValue>::ComputedValue>;
 
     #[inline]
     fn to_computed_value(&self, context: &Context) -> Self::ComputedValue {
@@ -703,6 +719,7 @@ trivial_to_computed_value!(crate::values::AtomIdent);
 trivial_to_computed_value!(crate::Namespace);
 #[cfg(feature = "servo")]
 trivial_to_computed_value!(crate::Prefix);
+trivial_to_computed_value!(crate::stylesheets::UrlExtraData);
 trivial_to_computed_value!(String);
 trivial_to_computed_value!(Box<str>);
 trivial_to_computed_value!(crate::OwnedStr);
@@ -778,7 +795,7 @@ impl ToAnimatedValue for NonNegativeNumber {
     type AnimatedValue = CSSFloat;
 
     #[inline]
-    fn to_animated_value(self) -> Self::AnimatedValue {
+    fn to_animated_value(self, _: &crate::values::animated::Context) -> Self::AnimatedValue {
         self.0
     }
 
@@ -821,7 +838,7 @@ impl ToAnimatedValue for ZeroToOneNumber {
     type AnimatedValue = CSSFloat;
 
     #[inline]
-    fn to_animated_value(self) -> Self::AnimatedValue {
+    fn to_animated_value(self, _: &crate::values::animated::Context) -> Self::AnimatedValue {
         self.0
     }
 
@@ -845,7 +862,7 @@ impl ToAnimatedValue for GreaterThanOrEqualToOneNumber {
     type AnimatedValue = CSSFloat;
 
     #[inline]
-    fn to_animated_value(self) -> Self::AnimatedValue {
+    fn to_animated_value(self, _: &crate::values::animated::Context) -> Self::AnimatedValue {
         self.0
     }
 
@@ -943,7 +960,7 @@ impl ToAnimatedValue for NonNegativeNumberOrPercentage {
     type AnimatedValue = NumberOrPercentage;
 
     #[inline]
-    fn to_animated_value(self) -> Self::AnimatedValue {
+    fn to_animated_value(self, _: &crate::values::animated::Context) -> Self::AnimatedValue {
         self.0
     }
 
@@ -966,7 +983,7 @@ impl ToAnimatedValue for PositiveInteger {
     type AnimatedValue = CSSInteger;
 
     #[inline]
-    fn to_animated_value(self) -> Self::AnimatedValue {
+    fn to_animated_value(self, _: &crate::values::animated::Context) -> Self::AnimatedValue {
         self.0
     }
 

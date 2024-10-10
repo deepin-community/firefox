@@ -21,6 +21,10 @@ use goblin::elf::{
     program_header::{PF_R, PT_NOTE},
     Elf, ProgramHeader,
 };
+
+use goblin::elf::note::Note;
+use scroll::ctx::TryFromCtx;
+
 use libc::{
     c_int, c_long, c_void, pid_t, ptrace, waitpid, EINTR, PTRACE_ATTACH, PTRACE_DETACH,
     PTRACE_PEEKDATA, __WALL,
@@ -75,6 +79,7 @@ impl ProcessReader {
         module_address: usize,
         note_type: u32,
         note_size: usize,
+        note_name: &str,
     ) -> Result<usize, ProcessReaderError> {
         let header_bytes = self.copy_array(module_address, size_of::<elf::Header>())?;
         let elf_header = Elf::parse_header(&header_bytes)?;
@@ -97,7 +102,14 @@ impl ProcessReader {
             context,
         )?;
 
-        self.find_note_in_headers(&elf, module_address, note_type, note_size)
+        self.find_note_in_headers(
+            &elf,
+            module_address,
+            note_type,
+            note_size,
+            note_name,
+            context,
+        )
     }
 
     fn find_note_in_headers(
@@ -106,6 +118,8 @@ impl ProcessReader {
         address: usize,
         note_type: u32,
         note_size: usize,
+        note_name: &str,
+        context: goblin::container::Ctx,
     ) -> Result<usize, ProcessReaderError> {
         for program_header in elf.program_headers.iter() {
             // We're looking for a note in the program headers, it needs to be
@@ -119,16 +133,16 @@ impl ProcessReader {
                 let notes_address = address + program_header.p_offset as usize;
                 let mut notes_offset = 0;
                 let notes_size = program_header.p_memsz as usize;
+                let notes_bytes = self.copy_array(notes_address, notes_size)?;
                 while notes_offset < notes_size {
-                    let note_address = notes_address + notes_offset;
-                    if let Ok(note) = self.copy_object::<goblin::elf::note::Nhdr32>(note_address) {
-                        if note.n_type == note_type {
-                            return Ok(note_address);
+                    if let Ok((note, size)) =
+                        Note::try_from_ctx(&notes_bytes[notes_offset..notes_size], (4, context))
+                    {
+                        if note.n_type == note_type && note.name == note_name {
+                            return Ok(notes_address + notes_offset);
                         }
 
-                        notes_offset += size_of::<goblin::elf::note::Nhdr32>()
-                            + (note.n_descsz as usize)
-                            + (note.n_namesz as usize);
+                        notes_offset += size;
                     } else {
                         break;
                     }

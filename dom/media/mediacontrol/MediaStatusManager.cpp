@@ -5,11 +5,11 @@
 #include "MediaStatusManager.h"
 
 #include "MediaControlService.h"
+#include "mozilla/StaticPrefs_media.h"
 #include "mozilla/dom/CanonicalBrowsingContext.h"
 #include "mozilla/dom/Element.h"
 #include "mozilla/dom/MediaControlUtils.h"
 #include "mozilla/dom/WindowGlobalParent.h"
-#include "mozilla/StaticPrefs_media.h"
 #include "nsContentUtils.h"
 #include "nsIChromeRegistry.h"
 #include "nsIObserverService.h"
@@ -288,7 +288,7 @@ MediaSessionPlaybackState MediaStatusManager::GetCurrentDeclaredPlaybackState()
 void MediaStatusManager::NotifyMediaPlaybackChanged(uint64_t aBrowsingContextId,
                                                     MediaPlaybackState aState) {
   LOG("UpdateMediaPlaybackState %s for context %" PRIu64,
-      ToMediaPlaybackStateStr(aState), aBrowsingContextId);
+      EnumValueToString(aState), aBrowsingContextId);
   const bool oldPlaying = mPlaybackStatusDelegate.IsPlaying();
   mPlaybackStatusDelegate.UpdateMediaPlaybackState(aBrowsingContextId, aState);
 
@@ -380,6 +380,29 @@ void MediaStatusManager::UpdatePositionState(
   mPositionStateChangedEvent.Notify(aState);
 }
 
+void MediaStatusManager::UpdateGuessedPositionState(
+    uint64_t aBrowsingContextId, const nsID& aMediaId,
+    const Maybe<PositionState>& aGuessedState) {
+  mPlaybackStatusDelegate.UpdateGuessedPositionState(aBrowsingContextId,
+                                                     aMediaId, aGuessedState);
+
+  // The position state comes from a non-active media session and
+  // there is another one active (with some metadata).
+  if (mActiveMediaSessionContextId &&
+      *mActiveMediaSessionContextId != aBrowsingContextId) {
+    return;
+  }
+
+  // media session is declared for the updated session, but there's no active
+  // session - it will get emitted once the session becomes active
+  if (mMediaSessionInfoMap.Contains(aBrowsingContextId) &&
+      !mActiveMediaSessionContextId) {
+    return;
+  }
+
+  mPositionStateChangedEvent.Notify(GetCurrentPositionState());
+}
+
 void MediaStatusManager::NotifySupportedKeysChangedIfNeeded(
     uint64_t aBrowsingContextId) {
   // Only the active media session's supported actions would be shown in virtual
@@ -431,11 +454,13 @@ MediaMetadataBase MediaStatusManager::GetCurrentMediaMetadata() const {
 Maybe<PositionState> MediaStatusManager::GetCurrentPositionState() const {
   if (mActiveMediaSessionContextId) {
     auto info = mMediaSessionInfoMap.Lookup(*mActiveMediaSessionContextId);
-    if (info) {
+    if (info && info->mPositionState) {
       return info->mPositionState;
     }
   }
-  return Nothing();
+
+  return mPlaybackStatusDelegate.GuessedMediaPositionState(
+      mActiveMediaSessionContextId);
 }
 
 void MediaStatusManager::FillMissingTitleAndArtworkIfNeeded(

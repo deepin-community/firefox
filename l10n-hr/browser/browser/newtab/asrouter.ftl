@@ -28,11 +28,13 @@ cfr-doorhanger-extension-author = od { $name }
 # This is a notification displayed in the address bar.
 # When clicked it opens a panel with a message for the user.
 cfr-doorhanger-extension-notification = Preporuka
+# .a11y-announcement is extracted in JS and announced via A11y.announce.
 cfr-doorhanger-extension-notification2 = Preporuka
     .tooltiptext = Preporuka dodatka
     .a11y-announcement = Dostupna je preporuka dodatka
 # This is a notification displayed in the address bar.
 # When clicked it opens a panel with a message for the user.
+# .a11y-announcement is extracted in JS and announced via A11y.announce.
 cfr-doorhanger-feature-notification = Preporuka
     .tooltiptext = Preporuka mogućnosti
     .a11y-announcement = Dostupna je preporuka mogućnosti
@@ -62,7 +64,8 @@ cfr-doorhanger-extension-total-users =
 ## Firefox Accounts Message
 
 cfr-doorhanger-bookmark-fxa-header = Sinkroniziraj svoje zabilješke svagdje.
-cfr-doorhanger-bookmark-fxa-body = Koristi ovu zabilješku i na mobilnom uređaju. Pokreni { -fxaccount-brand-name }.
+cfr-doorhanger-bookmark-fxa-body = Koristi ovu zabilješku na mobilnim uređajima. Započni s računom { -fxaccount-brand-name }.
+cfr-doorhanger-bookmark-fxa-body-2 = Koristi ovu zabilješku na mobilnim uređajima. Započni s jednim računom.
 cfr-doorhanger-bookmark-fxa-link-text = Sinkroniziraj zabilješke sada …
 cfr-doorhanger-bookmark-fxa-close-btn-tooltip =
     .aria-label = Tipka za zatvaranje
@@ -124,7 +127,7 @@ cfr-doorhanger-video-support-primary-button = Nadogradi sada
 
 # This header text can be explicitly wrapped.
 spotlight-public-wifi-vpn-header = Izgleda da koristiš javni Wi-Fi
-spotlight-public-wifi-vpn-body = Za skrivanje tvoje lokacije i aktivnosti pregledavanja, razmisli o virtualnoj privatnoj mreži. Pomoći će ti u zaštiti svog pregledavanja weba na javnim mjestima, kao što su zračne luke i kafići.
+spotlight-public-wifi-vpn-body = Za skrivanje tvog mjesta i aktivnosti pregledavanja, razmisli o virtualnoj privatnoj mreži. Pomoći će ti zaštiti tvoje pregledavanje weba na javnim mjestima, kao što su zračne luke i kafići.
 spotlight-public-wifi-vpn-primary-button = Sačuvaj privatnost uz { -mozilla-vpn-brand-name }
     .accesskey = S
 spotlight-public-wifi-vpn-link = Ne sada
@@ -132,6 +135,10 @@ spotlight-public-wifi-vpn-link = Ne sada
 
 ## Emotive Continuous Onboarding
 
+spotlight-better-internet-header = Bolji internet počinje s tobom
+spotlight-better-internet-body = Kada koristiš { -brand-short-name } glasaš za otvoren i pristupačan internet koji je bolji za sve.
+spotlight-peace-mind-header = Sve što trebaš
+spotlight-peace-mind-body = Svaki mjesec { -brand-short-name } blokira u prosjeku više od 3000 sustava za praćenje po korisniku, jer ništa – a posebno problematika privatnosti zbog sustava za praćenje – ne bi smjeli stajati između tebe i dobrog interneta.
 spotlight-pin-primary-button =
     { PLATFORM() ->
         [macos] Zadrži u Doku
@@ -171,9 +178,14 @@ firefoxview-cfr-primarybutton = Isprobaj ga
     .accesskey = I
 firefoxview-cfr-secondarybutton = Ne sada
     .accesskey = N
+firefoxview-cfr-header-v2 = Brzo nastavi tamo gdje si stao/stala
+firefoxview-cfr-body-v2 = Vrati nedavno zatvorene kartice i neprimjetno skači između uređaja koristeći { -firefoxview-brand-name }.
 
 ## Firefox View Spotlight
 
+firefoxview-spotlight-promo-title = Upoznaj { -firefoxview-brand-name }
+# “Poof” refers to the expression to convey when something or someone suddenly disappears, or in this case, reappears. For example, “Poof, it’s gone.”
+firefoxview-spotlight-promo-subtitle = Želiš tu otvorenu karticu na svom mobitelu? Zgrabi je. Trebaš upravo posjećenu stranicu? { -firefoxview-brand-name } će je prikazati u trenu.
 firefoxview-spotlight-promo-primarybutton = Pogledaj kako radi
 firefoxview-spotlight-promo-secondarybutton = Preskoči
 
@@ -183,18 +195,44 @@ colorways-cfr-primarybutton = Odaberi kolorit
     .accesskey = O
 # "shades" refers to the different color options available to users in colorways.
 colorways-cfr-body = Oboji preglednik s ekskluzivnim { -brand-short-name } nijansama inspiriranim glasovima koji su promijenili kulturu.
+colorways-cfr-header-28days = Koloriti „Neovisni glasovi” isteču 16. siječnja
+colorways-cfr-header-14days = Koloriti „Neovisni glasovi” isteču za dva tjedna
+colorways-cfr-header-7days = Koloriti „Neovisni glasovi” isteču ovaj tjedan
+colorways-cfr-header-today = Koloriti „Neovisni glasovi” isteču danas
 
 ## Cookie Banner Handling CFR
 
+cfr-cbh-header = Dopustiti da { -brand-short-name } odbije dijaloge kolačića?
+cfr-cbh-body = { -brand-short-name } može automatski odbiti mnoge zahtjeve dijaloga kolačića.
+cfr-cbh-confirm-button = Odbij dijaloge kolačića
+    .accesskey = O
+cfr-cbh-dismiss-button = Ne sada
+    .accesskey = N
+cookie-banner-blocker-onboarding-header = { -brand-short-name } je za tebe upravo odbio jedan dijalog kolačića
+cookie-banner-blocker-onboarding-body = Manje ometanja, manje kolačića koji te prate na ovoj stranici.
+cookie-banner-blocker-onboarding-learn-more = Saznaj više
 
 ## These strings are used in the Fox doodle Pin/set default spotlights
 
+july-jam-headline = Sve što trebaš
+july-jam-body = Svakog mjeseca { -brand-short-name } blokira u prosjeku više od 3000 sustava za praćenje po korisniku te omogućuje siguran i brz pristup dobrom internetu.
+july-jam-set-default-primary = Koristi { -brand-short-name } za otvaranje mojih poveznica
+fox-doodle-pin-headline = Dobro došao, dobro došla natrag
+# “indie” is short for the term “independent”.
+# In this instance, free from outside influence or control.
+fox-doodle-pin-body = Ovo je kratki podsjetnik da svom omiljenom neovisnom pregledniku možeš pristupiti jednim klikom.
+fox-doodle-pin-primary = Koristi { -brand-short-name } za otvaranje mojih poveznica
+fox-doodle-pin-secondary = Ne sada
 
 ## These strings are used in the Set Firefox as Default PDF Handler for Existing Users experiment
 
+set-default-pdf-handler-headline = <strong>Za otvaranje PDF datoteka se sada koristi { -brand-short-name }.</strong> Uredi ili potpiši obrasce izravno u pregledniku. Za mijenjanje ove opcije potraži „PDF” u postavkama.
+set-default-pdf-handler-primary = Razumijem
 
 ## FxA sync CFR
 
+fxa-sync-cfr-header = Novi uređaj u tvojoj budućnosti?
+fxa-sync-cfr-body = Osiguraj da imaš najnovije zabilješke, lozinke i kartice svaki put kada otvoriš novi { -brand-product-name } preglednik.
 fxa-sync-cfr-primary = Saznaj više
     .accesskey = S
 fxa-sync-cfr-secondary = Podsjeti me kasnije
@@ -202,17 +240,48 @@ fxa-sync-cfr-secondary = Podsjeti me kasnije
 
 ## Device Migration FxA Spotlight
 
-device-migration-fxa-spotlight-header = Koristiš stariji uređaj?
-device-migration-fxa-spotlight-primary-button = Kako napraviti sigurnosnu kopiju mojih podataka
-device-migration-fxa-spotlight-link = Podsjeti me kasnije
-device-migration-fxa-spotlight-getting-new-device-primary-button = Kako napraviti sigurnosnu kopiju mojih podataka
+device-migration-fxa-spotlight-heavy-user-header = Nemoj zaboraviti spremiti sigurnosne kopije tvojih podataka
+device-migration-fxa-spotlight-heavy-user-body = Osiguraj da su važne informacije – poput zabilješke i lozinke – aktualizirane i zaštićene na svim tvojim uređajima.
+device-migration-fxa-spotlight-heavy-user-primary-button = Započni
+device-migration-fxa-spotlight-older-device-header = Bezbrižnost, od { -brand-product-name }
+device-migration-fxa-spotlight-older-device-body = Račun aktualizira i štiti tvoje važne podatke na svakom uređaju koji povežeš.
+device-migration-fxa-spotlight-older-device-primary-button = Otvori račun
+device-migration-fxa-spotlight-getting-new-device-header-2 = Novi uređaj u tvojoj budućnosti?
+device-migration-fxa-spotlight-getting-new-device-body-2 = Slijedi nekoliko jednostavnih koraka da poneseš svoje zabilješke, povijest i lozinke sa sobom kada počneš koristiti novi uređaj.
+device-migration-fxa-spotlight-getting-new-device-primary-button = Kako spremiti sigurnosnu kopiju mojih podataka
 
 ## Set as Default PDF Reader Infobar
 
+# The question portion of the following message should have the <strong> and </strong> tags surrounding it.
+pdf-default-notification-message = <strong>Postaviti { -brand-short-name } kao standardni čitač PDF datoteka?</strong> Koristi { -brand-short-name } za čitanje i uređivanje PDF datoteka koje su spremljene na tvom računalu.
+pdf-default-notification-set-default-button =
+    .label = Postavi kao standardno
+pdf-default-notification-decline-button =
+    .label = Ne sada
 
 ## Launch on login infobar notification
 
+launch-on-login-infobar-message = <strong>Otvoriti { -brand-short-name } svaki put kada ponovo pokreneš računalo?</strong> Sada možeš postaviti da se { -brand-short-name } automatski otvara kada ponovo pokreneš uređaj.
+launch-on-login-learnmore = Saznaj više
+launch-on-login-infobar-confirm-button = Da, otvori { -brand-short-name }
+    .accesskey = D
+launch-on-login-infobar-reject-button = Ne sada
+    .accesskey = N
 
 ## These string variants are used when the “launch on login” infobar
 ## notification is displayed for a second time.
 
+launch-on-login-infobar-final-message = <strong>Otvoriti { -brand-short-name } svaki put kada ponovo pokreneš računalo?</strong> Za upravljanje postavkama pokretanja potraži „Pokretanje” u postavkama.
+launch-on-login-infobar-final-reject-button = Ne hvala
+    .accesskey = N
+
+## Tail Fox Set Default Spotlight
+
+# This title is displayed together with the picture of a running fox with a long tail.
+# In English, this is a figure of speech meaning 'stop something from following you'.
+# If the localization of this message is challenging, consider using a simplified
+# alternative as a reference for translation: 'Keep unwanted trackers away'.
+tail-fox-spotlight-title = Onemogući dosadne sustave za praćenje
+tail-fox-spotlight-subtitle = Reci zbogom dosadnim oglasima za praćenje i uživaj u sigurnijem i bržem internetskom iskustvu.
+tail-fox-spotlight-primary-button = Koristi { -brand-short-name } za otvaranje mojih poveznica
+tail-fox-spotlight-secondary-button = Ne sada

@@ -24,18 +24,18 @@ var test = function (isContent) {
     ["mozInnerScreenY", 0],
     ["screen.pixelDepth", 24],
     ["screen.colorDepth", 24],
-    ["screen.availWidth", "innerWidth"],
-    ["screen.availHeight", "innerHeight"],
+    ["screen.availWidth", "outerWidth"],
+    ["screen.availHeight", "outerHeight"],
     ["screen.left", 0],
     ["screen.top", 0],
     ["screen.availLeft", 0],
     ["screen.availTop", 0],
-    ["screen.width", "innerWidth"],
-    ["screen.height", "innerHeight"],
+    ["screen.width", "outerWidth"],
+    ["screen.height", "outerHeight"],
     ["screen.orientation.type", "'landscape-primary'"],
     ["screen.orientation.angle", 0],
     ["screen.mozOrientation", "'landscape-primary'"],
-    ["devicePixelRatio", 1],
+    ["devicePixelRatio", 2],
   ];
 
   // checkPair: tests if members of pair [a, b] are equal when evaluated.

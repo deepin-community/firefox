@@ -27,15 +27,23 @@
 
 // We expose a singleton from this module. Some tests may import the
 // constructor via a backstage pass.
-import { FirefoxRelayTelemetry } from "resource://gre/modules/FirefoxRelayTelemetry.mjs";
 import { FormAutofill } from "resource://autofill/FormAutofill.sys.mjs";
 import { FormAutofillUtils } from "resource://gre/modules/shared/FormAutofillUtils.sys.mjs";
+
+const { FIELD_STATES } = FormAutofillUtils;
 
 const lazy = {};
 
 ChromeUtils.defineESModuleGetters(lazy, {
   AddressComponent: "resource://gre/modules/shared/AddressComponent.sys.mjs",
+  // eslint-disable-next-line mozilla/no-browser-refs-in-toolkit
   BrowserWindowTracker: "resource:///modules/BrowserWindowTracker.sys.mjs",
+  FormAutofillAddressSection:
+    "resource://gre/modules/shared/FormAutofillSection.sys.mjs",
+  FormAutofillCreditCardSection:
+    "resource://gre/modules/shared/FormAutofillSection.sys.mjs",
+  FormAutofillSection:
+    "resource://gre/modules/shared/FormAutofillSection.sys.mjs",
   FormAutofillPreferences:
     "resource://autofill/FormAutofillPreferences.sys.mjs",
   FormAutofillPrompter: "resource://autofill/FormAutofillPrompter.sys.mjs",
@@ -239,6 +247,9 @@ ChromeUtils.defineLazyGetter(lazy, "gFormAutofillStorage", () => {
 });
 
 export class FormAutofillParent extends JSWindowActorParent {
+  // An array of section that are found in this form
+  sectionsByRootId = {};
+
   constructor() {
     super();
     FormAutofillStatus.init();
@@ -267,52 +278,29 @@ export class FormAutofillParent extends JSWindowActorParent {
         break;
       }
       case "FormAutofill:GetRecords": {
-        const relayPromise = lazy.FirefoxRelay.autocompleteItemsAsync({
-          formOrigin: this.formOrigin,
-          scenarioName: data.scenarioName,
-          hasInput: !!data.searchString?.length,
-        });
-        const recordsPromise = FormAutofillParent.getRecords(data);
-        const [records, externalEntries] = await Promise.all([
-          recordsPromise,
-          relayPromise,
-        ]);
-        return { records, externalEntries };
+        const records = await FormAutofillParent.getRecords(data);
+        return { records };
       }
       case "FormAutofill:OnFormSubmit": {
+        const { rootElementId, formFilledData } = data;
         this.notifyMessageObservers("onFormSubmitted", data);
-        await this._onFormSubmit(data);
+        await this._onFormSubmit(rootElementId, formFilledData);
         break;
-      }
-      case "FormAutofill:OpenPreferences": {
-        const win = lazy.BrowserWindowTracker.getTopWindow();
-        win.openPreferences("privacy-form-autofill");
-        break;
-      }
-      case "FormAutofill:GetDecryptedString": {
-        let { cipherText, reauth } = data;
-        if (!FormAutofillUtils._reauthEnabledByUser) {
-          lazy.log.debug("Reauth is disabled");
-          reauth = false;
-        }
-        let string;
-        try {
-          string = await lazy.OSKeyStore.decrypt(cipherText, reauth);
-        } catch (e) {
-          if (e.result != Cr.NS_ERROR_ABORT) {
-            throw e;
-          }
-          lazy.log.warn("User canceled encryption login");
-        }
-        return string;
       }
       case "FormAutofill:UpdateWarningMessage":
         this.notifyMessageObservers("updateWarningNote", data);
         break;
 
+      case "FormAutofill:FieldsDetected":
+        this.onFormDetected(data);
+        break;
       case "FormAutofill:FieldsIdentified":
         this.notifyMessageObservers("fieldsIdentified", data);
         break;
+      case "FormAutofill:FieldFilledModified": {
+        this.onFieldFilledModified(data);
+        break;
+      }
 
       // The remaining Save and Remove messages are invoked only by tests.
       case "FormAutofill:SaveAddress": {
@@ -327,7 +315,9 @@ export class FormAutofillParent extends JSWindowActorParent {
         break;
       }
       case "FormAutofill:SaveCreditCard": {
-        if (!(await FormAutofillUtils.ensureLoggedIn()).authenticated) {
+        // Setting the first parameter of OSKeyStore.ensurLoggedIn as false
+        // since this case only called in tests. Also the reason why we're not calling FormAutofill.verifyUserOSAuth.
+        if (!(await lazy.OSKeyStore.ensureLoggedIn(false)).authenticated) {
           lazy.log.warn("User canceled encryption login");
           return undefined;
         }
@@ -346,21 +336,6 @@ export class FormAutofillParent extends JSWindowActorParent {
         );
         break;
       }
-      case "PasswordManager:offerRelayIntegration": {
-        FirefoxRelayTelemetry.recordRelayOfferedEvent(
-          "clicked",
-          data.telemetry.flowId,
-          data.telemetry.scenarioName
-        );
-        return this.#offerRelayIntegration();
-      }
-      case "PasswordManager:generateRelayUsername": {
-        FirefoxRelayTelemetry.recordRelayUsernameFilledEvent(
-          "clicked",
-          data.telemetry.flowId
-        );
-        return this.#generateRelayUsername();
-      }
     }
 
     return undefined;
@@ -372,18 +347,20 @@ export class FormAutofillParent extends JSWindowActorParent {
     );
   }
 
-  getRootBrowser() {
-    return this.browsingContext.topFrameElement;
-  }
+  onFormDetected(fields) {
+    if (!fields?.length) {
+      return;
+    }
 
-  async #offerRelayIntegration() {
-    const browser = this.getRootBrowser();
-    return lazy.FirefoxRelay.offerRelayIntegration(browser, this.formOrigin);
-  }
+    const sections = lazy.FormAutofillSection.classifySections(fields);
 
-  async #generateRelayUsername() {
-    const browser = this.getRootBrowser();
-    return lazy.FirefoxRelay.generateUsername(browser, this.formOrigin);
+    // This function is not only called when a form is detected,
+    // but also called when the elements in a form are changed, which means we would
+    // treat the "updated" section as a new detected section.
+    sections.forEach(section => section.onDetected());
+
+    const rootElementId = fields[0].rootElementId;
+    this.sectionsByRootId[rootElementId] = sections;
   }
 
   notifyMessageObservers(callbackName, data) {
@@ -462,6 +439,10 @@ export class FormAutofillParent extends JSWindowActorParent {
       );
     });
   }
+
+  /*
+   * Capture-related functions
+   */
 
   async _onAddressSubmit(address, browser) {
     const storage = lazy.gFormAutofillStorage.addresses;
@@ -606,10 +587,37 @@ export class FormAutofillParent extends JSWindowActorParent {
     };
   }
 
-  async _onFormSubmit(data) {
-    let { address, creditCard } = data;
+  async _onFormSubmit(rootElementId, formFilledData) {
+    const browser = this.manager.browsingContext.top.embedderElement;
+    if (!browser) {
+      return;
+    }
 
-    let browser = this.manager.browsingContext.top.embedderElement;
+    const sections = this.sectionsByRootId[rootElementId];
+    if (!sections) {
+      return;
+    }
+
+    const address = [];
+    const creditCard = [];
+
+    for (const section of sections) {
+      const secRecord = section.createRecord(formFilledData);
+      if (!secRecord) {
+        continue;
+      }
+
+      if (section instanceof lazy.FormAutofillAddressSection) {
+        address.push(secRecord);
+      } else if (section instanceof lazy.FormAutofillCreditCardSection) {
+        creditCard.push(secRecord);
+      } else {
+        throw new Error("Unknown section type");
+      }
+
+      // Used for telemetry
+      section.onSubmitted(formFilledData);
+    }
 
     // Transmit the telemetry immediately in the meantime form submitted, and handle these pending
     // doorhangers at a later.
@@ -658,7 +666,11 @@ export class FormAutofillParent extends JSWindowActorParent {
 
     // Display the address capture doorhanger only when the submitted form contains all
     // the required fields. This approach is implemented to prevent excessive prompting.
-    const requiredFields = FormAutofill.addressCaptureRequiredFields ?? [];
+    let requiredFields = FormAutofill.addressCaptureRequiredFields;
+    requiredFields ??=
+      FormAutofillUtils.getFormFormat(record.country).countryRequiredFields ??
+      [];
+
     if (!requiredFields.every(field => field in record)) {
       lazy.log.debug(
         "Do not show the address capture prompt when the submitted form doesn't contain all the required fields"
@@ -667,5 +679,214 @@ export class FormAutofillParent extends JSWindowActorParent {
     }
 
     return true;
+  }
+
+  /*
+   * AutoComplete-related functions
+   */
+
+  /**
+   * Retrieves autocomplete entries for a given search string and data context.
+   *
+   * @param {string} searchString
+   *                 The search string used to filter autocomplete entries.
+   * @param {object} options
+   * @param {string} options.fieldName
+   *                 The name of the field for which autocomplete entries are being fetched.
+   * @param {string} options.elementId
+   *                 The id of the element for which we are searching for an autocomplete entry.
+   * @param {string} options.scenarioName
+   *                 The scenario name used in the autocomplete operation to fetch external entries.
+   * @returns {Promise<object>} A promise that resolves to an object containing two properties: `records` and `externalEntries`.
+   *         `records` is an array of autofill records from the form's internal data, sorted by `timeLastUsed`.
+   *         `externalEntries` is an array of external autocomplete items fetched based on the scenario.
+   *         `allFieldNames` is an array containing all the matched field name found in this section.
+   */
+  async searchAutoCompleteEntries(searchString, options) {
+    const { fieldName, elementId, scenarioName } = options;
+
+    const section = this.getSectionByElementId(elementId);
+    if (!section.isValidSection() || !section.isEnabled()) {
+      return null;
+    }
+
+    const relayPromise = lazy.FirefoxRelay.autocompleteItemsAsync({
+      formOrigin: this.formOrigin,
+      scenarioName,
+      hasInput: !!searchString?.length,
+    });
+
+    // Retrieve information for the autocomplete entry
+    const recordsPromise = FormAutofillParent.getRecords({
+      searchString,
+      fieldName,
+    });
+
+    const [records, externalEntries] = await Promise.all([
+      recordsPromise,
+      relayPromise,
+    ]);
+
+    // Sort addresses by timeLastUsed for showing the lastest used address at top.
+    records.sort((a, b) => b.timeLastUsed - a.timeLastUsed);
+    return { records, externalEntries, allFieldNames: section.allFieldNames };
+  }
+
+  /**
+   * This function is called when an autocomplete entry that is provided by
+   * formautofill is selected by the user.
+   */
+  async onAutoCompleteEntrySelected(message, data) {
+    switch (message) {
+      case "FormAutofill:OpenPreferences": {
+        const win = lazy.BrowserWindowTracker.getTopWindow();
+        win.openPreferences("privacy-form-autofill");
+        break;
+      }
+
+      case "FormAutofill:ClearForm": {
+        this.clearForm(data.focusElementId);
+        break;
+      }
+
+      case "FormAutofill:FillForm": {
+        this.autofillFields(data.focusElementId, data.profile);
+        break;
+      }
+
+      default: {
+        lazy.log.debug("Unsupported autocomplete message:", message);
+        break;
+      }
+    }
+  }
+
+  onAutoCompletePopupOpened(elementId) {
+    const section = this.getSectionByElementId(elementId);
+    section?.onPopupOpened(elementId);
+  }
+
+  onAutoCompleteEntryClearPreview(message, data) {
+    this.previewFields(data.focusElementId, null);
+  }
+
+  onAutoCompleteEntryHovered(message, data) {
+    if (message == "FormAutofill:FillForm") {
+      this.previewFields(data.focusElementId, data.profile);
+    } else {
+      // Make sure the preview is cleared when users select an entry
+      // that doesn't support preview.
+      this.previewFields(data.focusElementId, null);
+    }
+  }
+
+  clearForm(elementId) {
+    const section = this.getSectionByElementId(elementId);
+
+    section.onCleared(elementId);
+
+    const ids = section.fieldDetails.map(detail => detail.elementId);
+    this.sendAsyncMessage("FormAutofill:ClearFilledFields", ids);
+  }
+
+  async previewFields(elementId, profile) {
+    const section = this.getSectionByElementId(elementId);
+    if (!(await section.preparePreviewProfile(profile))) {
+      lazy.log.debug("profile cannot be previewed");
+      return false;
+    }
+
+    const ids = section.fieldDetails.map(detail => detail.elementId);
+
+    try {
+      if (profile) {
+        await this.sendQuery("FormAutofill:PreviewFields", { ids, profile });
+      } else {
+        await this.sendQuery("FormAutofill:ClearPreviewedFields", { ids });
+      }
+    } catch (e) {
+      console.error("There was an error previewing: ", e.message);
+    }
+
+    // For testing only
+    Services.obs.notifyObservers(null, "formautofill-preview-complete");
+    return true;
+  }
+
+  async autofillFields(elementId, profile) {
+    const section = this.getSectionByElementId(elementId);
+    if (!(await section.prepareFillingProfile(profile))) {
+      lazy.log.debug("profile cannot be filled");
+      return;
+    }
+
+    const ids = section.fieldDetails.map(detail => detail.elementId);
+
+    let filledResult = new Map();
+    try {
+      filledResult = await this.sendQuery("FormAutofill:FillFields", {
+        focusedElementId: elementId,
+        ids,
+        profile,
+      });
+
+      this.filledResult = this.filledResult ?? new Map();
+      filledResult.forEach((value, key) => this.filledResult.set(key, value));
+
+      section.onFilled(filledResult);
+    } catch (e) {
+      console.error("There was an error autofilling: ", e.message);
+    }
+
+    // eslint-disable-next-line consistent-return
+    return filledResult;
+  }
+
+  onFieldFilledModified(elementId) {
+    if (!this.filledResult?.get(elementId)) {
+      return;
+    }
+
+    this.filledResult.get(elementId).filledState = FIELD_STATES.NORMAL;
+
+    const section = this.getSectionByElementId(elementId);
+
+    // For telemetry
+    section?.onFilledModified(elementId);
+
+    // Restore <select> fields to their initial state once we know
+    // that the user intends to manually clear the filled form.
+    const fieldDetails = section.fieldDetails;
+    const selects = fieldDetails.filter(field => field.tagName == "SELECT");
+    if (selects.length) {
+      const inputs = fieldDetails.filter(field => field.tagName == "INPUT");
+      if (
+        inputs.every(
+          field =>
+            this.filledResult.get(field.elementId).filledState ==
+            FIELD_STATES.NORMAL
+        )
+      ) {
+        const ids = selects.map(field => field.elementId);
+        this.sendAsyncMessage("FormAutofill:ClearFilledFields", ids);
+      }
+    }
+  }
+
+  getSectionByElementId(elementId) {
+    for (const sections of Object.values(this.sectionsByRootId)) {
+      const section = sections.find(s =>
+        s.getFieldDetailByElementId(elementId)
+      );
+      if (section) {
+        return section;
+      }
+    }
+    return null;
+  }
+
+  // For testing
+  getSections() {
+    return Object.values(this.sectionsByRootId).flat();
   }
 }

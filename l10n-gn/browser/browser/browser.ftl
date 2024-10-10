@@ -550,6 +550,10 @@ urlbar-go-button =
     .tooltiptext = Kundaharape renda URL-pe jeho
 urlbar-page-action-button =
     .tooltiptext = Kuatiarogue rembiapo
+urlbar-revert-button =
+    .tooltiptext = Ehechauka kundaharape kundaha rupápe
+urlbar-show-page-actions-button =
+    .tooltiptext = Ehechaukapaite kuatiaroguepegua
 
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
@@ -640,6 +644,18 @@ urlbar-group-quickactions =
 #  $engine (String): the name of the search engine used to search.
 urlbar-group-recent-searches =
     .label = Ojeheka ramóva
+# The header shown above trending results.
+# Variables:
+#  $engine (String): the name of the search engine providing the trending suggestions
+urlbar-group-trending =
+    .label = Ojehayhuvéva { $engine } pegua
+# The result menu labels shown next to trending results.
+urlbar-result-menu-trending-dont-show =
+    .label = Anive ehechauka jeheka ojehayhuvéva
+    .accesskey = D
+urlbar-result-menu-trending-why =
+    .label = ¿Mba’ére ahecha kóva?
+    .accesskey = W
 
 ## Reader View toolbar buttons
 
@@ -988,6 +1004,10 @@ firefox-relay-offer-legal-notice = Eikutúvo “Eiporu ñanduti veve rovamo’ã
 popup-notification-addon-install-unsigned =
     .value = (Ndojehechajeýiva)
 popup-notification-xpinstall-prompt-learn-more = Eñemomaranduve mba’éichapa emohendáta moĩmbaha tekorosãkuápe
+# Note: Access key is set to P to match "Private" in the corresponding localized label.
+popup-notification-addon-privatebrowsing-checkbox =
+    .label = Emongu’e Windows ñemiguápe
+    .accesskey = P
 
 ## Pop-up warning
 
@@ -1017,3 +1037,16 @@ popup-warning-button =
 #   $popupURI (String): the URI for the pop-up window
 popup-show-popup-menuitem =
     .label = “{ $popupURI }” jehechauka
+
+## File-picker crash notification ("FilePickerCrashed.sys.mjs")
+
+
+# Button used with file-picker-crashed-save-default. Opens the folder in Windows
+# Explorer, with the saved file selected and in focus.
+#
+# The wording here should be consistent with the Windows variant of
+# `downloads-cmd-show-menuitem-2` and similar messages.
+
+file-picker-crashed-show-in-folder =
+    .label = Ehechauka ñongatuhápe
+    .accessKey = F

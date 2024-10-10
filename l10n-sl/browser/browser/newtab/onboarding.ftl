@@ -53,6 +53,9 @@ mr1-onboarding-import-primary-button-label-attribution = Uvozi iz brskalnika { $
 mr1-onboarding-theme-header = Uredite ga po svoje
 mr1-onboarding-theme-subtitle = Prilagodite svoj { -brand-short-name } s temo.
 mr1-onboarding-theme-secondary-button-label = Ne zdaj
+newtab-wallpaper-onboarding-title = Poskusite s kančkom barve
+newtab-wallpaper-onboarding-subtitle = Izberite si ozadje in polepšajte stran novega zavihka.
+newtab-wallpaper-onboarding-primary-button-label = Nastavi ozadje
 # System theme uses operating system color settings
 mr1-onboarding-theme-label-system = Sistemska tema
 mr1-onboarding-theme-label-light = Svetla
@@ -185,6 +188,8 @@ mr2022-onboarding-pin-primary-button-label =
         [macos] Obdrži { -brand-short-name } v Docku
        *[other] Pripni { -brand-short-name } v opravilno vrstico
     }
+# Primary button string used on welcome page for when Firefox is not pinned on MSIX
+mr2022-onboarding-pin-primary-button-label-msix = Pripni { -brand-short-name } v opravilno vrstico in v začetni meni
 # Subtitle will be used when user already has Firefox pinned, but
 # has not set it as their default browser.
 # When translating "zip", please feel free to pick a verb that signifies movement and/or exploration
@@ -332,6 +337,14 @@ onboarding-device-migration-subtitle = Prijavite se v { -fxaccount-brand-name(ca
 onboarding-device-migration-subtitle2 = Prijavite se v svoj račun in si prenesite zaznamke, gesla in zgodovino na novi računalnik.
 onboarding-device-migration-primary-button-label = Prijava
 
+## Add-ons Picker screen
+
+amo-picker-title = Prilagodi svoj { -brand-short-name }
+amo-picker-subtitle = Razširitve so kot aplikacije za vaš brskalnik, ki vam omogočajo zaščito gesel, prenos videoposnetkov, iskanje ponudb, zavračanje nadležnih oglasov, spreminjanje videza brskalnika in še veliko več.
+amo-picker-install-button-label = Dodaj v { -brand-short-name }
+amo-picker-install-complete-label = Nameščen
+amo-picker-collection-link = Raziščite več dodatkov
+
 ## The following screens have been updated to use security and privacy focused strings:
 
 # Easy setup screen
@@ -339,6 +352,7 @@ onboarding-easy-setup-security-and-privacy-title = Z veseljem skrbimo za vašo v
 onboarding-easy-setup-security-and-privacy-subtitle = Naš neprofitni brskalnik preprečuje podjetjem, da bi vas skrivaj spremljala po spletu.
 # Mobile download screen
 onboarding-mobile-download-security-and-privacy-title = Ostanite šifrirani pri skakanju z naprave na napravo
+onboarding-mobile-download-security-and-privacy-subtitle = Pri sinhronizaciji { -brand-short-name } ohranja vaša gesla, zaznamke in druge podatke varne s šifriranjem. Poleg tega vam omogoča priklicati zavihke, ki jih imate odprte na drugih napravah.
 # Gratitude screen
 onboarding-gratitude-security-and-privacy-title = { -brand-short-name } vam krije hrbet
 onboarding-gratitude-security-and-privacy-subtitle = Hvala, ker uporabljate { -brand-short-name }, ki ga podpira Mozilla Foundation. Z vašo podporo si prizadevamo narediti internet varnejši in dostopnejši za vse.

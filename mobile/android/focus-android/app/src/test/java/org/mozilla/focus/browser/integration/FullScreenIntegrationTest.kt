@@ -8,7 +8,9 @@ import android.app.Activity
 import android.content.res.Resources
 import android.view.View
 import android.view.Window
+import android.view.WindowInsetsController
 import android.view.WindowManager
+import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
 import mozilla.components.browser.engine.gecko.GeckoEngineView
 import mozilla.components.browser.toolbar.BrowserToolbar
@@ -20,6 +22,7 @@ import mozilla.components.support.test.robolectric.testContext
 import org.junit.Test
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.runner.RunWith
+import org.mockito.Mockito.anyInt
 import org.mockito.Mockito.doReturn
 import org.mockito.Mockito.inOrder
 import org.mockito.Mockito.never
@@ -33,23 +36,14 @@ import org.mozilla.focus.ext.showAsFixed
 import org.mozilla.focus.utils.Settings
 import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
 
 @RunWith(RobolectricTestRunner::class)
 internal class FullScreenIntegrationTest {
     @Test
     fun `WHEN the integration is started THEN start FullScreenFeature`() {
         val feature: FullScreenFeature = mock()
-        val integration = FullScreenIntegration(
-            mock(),
-            mock(),
-            null,
-            mock(),
-            mock(),
-            mock(),
-            mock(),
-            mock(),
-            mock(),
-        ).apply {
+        val integration = createFullScreenIntegration().apply {
             this.feature = feature
         }
 
@@ -61,17 +55,7 @@ internal class FullScreenIntegrationTest {
     @Test
     fun `WHEN the integration is stopped THEN stop FullScreenFeature`() {
         val feature: FullScreenFeature = mock()
-        val integration = FullScreenIntegration(
-            mock(),
-            mock(),
-            null,
-            mock(),
-            mock(),
-            mock(),
-            mock(),
-            mock(),
-            mock(),
-        ).apply {
+        val integration = createFullScreenIntegration().apply {
             this.feature = feature
         }
 
@@ -83,17 +67,7 @@ internal class FullScreenIntegrationTest {
     @Test
     fun `WHEN back is pressed THEN send this to the feature`() {
         val feature: FullScreenFeature = mock()
-        val integration = FullScreenIntegration(
-            mock(),
-            mock(),
-            null,
-            mock(),
-            mock(),
-            mock(),
-            mock(),
-            mock(),
-            mock(),
-        ).apply {
+        val integration = createFullScreenIntegration().apply {
             this.feature = feature
         }
 
@@ -109,17 +83,7 @@ internal class FullScreenIntegrationTest {
         val activity: Activity = mock()
         doReturn(activityWindow).`when`(activity).window
         doReturn(windowAttributes).`when`(activityWindow).attributes
-        val integration = FullScreenIntegration(
-            activity,
-            mock(),
-            null,
-            mock(),
-            mock(),
-            mock(),
-            mock(),
-            mock(),
-            mock(),
-        )
+        val integration = createFullScreenIntegration(activity = activity)
 
         integration.viewportFitChanged(33)
 
@@ -128,7 +92,8 @@ internal class FullScreenIntegrationTest {
 
     @Test
     @Suppress("DEPRECATION")
-    fun `WHEN entering immersive mode THEN hide all system bars`() {
+    @Config(sdk = [28])
+    fun `WHEN entering immersive mode THEN hide all system bars in SDK 28`() {
         val decorView: View = mock()
         val activityWindow: Window = mock()
         val activity: Activity = mock()
@@ -137,17 +102,7 @@ internal class FullScreenIntegrationTest {
         doReturn(decorView).`when`(activityWindow).decorView
         doReturn(layoutParams).`when`(activityWindow).attributes
 
-        val integration = FullScreenIntegration(
-            activity,
-            mock(),
-            null,
-            mock(),
-            mock(),
-            mock(),
-            mock(),
-            mock(),
-            mock(),
-        )
+        val integration = createFullScreenIntegration(activity = activity)
 
         integration.switchToImmersiveMode()
 
@@ -159,8 +114,40 @@ internal class FullScreenIntegrationTest {
     }
 
     @Test
+    fun `WHEN entering immersive mode THEN hide all system bars`() {
+        val decorView: View = mock()
+        val activityWindow: Window = mock()
+        val activity: Activity = mock()
+        val layoutParams = WindowManager.LayoutParams()
+        val insetsController: WindowInsetsController = mock()
+
+        doReturn(activityWindow).`when`(activity).window
+        doReturn(decorView).`when`(activityWindow).decorView
+        doReturn(layoutParams).`when`(activityWindow).attributes
+        doReturn(insetsController).`when`(activityWindow).insetsController
+
+        val integration = createFullScreenIntegration(activity = activity)
+
+        integration.switchToImmersiveMode()
+
+        // verify hiding system bars
+        verify(insetsController).hide(WindowInsetsCompat.Type.systemBars())
+
+        verify(activityWindow).setFlags(
+            WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+            WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+        )
+
+        assertEquals(
+            WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES,
+            layoutParams.layoutInDisplayCutoutMode,
+        )
+    }
+
+    @Test
     @Suppress("DEPRECATION")
-    fun `GIVEN immersive mode WHEN exitImmersiveModeIfNeeded is called THEN show the system bars`() {
+    @Config(sdk = [28])
+    fun `GIVEN immersive mode WHEN exitImmersiveModeIfNeeded is called THEN show the system bars on SDK 28`() {
         val decorView: View = mock()
         val activityWindow: Window = mock()
         val activity: Activity = mock()
@@ -168,17 +155,7 @@ internal class FullScreenIntegrationTest {
         doReturn(activityWindow).`when`(activity).window
         doReturn(decorView).`when`(activityWindow).decorView
         doReturn(layoutParams).`when`(activityWindow).attributes
-        val integration = FullScreenIntegration(
-            activity,
-            mock(),
-            null,
-            mock(),
-            mock(),
-            mock(),
-            mock(),
-            mock(),
-            mock(),
-        )
+        val integration = createFullScreenIntegration(activity = activity)
 
         integration.exitImmersiveMode()
         // Hiding the system bar hides the status and navigation bars.
@@ -189,22 +166,43 @@ internal class FullScreenIntegrationTest {
     }
 
     @Test
+    fun `GIVEN immersive mode WHEN exitImmersiveModeIfNeeded is called THEN show the system bars`() {
+        val decorView: View = mock()
+        val activityWindow: Window = mock()
+        val activity: Activity = mock()
+        val layoutParams = WindowManager.LayoutParams()
+        val insetsController: WindowInsetsController = mock()
+
+        doReturn(activityWindow).`when`(activity).window
+        doReturn(decorView).`when`(activityWindow).decorView
+        doReturn(layoutParams).`when`(activityWindow).attributes
+        doReturn(insetsController).`when`(activityWindow).insetsController
+
+        val integration = createFullScreenIntegration(activity = activity)
+
+        integration.exitImmersiveMode()
+
+        verify(insetsController).show(WindowInsetsCompat.Type.systemBars())
+        verify(decorView).setOnApplyWindowInsetsListener(null)
+        verify(activityWindow).clearFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS)
+
+        assertEquals(
+            WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_DEFAULT,
+            layoutParams.layoutInDisplayCutoutMode,
+        )
+    }
+
+    @Test
     fun `GIVEN a11y is enabled WHEN enterBrowserFullscreen THEN hide the toolbar`() {
         val toolbar: BrowserToolbar = mock()
         val engineView: GeckoEngineView = mock()
         doReturn(mock<View>()).`when`(engineView).asView()
         val settings: Settings = mock()
         doReturn(true).`when`(settings).isAccessibilityEnabled()
-        val integration = FullScreenIntegration(
-            mock(),
-            mock(),
-            null,
-            mock(),
-            settings,
-            toolbar,
-            mock(),
-            engineView,
-            mock(),
+        val integration = createFullScreenIntegration(
+            settings = settings,
+            toolbar = toolbar,
+            engineView = engineView,
         )
 
         integration.enterBrowserFullscreen()
@@ -221,16 +219,10 @@ internal class FullScreenIntegrationTest {
         doReturn(mock<View>()).`when`(engineView).asView()
         val settings: Settings = mock()
         doReturn(false).`when`(settings).isAccessibilityEnabled()
-        val integration = FullScreenIntegration(
-            mock(),
-            mock(),
-            null,
-            mock(),
-            settings,
-            toolbar,
-            mock(),
-            engineView,
-            mock(),
+        val integration = createFullScreenIntegration(
+            settings = settings,
+            toolbar = toolbar,
+            engineView = engineView,
         )
 
         integration.enterBrowserFullscreen()
@@ -252,17 +244,13 @@ internal class FullScreenIntegrationTest {
         val resources: Resources = mock()
         val activity: Activity = mock()
         doReturn(resources).`when`(activity).resources
-        val integration = FullScreenIntegration(
-            activity,
-            mock(),
-            null,
-            mock(),
-            settings,
-            toolbar,
-            mock(),
-            engineView,
-            mock(),
-        )
+        val integration =
+            createFullScreenIntegration(
+                activity = activity,
+                settings = settings,
+                toolbar = toolbar,
+                engineView = engineView,
+            )
 
         integration.exitBrowserFullscreen()
 
@@ -281,17 +269,13 @@ internal class FullScreenIntegrationTest {
         val resources: Resources = mock()
         val activity: Activity = mock()
         doReturn(resources).`when`(activity).resources
-        val integration = FullScreenIntegration(
-            activity,
-            mock(),
-            null,
-            mock(),
-            settings,
-            toolbar,
-            mock(),
-            engineView,
-            mock(),
-        )
+        val integration =
+            createFullScreenIntegration(
+                activity = activity,
+                settings = settings,
+                toolbar = toolbar,
+                engineView = engineView,
+            )
 
         integration.exitBrowserFullscreen()
 
@@ -312,16 +296,12 @@ internal class FullScreenIntegrationTest {
         val activity = Robolectric.buildActivity(Activity::class.java).get()
         val statusBar: View = mock()
         val integration = spy(
-            FullScreenIntegration(
-                activity,
-                mock(),
-                null,
-                mock(),
-                settings,
-                toolbar,
-                statusBar,
-                engineView,
-                mock(),
+            createFullScreenIntegration(
+                activity = activity,
+                settings = settings,
+                toolbar = toolbar,
+                statusBar = statusBar,
+                engineView = engineView,
             ),
         )
 
@@ -330,12 +310,13 @@ internal class FullScreenIntegrationTest {
 
         verify(integration).enterBrowserFullscreen()
         verify(statusBar).isVisible = false
-        verify(fullScreenNotification).show(any())
+        verify(fullScreenNotification).show()
         verify(integration).switchToImmersiveMode()
     }
 
     @Test
-    fun `WHEN exiting fullscreen THEN put browser in fullscreen, hide system bars and enter immersive mode`() {
+    @Config(sdk = [28])
+    fun `WHEN exiting fullscreen THEN put browser in fullscreen, hide system bars and enter immersive mode in SDK 28`() {
         val toolbar: BrowserToolbar = mock()
         val engineView: GeckoEngineView = mock()
         doReturn(mock<View>()).`when`(engineView).asView()
@@ -350,18 +331,15 @@ internal class FullScreenIntegrationTest {
         doReturn(decorView).`when`(activityWindow).decorView
         doReturn(windowAttributes).`when`(activityWindow).attributes
         doReturn(resources).`when`(activity).resources
+        doReturn("").`when`(resources).getString(anyInt())
         val statusBar: View = mock()
         val integration = spy(
-            FullScreenIntegration(
-                activity,
-                mock(),
-                null,
-                mock(),
-                settings,
-                toolbar,
-                statusBar,
-                engineView,
-                mock(),
+            createFullScreenIntegration(
+                activity = activity,
+                settings = settings,
+                toolbar = toolbar,
+                statusBar = statusBar,
+                engineView = engineView,
             ),
         )
 
@@ -371,4 +349,62 @@ internal class FullScreenIntegrationTest {
         verify(integration).exitImmersiveMode()
         verify(statusBar).isVisible = true
     }
+
+    @Test
+    fun `WHEN exiting fullscreen THEN put browser in fullscreen, hide system bars and enter immersive mode in`() {
+        val toolbar: BrowserToolbar = mock()
+        val engineView: GeckoEngineView = mock()
+        doReturn(mock<View>()).`when`(engineView).asView()
+
+        val settings: Settings = mock()
+        doReturn(false).`when`(settings).isAccessibilityEnabled()
+
+        val resources: Resources = mock()
+        val activityWindow: Window = mock()
+        val decorView: View = mock()
+        val windowAttributes = WindowManager.LayoutParams()
+        val activity: Activity = mock()
+        val insetsController: WindowInsetsController = mock()
+
+        doReturn(activityWindow).`when`(activity).window
+        doReturn(decorView).`when`(activityWindow).decorView
+        doReturn(windowAttributes).`when`(activityWindow).attributes
+        doReturn(resources).`when`(activity).resources
+        doReturn("").`when`(resources).getString(anyInt())
+        doReturn(insetsController).`when`(activityWindow).insetsController
+
+        val statusBar: View = mock()
+        val integration = spy(
+            createFullScreenIntegration(
+                activity = activity,
+                settings = settings,
+                toolbar = toolbar,
+                statusBar = statusBar,
+                engineView = engineView,
+            ),
+        )
+
+        integration.fullScreenChanged(false)
+
+        verify(integration).exitBrowserFullscreen()
+        verify(integration).exitImmersiveMode()
+        verify(statusBar).isVisible = true
+    }
+
+    private fun createFullScreenIntegration(
+        activity: Activity = mock(),
+        settings: Settings = mock(),
+        toolbar: BrowserToolbar = mock(),
+        statusBar: View = mock(),
+        engineView: GeckoEngineView = mock(),
+    ) = FullScreenIntegration(
+        activity = activity,
+        store = mock(),
+        tabId = null,
+        sessionUseCases = mock(),
+        settings = settings,
+        toolbarView = toolbar,
+        statusBar = statusBar,
+        engineView = engineView,
+    )
 }

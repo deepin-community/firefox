@@ -957,7 +957,7 @@ void jpegli_copy_critical_parameters(j_decompress_ptr srcinfo,
   jpegli_set_colorspace(dstinfo, srcinfo->jpeg_color_space);
   if (dstinfo->num_components != srcinfo->num_components) {
     const auto& cinfo = dstinfo;
-    JPEGLI_ERROR("Mismatch between src colorspace and components");
+    return JPEGLI_ERROR("Mismatch between src colorspace and components");
   }
   dstinfo->data_precision = srcinfo->data_precision;
   dstinfo->CCIR601_sampling = srcinfo->CCIR601_sampling;

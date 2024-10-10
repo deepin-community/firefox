@@ -52,11 +52,11 @@ account-connection-title-2 = Аккаунт
 #   $deviceName (String): the name of the new device
 account-connection-connected-with = Этот компьютер теперь подключён к { $deviceName }.
 # Used when the name of the new device is not known.
-account-connection-connected-with-noname = Этот компьютер теперь подключен к новому устройству.
+account-connection-connected-with-noname = Этот компьютер теперь подключён к новому устройству.
 # Used in a notification shown after a Firefox account is connected to the current device.
-account-connection-connected = Вы успешно вошли
+account-connection-connected = Вход завершён
 # Used in a notification shown after the Firefox account was disconnected remotely.
-account-connection-disconnected = Этот компьютер был отключён.
+account-connection-disconnected = Этот компьютер отключён.
 
 ## These strings are used in a notification shown when we're opening
 ## a single tab another device sent us to display.
@@ -98,4 +98,17 @@ account-multiple-tabs-arriving-from-unknown-device =
         [one] Получена { $tabCount } вкладка
         [few] Получено { $tabCount } вкладки
        *[many] Получено { $tabCount } вкладок
+    }
+
+## These strings are used in notifications in which the user remotely closed
+## tabs from other devices
+## Variables:
+##   $closedCount (Number): the number of tabs closed
+
+account-view-recently-closed-tabs = Просмотр недавно закрытых вкладок
+account-tabs-closed-remotely =
+    { $closedCount ->
+        [one] { $closedCount } вкладка { -brand-short-name } закрыта
+        [few] { $closedCount } вкладки { -brand-short-name } закрыты
+       *[many] { $closedCount } вкладок { -brand-short-name } закрыто
     }

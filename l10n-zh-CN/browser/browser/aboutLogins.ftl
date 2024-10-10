@@ -127,6 +127,8 @@ login-item-copied-username-button-text = 已复制！
 login-item-password-label = 密码
 login-item-password-reveal-checkbox =
     .aria-label = 显示密码
+login-item-password-conceal-checkbox =
+    .aria-label = 隐藏密码
 login-item-copy-password-button-text = 复制
 login-item-copied-password-button-text = 已复制！
 login-item-save-changes-button = 保存更改
@@ -158,6 +160,13 @@ about-logins-edit-login-os-auth-dialog-message-win = 请输入 Windows 登录凭
 # This message can be seen when attempting to edit a login in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-edit-login-os-auth-dialog-message-macosx = 编辑保存的登录信息
+# The macOS strings are preceded by the operating system with "Firefox is trying to ".
+# This message can be seen when attempting to disable osauth in about:preferences.
+about-logins-os-auth-dialog-message =
+    { PLATFORM() ->
+        [macos] 更改密码设置
+       *[other] { -brand-short-name } 正尝试更改密码设置，请验证设备登录信息以允许此操作。
+    }
 # This message can be seen when attempting to edit a login in about:logins on Windows.
 about-logins-edit-login-os-auth-dialog-message2-win = 请输入 Windows 登录凭据，以编辑密码。这有助于保护您的账户安全。
 # This message can be seen when attempting to edit a login in about:logins
@@ -253,8 +262,8 @@ about-logins-confirm-remove-all-sync-dialog-title2 = 确定在所有设备上移
 # Message for modal to confirm the removal of saved passwords when user IS synced.
 about-logins-confirm-remove-all-sync-dialog-message3 =
     { $count ->
-        [1] 将在您所有受同步的设备上，移除保存在 { -brand-short-name } 中的全部密码，以及在此显示的所有数据外泄警报。此操作不可撤销。
-       *[other] 将在您所有受同步的设备上，移除保存在 { -brand-short-name } 中的全部密码，以及在此显示的所有数据外泄警报。此操作不可撤销。
+        [1] 将在您所有同步的设备上，移除保存在 { -brand-short-name } 中的全部密码，以及在此显示的所有数据外泄警报。此操作不可撤销。
+       *[other] 将在您所有同步的设备上，移除保存在 { -brand-short-name } 中的全部密码，以及在此显示的所有数据外泄警报。此操作不可撤销。
     }
 
 ##

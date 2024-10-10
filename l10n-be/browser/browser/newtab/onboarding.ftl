@@ -188,6 +188,8 @@ mr2022-onboarding-pin-primary-button-label =
         [macos] Трымаць { -brand-short-name } у доку
        *[other] Замацаваць { -brand-short-name } на панэлі заданняў
     }
+# Primary button string used on welcome page for when Firefox is not pinned on MSIX
+mr2022-onboarding-pin-primary-button-label-msix = Замацаваць { -brand-short-name } на панэлі заданняў і ў стартавым меню
 # Subtitle will be used when user already has Firefox pinned, but
 # has not set it as their default browser.
 # When translating "zip", please feel free to pick a verb that signifies movement and/or exploration
@@ -334,6 +336,14 @@ onboarding-device-migration-title = З вяртаннем!
 onboarding-device-migration-subtitle = Увайдзіце ў свой { -fxaccount-brand-name(capitalization: "sentence") }, каб перанесці свае закладкі, паролі і гісторыю на вашу новую прыладу.
 onboarding-device-migration-subtitle2 = Увайдзіце ў свой уліковы запіс, каб перанесці свае закладкі, паролі і гісторыю на новую прыладу.
 onboarding-device-migration-primary-button-label = Увайсці
+
+## Add-ons Picker screen
+
+amo-picker-title = Уладкуйце свой { -brand-short-name }
+amo-picker-subtitle = Пашырэнні — гэта як праграмы для вашага браўзера, яны дазваляюць абараняць паролі, сцягваць відэа, знаходзіць выгадныя прапановы, блакаваць раздражняльную рэкламу, змяняць выгляд браўзера і многае іншае.
+amo-picker-install-button-label = Дадаць да { -brand-short-name }
+amo-picker-install-complete-label = Усталяваны
+amo-picker-collection-link = Адкрыць больш дадаткаў
 
 ## The following screens have been updated to use security and privacy focused strings:
 

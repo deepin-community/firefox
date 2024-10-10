@@ -108,7 +108,7 @@ static const RedirEntry kRedirMap[] = {
     {"credits", "https://www.mozilla.org/credits/",
      nsIAboutModule::URI_SAFE_FOR_UNTRUSTED_CONTENT |
          nsIAboutModule::URI_MUST_LOAD_IN_CHILD},
-    {"fingerprinting",
+    {"fingerprintingprotection",
      "chrome://global/content/usercharacteristics/usercharacteristics.html",
      nsIAboutModule::URI_SAFE_FOR_UNTRUSTED_CONTENT |
          nsIAboutModule::HIDE_FROM_ABOUTABOUT | nsIAboutModule::ALLOW_SCRIPT |
@@ -118,6 +118,10 @@ static const RedirEntry kRedirMap[] = {
      nsIAboutModule::URI_SAFE_FOR_UNTRUSTED_CONTENT |
          nsIAboutModule::URI_CAN_LOAD_IN_CHILD | nsIAboutModule::ALLOW_SCRIPT |
          nsIAboutModule::HIDE_FROM_ABOUTABOUT},
+#if defined(NIGHTLY_BUILD)
+    {"inference", "chrome://global/content/aboutInference.html",
+     nsIAboutModule::ALLOW_SCRIPT | nsIAboutModule::IS_SECURE_CHROME_UI},
+#endif
     {"license", "chrome://global/content/license.html",
      nsIAboutModule::URI_SAFE_FOR_UNTRUSTED_CONTENT |
          nsIAboutModule::IS_SECURE_CHROME_UI},

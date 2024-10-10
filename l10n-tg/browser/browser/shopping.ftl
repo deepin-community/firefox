@@ -115,6 +115,7 @@ shopping-settings-sidebar-enabled-state = Абзори тафтиши тақри
 shopping-adjusted-rating-label =
     .label = Баҳодиҳии санҷида дурустшуда
 shopping-adjusted-rating-unreliable-reviews = Тақризҳои беэътимод тоза карда шудаанд
+shopping-adjusted-rating-based-reliable-reviews = Дар асоси тақризҳои беэътимод
 
 ## Strings for the review reliability component
 
@@ -133,6 +134,8 @@ shopping-analysis-explainer-learn-more2 = Маълумоти бештар гир
 # websites, which will be inserted without being translated.
 #  $retailer (String) - capitalized name of the shopping website, for example, "Amazon".
 shopping-analysis-explainer-highlights-description = <strong>Нуқтаҳои асосӣ</strong> аз тақризҳои «{ $retailer }» ба хулоса омаданд, ки дар давоми 80 рӯзи охир ҷамъ карда шудаанд ва онҳо ба умеди мо боэътимод мебошанд.
+# Fallback for analysis highlights explainer if the retailer is ever unknown
+shopping-analysis-explainer-highlights-description-unknown-retailer = <strong>Нуқтаҳои асосӣ</strong> аз тақризҳо ба хулоса омаданд, ки дар давоми 80 рӯзи охир ҷамъ карда шудаанд ва онҳо ба умеди мо боэътимод мебошанд.
 shopping-analysis-explainer-review-grading-scale-reliable = Тақризҳои боэътимод. Мо боварӣ дорем, ки тақризҳо аз муштариёни ҳақиқӣ ба таври ростқавл ва беғаразона пешниҳод карда шудаанд.
 shopping-analysis-explainer-review-grading-scale-mixed = Мо боварӣ дорем, ки ҳозир будани маҷмӯи тақризҳои боэътимод ва беэътимод имконпазир аст.
 shopping-analysis-explainer-review-grading-scale-unreliable = Тақризҳои беэътимод. Мо боварӣ дорем, ки чунин тақризҳо аз тақризгарони қалбақӣ ва боғараз ворид карда шудаанд.

@@ -60,8 +60,8 @@ menu-file-new-tab =
     .label = Ny fane
     .accesskey = f
 menu-file-new-container-tab =
-    .label = Ny innholdsfane
-    .accesskey = i
+    .label = Ny beholderfane
+    .accesskey = h
 menu-file-new-window =
     .label = Nytt vindu
     .accesskey = N
@@ -339,7 +339,7 @@ menu-help-exit-troubleshoot-mode =
     .label = Slå av feilsøkingsmodus
     .accesskey = S
 menu-help-switch-device =
-    .label = Bytter til en ny enhet
+    .label = Bytte til en ny enhet
     .accesskey = n
 # Label of the Help menu item. Either this or
 # menu-help-notdeceptive is shown.

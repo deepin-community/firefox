@@ -77,16 +77,10 @@ appmenu-remote-tabs-turn-on-sync =
 appmenu-remote-tabs-showmore =
     .label = Mear ljepblêden toane
     .tooltiptext = Mear ljepblêden toane fan dit apparaat
-# This is shown when there are inactive tabs which are not being shown.
-# Variables
-# $count (Number) - The number of inactive tabs which are not being shown (at least 1)
-appmenu-remote-tabs-showinactive =
-    .label =
-        { $count ->
-            [one] Ien aktyf ljepblêd toane
-           *[other] { $count } ynaktive ljepblêden toane
-        }
-    .tooltiptext = De ynaktive ljepblêden op dit apparaat toane
+# This is shown as the label for an element to show inactive tabs from this device.
+appmenu-remote-tabs-show-inactive-tabs =
+    .label = Ynaktive ljepblêden
+    .tooltiptext = Ynaktive ljepblêden op dit apparaat besjen
 # This is shown beneath the name of a device when that device has no open tabs
 appmenu-remote-tabs-notabs = Gjin iepen ljepblêden
 # This is shown when Sync is configured but syncing tabs is disabled.
@@ -202,6 +196,9 @@ profiler-popup-presets-power-description = Foarynstelling foar it ûndersykjen f
 # "Power" is used in the sense of energy (electricity used by the computer).
 profiler-popup-presets-power-label =
     .label = Fermogen
+profiler-popup-presets-debug-description = Foarynstelling foar debugging yn { -brand-shorter-name }. Hege overhead, net brûke foar prestaasjewurk, mar om te fokussen op it begripen fan browsergedrach.
+profiler-popup-presets-debug-label =
+    .label = Debugge
 profiler-popup-presets-custom-label =
     .label = Oanpast
 

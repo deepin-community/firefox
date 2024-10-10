@@ -31,6 +31,7 @@
 #include "mozilla/Assertions.h"
 #include "mozilla/Attributes.h"
 #include "mozilla/BasicEvents.h"
+#include "mozilla/SourceLocation.h"
 #include "mozilla/CORSMode.h"
 #include "mozilla/CallState.h"
 #include "mozilla/Maybe.h"
@@ -38,6 +39,7 @@
 #include "mozilla/TimeStamp.h"
 #include "mozilla/UniquePtr.h"
 #include "mozilla/dom/BindingDeclarations.h"
+#include "mozilla/dom/CacheExpirationTime.h"
 #include "mozilla/dom/FromParser.h"
 #include "mozilla/dom/FetchPriority.h"
 #include "mozilla/fallible.h"
@@ -115,7 +117,6 @@ class nsNodeInfoManager;
 class nsParser;
 class nsPIWindowRoot;
 class nsPresContext;
-class nsStringBuffer;
 class nsTextFragment;
 class nsView;
 class nsWrapperCache;
@@ -143,6 +144,7 @@ class HTMLEditor;
 class LazyLogModule;
 class LogModule;
 class PresShell;
+class StringBuffer;
 class TextEditor;
 class WidgetDragEvent;
 class WidgetKeyboardEvent;
@@ -190,6 +192,7 @@ class NodeInfo;
 class OwningFileOrUSVStringOrFormData;
 class Selection;
 enum class ShadowRootMode : uint8_t;
+class ShadowRoot;
 struct StructuredSerializeOptions;
 class WorkerPrivate;
 enum class ElementCallbackType;
@@ -231,6 +234,8 @@ enum EventNameType {
 };
 
 enum class TreeKind : uint8_t { DOM, Flat };
+
+enum class SerializeShadowRoots : uint8_t { Yes, No };
 
 struct EventNameMapping {
   // This holds pointers to nsGkAtoms members, and is therefore safe as a
@@ -482,8 +487,21 @@ class nsContentUtils {
    * This method just sucks.
    */
   static nsresult GetInclusiveAncestorsAndOffsets(
-      nsINode* aNode, uint32_t aOffset, nsTArray<nsIContent*>* aAncestorNodes,
-      nsTArray<mozilla::Maybe<uint32_t>>* aAncestorOffsets);
+      nsINode* aNode, uint32_t aOffset, nsTArray<nsIContent*>& aAncestorNodes,
+      nsTArray<mozilla::Maybe<uint32_t>>& aAncestorOffsets);
+
+  /*
+   * https://dom.spec.whatwg.org/#concept-shadow-including-ancestor.
+   *
+   * Similar as the GetInclusiveAncestorsAndOffsets method, except this
+   * will use host elements as the parent for shadow roots.
+   *
+   * When the current content is a ShadowRoot, the offset of it from
+   * its ancestor (the host element) will be Nothing().
+   */
+  static nsresult GetShadowIncludingAncestorsAndOffsets(
+      nsINode* aNode, uint32_t aOffset, nsTArray<nsIContent*>& aAncestorNodes,
+      nsTArray<mozilla::Maybe<uint32_t>>& aAncestorOffsets);
 
   /**
    * Returns the closest common inclusive ancestor
@@ -500,6 +518,9 @@ class nsContentUtils {
 
     return GetCommonAncestorHelper(aNode1, aNode2);
   }
+
+  static nsINode* GetClosestCommonShadowIncludingInclusiveAncestor(
+      nsINode* aNode1, nsINode* aNode2);
 
   /**
    * Returns the common flattened tree ancestor, if any, for two given content
@@ -970,6 +991,11 @@ class nsContentUtils {
                                             nsIURI* aBaseURI);
 
   /**
+   * Returns true if |aAtom| contains at least one |aChar|.
+   */
+  static bool ContainsChar(nsAtom* aAtom, char aChar);
+
+  /**
    * Returns true if |aName| is a name with dashes.
    */
   static bool IsNameWithDash(nsAtom* aName);
@@ -1250,29 +1276,13 @@ class nsContentUtils {
    *   @param aErrorFlags See nsIScriptError.
    *   @param aCategory Name of module reporting error.
    *   @param aDocument Reference to the document which triggered the message.
-   *   @param [aURI=nullptr] (Optional) URI of resource containing error.
-   *   @param [aSourceLine=u""_ns] (Optional) The text of the line that
-              contains the error (may be empty).
-   *   @param [aLineNumber=0] (Optional) Line number within resource
-              containing error.
-   *   @param [aColumnNumber=0] (Optional) Column number within resource
-              containing error.
-              If aURI is null, then aDocument->GetDocumentURI() is used.
-   *   @param [aLocationMode] (Optional) Specifies the behavior if
-              error location information is omitted.
+   *   @param aLocation message location. Pass the empty location to omit it.
    */
-  enum MissingErrorLocationMode {
-    // Don't show location information in the error console.
-    eOMIT_LOCATION,
-    // Get location information from the currently executing script.
-    eUSE_CALLING_LOCATION
-  };
   static nsresult ReportToConsoleNonLocalized(
       const nsAString& aErrorText, uint32_t aErrorFlags,
       const nsACString& aCategory, const Document* aDocument,
-      nsIURI* aURI = nullptr, const nsString& aSourceLine = u""_ns,
-      uint32_t aLineNumber = 0, uint32_t aColumnNumber = 0,
-      MissingErrorLocationMode aLocationMode = eUSE_CALLING_LOCATION);
+      const mozilla::SourceLocation& aLocation =
+          mozilla::JSCallingLocation::Get());
 
   /**
    * Report a non-localized error message to the error console base on the
@@ -1282,23 +1292,13 @@ class nsContentUtils {
    *   @param aCategory Name of module reporting error.
    *   @param [aInnerWindowID] Inner window ID for document which triggered the
    *          message.
-   *   @param [aURI=nullptr] (Optional) URI of resource containing error.
-   *   @param [aSourceLine=u""_ns] (Optional) The text of the line that
-              contains the error (may be empty).
-   *   @param [aLineNumber=0] (Optional) Line number within resource
-              containing error.
-   *   @param [aColumnNumber=1] (Optional) Column number within resource
-              containing error.
-              If aURI is null, then aDocument->GetDocumentURI() is used.
-   *   @param [aLocationMode] (Optional) Specifies the behavior if
-              error location information is omitted.
+   *   @param aLocation message location. Pass the empty location to omit it.
    */
   static nsresult ReportToConsoleByWindowID(
       const nsAString& aErrorText, uint32_t aErrorFlags,
       const nsACString& aCategory, uint64_t aInnerWindowID,
-      nsIURI* aURI = nullptr, const nsString& aSourceLine = u""_ns,
-      uint32_t aLineNumber = 0, uint32_t aColumnNumber = 1,
-      MissingErrorLocationMode aLocationMode = eUSE_CALLING_LOCATION);
+      const mozilla::SourceLocation& aLocation =
+          mozilla::JSCallingLocation::Get());
 
   /**
    * Report a localized error message to the error console.
@@ -1309,14 +1309,7 @@ class nsContentUtils {
    *   @param aMessageName Name of localized message.
    *   @param [aParams=empty-array] (Optional) Parameters to be substituted into
               localized message.
-   *   @param [aURI=nullptr] (Optional) URI of resource containing error.
-   *   @param [aSourceLine=u""_ns] (Optional) The text of the line that
-              contains the error (may be empty).
-   *   @param [aLineNumber=0] (Optional) Line number within resource
-              containing error.
-   *   @param [aColumnNumber=0] (Optional) Column number within resource
-              containing error.
-              If aURI is null, then aDocument->GetDocumentURI() is used.
+   *   @param aLocation message location. Pass the empty location to omit it.
    */
   enum PropertiesFile {
     eCSS_PROPERTIES,
@@ -1340,8 +1333,8 @@ class nsContentUtils {
       uint32_t aErrorFlags, const nsACString& aCategory,
       const Document* aDocument, PropertiesFile aFile, const char* aMessageName,
       const nsTArray<nsString>& aParams = nsTArray<nsString>(),
-      nsIURI* aURI = nullptr, const nsString& aSourceLine = u""_ns,
-      uint32_t aLineNumber = 0, uint32_t aColumnNumber = 0);
+      const mozilla::SourceLocation& aLocation =
+          mozilla::JSCallingLocation::Get());
 
   static void ReportEmptyGetElementByIdArg(const Document* aDoc);
 
@@ -1394,13 +1387,6 @@ class nsContentUtils {
 
   static bool PrefetchPreloadEnabled(nsIDocShell* aDocShell);
 
-  static void ExtractErrorValues(JSContext* aCx, JS::Handle<JS::Value> aValue,
-                                 nsAString& aSourceSpecOut, uint32_t* aLineOut,
-                                 uint32_t* aColumnOut, nsString& aMessageOut);
-
-  // Variant on `ExtractErrorValues` with a `nsACString`. This
-  // method is provided for backwards compatibility. Prefer the
-  // faster method above for your code.
   static void ExtractErrorValues(JSContext* aCx, JS::Handle<JS::Value> aValue,
                                  nsACString& aSourceSpecOut, uint32_t* aLineOut,
                                  uint32_t* aColumnOut, nsString& aMessageOut);
@@ -1481,6 +1467,11 @@ class nsContentUtils {
   static bool IsChromeDoc(const Document* aDocument);
 
   /**
+   * Returns true if aDocument is an addon document
+   */
+  static bool IsAddonDoc(const Document* aDocument);
+
+  /**
    * Returns true if aDocument is in a docshell whose parent is the same type
    */
   static bool IsChildOfSameType(Document* aDoc);
@@ -1529,8 +1520,9 @@ class nsContentUtils {
   static bool IsPreloadType(nsContentPolicyType aType);
 
   /**
-   * Quick helper to determine whether there are any mutation listeners
-   * of a given type that apply to this content or any of its ancestors.
+   * Quick helper to determine whether mutation events are enabled and there are
+   * any mutation listeners of a given type that apply to this content or any of
+   * its ancestors.
    * The method has the side effect to call document's MayDispatchMutationEvent
    * using aTargetForSubtreeModified as the parameter.
    *
@@ -1541,8 +1533,8 @@ class nsContentUtils {
    *
    * @return true if there are mutation listeners of the specified type
    */
-  static bool HasMutationListeners(nsINode* aNode, uint32_t aType,
-                                   nsINode* aTargetForSubtreeModified);
+  static bool WantMutationEvents(nsINode* aNode, uint32_t aType,
+                                 nsINode* aTargetForSubtreeModified);
 
   /**
    * Quick helper to determine whether there are any mutation listeners
@@ -2135,6 +2127,13 @@ class nsContentUtils {
   }
 
   /**
+   * Gets the about:fingerprintingprotection principal.
+   */
+  static nsIPrincipal* GetFingerprintingProtectionPrincipal() {
+    return sFingerprintingProtectionPrincipal;
+  }
+
+  /**
    * *aResourcePrincipal is a principal describing who may access the contents
    * of a resource. The resource can only be consumed by a principal that
    * subsumes *aResourcePrincipal. MAKE SURE THAT NOTHING EVER ACTS WITH THE
@@ -2195,7 +2194,9 @@ class nsContentUtils {
   /**
    * Retrieve the current drag session, or null if no drag is currently occuring
    */
-  static already_AddRefed<nsIDragSession> GetDragSession();
+  static already_AddRefed<nsIDragSession> GetDragSession(nsIWidget* aWidget);
+
+  static already_AddRefed<nsIDragSession> GetDragSession(nsPresContext* aPC);
 
   /*
    * Initialize and set the dataTransfer field of an WidgetDragEvent.
@@ -2443,14 +2444,6 @@ class nsContentUtils {
   [[nodiscard]] static bool PlatformToDOMLineBreaks(nsString& aString,
                                                     const mozilla::fallible_t&);
 
-  /**
-   * Populates aResultString with the contents of the string-buffer aBuf, up
-   * to aBuf's null-terminator.  aBuf must not be null. Ownership of the string
-   * is not transferred.
-   */
-  static void PopulateStringFromStringBuffer(nsStringBuffer* aBuf,
-                                             nsAString& aResultString);
-
   static bool IsHandlingKeyBoardEvent() { return sIsHandlingKeyBoardEvent; }
 
   static void SetIsHandlingKeyBoardEvent(bool aHandling) {
@@ -2524,14 +2517,6 @@ class nsContentUtils {
    */
   static mozilla::WindowRenderer* WindowRendererForContent(
       const nsIContent* aContent);
-
-  /**
-   * Determine whether a content node is focused or not,
-   *
-   * @param aContent the content node to check
-   * @return true if the content node is focused, false otherwise.
-   */
-  static bool IsFocusedContent(const nsIContent* aContent);
 
   /**
    * Returns true if calling execCommand with 'cut' or 'copy' arguments is
@@ -2761,6 +2746,7 @@ class nsContentUtils {
   static bool IsJavaScriptLanguage(const nsString& aName);
 
   static bool IsJavascriptMIMEType(const nsAString& aMIMEType);
+  static bool IsJavascriptMIMEType(const nsACString& aMIMEType);
 
   static void SplitMimeType(const nsAString& aValue, nsString& aType,
                             nsString& aParams);
@@ -2778,9 +2764,13 @@ class nsContentUtils {
    *                    check.  aNode and aOffset can be computed with
    *                    UIEvent::GetRangeParentContentAndOffset() if you want to
    *                    check the click point.
+   * @param aAllowCrossShadowBoundary If true, this method allows the selection
+   *                                  to have boundaries that cross shadow
+   *                                  boundaries.
    */
   static bool IsPointInSelection(const mozilla::dom::Selection& aSelection,
-                                 const nsINode& aNode, const uint32_t aOffset);
+                                 const nsINode& aNode, const uint32_t aOffset,
+                                 const bool aAllowCrossShadowBoundary = false);
 
   /**
    * Takes a selection, and a text control element (<input> or <textarea>), and
@@ -3041,7 +3031,7 @@ class nsContentUtils {
   static mozilla::Maybe<mozilla::dom::IPCImage> SurfaceToIPCImage(
       mozilla::gfx::DataSourceSurface&);
   static already_AddRefed<mozilla::gfx::DataSourceSurface> IPCImageToSurface(
-      mozilla::dom::IPCImage&&);
+      const mozilla::dom::IPCImage&);
 
   // Helpers shared by the implementations of nsContentUtils methods and
   // nsIDOMWindowUtils methods.
@@ -3109,8 +3099,13 @@ class nsContentUtils {
   /*
    * Serializes a HTML nsINode into its markup representation.
    */
-  static bool SerializeNodeToMarkup(nsINode* aRoot, bool aDescendentsOnly,
-                                    nsAString& aOut);
+  template <SerializeShadowRoots ShouldSerializeShadowRoots =
+                SerializeShadowRoots::No>
+  static bool SerializeNodeToMarkup(
+      nsINode* aRoot, bool aDescendantsOnly, nsAString& aOut,
+      bool aSerializableShadowRoots,
+      const mozilla::dom::Sequence<
+          mozilla::OwningNonNull<mozilla::dom::ShadowRoot>>& aShadowRoots);
 
   /*
    * Returns true iff the provided JSObject is a global, and its URI matches
@@ -3453,16 +3448,29 @@ class nsContentUtils {
 
   struct SubresourceCacheValidationInfo {
     // The expiration time, in seconds, if known.
-    mozilla::Maybe<uint32_t> mExpirationTime;
+    mozilla::Maybe<CacheExpirationTime> mExpirationTime;
     bool mMustRevalidate = false;
   };
 
   /**
-   * Gets cache validation info for subresources such as images or CSS
-   * stylesheets.
+   * Gets cache validation info for subresources such as images, CSS
+   * stylesheets, or JS.
    */
   static SubresourceCacheValidationInfo GetSubresourceCacheValidationInfo(
       nsIRequest*, nsIURI*);
+
+  /**
+   * Gets cache expiration time for subresources such as images, CSS
+   * stylesheets, or JS.
+   */
+  static CacheExpirationTime GetSubresourceCacheExpirationTime(nsIRequest*,
+                                                               nsIURI*);
+
+  /**
+   * Returns true if the request associated with the document should bypass the
+   * shared sub resource cache.
+   */
+  static bool ShouldBypassSubResourceCache(Document* aDoc);
 
   static uint32_t SecondsFromPRTime(PRTime aTime) {
     return uint32_t(int64_t(aTime) / int64_t(PR_USEC_PER_SEC));
@@ -3544,7 +3552,7 @@ class nsContentUtils {
   MOZ_CAN_RUN_SCRIPT_BOUNDARY
   static nsIContent* AttachDeclarativeShadowRoot(
       nsIContent* aHost, mozilla::dom::ShadowRootMode aMode, bool aIsClonable,
-      bool aDelegatesFocus);
+      bool aIsSerializable, bool aDelegatesFocus);
 
  private:
   static bool InitializeEventTable();
@@ -3597,6 +3605,8 @@ class nsContentUtils {
           aCallback);
 
   static nsINode* GetCommonAncestorHelper(nsINode* aNode1, nsINode* aNode2);
+  static nsINode* GetCommonShadowIncludingAncestorHelper(nsINode* aNode1,
+                                                         nsINode* aNode2);
   static nsIContent* GetCommonFlattenedTreeAncestorHelper(
       nsIContent* aContent1, nsIContent* aContent2);
 
@@ -3605,6 +3615,7 @@ class nsContentUtils {
   static nsIScriptSecurityManager* sSecurityManager;
   static nsIPrincipal* sSystemPrincipal;
   static nsIPrincipal* sNullSubjectPrincipal;
+  static nsIPrincipal* sFingerprintingProtectionPrincipal;
 
   static nsIConsoleService* sConsoleService;
 
@@ -3696,7 +3707,8 @@ nsContentUtils::InternalContentPolicyTypeToExternal(nsContentPolicyType aType) {
     case nsIContentPolicy::TYPE_INTERNAL_TRACK:
       return ExtContentPolicy::TYPE_MEDIA;
 
-    case nsIContentPolicy::TYPE_INTERNAL_XMLHTTPREQUEST:
+    case nsIContentPolicy::TYPE_INTERNAL_XMLHTTPREQUEST_ASYNC:
+    case nsIContentPolicy::TYPE_INTERNAL_XMLHTTPREQUEST_SYNC:
     case nsIContentPolicy::TYPE_INTERNAL_EVENTSOURCE:
       return ExtContentPolicy::TYPE_XMLHTTPREQUEST;
 

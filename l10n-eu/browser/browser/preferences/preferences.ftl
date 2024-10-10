@@ -32,6 +32,8 @@ search-input-box2 =
     .style = width: 15.4em
     .placeholder = Bilatu ezarpenetan
 managed-notice = Nabigatzailea zure erakundeak kudeatzen du.
+managed-notice-info-icon =
+    .alt = Informazioa
 category-list =
     .aria-label = Kategoriak
 pane-general-title = Orokorra
@@ -55,6 +57,9 @@ category-experimental =
 pane-experimental-subtitle = Kontuz jarraitu
 pane-experimental-search-results-header = { -brand-short-name } esperimentuak: kontuz jarraitu
 pane-experimental-description2 = Konfigurazio-hobespen aurreratuak aldatzeak { -brand-short-name }(r)en errendimendu edo segurtasunean eragin lezake.
+settings-pane-labs-title = { -firefoxlabs-brand-name }
+settings-category-labs =
+    .tooltiptext = { -firefoxlabs-brand-name }
 pane-experimental-reset =
     .label = Berrezarri lehenespenak
     .accesskey = h
@@ -203,6 +208,9 @@ containers-remove-alert-msg =
     }
 containers-remove-ok-button = Kendu edukiontzia
 containers-remove-cancel-button = Ez kendu edukiontzia
+settings-tabs-show-image-in-preview =
+    .label = Erakutsi aurrebista-irudia sagua fitxaren gainetik pasatzean
+    .accessKey = b
 
 ## General Section - Language & Appearance
 
@@ -589,6 +597,9 @@ home-prefs-recent-activity-description = Azken gune eta edukien hautapena
 home-prefs-snippets-header =
     .label = Mezu-zatiak
 home-prefs-snippets-description-new = { -vendor-short-name } eta { -brand-product-name }(r)en aholku eta albisteak
+home-prefs-weather-header =
+    .label = Eguraldia
+home-prefs-weather-learn-more-link = Argibide gehiago
 # Variables:
 #   $num (number) - Number of rows displayed
 home-prefs-sections-rows-option =
@@ -703,6 +714,8 @@ sync-profile-picture =
 sync-profile-picture-with-alt =
     .tooltiptext = Aldatu profileko argazkia
     .alt = Aldatu profileko argazkia
+fxa-login-rejected-warning =
+    .alt = Abisua
 sync-sign-out =
     .label = Amaitu saioa…
     .accesskey = A
@@ -929,6 +942,7 @@ primary-password-os-auth-dialog-message-win = Pasahitz nagusi bat sortzeko, sart
 # notes are only valid for English. Please test in your locale.
 primary-password-os-auth-dialog-message-macosx = Sortu pasahitz nagusia
 master-password-os-auth-dialog-caption = { -brand-full-name }
+autofill-creditcard-os-auth-dialog-caption = { -brand-full-name }
 
 ## Privacy section - Autofill
 
@@ -1246,6 +1260,9 @@ privacy-segmentation-radio-off =
     .label = Erabili { -brand-product-name } gomendioak
 privacy-segmentation-radio-on =
     .label = Erakutsi informazio xehatua
+
+## Privacy Section - Website Advertising Preferences
+
 
 ## Privacy Section - Security
 ##

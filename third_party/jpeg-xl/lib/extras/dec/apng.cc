@@ -381,11 +381,9 @@ class BlobsReaderPNG {
 
     // We need 2*bytes for the hex values plus 1 byte every 36 values,
     // plus terminal \n for length.
-    size_t tail = static_cast<size_t>(encoded_end - pos);
-    bool ok = ((tail / 2) >= bytes_to_decode);
-    if (ok) tail -= 2 * static_cast<size_t>(bytes_to_decode);
-    ok = ok && (tail == 1 + DivCeil(bytes_to_decode, 36));
-    if (!ok) {
+    const unsigned long needed_bytes =
+        bytes_to_decode * 2 + 1 + DivCeil(bytes_to_decode, 36);
+    if (needed_bytes != static_cast<size_t>(encoded_end - pos)) {
       return JXL_FAILURE("Not enough bytes to parse %d bytes in hex",
                          bytes_to_decode);
     }
@@ -433,22 +431,9 @@ constexpr uint32_t kId_cHRM = 0x4D524863;
 constexpr uint32_t kId_eXIf = 0x66495865;
 
 struct APNGFrame {
-  APNGFrame() : pixels(nullptr, free) {}
-  std::unique_ptr<void, decltype(free)*> pixels;
-  size_t pixels_size = 0;
+  std::vector<uint8_t> pixels;
   std::vector<uint8_t*> rows;
   unsigned int w, h, delay_num, delay_den;
-  Status Resize(size_t new_size) {
-    if (new_size > pixels_size) {
-      pixels.reset(malloc(new_size));
-      if (!pixels) {
-        // TODO(szabadka): use specialized OOM error code
-        return JXL_FAILURE("Failed to allocate memory for image buffer");
-      }
-      pixels_size = new_size;
-    }
-    return true;
-  }
 };
 
 struct Reader {
@@ -464,7 +449,7 @@ struct Reader {
   bool Eof() const { return next == last; }
 };
 
-const uint32_t cMaxPNGSize = 1000000UL;
+const unsigned long cMaxPNGSize = 1000000UL;
 const size_t kMaxPNGChunkSize = 1lu << 30;  // 1 GB
 
 void info_fn(png_structp png_ptr, png_infop info_ptr) {
@@ -481,7 +466,7 @@ void row_fn(png_structp png_ptr, png_bytep new_row, png_uint_32 row_num,
       reinterpret_cast<APNGFrame*>(png_get_progressive_ptr(png_ptr));
   JXL_CHECK(frame);
   JXL_CHECK(row_num < frame->rows.size());
-  JXL_CHECK(frame->rows[row_num] < frame->rows[0] + frame->pixels_size);
+  JXL_CHECK(frame->rows[row_num] < frame->pixels.data() + frame->pixels.size());
   png_progressive_combine_row(png_ptr, frame->rows[row_num], new_row);
 }
 
@@ -601,7 +586,7 @@ Status DecodeImageAPNG(const Span<const uint8_t> bytes,
   bool seenFctl = false;
   APNGFrame frameRaw = {};
   uint32_t num_channels;
-  JxlPixelFormat format = {};
+  JxlPixelFormat format;
   unsigned int bytes_per_pixel = 0;
 
   struct FrameInfo {
@@ -643,17 +628,17 @@ Status DecodeImageAPNG(const Span<const uint8_t> bytes,
   bool have_srgb = false;
   bool errorstate = true;
   if (id == kId_IHDR && chunkIHDR.size() == 25) {
-    uint32_t x0 = 0;
-    uint32_t y0 = 0;
-    uint32_t delay_num = 1;
-    uint32_t delay_den = 10;
-    uint32_t dop = 0;
-    uint32_t bop = 0;
+    unsigned int x0 = 0;
+    unsigned int y0 = 0;
+    unsigned int delay_num = 1;
+    unsigned int delay_den = 10;
+    unsigned int dop = 0;
+    unsigned int bop = 0;
 
-    uint32_t w = png_get_uint_32(chunkIHDR.data() + 8);
-    uint32_t h = png_get_uint_32(chunkIHDR.data() + 12);
-    uint32_t w0 = w;
-    uint32_t h0 = h;
+    unsigned int w = png_get_uint_32(chunkIHDR.data() + 8);
+    unsigned int h = png_get_uint_32(chunkIHDR.data() + 12);
+    unsigned int w0 = w;
+    unsigned int h0 = h;
     if (w > cMaxPNGSize || h > cMaxPNGSize) {
       return false;
     }
@@ -683,10 +668,8 @@ Status DecodeImageAPNG(const Span<const uint8_t> bytes,
             if (!processing_finish(png_ptr, info_ptr, &ppf->metadata)) {
               // Allocates the frame buffer.
               uint32_t duration = delay_num * 1000 / delay_den;
-              JXL_ASSIGN_OR_RETURN(PackedImage image,
-                                   PackedImage::Create(w0, h0, format));
-              frames.push_back(FrameInfo{std::move(image), duration, x0, w0, y0,
-                                         h0, dop, bop});
+              frames.push_back(FrameInfo{PackedImage(w0, h0, format), duration,
+                                         x0, w0, y0, h0, dop, bop});
               auto& frame = frames.back().data;
               for (size_t y = 0; y < h0; ++y) {
                 memcpy(static_cast<uint8_t*>(frame.pixels()) + frame.stride * y,
@@ -804,17 +787,12 @@ Status DecodeImageAPNG(const Span<const uint8_t> bytes,
           }
           bytes_per_pixel =
               num_channels * (format.data_type == JXL_TYPE_UINT16 ? 2 : 1);
-          size_t rowbytes = w * bytes_per_pixel;
-          if (h > std::numeric_limits<size_t>::max() / rowbytes) {
-            return JXL_FAILURE("Image too big.");
-          }
-          size_t imagesize = h * rowbytes;
-          JXL_RETURN_IF_ERROR(frameRaw.Resize(imagesize));
+          unsigned int rowbytes = w * bytes_per_pixel;
+          unsigned int imagesize = h * rowbytes;
+          frameRaw.pixels.resize(imagesize);
           frameRaw.rows.resize(h);
-          for (size_t j = 0; j < h; j++) {
-            frameRaw.rows[j] =
-                reinterpret_cast<uint8_t*>(frameRaw.pixels.get()) +
-                j * rowbytes;
+          for (unsigned int j = 0; j < h; j++) {
+            frameRaw.rows[j] = frameRaw.pixels.data() + j * rowbytes;
           }
 
           if (processing_data(png_ptr, info_ptr, chunk.data(), chunk.size())) {
@@ -951,8 +929,7 @@ Status DecodeImageAPNG(const Span<const uint8_t> bytes,
                  py0 + pys >= y0 + ysize && use_for_next_frame) {
         // If the new frame is contained within the old frame, we can pad the
         // new frame with zeros and not blend.
-        JXL_ASSIGN_OR_RETURN(PackedImage new_data,
-                             PackedImage::Create(pxs, pys, frame.data.format));
+        PackedImage new_data(pxs, pys, frame.data.format);
         memset(new_data.pixels(), 0, new_data.pixels_size);
         for (size_t y = 0; y < ysize; y++) {
           size_t bytes_per_pixel =
@@ -974,8 +951,7 @@ Status DecodeImageAPNG(const Span<const uint8_t> bytes,
         ppf->frames.emplace_back(std::move(new_data));
       } else {
         // If all else fails, insert a placeholder blank frame with kReplace.
-        JXL_ASSIGN_OR_RETURN(PackedImage blank,
-                             PackedImage::Create(pxs, pys, frame.data.format));
+        PackedImage blank(pxs, pys, frame.data.format);
         memset(blank.pixels(), 0, blank.pixels_size);
         ppf->frames.emplace_back(std::move(blank));
         auto& pframe = ppf->frames.back();

@@ -104,6 +104,8 @@ sandbox-sys-call-pid = PID
 sandbox-sys-call-tid = TID
 restart-in-troubleshoot-mode-label = දොස් සෙවීමේ ප්‍රකාරය…
 clear-startup-cache-title = ආරම්භක නිහිතය මැකීමට බලන්න
+clear-startup-cache-label = ආරම්භක නිහිතය මකන්න…
+startup-cache-dialog-title2 = ආරම්භක නිහිතය මැකීමට { -brand-short-name } යළි අරඹන්න ද?
 restart-button-label = යළි අරඹන්න
 
 ## Media titles
@@ -122,6 +124,11 @@ media-device-channels = නාලිකා
 media-device-latency = ගුප්තතාව
 
 ## Codec support table
+
+
+## Media Content Decryption Modules (CDM)
+## See EME Spec for more explanation for following technical terms
+## https://w3c.github.io/encrypted-media/
 
 
 ##
@@ -265,6 +272,12 @@ support-printing-modified-settings = සංශෝධිත මුද්‍රණ
 support-printing-prefs-name = නම
 support-printing-prefs-value = අගය
 
+## Remote Settings sections
+
+support-remote-settings-sync-history = ඉතිහාසය
+support-remote-settings-sync-history-status = තත්‍වය
+support-remote-settings-sync-history-datetime = දිනය
+
 ## Normandy sections
 
 support-remote-experiments-name = නම
@@ -273,4 +286,7 @@ support-remote-features-name = නම
 support-remote-features-status = තත්‍වය
 
 ## Pointing devices
+
+
+## Content Analysis (DLP)
 

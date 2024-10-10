@@ -16,13 +16,13 @@ screenshots-download-button-tooltip = Preuzmi snimku ekrana
 screenshots-copy-button = Kopiraj
 screenshots-copy-button-tooltip = Kopiraj snimku ekrana u međuspremnik
 screenshots-download-button-title =
-    .title = Preuzmi snimku zaslona
+    .title = Preuzmi snimku ekrana
 screenshots-copy-button-title =
-    .title = Kopiraj snimku zaslona u međuspremnik
+    .title = Kopiraj snimku ekrana u međuspremnik
 screenshots-cancel-button-title =
     .title = Odustani
 screenshots-retry-button-title =
-    .title = Ponovi snimku zaslona
+    .title = Ponovi snimanje ekrana
 screenshots-meta-key =
     { PLATFORM() ->
         [macos] ⌘
@@ -41,18 +41,45 @@ screenshots-unshootable-page-error-title = Ovu stranicu ne možemo snimiti.
 screenshots-unshootable-page-error-details = Ovo nije standardna Web stranica stoga ju ne možete snimiti.
 screenshots-empty-selection-error-title = Tvoj odabir je premalen
 screenshots-private-window-error-title = { -screenshots-brand-name } je deaktiviran u modusu privatnog pregledavanja
-screenshots-private-window-error-details = Žao nam je na neugodnosti. Radimo na ovoj mogućnosti za buduća izdanja.
+screenshots-private-window-error-details = Žao nam je na neugodnosti. Radimo na ovoj funkciji za buduća izdanja.
 screenshots-generic-error-title = Uf! { -screenshots-brand-name } se zbrkao.
 screenshots-generic-error-details = Ne znamo točno što se upravo dogodilo. Možeš li ponovo pokušati ili snimiti jednu drugu stranicu?
+screenshots-too-large-error-title = Vaša je snimka zaslona izrezana jer je bila prevelika
+screenshots-too-large-error-details = Pokušajte odabrati područje koje je manje od 32.700 piksela na najdužoj strani ili ukupne površine od 124.900.000 piksela.
 screenshots-component-retry-button =
-    .title = Ponovi snimku zaslona
-    .aria-label = Ponovi snimku zaslona
-screenshots-component-copy-button-label = Kopiraj
-screenshots-component-download-button-label = Preuzmi
+    .title = Ponovi snimanje ekrana
+    .aria-label = Ponovi snimanje ekrana
+screenshots-component-cancel-button =
+    .title =
+        { PLATFORM() ->
+            [macos] Odustani (esc)
+           *[other] Odustani (Esc)
+        }
+    .aria-label = Odustani
+# Variables
+#   $shortcut (String) - A keyboard shortcut for copying the screenshot.
+screenshots-component-copy-button-2 = Kopiraj
+    .title = Kopiraj ({ $shortcut })
+    .aria-label = Kopiraj
+# Variables
+#   $shortcut (String) - A keyboard shortcut for saving/downloading the screenshot.
+screenshots-component-download-button-2 = Preuzmi
+    .title = Preuzmi ({ $shortcut })
+    .aria-label = Preuzmi
 
 ## The below strings are used to capture keydown events so the strings should
 ## not be changed unless the keyboard layout in the locale requires it.
 
+screenshots-component-download-key = S
+screenshots-component-copy-key = C
 
 ##
 
+# This string represents the selection size area
+# "×" here represents "by" (i.e 123 by 456)
+# Variables:
+#   $width (Number) - The width of the selection region in pixels
+#   $height (Number) - The height of the selection region in pixels
+screenshots-overlay-selection-region-size-3 = { $width } × { $height }
+screenshots-overlay-preview-face-label =
+    .aria-label = Odaberi ovo područje

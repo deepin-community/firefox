@@ -57,9 +57,6 @@ pref("apz.fling_stopped_threshold", "0.0");
 // feel a lot better (bug 1095727)
 pref("apz.max_velocity_inches_per_ms", "0.07");
 
-// Enable overscroll on Android (bug 1230674)
-pref("apz.overscroll.enabled", true);
-
 // Don't allow a faraway second tap to start a one-touch pinch gesture (bug 1391770)
 pref("apz.second_tap_tolerance", "0.3");
 
@@ -208,9 +205,6 @@ pref("dom.serviceWorkers.disable_open_click_delay", 5000);
 // Enable WebShare support (bug 1402369)
 pref("dom.webshare.enabled", true);
 
-// The abuse report feature needs some UI that we do not have on mobile
-pref("extensions.abuseReport.amWebAPI.enabled", false);
-
 // Disable add-ons that are not installed by the user in all scopes by default (See the SCOPE
 // constants in AddonManager.sys.mjs for values to use here, and Bug 1405528 for a rationale)
 pref("extensions.autoDisableScopes", 15);
@@ -350,9 +344,6 @@ pref("media.video-queue.send-to-compositor-size", 1);
 // Increase necko buffer sizes for Android (bug 560591)
 pref("network.buffer.cache.size",  16384);
 
-// CookieBehavior setting for private browsing (bug 1695050)
-pref("network.cookie.cookieBehavior.pbmode", 4);
-
 // Set HPACK receive buffer size appropriately for Android (bug 1296280)
 pref("network.http.http2.default-hpack-buffer", 4096);
 
@@ -379,12 +370,6 @@ pref("network.protocol-handler.warn-external.vnd.youtube", false);
 // network reads and on wifi to mitigate 802.11 Power Save Polling delays
 // (bug 888268)
 pref("network.tickle-wifi.enabled", true);
-
-// Editing PDFs is not supported on mobile
-pref("pdfjs.annotationEditorMode", -1);
-
-// Enable the floating PDF.js toolbar on GeckoView (bug 1829366)
-pref("pdfjs.enableFloatingToolbar", true);
 
 // Try to convert PDFs sent as octet-stream (bug 1754499)
 pref("pdfjs.handleOctetStream", true);

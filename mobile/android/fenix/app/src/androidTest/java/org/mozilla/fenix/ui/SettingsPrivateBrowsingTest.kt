@@ -4,10 +4,11 @@
 
 package org.mozilla.fenix.ui
 
+import androidx.compose.ui.test.junit4.AndroidComposeTestRule
 import org.junit.Rule
 import org.junit.Test
-import org.mozilla.fenix.helpers.AppAndSystemHelper.openAppFromExternalLink
-import org.mozilla.fenix.helpers.DataGenerationHelper.generateRandomString
+import org.mozilla.fenix.helpers.AppAndSystemHelper
+import org.mozilla.fenix.helpers.DataGenerationHelper
 import org.mozilla.fenix.helpers.HomeActivityIntentTestRule
 import org.mozilla.fenix.helpers.TestAssetHelper
 import org.mozilla.fenix.helpers.TestHelper.mDevice
@@ -19,12 +20,17 @@ import org.mozilla.fenix.ui.robots.homeScreen
 import org.mozilla.fenix.ui.robots.navigationToolbar
 
 class SettingsPrivateBrowsingTest : TestSetup() {
-    private val pageShortcutName = generateRandomString(5)
+    private val pageShortcutName = DataGenerationHelper.generateRandomString(5)
 
     @get:Rule
-    val activityTestRule = HomeActivityIntentTestRule.withDefaultSettingsOverrides(skipOnboarding = true)
+    val activityTestRule =
+        AndroidComposeTestRule(
+            HomeActivityIntentTestRule.withDefaultSettingsOverrides(
+                skipOnboarding = true,
+            ),
+        ) { it.activity }
 
-    // TestRail link: https://testrail.stage.mozaws.net/index.php?/cases/view/555822
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/555822
     @Test
     fun verifyPrivateBrowsingMenuItemsTest() {
         homeScreen {
@@ -39,7 +45,7 @@ class SettingsPrivateBrowsingTest : TestSetup() {
         }
     }
 
-    // TestRail link: https://testrail.stage.mozaws.net/index.php?/cases/view/420086
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/420086
     @Test
     fun launchLinksInAPrivateTabTest() {
         val firstWebPage = TestAssetHelper.getGenericAsset(mockWebServer, 1)
@@ -47,28 +53,28 @@ class SettingsPrivateBrowsingTest : TestSetup() {
 
         setOpenLinksInPrivateOn()
 
-        openAppFromExternalLink(firstWebPage.url.toString())
+        AppAndSystemHelper.openAppFromExternalLink(firstWebPage.url.toString())
 
         browserScreen {
             verifyUrl(firstWebPage.url.toString())
-        }.openTabDrawer {
-            verifyPrivateModeSelected()
+        }.openTabDrawer(activityTestRule) {
+            verifyPrivateBrowsingButtonIsSelected()
         }.closeTabDrawer {
         }.goToHomescreen { }
 
         setOpenLinksInPrivateOff()
 
         // We need to open a different link, otherwise it will open the same session
-        openAppFromExternalLink(secondWebPage.url.toString())
+        AppAndSystemHelper.openAppFromExternalLink(secondWebPage.url.toString())
 
         browserScreen {
             verifyUrl(secondWebPage.url.toString())
-        }.openTabDrawer {
-            verifyNormalModeSelected()
+        }.openTabDrawer(activityTestRule) {
+            verifyNormalBrowsingButtonIsSelected()
         }
     }
 
-    // TestRail link: https://testrail.stage.mozaws.net/index.php?/cases/view/555776
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/555776
     @Test
     fun launchPageShortcutInPrivateBrowsingTest() {
         val defaultWebPage = TestAssetHelper.getGenericAsset(mockWebServer, 1)
@@ -87,18 +93,18 @@ class SettingsPrivateBrowsingTest : TestSetup() {
 
         mDevice.waitForIdle()
         // We need to close the existing tab here, to open a different session
-        restartApp(activityTestRule)
+        restartApp(activityTestRule.activityRule)
 
         browserScreen {
-        }.openTabDrawer {
-            verifyNormalModeSelected()
+        }.openTabDrawer(activityTestRule) {
+            verifyNormalBrowsingButtonIsSelected()
             closeTab()
         }
 
         addToHomeScreen {
         }.searchAndOpenHomeScreenShortcut(pageShortcutName) {
-        }.openTabDrawer {
-            verifyPrivateModeSelected()
+        }.openTabDrawer(activityTestRule) {
+            verifyPrivateBrowsingButtonIsSelected()
             closeTab()
         }
 
@@ -106,12 +112,12 @@ class SettingsPrivateBrowsingTest : TestSetup() {
 
         addToHomeScreen {
         }.searchAndOpenHomeScreenShortcut(pageShortcutName) {
-        }.openTabDrawer {
-            verifyNormalModeSelected()
+        }.openTabDrawer(activityTestRule) {
+            verifyNormalBrowsingButtonIsSelected()
         }
     }
 
-    // TestRail link: https://testrail.stage.mozaws.net/index.php?/cases/view/414583
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/414583
     @Test
     fun addPrivateBrowsingShortcutFromSettingsTest() {
         homeScreen {
@@ -124,8 +130,8 @@ class SettingsPrivateBrowsingTest : TestSetup() {
         }.openPrivateBrowsingShortcut {
             verifySearchView()
         }.openBrowser {
-        }.openTabDrawer {
-            verifyPrivateModeSelected()
+        }.openTabDrawer(activityTestRule) {
+            verifyPrivateBrowsingButtonIsSelected()
         }
     }
 }

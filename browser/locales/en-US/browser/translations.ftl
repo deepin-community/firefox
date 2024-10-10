@@ -123,19 +123,19 @@ translations-manage-header = Translations
 translations-manage-settings-button =
     .label = Settings…
     .accesskey = t
-translations-manage-intro = Set your language and site translation preferences and manage languages installed for offline translation.
-translations-manage-install-description = Install languages for offline translation
-translations-manage-language-install-button =
-    .label = Install
-translations-manage-language-install-all-button =
-    .label = Install all
-    .accesskey = I
+translations-manage-intro-2 = Set your language and site translation preferences and manage languages downloaded for offline translation.
+translations-manage-download-description = Download languages for offline translation
+translations-manage-language-download-button =
+    .label = Download
+translations-manage-language-download-all-button =
+    .label = Download all
+    .accesskey = D
 translations-manage-language-remove-button =
     .label = Remove
 translations-manage-language-remove-all-button =
     .label = Remove all
     .accesskey = e
-translations-manage-error-install = There was a problem installing the language files. Please try again.
+translations-manage-error-download = There was a problem downloading the language files. Please try again.
 translations-manage-error-remove = There was an error removing the language files. Please try again.
 translations-manage-error-list = Failed to get the list of available languages for translation. Refresh the page to try again.
 
@@ -259,3 +259,6 @@ select-translations-panel-unsupported-language-message-unknown =
 # Text displayed on the menuitem that opens the Translation Settings page.
 select-translations-panel-open-translations-settings-menuitem =
     .label = Translation settings
+
+# An announcement made to assistive technology when the translation is complete
+select-translations-panel-translation-complete-announcement = Translation complete

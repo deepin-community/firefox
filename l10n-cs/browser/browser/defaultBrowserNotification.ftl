@@ -28,6 +28,13 @@ default-browser-prompt-message-pin =
         [neuter] Mějte { -brand-short-name(case: "acc") } nastavené jako výchozí prohlížeč a připnuté na své liště.
        *[other] Mějte aplikaci { -brand-short-name } nastavenou jako výchozí prohlížeč a připnutou na své liště.
     }
+default-browser-prompt-message-pin-msix =
+    { -brand-short-name.gender ->
+        [masculine] Mějte { -brand-short-name(case: "acc") } nastavený jako výchozí prohlížeč a připnutý na své liště a v nabídce start.
+        [feminine] Mějte { -brand-short-name(case: "acc") } nastavenou jako výchozí prohlížeč a připnutou na své liště a v nabídce start.
+        [neuter] Mějte { -brand-short-name(case: "acc") } nastavené jako výchozí prohlížeč a připnuté na své liště a v nabídce start.
+       *[other] Mějte aplikaci { -brand-short-name } nastavenou jako výchozí prohlížeč a připnutou na své liště a v nabídce start.
+    }
 default-browser-prompt-message-pin-mac =
     { -brand-short-name.gender ->
         [masculine] Mějte { -brand-short-name(case: "acc") } nastavený jako výchozí prohlížeč a připnutý ve svém docku.
@@ -35,6 +42,7 @@ default-browser-prompt-message-pin-mac =
         [neuter] Mějte { -brand-short-name(case: "acc") } nastavené jako výchozí prohlížeč a připnuté ve svém docku.
        *[other] Mějte aplikaci { -brand-short-name } nastavenou jako výchozí prohlížeč a připnutou ve svém docku.
     }
+default-browser-prompt-button-primary-set = Nastavit jako výchozí prohlížeč
 default-browser-prompt-button-primary-pin = Nastavit jako hlavní prohlížeč
 default-browser-prompt-title-alt =
     { -brand-short-name.case-status ->
@@ -69,7 +77,13 @@ default-browser-guidance-notification-body-instruction-win10 =
     }
 # Quoted text are keywords to look for in the Windows Settings app.
 default-browser-guidance-notification-body-instruction-win11 =
-    Krok 1: Přejděte do Nastavení > Výchozí aplikace
-    Krok 2: Vyberte { -brand-short-name } a klepněte na „Nastavit jako výchozí“
+    { -brand-short-name.case-status ->
+        [with-cases]
+            Krok 1: Přejděte do Nastavení > Výchozí aplikace
+            Krok 2: Vyberte { -brand-short-name(case: "acc") } a klepněte na „Nastavit jako výchozí“
+       *[no-cases]
+            Krok 1: Přejděte do Nastavení > Výchozí aplikace
+            Krok 2: Vyberte aplikaci { -brand-short-name } a klepněte na „Nastavit jako výchozí“
+    }
 default-browser-guidance-notification-info-page = Zobrazit
 default-browser-guidance-notification-dismiss = Hotovo

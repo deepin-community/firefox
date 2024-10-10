@@ -12,6 +12,8 @@ about-processes-column-action =
 
 about-processes-shutdown-process =
     .title = Inaktivera flikar och avsluta processen
+about-processes-kill-process =
+    .title = Avsluta processen
 about-processes-shutdown-tab =
     .title = Stäng flik
 # Profiler icons
@@ -51,6 +53,7 @@ about-processes-remote-sandbox-broker-process = Remote Sandbox Broker ({ $pid })
 about-processes-fork-server-process = Forkserver ({ $pid })
 about-processes-preallocated-process = Förallokerad ({ $pid })
 about-processes-utility-process = Verktyg ({ $pid })
+about-processes-inference-process = Inferens ({ $pid })
 # Unknown process names
 # Variables:
 #    $pid (String) The process id of this process, assigned by the OS.

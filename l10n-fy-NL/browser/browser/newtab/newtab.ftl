@@ -200,6 +200,8 @@ newtab-section-header-recent-activity = Resinte aktiviteit
 #   $provider (string) - Name of the corresponding content provider.
 newtab-section-header-pocket = Oanrekommandearre troch { $provider }
 newtab-section-header-stories = Ferhalen dy’t ta neitinken stimme
+# "picks" refers to recommended articles
+newtab-section-header-todays-picks = De karren fan hjoed foar jo
 
 ## Empty Section States: These show when there are no more items in a section. Ex. When there are no more Pocket story recommendations, in the space where there would have been stories, this is shown instead.
 
@@ -233,6 +235,19 @@ newtab-pocket-pocket-firefox-family = { -pocket-brand-name } is ûnderdiel fan d
 # A save to Pocket button that shows over the card thumbnail on hover.
 newtab-pocket-save = Bewarje
 newtab-pocket-saved = Bewarre
+
+## Thumbs up and down buttons that shows over a newtab stories card thumbnail on hover.
+
+# Clicking the thumbs up button for this story will result in more stories like this one being recommended
+newtab-pocket-thumbs-up-tooltip =
+    .title = Mear lykas dit
+# Clicking the thumbs down button for this story informs us that the user does not feel like the story is interesting for them
+newtab-pocket-thumbs-down-tooltip =
+    .title = Neat foar my
+newtab-toast-thumbs-up-or-down = Tank. Jo feedback sil ús helpe om jo feed te ferbetterjen.
+newtab-toast-dismiss-button =
+    .title = Slute
+    .aria-label = Slute
 
 ## Pocket content onboarding experience dialog and modal for new users seeing the Pocket section for the first time, shown as the first item in the Pocket section.
 
@@ -272,6 +287,9 @@ newtab-custom-recent-subtitle = In seleksje fan resinte websites en ynhâld
 newtab-custom-recent-toggle =
     .label = Resinte aktiviteit
     .description = In seleksje fan resinte websites en ynhâld
+newtab-custom-weather-toggle =
+    .label = It waar
+    .description = De waarsferwachting fan hjoed yn ien eachopslach
 newtab-custom-close-button = Slute
 newtab-custom-settings = Mear ynstellingen beheare
 
@@ -291,7 +309,125 @@ newtab-wallpaper-dark-panda = Reade panda ferburgen yn bosk
 newtab-wallpaper-dark-sky = Stedslânskip mei in nachthimel
 newtab-wallpaper-dark-mountain = Lânskip mei berch
 newtab-wallpaper-dark-city = Pears stêdslânskip
+
+## Solid Colors
+
+newtab-wallpaper-category-title-colors = Effen kleuren
+newtab-wallpaper-blue = Blau
+newtab-wallpaper-light-blue = Ljochtblau
+newtab-wallpaper-light-purple = Ljochtpears
+newtab-wallpaper-light-green = Ljochtgrien
+newtab-wallpaper-green = Grien
+newtab-wallpaper-beige = Bêzje
+newtab-wallpaper-yellow = Giel
+newtab-wallpaper-orange = Oranje
+newtab-wallpaper-pink = Rôze
+newtab-wallpaper-light-pink = Ljochtrôze
+newtab-wallpaper-red = Read
+newtab-wallpaper-dark-blue = Donkerblau
+newtab-wallpaper-dark-purple = Donkerpears
+newtab-wallpaper-dark-green = Donkergrien
+newtab-wallpaper-brown = Brún
+
+## Abstract
+
+newtab-wallpaper-category-title-abstract = Abstrakt
+newtab-wallpaper-abstract-green = Griene foarmen
+newtab-wallpaper-abstract-blue = Blauwe foarmen
+newtab-wallpaper-abstract-purple = Pearze foarmen
+newtab-wallpaper-abstract-orange = Oranje foarmen
+newtab-wallpaper-gradient-orange = Ferrin oranje en rôze
+newtab-wallpaper-abstract-blue-purple = Blauwe en pearze foarmen
+
+## Photographs
+
+newtab-wallpaper-category-title-photographs = Foto’s
+newtab-wallpaper-beach-at-sunrise = Strân by sinneopgong
+newtab-wallpaper-beach-at-sunset = Strân by sinneûndergong
+newtab-wallpaper-storm-sky = Tongerloft
+newtab-wallpaper-sky-with-pink-clouds = Loft mei rôze wolken
+newtab-wallpaper-red-panda-yawns-in-a-tree = Reade panda gappet yn in beam
+newtab-wallpaper-white-mountains = Wite bergen
 # Variables
 #   $author_string (String) - The name of the creator of the photo.
 #   $webpage_string (String) - The name of the webpage where the photo is located.
 newtab-wallpaper-attribution = Foto troch <a data-l10n-name="name-link">{ $author_string }</a> op <a data-l10n-name="webpage-link">{ $webpage_string }</a>
+newtab-wallpaper-feature-highlight-header = Probearje in bytsje kleur
+newtab-wallpaper-feature-highlight-content = Jou jo Nije-ljepblêdside in frisse útstrieling mei eftergrûnen.
+newtab-wallpaper-feature-highlight-button = Begrepen
+# Tooltip for dismiss button
+feature-highlight-dismiss-button =
+    .title = Slute
+    .aria-label = Pop-up slute
+feature-highlight-wallpaper =
+    .title = { -newtab-wallpaper-feature-highlight-header }
+    .aria-label = { -newtab-wallpaper-feature-highlight-content }
+
+## New Tab Weather
+
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-see-forecast =
+    .title = It waar besjen foar { $provider }
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-sponsored = { $provider } ∙ Sponsore
+newtab-weather-menu-change-location = Lokaasje wizigje
+newtab-weather-change-location-search-input = Lokaasje sykje
+newtab-weather-menu-weather-display = Waarwerjefte
+# Display options are:
+# - Simple: Displays a current weather condition icon and the current temperature
+# - Detailed: Include simple information plus a short text summary: e.g. "Mostly cloudy"
+newtab-weather-menu-weather-display-option-simple = Ienfâldich
+newtab-weather-menu-change-weather-display-simple = Wikselje nei ienfâldige werjefte
+newtab-weather-menu-weather-display-option-detailed = Detaillearre
+newtab-weather-menu-change-weather-display-detailed = Wikselje nei detaillearre werjefte
+newtab-weather-menu-temperature-units = Temperatuerienheden
+newtab-weather-menu-temperature-option-fahrenheit = Fahrenheit
+newtab-weather-menu-temperature-option-celsius = Celsius
+newtab-weather-menu-change-temperature-units-fahrenheit = Wikselje nei Fahrenheit
+newtab-weather-menu-change-temperature-units-celsius = Wikselje nei Celsius
+newtab-weather-menu-hide-weather = It waar op nij ljepblêd ferstopje
+newtab-weather-menu-learn-more = Mear ynfo
+# This message is shown if user is working offline
+newtab-weather-error-not-available = Waargegevens binne op dit stuit net beskikber.
+
+## Topic Labels
+
+newtab-topic-label-business = Saaklik
+newtab-topic-label-career = Karriêren
+newtab-topic-label-education = Underwiis
+newtab-topic-label-arts = Ferdivedaasje
+newtab-topic-label-food = Iten
+newtab-topic-label-health = Sûnens
+newtab-topic-label-hobbies = Gaming
+# ”Money” = “Personal Finance”, refers to articles and stories that help readers better manage
+# and understand their personal finances – from saving money to buying a home. See the
+# “Curated by our editors“ section at the top of https://getpocket.com/explore/personal-finance for more context
+newtab-topic-label-finance = Jild
+newtab-topic-label-society-parenting = Alderskip en opfieding
+newtab-topic-label-government = Polityk
+newtab-topic-label-education-science = Wittenskip
+# ”Life Hacks” = “Self Improvement”, refers to articles and stories aimed at helping readers improve various
+# aspects of their lives – from mental health to  productivity. See the “Curated by our editors“ section
+# at the top of https://getpocket.com/explore/self-improvement for more context.
+newtab-topic-label-society = Lifehacks
+newtab-topic-label-sports = Sport
+newtab-topic-label-tech = Technology
+newtab-topic-label-travel = Reizgjen
+newtab-topic-label-home = Hûs en tún
+
+## Topic Selection Modal
+
+# “fine-tune” refers to the process of making small adjustments to something to get
+# the best or desired experience or performance.
+newtab-topic-selection-title = Selektearje ûnderwerpen om jo feed te ferfynjen
+# “tailored” refers to process of (a tailor) making (clothes) to fit individual customers.
+# In other words, “Our expert curators prioritize stories to fit your selected interests”
+newtab-topic-selection-subtitle = Kies twa of mear ûnderwerpen. Us saakkundige kurators prioritearje ferhalen ôfstimd op jo ynteressen. Wurkje op elk momint by.
+newtab-topic-selection-save-button = Bewarje
+newtab-topic-selection-cancel-button = Annulearje
+newtab-topic-selection-button-maybe-later = Miskien letter
+newtab-topic-selection-privacy-link = Lês hoe’t wy gegevens beskermje en beheare
+newtab-topic-selection-button-update-interests = Wurkje jo ynteressen by
+newtab-topic-selection-button-pick-interests = Kies jo ynteressen

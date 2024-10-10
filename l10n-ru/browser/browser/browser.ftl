@@ -552,6 +552,10 @@ urlbar-go-button =
     .tooltiptext = Перейти по введённому адресу
 urlbar-page-action-button =
     .tooltiptext = Действия на странице
+urlbar-revert-button =
+    .tooltiptext = Показать адрес в Строке местоположения
+urlbar-show-page-actions-button =
+    .tooltiptext = Показать все действия на странице
 
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
@@ -642,6 +646,21 @@ urlbar-group-quickactions =
 #  $engine (String): the name of the search engine used to search.
 urlbar-group-recent-searches =
     .label = Недавние поиски
+# The header shown above trending results.
+# Variables:
+#  $engine (String): the name of the search engine providing the trending suggestions
+urlbar-group-trending =
+    .label = Популярные на { $engine }
+# The result menu labels shown next to trending results.
+urlbar-result-menu-trending-dont-show =
+    .label = Не показывать популярные поисковые запросы
+    .accesskey = В
+urlbar-result-menu-trending-why =
+    .label = Почему я это вижу?
+    .accesskey = Ц
+# A message that replaces a result when the user dismisses all suggestions of a
+# particular type.
+urlbar-trending-dismissal-acknowledgment = Спасибо за ваш отзыв. Вы больше не увидите популярные поисковые запросы.
 
 ## Reader View toolbar buttons
 
@@ -992,6 +1011,10 @@ firefox-relay-offer-legal-notice = Нажимая «Использовать п�
 popup-notification-addon-install-unsigned =
     .value = (Не проверено)
 popup-notification-xpinstall-prompt-learn-more = Узнайте больше о безопасной установке дополнений
+# Note: Access key is set to P to match "Private" in the corresponding localized label.
+popup-notification-addon-privatebrowsing-checkbox =
+    .label = Запуск в приватных окнах
+    .accesskey = З
 
 ## Pop-up warning
 
@@ -1027,3 +1050,24 @@ popup-warning-button =
 #   $popupURI (String): the URI for the pop-up window
 popup-show-popup-menuitem =
     .label = Показать «{ $popupURI }»
+
+## File-picker crash notification ("FilePickerCrashed.sys.mjs")
+
+file-picker-failed-open = Не удалось открыть диалоговое окно «Файл» Windows. Не удалось выбрать ни один файл или папку.
+#   $path (string): The full path to which the file will be saved (e.g., 'C:\Users\Default User\Downloads\readme.txt').
+file-picker-failed-save-somewhere = Не удалось открыть диалоговое окно «Файл» Windows. Файл будет сохранён в { $path }.
+file-picker-failed-save-nowhere = Не удалось открыть диалоговое окно «Файл» Windows. Папка по умолчанию не найдена; файл не будет сохранён.
+file-picker-crashed-open = Произошло падение диалогового окна «Файл» Windows. Не удалось выбрать ни один файл или папку.
+#   $path (string): The full path to which the file will be saved (e.g., 'C:\Users\Default User\Downloads\readme.txt').
+file-picker-crashed-save-somewhere = Произошло падение диалогового окна «Файл» Windows. Файл будет сохранён в { $path }.
+file-picker-crashed-save-nowhere = Произошло падение диалогового окна «Файл» Windows. Папка по умолчанию не найдена; файл не будет сохранён.
+
+# Button used with file-picker-crashed-save-default. Opens the folder in Windows
+# Explorer, with the saved file selected and in focus.
+#
+# The wording here should be consistent with the Windows variant of
+# `downloads-cmd-show-menuitem-2` and similar messages.
+
+file-picker-crashed-show-in-folder =
+    .label = Показать в папке
+    .accessKey = А

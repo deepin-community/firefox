@@ -140,6 +140,8 @@ login-item-copied-username-button-text = Copied!
 login-item-password-label = Password
 login-item-password-reveal-checkbox =
     .aria-label = Show password
+login-item-password-conceal-checkbox =
+    .aria-label = Hide password
 login-item-copy-password-button-text = Copy
 login-item-copied-password-button-text = Copied!
 login-item-save-changes-button = Save Changes
@@ -171,6 +173,13 @@ about-logins-edit-login-os-auth-dialog-message-win = To edit your login, enter y
 # This message can be seen when attempting to edit a login in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-edit-login-os-auth-dialog-message-macosx = edit the saved login
+# The macOS strings are preceded by the operating system with "Firefox is trying to ".
+# This message can be seen when attempting to disable osauth in about:preferences.
+about-logins-os-auth-dialog-message =
+    { PLATFORM() ->
+        [macos] change the settings for passwords
+       *[other] { -brand-short-name } is trying to change the settings for passwords. Use your device sign in to allow this.
+    }
 # This message can be seen when attempting to edit a login in about:logins on Windows.
 about-logins-edit-login-os-auth-dialog-message2-win = To edit your password, enter your Windows login credentials. This helps protect the security of your accounts.
 # This message can be seen when attempting to edit a login in about:logins

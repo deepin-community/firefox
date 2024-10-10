@@ -38,10 +38,12 @@ WINDOWS_WORKER_TYPES = {
     "windows10-64-2009-qr": {
         "virtual": "win10-64-2009",
         "virtual-with-gpu": "win10-64-2009-gpu",
+        "hardware": "t-win10-64-1803-hw",
     },
     "windows10-64-2009-shippable-qr": {
         "virtual": "win10-64-2009",
         "virtual-with-gpu": "win10-64-2009-gpu",
+        "hardware": "t-win10-64-1803-hw",
     },
     "windows11-32-2009-mingwclang-qr": {
         "virtual": "win11-64-2009",
@@ -58,6 +60,7 @@ WINDOWS_WORKER_TYPES = {
     "windows11-64-2009": {
         "virtual": "win11-64-2009",
         "virtual-with-gpu": "win11-64-2009-gpu",
+        "hardware": "win11-64-2009-hw",
     },
     "windows11-64-2009-ccov": {
         "virtual": "win11-64-2009-ssd",
@@ -74,14 +77,17 @@ WINDOWS_WORKER_TYPES = {
     "windows11-64-2009-shippable": {
         "virtual": "win11-64-2009",
         "virtual-with-gpu": "win11-64-2009-gpu",
+        "hardware": "win11-64-2009-hw",
     },
     "windows11-64-2009-qr": {
         "virtual": "win11-64-2009",
         "virtual-with-gpu": "win11-64-2009-gpu",
+        "hardware": "win11-64-2009-hw",
     },
     "windows11-64-2009-shippable-qr": {
         "virtual": "win11-64-2009",
         "virtual-with-gpu": "win11-64-2009-gpu",
+        "hardware": "win11-64-2009-hw",
     },
     "windows11-64-2009-devedition-qr": {
         "virtual": "win11-64-2009",
@@ -102,6 +108,8 @@ MACOSX_WORKER_TYPES = {
     "macosx1015-64": "t-osx-1015-r8",
     "macosx1100-64": "t-osx-1100-m1",
     "macosx1400-64": "t-osx-1400-m2",
+    "macosx1100-aarch64": "t-osx-1100-m1",
+    "macosx1400-aarch64": "t-osx-1400-m2",
 }
 
 transforms = TransformSequence()
@@ -122,8 +130,12 @@ def set_worker_type(config, tasks):
             task["worker-type"] = MACOSX_WORKER_TYPES["macosx1015-64"]
         elif test_platform.startswith("macosx1100-64"):
             task["worker-type"] = MACOSX_WORKER_TYPES["macosx1100-64"]
+        elif test_platform.startswith("macosx1100-aarch64"):
+            task["worker-type"] = MACOSX_WORKER_TYPES["macosx1100-aarch64"]
         elif test_platform.startswith("macosx1400-64"):
             task["worker-type"] = MACOSX_WORKER_TYPES["macosx1400-64"]
+        elif test_platform.startswith("macosx1400-aarch64"):
+            task["worker-type"] = MACOSX_WORKER_TYPES["macosx1400-aarch64"]
         elif test_platform.startswith("win"):
             # figure out what platform the job needs to run on
             if task["virtualization"] == "hardware":
@@ -132,8 +144,12 @@ def set_worker_type(config, tasks):
                     win_worker_type_platform = WINDOWS_WORKER_TYPES[
                         "windows11-64-2009-hw-ref"
                     ]
-                else:
+                elif test_platform.startswith("windows10-64"):
                     win_worker_type_platform = WINDOWS_WORKER_TYPES["windows10-64"]
+                else:
+                    win_worker_type_platform = WINDOWS_WORKER_TYPES[
+                        "windows11-64-2009-qr"
+                    ]
             else:
                 # the other jobs run on a vm which may or may not be a win10 vm
                 win_worker_type_platform = WINDOWS_WORKER_TYPES[
@@ -162,20 +178,36 @@ def set_worker_type(config, tasks):
                 task["worker-type"] = "t-bitbar-gw-unit-s21"
             else:
                 task["worker-type"] = "t-bitbar-gw-perf-s21"
+        elif test_platform.startswith("android-hw-s24"):
+            if task["suite"] != "raptor":
+                task["worker-type"] = "t-bitbar-gw-unit-s24"
+            else:
+                task["worker-type"] = "t-bitbar-gw-perf-s24"
         elif test_platform.startswith("android-hw-a51"):
             if task["suite"] != "raptor":
                 task["worker-type"] = "t-bitbar-gw-unit-a51"
             else:
                 task["worker-type"] = "t-bitbar-gw-perf-a51"
+        elif test_platform.startswith("android-hw-a55"):
+            if task["suite"] != "raptor":
+                task["worker-type"] = "t-bitbar-gw-unit-a55"
+            else:
+                task["worker-type"] = "t-bitbar-gw-perf-a55"
         elif test_platform.startswith("android-em-7.0-x86"):
             task["worker-type"] = "t-linux-kvm"
         elif test_platform.startswith("linux") or test_platform.startswith("android"):
             if "wayland" in test_platform:
-                task["worker-type"] = "t-linux-wayland"
+                if task["instance-size"].startswith("xlarge"):
+                    task["worker-type"] = "t-linux-xlarge-wayland"
+                else:
+                    task["worker-type"] = "t-linux-wayland"
             elif task.get("suite", "") in ["talos", "raptor"] and not task[
                 "build-platform"
             ].startswith("linux64-ccov"):
-                task["worker-type"] = "t-linux-talos-1804"
+                if "browsertime-network-bench" in task.get("test-name"):
+                    task["worker-type"] = "t-linux-netperf-1804"
+                else:
+                    task["worker-type"] = "t-linux-talos-1804"
             else:
                 task["worker-type"] = LINUX_WORKER_TYPES[task["instance-size"]]
         else:
@@ -187,7 +219,7 @@ def set_worker_type(config, tasks):
 @transforms.add
 def set_wayland_env(config, tasks):
     for task in tasks:
-        if task["worker-type"] != "t-linux-wayland":
+        if "wayland" not in task["test-platform"]:
             yield task
             continue
 

@@ -3,18 +3,27 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 tabbrowser-empty-tab-title = Нов раздел
-
+tabbrowser-empty-private-tab-title = Нов поверителен раздел
 tabbrowser-menuitem-close-tab =
     .label = Затваряне на раздела
 tabbrowser-menuitem-close =
     .label = Затваряне
-
 # Displayed as a tooltip on container tabs
 # Variables:
 #   $title (String): the title of the current tab.
 #   $containerName (String): the name of the current container.
 tabbrowser-container-tab-title = { $title } – { $containerName }
-
+# This text serves as an on-screen tooltip as well as an accessible name for
+# the "X" button that is shown on the active tab or, when multiple tabs are
+# selected, to all their "X" buttons.
+# Variables:
+#   $tabCount (Number): The number of tabs that will be closed.
+tabbrowser-close-tabs-button =
+    .tooltiptext =
+        { $tabCount ->
+            [one] Затваряне на раздела
+           *[other] Затваряне на { $tabCount } раздела
+        }
 # Variables:
 #   $tabCount (Number): The number of tabs that will be closed.
 tabbrowser-close-tabs-tooltip =
@@ -66,6 +75,14 @@ tabbrowser-unblock-tab-audio-tooltip =
 ## Confirmation dialog when closing a window with more than one tab open,
 ## or when quitting when only one window is open.
 
+# The singular form is not considered since this string is used only for multiple tabs.
+# Variables:
+#   $tabCount (Number): The number of tabs that will be closed.
+tabbrowser-confirm-close-tabs-title =
+    { NUMBER($tabCount) ->
+        [one] Да се затвори ли { $tabCount } раздел?
+       *[other] Да се затворят ли { $tabCount } раздела?
+    }
 tabbrowser-confirm-close-tabs-button = Затваряне на разделите
 
 ## Confirmation dialog when quitting using the menu and multiple windows are open.
@@ -79,6 +96,7 @@ tabbrowser-confirm-close-windows-button =
 ## Confirmation dialog when quitting using the keyboard shortcut (Ctrl/Cmd+Q)
 ## Windows does not show a prompt on quit when using the keyboard shortcut by default.
 
+tabbrowser-confirm-close-tabs-with-key-button = Изход от { -brand-short-name }
 
 ## Confirmation dialog when opening multiple tabs simultaneously
 
@@ -94,6 +112,16 @@ tabbrowser-confirm-open-multiple-tabs-checkbox = Предупреждаване,
 
 ## Confirmation dialog for enabling caret browsing
 
+tabbrowser-confirm-caretbrowsing-title = Навигация с каретка
+tabbrowser-confirm-caretbrowsing-message = Натискането на F7 включва и изключва Навигацията с каретка. Тази възможност поставя подвижен курсор в страниците, позволявайки избирането на текст с клавиатура. Искате ли да включите този режим?
+tabbrowser-confirm-caretbrowsing-checkbox = Да не се показва този диалогов прозорец отново.
+
+## Confirmation dialog for closing all duplicate tabs
+
+tabbrowser-confirm-close-duplicate-tabs-title = Внимание!
+tabbrowser-confirm-close-duplicate-tabs-text = Ще държим отворен последния активен раздел
+tabbrowser-confirm-close-all-duplicate-tabs-title = Да се затварят ли дублиращите се раздели?
+tabbrowser-confirm-close-all-duplicate-tabs-button-closetabs = Затваряне на разделите
 
 ##
 

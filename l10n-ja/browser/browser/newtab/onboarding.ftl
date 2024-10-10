@@ -171,6 +171,8 @@ mr2022-onboarding-pin-primary-button-label =
         [macos] { -brand-short-name } を Dock に追加
        *[other] { -brand-short-name } をタスクバーにピン留め
     }
+# Primary button string used on welcome page for when Firefox is not pinned on MSIX
+mr2022-onboarding-pin-primary-button-label-msix = { -brand-short-name } をタスクバーとスタートメニューにピン留め
 # Subtitle will be used when user already has Firefox pinned, but
 # has not set it as their default browser.
 # When translating "zip", please feel free to pick a verb that signifies movement and/or exploration
@@ -247,8 +249,8 @@ mr2022-onboarding-colorway-tooltip-dreamer2 =
 mr2022-onboarding-colorway-description-dreamer = <b>Dreamer</b>: 大胆に幸運を引き寄せろ。夢を掲げるあなたの姿は人の勇気を呼び覚ます。
 mr2022-onboarding-colorway-label-innovator = Innovator
 mr2022-onboarding-colorway-tooltip-innovator2 =
-    .title = Innovator (橙)
-mr2022-onboarding-colorway-description-innovator = <b>Innovator</b>: あらゆる場所で機会を掴め。あなたがもたらす革新は周囲の人生を震わせる。
+    .title = Innovator (オレンジ)
+mr2022-onboarding-colorway-description-innovator = <b>Innovator</b>: あらゆる場所で機会をつかめ。あなたがもたらす革新は周囲の人生を震わせる。
 
 ## MR2022 Multistage Mobile Download screen strings
 
@@ -317,6 +319,14 @@ onboarding-device-migration-title = おかえりなさい！
 onboarding-device-migration-subtitle = { -fxaccount-brand-name(capitalization: "sentence") } にログインして、ブックマークやパスワード、履歴を新しい端末とともに持ち歩きましょう。
 onboarding-device-migration-subtitle2 = アカウントにログインして、ブックマークやパスワード、履歴を新しい端末とともに持ち歩きましょう。
 onboarding-device-migration-primary-button-label = ログイン
+
+## Add-ons Picker screen
+
+amo-picker-title = { -brand-short-name } をカスタマイズ
+amo-picker-subtitle = 拡張機能はブラウザー用のアプリのようなものです。パスワード保護や動画のダウンロード、取引の検索、迷惑な広告のブロック、ブラウザーの外観の変更など、さらに多くの拡張機能があります。
+amo-picker-install-button-label = { -brand-short-name } に追加
+amo-picker-install-complete-label = インストール完了
+amo-picker-collection-link = 他のアドオンを探す
 
 ## The following screens have been updated to use security and privacy focused strings:
 

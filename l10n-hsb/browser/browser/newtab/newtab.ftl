@@ -200,6 +200,8 @@ newtab-section-header-recent-activity = Najnowša aktiwita
 #   $provider (string) - Name of the corresponding content provider.
 newtab-section-header-pocket = Wot { $provider } doporučeny
 newtab-section-header-stories = Stawiznički, kotrež k přemyslowanju pohonjeja
+# "picks" refers to recommended articles
+newtab-section-header-todays-picks = Dźensniše doporučenki za was
 
 ## Empty Section States: These show when there are no more items in a section. Ex. When there are no more Pocket story recommendations, in the space where there would have been stories, this is shown instead.
 
@@ -233,6 +235,19 @@ newtab-pocket-pocket-firefox-family = { -pocket-brand-name } je dźěl swójby {
 # A save to Pocket button that shows over the card thumbnail on hover.
 newtab-pocket-save = Składować
 newtab-pocket-saved = Składowany
+
+## Thumbs up and down buttons that shows over a newtab stories card thumbnail on hover.
+
+# Clicking the thumbs up button for this story will result in more stories like this one being recommended
+newtab-pocket-thumbs-up-tooltip =
+    .title = Wjace kaž ta
+# Clicking the thumbs down button for this story informs us that the user does not feel like the story is interesting for them
+newtab-pocket-thumbs-down-tooltip =
+    .title = Nic za mnje
+newtab-toast-thumbs-up-or-down = Dźakujemy so. Waše měnjenje budźe nam pomhać, waš kanal polěpšić.
+newtab-toast-dismiss-button =
+    .title = Zaćisnyć
+    .aria-label = Zaćisnyć
 
 ## Pocket content onboarding experience dialog and modal for new users seeing the Pocket section for the first time, shown as the first item in the Pocket section.
 
@@ -274,6 +289,9 @@ newtab-custom-recent-subtitle = Wuběr najnowšich sydłow a najnowšeho wobsaha
 newtab-custom-recent-toggle =
     .label = Najnowša aktiwita
     .description = Wuběr najnowšich sydłow a najnowšeho wobsaha
+newtab-custom-weather-toggle =
+    .label = Wjedro
+    .description = Dźensniša wjedrowa předpowědź na jedyn pohlad
 newtab-custom-close-button = Začinić
 newtab-custom-settings = Dalše nastajenja rjadować
 
@@ -293,7 +311,125 @@ newtab-wallpaper-dark-panda = Čerwjeny panda w lěsu schowany
 newtab-wallpaper-dark-sky = Měšćanska krajina z nócnym njebjom
 newtab-wallpaper-dark-mountain = Horinska krajina
 newtab-wallpaper-dark-city = Wioletna měšćanska krajina
+
+## Solid Colors
+
+newtab-wallpaper-category-title-colors = Jednotne barby
+newtab-wallpaper-blue = Módry
+newtab-wallpaper-light-blue = Swětłomódry
+newtab-wallpaper-light-purple = Swětłowioletny
+newtab-wallpaper-light-green = Swětłozeleny
+newtab-wallpaper-green = Zeleny
+newtab-wallpaper-beige = Beige
+newtab-wallpaper-yellow = Žołty
+newtab-wallpaper-orange = Oranžowy
+newtab-wallpaper-pink = Pink
+newtab-wallpaper-light-pink = Swětłopink
+newtab-wallpaper-red = Čerwjeny
+newtab-wallpaper-dark-blue = Ćmowomódry
+newtab-wallpaper-dark-purple = Ćmowowioletny
+newtab-wallpaper-dark-green = Ćmowozeleny
+newtab-wallpaper-brown = Bruny
+
+## Abstract
+
+newtab-wallpaper-category-title-abstract = Abstraktne
+newtab-wallpaper-abstract-green = Zelene twary
+newtab-wallpaper-abstract-blue = Módre twary
+newtab-wallpaper-abstract-purple = Wioletne twary
+newtab-wallpaper-abstract-orange = Oranžowe twary
+newtab-wallpaper-gradient-orange = Přeběžk oranžowy a pink
+newtab-wallpaper-abstract-blue-purple = Módre a wioletne twary
+
+## Photographs
+
+newtab-wallpaper-category-title-photographs = Fota
+newtab-wallpaper-beach-at-sunrise = Brjóh při schadźenju słónca
+newtab-wallpaper-beach-at-sunset = Brjóh při chowanju słónca
+newtab-wallpaper-storm-sky = Wichorowe njebjo
+newtab-wallpaper-sky-with-pink-clouds = Njebjo z róžowymi mróčelemi
+newtab-wallpaper-red-panda-yawns-in-a-tree = Čerwjeny panda w štomje zywa
+newtab-wallpaper-white-mountains = Běłe hory
 # Variables
 #   $author_string (String) - The name of the creator of the photo.
 #   $webpage_string (String) - The name of the webpage where the photo is located.
 newtab-wallpaper-attribution = Foto wot <a data-l10n-name="name-link">{ $author_string }</a> na <a data-l10n-name="webpage-link">{ $webpage_string }</a>
+newtab-wallpaper-feature-highlight-header = Wupruwujće barbowy woplusk
+newtab-wallpaper-feature-highlight-content = Dajće swojemu nowemu rajtarkej čerstwy napohlad z pozadkowymi wobrazami.
+newtab-wallpaper-feature-highlight-button = Sym zrozumił
+# Tooltip for dismiss button
+feature-highlight-dismiss-button =
+    .title = Zaćisnyć
+    .aria-label = Wuskakowace wokno začinić
+feature-highlight-wallpaper =
+    .title = { -newtab-wallpaper-feature-highlight-header }
+    .aria-label = { -newtab-wallpaper-feature-highlight-content }
+
+## New Tab Weather
+
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-see-forecast =
+    .title = Wjedrowu předpowědź w { $provider } pokazać
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-sponsored = { $provider } ∙ sponsorowany
+newtab-weather-menu-change-location = Městno změnić
+newtab-weather-change-location-search-input = Městno pytać
+newtab-weather-menu-weather-display = Wjedrowe pokazanje
+# Display options are:
+# - Simple: Displays a current weather condition icon and the current temperature
+# - Detailed: Include simple information plus a short text summary: e.g. "Mostly cloudy"
+newtab-weather-menu-weather-display-option-simple = Jednore
+newtab-weather-menu-change-weather-display-simple = Jednory napohlad wužiwać
+newtab-weather-menu-weather-display-option-detailed = Detailne
+newtab-weather-menu-change-weather-display-detailed = Detailny napohlad wužiwać
+newtab-weather-menu-temperature-units = Temperaturne jednotki
+newtab-weather-menu-temperature-option-fahrenheit = Fahrenheit
+newtab-weather-menu-temperature-option-celsius = Celsius
+newtab-weather-menu-change-temperature-units-fahrenheit = Fahrenheit wužiwać
+newtab-weather-menu-change-temperature-units-celsius = Celsius wužiwać
+newtab-weather-menu-hide-weather = Wjedro na nowym rajtarku schować
+newtab-weather-menu-learn-more = Dalše informacije
+# This message is shown if user is working offline
+newtab-weather-error-not-available = Wjedrowe daty tuchwilu k dispoziciji njejsu.
+
+## Topic Labels
+
+newtab-topic-label-business = Wobchodnistwo
+newtab-topic-label-career = Karjera
+newtab-topic-label-education = Zdźěłanje
+newtab-topic-label-arts = Zabawjenje
+newtab-topic-label-food = Cyroba
+newtab-topic-label-health = Strowosć
+newtab-topic-label-hobbies = Hraće
+# ”Money” = “Personal Finance”, refers to articles and stories that help readers better manage
+# and understand their personal finances – from saving money to buying a home. See the
+# “Curated by our editors“ section at the top of https://getpocket.com/explore/personal-finance for more context
+newtab-topic-label-finance = Pjenjezy
+newtab-topic-label-society-parenting = Kubłanje
+newtab-topic-label-government = Politika
+newtab-topic-label-education-science = Wědomosć
+# ”Life Hacks” = “Self Improvement”, refers to articles and stories aimed at helping readers improve various
+# aspects of their lives – from mental health to  productivity. See the “Curated by our editors“ section
+# at the top of https://getpocket.com/explore/self-improvement for more context.
+newtab-topic-label-society = Swójske polěpšenja
+newtab-topic-label-sports = Sport
+newtab-topic-label-tech = Technologija
+newtab-topic-label-travel = Pućowanje
+newtab-topic-label-home = Dom a zahroda
+
+## Topic Selection Modal
+
+# “fine-tune” refers to the process of making small adjustments to something to get
+# the best or desired experience or performance.
+newtab-topic-selection-title = Wubjerće temy, zo byšće swój kanal optimował
+# “tailored” refers to process of (a tailor) making (clothes) to fit individual customers.
+# In other words, “Our expert curators prioritize stories to fit your selected interests”
+newtab-topic-selection-subtitle = Wubjerće dwě temje abo wjace z nich. Naši nazhonjeni kuratorojo prioritu na stawiznički kładu, kotrež su na waše zajimy wusměrjene. Přiměrće to kóždy čas.
+newtab-topic-selection-save-button = Składować
+newtab-topic-selection-cancel-button = Přetorhnyć
+newtab-topic-selection-button-maybe-later = Snano pozdźišo
+newtab-topic-selection-privacy-link = Zhońće, kak daty škitamy a rjadujemy
+newtab-topic-selection-button-update-interests = Zaktualizujće swoje zajimy
+newtab-topic-selection-button-pick-interests = Wubjerće swoje zajimy

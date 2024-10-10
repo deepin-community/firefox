@@ -49,13 +49,13 @@ newtab-topsites-add-shortcut-label = Indítóikon hozzáadása
 newtab-topsites-title-label = Cím
 newtab-topsites-title-input =
     .placeholder = Cím megadása
-newtab-topsites-url-label = URL
+newtab-topsites-url-label = Webcím
 newtab-topsites-url-input =
-    .placeholder = Írjon vagy illesszen be egy URL-t
-newtab-topsites-url-validation = Érvényes URL szükséges
-newtab-topsites-image-url-label = Egyéni kép URL
+    .placeholder = Írjon vagy illesszen be egy webcímet
+newtab-topsites-url-validation = Érvényes webcím szükséges
+newtab-topsites-image-url-label = Egyéni kép webcíme
 newtab-topsites-use-image-link = Egyéni kép használata…
-newtab-topsites-image-validation = A kép betöltése nem sikerült. Próbáljon meg egy másik URL-t.
+newtab-topsites-image-validation = A kép betöltése nem sikerült. Próbáljon meg egy másik webcímet.
 
 ## Top Sites - General form dialog buttons. These are verbs/actions.
 
@@ -200,6 +200,8 @@ newtab-section-header-recent-activity = Legutóbbi tevékenység
 #   $provider (string) - Name of the corresponding content provider.
 newtab-section-header-pocket = A(z) { $provider } ajánlásával
 newtab-section-header-stories = Elgondolkodtató történetek
+# "picks" refers to recommended articles
+newtab-section-header-todays-picks = Mai kedvencek
 
 ## Empty Section States: These show when there are no more items in a section. Ex. When there are no more Pocket story recommendations, in the space where there would have been stories, this is shown instead.
 
@@ -233,6 +235,19 @@ newtab-pocket-pocket-firefox-family = A { -pocket-brand-name } a { -brand-produc
 # A save to Pocket button that shows over the card thumbnail on hover.
 newtab-pocket-save = Mentés
 newtab-pocket-saved = Mentve
+
+## Thumbs up and down buttons that shows over a newtab stories card thumbnail on hover.
+
+# Clicking the thumbs up button for this story will result in more stories like this one being recommended
+newtab-pocket-thumbs-up-tooltip =
+    .title = Több hasonló
+# Clicking the thumbs down button for this story informs us that the user does not feel like the story is interesting for them
+newtab-pocket-thumbs-down-tooltip =
+    .title = Nem nekem való
+newtab-toast-thumbs-up-or-down = Köszönjük. Visszajelzése segít nekünk a hírforrás fejlesztésében.
+newtab-toast-dismiss-button =
+    .title = Eltüntetés
+    .aria-label = Eltüntetés
 
 ## Pocket content onboarding experience dialog and modal for new users seeing the Pocket section for the first time, shown as the first item in the Pocket section.
 
@@ -272,6 +287,9 @@ newtab-custom-recent-subtitle = Válogatás a legutóbbi webhelyekből és tarta
 newtab-custom-recent-toggle =
     .label = Legutóbbi tevékenység
     .description = Válogatás a legutóbbi webhelyekből és tartalmakból
+newtab-custom-weather-toggle =
+    .label = Időjárás
+    .description = A mai előrejelzés egy pillantásra
 newtab-custom-close-button = Bezárás
 newtab-custom-settings = További beállítások kezelése
 
@@ -291,7 +309,125 @@ newtab-wallpaper-dark-panda = Vörös panda elrejtve az erdőben
 newtab-wallpaper-dark-sky = Városi táj éjszakai égbolttal
 newtab-wallpaper-dark-mountain = Hegyvidéki táj
 newtab-wallpaper-dark-city = Lila városi táj
+
+## Solid Colors
+
+newtab-wallpaper-category-title-colors = Egyszínű színek
+newtab-wallpaper-blue = Kék
+newtab-wallpaper-light-blue = Világoskék
+newtab-wallpaper-light-purple = Világoslila
+newtab-wallpaper-light-green = Világoszöld
+newtab-wallpaper-green = Zöld
+newtab-wallpaper-beige = Bézs
+newtab-wallpaper-yellow = Sárga
+newtab-wallpaper-orange = Narancssárga
+newtab-wallpaper-pink = Rózsaszín
+newtab-wallpaper-light-pink = Világos rózsaszín
+newtab-wallpaper-red = Vörös
+newtab-wallpaper-dark-blue = Sötétkék
+newtab-wallpaper-dark-purple = Sötétlila
+newtab-wallpaper-dark-green = Sötétzöld
+newtab-wallpaper-brown = Barna
+
+## Abstract
+
+newtab-wallpaper-category-title-abstract = Absztrakt
+newtab-wallpaper-abstract-green = Zöld alakzatok
+newtab-wallpaper-abstract-blue = Kék alakzatok
+newtab-wallpaper-abstract-purple = Lila alakzatok
+newtab-wallpaper-abstract-orange = Narancssárga alakzatok
+newtab-wallpaper-gradient-orange = Narancssárga és rózsaszín átmenet
+newtab-wallpaper-abstract-blue-purple = Kék és lila alakzatok
+
+## Photographs
+
+newtab-wallpaper-category-title-photographs = Fényképek
+newtab-wallpaper-beach-at-sunrise = Strand napkeltekor
+newtab-wallpaper-beach-at-sunset = Strand naplementekor
+newtab-wallpaper-storm-sky = Viharos égbolt
+newtab-wallpaper-sky-with-pink-clouds = Égbolt rózsaszín felhőkkel
+newtab-wallpaper-red-panda-yawns-in-a-tree = Vörös panda ásít egy fán
+newtab-wallpaper-white-mountains = Fehér hegyek
 # Variables
 #   $author_string (String) - The name of the creator of the photo.
 #   $webpage_string (String) - The name of the webpage where the photo is located.
 newtab-wallpaper-attribution = Fénykép: <a data-l10n-name="name-link">{ $author_string }</a> itt: <a data-l10n-name="webpage-link">{ $webpage_string }</a>
+newtab-wallpaper-feature-highlight-header = Próbáljon ki egy kis színt
+newtab-wallpaper-feature-highlight-content = Adjon friss külsőt az Új lap oldalnak háttérképekkel.
+newtab-wallpaper-feature-highlight-button = Megértettem!
+# Tooltip for dismiss button
+feature-highlight-dismiss-button =
+    .title = Eltüntetés
+    .aria-label = Felugró ablak bezárása
+feature-highlight-wallpaper =
+    .title = { -newtab-wallpaper-feature-highlight-header }
+    .aria-label = { -newtab-wallpaper-feature-highlight-content }
+
+## New Tab Weather
+
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-see-forecast =
+    .title = Előrejelzés megtekintése itt: { $provider }
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-sponsored = { $provider } ∙ Szponzorálva
+newtab-weather-menu-change-location = Hely módosítása
+newtab-weather-change-location-search-input = Keresési hely
+newtab-weather-menu-weather-display = Időjárás-kijelző
+# Display options are:
+# - Simple: Displays a current weather condition icon and the current temperature
+# - Detailed: Include simple information plus a short text summary: e.g. "Mostly cloudy"
+newtab-weather-menu-weather-display-option-simple = Egyszerű
+newtab-weather-menu-change-weather-display-simple = Átváltás egyszerű nézetre
+newtab-weather-menu-weather-display-option-detailed = Részletek
+newtab-weather-menu-change-weather-display-detailed = Átváltás részletes nézetre
+newtab-weather-menu-temperature-units = Hőmérséklet-egységek
+newtab-weather-menu-temperature-option-fahrenheit = Fahrenheit
+newtab-weather-menu-temperature-option-celsius = Celsius
+newtab-weather-menu-change-temperature-units-fahrenheit = Váltás Fahrenheitre
+newtab-weather-menu-change-temperature-units-celsius = Váltás Celsiusra
+newtab-weather-menu-hide-weather = Időjárás elrejtése az Új lapon
+newtab-weather-menu-learn-more = További tudnivalók
+# This message is shown if user is working offline
+newtab-weather-error-not-available = Az időjárásadatok most nem érhetők el
+
+## Topic Labels
+
+newtab-topic-label-business = Üzlet
+newtab-topic-label-career = Karrier
+newtab-topic-label-education = Oktatás
+newtab-topic-label-arts = Szórakozás
+newtab-topic-label-food = Étel
+newtab-topic-label-health = Egészség
+newtab-topic-label-hobbies = Játék
+# ”Money” = “Personal Finance”, refers to articles and stories that help readers better manage
+# and understand their personal finances – from saving money to buying a home. See the
+# “Curated by our editors“ section at the top of https://getpocket.com/explore/personal-finance for more context
+newtab-topic-label-finance = Pénz
+newtab-topic-label-society-parenting = Gyereknevelés
+newtab-topic-label-government = Politika
+newtab-topic-label-education-science = Tudomány
+# ”Life Hacks” = “Self Improvement”, refers to articles and stories aimed at helping readers improve various
+# aspects of their lives – from mental health to  productivity. See the “Curated by our editors“ section
+# at the top of https://getpocket.com/explore/self-improvement for more context.
+newtab-topic-label-society = Életmód
+newtab-topic-label-sports = Sport
+newtab-topic-label-tech = Technika
+newtab-topic-label-travel = Utazás
+newtab-topic-label-home = Otthon és kert
+
+## Topic Selection Modal
+
+# “fine-tune” refers to the process of making small adjustments to something to get
+# the best or desired experience or performance.
+newtab-topic-selection-title = Válasszon témákat a hírforrás finomhangolásához
+# “tailored” refers to process of (a tailor) making (clothes) to fit individual customers.
+# In other words, “Our expert curators prioritize stories to fit your selected interests”
+newtab-topic-selection-subtitle = Válasszon kettő vagy több témát. Szakértő kurátoraink az érdeklődési körének megfelelő történeteket részesítik előnyben. Frissítse bármikor.
+newtab-topic-selection-save-button = Mentés
+newtab-topic-selection-cancel-button = Mégse
+newtab-topic-selection-button-maybe-later = Talán később
+newtab-topic-selection-privacy-link = Tudja meg, hogyan védjük és kezeljük az adatait
+newtab-topic-selection-button-update-interests = Frissítse az érdeklődési köreit
+newtab-topic-selection-button-pick-interests = Válassza ki az érdeklődési köreit

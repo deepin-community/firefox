@@ -16,9 +16,11 @@ import androidx.preference.PreferenceScreen
 import androidx.preference.SwitchPreference
 import org.mozilla.fenix.FeatureFlags
 import org.mozilla.fenix.GleanMetrics.AppTheme
+import org.mozilla.fenix.GleanMetrics.CustomizationSettings
 import org.mozilla.fenix.GleanMetrics.PullToRefreshInBrowser
 import org.mozilla.fenix.GleanMetrics.ToolbarSettings
 import org.mozilla.fenix.R
+import org.mozilla.fenix.browser.tabstrip.isTabStripEnabled
 import org.mozilla.fenix.components.toolbar.ToolbarPosition
 import org.mozilla.fenix.ext.requireComponents
 import org.mozilla.fenix.ext.settings
@@ -53,7 +55,7 @@ class CustomizationFragment : PreferenceFragmentCompat() {
         bindLightTheme()
         bindAutoBatteryTheme()
         setupRadioGroups()
-        val tabletAndTabStripEnabled = requireContext().settings().isTabletAndTabStripEnabled
+        val tabletAndTabStripEnabled = requireContext().isTabStripEnabled()
         if (tabletAndTabStripEnabled) {
             val preferenceScreen: PreferenceScreen =
                 requirePreference(R.string.pref_key_customization_preference_screen)
@@ -63,9 +65,20 @@ class CustomizationFragment : PreferenceFragmentCompat() {
         } else {
             setupToolbarCategory()
         }
+        val isNavBarEnabled = requireContext().settings().navigationToolbarEnabled
+        if (isNavBarEnabled) {
+            setupNavBarEnabledSettingsUpdates()
+        }
         // if tab strip is enabled, swipe toolbar to switch tabs should not be enabled so the
         // preference is not shown
         setupGesturesCategory(isSwipeToolbarToSwitchTabsVisible = !tabletAndTabStripEnabled)
+    }
+
+    // Changes to some settings page copy for when the Toolbar(NavBar) is enabled
+    private fun setupNavBarEnabledSettingsUpdates() {
+        val scrollToEnable: SwitchPreference =
+            requirePreference(R.string.pref_key_dynamic_toolbar)
+        scrollToEnable.setTitle(R.string.preference_gestures_dynamic_toolbar_2)
     }
 
     private fun setupRadioGroups() {
@@ -174,6 +187,9 @@ class CustomizationFragment : PreferenceFragmentCompat() {
         when (preference.key) {
             resources.getString(R.string.pref_key_website_pull_to_refresh) -> {
                 PullToRefreshInBrowser.enabled.set(requireContext().settings().isPullToRefreshEnabledInBrowser)
+            }
+            resources.getString(R.string.pref_key_dynamic_toolbar) -> {
+                CustomizationSettings.dynamicToolbar.set(requireContext().settings().isDynamicToolbarEnabled)
             }
         }
         return super.onPreferenceTreeClick(preference)

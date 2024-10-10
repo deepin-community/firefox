@@ -30,7 +30,15 @@
 -focus-brand-name = Firefox Focus
 -relay-brand-name = Firefox Relay
 -relay-brand-short-name = Relay
--fakespot-brand-name = Fakespot
+-fakespot-brand-name =
+    { $sklon ->
+        [rodilnik] Fakespota
+        [dajalnik] Fakespotu
+        [tozilnik] Fakespot
+        [mestnik] Fakespotu
+        [orodnik] Fakespotom
+       *[imenovalnik] Fakespot
+    }
 # Note the name of the website is capitalized.
 -fakespot-website-name = Fakespot.com
 # The particle "by" can be localized, "Fakespot" and "Mozilla" should not be localized or transliterated.
@@ -76,3 +84,8 @@
 # View" can be localized, “Firefox” must be treated as a brand
 # and kept in English.
 -firefoxview-brand-name = Firefox View
+# Firefox Labs is the name for a page in Settings to allow users to learn about
+# experimental and in-development features, and turn those features on and off.
+# The "Labs" portion can be localized, “Firefox” must be treated as a brand
+# and kept in English.
+-firefoxlabs-brand-name = Firefox Labs

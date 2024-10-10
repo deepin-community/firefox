@@ -567,9 +567,8 @@ AntiTrackingUtils::GetStoragePermissionStateInParent(nsIChannel* aChannel) {
 
   if (policyType == ExtContentPolicy::TYPE_SUBDOCUMENT) {
     // For loads of framed documents, we only use storage access
-    // if the load is the result of a same-origin, self-initiated
+    // if the load is the result of a same-origin, same-site-initiated
     // navigation of the frame.
-    uint64_t targetWindowIdNoTop = bc->GetCurrentInnerWindowId();
     uint64_t triggeringWindowId;
     rv = loadInfo->GetTriggeringWindowId(&triggeringWindowId);
     if (NS_WARN_IF(NS_FAILED(rv))) {
@@ -581,10 +580,29 @@ AntiTrackingUtils::GetStoragePermissionStateInParent(nsIChannel* aChannel) {
     if (NS_WARN_IF(NS_FAILED(rv))) {
       return nsILoadInfo::NoStoragePermission;
     }
-    RefPtr<net::HttpBaseChannel> httpChannel = do_QueryObject(aChannel);
 
-    if (targetWindowIdNoTop == triggeringWindowId &&
-        triggeringWindowHasStorageAccess &&
+    nsIScriptSecurityManager* ssm = nsContentUtils::GetSecurityManager();
+    RefPtr<nsIPrincipal> channelResultPrincipal;
+    rv = ssm->GetChannelResultPrincipal(aChannel,
+                                        getter_AddRefs(channelResultPrincipal));
+    if (NS_WARN_IF(NS_FAILED(rv))) {
+      return nsILoadInfo::NoStoragePermission;
+    }
+    RefPtr<net::HttpBaseChannel> httpChannel = do_QueryObject(aChannel);
+    bool crossSiteInitiated = false;
+    if (bc && bc->GetParent()->GetCurrentWindowContext()) {
+      RefPtr<WindowGlobalParent> triggeringWGP =
+          WindowGlobalParent::GetByInnerWindowId(triggeringWindowId);
+      if (triggeringWGP && triggeringWGP->DocumentPrincipal()) {
+        rv = triggeringWGP->DocumentPrincipal()->IsThirdPartyPrincipal(
+            channelResultPrincipal, &crossSiteInitiated);
+        if (NS_FAILED(rv)) {
+          crossSiteInitiated = false;
+        }
+      }
+    }
+
+    if (!crossSiteInitiated && triggeringWindowHasStorageAccess &&
         trackingPrincipal->Equals(framePrincipal) && httpChannel &&
         !httpChannel->HasRedirectTaintedOrigin()) {
       return nsILoadInfo::HasStoragePermission;
@@ -756,6 +774,43 @@ AntiTrackingUtils::GetTopWindowExcludingExtensionAccessibleContentFrames(
 }
 
 /* static */
+nsresult AntiTrackingUtils::IsThirdPartyToPartitionKeySite(
+    nsIChannel* aChannel, const nsCOMPtr<nsIURI>& aURI, bool* aIsThirdParty) {
+  MOZ_ASSERT(XRE_IsParentProcess());
+  NS_ENSURE_ARG(aChannel);
+  NS_ENSURE_ARG(aURI);
+  NS_ENSURE_ARG(aIsThirdParty);
+  nsCOMPtr<nsILoadInfo> loadInfo = aChannel->LoadInfo();
+  nsCOMPtr<nsICookieJarSettings> cjs;
+  nsresult rv = loadInfo->GetCookieJarSettings(getter_AddRefs(cjs));
+  NS_ENSURE_SUCCESS(rv, rv);
+
+  nsAutoString partitionKey;
+  rv = cjs->GetPartitionKey(partitionKey);
+  NS_ENSURE_SUCCESS(rv, rv);
+
+  nsAutoString scheme, host;
+  int32_t _unused1;
+  bool _unused2;
+  if (!OriginAttributes::ParsePartitionKey(partitionKey, scheme, host, _unused1,
+                                           _unused2)) {
+    return NS_ERROR_FAILURE;
+  }
+  if (host.IsEmpty()) {
+    return NS_ERROR_FAILURE;
+  }
+  nsAutoString partitionKeySite = scheme + u"://"_ns + host;
+  nsCOMPtr<nsIURI> partitionKeySiteURI;
+  rv = NS_NewURI(getter_AddRefs(partitionKeySiteURI), partitionKeySite);
+  NS_ENSURE_SUCCESS(rv, rv);
+
+  nsCOMPtr<mozIThirdPartyUtil> thirdPartyUtil =
+      components::ThirdPartyUtil::Service();
+  return thirdPartyUtil->IsThirdPartyURI(aURI, partitionKeySiteURI,
+                                         aIsThirdParty);
+}
+
+/* static */
 void AntiTrackingUtils::ComputeIsThirdPartyToTopWindow(nsIChannel* aChannel) {
   MOZ_ASSERT(aChannel);
   MOZ_ASSERT(XRE_IsParentProcess());
@@ -774,6 +829,9 @@ void AntiTrackingUtils::ComputeIsThirdPartyToTopWindow(nsIChannel* aChannel) {
 
   RefPtr<BrowsingContext> bc;
   loadInfo->GetBrowsingContext(getter_AddRefs(bc));
+  if (!bc) {
+    bc = loadInfo->GetWorkerAssociatedBrowsingContext();
+  }
 
   nsCOMPtr<nsIURI> uri;
   Unused << aChannel->GetURI(getter_AddRefs(uri));
@@ -793,13 +851,29 @@ void AntiTrackingUtils::ComputeIsThirdPartyToTopWindow(nsIChannel* aChannel) {
       return;
     }
 
-    // We turn to check the loading principal if there is no browsing context.
-    auto* loadingPrincipal =
-        BasePrincipal::Cast(loadInfo->GetLoadingPrincipal());
+    // We turn to check the top-level principal if there is no browsing context.
+    auto* principal = BasePrincipal::Cast(loadInfo->GetTopLevelPrincipal());
 
-    if (uri && loadingPrincipal) {
+    // If we don't have the top level principal, we try to compare directly to
+    // the scheme in the partition key. Failing that, we fall back to
+    // comparing to the loading principal. But we can only do this if this
+    // channel has a URI. If we have neither a channel URI or the browsing
+    // context, we can do nothing.
+    if (uri) {
+      if (!principal) {
+        bool isThirdParty = true;
+        nsresult rv =
+            IsThirdPartyToPartitionKeySite(aChannel, uri, &isThirdParty);
+        if (NS_SUCCEEDED(rv)) {
+          loadInfo->SetIsThirdPartyContextToTopWindow(isThirdParty);
+          return;
+        }
+      }
+      principal = BasePrincipal::Cast(loadInfo->GetLoadingPrincipal());
+    }
+    if (principal) {
       bool isThirdParty = true;
-      nsresult rv = loadingPrincipal->IsThirdPartyURI(uri, &isThirdParty);
+      nsresult rv = principal->IsThirdPartyURI(uri, &isThirdParty);
 
       if (NS_SUCCEEDED(rv)) {
         loadInfo->SetIsThirdPartyContextToTopWindow(isThirdParty);
@@ -852,35 +926,16 @@ void AntiTrackingUtils::ComputeIsThirdPartyToTopWindow(nsIChannel* aChannel) {
 bool AntiTrackingUtils::IsThirdPartyChannel(nsIChannel* aChannel) {
   MOZ_ASSERT(aChannel);
 
-  // We have to handle blob URLs here because they always fail
-  // IsThirdPartyChannel because of how blob URLs are constructed. We just
-  // recompare to their ancestor chain from the loadInfo, bailing if any is
-  // third party.
-  nsAutoCString scheme;
-  nsCOMPtr<nsIURI> channelURI;
-  nsresult rv = aChannel->GetURI(getter_AddRefs(channelURI));
-  if (NS_SUCCEEDED(rv) && channelURI->SchemeIs("blob")) {
-    nsCOMPtr<nsILoadInfo> loadInfo = aChannel->LoadInfo();
-    for (const nsCOMPtr<nsIPrincipal>& principal :
-         loadInfo->AncestorPrincipals()) {
-      bool thirdParty = true;
-      rv = loadInfo->PrincipalToInherit()->IsThirdPartyPrincipal(principal,
-                                                                 &thirdParty);
-      if (NS_SUCCEEDED(rv) && thirdParty) {
-        return true;
-      }
-    }
-    return false;
-  }
-
   nsCOMPtr<mozIThirdPartyUtil> tpuService =
       mozilla::components::ThirdPartyUtil::Service();
   if (!tpuService) {
     return true;
   }
   bool thirdParty = true;
-  rv = tpuService->IsThirdPartyChannel(aChannel, nullptr, &thirdParty);
-  NS_ENSURE_SUCCESS(rv, true);
+  nsresult rv = tpuService->IsThirdPartyChannel(aChannel, nullptr, &thirdParty);
+  if (NS_FAILED(rv)) {
+    return true;
+  }
   return thirdParty;
 }
 
@@ -940,22 +995,20 @@ bool AntiTrackingUtils::IsThirdPartyDocument(Document* aDocument) {
     return true;
   }
   bool thirdParty = true;
-  if (!aDocument->GetChannel() ||
-      aDocument->GetDocumentURI()->SchemeIs("blob")) {
+  if (!aDocument->GetChannel()) {
     // If we can't get the channel from the document, i.e. initial about:blank
     // page, we use the browsingContext of the document to check if it's in the
     // third-party context. If the browsing context is still not available, we
     // will treat the window as third-party.
-    // We also rely on IsThirdPartyContext for blob documents because the
-    // IsThirdPartyChannel check relies on getting the BaseDomain,
-    // which correctly fails for blobs URIs.
     RefPtr<BrowsingContext> bc = aDocument->GetBrowsingContext();
     return bc ? IsThirdPartyContext(bc) : true;
   }
 
   nsresult rv = tpuService->IsThirdPartyChannel(aDocument->GetChannel(),
                                                 nullptr, &thirdParty);
-  NS_ENSURE_SUCCESS(rv, true);
+  if (NS_FAILED(rv)) {
+    return true;
+  }
   return thirdParty;
 }
 
@@ -1052,17 +1105,13 @@ void AntiTrackingUtils::UpdateAntiTrackingInfoForChannel(nsIChannel* aChannel) {
       ->MarkOverriddenFingerprintingSettingsAsSet();
 #endif
 
-  ExtContentPolicyType contentType = loadInfo->GetExternalContentPolicyType();
-  if (contentType == ExtContentPolicy::TYPE_DOCUMENT ||
-      contentType == ExtContentPolicy::TYPE_SUBDOCUMENT) {
-    nsCOMPtr<nsICookieJarSettings> cookieJarSettings;
-    Unused << loadInfo->GetCookieJarSettings(getter_AddRefs(cookieJarSettings));
-    // For subdocuments, the channel's partition key is that of the parent
-    // document. This document may have a different partition key, particularly
-    // one without the same-site bit.
-    net::CookieJarSettings::Cast(cookieJarSettings)
-        ->UpdatePartitionKeyForDocumentLoadedByChannel(aChannel);
-  }
+  nsCOMPtr<nsICookieJarSettings> cookieJarSettings;
+  Unused << loadInfo->GetCookieJarSettings(getter_AddRefs(cookieJarSettings));
+  // Subresources (including subdocuments) may have a different partition key,
+  // particularly one without or with the same-site bit. We have to update that
+  // here.
+  net::CookieJarSettings::Cast(cookieJarSettings)
+      ->UpdatePartitionKeyForDocumentLoadedByChannel(aChannel);
 
   // We only update the IsOnContentBlockingAllowList flag and the partition key
   // for the top-level http channel.
@@ -1073,6 +1122,7 @@ void AntiTrackingUtils::UpdateAntiTrackingInfoForChannel(nsIChannel* aChannel) {
   //
   // The partition key is computed based on the site, so it's no point to set it
   // for channels other than http channels.
+  ExtContentPolicyType contentType = loadInfo->GetExternalContentPolicyType();
   nsCOMPtr<nsIHttpChannel> httpChannel = do_QueryInterface(aChannel);
   if (!httpChannel || contentType != ExtContentPolicy::TYPE_DOCUMENT) {
     return;
@@ -1081,8 +1131,6 @@ void AntiTrackingUtils::UpdateAntiTrackingInfoForChannel(nsIChannel* aChannel) {
   // Update the IsOnContentBlockingAllowList flag in the CookieJarSettings
   // if this is a top level loading. For sub-document loading, this flag
   // would inherit from the parent.
-  nsCOMPtr<nsICookieJarSettings> cookieJarSettings;
-  Unused << loadInfo->GetCookieJarSettings(getter_AddRefs(cookieJarSettings));
   net::CookieJarSettings::Cast(cookieJarSettings)
       ->UpdateIsOnContentBlockingAllowList(aChannel);
 

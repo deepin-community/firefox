@@ -12,6 +12,8 @@ about-processes-column-action =
 
 about-processes-shutdown-process =
     .title = Unload tabs and kill process
+about-processes-kill-process =
+    .title = Kill process
 about-processes-shutdown-tab =
     .title = Close tab
 # Profiler icons
@@ -51,6 +53,7 @@ about-processes-remote-sandbox-broker-process = Remote Sandbox Broker ({ $pid })
 about-processes-fork-server-process = Fork Server ({ $pid })
 about-processes-preallocated-process = Preallocated ({ $pid })
 about-processes-utility-process = Utility ({ $pid })
+about-processes-inference-process = Inference ({ $pid })
 # Unknown process names
 # Variables:
 #    $pid (String) The process id of this process, assigned by the OS.

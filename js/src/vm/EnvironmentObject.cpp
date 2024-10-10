@@ -8,6 +8,7 @@
 
 #include "mozilla/Maybe.h"
 
+#include "builtin/Array.h"
 #include "builtin/ModuleObject.h"
 #include "js/Exception.h"
 #include "js/friend/ErrorMessages.h"  // js::GetErrorMessage, JSMSG_*
@@ -31,6 +32,7 @@
 #include "gc/Marking-inl.h"
 #include "gc/StableCellHasher-inl.h"
 #include "vm/BytecodeIterator-inl.h"
+#include "vm/List-inl.h"
 #include "vm/NativeObject-inl.h"
 #include "vm/Stack-inl.h"
 
@@ -223,7 +225,9 @@ CallObject* CallObject::createHollowForDebug(JSContext* cx,
 }
 
 const JSClass CallObject::class_ = {
-    "Call", JSCLASS_HAS_RESERVED_SLOTS(CallObject::RESERVED_SLOTS)};
+    "Call",
+    JSCLASS_HAS_RESERVED_SLOTS(CallObject::RESERVED_SLOTS),
+};
 
 /*****************************************************************************/
 
@@ -334,7 +338,9 @@ VarEnvironmentObject* VarEnvironmentObject::createWithoutEnclosing(
 }
 
 const JSClass VarEnvironmentObject::class_ = {
-    "Var", JSCLASS_HAS_RESERVED_SLOTS(VarEnvironmentObject::RESERVED_SLOTS)};
+    "Var",
+    JSCLASS_HAS_RESERVED_SLOTS(VarEnvironmentObject::RESERVED_SLOTS),
+};
 
 /*****************************************************************************/
 
@@ -370,7 +376,8 @@ const JSClass ModuleEnvironmentObject::class_ = {
     &ModuleEnvironmentObject::classOps_,
     JS_NULL_CLASS_SPEC,
     JS_NULL_CLASS_EXT,
-    &ModuleEnvironmentObject::objectOps_};
+    &ModuleEnvironmentObject::objectOps_,
+};
 
 /* static */
 ModuleEnvironmentObject* ModuleEnvironmentObject::create(
@@ -413,8 +420,47 @@ ModuleEnvironmentObject* ModuleEnvironmentObject::create(
   MOZ_ASSERT(!env->inDictionaryMode());
 #endif
 
+#ifdef ENABLE_EXPLICIT_RESOURCE_MANAGEMENT
+  env->initSlot(ModuleEnvironmentObject::DISPOSABLE_RESOURCE_STACK_SLOT,
+                UndefinedValue());
+#endif
+
   return env;
 }
+
+#ifdef ENABLE_EXPLICIT_RESOURCE_MANAGEMENT
+static ArrayObject* initialiseAndSetDisposeCapabilityHelper(
+    JSContext* cx, JS::Handle<EnvironmentObject*> env, uint32_t slot) {
+  JS::Value slotData = env->getReservedSlot(slot);
+  ArrayObject* disposablesList = nullptr;
+  if (slotData.isUndefined()) {
+    disposablesList = NewDenseEmptyArray(cx);
+    if (!disposablesList) {
+      return nullptr;
+    }
+    env->setReservedSlot(slot, ObjectValue(*disposablesList));
+  } else {
+    disposablesList = &slotData.toObject().as<ArrayObject>();
+  }
+  return disposablesList;
+}
+
+ArrayObject* DisposableEnvironmentObject::getOrCreateDisposeCapability(
+    JSContext* cx) {
+  Rooted<DisposableEnvironmentObject*> env(cx, this);
+  return initialiseAndSetDisposeCapabilityHelper(
+      cx, env, DISPOSABLE_RESOURCE_STACK_SLOT);
+}
+
+// TODO: The get & clear disposables function can be merged. (bug 1907736)
+JS::Value DisposableEnvironmentObject::getDisposables() {
+  return getReservedSlot(DISPOSABLE_RESOURCE_STACK_SLOT);
+}
+
+void DisposableEnvironmentObject::clearDisposables() {
+  setReservedSlot(DISPOSABLE_RESOURCE_STACK_SLOT, UndefinedValue());
+}
+#endif
 
 /* static */
 ModuleEnvironmentObject* ModuleEnvironmentObject::createSynthetic(
@@ -604,7 +650,8 @@ bool ModuleEnvironmentObject::newEnumerate(JSContext* cx, HandleObject obj,
 
 const JSClass WasmInstanceEnvironmentObject::class_ = {
     "WasmInstance",
-    JSCLASS_HAS_RESERVED_SLOTS(WasmInstanceEnvironmentObject::RESERVED_SLOTS)};
+    JSCLASS_HAS_RESERVED_SLOTS(WasmInstanceEnvironmentObject::RESERVED_SLOTS),
+};
 
 /* static */
 WasmInstanceEnvironmentObject*
@@ -631,7 +678,8 @@ WasmInstanceEnvironmentObject::createHollowForDebug(
 
 const JSClass WasmFunctionCallObject::class_ = {
     "WasmCall",
-    JSCLASS_HAS_RESERVED_SLOTS(WasmFunctionCallObject::RESERVED_SLOTS)};
+    JSCLASS_HAS_RESERVED_SLOTS(WasmFunctionCallObject::RESERVED_SLOTS),
+};
 
 /* static */
 WasmFunctionCallObject* WasmFunctionCallObject::createHollowForDebug(
@@ -843,7 +891,8 @@ const JSClass WithEnvironmentObject::class_ = {
     JS_NULL_CLASS_OPS,
     JS_NULL_CLASS_SPEC,
     JS_NULL_CLASS_EXT,
-    &WithEnvironmentObjectOps};
+    &WithEnvironmentObjectOps,
+};
 
 /* static */
 NonSyntacticVariablesObject* NonSyntacticVariablesObject::create(
@@ -872,7 +921,8 @@ NonSyntacticVariablesObject* NonSyntacticVariablesObject::create(
 
 const JSClass NonSyntacticVariablesObject::class_ = {
     "NonSyntacticVariablesObject",
-    JSCLASS_HAS_RESERVED_SLOTS(NonSyntacticVariablesObject::RESERVED_SLOTS)};
+    JSCLASS_HAS_RESERVED_SLOTS(NonSyntacticVariablesObject::RESERVED_SLOTS),
+};
 
 bool js::CreateNonSyntacticEnvironmentChain(JSContext* cx,
                                             HandleObjectVector envChain,
@@ -918,7 +968,8 @@ const JSClass LexicalEnvironmentObject::class_ = {
     JS_NULL_CLASS_OPS,
     JS_NULL_CLASS_SPEC,
     JS_NULL_CLASS_EXT,
-    JS_NULL_OBJECT_OPS};
+    JS_NULL_OBJECT_OPS,
+};
 
 /* static */
 LexicalEnvironmentObject* LexicalEnvironmentObject::create(
@@ -940,6 +991,11 @@ LexicalEnvironmentObject* LexicalEnvironmentObject::create(
   if (enclosing) {
     env->initEnclosingEnvironment(enclosing);
   }
+
+#ifdef ENABLE_EXPLICIT_RESOURCE_MANAGEMENT
+  env->initSlot(LexicalEnvironmentObject::DISPOSABLE_RESOURCE_STACK_SLOT,
+                UndefinedValue());
+#endif
 
   return env;
 }
@@ -1338,7 +1394,8 @@ const JSClass RuntimeLexicalErrorObject::class_ = {
     JS_NULL_CLASS_OPS,
     JS_NULL_CLASS_SPEC,
     JS_NULL_CLASS_EXT,
-    &RuntimeLexicalErrorObjectObjectOps};
+    &RuntimeLexicalErrorObjectObjectOps,
+};
 
 /*****************************************************************************/
 
@@ -1522,7 +1579,7 @@ namespace {
  *    proxy can either hide these optimizations or make the situation more
  *    clear to the debugger. An example is 'arguments'.
  */
-class DebugEnvironmentProxyHandler : public BaseProxyHandler {
+class DebugEnvironmentProxyHandler : public NurseryAllocableProxyHandler {
   enum Action { SET, GET };
 
   enum AccessResult { ACCESS_UNALIASED, ACCESS_GENERIC, ACCESS_LOST };
@@ -2023,7 +2080,8 @@ class DebugEnvironmentProxyHandler : public BaseProxyHandler {
   static const char family;
   static const DebugEnvironmentProxyHandler singleton;
 
-  constexpr DebugEnvironmentProxyHandler() : BaseProxyHandler(&family) {}
+  constexpr DebugEnvironmentProxyHandler()
+      : NurseryAllocableProxyHandler(&family) {}
 
   static bool isFunctionEnvironmentWithThis(const JSObject& env) {
     // All functions except arrows should have their own this binding.
@@ -2613,18 +2671,20 @@ void DebugEnvironments::checkHashTablesAfterMovingGC() {
    * This is called at the end of StoreBuffer::mark() to check that our
    * postbarriers have worked and that no hashtable keys (or values) are left
    * pointing into the nursery.
+   *
+   * |proxiedEnvs| is checked automatically because it is a WeakMap.
    */
-  proxiedEnvs.checkAfterMovingGC();
-  for (MissingEnvironmentMap::Range r = missingEnvs.all(); !r.empty();
-       r.popFront()) {
-    CheckGCThingAfterMovingGC(r.front().key().scope());
+  CheckTableAfterMovingGC(missingEnvs, [this](const auto& entry) {
+    CheckGCThingAfterMovingGC(entry.key().scope(), zone());
     // Use unbarrieredGet() to prevent triggering read barrier while collecting.
-    CheckGCThingAfterMovingGC(r.front().value().unbarrieredGet());
-  }
-  for (LiveEnvironmentMap::Range r = liveEnvs.all(); !r.empty(); r.popFront()) {
-    CheckGCThingAfterMovingGC(r.front().key());
-    CheckGCThingAfterMovingGC(r.front().value().scope_.get());
-  }
+    CheckGCThingAfterMovingGC(entry.value().unbarrieredGet(), zone());
+    return entry.key();
+  });
+  CheckTableAfterMovingGC(liveEnvs, [this](const auto& entry) {
+    CheckGCThingAfterMovingGC(entry.key(), zone());
+    CheckGCThingAfterMovingGC(entry.value().scope_.get(), zone());
+    return entry.key().unbarrieredGet();
+  });
 }
 #endif
 
@@ -4085,7 +4145,7 @@ void js::GetSuspendedGeneratorEnvironmentAndScope(
 
 #ifdef DEBUG
 
-typedef HashSet<PropertyName*> PropertyNameSet;
+using PropertyNameSet = HashSet<PropertyName*>;
 
 static bool RemoveReferencedNames(JSContext* cx, HandleScript script,
                                   PropertyNameSet& remainingNames) {

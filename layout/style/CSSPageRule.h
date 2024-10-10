@@ -12,6 +12,9 @@
 
 #include "nsDOMCSSDeclaration.h"
 #include "nsICSSDeclaration.h"
+// TODO alaskanemily: This is only needed by the generated bindings.
+// Ideally it would only be included from there.
+#include "nsCSSProps.h"
 
 namespace mozilla {
 class DeclarationBlock;
@@ -28,12 +31,13 @@ class CSSPageRuleDeclaration final : public nsDOMCSSDeclaration {
   nsINode* GetAssociatedNode() const final;
   nsISupports* GetParentObject() const final;
 
+  JSObject* WrapObject(JSContext* aCx, JS::Handle<JSObject*> aGivenProto) final;
+
  protected:
   DeclarationBlock* GetOrCreateCSSDeclaration(
       Operation aOperation, DeclarationBlock** aCreated) final;
   nsresult SetCSSDeclaration(DeclarationBlock* aDecl,
                              MutationClosureData* aClosureData) final;
-  Document* DocToUpdate() final { return nullptr; }
   nsDOMCSSDeclaration::ParsingEnvironment GetParsingEnvironment(
       nsIPrincipal* aSubjectPrincipal) const final;
 
@@ -70,7 +74,7 @@ class CSSPageRule final : public css::GroupRule {
   // WebIDL interfaces
   StyleCssRuleType Type() const final;
   void GetCssText(nsACString& aCssText) const final;
-  nsICSSDeclaration* Style();
+  CSSPageRuleDeclaration* Style() { return &mDecls; }
 
   void GetSelectorText(nsACString& aSelectorText) const;
   void SetSelectorText(const nsACString& aSelectorText);

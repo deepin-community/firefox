@@ -133,6 +133,7 @@ function TextPropertyEditor(ruleEditor, property) {
   this.telemetry = this.toolbox.telemetry;
 
   this._isDragging = false;
+  this._capturingPointerId = null;
   this._hasDragged = false;
   this._draggingController = null;
   this._draggingValueCache = null;
@@ -153,9 +154,9 @@ function TextPropertyEditor(ruleEditor, property) {
   this._onValidate = this.ruleView.debounce(this._previewValue, 10, this);
   this._onValueDone = this._onValueDone.bind(this);
 
-  this._draggingOnMouseDown = this._draggingOnMouseDown.bind(this);
+  this._draggingOnPointerDown = this._draggingOnPointerDown.bind(this);
   this._draggingOnMouseMove = throttle(this._draggingOnMouseMove, 30, this);
-  this._draggingOnMouseUp = this._draggingOnMouseUp.bind(this);
+  this._draggingOnPointerUp = this._draggingOnPointerUp.bind(this);
   this._draggingOnKeydown = this._draggingOnKeydown.bind(this);
 
   this._create();
@@ -264,6 +265,15 @@ TextPropertyEditor.prototype = {
       title: l10n("rule.warning.title"),
     });
 
+    this.invalidAtComputedValueTimeWarning = createChild(
+      this.container,
+      "div",
+      {
+        class: "ruleview-invalid-at-computed-value-time-warning",
+        hidden: "",
+      }
+    );
+
     this.unusedState = createChild(this.container, "div", {
       class: "ruleview-unused-warning",
       hidden: "",
@@ -314,9 +324,8 @@ TextPropertyEditor.prototype = {
         }
       });
 
-      const cssVariables = this.rule.elementStyle.getAllCustomProperties(
-        this.rule.pseudoElement
-      );
+      const getCssVariables = () =>
+        this.rule.elementStyle.getAllCustomProperties(this.rule.pseudoElement);
 
       editableField({
         start: this._onStartEditing,
@@ -327,7 +336,7 @@ TextPropertyEditor.prototype = {
         contentType: InplaceEditor.CONTENT_TYPES.CSS_PROPERTY,
         popup: this.popup,
         cssProperties: this.cssProperties,
-        cssVariables,
+        getCssVariables,
         // (Shift+)Tab will move the focus to the previous/next editable field (so property value
         // or new selector).
         focusEditableFieldAfterApply: true,
@@ -385,8 +394,8 @@ TextPropertyEditor.prototype = {
         }
       });
 
-      this.valueSpan.addEventListener("mouseup", () => {
-        // if we have dragged, we will handle the pending click in _draggingOnMouseUp instead
+      this.valueSpan.addEventListener("pointerup", () => {
+        // if we have dragged, we will handle the pending click in _draggingOnPointerUp instead
         if (this._hasDragged) {
           return;
         }
@@ -426,7 +435,7 @@ TextPropertyEditor.prototype = {
         multiline: true,
         maxWidth: () => this.container.getBoundingClientRect().width,
         cssProperties: this.cssProperties,
-        cssVariables,
+        getCssVariables,
         getGridLineNames: this.getGridlineNames,
         showSuggestCompletionOnEmpty: true,
         // (Shift+)Tab will move the focus to the previous/next editable field (so property name,
@@ -572,7 +581,7 @@ TextPropertyEditor.prototype = {
     }
 
     const outputParser = this.ruleView._outputParser;
-    const parserOptions = {
+    this.outputParserOptions = {
       angleClass: "ruleview-angle",
       angleSwatchClass: SHARED_SWATCH_CLASS + " " + ANGLE_SWATCH_CLASS,
       bezierClass: "ruleview-bezier",
@@ -595,12 +604,24 @@ TextPropertyEditor.prototype = {
       urlClass: "theme-link",
       fontFamilyClass: FONT_FAMILY_CLASS,
       baseURI: this.sheetHref,
-      unmatchedVariableClass: "ruleview-unmatched-variable",
+      unmatchedClass: "ruleview-unmatched",
       matchedVariableClass: "ruleview-variable",
-      getVariableValue: varName =>
-        this.rule.elementStyle.getVariable(varName, this.rule.pseudoElement),
+      getVariableData: varName =>
+        this.rule.elementStyle.getVariableData(
+          varName,
+          this.rule.pseudoElement
+        ),
+      inStartingStyleRule: this.rule.isInStartingStyle(),
     };
-    const frag = outputParser.parseCssProperty(name, val, parserOptions);
+
+    if (this.rule.darkColorScheme !== undefined) {
+      this.outputParserOptions.isDarkColorScheme = this.rule.darkColorScheme;
+    }
+    const frag = outputParser.parseCssProperty(
+      name,
+      val,
+      this.outputParserOptions
+    );
 
     // Save the initial value as the last committed value,
     // for restoring after pressing escape.
@@ -738,7 +759,7 @@ TextPropertyEditor.prototype = {
     const span = this.valueSpan.querySelector("." + FILTER_SWATCH_CLASS);
     if (this.ruleEditor.isEditable) {
       if (span) {
-        parserOptions.filterSwatch = true;
+        this.outputParserOptions.filterSwatch = true;
 
         this.ruleView.tooltips.getTooltip("filterEditor").addSwatch(
           span,
@@ -749,7 +770,7 @@ TextPropertyEditor.prototype = {
             onRevert: this._onSwatchRevert,
           },
           outputParser,
-          parserOptions
+          this.outputParserOptions
         );
         const title = l10n("rule.filterSwatch.tooltip");
         span.setAttribute("title", title);
@@ -772,8 +793,8 @@ TextPropertyEditor.prototype = {
     const flexToggle = this.valueSpan.querySelector(".ruleview-flex");
     if (flexToggle) {
       flexToggle.setAttribute("title", l10n("rule.flexToggle.tooltip"));
-      flexToggle.classList.toggle(
-        "active",
+      flexToggle.setAttribute(
+        "aria-pressed",
         this.ruleView.inspector.highlighters.getNodeForActiveHighlighter(
           this.ruleView.inspector.highlighters.TYPES.FLEXBOX
         ) === nodeFront
@@ -783,8 +804,8 @@ TextPropertyEditor.prototype = {
     const gridToggle = this.valueSpan.querySelector(".ruleview-grid");
     if (gridToggle) {
       gridToggle.setAttribute("title", l10n("rule.gridToggle.tooltip"));
-      gridToggle.classList.toggle(
-        "active",
+      gridToggle.setAttribute(
+        "aria-pressed",
         this.ruleView.highlighters.gridHighlighters.has(nodeFront)
       );
       gridToggle.toggleAttribute(
@@ -804,6 +825,8 @@ TextPropertyEditor.prototype = {
           })
           .join("");
       shapeToggle.setAttribute("data-mode", mode);
+      shapeToggle.setAttribute("aria-pressed", false);
+      shapeToggle.setAttribute("title", l10n("rule.shapeToggle.tooltip"));
     }
 
     // Now that we have updated the property's value, we might have a pending
@@ -881,6 +904,17 @@ TextPropertyEditor.prototype = {
       : l10n("rule.warning.title");
 
     this.warning.hidden = this.editing || this.isValid();
+
+    if (!this.editing && this.isInvalidAtComputedValueTime()) {
+      this.invalidAtComputedValueTimeWarning.title = l10nFormatStr(
+        "rule.warningInvalidAtComputedValueTime.title",
+        `"${this.prop.getExpectedSyntax()}"`
+      );
+      this.invalidAtComputedValueTimeWarning.hidden = false;
+    } else {
+      this.invalidAtComputedValueTimeWarning.hidden = true;
+    }
+
     this.filterProperty.hidden =
       this.editing ||
       !this.isValid() ||
@@ -1162,9 +1196,16 @@ TextPropertyEditor.prototype = {
       return;
     }
 
-    // Remove a property if the property value is empty and the property
-    // value is not about to be focused
-    if (!this.prop.value && direction !== Services.focus.MOVEFOCUS_FORWARD) {
+    const isVariable = value.startsWith("--");
+
+    // Remove a property if:
+    // - the property value is empty and is not a variable (empty variables are valid)
+    // - and the property value is not about to be focused
+    if (
+      !this.prop.value &&
+      !isVariable &&
+      direction !== Services.focus.MOVEFOCUS_FORWARD
+    ) {
       this.remove(direction);
       return;
     }
@@ -1244,9 +1285,11 @@ TextPropertyEditor.prototype = {
         this.committed.value === val.value &&
         this.committed.priority === val.priority);
 
-    // If the value is not empty and unchanged, revert the property back to
-    // its original value and enabled or disabled state
-    if (value.trim() && isValueUnchanged) {
+    const isVariable = this.prop.name.startsWith("--");
+
+    // If the value is not empty (or is an empty variable) and unchanged,
+    // revert the property back to its original value and enabled or disabled state
+    if ((value.trim() || isVariable) && isValueUnchanged) {
       this.ruleEditor.rule.previewPropertyValue(
         this.prop,
         val.value,
@@ -1278,12 +1321,17 @@ TextPropertyEditor.prototype = {
     // If needed, add any new properties after this.prop.
     this.ruleEditor.addProperties(parsedProperties.propertiesToAdd, this.prop);
 
-    // If the input value is empty and the focus is moving forward to the next
-    // editable field, then remove the whole property.
+    // If the input value is empty and is not a variable (empty variables are valid),
+    // and the focus is moving forward to the next editable field,
+    // then remove the whole property.
     // A timeout is used here to accurately check the state, since the inplace
     // editor `done` and `destroy` events fire before the next editor
     // is focused.
-    if (!value.trim() && direction !== Services.focus.MOVEFOCUS_BACKWARD) {
+    if (
+      !value.trim() &&
+      !isVariable &&
+      direction !== Services.focus.MOVEFOCUS_BACKWARD
+    ) {
       setTimeout(() => {
         if (!this.editing) {
           this.remove(direction);
@@ -1443,9 +1491,16 @@ TextPropertyEditor.prototype = {
     return !!dimensionMatchObj;
   },
 
-  _draggingOnMouseDown(event) {
+  _draggingOnPointerDown(event) {
+    // We want to handle a drag during a mouse button is pressed.  So, we can
+    // ignore pointer events which are caused by other devices.
+    if (event.pointerType != "mouse") {
+      return;
+    }
+
     this._isDragging = true;
     this.valueSpan.setPointerCapture(event.pointerId);
+    this._capturingPointerId = event.pointerId;
     this._draggingController = new AbortController();
     const { signal } = this._draggingController;
 
@@ -1461,10 +1516,12 @@ TextPropertyEditor.prototype = {
       unit,
     };
 
+    // "pointermove" is fired when the button state is changed too.  Therefore,
+    // we should listen to "mousemove" to handle the pointer position changes.
     this.valueSpan.addEventListener("mousemove", this._draggingOnMouseMove, {
       signal,
     });
-    this.valueSpan.addEventListener("mouseup", this._draggingOnMouseUp, {
+    this.valueSpan.addEventListener("pointerup", this._draggingOnPointerUp, {
       signal,
     });
     this.valueSpan.addEventListener("keydown", this._draggingOnKeydown, {
@@ -1519,7 +1576,7 @@ TextPropertyEditor.prototype = {
     this._hasDragged = true;
   },
 
-  _draggingOnMouseUp(event) {
+  _draggingOnPointerUp() {
     if (!this._isDragging) {
       return;
     }
@@ -1527,18 +1584,18 @@ TextPropertyEditor.prototype = {
       this.committed.value = this.prop.value;
       this.prop.setEnabled(true);
     }
-    this._onStopDragging(event);
+    this._onStopDragging();
   },
 
   _draggingOnKeydown(event) {
     if (event.key == "Escape") {
       this.prop.setValue(this.committed.value, this.committed.priority);
-      this._onStopDragging(event);
+      this._onStopDragging();
       event.preventDefault();
     }
   },
 
-  _onStopDragging(event) {
+  _onStopDragging() {
     // childHasDragged is used to stop the propagation of a click event when we
     // release the mouse in the ruleview.
     // The click event is not emitted when we have a pending click on the text property.
@@ -1548,7 +1605,15 @@ TextPropertyEditor.prototype = {
     this._isDragging = false;
     this._hasDragged = false;
     this._draggingValueCache = null;
-    this.valueSpan.releasePointerCapture(event.pointerId);
+    if (this._capturingPointerId !== null) {
+      this._capturingPointerId = null;
+      try {
+        this.valueSpan.releasePointerCapture(this._capturingPointerId);
+      } catch (e) {
+        // Ignore exception even if the pointerId has already been invalidated
+        // before the capture has already been released implicitly.
+      }
+    }
     this.valueSpan.classList.remove(IS_DRAGGING_CLASSNAME);
     this._draggingController.abort();
   },
@@ -1562,7 +1627,11 @@ TextPropertyEditor.prototype = {
       return;
     }
     this.valueSpan.classList.add(DRAGGABLE_VALUE_CLASSNAME);
-    this.valueSpan.addEventListener("mousedown", this._draggingOnMouseDown);
+    this.valueSpan.addEventListener(
+      "pointerdown",
+      this._draggingOnPointerDown,
+      { passive: true }
+    );
   },
 
   _removeDraggingCapacity() {
@@ -1571,7 +1640,11 @@ TextPropertyEditor.prototype = {
     }
     this._draggingController = null;
     this.valueSpan.classList.remove(DRAGGABLE_VALUE_CLASSNAME);
-    this.valueSpan.removeEventListener("mousedown", this._draggingOnMouseDown);
+    this.valueSpan.removeEventListener(
+      "pointerdown",
+      this._draggingOnPointerDown,
+      { passive: true }
+    );
   },
 
   /**
@@ -1590,6 +1663,10 @@ TextPropertyEditor.prototype = {
    */
   isNameValid() {
     return this.prop.isNameValid();
+  },
+
+  isInvalidAtComputedValueTime() {
+    return this.prop.isInvalidAtComputedValueTime();
   },
 
   /**

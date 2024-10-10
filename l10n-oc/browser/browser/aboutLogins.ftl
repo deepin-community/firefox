@@ -108,11 +108,13 @@ about-logins-login-intro-heading-logged-in = Cap d’identificant sincronizat pa
 login-intro-description = Se salvatz vòstres identificants dins { -brand-product-name } sus un autre periferics, vaquí cossí i accedir aquí :
 login-intro-instructions-fxa = Connectatz-vos o creatz un { -fxaccount-brand-name } sul periferic ont son salvats los identificants.
 about-logins-login-intro-heading-message = Enregistratz vòstres senhals en lòc segur
+login-intro-description2 = Totes los senhals que salvatz dins { -brand-product-name } son chifrats. Amai, susvelham las divulgacions de donadas e vos alertam se vos concernisson. <a data-l10n-name="breach-alert-link">Ne saber mai</a>
 login-intro-instructions-fxa2 = Creatz o connectatz-vos a un compte ont son salvats los identificants.
 login-intro-instructions-fxa-settings = Anatz als Paramètres > Sincronizacion > Activar la sincronizacion… e marcatz la cassa « Identificants e senhals ».
 login-intro-instructions-fxa-passwords-help = Consultatz <a data-l10n-name="passwords-help-link">l’assisténcia dels senhals</a> per mai d’ajuda.
 about-logins-intro-browser-only-import = Se vòstres identificants son salvats dins un autre navegador, podètz <a data-l10n-name="import-link">los importar dins { -brand-product-name }</a>
 about-logins-intro-import2 = Se vòstres identificants de connexion e senhals son salvats al defòra de { -brand-product-name }, podètz <a data-l10n-name="import-browser-link">los importar d‘un autre navegador estant</a> o <a data-l10n-name="import-file-link"> a partir d’un fichièr</a>
+about-logins-intro-import3 = Seleccionatz lo boton amb lo signe plus per apondre un senhal ara. Podètz tanben <a data-l10n-name="import-browser-link">los importar d‘un autre navegador estant</a> o <a data-l10n-name="import-file-link"> a partir d’un fichièr</a>.
 
 ## Login
 
@@ -123,6 +125,7 @@ login-item-edit-button = Modificar
 about-logins-login-item-remove-button = Suprimir
 login-item-origin-label = Adreça web
 login-item-tooltip-message = Asseguratz-vos que correspond a l’adreça exacta del site web ont vos autentificatz.
+about-logins-origin-tooltip2 = Picatz l’adreça exacta e asseguratz-vos que correspond exactament a çò de la connexion.
 # Variables
 #   $webTitle (String) - Website title of the password being changed.
 about-logins-edit-password-tooltip = Asseguratz-vos d’enregistrar vòstre senhal actual per aqueste site. Lo cambiar aquí lo càmbia pas sus { $webTitle }.
@@ -246,12 +249,6 @@ about-logins-confirm-remove-all-sync-dialog-message =
         [1] Suprimirà l’identificant qu’enregistrèretz dins { -brand-short-name } de totes los periferics sincronizats a vòstre { -fxaccount-brand-name }. Aquò suprimirà tanben las alèrtas de pèrda qu’apareis aquí. Poiretz pas anullar aquesta accion.
         [one] Suprimirà l’identificant qu’enregistrèretz dins { -brand-short-name } de totes los periferics sincronizats a vòstre { -fxaccount-brand-name }. Aquò suprimirà tanben las alèrtas de pèrda qu’apareis aquí. Poiretz pas anullar aquesta accion.
        *[other] Suprimirà totes los identificants qu’enregistrèretz dins { -brand-short-name } de totes los periferics sincronizats a vòstre { -fxaccount-brand-name }. Aquò suprimirà tanben las alèrtas de pèrda qu’apareis aquí. Poiretz pas anullar aquesta accion.
-    }
-about-logins-confirm-remove-all-sync-dialog-message2 =
-    { $count ->
-        [1] Aquò suprimirà l’identificant qu’enregistrèretz dins { -brand-short-name } de totes vòstres aparelhs sincronizats a aqueste compte. Poiriá levar las alèrtas de pèrdas de donadas qu’apareisson aicí. Aquesta accion es irreversibla.
-        [one] Aquò suprimirà l’identificant qu’enregistrèretz dins { -brand-short-name } de totes vòstres aparelhs sincronizats a aqueste compte. Poiriá levar las alèrtas de pèrdas de donadas qu’apareisson aicí. Aquesta accion es irreversibla.
-       *[other] Aquò suprimirà totes los identificants qu’enregistrèretz dins { -brand-short-name } de totes vòstres aparelhs sincronizats a aqueste compte. Poiriá levar las alèrtas de pèrdas de donadas qu’apareisson aicí. Aquesta accion es irreversibla.
     }
 # Checkbox for modal to confirm the removal of saved passwords
 about-logins-confirm-remove-all-dialog-checkbox-label2 =

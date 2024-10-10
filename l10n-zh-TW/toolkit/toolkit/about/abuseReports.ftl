@@ -15,13 +15,11 @@ abuse-report-subtitle = 有什麼問題？
 # Variables:
 #   $author-name (string) - Name of the add-on author
 abuse-report-addon-authored-by = by <a data-l10n-name="author-name">{ $author-name }</a>
-abuse-report-learnmore = 不確定要選擇哪項嗎？<a data-l10n-name="learnmore-link">了解關於回報擴充套件與佈景主題的相關資訊</a>
-abuse-report-learnmore-intro = 不確定要選擇哪項嗎？
-abuse-report-learnmore-link = 了解關於回報擴充套件與佈景主題的相關資訊
+abuse-report-learnmore = 不確定要選擇哪項嗎？<a data-l10n-name="learnmore-link">了解關於檢舉擴充套件與佈景主題的相關資訊</a>
 abuse-report-submit-description = 請描述問題（選填）
 abuse-report-textarea =
     .placeholder = 如果有更多細節，我們可以比較簡單就找到問題的根源。請描述您遇到了哪些問題，也非常感謝您協助我們，確保網路環境的健康。
-abuse-report-submit-note = 註: 請不要在回報內容中放入個人資訊（姓名、E-Mail 信箱、電話號碼、地址等）。{ -vendor-short-name } 會永久保留回報內容的相關紀錄。
+abuse-report-submit-note = 註：請不要在回報內容中放入個人資訊（姓名、E-Mail 信箱、電話號碼、地址等）。{ -vendor-short-name } 會永久保留回報內容的相關紀錄。
 
 ## Panel buttons.
 
@@ -44,24 +42,6 @@ abuse-report-messagebar-removed-sitepermission = 感謝您回報。已移除 <sp
 abuse-report-messagebar-removed-theme = 感謝您回報。已移除 <span data-l10n-name="addon-name">{ $addon-name }</span> 佈景主題。
 abuse-report-messagebar-error = 傳送<span data-l10n-name="addon-name">{ $addon-name }</span> 的報告時，發生錯誤。
 abuse-report-messagebar-error-recent-submit = 由於最近傳送過另一份報告，並未傳送 <span data-l10n-name="addon-name">{ $addon-name }</span> 的報告。
-abuse-report-messagebar-aborted2 =
-    .message = 已取消回報 { $addon-name }。
-abuse-report-messagebar-submitting2 =
-    .message = 正在傳送 { $addon-name } 的報告。
-abuse-report-messagebar-submitted2 =
-    .message = 感謝您回報。您想要移除 { $addon-name } 嗎？
-abuse-report-messagebar-submitted-noremove2 =
-    .message = 感謝您回報。
-abuse-report-messagebar-removed-extension2 =
-    .message = 感謝您回報。已移除 { $addon-name } 擴充套件。
-abuse-report-messagebar-removed-sitepermission2 =
-    .message = 感謝您回報。已移除 { $addon-name } 網站權限附加元件。
-abuse-report-messagebar-removed-theme2 =
-    .message = 感謝您回報。已移除 { $addon-name } 佈景主題。
-abuse-report-messagebar-error2 =
-    .message = 傳送{ $addon-name } 的報告時，發生錯誤。
-abuse-report-messagebar-error-recent-submit2 =
-    .message = 由於最近傳送過另一份報告，並未傳送 { $addon-name } 的報告。
 
 ## Message bars actions.
 
@@ -94,7 +74,7 @@ abuse-report-broken-suggestions-extension = 聽起來您遇到 Bug 了。除了�
 abuse-report-broken-suggestions-sitepermission = 聽起來您遇到 Bug 了。除了在此回報之外，能夠解決功能問題的最佳方式是直接連絡網站的開發者。<a data-l10n-name="support-link">請造訪網站</a>來取得開發者的連絡資訊。
 abuse-report-broken-suggestions-theme = 聽起來您遇到 Bug 了。除了在此回報之外，能夠解決功能問題的最佳方式是直接連絡佈景主題的開發者。<a data-l10n-name="support-link">請造訪佈景主題網站</a>來取得開發者的連絡資訊。
 abuse-report-policy-reason-v2 = 它散播仇恨、暴力、非法內容
-abuse-report-policy-suggestions = 註: 若有著作權與商標問題，請依另一個流程處理。<a data-l10n-name="report-infringement-link">請依照本文當中的指示</a>來回報問題。
+abuse-report-policy-suggestions = 註：若有著作權與商標問題，請依另一個流程處理。<a data-l10n-name="report-infringement-link">請依照本文當中的指示</a>來回報問題。
 abuse-report-unwanted-reason-v2 = 我從未安裝此套件，也不知道如何移除
 abuse-report-unwanted-example = 例如: 電腦上的某套應用程式未經我同意就安裝了這個套件
 abuse-report-other-reason = 其他原因

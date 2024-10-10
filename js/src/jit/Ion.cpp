@@ -20,6 +20,7 @@
 #include "jit/BacktrackingAllocator.h"
 #include "jit/BaselineFrame.h"
 #include "jit/BaselineJIT.h"
+#include "jit/BranchHinting.h"
 #include "jit/CodeGenerator.h"
 #include "jit/CompileInfo.h"
 #include "jit/EdgeCaseAnalysis.h"
@@ -1223,6 +1224,19 @@ bool OptimizeMIR(MIRGenerator* mir) {
     }
   }
 
+  if (mir->branchHintingEnabled()) {
+    JitSpewCont(JitSpew_BranchHint, "\n");
+    if (!BranchHinting(mir, graph)) {
+      return false;
+    }
+    gs.spewPass("BranchHinting");
+    AssertBasicGraphCoherency(graph);
+
+    if (mir->shouldCancel("BranchHinting")) {
+      return false;
+    }
+  }
+
   // LICM can hoist instructions from conditional branches and
   // trigger bailouts. Disable it if bailing out of a hoisted
   // instruction has previously invalidated this script.
@@ -1650,8 +1664,8 @@ static AbortReason IonCompile(JSContext* cx, HandleScript script,
                               jsbytecode* osrPc) {
   cx->check(script);
 
-  auto alloc =
-      cx->make_unique<LifoAlloc>(TempAllocator::PreferredLifoChunkSize);
+  auto alloc = cx->make_unique<LifoAlloc>(TempAllocator::PreferredLifoChunkSize,
+                                          js::MallocArena);
   if (!alloc) {
     return AbortReason::Error;
   }
@@ -2311,18 +2325,13 @@ static void InvalidateActivation(JS::GCContext* gcx,
 
   for (OnlyJSJitFrameIter iter(activations); !iter.done(); ++iter, ++frameno) {
     const JSJitFrameIter& frame = iter.frame();
-    MOZ_ASSERT_IF(frameno == 1, frame.isExitFrame() ||
-                                    frame.type() == FrameType::Bailout ||
-                                    frame.type() == FrameType::JSJitToWasm);
+    MOZ_ASSERT_IF(frameno == 1,
+                  frame.isExitFrame() || frame.type() == FrameType::Bailout);
 
 #ifdef JS_JITSPEW
     switch (frame.type()) {
       case FrameType::Exit:
         JitSpew(JitSpew_IonInvalidate, "#%zu exit frame @ %p", frameno,
-                frame.fp());
-        break;
-      case FrameType::JSJitToWasm:
-        JitSpew(JitSpew_IonInvalidate, "#%zu wasm exit frame @ %p", frameno,
                 frame.fp());
         break;
       case FrameType::BaselineJS:

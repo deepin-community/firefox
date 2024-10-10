@@ -189,6 +189,8 @@ mr2022-onboarding-pin-primary-button-label =
         [macos] { -brand-short-name } uygulamasını Dock’ta tut
        *[other] { -brand-short-name } uygulamasını görev çubuğuma sabitle
     }
+# Primary button string used on welcome page for when Firefox is not pinned on MSIX
+mr2022-onboarding-pin-primary-button-label-msix = { -brand-short-name } uygulamasını görev çubuğuna ve başlat menüsüne sabitle
 # Subtitle will be used when user already has Firefox pinned, but
 # has not set it as their default browser.
 # When translating "zip", please feel free to pick a verb that signifies movement and/or exploration
@@ -335,6 +337,14 @@ onboarding-device-migration-title = Yeniden hoş geldiniz!
 onboarding-device-migration-subtitle = Yer imlerinizi, parolalarınızı ve geçmişinizi yeni cihazınıza taşımak için { -fxaccount-brand-name(capitalization: "sentence") }nıza giriş yapın.
 onboarding-device-migration-subtitle2 = Yer imlerinizi, parolalarınızı ve geçmişinizi yeni cihazınızda yanınızda taşımak için hesabınıza giriş yapın.
 onboarding-device-migration-primary-button-label = Giriş yap
+
+## Add-ons Picker screen
+
+amo-picker-title = { -brand-short-name } tarayıcınızı özelleştirin
+amo-picker-subtitle = Uzantılar tarayıcınızın içinde çalışan uygulamalara benzer. Parolalarınızı korumanızı, video indirmenizi, indirimleri bulmanızı, sinir bozucu reklamları engellemenizi, tarayıcınızın görünümünü değiştirmenizi ve çok daha fazlasını yapmanızı sağlarlar.
+amo-picker-install-button-label = { -brand-short-name } tarayıcısına ekle
+amo-picker-install-complete-label = Yüklendi
+amo-picker-collection-link = Daha fazla eklenti keşfedin
 
 ## The following screens have been updated to use security and privacy focused strings:
 

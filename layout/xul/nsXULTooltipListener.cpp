@@ -73,10 +73,6 @@ void nsXULTooltipListener::MouseOut(Event* aEvent) {
     return;
   }
 
-#ifdef DEBUG_crap
-  if (mNeedTitletip) return;
-#endif
-
   // check to see if the mouse left the targetNode, and if so,
   // hide the tooltip
   if (currentTooltip) {
@@ -252,8 +248,12 @@ nsXULTooltipListener::HandleEvent(Event* aEvent) {
   nsCOMPtr<nsIDragService> dragService =
       do_GetService("@mozilla.org/widget/dragservice;1");
   NS_ENSURE_TRUE(dragService, NS_OK);
-  nsCOMPtr<nsIDragSession> dragSession;
-  dragService->GetCurrentSession(getter_AddRefs(dragSession));
+  auto* widgetGuiEvent = aEvent->WidgetEventPtr()->AsGUIEvent();
+  if (!widgetGuiEvent) {
+    return NS_OK;
+  }
+  nsCOMPtr<nsIDragSession> dragSession =
+      dragService->GetCurrentSession(widgetGuiEvent->mWidget);
   if (dragSession) {
     return NS_OK;
   }

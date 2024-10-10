@@ -8,7 +8,6 @@
 
 #include "nsSocketTransport2.h"
 
-#include "IOActivityMonitor.h"
 #include "NSSErrorsService.h"
 #include "NetworkDataCountLayer.h"
 #include "QuicSocketControl.h"
@@ -1242,6 +1241,15 @@ nsresult nsSocketTransport::InitiateSocket() {
   if (gIOService->IsNetTearingDown()) {
     return NS_ERROR_ABORT;
   }
+
+  // Since https://github.com/whatwg/fetch/pull/1763,
+  // we need to disable access to 0.0.0.0 for non-test purposes
+  if (StaticPrefs::network_socket_ip_addr_any_disabled() &&
+      mNetAddr.IsIPAddrAny() && !mProxyTransparentResolvesHost) {
+    SOCKET_LOG(("connection refused NS_ERROR_CONNECTION_REFUSED\n"));
+    return NS_ERROR_CONNECTION_REFUSED;
+  }
+
   if (gIOService->IsOffline()) {
     if (StaticPrefs::network_disable_localhost_when_offline() || !isLocal) {
       return NS_ERROR_OFFLINE;
@@ -1343,9 +1351,6 @@ nsresult nsSocketTransport::InitiateSocket() {
         ("  BuildSocket failed [rv=%" PRIx32 "]\n", static_cast<uint32_t>(rv)));
     return rv;
   }
-
-  // create proxy via IOActivityMonitor
-  IOActivityMonitor::MonitorSocket(fd);
 
 #ifdef FUZZING
   if (StaticPrefs::fuzzing_necko_enabled()) {

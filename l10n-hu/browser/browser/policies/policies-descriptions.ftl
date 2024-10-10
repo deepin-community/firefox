@@ -15,7 +15,7 @@ policy-AllowedDomainsForApps = Adja meg azokat a domaineket, amelyek hozzáférh
 policy-AllowFileSelectionDialogs = Fájlválasztó párbeszédablakok engedélyezése.
 policy-AppAutoUpdate = Az automatikus alkalmazásfrissítés engedélyezése vagy letiltása.
 policy-AppUpdatePin = A { -brand-short-name } megakadályozása abban, hogy a megadott verzión túl frissüljön.
-policy-AppUpdateURL = Egyéni alkalmazás-frissítési URL megadása.
+policy-AppUpdateURL = Egyéni alkalmazásfrissítési webcím megadása.
 policy-Authentication = Integrált hitelesítés beállítása azokhoz a weboldalakhoz, melyek támogatják.
 policy-AutofillAddressEnabled = Automatikus címkitöltés engedélyezése.
 policy-AutofillCreditCardEnabled = Fizetési módok automatikus kitöltésének engedélyezése.
@@ -74,7 +74,7 @@ policy-ExemptDomainFileTypePairsFromFileTypeDownloadWarnings = A fájlok kiterje
 # A “locked” extension can’t be disabled or removed by the user. This policy
 # takes 3 keys (“Install”, ”Uninstall”, ”Locked”), you can either keep them in
 # English or translate them as verbs.
-policy-Extensions = Kiegészítők telepítése, eltávolítása vagy zárolása. A Telepítés lehetőség URL-t vagy útvonalat vár paraméterként. Az Eltávolítás és Zárolás kiegészítőazonosítót vár.
+policy-Extensions = Kiegészítők telepítése, eltávolítása vagy zárolása. A Telepítés lehetőség webcímet vagy útvonalat vár paraméterként. Az Eltávolítás és Zárolás kiegészítőazonosítót vár.
 policy-ExtensionSettings = Kezelje a kiegészítők telepítésének összes vonatkozását.
 policy-ExtensionUpdate = Az automatikus kiegészítőfrissítések engedélyezése vagy letiltása.
 policy-FirefoxHome2 = A { -firefox-home-brand-name } beállítása.
@@ -84,6 +84,8 @@ policy-Handlers = Alapértelmezett alkalmazáskezelők beállítása
 policy-HardwareAcceleration = Ha hamis, akkor kikapcsolja a hardveres gyorsítást.
 # “lock” means that the user won’t be able to change this setting
 policy-Homepage = A kezdőlap beállítása, és választható módon, annak zárolása.
+policy-HttpAllowlist = Eredetek, amelyek nem lesznek HTTPS-re frissítve.
+policy-HttpsOnlyMode = A Csak HTTPS mód bekapcsolásának engedélyezése.
 policy-InstallAddonsPermission = Bizonyos weboldalak telepíthetnek kiegészítőket.
 policy-LegacyProfiles = A funkció letiltása, amely kikényszeríti, hogy minden telepítés külön profilt használjon
 
@@ -108,12 +110,16 @@ policy-OverrideFirstRunPage = Az első indítás oldal felülbírálása. Állí
 policy-OverridePostUpdatePage = A frissítés utáni „Újdonságok” oldal felülbírálása. Állítsa üres ezt a házirendet, ha azt szeretné, hogy ne legyen frissítés utáni oldal.
 policy-PasswordManagerEnabled = A jelszavak jelszókezelőbe történő mentésének engedélyezése.
 policy-PasswordManagerExceptions = A { -brand-short-name } megakadályozása abban, hogy egyes weboldalaknál mentse a jelszavakat.
+# Post-quantum refers to cryptography that is safe from attacks by quantum
+# computers. See https://en.wikipedia.org/wiki/Post-quantum_cryptography
+policy-PostQuantumKeyAgreementEnabled = Kvantumszámítógép-biztos kulcsmegállapodás engedélyezése a TLS-hez.
 # PDF.js and PDF should not be translated
 policy-PDFjs = A PDF.js-nek, a { -brand-short-name } beépített PDF-megjelenítőjének, letiltása vagy beállítása.
 policy-Permissions2 = A kamera, mikrofon, helyadatok, értesítések és automatikus lejátszás jogosultságának beállítása.
 policy-PictureInPicture = Kép a képben engedélyezése vagy letiltása.
 policy-PopupBlocking = Bizonyos weboldalak alapértelmezetten jeleníthessenek meg felugró ablakokat.
 policy-Preferences = Értékek beállítása és zárolása a beállítások egy részhalmazánál.
+policy-PrivateBrowsingModeAvailability = A privát böngészési mód elérhetőségének beállítása.
 policy-PromptForDownloadLocation = Kérdezze meg, hogy hová legyenek letöltve a fájlok.
 policy-Proxy = Proxy-beállítások konfigurálása.
 policy-RequestedLocales = Adja meg a kért területi beállításokat az alkalmazásnak, az Ön által előnyben részesített sorrendben.

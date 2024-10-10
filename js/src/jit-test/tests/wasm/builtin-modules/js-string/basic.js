@@ -3,96 +3,161 @@
 let testModule = `(module
   (type $arrayMutI16 (array (mut i16)))
 
-  (func
+  (func $testImp
     (import "wasm:js-string" "test")
     (param externref)
     (result i32)
   )
-  (export "test" (func 0))
-
-  (func
+  (func $castImp
     (import "wasm:js-string" "cast")
     (param externref)
     (result (ref extern))
   )
-  (export "cast" (func 1))
-
-  (func
+  (func $fromCharCodeArrayImp
     (import "wasm:js-string" "fromCharCodeArray")
     (param (ref null $arrayMutI16) i32 i32)
     (result (ref extern))
   )
-  (export "fromCharCodeArray" (func 2))
-
-  (func
+  (func $intoCharCodeArrayImp
     (import "wasm:js-string" "intoCharCodeArray")
     (param externref (ref null $arrayMutI16) i32)
     (result i32)
   )
-  (export "intoCharCodeArray" (func 3))
-
-  (func
+  (func $fromCharCodeImp
     (import "wasm:js-string" "fromCharCode")
     (param i32)
-    (result externref)
+    (result (ref extern))
   )
-  (export "fromCharCode" (func 4))
-
-  (func
+  (func $fromCodePointImp
     (import "wasm:js-string" "fromCodePoint")
     (param i32)
-    (result externref)
+    (result (ref extern))
   )
-  (export "fromCodePoint" (func 5))
-
-  (func
+  (func $charCodeAtImp
     (import "wasm:js-string" "charCodeAt")
     (param externref i32)
     (result i32)
   )
-  (export "charCodeAt" (func 6))
-
-  (func
+  (func $codePointAtImp
     (import "wasm:js-string" "codePointAt")
     (param externref i32)
     (result i32)
   )
-  (export "codePointAt" (func 7))
-
-  (func
+  (func $lengthImp
     (import "wasm:js-string" "length")
     (param externref)
     (result i32)
   )
-  (export "length" (func 8))
-
-  (func
+  (func $concatImp
     (import "wasm:js-string" "concat")
     (param externref externref)
-    (result externref)
+    (result (ref extern))
   )
-  (export "concat" (func 9))
-
-  (func
+  (func $substringImp
     (import "wasm:js-string" "substring")
     (param externref i32 i32)
-    (result externref)
+    (result (ref extern))
   )
-  (export "substring" (func 10))
-
-  (func
+  (func $equalsImp
     (import "wasm:js-string" "equals")
     (param externref externref)
     (result i32)
   )
-  (export "equals" (func 11))
-
-  (func
+  (func $compareImp
     (import "wasm:js-string" "compare")
     (param externref externref)
     (result i32)
   )
-  (export "compare" (func 12))
+
+  (func $test (export "test")
+    (param externref)
+    (result i32)
+    local.get 0
+    call $testImp
+  )
+  (func $cast (export "cast")
+    (param externref)
+    (result (ref extern))
+    local.get 0
+    call $castImp
+  )
+  (func $fromCharCodeArray (export "fromCharCodeArray")
+    (param (ref null $arrayMutI16) i32 i32)
+    (result (ref extern))
+    local.get 0
+    local.get 1
+    local.get 2
+    call $fromCharCodeArrayImp
+  )
+  (func $intoCharCodeArray (export "intoCharCodeArray")
+    (param externref (ref null $arrayMutI16) i32)
+    (result i32)
+    local.get 0
+    local.get 1
+    local.get 2
+    call $intoCharCodeArrayImp
+  )
+  (func $fromCharCode (export "fromCharCode")
+    (param i32)
+    (result externref)
+    local.get 0
+    call $fromCharCodeImp
+  )
+  (func $fromCodePoint (export "fromCodePoint")
+    (param i32)
+    (result externref)
+    local.get 0
+    call $fromCodePointImp
+  )
+  (func $charCodeAt (export "charCodeAt")
+    (param externref i32)
+    (result i32)
+    local.get 0
+    local.get 1
+    call $charCodeAtImp
+  )
+  (func $codePointAt (export "codePointAt")
+    (param externref i32)
+    (result i32)
+    local.get 0
+    local.get 1
+    call $codePointAtImp
+  )
+  (func $length (export "length")
+    (param externref)
+    (result i32)
+    local.get 0
+    call $lengthImp
+  )
+  (func $concat (export "concat")
+    (param externref externref)
+    (result externref)
+    local.get 0
+    local.get 1
+    call $concatImp
+  )
+  (func $substring (export "substring")
+    (param externref i32 i32)
+    (result externref)
+    local.get 0
+    local.get 1
+    local.get 2
+    call $substringImp
+  )
+  (func $equals (export "equals")
+    (param externref externref)
+    (result i32)
+    local.get 0
+    local.get 1
+    call $equalsImp
+  )
+  (func $compare (export "compare")
+    (param externref externref)
+    (result i32)
+    local.get 0
+    local.get 1
+    call $compareImp
+  )
 )`;
 
 let {
@@ -144,15 +209,16 @@ let polyFillImports = {
     }
     return string;
   },
-  fromCharCodeArray: (array, arrayStart, arrayCount) => {
+  fromCharCodeArray: (array, arrayStart, arrayEnd) => {
     arrayStart >>>= 0;
-    arrayCount >>>= 0;
-    let length = arrayLength(array);
-    if (BigInt(arrayStart) + BigInt(arrayCount) > BigInt(length)) {
+    arrayEnd >>>= 0;
+    if (array == null ||
+        arrayStart > arrayEnd ||
+        arrayEnd > arrayLength(array)) {
       throw new WebAssembly.RuntimeError();
     }
     let result = '';
-    for (let i = arrayStart; i < arrayStart + arrayCount; i++) {
+    for (let i = arrayStart; i < arrayEnd; i++) {
       result += String.fromCharCode(arrayGet(array, i));
     }
     return result;
@@ -160,6 +226,9 @@ let polyFillImports = {
   intoCharCodeArray: (string, arr, arrayStart) => {
     arrayStart >>>= 0;
     throwIfNotString(string);
+    if (arr == null) {
+      throw new WebAssembly.RuntimeError();
+    }
     let arrLength = arrayLength(arr);
     let stringLength = string.length;
     if (BigInt(arrayStart) + BigInt(stringLength) > BigInt(arrLength)) {
@@ -361,12 +430,42 @@ for (let a of testStrings) {
   }
 }
 
-// fromCharCodeArray length is an unsigned integer
+// fromCharCodeArray endIndex is an unsigned integer
 {
   let arrayMutI16 = createArrayMutI16(1);
   assertErrorMessage(() => assertSameBehavior(
     builtinExports['fromCharCodeArray'],
     polyfillExports['fromCharCodeArray'],
     arrayMutI16, 1, -1
+  ), WebAssembly.RuntimeError, /./);
+}
+
+// fromCharCodeArray is startIndex and endIndex, not a count
+{
+  let arrayMutI16 = createArrayMutI16(1);
+  // Ask for [1, 1) to get an empty string. If misinterpreted as a count, this
+  // will result in a trap.
+  assertEq(assertSameBehavior(
+    builtinExports['fromCharCodeArray'],
+    polyfillExports['fromCharCodeArray'],
+    arrayMutI16, 1, 1
+  ), "");
+}
+
+// fromCharCodeArray array is null
+{
+  assertErrorMessage(() => assertSameBehavior(
+    builtinExports['fromCharCodeArray'],
+    polyfillExports['fromCharCodeArray'],
+    null, 0, 0
+  ), WebAssembly.RuntimeError, /./);
+}
+
+// intoCharCodeArray array is null
+{
+  assertErrorMessage(() => assertSameBehavior(
+    builtinExports['intoCharCodeArray'],
+    polyfillExports['intoCharCodeArray'],
+    "test", null, 0,
   ), WebAssembly.RuntimeError, /./);
 }

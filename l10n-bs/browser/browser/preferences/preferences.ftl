@@ -3,19 +3,69 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 do-not-track-description = Web stranicama šalji “Ne prati” signal da ne želite biti praćeni
+do-not-track-description2 =
+    .label = Pošaljite web lokacijama zahtjev “Ne prati”.
+    .accesskey = d
 do-not-track-learn-more = Saznajte više
+do-not-track-option-default-content-blocking-known =
+    .label = Samo kada je { -brand-short-name } postavljen da blokira poznate tragače
 do-not-track-option-always =
     .label = Uvijek
+global-privacy-control-description =
+    .label = Recite web stranicama da ne prodaju ili dijele moje podatke
+    .accesskey = s
+non-technical-privacy-header = Postavke privatnosti web stranice
+# Do not translate.
+# "Global Privacy Control" or "GPC" are a web platform feature name and abbreviation
+# included to facilitate power-user search of the about:preferences page.
+global-privacy-control-search = Globalna kontrola privatnosti (GPC)
+settings-page-title = Postavke
+# This is used to determine the width of the search field in about:preferences,
+# in order to make the entire placeholder string visible
+#
+# Please keep the placeholder string short to avoid truncation.
+#
+# Notice: The value of the `.style` attribute is a CSS string, and the `width`
+# is the name of the CSS property. It is intended only to adjust the element's width.
+# Do not translate.
+search-input-box2 =
+    .style = width: 15.4em
+    .placeholder = Pronađi u Postavkama
+managed-notice = Vašim pretraživačem upravlja vaša organizacija.
+managed-notice-info-icon =
+    .alt = Informacije
+category-list =
+    .aria-label = Kategorije
 pane-general-title = Opće
 category-general =
     .tooltiptext = { pane-general-title }
+pane-home-title = Početna
+category-home =
+    .tooltiptext = { pane-home-title }
 pane-search-title = Traži
 category-search =
     .tooltiptext = { pane-search-title }
 pane-privacy-title = Privatnost & sigurnost
 category-privacy =
     .tooltiptext = { pane-privacy-title }
+pane-sync-title3 = Sinhronizacija
+category-sync3 =
+    .tooltiptext = { pane-sync-title3 }
+pane-experimental-title = { -brand-short-name } eksperimenti
+category-experimental =
+    .tooltiptext = { -brand-short-name } eksperimenti
+pane-experimental-subtitle = Nastavite s oprezom
+pane-experimental-search-results-header = { -brand-short-name } eksperimenti: Nastavite s oprezom
+pane-experimental-description2 = Promjena postavki napredne konfiguracije može uticati na performanse ili sigurnost { -brand-short-name }a.
+settings-pane-labs-title = { -firefoxlabs-brand-name }
+settings-category-labs =
+    .tooltiptext = { -firefoxlabs-brand-name }
+pane-experimental-description3 = Isprobajte naše eksperimentalne funkcije! Oni su u razvoju i evoluciji, što bi moglo uticati na to kako { -brand-short-name } funkcioniše.
+pane-experimental-reset =
+    .label = Vrati zadane postavke
+    .accesskey = R
 help-button-label = { -brand-short-name } podrška
+addons-button-label = Ekstenzije i teme
 focus-search =
     .key = f
 close-button =
@@ -27,6 +77,7 @@ feature-enable-requires-restart = { -brand-short-name } se mora restartovati kak
 feature-disable-requires-restart = { -brand-short-name } se mora restartovati kako bi onemogućio ovu funkcionalnost.
 should-restart-title = Restartuj { -brand-short-name }
 should-restart-ok = Restartuj { -brand-short-name } odmah
+cancel-no-restart-button = Otkaži
 restart-later = Restartuj kasnije
 
 ## Extension Control Notifications
@@ -39,6 +90,21 @@ restart-later = Restartuj kasnije
 ## Variables:
 ##   $name (string) - Name of the extension
 
+# This string is shown to notify the user that the password manager setting
+# is being controlled by an extension
+extension-controlling-password-saving = <img data-l10n-name="icon"/> <strong>{ $name }</strong> kontroliše ovu postavku.
+# This string is shown to notify the user that their notifications permission
+# is being controlled by an extension.
+extension-controlling-web-notifications = <img data-l10n-name="icon"/> <strong>{ $name }</strong> kontroliše ovu postavku.
+# This string is shown to notify the user that Container Tabs
+# are being enabled by an extension.
+extension-controlling-privacy-containers = <img data-l10n-name="icon"/> <strong>{ $name }</strong> zahtijeva tabove kontejnera.
+# This string is shown to notify the user that their content blocking "All Detected Trackers"
+# preferences are being controlled by an extension.
+extension-controlling-websites-content-blocking-all-trackers = <img data-l10n-name="icon"/> <strong>{ $name }</strong> kontroliše ovu postavku.
+# This string is shown to notify the user that their proxy configuration preferences
+# are being controlled by an extension.
+extension-controlling-proxy-config = <img data-l10n-name ="icon"/> <strong>{ $name }</strong> kontroliše kako se { -brand-short-name } povezuje na internet.
 # This string is shown after the user disables an extension to notify the user
 # how to enable an extension that they disabled.
 #
@@ -49,6 +115,8 @@ extension-controlled-enable = Da omogućite ekstenziju posjetite <img data-l10n-
 ## Preferences UI Search Results
 
 search-results-header = Rezultati pretrage
+# `<span data-l10n-name="query"></span>` will be replaced by the search term.
+search-results-empty-message2 = Izvinite! Nema rezultata u postavkama za “<span data-l10n-name="query"></span>”.
 search-results-help-link = Trebate pomoć? Posjetite <a data-l10n-name="url">{ -brand-short-name } podrška</a>
 
 ## General Section
@@ -62,8 +130,22 @@ is-not-default = { -brand-short-name } trenutno nije vaš glavni browser
 set-as-my-default-browser =
     .label = Učini glavnim…
     .accesskey = G
+startup-restore-windows-and-tabs =
+    .label = Otvorite prethodne prozore i tabove
+    .accesskey = s
+windows-launch-on-login =
+    .label = Automatski otvori { -brand-short-name } kada se računar pokrene
+    .accesskey = O
+windows-launch-on-login-disabled = Ova postavka je onemogućena u Windowsu. Za promjenu posjetite <a data-l10n-name="startup-link">Aplikacije pri pokretanju</a> u postavkama sistema.
+startup-restore-warn-on-quit =
+    .label = Upozorava vas kada napuštate pretraživač
 disable-extension =
     .label = Onemogući ekstenziju
+preferences-data-migration-header = Uvezite podatke pretraživača
+preferences-data-migration-description = Uvezite oznake, lozinke, historiju i podatke automatskog popunjavanja u { -brand-short-name }u.
+preferences-data-migration-button =
+    .label = Uvezi podatke
+    .accesskey = m
 tabs-group-header = Tabovi
 ctrl-tab-recently-used-order =
     .label = Ctrl+Tab prolazi kroz tabove u redosljedu nedavnog korištenja
@@ -74,9 +156,20 @@ open-new-link-as-tabs =
 confirm-on-close-multiple-tabs =
     .label = Zatraži potvrdu pri zatvaranju više tabova
     .accesskey = d
+# This string is used for the confirm before quitting preference.
+# Variables:
+#   $quitKey (string) - the quit keyboard shortcut, and formatted
+#                       in the same manner as it would appear,
+#                       for example, in the File menu.
+confirm-on-quit-with-key =
+    .label = Traži potvrdu prije zatvaranja s prečicom { $quitKey }
+    .accesskey = b
 warn-on-open-many-tabs =
     .label = Upozoriti vas kada otvaranje više tabova može usporiti { -brand-short-name }
     .accesskey = d
+switch-to-new-tabs =
+    .label = Kada otvorite vezu, sliku ili medij u novom tabu, odmah se prebacite na njega
+    .accesskey = h
 show-tabs-in-taskbar =
     .label = Prikazuj pregled tabova u Windows taskbaru
     .accesskey = k
@@ -119,10 +212,46 @@ containers-remove-alert-msg =
     }
 containers-remove-ok-button = Ukloni ovaj Container
 containers-remove-cancel-button = Ne uklanjaj ovaj Container
+settings-tabs-show-image-in-preview =
+    .label = Prikažite pregled slike kada zadržite pokazivač miša na tabu
+    .accessKey = h
 
 ## General Section - Language & Appearance
 
 language-and-appearance-header = Jezik i izled
+preferences-web-appearance-header = Izgled web stranice
+preferences-web-appearance-description = Neke web stranice prilagođavaju svoju shemu boja na osnovu vaših preferencija. Odaberite šemu boja koju želite koristiti za te stranice.
+preferences-web-appearance-choice-auto = Automatski
+preferences-web-appearance-choice-light = Svijetla
+preferences-web-appearance-choice-dark = Tamna
+preferences-web-appearance-choice-tooltip-auto =
+    .title = Automatski promijenite pozadinu i sadržaj web stranice na osnovu postavki vašeg sistema i teme { -brand-short-name }a.
+preferences-web-appearance-choice-tooltip-light =
+    .title = Koristite svijetli izgled za pozadinu i sadržaj web stranice.
+preferences-web-appearance-choice-tooltip-dark =
+    .title = Koristite taman izgled za pozadinu i sadržaj web stranice.
+preferences-web-appearance-choice-input-auto =
+    .aria-description = { preferences-web-appearance-choice-tooltip-auto.title }
+preferences-web-appearance-choice-input-light =
+    .aria-description = { preferences-web-appearance-choice-tooltip-light.title }
+preferences-web-appearance-choice-input-dark =
+    .aria-description = { preferences-web-appearance-choice-tooltip-dark.title }
+# This can appear when using windows HCM or "Override colors: always" without
+# system colors.
+preferences-web-appearance-override-warning = Vaši odabiri boja nadjačavaju izgled web stranice. <a data-l10n-name="colors-link">Upravljaj bojama</a>
+# This can appear when using windows HCM or "Override colors: always" without
+# system colors.
+preferences-web-appearance-override-warning2 =
+    .message = Vaši odabiri boja nadjačavaju izgled web stranice.
+# This message contains one link. It can be moved within the sentence as needed
+# to adapt to your language, but should not be changed.
+preferences-web-appearance-footer = Upravljajte temama { -brand-short-name }a u <a data-l10n-name="themes-link">Proširenja i teme</a>
+preferences-colors-header = Boje
+preferences-colors-description = Zamijenite zadane boje { -brand-short-name } za tekst, pozadinu web stranice i linkove.
+preferences-colors-manage-button =
+    .label = Upravljaj bojama…
+    .accesskey = C
+preferences-fonts-header = Fontovi
 default-font = Izvorni font:
     .accesskey = f
 default-font-size = Veličina:
@@ -130,20 +259,44 @@ default-font-size = Veličina:
 advanced-fonts =
     .label = Napredno…
     .accesskey = a
+# Zoom is a noun, and the message is used as header for a group of options
+preferences-zoom-header = Uvećaj
+preferences-default-zoom = Početno uvećanje
+    .accesskey = z
+# Variables:
+#   $percentage (number) - Zoom percentage value
+preferences-default-zoom-value =
+    .label = { $percentage }%
+preferences-zoom-text-only =
+    .label = Uvećaj samo tekst
+    .accesskey = t
+preferences-text-zoom-override-warning =
+    .message = Upozorenje: Ako odaberete “Samo uvećanje teksta” i vaše početno uvećanje nije postavljeno na 100%, to može uzrokovati kvar nekih web stranica ili sadržaja.
 language-header = Jezik
 choose-language-description = Izaberite željeni jezik za prikaz stranica
 choose-button =
     .label = Izaberi…
     .accesskey = I
+choose-browser-language-description = Odaberite jezike koji se koriste za prikaz menija, poruka i obavještenja sa { -brand-short-name }a.
+manage-browser-languages-button =
+    .label = Postavi alternative…
+    .accesskey = l
+confirm-browser-language-change-description = Ponovo pokrenite { -brand-short-name } da primijenite ove promjene
+confirm-browser-language-change-button = Primijeni i ponovo pokreni
 translate-web-pages =
     .label = Prevedi web sadržaj
     .accesskey = P
+fx-translate-web-pages = { -translations-brand-name }
 # The <img> element is replaced by the logo of the provider
 # used to provide machine translations for web pages.
 translate-attribution = Preveli <img data-l10n-name="logo"/>
 translate-exceptions =
     .label = Izuzeci…
     .accesskey = e
+# Variables:
+#    $localeName (string) - Localized name of the locale to be used.
+use-system-locale =
+    .label = Koristite postavke operativnog sistema za “{ $localeName }” za formatiranje datuma, vremena, brojeva i mjerenja.
 check-user-spelling =
     .label = Provjeravaj pravopis dok kucam
     .accesskey = o
@@ -191,6 +344,13 @@ applications-use-app =
 #   $app-name (String) - Name of an application (e.g Adobe Acrobat)
 applications-use-app-default =
     .label = Koristi { $app-name }  (izvorno)
+applications-use-os-default =
+    .label =
+        { PLATFORM() ->
+            [macos] Koristite macOS zadanu aplikaciju
+            [windows] Koristite Windows zadanu aplikaciju
+           *[other] Koristite sistemski zadanu aplikaciju
+        }
 applications-use-other =
     .label = Koristi drugo…
 applications-select-helper = Odaberite pomoćni program
@@ -203,9 +363,15 @@ applications-always-ask =
 #   $type (string) - The MIME type (e.g application/binary)
 applications-type-description-with-type = { $type-description } ({ $type })
 # Variables:
+#   $extension (string) - File extension (e.g .TXT)
+#   $type (string) - The MIME type (e.g application/binary)
+applications-file-ending-with-type = { applications-file-ending } ({ $type })
+# Variables:
 #   $plugin-name (string) - Name of a plugin (e.g Adobe Flash)
 applications-use-plugin-in =
     .label = Koristi { $plugin-name } (u { -brand-short-name }u)
+applications-open-inapp =
+    .label = Otvori u { -brand-short-name }u
 
 ## The strings in this group are used to populate
 ## selected label element based on the string from
@@ -217,15 +383,26 @@ applications-action-save-label =
     .value = { applications-action-save.label }
 applications-use-app-label =
     .value = { applications-use-app.label }
+applications-open-inapp-label =
+    .value = { applications-open-inapp.label }
 applications-always-ask-label =
     .value = { applications-always-ask.label }
 applications-use-app-default-label =
     .value = { applications-use-app-default.label }
 applications-use-other-label =
     .value = { applications-use-other.label }
+applications-use-os-default-label =
+    .value = { applications-use-os-default.label }
 
 ##
 
+applications-handle-new-file-types-description = Šta { -brand-short-name } treba da radi sa drugim datotekama?
+applications-save-for-new-types =
+    .label = Sačuvaj datoteke
+    .accesskey = S
+applications-ask-before-handling =
+    .label = Pitaj da li otvoriti ili sačuvati datoteke
+    .accesskey = A
 drm-content-header = Digital Rights Management (DRM) sadržaj
 play-drm-content =
     .label = Reproduciraj DRM-kontrolisani sadržaj
@@ -249,9 +426,27 @@ update-application-check-choose =
 update-application-manual =
     .label = Nikad ne provjeravaj za nadogradnju (nije preporučeno)
     .accesskey = N
+update-application-background-enabled =
+    .label = Kada { -brand-short-name } ne radi
+    .accesskey = W
+update-application-warning-cross-user-setting = Ova postavka će se primijeniti na sve Windows račune i { -brand-short-name } profile koji koriste ovu instalaciju { -brand-short-name }.
 update-application-use-service =
     .label = Koristi pozadinski servis za instalaciju nadogradnji
     .accesskey = b
+update-application-suppress-prompts =
+    .label = Prikaži manje upita za obavještenja o ažuriranju
+    .accesskey = n
+update-setting-write-failure-title2 = Greška pri čuvanju postavki ažuriranja
+# Variables:
+#   $path (string) - Path to the configuration file
+# The newlines between the main text and the line containing the path is
+# intentional so the path is easier to identify.
+update-setting-write-failure-message2 =
+    { -brand-short-name } je naišao na grešku i nije sačuvao ovu promjenu. Imajte na umu da promjena ove postavke ažuriranja zahtijeva dozvolu za pisanje u datoteku ispod. Vi ili sistemski administrator možda ćete moći riješiti grešku tako što ćete grupi korisnika dati potpunu kontrolu nad ovom datotekom.
+    
+    Nije moguće pisati u datoteku: { $path }
+update-in-progress-title = Ažuriranje u toku
+update-in-progress-message = Želite li da { -brand-short-name } nastavi s ovim ažuriranjem?
 
 ## General Section - Performance
 
@@ -302,11 +497,22 @@ network-proxy-connection-settings =
 
 ## Home Section
 
+home-new-windows-tabs-header = Novi prozori i tabovi
 home-new-windows-tabs-description2 = Izaberite šta želite vidjeti kada otvorite svoju početnu stranicu, nove prozore i nove tabove.
 
 ## Home Section - Home Page Customization
 
 home-homepage-mode-label = Početna stranica i novi prozori
+home-newtabs-mode-label = Novi tabovi
+home-restore-defaults =
+    .label = Vrati na početne vrijednosti
+    .accesskey = R
+home-mode-choice-custom =
+    .label = Prilagođeni URL-ovi…
+home-mode-choice-blank =
+    .label = Prazna stranica
+home-homepage-custom-url =
+    .placeholder = Zalijepi URL…
 # This string has a special case for '1' and [other] (default). If necessary for
 # your language, you can add {$tabCount} to your translations and use the
 # standard CLDR forms, or only use the form for [other] if both strings should
@@ -409,6 +615,9 @@ containers-header = Container tabovi
 containers-add-button =
     .label = Dodaj novi Container
     .accesskey = a
+containers-new-tab-check =
+    .label = Odaberite kontejner za svaki novi tab
+    .accesskey = S
 containers-remove-button =
     .label = Ukloni
 
@@ -609,6 +818,7 @@ history-clear-button =
 
 ## Privacy Section - Site Data
 
+sitedata-header = Kolačići i podaci stranica
 sitedata-total-size-calculating = Računam veličinu podataka web stranica i keš memorije…
 # Variables:
 #   $value (number) - Value of the unit (for example: 4.6, 500)
@@ -698,7 +908,7 @@ collection-header = { -brand-short-name } prikupljanje i upotreba podataka
 collection-description = Trudimo se da vam pružimo izbor i da sakupljamo samo ono što nam je potrebno kako bismo unaprijedili { -brand-short-name } za sve. Uvijek od vas tražimo dozvolu prije slanja bilo kakvih ličnih informacija.
 collection-privacy-notice = Polica privatnosti
 collection-health-report =
-    .label = Omogući { -brand-short-name }u da šalje tehničke i interakcijske podatke Mozilli
+    .label = Dozvolite da { -brand-short-name } šalje tehničke podatke i podatke o interakciji na { -vendor-short-name }
     .accesskey = r
 collection-health-report-link = Saznajte više
 collection-studies =
@@ -707,6 +917,9 @@ collection-studies-link = Prikaži { -brand-short-name } studije
 # This message is displayed above disabled data sharing options in developer builds
 # or builds with no Telemetry support available.
 collection-health-report-disabled = Izvještaji s podacima su onemogućeni za ovu konfiguraciju
+
+## Privacy Section - Website Advertising Preferences
+
 
 ## Privacy Section - Security
 ##

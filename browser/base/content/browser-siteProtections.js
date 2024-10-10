@@ -7,6 +7,7 @@
 ChromeUtils.defineESModuleGetters(this, {
   ContentBlockingAllowList:
     "resource://gre/modules/ContentBlockingAllowList.sys.mjs",
+  ReportBrokenSite: "resource:///modules/ReportBrokenSite.sys.mjs",
   SpecialMessageActions:
     "resource://messaging-system/lib/SpecialMessageActions.sys.mjs",
 });
@@ -1376,14 +1377,51 @@ var gProtectionsHandler = {
     if (!this._protectionsPopup) {
       let wrapper = document.getElementById("template-protections-popup");
       this._protectionsPopup = wrapper.content.firstElementChild;
+      this._protectionsPopup.addEventListener("popupshown", this);
+      this._protectionsPopup.addEventListener("popuphidden", this);
       wrapper.replaceWith(wrapper.content);
-      window.ensureCustomElements("moz-support-link");
 
       this.maybeSetMilestoneCounterText();
 
       for (let blocker of Object.values(this.blockers)) {
         blocker.updateCategoryItem();
       }
+
+      this._protectionsPopup.addEventListener("command", this);
+      this._protectionsPopup.addEventListener("popupshown", this);
+      this._protectionsPopup.addEventListener("popuphidden", this);
+
+      function openTooltip(event) {
+        document.getElementById(event.target.tooltip).openPopup(event.target);
+      }
+      function closeTooltip(event) {
+        document.getElementById(event.target.tooltip).hidePopup();
+      }
+      let notBlockingWhy = document.getElementById(
+        "protections-popup-not-blocking-section-why"
+      );
+      notBlockingWhy.addEventListener("mouseover", openTooltip);
+      notBlockingWhy.addEventListener("focus", openTooltip);
+      notBlockingWhy.addEventListener("mouseout", closeTooltip);
+      notBlockingWhy.addEventListener("blur", closeTooltip);
+
+      document
+        .getElementById("protections-popup-mainView-panel-header")
+        .addEventListener("click", event =>
+          gProtectionsHandler.onHeaderClicked(event)
+        );
+      document
+        .getElementById(
+          "protections-popup-trackers-blocked-counter-description"
+        )
+        .addEventListener("click", () =>
+          gProtectionsHandler.openProtections(true)
+        );
+      document
+        .getElementById("protections-popup-cookie-banner-switch")
+        .addEventListener("click", () =>
+          gProtectionsHandler.onCookieBannerClick()
+        );
     }
   },
 
@@ -1591,8 +1629,6 @@ var gProtectionsHandler = {
 
     // Add an observer to observe that the history has been cleared.
     Services.obs.addObserver(this, "browser:purge-session-history");
-
-    window.ensureCustomElements("moz-button-group", "moz-toggle");
   },
 
   uninit() {
@@ -1744,6 +1780,8 @@ var gProtectionsHandler = {
           "protections_popup"
         );
       }
+
+      ReportBrokenSite.updateParentMenu(event);
     }
   },
 
@@ -2022,9 +2060,76 @@ var gProtectionsHandler = {
     this.reportBlockingEventTelemetry(event, isSimulated, previousState);
   },
 
+  onCommand(event) {
+    switch (event.target.id) {
+      case "protections-popup-category-trackers":
+        gProtectionsHandler.showTrackersSubview(event);
+        gProtectionsHandler.recordClick("trackers");
+        break;
+      case "protections-popup-category-socialblock":
+        gProtectionsHandler.showSocialblockerSubview(event);
+        gProtectionsHandler.recordClick("social");
+        break;
+      case "protections-popup-category-cookies":
+        gProtectionsHandler.showCookiesSubview(event);
+        gProtectionsHandler.recordClick("cookies");
+        break;
+      case "protections-popup-category-cryptominers":
+        gProtectionsHandler.showCryptominersSubview(event);
+        gProtectionsHandler.recordClick("cryptominers");
+        return;
+      case "protections-popup-category-fingerprinters":
+        gProtectionsHandler.showFingerprintersSubview(event);
+        gProtectionsHandler.recordClick("fingerprinters");
+        break;
+      case "protections-popup-settings-button":
+        gProtectionsHandler.openPreferences();
+        gProtectionsHandler.recordClick("settings");
+        break;
+      case "protections-popup-show-report-button":
+        gProtectionsHandler.openProtections(true);
+        gProtectionsHandler.recordClick("full_report");
+        break;
+      case "protections-popup-milestones-content":
+        gProtectionsHandler.openProtections(true);
+        gProtectionsHandler.recordClick("milestone_message");
+        break;
+      case "protections-popup-trackersView-settings-button":
+        gProtectionsHandler.openPreferences();
+        gProtectionsHandler.recordClick("subview_settings", "trackers");
+        break;
+      case "protections-popup-socialblockView-settings-button":
+        gProtectionsHandler.openPreferences();
+        gProtectionsHandler.recordClick("subview_settings", "social");
+        break;
+      case "protections-popup-cookiesView-settings-button":
+        gProtectionsHandler.openPreferences();
+        gProtectionsHandler.recordClick("subview_settings", "cookies");
+        break;
+      case "protections-popup-fingerprintersView-settings-button":
+        gProtectionsHandler.openPreferences();
+        gProtectionsHandler.recordClick("subview_settings", "fingerprinters");
+        break;
+      case "protections-popup-cryptominersView-settings-button":
+        gProtectionsHandler.openPreferences();
+        gProtectionsHandler.recordClick("subview_settings", "cryptominers");
+        break;
+      case "protections-popup-cookieBannerView-cancel":
+        gProtectionsHandler._protectionsPopupMultiView.goBack();
+        break;
+      case "protections-popup-cookieBannerView-enable-button":
+      case "protections-popup-cookieBannerView-disable-button":
+        gProtectionsHandler.onCookieBannerToggleCommand();
+        break;
+    }
+  },
+
   // We handle focus here when the panel is shown.
   handleEvent(event) {
     switch (event.type) {
+      case "command":
+        this.onCommand(event);
+        break;
       case "focus": {
         let elem = document.activeElement;
         let position = elem.compareDocumentPosition(this._protectionsPopup);
@@ -2044,6 +2149,12 @@ var gProtectionsHandler = {
         }
         break;
       }
+      case "popupshown":
+        this.onPopupShown(event);
+        break;
+      case "popuphidden":
+        this.onPopupHidden(event);
+        break;
       case "toggle": {
         this.onTPSwitchCommand(event);
         break;
@@ -2601,14 +2712,14 @@ var gProtectionsHandler = {
   _createHeroElement(doc, message) {
     const messageEl = this._createElement(doc, "div");
     messageEl.setAttribute("id", "protections-popup-message");
-    messageEl.classList.add("whatsNew-hero-message");
+    messageEl.classList.add("protections-hero-message");
     const wrapperEl = this._createElement(doc, "div");
-    wrapperEl.classList.add("whatsNew-message-body");
+    wrapperEl.classList.add("protections-popup-message-body");
     messageEl.appendChild(wrapperEl);
 
     wrapperEl.appendChild(
       this._createElement(doc, "h2", {
-        classList: "whatsNew-message-title",
+        classList: "protections-popup-message-title",
         content: message.content.title,
       })
     );

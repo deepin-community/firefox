@@ -57,6 +57,10 @@ category-experimental =
 pane-experimental-subtitle = Daŭrigu singarde
 pane-experimental-search-results-header = Eksperimentoj de { -brand-short-name }: daŭrigu singarde
 pane-experimental-description2 = Ŝanĝo de spertulaj agordoj povas influi la efikecon aŭ sekurecon de { -brand-short-name }.
+settings-pane-labs-title = { -firefoxlabs-brand-name }
+settings-category-labs =
+    .tooltiptext = { -firefoxlabs-brand-name }
+pane-experimental-description3 = Provu niajn eksperimentajn trajtojn! Ili disvolviĝas kaj evoluas, kio povus efiki sur la maniero funkcii de { -brand-short-name }.
 pane-experimental-reset =
     .label = Remeti normojn
     .accesskey = R
@@ -599,6 +603,10 @@ home-prefs-recent-activity-description = Elekto de ĵusaj retejoj kaj enhavoj
 home-prefs-snippets-header =
     .label = Fragmentoj
 home-prefs-snippets-description-new = Konsiletoj kaj novaĵoj de { -vendor-short-name } kaj { -brand-product-name }
+home-prefs-weather-header =
+    .label = Vetero
+home-prefs-weather-description = Rapida rigardo al la veterprognozo hodiaŭa
+home-prefs-weather-learn-more-link = Pli da informo
 # Variables:
 #   $num (number) - Number of rows displayed
 home-prefs-sections-rows-option =
@@ -912,6 +920,9 @@ forms-saved-passwords =
 forms-primary-pw-use =
     .label = Uzi ĉefan pasvorton
     .accesskey = U
+# This operation requires the user to authenticate with the operating system (device sign-in)
+forms-os-reauth =
+    .label = Postuli komencon de seanco en la aparato por enigi kaj administri pasvortojn
 forms-primary-pw-learn-more-link = Pli da informo
 # This string uses the former name of the Primary Password feature
 # ("Master Password" in English) so that the preferences can be found
@@ -944,6 +955,13 @@ primary-password-os-auth-dialog-message-win = Por krei ĉefan pasvorton vi devas
 # notes are only valid for English. Please test in your locale.
 primary-password-os-auth-dialog-message-macosx = krei ĉefan pasvorton
 master-password-os-auth-dialog-caption = { -brand-full-name }
+# The macOS string is preceded by the operating system with "Firefox is trying to ".
+autofill-creditcard-os-dialog-message =
+    { PLATFORM() ->
+        [macos] ŝanĝi la agordojn por pagmetodoj
+       *[other] { -brand-short-name } klopodas ŝanĝi la agordojn por pagmetodoj. Komencu seancon per via aparato por permesi la ŝanĝon.
+    }
+autofill-creditcard-os-auth-dialog-caption = { -brand-full-name }
 
 ## Privacy section - Autofill
 
@@ -958,14 +976,9 @@ autofill-payment-methods-checkbox-submessage = Inkluzivi kreditajn kaj debetajn 
     .accesskey = k
 autofill-saved-payment-methods-button = Konservitaj pagmetodoj
     .accesskey = p
-autofill-reauth-checkbox =
-    { PLATFORM() ->
-        [macos] Aŭtentigado de macOS postulata por plenigi kaj redakti pagmetodojn.
-        [windows] Aŭtentigado de Windows postulata por plenigi kaj redakti pagmetodojn.
-        [linux] Aŭtentigado de Linux postulata por plenigi kaj redakti pagmetodojn.
-       *[other] Aŭtentigado postulata por plenigi kaj redakti pagmetodojn.
-    }
-    .accesskey = A
+# This operation requires the user to authenticate with the operating system (device sign-in)
+autofill-reauth-payment-methods-checkbox = Postuli komencon de seanco en la aparato por enigi kaj administri pagmetodojn
+    .accesskey = p
 
 ## Privacy Section - History
 
@@ -1102,6 +1115,9 @@ addressbar-suggestions-settings = Ŝanĝi preferojn pri serĉilaj sugestoj
 addressbar-locbar-showrecentsearches-option =
     .label = Montri ĵusajn serĉojn
     .accesskey = M
+addressbar-locbar-showtrendingsuggestions-option =
+    .label = Montri sugestojn pri popularaj serĉoj
+    .accesskey = s
 addressbar-quickactions-learn-more = Pli da informo
 
 ## Privacy Section - Content Blocking
@@ -1293,6 +1309,14 @@ privacy-segmentation-radio-off =
 privacy-segmentation-radio-on =
     .label = Montri detalan informon
 
+## Privacy Section - Website Advertising Preferences
+
+website-advertising-header = Preferoj pri reklamoj en retejoj
+website-advertising-private-attribution =
+    .label = Permesi al retejoj reklamrilatajn mezurojn, kiuj protektas privatecon
+    .accesskey = p
+website-advertising-private-attribution-description = Tio ĉi permesas al retejoj kompreni kiel siaj reklamoj efikas, sen kolekti datumojn pri vi.
+
 ## Privacy Section - Security
 ##
 ## It is important that wording follows the guidelines outlined on this page:
@@ -1336,13 +1360,20 @@ space-alert-under-5gb-message2 = <strong>Elĉerpiĝas la diska spaco por { -bran
 
 httpsonly-header = HTTPS-nura reĝimo
 httpsonly-description = HTTPS provizas sekuran, ĉifritan konekton inter { -brand-short-name } kaj la vizitataj retejoj. Plimulto de la retejoj subtenas HTTPS kaj, se la HTTPS-nura reĝimo estas aktiva, { -brand-short-name } movos ĉiujn konektojn al HTTPS.
+httpsonly-description2 = { -brand-short-name } kreas sekurajn kaj ĉifritajn konektojn al la retejoj, kiujn vi vizitas. Se la HTTPS-nura reĝimo estas ŝaltita { -brand-short-name } avertos vin se konekto ne estas sekura.
 httpsonly-learn-more = Pli da informo
 httpsonly-radio-enabled =
     .label = Aktivigi HTTPS-nuran reĝimon en ĉiuj fenestroj
+httpsonly-radio-enabled2 =
+    .label = Nur uzi HTTPS en ĉiuj fenestroj
 httpsonly-radio-enabled-pbm =
     .label = Aktivigi HTTPS-nuran reĝimon nur en privataj fenestroj
+httpsonly-radio-enabled-pbm2 =
+    .label = Nur uzi HTTPS en privataj fenestroj
 httpsonly-radio-disabled =
     .label = Ne aktivigi HTTPS-nuran reĝimon
+httpsonly-radio-disabled2 =
+    .label = Unue provi HTTPS sed permesi nesekurajn konektojn
 
 ## DoH Section
 

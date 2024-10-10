@@ -263,6 +263,11 @@ bool IsPromiseWithDefaultResolvingFunction(PromiseObject* promise);
 void SetAlreadyResolvedPromiseWithDefaultResolvingFunction(
     PromiseObject* promise);
 
+bool IsPromiseConstructor(const JSObject* obj);
+
+bool AbruptRejectPromise(JSContext* cx, JS::CallArgs& args,
+                         JS::Handle<JSObject*> promiseObj,
+                         JS::Handle<JSObject*> reject);
 }  // namespace js
 
 #endif  // builtin_Promise_h

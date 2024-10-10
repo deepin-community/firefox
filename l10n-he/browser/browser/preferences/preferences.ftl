@@ -57,6 +57,10 @@ category-experimental =
 pane-experimental-subtitle = נא להמשיך בזהירות
 pane-experimental-search-results-header = ניסויים של { -brand-short-name }: נא להמשיך בזהירות
 pane-experimental-description2 = שינוי הגדרות התצורה המתקדמות עשוי להשפיע על הביצועים או אבטחה של { -brand-short-name }.
+settings-pane-labs-title = { -firefoxlabs-brand-name }
+settings-category-labs =
+    .tooltiptext = { -firefoxlabs-brand-name }
+pane-experimental-description3 = נסו את התכונות הניסיוניות שלנו! הן בתהליך פיתוח ומשתדרגות עם הזמן, מה שעשוי להשפיע על האופן שבו { -brand-short-name } עובד.
 pane-experimental-reset =
     .label = שחזור ברירות מחדל
     .accesskey = ש
@@ -396,7 +400,7 @@ applications-save-for-new-types =
 applications-ask-before-handling =
     .label = לשאול האם לפתוח או לשמור את הקבצים
     .accesskey = א
-drm-content-header = תוכן ניהול זכויות דיגיטלי (DRM)
+drm-content-header = תוכן ניהול זכויות קניין (DRM)
 play-drm-content =
     .label = הפעלת תוכן מוגן DRM
     .accesskey = ה
@@ -599,6 +603,10 @@ home-prefs-recent-activity-description = מבחר של אתרים ותכנים �
 home-prefs-snippets-header =
     .label = פתקיות
 home-prefs-snippets-description-new = עצות וחדשות מ־{ -vendor-short-name } ו־{ -brand-product-name }
+home-prefs-weather-header =
+    .label = מזג אוויר
+home-prefs-weather-description = תחזית היום במבט חטוף
+home-prefs-weather-learn-more-link = מידע נוסף
 # Variables:
 #   $num (number) - Number of rows displayed
 home-prefs-sections-rows-option =
@@ -912,6 +920,9 @@ forms-saved-passwords =
 forms-primary-pw-use =
     .label = שימוש בססמה ראשית
     .accesskey = ש
+# This operation requires the user to authenticate with the operating system (device sign-in)
+forms-os-reauth =
+    .label = לדרוש פרטי התחברות של המכשיר כדי למלא ולנהל ססמאות
 forms-primary-pw-learn-more-link = מידע נוסף
 # This string uses the former name of the Primary Password feature
 # ("Master Password" in English) so that the preferences can be found
@@ -941,6 +952,13 @@ primary-password-os-auth-dialog-message-win = כדי ליצור ססמה ראש�
 # notes are only valid for English. Please test in your locale.
 primary-password-os-auth-dialog-message-macosx = ליצור ססמה ראשית
 master-password-os-auth-dialog-caption = { -brand-full-name }
+# The macOS string is preceded by the operating system with "Firefox is trying to ".
+autofill-creditcard-os-dialog-message =
+    { PLATFORM() ->
+        [macos] לשנות את ההגדרות עבור אמצעי תשלום
+       *[other] ‏{ -brand-short-name } מנסה לשנות את ההגדרות עבור אמצעי תשלום. יש להשתמש בפרטי ההתחברות של המכשיר שלך כדי לאפשר זאת.
+    }
+autofill-creditcard-os-auth-dialog-caption = { -brand-full-name }
 
 ## Privacy section - Autofill
 
@@ -955,14 +973,9 @@ autofill-payment-methods-checkbox-submessage = כולל כרטיסי אשראי 
     .accesskey = כ
 autofill-saved-payment-methods-button = אמצעי תשלום שמורים
     .accesskey = א
-autofill-reauth-checkbox =
-    { PLATFORM() ->
-        [macos] לדרוש אימות של macOS כדי למלא ולערוך אמצעי תשלום.
-        [windows] לדרוש אימות של Windows כדי למלא ולערוך אמצעי תשלום.
-        [linux] לדרוש אימות של Linux כדי למלא ולערוך אמצעי תשלום.
-       *[other] לדרוש אימות כדי למלא ולערוך אמצעי תשלום.
-    }
-    .accesskey = ל
+# This operation requires the user to authenticate with the operating system (device sign-in)
+autofill-reauth-payment-methods-checkbox = לדרוש פרטי התחברות של המכשיר כדי למלא ולנהל אמצעי תשלום
+    .accesskey = ד
 
 ## Privacy Section - History
 
@@ -1099,6 +1112,9 @@ addressbar-suggestions-settings = שינוי העדפות של הצעות מנו
 addressbar-locbar-showrecentsearches-option =
     .label = הצגת חיפושים אחרונים
     .accesskey = ח
+addressbar-locbar-showtrendingsuggestions-option =
+    .label = הצגת הצעות חיפוש פופולריים
+    .accesskey = פ
 addressbar-quickactions-learn-more = מידע נוסף
 
 ## Privacy Section - Content Blocking
@@ -1289,6 +1305,14 @@ privacy-segmentation-radio-off =
 privacy-segmentation-radio-on =
     .label = הצגת מידע מפורט
 
+## Privacy Section - Website Advertising Preferences
+
+website-advertising-header = העדפות פרסום באתרים
+website-advertising-private-attribution =
+    .label = לאפשר לאתרים לבצע מדידות על פרסומות באופן ששומר על הפרטיות
+    .accesskey = מ
+website-advertising-private-attribution-description = אפשרות זו מסייעת לאתרים להבין את ביצועי הפרסומות שלהם מבלי לאסוף עליך מידע.
+
 ## Privacy Section - Security
 ##
 ## It is important that wording follows the guidelines outlined on this page:
@@ -1332,13 +1356,20 @@ space-alert-under-5gb-message2 = <strong>ל־{ -brand-short-name } אוזל שט
 
 httpsonly-header = מצב HTTPS בלבד
 httpsonly-description = ‏HTTPS מספק חיבור מאובטח ומוצפן בין { -brand-short-name } לבין האתרים שמבקרים בהם. רוב האתרים תומכים ב־HTTPS, ואם מצב HTTPS בלבד מופעל, { -brand-short-name } ישדרג את כל החיבורים ל־HTTPS.
+httpsonly-description2 = ‏{ -brand-short-name } יוצר חיבורים מאובטחים ומוצפנים לאתרים שנכנסים אליהם. { -brand-short-name } יזהיר אותך אם החיבור אינו מאובטח כאשר מצב HTTPS בלבד מופעל.
 httpsonly-learn-more = מידע נוסף
 httpsonly-radio-enabled =
     .label = הפעלת מצב HTTPS בלבד בכל החלונות
+httpsonly-radio-enabled2 =
+    .label = להשתמש ב־HTTPS בלבד בכל החלונות
 httpsonly-radio-enabled-pbm =
     .label = הפעלת מצב HTTPS בלבד אך ורק בחלונות פרטיים
+httpsonly-radio-enabled-pbm2 =
+    .label = להשתמש ב־HTTPS בלבד בחלונות פרטיים
 httpsonly-radio-disabled =
     .label = לא להפעיל מצב HTTPS בלבד
+httpsonly-radio-disabled2 =
+    .label = לנסות תחילה את HTTPS, אבל לאפשר חיבורים שאינם מאובטחים
 
 ## DoH Section
 

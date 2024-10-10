@@ -253,19 +253,28 @@ class CssLogic {
     if (cssSheet._passId != this._passId) {
       cssSheet._passId = this._passId;
 
-      // Find import and keyframes rules.
-      for (const aDomRule of cssSheet.getCssRules()) {
-        const ruleClassName = ChromeUtils.getClassName(aDomRule);
-        if (
-          ruleClassName === "CSSImportRule" &&
-          aDomRule.styleSheet &&
-          this.mediaMatches(aDomRule)
-        ) {
-          this._cacheSheet(aDomRule.styleSheet);
-        } else if (ruleClassName === "CSSKeyframesRule") {
-          this._keyframesRules.push(aDomRule);
+      // Find import and keyframes rules. We loop through all the stylesheet recursively,
+      // so we can go through nested rules.
+      const traverseRules = ruleList => {
+        for (const aDomRule of ruleList) {
+          const ruleClassName = ChromeUtils.getClassName(aDomRule);
+          if (
+            ruleClassName === "CSSImportRule" &&
+            aDomRule.styleSheet &&
+            this.mediaMatches(aDomRule)
+          ) {
+            this._cacheSheet(aDomRule.styleSheet);
+          } else if (ruleClassName === "CSSKeyframesRule") {
+            this._keyframesRules.push(aDomRule);
+          }
+
+          if (aDomRule.cssRules) {
+            traverseRules(aDomRule.cssRules);
+          }
         }
-      }
+      };
+
+      traverseRules(cssSheet.getCssRules());
     }
   }
 
@@ -485,28 +494,45 @@ class CssLogic {
   }
 
   /**
-   * Check if the highlighted element or it's parents have matched selectors.
+   * Check if the highlighted element or its parents have matched selectors.
    *
-   * @param {Array} properties: The list of properties you want to check if they
-   * have matched selectors or not.
-   * @return {object} An object that tells for each property if it has matched
-   * selectors or not. Object keys are property names and values are booleans.
+   * @param {Array<String>} properties: The list of properties you want to check if they
+   * have matched selectors or not. For CSS variables, this will check if the variable
+   * is set OR used in a matching rule.
+   * @return {Set<String>} A Set containing the properties that do have matched selectors.
    */
   hasMatchedSelectors(properties) {
     if (!this._matchedRules) {
       this._buildMatchedRules();
     }
 
-    const result = {};
+    const result = new Set();
 
-    this._matchedRules.some(function (value) {
-      const rule = value[0];
-      const status = value[1];
-      properties = properties.filter(property => {
+    for (const [rule, status] of this._matchedRules) {
+      // Getting the rule cssText can be costly, so cache it
+      let cssText;
+      const getCssText = () => {
+        if (cssText === undefined) {
+          cssText = rule.domRule.cssText;
+        }
+        return cssText;
+      };
+
+      // Loop through properties in reverse as we're removing items from it and we don't
+      // want to mess with the iteration.
+      for (let i = properties.length - 1; i >= 0; i--) {
+        const property = properties[i];
         // We just need to find if a rule has this property while it matches
         // the viewedElement (or its parents).
         if (
-          rule.getPropertyValue(property) &&
+          // check if the property is assigned
+          (rule.getPropertyValue(property) ||
+            // or if this is a css variable, if it's being used in the rule.
+            (property.startsWith("--") &&
+              // we may have false positive for dashed ident or the variable being
+              // used in comment/string, but the tradeoff seems okay, as we would have
+              // to parse the value of each declaration, which could be costly.
+              new RegExp(`${property}[^A-Za-z0-9_-]`).test(getCssText()))) &&
           (status == STATUS.MATCHED ||
             (status == STATUS.PARENT_MATCH &&
               InspectorUtils.isInheritedProperty(
@@ -514,14 +540,16 @@ class CssLogic {
                 property
               )))
         ) {
-          result[property] = true;
-          return false;
+          result.add(property);
+          // Once the property has a matched selector, we can remove it from the array
+          properties.splice(i, 1);
         }
-        // Keep the property for the next rule.
-        return true;
-      });
-      return !properties.length;
-    }, this);
+      }
+
+      if (!properties.length) {
+        return result;
+      }
+    }
 
     return result;
   }

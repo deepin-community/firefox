@@ -12,6 +12,8 @@ about-processes-column-action =
 
 about-processes-shutdown-process =
     .title = "Ξεφόρτωμα" καρτελών και τερματισμός διεργασίας
+about-processes-kill-process =
+    .title = Τερματισμός διεργασίας
 about-processes-shutdown-tab =
     .title = Κλείσιμο καρτέλας
 # Profiler icons
@@ -51,6 +53,7 @@ about-processes-remote-sandbox-broker-process = Απομακρυσμένο Sandb
 about-processes-fork-server-process = Διακομιστής fork ({ $pid })
 about-processes-preallocated-process = Προκατανεμημένο ({ $pid })
 about-processes-utility-process = Εργαλείο ({ $pid })
+about-processes-inference-process = Συμπέρασμα ({ $pid })
 # Unknown process names
 # Variables:
 #    $pid (String) The process id of this process, assigned by the OS.

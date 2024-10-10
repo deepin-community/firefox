@@ -4,12 +4,12 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifdef XP_WIN
-#  include "objbase.h"
-#endif
-
 #include "mozilla/dom/HTMLMediaElement.h"
 
+#include <algorithm>
+#include <cmath>
+#include <limits>
+#include <type_traits>
 #include <unordered_map>
 
 #include "AudioDeviceInfo.h"
@@ -38,19 +38,21 @@
 #include "MediaShutdownManager.h"
 #include "MediaSourceDecoder.h"
 #include "MediaStreamError.h"
-#include "MediaTrackGraphImpl.h"
-#include "MediaTrackListener.h"
 #include "MediaStreamWindowCapturer.h"
 #include "MediaTrack.h"
+#include "MediaTrackGraphImpl.h"
 #include "MediaTrackList.h"
+#include "MediaTrackListener.h"
 #include "Navigator.h"
+#include "ReferrerInfo.h"
 #include "TimeRanges.h"
+#include "TimeUnits.h"
 #include "VideoFrameContainer.h"
 #include "VideoOutput.h"
 #include "VideoStreamTrack.h"
 #include "base/basictypes.h"
-#include "jsapi.h"
 #include "js/PropertyAndElement.h"  // JS_DefineProperty
+#include "jsapi.h"
 #include "mozilla/AppShutdown.h"
 #include "mozilla/ArrayUtils.h"
 #include "mozilla/AsyncEventDispatcher.h"
@@ -61,16 +63,17 @@
 #include "mozilla/NotNull.h"
 #include "mozilla/Preferences.h"
 #include "mozilla/PresShell.h"
-#include "mozilla/ScopeExit.h"
+#include "mozilla/SVGObserverUtils.h"
 #include "mozilla/SchedulerGroup.h"
+#include "mozilla/ScopeExit.h"
 #include "mozilla/Sprintf.h"
 #include "mozilla/StaticPrefs_media.h"
-#include "mozilla/SVGObserverUtils.h"
 #include "mozilla/Telemetry.h"
 #include "mozilla/dom/AudioTrack.h"
 #include "mozilla/dom/AudioTrackList.h"
 #include "mozilla/dom/BlobURLProtocolHandler.h"
 #include "mozilla/dom/ContentMediaController.h"
+#include "mozilla/dom/Document.h"
 #include "mozilla/dom/ElementInlines.h"
 #include "mozilla/dom/FeaturePolicyUtils.h"
 #include "mozilla/dom/HTMLAudioElement.h"
@@ -103,12 +106,12 @@
 #include "nsError.h"
 #include "nsGenericHTMLElement.h"
 #include "nsGkAtoms.h"
+#include "nsGlobalWindowInner.h"
 #include "nsIAsyncVerifyRedirectCallback.h"
 #include "nsICachingChannel.h"
 #include "nsIClassOfService.h"
 #include "nsIContentPolicy.h"
 #include "nsIDocShell.h"
-#include "mozilla/dom/Document.h"
 #include "nsIFrame.h"
 #include "nsIHttpChannel.h"
 #include "nsIObserverService.h"
@@ -131,13 +134,10 @@
 #include "nsURIHashKey.h"
 #include "nsURLHelper.h"
 #include "nsVideoFrame.h"
-#include "ReferrerInfo.h"
-#include "TimeUnits.h"
+#ifdef XP_WIN
+#  include "objbase.h"
+#endif
 #include "xpcpublic.h"
-#include <algorithm>
-#include <cmath>
-#include <limits>
-#include <type_traits>
 
 mozilla::LazyLogModule gMediaElementLog("HTMLMediaElement");
 mozilla::LazyLogModule gMediaElementEventsLog("HTMLMediaElementEvents");
@@ -318,7 +318,7 @@ class HTMLMediaElement::MediaControlKeyListener final
 
   MOZ_INIT_OUTSIDE_CTOR explicit MediaControlKeyListener(
       HTMLMediaElement* aElement)
-      : mElement(aElement) {
+      : mElement(aElement), mElementId(nsID::GenerateUUID()) {
     MOZ_ASSERT(NS_IsMainThread());
     MOZ_ASSERT(aElement);
   }
@@ -409,6 +409,33 @@ class HTMLMediaElement::MediaControlKeyListener final
         NotifyAudibleStateChanged(MediaAudibleState::eInaudible);
       }
     }
+  }
+
+  void NotifyMediaPositionState() {
+    if (!IsStarted()) {
+      return;
+    }
+
+    MOZ_ASSERT(mControlAgent);
+    auto* owner = Owner();
+    PositionState state(owner->Duration(), owner->PlaybackRate(),
+                        owner->CurrentTime(), TimeStamp::Now());
+    MEDIACONTROL_LOG(
+        "Notify media position state (duration=%f, playbackRate=%f, "
+        "position=%f)",
+        state.mDuration, state.mPlaybackRate,
+        state.mLastReportedPlaybackPosition);
+    mControlAgent->UpdateGuessedPositionState(mOwnerBrowsingContextId,
+                                              mElementId, Some(state));
+  }
+
+  void Shutdown() {
+    StopIfNeeded();
+    if (!mControlAgent) {
+      return;
+    }
+    mControlAgent->UpdateGuessedPositionState(mOwnerBrowsingContextId,
+                                              mElementId, Nothing());
   }
 
   // This method can be called before the listener starts, which would cache
@@ -538,11 +565,15 @@ class HTMLMediaElement::MediaControlKeyListener final
     MOZ_ASSERT(NS_IsMainThread());
     MOZ_ASSERT(mControlAgent);
     MEDIACONTROL_LOG("NotifyMediaState from state='%s' to state='%s'",
-                     ToMediaPlaybackStateStr(mState),
-                     ToMediaPlaybackStateStr(aState));
+                     dom::EnumValueToString(mState),
+                     dom::EnumValueToString(aState));
     MOZ_ASSERT(mState != aState, "Should not notify same state again!");
     mState = aState;
     mControlAgent->NotifyMediaPlaybackChanged(mOwnerBrowsingContextId, mState);
+
+    if (aState == MediaPlaybackState::ePlayed) {
+      NotifyMediaPositionState();
+    }
   }
 
   void NotifyAudibleStateChanged(MediaAudibleState aState) {
@@ -557,6 +588,7 @@ class HTMLMediaElement::MediaControlKeyListener final
   bool mIsPictureInPictureEnabled = false;
   bool mIsOwnerAudible = false;
   MOZ_INIT_OUTSIDE_CTOR uint64_t mOwnerBrowsingContextId;
+  const nsID mElementId;
 };
 
 class HTMLMediaElement::MediaStreamTrackListener
@@ -994,7 +1026,7 @@ class HTMLMediaElement::MediaStreamRenderer {
         graph->CreateSourceTrack(MediaSegment::AUDIO));
   }
 
-  void ResolveAudioDevicePromiseIfExists(const char* aMethodName) {
+  void ResolveAudioDevicePromiseIfExists(StaticString aMethodName) {
     if (mSetAudioDevicePromise.IsEmpty()) {
       return;
     }
@@ -1587,8 +1619,8 @@ class HTMLMediaElement::AudioChannelAgentCallback final
     MOZ_LOG(AudioChannelService::GetAudioChannelLog(), LogLevel::Debug,
             ("HTMLMediaElement::AudioChannelAgentCallback, "
              "NotifyAudioPlaybackChanged, this=%p, current=%s, new=%s",
-             this, AudibleStateToStr(mIsOwnerAudible),
-             AudibleStateToStr(newAudibleState)));
+             this, AudioChannelService::EnumValueToString(mIsOwnerAudible),
+             AudioChannelService::EnumValueToString(newAudibleState)));
     if (mIsOwnerAudible == newAudibleState) {
       return;
     }
@@ -2065,7 +2097,7 @@ NS_IMPL_CYCLE_COLLECTION_UNLINK_BEGIN_INHERITED(HTMLMediaElement,
   NS_IMPL_CYCLE_COLLECTION_UNLINK(mSeekDOMPromise)
   NS_IMPL_CYCLE_COLLECTION_UNLINK(mSetMediaKeysDOMPromise)
   if (tmp->mMediaControlKeyListener) {
-    tmp->mMediaControlKeyListener->StopIfNeeded();
+    tmp->mMediaControlKeyListener->Shutdown();
   }
   if (tmp->mEventBlocker) {
     tmp->mEventBlocker->Shutdown();
@@ -2195,10 +2227,6 @@ double HTMLMediaElement::InaudiblePlayTime() const {
 
 double HTMLMediaElement::MutedPlayTime() const {
   return mDecoder ? mDecoder->GetMutedPlayTimeInSeconds() : -1.0;
-}
-
-double HTMLMediaElement::VideoDecodeSuspendedTime() const {
-  return mDecoder ? mDecoder->GetVideoDecodeSuspendedTimeInSeconds() : -1.0;
 }
 
 void HTMLMediaElement::SetFormatDiagnosticsReportForMimeType(
@@ -3122,6 +3150,7 @@ MediaResult HTMLMediaElement::LoadResource() {
     if (NS_SUCCEEDED(rv)) return rv;
   }
 
+  LOG(LogLevel::Debug, ("%p LoadResource", this));
   if (mMediaSource) {
     MediaDecoderInit decoderInit(
         this, this, mMuted ? 0.0 : mVolume, mPreservesPitch,
@@ -3384,6 +3413,8 @@ void HTMLMediaElement::Seek(double aTime, SeekTarget::Type aSeekType,
 
   // We changed whether we're seeking so we need to AddRemoveSelfReference.
   AddRemoveSelfReference();
+
+  mMediaControlKeyListener->NotifyMediaPositionState();
 }
 
 double HTMLMediaElement::Duration() const {
@@ -3636,11 +3667,11 @@ void HTMLMediaElement::AddOutputTrackSourceToOutputStream(
   RefPtr<MediaStreamTrack> domTrack;
   if (aSource->Track()->mType == MediaSegment::AUDIO) {
     domTrack = new AudioStreamTrack(
-        aOutputStream.mStream->GetOwner(), aSource->Track(), aSource,
+        aOutputStream.mStream->GetOwnerWindow(), aSource->Track(), aSource,
         MediaStreamTrackState::Live, aSource->Muted());
   } else {
     domTrack = new VideoStreamTrack(
-        aOutputStream.mStream->GetOwner(), aSource->Track(), aSource,
+        aOutputStream.mStream->GetOwnerWindow(), aSource->Track(), aSource,
         MediaStreamTrackState::Live, aSource->Muted());
   }
 
@@ -4732,7 +4763,7 @@ void HTMLMediaElement::GetEventTargetParent(EventChainPreVisitor& aVisitor) {
     // content, since we always do that for touchstart.
     case eTouchMove:
     case eTouchStart:
-    case eMouseClick:
+    case ePointerClick:
     case eMouseDoubleClick:
     case eMouseDown:
     case eMouseUp:
@@ -4804,10 +4835,9 @@ void HTMLMediaElement::DoneCreatingElement() {
   }
 }
 
-bool HTMLMediaElement::IsHTMLFocusable(bool aWithMouse, bool* aIsFocusable,
-                                       int32_t* aTabIndex) {
-  if (nsGenericHTMLElement::IsHTMLFocusable(aWithMouse, aIsFocusable,
-                                            aTabIndex)) {
+bool HTMLMediaElement::IsHTMLFocusable(IsFocusableFlags aFlags,
+                                       bool* aIsFocusable, int32_t* aTabIndex) {
+  if (nsGenericHTMLElement::IsHTMLFocusable(aFlags, aIsFocusable, aTabIndex)) {
     return true;
   }
 
@@ -5119,7 +5149,7 @@ nsresult HTMLMediaElement::InitializeDecoderForChannel(
   }
 
   reportCanPlay(true);
-  bool isPrivateBrowsing = NodePrincipal()->GetPrivateBrowsingId() > 0;
+  bool isPrivateBrowsing = NodePrincipal()->GetIsInPrivateBrowsing();
   return SetupDecoder(decoder.get(), aChannel, isPrivateBrowsing, aListener);
 }
 
@@ -6245,7 +6275,8 @@ VideoFrameContainer* HTMLMediaElement::GetVideoFrameContainer() {
   }
 
   mVideoFrameContainer = new VideoFrameContainer(
-      this, MakeAndAddRef<ImageContainer>(ImageContainer::ASYNCHRONOUS));
+      this, MakeAndAddRef<ImageContainer>(ImageUsageType::VideoFrameContainer,
+                                          ImageContainer::ASYNCHRONOUS));
 
   return mVideoFrameContainer;
 }
@@ -6871,6 +6902,7 @@ void HTMLMediaElement::SetPlaybackRate(double aPlaybackRate, ErrorResult& aRv) {
     mDecoder->SetPlaybackRate(ClampPlaybackRate(mPlaybackRate));
   }
   DispatchAsyncEvent(u"ratechange"_ns);
+  mMediaControlKeyListener->NotifyMediaPositionState();
 }
 
 void HTMLMediaElement::SetPreservesPitch(bool aPreservesPitch) {
@@ -7501,8 +7533,9 @@ void HTMLMediaElement::GetEMEInfo(dom::EMEDebugInfo& aInfo) {
 
 void HTMLMediaElement::NotifyDecoderActivityChanges() const {
   if (mDecoder) {
-    mDecoder->NotifyOwnerActivityChanged(IsActuallyInvisible(),
-                                         IsInComposedDoc());
+    mDecoder->NotifyOwnerActivityChanged(
+        IsActuallyInvisible(), IsInComposedDoc(),
+        OwnerDoc()->IsInBackgroundWindow(), HasPendingCallbacks());
   }
 }
 

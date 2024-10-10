@@ -8,6 +8,8 @@ import android.content.Context
 import android.os.Build
 import android.os.StrictMode
 import android.util.Log.INFO
+import androidx.annotation.OpenForTesting
+import androidx.annotation.VisibleForTesting
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.preference.PreferenceManager
@@ -35,7 +37,6 @@ import org.mozilla.focus.nimbus.FocusNimbus
 import org.mozilla.focus.session.VisibilityLifeCycleCallback
 import org.mozilla.focus.telemetry.FactsProcessor
 import org.mozilla.focus.telemetry.ProfilerMarkerFactProcessor
-import org.mozilla.focus.utils.AdjustHelper
 import org.mozilla.focus.utils.AppConstants
 import kotlin.coroutines.CoroutineContext
 
@@ -68,15 +69,13 @@ open class FocusApplication : LocaleAwareApplication(), Provider, CoroutineScope
             setTheme(this)
             components.engine.warmUp()
 
-            components.metrics.initialize(this)
-            FactsProcessor.initialize()
+            initializeTelemetry()
+
             finishSetupMegazord()
 
             ProfilerMarkerFactProcessor.create { components.engine.profiler }.register()
 
             enableStrictMode()
-
-            AdjustHelper.setupAdjustIfNeeded(this@FocusApplication)
 
             visibilityLifeCycleCallback = VisibilityLifeCycleCallback(this@FocusApplication)
             registerActivityLifecycleCallbacks(visibilityLifeCycleCallback)
@@ -121,6 +120,11 @@ open class FocusApplication : LocaleAwareApplication(), Provider, CoroutineScope
         FocusNimbus.initialize { nimbus }
     }
 
+    protected open fun initializeTelemetry() {
+        components.metrics.initialize(this)
+        FactsProcessor.initialize()
+    }
+
     /**
      * Initiate Megazord sequence! Megazord Battle Mode!
      *
@@ -144,8 +148,12 @@ open class FocusApplication : LocaleAwareApplication(), Provider, CoroutineScope
         RustLog.enable()
     }
 
+    /**
+     * Finish Megazord setup sequence.
+     */
     @OptIn(DelicateCoroutinesApi::class) // GlobalScope usage
-    private fun finishSetupMegazord() {
+    @OpenForTesting
+    open fun finishSetupMegazord() {
         GlobalScope.launch(Dispatchers.IO) {
             // We need to use an unwrapped client because native components do not support private
             // requests.
@@ -219,7 +227,9 @@ open class FocusApplication : LocaleAwareApplication(), Provider, CoroutineScope
         StrictMode.setVmPolicy(vmPolicyBuilder.build())
     }
 
-    private fun initializeWebExtensionSupport() {
+    @VisibleForTesting
+    @OpenForTesting
+    internal open fun initializeWebExtensionSupport() {
         WebExtensionSupport.initialize(
             components.engine,
             components.store,

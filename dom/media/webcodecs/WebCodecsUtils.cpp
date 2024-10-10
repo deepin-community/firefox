@@ -94,6 +94,12 @@ Maybe<nsString> ParseCodecString(const nsAString& aCodec) {
   return Some(codecs[0]);
 }
 
+bool IsSameColorSpace(const VideoColorSpaceInit& aLhs,
+                      const VideoColorSpaceInit& aRhs) {
+  return aLhs.mFullRange == aRhs.mFullRange && aLhs.mMatrix == aRhs.mMatrix &&
+         aLhs.mPrimaries == aRhs.mPrimaries && aLhs.mTransfer == aRhs.mTransfer;
+}
+
 /*
  * The below are helpers to operate ArrayBuffer or ArrayBufferView.
  */
@@ -154,6 +160,39 @@ Result<Ok, nsresult> CloneBuffer(
     return Err(NS_ERROR_UNEXPECTED);
   }
   return Ok();
+}
+
+Result<RefPtr<MediaByteBuffer>, nsresult> GetExtraDataFromArrayBuffer(
+    const OwningMaybeSharedArrayBufferViewOrMaybeSharedArrayBuffer& aBuffer) {
+  RefPtr<MediaByteBuffer> data = MakeRefPtr<MediaByteBuffer>();
+  if (!AppendTypedArrayDataTo(aBuffer, *data)) {
+    return Err(NS_ERROR_OUT_OF_MEMORY);
+  }
+  return data->Length() > 0 ? data : nullptr;
+}
+
+bool IsArrayBufferEmpty(
+    const OwningMaybeSharedArrayBufferViewOrMaybeSharedArrayBuffer& aBuffer) {
+  return ProcessTypedArraysFixed(
+      aBuffer, [&](const Span<uint8_t>& aData) { return aData.IsEmpty(); });
+}
+
+bool CopyExtradataToDescription(
+    JSContext* aCx, Span<const uint8_t>& aSrc,
+    OwningMaybeSharedArrayBufferViewOrMaybeSharedArrayBuffer& aDest) {
+  MOZ_ASSERT(!aSrc.IsEmpty());
+
+  MOZ_ASSERT(aCx);
+
+  size_t lengthBytes = aSrc.Length();
+  UniquePtr<uint8_t[], JS::FreePolicy> extradata(new uint8_t[lengthBytes]);
+
+  PodCopy(extradata.get(), aSrc.Elements(), lengthBytes);
+
+  JS::Rooted<JSObject*> data(aCx, JS::NewArrayBufferWithContents(
+                                      aCx, lengthBytes, std::move(extradata)));
+  JS::Rooted<JS::Value> value(aCx, JS::ObjectValue(*data));
+  return aDest.Init(aCx, value);
 }
 
 /*
@@ -287,12 +326,13 @@ Maybe<VideoPixelFormat> SurfaceFormatToVideoPixelFormat(
       return Some(VideoPixelFormat::RGBA);
     case gfx::SurfaceFormat::R8G8B8X8:
       return Some(VideoPixelFormat::RGBX);
-    case gfx::SurfaceFormat::YUV:
+    case gfx::SurfaceFormat::YUV420:
       return Some(VideoPixelFormat::I420);
+    case gfx::SurfaceFormat::YUV422P10:
+      return Some(VideoPixelFormat::I422P10);
     case gfx::SurfaceFormat::NV12:
       return Some(VideoPixelFormat::NV12);
-    case gfx::SurfaceFormat::YUV422:
-      return Some(VideoPixelFormat::I422);
+
     default:
       break;
   }
@@ -577,15 +617,6 @@ nsCString ConfigToString(const VideoDecoderConfig& aConfig) {
   return internal->ToString();
 }
 
-Result<RefPtr<MediaByteBuffer>, nsresult> GetExtraDataFromArrayBuffer(
-    const OwningMaybeSharedArrayBufferViewOrMaybeSharedArrayBuffer& aBuffer) {
-  RefPtr<MediaByteBuffer> data = MakeRefPtr<MediaByteBuffer>();
-  if (!AppendTypedArrayDataTo(aBuffer, *data)) {
-    return Err(NS_ERROR_OUT_OF_MEMORY);
-  }
-  return data->Length() > 0 ? data : nullptr;
-}
-
 bool IsSupportedVideoCodec(const nsAString& aCodec) {
   LOG("IsSupportedVideoCodec: %s", NS_ConvertUTF16toUTF8(aCodec).get());
   // The only codec string accepted for vp8 is "vp8"
@@ -628,11 +659,11 @@ nsCString ConvertCodecName(const nsCString& aContainer,
 bool IsSupportedAudioCodec(const nsAString& aCodec) {
   LOG("IsSupportedAudioCodec: %s", NS_ConvertUTF16toUTF8(aCodec).get());
   return aCodec.EqualsLiteral("flac") || aCodec.EqualsLiteral("mp3") ||
-         IsAACCodecString(aCodec) || aCodec.EqualsLiteral("opus") ||
-         aCodec.EqualsLiteral("ulaw") || aCodec.EqualsLiteral("alaw") ||
-         aCodec.EqualsLiteral("pcm-u8") || aCodec.EqualsLiteral("pcm-s16") ||
-         aCodec.EqualsLiteral("pcm-s24") || aCodec.EqualsLiteral("pcm-s32") ||
-         aCodec.EqualsLiteral("pcm-f32");
+         IsAACCodecString(aCodec) || aCodec.EqualsLiteral("vorbis") ||
+         aCodec.EqualsLiteral("opus") || aCodec.EqualsLiteral("ulaw") ||
+         aCodec.EqualsLiteral("alaw") || aCodec.EqualsLiteral("pcm-u8") ||
+         aCodec.EqualsLiteral("pcm-s16") || aCodec.EqualsLiteral("pcm-s24") ||
+         aCodec.EqualsLiteral("pcm-s32") || aCodec.EqualsLiteral("pcm-f32");
 }
 
 uint32_t BytesPerSamples(const mozilla::dom::AudioSampleFormat& aFormat) {

@@ -558,6 +558,10 @@ urlbar-go-button =
     .tooltiptext = K adresy w adresowym polu
 urlbar-page-action-button =
     .tooltiptext = Akcije strony
+urlbar-revert-button =
+    .tooltiptext = Adresu w adresowym polu pokazać
+urlbar-show-page-actions-button =
+    .tooltiptext = Wšě akcije strony pokazać
 
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
@@ -648,6 +652,21 @@ urlbar-group-quickactions =
 #  $engine (String): the name of the search engine used to search.
 urlbar-group-recent-searches =
     .label = Najnowše pytanja
+# The header shown above trending results.
+# Variables:
+#  $engine (String): the name of the search engine providing the trending suggestions
+urlbar-group-trending =
+    .label = Trendowy na { $engine }
+# The result menu labels shown next to trending results.
+urlbar-result-menu-trending-dont-show =
+    .label = Trendowe pytanja njepokazać
+    .accesskey = T
+urlbar-result-menu-trending-why =
+    .label = Čehodla so to pokazuje?
+    .accesskey = h
+# A message that replaces a result when the user dismisses all suggestions of a
+# particular type.
+urlbar-trending-dismissal-acknowledgment = Wulki dźak za waš komentar. Njebudźeće hižo trendowe pytanja widźeć.
 
 ## Reader View toolbar buttons
 
@@ -998,6 +1017,10 @@ firefox-relay-offer-legal-notice = Hdyž na „E-mejlowu masku wužiwać“ klik
 popup-notification-addon-install-unsigned =
     .value = (Njewobkrućeny)
 popup-notification-xpinstall-prompt-learn-more = Zhońće wjace wo wěstym instalowanju přidatkow
+# Note: Access key is set to P to match "Private" in the corresponding localized label.
+popup-notification-addon-privatebrowsing-checkbox =
+    .label = W priwatnych woknach wuwjesć
+    .accesskey = p
 
 ## Pop-up warning
 
@@ -1035,3 +1058,24 @@ popup-warning-button =
 #   $popupURI (String): the URI for the pop-up window
 popup-show-popup-menuitem =
     .label = '{ $popupURI }' pokazać
+
+## File-picker crash notification ("FilePickerCrashed.sys.mjs")
+
+file-picker-failed-open = Datajowy dialog Windows njeda so wočinić. Dataja abo rjadowak njeda so wubrać.
+#   $path (string): The full path to which the file will be saved (e.g., 'C:\Users\Default User\Downloads\readme.txt').
+file-picker-failed-save-somewhere = Datajowy dialog Windows njeda so wočinić. Dataja budźe so do { $path } składować.
+file-picker-failed-save-nowhere = Datajowy dialog Windows njeda so wočinić. Standardny rjadowak njeda so namakać; dataja njebudźe so składować.
+file-picker-crashed-open = Datajowy dialog Windows je spadnył. Dataja abo rjadowak njeda so wubrać.
+#   $path (string): The full path to which the file will be saved (e.g., 'C:\Users\Default User\Downloads\readme.txt').
+file-picker-crashed-save-somewhere = Datajowy dialog Windows je spadnył. Dataja budźe so do { $path } składować.
+file-picker-crashed-save-nowhere = Datajowy dialog Windows je spadnył. Standardny rjadowak njeda so namakać; dataja njebudźe so składować.
+
+# Button used with file-picker-crashed-save-default. Opens the folder in Windows
+# Explorer, with the saved file selected and in focus.
+#
+# The wording here should be consistent with the Windows variant of
+# `downloads-cmd-show-menuitem-2` and similar messages.
+
+file-picker-crashed-show-in-folder =
+    .label = W rjadowaku pokazać
+    .accessKey = r

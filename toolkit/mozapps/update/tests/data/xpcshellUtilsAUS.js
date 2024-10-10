@@ -1305,17 +1305,16 @@ function checkAppBundleModTime() {
  * @param   aUpdateCount
  *          The update history's update count.
  */
-function checkUpdateManager(
+async function checkUpdateManager(
   aStatusFileState,
   aHasActiveUpdate,
   aUpdateStatusState,
   aUpdateErrCode,
   aUpdateCount
 ) {
-  let activeUpdate =
-    aUpdateStatusState == STATE_DOWNLOADING
-      ? gUpdateManager.downloadingUpdate
-      : gUpdateManager.readyUpdate;
+  let activeUpdate = await (aUpdateStatusState == STATE_DOWNLOADING
+    ? gUpdateManager.getDownloadingUpdate()
+    : gUpdateManager.getReadyUpdate());
   Assert.equal(
     readStatusState(),
     aStatusFileState,
@@ -1337,13 +1336,14 @@ function checkUpdateManager(
         msgTags[i] + "the active update should not be defined"
       );
     }
+    const history = await gUpdateManager.getHistory();
     Assert.equal(
-      gUpdateManager.getUpdateCount(),
+      history.length,
       aUpdateCount,
       msgTags[i] + "the update manager updateCount attribute" + MSG_SHOULD_EQUAL
     );
     if (aUpdateCount > 0) {
-      let update = gUpdateManager.getUpdateAt(0);
+      let update = history[0];
       Assert.equal(
         update.state,
         aUpdateStatusState,
@@ -1445,9 +1445,9 @@ function checkPostUpdateRunningFile(aShouldExist) {
  * Initializes the most commonly used settings and creates an instance of the
  * update service stub.
  */
-function standardInit() {
+async function standardInit() {
   // Initialize the update service stub component
-  initUpdateServiceStub();
+  await initUpdateServiceStub();
 }
 
 /**
@@ -2169,11 +2169,6 @@ function runUpdate(
   }
   Assert.equal(status, aExpectedStatus, "the update status" + MSG_SHOULD_EQUAL);
 
-  Assert.ok(
-    !updateHasBinaryTransparencyErrorResult(),
-    "binary transparency is not being processed for now"
-  );
-
   if (gIsServiceTest && aCheckSvcLog) {
     let contents = readServiceLogFile();
     Assert.notEqual(
@@ -2285,7 +2280,12 @@ function checkSymlink() {
 /**
  * Sets the active update and related information for updater tests.
  */
-function setupActiveUpdate() {
+async function setupActiveUpdate() {
+  // The update system being initialized at an unexpected time could cause
+  // unexpected effects in the reload process. Make sure that initialization
+  // has already run first.
+  await gAUS.init();
+
   let pendingState = gIsServiceTest ? STATE_PENDING_SVC : STATE_PENDING;
   let patchProps = { state: pendingState };
   let patches = getLocalPatchString(patchProps);
@@ -2294,7 +2294,10 @@ function setupActiveUpdate() {
   writeVersionFile(DEFAULT_UPDATE_VERSION);
   writeStatusFile(pendingState);
   reloadUpdateManagerData();
-  Assert.ok(!!gUpdateManager.readyUpdate, "the ready update should be defined");
+  Assert.ok(
+    !!(await gUpdateManager.getReadyUpdate()),
+    "the ready update should be defined"
+  );
 }
 
 /**
@@ -2356,7 +2359,7 @@ async function stageUpdate(
     );
 
     Assert.equal(
-      gUpdateManager.readyUpdate.state,
+      (await gUpdateManager.getReadyUpdate()).state,
       aStateAfterStage,
       "the update state" + MSG_SHOULD_EQUAL
     );
@@ -3152,15 +3155,23 @@ async function waitForHelperExit() {
  *          When true, copy or symlink omnijars as well.  This may be required
  *          to launch the updated application and have non-trivial functionality
  *          available.
+ * @param   options.asyncExeArg
+ *          When `aPostUpdateAsync`, the (single) post-argument to invoke the
+ *          post-update process with.  Default: "post-update-async".
  */
 async function setupUpdaterTest(
   aMarFile,
   aPostUpdateAsync,
   aPostUpdateExeRelPathPrefix = "",
   aSetupActiveUpdate = true,
-  { requiresOmnijar = false } = {}
+  { requiresOmnijar = false, asyncExeArg = "post-update-async" } = {}
 ) {
   debugDump("start - updater test setup");
+  // Make sure that update has already been initialized. If post update
+  // processing unexpectedly runs between this setup and when we use these
+  // files, it may clean them up before we get the chance to use them.
+  await gAUS.init();
+
   let updatesPatchDir = getUpdateDirFile(DIR_PATCH);
   if (!updatesPatchDir.exists()) {
     updatesPatchDir.create(Ci.nsIFile.DIRECTORY_TYPE, PERMS_DIRECTORY);
@@ -3298,11 +3309,13 @@ async function setupUpdaterTest(
   });
 
   if (aSetupActiveUpdate) {
-    setupActiveUpdate();
+    await setupActiveUpdate();
   }
 
   if (aPostUpdateAsync !== null) {
-    createUpdaterINI(aPostUpdateAsync, aPostUpdateExeRelPathPrefix);
+    createUpdaterINI(aPostUpdateAsync, aPostUpdateExeRelPathPrefix, {
+      asyncExeArg,
+    });
   }
 
   await TestUtils.waitForCondition(() => {
@@ -3328,9 +3341,16 @@ async function setupUpdaterTest(
  *          order to test the default launch behavior which is async.
  * @param   aExeRelPathPrefix
  *          A string to prefix the ExeRelPath values in the updater.ini.
+ * @param   options.asyncExeArg
+ *          When `aIsExeAsync`, the (single) argument to invoke the
+ *          post-update process with.  Default: "post-update-async".
  */
-function createUpdaterINI(aIsExeAsync, aExeRelPathPrefix) {
-  let exeArg = "ExeArg=post-update-async\n";
+function createUpdaterINI(
+  aIsExeAsync,
+  aExeRelPathPrefix,
+  { asyncExeArg = "post-update-async" } = {}
+) {
+  let exeArg = `ExeArg=${asyncExeArg}\n`;
   let exeAsync = "";
   if (aIsExeAsync !== undefined) {
     if (aIsExeAsync) {
@@ -4093,8 +4113,13 @@ function getPostUpdateFile(aSuffix) {
 /**
  * Checks the contents of the updater post update binary log. When completed
  * checkPostUpdateAppLogFinished will be called.
+ *
+ * @param   options.expectedContents
+ *          The expected log content.  Default: "post-update\n".
  */
-async function checkPostUpdateAppLog() {
+async function checkPostUpdateAppLog({
+  expectedContents = "post-update\n",
+} = {}) {
   // Only Mac OS X and Windows support post update.
   if (AppConstants.platform == "macosx" || AppConstants.platform == "win") {
     let file = getPostUpdateFile(".log");
@@ -4103,10 +4128,20 @@ async function checkPostUpdateAppLog() {
       "Waiting for file to exist, path: " + file.path
     );
 
-    let expectedContents = "post-update\n";
     await TestUtils.waitForCondition(
       () => readFile(file) == expectedContents,
-      "Waiting for expected file contents: " + expectedContents
+      // This is wonky: the message is evaluated _first_, not _finally_!  But
+      // when there's a mismatch and not a race, it still has the final content.
+      "Waiting for expected file contents: " +
+        expectedContents +
+        ", first read: " +
+        readFile(file)
+    );
+
+    Assert.equal(
+      readFile(file),
+      expectedContents,
+      "the post update log contents" + MSG_SHOULD_EQUAL
     );
   }
 }
@@ -4283,10 +4318,10 @@ async function waitForUpdateCheck(aSuccess, aExpectedValues = {}) {
  *          onStopRequest occurs and returns the arguments from onStopRequest.
  */
 async function waitForUpdateDownload(aUpdates, aExpectedStatus) {
-  let bestUpdate = gAUS.selectUpdate(aUpdates);
-  let success = await gAUS.downloadUpdate(bestUpdate, false);
-  if (!success) {
-    do_throw("nsIApplicationUpdateService:downloadUpdate returned " + success);
+  let bestUpdate = await gAUS.selectUpdate(aUpdates);
+  let result = await gAUS.downloadUpdate(bestUpdate, false);
+  if (result != Ci.nsIApplicationUpdateService.DOWNLOAD_SUCCESS) {
+    do_throw("nsIApplicationUpdateService:downloadUpdate returned " + result);
   }
   return new Promise(resolve =>
     gAUS.addDownloadListener({
@@ -4404,8 +4439,6 @@ function createAppInfo(aID, aName, aVersion, aPlatformVersion) {
  *       would otherwise pollute the xpcshell log.
  *
  * Command line arguments used when launching the application:
- * -no-remote prevents shell integration from being affected by an existing
- * application process.
  * -test-process-updates makes the application exit after being relaunched by
  * the updater.
  * the platform specific string defined by PIPE_TO_NULL to output both stdout
@@ -4446,7 +4479,7 @@ function getProcessArgs(aExtraArgs) {
     scriptContents += "export XRE_PROFILE_PATH=" + profilePath + "\n";
     scriptContents +=
       appBinPath +
-      " -no-remote -test-process-updates " +
+      " -test-process-updates " +
       aExtraArgs.join(" ") +
       " " +
       PIPE_TO_NULL;
@@ -4463,7 +4496,6 @@ function getProcessArgs(aExtraArgs) {
       appBinPath,
       "-profile",
       profilePath,
-      "-no-remote",
       "-test-process-updates",
       "-wait-for-browser",
     ]

@@ -46,10 +46,6 @@
 #include "nsDocShell.h"
 #include "nsDocShellLoadState.h"
 
-#ifdef MOZ_INSTRUMENT_EVENT_LOOP
-#  include "EventTracer.h"
-#endif
-
 using namespace mozilla;
 using mozilla::dom::BrowsingContext;
 using mozilla::intl::LocaleService;
@@ -182,9 +178,6 @@ nsAppShellService::CreateTopLevelWindow(nsIAppWindow* aParent, nsIURI* aUrl,
   if (NS_SUCCEEDED(rv)) {
     // the addref resulting from this is the owning addref for this window
     RegisterTopLevelWindow(*aResult);
-    nsCOMPtr<nsIAppWindow> parent;
-    if (aChromeMask & nsIWebBrowserChrome::CHROME_DEPENDENT) parent = aParent;
-    (*aResult)->SetZLevel(CalculateWindowZLevel(parent, aChromeMask));
   }
 
   return rv;
@@ -466,41 +459,6 @@ nsAppShellService::CreateWindowlessBrowser(bool aIsChrome, uint32_t aChromeMask,
 
   result.forget(aResult);
   return NS_OK;
-}
-
-uint32_t nsAppShellService::CalculateWindowZLevel(nsIAppWindow* aParent,
-                                                  uint32_t aChromeMask) {
-  uint32_t zLevel;
-
-  zLevel = nsIAppWindow::normalZ;
-  if (aChromeMask & nsIWebBrowserChrome::CHROME_WINDOW_RAISED)
-    zLevel = nsIAppWindow::raisedZ;
-  else if (aChromeMask & nsIWebBrowserChrome::CHROME_WINDOW_LOWERED)
-    zLevel = nsIAppWindow::loweredZ;
-
-#ifdef XP_MACOSX
-  /* Platforms on which modal windows are always application-modal, not
-     window-modal (that's just the Mac, right?) want modal windows to
-     be stacked on top of everyone else.
-
-     On Mac OS X, bind modality to parent window instead of app (ala Mac OS 9)
-  */
-  uint32_t modalDepMask =
-      nsIWebBrowserChrome::CHROME_MODAL | nsIWebBrowserChrome::CHROME_DEPENDENT;
-  if (aParent && (aChromeMask & modalDepMask)) {
-    aParent->GetZLevel(&zLevel);
-  }
-#else
-  /* Platforms with native support for dependent windows (that's everyone
-      but pre-Mac OS X, right?) know how to stack dependent windows. On these
-      platforms, give the dependent window the same level as its parent,
-      so we won't try to override the normal platform behaviour. */
-  if ((aChromeMask & nsIWebBrowserChrome::CHROME_DEPENDENT) && aParent) {
-    aParent->GetZLevel(&zLevel);
-  }
-#endif
-
-  return zLevel;
 }
 
 /*
@@ -871,21 +829,5 @@ nsAppShellService::Observe(nsISupports* aSubject, const char* aTopic,
     NS_ERROR("Unexpected observer topic!");
   }
 
-  return NS_OK;
-}
-
-NS_IMETHODIMP
-nsAppShellService::StartEventLoopLagTracking(bool* aResult) {
-#ifdef MOZ_INSTRUMENT_EVENT_LOOP
-  *aResult = mozilla::InitEventTracing(true);
-#endif
-  return NS_OK;
-}
-
-NS_IMETHODIMP
-nsAppShellService::StopEventLoopLagTracking() {
-#ifdef MOZ_INSTRUMENT_EVENT_LOOP
-  mozilla::ShutdownEventTracing();
-#endif
   return NS_OK;
 }

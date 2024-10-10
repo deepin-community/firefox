@@ -125,15 +125,19 @@
 #include "mozilla/dom/quota/ClientImpl.h"
 #include "mozilla/dom/quota/DebugOnlyMacro.h"
 #include "mozilla/dom/quota/DirectoryLock.h"
+#include "mozilla/dom/quota/DirectoryLockInlines.h"
 #include "mozilla/dom/quota/DecryptingInputStream_impl.h"
 #include "mozilla/dom/quota/EncryptingOutputStream_impl.h"
+#include "mozilla/dom/quota/ErrorHandling.h"
 #include "mozilla/dom/quota/FileStreams.h"
 #include "mozilla/dom/quota/OriginScope.h"
+#include "mozilla/dom/quota/PersistenceScope.h"
 #include "mozilla/dom/quota/PersistenceType.h"
 #include "mozilla/dom/quota/QuotaCommon.h"
 #include "mozilla/dom/quota/QuotaManager.h"
 #include "mozilla/dom/quota/QuotaObject.h"
 #include "mozilla/dom/quota/ResultExtensions.h"
+#include "mozilla/dom/quota/ThreadUtils.h"
 #include "mozilla/dom/quota/UsageInfo.h"
 #include "mozilla/fallible.h"
 #include "mozilla/ipc/BackgroundParent.h"
@@ -299,12 +303,21 @@ const uint32_t kMaxConnectionThreadCount = 20;
 
 static_assert(kMaxConnectionThreadCount, "Must have at least one thread!");
 
-// The maximum number of threads to keep when idle. Threads that become idle in
-// excess of this number will be shut down immediately.
-const uint32_t kMaxIdleConnectionThreadCount = 2;
+// The maximum number of threads to keep when idle. Until we switch to the STS
+// pool, we can reduce the number of idle threads kept around thanks to the
+// grace timeout.
+const uint32_t kMaxIdleConnectionThreadCount = 1;
 
 static_assert(kMaxConnectionThreadCount >= kMaxIdleConnectionThreadCount,
               "Idle thread limit must be less than total thread limit!");
+
+// The length of time that wanted idle threads will stay alive before being shut
+// down.
+const uint32_t kConnectionThreadMaxIdleMS = 30 * 1000;  // 30 seconds
+
+// The length of time that excess idle threads will stay alive before being shut
+// down.
+const uint32_t kConnectionThreadGraceIdleMS = 500;  // 0.5 seconds
 
 // The length of time that database connections will be held open after all
 // transactions have completed before doing idle maintenance. Please keep in
@@ -314,9 +327,6 @@ const uint32_t kConnectionIdleMaintenanceMS = 2 * 1000;  // 2 seconds
 // The length of time that database connections will be held open after all
 // transactions and maintenance have completed.
 const uint32_t kConnectionIdleCloseMS = 10 * 1000;  // 10 seconds
-
-// The length of time that idle threads will stay alive before being shut down.
-const uint32_t kConnectionThreadIdleMS = 30 * 1000;  // 30 seconds
 
 #define SAVEPOINT_CLAUSE "SAVEPOINT sp;"_ns
 
@@ -387,9 +397,20 @@ const uint32_t kDeleteTimeoutMs = 1000;
 const int32_t kDEBUGThreadPriority = nsISupportsPriority::PRIORITY_NORMAL;
 const uint32_t kDEBUGThreadSleepMS = 0;
 
-const int32_t kDEBUGTransactionThreadPriority =
-    nsISupportsPriority::PRIORITY_NORMAL;
+// Set to a non-zero number to enable debugging of transaction event targets.
+// It will cause sleeping after every transaction runnable!
+//
+// This can be useful for discovering race conditions related to switching to
+// another thread. Such races are usually avoided by using MozPromise or
+// RunAfterProcessingCurrentEvent. Chaos mode doesn't always help with
+// uncovering these issues, and only a precisely targeted sleep call can
+// simulate the problem.
 const uint32_t kDEBUGTransactionThreadSleepMS = 0;
+
+// Make sure that we notice if we ever accidentally check in a non-zero value.
+#  ifdef MOZILLA_OFFICIAL
+static_assert(kDEBUGTransactionThreadSleepMS == 0);
+#  endif
 
 #endif
 
@@ -613,6 +634,10 @@ Result<nsCOMPtr<nsIFileURL>, nsresult> GetDatabaseFileURL(
   return result;
 }
 
+nsLiteralCString GetDefaultSynchronousMode() {
+  return IndexedDatabaseManager::FullSynchronous() ? "FULL"_ns : "NORMAL"_ns;
+}
+
 nsresult SetDefaultPragmas(mozIStorageConnection& aConnection) {
   MOZ_ASSERT(!NS_IsMainThread());
 
@@ -641,9 +666,7 @@ nsresult SetDefaultPragmas(mozIStorageConnection& aConnection) {
   QM_TRY(MOZ_TO_RESULT(aConnection.ExecuteSimpleSQL(kBuiltInPragmas)));
 
   QM_TRY(MOZ_TO_RESULT(aConnection.ExecuteSimpleSQL(nsAutoCString{
-      "PRAGMA synchronous = "_ns +
-      (IndexedDatabaseManager::FullSynchronous() ? "FULL"_ns : "NORMAL"_ns) +
-      ";"_ns})));
+      "PRAGMA synchronous = "_ns + GetDefaultSynchronousMode() + ";"_ns})));
 
 #ifndef IDB_MOBILE
   if (kSQLiteGrowthIncrement) {
@@ -1130,6 +1153,7 @@ class DatabaseConnection final : public CachingDatabaseConnection {
   RefPtr<UpdateRefcountFunction> mUpdateRefcountFunction;
   RefPtr<QuotaObject> mQuotaObject;
   RefPtr<QuotaObject> mJournalQuotaObject;
+  IDBTransaction::Durability mLastDurability;
   bool mInReadTransaction;
   bool mInWriteTransaction;
 
@@ -1146,7 +1170,7 @@ class DatabaseConnection final : public CachingDatabaseConnection {
     return mUpdateRefcountFunction;
   }
 
-  nsresult BeginWriteTransaction();
+  nsresult BeginWriteTransaction(const IDBTransaction::Durability aDurability);
 
   nsresult CommitWriteTransaction();
 
@@ -1233,7 +1257,7 @@ class DatabaseConnection::UpdateRefcountFunction final
   bool mInSavepoint;
 
  public:
-  NS_DECL_ISUPPORTS
+  NS_DECL_ISUPPORTS_ONEVENTTARGET
   NS_DECL_MOZISTORAGEFUNCTION
 
   UpdateRefcountFunction(DatabaseConnection* aConnection,
@@ -1317,7 +1341,9 @@ class ConnectionPool final {
   class FinishCallbackWrapper;
   class IdleConnectionRunnable;
 
-  class ThreadRunnable;
+#ifdef DEBUG
+  class TransactionRunnable;
+#endif
   class TransactionInfo;
   struct TransactionInfoPair;
 
@@ -1396,99 +1422,10 @@ class ConnectionPool final {
     }
   };
 
-  class ThreadInfo {
-   public:
-    ThreadInfo();
-
-    ThreadInfo(nsCOMPtr<nsIThread> aThread, RefPtr<ThreadRunnable> aRunnable)
-        : mThread{std::move(aThread)}, mRunnable{std::move(aRunnable)} {
-      AssertIsOnBackgroundThread();
-      AssertValid();
-
-      MOZ_COUNT_CTOR(ConnectionPool::ThreadInfo);
-    }
-
-    ThreadInfo(const ThreadInfo& aOther) = delete;
-    ThreadInfo& operator=(const ThreadInfo& aOther) = delete;
-
-    ThreadInfo(ThreadInfo&& aOther) noexcept;
-    ThreadInfo& operator=(ThreadInfo&& aOther) = default;
-
-    bool IsValid() const {
-      const bool res = mThread;
-      if (res) {
-        AssertValid();
-      } else {
-        AssertEmpty();
-      }
-      return res;
-    }
-
-    void AssertValid() const {
-      MOZ_ASSERT(mThread);
-      MOZ_ASSERT(mRunnable);
-    }
-
-    void AssertEmpty() const {
-      MOZ_ASSERT(!mThread);
-      MOZ_ASSERT(!mRunnable);
-    }
-
-    nsIThread& ThreadRef() {
-      AssertValid();
-      return *mThread;
-    }
-
-    std::tuple<nsCOMPtr<nsIThread>, RefPtr<ThreadRunnable>> Forget() {
-      AssertValid();
-
-      return {std::move(mThread), std::move(mRunnable)};
-    }
-
-    ~ThreadInfo();
-
-    bool operator==(const ThreadInfo& aOther) const {
-      return mThread == aOther.mThread && mRunnable == aOther.mRunnable;
-    }
-
-   private:
-    nsCOMPtr<nsIThread> mThread;
-    RefPtr<ThreadRunnable> mRunnable;
-  };
-
-  struct IdleThreadInfo final : public IdleResource {
-    ThreadInfo mThreadInfo;
-
-    explicit IdleThreadInfo(ThreadInfo aThreadInfo);
-
-    IdleThreadInfo(const IdleThreadInfo& aOther) = delete;
-    IdleThreadInfo(IdleThreadInfo&& aOther) noexcept
-        : IdleResource(std::move(aOther)),
-          mThreadInfo(std::move(aOther.mThreadInfo)) {
-      AssertIsOnBackgroundThread();
-      mThreadInfo.AssertValid();
-
-      MOZ_COUNT_CTOR(ConnectionPool::IdleThreadInfo);
-    }
-    IdleThreadInfo& operator=(const IdleThreadInfo& aOther) = delete;
-    IdleThreadInfo& operator=(IdleThreadInfo&& aOther) = delete;
-
-    ~IdleThreadInfo();
-
-    bool operator==(const IdleThreadInfo& aOther) const {
-      return mThreadInfo == aOther.mThreadInfo;
-    }
-
-    bool operator<(const IdleThreadInfo& aOther) const {
-      return mIdleTime < aOther.mIdleTime;
-    }
-  };
-
   // This mutex guards mDatabases, see below.
   Mutex mDatabasesMutex MOZ_UNANNOTATED;
 
   nsCOMPtr<nsIThreadPool> mIOTarget;
-  nsTArray<IdleThreadInfo> mIdleThreads;
   nsTArray<IdleDatabaseInfo> mIdleDatabases;
   nsTArray<PerformingIdleMaintenanceDatabaseInfo>
       mDatabasesPerformingIdleMaintenance;
@@ -1506,7 +1443,6 @@ class ConnectionPool final {
   nsTArray<UniquePtr<DatabaseCompleteCallback>> mCompleteCallbacks;
 
   uint64_t mNextTransactionId;
-  uint32_t mTotalThreadCount;
   FlippedOnce<false> mShutdownRequested;
   FlippedOnce<false> mShutdownComplete;
 
@@ -1556,18 +1492,14 @@ class ConnectionPool final {
 
   void CancelIdleTimer();
 
-  void ShutdownThread(ThreadInfo aThreadInfo);
-
   void CloseIdleDatabases();
-
-  void ShutdownIdleThreads();
 
   bool ScheduleTransaction(TransactionInfo& aTransactionInfo,
                            bool aFromQueuedTransactions);
 
   void NoteFinishedTransaction(uint64_t aTransactionId);
 
-  void ScheduleQueuedTransactions(ThreadInfo aThreadInfo);
+  void ScheduleQueuedTransactions();
 
   void NoteIdleDatabase(DatabaseInfo& aDatabaseInfo);
 
@@ -1636,7 +1568,7 @@ struct ConnectionPool::DatabaseInfo final {
   nsTArray<NotNull<TransactionInfo*>> mTransactionsScheduledDuringClose;
   nsTArray<NotNull<TransactionInfo*>> mScheduledWriteTransactions;
   Maybe<TransactionInfo&> mRunningWriteTransaction;
-  ThreadInfo mThreadInfo;
+  RefPtr<TaskQueue> mEventTarget;
   uint32_t mReadTransactionCount;
   uint32_t mWriteTransactionCount;
   bool mNeedsCheckpoint;
@@ -1658,6 +1590,8 @@ struct ConnectionPool::DatabaseInfo final {
   uint64_t TotalTransactionCount() const {
     return mReadTransactionCount + mWriteTransactionCount;
   }
+
+  nsresult Dispatch(already_AddRefed<nsIRunnable> aRunnable);
 
  private:
   ~DatabaseInfo();
@@ -1714,26 +1648,19 @@ class ConnectionPool::FinishCallbackWrapper final : public Runnable {
   NS_DECL_NSIRUNNABLE
 };
 
-class ConnectionPool::ThreadRunnable final : public Runnable {
-  // Set at construction for logging.
-  const uint32_t mSerialNumber;
+#ifdef DEBUG
 
-  // These two values are only modified on the connection thread.
-  FlippedOnce<true> mFirstRun;
-  FlippedOnce<true> mContinueRunning;
-
+class ConnectionPool::TransactionRunnable final : public Runnable {
  public:
-  explicit ThreadRunnable(uint32_t aSerialNumber);
-
-  NS_INLINE_DECL_REFCOUNTING_INHERITED(ThreadRunnable, Runnable)
-
-  uint32_t SerialNumber() const { return mSerialNumber; }
+  explicit TransactionRunnable(nsCOMPtr<nsIRunnable> aRunnable);
 
  private:
-  ~ThreadRunnable() override;
-
   NS_DECL_NSIRUNNABLE
+
+  nsCOMPtr<nsIRunnable> mRunnable;
 };
+
+#endif
 
 class ConnectionPool::TransactionInfo final {
   friend class mozilla::DefaultDelete<TransactionInfo>;
@@ -2621,7 +2548,7 @@ class TransactionBase : public AtomicSafeRefCounted<TransactionBase> {
   uint64_t mActiveRequestCount;
   Atomic<bool> mInvalidatedOnAnyThread;
   const Mode mMode;
-  const Durability mDurability;  // TODO: See bug 1883045
+  const Durability mDurability;
   FlippedOnce<false> mInitialized;
   FlippedOnce<false> mHasBeenActiveOnConnectionThread;
   FlippedOnce<false> mActorDestroyed;
@@ -3138,6 +3065,9 @@ class FactoryOp
 
     return mDatabaseFilePath.ref();
   }
+
+  nsresult DispatchThisAfterProcessingCurrentEvent(
+      nsCOMPtr<nsIEventTarget> aEventTarget);
 
   void NoteDatabaseBlocked(Database* aDatabase);
 
@@ -4752,6 +4682,9 @@ class Utils final : public PBackgroundIndexedDBUtilsParent {
       const PersistenceType& aPersistenceType, const nsACString& aOrigin,
       const nsAString& aDatabaseName, const int64_t& aFileId, int32_t* aRefCnt,
       int32_t* aDBRefCnt, bool* aResult) override;
+
+  mozilla::ipc::IPCResult RecvDoMaintenance(
+      DoMaintenanceResolver&& aResolver) override;
 };
 
 /*******************************************************************************
@@ -4861,6 +4794,8 @@ class QuotaClient final : public mozilla::dom::quota::Client {
   nsresult AsyncDeleteFile(DatabaseFileManager* aFileManager, int64_t aFileId);
 
   nsresult FlushPendingFileDeletions();
+
+  RefPtr<BoolPromise> DoMaintenance();
 
   RefPtr<Maintenance> GetCurrentMaintenance() const {
     return mCurrentMaintenance;
@@ -5103,8 +5038,11 @@ class Maintenance final : public Runnable {
   };
 
   RefPtr<QuotaClient> mQuotaClient;
+  MozPromiseHolder<BoolPromise> mPromiseHolder;
   PRTime mStartTime;
   RefPtr<UniversalDirectoryLock> mPendingDirectoryLock;
+  // The directory lock is normally dropped by BeginDatabaseMaintenance, but if
+  // something fails (in any method), the Finish method will do the cleanup.
   RefPtr<UniversalDirectoryLock> mDirectoryLock;
   nsTArray<nsCOMPtr<nsIRunnable>> mCompleteCallbacks;
   nsTArray<DirectoryInfo> mDirectoryInfos;
@@ -5140,6 +5078,12 @@ class Maintenance final : public Runnable {
     MOZ_ASSERT(mState == State::Initial);
 
     Unused << this->Run();
+  }
+
+  RefPtr<BoolPromise> OnResults() {
+    AssertIsOnBackgroundThread();
+
+    return mPromiseHolder.Ensure(__func__);
   }
 
   void Abort();
@@ -5251,6 +5195,8 @@ class DatabaseMaintenance final : public Runnable {
   enum class MaintenanceAction { Nothing = 0, IncrementalVacuum, FullVacuum };
 
   RefPtr<Maintenance> mMaintenance;
+  // The directory lock is dropped in RunOnOwningThread which serves as a
+  // cleanup method and is always called.
   RefPtr<DirectoryLock> mDirectoryLock;
   const OriginMetadata mOriginMetadata;
   const nsString mDatabasePath;
@@ -5262,21 +5208,22 @@ class DatabaseMaintenance final : public Runnable {
   DataMutex<nsCOMPtr<mozIStorageConnection>> mSharedStorageConnection;
 
  public:
-  DatabaseMaintenance(Maintenance* aMaintenance, DirectoryLock* aDirectoryLock,
+  DatabaseMaintenance(Maintenance* aMaintenance,
+                      RefPtr<DirectoryLock> aDirectoryLock,
                       PersistenceType aPersistenceType,
                       const OriginMetadata& aOriginMetadata,
                       const nsAString& aDatabasePath,
                       const Maybe<CipherKey>& aMaybeKey)
       : Runnable("dom::indexedDB::DatabaseMaintenance"),
         mMaintenance(aMaintenance),
-        mDirectoryLock(aDirectoryLock),
+        mDirectoryLock(std::move(aDirectoryLock)),
         mOriginMetadata(aOriginMetadata),
         mDatabasePath(aDatabasePath),
         mPersistenceType(aPersistenceType),
         mMaybeKey{aMaybeKey},
         mAborted(false),
         mSharedStorageConnection("sharedStorageConnection") {
-    MOZ_ASSERT(aDirectoryLock);
+    MOZ_ASSERT(mDirectoryLock);
 
     MOZ_ASSERT(mDirectoryLock->Id() >= 0);
     mDirectoryLockId = mDirectoryLock->Id();
@@ -6696,7 +6643,10 @@ already_AddRefed<nsIThreadPool> MakeConnectionIOTarget() {
       threadPool->SetIdleThreadLimit(kMaxIdleConnectionThreadCount));
 
   MOZ_ALWAYS_SUCCEEDS(
-      threadPool->SetIdleThreadTimeout(kConnectionThreadIdleMS));
+      threadPool->SetIdleThreadMaximumTimeout(kConnectionThreadMaxIdleMS));
+
+  MOZ_ALWAYS_SUCCEEDS(
+      threadPool->SetIdleThreadGraceTimeout(kConnectionThreadGraceIdleMS));
 
   MOZ_ALWAYS_SUCCEEDS(threadPool->SetName("IndexedDB IO"_ns));
 
@@ -6794,6 +6744,7 @@ DatabaseConnection::DatabaseConnection(
     MovingNotNull<SafeRefPtr<DatabaseFileManager>> aFileManager)
     : CachingDatabaseConnection(std::move(aStorageConnection)),
       mFileManager(std::move(aFileManager)),
+      mLastDurability(IDBTransaction::Durability::Default),
       mInReadTransaction(false),
       mInWriteTransaction(false)
 #ifdef DEBUG
@@ -6824,7 +6775,8 @@ nsresult DatabaseConnection::Init() {
   return NS_OK;
 }
 
-nsresult DatabaseConnection::BeginWriteTransaction() {
+nsresult DatabaseConnection::BeginWriteTransaction(
+    const IDBTransaction::Durability aDurability) {
   AssertIsOnConnectionThread();
   MOZ_ASSERT(HasStorageConnection());
   MOZ_ASSERT(mInReadTransaction);
@@ -6836,6 +6788,29 @@ nsresult DatabaseConnection::BeginWriteTransaction() {
   QM_TRY(MOZ_TO_RESULT(ExecuteCachedStatement("ROLLBACK;"_ns)));
 
   mInReadTransaction = false;
+
+  if (mLastDurability != aDurability) {
+    auto synchronousMode = [aDurability]() -> nsLiteralCString {
+      switch (aDurability) {
+        case IDBTransaction::Durability::Default:
+          return GetDefaultSynchronousMode();
+
+        case IDBTransaction::Durability::Strict:
+          return "EXTRA"_ns;
+
+        case IDBTransaction::Durability::Relaxed:
+          return "OFF"_ns;
+
+        default:
+          MOZ_CRASH("Unknown CheckpointMode!");
+      }
+    }();
+
+    QM_TRY(MOZ_TO_RESULT(ExecuteCachedStatement("PRAGMA synchronous = "_ns +
+                                                synchronousMode + ";"_ns)));
+
+    mLastDurability = aDurability;
+  }
 
   if (!mUpdateRefcountFunction) {
     MOZ_ASSERT(mFileManager);
@@ -7738,8 +7713,7 @@ ConnectionPool::ConnectionPool()
     : mDatabasesMutex("ConnectionPool::mDatabasesMutex"),
       mIOTarget(MakeConnectionIOTarget()),
       mIdleTimer(NS_NewTimer()),
-      mNextTransactionId(0),
-      mTotalThreadCount(0) {
+      mNextTransactionId(0) {
   AssertIsOnOwningThread();
   AssertIsOnBackgroundThread();
   MOZ_ASSERT(mIdleTimer);
@@ -7747,7 +7721,6 @@ ConnectionPool::ConnectionPool()
 
 ConnectionPool::~ConnectionPool() {
   AssertIsOnOwningThread();
-  MOZ_ASSERT(mIdleThreads.IsEmpty());
   MOZ_ASSERT(mIdleDatabases.IsEmpty());
   MOZ_ASSERT(!mIdleTimer);
   MOZ_ASSERT(mTargetIdleTime.IsNull());
@@ -7755,7 +7728,6 @@ ConnectionPool::~ConnectionPool() {
   MOZ_ASSERT(!mTransactions.Count());
   MOZ_ASSERT(mQueuedTransactions.IsEmpty());
   MOZ_ASSERT(mCompleteCallbacks.IsEmpty());
-  MOZ_ASSERT(!mTotalThreadCount);
   MOZ_ASSERT(mShutdownRequested);
   MOZ_ASSERT(mShutdownComplete);
 }
@@ -7771,8 +7743,6 @@ void ConnectionPool::IdleTimerCallback(nsITimer* aTimer, void* aClosure) {
   MOZ_ASSERT(self.mIdleTimer);
   MOZ_ASSERT(SameCOMIdentity(self.mIdleTimer, aTimer));
   MOZ_ASSERT(!self.mTargetIdleTime.IsNull());
-  MOZ_ASSERT_IF(self.mIdleDatabases.IsEmpty(), !self.mIdleThreads.IsEmpty());
-  MOZ_ASSERT_IF(self.mIdleThreads.IsEmpty(), !self.mIdleDatabases.IsEmpty());
 
   self.mTargetIdleTime = TimeStamp();
 
@@ -7794,18 +7764,6 @@ void ConnectionPool::IdleTimerCallback(nsITimer* aTimer, void* aClosure) {
       } else {
         self.CloseDatabase(*info.mDatabaseInfo.ref());
       }
-
-      return false;
-    }
-
-    return true;
-  });
-
-  removeUntil(self.mIdleThreads, [now, &self](auto& info) {
-    info.mThreadInfo.AssertValid();
-
-    if (now >= info.mIdleTime) {
-      self.ShutdownThread(std::move(info.mThreadInfo));
 
       return false;
     }
@@ -7959,15 +7917,14 @@ void ConnectionPool::Dispatch(uint64_t aTransactionId, nsIRunnable* aRunnable) {
 
   if (transactionInfo->mRunning) {
     DatabaseInfo& dbInfo = transactionInfo->mDatabaseInfo;
-    dbInfo.mThreadInfo.AssertValid();
+    MOZ_ASSERT(dbInfo.mEventTarget);
     MOZ_ASSERT(!dbInfo.mClosing);
     MOZ_ASSERT_IF(
         transactionInfo->mIsWriteTransaction,
         dbInfo.mRunningWriteTransaction &&
             dbInfo.mRunningWriteTransaction.refEquals(*transactionInfo));
 
-    MOZ_ALWAYS_SUCCEEDS(
-        dbInfo.mThreadInfo.ThreadRef().Dispatch(aRunnable, NS_DISPATCH_NORMAL));
+    MOZ_ALWAYS_SUCCEEDS(dbInfo.Dispatch(do_AddRef(aRunnable)));
   } else {
     transactionInfo->mQueuedRunnables.AppendElement(aRunnable);
   }
@@ -8027,20 +7984,23 @@ void ConnectionPool::Shutdown() {
 
   CloseIdleDatabases();
 
-  ShutdownIdleThreads();
-
   if (!mDatabases.Count()) {
     MOZ_ASSERT(!mTransactions.Count());
 
     Cleanup();
 
     MOZ_ASSERT(mShutdownComplete);
+
+    mIOTarget->Shutdown();
+
     return;
   }
 
   MOZ_ALWAYS_TRUE(SpinEventLoopUntil("ConnectionPool::Shutdown"_ns, [&]() {
     return static_cast<bool>(mShutdownComplete);
   }));
+
+  mIOTarget->Shutdown();
 }
 
 void ConnectionPool::Cleanup() {
@@ -8049,7 +8009,6 @@ void ConnectionPool::Cleanup() {
   MOZ_ASSERT(!mShutdownComplete);
   MOZ_ASSERT(!mDatabases.Count());
   MOZ_ASSERT(!mTransactions.Count());
-  MOZ_ASSERT(mIdleThreads.IsEmpty());
 
   AUTO_PROFILER_LABEL("ConnectionPool::Cleanup", DOM);
 
@@ -8095,16 +8054,7 @@ void ConnectionPool::AdjustIdleTimer() {
     newTargetIdleTime = mIdleDatabases[0].mIdleTime;
   }
 
-  if (!mIdleThreads.IsEmpty()) {
-    const TimeStamp& idleTime = mIdleThreads[0].mIdleTime;
-
-    if (newTargetIdleTime.IsNull() || idleTime < newTargetIdleTime) {
-      newTargetIdleTime = idleTime;
-    }
-  }
-
   MOZ_ASSERT_IF(newTargetIdleTime.IsNull(), mIdleDatabases.IsEmpty());
-  MOZ_ASSERT_IF(newTargetIdleTime.IsNull(), mIdleThreads.IsEmpty());
 
   // Cancel the timer if it was running and the new target time is different.
   if (!mTargetIdleTime.IsNull() &&
@@ -8146,25 +8096,6 @@ void ConnectionPool::CancelIdleTimer() {
   }
 }
 
-void ConnectionPool::ShutdownThread(ThreadInfo aThreadInfo) {
-  AssertIsOnOwningThread();
-  MOZ_ASSERT(mTotalThreadCount);
-
-  // We need to move thread and runnable separately.
-  auto [thread, runnable] = aThreadInfo.Forget();
-
-  IDB_DEBUG_LOG(("ConnectionPool shutting down thread %" PRIu32,
-                 runnable->SerialNumber()));
-
-  // This should clean up the thread with the profiler.
-  MOZ_ALWAYS_SUCCEEDS(thread->Dispatch(runnable.forget(), NS_DISPATCH_NORMAL));
-
-  MOZ_ALWAYS_SUCCEEDS(NS_DispatchToMainThread(NewRunnableMethod(
-      "nsIThread::AsyncShutdown", thread, &nsIThread::AsyncShutdown)));
-
-  mTotalThreadCount--;
-}
-
 void ConnectionPool::CloseIdleDatabases() {
   AssertIsOnOwningThread();
   MOZ_ASSERT(mShutdownRequested);
@@ -8187,18 +8118,6 @@ void ConnectionPool::CloseIdleDatabases() {
   }
 }
 
-void ConnectionPool::ShutdownIdleThreads() {
-  AssertIsOnOwningThread();
-  MOZ_ASSERT(mShutdownRequested);
-
-  AUTO_PROFILER_LABEL("ConnectionPool::ShutdownIdleThreads", DOM);
-
-  for (auto& idleThread : mIdleThreads) {
-    ShutdownThread(std::move(idleThread.mThreadInfo));
-  }
-  mIdleThreads.Clear();
-}
-
 bool ConnectionPool::ScheduleTransaction(TransactionInfo& aTransactionInfo,
                                          bool aFromQueuedTransactions) {
   AssertIsOnOwningThread();
@@ -8219,70 +8138,30 @@ bool ConnectionPool::ScheduleTransaction(TransactionInfo& aTransactionInfo,
     return true;
   }
 
-  if (!dbInfo.mThreadInfo.IsValid()) {
-    if (mIdleThreads.IsEmpty()) {
-      bool created = false;
+  if (!dbInfo.mEventTarget) {
+    const uint32_t serialNumber = SerialNumber();
+    const nsCString serialName =
+        nsPrintfCString("IndexedDB #%" PRIu32, serialNumber);
 
-      if (mTotalThreadCount < kMaxConnectionThreadCount) {
-        const uint32_t serialNumber = SerialNumber();
-        const nsCString serialName =
-            nsPrintfCString("IndexedDB #%" PRIu32, serialNumber);
-        // This will set the thread up with the profiler.
-        RefPtr<ThreadRunnable> runnable = new ThreadRunnable(serialNumber);
-
-        nsCOMPtr<nsIThread> newThread;
-        nsresult rv =
-            NS_NewNamedThread(serialName, getter_AddRefs(newThread), runnable);
-        if (NS_SUCCEEDED(rv)) {
-          newThread->SetNameForWakeupTelemetry("IndexedDB (all)"_ns);
-          MOZ_ASSERT(newThread);
-
-          IDB_DEBUG_LOG(("ConnectionPool created thread %" PRIu32,
-                         runnable->SerialNumber()));
-
-          dbInfo.mThreadInfo =
-              ThreadInfo{std::move(newThread), std::move(runnable)};
-
-          mTotalThreadCount++;
-          created = true;
-        } else {
-          NS_WARNING("Failed to make new thread!");
-        }
-      } else if (!mDatabasesPerformingIdleMaintenance.IsEmpty()) {
-        // We need a thread right now so force all idle processing to stop by
-        // posting a dummy runnable to each thread that might be doing idle
-        // maintenance.
-        //
-        // This is copied for each database inside the loop below, it is
-        // deliberately const to prevent the attempt to wrongly optimize the
-        // refcounting by passing runnable.forget() to the Dispatch method, see
-        // bug 1598559.
-
-        for (uint32_t index = mDatabasesPerformingIdleMaintenance.Length();
-             index > 0; index--) {
-          const auto& performingIdleMaintenanceInfo =
-              mDatabasesPerformingIdleMaintenance[index - 1];
-
-          performingIdleMaintenanceInfo.mIdleConnectionRunnable->Interrupt();
-        }
-      }
-
-      if (!created) {
-        if (!aFromQueuedTransactions) {
-          MOZ_ASSERT(!mQueuedTransactions.Contains(&aTransactionInfo));
-          mQueuedTransactions.AppendElement(
-              WrapNotNullUnchecked(&aTransactionInfo));
-        }
-        return false;
-      }
-    } else {
-      dbInfo.mThreadInfo = std::move(mIdleThreads.PopLastElement().mThreadInfo);
-
-      AdjustIdleTimer();
-    }
+    dbInfo.mEventTarget =
+        TaskQueue::Create(do_AddRef(mIOTarget), serialName.get());
+    MOZ_ASSERT(dbInfo.mEventTarget);
+    IDB_DEBUG_LOG(("ConnectionPool created task queue %" PRIu32, serialNumber));
   }
 
-  dbInfo.mThreadInfo.AssertValid();
+  // The number of active operations equals the number of databases minus idle
+  // databases. The maximum number of database operations which can make
+  // progress at the same time is kMaxConnectionThreadCount. If we are at this
+  // limit, all idle processing is interrupted to make room for user
+  // transactions.
+  if (mDatabases.Count() >=
+          (mIdleDatabases.Length() + kMaxConnectionThreadCount) &&
+      !mDatabasesPerformingIdleMaintenance.IsEmpty()) {
+    const auto& busyDbs = mDatabasesPerformingIdleMaintenance;
+    for (auto dbInfo = busyDbs.rbegin(); dbInfo != busyDbs.rend(); ++dbInfo) {
+      (*dbInfo).mIdleConnectionRunnable->Interrupt();
+    }
+  }
 
   if (aTransactionInfo.mIsWriteTransaction) {
     if (dbInfo.mRunningWriteTransaction) {
@@ -8308,8 +8187,7 @@ bool ConnectionPool::ScheduleTransaction(TransactionInfo& aTransactionInfo,
 
   if (!queuedRunnables.IsEmpty()) {
     for (auto& queuedRunnable : queuedRunnables) {
-      MOZ_ALWAYS_SUCCEEDS(dbInfo.mThreadInfo.ThreadRef().Dispatch(
-          queuedRunnable.forget(), NS_DISPATCH_NORMAL));
+      MOZ_ALWAYS_SUCCEEDS(dbInfo.Dispatch(queuedRunnable.forget()));
     }
 
     queuedRunnables.Clear();
@@ -8332,7 +8210,7 @@ void ConnectionPool::NoteFinishedTransaction(uint64_t aTransactionId) {
 
   DatabaseInfo& dbInfo = transactionInfo->mDatabaseInfo;
   MOZ_ASSERT(mDatabases.Get(transactionInfo->mDatabaseId) == &dbInfo);
-  dbInfo.mThreadInfo.AssertValid();
+  MOZ_ASSERT(dbInfo.mEventTarget);
 
   // Schedule the next write transaction if there are any queued.
   if (dbInfo.mRunningWriteTransaction &&
@@ -8385,16 +8263,11 @@ void ConnectionPool::NoteFinishedTransaction(uint64_t aTransactionId) {
   }
 }
 
-void ConnectionPool::ScheduleQueuedTransactions(ThreadInfo aThreadInfo) {
+void ConnectionPool::ScheduleQueuedTransactions() {
   AssertIsOnOwningThread();
-  aThreadInfo.AssertValid();
   MOZ_ASSERT(!mQueuedTransactions.IsEmpty());
 
   AUTO_PROFILER_LABEL("ConnectionPool::ScheduleQueuedTransactions", DOM);
-
-  auto idleThreadInfo = IdleThreadInfo{std::move(aThreadInfo)};
-  MOZ_ASSERT(!mIdleThreads.Contains(idleThreadInfo));
-  mIdleThreads.InsertElementSorted(std::move(idleThreadInfo));
 
   const auto foundIt = std::find_if(
       mQueuedTransactions.begin(), mQueuedTransactions.end(),
@@ -8411,13 +8284,14 @@ void ConnectionPool::ScheduleQueuedTransactions(ThreadInfo aThreadInfo) {
 void ConnectionPool::NoteIdleDatabase(DatabaseInfo& aDatabaseInfo) {
   AssertIsOnOwningThread();
   MOZ_ASSERT(!aDatabaseInfo.TotalTransactionCount());
-  aDatabaseInfo.mThreadInfo.AssertValid();
+  MOZ_ASSERT(aDatabaseInfo.mEventTarget);
   MOZ_ASSERT(!mIdleDatabases.Contains(&aDatabaseInfo));
 
   AUTO_PROFILER_LABEL("ConnectionPool::NoteIdleDatabase", DOM);
 
   const bool otherDatabasesWaiting = !mQueuedTransactions.IsEmpty();
 
+  // We check mShutdownRequested because when it is true, mIdleTimer is null.
   if (mShutdownRequested || otherDatabasesWaiting ||
       aDatabaseInfo.mCloseOnIdle) {
     // Make sure we close the connection if we're shutting down or giving the
@@ -8425,13 +8299,7 @@ void ConnectionPool::NoteIdleDatabase(DatabaseInfo& aDatabaseInfo) {
     CloseDatabase(aDatabaseInfo);
 
     if (otherDatabasesWaiting) {
-      // Let another database use this thread.
-      ScheduleQueuedTransactions(std::move(aDatabaseInfo.mThreadInfo));
-    } else if (mShutdownRequested) {
-      // If there are no other databases that need to run then we can shut this
-      // thread down immediately instead of going through the idle thread
-      // mechanism.
-      ShutdownThread(std::move(aDatabaseInfo.mThreadInfo));
+      ScheduleQueuedTransactions();
     }
 
     return;
@@ -8451,40 +8319,12 @@ void ConnectionPool::NoteClosedDatabase(DatabaseInfo& aDatabaseInfo) {
 
   aDatabaseInfo.mClosing = false;
 
-  // Figure out what to do with this database's thread. It may have already been
-  // given to another database, in which case there's nothing to do here.
-  // Otherwise we prioritize the thread as follows:
-  //   1. Databases that haven't had an opportunity to run at all are highest
-  //      priority. Those live in the |mQueuedTransactions| list.
-  //   2. If this database has additional transactions that were started after
-  //      we began closing the connection then the thread can be reused for
-  //      those transactions.
-  //   3. If we're shutting down then we can get rid of the thread.
-  //   4. Finally, if nothing above took the thread then we can add it to our
-  //      list of idle threads. It may be reused or it may time out. If we have
-  //      too many idle threads then we will shut down the oldest.
-  if (aDatabaseInfo.mThreadInfo.IsValid()) {
-    if (!mQueuedTransactions.IsEmpty()) {
-      // Give the thread to another database.
-      ScheduleQueuedTransactions(std::move(aDatabaseInfo.mThreadInfo));
-    } else if (!aDatabaseInfo.TotalTransactionCount()) {
-      if (mShutdownRequested) {
-        ShutdownThread(std::move(aDatabaseInfo.mThreadInfo));
-      } else {
-        auto idleThreadInfo =
-            IdleThreadInfo{std::move(aDatabaseInfo.mThreadInfo)};
-        MOZ_ASSERT(!mIdleThreads.Contains(idleThreadInfo));
-
-        mIdleThreads.InsertElementSorted(std::move(idleThreadInfo));
-
-        if (mIdleThreads.Length() > kMaxIdleConnectionThreadCount) {
-          ShutdownThread(std::move(mIdleThreads[0].mThreadInfo));
-          mIdleThreads.RemoveElementAt(0);
-        }
-
-        AdjustIdleTimer();
-      }
-    }
+  // Schedule any transactions that were started while we were closing the
+  // connection.
+  if (!mQueuedTransactions.IsEmpty()) {
+    ScheduleQueuedTransactions();
+  } else if (!aDatabaseInfo.TotalTransactionCount() && !mShutdownRequested) {
+    AdjustIdleTimer();
   }
 
   // Schedule any transactions that were started while we were closing the
@@ -8552,7 +8392,7 @@ void ConnectionPool::PerformIdleDatabaseMaintenance(
     DatabaseInfo& aDatabaseInfo) {
   AssertIsOnOwningThread();
   MOZ_ASSERT(!aDatabaseInfo.TotalTransactionCount());
-  aDatabaseInfo.mThreadInfo.AssertValid();
+  MOZ_ASSERT(aDatabaseInfo.mEventTarget);
   MOZ_ASSERT(aDatabaseInfo.mIdle);
   MOZ_ASSERT(!aDatabaseInfo.mCloseOnIdle);
   MOZ_ASSERT(!aDatabaseInfo.mClosing);
@@ -8571,23 +8411,22 @@ void ConnectionPool::PerformIdleDatabaseMaintenance(
       PerformingIdleMaintenanceDatabaseInfo{aDatabaseInfo,
                                             idleConnectionRunnable});
 
-  MOZ_ALWAYS_SUCCEEDS(aDatabaseInfo.mThreadInfo.ThreadRef().Dispatch(
+  MOZ_ALWAYS_SUCCEEDS(aDatabaseInfo.mEventTarget->Dispatch(
       idleConnectionRunnable.forget(), NS_DISPATCH_NORMAL));
 }
 
 void ConnectionPool::CloseDatabase(DatabaseInfo& aDatabaseInfo) const {
   AssertIsOnOwningThread();
   MOZ_DIAGNOSTIC_ASSERT(!aDatabaseInfo.TotalTransactionCount());
-  aDatabaseInfo.mThreadInfo.AssertValid();
+  MOZ_ASSERT(aDatabaseInfo.mEventTarget);
   MOZ_ASSERT(!aDatabaseInfo.mClosing);
 
   aDatabaseInfo.mIdle = false;
   aDatabaseInfo.mNeedsCheckpoint = false;
   aDatabaseInfo.mClosing = true;
 
-  MOZ_ALWAYS_SUCCEEDS(aDatabaseInfo.mThreadInfo.ThreadRef().Dispatch(
-      MakeAndAddRef<CloseConnectionRunnable>(aDatabaseInfo),
-      NS_DISPATCH_NORMAL));
+  MOZ_ALWAYS_SUCCEEDS(aDatabaseInfo.Dispatch(
+      MakeAndAddRef<CloseConnectionRunnable>(aDatabaseInfo)));
 }
 
 bool ConnectionPool::CloseDatabaseWhenIdleInternal(
@@ -8726,10 +8565,22 @@ ConnectionPool::DatabaseInfo::~DatabaseInfo() {
   MOZ_ASSERT(!mConnection);
   MOZ_ASSERT(mScheduledWriteTransactions.IsEmpty());
   MOZ_ASSERT(!mRunningWriteTransaction);
-  mThreadInfo.AssertEmpty();
   MOZ_ASSERT(!TotalTransactionCount());
 
   MOZ_COUNT_DTOR(ConnectionPool::DatabaseInfo);
+}
+
+nsresult ConnectionPool::DatabaseInfo::Dispatch(
+    already_AddRefed<nsIRunnable> aRunnable) {
+  nsCOMPtr<nsIRunnable> runnable = aRunnable;
+
+#ifdef DEBUG
+  if (kDEBUGTransactionThreadSleepMS) {
+    runnable = MakeRefPtr<TransactionRunnable>(std::move(runnable));
+  }
+#endif
+
+  return mEventTarget->Dispatch(runnable.forget(), NS_DISPATCH_NORMAL);
 }
 
 ConnectionPool::DatabaseCompleteCallback::DatabaseCompleteCallback(
@@ -8804,101 +8655,28 @@ nsresult ConnectionPool::FinishCallbackWrapper::Run() {
 
 uint32_t ConnectionPool::sSerialNumber = 0u;
 
-ConnectionPool::ThreadRunnable::ThreadRunnable(uint32_t aSerialNumber)
-    : Runnable("dom::indexedDB::ConnectionPool::ThreadRunnable"),
-      mSerialNumber(aSerialNumber) {
+#ifdef DEBUG
+
+ConnectionPool::TransactionRunnable::TransactionRunnable(
+    nsCOMPtr<nsIRunnable> aRunnable)
+    : Runnable("dom::indexedDB::ConnectionPool::TransactionRunnable"),
+      mRunnable(std::move(aRunnable)) {
   AssertIsOnBackgroundThread();
+  MOZ_ASSERT(kDEBUGTransactionThreadSleepMS);
 }
 
-ConnectionPool::ThreadRunnable::~ThreadRunnable() {
-  MOZ_ASSERT(!mFirstRun);
-  MOZ_ASSERT(!mContinueRunning);
-}
-
-nsresult ConnectionPool::ThreadRunnable::Run() {
+nsresult ConnectionPool::TransactionRunnable::Run() {
   MOZ_ASSERT(!IsOnBackgroundThread());
-  MOZ_ASSERT(mContinueRunning);
 
-  if (!mFirstRun) {
-    mContinueRunning.Flip();
-    return NS_OK;
-  }
+  QM_TRY(MOZ_TO_RESULT(mRunnable->Run()));
 
-  mFirstRun.Flip();
-
-  {
-    // Scope for the profiler label.
-    AUTO_PROFILER_LABEL("ConnectionPool::ThreadRunnable::Run", DOM);
-
-    DebugOnly<nsIThread*> currentThread = NS_GetCurrentThread();
-    MOZ_ASSERT(currentThread);
-
-#ifdef DEBUG
-    if (kDEBUGTransactionThreadPriority !=
-        nsISupportsPriority::PRIORITY_NORMAL) {
-      NS_WARNING(
-          "ConnectionPool thread debugging enabled, priority has been "
-          "modified!");
-
-      nsCOMPtr<nsISupportsPriority> thread = do_QueryInterface(currentThread);
-      MOZ_ASSERT(thread);
-
-      MOZ_ALWAYS_SUCCEEDS(thread->SetPriority(kDEBUGTransactionThreadPriority));
-    }
-
-    if (kDEBUGTransactionThreadSleepMS) {
-      NS_WARNING(
-          "TransactionThreadPool thread debugging enabled, sleeping "
-          "after every event!");
-    }
-#endif  // DEBUG
-
-    DebugOnly<bool> b =
-        SpinEventLoopUntil("ConnectionPool::ThreadRunnable"_ns, [&]() -> bool {
-          if (!mContinueRunning) {
-            return true;
-          }
-
-#ifdef DEBUG
-          if (kDEBUGTransactionThreadSleepMS) {
-            MOZ_ALWAYS_TRUE(PR_Sleep(PR_MillisecondsToInterval(
-                                kDEBUGTransactionThreadSleepMS)) == PR_SUCCESS);
-          }
-#endif  // DEBUG
-
-          return false;
-        });
-    // MSVC can't stringify lambdas, so we have to separate the expression
-    // generating the value from the assert itself.
-#if DEBUG
-    MOZ_ALWAYS_TRUE(b);
-#endif
-  }
+  MOZ_ALWAYS_TRUE(PR_Sleep(PR_MillisecondsToInterval(
+                      kDEBUGTransactionThreadSleepMS)) == PR_SUCCESS);
 
   return NS_OK;
 }
 
-ConnectionPool::ThreadInfo::ThreadInfo() {
-  AssertIsOnBackgroundThread();
-
-  MOZ_COUNT_CTOR(ConnectionPool::ThreadInfo);
-}
-
-ConnectionPool::ThreadInfo::ThreadInfo(ThreadInfo&& aOther) noexcept
-    : mThread(std::move(aOther.mThread)),
-      mRunnable(std::move(aOther.mRunnable)) {
-  AssertIsOnBackgroundThread();
-  MOZ_ASSERT(mThread);
-  MOZ_ASSERT(mRunnable);
-
-  MOZ_COUNT_CTOR(ConnectionPool::ThreadInfo);
-}
-
-ConnectionPool::ThreadInfo::~ThreadInfo() {
-  AssertIsOnBackgroundThread();
-
-  MOZ_COUNT_DTOR(ConnectionPool::ThreadInfo);
-}
+#endif
 
 ConnectionPool::IdleResource::IdleResource(const TimeStamp& aIdleTime)
     : mIdleTime(aIdleTime) {
@@ -8949,22 +8727,6 @@ ConnectionPool::PerformingIdleMaintenanceDatabaseInfo::
   AssertIsOnBackgroundThread();
 
   MOZ_COUNT_DTOR(ConnectionPool::PerformingIdleMaintenanceDatabaseInfo);
-}
-
-ConnectionPool::IdleThreadInfo::IdleThreadInfo(ThreadInfo aThreadInfo)
-    : IdleResource(TimeStamp::NowLoRes() +
-                   TimeDuration::FromMilliseconds(kConnectionThreadIdleMS)),
-      mThreadInfo(std::move(aThreadInfo)) {
-  AssertIsOnBackgroundThread();
-  mThreadInfo.AssertValid();
-
-  MOZ_COUNT_CTOR(ConnectionPool::IdleThreadInfo);
-}
-
-ConnectionPool::IdleThreadInfo::~IdleThreadInfo() {
-  AssertIsOnBackgroundThread();
-
-  MOZ_COUNT_DTOR(ConnectionPool::IdleThreadInfo);
 }
 
 ConnectionPool::TransactionInfo::TransactionInfo(
@@ -9735,7 +9497,7 @@ void Database::ConnectionClosedCallback() {
   MOZ_ASSERT(mClosed);
   MOZ_ASSERT(!mTransactions.Count());
 
-  mDirectoryLock = nullptr;
+  DropDirectoryLock(mDirectoryLock);
 
   CleanupMetadata();
 
@@ -9896,7 +9658,7 @@ Database::AllocPBackgroundIDBTransactionParent(
 mozilla::ipc::IPCResult Database::RecvPBackgroundIDBTransactionConstructor(
     PBackgroundIDBTransactionParent* aActor,
     nsTArray<nsString>&& aObjectStoreNames, const Mode& aMode,
-    const Durability& aDurability) {  // TODO: See bug 1883045
+    const Durability& aDurability) {
   AssertIsOnBackgroundThread();
   MOZ_ASSERT(aActor);
   MOZ_ASSERT(!aObjectStoreNames.IsEmpty());
@@ -9953,7 +9715,10 @@ mozilla::ipc::IPCResult Database::RecvBlocked() {
   AssertIsOnBackgroundThread();
 
   if (NS_WARN_IF(mClosed)) {
-    return IPC_FAIL(this, "Database already closed!");
+    // Even though the sender checks the DB for not being closed, too,
+    // there is a potential race with an ongoing origin clearing which
+    // might have invalidated the DB in the meantime. Just ignore.
+    return IPC_OK();
   }
 
   DatabaseActorInfo* info;
@@ -10005,7 +9770,8 @@ nsresult Database::StartTransactionOp::DoDatabaseWork(
   }
 
   if (Transaction().GetMode() != IDBTransaction::Mode::ReadOnly) {
-    QM_TRY(MOZ_TO_RESULT(aConnection->BeginWriteTransaction()));
+    QM_TRY(MOZ_TO_RESULT(
+        aConnection->BeginWriteTransaction(Transaction().GetDurability())));
   }
 
   return NS_OK;
@@ -12323,6 +12089,22 @@ nsresult QuotaClient::FlushPendingFileDeletions() {
   return NS_OK;
 }
 
+RefPtr<BoolPromise> QuotaClient::DoMaintenance() {
+  AssertIsOnBackgroundThread();
+  MOZ_ASSERT(!IsShuttingDownOnBackgroundThread());
+
+  if (!mBackgroundThread) {
+    mBackgroundThread = GetCurrentSerialEventTarget();
+  }
+
+  auto maintenance = MakeRefPtr<Maintenance>(this);
+
+  mMaintenanceQueue.AppendElement(maintenance);
+  ProcessMaintenanceQueue();
+
+  return maintenance->OnResults();
+}
+
 nsThreadPool* QuotaClient::GetOrCreateThreadPool() {
   AssertIsOnBackgroundThread();
   MOZ_ASSERT(!IsShuttingDownOnBackgroundThread());
@@ -12342,7 +12124,8 @@ nsThreadPool* QuotaClient::GetOrCreateThreadPool() {
     MOZ_ALWAYS_SUCCEEDS(threadPool->SetIdleThreadLimit(1));
 
     // Don't keep idle threads alive very long.
-    MOZ_ALWAYS_SUCCEEDS(threadPool->SetIdleThreadTimeout(5 * PR_MSEC_PER_SEC));
+    MOZ_ALWAYS_SUCCEEDS(
+        threadPool->SetIdleThreadMaximumTimeout(5 * PR_MSEC_PER_SEC));
 
     MOZ_ALWAYS_SUCCEEDS(threadPool->SetName("IndexedDB Mnt"_ns));
 
@@ -12720,12 +12503,7 @@ void QuotaClient::StartIdleMaintenance() {
     return;
   }
 
-  if (!mBackgroundThread) {
-    mBackgroundThread = GetCurrentSerialEventTarget();
-  }
-
-  mMaintenanceQueue.EmplaceBack(MakeRefPtr<Maintenance>(this));
-  ProcessMaintenanceQueue();
+  DoMaintenance();
 }
 
 void QuotaClient::StopIdleMaintenance() {
@@ -13073,7 +12851,8 @@ void DeleteFilesRunnable::UnblockOpen() {
   AssertIsOnBackgroundThread();
   MOZ_ASSERT(mState == State_UnblockingOpen);
 
-  mDirectoryLock = nullptr;
+  SafeDropDirectoryLock(mDirectoryLock);
+
   MOZ_ASSERT(mDEBUGCountsAsPending);
   sPendingRunnables--;
   DEBUGONLY(mDEBUGCountsAsPending = false);
@@ -13139,8 +12918,6 @@ void Maintenance::Abort() {
     aDatabaseMaintenance.GetData()->Abort();
   }
 
-  // mDirectoryLock must be cleared before transition to finished state
-  mDirectoryLock = nullptr;
   mAborted = true;
 }
 
@@ -13268,7 +13045,7 @@ nsresult Maintenance::OpenDirectory() {
 
   quotaManager
       ->OpenStorageDirectory(
-          Nullable<PersistenceType>(), OriginScope::FromNull(),
+          PersistenceScope::CreateFromNull(), OriginScope::FromNull(),
           Nullable<Client::Type>(Client::IDB), /* aExclusive */ false,
           DirectoryLockCategory::None, SomeRef(mPendingDirectoryLock))
       ->Then(GetCurrentSerialEventTarget(), __func__,
@@ -13464,14 +13241,15 @@ nsresult Maintenance::DirectoryWork() {
 
                 QM_TRY_UNWRAP(
                     const DebugOnly<bool> created,
-                    quotaManager->EnsurePersistentOriginIsInitialized(metadata)
+                    quotaManager
+                        ->EnsurePersistentOriginIsInitializedInternal(metadata)
                         .map([](const auto& res) { return res.second; }),
                     // Not much we can do here...
                     Ok{});
 
                 // We found this origin directory by traversing the repository,
-                // so EnsurePersistentOriginIsInitialized shouldn't report that
-                // a new directory has been created.
+                // so EnsurePersistentOriginIsInitializedInternal shouldn't
+                // report that a new directory has been created.
                 MOZ_ASSERT(!created);
               }
 
@@ -13610,22 +13388,19 @@ nsresult Maintenance::BeginDatabaseMaintenance() {
   RefPtr<nsThreadPool> threadPool;
 
   for (DirectoryInfo& directoryInfo : mDirectoryInfos) {
-    RefPtr<DirectoryLock> directoryLock;
-
     for (const nsAString& databasePath : *directoryInfo.mDatabasePaths) {
       if (Helper::IsSafeToRunMaintenance(databasePath)) {
-        if (!directoryLock) {
-          directoryLock = mDirectoryLock->SpecializeForClient(
-              directoryInfo.mPersistenceType, *directoryInfo.mOriginMetadata,
-              Client::IDB);
-          MOZ_ASSERT(directoryLock);
-        }
+        RefPtr<DirectoryLock> directoryLock =
+            mDirectoryLock->SpecializeForClient(directoryInfo.mPersistenceType,
+                                                *directoryInfo.mOriginMetadata,
+                                                Client::IDB);
+        MOZ_ASSERT(directoryLock);
 
         // No key needs to be passed here, because we skip encrypted databases
         // in DoDirectoryWork as long as they are only used in private browsing
         // mode.
         const auto databaseMaintenance = MakeRefPtr<DatabaseMaintenance>(
-            this, directoryLock, directoryInfo.mPersistenceType,
+            this, std::move(directoryLock), directoryInfo.mPersistenceType,
             *directoryInfo.mOriginMetadata, databasePath, Nothing{});
 
         if (!threadPool) {
@@ -13649,7 +13424,7 @@ nsresult Maintenance::BeginDatabaseMaintenance() {
 
   mDirectoryInfos.Clear();
 
-  mDirectoryLock = nullptr;
+  DropDirectoryLock(mDirectoryLock);
 
   if (mDatabaseMaintenances.Count()) {
     mState = State::WaitingForDatabaseMaintenancesToComplete;
@@ -13663,15 +13438,20 @@ nsresult Maintenance::BeginDatabaseMaintenance() {
 
 void Maintenance::Finish() {
   AssertIsOnBackgroundThread();
-  MOZ_ASSERT(!mDirectoryLock);
   MOZ_ASSERT(mState == State::Finishing);
 
-  if (NS_FAILED(mResultCode)) {
+  if (NS_SUCCEEDED(mResultCode)) {
+    mPromiseHolder.ResolveIfExists(true, __func__);
+  } else {
+    mPromiseHolder.RejectIfExists(mResultCode, __func__);
+
     nsCString errorName;
     GetErrorName(mResultCode, errorName);
 
     IDB_WARNING("Maintenance finished with error: %s", errorName.get());
   }
+
+  SafeDropDirectoryLock(mDirectoryLock);
 
   // It can happen that we are only referenced by mCurrentMaintenance which is
   // cleared in NoteFinishedMaintenance()
@@ -13802,12 +13582,6 @@ nsresult DatabaseMaintenance::Abort() {
       QM_TRY(MOZ_TO_RESULT(connection->Interrupt()));
     }
   }
-
-  // mDirectoryLock must not be released here - otherwise QuotaVFS of storage
-  // emits a crash to disallow getting a quota object for an unregistered
-  // directory lock when connection is closed.
-  // mDirectoryLock will be dropped by RunOnOwningThread in a timely fashion
-  // after the interrupted maintenance completes.
 
   return NS_OK;
 }
@@ -14139,7 +13913,7 @@ void DatabaseMaintenance::FullVacuum(mozIStorageConnection& aConnection,
 void DatabaseMaintenance::RunOnOwningThread() {
   AssertIsOnBackgroundThread();
 
-  mDirectoryLock = nullptr;
+  DropDirectoryLock(mDirectoryLock);
 
   if (mCompleteCallback) {
     MOZ_ALWAYS_SUCCEEDS(NS_DispatchToCurrentThread(mCompleteCallback.forget()));
@@ -14754,6 +14528,17 @@ FactoryOp::FactoryOp(SafeRefPtr<Factory> aFactory,
   MOZ_ASSERT(!QuotaClient::IsShuttingDownOnBackgroundThread());
 }
 
+nsresult FactoryOp::DispatchThisAfterProcessingCurrentEvent(
+    nsCOMPtr<nsIEventTarget> aEventTarget) {
+  QM_TRY(MOZ_TO_RESULT(RunAfterProcessingCurrentEvent(
+      [eventTarget = std::move(aEventTarget), self = RefPtr(this)]() mutable {
+        QM_WARNONLY_TRY(MOZ_TO_RESULT(
+            eventTarget->Dispatch(self.forget(), NS_DISPATCH_NORMAL)));
+      })));
+
+  return NS_OK;
+}
+
 void FactoryOp::NoteDatabaseBlocked(Database* aDatabase) {
   AssertIsOnOwningThread();
   MOZ_ASSERT(aDatabase);
@@ -15234,7 +15019,7 @@ FactoryOp::Run() {
         SendResults();
       } else {
         MOZ_ALWAYS_SUCCEEDS(
-            mOwningEventTarget->Dispatch(this, NS_DISPATCH_NORMAL));
+            DispatchThisAfterProcessingCurrentEvent(mOwningEventTarget));
       }
     }
   };
@@ -15386,14 +15171,15 @@ nsresult OpenDatabaseOp::DoDatabaseWork() {
       ([persistenceType, &quotaManager, this]()
            -> mozilla::Result<std::pair<nsCOMPtr<nsIFile>, bool>, nsresult> {
         if (persistenceType == PERSISTENCE_TYPE_PERSISTENT) {
-          QM_TRY_RETURN(quotaManager->EnsurePersistentOriginIsInitialized(
-              mOriginMetadata));
+          QM_TRY_RETURN(
+              quotaManager->EnsurePersistentOriginIsInitializedInternal(
+                  mOriginMetadata));
         }
 
         QM_TRY(MOZ_TO_RESULT(
             quotaManager->EnsureTemporaryStorageIsInitializedInternal()));
-        QM_TRY_RETURN(quotaManager->EnsureTemporaryOriginIsInitialized(
-            persistenceType, mOriginMetadata));
+        QM_TRY_RETURN(quotaManager->EnsureTemporaryOriginIsInitializedInternal(
+            mOriginMetadata));
       }()
                   .map([](const auto& res) { return res.first; })));
 
@@ -15525,7 +15311,8 @@ nsresult OpenDatabaseOp::DoDatabaseWork() {
                ? State::SendingResults
                : State::BeginVersionChange;
 
-  QM_TRY(MOZ_TO_RESULT(mOwningEventTarget->Dispatch(this, NS_DISPATCH_NORMAL)));
+  QM_TRY(MOZ_TO_RESULT(
+      DispatchThisAfterProcessingCurrentEvent(mOwningEventTarget)));
 
   return NS_OK;
 }
@@ -16134,7 +15921,7 @@ void OpenDatabaseOp::ConnectionClosedCallback() {
   MOZ_ASSERT(HasFailed());
   MOZ_ASSERT(mDirectoryLock);
 
-  mDirectoryLock = nullptr;
+  DropDirectoryLock(mDirectoryLock);
 
   CleanupMetadata();
 }
@@ -16384,7 +16171,8 @@ nsresult OpenDatabaseOp::VersionChangeOp::DoDatabaseWork(
 
   Transaction().SetActiveOnConnectionThread();
 
-  QM_TRY(MOZ_TO_RESULT(aConnection->BeginWriteTransaction()));
+  QM_TRY(MOZ_TO_RESULT(
+      aConnection->BeginWriteTransaction(Transaction().GetDurability())));
 
   // The parameter names are not used, parameters are bound by index only
   // locally in the same function.
@@ -16607,7 +16395,8 @@ nsresult DeleteDatabaseOp::DoDatabaseWork() {
     mState = State::SendingResults;
   }
 
-  QM_TRY(MOZ_TO_RESULT(mOwningEventTarget->Dispatch(this, NS_DISPATCH_NORMAL)));
+  QM_TRY(MOZ_TO_RESULT(
+      DispatchThisAfterProcessingCurrentEvent(mOwningEventTarget)));
 
   return NS_OK;
 }
@@ -16715,7 +16504,7 @@ void DeleteDatabaseOp::SendResults() {
                                                                  response);
   }
 
-  mDirectoryLock = nullptr;
+  SafeDropDirectoryLock(mDirectoryLock);
 
   CleanupMetadata();
 
@@ -16850,7 +16639,8 @@ nsresult GetDatabasesOp::DatabasesNotAvailable() {
 
   mState = State::SendingResults;
 
-  QM_TRY(MOZ_TO_RESULT(mOwningEventTarget->Dispatch(this, NS_DISPATCH_NORMAL)));
+  QM_TRY(MOZ_TO_RESULT(
+      DispatchThisAfterProcessingCurrentEvent(mOwningEventTarget)));
 
   return NS_OK;
 }
@@ -16931,12 +16721,12 @@ nsresult GetDatabasesOp::DoDatabaseWork() {
   QM_TRY(([&quotaManager, this]()
               -> mozilla::Result<std::pair<nsCOMPtr<nsIFile>, bool>, nsresult> {
     if (mPersistenceType == PERSISTENCE_TYPE_PERSISTENT) {
-      QM_TRY_RETURN(
-          quotaManager->EnsurePersistentOriginIsInitialized(mOriginMetadata));
+      QM_TRY_RETURN(quotaManager->EnsurePersistentOriginIsInitializedInternal(
+          mOriginMetadata));
     }
 
-    QM_TRY_RETURN(quotaManager->EnsureTemporaryOriginIsInitialized(
-        mPersistenceType, mOriginMetadata));
+    QM_TRY_RETURN(quotaManager->EnsureTemporaryOriginIsInitializedInternal(
+        mOriginMetadata));
   }()
                      .map([](const auto& res) { return Ok{}; })));
 
@@ -17039,7 +16829,8 @@ nsresult GetDatabasesOp::DoDatabaseWork() {
 
   mState = State::SendingResults;
 
-  QM_TRY(MOZ_TO_RESULT(mOwningEventTarget->Dispatch(this, NS_DISPATCH_NORMAL)));
+  QM_TRY(MOZ_TO_RESULT(
+      DispatchThisAfterProcessingCurrentEvent(mOwningEventTarget)));
 
   return NS_OK;
 }
@@ -17070,7 +16861,7 @@ void GetDatabasesOp::SendResults() {
 
   mResolver(mDatabaseMetadataArray);
 
-  mDirectoryLock = nullptr;
+  SafeDropDirectoryLock(mDirectoryLock);
 
   CleanupMetadata();
 
@@ -20963,6 +20754,37 @@ mozilla::ipc::IPCResult Utils::RecvGetFileReferences(
   if (NS_WARN_IF(NS_FAILED(rv))) {
     return IPC_FAIL(this, "DispatchAndReturnFileReferences failed!");
   }
+
+  return IPC_OK();
+}
+
+mozilla::ipc::IPCResult Utils::RecvDoMaintenance(
+    DoMaintenanceResolver&& aResolver) {
+  AssertIsOnBackgroundThread();
+
+  QM_TRY(MOZ_TO_RESULT(!QuotaManager::IsShuttingDown()),
+         ResolveNSResultResponseAndReturn(aResolver));
+
+  QM_TRY(QuotaManager::EnsureCreated(),
+         ResolveNSResultResponseAndReturn(aResolver));
+
+  QuotaClient* quotaClient = QuotaClient::GetInstance();
+  QM_TRY(MOZ_TO_RESULT(quotaClient), QM_IPC_FAIL(this));
+
+  quotaClient->DoMaintenance()->Then(
+      GetCurrentSerialEventTarget(), __func__,
+      [self = RefPtr(this), resolver = std::move(aResolver)](
+          const BoolPromise::ResolveOrRejectValue& aValue) {
+        if (!self->CanSend()) {
+          return;
+        }
+
+        if (aValue.IsResolve()) {
+          resolver(NS_OK);
+        } else {
+          resolver(aValue.RejectValue());
+        }
+      });
 
   return IPC_OK();
 }

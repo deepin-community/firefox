@@ -8,6 +8,7 @@ import android.content.Intent
 import android.net.Uri
 import androidx.annotation.VisibleForTesting
 import androidx.core.net.toUri
+import mozilla.components.service.nimbus.GleanMetrics.Microsurvey
 import mozilla.components.service.nimbus.GleanMetrics.Messaging as GleanMessaging
 
 /**
@@ -21,9 +22,6 @@ open class NimbusMessagingController(
     private val messagingStorage: NimbusMessagingStorage,
     private val deepLinkScheme: String,
 ) : NimbusMessagingControllerInterface {
-    /**
-     * Records telemetry and metadata for a newly processed displayed message.
-     */
     override suspend fun onMessageDisplayed(displayedMessage: Message, bootIdentifier: String?): Message {
         sendShownMessageTelemetry(displayedMessage.id)
         val nextMessage = messagingStorage.onMessageDisplayed(displayedMessage, bootIdentifier)
@@ -33,17 +31,26 @@ open class NimbusMessagingController(
         return nextMessage
     }
 
-    /**
-     * Called when a message has been dismissed by the user.
-     *
-     * Records a messageDismissed event, and records that the message
-     * has been dismissed.
-     */
     override suspend fun onMessageDismissed(message: Message) {
         val messageMetadata = message.metadata
         sendDismissedMessageTelemetry(messageMetadata.id)
         val updatedMetadata = messageMetadata.copy(dismissed = true)
         messagingStorage.updateMetadata(updatedMetadata)
+    }
+
+    override suspend fun onMicrosurveyCompleted(message: Message, answer: String) {
+        val messageMetadata = message.metadata
+        sendMicrosurveyCompletedTelemetry(messageMetadata.id, answer)
+        val updatedMetadata = messageMetadata.copy(pressed = true)
+        messagingStorage.updateMetadata(updatedMetadata)
+    }
+
+    override suspend fun onMicrosurveyShown(id: String) {
+        Microsurvey.shown.record(Microsurvey.ShownExtra(surveyId = id))
+    }
+
+    override suspend fun onMicrosurveyPrivacyNoticeTapped(id: String) {
+        Microsurvey.privacyNoticeTapped.record(Microsurvey.PrivacyNoticeTappedExtra(surveyId = id))
     }
 
     /**
@@ -58,23 +65,26 @@ open class NimbusMessagingController(
         messagingStorage.updateMetadata(updatedMetadata)
     }
 
-    /**
-     * Create and return the relevant [Intent] for the given [Message].
-     *
-     * @param message the [Message] to create the [Intent] for.
-     * @return an [Intent] using the processed [Message].
-     */
+    override suspend fun onMicrosurveyDismissed(message: Message) {
+        Microsurvey.dismissButtonTapped.record(Microsurvey.DismissButtonTappedExtra(surveyId = message.id))
+        val messageMetadata = message.metadata
+        val updatedMetadata = messageMetadata.copy(dismissed = true)
+        messagingStorage.updateMetadata(updatedMetadata)
+    }
+
+    override suspend fun onMicrosurveySentConfirmationShown(id: String) {
+        Microsurvey.confirmationShown.record(Microsurvey.ConfirmationShownExtra(surveyId = id))
+    }
+
+    override suspend fun onMicrosurveyStarted(id: String) {
+        sendClickedMessageTelemetry(id, null)
+    }
+
     override fun getIntentForMessage(message: Message) = Intent(
         Intent.ACTION_VIEW,
         processMessageActionToUri(message),
     )
 
-    /**
-     * Will attempt to get the [Message] for the given [id].
-     *
-     * @param id the [Message.id] of the [Message] to try to match.
-     * @return the [Message] with a matching [id], or null if no [Message] has a matching [id].
-     */
     override suspend fun getMessage(id: String): Message? {
         return messagingStorage.getMessage(id)
     }
@@ -109,6 +119,15 @@ open class NimbusMessagingController(
     private fun sendClickedMessageTelemetry(messageId: String, uuid: String?) {
         GleanMessaging.messageClicked.record(
             GleanMessaging.MessageClickedExtra(messageKey = messageId, actionUuid = uuid),
+        )
+    }
+
+    private fun sendMicrosurveyCompletedTelemetry(messageId: String, answer: String?) {
+        Microsurvey.submitButtonTapped.record(
+            Microsurvey.SubmitButtonTappedExtra(
+                surveyId = messageId,
+                userSelection = answer,
+            ),
         )
     }
 

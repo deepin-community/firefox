@@ -313,6 +313,9 @@ about-logins-export-file-picker-title = Tik'wäx el Ruyakb'al Tikirib'äl Molojr
 # The default file name shown in the file picker when exporting saved logins.
 # This must end in .csv
 about-logins-export-file-picker-default-filename = logins.csv
+# The default file name shown in the file picker when exporting saved logins.
+# This must end in .csv
+about-logins-export-file-picker-default-filename2 = ewatzij.csv
 about-logins-export-file-picker-export-button = Tik'wäx el
 # A description for the .csv file format that may be shown as the file type
 # filter by the operating system.
@@ -390,6 +393,7 @@ about-logins-import-report-row-index = Cholaj { $number }
 about-logins-import-report-row-description-no-change = Kamulun: ütz nuk'äm ri' ri retal ruwujil k'o
 about-logins-import-report-row-description-modified = K'exon rutikirib'al molojri'ïl k'o wakami
 about-logins-import-report-row-description-added = Xtz'aqatisäx k'ak'a' tikirib'äl molojri'ïl
+about-logins-import-report-row-description-added2 = K'ak'a' ewan tzij xtz'aqatisäx
 about-logins-import-report-row-description-error = Sachoj: K'ojlib'äl k'a k'o na
 
 ##

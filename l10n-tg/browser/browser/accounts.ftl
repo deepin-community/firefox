@@ -96,3 +96,15 @@ account-multiple-tabs-arriving-from-unknown-device =
         [one] { $tabCount } варақа қабул шуд
        *[other] { $tabCount } варақа қабул шуданд
     }
+
+## These strings are used in notifications in which the user remotely closed
+## tabs from other devices
+## Variables:
+##   $closedCount (Number): the number of tabs closed
+
+account-view-recently-closed-tabs = Дидани варақаҳои ба наздикӣ пӯшидашуда
+account-tabs-closed-remotely =
+    { NUMBER($closedCount) ->
+        [one] { $closedCount } варақаи «{ -brand-short-name }» пӯшида мебошад
+       *[other] { $closedCount } варақаи «{ -brand-short-name }» пӯшида мебошанд
+    }

@@ -392,13 +392,7 @@ bool DecodeImageJXL(const uint8_t* bytes, size_t bytes_size,
         }
       }
     } else if (status == JXL_DEC_FRAME) {
-      auto frame_or = jxl::extras::PackedFrame::Create(ppf->info.xsize,
-                                                       ppf->info.ysize, format);
-      if (!frame_or.status()) {
-        fprintf(stderr, "Failed to create image frame.");
-        return false;
-      }
-      jxl::extras::PackedFrame frame = std::move(frame_or).value();
+      jxl::extras::PackedFrame frame(ppf->info.xsize, ppf->info.ysize, format);
       if (JXL_DEC_SUCCESS != JxlDecoderGetFrameHeader(dec, &frame.frame_info)) {
         fprintf(stderr, "JxlDecoderGetFrameHeader failed\n");
         return false;
@@ -437,16 +431,9 @@ bool DecodeImageJXL(const uint8_t* bytes, size_t bytes_size,
         fprintf(stderr, "JxlDecoderPreviewOutBufferSize failed\n");
         return false;
       }
-      auto preview_image_or = jxl::extras::PackedImage::Create(
-          ppf->info.preview.xsize, ppf->info.preview.ysize, format);
-      if (!preview_image_or.status()) {
-        fprintf(stderr, "Failed to create preview image\n");
-        return false;
-      }
-      jxl::extras::PackedImage preview_image =
-          std::move(preview_image_or).value();
       ppf->preview_frame = std::unique_ptr<jxl::extras::PackedFrame>(
-          new jxl::extras::PackedFrame(std::move(preview_image)));
+          new jxl::extras::PackedFrame(ppf->info.preview.xsize,
+                                       ppf->info.preview.ysize, format));
       if (buffer_size != ppf->preview_frame->color.pixels_size) {
         fprintf(stderr, "Invalid out buffer size %" PRIuS " %" PRIuS "\n",
                 buffer_size, ppf->preview_frame->color.pixels_size);
@@ -513,13 +500,8 @@ bool DecodeImageJXL(const uint8_t* bytes, size_t bytes_size,
       JxlPixelFormat ec_format = format;
       ec_format.num_channels = 1;
       for (auto& eci : ppf->extra_channels_info) {
-        auto image = jxl::extras::PackedImage::Create(
-            ppf->info.xsize, ppf->info.ysize, ec_format);
-        if (!image.status()) {
-          fprintf(stderr, "Failed to create extra channel image\n");
-          return false;
-        }
-        frame.extra_channels.emplace_back(std::move(image).value());
+        frame.extra_channels.emplace_back(ppf->info.xsize, ppf->info.ysize,
+                                          ec_format);
         auto& ec = frame.extra_channels.back();
         size_t buffer_size;
         if (JXL_DEC_SUCCESS != JxlDecoderExtraChannelBufferSize(

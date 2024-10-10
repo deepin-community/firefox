@@ -26,7 +26,6 @@ ChromeUtils.defineESModuleGetters(lazy, {
   BookmarksPolicies: "resource:///modules/policies/BookmarksPolicies.sys.mjs",
   CustomizableUI: "resource:///modules/CustomizableUI.sys.mjs",
   FileUtils: "resource://gre/modules/FileUtils.sys.mjs",
-  PdfJsDefaultPreferences: "resource://pdf.js/PdfJsDefaultPreferences.sys.mjs",
   ProxyPolicies: "resource:///modules/policies/ProxyPolicies.sys.mjs",
   UrlbarPrefs: "resource:///modules/UrlbarPrefs.sys.mjs",
   WebsiteFilter: "resource:///modules/policies/WebsiteFilter.sys.mjs",
@@ -549,10 +548,26 @@ export var Policies = {
           param.ClientSignature
         );
       }
+      if ("DefaultResult" in param) {
+        if (
+          !Number.isInteger(param.DefaultResult) ||
+          param.DefaultResult < 0 ||
+          param.DefaultResult > 2
+        ) {
+          lazy.log.error(
+            `Non-integer or out of range value for DefaultResult: ${param.DefaultResult}`
+          );
+        } else {
+          setAndLockPref(
+            "browser.contentanalysis.default_result",
+            param.DefaultResult
+          );
+        }
+      }
       let boolPrefs = [
         ["IsPerUser", "is_per_user"],
         ["ShowBlockedResult", "show_blocked_result"],
-        ["DefaultAllow", "default_allow"],
+        ["BypassForSameTabOperations", "bypass_for_same_tab_operations"],
       ];
       for (let pref of boolPrefs) {
         if (pref[0] in param) {
@@ -769,6 +784,15 @@ export var Policies = {
         blockAboutPage(manager, "about:debugging");
         blockAboutPage(manager, "about:devtools-toolbox");
         blockAboutPage(manager, "about:profiling");
+      }
+    },
+  },
+
+  DisableEncryptedClientHello: {
+    onBeforeAddons(manager, param) {
+      if (param) {
+        setAndLockPref("network.dns.echconfig.enabled", false);
+        setAndLockPref("network.dns.http3_echconfig.enabled", false);
       }
     },
   },
@@ -1515,6 +1539,31 @@ export var Policies = {
     },
   },
 
+  HttpAllowlist: {
+    onBeforeAddons(manager, param) {
+      addAllowDenyPermissions("https-only-load-insecure", param);
+    },
+  },
+
+  HttpsOnlyMode: {
+    onBeforeAddons(manager, param) {
+      switch (param) {
+        case "disallowed":
+          setAndLockPref("dom.security.https_only_mode", false);
+          break;
+        case "enabled":
+          PoliciesUtils.setDefaultPref("dom.security.https_only_mode", true);
+          break;
+        case "force_enabled":
+          setAndLockPref("dom.security.https_only_mode", true);
+          break;
+        case "allowed":
+          // The default case.
+          break;
+      }
+    },
+  },
+
   InstallAddonsPermission: {
     onBeforeUIStartup(manager, param) {
       if ("Allow" in param) {
@@ -1787,6 +1836,13 @@ export var Policies = {
     },
   },
 
+  PostQuantumKeyAgreementEnabled: {
+    onBeforeAddons(manager, param) {
+      setAndLockPref("network.http.http3.enable_kyber", param);
+      setAndLockPref("security.tls.enable_kyber", param);
+    },
+  },
+
   Preferences: {
     onBeforeAddons(manager, param) {
       let allowedPrefixes = [
@@ -1811,6 +1867,7 @@ export var Policies = {
         "places.",
         "pref.",
         "print.",
+        "privacy.globalprivacycontrol.enabled",
         "privacy.userContext.enabled",
         "privacy.userContext.ui.enabled",
         "signon.",
@@ -1831,6 +1888,8 @@ export var Policies = {
         "security.insecure_connection_text.enabled",
         "security.insecure_connection_text.pbmode.enabled",
         "security.mixed_content.block_active_content",
+        "security.mixed_content.block_display_content",
+        "security.mixed_content.upgrade_display_content",
         "security.osclientcerts.assume_rsa_pss_support",
         "security.osclientcerts.autoload",
         "security.OCSP.enabled",
@@ -1907,26 +1966,6 @@ export var Policies = {
                   throw new Error(`Non-integer value for ${preference}`);
                 }
 
-                // Because pdfjs prefs are set async, we can't check the
-                // default pref branch to see if they are int or bool, so we
-                // have to get their type from PdfJsDefaultPreferences.
-                if (preference.startsWith("pdfjs.")) {
-                  let preferenceTail = preference.replace("pdfjs.", "");
-                  if (
-                    preferenceTail in lazy.PdfJsDefaultPreferences &&
-                    typeof lazy.PdfJsDefaultPreferences[preferenceTail] ==
-                      "number"
-                  ) {
-                    prefBranch.setIntPref(preference, param[preference].Value);
-                  } else {
-                    prefBranch.setBoolPref(
-                      preference,
-                      !!param[preference].Value
-                    );
-                  }
-                  break;
-                }
-
                 // This is ugly, but necessary. On Windows GPO and macOS
                 // configs, booleans are converted to 0/1. In the previous
                 // Preferences implementation, the schema took care of
@@ -1979,6 +2018,26 @@ export var Policies = {
   PrintingEnabled: {
     onBeforeUIStartup(manager, param) {
       setAndLockPref("print.enabled", param);
+    },
+  },
+
+  PrivateBrowsingModeAvailability: {
+    onBeforeAddons(manager, param) {
+      switch (param) {
+        // Private Browsing mode disabled
+        case 1:
+          manager.disallowFeature("privatebrowsing");
+          blockAboutPage(manager, "about:privatebrowsing", true);
+          setAndLockPref("browser.privatebrowsing.autostart", false);
+          break;
+        // Private Browsing mode forced
+        case 2:
+          setAndLockPref("browser.privatebrowsing.autostart", true);
+          break;
+        // Private Browsing mode available
+        case 0:
+          break;
+      }
     },
   },
 
@@ -2457,13 +2516,6 @@ export var Policies = {
 
   UserMessaging: {
     onBeforeAddons(manager, param) {
-      if ("WhatsNew" in param) {
-        PoliciesUtils.setDefaultPref(
-          "browser.messaging-system.whatsNewPanel.enabled",
-          param.WhatsNew,
-          param.Locked
-        );
-      }
       if ("ExtensionRecommendations" in param) {
         PoliciesUtils.setDefaultPref(
           "browser.newtabpage.activity-stream.asrouter.userprefs.cfr.addons",
@@ -2497,6 +2549,13 @@ export var Policies = {
         PoliciesUtils.setDefaultPref(
           "browser.preferences.moreFromMozilla",
           param.MoreFromMozilla,
+          param.Locked
+        );
+      }
+      if ("FirefoxLabs" in param) {
+        PoliciesUtils.setDefaultPref(
+          "browser.preferences.experimental",
+          param.FirefoxLabs,
           param.Locked
         );
       }
@@ -2721,7 +2780,6 @@ export function runOnce(actionName, callback) {
  *        The callback to be run when the pref value changes
  * @returns {Promise}
  *        A promise that will resolve once the callback finishes running.
- *
  */
 async function runOncePerModification(actionName, policyValue, callback) {
   let prefName = `browser.policies.runOncePerModification.${actionName}`;

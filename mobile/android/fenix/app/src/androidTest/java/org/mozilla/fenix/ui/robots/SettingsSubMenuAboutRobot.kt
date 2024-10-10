@@ -17,6 +17,8 @@ import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.matcher.ViewMatchers
 import androidx.test.espresso.matcher.ViewMatchers.hasDescendant
+import androidx.test.espresso.matcher.ViewMatchers.hasMinimumChildCount
+import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
 import androidx.test.espresso.matcher.ViewMatchers.withContentDescription
 import androidx.test.espresso.matcher.ViewMatchers.withEffectiveVisibility
 import androidx.test.espresso.matcher.ViewMatchers.withId
@@ -117,7 +119,7 @@ class SettingsSubMenuAboutRobot {
         onView(withText("What’s new in $firefox")).perform(click())
         Log.i(TAG, "verifyWhatIsNewInFirefoxLink: Clicked the \"What’s new in $firefox\" link")
     }
-    fun verifySupport() {
+    fun verifySupportLink() {
         Log.i(TAG, "verifySupport: Trying to perform ${LISTS_MAXSWIPES}x a scroll action to the end of the about list")
         aboutMenuList.scrollToEnd(LISTS_MAXSWIPES)
         Log.i(TAG, "verifySupport: Performed ${LISTS_MAXSWIPES}x a scroll action to the end of the about list")
@@ -128,11 +130,9 @@ class SettingsSubMenuAboutRobot {
         onView(withText("Support")).perform(click())
         Log.i(TAG, "verifySupport: Clicked the \"Support\" link")
 
-        TestHelper.verifyUrl(
-            "support.mozilla.org",
-            "org.mozilla.fenix.debug:id/mozac_browser_toolbar_url_view",
-            R.id.mozac_browser_toolbar_url_view,
-        )
+        browserScreen {
+            verifyHelpUrl()
+        }
     }
 
     fun verifyCrashesLink() {
@@ -170,11 +170,9 @@ class SettingsSubMenuAboutRobot {
         onView(withText("Privacy notice")).perform(click())
         Log.i(TAG, "verifyPrivacyNoticeLink: Clicked the \"Privacy notice\" link")
 
-        TestHelper.verifyUrl(
-            "/privacy/firefox",
-            "org.mozilla.fenix.debug:id/mozac_browser_toolbar_url_view",
-            R.id.mozac_browser_toolbar_url_view,
-        )
+        browserScreen {
+            verifyUrl("/privacy/firefox")
+        }
     }
 
     fun verifyKnowYourRightsLink() {
@@ -188,11 +186,9 @@ class SettingsSubMenuAboutRobot {
         onView(withText("Know your rights")).perform(click())
         Log.i(TAG, "verifyKnowYourRightsLink: Clicked the \"Know your rights\" link")
 
-        TestHelper.verifyUrl(
-            SupportUtils.SumoTopic.YOUR_RIGHTS.topicStr,
-            "org.mozilla.fenix.debug:id/mozac_browser_toolbar_url_view",
-            R.id.mozac_browser_toolbar_url_view,
-        )
+        browserScreen {
+            verifyUrl(SupportUtils.SumoTopic.YOUR_RIGHTS.topicStr)
+        }
     }
 
     fun verifyLicensingInformationLink() {
@@ -206,11 +202,9 @@ class SettingsSubMenuAboutRobot {
         onView(withText("Licensing information")).perform(click())
         Log.i(TAG, "verifyLicensingInformationLink: Clicked the \"Licensing information\" link")
 
-        TestHelper.verifyUrl(
-            "about:license",
-            "org.mozilla.fenix.debug:id/mozac_browser_toolbar_url_view",
-            R.id.mozac_browser_toolbar_url_view,
-        )
+        browserScreen {
+            verifyUrl("about:license")
+        }
     }
 
     fun verifyLibrariesUsedLink() {
@@ -220,22 +214,35 @@ class SettingsSubMenuAboutRobot {
         Log.i(TAG, "verifyLibrariesUsedLink: Trying to verify that the \"Libraries that we use\" link is visible")
         onView(withText("Libraries that we use")).check(matches(withEffectiveVisibility(ViewMatchers.Visibility.VISIBLE)))
         Log.i(TAG, "verifyLibrariesUsedLink: Verified that the \"Libraries that we use\" link is visible")
+    }
+
+    fun verifyTheLibrariesListNotEmpty() {
         Log.i(TAG, "verifyLibrariesUsedLink: Trying to click the \"Libraries that we use\" link")
         onView(withText("Libraries that we use")).perform(click())
         Log.i(TAG, "verifyLibrariesUsedLink: Clicked the \"Libraries that we use\" link")
         Log.i(TAG, "verifyLibrariesUsedLink: Trying to verify that the toolbar has title: \"$appName | OSS Libraries\"")
-        onView(withId(R.id.navigationToolbar)).check(matches(hasDescendant(withText(containsString("$appName | OSS Libraries")))))
+        onView(withId(R.id.navigationToolbar)).check(
+            matches(
+                hasDescendant(
+                    withText(
+                        containsString("$appName | OSS Libraries"),
+                    ),
+                ),
+            ),
+        )
         Log.i(TAG, "verifyLibrariesUsedLink: Verified that the toolbar has title: \"$appName | OSS Libraries\"")
-        Log.i(TAG, "verifyLibrariesUsedLink: Trying to perform press back action")
-        Espresso.pressBack()
-        Log.i(TAG, "verifyLibrariesUsedLink: Performed press back action")
+        Log.i(TAG, "verifyTheLibrariesListNotEmpty: Trying to verify that the OSS Libraries list has more then 10 items.")
+        onView(withId(R.id.about_libraries_listview))
+            .check(matches(isDisplayed()))
+            .check(matches(hasMinimumChildCount(10)))
+        Log.i(TAG, "verifyTheLibrariesListNotEmpty: Verify that the OSS Libraries list has more then 10 items.")
     }
 
     fun verifyTheLinksList() {
         verifyAboutToolbar()
         verifyWhatIsNewInFirefoxLink()
         navigateBackToAboutPage()
-        verifySupport()
+        verifySupportLink()
         verifyCrashesLink()
         navigateBackToAboutPage()
         verifyPrivacyNoticeLink()

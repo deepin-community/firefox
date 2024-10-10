@@ -188,6 +188,8 @@ mr2022-onboarding-pin-primary-button-label =
         [macos] Behåll { -brand-short-name } i Dock
        *[other] Fäst { -brand-short-name } i aktivitetsfältet
     }
+# Primary button string used on welcome page for when Firefox is not pinned on MSIX
+mr2022-onboarding-pin-primary-button-label-msix = Fäst { -brand-short-name } i aktivitetsfältet och startmenyn
 # Subtitle will be used when user already has Firefox pinned, but
 # has not set it as their default browser.
 # When translating "zip", please feel free to pick a verb that signifies movement and/or exploration
@@ -334,6 +336,14 @@ onboarding-device-migration-title = Välkommen tillbaka!
 onboarding-device-migration-subtitle = Logga in på ditt { -fxaccount-brand-name } för att ta med dig dina bokmärken, lösenord och historik på din nya enhet.
 onboarding-device-migration-subtitle2 = Logga in på ditt konto för att ta med dig dina bokmärken, lösenord och historik på din nya enhet.
 onboarding-device-migration-primary-button-label = Logga in
+
+## Add-ons Picker screen
+
+amo-picker-title = Anpassa { -brand-short-name }
+amo-picker-subtitle = Tillägg är som appar för din webbläsare och de låter dig skydda lösenord, ladda ner videor, hitta erbjudanden, blockera irriterande annonser, ändra hur din webbläsare ser ut och mycket mer.
+amo-picker-install-button-label = Lägg till i { -brand-short-name }
+amo-picker-install-complete-label = Installerad
+amo-picker-collection-link = Utforska fler tillägg
 
 ## The following screens have been updated to use security and privacy focused strings:
 

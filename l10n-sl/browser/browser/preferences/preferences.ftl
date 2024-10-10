@@ -57,6 +57,10 @@ category-experimental =
 pane-experimental-subtitle = Nadaljujte previdno
 pane-experimental-search-results-header = { -brand-short-name }ovi poskusi: nadaljujte previdno
 pane-experimental-description2 = Spreminjanje naprednih nastavitev lahko vpliva na delovanje ali varnost { -brand-short-name(sklon: "rodilnik") }.
+settings-pane-labs-title = { -firefoxlabs-brand-name }
+settings-category-labs =
+    .tooltiptext = { -firefoxlabs-brand-name }
+pane-experimental-description3 = Preizkusite naše eksperimentalne zmogljivosti! So v razvoju in se spreminjajo, kar lahko vpliva na delovanje { -brand-short-name(sklon: "rodilnik") }.
 pane-experimental-reset =
     .label = Ponastavi privzeto
     .accesskey = P
@@ -605,6 +609,10 @@ home-prefs-recent-activity-description = Izbor nedavnih spletnih mest in vsebin
 home-prefs-snippets-header =
     .label = Izrezki
 home-prefs-snippets-description-new = Nasveti in novice od { -vendor-short-name(sklon: "rodilnik") } in { -brand-product-name(sklon: "rodilnik") }
+home-prefs-weather-header =
+    .label = Vreme
+home-prefs-weather-description = Kratek pogled na današnjo napoved
+home-prefs-weather-learn-more-link = Več o tem
 # Variables:
 #   $num (number) - Number of rows displayed
 home-prefs-sections-rows-option =
@@ -655,7 +663,7 @@ search-show-suggestions-above-history-option =
 search-show-suggestions-private-windows =
     .label = Prikazuj predloge iskanja v zasebnih oknih
 suggestions-addressbar-settings-generic2 = Spremeni nastavitve drugih predlogov naslovne vrstice
-search-suggestions-cant-show = Predlogi iskanja v vrstici z naslovom ne bodo prikazani, ker ste { -brand-short-name } nastavili tako, da si nikoli ne zapomni zgodovine.
+search-suggestions-cant-show = Predlogi iskanja v naslovni vrstici ne bodo prikazani, ker ste { -brand-short-name } nastavili tako, da si nikoli ne zapomni zgodovine.
 search-one-click-header2 = Bližnjice za iskanje
 search-one-click-desc = Izberite nadomestne iskalnike, ki se pojavijo pod naslovno in iskalno vrstico, ko začnete vnašati ključno besedo.
 search-choose-engine-column =
@@ -920,6 +928,9 @@ forms-saved-passwords =
 forms-primary-pw-use =
     .label = Uporabi glavno geslo
     .accesskey = U
+# This operation requires the user to authenticate with the operating system (device sign-in)
+forms-os-reauth =
+    .label = Zahtevaj prijavo v napravi za izpolnjevanje in upravljanje gesel
 forms-primary-pw-learn-more-link = Več o tem
 # This string uses the former name of the Primary Password feature
 # ("Master Password" in English) so that the preferences can be found
@@ -940,6 +951,7 @@ forms-windows-sso =
     .label = Dovoli enotno prijavo v sistem Windows za Microsoftove, službene in šolske račune
 forms-windows-sso-learn-more-link = Več o tem
 forms-windows-sso-desc = Upravljanje računov v nastavitvah naprave
+windows-passkey-settings-label = Upravljanje ključev za dostop v sistemskih nastavitvah
 
 ## OS Authentication dialog
 
@@ -951,6 +963,13 @@ primary-password-os-auth-dialog-message-win = Če želite ustvariti glavno geslo
 # notes are only valid for English. Please test in your locale.
 primary-password-os-auth-dialog-message-macosx = create a Primary Password
 master-password-os-auth-dialog-caption = { -brand-full-name }
+# The macOS string is preceded by the operating system with "Firefox is trying to ".
+autofill-creditcard-os-dialog-message =
+    { PLATFORM() ->
+        [macos] spremenite nastavitve plačilnih sredstev
+       *[other] { -brand-short-name } poskuša spremeniti nastavitve plačilnih sredstev. To omogočite z uporabo naprave za prijavo.
+    }
+autofill-creditcard-os-auth-dialog-caption = { -brand-full-name }
 
 ## Privacy section - Autofill
 
@@ -965,6 +984,9 @@ autofill-payment-methods-checkbox-submessage = Vključuje kreditne in debetne ka
     .accesskey = k
 autofill-saved-payment-methods-button = Shranjena plačilna sredstva
     .accesskey = h
+# This operation requires the user to authenticate with the operating system (device sign-in)
+autofill-reauth-payment-methods-checkbox = Zahtevaj prijavo v napravi za izpolnjevanje in upravljanje plačilnih sredstev
+    .accesskey = o
 
 ## Privacy Section - History
 
@@ -1101,6 +1123,9 @@ addressbar-suggestions-settings = Spremeni nastavitve predlogov iskanja
 addressbar-locbar-showrecentsearches-option =
     .label = Prikaži nedavna iskanja
     .accesskey = d
+addressbar-locbar-showtrendingsuggestions-option =
+    .label = Prikaži priljubljene predloge iskanja
+    .accesskey = p
 addressbar-quickactions-learn-more = Več o tem
 
 ## Privacy Section - Content Blocking
@@ -1292,6 +1317,14 @@ privacy-segmentation-radio-off =
 privacy-segmentation-radio-on =
     .label = Prikaži podrobne informacije
 
+## Privacy Section - Website Advertising Preferences
+
+website-advertising-header = Nastavitve oglaševanja spletnih mest
+website-advertising-private-attribution =
+    .label = Spletnim mestom dovoli izvajanje meritev oglasov, ki ohranjajo zasebnost
+    .accesskey = D
+website-advertising-private-attribution-description = To spletnim mestom pomaga razumeti učinkovitost njihovih oglasov, ne da bi zbirali podatke o vas.
+
 ## Privacy Section - Security
 ##
 ## It is important that wording follows the guidelines outlined on this page:
@@ -1335,13 +1368,20 @@ space-alert-under-5gb-message2 = <strong>{ -brand-short-name(sklon: "dajalnik") 
 
 httpsonly-header = Način "samo HTTPS"
 httpsonly-description = HTTPS zagotavlja varno, šifrirano povezavo med { -brand-short-name(sklon: "orodnik") } in spletnimi mesti, ki jih obiščete. Večina spletnih mest podpira HTTPS in če je omogočen način "samo HTTPS", bo { -brand-short-name } nadgradil vse povezave na HTTPS.
+httpsonly-description2 = { -brand-short-name } ustvarja varne in šifrirane povezave na spletna mesta, ki jih obiščete. { -brand-short-name } vas bo opozoril, če povezava ni varna, ko je vklopljen HTTPS-Only.
 httpsonly-learn-more = Več o tem
 httpsonly-radio-enabled =
     .label = Omogoči način "samo HTTPS" v vseh oknih
+httpsonly-radio-enabled2 =
+    .label = Uporabljaj samo HTTPS v vseh oknih
 httpsonly-radio-enabled-pbm =
     .label = Omogoči način "samo HTTPS" samo v zasebnih oknih
+httpsonly-radio-enabled-pbm2 =
+    .label = Uporabljaj samo HTTPS v zasebnih oknih
 httpsonly-radio-disabled =
     .label = Ne omogoči načina "samo HTTPS"
+httpsonly-radio-disabled2 =
+    .label = Najprej preizkusite HTTPS, vendar dovolite povezave, ki niso varne
 
 ## DoH Section
 

@@ -12,9 +12,9 @@ import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import mozilla.components.lib.state.Action
 import mozilla.components.lib.state.State
 import mozilla.components.lib.state.Store
@@ -66,10 +66,9 @@ fun <S : State, A : Action, R> Store<S, A>.observeAsState(
     val lifecycleOwner = LocalLifecycleOwner.current
 
     return produceState(initialValue = initialValue) {
-        val subscription = observe(lifecycleOwner) { browserState ->
+        observe(lifecycleOwner) { browserState ->
             value = map(browserState)
         }
-        awaitDispose { subscription?.unsubscribe() }
     }
 }
 

@@ -1,6 +1,9 @@
 use super::{conv, Command as C};
 use arrayvec::ArrayVec;
-use std::{mem, ops::Range};
+use std::{
+    mem::{self, size_of, size_of_val},
+    ops::Range,
+};
 
 #[derive(Clone, Copy, Debug, Default)]
 struct TextureSlotDesc {
@@ -81,9 +84,8 @@ impl super::CommandBuffer {
     }
 
     fn add_push_constant_data(&mut self, data: &[u32]) -> Range<u32> {
-        let data_raw = unsafe {
-            std::slice::from_raw_parts(data.as_ptr() as *const _, mem::size_of_val(data))
-        };
+        let data_raw =
+            unsafe { std::slice::from_raw_parts(data.as_ptr().cast(), size_of_val(data)) };
         let start = self.data_bytes.len();
         assert!(start < u32::MAX as usize);
         self.data_bytes.extend_from_slice(data_raw);
@@ -227,8 +229,12 @@ impl super::CommandEncoder {
     fn set_pipeline_inner(&mut self, inner: &super::PipelineInner) {
         self.cmd_buffer.commands.push(C::SetProgram(inner.program));
 
-        self.state.first_instance_location = inner.first_instance_location.clone();
-        self.state.push_constant_descs = inner.push_constant_descs.clone();
+        self.state
+            .first_instance_location
+            .clone_from(&inner.first_instance_location);
+        self.state
+            .push_constant_descs
+            .clone_from(&inner.push_constant_descs);
 
         // rebind textures, if needed
         let mut dirty_textures = 0u32;
@@ -270,7 +276,7 @@ impl crate::CommandEncoder for super::CommandEncoder {
 
     unsafe fn transition_buffers<'a, T>(&mut self, barriers: T)
     where
-        T: Iterator<Item = crate::BufferBarrier<'a, super::Api>>,
+        T: Iterator<Item = crate::BufferBarrier<'a, super::Buffer>>,
     {
         if !self
             .private_caps
@@ -295,7 +301,7 @@ impl crate::CommandEncoder for super::CommandEncoder {
 
     unsafe fn transition_textures<'a, T>(&mut self, barriers: T)
     where
-        T: Iterator<Item = crate::TextureBarrier<'a, super::Api>>,
+        T: Iterator<Item = crate::TextureBarrier<'a, super::Texture>>,
     {
         if !self
             .private_caps
@@ -491,7 +497,10 @@ impl crate::CommandEncoder for super::CommandEncoder {
 
     // render
 
-    unsafe fn begin_render_pass(&mut self, desc: &crate::RenderPassDescriptor<super::Api>) {
+    unsafe fn begin_render_pass(
+        &mut self,
+        desc: &crate::RenderPassDescriptor<super::QuerySet, super::TextureView>,
+    ) {
         debug_assert!(self.state.end_of_pass_timestamp.is_none());
         if let Some(ref t) = desc.timestamp_writes {
             if let Some(index) = t.beginning_of_pass_write_index {
@@ -604,6 +613,13 @@ impl crate::CommandEncoder for super::CommandEncoder {
             depth: 0.0..1.0,
         });
 
+        if !rendering_to_external_framebuffer {
+            // set the draw buffers and states
+            self.cmd_buffer
+                .commands
+                .push(C::SetDrawColorBuffers(desc.color_attachments.len() as u8));
+        }
+
         // issue the clears
         for (i, cat) in desc
             .color_attachments
@@ -632,13 +648,6 @@ impl crate::CommandEncoder for super::CommandEncoder {
                     },
                 );
             }
-        }
-
-        if !rendering_to_external_framebuffer {
-            // set the draw buffers and states
-            self.cmd_buffer
-                .commands
-                .push(C::SetDrawColorBuffers(desc.color_attachments.len() as u8));
         }
 
         if let Some(ref dsat) = desc.depth_stencil_attachment {
@@ -975,7 +984,7 @@ impl crate::CommandEncoder for super::CommandEncoder {
 
     unsafe fn set_index_buffer<'a>(
         &mut self,
-        binding: crate::BufferBinding<'a, super::Api>,
+        binding: crate::BufferBinding<'a, super::Buffer>,
         format: wgt::IndexFormat,
     ) {
         self.state.index_offset = binding.offset;
@@ -987,7 +996,7 @@ impl crate::CommandEncoder for super::CommandEncoder {
     unsafe fn set_vertex_buffer<'a>(
         &mut self,
         index: u32,
-        binding: crate::BufferBinding<'a, super::Api>,
+        binding: crate::BufferBinding<'a, super::Buffer>,
     ) {
         self.state.dirty_vbuf_mask |= 1 << index;
         let (_, ref mut vb) = self.state.vertex_buffers[index as usize];
@@ -1077,7 +1086,7 @@ impl crate::CommandEncoder for super::CommandEncoder {
         self.prepare_draw(0);
         for draw in 0..draw_count as wgt::BufferAddress {
             let indirect_offset =
-                offset + draw * mem::size_of::<wgt::DrawIndirectArgs>() as wgt::BufferAddress;
+                offset + draw * size_of::<wgt::DrawIndirectArgs>() as wgt::BufferAddress;
             #[allow(clippy::clone_on_copy)] // False positive when cloning glow::UniformLocation
             self.cmd_buffer.commands.push(C::DrawIndirect {
                 topology: self.state.topology,
@@ -1099,8 +1108,8 @@ impl crate::CommandEncoder for super::CommandEncoder {
             wgt::IndexFormat::Uint32 => glow::UNSIGNED_INT,
         };
         for draw in 0..draw_count as wgt::BufferAddress {
-            let indirect_offset = offset
-                + draw * mem::size_of::<wgt::DrawIndexedIndirectArgs>() as wgt::BufferAddress;
+            let indirect_offset =
+                offset + draw * size_of::<wgt::DrawIndexedIndirectArgs>() as wgt::BufferAddress;
             #[allow(clippy::clone_on_copy)] // False positive when cloning glow::UniformLocation
             self.cmd_buffer.commands.push(C::DrawIndexedIndirect {
                 topology: self.state.topology,
@@ -1134,7 +1143,7 @@ impl crate::CommandEncoder for super::CommandEncoder {
 
     // compute
 
-    unsafe fn begin_compute_pass(&mut self, desc: &crate::ComputePassDescriptor<super::Api>) {
+    unsafe fn begin_compute_pass(&mut self, desc: &crate::ComputePassDescriptor<super::QuerySet>) {
         debug_assert!(self.state.end_of_pass_timestamp.is_none());
         if let Some(ref t) = desc.timestamp_writes {
             if let Some(index) = t.beginning_of_pass_write_index {
@@ -1182,7 +1191,13 @@ impl crate::CommandEncoder for super::CommandEncoder {
         _descriptors: T,
     ) where
         super::Api: 'a,
-        T: IntoIterator<Item = crate::BuildAccelerationStructureDescriptor<'a, super::Api>>,
+        T: IntoIterator<
+            Item = crate::BuildAccelerationStructureDescriptor<
+                'a,
+                super::Buffer,
+                super::AccelerationStructure,
+            >,
+        >,
     {
         unimplemented!()
     }

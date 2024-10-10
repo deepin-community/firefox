@@ -20,7 +20,6 @@ ChromeUtils.defineESModuleGetters(this, {
   ExtensionSettingsStore:
     "resource://gre/modules/ExtensionSettingsStore.sys.mjs",
   PrivateBrowsingUtils: "resource://gre/modules/PrivateBrowsingUtils.sys.mjs",
-  ReportBrokenSite: "resource:///modules/ReportBrokenSite.sys.mjs",
   ShellService: "resource:///modules/ShellService.sys.mjs",
   URILoadingHelper: "resource:///modules/URILoadingHelper.sys.mjs",
 });
@@ -106,16 +105,6 @@ function openUILink(
     aPostData,
     aReferrerInfo
   );
-}
-
-// This is here for historical reasons. bug 1742889 covers cleaning this up.
-function getRootEvent(aEvent) {
-  return BrowserUtils.getRootEvent(aEvent);
-}
-
-// This is here for historical reasons. bug 1742889 covers cleaning this up.
-function whereToOpenLink(e, ignoreButton, ignoreAlt) {
-  return BrowserUtils.whereToOpenLink(e, ignoreButton, ignoreAlt);
 }
 
 function openTrustedLinkIn(url, where, params) {

@@ -5,6 +5,7 @@
 package org.mozilla.fenix.ui
 
 import android.Manifest
+import androidx.compose.ui.test.junit4.AndroidComposeTestRule
 import androidx.core.net.toUri
 import androidx.test.espresso.Espresso.pressBack
 import androidx.test.rule.GrantPermissionRule
@@ -18,6 +19,7 @@ import org.mozilla.fenix.helpers.HomeActivityIntentTestRule
 import org.mozilla.fenix.helpers.MatcherHelper
 import org.mozilla.fenix.helpers.TestAssetHelper
 import org.mozilla.fenix.helpers.TestAssetHelper.getStorageTestAsset
+import org.mozilla.fenix.helpers.TestAssetHelper.waitingTimeLong
 import org.mozilla.fenix.helpers.TestHelper.exitMenu
 import org.mozilla.fenix.helpers.TestHelper.mDevice
 import org.mozilla.fenix.helpers.TestHelper.restartApp
@@ -33,16 +35,21 @@ import org.mozilla.fenix.ui.robots.navigationToolbar
  *
  */
 class SettingsDeleteBrowsingDataOnQuitTest : TestSetup() {
-    @get:Rule
-    val activityTestRule = HomeActivityIntentTestRule.withDefaultSettingsOverrides(skipOnboarding = true)
+    @get:Rule(order = 0)
+    val composeTestRule =
+        AndroidComposeTestRule(
+            HomeActivityIntentTestRule.withDefaultSettingsOverrides(
+                skipOnboarding = true,
+            ),
+        ) { it.activity }
 
     // Automatically allows app permissions, avoiding a system dialog showing up.
-    @get:Rule
+    @get:Rule(order = 1)
     val grantPermissionRule: GrantPermissionRule = GrantPermissionRule.grant(
         Manifest.permission.RECORD_AUDIO,
     )
 
-    // TestRail link: https://testrail.stage.mozaws.net/index.php?/cases/view/416048
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/416048
     @Test
     fun deleteBrowsingDataOnQuitSettingTest() {
         homeScreen {
@@ -71,7 +78,7 @@ class SettingsDeleteBrowsingDataOnQuitTest : TestSetup() {
         }
     }
 
-    // TestRail link: https://testrail.stage.mozaws.net/index.php?/cases/view/416049
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/416049
     @Test
     fun deleteOpenTabsOnQuitTest() {
         val testPage = TestAssetHelper.getGenericAsset(mockWebServer, 1)
@@ -88,15 +95,15 @@ class SettingsDeleteBrowsingDataOnQuitTest : TestSetup() {
         }.goToHomescreen {
         }.openThreeDotMenu {
             clickQuit()
-            restartApp(activityTestRule)
+            restartApp(composeTestRule.activityRule)
         }
-        navigationToolbar {
-        }.openTabTray {
+        homeScreen {
+        }.openTabDrawer(composeTestRule) {
             verifyNoOpenTabsInNormalBrowsing()
         }
     }
 
-    // TestRail link: https://testrail.stage.mozaws.net/index.php?/cases/view/416050
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/416050
     @Test
     fun deleteBrowsingHistoryOnQuitTest() {
         val genericPage =
@@ -114,7 +121,7 @@ class SettingsDeleteBrowsingDataOnQuitTest : TestSetup() {
         }.goToHomescreen {
         }.openThreeDotMenu {
             clickQuit()
-            restartApp(activityTestRule)
+            restartApp(composeTestRule.activityRule)
         }
 
         homeScreen {
@@ -125,7 +132,7 @@ class SettingsDeleteBrowsingDataOnQuitTest : TestSetup() {
         }
     }
 
-    // TestRail link: https://testrail.stage.mozaws.net/index.php?/cases/view/416051
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/416051
     @Test
     fun deleteCookiesAndSiteDataOnQuitTest() {
         val storageWritePage =
@@ -147,7 +154,7 @@ class SettingsDeleteBrowsingDataOnQuitTest : TestSetup() {
         }.goToHomescreen {
         }.openThreeDotMenu {
             clickQuit()
-            restartApp(activityTestRule)
+            restartApp(composeTestRule.activityRule)
         }
 
         navigationToolbar {
@@ -160,7 +167,7 @@ class SettingsDeleteBrowsingDataOnQuitTest : TestSetup() {
         }
     }
 
-    // TestRail link: https://testrail.stage.mozaws.net/index.php?/cases/view/1243096
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/1243096
     @SmokeTest
     @Test
     fun deleteDownloadsOnQuitTest() {
@@ -182,15 +189,15 @@ class SettingsDeleteBrowsingDataOnQuitTest : TestSetup() {
             clickQuit()
             mDevice.waitForIdle()
         }
-        restartApp(activityTestRule)
+        restartApp(composeTestRule.activityRule)
         homeScreen {
         }.openThreeDotMenu {
-        }.openDownloadsManager {
-            verifyEmptyDownloadsList()
+        }.openDownloadsManager() {
+            verifyEmptyDownloadsList(composeTestRule)
         }
     }
 
-    // TestRail link: https://testrail.stage.mozaws.net/index.php?/cases/view/416053
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/416053
     @SmokeTest
     @Test
     fun deleteSitePermissionsOnQuitTest() {
@@ -206,7 +213,7 @@ class SettingsDeleteBrowsingDataOnQuitTest : TestSetup() {
         }
         navigationToolbar {
         }.enterURLAndEnterToBrowser(testPage.toUri()) {
-            waitForPageToLoad()
+            waitForPageToLoad(pageLoadWaitingTime = waitingTimeLong)
         }.clickStartMicrophoneButton {
             verifyMicrophonePermissionPrompt(testPageSubstring)
             selectRememberPermissionDecision()
@@ -217,16 +224,16 @@ class SettingsDeleteBrowsingDataOnQuitTest : TestSetup() {
             clickQuit()
             mDevice.waitForIdle()
         }
-        restartApp(activityTestRule)
+        restartApp(composeTestRule.activityRule)
         navigationToolbar {
         }.enterURLAndEnterToBrowser(testPage.toUri()) {
-            waitForPageToLoad()
+            waitForPageToLoad(pageLoadWaitingTime = waitingTimeLong)
         }.clickStartMicrophoneButton {
             verifyMicrophonePermissionPrompt(testPageSubstring)
         }
     }
 
-    // TestRail link: https://testrail.stage.mozaws.net/index.php?/cases/view/416052
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/416052
     @Test
     fun deleteCachedFilesOnQuitTest() {
         val pocketTopArticles = getStringResource(R.string.pocket_pinned_top_articles)
@@ -241,7 +248,7 @@ class SettingsDeleteBrowsingDataOnQuitTest : TestSetup() {
         homeScreen {
             verifyExistingTopSitesTabs(pocketTopArticles)
         }.openTopSiteTabWithTitle(pocketTopArticles) {
-            waitForPageToLoad()
+            verifyPocketPageContent()
         }.goToHomescreen {
         }.openThreeDotMenu {
             clickQuit()
@@ -249,7 +256,7 @@ class SettingsDeleteBrowsingDataOnQuitTest : TestSetup() {
         }
         // disabling wifi to prevent downloads in the background
         setNetworkEnabled(enabled = false)
-        restartApp(activityTestRule)
+        restartApp(composeTestRule.activityRule)
         navigationToolbar {
         }.enterURLAndEnterToBrowser("about:cache".toUri()) {
             verifyNetworkCacheIsEmpty("memory")

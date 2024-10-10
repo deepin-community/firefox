@@ -19,7 +19,6 @@
 #include "nsNameSpaceManager.h"
 
 #include "nsIContent.h"
-#include "nsIScrollableFrame.h"
 #include "nsPresContext.h"
 #include "nsGkAtoms.h"
 #include "nsLayoutUtils.h"
@@ -35,6 +34,7 @@
 #include "mozilla/EventStateManager.h"
 #include "mozilla/PresShell.h"
 #include "mozilla/PresState.h"
+#include "mozilla/ScrollContainerFrame.h"
 #include "mozilla/TextEditor.h"
 #include "nsAttrValueInlines.h"
 #include "mozilla/dom/Selection.h"
@@ -49,8 +49,6 @@
 #include "mozilla/Try.h"
 #include "nsFrameSelection.h"
 
-#define DEFAULT_COLUMN_WIDTH 20
-
 using namespace mozilla;
 using namespace mozilla::dom;
 
@@ -63,9 +61,7 @@ NS_IMPL_FRAMEARENA_HELPERS(nsTextControlFrame)
 
 NS_QUERYFRAME_HEAD(nsTextControlFrame)
   NS_QUERYFRAME_ENTRY(nsTextControlFrame)
-  NS_QUERYFRAME_ENTRY(nsIFormControlFrame)
   NS_QUERYFRAME_ENTRY(nsIAnonymousContentCreator)
-  NS_QUERYFRAME_ENTRY(nsITextControlFrame)
   NS_QUERYFRAME_ENTRY(nsIStatefulFrame)
 NS_QUERYFRAME_TAIL_INHERITING(nsContainerFrame)
 
@@ -120,7 +116,7 @@ nsTextControlFrame::nsTextControlFrame(ComputedStyle* aStyle,
 
 nsTextControlFrame::~nsTextControlFrame() = default;
 
-nsIScrollableFrame* nsTextControlFrame::GetScrollTargetFrame() const {
+ScrollContainerFrame* nsTextControlFrame::GetScrollTargetFrame() const {
   if (!mRootNode) {
     return nullptr;
   }
@@ -143,7 +139,8 @@ void nsTextControlFrame::Destroy(DestroyContext& aContext) {
   // text node in the text control.  If so, we should set source node to the
   // text control because another text node may be recreated soon if the text
   // control is just reframed.
-  if (nsCOMPtr<nsIDragSession> dragSession = nsContentUtils::GetDragSession()) {
+  if (nsCOMPtr<nsIDragSession> dragSession =
+          nsContentUtils::GetDragSession(PresContext())) {
     if (dragSession->IsDraggingTextInTextControl() && mRootNode &&
         mRootNode->GetFirstChild()) {
       nsCOMPtr<nsINode> sourceNode;
@@ -168,7 +165,7 @@ void nsTextControlFrame::Destroy(DestroyContext& aContext) {
   aContext.AddAnonymousContent(mRootNode.forget());
   aContext.AddAnonymousContent(mPlaceholderDiv.forget());
   aContext.AddAnonymousContent(mPreviewDiv.forget());
-  aContext.AddAnonymousContent(mRevealButton.forget());
+  aContext.AddAnonymousContent(mButton.forget());
 
   nsContainerFrame::Destroy(aContext);
 }
@@ -188,7 +185,8 @@ LogicalSize nsTextControlFrame::CalcIntrinsicSize(gfxContext* aRenderingContext,
   const nscoord charMaxAdvance = fontMet->MaxAdvance();
 
   // Initialize based on the width in characters.
-  const int32_t cols = GetCols();
+  const Maybe<int32_t> maybeCols = GetCols();
+  const int32_t cols = maybeCols.valueOr(TextControlElement::DEFAULT_COLS);
   intrinsicSize.ISize(aWM) = cols * charWidth;
 
   // If we do not have what appears to be a fixed-width font, add a "slop"
@@ -203,12 +201,11 @@ LogicalSize nsTextControlFrame::CalcIntrinsicSize(gfxContext* aRenderingContext,
                         nsPresContext::CSSPixelsToAppUnits(4));
     internalPadding = RoundToMultiple(internalPadding, AppUnitsPerCSSPixel());
     intrinsicSize.ISize(aWM) += internalPadding;
-  } else {
+  } else if (PresContext()->CompatibilityMode() ==
+             eCompatibility_FullStandards) {
     // This is to account for the anonymous <br> having a 1 twip width
     // in Full Standards mode, see BRFrame::Reflow and bug 228752.
-    if (PresContext()->CompatibilityMode() == eCompatibility_FullStandards) {
-      intrinsicSize.ISize(aWM) += 1;
-    }
+    intrinsicSize.ISize(aWM) += 1;
   }
 
   // Increment width with cols * letter-spacing.
@@ -225,15 +222,37 @@ LogicalSize nsTextControlFrame::CalcIntrinsicSize(gfxContext* aRenderingContext,
 
   // Add in the size of the scrollbars for textarea
   if (IsTextArea()) {
-    nsIScrollableFrame* scrollableFrame = GetScrollTargetFrame();
-    NS_ASSERTION(scrollableFrame, "Child must be scrollable");
-    if (scrollableFrame) {
-      LogicalMargin scrollbarSizes(aWM,
-                                   scrollableFrame->GetDesiredScrollbarSizes());
+    ScrollContainerFrame* scrollContainerFrame = GetScrollTargetFrame();
+    NS_ASSERTION(scrollContainerFrame, "Child must be scrollable");
+    if (scrollContainerFrame) {
+      LogicalMargin scrollbarSizes(
+          aWM, scrollContainerFrame->GetDesiredScrollbarSizes());
       intrinsicSize.ISize(aWM) += scrollbarSizes.IStartEnd(aWM);
-      intrinsicSize.BSize(aWM) += scrollbarSizes.BStartEnd(aWM);
+
+      // We only include scrollbar-thickness in our BSize if the scrollbar on
+      // that side is explicitly forced-to-be-present.
+      const bool includeScrollbarBSize = [&] {
+        if (!StaticPrefs::
+                layout_forms_textarea_sizing_excludes_auto_scrollbar_enabled()) {
+          return true;
+        }
+        auto overflow = aWM.IsVertical() ? StyleDisplay()->mOverflowY
+                                         : StyleDisplay()->mOverflowX;
+        return overflow == StyleOverflow::Scroll;
+      }();
+      if (includeScrollbarBSize) {
+        intrinsicSize.BSize(aWM) += scrollbarSizes.BStartEnd(aWM);
+      }
     }
   }
+
+  // Add the inline size of the button if our char size is explicit, so as to
+  // make sure to make enough space for it.
+  if (maybeCols.isSome() && mButton && mButton->GetPrimaryFrame()) {
+    intrinsicSize.ISize(aWM) +=
+        mButton->GetPrimaryFrame()->GetMinISize(aRenderingContext);
+  }
+
   return intrinsicSize;
 }
 
@@ -279,20 +298,6 @@ nsresult nsTextControlFrame::EnsureEditorInitialized() {
     // for why this is needed.
     mozilla::dom::AutoNoJSAPI nojsapi;
 
-    // Make sure that we try to focus the content even if the method fails
-    class EnsureSetFocus {
-     public:
-      explicit EnsureSetFocus(nsTextControlFrame* aFrame) : mFrame(aFrame) {}
-      ~EnsureSetFocus() {
-        if (nsContentUtils::IsFocusedContent(mFrame->GetContent()))
-          mFrame->SetFocus(true, false);
-      }
-
-     private:
-      nsTextControlFrame* mFrame;
-    };
-    EnsureSetFocus makeSureSetFocusHappens(this);
-
 #ifdef DEBUG
     // Make sure we are not being called again until we're finished.
     // If reentrancy happens, just pretend that we don't have an editor.
@@ -322,7 +327,7 @@ nsresult nsTextControlFrame::EnsureEditorInitialized() {
         position = val.Length();
       }
 
-      SetSelectionEndPoints(position, position);
+      SetSelectionEndPoints(position, position, SelectionDirection::None);
     }
   }
   NS_ENSURE_STATE(weakFrame.IsAlive());
@@ -417,19 +422,20 @@ nsresult nsTextControlFrame::CreateAnonymousContent(
   // background on the placeholder doesn't obscure the caret.
   aElements.AppendElement(mRootNode);
 
-  if (StaticPrefs::layout_forms_reveal_password_button_enabled() &&
-      IsPasswordTextControl()) {
-    mRevealButton =
-        MakeAnonElement(PseudoStyleType::mozReveal, nullptr, nsGkAtoms::button);
-    mRevealButton->SetAttr(kNameSpaceID_None, nsGkAtoms::aria_hidden,
-                           u"true"_ns, false);
-    mRevealButton->SetAttr(kNameSpaceID_None, nsGkAtoms::tabindex, u"-1"_ns,
-                           false);
-    aElements.AppendElement(mRevealButton);
-  }
-
   rv = UpdateValueDisplay(false);
   NS_ENSURE_SUCCESS(rv, rv);
+
+  if ((StaticPrefs::layout_forms_reveal_password_button_enabled() ||
+       PresContext()->Document()->ChromeRulesEnabled()) &&
+      IsPasswordTextControl() &&
+      StyleDisplay()->EffectiveAppearance() != StyleAppearance::Textfield) {
+    mButton =
+        MakeAnonElement(PseudoStyleType::mozReveal, nullptr, nsGkAtoms::button);
+    mButton->SetAttr(kNameSpaceID_None, nsGkAtoms::aria_hidden, u"true"_ns,
+                     false);
+    mButton->SetAttr(kNameSpaceID_None, nsGkAtoms::tabindex, u"-1"_ns, false);
+    aElements.AppendElement(mButton);
+  }
 
   InitializeEagerlyIfNeeded();
   return NS_OK;
@@ -458,7 +464,8 @@ bool nsTextControlFrame::ShouldInitializeEagerly() const {
   // If text in the editor is being dragged, we need the editor to create
   // new source node for the drag session (TextEditor creates the text node
   // in the anonymous <div> element.
-  if (nsCOMPtr<nsIDragSession> dragSession = nsContentUtils::GetDragSession()) {
+  if (nsCOMPtr<nsIDragSession> dragSession =
+          nsContentUtils::GetDragSession(PresContext())) {
     if (dragSession->IsDraggingTextInTextControl()) {
       nsCOMPtr<nsINode> sourceNode;
       if (NS_SUCCEEDED(
@@ -545,22 +552,19 @@ void nsTextControlFrame::AppendAnonymousContentTo(
     aElements.AppendElement(mPreviewDiv);
   }
 
-  if (mRevealButton) {
-    aElements.AppendElement(mRevealButton);
+  if (mButton) {
+    aElements.AppendElement(mButton);
   }
 
   aElements.AppendElement(mRootNode);
 }
 
-nscoord nsTextControlFrame::GetPrefISize(gfxContext* aRenderingContext) {
-  WritingMode wm = GetWritingMode();
-  return CalcIntrinsicSize(aRenderingContext, wm).ISize(wm);
-}
-
-nscoord nsTextControlFrame::GetMinISize(gfxContext* aRenderingContext) {
+nscoord nsTextControlFrame::IntrinsicISize(gfxContext* aContext,
+                                           IntrinsicISizeType aType) {
   // Our min inline size is just our preferred inline-size if we have auto
   // inline size.
-  return GetPrefISize(aRenderingContext);
+  WritingMode wm = GetWritingMode();
+  return CalcIntrinsicSize(aContext, wm).ISize(wm);
 }
 
 Maybe<nscoord> nsTextControlFrame::ComputeBaseline(
@@ -581,13 +585,6 @@ Maybe<nscoord> nsTextControlFrame::ComputeBaseline(
   return Some(nsLayoutUtils::GetCenteredFontBaseline(fontMet, lineHeight,
                                                      wm.IsLineInverted()) +
               aReflowInput.ComputedLogicalBorderPadding(wm).BStart(wm));
-}
-
-static bool IsButtonBox(const nsIFrame* aFrame) {
-  auto pseudoType = aFrame->Style()->GetPseudoType();
-  return pseudoType == PseudoStyleType::mozNumberSpinBox ||
-         pseudoType == PseudoStyleType::mozSearchClearButton ||
-         pseudoType == PseudoStyleType::mozReveal;
 }
 
 void nsTextControlFrame::Reflow(nsPresContext* aPresContext,
@@ -747,13 +744,7 @@ void nsTextControlFrame::ReflowTextControlChild(
 }
 
 // IMPLEMENTING NS_IFORMCONTROLFRAME
-void nsTextControlFrame::SetFocus(bool aOn, bool aRepaint) {
-  // If 'dom.placeholeder.show_on_focus' preference is 'false', focusing or
-  // blurring the frame can have an impact on the placeholder visibility.
-  if (!aOn) {
-    return;
-  }
-
+void nsTextControlFrame::OnFocus() {
   nsISelectionController* selCon = GetSelectionController();
   if (!selCon) {
     return;
@@ -793,30 +784,6 @@ void nsTextControlFrame::SetFocus(bool aOn, bool aRepaint) {
   if (RefPtr<nsFrameSelection> frameSelection = presShell->FrameSelection()) {
     frameSelection->SetDragState(false);
   }
-}
-
-nsresult nsTextControlFrame::SetFormProperty(nsAtom* aName,
-                                             const nsAString& aValue) {
-  if (!mIsProcessing) {  // some kind of lock.
-    mIsProcessing = true;
-    if (nsGkAtoms::select == aName) {
-      // Select all the text.
-      //
-      // XXX: This is lame, we can't call editor's SelectAll method
-      //      because that triggers AutoCopies in unix builds.
-      //      Instead, we have to call our own homegrown version
-      //      of select all which merely builds a range that selects
-      //      all of the content and adds that to the selection.
-
-      AutoWeakFrame weakThis = this;
-      SelectAllOrCollapseToEndOfText(true);  // NOTE: can destroy the world
-      if (!weakThis.IsAlive()) {
-        return NS_OK;
-      }
-    }
-    mIsProcessing = false;
-  }
-  return NS_OK;
 }
 
 already_AddRefed<TextEditor> nsTextControlFrame::GetTextEditor() {
@@ -870,7 +837,7 @@ void nsTextControlFrame::ScrollSelectionIntoViewAsync(
       nsISelectionController::SELECTION_FOCUS_REGION, flags);
 }
 
-nsresult nsTextControlFrame::SelectAllOrCollapseToEndOfText(bool aSelect) {
+nsresult nsTextControlFrame::SelectAll() {
   nsresult rv = EnsureEditorInitialized();
   if (NS_WARN_IF(NS_FAILED(rv))) {
     return rv;
@@ -884,7 +851,7 @@ nsresult nsTextControlFrame::SelectAllOrCollapseToEndOfText(bool aSelect) {
 
   uint32_t length = text->Length();
 
-  rv = SetSelectionInternal(text, aSelect ? 0 : length, text, length);
+  rv = SetSelectionInternal(text, 0, text, length, SelectionDirection::None);
   NS_ENSURE_SUCCESS(rv, rv);
 
   ScrollSelectionIntoViewAsync();
@@ -892,8 +859,7 @@ nsresult nsTextControlFrame::SelectAllOrCollapseToEndOfText(bool aSelect) {
 }
 
 nsresult nsTextControlFrame::SetSelectionEndPoints(
-    uint32_t aSelStart, uint32_t aSelEnd,
-    nsITextControlFrame::SelectionDirection aDirection) {
+    uint32_t aSelStart, uint32_t aSelEnd, SelectionDirection aDirection) {
   NS_ASSERTION(aSelStart <= aSelEnd, "Invalid selection offsets!");
 
   if (aSelStart > aSelEnd) return NS_ERROR_FAILURE;
@@ -926,9 +892,8 @@ nsresult nsTextControlFrame::SetSelectionEndPoints(
 }
 
 NS_IMETHODIMP
-nsTextControlFrame::SetSelectionRange(
-    uint32_t aSelStart, uint32_t aSelEnd,
-    nsITextControlFrame::SelectionDirection aDirection) {
+nsTextControlFrame::SetSelectionRange(uint32_t aSelStart, uint32_t aSelEnd,
+                                      SelectionDirection aDirection) {
   nsresult rv = EnsureEditorInitialized();
   NS_ENSURE_SUCCESS(rv, rv);
 
@@ -1013,12 +978,12 @@ void nsTextControlFrame::HandleReadonlyOrDisabledChange() {
     return;
   }
   if (el->IsDisabledOrReadOnly()) {
-    if (nsContentUtils::IsFocusedContent(el)) {
+    if (nsFocusManager::GetFocusedElementStatic() == el) {
       selCon->SetCaretEnabled(false);
     }
     editor->AddFlags(nsIEditor::eEditorReadonlyMask);
   } else {
-    if (nsContentUtils::IsFocusedContent(el)) {
+    if (nsFocusManager::GetFocusedElementStatic() == el) {
       selCon->SetCaretEnabled(true);
     }
     editor->RemoveFlags(nsIEditor::eEditorReadonlyMask);
@@ -1029,6 +994,10 @@ void nsTextControlFrame::ElementStateChanged(dom::ElementState aStates) {
   if (aStates.HasAtLeastOneOfStates(dom::ElementState::READONLY |
                                     dom::ElementState::DISABLED)) {
     HandleReadonlyOrDisabledChange();
+  }
+  if (aStates.HasState(dom::ElementState::FOCUS) &&
+      mContent->AsElement()->State().HasState(dom::ElementState::FOCUS)) {
+    OnFocus();
   }
   return nsContainerFrame::ElementStateChanged(aStates);
 }
@@ -1131,8 +1100,7 @@ nsTextControlFrame::GetOwnedSelectionController(
 }
 
 UniquePtr<PresState> nsTextControlFrame::SaveState() {
-  if (nsIStatefulFrame* scrollStateFrame =
-          do_QueryFrame(GetScrollTargetFrame())) {
+  if (nsIStatefulFrame* scrollStateFrame = GetScrollTargetFrame()) {
     return scrollStateFrame->SaveState();
   }
 
@@ -1143,9 +1111,7 @@ NS_IMETHODIMP
 nsTextControlFrame::RestoreState(PresState* aState) {
   NS_ENSURE_ARG_POINTER(aState);
 
-  // Query the nsIStatefulFrame from the HTMLScrollFrame
-  if (nsIStatefulFrame* scrollStateFrame =
-          do_QueryFrame(GetScrollTargetFrame())) {
+  if (nsIStatefulFrame* scrollStateFrame = GetScrollTargetFrame()) {
     return scrollStateFrame->RestoreState(aState);
   }
 
@@ -1203,7 +1169,8 @@ nsTextControlFrame::EditorInitializer::Run() {
   // and its source node is the text control element, we're being reframed.
   // In this case we should restore the source node of the drag session to
   // new text node because it's required for dispatching `dragend` event.
-  if (nsCOMPtr<nsIDragSession> dragSession = nsContentUtils::GetDragSession()) {
+  if (nsCOMPtr<nsIDragSession> dragSession =
+          nsContentUtils::GetDragSession(mFrame->PresContext())) {
     if (dragSession->IsDraggingTextInTextControl()) {
       nsCOMPtr<nsINode> sourceNode;
       if (NS_SUCCEEDED(

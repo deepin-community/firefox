@@ -11,23 +11,23 @@
 #include <propkeydef.h>   // For DEFINE_PROPERTYKEY() definition
 #include <propvarutil.h>  // For InitPropVariantFrom*()
 
-#include "mozilla/dom/MediaKeysBinding.h"
-#include "mozilla/dom/Promise.h"
-#include "mozilla/dom/KeySystemNames.h"
-#include "mozilla/ipc/UtilityAudioDecoderChild.h"
-#include "mozilla/ipc/UtilityProcessManager.h"
-#include "mozilla/ipc/UtilityProcessParent.h"
-#include "mozilla/EMEUtils.h"
-#include "mozilla/StaticMutex.h"
-#include "mozilla/StaticPrefs_media.h"
-#include "mozilla/KeySystemConfig.h"
-#include "mozilla/WindowsVersion.h"
 #include "MFCDMProxy.h"
 #include "MFMediaEngineUtils.h"
-#include "nsTHashMap.h"
 #include "RemoteDecodeUtils.h"       // For GetCurrentSandboxingKind()
 #include "SpecialSystemDirectory.h"  // For temp dir
 #include "WMFUtils.h"
+#include "mozilla/EMEUtils.h"
+#include "mozilla/KeySystemConfig.h"
+#include "mozilla/StaticMutex.h"
+#include "mozilla/StaticPrefs_media.h"
+#include "mozilla/WindowsVersion.h"
+#include "mozilla/dom/KeySystemNames.h"
+#include "mozilla/dom/MediaKeysBinding.h"
+#include "mozilla/dom/Promise.h"
+#include "mozilla/ipc/UtilityAudioDecoderChild.h"
+#include "mozilla/ipc/UtilityProcessManager.h"
+#include "mozilla/ipc/UtilityProcessParent.h"
+#include "nsTHashMap.h"
 
 #ifdef MOZ_WMF_CDM_LPAC_SANDBOX
 #  include "sandboxBroker.h"
@@ -605,23 +605,23 @@ static bool FactorySupports(ComPtr<IMFContentDecryptionModuleFactory>& aFactory,
     contentType.AppendLiteral(u",");
     contentType.AppendASCII(aAudioCodec);
   }
-  // These features are required to call IsTypeSupported(). We only care about
-  // codec and encryption scheme so hardcode the rest.
-  contentType.AppendLiteral(
-      u"\";features=\"decode-bpp=8,"
-      "decode-res-x=1920,decode-res-y=1080,"
-      "decode-bitrate=10000000,decode-fps=30,");
-  if (!aAdditionalFeatures.IsEmpty()) {
-    contentType.Append(aAdditionalFeatures);
-  }
-  // `encryption-robustness` is for Widevine only.
+  contentType.AppendLiteral(u"\";features=\"");
   if (IsWidevineExperimentKeySystemAndSupported(aKeySystem) ||
       IsWidevineKeySystem(aKeySystem)) {
+    // This decoder subsystem settings are only required by Wivevine.
+    contentType.AppendLiteral(
+        u"decode-bpc=8,"
+        "decode-res-x=1920,decode-res-y=1080,"
+        "decode-bitrate=10000000,decode-fps=30,");
+    // `encryption-robustness` is for Widevine only.
     if (aIsHWSecure) {
-      contentType.AppendLiteral(u"encryption-robustness=HW_SECURE_ALL");
+      contentType.AppendLiteral(u"encryption-robustness=HW_SECURE_ALL,");
     } else {
-      contentType.AppendLiteral(u"encryption-robustness=SW_SECURE_DECODE");
+      contentType.AppendLiteral(u"encryption-robustness=SW_SECURE_DECODE,");
     }
+  }
+  if (!aAdditionalFeatures.IsEmpty()) {
+    contentType.Append(aAdditionalFeatures);
   }
   contentType.AppendLiteral(u"\"");
   // End of the query string
@@ -774,6 +774,12 @@ void MFCDMParent::GetCapabilities(const nsString& aKeySystem,
     return;
   }
 
+  // MFCDM requires persistent storage, and can't use in-memory storage, it
+  // can't be used in private browsing.
+  if (aFlags.contains(CapabilitesFlag::IsPrivateBrowsing)) {
+    return;
+  }
+
   ComPtr<IMFContentDecryptionModuleFactory> factory = aFactory;
   if (!factory) {
     RETURN_VOID_IF_FAILED(GetOrCreateFactory(aKeySystem, factory));
@@ -818,7 +824,9 @@ void MFCDMParent::GetCapabilities(const nsString& aKeySystem,
         if (aCodec.Equals(KeySystemConfig::EME_CODEC_HEVC)) {
           return "hev1"_ns;
         }
-        // TODO : support AV1?
+        if (aCodec.Equals(KeySystemConfig::EME_CODEC_AV1)) {
+          return "av01"_ns;
+        }
         if (aCodec.Equals(KeySystemConfig::EME_CODEC_AAC)) {
           return "mp4a"_ns;
         }
@@ -835,35 +843,118 @@ void MFCDMParent::GetCapabilities(const nsString& aKeySystem,
         return "none"_ns;
       };
 
-  // TODO : add AV1
-  static nsTArray<KeySystemConfig::EMECodecString> kVideoCodecs({
-      KeySystemConfig::EME_CODEC_H264,
-      KeySystemConfig::EME_CODEC_VP8,
-      KeySystemConfig::EME_CODEC_VP9,
-      KeySystemConfig::EME_CODEC_HEVC,
+  static nsTArray<KeySystemConfig::EMECodecString> kVideoCodecs(
+      {KeySystemConfig::EME_CODEC_H264, KeySystemConfig::EME_CODEC_VP8,
+       KeySystemConfig::EME_CODEC_VP9, KeySystemConfig::EME_CODEC_HEVC,
+       KeySystemConfig::EME_CODEC_AV1});
+
+  // Collect schemes supported by all video codecs.
+  static nsTArray<CryptoScheme> kSchemes({
+      CryptoScheme::Cenc,
+      CryptoScheme::Cbcs,
   });
 
-  // Remember supported video codecs.
-  // It will be used when collecting audio codec and encryption scheme
-  // support.
+  // Remember supported video codecs, which will be used when collecting audio
+  // codec support.
   nsTArray<KeySystemConfig::EMECodecString> supportedVideoCodecs;
-  for (const auto& codec : kVideoCodecs) {
-    if (codec == KeySystemConfig::EME_CODEC_HEVC &&
-        !StaticPrefs::media_wmf_hevc_enabled()) {
-      continue;
+
+  if (aFlags.contains(CapabilitesFlag::NeedClearLeadCheck)) {
+    for (const auto& codec : kVideoCodecs) {
+      if (codec == KeySystemConfig::EME_CODEC_HEVC &&
+          !StaticPrefs::media_wmf_hevc_enabled()) {
+        continue;
+      }
+      CryptoSchemeSet supportedScheme;
+      for (const auto& scheme : kSchemes) {
+        nsAutoString additionalFeature(u"encryption-type=");
+        // If we don't specify 'encryption-iv-size', it would use 8 bytes IV as
+        // default [1]. If it's not supported, then we will try 16 bytes later.
+        // Since PlayReady 4.0 [2], 8 and 16 bytes IV are both supported. But
+        // We're not sure if Widevine supports both or not.
+        // [1]
+        // https://learn.microsoft.com/en-us/windows/win32/api/mfmediaengine/nf-mfmediaengine-imfextendeddrmtypesupport-istypesupportedex
+        // [2]
+        // https://learn.microsoft.com/en-us/playready/packaging/content-encryption-modes#initialization-vectors-ivs
+        if (scheme == CryptoScheme::Cenc) {
+          additionalFeature.AppendLiteral(u"cenc-clearlead,");
+        } else {
+          additionalFeature.AppendLiteral(u"cbcs-clearlead,");
+        }
+        bool rv = FactorySupports(factory, aKeySystem,
+                                  convertCodecToFourCC(codec), nsCString(""),
+                                  additionalFeature, isHardwareDecryption);
+        MFCDM_PARENT_SLOG("clearlead %s IV 8 bytes %s %s",
+                          EnumValueToString(scheme), codec.get(),
+                          rv ? "supported" : "not supported");
+        if (rv) {
+          supportedScheme += scheme;
+          break;
+        }
+        // Try 16 bytes IV.
+        additionalFeature.AppendLiteral(u"encryption-iv-size=16,");
+        rv = FactorySupports(factory, aKeySystem, convertCodecToFourCC(codec),
+                             nsCString(""), additionalFeature,
+                             isHardwareDecryption);
+        MFCDM_PARENT_SLOG("clearlead %s IV 16 bytes %s %s",
+                          EnumValueToString(scheme), codec.get(),
+                          rv ? "supported" : "not supported");
+
+        if (rv) {
+          supportedScheme += scheme;
+          break;
+        }
+      }
+      // Add a capability if supported scheme exists
+      if (!supportedScheme.isEmpty()) {
+        MFCDMMediaCapability* c =
+            aCapabilitiesOut.videoCapabilities().AppendElement();
+        c->contentType() = NS_ConvertUTF8toUTF16(codec);
+        c->robustness() =
+            GetRobustnessStringForKeySystem(aKeySystem, isHardwareDecryption);
+        if (supportedScheme.contains(CryptoScheme::Cenc)) {
+          c->encryptionSchemes().AppendElement(CryptoScheme::Cenc);
+          MFCDM_PARENT_SLOG("%s: +video:%s (cenc)", __func__, codec.get());
+        }
+        if (supportedScheme.contains(CryptoScheme::Cbcs)) {
+          c->encryptionSchemes().AppendElement(CryptoScheme::Cbcs);
+          MFCDM_PARENT_SLOG("%s: +video:%s (cbcs)", __func__, codec.get());
+        }
+        supportedVideoCodecs.AppendElement(codec);
+      }
     }
-    if (FactorySupports(factory, aKeySystem, convertCodecToFourCC(codec),
-                        KeySystemConfig::EMECodecString(""), nsString(u""),
-                        isHardwareDecryption)) {
-      MFCDMMediaCapability* c =
-          aCapabilitiesOut.videoCapabilities().AppendElement();
-      c->contentType() = NS_ConvertUTF8toUTF16(codec);
-      c->robustness() =
-          GetRobustnessStringForKeySystem(aKeySystem, isHardwareDecryption);
-      MFCDM_PARENT_SLOG("%s: +video:%s", __func__, codec.get());
-      supportedVideoCodecs.AppendElement(codec);
+  } else {
+    // Non clearlead situation for video codecs
+    for (const auto& codec : kVideoCodecs) {
+      if (codec == KeySystemConfig::EME_CODEC_HEVC &&
+          !StaticPrefs::media_wmf_hevc_enabled()) {
+        continue;
+      }
+      if (FactorySupports(factory, aKeySystem, convertCodecToFourCC(codec),
+                          KeySystemConfig::EMECodecString(""), nsString(u""),
+                          isHardwareDecryption)) {
+        MFCDMMediaCapability* c =
+            aCapabilitiesOut.videoCapabilities().AppendElement();
+        c->contentType() = NS_ConvertUTF8toUTF16(codec);
+        c->robustness() =
+            GetRobustnessStringForKeySystem(aKeySystem, isHardwareDecryption);
+        // 'If value is unspecified, default value of "cenc" is used.' See
+        // https://learn.microsoft.com/en-us/windows/win32/api/mfmediaengine/nf-mfmediaengine-imfextendeddrmtypesupport-istypesupportedex
+        c->encryptionSchemes().AppendElement(CryptoScheme::Cenc);
+        MFCDM_PARENT_SLOG("%s: +video:%s (cenc)", __func__, codec.get());
+        // Check cbcs scheme support
+        if (FactorySupports(
+                factory, aKeySystem, convertCodecToFourCC(codec),
+                KeySystemConfig::EMECodecString(""),
+                nsString(u"encryption-type=cbcs,encryption-iv-size=16,"),
+                isHardwareDecryption)) {
+          c->encryptionSchemes().AppendElement(CryptoScheme::Cbcs);
+          MFCDM_PARENT_SLOG("%s: +video:%s (cbcs)", __func__, codec.get());
+        }
+        supportedVideoCodecs.AppendElement(codec);
+      }
     }
   }
+
   if (supportedVideoCodecs.IsEmpty()) {
     // Return a capabilities with no codec supported.
     return;
@@ -889,85 +980,8 @@ void MFCDMParent::GetCapabilities(const nsString& aKeySystem,
       c->contentType() = NS_ConvertUTF8toUTF16(codec);
       c->robustness() = GetRobustnessStringForKeySystem(
           aKeySystem, false /* aIsHWSecure */, false /* isVideo */);
+      c->encryptionSchemes().AppendElement(CryptoScheme::Cenc);
       MFCDM_PARENT_SLOG("%s: +audio:%s", __func__, codec.get());
-    }
-  }
-
-  // 'If value is unspecified, default value of "cenc" is used.' See
-  // https://learn.microsoft.com/en-us/windows/win32/api/mfmediaengine/nf-mfmediaengine-imfextendeddrmtypesupport-istypesupportedex
-  if (!supportedVideoCodecs.IsEmpty()) {
-    aCapabilitiesOut.encryptionSchemes().AppendElement(CryptoScheme::Cenc);
-    MFCDM_PARENT_SLOG("%s: +scheme:cenc", __func__);
-  }
-
-  // Check another scheme "cbcs"
-  static std::pair<CryptoScheme, nsDependentString> kCbcs =
-      std::pair<CryptoScheme, nsDependentString>(
-          CryptoScheme::Cbcs, u"encryption-type=cbcs,encryption-iv-size=16,");
-  bool ok = true;
-  for (const auto& codec : supportedVideoCodecs) {
-    ok &= FactorySupports(factory, aKeySystem, convertCodecToFourCC(codec),
-                          nsCString(""), kCbcs.second /* additional feature */,
-                          isHardwareDecryption);
-    if (!ok) {
-      break;
-    }
-  }
-  if (ok) {
-    aCapabilitiesOut.encryptionSchemes().AppendElement(kCbcs.first);
-    MFCDM_PARENT_SLOG("%s: +scheme:cbcs", __func__);
-  }
-
-  // For key system requires clearlead, every codec needs to have clear support.
-  // If not, then we will remove the codec from supported codec.
-  if (aFlags.contains(CapabilitesFlag::NeedClearLeadCheck)) {
-    for (const auto& scheme : aCapabilitiesOut.encryptionSchemes()) {
-      nsTArray<KeySystemConfig::EMECodecString> noClearLeadCodecs;
-      for (const auto& codec : supportedVideoCodecs) {
-        nsAutoString additionalFeature(u"encryption-type=");
-        // If we don't specify 'encryption-iv-size', it would use 8 bytes IV as
-        // default [1]. If it's not supported, then we will try 16 bytes later.
-        // Since PlayReady 4.0 [2], 8 and 16 bytes IV are both supported. But
-        // We're not sure if Widevine supports both or not.
-        // [1]
-        // https://learn.microsoft.com/en-us/windows/win32/api/mfmediaengine/nf-mfmediaengine-imfextendeddrmtypesupport-istypesupportedex
-        // [2]
-        // https://learn.microsoft.com/en-us/playready/packaging/content-encryption-modes#initialization-vectors-ivs
-        if (scheme == CryptoScheme::Cenc) {
-          additionalFeature.AppendLiteral(u"cenc-clearlead,");
-        } else {
-          additionalFeature.AppendLiteral(u"cbcs-clearlead,");
-        }
-        bool rv = FactorySupports(factory, aKeySystem,
-                                  convertCodecToFourCC(codec), nsCString(""),
-                                  additionalFeature, isHardwareDecryption);
-        MFCDM_PARENT_SLOG("clearlead %s IV 8 bytes %s %s",
-                          CryptoSchemeToString(scheme), codec.get(),
-                          rv ? "supported" : "not supported");
-        if (rv) {
-          continue;
-        }
-        // Try 16 bytes IV.
-        additionalFeature.AppendLiteral(u"encryption-iv-size=16,");
-        rv = FactorySupports(factory, aKeySystem, convertCodecToFourCC(codec),
-                             nsCString(""), additionalFeature,
-                             isHardwareDecryption);
-        MFCDM_PARENT_SLOG("clearlead %s IV 16 bytes %s %s",
-                          CryptoSchemeToString(scheme), codec.get(),
-                          rv ? "supported" : "not supported");
-        // Failed on both, so remove the codec from supported codec.
-        if (!rv) {
-          noClearLeadCodecs.AppendElement(codec);
-        }
-      }
-      for (const auto& codec : noClearLeadCodecs) {
-        MFCDM_PARENT_SLOG("%s: -video:%s", __func__, codec.get());
-        aCapabilitiesOut.videoCapabilities().RemoveElementsBy(
-            [&codec](const MFCDMMediaCapability& aCapbilities) {
-              return aCapbilities.contentType() == NS_ConvertUTF8toUTF16(codec);
-            });
-        supportedVideoCodecs.RemoveElement(codec);
-      }
     }
   }
 
@@ -1005,6 +1019,9 @@ mozilla::ipc::IPCResult MFCDMParent::RecvGetCapabilities(
   if (RequireClearLead(aRequest.keySystem())) {
     flags += CapabilitesFlag::NeedClearLeadCheck;
   }
+  if (aRequest.isPrivateBrowsing()) {
+    flags += CapabilitesFlag::IsPrivateBrowsing;
+  }
   GetCapabilities(aRequest.keySystem(), flags, mFactory.Get(), capabilities);
   aResolver(std::move(capabilities));
   return IPC_OK();
@@ -1032,8 +1049,10 @@ mozilla::ipc::IPCResult MFCDMParent::RecvInit(
       RequirementToStr(aParams.distinctiveID()),
       RequirementToStr(aParams.persistentState()),
       IsKeySystemHWSecure(mKeySystem, aParams.videoCapabilities()));
-  MOZ_ASSERT(IsTypeSupported(mFactory, mKeySystem));
 
+  MFCDM_REJECT_IF(!mFactory, NS_ERROR_DOM_NOT_SUPPORTED_ERR);
+
+  MOZ_ASSERT(IsTypeSupported(mFactory, mKeySystem));
   MFCDM_REJECT_IF_FAILED(CreateContentDecryptionModule(
                              mFactory, MapKeySystem(mKeySystem), aParams, mCDM),
                          NS_ERROR_FAILURE);
@@ -1279,7 +1298,7 @@ RefPtr<GenericNonExclusivePromise> MFCDMService::LaunchMFCDMProcessIfNeeded(
             }
             return GenericNonExclusivePromise::CreateAndResolve(true, __func__);
           },
-          [](nsresult aError) {
+          [](ipc::LaunchError const& aError) {
             NS_WARNING("Failed to start the MFCDM process!");
             return GenericNonExclusivePromise::CreateAndReject(NS_ERROR_FAILURE,
                                                                __func__);

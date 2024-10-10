@@ -5,6 +5,7 @@
 import json
 import logging
 import os
+import random
 import subprocess
 import time
 from pathlib import Path
@@ -18,16 +19,65 @@ from experimentintegration.models.models import TelemetryModel
 KLAATU_SERVER_URL = "http://localhost:1378"
 KLAATU_LOCAL_SERVER_URL = "http://localhost:1378"
 
-here = Path()
+here = Path().cwd()
 
 
 def pytest_addoption(parser):
     parser.addoption(
-        "--experiment", action="store", help="The experiments experimenter URL"
-    )
-    parser.addoption(
         "--stage", action="store_true", default=None, help="Use the stage server"
     )
+    parser.addoption(
+        "--experiment-feature",
+        action="store",
+        help="Feature name you want to test against",
+    )
+    parser.addoption(
+        "--experiment", action="store", help="Feature name you want to test against"
+    )
+    parser.addoption(
+        "--experiment-branch",
+        action="store",
+        default="control",
+        help="Experiment Branch you want to test on",
+    )
+
+
+def pytest_runtest_setup(item):
+    envnames = [mark.name for mark in item.iter_markers()]
+    if envnames:
+        if item.config.getoption("--experiment-feature") not in envnames:
+            pytest.skip("test does not match feature name")
+
+
+def start_process(path, command):
+    module_path = Path(path)
+
+    try:
+        process = subprocess.Popen(
+            command,
+            encoding="utf-8",
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            universal_newlines=True,
+            cwd=module_path.absolute(),
+        )
+        stdout, stderr = process.communicate(timeout=5)
+
+        if process.returncode != 0:
+            raise Exception(stderr)
+    except subprocess.TimeoutExpired:
+        logging.info(f"{module_path.name} started")
+        return process
+
+
+@pytest.fixture(name="nimbus_cli_args")
+def fixture_nimbus_cli_args():
+    return ""
+
+
+@pytest.fixture(name="experiment_branch")
+def fixture_experiment_branch(request):
+    return request.config.getoption("--experiment-branch")
 
 
 @pytest.fixture(name="load_branches")
@@ -65,17 +115,19 @@ def gradlewbuild(gradlewbuild_log):
 
 
 @pytest.fixture(name="experiment_data")
-def fixture_experiment_data(experiment_url):
+def fixture_experiment_data(experiment_url, request):
     data = requests.get(experiment_url).json()
     branches = next(iter(data.get("branches")), None)
     features = next(iter(branches.get("features")), None)
-    if features.get("messages"):
-        for item in features["value"]["messages"].values():
-            item["surface"] = "homescreen"
-            item["style"] = "URGENT"
-            for count, trigger in enumerate(item["trigger"]):
-                if "USER_EN_SPEAKER" not in trigger:
-                    del item["trigger"][count]
+    match request.config.getoption("--experiment-feature"):
+        case "messaging_survey":
+            if features.get("value").get("messages"):
+                for item in features["value"]["messages"].values():
+                    if "USER_EN-US_SPEAKER" in item["trigger-if-all"]:
+                        item["trigger-if-all"] = ["ALWAYS"]
+        case _:
+            pass
+    logging.debug(f"JSON Data used for this test: {data}")
     return [data]
 
 
@@ -86,9 +138,9 @@ def fixture_experiment_url(request, variables):
     if slug := request.config.getoption("--experiment"):
         # Build URL from slug
         if request.config.getoption("--stage"):
-            url = f"{variables['urls']['stage_server']}/api/v6/experiments/{slug}"
+            url = f"{variables['urls']['stage_server']}/api/v6/experiments/{slug}/"
         else:
-            url = f"{variables['urls']['prod_server']}/api/v6/experiments/{slug}"
+            url = f"{variables['urls']['prod_server']}/api/v6/experiments/{slug}/"
     else:
         try:
             data = requests.get(f"{KLAATU_SERVER_URL}/experiment").json()
@@ -126,24 +178,26 @@ def fixture_experiment_slug(experiment_data):
     return experiment_data[0]["slug"]
 
 
+@pytest.fixture(name="ping_server", autouse=True, scope="session")
+def fixture_ping_server():
+    process = start_process("ping_server", ["python", "ping_server.py"])
+    yield "http://localhost:5000"
+    process.terminate()
+
+
+@pytest.fixture(name="delete_telemetry_pings")
+def fixture_delete_telemetry_pings(variables):
+    def runner():
+        requests.delete(f"{variables['urls']['telemetry_server']}/pings")
+
+    return runner
+
+
 @pytest.fixture(name="start_app")
-def fixture_start_app():
+def fixture_start_app(run_nimbus_cli_command):
     def _():
         command = "nimbus-cli --app fenix --channel developer open"
-        try:
-            out = subprocess.check_output(
-                command,
-                cwd=os.path.join(here, os.pardir),
-                stderr=subprocess.STDOUT,
-                universal_newlines=True,
-                shell=True,
-            )
-        except subprocess.CalledProcessError as e:
-            out = e.output
-            raise
-        finally:
-            with open(gradlewbuild_log, "w") as f:
-                f.write(out)
+        run_nimbus_cli_command(command)
         time.sleep(
             15
         )  # Wait a while as there's no real way to know when the app has started
@@ -204,12 +258,19 @@ def fixture_check_ping_for_experiment(experiment_slug, variables):
     return _check_ping_for_experiment
 
 
-@pytest.fixture(name="setup_experiment")
-def fixture_setup_experiment(experiment_slug, json_data, gradlewbuild_log, variables):
-    def _(branch):
-        requests.delete(f"{variables['urls']['telemetry_server']}/pings")
-        logging.info(f"Testing experiment {experiment_slug}, BRANCH: {branch[0]}")
-        command = f"nimbus-cli --app fenix --channel developer enroll {experiment_slug} --branch {branch[0]} --file {json_data} --reset-app"
+@pytest.fixture(name="open_app")
+def fixture_open_app(run_nimbus_cli_command):
+    def _():
+        command = "nimbus-cli --app fenix --channel developer open"
+        run_nimbus_cli_command(command)
+        time.sleep(5)
+
+    return _
+
+
+@pytest.fixture(name="run_nimbus_cli_command")
+def fixture_run_nimbus_cli_command(gradlewbuild_log):
+    def _run_nimbus_cli_command(command):
         logging.info(f"Running command {command}")
         try:
             out = subprocess.check_output(command, shell=True, stderr=subprocess.STDOUT)
@@ -219,6 +280,34 @@ def fixture_setup_experiment(experiment_slug, json_data, gradlewbuild_log, varia
         finally:
             with open(gradlewbuild_log, "w") as f:
                 f.write(f"{out}")
+
+    return _run_nimbus_cli_command
+
+
+@pytest.fixture(name="set_experiment_test_name")
+def fixture_set_experiment_test_name(experiment_data):
+    # Get a random word from the experiments userFacingName attribute.
+    exp_name = experiment_data[0]["userFacingName"].split()
+    os.environ["EXP_NAME"] = exp_name[random.randint(0, len(exp_name))]
+
+
+@pytest.fixture(name="setup_experiment")
+def fixture_setup_experiment(
+    experiment_slug,
+    json_data,
+    experiment_branch,
+    nimbus_cli_args,
+    run_nimbus_cli_command,
+    set_experiment_test_name,
+    delete_telemetry_pings,
+):
+    def _():
+        delete_telemetry_pings()
+        logging.info(
+            f"Testing experiment {experiment_slug}, BRANCH: {experiment_branch}"
+        )
+        command = f"nimbus-cli --app fenix --channel developer enroll {experiment_slug} --branch {experiment_branch} --file {json_data} --reset-app {nimbus_cli_args}"
+        run_nimbus_cli_command(command)
         time.sleep(
             15
         )  # Wait a while as there's no real way to know when the app has started

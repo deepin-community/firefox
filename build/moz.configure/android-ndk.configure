@@ -262,7 +262,14 @@ def extra_toolchain_flags(android_sysroot, toolchain_dir):
     return flags
 
 
-add_old_configure_assignment("extra_android_flags", extra_toolchain_flags)
+@depends(extra_toolchain_flags)
+def android_flags(extra_toolchain_flags):
+    return namespace(
+        cflags=extra_toolchain_flags + ["-fno-short-enums"],
+        cxxflags=extra_toolchain_flags + ["-fno-short-enums"],
+        ldflags=extra_toolchain_flags,
+        asflags=extra_toolchain_flags + ["-DANDROID"],
+    )
 
 
 @depends(extra_toolchain_flags)

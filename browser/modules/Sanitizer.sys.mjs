@@ -58,8 +58,15 @@ export var Sanitizer = {
    * Pref branches to fetch sanitization options from.
    */
   PREF_CPD_BRANCH: "privacy.cpd.",
-  PREF_SHUTDOWN_BRANCH: "privacy.clearOnShutdown.",
-  PREF_SHUTDOWN_V2_BRANCH: "privacy.clearOnShutdown_v2.",
+  /*
+   * We need to choose between two branches for shutdown since there are separate prefs for the new
+   * clear history dialog
+   */
+  get PREF_SHUTDOWN_BRANCH() {
+    return lazy.useOldClearHistoryDialog
+      ? "privacy.clearOnShutdown."
+      : "privacy.clearOnShutdown_v2.";
+  },
 
   /**
    * The fallback timestamp used when no argument is given to
@@ -400,20 +407,28 @@ export var Sanitizer = {
   /**
    * Migrate old sanitize prefs to the new prefs for the new
    * clear history dialog. Does nothing if the migration was completed before
-   * based on the pref privacy.sanitize.cpd.hasMigratedToNewPrefs or
-   * privacy.sanitize.clearOnShutdown.hasMigratedToNewPrefs
+   * based on the pref privacy.sanitize.cpd.hasMigratedToNewPrefs2 or
+   * privacy.sanitize.clearOnShutdown.hasMigratedToNewPrefs2
    *
    * @param {string} context - one of "clearOnShutdown" or "cpd", which indicates which
    *      pref branch to migrate prefs from based on the dialog context
    */
   maybeMigratePrefs(context) {
+    // We are going to be migrating once more due to a backout in Bug 1894933
+    // The new migration prefs have a 2 appended to the context
     if (
       Services.prefs.getBoolPref(
-        `privacy.sanitize.${context}.hasMigratedToNewPrefs`
+        `privacy.sanitize.${context}.hasMigratedToNewPrefs2`
       )
     ) {
       return;
     }
+
+    // We have to remove the old privacy.sanitize.${context}.hasMigratedToNewPrefs pref
+    // if the user has it on their system
+    Services.prefs.clearUserPref(
+      `privacy.sanitize.${context}.hasMigratedToNewPrefs`
+    );
 
     let cookies = Services.prefs.getBoolPref(`privacy.${context}.cookies`);
     let history = Services.prefs.getBoolPref(`privacy.${context}.history`);
@@ -450,14 +465,14 @@ export var Sanitizer = {
     );
 
     Services.prefs.setBoolPref(
-      `privacy.sanitize.${context}.hasMigratedToNewPrefs`,
+      `privacy.sanitize.${context}.hasMigratedToNewPrefs2`,
       true
     );
   },
 
   // When making any changes to the sanitize implementations here,
   // please check whether the changes are applicable to Android
-  // (mobile/android/modules/geckoview/GeckoViewStorageController.sys.mjs) as well.
+  // (mobile/shared/modules/geckoview/GeckoViewStorageController.sys.mjs) as well.
 
   items: {
     cache: {
@@ -653,7 +668,7 @@ export var Sanitizer = {
         TelemetryStopwatch.start("FX_SANITIZE_SITESETTINGS", refObj);
         await clearData(
           range,
-          Ci.nsIClearDataService.CLEAR_PERMISSIONS |
+          Ci.nsIClearDataService.CLEAR_SITE_PERMISSIONS |
             Ci.nsIClearDataService.CLEAR_CONTENT_PREFERENCES |
             Ci.nsIClearDataService.CLEAR_DOM_PUSH_NOTIFICATIONS |
             Ci.nsIClearDataService.CLEAR_CLIENT_AUTH_REMEMBER_SERVICE |
@@ -1111,10 +1126,10 @@ async function sanitizeOnShutdown(progress) {
   if (Sanitizer.shouldSanitizeOnShutdown) {
     // Need to sanitize upon shutdown
     progress.advancement = "shutdown-cleaner";
-    let shutdownBranch = lazy.useOldClearHistoryDialog
-      ? Sanitizer.PREF_SHUTDOWN_BRANCH
-      : Sanitizer.PREF_SHUTDOWN_V2_BRANCH;
-    let itemsToClear = getItemsToClearFromPrefBranch(shutdownBranch);
+
+    let itemsToClear = getItemsToClearFromPrefBranch(
+      Sanitizer.PREF_SHUTDOWN_BRANCH
+    );
     await Sanitizer.sanitize(itemsToClear, { progress });
 
     // We didn't crash during shutdown sanitization, so annotate it to avoid

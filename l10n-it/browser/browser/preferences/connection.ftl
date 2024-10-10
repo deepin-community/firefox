@@ -70,8 +70,11 @@ connection-proxy-autologin-checkbox =
     .accesskey = c
     .tooltiptext = Questa opzione permette di autenticarsi direttamente con un proxy se risultano salvate delle credenziali. La richiesta verrà visualizzata in caso di errore.
 connection-proxy-socks-remote-dns =
-    .label = DNS proxy per SOCKS v5
+    .label = Utilizza proxy per DNS con SOCKS v5
     .accesskey = D
+connection-proxy-socks4-remote-dns =
+    .label = Utilizza proxy per DNS con SOCKS v4
+    .accesskey = 4
 # Variables:
 #   $name (String) - Display name or URL for the DNS over HTTPS provider
 connection-dns-over-https-url-item-default =
@@ -82,3 +85,4 @@ connection-dns-over-https-url-custom =
     .accesskey = P
     .tooltiptext = Inserisci l’indirizzo da utilizzare per risolvere richieste DNS su HTTPS
 connection-dns-over-https-custom-label = Personalizzato
+

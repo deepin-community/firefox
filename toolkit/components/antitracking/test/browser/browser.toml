@@ -43,6 +43,7 @@ support-files = [
   "empty-altsvc.js^headers^",
   "empty.html",
   "file_iframe_document_open.html",
+  "file_iframe_document_open_partitioned.html",
   "file_localStorage.html",
   "popup.html",
   "redirect.sjs",
@@ -114,6 +115,10 @@ skip-if = ["os == 'mac' && !debug"] # Bug 1503778, 1577362
 
 ["browser_partitionedABA.js"]
 
+["browser_partitionedABnavigatestToAA.js"]
+
+["browser_partitionedBlobSubresources.js"]
+
 ["browser_partitionedClearSiteDataHeader.js"]
 support-files = ["clearSiteData.sjs"]
 
@@ -123,6 +128,12 @@ support-files = ["clearSiteData.sjs"]
 support-files = ["cookies.sjs"]
 
 ["browser_partitionedDOMCache.js"]
+
+["browser_partitionedDedicatedWorker.js"]
+support-files = [
+  "cookies.sjs",
+  "dedicatedWorker.js",
+]
 
 ["browser_partitionedIndexedDB.js"]
 
@@ -225,6 +236,8 @@ support-files = [
 skip-if = ["os == 'mac' && verify"] # Bug 1721210
 support-files = ["file_ws_handshake_delay_wsh.py"]
 
+["browser_storageAccessAutograntFromFedCM.js"]
+
 ["browser_storageAccessAutograntRequiresUserInteraction.js"]
 
 ["browser_storageAccessDeniedGivesNoUserInteraction.js"]
@@ -320,6 +333,10 @@ tags = "remote-settings"
 
 ["browser_urlQueryStringStripping.js"]
 skip-if = ["os == 'linux' && asan"]  # Bug 1713909 - new Fission platform triage
+support-files = ["file_stripping.html"]
+
+["browser_urlQueryStringStrippingWithEncoding.js"]
+skip-if = ["os == 'linux' && asan"]
 support-files = ["file_stripping.html"]
 
 ["browser_urlQueryStringStripping_allowList.js"]

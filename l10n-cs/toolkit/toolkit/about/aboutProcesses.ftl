@@ -12,6 +12,8 @@ about-processes-column-action =
 
 about-processes-shutdown-process =
     .title = Zrušit načtení panelů a zabít proces
+about-processes-kill-process =
+    .title = Ukončí proces
 about-processes-shutdown-tab =
     .title = Zavřít panel
 # Profiler icons
@@ -56,6 +58,7 @@ about-processes-remote-sandbox-broker-process = Remote Sandbox Broker ({ $pid })
 about-processes-fork-server-process = Fork Server ({ $pid })
 about-processes-preallocated-process = Předalokováno ({ $pid })
 about-processes-utility-process = Nástroj ({ $pid })
+about-processes-inference-process = Inference ({ $pid })
 # Unknown process names
 # Variables:
 #    $pid (String) The process id of this process, assigned by the OS.

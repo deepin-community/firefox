@@ -412,7 +412,10 @@ class PointerInputSource extends InputSource {
    *     True if |button| is in set of pressed buttons.
    */
   isPressed(button) {
-    lazy.assert.positiveInteger(button);
+    lazy.assert.positiveInteger(
+      button,
+      lazy.pprint`Expected "button" to be a positive integer, got ${button}`
+    );
     return this.pressed.has(button);
   }
 
@@ -426,7 +429,10 @@ class PointerInputSource extends InputSource {
    *     Set of pressed buttons.
    */
   press(button) {
-    lazy.assert.positiveInteger(button);
+    lazy.assert.positiveInteger(
+      button,
+      lazy.pprint`Expected "button" to be a positive integer, got ${button}`
+    );
     this.pressed.add(button);
   }
 
@@ -440,7 +446,10 @@ class PointerInputSource extends InputSource {
    *     True if |button| was present before removals, false otherwise.
    */
   release(button) {
-    lazy.assert.positiveInteger(button);
+    lazy.assert.positiveInteger(
+      button,
+      lazy.pprint`Expected "button" to be a positive integer, got ${button}`
+    );
     return this.pressed.delete(button);
   }
 
@@ -757,15 +766,23 @@ class KeyAction extends Action {
   static fromJSON(id, actionItem) {
     const { value } = actionItem;
 
-    // TODO countGraphemes
-    // TODO key.value could be a single code point like "\uE012"
-    // (see rawKey) or "grapheme cluster"
-    // https://bugzilla.mozilla.org/show_bug.cgi?id=1496323
-
     lazy.assert.string(
       value,
       'Expected "value" to be a string that represents single code point ' +
         lazy.pprint`or grapheme cluster, got ${value}`
+    );
+
+    let segmenter = new Intl.Segmenter();
+    lazy.assert.that(v => {
+      let graphemeIterator = segmenter.segment(v)[Symbol.iterator]();
+      // We should have exactly one grapheme cluster, so the first iterator
+      // value must be defined, but the second one must be undefined
+      return (
+        graphemeIterator.next().value !== undefined &&
+        graphemeIterator.next().value === undefined
+      );
+    }, `Expected "value" to be a string that represents single code point or grapheme cluster, got "${value}"`)(
+      value
     );
 
     return new this(id, { value });
@@ -1318,6 +1335,7 @@ class WheelScrollAction extends WheelAction {
       this.duration ?? tickDuration,
       deltaTarget =>
         this.performOneWheelScroll(
+          state,
           scrollCoordinates,
           deltaPosition,
           deltaTarget,
@@ -1329,12 +1347,19 @@ class WheelScrollAction extends WheelAction {
   /**
    * Perform one part of a wheel scroll corresponding to a specific emitted event.
    *
+   * @param {State} state - Actions state.
    * @param {Array<number>} scrollCoordinates - [x, y] viewport coordinates of the scroll.
    * @param {Array<number>} deltaPosition - [deltaX, deltaY] coordinates of the scroll before this event.
    * @param {Array<Array<number>>} deltaTargets - Array of [deltaX, deltaY] coordinates to scroll to.
    * @param {WindowProxy} win - Current window global.
    */
-  performOneWheelScroll(scrollCoordinates, deltaPosition, deltaTargets, win) {
+  performOneWheelScroll(
+    state,
+    scrollCoordinates,
+    deltaPosition,
+    deltaTargets,
+    win
+  ) {
     if (deltaTargets.length !== 1) {
       throw new Error("Can only scroll one wheel at a time");
     }
@@ -1350,6 +1375,7 @@ class WheelScrollAction extends WheelAction {
       deltaY,
       deltaZ: 0,
     });
+    eventData.update(state);
 
     lazy.event.synthesizeWheelAtPoint(
       scrollCoordinates[0],
@@ -2237,6 +2263,22 @@ class WheelEventData extends InputEventData {
     this.deltaY = deltaY;
     this.deltaZ = deltaZ;
     this.deltaMode = deltaMode;
+
+    this.altKey = false;
+    this.ctrlKey = false;
+    this.metaKey = false;
+    this.shiftKey = false;
+  }
+
+  update(state) {
+    // set modifier properties based on whether any corresponding keys are
+    // pressed on any key input source
+    for (const [, otherInputSource] of state.inputSourcesByType("key")) {
+      this.altKey = otherInputSource.alt || this.altKey;
+      this.ctrlKey = otherInputSource.ctrl || this.ctrlKey;
+      this.metaKey = otherInputSource.meta || this.metaKey;
+      this.shiftKey = otherInputSource.shift || this.shiftKey;
+    }
   }
 }
 

@@ -57,6 +57,10 @@ category-experimental =
 pane-experimental-subtitle = Абайлап жалғастырыңыз
 pane-experimental-search-results-header = { -brand-short-name } тәжірибелері: Абайлап жалғастырыңыз
 pane-experimental-description2 = Кеңейтілген баптауларды өзгерту { -brand-short-name } өнімділік немесе қауіпсіздігіне әсерін тигізуі мүмкін.
+settings-pane-labs-title = { -firefoxlabs-brand-name }
+settings-category-labs =
+    .tooltiptext = { -firefoxlabs-brand-name }
+pane-experimental-description3 = Эксперименттік мүмкіндіктерімізді қолданып көріңіз! Олар өңделуде және даму үстінде, бұл { -brand-short-name } жұмысына әсер етуі мүмкін.
 pane-experimental-reset =
     .label = Бастапқы мәндерін қайтару
     .accesskey = р
@@ -599,6 +603,10 @@ home-prefs-recent-activity-description = Жуырдағы сайттар мен 
 home-prefs-snippets-header =
     .label = Үзінділер
 home-prefs-snippets-description-new = { -vendor-short-name } және { -brand-product-name } кеңестері және жаңалықтары
+home-prefs-weather-header =
+    .label = Ауа райы
+home-prefs-weather-description = Бүгінгі қысқаша болжам
+home-prefs-weather-learn-more-link = Көбірек білу
 # Variables:
 #   $num (number) - Number of rows displayed
 home-prefs-sections-rows-option =
@@ -912,6 +920,9 @@ forms-saved-passwords =
 forms-primary-pw-use =
     .label = Басты парольді қолдану
     .accesskey = ы
+# This operation requires the user to authenticate with the operating system (device sign-in)
+forms-os-reauth =
+    .label = Парольдерді толтыру және басқару үшін құрылғыға кіруді талап ету
 forms-primary-pw-learn-more-link = Көбірек білу
 # This string uses the former name of the Primary Password feature
 # ("Master Password" in English) so that the preferences can be found
@@ -944,6 +955,13 @@ primary-password-os-auth-dialog-message-win = Басты парольді жас
 # notes are only valid for English. Please test in your locale.
 primary-password-os-auth-dialog-message-macosx = басты парольді жасау
 master-password-os-auth-dialog-caption = { -brand-full-name }
+# The macOS string is preceded by the operating system with "Firefox is trying to ".
+autofill-creditcard-os-dialog-message =
+    { PLATFORM() ->
+        [macos] төлем әдістері үшін баптауларды өзгерту
+       *[other] { -brand-short-name } төлем әдістері параметрлерін өзгертуге әрекеттенуде. Бұған рұқсат беру үшін құрылғыңызға кіруді пайдаланыңыз.
+    }
+autofill-creditcard-os-auth-dialog-caption = { -brand-full-name }
 
 ## Privacy section - Autofill
 
@@ -958,14 +976,9 @@ autofill-payment-methods-checkbox-submessage = Несиелік және деб�
     .accesskey = и
 autofill-saved-payment-methods-button = Сақталған төлем әдістері
     .accesskey = т
-autofill-reauth-checkbox =
-    { PLATFORM() ->
-        [macos] Төлем әдістерін толтыру және түзету үшін macOS аутентификациясын талап ету.
-        [windows] Төлем әдістерін толтыру және түзету үшін Windows аутентификациясын талап ету.
-        [linux] Төлем әдістерін толтыру және түзету үшін Linux аутентификациясын талап ету.
-       *[other] Төлем әдістерін толтыру және түзету үшін аутентификацияны талап ету.
-    }
-    .accesskey = о
+# This operation requires the user to authenticate with the operating system (device sign-in)
+autofill-reauth-payment-methods-checkbox = Төлем әдістерін толтыру және басқару үшін құрылғыға кіруді талап ету
+    .accesskey = д
 
 ## Privacy Section - History
 
@@ -1102,6 +1115,9 @@ addressbar-suggestions-settings = Іздеу жүйесінің ұсыныста
 addressbar-locbar-showrecentsearches-option =
     .label = Жуырдағы іздеулерді көрсету
     .accesskey = р
+addressbar-locbar-showtrendingsuggestions-option =
+    .label = Танымал іздеу ұсыныстарын көрсету
+    .accesskey = т
 addressbar-quickactions-learn-more = Көбірек білу
 
 ## Privacy Section - Content Blocking
@@ -1293,6 +1309,14 @@ privacy-segmentation-radio-off =
 privacy-segmentation-radio-on =
     .label = Толық ақпаратты көрсету
 
+## Privacy Section - Website Advertising Preferences
+
+website-advertising-header = Веб-сайтты жарнамалау баптаулары
+website-advertising-private-attribution =
+    .label = Веб-сайттарға жекелікті сақтап, жарнаманы өлшеуге рұқсат беру
+    .accesskey = а
+website-advertising-private-attribution-description = Бұл сайттарға сіз туралы деректерді жинамай-ақ жарнамаларының қалай орындалатынын түсінуге көмектеседі.
+
 ## Privacy Section - Security
 ##
 ## It is important that wording follows the guidelines outlined on this page:
@@ -1336,13 +1360,20 @@ space-alert-under-5gb-message2 = <strong>{ -brand-short-name } үшін бос �
 
 httpsonly-header = Тек-HTTPS режимі
 httpsonly-description = HTTPS { -brand-short-name } және сіз кіретін веб-сайттар арасында қауіпсіз, шифрленген байланысты ұсынады. Веб-сайттардың көбі HTTPS қолдайды, тек-HTTPS режимі іске қосылған болса, { -brand-short-name } барлық байланыстарды HTTPS-ке дейін жаңартады.
+httpsonly-description2 = { -brand-short-name } сіз кіретін сайттарға қауіпсіз және шифрленген байланыстарды жасайды. { -brand-short-name } "Тек-HTTPS" режимі іске қосулы кезде байланыс қауіпсіз болмаса, ескертеді.
 httpsonly-learn-more = Көбірек білу
 httpsonly-radio-enabled =
     .label = Барлық терезелерде тек-HTTPS режимін іске қосу
+httpsonly-radio-enabled2 =
+    .label = Барлық терезелерде тек HTTPS пайдалану
 httpsonly-radio-enabled-pbm =
     .label = Тек-HTTPS режимін тек жекелік терезелерде іске қосу
+httpsonly-radio-enabled-pbm2 =
+    .label = Барлық жекелік терезелерде тек HTTPS пайдалану
 httpsonly-radio-disabled =
     .label = Тек-HTTPS режимін іске қоспау
+httpsonly-radio-disabled2 =
+    .label = Алдымен HTTPS қолданып көру, бірақ қауіпсіз емес байланыстарға рұқсат беру
 
 ## DoH Section
 

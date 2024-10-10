@@ -19,6 +19,7 @@
 #include "mozilla/ArrayUtils.h"
 #include "mozilla/PresShell.h"
 #include "mozilla/RefPtr.h"
+#include "mozilla/StaticPrefs_svg.h"
 #include "mozilla/SVGContextPaint.h"
 #include "mozilla/SVGContentUtils.h"
 #include "mozilla/SVGObserverUtils.h"
@@ -104,22 +105,26 @@ void SVGGeometryFrame::DidSetComputedStyle(ComputedStyle* aOldComputedStyle) {
         // For clipPath we use clip-rule as the path's fill-rule.
         element->ClearAnyCachedPath();
       }
-    } else {
-      if (StyleSVG()->mFillRule != oldStyleSVG->mFillRule) {
-        // Moz2D Path objects are fill-rule specific.
-        element->ClearAnyCachedPath();
-      }
+    } else if (StyleSVG()->mFillRule != oldStyleSVG->mFillRule) {
+      // Moz2D Path objects are fill-rule specific.
+      element->ClearAnyCachedPath();
     }
+  }
+
+  if (StyleDisplay()->CalcTransformPropertyDifference(
+          *aOldComputedStyle->StyleDisplay())) {
+    SVGUtils::NotifyChildrenOfSVGChange(this, TRANSFORM_CHANGED);
   }
 
   if (element->IsGeometryChangedViaCSS(*Style(), *aOldComputedStyle)) {
     element->ClearAnyCachedPath();
+    SVGObserverUtils::InvalidateRenderingObservers(this);
   }
 }
 
-bool SVGGeometryFrame::IsSVGTransformed(
-    gfx::Matrix* aOwnTransform, gfx::Matrix* aFromParentTransform) const {
-  return SVGUtils::IsSVGTransformed(this, aOwnTransform, aFromParentTransform);
+bool SVGGeometryFrame::DoGetParentSVGTransforms(
+    gfx::Matrix* aFromParentTransform) const {
+  return SVGUtils::GetParentSVGTransforms(this, aFromParentTransform);
 }
 
 void SVGGeometryFrame::BuildDisplayList(nsDisplayListBuilder* aBuilder,
@@ -132,7 +137,7 @@ void SVGGeometryFrame::BuildDisplayList(nsDisplayListBuilder* aBuilder,
     if (!IsVisibleForPainting()) {
       return;
     }
-    if (StyleEffects()->IsTransparent()) {
+    if (StyleEffects()->IsTransparent() && SVGUtils::CanOptimizeOpacity(this)) {
       return;
     }
     const auto* styleSVG = StyleSVG();
@@ -462,51 +467,33 @@ SVGBBox SVGGeometryFrame::GetBBoxContribution(const Matrix& aToBBoxUserspace,
 
     // Account for stroke:
     if (getStroke) {
-#if 0
-      // This disabled code is how we would calculate the stroke bounds using
-      // Moz2D Path::GetStrokedBounds(). Unfortunately at the time of writing
-      // it there are two problems that prevent us from using it.
-      //
-      // First, it seems that some of the Moz2D backends are really dumb. Not
-      // only do some GetStrokeOptions() implementations sometimes
-      // significantly overestimate the stroke bounds, but if an argument is
-      // passed for the aTransform parameter then they just return bounds-of-
-      // transformed-bounds.  These two things combined can lead the bounds to
-      // be unacceptably oversized, leading to massive over-invalidation.
-      //
-      // Second, the way we account for non-scaling-stroke by transforming the
-      // path using the transform to the outer-<svg> element is not compatible
-      // with the way that SVGGeometryFrame::Reflow() inserts a scale
-      // into aToBBoxUserspace and then scales the bounds that we return.
-      SVGContentUtils::AutoStrokeOptions strokeOptions;
-      SVGContentUtils::GetStrokeOptions(&strokeOptions, element,
-                                        Style(), nullptr,
-                                        SVGContentUtils::eIgnoreStrokeDashing);
       Rect strokeBBoxExtents;
-      gfxMatrix userToOuterSVG;
-      if (SVGUtils::GetNonScalingStrokeTransform(this, &userToOuterSVG)) {
-        Matrix outerSVGToUser = ToMatrix(userToOuterSVG);
-        outerSVGToUser.Invert();
-        Matrix outerSVGToBBox = aToBBoxUserspace * outerSVGToUser;
-        RefPtr<PathBuilder> builder =
-          pathInUserSpace->TransformedCopyToBuilder(ToMatrix(userToOuterSVG));
-        RefPtr<Path> pathInOuterSVGSpace = builder->Finish();
-        strokeBBoxExtents =
-          pathInOuterSVGSpace->GetStrokedBounds(strokeOptions, outerSVGToBBox);
+      if (StaticPrefs::svg_Moz2D_strokeBounds_enabled()) {
+        SVGContentUtils::AutoStrokeOptions strokeOptions;
+        SVGContentUtils::GetStrokeOptions(
+            &strokeOptions, element, Style(), nullptr,
+            SVGContentUtils::eIgnoreStrokeDashing);
+        gfxMatrix userToOuterSVG;
+        if (SVGUtils::GetNonScalingStrokeTransform(this, &userToOuterSVG)) {
+          Matrix outerSVGToUser = ToMatrix(userToOuterSVG);
+          outerSVGToUser.Invert();
+          Matrix outerSVGToBBox = aToBBoxUserspace * outerSVGToUser;
+          RefPtr<PathBuilder> builder =
+              pathInUserSpace->TransformedCopyToBuilder(
+                  ToMatrix(userToOuterSVG));
+          RefPtr<Path> pathInOuterSVGSpace = builder->Finish();
+          strokeBBoxExtents = pathInOuterSVGSpace->GetStrokedBounds(
+              strokeOptions, outerSVGToBBox);
+        } else {
+          strokeBBoxExtents = pathInUserSpace->GetStrokedBounds(
+              strokeOptions, aToBBoxUserspace);
+        }
       } else {
-        strokeBBoxExtents =
-          pathInUserSpace->GetStrokedBounds(strokeOptions, aToBBoxUserspace);
+        strokeBBoxExtents = ToRect(SVGUtils::PathExtentsToMaxStrokeExtents(
+            ThebesRect(pathBBoxExtents), this, ThebesMatrix(aToBBoxUserspace)));
       }
       MOZ_ASSERT(strokeBBoxExtents.IsFinite(), "bbox is about to go bad");
       bbox.UnionEdges(strokeBBoxExtents);
-#else
-      // For now we just use SVGUtils::PathExtentsToMaxStrokeExtents:
-      gfxRect strokeBBoxExtents = SVGUtils::PathExtentsToMaxStrokeExtents(
-          ThebesRect(pathBBoxExtents), this, ThebesMatrix(aToBBoxUserspace));
-      MOZ_ASSERT(ToRect(strokeBBoxExtents).IsFinite(),
-                 "bbox is about to go bad");
-      bbox.UnionEdges(strokeBBoxExtents);
-#endif
     }
   }
 
@@ -565,11 +552,7 @@ void SVGGeometryFrame::Render(gfxContext* aContext, uint32_t aRenderComponents,
 
   SVGGeometryElement* element = static_cast<SVGGeometryElement*>(GetContent());
 
-  AntialiasMode aaMode =
-      (StyleSVG()->mShapeRendering == StyleShapeRendering::Optimizespeed ||
-       StyleSVG()->mShapeRendering == StyleShapeRendering::Crispedges)
-          ? AntialiasMode::NONE
-          : AntialiasMode::SUBPIXEL;
+  AntialiasMode aaMode = SVGUtils::ToAntialiasMode(StyleSVG()->mShapeRendering);
 
   // We wait as late as possible before setting the transform so that we don't
   // set it unnecessarily if we return early (it's an expensive operation for
@@ -677,7 +660,8 @@ bool SVGGeometryFrame::IsInvisible() const {
   // Anything below will round to zero later down the pipeline.
   constexpr float opacity_threshold = 1.0 / 128.0;
 
-  if (StyleEffects()->mOpacity <= opacity_threshold) {
+  if (StyleEffects()->mOpacity <= opacity_threshold &&
+      SVGUtils::CanOptimizeOpacity(this)) {
     return true;
   }
 
@@ -772,15 +756,18 @@ bool SVGGeometryFrame::CreateWebRenderCommands(
     // At the moment this code path doesn't support strokes so it fine to
     // combine the rectangle's opacity (which has to be applied on the result)
     // of (filling + stroking) with the fill opacity.
-    float elemOpacity = StyleEffects()->mOpacity;
+
+    float elemOpacity = 1.0f;
+    if (SVGUtils::CanOptimizeOpacity(this)) {
+      elemOpacity = StyleEffects()->mOpacity;
+    }
+
     float fillOpacity = SVGUtils::GetOpacity(style->mFillOpacity, contextPaint);
     float opacity = elemOpacity * fillOpacity;
 
-    auto c = nsLayoutUtils::GetColor(this, &nsStyleSVG::mFill);
-    wr::ColorF color{
-        ((float)NS_GET_R(c)) / 255.0f, ((float)NS_GET_G(c)) / 255.0f,
-        ((float)NS_GET_B(c)) / 255.0f, ((float)NS_GET_A(c)) / 255.0f * opacity};
-
+    auto color = wr::ToColorF(
+        ToDeviceColor(StyleSVG()->mFill.kind.AsColor().CalcColor(this)));
+    color.a *= opacity;
     aBuilder.PushRect(wrRect, wrRect, !aItem->BackfaceIsHidden(), true, false,
                       color);
   }

@@ -194,6 +194,7 @@ void ExternalEngineStateMachine::ChangeStateTo(State aNextState) {
   } else {
     MOZ_ASSERT_UNREACHABLE("Wrong state!");
   }
+  NotifyAudibleStateChangeIfNeeded();
 }
 
 ExternalEngineStateMachine::ExternalEngineStateMachine(
@@ -216,7 +217,14 @@ void ExternalEngineStateMachine::InitEngine() {
   if (mEngine) {
     MOZ_ASSERT(mInfo);
     auto* state = mState.AsInitEngine();
-    state->mInitPromise = mEngine->Init(*mInfo, !mMinimizePreroll);
+    ExternalPlaybackEngine::InitFlagSet flags;
+    if (mMinimizePreroll) {
+      flags += ExternalPlaybackEngine::InitFlag::ShouldPreload;
+    }
+    if (mReader->IsEncryptedCustomIdent()) {
+      flags += ExternalPlaybackEngine::InitFlag::EncryptedCustomIdent;
+    }
+    state->mInitPromise = mEngine->Init(*mInfo, flags);
     state->mInitPromise
         ->Then(OwnerThread(), __func__, this,
                &ExternalEngineStateMachine::OnEngineInitSuccess,
@@ -295,7 +303,7 @@ void ExternalEngineStateMachine::OnMetadataRead(MetadataHolder&& aMetadata) {
 #ifdef MOZ_WMF_MEDIA_ENGINE
   // Only support encrypted playback. Not a real "error", because it would
   // fallback to another state machine.
-  if (!mInfo->IsEncrypted() &&
+  if ((!mInfo->IsEncrypted() && !mReader->IsEncryptedCustomIdent()) &&
       StaticPrefs::media_wmf_media_engine_enabled() == 2) {
     LOG("External engine only supports encrypted playback by the pref");
     DecodeError(
@@ -504,7 +512,7 @@ void ExternalEngineStateMachine::OnSeekRejected(
   state->mSeekRequest.Complete();
   if (aReject.mError == NS_ERROR_DOM_MEDIA_WAITING_FOR_DATA) {
     LOG("OnSeekRejected reason=WAITING_FOR_DATA type=%s",
-        MediaData::TypeToStr(aReject.mType));
+        MediaData::EnumValueToString(aReject.mType));
     MOZ_ASSERT_IF(aReject.mType == MediaData::Type::AUDIO_DATA,
                   !IsRequestingAudioData());
     MOZ_ASSERT_IF(aReject.mType == MediaData::Type::VIDEO_DATA,
@@ -615,7 +623,6 @@ RefPtr<ShutdownPromise> ExternalEngineStateMachine::Shutdown() {
 
   mDuration.DisconnectAll();
   mCurrentPosition.DisconnectAll();
-  // TODO : implement audible check
   mIsAudioDataAudible.DisconnectAll();
 
   mMetadataManager.Disconnect();
@@ -728,6 +735,7 @@ void ExternalEngineStateMachine::PlayStateChanged() {
   } else if (mPlayState == MediaDecoder::PLAY_STATE_PAUSED) {
     mEngine->Pause();
   }
+  NotifyAudibleStateChangeIfNeeded();
 }
 
 void ExternalEngineStateMachine::LoopingChanged() {
@@ -873,7 +881,6 @@ void ExternalEngineStateMachine::RunningEngineUpdate(MediaData::Type aType) {
 void ExternalEngineStateMachine::OnRequestAudio() {
   AssertOnTaskQueue();
   MOZ_ASSERT(mState.IsRunningEngine() || mState.IsSeekingData());
-  LOGV("OnRequestAudio");
 
   if (!HasAudio()) {
     return;
@@ -887,7 +894,6 @@ void ExternalEngineStateMachine::OnRequestAudio() {
     return;
   }
 
-  LOGV("Start requesting audio");
   PerformanceRecorder<PlaybackStage> perfRecorder(MediaStage::RequestData);
   RefPtr<ExternalEngineStateMachine> self = this;
   mReader->RequestAudioData()
@@ -897,7 +903,6 @@ void ExternalEngineStateMachine::OnRequestAudio() {
               const RefPtr<AudioData>& aAudio) mutable {
             perfRecorder.Record();
             mAudioDataRequest.Complete();
-            LOGV("Completed requesting audio");
             AUTO_PROFILER_LABEL(
                 "ExternalEngineStateMachine::OnRequestAudio:Resolved",
                 MEDIA_PLAYBACK);
@@ -937,7 +942,6 @@ void ExternalEngineStateMachine::OnRequestAudio() {
 void ExternalEngineStateMachine::OnRequestVideo() {
   AssertOnTaskQueue();
   MOZ_ASSERT(mState.IsRunningEngine() || mState.IsSeekingData());
-  LOGV("OnRequestVideo");
 
   if (!HasVideo()) {
     return;
@@ -951,7 +955,6 @@ void ExternalEngineStateMachine::OnRequestVideo() {
     return;
   }
 
-  LOGV("Start requesting video");
   PerformanceRecorder<PlaybackStage> perfRecorder(MediaStage::RequestData,
                                                   Info().mVideo.mImage.height);
   RefPtr<ExternalEngineStateMachine> self = this;
@@ -962,7 +965,6 @@ void ExternalEngineStateMachine::OnRequestVideo() {
               const RefPtr<VideoData>& aVideo) mutable {
             perfRecorder.Record();
             mVideoDataRequest.Complete();
-            LOGV("Completed requesting video");
             AUTO_PROFILER_LABEL(
                 "ExternalEngineStateMachine::OnRequestVideo:Resolved",
                 MEDIA_PLAYBACK);
@@ -1270,6 +1272,7 @@ RefPtr<SetCDMPromise> ExternalEngineStateMachine::SetCDMProxy(
 
   if (!mEngine || !mEngine->IsInited()) {
     LOG("SetCDMProxy is called before init");
+    mReader->SetEncryptedCustomIdent();
     mPendingTasks.AppendElement(NS_NewRunnableFunction(
         "ExternalEngineStateMachine::SetCDMProxy",
         [self = RefPtr{this}, proxy = RefPtr{aProxy}, this] {
@@ -1365,6 +1368,14 @@ void ExternalEngineStateMachine::DecodeError(const MediaResult& aError) {
     mHasFatalError = true;
   }
   MediaDecoderStateMachineBase ::DecodeError(aError);
+}
+
+void ExternalEngineStateMachine::NotifyAudibleStateChangeIfNeeded() {
+  // Only perform a simple check because we can't access audio data from the
+  // external engine.
+  mIsAudioDataAudible = mInfo && HasAudio() &&
+                        mPlayState == MediaDecoder::PLAY_STATE_PLAYING &&
+                        mState.IsRunningEngine();
 }
 
 #undef FMT

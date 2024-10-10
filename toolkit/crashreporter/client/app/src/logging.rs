@@ -12,15 +12,14 @@ use crate::std::{
 
 /// Initialize logging and return a log target which can be used to change the destination of log
 /// statements.
-#[cfg_attr(mock, allow(unused))]
 pub fn init() -> LogTarget {
     let log_target_inner = LogTargetInner::default();
 
     env_logger::builder()
         .parse_env(
             env_logger::Env::new()
-                .filter("MOZ_CRASHEREPORTER")
-                .write_style("MOZ_CRASHREPORTER_STYLE"),
+                .filter(ekey!("LOG"))
+                .write_style(ekey!("LOG_STYLE")),
         )
         .target(env_logger::fmt::Target::Pipe(Box::new(
             log_target_inner.clone(),

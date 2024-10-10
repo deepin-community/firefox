@@ -40,7 +40,19 @@ shopping-letter-grade-tooltip =
 
 shopping-message-bar-warning-stale-analysis-message-2 = Talɣut tamaynut ara yettusneqden
 shopping-message-bar-warning-stale-analysis-button = Senqed tura
+shopping-message-bar-generic-error =
+    .heading = Ulac talɣut i yellan akka tura
+    .message = Aql-aɣ nxeddem ad nefru ugur-a. Ttxil-k, ssefqed-d ticki.
+shopping-message-bar-warning-not-enough-reviews =
+    .heading = Ulac ddeqs n tamiwin akka tura
+    .message = Mi ara yesɛu ufaris-a ugar n yiceggiren, ad nezmer ad nessefqed taɣara-s
+shopping-message-bar-warning-product-not-available =
+    .heading = Afaris ulac-it
+    .message = Ma twalaḍ afaris-a yuɣal-d deg taggazt, ini-aɣ-t-id, ad nexdem akken ara nessefqed iceggiren.
 shopping-message-bar-warning-product-not-available-button2 = Mmel tuɣalin n ufaris deg tawsa
+shopping-message-bar-thanks-for-reporting =
+    .heading = Tanemmirt ɣef tuzna n uneqqis!
+    .message = Ilaq ad nesεu isallan ɣef yiceggiren n ufaris-a sya ɣer 24 n yisragen. Ttxil-k, ssefqed-d ticki.
 shopping-message-bar-analysis-in-progress-title2 = Adenqed n tɣara n yilɣa
 shopping-message-bar-analysis-in-progress-message2 = Aya yezmer ad yeṭṭef 60 tsinin.
 # Variables:
@@ -72,6 +84,16 @@ shopping-settings-recommendations-toggle =
     .label = Sken adellel deg umsenqad n tamawt
 shopping-settings-opt-out-button = Sens Amsenqed n tamawin
 powered-by-fakespot = Amsenqad n tamiwin yella d lmendad n <a data-l10n-name="fakespot-link">{ -fakespot-brand-full-name }</a>.
+# Description text for regions where we support three sites. Sites are limited to Amazon, Walmart and Best Buy.
+# Variables:
+#   $firstSite (String) - The first shopping page name
+#   $secondSite (String) - The second shopping page name
+#   $thirdSite (String) - The third shopping page name
+shopping-settings-auto-open-description-three-sites = Mira twaliḍ ifarisen ɣef { $firstSite }, { $secondSite }, akked { $thirdSite }
+# Description text for regions where we support only one site (e.g. currently used in FR/DE with Amazon).
+# Variables:
+#   $currentSite (String) - The current shopping page name
+shopping-settings-auto-open-description-single-site = Mira twaliḍ ifarisen ɣef { $currentSite }
 
 ## Strings for the adjusted rating component
 
@@ -80,6 +102,7 @@ powered-by-fakespot = Amsenqad n tamiwin yella d lmendad n <a data-l10n-name="fa
 shopping-adjusted-rating-label =
     .label = Aktazal yettwaseɣta
 shopping-adjusted-rating-unreliable-reviews = Yir alɣu yettwakkes
+shopping-adjusted-rating-based-reliable-reviews = Deg taffa n yiwenniten yettwamanen
 
 ## Strings for the review reliability component
 
@@ -90,7 +113,18 @@ shopping-review-reliability-label =
 
 shopping-analysis-explainer-label =
     .label = Amek ara nettguccul alɣu n tɣara
+shopping-analysis-explainer-intro2 = Nesseqdac tatiknulujit AI seg { -fakespot-brand-full-name } akken ad nessefqed arkad n yiceggiren n ufaris. Aya ad k-iεawen kan ad tektaleḍ taɣara n uceggir, mačči taɣara n ufaris.
+shopping-analysis-explainer-grades-intro = Ad nmudd <strong>asekkil n ugemmay</strong> i yiceggiren ɣef yal afaris, seg A ɣer F.
+shopping-analysis-explainer-adjusted-rating-description = Alɣu n <strong>amwati</strong> yebna kan ɣef yiceggiren i nettwali deg-sen taneflest.
+# This string includes the short brand name of one of the three supported
+# websites, which will be inserted without being translated.
+#  $retailer (String) - capitalized name of the shopping website, for example, "Amazon".
+shopping-analysis-explainer-highlights-description = <strong>Asebruraq</strong> seg { $retailer } n yiceggiren deg 80 n wussan-a ineggura i nettwali yella lettkal fell-asen.
+# Fallback for analysis highlights explainer if the retailer is ever unknown
+shopping-analysis-explainer-highlights-description-unknown-retailer = <strong>Asebruraq</strong> seg yiceggiren deg 80 n wussan-a ineggura i nettwali yella lettkal fell-asen.
+shopping-analysis-explainer-review-grading-scale-reliable = Iceggiren igerrzen. Nettwali iceggiren zemren ad d-ilin seg yimsaɣen n tidet i d-yeǧǧan iceggiren imeɣtiyen, ur nebni ɣef tḥila.
 shopping-analysis-explainer-review-grading-scale-mixed = Nettwali iwellihen sdukklen iwellihen inaflasen d yiwellihen arinaflasen.
+shopping-analysis-explainer-review-grading-scale-unreliable = Iceggiren ur yettwamanen ara. Nettwali iceggiren zemren ad ilin d tikellax neɣ kkan-d seg yimciggar ur nesεi azal.
 
 ## Strings for UrlBar button
 
@@ -107,6 +141,7 @@ shopping-sidebar-close-button2 =
 ## possible - if these terms are not meaningfully different - that is OK.
 
 shopping-unanalyzed-product-header-2 = Ulac talɣut ɣef yilɣa-a akka ar tura
+shopping-unanalyzed-product-message-2 = I wakken ad twaliḍ iceggiren ɣef ufaris-a ara yettwamanen, senqed taɣara-s. Aya ad yeṭṭef kan 60 tsinin.
 shopping-unanalyzed-product-analyze-button = Senqed tɣara n yilɣa
 
 ## Strings for the advertisement
@@ -121,6 +156,8 @@ shopping-survey-headline = Ɛawen i usemɣer n { -brand-product-name }
 shopping-survey-q1-radio-1-label = Yumer aṭas
 shopping-survey-q1-radio-2-label = Y·Tumer
 shopping-survey-q1-radio-3-label = War tamawt
+shopping-survey-q1-radio-4-label = Ur yumir ara
+shopping-survey-q1-radio-5-label = Texseṛ-as akk nniya
 shopping-survey-q2-radio-1-label = Ih
 shopping-survey-q2-radio-2-label = Ala
 shopping-survey-q2-radio-3-label = Ur zriɣ ara
@@ -138,6 +175,8 @@ shopping-callout-closed-not-opted-in-revised-button = Awi-t
 shopping-callout-not-opted-in-reminder-open-button = Ldi Amsenqed n tamiwin
 shopping-callout-not-opted-in-reminder-close-button = Zgel
 shopping-callout-not-opted-in-reminder-ignore-checkbox = Ur d-skan ara tikkelt niḍen
+shopping-callout-disabled-auto-open-button = Awi-t
+shopping-callout-opted-out-button = Awi-t
 
 ## Onboarding message strings.
 

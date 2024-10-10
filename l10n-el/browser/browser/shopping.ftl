@@ -89,6 +89,9 @@ shopping-show-less-button = Εμφάνιση λιγότερων
 
 shopping-settings-label =
     .label = Ρυθμίσεις
+shopping-settings-recommendations-toggle2 =
+    .label = Εμφάνιση προτάσεων και χορηγούμενου περιεχομένου
+shopping-settings-recommendations-learn-more3 = Το { -brand-product-name } δεν κοινοποιεί τα προσωπικά σας δεδομένα, επομένως αυτές οι προτάσεις δεν θα σας ακολουθούν σε όλο το διαδίκτυο. <a data-l10n-name="review-quality-url">Μάθετε περισσότερα</a>
 shopping-settings-recommendations-toggle =
     .label = Εμφάνιση διαφημίσεων στον έλεγχο κριτικών
 shopping-settings-recommendations-learn-more2 = Θα βλέπετε περιστασιακά διαφημίσεις για σχετικά προϊόντα. Διαφημίζουμε μόνο προϊόντα με αξιόπιστες κριτικές. <a data-l10n-name="review-quality-url">Μάθετε περισσότερα</a>
@@ -115,6 +118,7 @@ shopping-settings-sidebar-enabled-state = Ο έλεγχος κριτικών ε�
 shopping-adjusted-rating-label =
     .label = Αναπροσαρμοσμένη βαθμολογία
 shopping-adjusted-rating-unreliable-reviews = Οι αναξιόπιστες κριτικές αφαιρέθηκαν
+shopping-adjusted-rating-based-reliable-reviews = Με βάση αξιόπιστες κριτικές
 
 ## Strings for the review reliability component
 
@@ -133,6 +137,8 @@ shopping-analysis-explainer-learn-more2 = Μάθετε περισσότερα σ
 # websites, which will be inserted without being translated.
 #  $retailer (String) - capitalized name of the shopping website, for example, "Amazon".
 shopping-analysis-explainer-highlights-description = Τα <strong>σημαντικά σημεία</strong> προέρχονται από κριτικές για το { $retailer }, οι οποίες γράφτηκαν τις τελευταίες 80 ημέρες και πιστεύουμε ότι είναι αξιόπιστες.
+# Fallback for analysis highlights explainer if the retailer is ever unknown
+shopping-analysis-explainer-highlights-description-unknown-retailer = Τα <strong>σημαντικά σημεία</strong> προέρχονται από κριτικές που γράφτηκαν τις τελευταίες 80 ημέρες και πιστεύουμε ότι είναι αξιόπιστες.
 shopping-analysis-explainer-review-grading-scale-reliable = Αξιόπιστες κριτικές. Πιστεύουμε ότι οι κριτικές προέρχονται πιθανότατα από πραγματικούς πελάτες, που άφησαν ειλικρινείς και αντικειμενικές κριτικές.
 shopping-analysis-explainer-review-grading-scale-mixed = Πιστεύουμε ότι υπάρχει ένας συνδυασμός αξιόπιστων και αναξιόπιστων κριτικών.
 shopping-analysis-explainer-review-grading-scale-unreliable = Αναξιόπιστες κριτικές. Πιστεύουμε ότι οι κριτικές είναι μάλλον ψευδείς ή προέρχονται από άτομα που μεροληπτούν.
@@ -159,6 +165,7 @@ shopping-unanalyzed-product-analyze-button = Έλεγχος ποιότητας �
 
 more-to-consider-ad-label =
     .label = Περισσότερες εναλλακτικές
+shopping-sponsored-label = Χορηγία
 ad-by-fakespot = Διαφήμιση από το { -fakespot-brand-name }
 
 ## Shopping survey strings.

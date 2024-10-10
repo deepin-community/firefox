@@ -35,7 +35,6 @@
 #include "mozilla/Logging.h"
 #include "mozilla/MiscEvents.h"
 #include "mozilla/Preferences.h"
-#include "mozilla/Telemetry.h"
 #include "mozilla/TextEvents.h"
 #include "mozilla/StaticMutex.h"
 #include "mozilla/StaticPrefs_media.h"
@@ -295,7 +294,7 @@ BOOL nsCocoaUtils::WasLaunchedAtLogin() {
   return NO;
 }
 
-BOOL nsCocoaUtils::ShouldRestoreStateDueToLaunchAtLoginImpl() {
+BOOL nsCocoaUtils::ShouldRestoreStateDueToLaunchAtLogin() {
   // Check if we were launched by macOS as a result of having
   // "Reopen windows..." selected during a restart.
   if (!WasLaunchedAtLogin()) {
@@ -319,13 +318,6 @@ BOOL nsCocoaUtils::ShouldRestoreStateDueToLaunchAtLoginImpl() {
   }
 
   return NO;
-}
-
-BOOL nsCocoaUtils::ShouldRestoreStateDueToLaunchAtLogin() {
-  BOOL shouldRestore = ShouldRestoreStateDueToLaunchAtLoginImpl();
-  Telemetry::ScalarSet(Telemetry::ScalarID::STARTUP_IS_RESTORED_BY_MACOS,
-                       !!shouldRestore);
-  return shouldRestore;
 }
 
 void nsCocoaUtils::PrepareForNativeAppModalDialog() {
@@ -935,12 +927,11 @@ struct KeyConversionData {
 
 static const KeyConversionData gKeyConversions[] = {
 
-#define KEYCODE_ENTRY(aStr, aCode) \
-  { #aStr, sizeof(#aStr) - 1, NS_##aStr, aCode }
+#define KEYCODE_ENTRY(aStr, aCode) {#aStr, sizeof(#aStr) - 1, NS_##aStr, aCode}
 
 // Some keycodes may have different name in KeyboardEvent from its key name.
 #define KEYCODE_ENTRY2(aStr, aNSName, aCode) \
-  { #aStr, sizeof(#aStr) - 1, NS_##aNSName, aCode }
+  {#aStr, sizeof(#aStr) - 1, NS_##aNSName, aCode}
 
     KEYCODE_ENTRY(VK_CANCEL, 0x001B),
     KEYCODE_ENTRY(VK_DELETE, NSDeleteFunctionKey),
@@ -1384,6 +1375,19 @@ nsresult nsCocoaUtils::GetScreenCapturePermissionState(
     CFStringRef windowName = reinterpret_cast<CFStringRef>(
         CFDictionaryGetValue(windowDict, kCGWindowName));
     if (!windowName) {
+      continue;
+    }
+
+    // macOS versions 12.2 (Monterey) or later have a status indicator when the
+    // microphone is in use (an orange dot). This is implemented as a window
+    // owned by the window server process. The permission check logic queries
+    // window server for all windows and assumes it has the required permission
+    // if it can read any window name that is at dock or normal level.
+    // The StatusIndicator window is an exception and needs to be skipped
+    // because it is owned by window server process and therefore when querying
+    // the window server, the name is always readable.
+    if (kCFCompareEqualTo ==
+        CFStringCompare(windowName, CFSTR("StatusIndicator"), 0)) {
       continue;
     }
 

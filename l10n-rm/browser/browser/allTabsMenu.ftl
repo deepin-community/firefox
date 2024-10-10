@@ -5,13 +5,14 @@
 # "Search" is a verb, as in "Search through tabs".
 all-tabs-menu-search-tabs =
     .label = Tschertgar en ils tabs
-
 all-tabs-menu-new-user-context =
     .label = Nov tab da container
-
 all-tabs-menu-hidden-tabs =
     .label = Tabs zuppentads
-
 all-tabs-menu-manage-user-context =
     .label = Administrar ils containers
     .accesskey = A
+all-tabs-menu-close-duplicate-tabs =
+    .label = Serrar tabs duplitgads
+all-tabs-menu-close-all-duplicate-tabs =
+    .label = Serrar tut ils tabs duplitgads

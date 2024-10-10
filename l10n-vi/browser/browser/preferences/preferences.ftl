@@ -57,6 +57,10 @@ category-experimental =
 pane-experimental-subtitle = Tiến hành thận trọng
 pane-experimental-search-results-header = Thử nghiệm { -brand-short-name }: Tiến hành thận trọng
 pane-experimental-description2 = Thay đổi cài đặt cấu hình nâng cao có thể ảnh hưởng đến hiệu suất hoặc bảo mật của { -brand-short-name }.
+settings-pane-labs-title = { -firefoxlabs-brand-name }
+settings-category-labs =
+    .tooltiptext = { -firefoxlabs-brand-name }
+pane-experimental-description3 = Hãy dùng thử các tính năng thử nghiệm của chúng tôi! Chúng đang trong quá trình phát triển, điều này có thể ảnh hưởng đến cách { -brand-short-name } hoạt động.
 pane-experimental-reset =
     .label = Khôi phục về mặc định
     .accesskey = R
@@ -576,7 +580,7 @@ home-prefs-highlights-options-bookmarks =
 home-prefs-highlights-option-most-recent-download =
     .label = Tải xuống gần đây nhất
 home-prefs-highlights-option-saved-to-pocket =
-    .label = Đã lưu trang vào { -pocket-brand-name }
+    .label = Trang đã lưu vào { -pocket-brand-name }
 home-prefs-recent-activity-header =
     .label = Hoạt động gần đây
 home-prefs-recent-activity-description = Tuyển chọn các trang và nội dung gần đây
@@ -587,6 +591,10 @@ home-prefs-recent-activity-description = Tuyển chọn các trang và nội dun
 home-prefs-snippets-header =
     .label = Ghi chú nhỏ
 home-prefs-snippets-description-new = Mẹo và tin tức từ { -vendor-short-name } và { -brand-product-name }
+home-prefs-weather-header =
+    .label = Thời tiết
+home-prefs-weather-description = Sơ lược về dự báo hôm nay
+home-prefs-weather-learn-more-link = Tìm hiểu thêm
 # Variables:
 #   $num (number) - Number of rows displayed
 home-prefs-sections-rows-option =
@@ -896,6 +904,9 @@ forms-saved-passwords =
 forms-primary-pw-use =
     .label = Sử dụng mật khẩu chính
     .accesskey = U
+# This operation requires the user to authenticate with the operating system (device sign-in)
+forms-os-reauth =
+    .label = Yêu cầu thiết bị đăng nhập để điền và quản lý mật khẩu
 forms-primary-pw-learn-more-link = Tìm hiểu thêm
 # This string uses the former name of the Primary Password feature
 # ("Master Password" in English) so that the preferences can be found
@@ -928,6 +939,13 @@ primary-password-os-auth-dialog-message-win = Để tạo mật khẩu chính, h
 # notes are only valid for English. Please test in your locale.
 primary-password-os-auth-dialog-message-macosx = tạo một mật khẩu chính
 master-password-os-auth-dialog-caption = { -brand-full-name }
+# The macOS string is preceded by the operating system with "Firefox is trying to ".
+autofill-creditcard-os-dialog-message =
+    { PLATFORM() ->
+        [macos] thay đổi cài đặt cho phương thức thanh toán
+       *[other] { -brand-short-name } đang cố gắng thay đổi cài đặt cho phương thức thanh toán. Sử dụng thiết bị đăng nhập của bạn để cho phép điều này.
+    }
+autofill-creditcard-os-auth-dialog-caption = { -brand-full-name }
 
 ## Privacy section - Autofill
 
@@ -942,13 +960,8 @@ autofill-payment-methods-checkbox-submessage = Bao gồm thẻ tín dụng và t
     .accesskey = I
 autofill-saved-payment-methods-button = Phương thức thanh toán đã lưu
     .accesskey = v
-autofill-reauth-checkbox =
-    { PLATFORM() ->
-        [macos] Yêu cầu xác thực trên macOS để điền và chỉnh sửa phương thức thanh toán.
-        [windows] Yêu cầu xác thực trên Windows để điền và chỉnh sửa phương thức thanh toán.
-        [linux] Yêu cầu xác thực trên Linux để điền và chỉnh sửa phương thức thanh toán.
-       *[other] Yêu cầu xác thực để điền và chỉnh sửa phương thức thanh toán.
-    }
+# This operation requires the user to authenticate with the operating system (device sign-in)
+autofill-reauth-payment-methods-checkbox = Yêu cầu thiết bị đăng nhập để điền và quản lý phương thức thanh toán
     .accesskey = o
 
 ## Privacy Section - History
@@ -1086,6 +1099,9 @@ addressbar-suggestions-settings = Thay đổi tùy chỉnh phần gợi ý của
 addressbar-locbar-showrecentsearches-option =
     .label = Hiển thị các tìm kiếm gần đây
     .accesskey = F
+addressbar-locbar-showtrendingsuggestions-option =
+    .label = Hiển thị đề xuất tìm kiếm thịnh hành
+    .accesskey = t
 addressbar-quickactions-learn-more = Tìm hiểu thêm
 
 ## Privacy Section - Content Blocking
@@ -1277,6 +1293,14 @@ privacy-segmentation-radio-off =
 privacy-segmentation-radio-on =
     .label = Hiển thị thông tin chi tiết
 
+## Privacy Section - Website Advertising Preferences
+
+website-advertising-header = Tùy chọn quảng cáo cho trang web
+website-advertising-private-attribution =
+    .label = Cho phép các trang web thực hiện đo lường quảng cáo đảm bảo quyền riêng tư
+    .accesskey = a
+website-advertising-private-attribution-description = Điều này giúp các trang web hiểu quảng cáo của họ hoạt động như thế nào mà không thu thập dữ liệu về bạn.
+
 ## Privacy Section - Security
 ##
 ## It is important that wording follows the guidelines outlined on this page:
@@ -1320,13 +1344,20 @@ space-alert-under-5gb-message2 = <strong>{ -brand-short-name } sắp hết dung 
 
 httpsonly-header = Chế độ chỉ HTTPS
 httpsonly-description = HTTPS cung cấp kết nối được mã hóa an toàn giữa { -brand-short-name } và các trang web bạn truy cập. Hầu hết các trang web đều hỗ trợ HTTPS và nếu chế độ chỉ HTTPS được bật, thì { -brand-short-name } sẽ nâng cấp tất cả các kết nối lên HTTPS.
+httpsonly-description2 = { -brand-short-name } tạo kết nối an toàn và được mã hóa tới các trang web bạn truy cập. { -brand-short-name } sẽ cảnh báo bạn nếu kết nối không an toàn khi kích hoạt chỉ HTTPS.
 httpsonly-learn-more = Tìm hiểu thêm
 httpsonly-radio-enabled =
     .label = Kích hoạt chế độ chỉ HTTPS trong tất cả các cửa sổ
+httpsonly-radio-enabled2 =
+    .label = Chỉ sử dụng HTTPS trong tất cả cửa sổ
 httpsonly-radio-enabled-pbm =
     .label = Chỉ kích hoạt chế độ HTTPS trong các cửa sổ riêng tư
+httpsonly-radio-enabled-pbm2 =
+    .label = Chỉ sử dụng HTTPS trong cửa số riêng tư
 httpsonly-radio-disabled =
     .label = Không kích hoạt chế độ chỉ HTTPS
+httpsonly-radio-disabled2 =
+    .label = Thử HTTPS trước, nhưng cho phép kết nối không an toàn
 
 ## DoH Section
 

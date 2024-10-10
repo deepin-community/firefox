@@ -550,6 +550,10 @@ urlbar-go-button =
     .tooltiptext = Ir a la dirección en la Barra de ubicaciones.
 urlbar-page-action-button =
     .tooltiptext = Acciones de la página
+urlbar-revert-button =
+    .tooltiptext = Mostrar la dirección en la barra de búsqueda
+urlbar-show-page-actions-button =
+    .tooltiptext = Mostrar todas las acciones de la página
 
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
@@ -570,6 +574,11 @@ urlbar-result-action-search-w-engine = Buscar con { $engine }
 urlbar-result-action-sponsored = Patrocinado
 urlbar-result-action-switch-tab = Cambiar a la pestaña
 urlbar-result-action-visit = Visitar
+# "Switch to tab with container" is used when the target tab is located in a
+# different container.
+# Variables
+# $container (String): the name of the target container
+urlbar-result-action-switch-tab-with-container = Cambiar a pestaña · <span>{ $container }</span>
 # Allows the user to visit a URL that was previously copied to the clipboard.
 urlbar-result-action-visit-from-clipboard = Visitar desde el portapapeles
 # Directs a user to press the Tab key to perform a search with the specified
@@ -600,6 +609,12 @@ urlbar-result-action-copy-to-clipboard = Copiar
 #  $result (String): the string representation for a formula result
 urlbar-result-action-calculator-result = = { $result }
 
+## Strings used for buttons in the urlbar
+
+# Label prompting user to search with a particular search engine.
+#  $engine (String): the name of a search engine that searches a specific site
+urlbar-result-search-with = Navegue con { $engine }
+
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
 ## In these actions "Search" is a verb, followed by where the search is performed.
@@ -629,6 +644,21 @@ urlbar-group-quickactions =
 #  $engine (String): the name of the search engine used to search.
 urlbar-group-recent-searches =
     .label = Búsquedas recientes
+# The header shown above trending results.
+# Variables:
+#  $engine (String): the name of the search engine providing the trending suggestions
+urlbar-group-trending =
+    .label = Tendencia en { $engine }
+# The result menu labels shown next to trending results.
+urlbar-result-menu-trending-dont-show =
+    .label = No mostrar búsquedas de tendencia
+    .accesskey = s
+urlbar-result-menu-trending-why =
+    .label = ¿Por qué estoy viendo esto?
+    .accesskey = v
+# A message that replaces a result when the user dismisses all suggestions of a
+# particular type.
+urlbar-trending-dismissal-acknowledgment = Gracias por tus comentarios. Ya no verás búsquedas de tendencia.
 
 ## Reader View toolbar buttons
 
@@ -649,6 +679,9 @@ picture-in-picture-urlbar-button-close =
     .tooltiptext = Cerrar Picture-in-Picture ({ $shortcut })
 picture-in-picture-panel-header = Picture-in-Picture
 picture-in-picture-panel-headline = Este sitio no recomienda Picture-in-Picture
+picture-in-picture-panel-body = Es posible que los videos no se muestren como el desarrollador lo había planteado mientras Picture-in-Picture esté activado.
+picture-in-picture-enable-toggle =
+    .label = Activar de todos modos
 
 ## Full Screen and Pointer Lock UI
 
@@ -891,6 +924,10 @@ tabs-toolbar-list-all-tabs =
 restore-session-startup-suggestion-message = <strong>¿Abrir pestañas anteriores?</strong> Puedes restaurar tu sesión anterior desde el menú de la aplicación { -brand-short-name } <img data-l10n-name = "icon" />, bajo Historial.
 restore-session-startup-suggestion-button = Mostrar cómo
 
+## Infobar shown when the user tries to open a file picker and file pickers are blocked by enterprise policy
+
+filepicker-blocked-infobar = Su organización ha bloqueado el acceso a archivos locales en esta computadora
+
 ## Mozilla data reporting notification (Telemetry, Firefox Health Report, etc)
 
 data-reporting-notification-message = { -brand-short-name } envía automáticamente algunos datos a { -vendor-short-name } para poder mejorar tu experiencia.
@@ -899,6 +936,15 @@ data-reporting-notification-button =
     .accesskey = c
 # Label for the indicator shown in the private browsing window titlebar.
 private-browsing-indicator-label = Navegación privada
+# Tooltip for the indicator shown in the window titlebar when content analysis is active.
+# Variables:
+#   $agentName (String): The name of the DLP agent that is connected
+content-analysis-indicator-tooltip =
+    .tooltiptext = Prevención de pérdida de datos (DLP) por { $agentName }. Haga click para saber más información.
+content-analysis-panel-title = Protección de datos
+# Variables:
+#   $agentName (String): The name of the DLP agent that is connected
+content-analysis-panel-text = Su organización utiliza { $agentName } para protegerse contra la pérdida de datos. <a data-l10n-name="info">Más información</a>
 
 ## Unified extensions (toolbar) button
 
@@ -918,9 +964,29 @@ unified-extensions-button-permissions-needed =
 ## Unified extensions button when some extensions are quarantined.
 ## Note that the new line is intentionally part of the tooltip.
 
+unified-extensions-button-quarantined =
+    .label = Extensiones
+    .tooltiptext =
+        Extensiones
+        Algunas extensiones no están permitidas
 
 ## Private browsing reset button
 
+reset-pbm-toolbar-button =
+    .label = Finalizar sesión privada
+    .tooltiptext = Finalizar sesión privada
+reset-pbm-panel-heading = ¿Finalizar tu sesión privada?
+reset-pbm-panel-description = Cerrar todas las pestañas privadas y borrar el historial, las cookies y todos los demás datos del sitio.
+reset-pbm-panel-always-ask-checkbox =
+    .label = Preguntarme siempre
+    .accesskey = A
+reset-pbm-panel-cancel-button =
+    .label = Cancelar
+    .accesskey = C
+reset-pbm-panel-confirm-button =
+    .label = Eliminar datos de la sesión
+    .accesskey = D
+reset-pbm-panel-complete = Los datos de la sesión privada han sido eliminados
 
 ## Autorefresh blocker
 
@@ -932,12 +998,21 @@ refresh-blocked-allow =
 
 ## Firefox Relay integration
 
+firefox-relay-offer-why-to-use-relay = Nuestras máscaras seguras y fáciles de usar protegen tu identidad y evitan el spam al ocultar tu dirección de correo electrónico.
+# Variables:
+#  $useremail (String): user email that will receive messages
+firefox-relay-offer-what-relay-provides = Todos los correos electrónicos enviados a tus máscaras de correo electrónico se reenviarán a <strong>{ $useremail }</strong> (a menos que decidas bloquearlos).
+firefox-relay-offer-legal-notice = Al hacer clic en "Usar máscara de correo electrónico", aceptas <label data-l10n-name="tos-url">Los Términos de Servicio</label> y <label data-l10n-name="privacy-url">El Aviso de Privacidad</label>.
 
 ## Add-on Pop-up Notifications
 
 popup-notification-addon-install-unsigned =
     .value = (No verificado)
 popup-notification-xpinstall-prompt-learn-more = Saber más sobre cómo instalar complementos de forma segura
+# Note: Access key is set to P to match "Private" in the corresponding localized label.
+popup-notification-addon-privatebrowsing-checkbox =
+    .label = Ejecutar en ventanas privadas
+    .accesskey = p
 
 ## Pop-up warning
 
@@ -966,4 +1041,25 @@ popup-warning-button =
 # Variables:
 #   $popupURI (String): the URI for the pop-up window
 popup-show-popup-menuitem =
-    .label = Mostrar '{ $popupURI }'
+    .label = Mostrar “{ $popupURI }”
+
+## File-picker crash notification ("FilePickerCrashed.sys.mjs")
+
+file-picker-failed-open = El diálogo de archivo de Windows no se pudo abrir. No se pudo seleccionar ningún archivo o carpeta.
+#   $path (string): The full path to which the file will be saved (e.g., 'C:\Users\Default User\Downloads\readme.txt').
+file-picker-failed-save-somewhere = El diálogo de archivo de Windows no se pudo abrir. El archivo se guardará en { $path }.
+file-picker-failed-save-nowhere = El diálogo de archivo de Windows no se pudo abrir. No se pudo encontrar ninguna carpeta predeterminada; el archivo no se guardará.
+file-picker-crashed-open = El diálogo de archivo de Windows ha fallado. No se pudo seleccionar ningún archivo o carpeta.
+#   $path (string): The full path to which the file will be saved (e.g., 'C:\Users\Default User\Downloads\readme.txt').
+file-picker-crashed-save-somewhere = El diálogo de archivo de Windows ha fallado. El archivo se guardará en { $path }.
+file-picker-crashed-save-nowhere = El diálogo de archivo de Windows ha fallado. No se pudo encontrar ninguna carpeta predeterminada; el archivo no se guardará.
+
+# Button used with file-picker-crashed-save-default. Opens the folder in Windows
+# Explorer, with the saved file selected and in focus.
+#
+# The wording here should be consistent with the Windows variant of
+# `downloads-cmd-show-menuitem-2` and similar messages.
+
+file-picker-crashed-show-in-folder =
+    .label = Mostrar en carpeta
+    .accessKey = M

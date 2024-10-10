@@ -170,7 +170,8 @@ bool WorkerScriptTimeoutHandler::Call(const char* aExecutionReason) {
 
   JSContext* cx = aes.cx();
   JS::CompileOptions options(cx);
-  options.setFileAndLine(mFileName.get(), mLineNo).setNoScriptRval(true);
+  options.setFileAndLine(mCaller.FileName().get(), mCaller.mLine)
+      .setNoScriptRval(true);
   options.setIntroductionType("domTimer");
 
   JS::Rooted<JS::Value> unused(cx);
@@ -468,6 +469,7 @@ already_AddRefed<CacheStorage> WorkerGlobalScope::GetCaches(ErrorResult& aRv) {
   if (!mCacheStorage) {
     mCacheStorage = CacheStorage::CreateOnWorker(cache::DEFAULT_NAMESPACE, this,
                                                  mWorkerPrivate, aRv);
+    mWorkerPrivate->NotifyStorageKeyUsed();
   }
 
   RefPtr<CacheStorage> ref = mCacheStorage;
@@ -735,25 +737,28 @@ already_AddRefed<IDBFactory> WorkerGlobalScope::GetIndexedDB(
   if (!indexedDB) {
     StorageAccess access = mWorkerPrivate->StorageAccess();
 
+    bool allowed = true;
     if (access == StorageAccess::eDeny) {
       NS_WARNING("IndexedDB is not allowed in this worker!");
-      aErrorResult = NS_ERROR_DOM_SECURITY_ERR;
-      return nullptr;
+      allowed = false;
     }
 
     if (ShouldPartitionStorage(access) &&
         !StoragePartitioningEnabled(access,
                                     mWorkerPrivate->CookieJarSettings())) {
       NS_WARNING("IndexedDB is not allowed in this worker!");
-      aErrorResult = NS_ERROR_DOM_SECURITY_ERR;
-      return nullptr;
+      allowed = false;
     }
 
-    const PrincipalInfo& principalInfo =
-        mWorkerPrivate->GetEffectiveStoragePrincipalInfo();
+    auto windowID = mWorkerPrivate->WindowID();
 
-    auto res = IDBFactory::CreateForWorker(this, principalInfo,
-                                           mWorkerPrivate->WindowID());
+    auto principalInfoPtr =
+        allowed ? MakeUnique<PrincipalInfo>(
+                      mWorkerPrivate->GetEffectiveStoragePrincipalInfo())
+                : nullptr;
+    auto res = IDBFactory::CreateForWorker(this, std::move(principalInfoPtr),
+                                           windowID);
+
     if (NS_WARN_IF(res.isErr())) {
       aErrorResult = res.unwrapErr();
       return nullptr;
@@ -762,6 +767,8 @@ already_AddRefed<IDBFactory> WorkerGlobalScope::GetIndexedDB(
     indexedDB = res.unwrap();
     mIndexedDB = indexedDB;
   }
+
+  mWorkerPrivate->NotifyStorageKeyUsed();
 
   return indexedDB.forget();
 }
@@ -944,7 +951,7 @@ void DedicatedWorkerGlobalScope::Close() {
   mWorkerPrivate->CloseInternal();
 }
 
-int32_t DedicatedWorkerGlobalScope::RequestAnimationFrame(
+uint32_t DedicatedWorkerGlobalScope::RequestAnimationFrame(
     FrameRequestCallback& aCallback, ErrorResult& aError) {
   AssertIsOnWorkerThread();
 
@@ -980,7 +987,7 @@ int32_t DedicatedWorkerGlobalScope::RequestAnimationFrame(
     }
   }
 
-  int32_t handle = 0;
+  uint32_t handle = 0;
   aError = mFrameRequestManager.Schedule(aCallback, &handle);
   if (!aError.Failed() && mDocumentVisible) {
     mVsyncChild->TryObserve();
@@ -988,7 +995,7 @@ int32_t DedicatedWorkerGlobalScope::RequestAnimationFrame(
   return handle;
 }
 
-void DedicatedWorkerGlobalScope::CancelAnimationFrame(int32_t aHandle,
+void DedicatedWorkerGlobalScope::CancelAnimationFrame(uint32_t aHandle,
                                                       ErrorResult& aError) {
   AssertIsOnWorkerThread();
 
@@ -1150,9 +1157,7 @@ namespace {
 
 class ReportFetchListenerWarningRunnable final : public Runnable {
   const nsCString mScope;
-  nsString mSourceSpec;
-  uint32_t mLine;
-  uint32_t mColumn;
+  mozilla::JSCallingLocation mCaller;
 
  public:
   explicit ReportFetchListenerWarningRunnable(const nsString& aScope)
@@ -1163,7 +1168,7 @@ class ReportFetchListenerWarningRunnable final : public Runnable {
     JSContext* cx = workerPrivate->GetJSContext();
     MOZ_ASSERT(cx);
 
-    nsJSUtils::GetCallingLocation(cx, mSourceSpec, &mLine, &mColumn);
+    mCaller = JSCallingLocation::Get(cx);
   }
 
   NS_IMETHOD
@@ -1172,7 +1177,8 @@ class ReportFetchListenerWarningRunnable final : public Runnable {
 
     ServiceWorkerManager::LocalizeAndReportToAllClients(
         mScope, "ServiceWorkerNoFetchHandler", nsTArray<nsString>{},
-        nsIScriptError::warningFlag, mSourceSpec, u""_ns, mLine, mColumn);
+        nsIScriptError::warningFlag, mCaller.FileName(), u""_ns, mCaller.mLine,
+        mCaller.mColumn);
 
     return NS_OK;
   }
@@ -1338,11 +1344,9 @@ void WorkerDebuggerGlobalScope::SetImmediate(Function& aHandler,
 
 void WorkerDebuggerGlobalScope::ReportError(JSContext* aCx,
                                             const nsAString& aMessage) {
-  JS::AutoFilename chars;
-  uint32_t lineno = 0;
-  JS::DescribeScriptedCaller(aCx, &chars, &lineno);
-  nsString filename(NS_ConvertUTF8toUTF16(chars.get()));
-  mWorkerPrivate->ReportErrorToDebugger(filename, lineno, aMessage);
+  auto caller = JSCallingLocation::Get(aCx);
+  mWorkerPrivate->ReportErrorToDebugger(caller.FileName(), caller.mLine,
+                                        aMessage);
 }
 
 void WorkerDebuggerGlobalScope::RetrieveConsoleEvents(

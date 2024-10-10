@@ -41,6 +41,7 @@
 #include "nsThreadUtils.h"
 #include "WebTransportSessionProxy.h"
 #include "mozilla/AppShutdown.h"
+#include "mozilla/Components.h"
 #include "mozilla/LoadInfo.h"
 #include "mozilla/net/NeckoCommon.h"
 #include "mozilla/Services.h"
@@ -58,14 +59,23 @@
 #include "mozilla/net/SocketProcessHost.h"
 #include "mozilla/net/SocketProcessParent.h"
 #include "mozilla/net/SSLTokensCache.h"
+#include "mozilla/StoragePrincipalHelper.h"
 #include "mozilla/Unused.h"
 #include "nsContentSecurityManager.h"
 #include "nsContentUtils.h"
 #include "mozilla/StaticPrefs_network.h"
 #include "mozilla/StaticPrefs_security.h"
+#include "mozilla/glean/GleanMetrics.h"
 #include "nsNSSComponent.h"
 #include "ssl.h"
 #include "StaticComponents.h"
+
+#ifdef MOZ_WIDGET_ANDROID
+#  include <regex>
+#  include "AndroidBridge.h"
+#  include "mozilla/java/GeckoAppShellWrappers.h"
+#  include "mozilla/jni/Utils.h"
+#endif
 
 namespace mozilla {
 namespace net {
@@ -231,6 +241,7 @@ static const char* gCallbackPrefsForSocketProcess[] = {
     "network.proxy.allow_hijacking_localhost",
     "network.connectivity-service.",
     "network.captive-portal-service.testMode",
+    "network.socket.ip_addr_any.disabled",
     nullptr,
 };
 
@@ -248,11 +259,6 @@ static const char* gCallbackSecurityPrefs[] = {
     "security.ssl.disable_session_identifiers",
     "security.tls.enable_post_handshake_auth",
     "security.tls.enable_delegated_credentials",
-    // Note the prefs listed below should be in sync with the code in
-    // SetValidationOptionsCommon().
-    "security.ssl.enable_ocsp_stapling",
-    "security.ssl.enable_ocsp_must_staple",
-    "security.pki.certificate_transparency.mode",
     nullptr,
 };
 
@@ -385,6 +391,39 @@ nsIOService::~nsIOService() {
   }
 }
 
+#ifdef MOZ_WIDGET_ANDROID
+bool nsIOService::ShouldAddAdditionalSearchHeaders(nsIURI* aURI,
+                                                   bool* aHeaderVal) {
+  if (!(mozilla::AndroidBridge::Bridge())) {
+    return false;
+  }
+
+  if (!aURI->SchemeIs("https")) {
+    return false;
+  }
+
+  // We need to improve below logic for matching google domains
+  // See Bug 1894642
+  // Is URI same as google ^https://www\\.google\\..+
+  nsAutoCString host;
+  aURI->GetHost(host);
+  LOG(("nsIOService::ShouldAddAdditionalSearchHeaders() checking host %s\n",
+       PromiseFlatCString(host).get()));
+
+  std::regex pattern("^www\\.google\\..+");
+  if (std::regex_match(host.get(), pattern)) {
+    LOG(("Google domain detected for host %s\n",
+         PromiseFlatCString(host).get()));
+    static bool ramAboveThreshold =
+        java::GeckoAppShell::IsDeviceRamThresholdOkay();
+    *aHeaderVal = ramAboveThreshold;
+    return true;
+  }
+
+  return false;
+}
+#endif
+
 // static
 void nsIOService::OnTLSPrefChange(const char* aPref, void* aSelf) {
   MOZ_ASSERT(IsSocketProcessChild());
@@ -396,13 +435,9 @@ void nsIOService::OnTLSPrefChange(const char* aPref, void* aSelf) {
 
   nsAutoCString pref(aPref);
   // The preferences listed in gCallbackSecurityPrefs need to be in sync with
-  // the code in HandleTLSPrefChange() and SetValidationOptionsCommon().
+  // the code in HandleTLSPrefChange().
   if (HandleTLSPrefChange(pref)) {
     LOG(("HandleTLSPrefChange done"));
-  } else if (pref.EqualsLiteral("security.ssl.enable_ocsp_stapling") ||
-             pref.EqualsLiteral("security.ssl.enable_ocsp_must_staple") ||
-             pref.EqualsLiteral("security.pki.certificate_transparency.mode")) {
-    SetValidationOptionsCommon();
   }
 }
 
@@ -412,9 +447,9 @@ nsresult nsIOService::InitializeCaptivePortalService() {
     return NS_OK;
   }
 
-  mCaptivePortalService = do_GetService(NS_CAPTIVEPORTAL_CID);
+  mCaptivePortalService = mozilla::components::CaptivePortal::Service();
   if (mCaptivePortalService) {
-    return static_cast<CaptivePortalService*>(mCaptivePortalService.get())
+    static_cast<CaptivePortalService*>(mCaptivePortalService.get())
         ->Initialize();
   }
 
@@ -437,7 +472,7 @@ nsresult nsIOService::InitializeSocketTransportService() {
 
   if (!mSocketTransportService) {
     mSocketTransportService =
-        do_GetService(NS_SOCKETTRANSPORTSERVICE_CONTRACTID, &rv);
+        mozilla::components::SocketTransport::Service(&rv);
     if (NS_FAILED(rv)) {
       NS_WARNING("failed to get socket transport service");
     }
@@ -484,7 +519,7 @@ nsresult nsIOService::InitializeProtocolProxyService() {
 
   if (XRE_IsParentProcess()) {
     // for early-initialization
-    Unused << do_GetService(NS_PROTOCOLPROXYSERVICE_CONTRACTID, &rv);
+    Unused << mozilla::components::ProtocolProxy::Service(&rv);
   }
 
   return rv;
@@ -813,8 +848,8 @@ nsresult nsIOService::AsyncOnChannelRedirect(
   // This is silly. I wish there was a simpler way to get at the global
   // reference of the contentSecurityManager. But it lives in the XPCOM
   // service registry.
-  nsCOMPtr<nsIChannelEventSink> sink =
-      do_GetService(NS_CONTENTSECURITYMANAGER_CONTRACTID);
+  nsCOMPtr<nsIChannelEventSink> sink;
+  sink = mozilla::components::ContentSecurityManager::Service();
   if (sink) {
     nsresult rv =
         helper->DelegateOnChannelRedirect(sink, oldChan, newChan, flags);
@@ -844,13 +879,24 @@ nsresult nsIOService::AsyncOnChannelRedirect(
     newURI->GetScheme(scheme);
     MOZ_ASSERT(!scheme.IsEmpty());
 
-    Telemetry::AccumulateCategoricalKeyed(
-        scheme,
-        oldChan->IsDocument()
-            ? Telemetry::LABELS_NETWORK_HTTP_REDIRECT_TO_SCHEME::topLevel
-            : Telemetry::LABELS_NETWORK_HTTP_REDIRECT_TO_SCHEME::subresource);
+    if (oldChan->IsDocument()) {
+      Telemetry::AccumulateCategoricalKeyed(
+          scheme, Telemetry::LABELS_NETWORK_HTTP_REDIRECT_TO_SCHEME::topLevel);
+#ifndef ANDROID
+      mozilla::glean::networking::http_redirect_to_scheme_top_level.Get(scheme)
+          .Add(1);
+#endif
+    } else {
+      Telemetry::AccumulateCategoricalKeyed(
+          scheme,
+          Telemetry::LABELS_NETWORK_HTTP_REDIRECT_TO_SCHEME::subresource);
+#ifndef ANDROID
+      mozilla::glean::networking::http_redirect_to_scheme_subresource
+          .Get(scheme)
+          .Add(1);
+#endif
+    }
   }
-
   return NS_OK;
 }
 
@@ -1150,8 +1196,8 @@ nsresult nsIOService::NewChannelFromURIWithProxyFlagsInternal(
   if (!gHasWarnedUploadChannel2 && scheme.EqualsLiteral("http")) {
     nsCOMPtr<nsIUploadChannel2> uploadChannel2 = do_QueryInterface(channel);
     if (!uploadChannel2) {
-      nsCOMPtr<nsIConsoleService> consoleService =
-          do_GetService(NS_CONSOLESERVICE_CONTRACTID);
+      nsCOMPtr<nsIConsoleService> consoleService;
+      consoleService = mozilla::components::Console::Service();
       if (consoleService) {
         consoleService->LogStringMessage(
             u"Http channel implementation "
@@ -1207,6 +1253,22 @@ nsIOService::NewWebTransport(nsIWebTransport** result) {
   nsCOMPtr<nsIWebTransport> webTransport = new WebTransportSessionProxy();
 
   webTransport.forget(result);
+  return NS_OK;
+}
+
+NS_IMETHODIMP
+nsIOService::OriginAttributesForNetworkState(
+    nsIChannel* aChannel, JSContext* cx, JS::MutableHandle<JS::Value> _retval) {
+  OriginAttributes attrs;
+  if (!StoragePrincipalHelper::GetOriginAttributesForNetworkState(aChannel,
+                                                                  attrs)) {
+    return NS_ERROR_FAILURE;
+  }
+
+  if (NS_WARN_IF(!mozilla::dom::ToJSValue(cx, attrs, _retval))) {
+    return NS_ERROR_FAILURE;
+  }
+
   return NS_OK;
 }
 
@@ -1713,6 +1775,9 @@ nsIOService::Observe(nsISupports* subject, const char* topic,
     // https://bugzilla.mozilla.org/show_bug.cgi?id=1152048#c19
     nsCOMPtr<nsIRunnable> wakeupNotifier = new nsWakeupNotifier(this);
     NS_DispatchToMainThread(wakeupNotifier);
+    mInSleepMode = false;
+  } else if (!strcmp(topic, NS_WIDGET_SLEEP_OBSERVER_TOPIC)) {
+    mInSleepMode = true;
   }
 
   return NS_OK;
@@ -2011,8 +2076,8 @@ nsresult nsIOService::SpeculativeConnectInternal(
   // speculative connect should not be performed because the potential
   // reward is slim with tcp peers closely located to the browser.
   nsresult rv;
-  nsCOMPtr<nsIProtocolProxyService> pps =
-      do_GetService(NS_PROTOCOLPROXYSERVICE_CONTRACTID, &rv);
+  nsCOMPtr<nsIProtocolProxyService> pps;
+  pps = mozilla::components::ProtocolProxy::Service(&rv);
   NS_ENSURE_SUCCESS(rv, rv);
 
   nsCOMPtr<nsIPrincipal> loadingPrincipal = aPrincipal;

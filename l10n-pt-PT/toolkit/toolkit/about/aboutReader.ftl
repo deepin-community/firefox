@@ -26,6 +26,18 @@ about-reader-color-theme-contrast = Contraste
     .title = Cor de tema de contraste
 about-reader-color-theme-custom = Cores personalizadas
     .title = Cor de tema personalizadas
+about-reader-color-light-theme = Claro
+    .title = Tema claro
+about-reader-color-dark-theme = Escuro
+    .title = Tema escuro
+about-reader-color-sepia-theme = Sépia
+    .title = Tema sépia
+about-reader-color-auto-theme = Automático
+    .title = Tema automático
+about-reader-color-gray-theme = Cinza
+    .title = Tema cinza
+about-reader-color-contrast-theme = Contraste
+    .title = Tema de contraste
 # An estimate for how long it takes to read an article,
 # expressed as a range covering both slow and fast readers.
 # Variables:
@@ -56,12 +68,15 @@ about-reader-toolbar-lineheightplus =
 
 about-reader-font-type-serif = Serifa
 about-reader-font-type-sans-serif = Sem serifa
+about-reader-font-type-monospace = Mono-espaçado
 
 ## Reader View toolbar buttons
 
 about-reader-toolbar-close = Fechar vista de leitura
 about-reader-toolbar-type-controls = Controlos de tipo
 about-reader-toolbar-color-controls = Cores
+about-reader-toolbar-text-layout-controls = Texto e esquema
+about-reader-toolbar-theme-controls = Tema
 about-reader-toolbar-savetopocket = Guardar em { -pocket-brand-name }
 
 ## Reader View colors menu
@@ -85,3 +100,36 @@ about-reader-custom-colors-visited-links = Ligações visitadas
 about-reader-custom-colors-selection-highlight = Realce para ler em alta voz
     .title = Editar cor
 about-reader-custom-colors-reset-button = Redefinir predefinições
+about-reader-reset-button = Redefinir predefinições
+
+## Reader View improved text and layout menu
+
+about-reader-text-header = Texto
+about-reader-text-size-label = Tamanho do texto
+about-reader-font-type-selector-label = Tipo de letra
+about-reader-font-weight-selector-label = Espessura do tipo de letra
+about-reader-font-weight-light = Estreito
+about-reader-font-weight-regular = Normal
+about-reader-font-weight-bold = Negrito
+about-reader-layout-header = Disposição
+about-reader-slider-label-spacing-standard = Padrão
+about-reader-slider-label-spacing-wide = Larga
+about-reader-content-width-label =
+    .label = Largura do conteúdo
+about-reader-line-spacing-label =
+    .label = Espaçamento entre linhas
+about-reader-advanced-layout-header = Avançadas
+about-reader-slider-label-width-narrow = Estreita
+about-reader-slider-label-width-wide = Larga
+about-reader-slider-label-spacing-narrow = Estreita
+about-reader-character-spacing-label =
+    .label = Espaçamento entre caracteres
+about-reader-word-spacing-label =
+    .label = Espaçamento entre palavras
+about-reader-text-alignment-label = Alinhamento do texto
+about-reader-text-alignment-left =
+    .title = Alinhar o texto à esquerda
+about-reader-text-alignment-center =
+    .title = Alinhar o texto ao centro
+about-reader-text-alignment-right =
+    .title = Alinhar o texto à direita

@@ -8,6 +8,9 @@ places-open =
 places-open-in-tab =
     .label = افتح في لسان جديد
     .accesskey = س
+places-open-in-container-tab =
+    .label = افتح في لسانٍ حاوٍ جديد
+    .accesskey = ف
 places-open-all-bookmarks =
     .label = افتح كل العلامات
     .accesskey = ف
@@ -20,10 +23,8 @@ places-open-in-window =
 places-open-in-private-window =
     .label = افتح في نافذة خاصة جديدة
     .accesskey = خ
-
 places-empty-bookmarks-folder =
     .label = (فارغ)
-
 places-add-bookmark =
     .label = أضِف علامة…
     .accesskey = ع
@@ -36,7 +37,6 @@ places-add-folder =
 places-add-separator =
     .label = أضِف فاصلًا
     .accesskey = ف
-
 places-view =
     .label = اعرض
     .accesskey = ع
@@ -55,17 +55,18 @@ places-by-last-visited =
 places-by-day-and-site =
     .label = حسب التاريخ والموقع
     .accesskey = ق
-
 places-history-search =
     .placeholder = تأريخ البحث
 places-history =
     .aria-label = التأريخ
 places-bookmarks-search =
     .placeholder = علامات البحث
-
 places-delete-domain-data =
     .label = انسَ هذا الموقع
     .accesskey = ن
+places-forget-domain-data =
+    .label = انسَ هذا الموقع…
+    .accesskey = ق
 places-sortby-name =
     .label = رتّب بالاسم
     .accesskey = ر
@@ -79,6 +80,20 @@ places-edit-generic =
 places-edit-folder2 =
     .label = حرّر المجلد…
     .accesskey = ح
+# Variables
+#   $count (number) - Number of folders to delete
+places-delete-folder =
+    .label =
+        { $count ->
+            [1] احذف المجلد
+            [zero] احذف المجلد
+            [one] احذف المجلد
+            [two] احذف المجلدات
+            [few] احذف المجلدات
+            [many] احذف المجلدات
+           *[other] احذف المجلدات
+        }
+    .accesskey = ح
 # Variables:
 #   $count (number) - The number of pages selected for removal.
 places-delete-page =
@@ -88,128 +103,132 @@ places-delete-page =
            *[other] احذف الصفحات
         }
     .accesskey = ذ
-
-# Managed bookmarks are created by an administrator and cannot be changed by the user.
+# Managed bookmarks are created by enterprise policy and cannot be changed by the user.
 managed-bookmarks =
     .label = العلامات المُدارة
 # This label is used when a managed bookmarks folder doesn't have a name.
 managed-bookmarks-subfolder =
     .label = مجلد فرعي
-
 # This label is used for the "Other Bookmarks" folder that appears in the bookmarks toolbar.
 other-bookmarks-folder =
     .label = العلامات الأخرى
-
 places-show-in-folder =
     .label = اعرض في المجلد
     .accesskey = ع
-
+# Variables:
+# $count (number) - The number of elements being selected for removal.
+places-delete-bookmark =
+    .label =
+        { $count ->
+            [1] احذف العلامة
+            [zero] احذف العلامة
+            [one] احذف العلامة
+            [two] احذف العلامات
+            [few] احذف العلامات
+            [many] احذف العلامات
+           *[other] احذف العلامات
+        }
+    .accesskey = ذ
+# Variables:
+#   $count (number) - The number of bookmarks being added.
+places-create-bookmark =
+    .label =
+        { $count ->
+            [1] علِّم الصفحة…
+            [zero] علِّم الصفحة…
+            [one] علِّم الصفحة…
+            [two] علِّم الصفحات
+            [few] علِّم الصفحات
+            [many] علِّم الصفحات
+           *[other] علِّم الصفحات
+        }
+    .accesskey = ف
+places-untag-bookmark =
+    .label = أزل الوسم
+    .accesskey = ز
 places-manage-bookmarks =
     .label = أدِر العلامات
     .accesskey = د
-
+places-forget-about-this-site-confirmation-title = نسيان هذا الموقع
+# Variables:
+# $hostOrBaseDomain (string) - The base domain (or host in case there is no base domain) for which data is being removed
+places-forget-about-this-site-confirmation-msg = سيؤدي هذا الإجراء إلى إزالة البيانات المتعلقة بـ { $hostOrBaseDomain } بما في ذلك السجل وملفات تعريف الارتباط وذاكرة التخزين المؤقت وتفضيلات المحتوى. لن تُزيل العلامات وكلمات المرور ذات الصلة. هل انت متأكد انك تريد المتابعة؟
+places-forget-about-this-site-forget = انسَ
 places-library3 =
     .title = المكتبة
-
 places-organize-button =
     .label = نظّم
     .tooltiptext = نظّم علاماتك
     .accesskey = ظ
-
 places-organize-button-mac =
     .label = نظّم
     .tooltiptext = نظّم علاماتك
-
 places-file-close =
     .label = أغلق
     .accesskey = غ
-
 places-cmd-close =
     .key = w
-
 places-view-button =
     .label = المناظير
     .tooltiptext = غيّر المنظور
     .accesskey = ظ
-
 places-view-button-mac =
     .label = المناظير
     .tooltiptext = غيّر المنظور
-
 places-view-menu-columns =
     .label = أظهر الأعمدة
     .accesskey = ع
-
 places-view-menu-sort =
     .label = رتّب
     .accesskey = ر
-
 places-view-sort-unsorted =
     .label = غير مرتّبة
     .accesskey = غ
-
 places-view-sort-ascending =
     .label = ترتيب أ > ي
     .accesskey = أ
-
 places-view-sort-descending =
     .label = ترتيب ي > أ
     .accesskey = ي
-
 places-maintenance-button =
     .label = الاستيراد والحفظ الاحتياطي
     .tooltiptext = استورد علاماتك واحفظ نسخًا احتياطية منها
     .accesskey = ط
-
 places-maintenance-button-mac =
     .label = الاستيراد والحفظ الاحتياطي
     .tooltiptext = استورد علاماتك واحفظ نسخًا احتياطية منها
-
 places-cmd-backup =
     .label = احفظ احتياطيًا…
     .accesskey = ط
-
 places-cmd-restore =
     .label = استعِد
     .accesskey = ت
-
 places-cmd-restore-from-file =
     .label = اختر ملفًا…
     .accesskey = خ
-
 places-import-bookmarks-from-html =
     .label = استورد العلامات من HTML…
     .accesskey = و
-
 places-export-bookmarks-to-html =
     .label = صدّر العلامات إلى HTML…
     .accesskey = ر
-
 places-import-other-browser =
     .label = استورد البيانات من متصفح آخر…
     .accesskey = خ
-
 places-view-sort-col-name =
     .label = الاسم
-
 places-view-sort-col-tags =
     .label = الوسوم
-
 places-view-sort-col-url =
     .label = المكان
-
 places-view-sort-col-most-recent-visit =
     .label = آخر زيارة
-
 places-view-sort-col-visit-count =
     .label = عدد الزيارات
-
 places-view-sort-col-date-added =
     .label = مُضاف
-
 places-view-sort-col-last-modified =
     .label = آخر تعديل
-
 places-view-sortby-name =
     .label = رتّب بالاسم
     .accesskey = س
@@ -231,18 +250,13 @@ places-view-sortby-last-modified =
 places-view-sortby-tags =
     .label = رتّب بالوسوم
     .accesskey = س
-
 places-cmd-find-key =
     .key = f
-
 places-back-button =
     .tooltiptext = انتقل للخلف
-
 places-forward-button =
     .tooltiptext = انتقل إلى الأمام
-
 places-details-pane-select-an-item-description = اختر عنصرًا لعرضه وتحرير خصائصه
-
 places-details-pane-no-items =
     .value = لا عناصر
 # Variables:

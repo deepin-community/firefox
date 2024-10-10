@@ -72,8 +72,8 @@ class nsRangeFrame final : public nsContainerFrame,
   nsresult AttributeChanged(int32_t aNameSpaceID, nsAtom* aAttribute,
                             int32_t aModType) override;
 
-  nscoord GetMinISize(gfxContext* aRenderingContext) override;
-  nscoord GetPrefISize(gfxContext* aRenderingContext) override;
+  nscoord IntrinsicISize(gfxContext* aContext,
+                         mozilla::IntrinsicISizeType aType) override;
 
   /**
    * Returns true if the slider's thumb moves horizontally, or else false if it
@@ -105,8 +105,8 @@ class nsRangeFrame final : public nsContainerFrame,
   bool IsUpwards() const {
     MOZ_ASSERT(!IsHorizontal());
     mozilla::WritingMode wm = GetWritingMode();
-    return wm.GetBlockDir() == mozilla::WritingMode::eBlockTB ||
-           wm.GetInlineDir() == mozilla::WritingMode::eInlineBTT;
+    return wm.GetBlockDir() == mozilla::WritingMode::BlockDir::TB ||
+           wm.GetInlineDir() == mozilla::WritingMode::InlineDir::BTT;
   }
 
   double GetMin() const;

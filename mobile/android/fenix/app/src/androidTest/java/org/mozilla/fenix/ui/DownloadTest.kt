@@ -4,8 +4,9 @@
 
 package org.mozilla.fenix.ui
 
+import androidx.compose.ui.test.junit4.AndroidComposeTestRule
 import androidx.core.net.toUri
-import org.junit.Ignore
+import androidx.test.espresso.intent.rule.IntentsRule
 import org.junit.Rule
 import org.junit.Test
 import org.mozilla.fenix.customannotations.SmokeTest
@@ -14,9 +15,10 @@ import org.mozilla.fenix.helpers.AppAndSystemHelper.deleteDownloadedFileOnStorag
 import org.mozilla.fenix.helpers.AppAndSystemHelper.setNetworkEnabled
 import org.mozilla.fenix.helpers.Constants.PackageName.GOOGLE_APPS_PHOTOS
 import org.mozilla.fenix.helpers.Constants.PackageName.GOOGLE_DOCS
-import org.mozilla.fenix.helpers.HomeActivityIntentTestRule
+import org.mozilla.fenix.helpers.HomeActivityTestRule
 import org.mozilla.fenix.helpers.MatcherHelper.itemWithText
 import org.mozilla.fenix.helpers.TestAssetHelper
+import org.mozilla.fenix.helpers.TestAssetHelper.waitingTimeLong
 import org.mozilla.fenix.helpers.TestHelper.clickSnackbarButton
 import org.mozilla.fenix.helpers.TestHelper.exitMenu
 import org.mozilla.fenix.helpers.TestHelper.mDevice
@@ -38,13 +40,20 @@ import org.mozilla.fenix.ui.robots.notificationShade
  **/
 class DownloadTest : TestSetup() {
     /* Remote test page managed by Mozilla Mobile QA team at https://github.com/mozilla-mobile/testapp */
-    private val downloadTestPage = "https://storage.googleapis.com/mobile_test_assets/test_app/downloads.html"
+    private val downloadTestPage =
+        "https://storage.googleapis.com/mobile_test_assets/test_app/downloads.html"
     private var downloadFile: String = ""
 
     @get:Rule
-    val activityTestRule = HomeActivityIntentTestRule.withDefaultSettingsOverrides()
+    val activityTestRule =
+        AndroidComposeTestRule(
+            HomeActivityTestRule.withDefaultSettingsOverrides(),
+        ) { it.activity }
 
-    // TestRail link: https://testrail.stage.mozaws.net/index.php?/cases/view/243844
+    @get:Rule
+    val intentsTestRule = IntentsRule()
+
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/243844
     @Test
     fun verifyTheDownloadPromptsTest() {
         downloadRobot {
@@ -56,7 +65,7 @@ class DownloadTest : TestSetup() {
         }
     }
 
-    // TestRail link: https://testrail.stage.mozaws.net/index.php?/cases/view/2299405
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/2299405
     @Test
     fun verifyTheDownloadFailedNotificationsTest() {
         downloadRobot {
@@ -73,7 +82,7 @@ class DownloadTest : TestSetup() {
         }.closeNotificationTray {}
     }
 
-    // TestRail link: https://testrail.stage.mozaws.net/index.php?/cases/view/2298616
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/2298616
     @Test
     fun verifyDownloadCompleteNotificationTest() {
         downloadRobot {
@@ -97,8 +106,7 @@ class DownloadTest : TestSetup() {
         }.closeNotificationTray {}
     }
 
-    // TestRail link: https://testrail.stage.mozaws.net/index.php?/cases/view/451563
-    @Ignore("Failing: Bug https://bugzilla.mozilla.org/show_bug.cgi?id=1813521")
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/451563
     @SmokeTest
     @Test
     fun pauseResumeCancelDownloadTest() {
@@ -118,12 +126,12 @@ class DownloadTest : TestSetup() {
         }
         browserScreen {
         }.openThreeDotMenu {
-        }.openDownloadsManager {
-            verifyEmptyDownloadsList()
+        }.openDownloadsManager() {
+            verifyEmptyDownloadsList(activityTestRule)
         }
     }
 
-    // TestRail link: https://testrail.stage.mozaws.net/index.php?/cases/view/2301474
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/2301474
     @Test
     fun openDownloadedFileFromDownloadsMenuTest() {
         downloadRobot {
@@ -132,15 +140,15 @@ class DownloadTest : TestSetup() {
         }
         browserScreen {
         }.openThreeDotMenu {
-        }.openDownloadsManager {
-            verifyDownloadedFileName("web_icon.png")
-            openDownloadedFile("web_icon.png")
+        }.openDownloadsManager() {
+            verifyDownloadedFileExistsInDownloadsList(activityTestRule, "web_icon.png")
+            clickDownloadedItem(activityTestRule, "web_icon.png")
             verifyPhotosAppOpens()
             mDevice.pressBack()
         }
     }
 
-    // TestRail link: https://testrail.stage.mozaws.net/index.php?/cases/view/1114970
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/1114970
     @Test
     fun deleteDownloadedFileTest() {
         downloadRobot {
@@ -148,17 +156,17 @@ class DownloadTest : TestSetup() {
         }
         browserScreen {
         }.openThreeDotMenu {
-        }.openDownloadsManager {
-            verifyDownloadedFileName("smallZip.zip")
-            deleteDownloadedItem("smallZip.zip")
+        }.openDownloadsManager() {
+            verifyDownloadedFileExistsInDownloadsList(activityTestRule, "smallZip.zip")
+            deleteDownloadedItem(activityTestRule, "smallZip.zip")
             clickSnackbarButton("UNDO")
-            verifyDownloadedFileName("smallZip.zip")
-            deleteDownloadedItem("smallZip.zip")
-            verifyEmptyDownloadsList()
+            verifyDownloadedFileExistsInDownloadsList(activityTestRule, "smallZip.zip")
+            deleteDownloadedItem(activityTestRule, "smallZip.zip")
+            verifyEmptyDownloadsList(activityTestRule)
         }
     }
 
-    // TestRail link: https://testrail.stage.mozaws.net/index.php?/cases/view/2302662
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/2302662
     @Test
     fun deleteMultipleDownloadedFilesTest() {
         val firstDownloadedFile = "smallZip.zip"
@@ -175,25 +183,25 @@ class DownloadTest : TestSetup() {
         }
         browserScreen {
         }.openThreeDotMenu {
-        }.openDownloadsManager {
-            verifyDownloadedFileName(firstDownloadedFile)
-            verifyDownloadedFileName(secondDownloadedFile)
-            longClickDownloadedItem(firstDownloadedFile)
-            selectDownloadedItem(secondDownloadedFile)
+        }.openDownloadsManager() {
+            verifyDownloadedFileExistsInDownloadsList(activityTestRule, firstDownloadedFile)
+            verifyDownloadedFileExistsInDownloadsList(activityTestRule, secondDownloadedFile)
+            longClickDownloadedItem(activityTestRule, firstDownloadedFile)
+            clickDownloadedItem(activityTestRule, secondDownloadedFile)
             openMultiSelectMoreOptionsMenu()
             clickMultiSelectRemoveButton()
             clickSnackbarButton("UNDO")
-            verifyDownloadedFileName(firstDownloadedFile)
-            verifyDownloadedFileName(secondDownloadedFile)
-            longClickDownloadedItem(firstDownloadedFile)
-            selectDownloadedItem(secondDownloadedFile)
+            verifyDownloadedFileExistsInDownloadsList(activityTestRule, firstDownloadedFile)
+            verifyDownloadedFileExistsInDownloadsList(activityTestRule, secondDownloadedFile)
+            longClickDownloadedItem(activityTestRule, firstDownloadedFile)
+            clickDownloadedItem(activityTestRule, secondDownloadedFile)
             openMultiSelectMoreOptionsMenu()
             clickMultiSelectRemoveButton()
-            verifyEmptyDownloadsList()
+            verifyEmptyDownloadsList(activityTestRule)
         }
     }
 
-    // TestRail link: https://testrail.stage.mozaws.net/index.php?/cases/view/2301537
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/2301537
     @Test
     fun fileDeletedFromStorageIsDeletedEverywhereTest() {
         downloadRobot {
@@ -202,14 +210,13 @@ class DownloadTest : TestSetup() {
         }
         browserScreen {
         }.openThreeDotMenu {
-        }.openDownloadsManager {
-            waitForDownloadsListToExist()
-            verifyDownloadedFileName("smallZip.zip")
+        }.openDownloadsManager() {
+            verifyDownloadedFileExistsInDownloadsList(activityTestRule, "smallZip.zip")
             deleteDownloadedFileOnStorage("smallZip.zip")
         }.exitDownloadsManagerToBrowser {
         }.openThreeDotMenu {
-        }.openDownloadsManager {
-            verifyEmptyDownloadsList()
+        }.openDownloadsManager() {
+            verifyEmptyDownloadsList(activityTestRule)
             exitMenu()
         }
 
@@ -219,13 +226,12 @@ class DownloadTest : TestSetup() {
         }
         browserScreen {
         }.openThreeDotMenu {
-        }.openDownloadsManager {
-            waitForDownloadsListToExist()
-            verifyDownloadedFileName("smallZip.zip")
+        }.openDownloadsManager() {
+            verifyDownloadedFileExistsInDownloadsList(activityTestRule, "smallZip.zip")
         }
     }
 
-    // TestRail link: https://testrail.stage.mozaws.net/index.php?/cases/view/457112
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/457112
     @Test
     fun systemNotificationCantBeDismissedWhileInProgressTest() {
         downloadRobot {
@@ -242,21 +248,23 @@ class DownloadTest : TestSetup() {
         }
     }
 
-    // TestRail link: https://testrail.stage.mozaws.net/index.php?/cases/view/2299297
-    @Ignore("Failing, see: https://bugzilla.mozilla.org/show_bug.cgi?id=1842154")
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/2299297
     @Test
     fun notificationCanBeDismissedIfDownloadIsInterruptedTest() {
         downloadRobot {
             openPageAndDownloadFile(url = downloadTestPage.toUri(), downloadFile = "1GB.zip")
+            setNetworkEnabled(enabled = false)
+            verifyDownloadFailedPrompt("1GB.zip")
         }
-
-        setNetworkEnabled(enabled = false)
 
         browserScreen {
         }.openNotificationShade {
-            expandNotificationMessage()
             verifySystemNotificationExists("Download failed")
-            swipeDownloadNotification("Left", true)
+            swipeDownloadNotification(
+                direction = "Left",
+                shouldDismissNotification = true,
+                canExpandNotification = true,
+            )
             verifySystemNotificationDoesNotExist("Firefox Fenix")
         }.closeNotificationTray {}
 
@@ -266,7 +274,7 @@ class DownloadTest : TestSetup() {
         }
     }
 
-    // TestRail link: https://testrail.stage.mozaws.net/index.php?/cases/view/1632384
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/1632384
     @Test
     fun warningWhenClosingPrivateTabsWhileDownloadingTest() {
         homeScreen {
@@ -275,7 +283,7 @@ class DownloadTest : TestSetup() {
             openPageAndDownloadFile(url = downloadTestPage.toUri(), downloadFile = "3GB.zip")
         }
         browserScreen {
-        }.openTabDrawer {
+        }.openTabDrawer(activityTestRule) {
             closeTab()
         }
         browserScreen {
@@ -286,7 +294,7 @@ class DownloadTest : TestSetup() {
         }
     }
 
-    // TestRail link: https://testrail.stage.mozaws.net/index.php?/cases/view/2302663
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/2302663
     @Test
     fun cancelActivePrivateBrowsingDownloadsTest() {
         homeScreen {
@@ -295,7 +303,7 @@ class DownloadTest : TestSetup() {
             openPageAndDownloadFile(url = downloadTestPage.toUri(), downloadFile = "3GB.zip")
         }
         browserScreen {
-        }.openTabDrawer {
+        }.openTabDrawer(activityTestRule) {
             closeTab()
         }
         browserScreen {
@@ -306,7 +314,7 @@ class DownloadTest : TestSetup() {
         }
     }
 
-    // TestRail link: https://testrail.stage.mozaws.net/index.php?/cases/view/2048448
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/2048448
     // Save edited PDF file from the share overlay
     @SmokeTest
     @Test
@@ -330,14 +338,14 @@ class DownloadTest : TestSetup() {
         }
     }
 
-    // TestRail link: https://testrail.stage.mozaws.net/index.php?/cases/view/244125
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/244125
     @Test
     fun restartDownloadFromAppNotificationAfterConnectionIsInterruptedTest() {
         downloadFile = "3GB.zip"
 
         navigationToolbar {
         }.enterURLAndEnterToBrowser(downloadTestPage.toUri()) {
-            waitForPageToLoad()
+            waitForPageToLoad(pageLoadWaitingTime = waitingTimeLong)
         }.clickDownloadLink(downloadFile) {
             verifyDownloadPrompt(downloadFile)
             setNetworkEnabled(false)

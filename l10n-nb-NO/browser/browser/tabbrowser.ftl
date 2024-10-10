@@ -4,18 +4,26 @@
 
 tabbrowser-empty-tab-title = Ny fane
 tabbrowser-empty-private-tab-title = Ny privat fane
-
 tabbrowser-menuitem-close-tab =
     .label = Lukk fane
 tabbrowser-menuitem-close =
     .label = Lukk
-
 # Displayed as a tooltip on container tabs
 # Variables:
 #   $title (String): the title of the current tab.
 #   $containerName (String): the name of the current container.
 tabbrowser-container-tab-title = { $title } - { $containerName }
-
+# This text serves as an on-screen tooltip as well as an accessible name for
+# the "X" button that is shown on the active tab or, when multiple tabs are
+# selected, to all their "X" buttons.
+# Variables:
+#   $tabCount (Number): The number of tabs that will be closed.
+tabbrowser-close-tabs-button =
+    .tooltiptext =
+        { $tabCount ->
+            [one] Lukk fane
+           *[other] Lukk { $tabCount } faner
+        }
 # Variables:
 #   $tabCount (Number): The number of tabs that will be closed.
 tabbrowser-close-tabs-tooltip =
@@ -114,13 +122,22 @@ tabbrowser-confirm-caretbrowsing-title = Nettlesing med tekstvelger
 tabbrowser-confirm-caretbrowsing-message = Nettlesing med tekstvelger kan slås på eller av med F7. Denne funksjonen gjør at du kan merke tekst med tastaturet ved hjelp av en flyttbar markør. Vil du slå på nettlesing med tekstvelger?
 tabbrowser-confirm-caretbrowsing-checkbox = Ikke vis denne dialogen igjen.
 
+## Confirmation dialog for closing all duplicate tabs
+
+tabbrowser-confirm-close-duplicate-tabs-title = Varsel
+tabbrowser-confirm-close-duplicate-tabs-text = Vi holder den siste aktive fanen åpen
+tabbrowser-confirm-close-all-duplicate-tabs-title = Vil du lukke dupliserte faner?
+tabbrowser-confirm-close-all-duplicate-tabs-text =
+    Vi lukker dupliserte faner i dette vinduet. Den siste aktive
+    fanen forblir åpen.
+tabbrowser-confirm-close-all-duplicate-tabs-button-closetabs = Lukk faner
+
 ##
 
 # Variables:
 #   $domain (String): URL of the page that is trying to steal focus.
 tabbrowser-allow-dialogs-to-get-focus =
     .label = Tillat lignende varsler fra { $domain } å ta deg til fanen deres
-
 tabbrowser-customizemode-tab-title = Tilpass { -brand-short-name }
 
 ## Context menu buttons, of which only one will be visible at a time
@@ -139,7 +156,6 @@ tabbrowser-context-mute-selected-tabs =
 tabbrowser-context-unmute-selected-tabs =
     .label = Lyd på i faner
     .accesskey = a
-
 # This string is used as an additional tooltip and accessibility description for tabs playing audio
 tabbrowser-tab-audio-playing-description = Spiller av lyd
 

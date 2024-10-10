@@ -57,6 +57,9 @@ category-experimental =
 pane-experimental-subtitle = Бо эҳтиёт идома диҳед
 pane-experimental-search-results-header = Озмоишҳои «{ -brand-short-name }»: Бо эҳтиёт идома диҳед
 pane-experimental-description2 = Тағйир додани хусусиятҳо танзимоти иловагӣ метавонад ба кор ё амнияти «{ -brand-short-name }» таъсир расонад.
+settings-pane-labs-title = { -firefoxlabs-brand-name }
+settings-category-labs =
+    .tooltiptext = { -firefoxlabs-brand-name }
 pane-experimental-reset =
     .label = Барқарор кардани пешфарзҳо
     .accesskey = Б
@@ -598,6 +601,10 @@ home-prefs-recent-activity-description = Интихоби сомонаҳо ва 
 home-prefs-snippets-header =
     .label = Ёддоштҳо
 home-prefs-snippets-description-new = Маслиҳатҳо ва ахбор аз { -vendor-short-name } ва { -brand-product-name }
+home-prefs-weather-header =
+    .label = Обу ҳаво
+home-prefs-weather-description = Ҳолати обу ҳаво барои имрӯз
+home-prefs-weather-learn-more-link = Маълумоти бештар
 # Variables:
 #   $num (number) - Number of rows displayed
 home-prefs-sections-rows-option =
@@ -911,6 +918,9 @@ forms-saved-passwords =
 forms-primary-pw-use =
     .label = Истифода кардани ниҳонвожаи асосӣ
     .accesskey = И
+# This operation requires the user to authenticate with the operating system (device sign-in)
+forms-os-reauth =
+    .label = Дархости ворид шудан дар дастгоҳ барои пур кардан ва идора намудани ниҳонвожаҳо
 forms-primary-pw-learn-more-link = Маълумоти бештар
 # This string uses the former name of the Primary Password feature
 # ("Master Password" in English) so that the preferences can be found
@@ -943,6 +953,13 @@ primary-password-os-auth-dialog-message-win = Барои эҷод кардани
 # notes are only valid for English. Please test in your locale.
 primary-password-os-auth-dialog-message-macosx = ниҳонвожаи асосиро эҷод кунад
 master-password-os-auth-dialog-caption = { -brand-full-name }
+# The macOS string is preceded by the operating system with "Firefox is trying to ".
+autofill-creditcard-os-dialog-message =
+    { PLATFORM() ->
+        [macos] тағйир додани танзимоти тарзҳои пардохт
+       *[other] «{ -brand-short-name }» кӯшиш мекунад, ки танзимоти тарзҳои пардохтро тағйир диҳад. Барои иҷозат додан ба ин амал, аз дастгоҳи худ ворид шавед.
+    }
+autofill-creditcard-os-auth-dialog-caption = { -brand-full-name }
 
 ## Privacy section - Autofill
 
@@ -957,14 +974,9 @@ autofill-payment-methods-checkbox-submessage = Дар бар гирифтани 
     .accesskey = б
 autofill-saved-payment-methods-button = Тарзҳои пардохти нигоҳдошташуда
     .accesskey = р
-autofill-reauth-checkbox =
-    { PLATFORM() ->
-        [macos] Дархости санҷиши ҳаққонияти «macOS» барои пуркунӣ ва таҳриркунии тарзҳои пардохт.
-        [windows] Дархости санҷиши ҳаққонияти «Windows» барои пуркунӣ ва таҳриркунии тарзҳои пардохт.
-        [linux] Дархости санҷиши ҳаққонияти «Linux» барои пуркунӣ ва таҳриркунии тарзҳои пардохт.
-       *[other] Дархости санҷиши ҳаққоният барои пуркунӣ ва таҳриркунии тарзҳои пардохт.
-    }
-    .accesskey = х
+# This operation requires the user to authenticate with the operating system (device sign-in)
+autofill-reauth-payment-methods-checkbox = Дархости ворид шудан дар дастгоҳ барои пур кардан ва идора намудани тарзҳои пардохт
+    .accesskey = Д
 
 ## Privacy Section - History
 
@@ -1100,6 +1112,9 @@ addressbar-locbar-quickactions-option =
 addressbar-suggestions-settings = Иваз кардани хусусиятҳо барои пешниҳодҳои низоми ҷустуҷӯӣ
 addressbar-locbar-showrecentsearches-option =
     .label = Намоиш додани ҷустуҷӯҳои охирин
+    .accesskey = Н
+addressbar-locbar-showtrendingsuggestions-option =
+    .label = Намоиш додани пешниҳодҳои ҷустуҷӯи тамоюл
     .accesskey = Н
 addressbar-quickactions-learn-more = Маълумоти бештар
 
@@ -1292,6 +1307,10 @@ privacy-segmentation-radio-off =
 privacy-segmentation-radio-on =
     .label = Намоиш додани маълумоти муфассал
 
+## Privacy Section - Website Advertising Preferences
+
+website-advertising-header = Хусусиятҳои рекламавӣ барои сомонаҳо
+
 ## Privacy Section - Security
 ##
 ## It is important that wording follows the guidelines outlined on this page:
@@ -1338,10 +1357,16 @@ httpsonly-description = HTTPS байни «{ -brand-short-name }» ва сомо
 httpsonly-learn-more = Маълумоти бештар
 httpsonly-radio-enabled =
     .label = Фаъол кардани реҷаи «Танҳо HTTPS» дар ҳамаи равзанаҳо
+httpsonly-radio-enabled2 =
+    .label = Танҳо HTTPS бояд дар ҳамаи равзанаҳо истифода карда шавад
 httpsonly-radio-enabled-pbm =
     .label = Фаъол кардани реҷаи «Танҳо HTTPS» танҳо дар равзанаҳои хусусӣ
+httpsonly-radio-enabled-pbm2 =
+    .label = Танҳо HTTPS бояд дар равзанаҳои хусусӣ истифода карда шавад
 httpsonly-radio-disabled =
     .label = Реҷаи «Танҳо HTTPS» фаъол карда нашавад
+httpsonly-radio-disabled2 =
+    .label = Аввал аз HTTPS истифода баред, аммо ба пайвастҳое, ки бехатар намебошанд, иҷозат диҳед
 
 ## DoH Section
 

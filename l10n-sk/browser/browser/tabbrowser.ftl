@@ -4,18 +4,27 @@
 
 tabbrowser-empty-tab-title = Nová karta
 tabbrowser-empty-private-tab-title = Nová súkromná karta
-
 tabbrowser-menuitem-close-tab =
     .label = Zavrieť kartu
 tabbrowser-menuitem-close =
     .label = Zavrieť
-
 # Displayed as a tooltip on container tabs
 # Variables:
 #   $title (String): the title of the current tab.
 #   $containerName (String): the name of the current container.
 tabbrowser-container-tab-title = { $title } - { $containerName }
-
+# This text serves as an on-screen tooltip as well as an accessible name for
+# the "X" button that is shown on the active tab or, when multiple tabs are
+# selected, to all their "X" buttons.
+# Variables:
+#   $tabCount (Number): The number of tabs that will be closed.
+tabbrowser-close-tabs-button =
+    .tooltiptext =
+        { $tabCount ->
+            [one] Zavrieť kartu
+            [few] Zavrieť { $tabCount } karty
+           *[other] Zavrieť { $tabCount } kariet
+        }
 # Variables:
 #   $tabCount (Number): The number of tabs that will be closed.
 tabbrowser-close-tabs-tooltip =
@@ -132,13 +141,20 @@ tabbrowser-confirm-caretbrowsing-title = Prehliadanie pomocou klávesnice
 tabbrowser-confirm-caretbrowsing-message = Stlačením klávesu F7 zapnete alebo vypnete prehliadanie pomocou klávesnice. Táto funkcia umiestni do webovej stránky posúvateľný kurzor, ktorý umožňuje označovať text pomocou klávesnice. Chcete zapnúť prehliadanie pomocou klávesnice?
 tabbrowser-confirm-caretbrowsing-checkbox = Nabudúce toto okno nezobrazovať
 
+## Confirmation dialog for closing all duplicate tabs
+
+tabbrowser-confirm-close-duplicate-tabs-title = Pozor
+tabbrowser-confirm-close-duplicate-tabs-text = Poslednú aktívnu kartu ponecháme otvorenú
+tabbrowser-confirm-close-all-duplicate-tabs-title = Zavrieť duplicitné karty?
+tabbrowser-confirm-close-all-duplicate-tabs-text = V tomto okne zatvoríme duplicitné karty. Posledná aktívna karta zostane otvorená.
+tabbrowser-confirm-close-all-duplicate-tabs-button-closetabs = Zavrieť karty
+
 ##
 
 # Variables:
 #   $domain (String): URL of the page that is trying to steal focus.
 tabbrowser-allow-dialogs-to-get-focus =
     .label = Povoliť podobné oznámenia z domény { $domain }, aby vás presmerovali na ich kartu
-
 tabbrowser-customizemode-tab-title = Prispôsobenie { -brand-short-name(case: "gen") }
 
 ## Context menu buttons, of which only one will be visible at a time
@@ -157,7 +173,6 @@ tabbrowser-context-mute-selected-tabs =
 tabbrowser-context-unmute-selected-tabs =
     .label = Zapnúť zvuk na kartách
     .accesskey = u
-
 # This string is used as an additional tooltip and accessibility description for tabs playing audio
 tabbrowser-tab-audio-playing-description = Prehráva zvuk
 

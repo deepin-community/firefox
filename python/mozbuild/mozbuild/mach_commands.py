@@ -388,26 +388,38 @@ def cargo_vet(command_context, arguments, stdout=None, env=os.environ):
                 ),
             )
 
+    topsrcdir = Path(command_context.topsrcdir)
+    config_toml_in = topsrcdir / ".cargo/config.toml.in"
+    cargo_vet_dir = topsrcdir
+
+    try:
+        # When run for Thunderbird, configure must run first
+        if override_config_toml_in := command_context.substs.get(
+            "MOZ_OVERRIDE_CARGO_CONFIG"
+        ):
+            config_toml_in = Path(override_config_toml_in).absolute()
+            cargo_vet_dir = config_toml_in.parent.parent
+    except BuildEnvironmentNotFoundException:
+        pass
+
+    config_toml = config_toml_in.parent / config_toml_in.stem
+    command_context.log(logging.INFO, "cargo-vet", {}, f"[INFO] Using {config_toml}.")
+
     locked = "--locked" in arguments
     if locked:
         # The use of --locked requires .cargo/config.toml to exist, but other things,
         # like cargo update, don't want it there, so remove it once we're done.
-        topsrcdir = Path(command_context.topsrcdir)
-        shutil.copyfile(
-            topsrcdir / ".cargo" / "config.toml.in",
-            topsrcdir / ".cargo" / "config.toml",
-        )
-
+        shutil.copyfile(config_toml_in, config_toml)
     try:
         res = subprocess.run(
             [cargo, "vet"] + arguments,
-            cwd=command_context.topsrcdir,
+            cwd=cargo_vet_dir,
             stdout=stdout,
             env=env,
         )
     finally:
         if locked:
-            (topsrcdir / ".cargo" / "config.toml").unlink()
+            config_toml.unlink()
 
     # When the function is invoked without stdout set (the default when running
     # as a mach subcommand), exit with the returncode from cargo vet.
@@ -1157,7 +1169,26 @@ def package(command_context, verbose=False):
     )
     if ret == 0:
         command_context.notify("Packaging complete")
+        _print_package_name(command_context)
     return ret
+
+
+def _print_package_name(command_context):
+    dist_path = mozpath.join(command_context.topobjdir, "dist")
+    package_name_path = mozpath.join(dist_path, "package_name.txt")
+    if not os.path.exists(package_name_path):
+        return
+
+    with open(package_name_path, "r") as f:
+        package_name = f.read().strip()
+    package_path = mozpath.join(dist_path, package_name)
+
+    if not os.path.exists(package_path):
+        return
+
+    command_context.log(
+        logging.INFO, "package", {}, "Created package: {}".format(package_path)
+    )
 
 
 def _get_android_install_parser():
@@ -1372,12 +1403,6 @@ def _get_desktop_run_parser():
     group.add_argument("--packaged", action="store_true", help="Run a packaged build.")
     group.add_argument(
         "--app", help="Path to executable to run (default: output of ./mach build)"
-    )
-    group.add_argument(
-        "--remote",
-        "-r",
-        action="store_true",
-        help="Do not pass the --no-remote argument by default.",
     )
     group.add_argument(
         "--background",
@@ -1903,7 +1928,6 @@ def _run_desktop(
     params,
     packaged,
     app,
-    remote,
     background,
     noprofile,
     disable_e10s,
@@ -1928,20 +1952,40 @@ def _run_desktop(
         else:
             binpath = app or command_context.get_binary_path("app")
     except BinaryNotFoundException as e:
-        command_context.log(logging.ERROR, "run", {"error": str(e)}, "ERROR: {error}")
         if packaged:
-            command_context.log(
-                logging.INFO,
-                "run",
-                {
-                    "help": "It looks like your build isn't packaged. "
-                    "You can run |./mach package| to package it."
-                },
-                "{help}",
+            ret = command_context._run_make(
+                directory=".",
+                target="stage-package",
+                silent=True,
+                ensure_exit_code=False,
             )
+
+            if ret == 0:
+                try:
+                    binpath = command_context.get_binary_path(where="staged-package")
+                except BinaryNotFoundException:
+                    command_context.log(
+                        logging.ERROR, "run", {"error": str(e)}, "ERROR: {error}"
+                    )
+                    ret = 1
+
+            if ret != 0:
+                command_context.log(
+                    logging.INFO,
+                    "run",
+                    {
+                        "help": "It looks like your build failed to package properly? "
+                        "You can run |./mach package| to package it manually."
+                    },
+                    "{help}",
+                )
+                return 1
         else:
+            command_context.log(
+                logging.ERROR, "run", {"error": str(e)}, "ERROR: {error}"
+            )
             command_context.log(logging.INFO, "run", {"help": e.help()}, "{help}")
-        return 1
+            return 1
 
     args = []
     if macos_open:
@@ -1967,9 +2011,6 @@ def _run_desktop(
 
     if params:
         args.extend(params)
-
-    if not remote:
-        args.append("-no-remote")
 
     if not background and sys.platform == "darwin":
         args.append("-foreground")
@@ -2796,6 +2837,394 @@ def repackage_mar(command_context, input, mar, output, arch, mar_channel_id):
         arch=arch,
         mar_channel_id=mar_channel_id,
     )
+
+
+@SubCommand(
+    "repackage",
+    "snap",
+    description="Repackage into Snap format for developer testing",
+    virtualenv_name="repackage-snap",
+)
+@CommandArgument(
+    "--snapcraft",
+    metavar="FILENAME",
+    help="Path to the snapcraft command (default: search $PATH and /snap/bin)",
+)
+@CommandArgument(
+    "--snap-name",
+    default="firefox-devel",
+    required=True,
+    help="Name of the snap to generate (default: firefox-devel)",
+)
+@CommandArgument(
+    "--upstream-repo",
+    default="canonical/firefox-snap",
+    required=False,
+    help="Name of the firefox-snap github repo to use (default: canonical/firefox-snap)",
+)
+@CommandArgument(
+    "--upstream-branch",
+    default="nightly",
+    required=False,
+    help="Name of the firefox-snap github branch to use (default: nightly)",
+)
+@CommandArgument(
+    "--output",
+    metavar="FILE|DIR",
+    help="File or directory where the snap file will be written;"
+    " by default, it's left in the staging directory",
+)
+@CommandArgument(
+    "--input",
+    metavar="FILENAME",
+    dest="input_pkg",
+    help="Repack an existing package instead of a local build;"
+    " implies --clean and requires --output",
+)
+@CommandArgument(
+    "--tmp-dir",
+    metavar="FILENAME",
+    default=tempfile.gettempdir,
+    help="Temp dir for --input (default: tempfile.gettempdir; note that /tmp may not work)",
+)
+@CommandArgument(
+    "--clean",
+    action="store_true",
+    help="Delete staging directory afterwards; requires --output",
+)
+@CommandArgument(
+    "--install",
+    action="store_true",
+    help="Install the snap afterwards (as with `mach repackage snap-install`)",
+)
+@CommandArgument(
+    "--dry-run",
+    action="store_true",
+    help="Prepare everything but stop before actually calling snapcraft. Useful for debugging generated YAML definition.",
+)
+def repackage_snap(
+    command_context,
+    snapcraft=None,
+    snap_name=None,
+    upstream_repo=None,
+    upstream_branch=None,
+    output=None,
+    input_pkg=None,
+    tmp_dir=None,
+    clean=False,
+    install=False,
+    dry_run=False,
+):
+    from mozfile import which
+
+    from mozbuild.repackaging.snap import (
+        repackage_snap,
+        unpack_tarball,
+    )
+
+    # Validate arguments / environment
+    if not snapcraft:
+        snapcraft = which("snapcraft", extra_search_dirs=["/snap/bin"])
+
+    if not snapcraft:
+        command_context.log(
+            logging.ERROR,
+            "repackage-snap-no-snapcraft",
+            {},
+            "Couldn't find the `snapcraft` command; if it's installed, try"
+            " adjusting your $PATH or using the --snapcraft option",
+        )
+        return 1
+
+    if not conditions.is_firefox(command_context):
+        command_context.log(
+            logging.ERROR,
+            "repackage-snap-unsupported-product",
+            {},
+            "Snap repackaging is currently supported only for Firefox",
+        )
+        return 1
+
+    if input_pkg:
+        clean = True
+
+    if clean and not output:
+        command_context.log(
+            logging.ERROR,
+            "repackage-snap-no-output",
+            {},
+            "When --input or --clean is used, --output is required",
+        )
+        return 1
+
+    if not input_pkg and not os.path.exists(command_context.bindir):
+        command_context.log(
+            logging.ERROR,
+            "repackage-snap-no-input",
+            {},
+            "No build found in objdir; please run ./mach build or pass --input",
+        )
+        return 1
+
+    # Set up the staging dir and unpack or copy the payload
+    if input_pkg:
+        # This mode of operation isn't about the current build, so the
+        # package is staged in a secure temp dir from mkdtemp instead
+        # of something under the objdir.  But when snapcraft runs
+        # itself under multipass (the default), the VM will be rebuilt
+        # whenever the staging dir changes, and this means it will
+        # change every time.  So that's not ideal, but it's not clear
+        # how to improve the experience.
+        snapdir = tempfile.mkdtemp(dir=tmp_dir, prefix="snap-repackage-")
+        command_context.log(
+            logging.INFO,
+            "repackage-snap-tmp-dir",
+            {"path": snapdir},
+            "Using temp dir: {path}",
+        )
+        unpack_tarball(
+            input_pkg, os.path.join(snapdir, "source", "usr", "lib", "firefox")
+        )
+    else:
+        # Deploy the current build for packaging, into the directory
+        # where snapcraft will expect it
+        command_context._run_make(
+            directory=".",
+            target="stage-package",
+            append_env={"MOZ_PKG_DIR": "snap/source/usr/lib/firefox"},
+        )
+        snapdir = os.path.join(command_context.distdir, "snap")
+
+    # Handle the most common cases of arch:
+    mozarch = command_context.substs["TARGET_CPU"]
+    if mozarch == "x86":
+        arch = "i386"
+    elif mozarch == "x86_64":
+        arch = "amd64"
+    elif mozarch == "aarch64":
+        arch = "arm64"
+    else:
+        command_context.log(
+            logging.ERROR,
+            "repackage-snap-arch-unknown",
+            {},
+            "Could not automatically detect architecture for Snap "
+            "repackaging; please pass --arch",
+        )
+        return 1
+
+    # Create the package
+    snappath = repackage_snap(
+        log=command_context.log,
+        srcdir=command_context.topsrcdir,
+        objdir=command_context.topobjdir,
+        snapdir=snapdir,
+        snapcraft=snapcraft,
+        appname=snap_name,
+        reponame=upstream_repo,
+        branchname=upstream_branch,
+        arch=arch,
+        dry_run=dry_run,
+    )
+
+    if dry_run:
+        command_context.log(
+            logging.INFO,
+            "repackage-snap-show-output",
+            {"path": snappath},
+            "Snap package prepared: {path}",
+        )
+
+        return 0
+
+    # Cleanup: move the output, delete temp files, inform the user
+    if output:
+        if os.path.isdir(output):
+            output = os.path.join(output, os.path.basename(snappath))
+        shutil.copyfile(snappath, output)
+        snappath = output
+
+    if clean:
+        command_context.log(
+            logging.INFO,
+            "repackage-snap-clean",
+            {"path": snapdir},
+            "Deleting staging dir: {path}",
+        )
+        shutil.rmtree(snapdir)
+
+    command_context.log(
+        logging.INFO,
+        "repackage-snap-show-output",
+        {"path": snappath},
+        "Snap package created: {path}",
+    )
+
+    if install:
+        return repackage_snap_install(
+            command_context,
+            snap_file=snappath,
+            snap_name=snap_name,
+        )
+
+    return 0
+
+
+@SubCommand(
+    "repackage",
+    "snap-install",
+    description="Install an unofficial Snap package and, if needed, enable"
+    " its connections",
+)
+@CommandArgument(
+    "--snap-file",
+    metavar="FILENAME",
+    help="Snap file to install; defaults to the last one built by"
+    " `mach repackage snap` (without `--output`)",
+)
+@CommandArgument(
+    "--sudo",
+    metavar="COMMAND",
+    default=None,
+    help="Wrapper to run commands as root (default: sudo or doas)",
+)
+def repackage_snap_install(command_context, snap_file, snap_name, sudo=None):
+    from mozfile import which
+
+    from mozbuild.repackaging.snap import missing_connections
+
+    if not sudo:
+        for candidate in ["sudo", "doas"]:
+            if which(candidate):
+                sudo = candidate
+                break
+
+    if not sudo:
+        command_context.log(
+            logging.ERROR,
+            "repackage-snap-install-no-sudo",
+            {},
+            "Couldn't find a command to run snap as root; please use the"
+            " --sudo option",
+        )
+
+    if not snap_file:
+        snap_file = os.path.join(command_context.distdir, "snap/latest.snap")
+        if not os.path.exists(snap_file):
+            command_context.log(
+                logging.ERROR,
+                "repackage-snap-install-no-dfl-snap",
+                {},
+                "No snap file found; please run `./mach repackage snap` first"
+                " or use --snap-file",
+            )
+            return 1
+
+    # Install
+    command_context.run_process(
+        # The `--dangerous` flag skips signature checks but doesn't
+        # turn off sandboxing (contrast `--devmode`), because if you
+        # need to test under Snap instead of normally, it may be
+        # because their sandbox broke something.
+        [sudo, "snap", "install", "--dangerous", snap_file],
+        pass_thru=True,
+    )
+
+    # Fix up connections if needed
+    # (Ideally this wouldn't hard-code the app name....)
+    for conn in missing_connections(snap_name):
+        command_context.run_process(
+            [sudo, "snap", "connect", conn],
+            pass_thru=True,
+        )
+
+    # A little help
+    command_context.log(
+        logging.INFO,
+        "repackage-snap-install-howto-run",
+        {},
+        "Example usage: snap run {}".format(snap_name),
+    )
+
+    return 0
+
+
+@SubCommand(
+    "repackage",
+    "desktop-file",
+    description="Prepare a firefox.desktop file",
+    virtualenv_name="repackage-desktop-file",
+)
+@CommandArgument("--output", type=str, required=True, help="Output desktop file")
+@CommandArgument(
+    "--flavor",
+    type=str,
+    required=True,
+    choices=["snap", "flatpak"],
+    help="Desktop file flavor to generate.",
+)
+@CommandArgument(
+    "--release-product",
+    type=str,
+    required=True,
+    help="The product being shipped. Used to disambiguate beta/devedition etc.",
+)
+@CommandArgument(
+    "--release-type",
+    type=str,
+    required=True,
+    help="The release being shipped. Used to disambiguate nightly/try etc.",
+)
+def repackage_desktop_file(
+    command_context,
+    output,
+    flavor,
+    release_product,
+    release_type,
+):
+    desktop = None
+    if flavor == "flatpak":
+        from fluent.runtime.fallback import FluentLocalization, FluentResourceLoader
+
+        from mozbuild.repackaging.desktop_file import generate_browser_desktop_entry
+
+        # This relies in existing build variables usage inherited from the
+        # debian repackage code that serves the same purpose on Flatpak, so
+        # it is just directly re-used here.
+        build_variables = {
+            "DEB_PKG_NAME": release_product,
+            "DBusActivatable": "false",
+            "Icon": "org.mozilla.firefox",
+            "StartupWMClass": release_product,
+        }
+
+        desktop = "\n".join(
+            generate_browser_desktop_entry(
+                command_context.log,
+                build_variables,
+                release_product,
+                release_type,
+                FluentLocalization,
+                FluentResourceLoader,
+            )
+        )
+
+    if flavor == "snap":
+        from mozbuild.repackaging.snapcraft_transform import (
+            SnapDesktopFile,
+        )
+
+        desktop = SnapDesktopFile(
+            command_context.log, appname=release_product, branchname=release_type
+        ).repack()
+
+    if desktop is None:
+        raise NotImplementedError(
+            f"Couldn't generate a desktop file. Unknown flavor: {flavor}"
+        )
+
+    with open(output, "w") as desktop_file:
+        desktop_file.write(desktop)
 
 
 @Command(

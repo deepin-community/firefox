@@ -57,6 +57,9 @@ category-experimental =
 pane-experimental-subtitle = Kemmel, maca ɣur-k.
 pane-experimental-search-results-header = { -brand-short-name } Tirma: ddu kan s leεqel
 pane-experimental-description2 = Abeddel n yiɣewwaren n twila lqayen zemren ad ḥazen tamlellit neɣ taɣellist n { -brand-short-name }.
+settings-pane-labs-title = { -firefoxlabs-brand-name }
+settings-category-labs =
+    .tooltiptext = { -firefoxlabs-brand-name }
 pane-experimental-reset =
     .label = Err-d iɣewwaren imezwer
     .accesskey = R
@@ -565,6 +568,8 @@ home-prefs-shortcuts-by-option-sponsored =
 home-prefs-recommended-by-header =
     .label = Iwelleh-it-id { $provider }
 home-prefs-recommended-by-description-new = Agbur ufrin i s-yettusuddsen sɣur { $provider }, d aḥric seg twacult { -brand-product-name }
+home-prefs-recommended-by-header-generic =
+    .label = Tiqsiḍin yelhan
 
 ##
 
@@ -591,6 +596,9 @@ home-prefs-recent-activity-description = Tafrant n yismal d ugbur n melmi kan
 home-prefs-snippets-header =
     .label = Tiwzillin
 home-prefs-snippets-description-new = Iwellihen d yisallen sɣur { -vendor-short-name } akked { -brand-product-name }
+home-prefs-weather-header =
+    .label = Tagnawt
+home-prefs-weather-learn-more-link = Issin ugar
 # Variables:
 #   $num (number) - Number of rows displayed
 home-prefs-sections-rows-option =
@@ -705,6 +713,8 @@ sync-profile-picture =
 sync-profile-picture-with-alt =
     .tooltiptext = Beddel tugna n umaɣnu
     .alt = Beddel tugna n umaɣnu
+sync-profile-picture-account-problem =
+    .alt = Tugna n umaɣnu n umiḍan
 fxa-login-rejected-warning =
     .alt = Alɣu
 sync-sign-out =
@@ -793,6 +803,10 @@ sync-engine-logins-passwords =
     .label = Inekcam d wawalen uffiren
     .tooltiptext = Ismawen n yiseqdacen akked wawalen uffiren i teskelseḍ
     .accesskey = I
+sync-engine-passwords =
+    .label = Awalen n uεeddi
+    .tooltiptext = Awalen n uεeddi i teskelseḍ
+    .accesskey = A
 sync-engine-addresses =
     .label = Tansiwin
     .tooltiptext = Tansiwin n lpusṭa i teskelseḍ (aselkim kan)
@@ -801,6 +815,10 @@ sync-engine-creditcards =
     .label = Tikarḍiwin n usmad
     .tooltiptext = Ismawen, imḍanen akked yizemziyen ifaten (aselkim kan)
     .accesskey = G
+sync-engine-payment-methods2 =
+    .label = Tarrayin n uxelleṣ
+    .tooltiptext = Ismawen, uṭṭunen n tkarḍa akked wazemz n taggara
+    .accesskey = n
 sync-engine-addons =
     .label = Izegrar
     .tooltiptext = Iseɣzaf akked yisental i Firefox n uselkim
@@ -850,11 +868,22 @@ forms-ask-to-save-logins =
 
 ## Privacy Section - Passwords
 
+# "Logins" is the former term for "Passwords". Users should find password settings
+# by searching for the former term "logins". It's not displayed in the UI.
+pane-privacy-passwords-header = Awalen uffiren
+    .searchkeywords = Inekcam
+# Checkbox to control whether UI is shown to users to save or fill logins/passwords.
+forms-ask-to-save-passwords =
+    .label = Ssuter asekles n wawalen n uεeddi
+    .accesskey = S
 forms-exceptions =
     .label = Tisuraf…
     .accesskey = r
 forms-generate-passwords =
     .label = Sumer daɣen rnu awalen uffiren iǧehden
+    .accesskey = S
+forms-suggest-passwords =
+    .label = SuƔer awalen n uεeddi iǧehden
     .accesskey = S
 forms-breach-alerts =
     .label = Sken ilɣa i wawalen uffiren n yismal i teɛna trewla n yisefka
@@ -862,6 +891,9 @@ forms-breach-alerts =
 forms-breach-alerts-learn-more-link = Issin ugar
 preferences-relay-integration-checkbox =
     .label = Sumer igelmusen n yimayl { -relay-brand-name } i ummesten n tansa-k·m n yimayl
+preferences-relay-integration-checkbox2 =
+    .label = Sumer igelmusen n yimayl { -relay-brand-name } i ummesten n tansa-k·m n yimayl
+    .accesskey = r
 relay-integration-learn-more-link = Issin ugar
 # Checkbox which controls filling saved logins into fields automatically when they appear, in some cases without user interaction.
 forms-fill-logins-and-passwords =
@@ -870,12 +902,19 @@ forms-fill-logins-and-passwords =
 forms-saved-logins =
     .label = Inekcumen yettwakelsen…
     .accesskey = e
+# Checkbox which controls filling saved logins into fields automatically when they appear, in some cases without user interaction.
+forms-fill-usernames-and-passwords =
+    .label = Smed s wudem awurman ismawen n useqdac d wawalen n uεeddi
+    .accesskey = S
 forms-saved-passwords =
     .label = Awalen uffiren yettwakelsen
     .accesskey = d
 forms-primary-pw-use =
     .label = Seqdec awal uffir agejdan
     .accesskey = U
+# This operation requires the user to authenticate with the operating system (device sign-in)
+forms-os-reauth =
+    .label = Ssuter tuqqna ɣer yibenk i wakken ad tesferkeḍ awalen n uεeddi
 forms-primary-pw-learn-more-link = Issin ugar
 # This string uses the former name of the Primary Password feature
 # ("Master Password" in English) so that the preferences can be found
@@ -896,6 +935,7 @@ forms-windows-sso =
     .label = Issirig anekcum asuf n Windows i yimiḍanen n Microsoft n umahel, d uɣerbaz
 forms-windows-sso-learn-more-link = Issin ugar
 forms-windows-sso-desc = Sefrek imiḍanen deg yiɣewwaren n yibenk-ik·im
+windows-passkey-settings-label = Sefrek tisura n unekcum deg yiɣewwaren n unagraw
 
 ## OS Authentication dialog
 
@@ -907,6 +947,7 @@ primary-password-os-auth-dialog-message-win = Akken ad ternuḍ awal-inek·inem 
 # notes are only valid for English. Please test in your locale.
 primary-password-os-auth-dialog-message-macosx = rnu awal uffir agejdan
 master-password-os-auth-dialog-caption = { -brand-full-name }
+autofill-creditcard-os-auth-dialog-caption = { -brand-full-name }
 
 ## Privacy section - Autofill
 
@@ -915,6 +956,12 @@ autofill-addresses-checkbox = Sekles; teččareḍ tansiwin
     .accesskey = a
 autofill-saved-addresses-button = Tansiwin ittwakelsen
     .accesskey = T
+autofill-payment-methods-checkbox-message = Sekles syen ččar tarrayin n uxelleṣ
+    .accesskey = r
+autofill-payment-methods-checkbox-submessage = Deg-s tikarḍiwin n lbenkat
+    .accesskey = D
+autofill-saved-payment-methods-button = Isseklas tarrayin n uxelleṣ
+    .accesskey = s
 
 ## Privacy Section - History
 
@@ -1226,6 +1273,9 @@ privacy-segmentation-radio-off =
     .label = Seqdec iwellihen n { -brand-product-name }
 privacy-segmentation-radio-on =
     .label = Sken Talɣut leqqayen
+
+## Privacy Section - Website Advertising Preferences
+
 
 ## Privacy Section - Security
 ##

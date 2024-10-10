@@ -9,9 +9,11 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.Text
@@ -23,8 +25,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import mozilla.components.concept.engine.translate.TranslationError
 import org.mozilla.fenix.R
 import org.mozilla.fenix.compose.Divider
+import org.mozilla.fenix.compose.InfoCard
+import org.mozilla.fenix.compose.InfoType
 import org.mozilla.fenix.compose.SwitchWithLabel
 import org.mozilla.fenix.compose.annotation.LightDarkPreview
 import org.mozilla.fenix.compose.list.TextListItem
@@ -36,6 +41,7 @@ import java.util.Locale
  *
  * @param translationOptionsList A list of [TranslationSwitchItem]s to display.
  * @param showGlobalSettings Whether to show to global settings entry point or not.
+ * @param pageSettingsError Could not load page settings error.
  * @param onBackClicked Invoked when the user clicks on the back button.
  * @param onTranslationSettingsClicked Invoked when the user clicks on the "Translation Settings" button.
  * @param aboutTranslationClicked Invoked when the user clicks on the "About Translation" button.
@@ -44,12 +50,18 @@ import java.util.Locale
 fun TranslationOptionsDialog(
     translationOptionsList: List<TranslationSwitchItem>,
     showGlobalSettings: Boolean,
+    pageSettingsError: TranslationError? = null,
     onBackClicked: () -> Unit,
     onTranslationSettingsClicked: () -> Unit,
     aboutTranslationClicked: () -> Unit,
 ) {
     TranslationOptionsDialogHeader(onBackClicked)
-    translationOptionsList.forEach() { item: TranslationSwitchItem ->
+
+    pageSettingsError?.let {
+        TranslationPageSettingsErrorWarning()
+    }
+
+    translationOptionsList.forEach { item: TranslationSwitchItem ->
         Column {
             val translationSwitchItem = TranslationSwitchItem(
                 type = item.type,
@@ -71,9 +83,12 @@ fun TranslationOptionsDialog(
             TextListItem(
                 label = stringResource(id = R.string.translation_option_bottom_sheet_translation_settings),
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 56.dp),
-                onClick = { onTranslationSettingsClicked() },
+                    .padding(start = 56.dp)
+                    .defaultMinSize(minHeight = 56.dp)
+                    .wrapContentHeight(),
+                onClick = {
+                    onTranslationSettingsClicked()
+                },
             )
         }
     }
@@ -86,10 +101,30 @@ fun TranslationOptionsDialog(
             ),
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(start = 56.dp),
+                .padding(start = 56.dp)
+                .defaultMinSize(minHeight = 56.dp)
+                .wrapContentHeight(),
             onClick = { aboutTranslationClicked() },
         )
+
+        Spacer(modifier = Modifier.height(16.dp))
     }
+}
+
+@Composable
+private fun TranslationPageSettingsErrorWarning() {
+    val modifier = Modifier
+        .fillMaxWidth()
+        .padding(start = 72.dp, end = 16.dp, bottom = 16.dp)
+        .defaultMinSize(minHeight = 56.dp)
+        .wrapContentHeight()
+
+    InfoCard(
+        description = stringResource(id = R.string.translation_option_bottom_sheet_error_warning_text),
+        type = InfoType.Warning,
+        verticalRowAlignment = Alignment.CenterVertically,
+        modifier = modifier,
+    )
 }
 
 @Composable
@@ -98,6 +133,8 @@ private fun TranslationOptions(
 ) {
     SwitchWithLabel(
         label = translationSwitchItem.textLabel,
+        checked = translationSwitchItem.isChecked,
+        modifier = Modifier.padding(start = 72.dp, end = 16.dp, top = 6.dp, bottom = 6.dp),
         description = if (translationSwitchItem.isChecked) {
             translationSwitchItem.type.descriptionId?.let {
                 stringResource(
@@ -108,15 +145,12 @@ private fun TranslationOptions(
             null
         },
         enabled = translationSwitchItem.isEnabled,
-        checked = translationSwitchItem.isChecked,
-        onCheckedChange = { checked ->
-            translationSwitchItem.onStateChange.invoke(
-                translationSwitchItem.type,
-                checked,
-            )
-        },
-        modifier = Modifier.padding(start = 72.dp, end = 16.dp),
-    )
+    ) { checked ->
+        translationSwitchItem.onStateChange.invoke(
+            translationSwitchItem.type,
+            checked,
+        )
+    }
 
     if (translationSwitchItem.type.hasDivider) {
         Divider(Modifier.padding(top = 4.dp, bottom = 4.dp))

@@ -18,6 +18,8 @@
 #include "TupleUtils.h"
 #include "WebGLTypes.h"
 
+#include <memory>
+
 namespace mozilla {
 namespace webgl {
 
@@ -257,7 +259,7 @@ ContiguousEnumSerializer.
 template <class T>
 struct ParamTraits_IsEnumCase {
   static bool Write(MessageWriter* const writer, const T& in) {
-    MOZ_ASSERT(IsEnumCase(in));
+    MOZ_ASSERT(mozilla::IsEnumCase(in));
     const auto shadow = static_cast<std::underlying_type_t<T>>(in);
     WriteParam(writer, shadow);
     return true;
@@ -266,7 +268,7 @@ struct ParamTraits_IsEnumCase {
   static bool Read(MessageReader* const reader, T* const out) {
     auto shadow = std::underlying_type_t<T>{};
     if (!ReadParam(reader, &shadow)) return false;
-    const auto e = mozilla::AsValidEnum<T>(shadow);
+    const auto e = mozilla::AsEnumCase<T>(shadow);
     if (!e) return false;
     *out = *e;
     return true;
@@ -649,6 +651,32 @@ struct ParamTraits<mozilla::avec3<U>> final {
   static bool Read(MessageReader* const reader, T* const out) {
     return ReadParam(reader, &out->x) && ReadParam(reader, &out->y) &&
            ReadParam(reader, &out->z);
+  }
+};
+
+// -
+
+template <class U>
+struct ParamTraits<std::optional<U>> final {
+  using T = std::optional<U>;
+
+  static void Write(MessageWriter* const writer, const T& in) {
+    WriteParam(writer, bool{in});
+    if (in) {
+      WriteParam(writer, *in);
+    }
+  }
+
+  static bool Read(MessageReader* const reader, T* const out) {
+    bool isSome;
+    if (!ReadParam(reader, &isSome)) return false;
+
+    if (!isSome) {
+      out->reset();
+      return true;
+    }
+    out->emplace();
+    return ReadParam(reader, &**out);
   }
 };
 

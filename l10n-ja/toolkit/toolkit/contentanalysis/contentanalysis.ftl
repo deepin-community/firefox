@@ -3,7 +3,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 contentanalysis-alert-title = コンテンツ解析
-
 # Variables:
 #   $content - Description of the content being warned about, such as "clipboard" or "aFile.txt"
 contentanalysis-slow-agent-notification = コンテンツ解析ツールはリソース “{ $content }” への応答に時間がかかっています
@@ -41,21 +40,6 @@ contentanalysis-genericresponse-message = コンテンツ解析が次のリソ�
 # Variables:
 #   $content - Description of the content being blocked, such as "clipboard" or "aFile.txt"
 contentanalysis-block-message = 所属組織で使用されているデータ損失防止ソフトウェアが次のコンテンツをブロックしました: { $content }
-# Variables:
-#   $content - Description of the content being blocked, such as "clipboard" or "aFile.txt"
-contentanalysis-error-message = データ損失防止ソフトウェアとの通信時にエラーが発生しました。次のリソースの転送が拒否されました: { $content }
-# Variables:
-#   $agent - The name of the DLP agent doing the analysis
-#   $content - Description of the content being blocked, such as "clipboard" or "aFile.txt"
-contentanalysis-unspecified-error-message = { $agent } との通信時にエラーが発生しました。次のリソースの転送が拒否されました: { $content }
-# Variables:
-#   $agent - The name of the DLP agent doing the analysis
-#   $content - Description of the content being blocked, such as "clipboard" or "aFile.txt"
-contentanalysis-no-agent-connected-message = { $agent } に接続できません。次のリソースの転送が拒否されました: { $content }
-# Variables:
-#   $agent - The name of the DLP agent doing the analysis
-#   $content - Description of the content being blocked, such as "clipboard" or "aFile.txt"
-contentanalysis-invalid-agent-signature-message = { $agent } の署名検証に失敗しました。次のリソースの転送が拒否されました: { $content }
 # Variables:
 #   $agent - The name of the DLP agent doing the analysis
 #   $content - Localized text describing the content being blocked, such as "Paste denied."

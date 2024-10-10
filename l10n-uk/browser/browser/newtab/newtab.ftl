@@ -200,6 +200,8 @@ newtab-section-header-recent-activity = Нещодавня активність
 #   $provider (string) - Name of the corresponding content provider.
 newtab-section-header-pocket = Рекомендації від { $provider }
 newtab-section-header-stories = Розповіді, що спонукають замислитися
+# "picks" refers to recommended articles
+newtab-section-header-todays-picks = Сьогоднішня підбірка для вас
 
 ## Empty Section States: These show when there are no more items in a section. Ex. When there are no more Pocket story recommendations, in the space where there would have been stories, this is shown instead.
 
@@ -233,6 +235,19 @@ newtab-pocket-pocket-firefox-family = { -pocket-brand-name } є частиною
 # A save to Pocket button that shows over the card thumbnail on hover.
 newtab-pocket-save = Зберегти
 newtab-pocket-saved = Збережено
+
+## Thumbs up and down buttons that shows over a newtab stories card thumbnail on hover.
+
+# Clicking the thumbs up button for this story will result in more stories like this one being recommended
+newtab-pocket-thumbs-up-tooltip =
+    .title = Більше подібного
+# Clicking the thumbs down button for this story informs us that the user does not feel like the story is interesting for them
+newtab-pocket-thumbs-down-tooltip =
+    .title = Не для мене
+newtab-toast-thumbs-up-or-down = Дякуємо. Ваш відгук допоможе нам покращити вашу стрічку.
+newtab-toast-dismiss-button =
+    .title = Відхилити
+    .aria-label = Відхилити
 
 ## Pocket content onboarding experience dialog and modal for new users seeing the Pocket section for the first time, shown as the first item in the Pocket section.
 
@@ -273,6 +288,9 @@ newtab-custom-recent-subtitle = Добірка недавніх сайтів т�
 newtab-custom-recent-toggle =
     .label = Недавня активність
     .description = Добірка недавніх сайтів та вмісту
+newtab-custom-weather-toggle =
+    .label = Погода
+    .description = Точний прогноз на сьогодні
 newtab-custom-close-button = Закрити
 newtab-custom-settings = Керувати іншими налаштуваннями
 
@@ -292,7 +310,125 @@ newtab-wallpaper-dark-panda = Червона панда, що ховається
 newtab-wallpaper-dark-sky = Міський пейзаж з нічним небом
 newtab-wallpaper-dark-mountain = Гірський краєвид
 newtab-wallpaper-dark-city = Фіолетовий міський пейзаж
+
+## Solid Colors
+
+newtab-wallpaper-category-title-colors = Суцільні кольори
+newtab-wallpaper-blue = Синій
+newtab-wallpaper-light-blue = Блакитний
+newtab-wallpaper-light-purple = Світло-пурпуровий
+newtab-wallpaper-light-green = Світло-зелений
+newtab-wallpaper-green = Зелений
+newtab-wallpaper-beige = Бежевий
+newtab-wallpaper-yellow = Жовтий
+newtab-wallpaper-orange = Помаранчевий
+newtab-wallpaper-pink = Рожевий
+newtab-wallpaper-light-pink = Світло-рожевий
+newtab-wallpaper-red = Червоний
+newtab-wallpaper-dark-blue = Темно-синій
+newtab-wallpaper-dark-purple = Темно-пурпуровий
+newtab-wallpaper-dark-green = Темно-зелений
+newtab-wallpaper-brown = Коричневий
+
+## Abstract
+
+newtab-wallpaper-category-title-abstract = Абстракція
+newtab-wallpaper-abstract-green = Зелені форми
+newtab-wallpaper-abstract-blue = Сині форми
+newtab-wallpaper-abstract-purple = Фіолетові форми
+newtab-wallpaper-abstract-orange = Помаранчеві форми
+newtab-wallpaper-gradient-orange = Градієнт помаранчевого і рожевого
+newtab-wallpaper-abstract-blue-purple = Сині та пурпурові форми
+
+## Photographs
+
+newtab-wallpaper-category-title-photographs = Фотографії
+newtab-wallpaper-beach-at-sunrise = Пляж на сході сонця
+newtab-wallpaper-beach-at-sunset = Пляж на заході сонця
+newtab-wallpaper-storm-sky = Грозове небо
+newtab-wallpaper-sky-with-pink-clouds = Небо з рожевими хмарами
+newtab-wallpaper-red-panda-yawns-in-a-tree = Червона панда позіхає на дереві
+newtab-wallpaper-white-mountains = Білі гори
 # Variables
 #   $author_string (String) - The name of the creator of the photo.
 #   $webpage_string (String) - The name of the webpage where the photo is located.
 newtab-wallpaper-attribution = Фото від <a data-l10n-name="name-link">{ $author_string }</a> з <a data-l10n-name="webpage-link">{ $webpage_string }</a>
+newtab-wallpaper-feature-highlight-header = Спробуйте сплеск кольорів
+newtab-wallpaper-feature-highlight-content = Надайте своїй новій вкладці свіжий вигляд за допомогою шпалер.
+newtab-wallpaper-feature-highlight-button = Зрозуміло
+# Tooltip for dismiss button
+feature-highlight-dismiss-button =
+    .title = Відхилити
+    .aria-label = Закрити спливне вікно
+feature-highlight-wallpaper =
+    .title = { -newtab-wallpaper-feature-highlight-header }
+    .aria-label = { -newtab-wallpaper-feature-highlight-content }
+
+## New Tab Weather
+
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-see-forecast =
+    .title = Дивіться прогноз у { $provider }
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-sponsored = { $provider } ∙ Спонсоровано
+newtab-weather-menu-change-location = Змінити розташування
+newtab-weather-change-location-search-input = Пошук розташування
+newtab-weather-menu-weather-display = Подання погоди
+# Display options are:
+# - Simple: Displays a current weather condition icon and the current temperature
+# - Detailed: Include simple information plus a short text summary: e.g. "Mostly cloudy"
+newtab-weather-menu-weather-display-option-simple = Просте
+newtab-weather-menu-change-weather-display-simple = Перемкнути на просте подання
+newtab-weather-menu-weather-display-option-detailed = Подробиці
+newtab-weather-menu-change-weather-display-detailed = Перемкнути на подання з подробицями
+newtab-weather-menu-temperature-units = Одиниці вимірювання температури
+newtab-weather-menu-temperature-option-fahrenheit = Градуси Фаренгейта
+newtab-weather-menu-temperature-option-celsius = Градуси Цельсія
+newtab-weather-menu-change-temperature-units-fahrenheit = Перемкнути на градуси Фаренгейта
+newtab-weather-menu-change-temperature-units-celsius = Перемкнути на градуси Цельсія
+newtab-weather-menu-hide-weather = Сховати погоду на новій вкладці
+newtab-weather-menu-learn-more = Докладніше
+# This message is shown if user is working offline
+newtab-weather-error-not-available = Дані про погоду зараз недоступні.
+
+## Topic Labels
+
+newtab-topic-label-business = Бізнес
+newtab-topic-label-career = Кар'єра
+newtab-topic-label-education = Навчання
+newtab-topic-label-arts = Розваги
+newtab-topic-label-food = Їжа
+newtab-topic-label-health = Здоров'я
+newtab-topic-label-hobbies = Ігри
+# ”Money” = “Personal Finance”, refers to articles and stories that help readers better manage
+# and understand their personal finances – from saving money to buying a home. See the
+# “Curated by our editors“ section at the top of https://getpocket.com/explore/personal-finance for more context
+newtab-topic-label-finance = Гроші
+newtab-topic-label-society-parenting = Батьківство
+newtab-topic-label-government = Політика
+newtab-topic-label-education-science = Наука
+# ”Life Hacks” = “Self Improvement”, refers to articles and stories aimed at helping readers improve various
+# aspects of their lives – from mental health to  productivity. See the “Curated by our editors“ section
+# at the top of https://getpocket.com/explore/self-improvement for more context.
+newtab-topic-label-society = Корисні поради
+newtab-topic-label-sports = Спорт
+newtab-topic-label-tech = Технології
+newtab-topic-label-travel = Подорожі
+newtab-topic-label-home = Дім і сад
+
+## Topic Selection Modal
+
+# “fine-tune” refers to the process of making small adjustments to something to get
+# the best or desired experience or performance.
+newtab-topic-selection-title = Виберіть теми, щоб налаштувати свій канал
+# “tailored” refers to process of (a tailor) making (clothes) to fit individual customers.
+# In other words, “Our expert curators prioritize stories to fit your selected interests”
+newtab-topic-selection-subtitle = Оберіть принаймні дві теми. Наші досвідчені куратори підбирають матеріали відповідно до ваших інтересів. Оновлюйте коли завгодно.
+newtab-topic-selection-save-button = Зберегти
+newtab-topic-selection-cancel-button = Скасувати
+newtab-topic-selection-button-maybe-later = Можливо, пізніше
+newtab-topic-selection-privacy-link = Дізнайтеся, як ми захищаємо дані та керуємо ними
+newtab-topic-selection-button-update-interests = Оновіть свої інтереси
+newtab-topic-selection-button-pick-interests = Виберіть свої інтереси

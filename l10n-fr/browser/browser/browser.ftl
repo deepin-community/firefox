@@ -550,6 +550,10 @@ urlbar-go-button =
     .tooltiptext = Se rendre à la page indiquée dans la barre d’adresse
 urlbar-page-action-button =
     .tooltiptext = Actions pour la page
+urlbar-revert-button =
+    .tooltiptext = Afficher l’adresse dans la barre d’adresse
+urlbar-show-page-actions-button =
+    .tooltiptext = Afficher toutes les actions de la page
 
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
@@ -640,6 +644,21 @@ urlbar-group-quickactions =
 #  $engine (String): the name of the search engine used to search.
 urlbar-group-recent-searches =
     .label = Recherches récentes
+# The header shown above trending results.
+# Variables:
+#  $engine (String): the name of the search engine providing the trending suggestions
+urlbar-group-trending =
+    .label = Populaire sur { $engine }
+# The result menu labels shown next to trending results.
+urlbar-result-menu-trending-dont-show =
+    .label = Ne pas afficher les recherches populaires
+    .accesskey = N
+urlbar-result-menu-trending-why =
+    .label = Pourquoi ce résultat s’affiche-t-il ?
+    .accesskey = P
+# A message that replaces a result when the user dismisses all suggestions of a
+# particular type.
+urlbar-trending-dismissal-acknowledgment = Merci de votre retour. Vous ne verrez plus apparaître de recherches populaires.
 
 ## Reader View toolbar buttons
 
@@ -990,6 +1009,10 @@ firefox-relay-offer-legal-notice = En cliquant sur « Utiliser les alias de mes
 popup-notification-addon-install-unsigned =
     .value = (Non vérifié)
 popup-notification-xpinstall-prompt-learn-more = En apprendre plus sur l’installation des modules complémentaires en toute sécurité
+# Note: Access key is set to P to match "Private" in the corresponding localized label.
+popup-notification-addon-privatebrowsing-checkbox =
+    .label = Exécution dans les fenêtres privées
+    .accesskey = p
 
 ## Pop-up warning
 
@@ -1019,3 +1042,24 @@ popup-warning-button =
 #   $popupURI (String): the URI for the pop-up window
 popup-show-popup-menuitem =
     .label = Afficher « { $popupURI } »
+
+## File-picker crash notification ("FilePickerCrashed.sys.mjs")
+
+file-picker-failed-open = La boîte de dialogue de fichiers de Windows n’a pas pu être ouverte. Aucun fichier ou dossier n’a pu être sélectionné.
+#   $path (string): The full path to which the file will be saved (e.g., 'C:\Users\Default User\Downloads\readme.txt').
+file-picker-failed-save-somewhere = La boîte de dialogue de fichiers de Windows n’a pas pu être ouverte. Le fichier sera enregistré à l’emplacement { $path }.
+file-picker-failed-save-nowhere = La boîte de dialogue de fichiers de Windows n’a pas pu être ouverte. Aucun dossier de sauvegarde par défaut n’a pu être trouvé, le fichier ne sera pas enregistré.
+file-picker-crashed-open = La boîte de dialogue de fichiers de Windows a planté. Impossible de sélectionner ni fichier ni dossier.
+#   $path (string): The full path to which the file will be saved (e.g., 'C:\Users\Default User\Downloads\readme.txt').
+file-picker-crashed-save-somewhere = La boîte de dialogue de fichiers de Windows a planté. Le fichier sera enregistré à l’emplacement { $path }.
+file-picker-crashed-save-nowhere = La boîte de dialogue de fichiers de Windows a planté. Aucun dossier de sauvegarde par défaut n’a pu être trouvé, le fichier ne sera pas enregistré.
+
+# Button used with file-picker-crashed-save-default. Opens the folder in Windows
+# Explorer, with the saved file selected and in focus.
+#
+# The wording here should be consistent with the Windows variant of
+# `downloads-cmd-show-menuitem-2` and similar messages.
+
+file-picker-crashed-show-in-folder =
+    .label = Afficher dans le dossier
+    .accessKey = d

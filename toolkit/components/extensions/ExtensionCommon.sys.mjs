@@ -748,7 +748,6 @@ export class BaseContext {
             new ScriptError(
               message,
               fileName,
-              null,
               lineNumber,
               columnNumber,
               Ci.nsIScriptError.errorFlag,
@@ -1769,10 +1768,15 @@ class SchemaAPIManager extends EventEmitter {
     this._checkLoadModule(module, name);
 
     module.asyncLoaded = ChromeUtils.compileScript(module.url).then(script => {
-      this.initGlobal();
-      script.executeInGlobal(this.global);
+      // In some rare cases, loadModule() may have been called since we started
+      // the async compileScript call. In that case, return the result that we
+      // already got from loadModule.
+      if (!module.loaded) {
+        this.initGlobal();
+        script.executeInGlobal(this.global);
 
-      module.loaded = true;
+        module.loaded = true;
+      }
 
       return this.global[name];
     });
@@ -1841,9 +1845,6 @@ class SchemaAPIManager extends EventEmitter {
     if (!module) {
       throw new Error(`Module '${name}' does not exist`);
     }
-    if (module.asyncLoaded) {
-      throw new Error(`Module '${name}' currently being lazily loaded`);
-    }
     if (this.global && this.global[name]) {
       throw new Error(
         `Module '${name}' conflicts with existing global property`
@@ -1877,10 +1878,14 @@ class SchemaAPIManager extends EventEmitter {
       ExtensionAPI,
       ExtensionAPIPersistent,
       ExtensionCommon,
+      FileReader,
+      Glean,
+      GleanPings,
       IOUtils,
       MatchGlob,
       MatchPattern,
       MatchPatternSet,
+      OffscreenCanvas,
       PathUtils,
       Services,
       StructuredCloneHolder,
@@ -2879,15 +2884,28 @@ class EventManager {
         listener.added = true;
 
         recordStartupData = false;
-        this.remove.set(callback, () => {
-          EventManager.clearPersistentListener(
-            extension,
-            module,
-            event,
-            uneval(args),
-            listener.primeId
-          );
-        });
+
+        // Do not clear the persistent listener for a non-persistent backgrond
+        // context on removeListener calls got after the background context
+        // was fully started. The persistent listener can instead be cleared
+        // by not re-registering it on the next background context startup.
+        //
+        // This check prevents that for listeners that were already persisted
+        // and primed (a separate one below prevents it for new listeners).
+        //
+        // TODO Bug 1899767: do not reprime if the listener has been
+        // unregistered.
+        if (extension.persistentBackground) {
+          this.remove.set(callback, () => {
+            EventManager.clearPersistentListener(
+              extension,
+              module,
+              event,
+              uneval(args),
+              listener.primeId
+            );
+          });
+        }
       }
     }
 
@@ -2903,15 +2921,28 @@ class EventManager {
     if (recordStartupData) {
       const [, , , /* _module */ /* _event */ /* _key */ primeId] =
         EventManager.savePersistentListener(extension, module, event, args);
-      this.remove.set(callback, () => {
-        EventManager.clearPersistentListener(
-          extension,
-          module,
-          event,
-          uneval(args),
-          primeId
-        );
-      });
+
+      // Do not clear the persistent listener for a non-persistent backgrond
+      // context on removeListener calls got after the background context
+      // was fully started. The persistent listener can instead be cleared
+      // by not re-registering it on the next background context startup.
+      //
+      // This check prevents that for new listeners that were not already persisted
+      // and primed.
+      //
+      // TODO Bug 1899767: do not reprime if the listener has been
+      // unregistered.
+      if (extension.persistentBackground) {
+        this.remove.set(callback, () => {
+          EventManager.clearPersistentListener(
+            extension,
+            module,
+            event,
+            uneval(args),
+            primeId
+          );
+        });
+      }
     }
   }
 
@@ -2980,7 +3011,6 @@ function ignoreEvent(context, name) {
       scriptError.init(
         msg,
         frame.filename,
-        null,
         frame.lineNumber,
         frame.columnNumber,
         Ci.nsIScriptError.warningFlag,

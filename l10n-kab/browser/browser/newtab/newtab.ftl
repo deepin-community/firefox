@@ -45,6 +45,7 @@ newtab-topsites-add-search-engine-header = Rnu amsedday n unadi
 newtab-topsites-add-shortcut-header = Anegzum amaynut
 newtab-topsites-edit-topsites-header = Ẓreg asmel ifazen
 newtab-topsites-edit-shortcut-header = Ẓreg anegzum
+newtab-topsites-add-shortcut-label = Rnu anegzum
 newtab-topsites-title-label = Azwel
 newtab-topsites-title-input =
     .placeholder = Sekcem azwel
@@ -227,6 +228,18 @@ newtab-pocket-pocket-firefox-family = { -pocket-brand-name } d yiwen seg twacult
 newtab-pocket-save = Sekles
 newtab-pocket-saved = Yettwasekles
 
+## Thumbs up and down buttons that shows over a newtab stories card thumbnail on hover.
+
+# Clicking the thumbs up button for this story will result in more stories like this one being recommended
+newtab-pocket-thumbs-up-tooltip =
+    .title = Ugar am wagi
+# Clicking the thumbs down button for this story informs us that the user does not feel like the story is interesting for them
+newtab-pocket-thumbs-down-tooltip =
+    .title = Mačči i nekk
+newtab-toast-dismiss-button =
+    .title = Zgel
+    .aria-label = Zgel
+
 ## Pocket content onboarding experience dialog and modal for new users seeing the Pocket section for the first time, shown as the first item in the Pocket section.
 
 newtab-pocket-onboarding-discover = Snirem ayen akk igerrzen deg web
@@ -268,4 +281,75 @@ newtab-custom-settings = Sefrek ugar n yiɣewwaṛen
 
 newtab-wallpaper-title = Tugniwin n ugilal
 newtab-wallpaper-reset = Wennez ɣer umezwer
+newtab-wallpaper-light-red-panda = Apunda azewwaɣ
 newtab-wallpaper-light-mountain = Adrar amellal
+newtab-wallpaper-dark-mountain = Tugna n yidurar
+
+## Solid Colors
+
+newtab-wallpaper-blue = Amidadi
+newtab-wallpaper-green = Azegzaw
+newtab-wallpaper-yellow = Awraɣ
+newtab-wallpaper-orange = Ačinawi
+newtab-wallpaper-pink = Axuxi
+newtab-wallpaper-red = Azggaɣ
+newtab-wallpaper-dark-blue = Amidadi iḥemqen
+newtab-wallpaper-brown = Aqehwi
+
+## Abstract
+
+newtab-wallpaper-category-title-abstract = Amadwan
+
+## Photographs
+
+newtab-wallpaper-white-mountains = Idurar imellalen
+# Variables
+#   $author_string (String) - The name of the creator of the photo.
+#   $webpage_string (String) - The name of the webpage where the photo is located.
+newtab-wallpaper-attribution = Tawlaft s <a data-l10n-name="name-link">{ $author_string }</a> ɣef <a data-l10n-name="webpage-link">{ $webpage_string }</a>
+newtab-wallpaper-feature-highlight-header = Ɛreḍ aṛuccu n yini
+newtab-wallpaper-feature-highlight-button = Awi-t
+feature-highlight-wallpaper =
+    .title = { -newtab-wallpaper-feature-highlight-header }
+    .aria-label = { -newtab-wallpaper-feature-highlight-content }
+
+## New Tab Weather
+
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-sponsored = { $provider } ∙ S lmendad
+newtab-weather-menu-change-location = Ẓreg adig
+newtab-weather-change-location-search-input = Adig n unadi
+newtab-weather-menu-weather-display = Askan n tegnawt
+# Display options are:
+# - Simple: Displays a current weather condition icon and the current temperature
+# - Detailed: Include simple information plus a short text summary: e.g. "Mostly cloudy"
+newtab-weather-menu-weather-display-option-simple = Aḥerfi
+newtab-weather-menu-weather-display-option-detailed = S telqayt
+newtab-weather-menu-temperature-option-fahrenheit = Fahrenheit
+newtab-weather-menu-temperature-option-celsius = Celsius
+newtab-weather-menu-change-temperature-units-fahrenheit = Beddel ɣer Fahrenheit
+newtab-weather-menu-change-temperature-units-celsius = Beddel ɣer Celsius
+newtab-weather-menu-learn-more = Issin ugar
+
+## Topic Labels
+
+newtab-topic-label-business = Amahil
+newtab-topic-label-education = Aselmed
+newtab-topic-label-food = Tuččit
+newtab-topic-label-health = Tazmert
+newtab-topic-label-hobbies = Uraren
+# ”Money” = “Personal Finance”, refers to articles and stories that help readers better manage
+# and understand their personal finances – from saving money to buying a home. See the
+# “Curated by our editors“ section at the top of https://getpocket.com/explore/personal-finance for more context
+newtab-topic-label-finance = Tadrimt
+newtab-topic-label-education-science = Tussna
+newtab-topic-label-sports = Addal
+newtab-topic-label-tech = Tatiknulujit
+newtab-topic-label-travel = Tirza
+
+## Topic Selection Modal
+
+newtab-topic-selection-save-button = Sekles
+newtab-topic-selection-cancel-button = Sefsex
+newtab-topic-selection-button-maybe-later = Ahat ticki

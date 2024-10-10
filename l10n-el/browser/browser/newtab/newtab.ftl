@@ -200,6 +200,8 @@ newtab-section-header-recent-activity = Πρόσφατη δραστηριότη�
 #   $provider (string) - Name of the corresponding content provider.
 newtab-section-header-pocket = Προτάσεις του { $provider }
 newtab-section-header-stories = Άρθρα που σας βάζουν σε σκέψεις
+# "picks" refers to recommended articles
+newtab-section-header-todays-picks = Σημερινές επιλογές για εσάς
 
 ## Empty Section States: These show when there are no more items in a section. Ex. When there are no more Pocket story recommendations, in the space where there would have been stories, this is shown instead.
 
@@ -233,6 +235,19 @@ newtab-pocket-pocket-firefox-family = Το { -pocket-brand-name } ανήκει �
 # A save to Pocket button that shows over the card thumbnail on hover.
 newtab-pocket-save = Αποθήκευση
 newtab-pocket-saved = Αποθηκεύτηκε
+
+## Thumbs up and down buttons that shows over a newtab stories card thumbnail on hover.
+
+# Clicking the thumbs up button for this story will result in more stories like this one being recommended
+newtab-pocket-thumbs-up-tooltip =
+    .title = Περισσότερα σαν κι αυτό
+# Clicking the thumbs down button for this story informs us that the user does not feel like the story is interesting for them
+newtab-pocket-thumbs-down-tooltip =
+    .title = Όχι για μένα
+newtab-toast-thumbs-up-or-down = Ευχαριστούμε. Τα σχόλιά σας θα μας βοηθήσουν να βελτιώσουμε τη ροή σας.
+newtab-toast-dismiss-button =
+    .title = Απόρριψη
+    .aria-label = Απόρριψη
 
 ## Pocket content onboarding experience dialog and modal for new users seeing the Pocket section for the first time, shown as the first item in the Pocket section.
 
@@ -272,13 +287,16 @@ newtab-custom-recent-subtitle = Συλλογή πρόσφατων ιστοτόπ
 newtab-custom-recent-toggle =
     .label = Πρόσφατη δραστηριότητα
     .description = Συλλογή πρόσφατων ιστοτόπων και περιεχομένου
+newtab-custom-weather-toggle =
+    .label = Καιρός
+    .description = Σημερινή πρόγνωση με μια ματιά
 newtab-custom-close-button = Κλείσιμο
 newtab-custom-settings = Διαχείριση περισσότερων ρυθμίσεων
 
 ## New Tab Wallpapers
 
 newtab-wallpaper-title = Ταπετσαρίες
-newtab-wallpaper-reset = Επαναφορά στην προεπιλογή
+newtab-wallpaper-reset = Επαναφορά προεπιλογής
 newtab-wallpaper-light-red-panda = Κόκκινο πάντα
 newtab-wallpaper-light-mountain = Λευκό βουνό
 newtab-wallpaper-light-sky = Ουρανός με μωβ και ροζ σύννεφα
@@ -291,7 +309,125 @@ newtab-wallpaper-dark-panda = Κόκκινο πάντα στο δάσος
 newtab-wallpaper-dark-sky = Αστικό τοπίο με νυχτερινό ουρανό
 newtab-wallpaper-dark-mountain = Ορεινό τοπίο
 newtab-wallpaper-dark-city = Μωβ αστικό τοπίο
+
+## Solid Colors
+
+newtab-wallpaper-category-title-colors = Συμπαγή χρώματα
+newtab-wallpaper-blue = Μπλε
+newtab-wallpaper-light-blue = Ανοιχτό μπλε
+newtab-wallpaper-light-purple = Ανοιχτό μωβ
+newtab-wallpaper-light-green = Ανοιχτό πράσινο
+newtab-wallpaper-green = Πράσινο
+newtab-wallpaper-beige = Μπεζ
+newtab-wallpaper-yellow = Κίτρινο
+newtab-wallpaper-orange = Πορτοκαλί
+newtab-wallpaper-pink = Ροζ
+newtab-wallpaper-light-pink = Ανοιχτό ροζ
+newtab-wallpaper-red = Κόκκινο
+newtab-wallpaper-dark-blue = Σκούρο μπλε
+newtab-wallpaper-dark-purple = Σκούρο μωβ
+newtab-wallpaper-dark-green = Σκούρο πράσινο
+newtab-wallpaper-brown = Καφέ
+
+## Abstract
+
+newtab-wallpaper-category-title-abstract = Αφηρημένο
+newtab-wallpaper-abstract-green = Πράσινα σχήματα
+newtab-wallpaper-abstract-blue = Μπλε σχήματα
+newtab-wallpaper-abstract-purple = Μωβ σχήματα
+newtab-wallpaper-abstract-orange = Πορτοκαλί σχήματα
+newtab-wallpaper-gradient-orange = Διαβάθμιση πορτοκαλί και ροζ
+newtab-wallpaper-abstract-blue-purple = Μπλε και μωβ σχήματα
+
+## Photographs
+
+newtab-wallpaper-category-title-photographs = Φωτογραφίες
+newtab-wallpaper-beach-at-sunrise = Παραλία στην ανατολή του ήλιου
+newtab-wallpaper-beach-at-sunset = Παραλία στη δύση του ήλιου
+newtab-wallpaper-storm-sky = Ουρανός με καταιγίδα
+newtab-wallpaper-sky-with-pink-clouds = Ουρανός με ροζ σύννεφα
+newtab-wallpaper-red-panda-yawns-in-a-tree = Κόκκινο πάντα που χασμουριέται σε ένα δέντρο
+newtab-wallpaper-white-mountains = Λευκά βουνά
 # Variables
 #   $author_string (String) - The name of the creator of the photo.
 #   $webpage_string (String) - The name of the webpage where the photo is located.
 newtab-wallpaper-attribution = Φωτογραφία από <a data-l10n-name="name-link">{ $author_string }</a> στο <a data-l10n-name="webpage-link">{ $webpage_string }</a>
+newtab-wallpaper-feature-highlight-header = Δοκιμάστε μια πινελιά χρώματος
+newtab-wallpaper-feature-highlight-content = Δώστε νέα εμφάνιση στη νέα σας καρτέλα με ταπετσαρίες.
+newtab-wallpaper-feature-highlight-button = Το κατάλαβα
+# Tooltip for dismiss button
+feature-highlight-dismiss-button =
+    .title = Απόρριψη
+    .aria-label = Κλείσιμο αναδυόμενου παραθύρου
+feature-highlight-wallpaper =
+    .title = { -newtab-wallpaper-feature-highlight-header }
+    .aria-label = { -newtab-wallpaper-feature-highlight-content }
+
+## New Tab Weather
+
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-see-forecast =
+    .title = Προβολή πρόγνωσης στο { $provider }
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-sponsored = { $provider } ∙ Χορηγία
+newtab-weather-menu-change-location = Αλλαγή τοποθεσίας
+newtab-weather-change-location-search-input = Αναζήτηση τοποθεσίας
+newtab-weather-menu-weather-display = Προβολή καιρού
+# Display options are:
+# - Simple: Displays a current weather condition icon and the current temperature
+# - Detailed: Include simple information plus a short text summary: e.g. "Mostly cloudy"
+newtab-weather-menu-weather-display-option-simple = Απλή
+newtab-weather-menu-change-weather-display-simple = Εναλλαγή σε απλή προβολή
+newtab-weather-menu-weather-display-option-detailed = Λεπτομερής
+newtab-weather-menu-change-weather-display-detailed = Εναλλαγή σε λεπτομερή προβολή
+newtab-weather-menu-temperature-units = Μονάδες θερμοκρασίας
+newtab-weather-menu-temperature-option-fahrenheit = Φαρενάιτ
+newtab-weather-menu-temperature-option-celsius = Κελσίου
+newtab-weather-menu-change-temperature-units-fahrenheit = Εναλλαγή σε Φαρενάιτ
+newtab-weather-menu-change-temperature-units-celsius = Εναλλαγή σε Κελσίου
+newtab-weather-menu-hide-weather = Απόκρυψη καιρού στη νέα καρτέλα
+newtab-weather-menu-learn-more = Μάθετε περισσότερα
+# This message is shown if user is working offline
+newtab-weather-error-not-available = Τα δεδομένα καιρού δεν είναι διαθέσιμα αυτήν τη στιγμή.
+
+## Topic Labels
+
+newtab-topic-label-business = Επιχειρήσεις
+newtab-topic-label-career = Καριέρα
+newtab-topic-label-education = Εκπαίδευση
+newtab-topic-label-arts = Ψυχαγωγία
+newtab-topic-label-food = Φαγητό
+newtab-topic-label-health = Υγεία
+newtab-topic-label-hobbies = Παιχνίδια
+# ”Money” = “Personal Finance”, refers to articles and stories that help readers better manage
+# and understand their personal finances – from saving money to buying a home. See the
+# “Curated by our editors“ section at the top of https://getpocket.com/explore/personal-finance for more context
+newtab-topic-label-finance = Οικονομικά
+newtab-topic-label-society-parenting = Ανατροφή παιδιών
+newtab-topic-label-government = Πολιτική
+newtab-topic-label-education-science = Επιστήμη
+# ”Life Hacks” = “Self Improvement”, refers to articles and stories aimed at helping readers improve various
+# aspects of their lives – from mental health to  productivity. See the “Curated by our editors“ section
+# at the top of https://getpocket.com/explore/self-improvement for more context.
+newtab-topic-label-society = Αυτοβελτίωση
+newtab-topic-label-sports = Αθλήματα
+newtab-topic-label-tech = Τεχνολογία
+newtab-topic-label-travel = Ταξίδια
+newtab-topic-label-home = Σπίτι και κήπος
+
+## Topic Selection Modal
+
+# “fine-tune” refers to the process of making small adjustments to something to get
+# the best or desired experience or performance.
+newtab-topic-selection-title = Επιλέξτε θέματα για να βελτιώσετε τη ροή σας
+# “tailored” refers to process of (a tailor) making (clothes) to fit individual customers.
+# In other words, “Our expert curators prioritize stories to fit your selected interests”
+newtab-topic-selection-subtitle = Επιλέξτε δύο ή περισσότερα θέματα. Οι ειδικοί επιμελητές μας δίνουν προτεραιότητα σε άρθρα που ταιριάζουν με τα ενδιαφέροντά σας. Κάντε ενημέρωση ανά πάσα στιγμή.
+newtab-topic-selection-save-button = Αποθήκευση
+newtab-topic-selection-cancel-button = Ακύρωση
+newtab-topic-selection-button-maybe-later = Ίσως αργότερα
+newtab-topic-selection-privacy-link = Μάθετε πώς προστατεύουμε και διαχειριζόμαστε τα δεδομένα
+newtab-topic-selection-button-update-interests = Ενημερώστε τα ενδιαφέροντά σας
+newtab-topic-selection-button-pick-interests = Επιλέξτε τα ενδιαφέροντά σας

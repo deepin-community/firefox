@@ -20,15 +20,13 @@ add_setup(async function () {
   let server = useHttpServer();
   server.registerContentType("sjs", "sjs");
 
-  await AddonTestUtils.promiseStartupManager();
-
   const engineData = {
     baseURL: gDataUrl,
     name: "GET suggestion engine",
     method: "GET",
   };
 
-  engine = await SearchTestUtils.promiseNewSearchEngine({
+  engine = await SearchTestUtils.installOpenSearchEngine({
     url: `${gDataUrl}engineMaker.sjs?${JSON.stringify(engineData)}`,
   });
 });

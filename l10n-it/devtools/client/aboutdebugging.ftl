@@ -83,6 +83,8 @@ about-debugging-setup-usb-step-enable-dev-menu2 = Attiva il menu “Opzioni svil
 
 about-debugging-setup-usb-step-enable-debug2 = Attiva “Debug USB” nel menu “Opzioni sviluppatori” sul dispositivo Android.
 
+about-debugging-setup-usb-step-enable-file-transfer = Attiva il trasferimento file e assicurati che il dispositivo non sia in modalità solo ricarica.
+
 about-debugging-setup-usb-step-enable-debug-firefox2 = Attiva USB Debugging in Firefox sul dispositivo Android.
 
 about-debugging-setup-usb-step-plug-device = Connetti il dispositivo Android al computer.
@@ -216,6 +218,10 @@ about-debugging-worker-scope =
 
 about-debugging-worker-push-service =
   .label = Servizio push
+
+# Displayed for service workers in runtime pages, to label the origin of a worker.
+about-debugging-worker-origin =
+  .label = Origine
 
 about-debugging-worker-inspect-action-disabled =
   .title = L’analisi di service worker è attualmente disattivata in { -brand-shorter-name } multiprocesso.

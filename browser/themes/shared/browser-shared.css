@@ -2,9 +2,14 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-@import url("chrome://browser/skin/downloads/indicator.css");
 @import url("chrome://browser/skin/addons/extension-controlled.css");
 @import url("chrome://browser/skin/addons/unified-extensions.css");
+@import url("chrome://browser/skin/downloads/indicator.css");
+@import url("chrome://browser/skin/tabbrowser/content-area.css");
+@import url("chrome://browser/skin/tabbrowser/ctrlTab.css");
+@import url("chrome://browser/skin/tabbrowser/fullscreen-and-pointerlock.css");
+@import url("chrome://browser/skin/tabbrowser/tabs.css");
+@import url("chrome://browser/skin/tabbrowser/tab-hover-preview.css");
 @import url("chrome://browser/skin/toolbarbuttons.css");
 @import url("chrome://browser/skin/toolbarbutton-icons.css");
 @import url("chrome://browser/skin/menupanel.css");
@@ -16,21 +21,42 @@
 @import url("chrome://browser/skin/urlbarView.css");
 @import url("chrome://browser/skin/autocomplete.css");
 @import url("chrome://browser/skin/places/editBookmarkPanel.css");
+@import url("chrome://browser/skin/searchbar.css");
 @import url("chrome://browser/skin/sidebar.css");
-@import url("chrome://browser/skin/tabs.css");
-@import url("chrome://browser/content/tabpreview/tabpreview.css");
-@import url("chrome://browser/skin/fullscreen/warning.css");
-@import url("chrome://browser/skin/ctrlTab.css");
 @import url("chrome://browser/skin/customizableui/customizeMode.css");
 @import url("chrome://browser/skin/UITour.css");
 @import url("chrome://browser/skin/formautofill-notification.css");
 
 @namespace html url("http://www.w3.org/1999/xhtml");
 
+:root,
+body {
+  height: 100%;
+  width: 100%;
+  overflow: clip;
+}
+
 :root {
   user-select: none;
   color-scheme: light dark;
   accent-color: var(--button-primary-bgcolor);
+  text-rendering: optimizeLegibility;
+  min-height: 95px;
+  min-width: 95px;
+
+  &:-moz-locale-dir(rtl) {
+    direction: rtl;
+  }
+
+  &:not([chromehidden~="toolbar"]) {
+    min-width: 450px;
+    min-height: 120px;
+  }
+
+  /* z-indices that fight on the browser stack */
+  --browser-stack-z-index-devtools-splitter: 1;
+  --browser-stack-z-index-dialog-stack: 2;
+  --browser-stack-z-index-rdm-toolbar: 3;
 
   --toolbox-non-lwt-bgcolor: -moz-headerbar;
   --toolbox-non-lwt-textcolor: -moz-headerbartext;
@@ -40,10 +66,13 @@
   --toolbarbutton-border-radius: 4px;
 
   --chrome-content-separator-color: ThreeDShadow;
+  /* stylelint-disable-next-line media-query-no-invalid */
+  @media (-moz-bool-pref: "sidebar.revamp") {
+    --chrome-content-separator-color: var(--lwt-sidebar-border-color, light-dark(rgba(0,0,0,.3), rgba(255,255,255,.3)));
+  }
+
   --tabs-navbar-separator-color: ThreeDShadow;
   --tabs-navbar-separator-style: solid;
-
-  --panelui-subview-transition-duration: 150ms;
 
   --short-notification-background: #0250BB;
   --short-notification-gradient: #9059FF;
@@ -75,6 +104,11 @@
   /* This should be used for icons and chiclets inside the input field. It makes
      the gap around them more uniform when they are close to the field edges */
   --urlbar-icon-border-radius: calc(var(--toolbarbutton-border-radius) - 1px);
+  --urlbar-searchmode-and-input-box-container-border-color: color-mix(in srgb, currentColor 30%, transparent);
+  --urlbar-searchmode-and-input-box-container-shadow: 0 2px 6px rgba(0, 0, 0, 15%);
+  --urlbar-search-mode-picker-persisted-background-color: color-mix(in srgb, currentColor 14%, transparent);
+  --urlbar-search-mode-picker-persisted-background-color-hover: color-mix(in srgb, currentColor 28%, transparent);
+  --urlbar-search-mode-picker-persisted-background-color-active: color-mix(in srgb, currentColor 35%, transparent);
 
   --pocket-icon-fill: #ef4056;
 
@@ -108,9 +142,13 @@
     color: var(--lwt-text-color);
 
     --link-color: light-dark(rgb(0, 97, 224), rgb(0, 221, 255));
-    --chrome-content-separator-color: rgba(0,0,0,.3);
     --tabs-navbar-separator-color: light-dark(rgba(0,0,0,.1), rgba(0,0,0,.3));
     --attention-dot-color: light-dark(#2ac3a2, #54ffbd);
+
+    /* stylelint-disable-next-line media-query-no-invalid */
+    @media not (-moz-bool-pref: "sidebar.revamp") {
+      --chrome-content-separator-color: light-dark(rgba(0,0,0,.3), rgba(255,255,255,.3));
+    }
 
     @media not (prefers-contrast) {
       --focus-outline-color: light-dark(#0061E0, #00DDFF);
@@ -142,6 +180,15 @@
   }
 }
 
+body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  margin: 0;
+}
+
+/* Toolbox and Toolbars */
+
 #navigator-toolbox {
   appearance: none;
 
@@ -157,6 +204,15 @@
   &:-moz-window-inactive {
     background-color: var(--toolbox-non-lwt-bgcolor-inactive);
     color: var(--toolbox-non-lwt-textcolor-inactive);
+  }
+
+  /* stylelint-disable-next-line media-query-no-invalid */
+  @media (-moz-bool-pref: "sidebar.revamp") {
+    border-bottom: none;
+  }
+
+  &[fullscreenShouldAnimate] {
+    transition: 0.8s margin-top ease-out;
   }
 
   :root[customizing] & {
@@ -196,20 +252,119 @@
   }
 }
 
-:root[tabsintitlebar] #titlebar {
-  will-change: opacity;
-  transition: opacity var(--inactive-window-transition);
+/* Title bar */
 
-  &:-moz-window-inactive {
-    opacity: var(--inactive-titlebar-opacity);
+#titlebar {
+  -moz-window-dragging: drag;
+
+  :root[tabsintitlebar] & {
+    will-change: opacity;
+    transition: opacity var(--inactive-window-transition);
+
+    &:-moz-window-inactive {
+      opacity: var(--inactive-titlebar-opacity);
+    }
   }
 }
 
-/* Add space to beginning of toolbar and make that space click the first <toolbarbutton> */
-#nav-bar-customization-target > :is(toolbarbutton, toolbaritem):first-child,
-#nav-bar-customization-target > toolbarpaletteitem:first-child > :is(toolbarbutton, toolbaritem) {
-  padding-inline-start: var(--toolbar-start-end-padding);
+.titlebar-buttonbox-container {
+  order: 1000;
+
+  @media (-moz-platform: macos) and (not (-moz-mac-rtl)) {
+    &:-moz-locale-dir(ltr) {
+      order: -1;
+    }
+  }
+
+  @media (-moz-mac-rtl) {
+    &:-moz-locale-dir(rtl) {
+      order: -1;
+    }
+  }
+
+  #toolbar-menubar[autohide="true"]:not([inactive]) + #TabsToolbar > & {
+    visibility: hidden;
+  }
+
+  :root:not([chromemargin], [inFullscreen]) & {
+    display: none;
+  }
 }
+
+.titlebar-spacer {
+  :root[inFullscreen] &,
+  :root:not([tabsintitlebar]) & {
+    display: none;
+  }
+
+  @media (-moz-platform: windows) {
+    :root:not([sizemode=normal]) &[type="pre-tabs"] {
+      display: none;
+    }
+  }
+
+  @media (-moz-platform: linux) and (-moz-gtk-csd-reversed-placement: 0) {
+    :root:not([sizemode=normal]) &[type="pre-tabs"],
+    :root[gtktiledwindow=true] &[type="pre-tabs"] {
+      display: none;
+    }
+  }
+
+  @media (-moz-gtk-csd-reversed-placement) {
+    :root:not([sizemode=normal]) &[type="post-tabs"],
+    :root[gtktiledwindow=true] &[type="post-tabs"] {
+      display: none;
+    }
+  }
+}
+
+/* Hide the TabsToolbar titlebar controls if the menubar is permanently shown.
+ * (That is, if the menu bar doesn't autohide, and we're not in a fullscreen or
+ * popup window.) */
+:root:not([chromehidden~="menubar"], [inFullscreen]) #toolbar-menubar[autohide="false"] + #TabsToolbar > :is(.titlebar-buttonbox-container, .titlebar-spacer) {
+  display: none;
+}
+
+:root:not([sizemode=maximized], [sizemode=fullscreen]) .titlebar-restore,
+:root:is([sizemode=maximized], [sizemode=fullscreen]) .titlebar-max {
+  display: none;
+}
+
+.titlebar-buttonbox {
+  appearance: auto;
+  -moz-default-appearance: -moz-window-button-box;
+  position: relative;
+
+  :root:not([tabsintitlebar], [sizemode=fullscreen]) & {
+    display: none;
+  }
+}
+
+/* Menu bar */
+
+#toolbar-menubar {
+  &[autohide="true"] {
+    overflow: hidden;
+
+    &[inactive]:not([customizing]) {
+      min-height: 0 !important;
+      height: 0 !important;
+      padding: 0 !important;
+      appearance: none !important;
+    }
+  }
+
+  &:not([autohide]) {
+    visibility: collapse;
+  }
+}
+
+/* Hide menu elements intended for keyboard access support */
+#main-menubar[openedwithkey=false] .show-only-for-keyboard {
+  display: none;
+}
+
+/* Navigation toolbar */
 
 #nav-bar {
   /* The toolbar buttons that animate use position:absolute and require a
@@ -221,8 +376,28 @@
     border-top-style: none;
   }
 
+  /* The address bar needs to be able to render outside of the toolbar, but as
+   * long as it's within the toolbar's bounds we can clip the toolbar so that the
+   * rendering pipeline doesn't reserve an enormous texture for it. */
+  &:not([urlbar-exceeds-toolbar-bounds]) {
+    overflow: clip;
+  }
+
   :root[sessionrestored][lwtheme] & {
     transition: var(--ext-theme-background-transition);
+  }
+}
+
+#nav-bar-customization-target {
+  /* Don't grow if potentially-user-sized elements (like the searchbar or the
+   * bookmarks toolbar item list) are too wide. This forces them to flex to the
+   * available space as much as possible, see bug 1795260. */
+  min-width: 0;
+
+  /* Add space to beginning of toolbar and make that space click the first <toolbarbutton> */
+  > :is(toolbarbutton, toolbaritem):first-child,
+  > toolbarpaletteitem:first-child > :is(toolbarbutton, toolbaritem) {
+    padding-inline-start: var(--toolbar-start-end-padding);
   }
 }
 
@@ -296,6 +471,17 @@
   }
 }
 
+#personal-bookmarks {
+  position: relative;
+  -moz-window-dragging: inherit;
+}
+
+toolbarpaletteitem > #personal-bookmarks > #PlacesToolbar,
+toolbarpaletteitem:has(> toolbarbutton.fxms-bmb-button),
+#personal-bookmarks:is([overflowedItem=true], [cui-areatype="panel"]) > #PlacesToolbar {
+  display: none;
+}
+
 /* Bookmarks toolbar only-on-new-tab mode */
 
 :root {
@@ -316,16 +502,23 @@
   }
 
   .newTabBrowserPanel,
-  #sidebar-box {
+  #sidebar-main,
+  #sidebar-box,
+  .sidebar-animation-screenshot {
     /* Make room for the bookmarks toolbar so that it won't visibly overlap the
        new tab page and sidebar contents. We do not put this padding on #browser
        as that would resize the content area for all tabs including background
        tabs, which is what we explicitly want to avoid doing here. */
-    padding-top: var(--bookmarks-toolbar-overlapping-browser-height);
+    margin-top: var(--bookmarks-toolbar-overlapping-browser-height);
   }
 }
 
 /* Bookmarks toolbar drop indicator */
+
+#PlacesToolbarDropIndicatorHolder {
+  display: block;
+  position: absolute;
+}
 
 #PlacesToolbarDropIndicator {
   list-style-image: url(chrome://browser/skin/toolbar-drag-indicator.svg);
@@ -359,7 +552,11 @@ menupopup::part(drop-indicator) {
   pointer-events: none;
 }
 
-/* Back / Forward context menu */
+/* Back / Forward buttons context menu */
+
+.unified-nav-current {
+  font-weight: var(--font-weight-bold);
+}
 
 .unified-nav-back,
 .unified-nav-forward {
@@ -375,98 +572,6 @@ menupopup::part(drop-indicator) {
 .unified-nav-forward[_moz-menuactive]:-moz-locale-dir(ltr),
 .unified-nav-back[_moz-menuactive]:-moz-locale-dir(rtl) {
   list-style-image: url("chrome://browser/skin/forward.svg") !important;
-}
-
-/* Status panel */
-
-#statuspanel {
-  &:not([hidden]) {
-    max-width: calc(100% - 5px);
-    pointer-events: none;
-
-    /* Take a bit more space vertically for the mouse tracker to hit us more
-     * easily */
-    padding-top: 2em;
-
-    position: absolute;
-    bottom: 0;
-    left: 0;
-  }
-
-  &:not([mirror]):-moz-locale-dir(rtl),
-  &[mirror]:-moz-locale-dir(ltr) {
-    left: auto;
-    right: 0;
-  }
-
-  &[sizelimit] {
-    max-width: 50%;
-  }
-
-  &[type=status] {
-    min-width: min(23em, 33%);
-  }
-
-  &[type=overLink] {
-    transition: opacity 120ms ease-out, visibility 120ms;
-  }
-
-  &:is([type=overLink], [inactive][previoustype=overLink]) {
-    direction: ltr;
-  }
-
-  &[inactive],
-  :root[inDOMFullscreen] &:not([type=overLink]) {
-    transition: none;
-    opacity: 0;
-    visibility: hidden;
-
-    &[previoustype=overLink] {
-      transition: opacity 200ms ease-out, visibility 200ms;
-    }
-  }
-
-  /* stylelint-disable-next-line media-query-no-invalid */
-  @media (-moz-bool-pref: "browser.tabs.hideStatusPanel") {
-    visibility: hidden;
-  }
-}
-
-#statuspanel-label {
-  color-scheme: env(-moz-content-preferred-color-scheme);
-  margin: 0;
-  padding: 2px 4px;
-  background-color: -moz-dialog;
-  border: 1px none ThreeDShadow;
-  border-top-style: solid;
-  color: -moz-dialogText;
-  text-shadow: none;
-
-  @media (not (prefers-contrast)) and (not (-moz-platform: linux)) {
-    background-color: light-dark(#f9f9fa, hsl(240,1%,20%));
-    border-color: light-dark(#ddd, hsl(240,1%,40%));
-    color: light-dark(#444, rgb(249,249,250));
-  }
-
-  #statuspanel:not([mirror]) > &:-moz-locale-dir(ltr),
-  #statuspanel[mirror] > &:-moz-locale-dir(rtl) {
-    border-right-style: solid;
-    /* disabled on Windows for triggering grayscale AA (bug 659213): */
-  	@media not (-moz-platform: windows) {
-      border-top-right-radius: .3em;
-    }
-    margin-right: 1em;
-  }
-
-  #statuspanel:not([mirror]) > &:-moz-locale-dir(rtl),
-  #statuspanel[mirror] > &:-moz-locale-dir(ltr) {
-    border-left-style: solid;
-    /* disabled on Windows for triggering grayscale AA (bug 659213): */
-  	@media not (-moz-platform: windows) {
-      border-top-left-radius: .3em;
-    }
-    margin-left: 1em;
-  }
 }
 
 /* Find bar */
@@ -513,7 +618,18 @@ menupopup::part(drop-indicator) {
   height: 16px;
 }
 
-/* End private browsing indicator */
+/* Content analysis indicator */
+
+:root:not([contentanalysisactive]) #content-analysis-indicator {
+  display: none;
+}
+
+/* Various panels and popup notifications */
+
+#screenshotsPagePanel {
+  position: relative;
+  max-height: 0;
+}
 
 /* Override theme colors since the picker uses extra colors that
    themes cannot set */
@@ -533,6 +649,28 @@ menupopup::part(drop-indicator) {
 
 #addon-progress-notification-progressmeter {
   margin: 2px 4px;
+}
+
+#invalid-form-popup {
+  white-space: pre-wrap;
+  word-break: break-word;
+  unicode-bidi: plaintext;
+
+  > description {
+    max-width: 280px;
+  }
+}
+
+.popup-notification-invalid-input {
+  box-shadow: 0 0 1.5px 1px red;
+
+  &[focused] {
+    box-shadow: 0 0 2px 2px rgba(255,0,0,0.4);
+  }
+}
+
+.popup-notification-description[popupid="webauthn-prompt-register-direct"] {
+  white-space: pre-line;
 }
 
 /* Contextual Feature Recommendation popup-notification */
@@ -648,7 +786,7 @@ menupopup::part(drop-indicator) {
       float: inline-end;
       background-color: transparent;
       flex-direction: row-reverse;
-      /* Override proton-doorhanger default styles that increase the size of the button */
+      /* Override doorhanger default styles that increase the size of the button */
       margin: 0;
     }
 
@@ -819,15 +957,6 @@ menupopup::part(drop-indicator) {
 
 #cfr-notification-footer-spacer {
   flex-grow: 1;
-}
-
-/* nhnt11: Workaround to insert a linebreak after the DoH doorhanger's title.
- * The title uses the inline <b> that usually contains the hostname for
- * permission prompts to achieve bold formatting. This is always the 2nd child.
- */
-.popup-notification-description[popupid="doh-first-time"] > b:first-of-type {
-  display: block;
-  margin-bottom: 4px; /* matches the margin-bottom on description elements */
 }
 
 /* Sharing tabs warning */
@@ -1058,6 +1187,11 @@ popupnotificationcontent {
 
 /* History swipe navigation animation */
 
+#historySwipeAnimationContainer {
+  overflow: hidden;
+  pointer-events: none;
+}
+
 #historySwipeAnimationPreviousArrow,
 #historySwipeAnimationNextArrow {
   --swipe-nav-icon-primary-color: SelectedItemText;
@@ -1082,47 +1216,47 @@ popupnotificationcontent {
   transform: scaleX(-1);
 }
 
-.swipe-nav-icon {
-  > path {
-    transition: fill 1s;
-  }
+.swipe-nav-icon-circle,
+.swipe-nav-icon-circle-outline,
+.swipe-nav-icon-arrow {
+  transition: fill 1s;
+}
 
-  @media not (-moz-platform: macos) {
-    /*
-     * Styles for the swipe navigation SVG icon.
-     *
-     * `will-navigate` class name is added to the <svg> element when the user's
-     * swipe gesture reached to the point where history navigation will be
-     * triggered. It's used for triggering three animations, an arrow color change,
-     * a circle color change and a glowing effect outer the circle.
-     */
-    > circle {
-      fill: var(--swipe-nav-icon-accent-color);
-      stroke: var(--swipe-nav-icon-primary-color);
-      transition: fill 1s;
+@media not (-moz-platform: macos) {
+  /*
+   * Styles for the swipe navigation SVG icon.
+   *
+   * `will-navigate` class name is added to the <svg> element when the user's
+   * swipe gesture reached to the point where history navigation will be
+   * triggered. It's used for triggering three animations, an arrow color change,
+   * a circle color change and a glowing effect outer the circle.
+   */
+  .swipe-nav-icon-circle {
+    fill: var(--swipe-nav-icon-accent-color);
+    stroke: var(--swipe-nav-icon-primary-color);
 
-      &:first-of-type {
-        fill: var(--swipe-nav-icon-primary-color);
-        transition: opacity 1s;
-        will-change: opacity; /* a workaround for bug 1804189 */
-        opacity: 0;
-      }
-    }
-
-    &.will-navigate > circle:not(:first-of-type) {
+    .will-navigate > & {
       fill: var(--swipe-nav-icon-primary-color);
     }
+  }
 
-    &.will-navigate > circle:first-of-type {
+  .swipe-nav-icon-circle-outline {
+    fill: var(--swipe-nav-icon-primary-color);
+    stroke: var(--swipe-nav-icon-primary-color);
+    transition: opacity 1s;
+    will-change: opacity; /* a workaround for bug 1804189 */
+    opacity: 0;
+
+    .will-navigate > & {
       transition-delay: 0.2s;
       opacity: 0.2;
     }
+  }
 
-    > path {
-      fill: var(--swipe-nav-icon-primary-color);
-    }
+  .swipe-nav-icon-arrow {
+    fill: var(--swipe-nav-icon-primary-color);
 
-    &.will-navigate > path {
+    .will-navigate > & {
       fill: var(--swipe-nav-icon-accent-color);
       stroke: var(--swipe-nav-icon-accent-color);
     }
@@ -1140,19 +1274,16 @@ popupnotificationcontent {
   .swipe-nav-icon-circle-outline,
   .swipe-nav-icon-arrow {
     fill: var(--swipe-nav-icon-primary-color);
+
+    .will-navigate > & {
+      fill: var(--swipe-nav-icon-accent-color);
+    }
   }
 
   .swipe-nav-icon-circle {
     fill: var(--swipe-nav-icon-accent-color);
-  }
 
-  .swipe-nav-icon.will-navigate {
-    > .swipe-nav-icon-circle-outline,
-    > .swipe-nav-icon-arrow {
-      fill: var(--swipe-nav-icon-accent-color);
-    }
-
-    > .swipe-nav-icon-circle {
+    .will-navigate > & {
       fill: var(--swipe-nav-icon-primary-color);
     }
   }

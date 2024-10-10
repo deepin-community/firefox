@@ -13,6 +13,10 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.DialogFragment
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
+import mozilla.components.browser.state.action.TranslationsAction
+import mozilla.components.browser.state.store.BrowserStore
+import org.mozilla.fenix.ext.requireComponents
+import org.mozilla.fenix.ext.runIfFragmentIsAttached
 import org.mozilla.fenix.theme.FirefoxTheme
 
 /**
@@ -21,6 +25,7 @@ import org.mozilla.fenix.theme.FirefoxTheme
 class NeverTranslateSiteDialogPreferenceFragment : DialogFragment() {
 
     private val args by navArgs<NeverTranslateSiteDialogPreferenceFragmentArgs>()
+    private val browserStore: BrowserStore by lazy { requireComponents.core.store }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog =
         super.onCreateDialog(savedInstanceState).apply {
@@ -37,9 +42,22 @@ class NeverTranslateSiteDialogPreferenceFragment : DialogFragment() {
         setContent {
             FirefoxTheme {
                 NeverTranslateSiteDialogPreference(
-                    websiteUrl = args.websiteUrl,
-                    onConfirmDelete = { findNavController().popBackStack() },
-                    onCancel = { findNavController().popBackStack() },
+                    websiteUrl = args.neverTranslateSiteUrl,
+                    onConfirmDelete = {
+                        browserStore.dispatch(
+                            TranslationsAction.RemoveNeverTranslateSiteAction(
+                                origin = args.neverTranslateSiteUrl,
+                            ),
+                        )
+                        runIfFragmentIsAttached {
+                            findNavController().popBackStack()
+                        }
+                    },
+                    onCancel = {
+                        runIfFragmentIsAttached {
+                            findNavController().popBackStack()
+                        }
+                    },
                 )
             }
         }

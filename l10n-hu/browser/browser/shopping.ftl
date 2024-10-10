@@ -89,6 +89,9 @@ shopping-show-less-button = Kevesebb megjelenítése
 
 shopping-settings-label =
     .label = Beállítások
+shopping-settings-recommendations-toggle2 =
+    .label = Ajánlások és szponzorált tartalmak megjelenítése
+shopping-settings-recommendations-learn-more3 = A { -brand-product-name } nem osztja meg a személyes adatait, így ezek az ajánlások nem követik Önt az interneten. <a data-l10n-name="review-quality-url">További tudnivalók</a>
 shopping-settings-recommendations-toggle =
     .label = Reklámok megjelenítése az értékelés-ellenőrzőben
 shopping-settings-recommendations-learn-more2 = Alkalmanként releváns termékek hirdetéseit fogja látni. Csak megbízható értékeléssel rendelkező termékeket hirdetünk. <a data-l10n-name="review-quality-url">További tudnivalók</a>
@@ -115,6 +118,7 @@ shopping-settings-sidebar-enabled-state = Értékelés-ellenőrző <strong>be</s
 shopping-adjusted-rating-label =
     .label = Módosított értékelés
 shopping-adjusted-rating-unreliable-reviews = A nem megbízható értékelések eltávolítva
+shopping-adjusted-rating-based-reliable-reviews = Megbízható értékelések alapján
 
 ## Strings for the review reliability component
 
@@ -135,6 +139,8 @@ shopping-analysis-explainer-learn-more2 = Tudjon meg többet arról, <a data-l10
 # websites, which will be inserted without being translated.
 #  $retailer (String) - capitalized name of the shopping website, for example, "Amazon".
 shopping-analysis-explainer-highlights-description = A <strong>kiemelések</strong> a(z) { $retailer } értékeléseinek az elmúlt 80 napból származó és megbízhatónak ítélt elemei.
+# Fallback for analysis highlights explainer if the retailer is ever unknown
+shopping-analysis-explainer-highlights-description-unknown-retailer = A <strong>kiemelések</strong> az értékelések az elmúlt 80 napból származó és megbízhatónak ítélt elemei.
 shopping-analysis-explainer-review-grading-scale-reliable = Megbízható értékelések. Úgy gondoljuk, hogy az értékelések valószínűleg valódi vásárlóktól származnak, akik őszinte, elfogulatlan értékelést írtak.
 shopping-analysis-explainer-review-grading-scale-mixed = Úgy gondoljuk, hogy vegyesen vannak megbízható és nem megbízható értékelések.
 shopping-analysis-explainer-review-grading-scale-unreliable = Nem megbízható értékelések. Úgy gondoljuk, hogy az értékelések hamisak vagy elfogult értékelőktől származnak.
@@ -161,6 +167,7 @@ shopping-unanalyzed-product-analyze-button = Értékelési minőség ellenőrzé
 
 more-to-consider-ad-label =
     .label = További megfontolandó információk
+shopping-sponsored-label = Szponzorált
 ad-by-fakespot = A { -fakespot-brand-name } hirdetése
 
 ## Shopping survey strings.

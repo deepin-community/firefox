@@ -6,13 +6,20 @@ const lazy = {};
 ChromeUtils.defineESModuleGetters(
   lazy,
   {
+    loader: "resource://devtools/shared/loader/Loader.sys.mjs",
+  },
+  { global: "contextual" }
+);
+
+ChromeUtils.defineESModuleGetters(
+  lazy,
+  {
     releaseDistinctSystemPrincipalLoader:
       "resource://devtools/shared/loader/DistinctSystemPrincipalLoader.sys.mjs",
     useDistinctSystemPrincipalLoader:
       "resource://devtools/shared/loader/DistinctSystemPrincipalLoader.sys.mjs",
-    loader: "resource://devtools/shared/loader/Loader.sys.mjs",
   },
-  { global: "contextual" }
+  { global: "shared" }
 );
 
 // Name of the attribute into which we save data in `sharedData` object.
@@ -97,6 +104,16 @@ export const ContentProcessWatcherRegistry = {
   },
 
   /**
+   * Similar to `getAllWatcherDataObjects`, but will only return the already existing registered watchers in this process.
+   */
+  getAllExistingWatchersDataObjects() {
+    if (!gAllWatcherData) {
+      return [];
+    }
+    return gAllWatcherData.values();
+  },
+
+  /**
    * Get the watcher data object for a given watcher actor.
    *
    * @param {String} watcherActorID
@@ -157,11 +174,17 @@ export const ContentProcessWatcherRegistry = {
       return { connection, loader };
     }
 
-    const { sessionContext, forwardingPrefix } = watcherDataObject;
-    // For the browser toolbox, we need to use a distinct loader in order to debug privileged JS.
+    // When debugging a privileged page, like about:addons, this module will run in the same compartment
+    // as the debugged page. Both will run in the shared system compartment.
     // The thread actor ultimately need to be in a distinct compartments from its debuggees.
+    // So we are using a special loader, which will use a distinct privileged global and compartment
+    // to load itself as well as all its modules.
+    //
+    // Note that when we are running the Browser Toolbox, this module will already be loaded in a special, distinct global and compartment
+    // Thanks to `loadInDevToolsLoader` flag of BrowserToolboxDevToolsProcess's JS Process Actor configuration.
+    // So that the Loader will also be loaded in the right, distinct compartment.
     loader =
-      useDistinctLoader || sessionContext.type == "all"
+      useDistinctLoader || watcherDataObject.sessionContext.type == "all"
         ? lazy.useDistinctSystemPrincipalLoader(watcherDataObject)
         : lazy.loader;
     watcherDataObject.loader = loader;
@@ -179,6 +202,7 @@ export const ContentProcessWatcherRegistry = {
 
     // Instantiate a DevToolsServerConnection which will pipe all its outgoing RDP packets
     // up to the parent process manager via DevToolsProcess JS Actor messages.
+    const { forwardingPrefix } = watcherDataObject;
     connection = DevToolsServer.connectToParentWindowActor(
       watcherDataObject.jsProcessActor,
       forwardingPrefix,
@@ -414,17 +438,31 @@ function createWatcherDataObject(watcherActorID, sessionData) {
     // List of active WindowGlobal and ContentProcess target actor instances.
     actors: [],
 
-    // {Array<Object>}
-    // We store workers independently as we don't have access to the TargetActor instance (it is in the worker thread)
-    // and we need to keep reference to some other specifics
+    // {Object<Array<Object>>}
+    // We can't use `actors` list for workers as this code runs in the main thread and the WorkerTargetActors
+    // run in the worker thread.
+    // We store in each array, specific to each worker type (having a dedicated target watcher class),
+    // an object with the following attributes:
     // - {WorkerDebugger} dbg
-    workers: [],
+    // - {String} workerThreadServerForwardingPrefix
+    // - {Object} workerTargetForm
+    // - {DevToolsTransport} transport
+    workers: {
+      service_worker: [],
+      shared_worker: [],
+      worker: [],
+    },
 
-    // {Set<Array<Object>>}
+    // {Object<Set<Array<Object>>>}
     // A Set of arrays which will be populated with concurrent Session Data updates
     // being done while a worker target is being instantiated.
     // Each pending worker being initialized register a new dedicated array which will be removed
     // from the Set once its initialization is over.
-    pendingWorkers: new Set(),
+    // We maintain one Set per target type which is managed by a dedicated target watcher class.
+    pendingWorkers: {
+      service_worker: new Set(),
+      shared_worker: new Set(),
+      worker: new Set(),
+    },
   };
 }

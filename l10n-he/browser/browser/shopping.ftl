@@ -89,6 +89,9 @@ shopping-show-less-button = להציג פחות
 
 shopping-settings-label =
     .label = הגדרות
+shopping-settings-recommendations-toggle2 =
+    .label = הצגת המלצות ותוכן ממומן
+shopping-settings-recommendations-learn-more3 = ‏{ -brand-product-name } לא משתף את הנתונים האישיים שלך, כך שההמלצות האלה לא יעקבו אחריך ברחבי הרשת. <a data-l10n-name="review-quality-url">מידע נוסף</a>
 shopping-settings-recommendations-toggle =
     .label = הצגת פרסומות בבודק הסקירות
 shopping-settings-recommendations-learn-more2 = מדי פעם יוצגו פרסומות עבור מוצרים רלוונטיים. אנו מפרסמים רק מוצרים בעלי סקירות אמינות. <a data-l10n-name="review-quality-url">מידע נוסף</a>
@@ -115,6 +118,7 @@ shopping-settings-sidebar-enabled-state = בודק הסקירות <strong>מופ
 shopping-adjusted-rating-label =
     .label = דירוג מותאם
 shopping-adjusted-rating-unreliable-reviews = סקירות בלתי אמינות הוסרו
+shopping-adjusted-rating-based-reliable-reviews = מבוסס על סקירות אמינות
 
 ## Strings for the review reliability component
 
@@ -133,6 +137,8 @@ shopping-analysis-explainer-learn-more2 = מידע נוסף על <a data-l10n-na
 # websites, which will be inserted without being translated.
 #  $retailer (String) - capitalized name of the shopping website, for example, "Amazon".
 shopping-analysis-explainer-highlights-description = <strong>הדגשים</strong> הם מסקירות של { $retailer } במהלך 80 הימים האחרונים, שאנו מאמינים שהן אמינות.
+# Fallback for analysis highlights explainer if the retailer is ever unknown
+shopping-analysis-explainer-highlights-description-unknown-retailer = <strong>הדגשים</strong> הם מסקירות במהלך 80 הימים האחרונים, שאנו מאמינים שהן אמינות.
 shopping-analysis-explainer-review-grading-scale-reliable = סקירות אמינות. אנו מאמינים שהסקירות הן ככל הנראה מלקוחות אמיתיים שהשאירו סקירות כנות ושאינן משוחדות.
 shopping-analysis-explainer-review-grading-scale-mixed = אנו מאמינים שיש שילוב של סקירות אמינות ובלתי אמינות.
 shopping-analysis-explainer-review-grading-scale-unreliable = סקירות בלתי אמינות. אנו מאמינים שהסקירות כנראה מזויפות או של סוקרים מוטים או משוחדים.
@@ -157,6 +163,7 @@ shopping-unanalyzed-product-analyze-button = בדיקת איכות הסקירו�
 
 ## Strings for the advertisement
 
+shopping-sponsored-label = ממומן
 ad-by-fakespot = פרסומת מאת { -fakespot-brand-name }
 
 ## Shopping survey strings.

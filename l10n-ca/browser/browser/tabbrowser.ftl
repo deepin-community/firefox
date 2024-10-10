@@ -13,6 +13,17 @@ tabbrowser-menuitem-close =
 #   $title (String): the title of the current tab.
 #   $containerName (String): the name of the current container.
 tabbrowser-container-tab-title = { $title } - { $containerName }
+# This text serves as an on-screen tooltip as well as an accessible name for
+# the "X" button that is shown on the active tab or, when multiple tabs are
+# selected, to all their "X" buttons.
+# Variables:
+#   $tabCount (Number): The number of tabs that will be closed.
+tabbrowser-close-tabs-button =
+    .tooltiptext =
+        { $tabCount ->
+            [one] Tanca la pestanya
+           *[other] Tanca { $tabCount } pestanyes
+        }
 # Variables:
 #   $tabCount (Number): The number of tabs that will be closed.
 tabbrowser-close-tabs-tooltip =
@@ -110,6 +121,10 @@ tabbrowser-confirm-open-multiple-tabs-checkbox = Avisa'm quan el fet d'obrir mol
 tabbrowser-confirm-caretbrowsing-title = Navegació amb cursor
 tabbrowser-confirm-caretbrowsing-message = En prémer F7 s'activa o es desactiva la navegació amb cursor. Aquesta característica col·loca un cursor mòbil a les pàgines web que us permet seleccionar text amb el teclat. Voleu activar-la?
 tabbrowser-confirm-caretbrowsing-checkbox = No em tornis a mostrar aquest diàleg.
+
+## Confirmation dialog for closing all duplicate tabs
+
+tabbrowser-confirm-close-duplicate-tabs-title = Atenció
 
 ##
 

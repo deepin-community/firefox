@@ -20,43 +20,54 @@ add_task(async function test_translations_telemetry_switch_from_language() {
   await FullPageTranslationsTestUtils.assertPageIsUntranslated(runInPage);
 
   await FullPageTranslationsTestUtils.openPanel({
+    expectedFromLanguage: "es",
+    expectedToLanguage: "en",
     onOpenPanel: FullPageTranslationsTestUtils.assertPanelViewDefault,
   });
 
-  FullPageTranslationsTestUtils.assertSelectedFromLanguage({ langTag: "es" });
-  FullPageTranslationsTestUtils.changeSelectedFromLanguage("en");
+  await FullPageTranslationsTestUtils.changeSelectedFromLanguage({
+    langTag: "en",
+  });
 
   await TestTranslationsTelemetry.assertEvent(Glean.translationsPanel.open, {
     expectedEventCount: 1,
     expectNewFlowId: true,
-    finalValuePredicates: [
-      value => value.extra.auto_show === "false",
-      value => value.extra.view_name === "defaultView",
-      value => value.extra.opened_from === "translationsButton",
-      value => value.extra.document_language === "es",
-    ],
+    assertForMostRecentEvent: {
+      auto_show: false,
+      view_name: "defaultView",
+      opened_from: "translationsButton",
+      document_language: "es",
+    },
   });
   await TestTranslationsTelemetry.assertEvent(
     Glean.translationsPanel.changeFromLanguage,
     {
       expectedEventCount: 1,
       expectNewFlowId: false,
-      finalValuePredicates: [value => value.extra.language === "en"],
+      assertForMostRecentEvent: {
+        language: "en",
+      },
     }
   );
 
-  FullPageTranslationsTestUtils.changeSelectedFromLanguage("es");
+  await FullPageTranslationsTestUtils.changeSelectedFromLanguage({
+    langTag: "es",
+  });
 
   await TestTranslationsTelemetry.assertEvent(
     Glean.translationsPanel.changeFromLanguage,
     {
       expectedEventCount: 2,
       expectNewFlowId: false,
-      finalValuePredicates: [value => value.extra.language === "es"],
+      assertForMostRecentEvent: {
+        language: "es",
+      },
     }
   );
 
-  FullPageTranslationsTestUtils.changeSelectedFromLanguage("");
+  await FullPageTranslationsTestUtils.changeSelectedFromLanguage({
+    langTag: "",
+  });
 
   await TestTranslationsTelemetry.assertEvent(
     Glean.translationsPanel.changeFromLanguage,
@@ -65,14 +76,18 @@ add_task(async function test_translations_telemetry_switch_from_language() {
     }
   );
 
-  FullPageTranslationsTestUtils.changeSelectedFromLanguage("en");
+  await FullPageTranslationsTestUtils.changeSelectedFromLanguage({
+    langTag: "en",
+  });
 
   await TestTranslationsTelemetry.assertEvent(
     Glean.translationsPanel.changeFromLanguage,
     {
       expectedEventCount: 3,
       expectNewFlowId: false,
-      finalValuePredicates: [value => value.extra.language === "en"],
+      assertForMostRecentEvent: {
+        language: "en",
+      },
     }
   );
 
@@ -96,43 +111,52 @@ add_task(async function test_translations_telemetry_switch_to_language() {
   await FullPageTranslationsTestUtils.assertPageIsUntranslated(runInPage);
 
   await FullPageTranslationsTestUtils.openPanel({
+    expectedFromLanguage: "es",
+    expectedToLanguage: "en",
     onOpenPanel: FullPageTranslationsTestUtils.assertPanelViewDefault,
   });
 
-  FullPageTranslationsTestUtils.assertSelectedToLanguage({ langTag: "en" });
-  FullPageTranslationsTestUtils.changeSelectedToLanguage("fr");
+  await FullPageTranslationsTestUtils.changeSelectedToLanguage({
+    langTag: "fr",
+  });
 
   await TestTranslationsTelemetry.assertEvent(Glean.translationsPanel.open, {
     expectedEventCount: 1,
     expectNewFlowId: true,
-    finalValuePredicates: [
-      value => value.extra.auto_show === "false",
-      value => value.extra.view_name === "defaultView",
-      value => value.extra.opened_from === "translationsButton",
-      value => value.extra.document_language === "es",
-    ],
+    assertForMostRecentEvent: {
+      auto_show: false,
+      view_name: "defaultView",
+      opened_from: "translationsButton",
+      document_language: "es",
+    },
   });
   await TestTranslationsTelemetry.assertEvent(
     Glean.translationsPanel.changeToLanguage,
     {
       expectedEventCount: 1,
       expectNewFlowId: false,
-      finalValuePredicates: [value => value.extra.language === "fr"],
+      assertForMostRecentEvent: {
+        language: "fr",
+      },
     }
   );
 
-  FullPageTranslationsTestUtils.changeSelectedToLanguage("en");
+  await FullPageTranslationsTestUtils.changeSelectedToLanguage({
+    langTag: "en",
+  });
 
   await TestTranslationsTelemetry.assertEvent(
     Glean.translationsPanel.changeToLanguage,
     {
       expectedEventCount: 2,
       expectNewFlowId: false,
-      finalValuePredicates: [value => value.extra.language === "en"],
+      assertForMostRecentEvent: {
+        language: "en",
+      },
     }
   );
 
-  FullPageTranslationsTestUtils.changeSelectedToLanguage("");
+  await FullPageTranslationsTestUtils.changeSelectedToLanguage({ langTag: "" });
 
   await TestTranslationsTelemetry.assertEvent(
     Glean.translationsPanel.changeToLanguage,
@@ -141,14 +165,18 @@ add_task(async function test_translations_telemetry_switch_to_language() {
     }
   );
 
-  FullPageTranslationsTestUtils.changeSelectedToLanguage("en");
+  await FullPageTranslationsTestUtils.changeSelectedToLanguage({
+    langTag: "en",
+  });
 
   await TestTranslationsTelemetry.assertEvent(
     Glean.translationsPanel.changeToLanguage,
     {
       expectedEventCount: 3,
       expectNewFlowId: false,
-      finalValuePredicates: [value => value.extra.language === "en"],
+      assertForMostRecentEvent: {
+        language: "en",
+      },
     }
   );
 

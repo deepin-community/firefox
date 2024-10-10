@@ -4,6 +4,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+include "mozilla/dom/DomSecurityIPCUtils.h";
 include "mozilla/GfxMessageUtils.h";
 include "mozilla/dom/CSPMessageUtils.h";
 include "mozilla/dom/DocShellMessageUtils.h";
@@ -39,9 +40,11 @@ using mozilla::CSSRect from "Units.h";
 using mozilla::CSSSize from "Units.h";
 using mozilla::ScreenIntSize from "Units.h";
 using mozilla::LayoutDeviceIntPoint from "Units.h";
+using mozilla::ImageIntSize from "Units.h";
 using nsSizeMode from "nsIWidgetListener.h";
 using mozilla::ScrollbarPreference from "mozilla/ScrollbarPreferences.h";
 using mozilla::gfx::SurfaceFormat from "mozilla/gfx/Types.h";
+using nsILoadInfo::HTTPSUpgradeTelemetryType from "nsILoadInfo.h";
 [RefCounted] using class nsIPrincipal from "nsIPrincipal.h";
 using mozilla::dom::MaybeDiscardedBrowsingContext from "mozilla/dom/BrowsingContext.h";
 [RefCounted] using class nsIURI from "nsIURI.h";
@@ -131,16 +134,6 @@ struct FrameScriptInfo
   bool runInGlobalScope;
 };
 
-struct FeaturePolicyInfo
-{
-  nsString[]   inheritedDeniedFeatureNames;
-  nsString[]   attributeEnabledFeatureNames;
-  nsString     declaredString;
-  nullable nsIPrincipal defaultOrigin;
-  nullable nsIPrincipal selfOrigin;
-  nullable nsIPrincipal srcOrigin;
-};
-
 /**
  * The information required to complete a window creation request.
  */
@@ -216,9 +209,11 @@ struct DocShellLoadStateInit
   bool IsFormSubmission;
   bool FirstParty;
   bool HasValidUserGestureActivation;
+  bool TextDirectiveUserActivation;
   bool AllowFocusMove;
   bool IsFromProcessingFrameAttributes;
   bool WasSchemelessInput;
+  HTTPSUpgradeTelemetryType HttpsUpgradeTelemetry;
 
   // Fields missing due to lack of need or serialization
   // nsCOMPtr<nsIDocShell> mSourceDocShell;
@@ -245,6 +240,7 @@ struct TimedChannelInfo
   bool allRedirectsSameOrigin;
   bool allRedirectsPassTimingAllowCheck;
   bool? timingAllowCheckForPrincipal;
+  bool renderBlocking;
   TimeStamp launchServiceWorkerStart;
   TimeStamp launchServiceWorkerEnd;
   TimeStamp dispatchFetchEventStart;
@@ -324,6 +320,13 @@ struct OwnerShowInfo {
   // TODO(emilio): I think we should really be able to figure this out from the
   // parent process too instead.
   nsSizeMode sizeMode;
+};
+
+struct IPCImage {
+    BigBuffer data;
+    uint32_t stride;
+    SurfaceFormat format;
+    ImageIntSize size;
 };
 
 } // namespace dom

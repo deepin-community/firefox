@@ -201,6 +201,8 @@ newtab-section-header-recent-activity = Gweithgaredd diweddar
 #   $provider (string) - Name of the corresponding content provider.
 newtab-section-header-pocket = Argymhellwyd gan { $provider }
 newtab-section-header-stories = Straeon sy’n procio’r meddwl
+# "picks" refers to recommended articles
+newtab-section-header-todays-picks = Dewisiadau heddiw i chi
 
 ## Empty Section States: These show when there are no more items in a section. Ex. When there are no more Pocket story recommendations, in the space where there would have been stories, this is shown instead.
 
@@ -234,6 +236,19 @@ newtab-pocket-pocket-firefox-family = Mae { -pocket-brand-name } yn rhan o deulu
 # A save to Pocket button that shows over the card thumbnail on hover.
 newtab-pocket-save = Cadw
 newtab-pocket-saved = Wedi'u Cadw
+
+## Thumbs up and down buttons that shows over a newtab stories card thumbnail on hover.
+
+# Clicking the thumbs up button for this story will result in more stories like this one being recommended
+newtab-pocket-thumbs-up-tooltip =
+    .title = Mwy fel hyn
+# Clicking the thumbs down button for this story informs us that the user does not feel like the story is interesting for them
+newtab-pocket-thumbs-down-tooltip =
+    .title = Nid i mi
+newtab-toast-thumbs-up-or-down = Diolch. Bydd eich adborth yn ein helpu i wella'ch llif.
+newtab-toast-dismiss-button =
+    .title = Cau
+    .aria-label = Cau
 
 ## Pocket content onboarding experience dialog and modal for new users seeing the Pocket section for the first time, shown as the first item in the Pocket section.
 
@@ -277,6 +292,9 @@ newtab-custom-recent-subtitle = Detholiad o wefannau a chynnwys diweddar
 newtab-custom-recent-toggle =
     .label = Gweithgaredd diweddar
     .description = Detholiad o wefannau a chynnwys diweddar
+newtab-custom-weather-toggle =
+    .label = Y Tywydd
+    .description = Cipolwg ar ragolygon tywydd heddiw
 newtab-custom-close-button = Cau
 newtab-custom-settings = Rheoli rhagor o osodiadau
 
@@ -296,7 +314,125 @@ newtab-wallpaper-dark-panda = Panda coch wedi'i guddio yn y goedwig
 newtab-wallpaper-dark-sky = Tirwedd y ddinas gydag awyr y nos
 newtab-wallpaper-dark-mountain = Tirwedd mynydd
 newtab-wallpaper-dark-city = Tirwedd dinas borffor
+
+## Solid Colors
+
+newtab-wallpaper-category-title-colors = Lliwiau solet
+newtab-wallpaper-blue = Glas
+newtab-wallpaper-light-blue = Glas golau
+newtab-wallpaper-light-purple = Porffor golau
+newtab-wallpaper-light-green = Gwyrdd golau
+newtab-wallpaper-green = Gwyrdd
+newtab-wallpaper-beige = Llwydfelyn
+newtab-wallpaper-yellow = Melyn
+newtab-wallpaper-orange = Oren
+newtab-wallpaper-pink = Pinc
+newtab-wallpaper-light-pink = Pinc golau
+newtab-wallpaper-red = Coch
+newtab-wallpaper-dark-blue = Glas tywyll
+newtab-wallpaper-dark-purple = Porffor tywyll
+newtab-wallpaper-dark-green = Gwyrdd tywyll
+newtab-wallpaper-brown = Brown
+
+## Abstract
+
+newtab-wallpaper-category-title-abstract = Haniaethol
+newtab-wallpaper-abstract-green = Siapiau gwyrdd
+newtab-wallpaper-abstract-blue = Siapiau glas
+newtab-wallpaper-abstract-purple = Siapiau porffor
+newtab-wallpaper-abstract-orange = Siapiau oren
+newtab-wallpaper-gradient-orange = Graddiant oren a phinc
+newtab-wallpaper-abstract-blue-purple = Siapiau glas a phorffor
+
+## Photographs
+
+newtab-wallpaper-category-title-photographs = Ffotograffau
+newtab-wallpaper-beach-at-sunrise = Traeth ar godiad haul
+newtab-wallpaper-beach-at-sunset = Traeth ar fachlud haul
+newtab-wallpaper-storm-sky = Awyr stormus
+newtab-wallpaper-sky-with-pink-clouds = Awyr gyda chymylau pinc
+newtab-wallpaper-red-panda-yawns-in-a-tree = Panda coch yn dylyfu mewn coeden
+newtab-wallpaper-white-mountains = Mynyddoedd gwyn
 # Variables
 #   $author_string (String) - The name of the creator of the photo.
 #   $webpage_string (String) - The name of the webpage where the photo is located.
 newtab-wallpaper-attribution = Llun gan <a data-l10n-name="name-link">{ $author_string }</a> ar <a data-l10n-name="webpage-link">{ $webpage_string }</a>
+newtab-wallpaper-feature-highlight-header = Ychwanegwch bach o liw
+newtab-wallpaper-feature-highlight-content = Rhowch olwg newydd i'ch Tab Newydd gyda phapurau wal.
+newtab-wallpaper-feature-highlight-button = Iawn
+# Tooltip for dismiss button
+feature-highlight-dismiss-button =
+    .title = Cau
+    .aria-label = Cau'r llamlen
+feature-highlight-wallpaper =
+    .title = { -newtab-wallpaper-feature-highlight-header }
+    .aria-label = { -newtab-wallpaper-feature-highlight-content }
+
+## New Tab Weather
+
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-see-forecast =
+    .title = Gweld y rhagolygon yn { $provider }
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-sponsored = { $provider } ∙ Wedi'i noddi
+newtab-weather-menu-change-location = Newid lleoliad
+newtab-weather-change-location-search-input = Chwilio am leoliad
+newtab-weather-menu-weather-display = Dangos y tywydd
+# Display options are:
+# - Simple: Displays a current weather condition icon and the current temperature
+# - Detailed: Include simple information plus a short text summary: e.g. "Mostly cloudy"
+newtab-weather-menu-weather-display-option-simple = Syml
+newtab-weather-menu-change-weather-display-simple = Newid i'r golwg syml
+newtab-weather-menu-weather-display-option-detailed = Manwl
+newtab-weather-menu-change-weather-display-detailed = Newid i'r golwg manwl
+newtab-weather-menu-temperature-units = Unedau tymheredd
+newtab-weather-menu-temperature-option-fahrenheit = Fahrenheit
+newtab-weather-menu-temperature-option-celsius = Celsius
+newtab-weather-menu-change-temperature-units-fahrenheit = Newid i Fahrenheit
+newtab-weather-menu-change-temperature-units-celsius = Newid i Celsius
+newtab-weather-menu-hide-weather = Cuddio'r tywydd ar Dab Newydd
+newtab-weather-menu-learn-more = Dysgu rhagor
+# This message is shown if user is working offline
+newtab-weather-error-not-available = Nid yw data tywydd ar gael ar hyn o bryd.
+
+## Topic Labels
+
+newtab-topic-label-business = Busnes
+newtab-topic-label-career = Gyrfaoedd
+newtab-topic-label-education = Addysg
+newtab-topic-label-arts = Adloniant
+newtab-topic-label-food = Bwyd
+newtab-topic-label-health = Iechyd
+newtab-topic-label-hobbies = Gemau
+# ”Money” = “Personal Finance”, refers to articles and stories that help readers better manage
+# and understand their personal finances – from saving money to buying a home. See the
+# “Curated by our editors“ section at the top of https://getpocket.com/explore/personal-finance for more context
+newtab-topic-label-finance = Arian
+newtab-topic-label-society-parenting = Rhiantu
+newtab-topic-label-government = Gwleidyddiaeth
+newtab-topic-label-education-science = Gwyddoniaeth
+# ”Life Hacks” = “Self Improvement”, refers to articles and stories aimed at helping readers improve various
+# aspects of their lives – from mental health to  productivity. See the “Curated by our editors“ section
+# at the top of https://getpocket.com/explore/self-improvement for more context.
+newtab-topic-label-society = Gwella'ch Bywyd
+newtab-topic-label-sports = Chwaraeon
+newtab-topic-label-tech = Technoleg
+newtab-topic-label-travel = Teithio
+newtab-topic-label-home = Cartref a Gardd
+
+## Topic Selection Modal
+
+# “fine-tune” refers to the process of making small adjustments to something to get
+# the best or desired experience or performance.
+newtab-topic-selection-title = Dewiswch bynciau i fireinio'ch llif
+# “tailored” refers to process of (a tailor) making (clothes) to fit individual customers.
+# In other words, “Our expert curators prioritize stories to fit your selected interests”
+newtab-topic-selection-subtitle = Dewiswch ddau bwnc neu fwy. Mae ein curaduron arbenigol yn blaenoriaethu straeon sydd wedi'u teilwra i'ch diddordebau. Diweddarwch nhw ar unrhyw adeg.
+newtab-topic-selection-save-button = Cadw
+newtab-topic-selection-cancel-button = Diddymu
+newtab-topic-selection-button-maybe-later = Rhywbryd eto
+newtab-topic-selection-privacy-link = Dyma sut rydym yn diogelu ac yn rheoli data
+newtab-topic-selection-button-update-interests = Diweddarwch eich diddordebau
+newtab-topic-selection-button-pick-interests = Dewiswch eich diddordebau

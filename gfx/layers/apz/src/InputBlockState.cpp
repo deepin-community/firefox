@@ -11,6 +11,7 @@
 
 #include "mozilla/MouseEvents.h"
 #include "mozilla/StaticPrefs_apz.h"
+#include "mozilla/StaticPrefs_browser.h"
 #include "mozilla/StaticPrefs_layout.h"
 #include "mozilla/StaticPrefs_mousewheel.h"
 #include "mozilla/StaticPrefs_test.h"
@@ -50,7 +51,7 @@ InputBlockState::InputBlockState(
 
 bool InputBlockState::SetConfirmedTargetApzc(
     const RefPtr<AsyncPanZoomController>& aTargetApzc,
-    TargetConfirmationState aState, InputData* aFirstInput,
+    TargetConfirmationState aState, InputQueueIterator aFirstInput,
     bool aForScrollbarDrag) {
   MOZ_ASSERT(aState == TargetConfirmationState::eConfirmed ||
              aState == TargetConfirmationState::eTimedOut);
@@ -318,15 +319,30 @@ bool WheelBlockState::SetContentResponse(bool aPreventDefault) {
 
 bool WheelBlockState::SetConfirmedTargetApzc(
     const RefPtr<AsyncPanZoomController>& aTargetApzc,
-    TargetConfirmationState aState, InputData* aFirstInput,
+    TargetConfirmationState aState, InputQueueIterator aFirstInput,
     bool aForScrollbarDrag) {
   // The APZC that we find via APZCCallbackHelpers may not be the same APZC
   // ESM or OverscrollHandoff would have computed. Make sure we get the right
   // one by looking for the first apzc the next pending event can scroll.
   RefPtr<AsyncPanZoomController> apzc = aTargetApzc;
   if (apzc && aFirstInput) {
-    apzc = apzc->BuildOverscrollHandoffChain()->FindFirstScrollable(
-        *aFirstInput, &mAllowedScrollDirections);
+    auto handoffChain = apzc->BuildOverscrollHandoffChain();
+    apzc = handoffChain->FindFirstScrollable(*aFirstInput->Input(),
+                                             &mAllowedScrollDirections);
+
+    // If the first event in the input block cannot scroll any APZC,
+    // iterate through the input queue and try subsequent events in the block.
+    // This avoids dropping an entire block where some events could have caused
+    // scrolling.
+    while (!apzc) {
+      ++aFirstInput;
+      if (!aFirstInput) break;
+      if (aFirstInput->Block() != this) {
+        continue;
+      }
+      apzc = handoffChain->FindFirstScrollable(*aFirstInput->Input(),
+                                               &mAllowedScrollDirections);
+    }
   }
 
   InputBlockState::SetConfirmedTargetApzc(apzc, aState, aFirstInput,
@@ -369,6 +385,11 @@ void WheelBlockState::Update(ScrollWheelInput& aEvent) {
   // timeout and the mouse-move-in-frame timeout.
   mLastEventTime = aEvent.mTimeStamp;
   mLastMouseMove = TimeStamp();
+}
+
+Maybe<LayersId> WheelBlockState::WheelTransactionLayersId() const {
+  return (InTransaction() && TargetApzc()) ? Some(TargetApzc()->GetLayersId())
+                                           : Nothing();
 }
 
 bool WheelBlockState::MustStayActive() { return !mTransactionEnded; }
@@ -521,7 +542,7 @@ PanGestureBlockState::PanGestureBlockState(
 
 bool PanGestureBlockState::SetConfirmedTargetApzc(
     const RefPtr<AsyncPanZoomController>& aTargetApzc,
-    TargetConfirmationState aState, InputData* aFirstInput,
+    TargetConfirmationState aState, InputQueueIterator aFirstInput,
     bool aForScrollbarDrag) {
   // The APZC that we find via APZCCallbackHelpers may not be the same APZC
   // ESM or OverscrollHandoff would have computed. Make sure we get the right
@@ -530,7 +551,7 @@ bool PanGestureBlockState::SetConfirmedTargetApzc(
   if (apzc && aFirstInput) {
     RefPtr<AsyncPanZoomController> scrollableApzc =
         apzc->BuildOverscrollHandoffChain()->FindFirstScrollable(
-            *aFirstInput, &mAllowedScrollDirections);
+            *aFirstInput->Input(), &mAllowedScrollDirections);
     if (scrollableApzc) {
       apzc = scrollableApzc;
     }
@@ -593,6 +614,10 @@ void PanGestureBlockState::SetBrowserGestureResponse(
     BrowserGestureResponse aResponse) {
   mWaitingForBrowserGestureResponse = false;
   mStartedBrowserGesture = bool(aResponse);
+}
+
+Maybe<LayersId> PanGestureBlockState::WheelTransactionLayersId() const {
+  return TargetApzc() ? Some(TargetApzc()->GetLayersId()) : Nothing();
 }
 
 PinchGestureBlockState::PinchGestureBlockState(
@@ -727,8 +752,25 @@ void TouchBlockState::DispatchEvent(const InputData& aEvent) const {
 }
 
 bool TouchBlockState::TouchActionAllowsPinchZoom() const {
+  bool forceUserScalable = StaticPrefs::browser_ui_zoom_force_user_scalable();
+
   // Pointer events specification requires that all touch points allow zoom.
   for (auto& behavior : mAllowedTouchBehaviors) {
+    if (
+        // These flags represent 'touch-action: none'; if all of them are unset,
+        // we want to disable pinch zoom, even if forceUserScalable is true.
+        // This matches the behavior of other browsers.
+        !(behavior & AllowedTouchBehavior::PINCH_ZOOM) &&
+        !(behavior & AllowedTouchBehavior::ANIMATING_ZOOM) &&
+        !(behavior & AllowedTouchBehavior::VERTICAL_PAN) &&
+        !(behavior & AllowedTouchBehavior::HORIZONTAL_PAN)) {
+      return false;
+    }
+
+    if (forceUserScalable) {
+      return true;
+    }
+
     if (!(behavior & AllowedTouchBehavior::PINCH_ZOOM)) {
       return false;
     }
@@ -811,7 +853,7 @@ bool TouchBlockState::UpdateSlopState(const MultiTouchInput& aInput,
 bool TouchBlockState::IsInSlop() const { return mInSlop; }
 
 Maybe<ScrollDirection> TouchBlockState::GetBestGuessPanDirection(
-    const MultiTouchInput& aInput) {
+    const MultiTouchInput& aInput) const {
   if (aInput.mType != MultiTouchInput::MULTITOUCH_MOVE ||
       aInput.mTouches.Length() != 1) {
     return Nothing();

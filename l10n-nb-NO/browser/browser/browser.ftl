@@ -547,6 +547,10 @@ urlbar-go-button =
     .tooltiptext = Gå til adressen i adresselinjen
 urlbar-page-action-button =
     .tooltiptext = Sidehandlinger
+urlbar-revert-button =
+    .tooltiptext = Vis adressen i adresselinjen
+urlbar-show-page-actions-button =
+    .tooltiptext = Vis alle sidehandlinger
 
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
@@ -602,6 +606,12 @@ urlbar-result-action-copy-to-clipboard = Kopier
 #  $result (String): the string representation for a formula result
 urlbar-result-action-calculator-result = = { $result }
 
+## Strings used for buttons in the urlbar
+
+# Label prompting user to search with a particular search engine.
+#  $engine (String): the name of a search engine that searches a specific site
+urlbar-result-search-with = Søk med { $engine }
+
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
 ## In these actions "Search" is a verb, followed by where the search is performed.
@@ -631,6 +641,21 @@ urlbar-group-quickactions =
 #  $engine (String): the name of the search engine used to search.
 urlbar-group-recent-searches =
     .label = Nylige søk
+# The header shown above trending results.
+# Variables:
+#  $engine (String): the name of the search engine providing the trending suggestions
+urlbar-group-trending =
+    .label = Populær på { $engine }
+# The result menu labels shown next to trending results.
+urlbar-result-menu-trending-dont-show =
+    .label = Ikke vis populære søk
+    .accesskey = k
+urlbar-result-menu-trending-why =
+    .label = Hvorfor ser jeg dette?
+    .accesskey = H
+# A message that replaces a result when the user dismisses all suggestions of a
+# particular type.
+urlbar-trending-dismissal-acknowledgment = Takk for din tilbakemelding. Du vil ikke lenger se populære søk.
 
 ## Reader View toolbar buttons
 
@@ -981,6 +1006,10 @@ firefox-relay-offer-legal-notice = Ved å klikke «Bruk e-postalias» godtar du 
 popup-notification-addon-install-unsigned =
     .value = (Ubekreftet)
 popup-notification-xpinstall-prompt-learn-more = Les mer om sikker installering av utvidelser
+# Note: Access key is set to P to match "Private" in the corresponding localized label.
+popup-notification-addon-privatebrowsing-checkbox =
+    .label = Kjør i private vindu
+    .accesskey = p
 
 ## Pop-up warning
 
@@ -1010,3 +1039,24 @@ popup-warning-button =
 #   $popupURI (String): the URI for the pop-up window
 popup-show-popup-menuitem =
     .label = Åpne «{ $popupURI }»
+
+## File-picker crash notification ("FilePickerCrashed.sys.mjs")
+
+file-picker-failed-open = Klarte ikke å åpne Windows-fildialogvinduet. Ingen fil eller mappe kunne velges.
+#   $path (string): The full path to which the file will be saved (e.g., 'C:\Users\Default User\Downloads\readme.txt').
+file-picker-failed-save-somewhere = Klarte ikke å åpne Windows-fildialogvinduet. Filen vil bli lagret i { $path }.
+file-picker-failed-save-nowhere = Klarte ikke å åpne Windows-fildialogvinduet. Fant ingen standardmappe, og filen vil ikke bli lagret.
+file-picker-crashed-open = Windows-fildialogvinduet har krasjet. Ingen fil eller mappe kunne velges.
+#   $path (string): The full path to which the file will be saved (e.g., 'C:\Users\Default User\Downloads\readme.txt').
+file-picker-crashed-save-somewhere = Windows-fildialogvinduet har krasjet. Filen vil bli lagret i { $path }.
+file-picker-crashed-save-nowhere = Windows-fildialogvinduet har krasjet. Fant ingen standardmappe, og filen vil ikke bli lagret.
+
+# Button used with file-picker-crashed-save-default. Opens the folder in Windows
+# Explorer, with the saved file selected and in focus.
+#
+# The wording here should be consistent with the Windows variant of
+# `downloads-cmd-show-menuitem-2` and similar messages.
+
+file-picker-crashed-show-in-folder =
+    .label = Vis i mappe
+    .accessKey = m

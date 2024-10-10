@@ -11,11 +11,13 @@ certmgr-tab-remembered =
 certmgr-tab-people =
     .label = Osobe
 certmgr-tab-servers =
-    .label = Poslužitelji
+    .label = Serveri
 certmgr-tab-ca =
     .label = Certifikacijska tijela
 certmgr-mine = Imaš certifikate sljedećih organizacija koje te identificiraju
+certmgr-remembered = Ovi se certifikati koriste za tvoju identifikaciju na web stranicama
 certmgr-people = Imaš spremljene certifikate koji identificiraju sljedeće osobe
+certmgr-server = Ovi unosi identificiraju iznimke grešaka certifikata servera
 certmgr-ca = Imaš spremljene certifikate koji identificiraju ova certifikacijska tijela
 certmgr-edit-ca-cert2 =
     .title = Uredi postavke povjerenja CA-ovih certifikata
@@ -29,11 +31,11 @@ certmgr-delete-cert2 =
     .title = Izbriši certifikat
     .style = min-width: 48em; min-height: 24em;
 certmgr-cert-host =
-    .label = Poslužitelj
+    .label = Računalo
 certmgr-cert-name =
-    .label = Naziv certifikata
+    .label = Ime certifikata
 certmgr-cert-server =
-    .label = Poslužitelj
+    .label = Server
 certmgr-token-name =
     .label = Sigurnosni uređaj
 certmgr-begins-label =
@@ -78,7 +80,7 @@ exception-mgr-extra-button =
     .accesskey = r
 exception-mgr-supplemental-warning = Legitimne banke, trgovine i ostale javne stranice te neće tražiti da ovo učiniš.
 exception-mgr-cert-location-url =
-    .value = Lokacija:
+    .value = Adresa:
 exception-mgr-cert-location-download =
     .label = Preuzmi certifikat
     .accesskey = c
@@ -90,7 +92,7 @@ exception-mgr-permanent =
     .accesskey = i
 pk11-bad-password = Lozinka koju ste upisali je bila netočna.
 pkcs12-decode-err = Dekodiranje datoteke nije uspjelo. Ili datoteka nije u PKCS #12 formatu ili je oštećena ili je lozinka koju ste unijeli bila kriva.
-pkcs12-unknown-err-restore = Vraćanje PKCS #12 datoteke nije uspjelo zbog nepoznatih razloga.
+pkcs12-unknown-err-restore = Obnavljanje PKCS #12 datoteke nije uspjelo zbog nepoznatih razloga.
 pkcs12-unknown-err-backup = Stvaranje sigurnosne kopije PKCS #12 datoteke nije uspjelo zbog nepoznatih razloga.
 pkcs12-unknown-err = PKCS #12 operacija nije uspjela zbog nepoznatih razloga.
 pkcs12-info-no-smartcard-backup = Nije moguće napraviti sigurnosnu kopiju certifikata iz hardverskog sigurnosnog uređaja poput smart kartice.
@@ -98,7 +100,7 @@ pkcs12-dup-data = Certifikat i sigurnosni ključ već postoje na sigurnosnom ure
 
 ## PKCS#12 file dialogs
 
-choose-p12-backup-file-dialog = Naziv datoteke za izradu sigurnosne kopije
+choose-p12-backup-file-dialog = Ime datoteke za sigurnosnu kopiju
 file-browse-pkcs12-spec = PKCS12 Datoteke
 choose-p12-restore-file-dialog = Datoteka certifikata za uvoz
 
@@ -120,7 +122,10 @@ delete-user-cert-title =
     .title = Izbriši svoje certifikate
 delete-user-cert-confirm = Stvarno želiš izbrisati ove certifikate?
 delete-user-cert-impact = Ako izbrišeš jedan od vlastitih certifikata, više ga nećeš moći koristiti za identifikaciju.
-delete-ssl-override-confirm = Sigurno izbrisati ovu iznimku poslužitelja?
+delete-ssl-override-title =
+    .title = Izbriši iznimku certifikata servera
+delete-ssl-override-confirm = Stvarno želiš izbrisati ovu iznimku servera?
+delete-ssl-override-impact = Ako izbrišeš iznimku servera, obnavljaš uobičajene sigurnosne provjere za te servere i zahtijevaš da koriste ispravne certifikate.
 delete-ca-cert-title =
     .title = Brisanje ili poništavanje povjerenja CA certifikata
 delete-ca-cert-confirm = Zatražio/la si brisanje ovih CA certifikata. Za ugrađene certifikate uklonit će se sva povjerenja, što ima isti efekt. Zaista želiš izbrisati certifikate ili poništiti povjerenje?
@@ -137,6 +142,8 @@ cert-with-serial =
     .value = Certifikat sa serijskim brojem: { $serialNumber }
 # Used when no cert is stored for an override
 no-cert-stored-for-override = (nije pohranjeno)
+# When a certificate is unavailable (for example, it has been deleted or the token it exists on has been removed).
+certificate-not-available = (Nedostupno)
 
 ## Used to show whether an override is temporary or permanent
 
@@ -145,7 +152,7 @@ temporary-override = Privremeno
 
 ## Add Security Exception dialog
 
-add-exception-branded-warning = Promijeniti ćete na način na koji { -brand-short-name } identificira ovu stranicu.
+add-exception-branded-warning = Promijenit ćeš na način na koji { -brand-short-name } identificira ovu web stranicu.
 add-exception-invalid-header = Ova se stranica pokušava identificirati s neispravnim informacijama.
 add-exception-domain-mismatch-short = Pogrešna stranica
 add-exception-domain-mismatch-long = Certifikat pripada drugoj stranici, što može značiti da netko pokušava krivotvoriti ovu stranicu.

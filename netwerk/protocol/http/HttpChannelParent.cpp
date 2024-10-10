@@ -21,6 +21,7 @@
 #include "mozilla/dom/WindowGlobalParent.h"
 #include "mozilla/net/NeckoParent.h"
 #include "mozilla/net/CookieServiceParent.h"
+#include "mozilla/Components.h"
 #include "mozilla/InputStreamLengthHelper.h"
 #include "mozilla/IntegerPrintfMacros.h"
 #include "mozilla/Preferences.h"
@@ -325,8 +326,8 @@ HttpChannelParent::GetInterface(const nsIID& aIID, void** result) {
   if (!mBrowserParent && (aIID.Equals(NS_GET_IID(nsIAuthPrompt)) ||
                           aIID.Equals(NS_GET_IID(nsIAuthPrompt2)))) {
     nsresult rv;
-    nsCOMPtr<nsIWindowWatcher> wwatch =
-        do_GetService(NS_WINDOWWATCHER_CONTRACTID, &rv);
+    nsCOMPtr<nsIWindowWatcher> wwatch;
+    wwatch = mozilla::components::WindowWatcher::Service(&rv);
     NS_ENSURE_SUCCESS(rv, NS_ERROR_NO_INTERFACE);
 
     bool hasWindowCreator = false;
@@ -1055,7 +1056,8 @@ mozilla::ipc::IPCResult HttpChannelParent::RecvRemoveCorsPreflightCacheEntry(
 
 mozilla::ipc::IPCResult HttpChannelParent::RecvSetCookies(
     const nsACString& aBaseDomain, const OriginAttributes& aOriginAttributes,
-    nsIURI* aHost, const bool& aFromHttp, nsTArray<CookieStruct>&& aCookies) {
+    nsIURI* aHost, const bool& aFromHttp, const bool& aIsThirdParty,
+    nsTArray<CookieStruct>&& aCookies) {
   net::PCookieServiceParent* csParent =
       LoneManagedOrNullAsserts(Manager()->ManagedPCookieServiceParent());
   NS_ENSURE_TRUE(csParent, IPC_OK());
@@ -1068,7 +1070,7 @@ mozilla::ipc::IPCResult HttpChannelParent::RecvSetCookies(
   }
 
   return cs->SetCookies(nsCString(aBaseDomain), aOriginAttributes, aHost,
-                        aFromHttp, aCookies, browsingContext);
+                        aFromHttp, aIsThirdParty, aCookies, browsingContext);
 }
 
 //-----------------------------------------------------------------------------

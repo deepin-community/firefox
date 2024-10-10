@@ -111,6 +111,8 @@ export class UrlbarController {
    * Takes a query context and starts the query based on the user input.
    *
    * @param {UrlbarQueryContext} queryContext The query details.
+   * @returns {UrlbarQueryContext}
+   *   The updated query context.
    */
   async startQuery(queryContext) {
     // Cancel any running query.
@@ -604,7 +606,7 @@ export class UrlbarController {
   /**
    * Triggers a "dismiss" engagement for the selected result if one is selected
    * and it's not the heuristic. Providers that can respond to dismissals of
-   * their results should implement `onLegacyEngagement()`, handle the
+   * their results should implement `onEngagement()`, handle the
    * dismissal, and call `controller.removeResult()`.
    *
    * @param {Event} event
@@ -898,7 +900,9 @@ class TelemetryEvent {
       action = "dismiss";
       skipLegacyTelemetry = true;
     } else if (MouseEvent.isInstance(event)) {
-      action = event.target.id == "urlbar-go-button" ? "go_button" : "click";
+      action = event.target.classList.contains("urlbar-go-button")
+        ? "go_button"
+        : "click";
     } else {
       action = "enter";
     }
@@ -952,40 +956,38 @@ class TelemetryEvent {
       this.#recordEndOfSessionTelemetry(details.searchString);
     }
 
-    if (skipLegacyTelemetry) {
+    if (!skipLegacyTelemetry) {
+      Services.telemetry.scalarAdd(
+        method == "engagement"
+          ? TELEMETRY_SCALAR_ENGAGEMENT
+          : TELEMETRY_SCALAR_ABANDONMENT,
+        1
+      );
+
+      if (
+        method === "engagement" &&
+        this._controller.view?.visibleResults?.[0]?.autofill
+      ) {
+        // Record autofill impressions upon engagement.
+        const type = lazy.UrlbarUtils.telemetryTypeFromResult(
+          this._controller.view.visibleResults[0]
+        );
+        Services.telemetry.scalarAdd(`urlbar.impression.${type}`, 1);
+      }
+    }
+
+    try {
       this._controller.manager.notifyEngagementChange(
         method,
         queryContext,
         details,
         this._controller
       );
-      return;
+    } catch (error) {
+      // We handle and report any error here to avoid hitting the record()
+      // handler, that would look like we didn't send telemetry at all.
+      console.error(error);
     }
-
-    Services.telemetry.scalarAdd(
-      method == "engagement"
-        ? TELEMETRY_SCALAR_ENGAGEMENT
-        : TELEMETRY_SCALAR_ABANDONMENT,
-      1
-    );
-
-    if (
-      method === "engagement" &&
-      this._controller.view?.visibleResults?.[0]?.autofill
-    ) {
-      // Record autofill impressions upon engagement.
-      const type = lazy.UrlbarUtils.telemetryTypeFromResult(
-        this._controller.view.visibleResults[0]
-      );
-      Services.telemetry.scalarAdd(`urlbar.impression.${type}`, 1);
-    }
-
-    this._controller.manager.notifyEngagementChange(
-      method,
-      queryContext,
-      details,
-      this._controller
-    );
   }
 
   _recordSearchEngagementTelemetry(
@@ -1001,7 +1003,6 @@ class TelemetryEvent {
       searchWords,
       searchSource,
       searchMode,
-      selectedElement,
       selIndex,
       selType,
     }
@@ -1037,19 +1038,25 @@ class TelemetryEvent {
     let results = currentResults
       .map(r => lazy.UrlbarUtils.searchEngagementTelemetryType(r))
       .join(",");
+    let actions = currentResults
+      .map((r, i) => lazy.UrlbarUtils.searchEngagementTelemetryAction(r, i))
+      .join(",");
     const search_engine_default_id = Services.search.defaultEngine.telemetryId;
 
     let eventInfo;
     if (method === "engagement") {
-      const selected_result = lazy.UrlbarUtils.searchEngagementTelemetryType(
+      let selected_result = lazy.UrlbarUtils.searchEngagementTelemetryType(
         currentResults[selIndex],
         selType
       );
-      const selected_result_subtype =
-        lazy.UrlbarUtils.searchEngagementTelemetrySubtype(
+
+      if (selType == "action") {
+        let actionKey = lazy.UrlbarUtils.searchEngagementTelemetryAction(
           currentResults[selIndex],
-          selectedElement
+          selIndex
         );
+        selected_result = `action_${actionKey}`;
+      }
 
       if (selected_result === "input_field" && !this._controller.view?.isOpen) {
         numResults = 0;
@@ -1066,13 +1073,13 @@ class TelemetryEvent {
         n_results: numResults,
         selected_position: selIndex + 1,
         selected_result,
-        selected_result_subtype,
         provider,
         engagement_type:
           selType === "help" || selType === "dismiss" ? selType : action,
         search_engine_default_id,
         groups,
         results,
+        actions,
       };
     } else if (method === "abandonment") {
       eventInfo = {
@@ -1086,6 +1093,7 @@ class TelemetryEvent {
         search_engine_default_id,
         groups,
         results,
+        actions,
       };
     } else if (method === "impression") {
       eventInfo = {
@@ -1099,6 +1107,7 @@ class TelemetryEvent {
         search_engine_default_id,
         groups,
         results,
+        actions,
       };
     } else {
       console.error(`Unknown telemetry event method: ${method}`);
@@ -1154,8 +1163,10 @@ class TelemetryEvent {
    *        exposures are enabled for its result type.
    */
   addExposure(result) {
-    if (result.exposureResultType) {
-      this.#exposureResultTypes.add(result.exposureResultType);
+    if (result.exposureTelemetry) {
+      this.#exposureResultTypes.add(
+        lazy.UrlbarUtils.searchEngagementTelemetryType(result)
+      );
     }
   }
 
@@ -1168,8 +1179,10 @@ class TelemetryEvent {
    *        result if exposures are enabled for its result type.
    */
   addTentativeExposure(result) {
-    if (result.exposureResultType) {
-      this.#tentativeExposureResultTypes.add(result.exposureResultType);
+    if (result.exposureTelemetry) {
+      this.#tentativeExposureResultTypes.add(
+        lazy.UrlbarUtils.searchEngagementTelemetryType(result)
+      );
     }
   }
 

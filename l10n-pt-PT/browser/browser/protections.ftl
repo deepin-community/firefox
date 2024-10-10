@@ -48,7 +48,7 @@ tracker-tab-description = Os sites podem carregar anúncios, vídeos e outros co
 fingerprinter-tab-title = Identificadores
 fingerprinter-tab-content = Os identificadores recolhem definições do seu navegador e computador para criar um perfil sobre si. Ao utilizar este identificador digital, estes podem monitorizá-lo em vários sites diferentes. <a data-l10n-name="learn-more-link">Saber mais</a>
 cryptominer-tab-title = Cripto-mineradores
-cryptominer-tab-content = Os cripto-mineradores utilizam o poder de computação do seu sistema para minerar dinheiro digital. Os scripts de cripto-mineração podem descarregar a sua bateria, tornar o seu computador mais lento e aumentar os custos com a sua fatura elétrica. <a data-l10n-name="learn-more-link">Saber mais</a>
+cryptominer-tab-content = Os criptomineradores utilizam o poder de computação do seu sistema para minerar dinheiro digital. Os scripts de criptomineração podem descarregar a sua bateria, tornar o seu computador mais lento e aumentar os custos com a sua fatura elétrica. <a data-l10n-name="learn-more-link">Saber mais</a>
 protections-close-button2 =
     .aria-label = Fechar
     .title = Fechar
@@ -56,7 +56,7 @@ mobile-app-title = Bloquear anúncios de monitorização em mais dispositivos
 mobile-app-card-content = Utilize o navegador móvel com proteção integrada contra anúncios de monitorização.
 mobile-app-links = O navegador { -brand-product-name } para <a data-l10n-name="android-mobile-inline-link">Android</a> e <a data-l10n-name="ios-mobile-inline-link">iOS</a>
 lockwise-title = Nunca mais esqueça uma palavra-passe
-passwords-title-logged-in = Gira as suas palavras-passe
+passwords-title-logged-in = Gerir as suas palavras-passe
 passwords-header-content = O { -brand-product-name } guarda as suas palavras-passe em segurança no seu navegador.
 lockwise-header-content-logged-in = Guarde e sincronize em segurança as suas palavras-passe em todos os seus dispositivos.
 protection-report-passwords-save-passwords-button = Guardar palavras-passe

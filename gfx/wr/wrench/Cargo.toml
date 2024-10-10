@@ -13,7 +13,7 @@ path = "src/main.rs"
 
 [dependencies]
 base64 = "0.13"
-env_logger = { version = "0.10", optional = true, default_features = false }
+env_logger = { version = "0.10", optional = true, default-features = false }
 gleam = "0.15"
 glutin = "0.28"
 clap = { version = "3.1", features = ["yaml"] }
@@ -68,7 +68,7 @@ opengles_version_minor = 0
 
 [package.metadata.android.sdk]
 # keep it in sync with android-sdk-version in android-sdk.configure
-target_sdk_version = 34
+target_sdk_version = 35
 min_sdk_version = 18
 
 [package.metadata.android.application]

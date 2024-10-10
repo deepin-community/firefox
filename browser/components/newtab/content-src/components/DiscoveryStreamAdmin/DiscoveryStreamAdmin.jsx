@@ -122,12 +122,18 @@ export class DiscoveryStreamAdminUI extends React.PureComponent {
     this.setConfigValue = this.setConfigValue.bind(this);
     this.expireCache = this.expireCache.bind(this);
     this.refreshCache = this.refreshCache.bind(this);
+    this.showPlaceholder = this.showPlaceholder.bind(this);
     this.idleDaily = this.idleDaily.bind(this);
     this.systemTick = this.systemTick.bind(this);
     this.syncRemoteSettings = this.syncRemoteSettings.bind(this);
     this.onStoryToggle = this.onStoryToggle.bind(this);
+    this.handleWeatherSubmit = this.handleWeatherSubmit.bind(this);
+    this.handleWeatherUpdate = this.handleWeatherUpdate.bind(this);
+    this.refreshTopicSelectionCache =
+      this.refreshTopicSelectionCache.bind(this);
     this.state = {
       toggledStories: {},
+      weatherQuery: "",
     };
   }
 
@@ -158,6 +164,15 @@ export class DiscoveryStreamAdminUI extends React.PureComponent {
     );
   }
 
+  refreshTopicSelectionCache() {
+    this.props.dispatch(
+      ac.SetPref("discoverystream.topicSelection.onboarding.displayCount", 0)
+    );
+    this.props.dispatch(
+      ac.SetPref("discoverystream.topicSelection.onboarding.maybeDisplay", true)
+    );
+  }
+
   dispatchSimpleAction(type) {
     this.props.dispatch(
       ac.OnlyToMain({
@@ -174,12 +189,26 @@ export class DiscoveryStreamAdminUI extends React.PureComponent {
     this.dispatchSimpleAction(at.DISCOVERY_STREAM_DEV_EXPIRE_CACHE);
   }
 
+  showPlaceholder() {
+    this.dispatchSimpleAction(at.DISCOVERY_STREAM_DEV_SHOW_PLACEHOLDER);
+  }
+
   idleDaily() {
     this.dispatchSimpleAction(at.DISCOVERY_STREAM_DEV_IDLE_DAILY);
   }
 
   syncRemoteSettings() {
     this.dispatchSimpleAction(at.DISCOVERY_STREAM_DEV_SYNC_RS);
+  }
+
+  handleWeatherUpdate(e) {
+    this.setState({ weatherQuery: e.target.value || "" });
+  }
+
+  handleWeatherSubmit(e) {
+    e.preventDefault();
+    const { weatherQuery } = this.state;
+    this.props.dispatch(ac.SetPref("weather.query", weatherQuery));
   }
 
   renderComponent(width, component) {
@@ -198,6 +227,46 @@ export class DiscoveryStreamAdminUI extends React.PureComponent {
         </tbody>
       </table>
     );
+  }
+
+  renderWeatherData() {
+    const { suggestions } = this.props.state.Weather;
+    let weatherTable;
+    if (suggestions) {
+      weatherTable = (
+        <div className="weather-section">
+          <form onSubmit={this.handleWeatherSubmit}>
+            <label htmlFor="weather-query">Weather query</label>
+            <input
+              type="text"
+              min="3"
+              max="10"
+              id="weather-query"
+              onChange={this.handleWeatherUpdate}
+              value={this.weatherQuery}
+            />
+            <button type="submit">Submit</button>
+          </form>
+          <table>
+            <tbody>
+              {suggestions.map(suggestion => (
+                <tr className="message-item" key={suggestion.city_name}>
+                  <td className="message-id">
+                    <span>
+                      {suggestion.city_name} <br />
+                    </span>
+                  </td>
+                  <td className="message-summary">
+                    <pre>{JSON.stringify(suggestion, null, 2)}</pre>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      );
+    }
+    return weatherTable;
   }
 
   renderFeedData(url) {
@@ -338,6 +407,13 @@ export class DiscoveryStreamAdminUI extends React.PureComponent {
         <br />
         <button className="button" onClick={this.syncRemoteSettings}>
           Sync Remote Settings
+        </button>{" "}
+        <button className="button" onClick={this.refreshTopicSelectionCache}>
+          Refresh Topic selection count
+        </button>
+        <br />
+        <button className="button" onClick={this.showPlaceholder}>
+          Show Placeholder Cards
         </button>
         <table>
           <tbody>
@@ -376,6 +452,8 @@ export class DiscoveryStreamAdminUI extends React.PureComponent {
         {this.renderSpocs()}
         <h3>Feeds Data</h3>
         {this.renderFeedsData()}
+        <h3>Weather Data</h3>
+        {this.renderWeatherData()}
       </div>
     );
   }
@@ -412,6 +490,7 @@ export class DiscoveryStreamAdminInner extends React.PureComponent {
               state={{
                 DiscoveryStream: this.props.DiscoveryStream,
                 Personalization: this.props.Personalization,
+                Weather: this.props.Weather,
               }}
               otherPrefs={this.props.Prefs.values}
               dispatch={this.props.dispatch}
@@ -500,4 +579,5 @@ export const DiscoveryStreamAdmin = connect(state => ({
   DiscoveryStream: state.DiscoveryStream,
   Personalization: state.Personalization,
   Prefs: state.Prefs,
+  Weather: state.Weather,
 }))(_DiscoveryStreamAdmin);

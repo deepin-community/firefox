@@ -3,6 +3,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 import { BackupResource } from "resource:///modules/backup/BackupResource.sys.mjs";
+import { MeasurementUtils } from "resource:///modules/backup/MeasurementUtils.sys.mjs";
 import { XPCOMUtils } from "resource://gre/modules/XPCOMUtils.sys.mjs";
 
 const lazy = {};
@@ -10,7 +11,6 @@ const lazy = {};
 ChromeUtils.defineESModuleGetters(lazy, {
   BookmarkJSONUtils: "resource://gre/modules/BookmarkJSONUtils.sys.mjs",
   PrivateBrowsingUtils: "resource://gre/modules/PrivateBrowsingUtils.sys.mjs",
-  Sqlite: "resource://gre/modules/Sqlite.sys.mjs",
 });
 
 XPCOMUtils.defineLazyPreferenceGetter(
@@ -26,6 +26,8 @@ XPCOMUtils.defineLazyPreferenceGetter(
   false
 );
 
+const BOOKMARKS_BACKUP_FILENAME = "bookmarks.jsonlz4";
+
 /**
  * Class representing Places database related files within a user profile.
  */
@@ -38,8 +40,15 @@ export class PlacesBackupResource extends BackupResource {
     return false;
   }
 
-  async backup(stagingPath, profilePath = PathUtils.profileDir) {
-    const sqliteDatabases = ["places.sqlite", "favicons.sqlite"];
+  static get priority() {
+    return 1;
+  }
+
+  async backup(
+    stagingPath,
+    profilePath = PathUtils.profileDir,
+    _isEncrypting = false
+  ) {
     let canBackupHistory =
       !lazy.PrivateBrowsingUtils.permanentPrivateBrowsing &&
       !lazy.isSanitizeOnShutdownEnabled &&
@@ -52,7 +61,7 @@ export class PlacesBackupResource extends BackupResource {
     if (!canBackupHistory) {
       let bookmarksBackupFile = PathUtils.join(
         stagingPath,
-        "bookmarks.jsonlz4"
+        BOOKMARKS_BACKUP_FILENAME
       );
       await lazy.BookmarkJSONUtils.exportToFile(bookmarksBackupFile, {
         compress: true,
@@ -60,23 +69,65 @@ export class PlacesBackupResource extends BackupResource {
       return { bookmarksOnly: true };
     }
 
-    for (let fileName of sqliteDatabases) {
-      let sourcePath = PathUtils.join(profilePath, fileName);
-      let destPath = PathUtils.join(stagingPath, fileName);
-      let connection;
+    // These are copied in parallel because they're attached[1], and we don't
+    // want them to get out of sync with one another.
+    //
+    // [1]: https://www.sqlite.org/lang_attach.html
+    let timedCopies = [
+      MeasurementUtils.measure(
+        Glean.browserBackup.placesTime,
+        BackupResource.copySqliteDatabases(profilePath, stagingPath, [
+          "places.sqlite",
+        ])
+      ),
+      MeasurementUtils.measure(
+        Glean.browserBackup.faviconsTime,
+        BackupResource.copySqliteDatabases(profilePath, stagingPath, [
+          "favicons.sqlite",
+        ])
+      ),
+    ];
+    await Promise.all(timedCopies);
 
-      try {
-        connection = await lazy.Sqlite.openConnection({
-          path: sourcePath,
-          readOnly: true,
-        });
+    return null;
+  }
 
-        await connection.backup(destPath);
-      } finally {
-        await connection.close();
+  async recover(manifestEntry, recoveryPath, destProfilePath) {
+    if (!manifestEntry) {
+      const simpleCopyFiles = ["places.sqlite", "favicons.sqlite"];
+      await BackupResource.copyFiles(
+        recoveryPath,
+        destProfilePath,
+        simpleCopyFiles
+      );
+    } else {
+      const { bookmarksOnly } = manifestEntry;
+
+      /**
+       * If the recovery file only has bookmarks backed up, pass the file path to postRecovery()
+       * so that we can import all bookmarks into the new profile once it's been launched and restored.
+       */
+      if (bookmarksOnly) {
+        let bookmarksBackupPath = PathUtils.join(
+          recoveryPath,
+          BOOKMARKS_BACKUP_FILENAME
+        );
+        return { bookmarksBackupPath };
       }
     }
+
     return null;
+  }
+
+  async postRecovery(postRecoveryEntry) {
+    if (postRecoveryEntry?.bookmarksBackupPath) {
+      await lazy.BookmarkJSONUtils.importFromFile(
+        postRecoveryEntry.bookmarksBackupPath,
+        {
+          replace: true,
+        }
+      );
+    }
   }
 
   async measure(profilePath = PathUtils.profileDir) {

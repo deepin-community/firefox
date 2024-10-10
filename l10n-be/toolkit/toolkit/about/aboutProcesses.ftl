@@ -12,6 +12,8 @@ about-processes-column-action =
 
 about-processes-shutdown-process =
     .title = Выгрузіць карткі і забіць працэс
+about-processes-kill-process =
+    .title = Забіць працэс
 about-processes-shutdown-tab =
     .title = Закрыць картку
 # Profiler icons
@@ -52,6 +54,7 @@ about-processes-remote-sandbox-broker-process = Аддалены брокер п
 about-processes-fork-server-process = Форк-сервер ({ $pid })
 about-processes-preallocated-process = Загадзя выдзелены ({ $pid })
 about-processes-utility-process = Утылiта ({ $pid })
+about-processes-inference-process = Выснова ({ $pid })
 # Unknown process names
 # Variables:
 #    $pid (String) The process id of this process, assigned by the OS.

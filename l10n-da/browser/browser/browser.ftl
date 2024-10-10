@@ -550,6 +550,10 @@ urlbar-go-button =
     .tooltiptext = Gå til adressen i adressefeltet
 urlbar-page-action-button =
     .tooltiptext = Sidehandlinger
+urlbar-revert-button =
+    .tooltiptext = Vis adressen i adressefeltet
+urlbar-show-page-actions-button =
+    .tooltiptext = Vis alle sidehandlinger
 
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
@@ -640,6 +644,21 @@ urlbar-group-quickactions =
 #  $engine (String): the name of the search engine used to search.
 urlbar-group-recent-searches =
     .label = Seneste søgninger
+# The header shown above trending results.
+# Variables:
+#  $engine (String): the name of the search engine providing the trending suggestions
+urlbar-group-trending =
+    .label = Populært på { $engine }
+# The result menu labels shown next to trending results.
+urlbar-result-menu-trending-dont-show =
+    .label = Vis ikke populære søgninger
+    .accesskey = V
+urlbar-result-menu-trending-why =
+    .label = Hvorfor ser jeg dette?
+    .accesskey = H
+# A message that replaces a result when the user dismisses all suggestions of a
+# particular type.
+urlbar-trending-dismissal-acknowledgment = Tak for tilbagemeldingen. Du vil ikke længere se populære søgninger.
 
 ## Reader View toolbar buttons
 
@@ -990,6 +1009,10 @@ firefox-relay-offer-legal-notice = Ved at klikke "Brug mail-maske" accepterer du
 popup-notification-addon-install-unsigned =
     .value = (Uverificeret)
 popup-notification-xpinstall-prompt-learn-more = Læs mere om sikker installering af tilføjelser
+# Note: Access key is set to P to match "Private" in the corresponding localized label.
+popup-notification-addon-privatebrowsing-checkbox =
+    .label = Anvend i private vinduer
+    .accesskey = P
 
 ## Pop-up warning
 
@@ -1019,3 +1042,24 @@ popup-warning-button =
 #   $popupURI (String): the URI for the pop-up window
 popup-show-popup-menuitem =
     .label = Vis '{ $popupURI }'
+
+## File-picker crash notification ("FilePickerCrashed.sys.mjs")
+
+file-picker-failed-open = Fildialogboksen i Windows kunne ikke åbnes. Ingen fil eller mappe kunne vælges.
+#   $path (string): The full path to which the file will be saved (e.g., 'C:\Users\Default User\Downloads\readme.txt').
+file-picker-failed-save-somewhere = Fildialogboksen i Windows kunne ikke åbnes. Filen vil blive gemt i { $path }.
+file-picker-failed-save-nowhere = Fildialogboksen i Windows kunne ikke åbnes. Der blev ikke fundet nogen standardmappe; filen vil ikke blive gemt.
+file-picker-crashed-open = Fildialogboksen i Windows er gået ned. Der kunne ikke vælges nogen fil eller mappe.
+#   $path (string): The full path to which the file will be saved (e.g., 'C:\Users\Default User\Downloads\readme.txt').
+file-picker-crashed-save-somewhere = Fildialogboksen i Windows er gået ned. Filen vil blive gemt i { $path }.
+file-picker-crashed-save-nowhere = Fildialogboksen i Windows er gået ned. Der blev ikke fundet nogen standardmappe; filen vil ikke blive gemt.
+
+# Button used with file-picker-crashed-save-default. Opens the folder in Windows
+# Explorer, with the saved file selected and in focus.
+#
+# The wording here should be consistent with the Windows variant of
+# `downloads-cmd-show-menuitem-2` and similar messages.
+
+file-picker-crashed-show-in-folder =
+    .label = Vis i mappe
+    .accessKey = F

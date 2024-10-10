@@ -45,7 +45,7 @@ class DelayedResolveOrReject : public Runnable {
         mIterations(aIterations) {}
 
   NS_IMETHOD Run() override {
-    MOZ_ASSERT(mTaskQueue->IsCurrentThreadIn());
+    MOZ_RELEASE_ASSERT(mTaskQueue->IsCurrentThreadIn());
     if (!mPromise) {
       // Canceled.
       return NS_OK;
@@ -447,9 +447,7 @@ TEST(MozPromise, Chaining)
     }
     // We will hit the assertion if we don't disconnect the leaf Request
     // in the promise chain.
-    p->Then(
-         queue, __func__, []() {}, []() {})
-        ->Track(holder);
+    p->Then(queue, __func__, []() {}, []() {})->Track(holder);
   });
 }
 

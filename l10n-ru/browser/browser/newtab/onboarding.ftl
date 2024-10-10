@@ -162,7 +162,7 @@ fx100-upgrade-thanks-header = 100 благодарностей
 fx100-upgrade-thank-you-body = Это наш 100-й выпуск { -brand-short-name }. Спасибо <em>Вам</em> за помощь в создании лучшего и более здорового Интернета.
 # Message shown with either a pin-to-taskbar or set-default button.
 fx100-upgrade-thanks-keep-body = Это наш 100-й выпуск! Спасибо, что являетесь частью нашего сообщества. Держите { -brand-short-name } под рукой для следующих 100.
-mr2022-onboarding-secondary-skip-button-label = Пропустить этот шаг
+mr2022-onboarding-secondary-skip-button-label = Пропустить шаг
 
 ## MR2022 New User Easy Setup screen strings
 
@@ -188,6 +188,8 @@ mr2022-onboarding-pin-primary-button-label =
         [macos] Добавьте { -brand-short-name } в Dock
        *[other] Закрепите { -brand-short-name } на панели задач
     }
+# Primary button string used on welcome page for when Firefox is not pinned on MSIX
+mr2022-onboarding-pin-primary-button-label-msix = Закрепите { -brand-short-name } на панели задач и в меню «Пуск»
 # Subtitle will be used when user already has Firefox pinned, but
 # has not set it as their default browser.
 # When translating "zip", please feel free to pick a verb that signifies movement and/or exploration
@@ -248,11 +250,11 @@ mr2022-onboarding-colorway-tooltip-playmaker2 =
 mr2022-onboarding-colorway-description-playmaker = <b>Вы — Создатель игр.</b> Вы создаёте возможности победить и помогаете всем вокруг поднять их игру на новый уровень.
 mr2022-onboarding-colorway-label-expressionist = Экспрессионист
 mr2022-onboarding-colorway-tooltip-expressionist2 =
-    .title = Экспрессионист (желтый)
+    .title = Экспрессионист (жёлтый)
 mr2022-onboarding-colorway-description-expressionist = <b>Вы — Экспрессионист.</b> Вы видите мир иначе, а ваши творения поражают остальных.
 mr2022-onboarding-colorway-label-visionary = Провидец
 mr2022-onboarding-colorway-tooltip-visionary2 =
-    .title = Провидец (зеленый)
+    .title = Провидец (зелёный)
 mr2022-onboarding-colorway-description-visionary = <b>Вы — Провидец.</b> Вы ставите под сомнение статус-кво и побуждаете остальных представлять лучшее будущее.
 mr2022-onboarding-colorway-label-activist = Активист
 mr2022-onboarding-colorway-tooltip-activist2 =
@@ -324,7 +326,7 @@ mr2022-onboarding-privacy-segmentation-image-alt =
 mr2022-onboarding-gratitude-image-alt =
     .aria-label = Вид на закат через окно с лисой и комнатным растением на подоконнике
 mr2022-onboarding-colorways-image-alt =
-    .aria-label = Баллончик с краской рисует красочный коллаж из зеленого глаза, оранжевой обуви, красного баскетбольного мяча, фиолетовых наушников, синего сердца и желтой короны
+    .aria-label = Баллончик с краской рисует красочный коллаж из зелёного глаза, оранжевой обуви, красного баскетбольного мяча, фиолетовых наушников, синего сердца и жёлтой короны
 
 ## Device migration onboarding
 
@@ -334,6 +336,14 @@ onboarding-device-migration-title = С возвращением!
 onboarding-device-migration-subtitle = Войдите в свой { -fxaccount-brand-name(case: "accusative") }, чтобы перенести закладки, пароли и историю на ваше новое устройство.
 onboarding-device-migration-subtitle2 = Войдите в свой аккаунт, чтобы перенести свои закладки, пароли и историю на новое устройство.
 onboarding-device-migration-primary-button-label = Войти
+
+## Add-ons Picker screen
+
+amo-picker-title = Настройте свой { -brand-short-name }
+amo-picker-subtitle = Расширения — это вроде приложений для вашего браузера, они позволяют вам защищать пароли, загружать видео, находить выгодные покупки, блокировать раздражающую рекламу, изменять внешний вид браузера и многое другое.
+amo-picker-install-button-label = Добавить в { -brand-short-name }
+amo-picker-install-complete-label = Установлено
+amo-picker-collection-link = Исследуйте больше дополнений
 
 ## The following screens have been updated to use security and privacy focused strings:
 

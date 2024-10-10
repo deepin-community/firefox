@@ -54,6 +54,7 @@
 #include "mozilla/EventStateManager.h"
 #include "mozilla/LookAndFeel.h"
 #include "mozilla/MouseEvents.h"
+#include "mozilla/PointerLockManager.h"
 #include "mozilla/PresShell.h"
 #include "mozilla/Services.h"
 #include "mozilla/StaticPrefs_ui.h"
@@ -139,7 +140,7 @@ void PendingPopup::InitMousePoint() {
 
     nsIFrame* rootDocumentRootFrame =
         rootDocPresContext->PresShell()->GetRootFrame();
-    if ((event->mClass == eMouseEventClass ||
+    if ((event->IsMouseEventClassOrHasClickRelatedPointerEvent() ||
          event->mClass == eMouseScrollEventClass ||
          event->mClass == eWheelEventClass) &&
         !event->AsGUIEvent()->mWidget) {
@@ -854,7 +855,7 @@ void nsXULPopupManager::ShowMenu(nsIContent* aMenu, bool aSelectFirstItem) {
 
   // there is no trigger event for menus
   popupFrame->InitializePopup(aMenu, nullptr, position, 0, 0,
-                              MenuPopupAnchorType_Node, true);
+                              MenuPopupAnchorType::Node, true);
   PendingPopup pendingPopup(&popupFrame->PopupElement(), nullptr);
   BeginShowingPopup(pendingPopup, parentIsContextMenu, aSelectFirstItem);
 }
@@ -896,7 +897,7 @@ void nsXULPopupManager::ShowPopup(Element* aPopup, nsIContent* aAnchorContent,
   nsCOMPtr<nsIContent> triggerContent = pendingPopup.GetTriggerContent();
 
   popupFrame->InitializePopup(aAnchorContent, triggerContent, aPosition, aXPos,
-                              aYPos, MenuPopupAnchorType_Node,
+                              aYPos, MenuPopupAnchorType::Node,
                               aAttributesOverride);
 
   BeginShowingPopup(pendingPopup, aIsContextMenu, aSelectFirstItem);
@@ -987,6 +988,7 @@ bool nsXULPopupManager::ShowPopupAsNativeMenu(Element* aPopup, int32_t aXPos,
     EventStateManager::ClearGlobalActiveContent(activeESM);
     activeESM->StopTrackingDragGesture(true);
   }
+  PointerLockManager::Unlock();
   PresShell::ReleaseCapturingContent();
 
   return true;
@@ -1201,6 +1203,10 @@ void nsXULPopupManager::ShowPopupCallback(Element* aPopup,
   // Caret visibility may have been affected, ensure that
   // the caret isn't now drawn when it shouldn't be.
   CheckCaretDrawingState();
+
+  if (popupType != PopupType::Tooltip) {
+    PointerLockManager::Unlock();
+  }
 }
 
 nsMenuChainItem* nsXULPopupManager::FindPopup(Element* aPopup) const {
@@ -1850,8 +1856,17 @@ nsIContent* nsXULPopupManager::GetTopActiveMenuItemContent() {
   return nullptr;
 }
 
-void nsXULPopupManager::GetVisiblePopups(nsTArray<nsIFrame*>& aPopups) {
+void nsXULPopupManager::GetVisiblePopups(nsTArray<nsMenuPopupFrame*>& aPopups,
+                                         bool aIncludeNativeMenu) {
   aPopups.Clear();
+  if (aIncludeNativeMenu && mNativeMenu) {
+    nsCOMPtr<nsIContent> popup = mNativeMenu->Element();
+    nsMenuPopupFrame* popupFrame = GetPopupFrameForContent(popup, true);
+    if (popupFrame && popupFrame->IsVisible() &&
+        !popupFrame->IsMouseTransparent()) {
+      aPopups.AppendElement(popupFrame);
+    }
+  }
   for (nsMenuChainItem* item = mPopups.get(); item; item = item->GetParent()) {
     // Skip panels which are not visible as well as popups that are transparent
     // to mouse events.

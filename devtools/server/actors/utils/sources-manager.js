@@ -101,7 +101,8 @@ class SourcesManager extends EventEmitter {
     this._thread.threadLifetimePool.manage(actor);
 
     this._sourceActors.set(source, actor);
-    if (this._sourcesByInternalSourceId && source.id) {
+    // source.id can be 0 for WASM sources
+    if (this._sourcesByInternalSourceId && Number.isInteger(source.id)) {
       this._sourcesByInternalSourceId.set(source.id, source);
     }
 
@@ -157,7 +158,8 @@ class SourcesManager extends EventEmitter {
     if (!this._sourcesByInternalSourceId) {
       this._sourcesByInternalSourceId = new Map();
       for (const source of this._thread.dbg.findSources()) {
-        if (source.id) {
+        // source.id can be 0 for WASM sources
+        if (Number.isInteger(source.id)) {
           this._sourcesByInternalSourceId.set(source.id, source);
         }
       }
@@ -478,7 +480,10 @@ class SourcesManager extends EventEmitter {
     // actual text (otherwise it will be very confusing or unusable for users),
     // so replace the contents with the actual text if there is a mismatch.
     const actors = [...this._sourceActors.values()].filter(
-      actor => actor.url == url
+      // Bug 1907977: some source may not have a valid source text content exposed by spidermonkey
+      // and have their text be "[no source]", so avoid falling back to them and consider
+      // the request fallback.
+      actor => actor.url == url && actor.actualText() != "[no source]"
     );
     if (!actors.every(actor => actor.contentMatches(result))) {
       if (actors.length > 1) {

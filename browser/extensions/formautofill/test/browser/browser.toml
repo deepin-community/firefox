@@ -10,8 +10,6 @@ support-files = [
   "./empty.html",
 ]
 
-["browser_active_window_navigation.js"]
-
 ["browser_autocomplete_footer.js"]
 skip-if = ["verify"]
 
@@ -25,11 +23,17 @@ skip-if = [
 
 ["browser_autofill_address_select.js"]
 
+["browser_autofill_address_select_inexact.js"]
+
 ["browser_autofill_duplicate_fields.js"]
 
 ["browser_autofill_sandboxed_iframe.js"]
 
+["browser_cancel_attribute_change_task.js"]
+
 ["browser_check_installed.js"]
+
+["browser_clearPopulatedForm.js"]
 
 ["browser_dropdown_layout.js"]
 
@@ -37,11 +41,16 @@ skip-if = [
 skip-if = [
   "verify",
   "win11_2009", # Bug 1797751
+  "os == 'linux'" , # Bug 1788900
 ]
 
 ["browser_fathom_cc.js"]
 
 ["browser_manageAddressesDialog.js"]
+
+["browser_page_navigation_in_subtree.js"]
+
+["browser_previewFormFields.js"]
 
 ["browser_privacyPreferences.js"]
 skip-if = [

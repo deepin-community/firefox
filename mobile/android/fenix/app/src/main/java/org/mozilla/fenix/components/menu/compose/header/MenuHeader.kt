@@ -20,10 +20,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import mozilla.components.service.fxa.manager.AccountState
+import mozilla.components.service.fxa.manager.AccountState.NotAuthenticated
 import mozilla.components.service.fxa.store.Account
 import org.mozilla.fenix.R
-import org.mozilla.fenix.components.accounts.AccountState
-import org.mozilla.fenix.components.accounts.AccountState.NO_ACCOUNT
 import org.mozilla.fenix.compose.Divider
 import org.mozilla.fenix.compose.annotation.LightDarkPreview
 import org.mozilla.fenix.theme.FirefoxTheme
@@ -33,7 +33,7 @@ import org.mozilla.fenix.theme.Theme
 internal fun MenuHeader(
     account: Account?,
     accountState: AccountState,
-    onSignInButtonClick: () -> Unit,
+    onMozillaAccountButtonClick: () -> Unit,
     onHelpButtonClick: () -> Unit,
     onSettingsButtonClick: () -> Unit,
 ) {
@@ -46,13 +46,15 @@ internal fun MenuHeader(
         MozillaAccountMenuButton(
             account = account,
             accountState = accountState,
-            onSignInButtonClick = onSignInButtonClick,
+            onClick = onMozillaAccountButtonClick,
             modifier = Modifier.weight(1f),
         )
 
         Spacer(modifier = Modifier.width(8.dp))
 
         Divider(modifier = Modifier.size(width = 2.dp, height = 32.dp))
+
+        Spacer(modifier = Modifier.width(4.dp))
 
         IconButton(
             onClick = onHelpButtonClick,
@@ -86,8 +88,8 @@ private fun MenuHeaderPreview() {
         ) {
             MenuHeader(
                 account = null,
-                accountState = NO_ACCOUNT,
-                onSignInButtonClick = {},
+                accountState = NotAuthenticated,
+                onMozillaAccountButtonClick = {},
                 onHelpButtonClick = {},
                 onSettingsButtonClick = {},
             )
@@ -105,8 +107,8 @@ private fun MenuHeaderPrivatePreview() {
         ) {
             MenuHeader(
                 account = null,
-                accountState = NO_ACCOUNT,
-                onSignInButtonClick = {},
+                accountState = NotAuthenticated,
+                onMozillaAccountButtonClick = {},
                 onHelpButtonClick = {},
                 onSettingsButtonClick = {},
             )

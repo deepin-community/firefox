@@ -13,6 +13,17 @@ tabbrowser-menuitem-close =
 #   $title (String): the title of the current tab.
 #   $containerName (String): the name of the current container.
 tabbrowser-container-tab-title = { $title } - { $containerName }
+# This text serves as an on-screen tooltip as well as an accessible name for
+# the "X" button that is shown on the active tab or, when multiple tabs are
+# selected, to all their "X" buttons.
+# Variables:
+#   $tabCount (Number): The number of tabs that will be closed.
+tabbrowser-close-tabs-button =
+    .tooltiptext =
+        { $tabCount ->
+            [one] Itxi fitxa
+           *[other] Itxi { $tabCount } fitxa
+        }
 # Variables:
 #   $tabCount (Number): The number of tabs that will be closed.
 tabbrowser-close-tabs-tooltip =
@@ -110,6 +121,11 @@ tabbrowser-confirm-open-multiple-tabs-checkbox = Abisatu hainbat fitxa aldi bere
 tabbrowser-confirm-caretbrowsing-title = Kurtsore bidezko nabigazioa
 tabbrowser-confirm-caretbrowsing-message = F7 zapaltzeak kurtsore bidezko nabigazioa gaitzen edo desgaitzen du. Eginbide honek web orrietan kurtsore bat ezartzen du testua teklatuarekin aukeratzea baimenduz. Kurtsore bidezko nabigazioa gaitu nahi duzu?
 tabbrowser-confirm-caretbrowsing-checkbox = Ez erakutsi berriro elkarrizketa-koadro hau.
+
+## Confirmation dialog for closing all duplicate tabs
+
+tabbrowser-confirm-close-all-duplicate-tabs-title = Bikoiztutako fitxak itxi?
+tabbrowser-confirm-close-all-duplicate-tabs-button-closetabs = Itxi fitxak
 
 ##
 

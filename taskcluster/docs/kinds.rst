@@ -240,10 +240,6 @@ release-beetmover-push-to-release publishes promoted releases from the
 candidates directory to the release directory. This is part of release
 promotion.
 
-beetmover-snap
---------------
-Beetmover-source publishes Ubuntu's snap. This is part of release promotion.
-
 beetmover-source
 ----------------
 Beetmover-source publishes release source. This is part of release promotion.
@@ -309,10 +305,6 @@ release-binary-transparency
 ---------------------------
 Binary transparency creates a publicly verifiable log of binary shas for downstream
 release auditing. https://wiki.mozilla.org/Security/Binary_Transparency
-
-release-snap-repackage
-----------------------
-Generate an installer using Ubuntu's Snap format.
 
 release-flatpak-repackage
 -------------------------
@@ -627,6 +619,10 @@ repackage-signing-shippable-l10n-msix
 Repackage-signing-shippable-l10n-msix takes Windows MSIX packages produced in
 ```repackage-signing-shippable-l10n-msix``` and signs them.
 
+repackage-snap
+--------------
+Repackage current packaged build as a Snap package
+
 release-msix-push
 --------------------
 Pushes msix repackage to the Microsoft Store.
@@ -684,7 +680,7 @@ diffoscope
 ----------
 Tasks used to compare pairs of Firefox builds using https://diffoscope.org/.
 As of writing, this is mainly meant to be used in try builds, by editing
-taskcluster/ci/diffoscope/kind.yml for your needs.
+taskcluster/kinds/diffoscope/kind.yml for your needs.
 
 addon
 -----
@@ -702,11 +698,6 @@ webrender
 ---------
 Tasks used to do testing of WebRender standalone (without gecko). The
 WebRender code lives in gfx/wr and has its own testing infrastructure.
-
-github-sync
-------------
-Tasks used to do synchronize parts of Gecko that have downstream GitHub
-repositories.
 
 instrumented-build
 ------------------
@@ -860,8 +851,8 @@ android-startup-test
 --------------------
 Startup test for android.
 
-post-signing
-------------
+post-signing-dummy
+------------------
 Gating kind to wait for all android signing tasks.
 
 beetmover-components
@@ -883,3 +874,7 @@ Push Focus and Fenix AABs to Google Play.
 android-l10n
 ------------
 Update android string resources from android-l10n repo.
+
+release-update-product-channel-version
+------------
+Update the product channel version in Ship-It.

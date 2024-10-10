@@ -7,7 +7,6 @@
 #include "mozilla/ServoStyleSet.h"
 #include "mozilla/ServoStyleSetInlines.h"
 
-#include "gfxPlatformFontList.h"
 #include "mozilla/DocumentStyleRootIterator.h"
 #include "mozilla/AttributeStyles.h"
 #include "mozilla/EffectCompositor.h"
@@ -34,6 +33,7 @@
 #include "mozilla/dom/CSSContainerRule.h"
 #include "mozilla/dom/CSSLayerBlockRule.h"
 #include "mozilla/dom/CSSLayerStatementRule.h"
+#include "mozilla/dom/CSSMarginRule.h"
 #include "mozilla/dom/CSSMediaRule.h"
 #include "mozilla/dom/CSSMozDocumentRule.h"
 #include "mozilla/dom/CSSKeyframesRule.h"
@@ -41,6 +41,7 @@
 #include "mozilla/dom/CSSNamespaceRule.h"
 #include "mozilla/dom/CSSPageRule.h"
 #include "mozilla/dom/CSSPropertyRule.h"
+#include "mozilla/dom/CSSPositionTryRule.h"
 #include "mozilla/dom/CSSScopeRule.h"
 #include "mozilla/dom/CSSSupportsRule.h"
 #include "mozilla/dom/CSSStartingStyleRule.h"
@@ -597,6 +598,18 @@ already_AddRefed<ComputedStyle> ServoStyleSet::ResolveXULTreePseudoStyle(
       .Consume();
 }
 
+already_AddRefed<ComputedStyle> ServoStyleSet::ResolveStartingStyle(
+    dom::Element& aElement) {
+  nsPresContext* pc = GetPresContext();
+  if (!pc) {
+    return nullptr;
+  }
+
+  return Servo_ResolveStartingStyle(
+             &aElement, &pc->RestyleManager()->Snapshots(), mRawData.get())
+      .Consume();
+}
+
 // manage the set of style sheets in the style set
 void ServoStyleSet::AppendStyleSheet(StyleSheet& aSheet) {
   MOZ_ASSERT(aSheet.IsApplicable());
@@ -749,7 +762,7 @@ bool ServoStyleSet::GeneratedContentPseudoExists(
     }
     // ::marker only exist if we have 'content' or at least one of
     // 'list-style-type' or 'list-style-image'.
-    if (aPseudoStyle.StyleList()->mCounterStyle.IsNone() &&
+    if (aPseudoStyle.StyleList()->mListStyleType.IsNone() &&
         aPseudoStyle.StyleList()->mListStyleImage.IsNone() &&
         content.IsNormal()) {
       return false;
@@ -766,7 +779,7 @@ bool ServoStyleSet::GeneratedContentPseudoExists(
     if (!aPseudoStyle.StyleContent()->mContent.IsItems()) {
       return false;
     }
-    MOZ_ASSERT(aPseudoStyle.StyleContent()->ContentCount() > 0,
+    MOZ_ASSERT(!aPseudoStyle.StyleContent()->NonAltContentItems().IsEmpty(),
                "IsItems() implies we have at least one item");
     // display:none is equivalent to not having a pseudo at all.
     if (aPseudoStyle.StyleDisplay()->mDisplay == StyleDisplay::None) {
@@ -937,7 +950,7 @@ static OriginFlags ToOriginFlags(StyleOrigin aOrigin) {
   }
 }
 
-void ServoStyleSet::ImportRuleLoaded(dom::CSSImportRule&, StyleSheet& aSheet) {
+void ServoStyleSet::ImportRuleLoaded(StyleSheet& aSheet) {
   if (mStyleRuleMap) {
     mStyleRuleMap->SheetAdded(aSheet);
   }
@@ -987,13 +1000,13 @@ void ServoStyleSet::RuleChangedInternal(StyleSheet& aSheet, css::Rule& aRule,
     return Servo_StyleSet_##constant_##RuleChanged(                       \
         mRawData.get(), static_cast<dom::CSS##type_##Rule&>(aRule).Raw(), \
         &aSheet, aKind);
-
   switch (aRule.Type()) {
     CASE_FOR(CounterStyle, CounterStyle)
     CASE_FOR(Style, Style)
     CASE_FOR(Import, Import)
     CASE_FOR(Media, Media)
     CASE_FOR(Keyframes, Keyframes)
+    CASE_FOR(Margin, Margin)
     CASE_FOR(FontFeatureValues, FontFeatureValues)
     CASE_FOR(FontPaletteValues, FontPaletteValues)
     CASE_FOR(FontFace, FontFace)
@@ -1006,6 +1019,7 @@ void ServoStyleSet::RuleChangedInternal(StyleSheet& aSheet, css::Rule& aRule,
     CASE_FOR(Container, Container)
     CASE_FOR(Scope, Scope)
     CASE_FOR(StartingStyle, StartingStyle)
+    CASE_FOR(PositionTry, PositionTry)
     // @namespace can only be inserted / removed when there are only other
     // @namespace and @import rules, and can't be mutated.
     case StyleCssRuleType::Namespace:
@@ -1014,9 +1028,6 @@ void ServoStyleSet::RuleChangedInternal(StyleSheet& aSheet, css::Rule& aRule,
       // FIXME: We should probably just forward to the parent @keyframes rule? I
       // think that'd do the right thing, but meanwhile...
       return MarkOriginsDirty(ToOriginFlags(aSheet.GetOrigin()));
-    case StyleCssRuleType::Margin:
-      // Margin rules not implemented yet, see bug 1864737
-      break;
   }
 
 #undef CASE_FOR
@@ -1432,12 +1443,12 @@ void ServoStyleSet::MaybeInvalidateRelativeSelectorForNthEdgeDependency(
 }
 
 void ServoStyleSet::MaybeInvalidateRelativeSelectorForNthDependencyFromSibling(
-    const Element* aFromSibling) {
-  if (aFromSibling == nullptr) {
+    const Element* aFromSibling, bool aForceRestyleSiblings) {
+  if (!aFromSibling) {
     return;
   }
   Servo_StyleSet_MaybeInvalidateRelativeSelectorNthDependencyFromSibling(
-      mRawData.get(), aFromSibling);
+      mRawData.get(), aFromSibling, aForceRestyleSiblings);
 }
 
 void ServoStyleSet::MaybeInvalidateForElementInsertion(

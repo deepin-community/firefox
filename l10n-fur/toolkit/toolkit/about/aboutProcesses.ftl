@@ -12,6 +12,8 @@ about-processes-column-action =
 
 about-processes-shutdown-process =
     .title = Discjame lis schedis e cope i procès
+about-processes-kill-process =
+    .title = Cope procès
 about-processes-shutdown-tab =
     .title = Siere schede
 # Profiler icons
@@ -51,6 +53,7 @@ about-processes-remote-sandbox-broker-process = Remote Sandbox Broker ({ $pid })
 about-processes-fork-server-process = Servidôr pal sdopleament (fork) dai procès ({ $pid })
 about-processes-preallocated-process = Preassegnât ({ $pid })
 about-processes-utility-process = Utilitât ({ $pid })
+about-processes-inference-process = Inference ({ $pid })
 # Unknown process names
 # Variables:
 #    $pid (String) The process id of this process, assigned by the OS.

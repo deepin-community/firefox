@@ -29,11 +29,12 @@ import mozilla.components.feature.session.SessionUseCases
 import mozilla.components.feature.tab.collections.TabCollection
 import mozilla.components.feature.tabs.TabsUseCases
 import mozilla.components.feature.top.sites.TopSite
-import mozilla.components.service.glean.testing.GleanTestRule
+import mozilla.components.feature.top.sites.TopSitesUseCases
 import mozilla.components.service.nimbus.messaging.Message
 import mozilla.components.support.test.ext.joinBlocking
 import mozilla.components.support.test.robolectric.testContext
 import mozilla.components.support.test.rule.MainCoroutineRule
+import mozilla.telemetry.glean.testing.GleanTestRule
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
@@ -46,9 +47,9 @@ import org.junit.runner.RunWith
 import org.mozilla.fenix.BrowserDirection
 import org.mozilla.fenix.GleanMetrics.Collections
 import org.mozilla.fenix.GleanMetrics.Events
+import org.mozilla.fenix.GleanMetrics.HomeBookmarks
 import org.mozilla.fenix.GleanMetrics.HomeScreen
 import org.mozilla.fenix.GleanMetrics.Pings
-import org.mozilla.fenix.GleanMetrics.RecentBookmarks
 import org.mozilla.fenix.GleanMetrics.RecentTabs
 import org.mozilla.fenix.GleanMetrics.TopSites
 import org.mozilla.fenix.HomeActivity
@@ -62,7 +63,7 @@ import org.mozilla.fenix.components.appstate.AppState
 import org.mozilla.fenix.ext.components
 import org.mozilla.fenix.ext.settings
 import org.mozilla.fenix.helpers.FenixRobolectricTestRunner
-import org.mozilla.fenix.home.recentbookmarks.RecentBookmark
+import org.mozilla.fenix.home.bookmarks.Bookmark
 import org.mozilla.fenix.home.recenttabs.RecentTab
 import org.mozilla.fenix.home.sessioncontrol.DefaultSessionControlController
 import org.mozilla.fenix.messaging.MessageController
@@ -93,6 +94,7 @@ class DefaultSessionControlControllerTest {
     private val tabsUseCases: TabsUseCases = mockk(relaxed = true)
     private val reloadUrlUseCase: SessionUseCases = mockk(relaxed = true)
     private val selectTabUseCase: TabsUseCases = mockk(relaxed = true)
+    private val topSitesUseCases: TopSitesUseCases = mockk(relaxed = true)
     private val settings: Settings = mockk(relaxed = true)
     private val analytics: Analytics = mockk(relaxed = true)
     private val scope = coroutinesTestRule.scope
@@ -142,7 +144,7 @@ class DefaultSessionControlControllerTest {
             topSites = emptyList(),
             showCollectionPlaceholder = true,
             recentTabs = emptyList(),
-            recentBookmarks = emptyList(),
+            bookmarks = emptyList(),
         )
 
         every { navController.currentDestination } returns mockk {
@@ -152,7 +154,6 @@ class DefaultSessionControlControllerTest {
         every { activity.settings() } returns settings
         every { activity.components.analytics } returns analytics
         every { activity.filesDir } returns filesDir
-        every { filesDir.path } returns "/test"
     }
 
     @Test
@@ -304,22 +305,15 @@ class DefaultSessionControlControllerTest {
 
     @Test
     fun `handleCollectionRemoveTab one tab`() {
+        val tab = mockk<ComponentTab> ()
+
         val expectedCollection = mockk<TabCollection> {
-            every { tabs } returns listOf(mockk())
-            every { title } returns "Collection"
+            every { id } returns 123L
+            every { tabs } returns listOf(tab)
         }
-        val tab = mockk<ComponentTab>()
-        every {
-            activity.resources.getString(
-                R.string.delete_tab_and_collection_dialog_title,
-                "Collection",
-            )
-        } returns "Delete Collection?"
-        every {
-            activity.resources.getString(R.string.delete_tab_and_collection_dialog_message)
-        } returns "Deleting this tab will delete everything."
 
         var actualCollection: TabCollection? = null
+        every { tabCollectionStorage.cachedTabCollections } returns listOf(expectedCollection)
 
         createController(
             removeCollectionWithUndo = { collection ->
@@ -470,6 +464,30 @@ class DefaultSessionControlControllerTest {
             )
         }
         verify { navController.navigate(R.id.browserFragment) }
+    }
+
+    @Test
+    fun `GIVEN homepage as a new tab is enabled WHEN Default TopSite is selected THEN open top site in existing tab`() {
+        val topSite = TopSite.Default(
+            id = 1L,
+            title = "Mozilla",
+            url = "mozilla.org",
+            createdAt = 0,
+        )
+        val controller = spyk(createController())
+
+        every { controller.getAvailableSearchEngines() } returns listOf(searchEngine)
+        every { settings.enableHomepageAsNewTab } returns true
+
+        controller.handleSelectTopSite(topSite, position = 0)
+
+        verify {
+            activity.openToBrowserAndLoad(
+                searchTermOrURL = topSite.url,
+                newTab = false,
+                from = BrowserDirection.FromHome,
+            )
+        }
     }
 
     @Test
@@ -1061,6 +1079,46 @@ class DefaultSessionControlControllerTest {
     }
 
     @Test
+    fun `WHEN the frecent top site is updated THEN add the frecent top site as a pinned top site`() {
+        val topSite = TopSite.Frecent(
+            id = 1L,
+            title = "Mozilla",
+            url = "mozilla.org",
+            createdAt = 0,
+        )
+
+        val controller = spyk(createController())
+        val title = "Firefox"
+        val url = "firefox.com"
+
+        controller.updateTopSite(topSite = topSite, title = title, url = url)
+
+        verify {
+            topSitesUseCases.addPinnedSites(title = title, url = url)
+        }
+    }
+
+    @Test
+    fun `WHEN the pinned top site is updated THEN update the pinned top site in storage`() {
+        val topSite = TopSite.Pinned(
+            id = 1L,
+            title = "Mozilla",
+            url = "mozilla.org",
+            createdAt = 0,
+        )
+
+        val controller = spyk(createController())
+        val title = "Firefox"
+        val url = "firefox.com"
+
+        controller.updateTopSite(topSite = topSite, title = title, url = url)
+
+        verify {
+            topSitesUseCases.updateTopSites(topSite = topSite, title = title, url = url)
+        }
+    }
+
+    @Test
     fun `GIVEN exactly the required amount of downloaded thumbnails with no errors WHEN handling wallpaper dialog THEN dialog is shown`() {
         val wallpaperState = WallpaperState.default.copy(
             availableWallpapers = makeFakeRemoteWallpapers(
@@ -1187,28 +1245,28 @@ class DefaultSessionControlControllerTest {
     }
 
     @Test
-    fun `WHEN handleReportSessionMetrics is called AND there are zero recent bookmarks THEN report Event#RecentBookmarkCount(0)`() {
-        every { appState.recentBookmarks } returns emptyList()
+    fun `WHEN handleReportSessionMetrics is called AND there are zero bookmarks THEN report Event#BookmarkCount(0)`() {
+        every { appState.bookmarks } returns emptyList()
         every { appState.recentTabs } returns emptyList()
-        assertNull(RecentBookmarks.recentBookmarksCount.testGetValue())
+        assertNull(HomeBookmarks.bookmarksCount.testGetValue())
 
         createController().handleReportSessionMetrics(appState)
 
-        assertNotNull(RecentBookmarks.recentBookmarksCount.testGetValue())
-        assertEquals(0L, RecentBookmarks.recentBookmarksCount.testGetValue())
+        assertNotNull(HomeBookmarks.bookmarksCount.testGetValue())
+        assertEquals(0L, HomeBookmarks.bookmarksCount.testGetValue())
     }
 
     @Test
-    fun `WHEN handleReportSessionMetrics is called AND there is at least one recent bookmark THEN report Event#RecentBookmarkCount(1)`() {
-        val recentBookmark: RecentBookmark = mockk(relaxed = true)
-        every { appState.recentBookmarks } returns listOf(recentBookmark)
+    fun `WHEN handleReportSessionMetrics is called AND there is at least one bookmark THEN report Event#BookmarkCount(1)`() {
+        val bookmark: Bookmark = mockk(relaxed = true)
+        every { appState.bookmarks } returns listOf(bookmark)
         every { appState.recentTabs } returns emptyList()
-        assertNull(RecentBookmarks.recentBookmarksCount.testGetValue())
+        assertNull(HomeBookmarks.bookmarksCount.testGetValue())
 
         createController().handleReportSessionMetrics(appState)
 
-        assertNotNull(RecentBookmarks.recentBookmarksCount.testGetValue())
-        assertEquals(1L, RecentBookmarks.recentBookmarksCount.testGetValue())
+        assertNotNull(HomeBookmarks.bookmarksCount.testGetValue())
+        assertEquals(1L, HomeBookmarks.bookmarksCount.testGetValue())
     }
 
     @Test
@@ -1346,8 +1404,9 @@ class DefaultSessionControlControllerTest {
             tabCollectionStorage = tabCollectionStorage,
             addTabUseCase = tabsUseCases.addTab,
             restoreUseCase = mockk(relaxed = true),
-            reloadUrlUseCase = reloadUrlUseCase.reload,
             selectTabUseCase = selectTabUseCase.selectTab,
+            reloadUrlUseCase = reloadUrlUseCase.reload,
+            topSitesUseCases = topSitesUseCases,
             appStore = appStore,
             navController = navController,
             viewLifecycleScope = scope,

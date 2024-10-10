@@ -347,6 +347,9 @@ has-seccomp-bpf = Seccomp-BPF (Φιλτράρισμα κλήσεων συστή�
 has-seccomp-tsync = Συγχρονισμός νήματος Seccomp
 has-user-namespaces = Χώροι ονομάτων χρήστη
 has-privileged-user-namespaces = Χώροι ονομάτων χρήστη για προνομιακές διεργασίες
+# Variables
+# $status (string) - Boolean value of hasUserNamespaces (should only be false when support-user-namespaces-unavailable is used)
+support-user-namespaces-unavailable = { $status } — Αυτή η λειτουργία δεν επιτρέπεται από το σύστημά σας. Αυτό μπορεί να περιορίσει τις λειτουργίες ασφαλείας του { -brand-short-name }.
 can-sandbox-content = Sandboxing διεργασίας περιεχομένου
 can-sandbox-media = Sandboxing αρθρώματος πολυμέσων
 content-sandbox-level = Επίπεδο sandbox διεργασίας περιεχομένου
@@ -415,6 +418,20 @@ support-printing-modified-settings = Τροποποιημένες ρυθμίσε
 support-printing-prefs-name = Όνομα
 support-printing-prefs-value = Τιμή
 
+## Remote Settings sections
+
+support-remote-settings-title = Απομακρυσμένες ρυθμίσεις
+support-remote-settings-status = Κατάσταση
+support-remote-settings-status-ok = OK
+# Status when synchronization is not working.
+support-remote-settings-status-broken = Δεν λειτουργεί
+support-remote-settings-last-check = Τελευταίος έλεγχος
+support-remote-settings-local-timestamp = Τοπική χρονική σήμανση
+support-remote-settings-sync-history = Ιστορικό
+support-remote-settings-sync-history-status = Κατάσταση
+support-remote-settings-sync-history-datetime = Ημερομηνία
+support-remote-settings-sync-history-infos = Πληροφορίες
+
 ## Normandy sections
 
 support-remote-experiments-title = Απομακρυσμένα πειράματα
@@ -439,7 +456,7 @@ pointing-device-none = Δεν υπάρχουν συσκευές κατάδειξ
 # to external websites.
 content-analysis-title = Ανάλυση περιεχομένου (DLP)
 content-analysis-active = Ενεργή
-content-analysis-connected-to-agent = Έγινε σύνδεση με πάροχο
-content-analysis-agent-path = Διαδρομή παρόχου
-content-analysis-agent-failed-signature-verification = Αποτυχία επαλήθευσης υπογραφής παρόχου
+content-analysis-connected-to-agent = Σε σύνδεση με παράγοντα
+content-analysis-agent-path = Διαδρομή παράγοντα
+content-analysis-agent-failed-signature-verification = Αποτυχία επαλήθευσης υπογραφής παράγοντα
 content-analysis-request-count = Αριθμός αιτημάτων

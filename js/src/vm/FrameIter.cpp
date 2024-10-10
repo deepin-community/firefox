@@ -202,14 +202,13 @@ void JitFrameIter::settle() {
 
     MOZ_ASSERT(wasmFrame.done());
     uint8_t* prevFP = wasmFrame.unwoundCallerFP();
-    jit::FrameType prevFrameType = wasmFrame.unwoundJitFrameType();
 
     if (mustUnwindActivation_) {
       act_->setJSExitFP(prevFP);
     }
 
     iter_.destroy();
-    iter_.construct<jit::JSJitFrameIter>(act_, prevFrameType, prevFP);
+    iter_.construct<jit::JSJitFrameIter>(act_, prevFP, mustUnwindActivation_);
     MOZ_ASSERT(!asJSJit().done());
     return;
   }
@@ -783,7 +782,7 @@ void FrameIter::wasmUpdateBytecodeOffset() {
 
   // Relookup the current frame, updating the bytecode offset in the process.
   data_.jitFrames_ = JitFrameIter(data_.activations_->asJit());
-  while (wasmFrame().debugFrame() != frame) {
+  while (!isWasm() || wasmFrame().debugFrame() != frame) {
     ++data_.jitFrames_;
   }
 

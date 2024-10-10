@@ -89,6 +89,9 @@ shopping-show-less-button = Mostrar menos
 
 shopping-settings-label =
     .label = Ajustes
+shopping-settings-recommendations-toggle2 =
+    .label = Mostrar recomendaciones y contenido patrocinado
+shopping-settings-recommendations-learn-more3 = { -brand-product-name } no comparte tus datos personales, por lo que estas recomendaciones no te seguirán por Internet. <a data-l10n-name="review-quality-url">Aprender más</a>
 shopping-settings-recommendations-toggle =
     .label = Mostrar anuncios en el verificador de reseñas
 shopping-settings-recommendations-learn-more2 = Verás publicidades ocasional de productos relevantes. Sólo publicitamos productos con revisiones confiables. <a data-l10n-name="review-quality-url">Aprender más</a>
@@ -115,6 +118,7 @@ shopping-settings-sidebar-enabled-state = El verificador de reseñas está <stro
 shopping-adjusted-rating-label =
     .label = Calificación ajustada
 shopping-adjusted-rating-unreliable-reviews = Se eliminaron las reseñas poco confiables
+shopping-adjusted-rating-based-reliable-reviews = Basado en revisiones confiables
 
 ## Strings for the review reliability component
 
@@ -135,6 +139,8 @@ shopping-analysis-explainer-learn-more2 = Obtén más información acerca de <a 
 # websites, which will be inserted without being translated.
 #  $retailer (String) - capitalized name of the shopping website, for example, "Amazon".
 shopping-analysis-explainer-highlights-description = Los <strong>puntos destacados</strong> provienen de reseñas de { $retailer } de los últimos 80 días que creemos que son confiables.
+# Fallback for analysis highlights explainer if the retailer is ever unknown
+shopping-analysis-explainer-highlights-description-unknown-retailer = Los <strong>puntos destacados</strong> provienen de reseñas de los últimos 80 días que creemos que son confiables.
 shopping-analysis-explainer-review-grading-scale-reliable = Revisiones confiables. Creemos que las reseñas probablemente provienen de clientes reales que dejaron reseñas honestas e imparciales.
 shopping-analysis-explainer-review-grading-scale-mixed = Creemos que hay una combinación de reseñas confiables y no confiables.
 shopping-analysis-explainer-review-grading-scale-unreliable = Reseñas poco fiables. Creemos que las reseñas probablemente son falsas o provienen de revisores sesgados.
@@ -161,6 +167,7 @@ shopping-unanalyzed-product-analyze-button = Comprobar la calidad de la reseña
 
 more-to-consider-ad-label =
     .label = Más para considerar
+shopping-sponsored-label = Patrocinado
 ad-by-fakespot = Anuncio de { -fakespot-brand-name }
 
 ## Shopping survey strings.

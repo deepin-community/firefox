@@ -8,6 +8,9 @@
 # Variables
 #   $host (String) - Hostname for which the password is saved for.
 password-manager-save-password-message = Voleu desar la contrasenya per a { $host }?
+password-manager-save-password-button-deny =
+    .label = Ara no
+    .accesskey = n
 password-manager-save-password-button-allow =
     .label = Desa
     .accesskey = D
@@ -17,6 +20,9 @@ password-manager-save-password-button-never =
 # Variables
 #   $host (String) - Hostname for which the password is updated for.
 password-manager-update-password-message = Voleu actualitzar la contrasenya per a { $host }?
+password-manager-update-password-button-delete =
+    .label = Elimina la contrasenya desada
+    .accesskey = E
 password-manager-update-login-add-username = Voleu afegir el nom d’usuari a la contrasenya desada?
 password-manager-password-password-button-allow =
     .label = Actualitza

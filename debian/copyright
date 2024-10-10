@@ -85,106 +85,30 @@ Files: debian/*
 Copyright: 2005-2014, Mike Hommey <glandium@debian.org>
 License: MPL-2.0
 
-Files: build/autoconf/codeset.m4
-  build/autoconf/config.guess
+Files: build/autoconf/config.guess
   build/autoconf/config.sub
-  js/src/build/autoconf/config.guess
-  js/src/build/autoconf/config.sub
   nsprpub/build/autoconf/config.guess
   nsprpub/build/autoconf/config.sub
-  toolkit/crashreporter/google-breakpad/autotools/config.guess
-  toolkit/crashreporter/google-breakpad/autotools/config.sub
 Copyright: 1992-2008, Free Software Foundation Inc.
 License: GPL-2 or GPL-3
 
 Files: dom/tests/mochitest/ajax/jquery/dist/jquery.js
-  browser/components/tabview/iq.js
 Copyright: 2008 John Resig <http://jquery.com>
 License: GPL-2 or MIT
 
 Files: aclocal.m4
-  build/autoconf/freetype2.m4
-  build/autoconf/gtk.m4
-  build/autoconf/nspr.m4
-  db/mork/src/morkDeque.cpp
-  db/mork/src/morkDeque.h
   js/src/aclocal.m4
-  js/src/build/autoconf/nspr.m4
   nsprpub/config/nspr.m4
-  toolkit/crashreporter/google-breakpad/aclocal.m4
 Copyright: Public Domain
 License: public-domain
 
-Files: xpcom/glue/nsQuickSort.cpp
-Copyright: 1992, 1993 The Regents of the University of California.
-License: BSD-3-clause
- Redistribution and use in source and binary forms, with or without
- modification, are permitted provided that the following conditions
- are met:
- 1. Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
- 2. Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
- 3. Neither the name of the University nor the names of its contributors
-    may be used to endorse or promote products derived from this software
-    without specific prior written permission.
- .
- THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
- ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
- FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
- OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
- OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
- SUCH DAMAGE.
-
 Files: build/autoconf/install-sh
-  js/src/build/autoconf/install-sh
   nsprpub/build/autoconf/install-sh
-  security/nss/tests/pkcs11/netscape/trivial/install-sh
-  toolkit/crashreporter/google-breakpad/autotools/install-sh
 Copyright: X11R5
 License: other
  Without any clear licensing terms
 
-Files: embedding/tests/winEmbed/*
-Copyright: 2002 Netscape Communications Corporation and other contributors
-License: MIT
-
-Files: dom/plugins/base/npruntime.h
-Copyright: 2004, Apple Computer, Inc. and The Mozilla Foundation.
-License: BSD-3-clause
- Redistribution and use in source and binary forms, with or without
- modification, are permitted provided that the following conditions are
- met:
- .
- 1. Redistributions of source code must retain the above copyright
- notice, this list of conditions and the following disclaimer.
- 2. Redistributions in binary form must reproduce the above copyright
- notice, this list of conditions and the following disclaimer in the
- documentation and/or other materials provided with the distribution.
- 3. Neither the names of Apple Computer, Inc. ("Apple") or The Mozilla
- Foundation ("Mozilla") nor the names of their contributors may be used
- to endorse or promote products derived from this software without
- specific prior written permission.
- .
- THIS SOFTWARE IS PROVIDED BY APPLE, MOZILLA AND THEIR CONTRIBUTORS "AS
- IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
- TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
- PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL APPLE, MOZILLA OR
- THEIR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL
- SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
- TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
- PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
- LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
- NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-Files: toolkit/mozapps/update/updater/bspatch.*
+Files: toolkit/mozapps/update/updater/bspatch/*
 Copyright: 2003,2004 Colin Percival
 License: BSD-2-clause
  Redistribution and use in source and binary forms, with or without
@@ -208,11 +132,7 @@ License: BSD-2-clause
  IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  POSSIBILITY OF SUCH DAMAGE.
 
-Files: netwerk/dns/nameprep.c
-  netwerk/dns/nameprepdata.c
-  netwerk/dns/nameprep_template.c
-  netwerk/dns/nsIDNKitInterface.h
-  netwerk/dns/race.c
+Files: netwerk/dns/nsIDNKitInterface.h
 Copyright: 2001,2002 Japan Network Information Center
 License: other
  The following License Terms and Conditions apply, unless a different
@@ -284,7 +204,7 @@ License: other
  OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  PERFORMANCE OF THIS SOFTWARE.
 
-Files: netwerk/wifi/osx_wifi.h
+Files: netwerk/wifi/mac/Wifi.h
 Copyright: 2008, Google Inc.
 License: BSD-3-clause
  Redistribution and use in source and binary forms, with or without
@@ -347,36 +267,7 @@ License: BSD-3-clause
  The framework can be found at
  /System/Library/PrivateFrameworks/Apple80211.framework.
 
-Files: netwerk/wifi/wlanapi.h
-Copyright: 2008, Google Inc.
-License: BSD-3-clause
- Redistribution and use in source and binary forms, with or without
- modification, are permitted provided that the following conditions are met:
- .
-  1. Redistributions of source code must retain the above copyright notice
-     this list of conditions and the following disclaimer.
-  2. Redistributions in binary form must reproduce the above copyright notice
-     this list of conditions and the following disclaimer in the documentation
-     and/or other materials provided with the distribution.
-  3. Neither the name of Google Inc. nor the names of its contributors may be
-     used to endorse or promote products derived from this software without
-     specific prior written permission.
- .
- THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
- WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
- MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
- EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL
- SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO
- PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
- OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY
- WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
- OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
- ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- .
- Replicates missing wlanapi.h. Taken from
- http://msdn.microsoft.com/en-us/library/bb204766.aspx.
-
-Files: db/sqlite3/src/sqlite*
+Files: third_party/sqlite3/src/sqlite*
 Copyright: none
 License: other
  The author disclaims copyright to this source code.  In place of
@@ -542,11 +433,6 @@ License: other
  commercial products, provided that all warranty or liability claims are
  assumed by the product vendor.
 
-Files: modules/libbz2/src/*
-Copyright: 1996-2005 Julian R Seward
-License: other
- Licensing details are available in modules/libbz2/src/LICENSE
-
 Files: media/libpng/*
 Copyright: various contributors
 License: other
@@ -589,8 +475,8 @@ Copyright: 1998, 1999, 2000 Thai Open Source Software Center Ltd
            2001, 2002 Expat maintainers
 License: MIT
 
-Files: memory/mozjemalloc/jemalloc.c
-  memory/mozjemalloc/tree.h
+Files: memory/build/mozjemalloc.cpp
+  memory/build/rb.h
 Copyright: 2006-2008 Jason Evans
            2002 Niels Provos
 License: BSD-2-clause
@@ -627,7 +513,6 @@ License: BSD-3-clause
 
 Files: media/libogg/*
   media/libtheora/*
-  media/libtremor/*
   media/libvorbis/*
   media/libspeex_resampler/*
 Copyright: 2002-2010 Xiph.org Foundation
@@ -673,35 +558,6 @@ License: other
  WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
  ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
-Files: media/libnestegg/src/halloc.*
-       media/libnestegg/src/align.h
-       media/libnestegg/src/hlist.h
-       media/libnestegg/src/macros.h
-Copyright: 2004-2010 Alex Pankratov
-License: BSD-3-clause
- Redistribution and use in source and binary forms, with or without
- modification, are permitted provided that the following conditions are met:
- .
-    * Redistributions of source code must retain the above copyright notice
-      this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice
-      this list of conditions and the following disclaimer in the documentation
-      and/or other materials provided with the distribution.
-    * Neither the name of the project nor the names of its contributors may be
-      used to endorse or promote products derived from this software without
-      specific prior written permission.
- .
- THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY
- OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 Files: media/libvpx/*
 Copyright: 2010 Google Inc.
@@ -753,17 +609,14 @@ License: BSD-3-clause
 
 Files: dom/media/webspeech/recognition/endpointer.*
   dom/media/webspeech/recognition/energy_endpointer*
-  dom/plugins/ipc/PluginInterposeOSX.*
-  editor/libeditor/nsEditorEventListener.cpp
+  editor/libeditor/EditorEventListener.cpp
   ipc/chromium/*
   gfx/ots/*
   gfx/ycbcr/*
-  media/openmax_dl/*
   security/sandbox/*
-  tools/profiler/platform-linux.cc
-  tools/profiler/platform-win32.cc
-  tools/profiler/platform.h
-  widget/cocoa/GfxInfo.mm
+  tools/profiler/core/platform-linux-android.cpp
+  tools/profiler/core/platform-win32.cpp
+  tools/profiler/core/platform.h
 Copyright: 2006-2008 The Chromium Authors
 License: BSD-3-clause
  Redistribution and use in source and binary forms, with or without
@@ -834,56 +687,6 @@ Copyright: 2007-2009 Mozilla Foundation
            2004-2008 Apple Computer
 License: MIT
 
-Files: dom/plugins/test/testplugin/*
-Copyright: 2008, Mozilla Corporation
-License: BSD-3-clause
- Redistribution and use in source and binary forms, with or without
- modification, are permitted provided that the following conditions are met:
- .
- * Redistributions of source code must retain the above copyright notice, this
-   list of conditions and the following disclaimer.
- * Redistributions in binary form must reproduce the above copyright notice
-   this list of conditions and the following disclaimer in the documentation
-   and/or other materials provided with the distribution.
- * Neither the name of the Mozilla Corporation nor the names of its
-   contributors may be used to endorse or promote products derived from this
-   software without specific prior written permission.
- .
- THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
- ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
- ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-Files: dom/plugins/test/testplugin/nptest_utils.*
-Copyright: 2006, 2007, 2008 Apple Inc.
-License: BSD-2-clause
- Redistribution and use in source and binary forms, with or without
- modification, are permitted provided that the following conditions
- are met:
- 1. Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
- 2. Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
- .
- THIS SOFTWARE IS PROVIDED BY APPLE INC. ``AS IS'' AND ANY
- EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL APPLE INC. OR
- CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL
- EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO
- PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
- PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
- OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
 Files: gfx/harfbuzz/*
 Copyright: 1998-2004 David Turner and Werner Lemberg
            2004, 2007, 2008, 2009, 2010 Red Hat, Inc.
@@ -909,53 +712,6 @@ License: other
  FITNESS FOR A PARTICULAR PURPOSE.  THE SOFTWARE PROVIDED HEREUNDER IS
  ON AN "AS IS" BASIS, AND THE COPYRIGHT HOLDER HAS NO OBLIGATION TO
  PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
-
-Files:  media/webrtc/trunk/webrtc/system_wrappers/source/condition_variable_win.cc
-Copyright: 1993-2009 Douglas C. Schmidt
-           1993-2009 Washington University
-           1993-2009 University of California, Irvine
-           1993-2009 Vanderbilt University
-License: other
- ACE(TM), TAO(TM), CIAO(TM), DAnCE(TM), and CoSMIC(TM)
- (henceforth referred to as "DOC software") are copyrighted by
- Douglas C. Schmidt and his research group at Washington University
- University of California, Irvine, and Vanderbilt University
- Copyright (c) 1993-2009, all rights reserved.
- Since DOC software is open-source, freely available software
- you are free to use, modify, copy, and distribute--perpetually and
- irrevocably--the DOC software source code and object code produced
- from the source, as well as copy and distribute modified versions of
- this software. You must, however, include this copyright statement
- along with any code built using DOC software that you release. No
- copyright statement needs to be provided if you just ship binary
- executables of your software products.
-
-Files: other-licenses/skia-npapi/*
-  mozglue/build/cpuacct.*
-  dom/plugins/base/android/ANPKeyCodes.h
-  dom/plugins/base/android/android_npapi.h
-Copyright: 2009, The Android Open Source Project
-License: BSD-2-clause
- Redistribution and use in source and binary forms, with or without
- modification, are permitted provided that the following conditions
- are met:
-  * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-  * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
- .
- THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS ``AS IS'' AND ANY
- EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR
- CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL
- EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO
- PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
- PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
- OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 Files: gfx/angle/*
 Copyright: 2002-2010 The ANGLE Project Authors
@@ -990,42 +746,32 @@ License: BSD-3-clause
  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  POSSIBILITY OF SUCH DAMAGE.
 
-Files:
-  browser/devtools/commandline/gcli.jsm
-  browser/extensions/pdfjs/*
-  content/media/omx/mediaresourcemanager/IMediaResourceManagerDeathNotifier.h
-  dom/bluetooth/*
-  dom/camera/Gonk*
-  dom/system/gonk/*
-  gfx/skia/include/gpu/GrRenderTarget.h
-  gfx/skia/src/ports/FontHostConfiguration_android.*
-  hal/gonk/*
-  ipc/dbus/DBus*
-  media/libcubeb/src/android*
-  media/libcubeb/src/audiotrack_definitions.h
-  media/omx-plugin/*
+Files: media/libcubeb/*
+Copyright: 2011 Mozilla Foundation
+License: other
+ Permission to use, copy, modify, and distribute this software for any
+ purpose with or without fee is hereby granted, provided that the above
+ copyright notice and this permission notice appear in all copies.
+ .
+ THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+
+Files: media/libcubeb/src/android/*
   mobile/android/*
-  netwerk/sctp/src/LocalArray.h
-  netwerk/sctp/src/ScopedFd.h
-  netwerk/sctp/src/ifaddrs-android-ext.h
-  netwerk/sctp/src/ifaddrs_android.cpp
-  testing/marionette/client/marionette/application_cache.py
-  testing/marionette/client/marionette/keys.py
-  testing/marionette/client/marionette/tests/unit/test_appcache.py
-  testing/marionette/client/marionette/tests/unit/test_rendered_element.py
-  testing/marionette/client/marionette/www/html5Page.html
-  testing/marionette/marionette-sendkeys.js
-  toolkit/devtools/gcli/gcli.jsm
-  toolkit/devtools/gcli/Templater.jsm
-  uriloader/exthandler/gonk/nsOSHelperAppService.*
-  widget/android/android/StrongPointer.h
-  widget/gonk/*
+  testing/marionette/client/marionette_driver/keys.py
+  testing/marionette/harness/marionette_harness/tests/unit/test_rendered_element.py
+  testing/marionette/harness/marionette_harness/www/html5Page.html
+  toolkit/components/pdfjs/*
 License: other
  On Debian systems, the complete text of the Apache License version
  2.0 can be found in the file `/usr/share/common-licenses/Apache-2.0'.
 
 Files: dom/media/webaudio/blink/*
-  widget/cocoa/*
 Copyright: 2008, 2009 Apple Inc.
 License: BSD-2-clause
  Redistribution and use in source and binary forms, with or without
@@ -1049,7 +795,7 @@ License: BSD-2-clause
  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-Files: devtools/shared/webconsole/network-helper.js
+Files: devtools/shared/network-observer/NetworkHelper.sys.mjs
 Copyright: 2007, Parakey, Inc.
 License: BSD-3-clause
  Redistribution and use of this software in source and binary forms, with or
@@ -1108,7 +854,7 @@ License: BSD-3-clause
  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-Files: media/webrtc/trunk/tools/gyp/*
+Files: third_party/python/gyp/*
 Copyright: 2009 Google Inc.
 License: BSD-3-clause
  Redistribution and use in source and binary forms, with or without
@@ -1169,49 +915,8 @@ License: other
  All trademarks and registered trademarks mentioned herein are the property
  of their respective owners.
 
-Files: media/kiss_fft/*
-Copyright: 2003-2010 Mark Borgerding
-License: BSD-3-clause
- Redistribution and use in source and binary forms, with or without
- modification, are permitted provided that the following conditions are met:
- .
-     * Redistributions of source code must retain the above copyright notice
-       this list of conditions and the following disclaimer.
-     * Redistributions in binary form must reproduce the above copyright notice
-       this list of conditions and the following disclaimer in the documentation
-       and/or other materials provided with the distribution.
-     * Neither the author nor the names of any contributors may be used to
-       endorse or promote products derived from this software without specific
-       prior written permission.
- .
- THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
- ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
- ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-Files: media/libcubeb/*
-Copyright: 2011 Mozilla Foundation
-License: other
- Permission to use, copy, modify, and distribute this software for any
- purpose with or without fee is hereby granted, provided that the above
- copyright notice and this permission notice appear in all copies.
- .
- THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
- WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
- MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
- ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
- WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
- ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
- OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
-Files: media/mtransport/sigslot.h
-  media/mtransport/test/gtest_utils.h
+Files: dom/media/webrtc/transport/sigslot.h
+  dom/media/webrtc/transport/test/gtest_utils.h
 Copyright: 2004-2005 Google Inc.
 License: BSD-3-clause
  Redistribution and use in source and binary forms, with or without modification
@@ -1272,22 +977,7 @@ License: BSD-3-clause
  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-Files: media/libyuv/source/x86inc.asm
-Copyright: 2005-2012 x264 project
-License: other
- Permission to use, copy, modify, and/or distribute this software for any
- purpose with or without fee is hereby granted, provided that the above
- copyright notice and this permission notice appear in all copies.
- .
- THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
- WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
- MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
- ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
- WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
- ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
- OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
-Files: media/mtransport/third_party/nICEr/*
+Files: dom/media/webrtc/transport/third_party/nICEr/*
 Copyright: 2007, Adobe Systems Inc.
            2007-2008, Network Resonance, Inc.
 License: BSD-3-clause
@@ -1318,7 +1008,7 @@ License: BSD-3-clause
  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-Files: media/mtransport/third_party/nrappkit/*
+Files: dom/media/webrtc/transport/third_party/nrappkit/*
 Copyright: 2001-2007, Network Resonance, Inc.
 License: BSD-3-clause
  Redistribution and use in source and binary forms, with or without
@@ -1347,8 +1037,8 @@ License: BSD-3-clause
  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  POSSIBILITY OF SUCH DAMAGE.
 
-Files: media/mtransport/third_party/nrappkit/src/log/r_log.*
-  media/mtransport/third_party/nrappkit/src/util/libekr/*
+Files: dom/media/webrtc/transport/third_party/nrappkit/src/log/r_log.*
+  dom/media/webrtc/transport/third_party/nrappkit/src/util/libekr/*
 Copyright: 1999-2003 RTFM, Inc.
 License: BSD-4-clause
  This package is a SSLv3/TLS protocol analyzer written by Eric Rescorla
@@ -1389,7 +1079,7 @@ License: BSD-4-clause
  included in this distribution. it does not apply to any other part of
  ssldump not included in this distribution.
 
-Files: media/mtransport/third_party/nrappkit/src/port/generic/include/sys/queue.h
+Files: dom/media/webrtc/transport/third_party/nrappkit/src/port/generic/include/sys/queue.h
 Copyright: 1991, 1993 The Regents of the University of California.
 License: BSD-3-clause
  Redistribution and use in source and binary forms, with or without
@@ -1415,7 +1105,7 @@ License: BSD-3-clause
  OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  SUCH DAMAGE.
 
-Files: media/mtransport/third_party/nrappkit/src/util/util.c
+Files: dom/media/webrtc/transport/third_party/nrappkit/src/util/util.c
 Copyright: 1998 Tood C. Miller
 License: BSD-3-clause
  Redistribution and use in source and binary forms, with or without
@@ -1483,7 +1173,6 @@ Files: netwerk/sctp/src/netinet/sctp_ss_functions.c
  netwerk/sctp/src/user_atomic.h
  netwerk/sctp/src/user_environment.*
  netwerk/sctp/src/user_recv_thread.*
- netwerk/sctp/src/user_sctp_timer_iterate.c
  netwerk/sctp/src/user_socket.c
  netwerk/sctp/src/user_uma.h
  netwerk/sctp/src/usrsctp.h
@@ -1544,7 +1233,7 @@ License: BSD-3-clause
  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-Files: other-licenses/snappy
+Files: other-licenses/snappy/*
 Copyright: 2011 Google Inc.
 License: BSD-3-clause
  Redistribution and use in source and binary forms, with or without
@@ -1613,7 +1302,7 @@ Files: intl/icu/source/data/unidata/CaseFolding.txt
   intl/icu/source/data/unidata/norm2/uts46.txt
   intl/icu/source/data/unidata/ppucd.txt
   intl/unicharutil/util/nsUnicodePropertyData.cpp
-  intl/unicharutil/util/nsUnicodeScriptCodes.h
+  intl/components/src/UnicodeScriptCodes.h
 Copyright: 1991-2012 Unicode, Inc.
 License: other
  Permission is hereby granted, free of charge, to any person obtaining a
@@ -1649,7 +1338,7 @@ License: other
 Files: js/src/irregexp/*
   js/src/builtin/*
   js/src/jit/arm/*
-  js/src/jit/mips/*
+  js/src/jit/mips*/Simulator-mips*
 Copyright: 2006-2012 the V8 project authors
 License: BSD-3-clause
  Redistribution and use in source and binary forms, with or without
@@ -1678,7 +1367,7 @@ License: BSD-3-clause
  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-Files: media/webrtc/trunk/*
+Files: third_party/libwebrtc/*
 Copyright: 2011, The WebRTC project authors
 License: BSD-3-clause
  Redistribution and use in source and binary forms, with or without
@@ -1738,14 +1427,8 @@ License: BSD-3
  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-Files: devtools/client/sourceeditor/codemirror/*
-  devtools/client/sourceeditor/test/cm_comment_test.js
-  devtools/client/sourceeditor/test/cm_driver.js
-  devtools/client/sourceeditor/test/cm_mode_javascript_test.js
-  devtools/client/sourceeditor/test/cm_mode_test.css
-  devtools/client/sourceeditor/test/cm_mode_test.js
-  devtools/client/sourceeditor/test/cm_test.js
-  devtools/shared/acorn/*
+Files: devtools/client/shared/sourceeditor/codemirror/*
+  devtools/shared/jsbeautify/src/beautify-js.js
 Copyright: 2012-2013 by Marijn Haverbeke <marijnh@gmail.com>
 License: MIT
  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -1770,7 +1453,7 @@ License: MIT
  include their own LICENSE files, and are released under different
  licences.
 
-Files: browser/extensions/pdfjs/content/web/cmaps/*
+Files: toolkit/components/pdfjs/content/web/cmaps/*
 Copyright: 1990-2009 Adobe Systems Incorporated
 License: other
  Redistribution and use in source and binary forms, with or
@@ -1805,25 +1488,13 @@ License: other
  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-Files: toolkit/devtools/qrcode/encoder/*
+Files: devtools/shared/qrcode/encoder/*
 Copyright: 2009 Kazuhiko Arase
-License: MIT
-
-Files: browser/components/loop/content/shared/libs/backbone-*.js
-  browser/components/loop/content/shared/libs/lodash-*.js
-  browser/components/loop/content/shared/libs/sdk.js:
-Copyright: 2010-2014 Jeremy Ashkenas, DocumentCloud
-  2012-2014 The Dojo Foundation
-  2014 TokBox
 License: MIT
 
 Files: devtools/client/shared/widgets/CubicBezierWidget.js
 Copyright: 2013 Lea Verou
 License: MIT
-
-Files: media/gmp-clearkey/0.1/openaes/*
-Copyright: 2012, Nabil S. Al Ramli
-License: BSD-2-clause
 
 Files: security/sandbox/chromium/base/third_party/superfasthash/*
 Copyright: 2010, Paul Hsieh
@@ -1852,7 +1523,7 @@ License: BSD-3-clause
  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  POSSIBILITY OF SUCH DAMAGE.
 
-Files: js/src/jit/arm64/vixl/*.
+Files: js/src/jit/arm64/vixl/*
 Copyright: 2013, ARM Limited
 License: BSD-3-clause
  Redistribution and use in source and binary forms, with or without
@@ -1878,7 +1549,7 @@ License: BSD-3-clause
  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-Files: devtools/client/shared/d3.js
+Files: third_party/js/d3/d3.js
 Copyright: 2014, Michael Bostock
 License: BSD-3-clause
  Redistribution and use in source and binary forms, with or without
@@ -1905,35 +1576,9 @@ License: BSD-3-clause
  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-Files: devtools/client/webaudioeditor/lib/dagre-d3.js
+Files: devtools/client/shared/vendor/dagre-d3.js
 Copyright: 2013 Chris Pettitt
 License: MIT
-
-Files: openmax_dl/dl/api/omxtypes.h
-  openmax_dl/dl/sp/api/omxSP.h
-Copyright: 2005-2008 The Khronos Group Inc.
-License: other
- These materials are protected by copyright laws and contain material
- proprietary to the Khronos Group, Inc.  You may use these materials
- for implementing Khronos specifications, without altering or removing
- any trademark, copyright or other notice from the specification.
- .
- Khronos Group makes no, and expressly disclaims any, representations
- or warranties, express or implied, regarding these materials, including,
- without limitation, any implied warranties of merchantability or fitness
- for a particular purpose or non-infringement of any intellectual property.
- Khronos Group makes no, and expressly disclaims any, warranties, express
- or implied, regarding the correctness, accuracy, completeness, timeliness,
- and reliability of these materials.
- .
- Under no circumstances will the Khronos Group, or any of its Promoters,
- Contributors or Members or their respective partners, officers, directors,
- employees, agents or representatives be liable for any damages, whether
- direct, indirect, special or consequential damages for lost revenues,
- lost profits, or otherwise, arising from or in connection with these
- materials.
- .
- Khronos and OpenMAX are trademarks of the Khronos Group Inc.
 
 Files: devtools/client/shared/vendor/react.js
 Copyright: 2013-2015, Facebook, Inc.
@@ -1965,12 +1610,4 @@ License: BSD-3-clause
 
 Files: devtools/client/shared/vendor/react-redux.js
 Copyright: 2015 Dan Abramov
-License: MIT
-
-Files: browser/components/loop/content/shared/js/urlRegExps.js
-Copyright: 2010-2013 Diego Perini (http://www.iport.it)
-License: MIT
-
-Files: browser/components/loop/content/shared/libs/classnames-*.js
-Copyright: 2015 Jed Watson
 License: MIT

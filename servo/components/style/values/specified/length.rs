@@ -9,6 +9,7 @@
 use super::{AllowQuirks, Number, Percentage, ToComputedValue};
 use crate::computed_value_flags::ComputedValueFlags;
 use crate::font_metrics::{FontMetrics, FontMetricsOrientation};
+#[cfg(feature = "gecko")]
 use crate::gecko_bindings::structs::GeckoFontMetrics;
 use crate::parser::{Parse, ParserContext};
 use crate::values::computed::{self, CSSPixelLength, Context};
@@ -195,7 +196,7 @@ impl FontRelativeLength {
             Self::Ic(x) => Self::Ic(op(*x)),
             Self::Rem(x) => Self::Rem(op(*x)),
             Self::Lh(x) => Self::Lh(op(*x)),
-            Self::Rlh(x) => Self::Lh(op(*x)),
+            Self::Rlh(x) => Self::Rlh(op(*x)),
         }
     }
 
@@ -212,6 +213,7 @@ impl FontRelativeLength {
     }
 
     /// Computes the length, given a GeckoFontMetrics getter to resolve font-relative units.
+    #[cfg(feature = "gecko")]
     pub fn to_computed_pixel_length_with_font_metrics(
         &self,
         get_font_metrics: impl Fn() -> GeckoFontMetrics,
@@ -357,7 +359,10 @@ impl FontRelativeLength {
                 let reference_size = if context.builder.is_root_element || context.in_media_query {
                     reference_font_size.computed_size()
                 } else {
-                    context.device().root_font_size().zoom(context.builder.effective_zoom)
+                    context
+                        .device()
+                        .root_font_size()
+                        .zoom(context.builder.effective_zoom)
                 };
                 (reference_size, length)
             },
@@ -805,7 +810,9 @@ impl ToComputedValue for AbsoluteLength {
     type ComputedValue = CSSPixelLength;
 
     fn to_computed_value(&self, context: &Context) -> Self::ComputedValue {
-        CSSPixelLength::new(self.to_px()).zoom(context.builder.effective_zoom).finite()
+        CSSPixelLength::new(self.to_px())
+            .zoom(context.builder.effective_zoom)
+            .finite()
     }
 
     fn from_computed_value(computed: &Self::ComputedValue) -> Self {
@@ -944,15 +951,6 @@ impl ContainerRelativeLength {
         };
         CSSPixelLength::new((container_length.to_f64_px() * factor as f64 / 100.0) as f32).finite()
     }
-}
-
-#[cfg(feature = "gecko")]
-fn are_container_queries_enabled() -> bool {
-    static_prefs::pref!("layout.css.container-queries.enabled")
-}
-#[cfg(feature = "servo")]
-fn are_container_queries_enabled() -> bool {
-    false
 }
 
 /// A `<length>` without taking `calc` expressions into account
@@ -1138,22 +1136,22 @@ impl NoCalcLength {
             },
             // Container query lengths. Inherit the limitation from viewport units since
             // we may fall back to them.
-            "cqw" if !context.in_page_rule() && are_container_queries_enabled() => {
+            "cqw" if !context.in_page_rule() && cfg!(feature = "gecko") => {
                 Self::ContainerRelative(ContainerRelativeLength::Cqw(value))
             },
-            "cqh" if !context.in_page_rule() && are_container_queries_enabled() => {
+            "cqh" if !context.in_page_rule() && cfg!(feature = "gecko") => {
                 Self::ContainerRelative(ContainerRelativeLength::Cqh(value))
             },
-            "cqi" if !context.in_page_rule() && are_container_queries_enabled() => {
+            "cqi" if !context.in_page_rule() && cfg!(feature = "gecko") => {
                 Self::ContainerRelative(ContainerRelativeLength::Cqi(value))
             },
-            "cqb" if !context.in_page_rule() && are_container_queries_enabled() => {
+            "cqb" if !context.in_page_rule() && cfg!(feature = "gecko") => {
                 Self::ContainerRelative(ContainerRelativeLength::Cqb(value))
             },
-            "cqmin" if !context.in_page_rule() && are_container_queries_enabled() => {
+            "cqmin" if !context.in_page_rule() && cfg!(feature = "gecko") => {
                 Self::ContainerRelative(ContainerRelativeLength::Cqmin(value))
             },
-            "cqmax" if !context.in_page_rule() && are_container_queries_enabled() => {
+            "cqmax" if !context.in_page_rule() && cfg!(feature = "gecko") => {
                 Self::ContainerRelative(ContainerRelativeLength::Cqmax(value))
             },
             _ => return Err(()),
@@ -1224,6 +1222,7 @@ impl NoCalcLength {
 
     /// Get a px value without a full style context; this can handle either
     /// absolute or (if a font metrics getter is provided) font-relative units.
+    #[cfg(feature = "gecko")]
     #[inline]
     pub fn to_computed_pixel_length_with_font_metrics(
         &self,
@@ -1513,6 +1512,7 @@ impl Length {
     }
 
     /// Get a px value, with an optional GeckoFontMetrics getter to resolve font-relative units.
+    #[cfg(feature = "gecko")]
     pub fn to_computed_pixel_length_with_font_metrics(
         &self,
         get_font_metrics: Option<impl Fn() -> GeckoFontMetrics>,
@@ -1957,6 +1957,10 @@ macro_rules! parse_size_non_length {
                 "fit-content" | "-moz-fit-content" => $size::FitContent,
                 #[cfg(feature = "gecko")]
                 "-moz-available" => $size::MozAvailable,
+                #[cfg(feature = "gecko")]
+                "-webkit-fill-available" if is_webkit_fill_available_keyword_enabled() => $size::WebkitFillAvailable,
+                #[cfg(feature = "gecko")]
+                "stretch" if is_stretch_enabled() => $size::Stretch,
                 $auto_or_none => $size::$auto_or_none_ident,
             })
         });
@@ -1964,6 +1968,15 @@ macro_rules! parse_size_non_length {
             return size;
         }
     }};
+}
+
+#[cfg(feature = "gecko")]
+fn is_webkit_fill_available_keyword_enabled() -> bool {
+    static_prefs::pref!("layout.css.webkit-fill-available.enabled")
+}
+#[cfg(feature = "gecko")]
+fn is_stretch_enabled() -> bool {
+    static_prefs::pref!("layout.css.stretch-size-keyword.enabled")
 }
 
 #[cfg(feature = "gecko")]

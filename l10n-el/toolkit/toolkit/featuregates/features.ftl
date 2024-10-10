@@ -46,3 +46,25 @@ experimental-features-js-warp-description = Ενεργοποίηση του Warp
 experimental-features-ime-search =
     .label = Γραμμή διευθύνσεων: εμφάνιση αποτελεσμάτων κατά τη σύνταξη IME
 experimental-features-ime-search-description = Το IME (Input Method Editor) είναι ένα εργαλείο που σας επιτρέπει να εισαγάγετε περίπλοκα σύμβολα, όπως αυτά που χρησιμοποιούνται στις γλώσσες της Ανατολικής Ασίας ή της Ινδίας, με ένα τυπικό πληκτρολόγιο. Η ενεργοποίηση αυτού του πειράματος θα διατηρεί ανοικτή τη λίστα της γραμμής διευθύνσεων, εμφανίζοντας αποτελέσματα και προτάσεις αναζήτησης, κατά τη χρήση του IME για εισαγωγή κειμένου. Σημειώστε ότι το IME ενδέχεται να εμφανίσει ένα παράθυρο που καλύπτει τα αποτελέσματα της γραμμής διευθύνσεων, επομένως αυτή η προτίμηση προτείνεται μόνο για IME που δεν χρησιμοποιεί αυτόν τον τύπο παραθύρου.
+# Auto Picture-in-Picture
+experimental-features-auto-pip =
+    .label = Εικόνα εντός εικόνας: αυτόματο άνοιγμα με εναλλαγή καρτελών
+experimental-features-auto-pip-description = Ενεργοποίηση λειτουργίας «Εικόνα εντός εικόνας» σε ενεργά βίντεο κατά την εναλλαγή καρτελών.
+genai-settings-chat-title =
+    .label = AI chatbot
+# Updated sidebar settings
+sidebar-title =
+    .label = Πλαϊνή γραμμή
+sidebar-description = Αποκτήστε εύκολα πρόσβαση στο ιστορικό, τις καρτέλες από άλλες συσκευές, τις επεκτάσεις πλαϊνής γραμμής και πολλά άλλα κατά την περιήγησή σας. <a data-l10n-name="connect">Αποστολή σχολίων</a>
+vertical-tabs-title =
+    .label = Κάθετες καρτέλες
+vertical-tabs-description = Μετακινήστε τις καρτέλες σας από το πάνω μέρος του προγράμματος περιήγησης στο πλάι. Θα πρέπει επίσης να δοκιμάσετε και την πλαϊνή γραμμή. <a data-l10n-name="connect">Αποστολή σχολίων</a>
+experimental-features-group-browsing =
+    .label = Περιήγηση
+experimental-features-group-developer-tools =
+    .label = Εργαλεία ανάπτυξης
+experimental-features-group-webpage-display =
+    .label = Προβολή ιστοσελίδων
+experimental-features-group-customize-browsing =
+    .label = Προσαρμόστε την περιήγησή σας
+experimental-features-group-customize-browsing-description = Αν δοκιμάσετε αυτές τις λειτουργίες, <a data-l10n-name="connect">μοιραστείτε τις σκέψεις σας μέσω του Connect</a>

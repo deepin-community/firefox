@@ -511,6 +511,10 @@ class GlobalObject : public NativeObject {
     MOZ_ASSERT(functionObjectClassesInitialized());
     return getPrototype(JSProto_Function);
   }
+  Handle<JSObject*> getFunctionPrototypeHandle() {
+    MOZ_ASSERT(functionObjectClassesInitialized());
+    return getPrototypeHandle(JSProto_Function);
+  }
   JSFunction& getEvalFunction() {
     MOZ_ASSERT(data().eval);
     return *data().eval;
@@ -605,6 +609,14 @@ class GlobalObject : public NativeObject {
     return &global->getPrototype(JSProto_RegExp);
   }
 
+  static JSObject* getOrCreateRegExpConstructor(JSContext* cx,
+                                                Handle<GlobalObject*> global) {
+    if (!ensureConstructor(cx, global, JSProto_RegExp)) {
+      return nullptr;
+    }
+    return &global->getConstructor(JSProto_RegExp);
+  }
+
   JSObject* maybeGetRegExpPrototype() {
     if (classIsInitialized(JSProto_RegExp)) {
       return &getPrototype(JSProto_RegExp);
@@ -642,6 +654,14 @@ class GlobalObject : public NativeObject {
       return nullptr;
     }
     return &global->getPrototype(JSProto_SharedArrayBuffer);
+  }
+
+  static JSObject* getOrCreateSharedArrayBufferConstructor(
+      JSContext* cx, Handle<GlobalObject*> global) {
+    if (!ensureConstructor(cx, global, JSProto_SharedArrayBuffer)) {
+      return nullptr;
+    }
+    return &global->getConstructor(JSProto_SharedArrayBuffer);
   }
 
   static JSObject* getOrCreateCustomErrorPrototype(JSContext* cx,

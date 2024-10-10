@@ -3,6 +3,9 @@ https://creativecommons.org/publicdomain/zero/1.0/ */
 
 "use strict";
 
+const { BookmarkJSONUtils } = ChromeUtils.importESModule(
+  "resource://gre/modules/BookmarkJSONUtils.sys.mjs"
+);
 const { PlacesBackupResource } = ChromeUtils.importESModule(
   "resource:///modules/backup/PlacesBackupResource.sys.mjs"
 );
@@ -81,6 +84,13 @@ add_task(async function test_measure() {
  * favicons.sqlite from the profile directory into the staging directory.
  */
 add_task(async function test_backup() {
+  Services.fog.testResetFOG();
+  const placesTimeHistogram = TelemetryTestUtils.getAndClearHistogram(
+    "BROWSER_BACKUP_PLACES_TIME_MS"
+  );
+  const faviconsTimeHistogram = TelemetryTestUtils.getAndClearHistogram(
+    "BROWSER_BACKUP_FAVICONS_TIME_MS"
+  );
   let sandbox = sinon.createSandbox();
 
   let placesBackupResource = new PlacesBackupResource();
@@ -93,13 +103,28 @@ add_task(async function test_backup() {
     "PlacesBackupResource-staging-test"
   );
 
+  // Make sure these files exist in the source directory, otherwise
+  // BackupResource will skip attempting to back them up.
+  await createTestFiles(sourcePath, [
+    { path: "places.sqlite" },
+    { path: "favicons.sqlite" },
+  ]);
+
   let fakeConnection = {
     backup: sandbox.stub().resolves(true),
     close: sandbox.stub().resolves(true),
   };
   sandbox.stub(Sqlite, "openConnection").returns(fakeConnection);
 
-  await placesBackupResource.backup(stagingPath, sourcePath);
+  let manifestEntry = await placesBackupResource.backup(
+    stagingPath,
+    sourcePath
+  );
+  Assert.equal(
+    manifestEntry,
+    null,
+    "PlacesBackupResource.backup should return null as its ManifestEntry"
+  );
 
   Assert.ok(
     fakeConnection.backup.calledTwice,
@@ -117,6 +142,11 @@ add_task(async function test_backup() {
     ),
     "favicons.sqlite should have been backed up second"
   );
+  // Validate timing metrics
+  assertSingleTimeMeasurement(Glean.browserBackup.placesTime.testGetValue());
+  assertSingleTimeMeasurement(Glean.browserBackup.faviconsTime.testGetValue());
+  assertHistogramMeasurementQuantity(placesTimeHistogram, 1);
+  assertHistogramMeasurementQuantity(faviconsTimeHistogram, 1);
 
   await maybeRemovePath(stagingPath);
   await maybeRemovePath(sourcePath);
@@ -129,6 +159,13 @@ add_task(async function test_backup() {
  * don't want history saved, even on shutdown.
  */
 add_task(async function test_backup_no_saved_history() {
+  Services.fog.testResetFOG();
+  const placesTimeHistogram = TelemetryTestUtils.getAndClearHistogram(
+    "BROWSER_BACKUP_PLACES_TIME_MS"
+  );
+  const faviconsTimeHistogram = TelemetryTestUtils.getAndClearHistogram(
+    "BROWSER_BACKUP_FAVICONS_TIME_MS"
+  );
   let sandbox = sinon.createSandbox();
 
   let placesBackupResource = new PlacesBackupResource();
@@ -154,13 +191,36 @@ add_task(async function test_backup_no_saved_history() {
   Services.prefs.setBoolPref(HISTORY_ENABLED_PREF, false);
   Services.prefs.setBoolPref(SANITIZE_ON_SHUTDOWN_PREF, false);
 
-  await placesBackupResource.backup(stagingPath, sourcePath);
+  let manifestEntry = await placesBackupResource.backup(
+    stagingPath,
+    sourcePath
+  );
+  Assert.deepEqual(
+    manifestEntry,
+    { bookmarksOnly: true },
+    "Should have gotten back a ManifestEntry indicating that we only copied " +
+      "bookmarks"
+  );
 
   Assert.ok(
     fakeConnection.backup.notCalled,
     "No sqlite connections should have been made with remember history disabled"
   );
   await assertFilesExist(stagingPath, [{ path: "bookmarks.jsonlz4" }]);
+  // Validate no timing metrics
+  Assert.equal(
+    Glean.browserBackup.placesTime.testGetValue(),
+    null,
+    "Should not have timed places backup when it did not occur"
+  );
+  Assert.equal(
+    Glean.browserBackup.faviconsTime.testGetValue(),
+    null,
+    "Should not have timed favicons backup when it did not occur"
+  );
+  assertHistogramMeasurementQuantity(placesTimeHistogram, 0);
+  assertHistogramMeasurementQuantity(faviconsTimeHistogram, 0);
+
   await IOUtils.remove(PathUtils.join(stagingPath, "bookmarks.jsonlz4"));
 
   /**
@@ -171,13 +231,32 @@ add_task(async function test_backup_no_saved_history() {
   Services.prefs.setBoolPref(SANITIZE_ON_SHUTDOWN_PREF, true);
 
   fakeConnection.backup.resetHistory();
-  await placesBackupResource.backup(stagingPath, sourcePath);
+  manifestEntry = await placesBackupResource.backup(stagingPath, sourcePath);
+  Assert.deepEqual(
+    manifestEntry,
+    { bookmarksOnly: true },
+    "Should have gotten back a ManifestEntry indicating that we only copied " +
+      "bookmarks"
+  );
 
   Assert.ok(
     fakeConnection.backup.notCalled,
     "No sqlite connections should have been made with sanitize shutdown enabled"
   );
   await assertFilesExist(stagingPath, [{ path: "bookmarks.jsonlz4" }]);
+  // Validate no timing metrics
+  Assert.equal(
+    Glean.browserBackup.placesTime.testGetValue(),
+    null,
+    "Should not have timed places backup when it did not occur"
+  );
+  Assert.equal(
+    Glean.browserBackup.faviconsTime.testGetValue(),
+    null,
+    "Should not have timed favicons backup when it did not occur"
+  );
+  assertHistogramMeasurementQuantity(placesTimeHistogram, 0);
+  assertHistogramMeasurementQuantity(faviconsTimeHistogram, 0);
 
   await maybeRemovePath(stagingPath);
   await maybeRemovePath(sourcePath);
@@ -192,6 +271,13 @@ add_task(async function test_backup_no_saved_history() {
  * permanent private browsing mode is enabled.
  */
 add_task(async function test_backup_private_browsing() {
+  Services.fog.testResetFOG();
+  const placesTimeHistogram = TelemetryTestUtils.getAndClearHistogram(
+    "BROWSER_BACKUP_PLACES_TIME_MS"
+  );
+  const faviconsTimeHistogram = TelemetryTestUtils.getAndClearHistogram(
+    "BROWSER_BACKUP_FAVICONS_TIME_MS"
+  );
   let sandbox = sinon.createSandbox();
 
   let placesBackupResource = new PlacesBackupResource();
@@ -211,16 +297,139 @@ add_task(async function test_backup_private_browsing() {
   sandbox.stub(Sqlite, "openConnection").returns(fakeConnection);
   sandbox.stub(PrivateBrowsingUtils, "permanentPrivateBrowsing").value(true);
 
-  await placesBackupResource.backup(stagingPath, sourcePath);
+  let manifestEntry = await placesBackupResource.backup(
+    stagingPath,
+    sourcePath
+  );
+  Assert.deepEqual(
+    manifestEntry,
+    { bookmarksOnly: true },
+    "Should have gotten back a ManifestEntry indicating that we only copied " +
+      "bookmarks"
+  );
 
   Assert.ok(
     fakeConnection.backup.notCalled,
     "No sqlite connections should have been made with permanent private browsing enabled"
   );
   await assertFilesExist(stagingPath, [{ path: "bookmarks.jsonlz4" }]);
+  // Validate no timing metrics
+  Assert.equal(
+    Glean.browserBackup.placesTime.testGetValue(),
+    null,
+    "Should not have timed places backup when it did not occur"
+  );
+  Assert.equal(
+    Glean.browserBackup.faviconsTime.testGetValue(),
+    null,
+    "Should not have timed favicons backup when it did not occur"
+  );
+  assertHistogramMeasurementQuantity(placesTimeHistogram, 0);
+  assertHistogramMeasurementQuantity(faviconsTimeHistogram, 0);
 
   await maybeRemovePath(stagingPath);
   await maybeRemovePath(sourcePath);
+
+  sandbox.restore();
+});
+
+/**
+ * Test that the recover method correctly copies places.sqlite and favicons.sqlite
+ * from the recovery directory into the destination profile directory.
+ */
+add_task(async function test_recover() {
+  let placesBackupResource = new PlacesBackupResource();
+  let recoveryPath = await IOUtils.createUniqueDirectory(
+    PathUtils.tempDir,
+    "PlacesBackupResource-recovery-test"
+  );
+  let destProfilePath = await IOUtils.createUniqueDirectory(
+    PathUtils.tempDir,
+    "PlacesBackupResource-test-profile"
+  );
+
+  const simpleCopyFiles = [
+    { path: "places.sqlite" },
+    { path: "favicons.sqlite" },
+  ];
+  await createTestFiles(recoveryPath, simpleCopyFiles);
+
+  // The backup method is expected to have returned a null ManifestEntry
+  let postRecoveryEntry = await placesBackupResource.recover(
+    null /* manifestEntry */,
+    recoveryPath,
+    destProfilePath
+  );
+  Assert.equal(
+    postRecoveryEntry,
+    null,
+    "PlacesBackupResource.recover should return null as its post recovery entry"
+  );
+
+  await assertFilesExist(destProfilePath, simpleCopyFiles);
+
+  await maybeRemovePath(recoveryPath);
+  await maybeRemovePath(destProfilePath);
+});
+
+/**
+ * Test that the recover method correctly copies bookmarks.jsonlz4 from the recovery
+ * directory into the destination profile directory.
+ */
+add_task(async function test_recover_bookmarks_only() {
+  let sandbox = sinon.createSandbox();
+  let placesBackupResource = new PlacesBackupResource();
+  let recoveryPath = await IOUtils.createUniqueDirectory(
+    PathUtils.tempDir,
+    "PlacesBackupResource-recovery-test"
+  );
+  let destProfilePath = await IOUtils.createUniqueDirectory(
+    PathUtils.tempDir,
+    "PlacesBackupResource-test-profile"
+  );
+  let bookmarksImportStub = sandbox
+    .stub(BookmarkJSONUtils, "importFromFile")
+    .resolves(true);
+
+  await createTestFiles(recoveryPath, [{ path: "bookmarks.jsonlz4" }]);
+
+  // The backup method is expected to detect bookmarks import only
+  let postRecoveryEntry = await placesBackupResource.recover(
+    { bookmarksOnly: true },
+    recoveryPath,
+    destProfilePath
+  );
+
+  let expectedBookmarksPath = PathUtils.join(recoveryPath, "bookmarks.jsonlz4");
+
+  // Expect the bookmarks backup file path to be passed from recover()
+  Assert.deepEqual(
+    postRecoveryEntry,
+    { bookmarksBackupPath: expectedBookmarksPath },
+    "PlacesBackupResource.recover should return the expected post recovery entry"
+  );
+
+  // Ensure that files stored in a places backup are not copied to the new profile during recovery
+  for (let placesFile of [
+    "places.sqlite",
+    "favicons.sqlite",
+    "bookmarks.jsonlz4",
+  ]) {
+    Assert.ok(
+      !(await IOUtils.exists(PathUtils.join(destProfilePath, placesFile))),
+      `${placesFile} should not exist in the new profile`
+    );
+  }
+
+  // Now pretend that BackupService called the postRecovery method
+  await placesBackupResource.postRecovery(postRecoveryEntry);
+  Assert.ok(
+    bookmarksImportStub.calledOnce,
+    "BookmarkJSONUtils.importFromFile was called in the postRecovery step"
+  );
+
+  await maybeRemovePath(recoveryPath);
+  await maybeRemovePath(destProfilePath);
 
   sandbox.restore();
 });

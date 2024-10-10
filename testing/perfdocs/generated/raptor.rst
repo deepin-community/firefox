@@ -2,7 +2,7 @@
 Raptor
 ######
 
-Raptor is a performance-testing framework for running browser pageload and browser benchmark tests. Raptor is cross-browser compatible and is currently running in production on Firefox Desktop, Firefox Android GeckoView, Fenix, Reference Browser, Chromium, and Chrome.
+Raptor is a performance-testing framework for running browser pageload and browser benchmark tests. Raptor is cross-browser compatible and is currently running in production on Firefox Desktop, Firefox Android GeckoView, Fenix, Reference Browser, Chromium, Chrome, Chrome for Android, Safari, and Safari Technology Preview.
 
 - Contact: Dave Hunt [:davehunt]
 - Source code: https://searchfox.org/mozilla-central/source/testing/raptor
@@ -23,7 +23,7 @@ Locally, Raptor can be invoked with the following command:
    browsertime
    debugging
    contributing
-   metrics
+   raptor-metrics
 
 .. contents::
    :depth: 2
@@ -41,6 +41,12 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
 
 .. dropdown:: ares6
    :class-container: anchor-id-ares6-b
+
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t ares6
 
    **Owner**: :jandem and SpiderMonkey Team
 
@@ -187,7 +193,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -203,28 +209,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-chrome-ares6**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-benchmark-firefox-ares6**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -240,23 +225,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-firefox-ares6**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -280,6 +249,12 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
 
 .. dropdown:: assorted-dom
    :class-container: anchor-id-assorted-dom-b
+
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t assorted-dom
 
    **Owner**: PerfTest Team
 
@@ -428,7 +403,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -444,28 +419,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-chrome-assorted-dom**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-benchmark-firefox-assorted-dom**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -481,23 +435,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-firefox-assorted-dom**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -521,6 +459,12 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
 
 .. dropdown:: jetstream2
    :class-container: anchor-id-jetstream2-b
+
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t jetstream2
 
    **Owner**: :jandem and SpiderMonkey Team
 
@@ -670,7 +614,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -686,28 +630,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-chrome-jetstream2**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-benchmark-firefox-jetstream2**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -723,23 +646,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-firefox-jetstream2**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -763,6 +670,12 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
 
 .. dropdown:: matrix-react-bench
    :class-container: anchor-id-matrix-react-bench-b
+
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t matrix-react-bench
 
    **Owner**: :jandem and SpiderMonkey Team
 
@@ -907,7 +820,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -923,28 +836,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-chrome-matrix-react-bench**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-benchmark-firefox-matrix-react-bench**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -960,23 +852,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-firefox-matrix-react-bench**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -1001,6 +877,12 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
 .. dropdown:: motionmark-1-3
    :class-container: anchor-id-motionmark-1-3-b
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t motionmark-1-3
+
    **Owner**: Graphics Team
 
    * **alert threshold**: 2.0
@@ -1010,7 +892,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
    * **expected**: pass
    * **expose browser profiler**: true
    * **expose chrome trace**: true
-   * **gecko profile features**: stackwalk,js,cpu,java,processcpu
+   * **gecko profile features**: stackwalk,js,cpu,java,processcpu,memory
    * **gecko profile interval**: 1
    * **gecko profile threads**: GeckoMain,Compositor,Renderer,SwComposite,RenderBackend,SceneBuilder,WrWorker,CanvasWorkers,TextureUpdate
    * **host from parent**: false
@@ -1080,317 +962,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-linux1804-64-clang-trunk-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-firefox-motionmark-1-3**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-linux1804-64-nightlyasrelease-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-firefox-motionmark-1-3**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-linux1804-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-firefox-motionmark-1-3**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-linux1804-64-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-chrome-motionmark-1-3**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-benchmark-custom-car-motionmark-1-3**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-benchmark-firefox-motionmark-1-3**
-        - ✅
-        - ✅
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-macosx1015-64-nightlyasrelease-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-firefox-motionmark-1-3**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-macosx1015-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-firefox-motionmark-1-3**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-macosx1015-64-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-chrome-motionmark-1-3**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-benchmark-custom-car-motionmark-1-3**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-benchmark-firefox-motionmark-1-3**
-        - ✅
-        - ✅
-        - ❌
-        - ❌
-      * - **browsertime-benchmark-safari-motionmark-1-3**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-macosx1400-64-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-chrome-motionmark-1-3**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-benchmark-custom-car-motionmark-1-3**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-benchmark-firefox-motionmark-1-3**
-        - ✅
-        - ✅
-        - ❌
-        - ❌
-      * - **browsertime-benchmark-safari-motionmark-1-3**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-32-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-firefox-motionmark-1-3**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-chrome-motionmark-1-3**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-benchmark-firefox-motionmark-1-3**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-firefox-motionmark-1-3**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-firefox-motionmark-1-3**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-chrome-motionmark-1-3**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-benchmark-custom-car-motionmark-1-3**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-benchmark-firefox-motionmark-1-3**
-        - ✅
-        - ✅
-        - ❌
-        - ❌
-
-
-   **Owner**: Graphics Team
-
-   * **alert threshold**: 2.0
-   * **apps**: fenix, geckoview, chrome-m, cstm-car-m
-   * **browser cycles**: 1
-   * **cold**: true
-   * **expected**: pass
-   * **expose browser profiler**: true
-   * **gecko profile features**: stackwalk,js,cpu,java,processcpu
-   * **gecko profile interval**: 1
-   * **gecko profile threads**: GeckoMain,Compositor,Renderer,SwComposite,RenderBackend,SceneBuilder,WrWorker,CanvasWorkers,TextureUpdate
-   * **host from parent**: false
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/benchmarks/motionmark-1-3-mobile.toml#11>`__
-   * **lower is better**: false
-   * **page cycles**: 1
-   * **page timeout**: 600000
-   * **repository**: https://github.com/webkit/motionmark
-   * **repository revision**: 5d9c88136d59c11daf78d539c73e4e3e88c091ab
-   * **suite name**: MotionMark
-   * **support class**: motionmark-1-3.py
-   * **test script**: motionmark-1-3.js
-   * **test url**: `<http://\<host\>:\<port\>/MotionMark/developer.html?warmup-length=2000&warmup-frame-count=30&first-frame-minimum-length=0&test-interval=30&display=minimal&tiles=big&controller=ramp&system-frame-rate=60&frame-rate=60&time-measurement=performance>`__
-   * **type**: benchmark
-   * **unit**: score
-   * **Test Task**:
-
-   .. list-table:: **test-android-hw-a51-11-0-aarch64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-motionmark-1-3-fenix-motionmark-1-3-nofis**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-benchmark-motionmark-1-3-geckoview-motionmark-1-3-nofis**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-android-hw-a51-11-0-aarch64-shippable-qr/opt**
+   .. list-table:: **test-android-hw-a55-14-0-android-aarch64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -1541,7 +1113,332 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
         - ❌
         - ❌
+      * - **browsertime-benchmark-firefox-motionmark-1-3**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+      * - **browsertime-benchmark-safari-motionmark-1-3**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-macosx1400-64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-benchmark-chrome-motionmark-1-3**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
       * - **browsertime-benchmark-custom-car-motionmark-1-3**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-benchmark-firefox-motionmark-1-3**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+      * - **browsertime-benchmark-safari-motionmark-1-3**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-benchmark-firefox-motionmark-1-3**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-windows11-64-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-benchmark-firefox-motionmark-1-3**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-benchmark-chrome-motionmark-1-3**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-benchmark-custom-car-motionmark-1-3**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-benchmark-firefox-motionmark-1-3**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+
+
+   **Owner**: Graphics Team
+
+   * **alert threshold**: 2.0
+   * **apps**: fenix, geckoview, chrome-m, cstm-car-m
+   * **browser cycles**: 1
+   * **cold**: true
+   * **expected**: pass
+   * **expose browser profiler**: true
+   * **gecko profile features**: stackwalk,js,cpu,java,processcpu,memory
+   * **gecko profile interval**: 1
+   * **gecko profile threads**: GeckoMain,Compositor,Renderer,SwComposite,RenderBackend,SceneBuilder,WrWorker,CanvasWorkers,TextureUpdate
+   * **host from parent**: false
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/benchmarks/motionmark-1-3-mobile.toml#11>`__
+   * **lower is better**: false
+   * **page cycles**: 1
+   * **page timeout**: 600000
+   * **repository**: https://github.com/webkit/motionmark
+   * **repository revision**: 5d9c88136d59c11daf78d539c73e4e3e88c091ab
+   * **suite name**: MotionMark
+   * **support class**: motionmark-1-3.py
+   * **test script**: motionmark-1-3.js
+   * **test url**: `<http://\<host\>:\<port\>/MotionMark/developer.html?warmup-length=2000&warmup-frame-count=30&first-frame-minimum-length=0&test-interval=30&display=minimal&tiles=big&controller=ramp&system-frame-rate=60&frame-rate=60&time-measurement=performance>`__
+   * **type**: benchmark
+   * **unit**: score
+   * **Test Task**:
+
+   .. list-table:: **test-android-hw-a51-11-0-aarch64-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-benchmark-motionmark-1-3-fenix-motionmark-1-3-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-benchmark-motionmark-1-3-geckoview-motionmark-1-3-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-android-hw-a51-11-0-aarch64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-benchmark-motionmark-1-3-chrome-m-motionmark-1-3-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-benchmark-motionmark-1-3-cstm-car-m-motionmark-1-3-nofis**
+        - ✅
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-benchmark-motionmark-1-3-fenix-motionmark-1-3-nofis**
+        - ✅
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-benchmark-motionmark-1-3-geckoview-motionmark-1-3-nofis**
+        - ✅
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-android-hw-a55-14-0-android-aarch64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-benchmark-motionmark-1-3-chrome-m-motionmark-1-3-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-benchmark-motionmark-1-3-cstm-car-m-motionmark-1-3-nofis**
+        - ✅
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-benchmark-motionmark-1-3-fenix-motionmark-1-3-nofis**
+        - ✅
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-benchmark-motionmark-1-3-geckoview-motionmark-1-3-nofis**
+        - ✅
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-linux1804-64-clang-trunk-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-benchmark-firefox-motionmark-1-3**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-linux1804-64-nightlyasrelease-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-benchmark-firefox-motionmark-1-3**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-linux1804-64-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-benchmark-firefox-motionmark-1-3**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-linux1804-64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-benchmark-chrome-motionmark-1-3**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-benchmark-custom-car-motionmark-1-3**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-benchmark-firefox-motionmark-1-3**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-macosx1015-64-nightlyasrelease-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-benchmark-firefox-motionmark-1-3**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-macosx1015-64-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-benchmark-firefox-motionmark-1-3**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-macosx1015-64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-benchmark-chrome-motionmark-1-3**
         - ❌
         - ❌
         - ❌
@@ -1589,7 +1486,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -1605,28 +1502,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-chrome-motionmark-1-3**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-benchmark-firefox-motionmark-1-3**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -1642,23 +1518,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-firefox-motionmark-1-3**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -1688,13 +1548,19 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
 .. dropdown:: motionmark-animometer
    :class-container: anchor-id-motionmark-animometer-b
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t motionmark-animometer
+
    **Owner**: :jgilbert and Graphics(gfx) Team
 
    * **alert threshold**: 2.0
    * **apps**: firefox, chrome, safari
    * **expected**: pass
    * **expose browser profiler**: true
-   * **gecko profile features**: stackwalk,js,cpu,java,processcpu
+   * **gecko profile features**: stackwalk,js,cpu,java,processcpu,memory
    * **gecko profile interval**: 1
    * **gecko profile threads**: GeckoMain,Compositor,Renderer,SwComposite,RenderBackend,SceneBuilder,WrWorker,CanvasWorkers,TextureUpdate
    * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/benchmarks/motionmark-animometer-desktop.toml#16>`__
@@ -1753,263 +1619,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-linux1804-64-clang-trunk-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-firefox-motionmark-animometer**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-linux1804-64-nightlyasrelease-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-firefox-motionmark-animometer**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-linux1804-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-firefox-motionmark-animometer**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-linux1804-64-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-chrome-motionmark-animometer**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-benchmark-firefox-motionmark-animometer**
-        - ✅
-        - ✅
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-macosx1015-64-nightlyasrelease-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-firefox-motionmark-animometer**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-macosx1015-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-firefox-motionmark-animometer**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-macosx1015-64-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-chrome-motionmark-animometer**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-benchmark-firefox-motionmark-animometer**
-        - ✅
-        - ✅
-        - ❌
-        - ❌
-      * - **browsertime-benchmark-safari-motionmark-animometer**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-32-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-firefox-motionmark-animometer**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-chrome-motionmark-animometer**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-benchmark-firefox-motionmark-animometer**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-firefox-motionmark-animometer**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-firefox-motionmark-animometer**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-chrome-motionmark-animometer**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-benchmark-firefox-motionmark-animometer**
-        - ✅
-        - ✅
-        - ❌
-        - ❌
-
-
-   **Owner**: :jgilbert and Graphics(gfx) Team
-
-   * **alert threshold**: 2.0
-   * **apps**: fenix, chrome-m, geckoview
-   * **expected**: pass
-   * **expose browser profiler**: true
-   * **gecko profile features**: stackwalk,js,cpu,java,processcpu
-   * **gecko profile interval**: 1
-   * **gecko profile threads**: GeckoMain,Compositor,Renderer,SwComposite,RenderBackend,SceneBuilder,WrWorker,CanvasWorkers,TextureUpdate
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/benchmarks/motionmark-animometer-mobile.toml#16>`__
-   * **lower is better**: false
-   * **page cycles**: 1
-   * **page timeout**: 600000
-   * **test url**: `<http://\<host\>:\<port\>/MotionMark/developer.html?test-interval=15&display=minimal&tiles=big&controller=fixed&frame-rate=30&kalman-process-error=1&kalman-measurement-error=4&time-measurement=performance&suite-name=Animometer&raptor=true&oskey={platform}>`__
-   * **type**: benchmark
-   * **unit**: score
-   * **Test Task**:
-
-   .. list-table:: **test-android-hw-a51-11-0-aarch64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-motionmark-fenix-motionmark-animometer-nofis**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-benchmark-motionmark-geckoview-motionmark-animometer-nofis**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-android-hw-a51-11-0-aarch64-shippable-qr/opt**
+   .. list-table:: **test-android-hw-a55-14-0-android-aarch64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -2162,7 +1772,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -2178,7 +1788,23 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-benchmark-firefox-motionmark-animometer**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -2193,13 +1819,104 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
         - ❌
       * - **browsertime-benchmark-firefox-motionmark-animometer**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+
+
+   **Owner**: :jgilbert and Graphics(gfx) Team
+
+   * **alert threshold**: 2.0
+   * **apps**: fenix, chrome-m, geckoview
+   * **expected**: pass
+   * **expose browser profiler**: true
+   * **gecko profile features**: stackwalk,js,cpu,java,processcpu,memory
+   * **gecko profile interval**: 1
+   * **gecko profile threads**: GeckoMain,Compositor,Renderer,SwComposite,RenderBackend,SceneBuilder,WrWorker,CanvasWorkers,TextureUpdate
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/benchmarks/motionmark-animometer-mobile.toml#16>`__
+   * **lower is better**: false
+   * **page cycles**: 1
+   * **page timeout**: 600000
+   * **test url**: `<http://\<host\>:\<port\>/MotionMark/developer.html?test-interval=15&display=minimal&tiles=big&controller=fixed&frame-rate=30&kalman-process-error=1&kalman-measurement-error=4&time-measurement=performance&suite-name=Animometer&raptor=true&oskey={platform}>`__
+   * **type**: benchmark
+   * **unit**: score
+   * **Test Task**:
+
+   .. list-table:: **test-android-hw-a51-11-0-aarch64-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-benchmark-motionmark-fenix-motionmark-animometer-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-benchmark-motionmark-geckoview-motionmark-animometer-nofis**
         - ❌
         - ❌
         - ❌
         - ❌
 
 
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
+   .. list-table:: **test-android-hw-a51-11-0-aarch64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-benchmark-motionmark-chrome-m-motionmark-animometer-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-benchmark-motionmark-fenix-motionmark-animometer-nofis**
+        - ✅
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-benchmark-motionmark-geckoview-motionmark-animometer-nofis**
+        - ✅
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-android-hw-a55-14-0-android-aarch64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-benchmark-motionmark-chrome-m-motionmark-animometer-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-benchmark-motionmark-fenix-motionmark-animometer-nofis**
+        - ✅
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-benchmark-motionmark-geckoview-motionmark-animometer-nofis**
+        - ✅
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-linux1804-64-clang-trunk-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -2215,7 +1932,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-64-qr/opt**
+   .. list-table:: **test-linux1804-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -2231,7 +1948,134 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-linux1804-64-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-benchmark-firefox-motionmark-animometer**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-linux1804-64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-benchmark-chrome-motionmark-animometer**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-benchmark-firefox-motionmark-animometer**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-macosx1015-64-nightlyasrelease-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-benchmark-firefox-motionmark-animometer**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-macosx1015-64-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-benchmark-firefox-motionmark-animometer**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-macosx1015-64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-benchmark-chrome-motionmark-animometer**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-benchmark-firefox-motionmark-animometer**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+      * - **browsertime-benchmark-safari-motionmark-animometer**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-benchmark-firefox-motionmark-animometer**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-windows11-64-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-benchmark-firefox-motionmark-animometer**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -2256,13 +2100,19 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
 .. dropdown:: motionmark-animometer-ramp
    :class-container: anchor-id-motionmark-animometer-ramp-b
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t motionmark-animometer-ramp
+
    **Owner**: :jgilbert and Graphics(gfx) Team
 
    * **alert threshold**: 2.0
    * **apps**: firefox, chrome, safari, custom-car
    * **expected**: pass
    * **expose browser profiler**: true
-   * **gecko profile features**: stackwalk,js,cpu,java,processcpu
+   * **gecko profile features**: stackwalk,js,cpu,java,processcpu,memory
    * **gecko profile interval**: 1
    * **gecko profile threads**: GeckoMain,Compositor,Renderer,SwComposite,RenderBackend,SceneBuilder,WrWorker,CanvasWorkers,TextureUpdate
    * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/benchmarks/motionmark-animometer-desktop.toml#18>`__
@@ -2321,273 +2171,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-linux1804-64-clang-trunk-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-firefox-motionmark-animometer-ramp**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-linux1804-64-nightlyasrelease-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-firefox-motionmark-animometer-ramp**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-linux1804-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-firefox-motionmark-animometer-ramp**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-linux1804-64-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-chrome-motionmark-animometer-ramp**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-benchmark-custom-car-motionmark-animometer-ramp**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-benchmark-firefox-motionmark-animometer-ramp**
-        - ✅
-        - ✅
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-macosx1015-64-nightlyasrelease-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-firefox-motionmark-animometer-ramp**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-macosx1015-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-firefox-motionmark-animometer-ramp**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-macosx1015-64-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-custom-car-motionmark-animometer-ramp**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-benchmark-firefox-motionmark-animometer-ramp**
-        - ✅
-        - ✅
-        - ❌
-        - ❌
-      * - **browsertime-benchmark-safari-motionmark-animometer-ramp**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-32-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-firefox-motionmark-animometer-ramp**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-chrome-motionmark-animometer-ramp**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-benchmark-firefox-motionmark-animometer-ramp**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-firefox-motionmark-animometer-ramp**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-firefox-motionmark-animometer-ramp**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-chrome-motionmark-animometer-ramp**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-benchmark-custom-car-motionmark-animometer-ramp**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-benchmark-firefox-motionmark-animometer-ramp**
-        - ✅
-        - ✅
-        - ❌
-        - ❌
-
-
-   **Owner**: :jgilbert and Graphics(gfx) Team
-
-   * **alert threshold**: 2.0
-   * **apps**: fenix, chrome-m, geckoview
-   * **expected**: pass
-   * **expose browser profiler**: true
-   * **gecko profile features**: stackwalk,js,cpu,java,processcpu
-   * **gecko profile interval**: 1
-   * **gecko profile threads**: GeckoMain,Compositor,Renderer,SwComposite,RenderBackend,SceneBuilder,WrWorker,CanvasWorkers,TextureUpdate
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/benchmarks/motionmark-animometer-mobile.toml#18>`__
-   * **lower is better**: false
-   * **page cycles**: 1
-   * **page timeout**: 600000
-   * **test url**: `<http://\<host\>:\<port\>/MotionMark/developer.html?test-interval=30&display=minimal&tiles=big&controller=ramp&frame-rate=60&kalman-process-error=1&kalman-measurement-error=4&time-measurement=performance&suite-name=Animometer&raptor=true&oskey={platform}>`__
-   * **type**: benchmark
-   * **unit**: score
-   * **Test Task**:
-
-   .. list-table:: **test-android-hw-a51-11-0-aarch64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-motionmark-fenix-motionmark-animometer-ramp-nofis**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-benchmark-motionmark-geckoview-motionmark-animometer-ramp-nofis**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-android-hw-a51-11-0-aarch64-shippable-qr/opt**
+   .. list-table:: **test-android-hw-a55-14-0-android-aarch64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -2728,11 +2312,6 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - autoland
         - mozilla-release
         - mozilla-beta
-      * - **browsertime-benchmark-custom-car-motionmark-animometer-ramp**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
       * - **browsertime-benchmark-firefox-motionmark-animometer-ramp**
         - ✅
         - ✅
@@ -2745,7 +2324,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -2761,7 +2340,23 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-benchmark-firefox-motionmark-animometer-ramp**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -2775,14 +2370,110 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
         - ❌
         - ❌
+      * - **browsertime-benchmark-custom-car-motionmark-animometer-ramp**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
       * - **browsertime-benchmark-firefox-motionmark-animometer-ramp**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+
+
+   **Owner**: :jgilbert and Graphics(gfx) Team
+
+   * **alert threshold**: 2.0
+   * **apps**: fenix, chrome-m, geckoview
+   * **expected**: pass
+   * **expose browser profiler**: true
+   * **gecko profile features**: stackwalk,js,cpu,java,processcpu,memory
+   * **gecko profile interval**: 1
+   * **gecko profile threads**: GeckoMain,Compositor,Renderer,SwComposite,RenderBackend,SceneBuilder,WrWorker,CanvasWorkers,TextureUpdate
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/benchmarks/motionmark-animometer-mobile.toml#18>`__
+   * **lower is better**: false
+   * **page cycles**: 1
+   * **page timeout**: 600000
+   * **test url**: `<http://\<host\>:\<port\>/MotionMark/developer.html?test-interval=30&display=minimal&tiles=big&controller=ramp&frame-rate=60&kalman-process-error=1&kalman-measurement-error=4&time-measurement=performance&suite-name=Animometer&raptor=true&oskey={platform}>`__
+   * **type**: benchmark
+   * **unit**: score
+   * **Test Task**:
+
+   .. list-table:: **test-android-hw-a51-11-0-aarch64-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-benchmark-motionmark-fenix-motionmark-animometer-ramp-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-benchmark-motionmark-geckoview-motionmark-animometer-ramp-nofis**
         - ❌
         - ❌
         - ❌
         - ❌
 
 
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
+   .. list-table:: **test-android-hw-a51-11-0-aarch64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-benchmark-motionmark-chrome-m-motionmark-animometer-ramp-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-benchmark-motionmark-fenix-motionmark-animometer-ramp-nofis**
+        - ✅
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-benchmark-motionmark-geckoview-motionmark-animometer-ramp-nofis**
+        - ✅
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-android-hw-a55-14-0-android-aarch64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-benchmark-motionmark-chrome-m-motionmark-animometer-ramp-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-benchmark-motionmark-fenix-motionmark-animometer-ramp-nofis**
+        - ✅
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-benchmark-motionmark-geckoview-motionmark-animometer-ramp-nofis**
+        - ✅
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-linux1804-64-clang-trunk-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -2798,7 +2489,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-64-qr/opt**
+   .. list-table:: **test-linux1804-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -2814,7 +2505,134 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-linux1804-64-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-benchmark-firefox-motionmark-animometer-ramp**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-linux1804-64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-benchmark-chrome-motionmark-animometer-ramp**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-benchmark-custom-car-motionmark-animometer-ramp**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-benchmark-firefox-motionmark-animometer-ramp**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-macosx1015-64-nightlyasrelease-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-benchmark-firefox-motionmark-animometer-ramp**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-macosx1015-64-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-benchmark-firefox-motionmark-animometer-ramp**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-macosx1015-64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-benchmark-firefox-motionmark-animometer-ramp**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+      * - **browsertime-benchmark-safari-motionmark-animometer-ramp**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-benchmark-firefox-motionmark-animometer-ramp**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-windows11-64-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-benchmark-firefox-motionmark-animometer-ramp**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -2844,6 +2662,12 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
 .. dropdown:: motionmark-htmlsuite
    :class-container: anchor-id-motionmark-htmlsuite-b
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t motionmark-htmlsuite
+
    **Owner**: :jgilbert and Graphics(gfx) Team
 
    * **alert threshold**: 2.0
@@ -2851,7 +2675,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
    * **expected**: pass
    * **expose chrome trace**: true
    * **expose gecko profiler**: true
-   * **gecko profile features**: stackwalk,js,cpu,java,processcpu
+   * **gecko profile features**: stackwalk,js,cpu,java,processcpu,memory
    * **gecko profile interval**: 1
    * **gecko profile threads**: GeckoMain,Compositor,Renderer,SwComposite,RenderBackend,SceneBuilder,WrWorker,CanvasWorkers,TextureUpdate
    * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/benchmarks/motionmark-htmlsuite-desktop.toml#17>`__
@@ -2910,264 +2734,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-linux1804-64-clang-trunk-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-firefox-motionmark-htmlsuite**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-linux1804-64-nightlyasrelease-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-firefox-motionmark-htmlsuite**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-linux1804-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-firefox-motionmark-htmlsuite**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-linux1804-64-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-chrome-motionmark-htmlsuite**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-benchmark-firefox-motionmark-htmlsuite**
-        - ✅
-        - ✅
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-macosx1015-64-nightlyasrelease-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-firefox-motionmark-htmlsuite**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-macosx1015-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-firefox-motionmark-htmlsuite**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-macosx1015-64-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-chrome-motionmark-htmlsuite**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-benchmark-firefox-motionmark-htmlsuite**
-        - ✅
-        - ✅
-        - ❌
-        - ❌
-      * - **browsertime-benchmark-safari-motionmark-htmlsuite**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-32-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-firefox-motionmark-htmlsuite**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-chrome-motionmark-htmlsuite**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-benchmark-firefox-motionmark-htmlsuite**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-firefox-motionmark-htmlsuite**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-firefox-motionmark-htmlsuite**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-chrome-motionmark-htmlsuite**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-benchmark-firefox-motionmark-htmlsuite**
-        - ✅
-        - ✅
-        - ❌
-        - ❌
-
-
-   **Owner**: :jgilbert and Graphics(gfx) Team
-
-   * **alert threshold**: 2.0
-   * **apps**: fenix, chrome-m, geckoview
-   * **expected**: pass
-   * **expose chrome trace**: true
-   * **expose gecko profiler**: true
-   * **gecko profile features**: stackwalk,js,cpu,java,processcpu
-   * **gecko profile interval**: 1
-   * **gecko profile threads**: GeckoMain,Compositor,Renderer,SwComposite,RenderBackend,SceneBuilder,WrWorker,CanvasWorkers,TextureUpdate
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/benchmarks/motionmark-htmlsuite-mobile.toml#17>`__
-   * **lower is better**: false
-   * **page cycles**: 5
-   * **page timeout**: 600000
-   * **test url**: `<http://\<host\>:\<port\>/MotionMark/developer.html?test-interval=15&display=minimal&tiles=big&controller=fixed&frame-rate=30&kalman-process-error=1&kalman-measurement-error=4&time-measurement=performance&suite-name=HTMLsuite&raptor=true&oskey={platform}>`__
-   * **type**: benchmark
-   * **unit**: score
-   * **Test Task**:
-
-   .. list-table:: **test-android-hw-a51-11-0-aarch64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-motionmark-fenix-motionmark-htmlsuite-nofis**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-benchmark-motionmark-geckoview-motionmark-htmlsuite-nofis**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-android-hw-a51-11-0-aarch64-shippable-qr/opt**
+   .. list-table:: **test-android-hw-a55-14-0-android-aarch64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -3320,7 +2887,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -3336,7 +2903,23 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-benchmark-firefox-motionmark-htmlsuite**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -3351,13 +2934,105 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
         - ❌
       * - **browsertime-benchmark-firefox-motionmark-htmlsuite**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+
+
+   **Owner**: :jgilbert and Graphics(gfx) Team
+
+   * **alert threshold**: 2.0
+   * **apps**: fenix, chrome-m, geckoview
+   * **expected**: pass
+   * **expose chrome trace**: true
+   * **expose gecko profiler**: true
+   * **gecko profile features**: stackwalk,js,cpu,java,processcpu,memory
+   * **gecko profile interval**: 1
+   * **gecko profile threads**: GeckoMain,Compositor,Renderer,SwComposite,RenderBackend,SceneBuilder,WrWorker,CanvasWorkers,TextureUpdate
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/benchmarks/motionmark-htmlsuite-mobile.toml#17>`__
+   * **lower is better**: false
+   * **page cycles**: 5
+   * **page timeout**: 600000
+   * **test url**: `<http://\<host\>:\<port\>/MotionMark/developer.html?test-interval=15&display=minimal&tiles=big&controller=fixed&frame-rate=30&kalman-process-error=1&kalman-measurement-error=4&time-measurement=performance&suite-name=HTMLsuite&raptor=true&oskey={platform}>`__
+   * **type**: benchmark
+   * **unit**: score
+   * **Test Task**:
+
+   .. list-table:: **test-android-hw-a51-11-0-aarch64-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-benchmark-motionmark-fenix-motionmark-htmlsuite-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-benchmark-motionmark-geckoview-motionmark-htmlsuite-nofis**
         - ❌
         - ❌
         - ❌
         - ❌
 
 
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
+   .. list-table:: **test-android-hw-a51-11-0-aarch64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-benchmark-motionmark-chrome-m-motionmark-htmlsuite-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-benchmark-motionmark-fenix-motionmark-htmlsuite-nofis**
+        - ✅
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-benchmark-motionmark-geckoview-motionmark-htmlsuite-nofis**
+        - ✅
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-android-hw-a55-14-0-android-aarch64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-benchmark-motionmark-chrome-m-motionmark-htmlsuite-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-benchmark-motionmark-fenix-motionmark-htmlsuite-nofis**
+        - ✅
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-benchmark-motionmark-geckoview-motionmark-htmlsuite-nofis**
+        - ✅
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-linux1804-64-clang-trunk-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -3373,7 +3048,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-64-qr/opt**
+   .. list-table:: **test-linux1804-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -3389,7 +3064,134 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-linux1804-64-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-benchmark-firefox-motionmark-htmlsuite**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-linux1804-64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-benchmark-chrome-motionmark-htmlsuite**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-benchmark-firefox-motionmark-htmlsuite**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-macosx1015-64-nightlyasrelease-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-benchmark-firefox-motionmark-htmlsuite**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-macosx1015-64-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-benchmark-firefox-motionmark-htmlsuite**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-macosx1015-64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-benchmark-chrome-motionmark-htmlsuite**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-benchmark-firefox-motionmark-htmlsuite**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+      * - **browsertime-benchmark-safari-motionmark-htmlsuite**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-benchmark-firefox-motionmark-htmlsuite**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-windows11-64-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-benchmark-firefox-motionmark-htmlsuite**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -3414,6 +3216,12 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
 .. dropdown:: motionmark-htmlsuite-1-3
    :class-container: anchor-id-motionmark-htmlsuite-1-3-b
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t motionmark-htmlsuite-1-3
+
    **Owner**: Graphics Team
 
    * **alert threshold**: 2.0
@@ -3423,7 +3231,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
    * **expected**: pass
    * **expose browser profiler**: true
    * **expose chrome trace**: true
-   * **gecko profile features**: stackwalk,js,cpu,java,processcpu
+   * **gecko profile features**: stackwalk,js,cpu,java,processcpu,memory
    * **gecko profile interval**: 1
    * **gecko profile threads**: GeckoMain,Compositor,Renderer,SwComposite,RenderBackend,SceneBuilder,WrWorker,CanvasWorkers,TextureUpdate
    * **host from parent**: false
@@ -3493,317 +3301,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-linux1804-64-clang-trunk-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-firefox-motionmark-htmlsuite-1-3**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-linux1804-64-nightlyasrelease-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-firefox-motionmark-htmlsuite-1-3**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-linux1804-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-firefox-motionmark-htmlsuite-1-3**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-linux1804-64-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-chrome-motionmark-htmlsuite-1-3**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-benchmark-custom-car-motionmark-htmlsuite-1-3**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-benchmark-firefox-motionmark-htmlsuite-1-3**
-        - ✅
-        - ✅
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-macosx1015-64-nightlyasrelease-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-firefox-motionmark-htmlsuite-1-3**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-macosx1015-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-firefox-motionmark-htmlsuite-1-3**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-macosx1015-64-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-chrome-motionmark-htmlsuite-1-3**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-benchmark-custom-car-motionmark-htmlsuite-1-3**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-benchmark-firefox-motionmark-htmlsuite-1-3**
-        - ✅
-        - ✅
-        - ❌
-        - ❌
-      * - **browsertime-benchmark-safari-motionmark-htmlsuite-1-3**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-macosx1400-64-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-chrome-motionmark-htmlsuite-1-3**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-benchmark-custom-car-motionmark-htmlsuite-1-3**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-benchmark-firefox-motionmark-htmlsuite-1-3**
-        - ✅
-        - ✅
-        - ❌
-        - ❌
-      * - **browsertime-benchmark-safari-motionmark-htmlsuite-1-3**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-32-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-firefox-motionmark-htmlsuite-1-3**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-chrome-motionmark-htmlsuite-1-3**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-benchmark-firefox-motionmark-htmlsuite-1-3**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-firefox-motionmark-htmlsuite-1-3**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-firefox-motionmark-htmlsuite-1-3**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-chrome-motionmark-htmlsuite-1-3**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-benchmark-custom-car-motionmark-htmlsuite-1-3**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-benchmark-firefox-motionmark-htmlsuite-1-3**
-        - ✅
-        - ✅
-        - ❌
-        - ❌
-
-
-   **Owner**: Graphics Team
-
-   * **alert threshold**: 2.0
-   * **apps**: fenix, geckoview, chrome-m, cstm-car-m
-   * **browser cycles**: 1
-   * **cold**: true
-   * **expected**: pass
-   * **expose browser profiler**: true
-   * **gecko profile features**: stackwalk,js,cpu,java,processcpu
-   * **gecko profile interval**: 1
-   * **gecko profile threads**: GeckoMain,Compositor,Renderer,SwComposite,RenderBackend,SceneBuilder,WrWorker,CanvasWorkers,TextureUpdate
-   * **host from parent**: false
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/benchmarks/motionmark-1-3-mobile.toml#26>`__
-   * **lower is better**: false
-   * **page cycles**: 1
-   * **page timeout**: 600000
-   * **repository**: https://github.com/webkit/motionmark
-   * **repository revision**: 5d9c88136d59c11daf78d539c73e4e3e88c091ab
-   * **suite name**: HTML suite
-   * **support class**: motionmark-1-3.py
-   * **test script**: motionmark-1-3.js
-   * **test url**: `<http://\<host\>:\<port\>/MotionMark/developer.html?warmup-length=2000&warmup-frame-count=30&first-frame-minimum-length=0&test-interval=30&display=minimal&tiles=big&controller=ramp&system-frame-rate=60&frame-rate=60&time-measurement=performance>`__
-   * **type**: benchmark
-   * **unit**: score
-   * **Test Task**:
-
-   .. list-table:: **test-android-hw-a51-11-0-aarch64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-motionmark-1-3-fenix-motionmark-htmlsuite-1-3-nofis**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-benchmark-motionmark-1-3-geckoview-motionmark-htmlsuite-1-3-nofis**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-android-hw-a51-11-0-aarch64-shippable-qr/opt**
+   .. list-table:: **test-android-hw-a55-14-0-android-aarch64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -3954,7 +3452,332 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
         - ❌
         - ❌
+      * - **browsertime-benchmark-firefox-motionmark-htmlsuite-1-3**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+      * - **browsertime-benchmark-safari-motionmark-htmlsuite-1-3**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-macosx1400-64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-benchmark-chrome-motionmark-htmlsuite-1-3**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
       * - **browsertime-benchmark-custom-car-motionmark-htmlsuite-1-3**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-benchmark-firefox-motionmark-htmlsuite-1-3**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+      * - **browsertime-benchmark-safari-motionmark-htmlsuite-1-3**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-benchmark-firefox-motionmark-htmlsuite-1-3**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-windows11-64-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-benchmark-firefox-motionmark-htmlsuite-1-3**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-benchmark-chrome-motionmark-htmlsuite-1-3**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-benchmark-custom-car-motionmark-htmlsuite-1-3**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-benchmark-firefox-motionmark-htmlsuite-1-3**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+
+
+   **Owner**: Graphics Team
+
+   * **alert threshold**: 2.0
+   * **apps**: fenix, geckoview, chrome-m, cstm-car-m
+   * **browser cycles**: 1
+   * **cold**: true
+   * **expected**: pass
+   * **expose browser profiler**: true
+   * **gecko profile features**: stackwalk,js,cpu,java,processcpu,memory
+   * **gecko profile interval**: 1
+   * **gecko profile threads**: GeckoMain,Compositor,Renderer,SwComposite,RenderBackend,SceneBuilder,WrWorker,CanvasWorkers,TextureUpdate
+   * **host from parent**: false
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/benchmarks/motionmark-1-3-mobile.toml#26>`__
+   * **lower is better**: false
+   * **page cycles**: 1
+   * **page timeout**: 600000
+   * **repository**: https://github.com/webkit/motionmark
+   * **repository revision**: 5d9c88136d59c11daf78d539c73e4e3e88c091ab
+   * **suite name**: HTML suite
+   * **support class**: motionmark-1-3.py
+   * **test script**: motionmark-1-3.js
+   * **test url**: `<http://\<host\>:\<port\>/MotionMark/developer.html?warmup-length=2000&warmup-frame-count=30&first-frame-minimum-length=0&test-interval=30&display=minimal&tiles=big&controller=ramp&system-frame-rate=60&frame-rate=60&time-measurement=performance>`__
+   * **type**: benchmark
+   * **unit**: score
+   * **Test Task**:
+
+   .. list-table:: **test-android-hw-a51-11-0-aarch64-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-benchmark-motionmark-1-3-fenix-motionmark-htmlsuite-1-3-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-benchmark-motionmark-1-3-geckoview-motionmark-htmlsuite-1-3-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-android-hw-a51-11-0-aarch64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-benchmark-motionmark-1-3-chrome-m-motionmark-htmlsuite-1-3-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-benchmark-motionmark-1-3-cstm-car-m-motionmark-htmlsuite-1-3-nofis**
+        - ✅
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-benchmark-motionmark-1-3-fenix-motionmark-htmlsuite-1-3-nofis**
+        - ✅
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-benchmark-motionmark-1-3-geckoview-motionmark-htmlsuite-1-3-nofis**
+        - ✅
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-android-hw-a55-14-0-android-aarch64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-benchmark-motionmark-1-3-chrome-m-motionmark-htmlsuite-1-3-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-benchmark-motionmark-1-3-cstm-car-m-motionmark-htmlsuite-1-3-nofis**
+        - ✅
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-benchmark-motionmark-1-3-fenix-motionmark-htmlsuite-1-3-nofis**
+        - ✅
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-benchmark-motionmark-1-3-geckoview-motionmark-htmlsuite-1-3-nofis**
+        - ✅
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-linux1804-64-clang-trunk-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-benchmark-firefox-motionmark-htmlsuite-1-3**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-linux1804-64-nightlyasrelease-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-benchmark-firefox-motionmark-htmlsuite-1-3**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-linux1804-64-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-benchmark-firefox-motionmark-htmlsuite-1-3**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-linux1804-64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-benchmark-chrome-motionmark-htmlsuite-1-3**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-benchmark-custom-car-motionmark-htmlsuite-1-3**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-benchmark-firefox-motionmark-htmlsuite-1-3**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-macosx1015-64-nightlyasrelease-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-benchmark-firefox-motionmark-htmlsuite-1-3**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-macosx1015-64-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-benchmark-firefox-motionmark-htmlsuite-1-3**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-macosx1015-64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-benchmark-chrome-motionmark-htmlsuite-1-3**
         - ❌
         - ❌
         - ❌
@@ -4002,7 +3825,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -4018,28 +3841,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-chrome-motionmark-htmlsuite-1-3**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-benchmark-firefox-motionmark-htmlsuite-1-3**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -4055,23 +3857,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-firefox-motionmark-htmlsuite-1-3**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -4101,6 +3887,12 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
 .. dropdown:: motionmark-htmlsuite-ramp
    :class-container: anchor-id-motionmark-htmlsuite-ramp-b
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t motionmark-htmlsuite-ramp
+
    **Owner**: :jgilbert and Graphics(gfx) Team
 
    * **alert threshold**: 2.0
@@ -4108,7 +3900,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
    * **expected**: pass
    * **expose chrome trace**: true
    * **expose gecko profiler**: true
-   * **gecko profile features**: stackwalk,js,cpu,java,processcpu
+   * **gecko profile features**: stackwalk,js,cpu,java,processcpu,memory
    * **gecko profile interval**: 1
    * **gecko profile threads**: GeckoMain,Compositor,Renderer,SwComposite,RenderBackend,SceneBuilder,WrWorker,CanvasWorkers,TextureUpdate
    * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/benchmarks/motionmark-htmlsuite-desktop.toml#19>`__
@@ -4167,274 +3959,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-linux1804-64-clang-trunk-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-firefox-motionmark-htmlsuite-ramp**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-linux1804-64-nightlyasrelease-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-firefox-motionmark-htmlsuite-ramp**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-linux1804-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-firefox-motionmark-htmlsuite-ramp**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-linux1804-64-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-chrome-motionmark-htmlsuite-ramp**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-benchmark-custom-car-motionmark-htmlsuite-ramp**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-benchmark-firefox-motionmark-htmlsuite-ramp**
-        - ✅
-        - ✅
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-macosx1015-64-nightlyasrelease-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-firefox-motionmark-htmlsuite-ramp**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-macosx1015-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-firefox-motionmark-htmlsuite-ramp**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-macosx1015-64-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-custom-car-motionmark-htmlsuite-ramp**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-benchmark-firefox-motionmark-htmlsuite-ramp**
-        - ✅
-        - ✅
-        - ❌
-        - ❌
-      * - **browsertime-benchmark-safari-motionmark-htmlsuite-ramp**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-32-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-firefox-motionmark-htmlsuite-ramp**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-chrome-motionmark-htmlsuite-ramp**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-benchmark-firefox-motionmark-htmlsuite-ramp**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-firefox-motionmark-htmlsuite-ramp**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-firefox-motionmark-htmlsuite-ramp**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-chrome-motionmark-htmlsuite-ramp**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-benchmark-custom-car-motionmark-htmlsuite-ramp**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-benchmark-firefox-motionmark-htmlsuite-ramp**
-        - ✅
-        - ✅
-        - ❌
-        - ❌
-
-
-   **Owner**: :jgilbert and Graphics(gfx) Team
-
-   * **alert threshold**: 2.0
-   * **apps**: fenix, chrome-m, geckoview
-   * **expected**: pass
-   * **expose chrome trace**: true
-   * **expose gecko profiler**: true
-   * **gecko profile features**: stackwalk,js,cpu,java,processcpu
-   * **gecko profile interval**: 1
-   * **gecko profile threads**: GeckoMain,Compositor,Renderer,SwComposite,RenderBackend,SceneBuilder,WrWorker,CanvasWorkers,TextureUpdate
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/benchmarks/motionmark-htmlsuite-mobile.toml#19>`__
-   * **lower is better**: false
-   * **page cycles**: 5
-   * **page timeout**: 600000
-   * **test url**: `<http://\<host\>:\<port\>/MotionMark/developer.html?test-interval=30&display=minimal&tiles=big&controller=ramp&frame-rate=60&kalman-process-error=1&kalman-measurement-error=4&time-measurement=performance&suite-name=HTMLsuite&raptor=true&oskey={platform}>`__
-   * **type**: benchmark
-   * **unit**: score
-   * **Test Task**:
-
-   .. list-table:: **test-android-hw-a51-11-0-aarch64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-motionmark-fenix-motionmark-htmlsuite-ramp-nofis**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-benchmark-motionmark-geckoview-motionmark-htmlsuite-ramp-nofis**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-android-hw-a51-11-0-aarch64-shippable-qr/opt**
+   .. list-table:: **test-android-hw-a55-14-0-android-aarch64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -4575,11 +4100,6 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - autoland
         - mozilla-release
         - mozilla-beta
-      * - **browsertime-benchmark-custom-car-motionmark-htmlsuite-ramp**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
       * - **browsertime-benchmark-firefox-motionmark-htmlsuite-ramp**
         - ✅
         - ✅
@@ -4592,7 +4112,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -4608,7 +4128,23 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-benchmark-firefox-motionmark-htmlsuite-ramp**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -4622,14 +4158,111 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
         - ❌
         - ❌
+      * - **browsertime-benchmark-custom-car-motionmark-htmlsuite-ramp**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
       * - **browsertime-benchmark-firefox-motionmark-htmlsuite-ramp**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+
+
+   **Owner**: :jgilbert and Graphics(gfx) Team
+
+   * **alert threshold**: 2.0
+   * **apps**: fenix, chrome-m, geckoview
+   * **expected**: pass
+   * **expose chrome trace**: true
+   * **expose gecko profiler**: true
+   * **gecko profile features**: stackwalk,js,cpu,java,processcpu,memory
+   * **gecko profile interval**: 1
+   * **gecko profile threads**: GeckoMain,Compositor,Renderer,SwComposite,RenderBackend,SceneBuilder,WrWorker,CanvasWorkers,TextureUpdate
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/benchmarks/motionmark-htmlsuite-mobile.toml#19>`__
+   * **lower is better**: false
+   * **page cycles**: 5
+   * **page timeout**: 600000
+   * **test url**: `<http://\<host\>:\<port\>/MotionMark/developer.html?test-interval=30&display=minimal&tiles=big&controller=ramp&frame-rate=60&kalman-process-error=1&kalman-measurement-error=4&time-measurement=performance&suite-name=HTMLsuite&raptor=true&oskey={platform}>`__
+   * **type**: benchmark
+   * **unit**: score
+   * **Test Task**:
+
+   .. list-table:: **test-android-hw-a51-11-0-aarch64-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-benchmark-motionmark-fenix-motionmark-htmlsuite-ramp-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-benchmark-motionmark-geckoview-motionmark-htmlsuite-ramp-nofis**
         - ❌
         - ❌
         - ❌
         - ❌
 
 
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
+   .. list-table:: **test-android-hw-a51-11-0-aarch64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-benchmark-motionmark-chrome-m-motionmark-htmlsuite-ramp-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-benchmark-motionmark-fenix-motionmark-htmlsuite-ramp-nofis**
+        - ✅
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-benchmark-motionmark-geckoview-motionmark-htmlsuite-ramp-nofis**
+        - ✅
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-android-hw-a55-14-0-android-aarch64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-benchmark-motionmark-chrome-m-motionmark-htmlsuite-ramp-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-benchmark-motionmark-fenix-motionmark-htmlsuite-ramp-nofis**
+        - ✅
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-benchmark-motionmark-geckoview-motionmark-htmlsuite-ramp-nofis**
+        - ✅
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-linux1804-64-clang-trunk-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -4645,7 +4278,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-64-qr/opt**
+   .. list-table:: **test-linux1804-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -4661,7 +4294,134 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-linux1804-64-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-benchmark-firefox-motionmark-htmlsuite-ramp**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-linux1804-64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-benchmark-chrome-motionmark-htmlsuite-ramp**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-benchmark-custom-car-motionmark-htmlsuite-ramp**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-benchmark-firefox-motionmark-htmlsuite-ramp**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-macosx1015-64-nightlyasrelease-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-benchmark-firefox-motionmark-htmlsuite-ramp**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-macosx1015-64-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-benchmark-firefox-motionmark-htmlsuite-ramp**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-macosx1015-64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-benchmark-firefox-motionmark-htmlsuite-ramp**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+      * - **browsertime-benchmark-safari-motionmark-htmlsuite-ramp**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-benchmark-firefox-motionmark-htmlsuite-ramp**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-windows11-64-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-benchmark-firefox-motionmark-htmlsuite-ramp**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -4691,10 +4451,16 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
 .. dropdown:: speedometer
    :class-container: anchor-id-speedometer-b
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t speedometer
+
    **Owner**: SpiderMonkey Team
 
    * **alert threshold**: 2.0
-   * **apps**: firefox, chrome, safari, custom-car
+   * **apps**: firefox, chrome, safari, safari-tp, custom-car
    * **expected**: pass
    * **expose browser profiler**: true
    * **gecko profile interval**: 1
@@ -4731,6 +4497,37 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
 
 
    .. list-table:: **test-android-hw-a51-11-0-aarch64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-benchmark-speedometer-mobile-chrome-m-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-benchmark-speedometer-mobile-cstm-car-m-nofis**
+        - ✅
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-benchmark-speedometer-mobile-fenix-nofis**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+      * - **browsertime-benchmark-speedometer-mobile-geckoview-nofis**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-android-hw-a55-14-0-android-aarch64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -4943,11 +4740,6 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
         - ❌
         - ❌
-      * - **browsertime-benchmark-custom-car-speedometer**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
       * - **browsertime-benchmark-firefox-speedometer**
         - ✅
         - ✅
@@ -4991,44 +4783,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-firefox-speedometer**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-chrome-speedometer**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-benchmark-firefox-speedometer**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -5044,7 +4799,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-64-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -5060,7 +4815,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -5156,6 +4911,37 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
+   .. list-table:: **test-android-hw-a55-14-0-android-aarch64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-benchmark-speedometer-mobile-chrome-m-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-benchmark-speedometer-mobile-cstm-car-m-nofis**
+        - ✅
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-benchmark-speedometer-mobile-fenix-nofis**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+      * - **browsertime-benchmark-speedometer-mobile-geckoview-nofis**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+
+
    .. list-table:: **test-android-hw-p6-13-0-android-aarch64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
@@ -5338,11 +5124,6 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
         - ❌
         - ❌
-      * - **browsertime-benchmark-custom-car-speedometer**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
       * - **browsertime-benchmark-firefox-speedometer**
         - ✅
         - ✅
@@ -5386,44 +5167,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-firefox-speedometer**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-chrome-speedometer**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-benchmark-firefox-speedometer**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -5439,7 +5183,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-64-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -5455,7 +5199,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -5485,10 +5229,16 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
 .. dropdown:: speedometer3
    :class-container: anchor-id-speedometer3-b
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t speedometer3
+
    **Owner**: Performance Team
 
    * **alert threshold**: 2.0
-   * **apps**: firefox, chrome, safari, custom-car
+   * **apps**: firefox, chrome, safari, safari-tp, custom-car
    * **browser cycles**: 5
    * **cold**: true
    * **expected**: pass
@@ -5499,13 +5249,11 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
    * **lower is better**: false
    * **page cycles**: 5
    * **page timeout**: 600000
-   * **repository**: https://github.com/WebKit/Speedometer
-   * **repository revision**: 8d67f28d0281ac4330f283495b7f48286654ad7d
    * **subtest lower is better**: true
    * **subtest unit**: ms
    * **support class**: speedometer3.py
    * **test script**: speedometer3.js
-   * **test url**: `<http://\<host\>:\<port\>/index.html>`__
+   * **test url**: `<http://\<host\>:\<port\>/Speedometer3/index.html?raptor>`__
    * **type**: benchmark
    * **unit**: score
    * **Test Task**:
@@ -5562,6 +5310,37 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
+   .. list-table:: **test-android-hw-a55-14-0-android-aarch64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-benchmark-speedometer3-mobile-chrome-m-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-benchmark-speedometer3-mobile-cstm-car-m-nofis**
+        - ✅
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-benchmark-speedometer3-mobile-fenix-nofis**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+      * - **browsertime-benchmark-speedometer3-mobile-geckoview-nofis**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+
+
    .. list-table:: **test-android-hw-p6-13-0-android-aarch64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
@@ -5744,11 +5523,6 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
         - ❌
         - ❌
-      * - **browsertime-benchmark-custom-car-speedometer3**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
       * - **browsertime-benchmark-firefox-speedometer3**
         - ✅
         - ✅
@@ -5785,25 +5559,14 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
         - ❌
         - ❌
-
-
-   .. list-table:: **test-windows10-32-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-firefox-speedometer3**
-        - ❌
+      * - **browsertime-benchmark-safari-tp-speedometer3**
+        - ✅
         - ❌
         - ❌
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
+   .. list-table:: **test-windows10-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -5817,14 +5580,19 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
         - ❌
         - ❌
+      * - **browsertime-benchmark-custom-car-speedometer3**
+        - ✅
+        - ❌
+        - ❌
+        - ❌
       * - **browsertime-benchmark-firefox-speedometer3**
-        - ❌
+        - ✅
         - ❌
         - ❌
         - ❌
 
 
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -5840,7 +5608,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-64-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -5856,7 +5624,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -5959,6 +5727,37 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
+   .. list-table:: **test-android-hw-a55-14-0-android-aarch64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-benchmark-speedometer3-mobile-chrome-m-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-benchmark-speedometer3-mobile-cstm-car-m-nofis**
+        - ✅
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-benchmark-speedometer3-mobile-fenix-nofis**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+      * - **browsertime-benchmark-speedometer3-mobile-geckoview-nofis**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+
+
    .. list-table:: **test-android-hw-p6-13-0-android-aarch64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
@@ -6141,11 +5940,6 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
         - ❌
         - ❌
-      * - **browsertime-benchmark-custom-car-speedometer3**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
       * - **browsertime-benchmark-firefox-speedometer3**
         - ✅
         - ✅
@@ -6182,25 +5976,14 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
         - ❌
         - ❌
-
-
-   .. list-table:: **test-windows10-32-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-firefox-speedometer3**
-        - ❌
+      * - **browsertime-benchmark-safari-tp-speedometer3**
+        - ✅
         - ❌
         - ❌
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
+   .. list-table:: **test-windows10-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -6214,14 +5997,19 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
         - ❌
         - ❌
+      * - **browsertime-benchmark-custom-car-speedometer3**
+        - ✅
+        - ❌
+        - ❌
+        - ❌
       * - **browsertime-benchmark-firefox-speedometer3**
-        - ❌
+        - ✅
         - ❌
         - ❌
         - ❌
 
 
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -6237,7 +6025,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-64-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -6253,7 +6041,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -6282,6 +6070,12 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
 
 .. dropdown:: stylebench
    :class-container: anchor-id-stylebench-b
+
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t stylebench
 
    **Owner**: :emelio and Layout Team
 
@@ -6428,7 +6222,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -6444,28 +6238,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-chrome-stylebench**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-benchmark-firefox-stylebench**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -6481,23 +6254,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-firefox-stylebench**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -6521,6 +6278,12 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
 
 .. dropdown:: sunspider
    :class-container: anchor-id-sunspider-b
+
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t sunspider
 
    **Owner**: :jandem and SpiderMonkey Team
 
@@ -6665,7 +6428,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -6681,28 +6444,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-chrome-sunspider**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-benchmark-firefox-sunspider**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -6718,23 +6460,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-firefox-sunspider**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -6758,6 +6484,12 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
 
 .. dropdown:: twitch-animation
    :class-container: anchor-id-twitch-animation-b
+
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t twitch-animation
 
    **Owner**: :jrmuizel
 
@@ -6893,7 +6625,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -6909,7 +6641,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -6925,39 +6657,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-firefox-twitch-animation**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-firefox-twitch-animation**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -6976,6 +6676,12 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
 
 .. dropdown:: unity-webgl
    :class-container: anchor-id-unity-webgl-b
+
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t unity-webgl
 
    **Owner**: :jgilbert and Graphics(gfx) Team
 
@@ -7018,6 +6724,32 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
 
 
    .. list-table:: **test-android-hw-a51-11-0-aarch64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-benchmark-unity-webgl-mobile-chrome-m-nofis**
+        - ✅
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-benchmark-unity-webgl-mobile-fenix-nofis**
+        - ✅
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-benchmark-unity-webgl-mobile-geckoview-nofis**
+        - ✅
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-android-hw-a55-14-0-android-aarch64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -7165,7 +6897,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -7181,28 +6913,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-chrome-unity-webgl**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-benchmark-firefox-unity-webgl**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -7218,23 +6929,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-firefox-unity-webgl**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -7321,6 +7016,32 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
+   .. list-table:: **test-android-hw-a55-14-0-android-aarch64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-benchmark-unity-webgl-mobile-chrome-m-nofis**
+        - ✅
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-benchmark-unity-webgl-mobile-fenix-nofis**
+        - ✅
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-benchmark-unity-webgl-mobile-geckoview-nofis**
+        - ✅
+        - ❌
+        - ❌
+        - ❌
+
+
    .. list-table:: **test-linux1804-64-clang-trunk-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
@@ -7443,7 +7164,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -7459,28 +7180,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-chrome-unity-webgl**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-benchmark-firefox-unity-webgl**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -7496,23 +7196,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-firefox-unity-webgl**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -7536,6 +7220,12 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
 
 .. dropdown:: wasm-godot
    :class-container: anchor-id-wasm-godot-b
+
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t wasm-godot
 
    **Owner**: :lth and SpiderMonkey Team
 
@@ -7681,7 +7371,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -7697,28 +7387,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-wasm-chrome-wasm-godot**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-benchmark-wasm-firefox-wasm-godot**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -7734,23 +7403,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-wasm-firefox-wasm-godot**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -7774,6 +7427,12 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
 
 .. dropdown:: wasm-godot-baseline
    :class-container: anchor-id-wasm-godot-baseline-b
+
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t wasm-godot-baseline
 
    **Owner**: :lth and SpiderMonkey Team
 
@@ -7905,7 +7564,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -7921,7 +7580,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -7937,39 +7596,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-wasm-firefox-wasm-godot-baseline**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-wasm-firefox-wasm-godot-baseline**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -7988,6 +7615,12 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
 
 .. dropdown:: wasm-godot-optimizing
    :class-container: anchor-id-wasm-godot-optimizing-b
+
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t wasm-godot-optimizing
 
    **Owner**: :lth and SpiderMonkey Team
 
@@ -8119,7 +7752,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -8135,7 +7768,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -8151,39 +7784,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-wasm-firefox-wasm-godot-optimizing**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-wasm-firefox-wasm-godot-optimizing**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -8202,6 +7803,12 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
 
 .. dropdown:: wasm-misc
    :class-container: anchor-id-wasm-misc-b
+
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t wasm-misc
 
    **Owner**: :lth and SpiderMonkey Team
 
@@ -8344,7 +7951,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -8360,28 +7967,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-wasm-chrome-wasm-misc**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-benchmark-wasm-firefox-wasm-misc**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -8397,23 +7983,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-wasm-firefox-wasm-misc**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -8437,6 +8007,12 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
 
 .. dropdown:: wasm-misc-baseline
    :class-container: anchor-id-wasm-misc-baseline-b
+
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t wasm-misc-baseline
 
    **Owner**: :lth and SpiderMonkey Team
 
@@ -8570,7 +8146,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -8586,7 +8162,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -8602,39 +8178,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-wasm-firefox-wasm-misc-baseline**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-wasm-firefox-wasm-misc-baseline**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -8653,6 +8197,12 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
 
 .. dropdown:: wasm-misc-optimizing
    :class-container: anchor-id-wasm-misc-optimizing-b
+
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t wasm-misc-optimizing
 
    **Owner**: :lth and SpiderMonkey Team
 
@@ -8786,7 +8336,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -8802,7 +8352,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -8818,39 +8368,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-wasm-firefox-wasm-misc-optimizing**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-wasm-firefox-wasm-misc-optimizing**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -8869,6 +8387,12 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
 
 .. dropdown:: webaudio
    :class-container: anchor-id-webaudio-b
+
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t webaudio
 
    **Owner**: :padenot and Media Team
 
@@ -9014,7 +8538,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -9030,28 +8554,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-chrome-webaudio**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-benchmark-firefox-webaudio**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -9067,23 +8570,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-benchmark-firefox-webaudio**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -9105,12 +8592,17 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
 
 
 
-.. dropdown:: youtube-playback
-   :class-container: anchor-id-youtube-playback-b
+.. dropdown:: youtube-playback-av1-sfr
+   :class-container: anchor-id-youtube-playback-av1-sfr-b
+
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t youtube-playback-av1-sfr
 
    **Owner**: PerfTest Team
 
-   * **alert on**: H264.1080p30@1X_dropped_frames H264.1080p60@1X_dropped_frames H264.1440p30@1X_dropped_frames H264.144p15@1X_dropped_frames H264.2160p30@1X_dropped_frames H264.240p30@1X_dropped_frames H264.360p30@1X_dropped_frames H264.480p30@1X_dropped_frames H264.720p30@1X_dropped_frames H264.720p60@1X_dropped_frames VP9.1080p30@1X_dropped_frames VP9.1080p60@1X_dropped_frames VP9.1440p30@1X_dropped_frames VP9.1440p60@1X_dropped_frames VP9.144p30@1X_dropped_frames VP9.2160p30@1X_dropped_frames VP9.2160p60@1X_dropped_frames VP9.240p30@1X_dropped_frames VP9.360p30@1X_dropped_frames VP9.480p30@1X_dropped_frames VP9.720p30@1X_dropped_frames VP9.720p60@1X_dropped_frames
    * **alert threshold**: 2.0
    * **apps**: firefox, geckoview, fenix, refbrow, chrome
    * **expected**: pass
@@ -9124,30 +8616,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
    * **preferences**: media.autoplay.default=0 media.autoplay.ask-permission=false media.autoplay.blocking_policy=0 media.allowed-to-play.enabled=true media.block-autoplay-until-in-foreground=false
    * **subtest lower is better**: true
    * **subtest unit**: score
-   * **test url**: `<http://yttest.prod.mozaws.net/2019/main.html?test_type=playbackperf-test&raptor=true&command=run&exclude=1,2&muted=true>`__
-   * **type**: benchmark
-   * **unit**: score
-   * **use live sites**: true
-
-.. dropdown:: youtube-playback-av1-sfr
-   :class-container: anchor-id-youtube-playback-av1-sfr-b
-
-   **Owner**: PerfTest Team
-
-   * **alert threshold**: 2.0
-   * **apps**: firefox, geckoview, fenix, refbrow, chrome
-   * **expected**: pass
-   * **expose browser profiler**: true
-   * **gecko profile interval**: 1000
-   * **gecko profile threads**: MediaPlayback
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/benchmarks/youtube-playback.toml#52>`__
-   * **lower is better**: true
-   * **page cycles**: 1
-   * **page timeout**: 2700000
-   * **preferences**: media.autoplay.default=0 media.autoplay.ask-permission=false media.autoplay.blocking_policy=0 media.allowed-to-play.enabled=true media.block-autoplay-until-in-foreground=false
-   * **subtest lower is better**: true
-   * **subtest unit**: score
-   * **test url**: `<https://yttest.prod.mozaws.net/2020/main.html?test_type=playbackperf-sfr-av1-test&raptor=true&exclude=1,2&muted=true&command=run>`__
+   * **test url**: `<https://prod.youtube-test.prod.webservices.mozgcp.net/main.html?test_type=playbackperf-sfr-av1-test&raptor=true&exclude=1,2&muted=true&command=run>`__
    * **type**: benchmark
    * **unit**: score
    * **use live sites**: true
@@ -9170,6 +8639,22 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
 
 
    .. list-table:: **test-android-hw-a51-11-0-aarch64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-mobile-fenix-youtube-playback-av1-sfr-nofis**
+        - ✅
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-android-hw-a55-14-0-android-aarch64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -9205,6 +8690,12 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
 .. dropdown:: youtube-playback-h264-1080p30
    :class-container: anchor-id-youtube-playback-h264-1080p30-b
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t youtube-playback-h264-1080p30
+
    **Owner**: PerfTest Team
 
    * **alert threshold**: 2.0
@@ -9214,14 +8705,14 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
    * **gather cpuTime**: true
    * **gecko profile interval**: 1000
    * **gecko profile threads**: MediaPlayback
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/benchmarks/youtube-playback.toml#56>`__
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/benchmarks/youtube-playback.toml#28>`__
    * **lower is better**: true
    * **page cycles**: 20
    * **page timeout**: 2700000
    * **preferences**: media.autoplay.default=0 media.autoplay.ask-permission=false media.autoplay.blocking_policy=0 media.allowed-to-play.enabled=true media.block-autoplay-until-in-foreground=false
    * **subtest lower is better**: true
    * **subtest unit**: score
-   * **test url**: `<https://yttest.prod.mozaws.net/2020/main.html?test_type=playbackperf-sfr-h264-test&tests=18&raptor=true&muted=true&command=run&exclude=1,2>`__
+   * **test url**: `<https://prod.youtube-test.prod.webservices.mozgcp.net/main.html?test_type=playbackperf-sfr-h264-test&tests=18&raptor=true&muted=true&command=run&exclude=1,2>`__
    * **type**: benchmark
    * **unit**: score
    * **use live sites**: true
@@ -9323,7 +8814,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -9339,7 +8830,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -9355,39 +8846,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-power-firefox-youtube-playback-h264-1080p30**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-power-firefox-youtube-playback-h264-1080p30**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -9407,6 +8866,12 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
 .. dropdown:: youtube-playback-h264-1080p60
    :class-container: anchor-id-youtube-playback-h264-1080p60-b
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t youtube-playback-h264-1080p60
+
    **Owner**: PerfTest Team
 
    * **alert threshold**: 2.0
@@ -9416,14 +8881,14 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
    * **gather cpuTime**: true
    * **gecko profile interval**: 1000
    * **gecko profile threads**: MediaPlayback
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/benchmarks/youtube-playback.toml#62>`__
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/benchmarks/youtube-playback.toml#34>`__
    * **lower is better**: true
    * **page cycles**: 20
    * **page timeout**: 2700000
    * **preferences**: media.autoplay.default=0 media.autoplay.ask-permission=false media.autoplay.blocking_policy=0 media.allowed-to-play.enabled=true media.block-autoplay-until-in-foreground=false
    * **subtest lower is better**: true
    * **subtest unit**: score
-   * **test url**: `<https://yttest.prod.mozaws.net/2020/main.html?test_type=playbackperf-hfr-test&raptor=true&tests=46&muted=true&command=run&exclude=1,2>`__
+   * **test url**: `<https://prod.youtube-test.prod.webservices.mozgcp.net/main.html?test_type=playbackperf-hfr-test&raptor=true&tests=46&muted=true&command=run&exclude=1,2>`__
    * **type**: benchmark
    * **unit**: score
    * **use live sites**: true
@@ -9525,7 +8990,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -9541,7 +9006,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -9557,39 +9022,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-power-firefox-youtube-playback-h264-1080p60**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-power-firefox-youtube-playback-h264-1080p60**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -9609,6 +9042,12 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
 .. dropdown:: youtube-playback-h264-full-1080p30
    :class-container: anchor-id-youtube-playback-h264-full-1080p30-b
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t youtube-playback-h264-full-1080p30
+
    **Owner**: PerfTest Team
 
    * **alert threshold**: 2.0
@@ -9618,14 +9057,14 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
    * **gather cpuTime**: true
    * **gecko profile interval**: 1000
    * **gecko profile threads**: MediaPlayback
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/benchmarks/youtube-playback.toml#68>`__
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/benchmarks/youtube-playback.toml#40>`__
    * **lower is better**: true
    * **page cycles**: 20
    * **page timeout**: 2700000
    * **preferences**: media.autoplay.default=0 media.autoplay.ask-permission=false media.autoplay.blocking_policy=0 media.allowed-to-play.enabled=true media.block-autoplay-until-in-foreground=false full-screen-api.allow-trusted-requests-only=false full-screen-api.warning.timeout=0
    * **subtest lower is better**: true
    * **subtest unit**: score
-   * **test url**: `<https://yttest.prod.mozaws.net/2020/main.html?test_type=playbackperf-sfr-h264-test&tests=18&raptor=true&muted=true&command=run&fullscreen=true&exclude=1,2>`__
+   * **test url**: `<https://prod.youtube-test.prod.webservices.mozgcp.net/main.html?test_type=playbackperf-sfr-h264-test&tests=18&raptor=true&muted=true&command=run&fullscreen=true&exclude=1,2>`__
    * **type**: benchmark
    * **unit**: score
    * **use live sites**: true
@@ -9727,7 +9166,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -9743,7 +9182,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -9759,39 +9198,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-power-firefox-youtube-playback-h264-full-1080p30**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-power-firefox-youtube-playback-h264-full-1080p30**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -9811,6 +9218,12 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
 .. dropdown:: youtube-playback-h264-full-1080p60
    :class-container: anchor-id-youtube-playback-h264-full-1080p60-b
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t youtube-playback-h264-full-1080p60
+
    **Owner**: PerfTest Team
 
    * **alert threshold**: 2.0
@@ -9820,14 +9233,14 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
    * **gather cpuTime**: true
    * **gecko profile interval**: 1000
    * **gecko profile threads**: MediaPlayback
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/benchmarks/youtube-playback.toml#83>`__
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/benchmarks/youtube-playback.toml#55>`__
    * **lower is better**: true
    * **page cycles**: 20
    * **page timeout**: 2700000
    * **preferences**: media.autoplay.default=0 media.autoplay.ask-permission=false media.autoplay.blocking_policy=0 media.allowed-to-play.enabled=true media.block-autoplay-until-in-foreground=false full-screen-api.allow-trusted-requests-only=false full-screen-api.warning.timeout=0
    * **subtest lower is better**: true
    * **subtest unit**: score
-   * **test url**: `<https://yttest.prod.mozaws.net/2020/main.html?test_type=playbackperf-hfr-test&raptor=true&tests=46&muted=true&command=run&fullscreen=true&exclude=1,2>`__
+   * **test url**: `<https://prod.youtube-test.prod.webservices.mozgcp.net/main.html?test_type=playbackperf-hfr-test&raptor=true&tests=46&muted=true&command=run&fullscreen=true&exclude=1,2>`__
    * **type**: benchmark
    * **unit**: score
    * **use live sites**: true
@@ -9929,7 +9342,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -9945,7 +9358,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -9961,39 +9374,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-power-firefox-youtube-playback-h264-full-1080p60**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-power-firefox-youtube-playback-h264-full-1080p60**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -10013,6 +9394,12 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
 .. dropdown:: youtube-playback-h264-sfr
    :class-container: anchor-id-youtube-playback-h264-sfr-b
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t youtube-playback-h264-sfr
+
    **Owner**: PerfTest Team
 
    * **alert threshold**: 2.0
@@ -10021,14 +9408,14 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
    * **expose browser profiler**: true
    * **gecko profile interval**: 1000
    * **gecko profile threads**: MediaPlayback
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/benchmarks/youtube-playback.toml#98>`__
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/benchmarks/youtube-playback.toml#70>`__
    * **lower is better**: true
    * **page cycles**: 1
    * **page timeout**: 2700000
    * **preferences**: media.autoplay.default=0 media.autoplay.ask-permission=false media.autoplay.blocking_policy=0 media.allowed-to-play.enabled=true media.block-autoplay-until-in-foreground=false
    * **subtest lower is better**: true
    * **subtest unit**: score
-   * **test url**: `<https://yttest.prod.mozaws.net/2020/main.html?test_type=playbackperf-sfr-h264-test&raptor=true&exclude=1,2&muted=true&command=run>`__
+   * **test url**: `<https://prod.youtube-test.prod.webservices.mozgcp.net/main.html?test_type=playbackperf-sfr-h264-test&raptor=true&exclude=1,2&muted=true&command=run>`__
    * **type**: benchmark
    * **unit**: score
    * **use live sites**: true
@@ -10051,6 +9438,22 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
 
 
    .. list-table:: **test-android-hw-a51-11-0-aarch64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-mobile-geckoview-youtube-playback-h264-sfr-nofis**
+        - ✅
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-android-hw-a55-14-0-android-aarch64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -10178,7 +9581,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -10194,7 +9597,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -10210,39 +9613,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-firefox-youtube-playback-h264-sfr**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-firefox-youtube-playback-h264-sfr**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -10262,23 +9633,29 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
 .. dropdown:: youtube-playback-hfr
    :class-container: anchor-id-youtube-playback-hfr-b
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t youtube-playback-hfr
+
    **Owner**: PerfTest Team
 
-   * **alert on**: H2641080p60fps@1X_dropped_frames H264720p60fps@1X_dropped_frames
+   * **alert on**: `H2641080p60fps@1X_dropped_frames <raptor-metrics.html#youtube-playback-metrics>`__, `H264720p60fps@1X_dropped_frames <raptor-metrics.html#youtube-playback-metrics>`__
    * **alert threshold**: 2.0
    * **apps**: firefox, geckoview, fenix, refbrow, chrome
    * **expected**: pass
    * **expose browser profiler**: true
    * **gecko profile interval**: 1000
    * **gecko profile threads**: MediaPlayback
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/benchmarks/youtube-playback.toml#102>`__
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/benchmarks/youtube-playback.toml#74>`__
    * **lower is better**: true
    * **page cycles**: 1
    * **page timeout**: 2700000
    * **preferences**: media.autoplay.default=0 media.autoplay.ask-permission=false media.autoplay.blocking_policy=0 media.allowed-to-play.enabled=true media.block-autoplay-until-in-foreground=false
    * **subtest lower is better**: true
    * **subtest unit**: score
-   * **test url**: `<https://yttest.prod.mozaws.net/2020/main.html?test_type=playbackperf-hfr-test&raptor=true&exclude=1,2&muted=true&command=run>`__
+   * **test url**: `<https://prod.youtube-test.prod.webservices.mozgcp.net/main.html?test_type=playbackperf-hfr-test&raptor=true&exclude=1,2&muted=true&command=run>`__
    * **type**: benchmark
    * **unit**: score
    * **use live sites**: true
@@ -10306,6 +9683,27 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
 
 
    .. list-table:: **test-android-hw-a51-11-0-aarch64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-mobile-fenix-youtube-playback-hfr-nofis**
+        - ✅
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-mobile-geckoview-youtube-playback-hfr-nofis**
+        - ✅
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-android-hw-a55-14-0-android-aarch64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -10438,7 +9836,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -10454,7 +9852,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -10470,39 +9868,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-firefox-youtube-playback-hfr**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-firefox-youtube-playback-hfr**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -10522,6 +9888,12 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
 .. dropdown:: youtube-playback-v9-1080p30
    :class-container: anchor-id-youtube-playback-v9-1080p30-b
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t youtube-playback-v9-1080p30
+
    **Owner**: PerfTest Team
 
    * **alert threshold**: 2.0
@@ -10531,14 +9903,14 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
    * **gather cpuTime**: true
    * **gecko profile interval**: 1000
    * **gecko profile threads**: MediaPlayback
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/benchmarks/youtube-playback.toml#110>`__
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/benchmarks/youtube-playback.toml#82>`__
    * **lower is better**: true
    * **page cycles**: 20
    * **page timeout**: 2700000
    * **preferences**: media.autoplay.default=0 media.autoplay.ask-permission=false media.autoplay.blocking_policy=0 media.allowed-to-play.enabled=true media.block-autoplay-until-in-foreground=false
    * **subtest lower is better**: true
    * **subtest unit**: score
-   * **test url**: `<https://yttest.prod.mozaws.net/2020/main.html?test_type=playbackperf-sfr-vp9-test&raptor=true&tests=18&muted=true&command=run&exclude=1,2>`__
+   * **test url**: `<https://prod.youtube-test.prod.webservices.mozgcp.net/main.html?test_type=playbackperf-sfr-vp9-test&raptor=true&tests=18&muted=true&command=run&exclude=1,2>`__
    * **type**: benchmark
    * **unit**: score
    * **use live sites**: true
@@ -10640,7 +10012,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -10656,7 +10028,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -10672,39 +10044,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-power-firefox-youtube-playback-v9-1080p30**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-power-firefox-youtube-playback-v9-1080p30**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -10724,6 +10064,12 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
 .. dropdown:: youtube-playback-v9-1080p60
    :class-container: anchor-id-youtube-playback-v9-1080p60-b
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t youtube-playback-v9-1080p60
+
    **Owner**: PerfTest Team
 
    * **alert threshold**: 2.0
@@ -10733,14 +10079,14 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
    * **gather cpuTime**: true
    * **gecko profile interval**: 1000
    * **gecko profile threads**: MediaPlayback
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/benchmarks/youtube-playback.toml#116>`__
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/benchmarks/youtube-playback.toml#88>`__
    * **lower is better**: true
    * **page cycles**: 20
    * **page timeout**: 2700000
    * **preferences**: media.autoplay.default=0 media.autoplay.ask-permission=false media.autoplay.blocking_policy=0 media.allowed-to-play.enabled=true media.block-autoplay-until-in-foreground=false
    * **subtest lower is better**: true
    * **subtest unit**: score
-   * **test url**: `<https://yttest.prod.mozaws.net/2020/main.html?test_type=playbackperf-hfr-test&raptor=true&tests=14&muted=true&command=run&exclude=1,2>`__
+   * **test url**: `<https://prod.youtube-test.prod.webservices.mozgcp.net/main.html?test_type=playbackperf-hfr-test&raptor=true&tests=14&muted=true&command=run&exclude=1,2>`__
    * **type**: benchmark
    * **unit**: score
    * **use live sites**: true
@@ -10842,7 +10188,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -10858,7 +10204,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -10874,39 +10220,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-power-firefox-youtube-playback-v9-1080p60**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-power-firefox-youtube-playback-v9-1080p60**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -10926,6 +10240,12 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
 .. dropdown:: youtube-playback-v9-full-1080p30
    :class-container: anchor-id-youtube-playback-v9-full-1080p30-b
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t youtube-playback-v9-full-1080p30
+
    **Owner**: PerfTest Team
 
    * **alert threshold**: 2.0
@@ -10935,14 +10255,14 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
    * **gather cpuTime**: true
    * **gecko profile interval**: 1000
    * **gecko profile threads**: MediaPlayback
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/benchmarks/youtube-playback.toml#122>`__
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/benchmarks/youtube-playback.toml#94>`__
    * **lower is better**: true
    * **page cycles**: 20
    * **page timeout**: 2700000
    * **preferences**: media.autoplay.default=0 media.autoplay.ask-permission=false media.autoplay.blocking_policy=0 media.allowed-to-play.enabled=true media.block-autoplay-until-in-foreground=false full-screen-api.allow-trusted-requests-only=false full-screen-api.warning.timeout=0
    * **subtest lower is better**: true
    * **subtest unit**: score
-   * **test url**: `<https://yttest.prod.mozaws.net/2020/main.html?test_type=playbackperf-sfr-vp9-test&raptor=true&tests=18&muted=true&command=run&fullscreen=true&exclude=1,2>`__
+   * **test url**: `<https://prod.youtube-test.prod.webservices.mozgcp.net/main.html?test_type=playbackperf-sfr-vp9-test&raptor=true&tests=18&muted=true&command=run&fullscreen=true&exclude=1,2>`__
    * **type**: benchmark
    * **unit**: score
    * **use live sites**: true
@@ -11044,7 +10364,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -11060,7 +10380,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -11076,39 +10396,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-power-firefox-youtube-playback-v9-full-1080p30**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-power-firefox-youtube-playback-v9-full-1080p30**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -11128,6 +10416,12 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
 .. dropdown:: youtube-playback-v9-full-1080p60
    :class-container: anchor-id-youtube-playback-v9-full-1080p60-b
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t youtube-playback-v9-full-1080p60
+
    **Owner**: PerfTest Team
 
    * **alert threshold**: 2.0
@@ -11137,14 +10431,14 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
    * **gather cpuTime**: true
    * **gecko profile interval**: 1000
    * **gecko profile threads**: MediaPlayback
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/benchmarks/youtube-playback.toml#137>`__
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/benchmarks/youtube-playback.toml#109>`__
    * **lower is better**: true
    * **page cycles**: 20
    * **page timeout**: 2700000
    * **preferences**: media.autoplay.default=0 media.autoplay.ask-permission=false media.autoplay.blocking_policy=0 media.allowed-to-play.enabled=true media.block-autoplay-until-in-foreground=false full-screen-api.allow-trusted-requests-only=false full-screen-api.warning.timeout=0
    * **subtest lower is better**: true
    * **subtest unit**: score
-   * **test url**: `<https://yttest.prod.mozaws.net/2020/main.html?test_type=playbackperf-hfr-test&raptor=true&tests=14&muted=true&command=run&fullscreen=true&exclude=1,2>`__
+   * **test url**: `<https://prod.youtube-test.prod.webservices.mozgcp.net/main.html?test_type=playbackperf-hfr-test&raptor=true&tests=14&muted=true&command=run&fullscreen=true&exclude=1,2>`__
    * **type**: benchmark
    * **unit**: score
    * **use live sites**: true
@@ -11246,7 +10540,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -11262,7 +10556,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -11278,39 +10572,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-power-firefox-youtube-playback-v9-full-1080p60**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-power-firefox-youtube-playback-v9-full-1080p60**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -11330,6 +10592,12 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
 .. dropdown:: youtube-playback-vp9-sfr
    :class-container: anchor-id-youtube-playback-vp9-sfr-b
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t youtube-playback-vp9-sfr
+
    **Owner**: PerfTest Team
 
    * **alert threshold**: 2.0
@@ -11338,14 +10606,14 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
    * **expose browser profiler**: true
    * **gecko profile interval**: 1000
    * **gecko profile threads**: MediaPlayback
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/benchmarks/youtube-playback.toml#152>`__
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/benchmarks/youtube-playback.toml#124>`__
    * **lower is better**: true
    * **page cycles**: 1
    * **page timeout**: 2700000
    * **preferences**: media.autoplay.default=0 media.autoplay.ask-permission=false media.autoplay.blocking_policy=0 media.allowed-to-play.enabled=true media.block-autoplay-until-in-foreground=false
    * **subtest lower is better**: true
    * **subtest unit**: score
-   * **test url**: `<https://yttest.prod.mozaws.net/2020/main.html?test_type=playbackperf-sfr-vp9-test&raptor=true&exclude=1,2&muted=true&command=run>`__
+   * **test url**: `<https://prod.youtube-test.prod.webservices.mozgcp.net/main.html?test_type=playbackperf-sfr-vp9-test&raptor=true&exclude=1,2&muted=true&command=run>`__
    * **type**: benchmark
    * **unit**: score
    * **use live sites**: true
@@ -11383,6 +10651,22 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
+   .. list-table:: **test-android-hw-a55-14-0-android-aarch64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-mobile-fenix-youtube-playback-vp9-sfr-nofis**
+        - ✅
+        - ❌
+        - ❌
+        - ❌
+
+
    .. list-table:: **test-linux1804-64-clang-trunk-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
@@ -11495,7 +10779,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -11511,7 +10795,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -11527,39 +10811,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-firefox-youtube-playback-vp9-sfr**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-firefox-youtube-playback-vp9-sfr**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -11579,6 +10831,12 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
 .. dropdown:: youtube-playback-widevine-h264-sfr
    :class-container: anchor-id-youtube-playback-widevine-h264-sfr-b
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t youtube-playback-widevine-h264-sfr
+
    **Owner**: PerfTest Team
 
    * **alert threshold**: 2.0
@@ -11587,14 +10845,14 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
    * **expose browser profiler**: true
    * **gecko profile interval**: 1000
    * **gecko profile threads**: MediaPlayback
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/benchmarks/youtube-playback.toml#156>`__
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/benchmarks/youtube-playback.toml#128>`__
    * **lower is better**: true
    * **page cycles**: 1
    * **page timeout**: 2700000
    * **preferences**: media.autoplay.default=0 media.autoplay.ask-permission=false media.autoplay.blocking_policy=0 media.allowed-to-play.enabled=true media.block-autoplay-until-in-foreground=false media.eme.enabled=true media.gmp-manager.updateEnabled=true media.eme.require-app-approval=false
    * **subtest lower is better**: true
    * **subtest unit**: score
-   * **test url**: `<https://yttest.prod.mozaws.net/2020/main.html?test_type=playbackperf-widevine-sfr-h264-test&raptor=true&exclude=1,2&muted=true&command=run>`__
+   * **test url**: `<https://prod.youtube-test.prod.webservices.mozgcp.net/main.html?test_type=playbackperf-widevine-sfr-h264-test&raptor=true&exclude=1,2&muted=true&command=run>`__
    * **type**: benchmark
    * **unit**: score
    * **use live sites**: true
@@ -11712,7 +10970,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -11728,7 +10986,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -11744,39 +11002,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-firefox-youtube-playback-widevine-h264-sfr**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-firefox-youtube-playback-widevine-h264-sfr**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -11796,6 +11022,12 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
 .. dropdown:: youtube-playback-widevine-hfr
    :class-container: anchor-id-youtube-playback-widevine-hfr-b
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t youtube-playback-widevine-hfr
+
    **Owner**: PerfTest Team
 
    * **alert threshold**: 2.0
@@ -11804,14 +11036,14 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
    * **expose browser profiler**: true
    * **gecko profile interval**: 1000
    * **gecko profile threads**: MediaPlayback
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/benchmarks/youtube-playback.toml#170>`__
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/benchmarks/youtube-playback.toml#142>`__
    * **lower is better**: true
    * **page cycles**: 1
    * **page timeout**: 2700000
    * **preferences**: media.autoplay.default=0 media.autoplay.ask-permission=false media.autoplay.blocking_policy=0 media.allowed-to-play.enabled=true media.block-autoplay-until-in-foreground=false media.eme.enabled=true media.gmp-manager.updateEnabled=true media.eme.require-app-approval=false
    * **subtest lower is better**: true
    * **subtest unit**: score
-   * **test url**: `<https://yttest.prod.mozaws.net/2020/main.html?test_type=playbackperf-widevine-hfr-test&raptor=true&exclude=1,2&muted=true&command=run>`__
+   * **test url**: `<https://prod.youtube-test.prod.webservices.mozgcp.net/main.html?test_type=playbackperf-widevine-hfr-test&raptor=true&exclude=1,2&muted=true&command=run>`__
    * **type**: benchmark
    * **unit**: score
    * **use live sites**: true
@@ -11929,7 +11161,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -11945,7 +11177,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -11961,39 +11193,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-firefox-youtube-playback-widevine-hfr**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-firefox-youtube-playback-widevine-hfr**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -12013,6 +11213,12 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
 .. dropdown:: youtube-playback-widevine-vp9-sfr
    :class-container: anchor-id-youtube-playback-widevine-vp9-sfr-b
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t youtube-playback-widevine-vp9-sfr
+
    **Owner**: PerfTest Team
 
    * **alert threshold**: 2.0
@@ -12021,14 +11227,14 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
    * **expose browser profiler**: true
    * **gecko profile interval**: 1000
    * **gecko profile threads**: MediaPlayback
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/benchmarks/youtube-playback.toml#184>`__
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/benchmarks/youtube-playback.toml#156>`__
    * **lower is better**: true
    * **page cycles**: 1
    * **page timeout**: 2700000
    * **preferences**: media.autoplay.default=0 media.autoplay.ask-permission=false media.autoplay.blocking_policy=0 media.allowed-to-play.enabled=true media.block-autoplay-until-in-foreground=false media.eme.enabled=true media.gmp-manager.updateEnabled=true media.eme.require-app-approval=false
    * **subtest lower is better**: true
    * **subtest unit**: score
-   * **test url**: `<https://yttest.prod.mozaws.net/2020/main.html?test_type=playbackperf-widevine-sfr-vp9-test&raptor=true&exclude=1,2&muted=true&command=run>`__
+   * **test url**: `<https://prod.youtube-test.prod.webservices.mozgcp.net/main.html?test_type=playbackperf-widevine-sfr-vp9-test&raptor=true&exclude=1,2&muted=true&command=run>`__
    * **type**: benchmark
    * **unit**: score
    * **use live sites**: true
@@ -12146,7 +11352,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -12162,7 +11368,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -12178,39 +11384,7 @@ Standard benchmarks are third-party tests (i.e. Speedometer) that we have integr
         - ❌
 
 
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-firefox-youtube-playback-widevine-vp9-sfr**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-firefox-youtube-playback-widevine-vp9-sfr**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -12235,6 +11409,12 @@ Browsertime tests that use a custom pageload test script. These use the pageload
 .. dropdown:: addMab1
    :class-container: anchor-id-addMab1-c
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t addMab1
+
    **Owner**: DOM Lifecycle, Workers and Storage Team
 
    **Description**: Use add API to send many small ArrayBuffers to IndexedDB in one transaction
@@ -12246,7 +11426,7 @@ Browsertime tests that use a custom pageload test script. These use the pageload
    * **custom data**: true
    * **expected**: pass
    * **gecko profile entries**: 131072000
-   * **gecko profile features**: js,stackwalk,cpu
+   * **gecko profile features**: js,stackwalk,cpu,memory
    * **gecko profile threads**: GeckoMain,DOM Worker,IndexedDB
    * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/custom/browsertime-indexeddb.toml#30>`__
    * **lower is better**: true
@@ -12371,7 +11551,7 @@ Browsertime tests that use a custom pageload test script. These use the pageload
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -12387,28 +11567,7 @@ Browsertime tests that use a custom pageload test script. These use the pageload
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-indexeddb-chrome-addMab1**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-indexeddb-firefox-addMab1**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -12424,23 +11583,7 @@ Browsertime tests that use a custom pageload test script. These use the pageload
         - ❌
 
 
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-indexeddb-firefox-addMab1**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -12465,6 +11608,12 @@ Browsertime tests that use a custom pageload test script. These use the pageload
 .. dropdown:: addMabN
    :class-container: anchor-id-addMabN-c
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t addMabN
+
    **Owner**: DOM Lifecycle, Workers and Storage Team
 
    **Description**: Use add API to send many small ArrayBuffers to IndexedDB independently
@@ -12476,7 +11625,7 @@ Browsertime tests that use a custom pageload test script. These use the pageload
    * **custom data**: true
    * **expected**: pass
    * **gecko profile entries**: 131072000
-   * **gecko profile features**: js,stackwalk,cpu
+   * **gecko profile features**: js,stackwalk,cpu,memory
    * **gecko profile threads**: GeckoMain,DOM Worker,IndexedDB
    * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/custom/browsertime-indexeddb.toml#34>`__
    * **lower is better**: true
@@ -12601,7 +11750,7 @@ Browsertime tests that use a custom pageload test script. These use the pageload
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -12617,28 +11766,7 @@ Browsertime tests that use a custom pageload test script. These use the pageload
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-indexeddb-chrome-addMabN**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-indexeddb-firefox-addMabN**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -12654,23 +11782,7 @@ Browsertime tests that use a custom pageload test script. These use the pageload
         - ❌
 
 
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-indexeddb-firefox-addMabN**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -12695,6 +11807,12 @@ Browsertime tests that use a custom pageload test script. These use the pageload
 .. dropdown:: addMar1
    :class-container: anchor-id-addMar1-c
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t addMar1
+
    **Owner**: DOM Lifecycle, Workers and Storage Team
 
    **Description**: Use add API to send many small Arrays to IndexedDB in one transaction
@@ -12706,7 +11824,7 @@ Browsertime tests that use a custom pageload test script. These use the pageload
    * **custom data**: true
    * **expected**: pass
    * **gecko profile entries**: 131072000
-   * **gecko profile features**: js,stackwalk,cpu
+   * **gecko profile features**: js,stackwalk,cpu,memory
    * **gecko profile threads**: GeckoMain,DOM Worker,IndexedDB
    * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/custom/browsertime-indexeddb.toml#38>`__
    * **lower is better**: true
@@ -12831,7 +11949,7 @@ Browsertime tests that use a custom pageload test script. These use the pageload
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -12847,28 +11965,7 @@ Browsertime tests that use a custom pageload test script. These use the pageload
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-indexeddb-chrome-addMar1**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-indexeddb-firefox-addMar1**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -12884,23 +11981,7 @@ Browsertime tests that use a custom pageload test script. These use the pageload
         - ❌
 
 
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-indexeddb-firefox-addMar1**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -12925,6 +12006,12 @@ Browsertime tests that use a custom pageload test script. These use the pageload
 .. dropdown:: addMarN
    :class-container: anchor-id-addMarN-c
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t addMarN
+
    **Owner**: DOM Lifecycle, Workers and Storage Team
 
    **Description**: Use add API to send many small Arrays to IndexedDB independently
@@ -12936,7 +12023,7 @@ Browsertime tests that use a custom pageload test script. These use the pageload
    * **custom data**: true
    * **expected**: pass
    * **gecko profile entries**: 131072000
-   * **gecko profile features**: js,stackwalk,cpu
+   * **gecko profile features**: js,stackwalk,cpu,memory
    * **gecko profile threads**: GeckoMain,DOM Worker,IndexedDB
    * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/custom/browsertime-indexeddb.toml#42>`__
    * **lower is better**: true
@@ -13061,7 +12148,7 @@ Browsertime tests that use a custom pageload test script. These use the pageload
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -13077,28 +12164,7 @@ Browsertime tests that use a custom pageload test script. These use the pageload
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-indexeddb-chrome-addMarN**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-indexeddb-firefox-addMarN**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -13114,23 +12180,7 @@ Browsertime tests that use a custom pageload test script. These use the pageload
         - ❌
 
 
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-indexeddb-firefox-addMarN**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -13155,6 +12205,12 @@ Browsertime tests that use a custom pageload test script. These use the pageload
 .. dropdown:: addMbl1
    :class-container: anchor-id-addMbl1-c
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t addMbl1
+
    **Owner**: DOM Lifecycle, Workers and Storage Team
 
    **Description**: Use add API to send many small Blobs to IndexedDB in one transaction
@@ -13166,7 +12222,7 @@ Browsertime tests that use a custom pageload test script. These use the pageload
    * **custom data**: true
    * **expected**: pass
    * **gecko profile entries**: 131072000
-   * **gecko profile features**: js,stackwalk,cpu
+   * **gecko profile features**: js,stackwalk,cpu,memory
    * **gecko profile threads**: GeckoMain,DOM Worker,IndexedDB
    * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/custom/browsertime-indexeddb.toml#46>`__
    * **lower is better**: true
@@ -13291,7 +12347,7 @@ Browsertime tests that use a custom pageload test script. These use the pageload
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -13307,28 +12363,7 @@ Browsertime tests that use a custom pageload test script. These use the pageload
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-indexeddb-chrome-addMbl1**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-indexeddb-firefox-addMbl1**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -13344,23 +12379,7 @@ Browsertime tests that use a custom pageload test script. These use the pageload
         - ❌
 
 
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-indexeddb-firefox-addMbl1**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -13385,6 +12404,12 @@ Browsertime tests that use a custom pageload test script. These use the pageload
 .. dropdown:: addMblN
    :class-container: anchor-id-addMblN-c
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t addMblN
+
    **Owner**: DOM Lifecycle, Workers and Storage Team
 
    **Description**: Use add API to send many small Blobs to IndexedDB independently
@@ -13396,7 +12421,7 @@ Browsertime tests that use a custom pageload test script. These use the pageload
    * **custom data**: true
    * **expected**: pass
    * **gecko profile entries**: 131072000
-   * **gecko profile features**: js,stackwalk,cpu
+   * **gecko profile features**: js,stackwalk,cpu,memory
    * **gecko profile threads**: GeckoMain,DOM Worker,IndexedDB
    * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/custom/browsertime-indexeddb.toml#50>`__
    * **lower is better**: true
@@ -13521,7 +12546,7 @@ Browsertime tests that use a custom pageload test script. These use the pageload
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -13537,28 +12562,7 @@ Browsertime tests that use a custom pageload test script. These use the pageload
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-indexeddb-chrome-addMblN**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-indexeddb-firefox-addMblN**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -13574,23 +12578,7 @@ Browsertime tests that use a custom pageload test script. These use the pageload
         - ❌
 
 
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-indexeddb-firefox-addMblN**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -13615,6 +12603,12 @@ Browsertime tests that use a custom pageload test script. These use the pageload
 .. dropdown:: addkAB1
    :class-container: anchor-id-addkAB1-c
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t addkAB1
+
    **Owner**: DOM Lifecycle, Workers and Storage Team
 
    **Description**: Use add API to send a couple of large ArrayBuffers to IndexedDB in one transaction
@@ -13626,7 +12620,7 @@ Browsertime tests that use a custom pageload test script. These use the pageload
    * **custom data**: true
    * **expected**: pass
    * **gecko profile entries**: 131072000
-   * **gecko profile features**: js,stackwalk,cpu
+   * **gecko profile features**: js,stackwalk,cpu,memory
    * **gecko profile threads**: GeckoMain,DOM Worker,IndexedDB
    * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/custom/browsertime-indexeddb.toml#54>`__
    * **lower is better**: true
@@ -13751,7 +12745,7 @@ Browsertime tests that use a custom pageload test script. These use the pageload
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -13767,28 +12761,7 @@ Browsertime tests that use a custom pageload test script. These use the pageload
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-indexeddb-chrome-addkAB1**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-indexeddb-firefox-addkAB1**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -13804,23 +12777,7 @@ Browsertime tests that use a custom pageload test script. These use the pageload
         - ❌
 
 
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-indexeddb-firefox-addkAB1**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -13845,6 +12802,12 @@ Browsertime tests that use a custom pageload test script. These use the pageload
 .. dropdown:: addkABN
    :class-container: anchor-id-addkABN-c
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t addkABN
+
    **Owner**: DOM Lifecycle, Workers and Storage Team
 
    **Description**: Use add API to send a couple of large ArrayBuffers to IndexedDB independently
@@ -13856,7 +12819,7 @@ Browsertime tests that use a custom pageload test script. These use the pageload
    * **custom data**: true
    * **expected**: pass
    * **gecko profile entries**: 131072000
-   * **gecko profile features**: js,stackwalk,cpu
+   * **gecko profile features**: js,stackwalk,cpu,memory
    * **gecko profile threads**: GeckoMain,DOM Worker,IndexedDB
    * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/custom/browsertime-indexeddb.toml#58>`__
    * **lower is better**: true
@@ -13981,7 +12944,7 @@ Browsertime tests that use a custom pageload test script. These use the pageload
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -13997,28 +12960,7 @@ Browsertime tests that use a custom pageload test script. These use the pageload
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-indexeddb-chrome-addkABN**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-indexeddb-firefox-addkABN**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -14034,23 +12976,7 @@ Browsertime tests that use a custom pageload test script. These use the pageload
         - ❌
 
 
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-indexeddb-firefox-addkABN**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -14075,6 +13001,12 @@ Browsertime tests that use a custom pageload test script. These use the pageload
 .. dropdown:: addkAR1
    :class-container: anchor-id-addkAR1-c
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t addkAR1
+
    **Owner**: DOM Lifecycle, Workers and Storage Team
 
    **Description**: Use add API to send a couple of large JS Arrays to IndexedDB in one transaction
@@ -14086,7 +13018,7 @@ Browsertime tests that use a custom pageload test script. These use the pageload
    * **custom data**: true
    * **expected**: pass
    * **gecko profile entries**: 131072000
-   * **gecko profile features**: js,stackwalk,cpu
+   * **gecko profile features**: js,stackwalk,cpu,memory
    * **gecko profile threads**: GeckoMain,DOM Worker,IndexedDB
    * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/custom/browsertime-indexeddb.toml#62>`__
    * **lower is better**: true
@@ -14211,7 +13143,7 @@ Browsertime tests that use a custom pageload test script. These use the pageload
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -14227,28 +13159,7 @@ Browsertime tests that use a custom pageload test script. These use the pageload
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-indexeddb-chrome-addkAR1**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-indexeddb-firefox-addkAR1**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -14264,23 +13175,7 @@ Browsertime tests that use a custom pageload test script. These use the pageload
         - ❌
 
 
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-indexeddb-firefox-addkAR1**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -14305,6 +13200,12 @@ Browsertime tests that use a custom pageload test script. These use the pageload
 .. dropdown:: addkARN
    :class-container: anchor-id-addkARN-c
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t addkARN
+
    **Owner**: DOM Lifecycle, Workers and Storage Team
 
    **Description**: Use add API to send a couple of large JS Arrays to IndexedDB independently
@@ -14316,7 +13217,7 @@ Browsertime tests that use a custom pageload test script. These use the pageload
    * **custom data**: true
    * **expected**: pass
    * **gecko profile entries**: 131072000
-   * **gecko profile features**: js,stackwalk,cpu
+   * **gecko profile features**: js,stackwalk,cpu,memory
    * **gecko profile threads**: GeckoMain,DOM Worker,IndexedDB
    * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/custom/browsertime-indexeddb.toml#66>`__
    * **lower is better**: true
@@ -14441,7 +13342,7 @@ Browsertime tests that use a custom pageload test script. These use the pageload
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -14457,28 +13358,7 @@ Browsertime tests that use a custom pageload test script. These use the pageload
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-indexeddb-chrome-addkARN**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-indexeddb-firefox-addkARN**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -14494,23 +13374,7 @@ Browsertime tests that use a custom pageload test script. These use the pageload
         - ❌
 
 
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-indexeddb-firefox-addkARN**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -14535,6 +13399,12 @@ Browsertime tests that use a custom pageload test script. These use the pageload
 .. dropdown:: addkBL1
    :class-container: anchor-id-addkBL1-c
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t addkBL1
+
    **Owner**: DOM Lifecycle, Workers and Storage Team
 
    **Description**: Use add API to send a couple of large Blobs to IndexedDB in one transaction
@@ -14546,7 +13416,7 @@ Browsertime tests that use a custom pageload test script. These use the pageload
    * **custom data**: true
    * **expected**: pass
    * **gecko profile entries**: 131072000
-   * **gecko profile features**: js,stackwalk,cpu
+   * **gecko profile features**: js,stackwalk,cpu,memory
    * **gecko profile threads**: GeckoMain,DOM Worker,IndexedDB
    * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/custom/browsertime-indexeddb.toml#70>`__
    * **lower is better**: true
@@ -14671,7 +13541,7 @@ Browsertime tests that use a custom pageload test script. These use the pageload
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -14687,28 +13557,7 @@ Browsertime tests that use a custom pageload test script. These use the pageload
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-indexeddb-chrome-addkBL1**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-indexeddb-firefox-addkBL1**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -14724,23 +13573,7 @@ Browsertime tests that use a custom pageload test script. These use the pageload
         - ❌
 
 
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-indexeddb-firefox-addkBL1**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -14765,6 +13598,12 @@ Browsertime tests that use a custom pageload test script. These use the pageload
 .. dropdown:: addkBLN
    :class-container: anchor-id-addkBLN-c
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t addkBLN
+
    **Owner**: DOM Lifecycle, Workers and Storage Team
 
    **Description**: Use add API to send a couple of large Blobs to IndexedDB independently
@@ -14776,7 +13615,7 @@ Browsertime tests that use a custom pageload test script. These use the pageload
    * **custom data**: true
    * **expected**: pass
    * **gecko profile entries**: 131072000
-   * **gecko profile features**: js,stackwalk,cpu
+   * **gecko profile features**: js,stackwalk,cpu,memory
    * **gecko profile threads**: GeckoMain,DOM Worker,IndexedDB
    * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/custom/browsertime-indexeddb.toml#74>`__
    * **lower is better**: true
@@ -14901,7 +13740,7 @@ Browsertime tests that use a custom pageload test script. These use the pageload
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -14917,28 +13756,7 @@ Browsertime tests that use a custom pageload test script. These use the pageload
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-indexeddb-chrome-addkBLN**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-indexeddb-firefox-addkBLN**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -14954,23 +13772,7 @@ Browsertime tests that use a custom pageload test script. These use the pageload
         - ❌
 
 
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-indexeddb-firefox-addkBLN**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -14995,17 +13797,23 @@ Browsertime tests that use a custom pageload test script. These use the pageload
 .. dropdown:: browsertime
    :class-container: anchor-id-browsertime-c
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t browsertime
+
    **Owner**: PerfTest Team
 
-   **Description**: Used to run vanilla browsertime tests through raptor. For example: `./mach raptor --browsertime -t browsertime --browsertime-arg url=https://www.sitespeed.io --browsertime-arg iterations=3`
+   **Description**: Used to run vanilla browsertime tests through raptor. For example: `./mach raptor -t browsertime --browsertime-arg url=https://www.sitespeed.io --browsertime-arg iterations=3`
 
-   * **alert on**: fcp, loadtime
+   * **alert on**: `fcp <raptor-metrics.html#first-paint>`__, `loadtime <raptor-metrics.html#load-time>`__
    * **alert threshold**: 2.0
    * **apps**: firefox
    * **browser cycles**: 1
    * **expected**: pass
    * **gecko profile interval**: 1
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/custom/browsertime-custom.toml#18>`__
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/custom/browsertime-custom.toml#17>`__
    * **lower is better**: true
    * **measure**: fnbpaint, fcp, dcf, loadtime
    * **page cycles**: 1
@@ -15013,6 +13821,7 @@ Browsertime tests that use a custom pageload test script. These use the pageload
    * **playback**: mitmproxy
    * **playback pageset manifest**: null.manifest
    * **playback version**: 8.1.1
+   * **support class**: browsertime_pageload.py
    * **test script**: None
    * **test url**: `<None>`__
    * **type**: pageload
@@ -15022,12 +13831,18 @@ Browsertime tests that use a custom pageload test script. These use the pageload
 .. dropdown:: connect
    :class-container: anchor-id-connect-c
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t connect
+
    **Owner**: Network Team
 
    **Description**: Verifies that connection time on a pageload is zero when a speculative connection has first been made
 
    * **alert change type**: absolute
-   * **alert on**: fcp, loadtime, ContentfulSpeedIndex, PerceptualSpeedIndex, SpeedIndex, FirstVisualChange
+   * **alert on**: `fcp <raptor-metrics.html#first-paint>`__, `loadtime <raptor-metrics.html#load-time>`__, `ContentfulSpeedIndex <raptor-metrics.html#contentful-speed-index>`__, `PerceptualSpeedIndex <raptor-metrics.html#perceptual-speed-index>`__, `SpeedIndex <raptor-metrics.html#speed-index>`__, `FirstVisualChange <raptor-metrics.html#first-visual-change>`__
    * **alert threshold**: 10.0
    * **apps**: firefox
    * **browser cycles**: 3
@@ -15142,7 +13957,7 @@ Browsertime tests that use a custom pageload test script. These use the pageload
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -15158,7 +13973,7 @@ Browsertime tests that use a custom pageload test script. These use the pageload
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -15174,39 +13989,7 @@ Browsertime tests that use a custom pageload test script. These use the pageload
         - ❌
 
 
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-speculative-firefox-connect**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-speculative-firefox-connect**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -15225,6 +14008,12 @@ Browsertime tests that use a custom pageload test script. These use the pageload
 
 .. dropdown:: constant-regression
    :class-container: anchor-id-constant-regression-c
+
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t constant-regression
 
    **Owner**: PerfTest Team
 
@@ -15290,6 +14079,12 @@ Browsertime tests that use a custom pageload test script. These use the pageload
 .. dropdown:: getkeyrng
    :class-container: anchor-id-getkeyrng-c
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t getkeyrng
+
    **Owner**: DOM Lifecycle, Workers and Storage Team
 
    **Description**: Measures the speed of key-range based reads of IndexedDB
@@ -15300,7 +14095,7 @@ Browsertime tests that use a custom pageload test script. These use the pageload
    * **custom data**: true
    * **expected**: pass
    * **gecko profile entries**: 131072000
-   * **gecko profile features**: js,stackwalk,cpu
+   * **gecko profile features**: js,stackwalk,cpu,memory
    * **gecko profile threads**: GeckoMain,DOM Worker,IndexedDB
    * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/custom/browsertime-indexeddb.toml#78>`__
    * **lower is better**: true
@@ -15311,6 +14106,7 @@ Browsertime tests that use a custom pageload test script. These use the pageload
    * **playback**: mitmproxy
    * **playback pageset manifest**: mitm8-linux-firefox-example.manifest
    * **subtest unit**: ms
+   * **support class**: browsertime_pageload.py
    * **test script**: indexeddb_getkeyrange.js
    * **test summary**: flatten
    * **test url**: `<https://www.example.com>`__
@@ -15425,7 +14221,7 @@ Browsertime tests that use a custom pageload test script. These use the pageload
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -15441,28 +14237,7 @@ Browsertime tests that use a custom pageload test script. These use the pageload
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-indexeddb-chrome-getkeyrng**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-indexeddb-firefox-getkeyrng**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -15478,23 +14253,7 @@ Browsertime tests that use a custom pageload test script. These use the pageload
         - ❌
 
 
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-indexeddb-firefox-getkeyrng**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -15516,50 +14275,208 @@ Browsertime tests that use a custom pageload test script. These use the pageload
 
 
 
-.. dropdown:: grandprix
-   :class-container: anchor-id-grandprix-c
+.. dropdown:: h3-upload
+   :class-container: anchor-id-h3-upload-c
 
-   **Owner**: PerfTest Team
+   * Command to Run Locally
 
-   **Description**: Runs the Grandprix benchmark
+   .. code-block::
+
+      ./mach raptor -t h3-upload
+
+   **Owner**: Network Team
+
+   **Description**: Measures HTTP/3 file upload throughput with a local server
 
    * **alert threshold**: 2.0
-   * **apps**: firefox, chrome, safari
+   * **apps**: firefox
    * **browser cycles**: 1
-   * **browsertime args**: --browsertime.grandprix_iterations=25
+   * **browsertime args**: --browsertime.upload_iterations=10 --firefox.preference=network.http.http3.enable:true
    * **custom data**: true
    * **expected**: pass
    * **gecko profile interval**: 1
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/custom/browsertime-grandprix.toml#16>`__
-   * **lower is better**: true
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/custom/browsertime-network-bench.toml#24>`__
+   * **lower is better**: false
    * **output timeout**: 2000000
    * **page cycles**: 1
    * **page timeout**: 1800000
+   * **subtest lower is better**: false
    * **subtest name filters**: tests/,iterations/
-   * **subtest unit**: ms
-   * **test script**: grandprix.js
-   * **test summary**: flatten
+   * **subtest unit**: mbps
+   * **support class**: network_bench.py
+   * **test script**: upload.js
    * **test url**: `<None>`__
    * **type**: pageload
-   * **unit**: score
-   * **use live sites**: true
+   * **unit**: mbps
+   * **Test Task**:
+
+   .. list-table:: **test-linux1804-64-nightlyasrelease-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-network-bench-firefox-h3-upload**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-linux1804-64-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-network-bench-firefox-h3-upload**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-linux1804-64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-network-bench-firefox-h3-upload**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-macosx1015-64-nightlyasrelease-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-network-bench-firefox-h3-upload**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-macosx1015-64-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-network-bench-firefox-h3-upload**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-macosx1015-64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-network-bench-firefox-h3-upload**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-network-bench-firefox-h3-upload**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-windows11-64-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-network-bench-firefox-h3-upload**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-network-bench-firefox-h3-upload**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
 
 .. dropdown:: process-switch
    :class-container: anchor-id-process-switch-c
+
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t process-switch
 
    **Owner**: PerfTest Team
 
    **Description**: Measures process switch time
 
    * **accept zero vismet**: true
-   * **alert on**: fcp, loadtime, ContentfulSpeedIndex, PerceptualSpeedIndex, SpeedIndex, FirstVisualChange, LastVisualChange
+   * **alert on**: `fcp <raptor-metrics.html#first-paint>`__, `loadtime <raptor-metrics.html#load-time>`__, `ContentfulSpeedIndex <raptor-metrics.html#contentful-speed-index>`__, `PerceptualSpeedIndex <raptor-metrics.html#perceptual-speed-index>`__, `SpeedIndex <raptor-metrics.html#speed-index>`__, `FirstVisualChange <raptor-metrics.html#first-visual-change>`__, `LastVisualChange <raptor-metrics.html#last-visual-change>`__
    * **alert threshold**: 2.0
    * **apps**: firefox, chrome
    * **browser cycles**: 25
    * **browsertime args**: --pageCompleteWaitTime=1000 --pageCompleteCheckInactivity=true
    * **expected**: pass
    * **gecko profile interval**: 1
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/custom/browsertime-process-switch.toml#19>`__
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/custom/browsertime-process-switch.toml#20>`__
    * **lower is better**: true
    * **measure**: fcp, loadtime, ContentfulSpeedIndex, PerceptualSpeedIndex, SpeedIndex, FirstVisualChange, LastVisualChange
    * **page cycles**: 25
@@ -15567,6 +14484,7 @@ Browsertime tests that use a custom pageload test script. These use the pageload
    * **playback**: mitmproxy
    * **playback pageset manifest**: mitm5-linux-firefox-proc-switch.manifest
    * **playback version**: 5.1.1
+   * **support class**: browsertime_pageload.py
    * **test script**: process_switch.js
    * **test url**: `<https://mozilla.seanfeng.dev/files/red.html,https://mozilla.pettay.fi/moztests/blue.html>`__
    * **type**: pageload
@@ -15670,7 +14588,7 @@ Browsertime tests that use a custom pageload test script. These use the pageload
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -15686,7 +14604,7 @@ Browsertime tests that use a custom pageload test script. These use the pageload
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -15702,39 +14620,7 @@ Browsertime tests that use a custom pageload test script. These use the pageload
         - ❌
 
 
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-custom-firefox-process-switch**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-custom-firefox-process-switch**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -15753,6 +14639,12 @@ Browsertime tests that use a custom pageload test script. These use the pageload
 
 .. dropdown:: sample-python-support
    :class-container: anchor-id-sample-python-support-c
+
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t sample-python-support
 
    **Owner**: PerfTest Team
 
@@ -15785,11 +14677,17 @@ Browsertime tests that use a custom pageload test script. These use the pageload
 .. dropdown:: throttled
    :class-container: anchor-id-throttled-c
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t throttled
+
    **Owner**: Network Team
 
    **Description**: Pageload test using a throttled network environment
 
-   * **alert on**: fcp, loadtime, ContentfulSpeedIndex, PerceptualSpeedIndex, SpeedIndex, FirstVisualChange
+   * **alert on**: `fcp <raptor-metrics.html#first-paint>`__, `loadtime <raptor-metrics.html#load-time>`__, `ContentfulSpeedIndex <raptor-metrics.html#contentful-speed-index>`__, `PerceptualSpeedIndex <raptor-metrics.html#perceptual-speed-index>`__, `SpeedIndex <raptor-metrics.html#speed-index>`__, `FirstVisualChange <raptor-metrics.html#first-visual-change>`__
    * **alert threshold**: 2.0
    * **apps**: firefox
    * **browser cycles**: 3
@@ -15904,7 +14802,7 @@ Browsertime tests that use a custom pageload test script. These use the pageload
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -15920,7 +14818,7 @@ Browsertime tests that use a custom pageload test script. These use the pageload
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -15936,39 +14834,7 @@ Browsertime tests that use a custom pageload test script. These use the pageload
         - ❌
 
 
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-throttled-firefox-throttled**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-throttled-firefox-throttled**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -15987,6 +14853,12 @@ Browsertime tests that use a custom pageload test script. These use the pageload
 
 .. dropdown:: tp6-bench
    :class-container: anchor-id-tp6-bench-c
+
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t tp6-bench
 
    **Owner**: PerfTest Team
 
@@ -16113,7 +14985,7 @@ Browsertime tests that use a custom pageload test script. These use the pageload
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -16129,7 +15001,7 @@ Browsertime tests that use a custom pageload test script. These use the pageload
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -16145,39 +15017,7 @@ Browsertime tests that use a custom pageload test script. These use the pageload
         - ❌
 
 
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-pageload-benchmark-firefox-tp6-bench**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-pageload-benchmark-firefox-tp6-bench**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -16197,14 +15037,20 @@ Browsertime tests that use a custom pageload test script. These use the pageload
 .. dropdown:: upload
    :class-container: anchor-id-upload-c
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t upload
+
    **Owner**: Network Team
 
-   **Description**: Measures http/2 file upload throughput
+   **Description**: Measures HTTP/2 file upload throughput with a remote server
 
    * **alert threshold**: 2.0
    * **apps**: firefox, chrome, safari
    * **browser cycles**: 1
-   * **browsertime args**: --browsertime.upload_iterations=10 --firefox.preference=network.http.http3.enable:false --chrome.args disable-quic
+   * **browsertime args**: --browsertime.upload_iterations=10 --browsertime.upload_url=https://uploadtest-381620.uc.r.appspot.com --firefox.preference=network.http.http3.enable:false --chrome.args disable-quic
    * **custom data**: true
    * **expected**: pass
    * **gecko profile interval**: 1
@@ -16334,7 +15180,7 @@ Browsertime tests that use a custom pageload test script. These use the pageload
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -16350,28 +15196,7 @@ Browsertime tests that use a custom pageload test script. These use the pageload
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-upload-chrome-upload**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-upload-firefox-upload**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -16387,23 +15212,7 @@ Browsertime tests that use a custom pageload test script. These use the pageload
         - ❌
 
 
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-upload-firefox-upload**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -16428,14 +15237,20 @@ Browsertime tests that use a custom pageload test script. These use the pageload
 .. dropdown:: upload-h3
    :class-container: anchor-id-upload-h3-c
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t upload-h3
+
    **Owner**: Network Team
 
-   **Description**: Measures http/3 file upload throughput
+   **Description**: Measures HTTP/3 file upload throughput with a remote server
 
    * **alert threshold**: 2.0
    * **apps**: firefox, chrome, safari
    * **browser cycles**: 1
-   * **browsertime args**: --browsertime.upload_iterations=10 --firefox.preference=network.http.http3.enable:true
+   * **browsertime args**: --browsertime.upload_iterations=10 --browsertime.upload_url=https://uploadtest-381620.uc.r.appspot.com --firefox.preference=network.http.http3.enable:true
    * **custom data**: true
    * **expected**: pass
    * **gecko profile interval**: 1
@@ -16565,7 +15380,7 @@ Browsertime tests that use a custom pageload test script. These use the pageload
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -16581,28 +15396,7 @@ Browsertime tests that use a custom pageload test script. These use the pageload
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-upload-chrome-upload-h3**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-upload-firefox-upload-h3**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -16618,23 +15412,7 @@ Browsertime tests that use a custom pageload test script. These use the pageload
         - ❌
 
 
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-upload-firefox-upload-h3**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -16651,6 +15429,935 @@ Browsertime tests that use a custom pageload test script. These use the pageload
       * - **browsertime-upload-firefox-upload-h3**
         - ✅
         - ✅
+        - ❌
+        - ❌
+
+
+
+.. dropdown:: vpl-av1
+   :class-container: anchor-id-vpl-av1-c
+
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t vpl-av1
+
+   **Owner**: :aosmond and the Media Team
+
+   **Description**: Measures AV1 1080p video playback latency.
+
+   * **alert on**: `estimatedFirstFrameLatency <raptor-metrics.html#estimated-frame-latency-(first)>`__, `estimatedAnyFrameLatency <raptor-metrics.html#estimated-frame-latency-(any)>`__
+   * **alert threshold**: 2.0
+   * **apps**: chrome, chrome-m, geckoview, fenix, firefox, safari
+   * **benchmark webserver**: true
+   * **browser cycles**: 20
+   * **expected**: pass
+   * **gecko profile features**: stackwalk,js,cpu,java,processcpu,screenshots,memory
+   * **gecko profile interval**: 1
+   * **gecko profile threads**: BackgroundThreadPool,Compositor,decoder,GeckoMain,gmp,graph,grph,InotifyEventThread,IPDL Background,media,ModuleProcessThread,PacerThread,RemVidChild,RenderBackend,Renderer,SwComposite,TextureUpdate,ImageBridgeChld
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/custom/browsertime-video-playback-latency.toml#36>`__
+   * **lower is better**: true
+   * **measure**: firstFrame, secondFrame, lastFrame, estimatedFirstFrameLatency, estimatedAnyFrameLatency
+   * **newtab per cycle**: true
+   * **page cycles**: 20
+   * **page timeout**: 20000
+   * **preferences**: media.autoplay.default=0 media.autoplay.ask-permission=false media.autoplay.blocking_policy=0 media.allowed-to-play.enabled=true media.block-autoplay-until-in-foreground=false
+   * **repository**: https://github.com/mozilla/perf-automation
+   * **repository path**: benchmarks/video-playback-latency
+   * **repository revision**: e3d0295c15cfdd6f32e6d4270de0ed5d6c1632cd
+   * **support class**: video_playback_latency.py
+   * **test url**: `<http://\<host\>:\<port\>/av1_1080p.html>`__
+   * **type**: pageload
+   * **unit**: ms
+   * **Test Task**:
+
+   .. list-table:: **test-android-hw-a51-11-0-aarch64-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-video-playback-latency-mobile-fenix-vpl-av1-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-video-playback-latency-mobile-geckoview-vpl-av1-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-android-hw-a51-11-0-aarch64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-video-playback-latency-mobile-chrome-m-vpl-av1-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-video-playback-latency-mobile-fenix-vpl-av1-nofis**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+      * - **browsertime-video-playback-latency-mobile-geckoview-vpl-av1-nofis**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-android-hw-a55-14-0-android-aarch64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-video-playback-latency-mobile-chrome-m-vpl-av1-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-video-playback-latency-mobile-fenix-vpl-av1-nofis**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+      * - **browsertime-video-playback-latency-mobile-geckoview-vpl-av1-nofis**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-linux1804-64-nightlyasrelease-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-video-playback-latency-firefox-vpl-av1**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-linux1804-64-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-video-playback-latency-firefox-vpl-av1**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-linux1804-64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-video-playback-latency-chrome-vpl-av1**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-video-playback-latency-firefox-vpl-av1**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-macosx1015-64-nightlyasrelease-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-video-playback-latency-firefox-vpl-av1**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-macosx1015-64-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-video-playback-latency-firefox-vpl-av1**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-macosx1015-64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-video-playback-latency-chrome-vpl-av1**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-video-playback-latency-firefox-vpl-av1**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-windows11-64-2009-hw-ref-shippable/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-video-playback-latency-chrome-vpl-av1**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-video-playback-latency-firefox-vpl-av1**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-windows11-64-2009-hw-ref/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-video-playback-latency-firefox-vpl-av1**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-video-playback-latency-firefox-vpl-av1**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-windows11-64-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-video-playback-latency-firefox-vpl-av1**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-video-playback-latency-chrome-vpl-av1**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-video-playback-latency-firefox-vpl-av1**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+
+.. dropdown:: vpl-h264
+   :class-container: anchor-id-vpl-h264-c
+
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t vpl-h264
+
+   **Owner**: :aosmond and the Media Team
+
+   **Description**: Measures H264 1080p video playback latency.
+
+   * **alert on**: `estimatedFirstFrameLatency <raptor-metrics.html#estimated-frame-latency-(first)>`__, `estimatedAnyFrameLatency <raptor-metrics.html#estimated-frame-latency-(any)>`__
+   * **alert threshold**: 2.0
+   * **apps**: chrome, chrome-m, geckoview, fenix, firefox, safari
+   * **benchmark webserver**: true
+   * **browser cycles**: 20
+   * **expected**: pass
+   * **gecko profile features**: stackwalk,js,cpu,java,processcpu,screenshots,memory
+   * **gecko profile interval**: 1
+   * **gecko profile threads**: BackgroundThreadPool,Compositor,decoder,GeckoMain,gmp,graph,grph,InotifyEventThread,IPDL Background,media,ModuleProcessThread,PacerThread,RemVidChild,RenderBackend,Renderer,SwComposite,TextureUpdate,ImageBridgeChld
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/custom/browsertime-video-playback-latency.toml#30>`__
+   * **lower is better**: true
+   * **measure**: firstFrame, secondFrame, lastFrame, estimatedFirstFrameLatency, estimatedAnyFrameLatency
+   * **newtab per cycle**: true
+   * **page cycles**: 20
+   * **page timeout**: 20000
+   * **preferences**: media.autoplay.default=0 media.autoplay.ask-permission=false media.autoplay.blocking_policy=0 media.allowed-to-play.enabled=true media.block-autoplay-until-in-foreground=false
+   * **repository**: https://github.com/mozilla/perf-automation
+   * **repository path**: benchmarks/video-playback-latency
+   * **repository revision**: e3d0295c15cfdd6f32e6d4270de0ed5d6c1632cd
+   * **support class**: video_playback_latency.py
+   * **test url**: `<http://\<host\>:\<port\>/h264_1080p.html>`__
+   * **type**: pageload
+   * **unit**: ms
+   * **Test Task**:
+
+   .. list-table:: **test-android-hw-a51-11-0-aarch64-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-video-playback-latency-mobile-fenix-vpl-h264-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-video-playback-latency-mobile-geckoview-vpl-h264-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-android-hw-a51-11-0-aarch64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-video-playback-latency-mobile-chrome-m-vpl-h264-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-video-playback-latency-mobile-fenix-vpl-h264-nofis**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+      * - **browsertime-video-playback-latency-mobile-geckoview-vpl-h264-nofis**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-android-hw-a55-14-0-android-aarch64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-video-playback-latency-mobile-chrome-m-vpl-h264-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-video-playback-latency-mobile-fenix-vpl-h264-nofis**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+      * - **browsertime-video-playback-latency-mobile-geckoview-vpl-h264-nofis**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-linux1804-64-nightlyasrelease-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-video-playback-latency-firefox-vpl-h264**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-linux1804-64-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-video-playback-latency-firefox-vpl-h264**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-linux1804-64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-video-playback-latency-chrome-vpl-h264**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-video-playback-latency-firefox-vpl-h264**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-macosx1015-64-nightlyasrelease-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-video-playback-latency-firefox-vpl-h264**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-macosx1015-64-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-video-playback-latency-firefox-vpl-h264**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-macosx1015-64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-video-playback-latency-chrome-vpl-h264**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-video-playback-latency-firefox-vpl-h264**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+      * - **browsertime-video-playback-latency-safari-vpl-h264**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-windows11-64-2009-hw-ref-shippable/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-video-playback-latency-chrome-vpl-h264**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-video-playback-latency-firefox-vpl-h264**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-windows11-64-2009-hw-ref/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-video-playback-latency-firefox-vpl-h264**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-video-playback-latency-firefox-vpl-h264**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-windows11-64-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-video-playback-latency-firefox-vpl-h264**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-video-playback-latency-chrome-vpl-h264**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-video-playback-latency-firefox-vpl-h264**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+
+.. dropdown:: vpl-vp9
+   :class-container: anchor-id-vpl-vp9-c
+
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t vpl-vp9
+
+   **Owner**: :aosmond and the Media Team
+
+   **Description**: Measures VP9 1080p video playback latency.
+
+   * **alert on**: `estimatedFirstFrameLatency <raptor-metrics.html#estimated-frame-latency-(first)>`__, `estimatedAnyFrameLatency <raptor-metrics.html#estimated-frame-latency-(any)>`__
+   * **alert threshold**: 2.0
+   * **apps**: chrome, chrome-m, geckoview, fenix, firefox, safari
+   * **benchmark webserver**: true
+   * **browser cycles**: 20
+   * **expected**: pass
+   * **gecko profile features**: stackwalk,js,cpu,java,processcpu,screenshots,memory
+   * **gecko profile interval**: 1
+   * **gecko profile threads**: BackgroundThreadPool,Compositor,decoder,GeckoMain,gmp,graph,grph,InotifyEventThread,IPDL Background,media,ModuleProcessThread,PacerThread,RemVidChild,RenderBackend,Renderer,SwComposite,TextureUpdate,ImageBridgeChld
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/custom/browsertime-video-playback-latency.toml#33>`__
+   * **lower is better**: true
+   * **measure**: firstFrame, secondFrame, lastFrame, estimatedFirstFrameLatency, estimatedAnyFrameLatency
+   * **newtab per cycle**: true
+   * **page cycles**: 20
+   * **page timeout**: 20000
+   * **preferences**: media.autoplay.default=0 media.autoplay.ask-permission=false media.autoplay.blocking_policy=0 media.allowed-to-play.enabled=true media.block-autoplay-until-in-foreground=false
+   * **repository**: https://github.com/mozilla/perf-automation
+   * **repository path**: benchmarks/video-playback-latency
+   * **repository revision**: e3d0295c15cfdd6f32e6d4270de0ed5d6c1632cd
+   * **support class**: video_playback_latency.py
+   * **test url**: `<http://\<host\>:\<port\>/vp9_1080p.html>`__
+   * **type**: pageload
+   * **unit**: ms
+   * **Test Task**:
+
+   .. list-table:: **test-android-hw-a51-11-0-aarch64-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-video-playback-latency-mobile-fenix-vpl-vp9-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-video-playback-latency-mobile-geckoview-vpl-vp9-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-android-hw-a51-11-0-aarch64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-video-playback-latency-mobile-chrome-m-vpl-vp9-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-video-playback-latency-mobile-fenix-vpl-vp9-nofis**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+      * - **browsertime-video-playback-latency-mobile-geckoview-vpl-vp9-nofis**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-android-hw-a55-14-0-android-aarch64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-video-playback-latency-mobile-chrome-m-vpl-vp9-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-video-playback-latency-mobile-fenix-vpl-vp9-nofis**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+      * - **browsertime-video-playback-latency-mobile-geckoview-vpl-vp9-nofis**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-linux1804-64-nightlyasrelease-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-video-playback-latency-firefox-vpl-vp9**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-linux1804-64-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-video-playback-latency-firefox-vpl-vp9**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-linux1804-64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-video-playback-latency-chrome-vpl-vp9**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-video-playback-latency-firefox-vpl-vp9**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-macosx1015-64-nightlyasrelease-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-video-playback-latency-firefox-vpl-vp9**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-macosx1015-64-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-video-playback-latency-firefox-vpl-vp9**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-macosx1015-64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-video-playback-latency-chrome-vpl-vp9**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-video-playback-latency-firefox-vpl-vp9**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-windows11-64-2009-hw-ref-shippable/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-video-playback-latency-chrome-vpl-vp9**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-video-playback-latency-firefox-vpl-vp9**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-windows11-64-2009-hw-ref/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-video-playback-latency-firefox-vpl-vp9**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-video-playback-latency-firefox-vpl-vp9**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-windows11-64-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-video-playback-latency-firefox-vpl-vp9**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-video-playback-latency-chrome-vpl-vp9**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-video-playback-latency-firefox-vpl-vp9**
+        - ❌
+        - ❌
         - ❌
         - ❌
 
@@ -16659,17 +16366,23 @@ Browsertime tests that use a custom pageload test script. These use the pageload
 .. dropdown:: welcome
    :class-container: anchor-id-welcome-c
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t welcome
+
    **Owner**: PerfTest Team
 
    **Description**: Measures pageload metrics for the first-install about:welcome page
 
-   * **alert on**: fcp, loadtime, ContentfulSpeedIndex, PerceptualSpeedIndex, SpeedIndex, FirstVisualChange, LastVisualChange
+   * **alert on**: `fcp <raptor-metrics.html#first-paint>`__, `loadtime <raptor-metrics.html#load-time>`__, `ContentfulSpeedIndex <raptor-metrics.html#contentful-speed-index>`__, `PerceptualSpeedIndex <raptor-metrics.html#perceptual-speed-index>`__, `SpeedIndex <raptor-metrics.html#speed-index>`__, `FirstVisualChange <raptor-metrics.html#first-visual-change>`__, `LastVisualChange <raptor-metrics.html#last-visual-change>`__
    * **alert threshold**: 2.0
    * **apps**: firefox
    * **browser cycles**: 25
    * **expected**: pass
    * **gecko profile interval**: 1
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/custom/browsertime-welcome.toml#17>`__
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/custom/browsertime-welcome.toml#18>`__
    * **lower is better**: true
    * **measure**: fcp, loadtime, ContentfulSpeedIndex, PerceptualSpeedIndex, SpeedIndex, FirstVisualChange, LastVisualChange
    * **page cycles**: 25
@@ -16677,6 +16390,7 @@ Browsertime tests that use a custom pageload test script. These use the pageload
    * **playback**: mitmproxy
    * **playback pageset manifest**: mitm5-linux-firefox-welcome.manifest
    * **playback version**: 8.1.1
+   * **support class**: browsertime_pageload.py
    * **test script**: welcome.js
    * **test url**: `<about:welcome>`__
    * **type**: pageload
@@ -16780,7 +16494,7 @@ Browsertime tests that use a custom pageload test script. These use the pageload
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -16796,7 +16510,7 @@ Browsertime tests that use a custom pageload test script. These use the pageload
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -16812,39 +16526,7 @@ Browsertime tests that use a custom pageload test script. These use the pageload
         - ❌
 
 
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-first-install-firefox-welcome**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-first-install-firefox-welcome**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -16869,16 +16551,22 @@ Tests for page-load performance. The links direct to the actual websites that ar
 .. dropdown:: amazon
    :class-container: anchor-id-amazon-d
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t amazon
+
    **Owner**: PerfTest Team
 
-   * **alert on**: fcp, loadtime, ContentfulSpeedIndex, PerceptualSpeedIndex, SpeedIndex, FirstVisualChange, LastVisualChange, largestContentfulPaint
+   * **alert on**: `fcp <raptor-metrics.html#first-paint>`__, `loadtime <raptor-metrics.html#load-time>`__, `ContentfulSpeedIndex <raptor-metrics.html#contentful-speed-index>`__, `PerceptualSpeedIndex <raptor-metrics.html#perceptual-speed-index>`__, `SpeedIndex <raptor-metrics.html#speed-index>`__, `FirstVisualChange <raptor-metrics.html#first-visual-change>`__, `LastVisualChange <raptor-metrics.html#last-visual-change>`__, `largestContentfulPaint <raptor-metrics.html#largest-contentful-paint>`__
    * **alert threshold**: 2.0
    * **apps**: firefox, chrome, safari, custom-car
    * **benchmark page**: false
    * **browser cycles**: 25
    * **expected**: pass
    * **gecko profile interval**: 1
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/desktop/browsertime-tp6.toml#21>`__
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/desktop/browsertime-tp6.toml#22>`__
    * **lower is better**: true
    * **page cycles**: 25
    * **page timeout**: 60000
@@ -16886,6 +16574,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
    * **playback pageset manifest**: mitm8-linux-firefox-amazon.manifest
    * **playback version**: 8.1.1
    * **secondary url**: `<https://www.amazon.com/Acer-A515-46-R14K-Quad-Core-Processor-Backlit/dp/B08VKNVDDR/ref=sr_1_3?dchild=1&keywords=laptop&qid=1627047187&sr=8-3>`__
+   * **support class**: browsertime_pageload.py
    * **test url**: `<https://www.amazon.com/s?k=laptop&ref=nb_sb_noss_1>`__
    * **type**: pageload
    * **unit**: ms
@@ -16939,6 +16628,67 @@ Tests for page-load performance. The links direct to the actual websites that ar
 
 
    .. list-table:: **test-android-hw-a51-11-0-aarch64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-tp6m-chrome-m-amazon**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-chrome-m-amazon-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-fenix-amazon**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-fenix-amazon-nofis**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-geckoview-amazon**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-geckoview-amazon-nofis**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-chrome-m-amazon-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-fenix-amazon-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-geckoview-amazon-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-refbrow-amazon**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-android-hw-a55-14-0-android-aarch64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -17224,11 +16974,6 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
         - ❌
         - ❌
-      * - **browsertime-tp6-essential-custom-car-amazon**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
       * - **browsertime-tp6-essential-firefox-amazon**
         - ✅
         - ✅
@@ -17261,7 +17006,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -17292,48 +17037,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-tp6-bytecode-firefox-amazon**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-essential-chrome-amazon**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-essential-firefox-amazon**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-live-chrome-amazon**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-live-firefox-amazon**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-webextensions-firefox-amazon**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -17364,38 +17068,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-tp6-bytecode-firefox-amazon**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-essential-firefox-amazon**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-live-firefox-amazon**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-webextensions-firefox-amazon**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -17445,22 +17118,29 @@ Tests for page-load performance. The links direct to the actual websites that ar
 .. dropdown:: bing-search
    :class-container: anchor-id-bing-search-d
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t bing-search
+
    **Owner**: PerfTest Team
 
-   * **alert on**: fcp, loadtime, ContentfulSpeedIndex, PerceptualSpeedIndex, SpeedIndex, FirstVisualChange, LastVisualChange, largestContentfulPaint
+   * **alert on**: `fcp <raptor-metrics.html#first-paint>`__, `loadtime <raptor-metrics.html#load-time>`__, `ContentfulSpeedIndex <raptor-metrics.html#contentful-speed-index>`__, `PerceptualSpeedIndex <raptor-metrics.html#perceptual-speed-index>`__, `SpeedIndex <raptor-metrics.html#speed-index>`__, `FirstVisualChange <raptor-metrics.html#first-visual-change>`__, `LastVisualChange <raptor-metrics.html#last-visual-change>`__, `largestContentfulPaint <raptor-metrics.html#largest-contentful-paint>`__
    * **alert threshold**: 2.0
    * **apps**: firefox, chrome, safari, custom-car
    * **benchmark page**: true
    * **browser cycles**: 25
    * **expected**: pass
    * **gecko profile interval**: 1
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/desktop/browsertime-tp6.toml#27>`__
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/desktop/browsertime-tp6.toml#28>`__
    * **lower is better**: true
    * **page cycles**: 25
    * **page timeout**: 60000
    * **playback**: mitmproxy
-   * **playback pageset manifest**: mitm5-linux-firefox-bing-search.manifest
+   * **playback pageset manifest**: mitm8-darwin-firefox-bing-search.manifest
    * **playback version**: 8.1.1
+   * **support class**: browsertime_pageload.py
    * **test url**: `<https://www.bing.com/search?q=barack+obama>`__
    * **type**: pageload
    * **unit**: ms
@@ -17657,11 +17337,6 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
         - ❌
         - ❌
-      * - **browsertime-tp6-essential-custom-car-bing-search**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
       * - **browsertime-tp6-essential-firefox-bing-search**
         - ✅
         - ✅
@@ -17684,7 +17359,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -17710,43 +17385,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-tp6-bytecode-firefox-bing-search**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-essential-chrome-bing-search**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-essential-firefox-bing-search**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-live-chrome-bing-search**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-live-firefox-bing-search**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -17772,33 +17411,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-tp6-bytecode-firefox-bing-search**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-essential-firefox-bing-search**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-live-firefox-bing-search**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -17843,16 +17456,22 @@ Tests for page-load performance. The links direct to the actual websites that ar
 .. dropdown:: buzzfeed
    :class-container: anchor-id-buzzfeed-d
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t buzzfeed
+
    **Owner**: PerfTest Team
 
-   * **alert on**: fcp, loadtime, ContentfulSpeedIndex, PerceptualSpeedIndex, SpeedIndex, FirstVisualChange, LastVisualChange, largestContentfulPaint
+   * **alert on**: `fcp <raptor-metrics.html#first-paint>`__, `loadtime <raptor-metrics.html#load-time>`__, `ContentfulSpeedIndex <raptor-metrics.html#contentful-speed-index>`__, `PerceptualSpeedIndex <raptor-metrics.html#perceptual-speed-index>`__, `SpeedIndex <raptor-metrics.html#speed-index>`__, `FirstVisualChange <raptor-metrics.html#first-visual-change>`__, `LastVisualChange <raptor-metrics.html#last-visual-change>`__, `largestContentfulPaint <raptor-metrics.html#largest-contentful-paint>`__
    * **alert threshold**: 2.0
    * **apps**: firefox, chrome, safari, custom-car
    * **benchmark page**: false
    * **browser cycles**: 25
    * **expected**: pass
    * **gecko profile interval**: 1
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/desktop/browsertime-tp6.toml#31>`__
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/desktop/browsertime-tp6.toml#32>`__
    * **lower is better**: true
    * **page cycles**: 25
    * **page timeout**: 60000
@@ -17860,6 +17479,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
    * **playback pageset manifest**: mitm7-linux-firefox-buzzfeed.manifest
    * **playback version**: 8.1.1
    * **secondary url**: `<https://www.buzzfeed.com/quizzes>`__
+   * **support class**: browsertime_pageload.py
    * **test url**: `<https://www.buzzfeed.com/>`__
    * **type**: pageload
    * **unit**: ms
@@ -17988,7 +17608,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -18004,28 +17624,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-tp6-chrome-buzzfeed**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-firefox-buzzfeed**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -18041,23 +17640,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-tp6-firefox-buzzfeed**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -18082,23 +17665,30 @@ Tests for page-load performance. The links direct to the actual websites that ar
 .. dropdown:: cnn
    :class-container: anchor-id-cnn-d
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t cnn
+
    **Owner**: PerfTest Team
 
-   * **alert on**: fcp, loadtime, ContentfulSpeedIndex, PerceptualSpeedIndex, SpeedIndex, FirstVisualChange, LastVisualChange, largestContentfulPaint
+   * **alert on**: `fcp <raptor-metrics.html#first-paint>`__, `loadtime <raptor-metrics.html#load-time>`__, `ContentfulSpeedIndex <raptor-metrics.html#contentful-speed-index>`__, `PerceptualSpeedIndex <raptor-metrics.html#perceptual-speed-index>`__, `SpeedIndex <raptor-metrics.html#speed-index>`__, `FirstVisualChange <raptor-metrics.html#first-visual-change>`__, `LastVisualChange <raptor-metrics.html#last-visual-change>`__, `largestContentfulPaint <raptor-metrics.html#largest-contentful-paint>`__
    * **alert threshold**: 2.0
    * **apps**: firefox, chrome, safari, custom-car
    * **benchmark page**: true
    * **browser cycles**: 25
    * **expected**: pass
    * **gecko profile interval**: 1
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/desktop/browsertime-tp6.toml#36>`__
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/desktop/browsertime-tp6.toml#37>`__
    * **lower is better**: true
    * **page cycles**: 25
    * **page timeout**: 60000
    * **playback**: mitmproxy
-   * **playback pageset manifest**: mitm7-linux-firefox-cnn.manifest
+   * **playback pageset manifest**: mitm8-linux-firefox-cnn.manifest
    * **playback version**: 8.1.1
    * **secondary url**: `<https://www.cnn.com/weather>`__
+   * **support class**: browsertime_pageload.py
    * **test url**: `<https://www.cnn.com/2021/03/22/weather/climate-change-warm-waters-lake-michigan/index.html>`__
    * **type**: pageload
    * **unit**: ms
@@ -18152,6 +17742,67 @@ Tests for page-load performance. The links direct to the actual websites that ar
 
 
    .. list-table:: **test-android-hw-a51-11-0-aarch64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-tp6m-chrome-m-cnn**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-chrome-m-cnn-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-fenix-cnn**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-fenix-cnn-nofis**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-geckoview-cnn**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-geckoview-cnn-nofis**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-chrome-m-cnn-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-fenix-cnn-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-geckoview-cnn-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-refbrow-cnn**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-android-hw-a55-14-0-android-aarch64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -18397,11 +18048,6 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
         - ❌
         - ❌
-      * - **browsertime-tp6-essential-custom-car-cnn**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
       * - **browsertime-tp6-essential-firefox-cnn**
         - ✅
         - ✅
@@ -18414,7 +18060,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -18440,38 +18086,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-tp6-bytecode-firefox-cnn**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-essential-chrome-cnn**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-essential-firefox-cnn**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-live-sheriffed-firefox-cnn**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -18497,33 +18112,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-tp6-bytecode-firefox-cnn**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-essential-firefox-cnn**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-live-sheriffed-firefox-cnn**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -18563,16 +18152,22 @@ Tests for page-load performance. The links direct to the actual websites that ar
 .. dropdown:: docomo
    :class-container: anchor-id-docomo-d
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t docomo
+
    **Owner**: PerfTest Team
 
-   * **alert on**: fcp, loadtime, ContentfulSpeedIndex, PerceptualSpeedIndex, SpeedIndex, FirstVisualChange, LastVisualChange, largestContentfulPaint
+   * **alert on**: `fcp <raptor-metrics.html#first-paint>`__, `loadtime <raptor-metrics.html#load-time>`__, `ContentfulSpeedIndex <raptor-metrics.html#contentful-speed-index>`__, `PerceptualSpeedIndex <raptor-metrics.html#perceptual-speed-index>`__, `SpeedIndex <raptor-metrics.html#speed-index>`__, `FirstVisualChange <raptor-metrics.html#first-visual-change>`__, `LastVisualChange <raptor-metrics.html#last-visual-change>`__, `largestContentfulPaint <raptor-metrics.html#largest-contentful-paint>`__
    * **alert threshold**: 2.0
    * **apps**: firefox, chrome
    * **benchmark page**: false
    * **browser cycles**: 25
    * **expected**: pass
    * **gecko profile interval**: 1
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp7/desktop/browsertime-tp7.toml#22>`__
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp7/desktop/browsertime-tp7.toml#23>`__
    * **lower is better**: true
    * **page cycles**: 25
    * **page timeout**: 60000
@@ -18580,6 +18175,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
    * **playback pageset manifest**: mitm8-linux-firefox-docomo.manifest
    * **playback version**: 8.1.1
    * **secondary url**: `<https://www.docomo.ne.jp/iphone/?icid=CRP_menu_to_CRP_IPH>`__
+   * **support class**: browsertime_pageload.py
    * **test url**: `<https://www.docomo.ne.jp/>`__
    * **type**: pageload
    * **unit**: ms
@@ -18692,7 +18288,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -18708,28 +18304,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-tp7-chrome-docomo**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp7-firefox-docomo**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -18745,23 +18320,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-tp7-firefox-docomo**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -18786,16 +18345,22 @@ Tests for page-load performance. The links direct to the actual websites that ar
 .. dropdown:: ebay
    :class-container: anchor-id-ebay-d
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t ebay
+
    **Owner**: PerfTest Team
 
-   * **alert on**: fcp, loadtime, ContentfulSpeedIndex, PerceptualSpeedIndex, SpeedIndex, FirstVisualChange, LastVisualChange, largestContentfulPaint
+   * **alert on**: `fcp <raptor-metrics.html#first-paint>`__, `loadtime <raptor-metrics.html#load-time>`__, `ContentfulSpeedIndex <raptor-metrics.html#contentful-speed-index>`__, `PerceptualSpeedIndex <raptor-metrics.html#perceptual-speed-index>`__, `SpeedIndex <raptor-metrics.html#speed-index>`__, `FirstVisualChange <raptor-metrics.html#first-visual-change>`__, `LastVisualChange <raptor-metrics.html#last-visual-change>`__, `largestContentfulPaint <raptor-metrics.html#largest-contentful-paint>`__
    * **alert threshold**: 2.0
    * **apps**: firefox, chrome, safari, custom-car
    * **benchmark page**: true
    * **browser cycles**: 25
    * **expected**: pass
    * **gecko profile interval**: 1
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/desktop/browsertime-tp6.toml#40>`__
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/desktop/browsertime-tp6.toml#42>`__
    * **lower is better**: true
    * **page cycles**: 25
    * **page timeout**: 60000
@@ -18803,6 +18368,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
    * **playback pageset manifest**: mitm8-linux-firefox-ebay.manifest
    * **playback version**: 8.1.1
    * **secondary url**: `<https://www.ebay.com/deals>`__
+   * **support class**: browsertime_pageload.py
    * **test url**: `<https://www.ebay.com/>`__
    * **type**: pageload
    * **unit**: ms
@@ -18981,7 +18547,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -19002,38 +18568,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-tp6-chrome-ebay**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-firefox-ebay**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-live-chrome-ebay**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-live-firefox-ebay**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -19054,28 +18589,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-tp6-firefox-ebay**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-live-firefox-ebay**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -19110,16 +18624,22 @@ Tests for page-load performance. The links direct to the actual websites that ar
 .. dropdown:: espn
    :class-container: anchor-id-espn-d
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t espn
+
    **Owner**: PerfTest Team
 
-   * **alert on**: fcp, loadtime, ContentfulSpeedIndex, PerceptualSpeedIndex, SpeedIndex, FirstVisualChange, LastVisualChange, largestContentfulPaint
+   * **alert on**: `fcp <raptor-metrics.html#first-paint>`__, `loadtime <raptor-metrics.html#load-time>`__, `ContentfulSpeedIndex <raptor-metrics.html#contentful-speed-index>`__, `PerceptualSpeedIndex <raptor-metrics.html#perceptual-speed-index>`__, `SpeedIndex <raptor-metrics.html#speed-index>`__, `FirstVisualChange <raptor-metrics.html#first-visual-change>`__, `LastVisualChange <raptor-metrics.html#last-visual-change>`__, `largestContentfulPaint <raptor-metrics.html#largest-contentful-paint>`__
    * **alert threshold**: 2.0
    * **apps**: firefox, chrome, safari, custom-car
    * **benchmark page**: false
    * **browser cycles**: 25
    * **expected**: pass
    * **gecko profile interval**: 1
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/desktop/browsertime-tp6.toml#45>`__
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/desktop/browsertime-tp6.toml#47>`__
    * **lower is better**: true
    * **page cycles**: 25
    * **page timeout**: 60000
@@ -19127,6 +18647,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
    * **playback pageset manifest**: mitm7-linux-firefox-espn.manifest
    * **playback version**: 8.1.1
    * **secondary url**: `<https://www.espn.com/nba/draft/news>`__
+   * **support class**: browsertime_pageload.py
    * **test url**: `<http://www.espn.com/nba/story/_/page/allstarweekend25788027/the-comparison-lebron-james-michael-jordan-their-own-words>`__
    * **type**: pageload
    * **unit**: ms
@@ -19165,6 +18686,47 @@ Tests for page-load performance. The links direct to the actual websites that ar
 
 
    .. list-table:: **test-android-hw-a51-11-0-aarch64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-tp6m-essential-chrome-m-espn-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-essential-fenix-espn-nofis**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-essential-geckoview-espn-nofis**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-chrome-m-espn-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-fenix-espn-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-geckoview-espn-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-android-hw-a55-14-0-android-aarch64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -19327,7 +18889,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -19343,28 +18905,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-tp6-chrome-espn**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-firefox-espn**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -19380,23 +18921,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-tp6-firefox-espn**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -19421,23 +18946,30 @@ Tests for page-load performance. The links direct to the actual websites that ar
 .. dropdown:: expedia
    :class-container: anchor-id-expedia-d
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t expedia
+
    **Owner**: PerfTest Team
 
-   * **alert on**: fcp, loadtime, ContentfulSpeedIndex, PerceptualSpeedIndex, SpeedIndex, FirstVisualChange, LastVisualChange, largestContentfulPaint
+   * **alert on**: `fcp <raptor-metrics.html#first-paint>`__, `loadtime <raptor-metrics.html#load-time>`__, `ContentfulSpeedIndex <raptor-metrics.html#contentful-speed-index>`__, `PerceptualSpeedIndex <raptor-metrics.html#perceptual-speed-index>`__, `SpeedIndex <raptor-metrics.html#speed-index>`__, `FirstVisualChange <raptor-metrics.html#first-visual-change>`__, `LastVisualChange <raptor-metrics.html#last-visual-change>`__, `largestContentfulPaint <raptor-metrics.html#largest-contentful-paint>`__
    * **alert threshold**: 2.0
    * **apps**: firefox, chrome, safari, custom-car
    * **benchmark page**: true
    * **browser cycles**: 25
    * **expected**: pass
    * **gecko profile interval**: 1
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/desktop/browsertime-tp6.toml#50>`__
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/desktop/browsertime-tp6.toml#52>`__
    * **lower is better**: true
    * **page cycles**: 25
    * **page timeout**: 60000
    * **playback**: mitmproxy
-   * **playback pageset manifest**: mitm7-linux-firefox-expedia.manifest
+   * **playback pageset manifest**: mitm8-darwin-firefox-expedia.manifest
    * **playback version**: 8.1.1
    * **secondary url**: `<https://groups.expedia.com/Group-Rate/?locale=en_US&ol=1>`__
+   * **support class**: browsertime_pageload.py
    * **test url**: `<https://expedia.com/Hotel-Search?destination=New+York%2C+New+York&latLong=40.756680%2C-73.986470&regionId=178293&startDate=&endDate=&rooms=1&_xpid=11905%7C1&adults=2>`__
    * **type**: pageload
    * **unit**: ms
@@ -19466,6 +18998,32 @@ Tests for page-load performance. The links direct to the actual websites that ar
 
 
    .. list-table:: **test-android-hw-a51-11-0-aarch64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-tp6m-live-chrome-m-expedia-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-fenix-expedia-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-geckoview-expedia-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-android-hw-a55-14-0-android-aarch64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -19613,7 +19171,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -19629,28 +19187,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-tp6-chrome-expedia**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-firefox-expedia**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -19666,23 +19203,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-tp6-firefox-expedia**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -19707,16 +19228,22 @@ Tests for page-load performance. The links direct to the actual websites that ar
 .. dropdown:: facebook
    :class-container: anchor-id-facebook-d
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t facebook
+
    **Owner**: PerfTest Team
 
-   * **alert on**: fcp, loadtime, ContentfulSpeedIndex, PerceptualSpeedIndex, SpeedIndex, FirstVisualChange, LastVisualChange, largestContentfulPaint
+   * **alert on**: `fcp <raptor-metrics.html#first-paint>`__, `loadtime <raptor-metrics.html#load-time>`__, `ContentfulSpeedIndex <raptor-metrics.html#contentful-speed-index>`__, `PerceptualSpeedIndex <raptor-metrics.html#perceptual-speed-index>`__, `SpeedIndex <raptor-metrics.html#speed-index>`__, `FirstVisualChange <raptor-metrics.html#first-visual-change>`__, `LastVisualChange <raptor-metrics.html#last-visual-change>`__, `largestContentfulPaint <raptor-metrics.html#largest-contentful-paint>`__
    * **alert threshold**: 2.0
    * **apps**: firefox, chrome, safari, custom-car
    * **benchmark page**: true
    * **browser cycles**: 25
    * **expected**: pass
    * **gecko profile interval**: 1
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/desktop/browsertime-tp6.toml#54>`__
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/desktop/browsertime-tp6.toml#57>`__
    * **lower is better**: true
    * **page cycles**: 25
    * **page timeout**: 60000
@@ -19724,6 +19251,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
    * **playback pageset manifest**: mitm6-linux-firefox-facebook.manifest
    * **playback version**: 8.1.1
    * **secondary url**: `<https://www.facebook.com/marketplace/?ref=bookmark>`__
+   * **support class**: browsertime_pageload.py
    * **test url**: `<https://www.facebook.com>`__
    * **type**: pageload
    * **unit**: ms
@@ -19752,6 +19280,32 @@ Tests for page-load performance. The links direct to the actual websites that ar
 
 
    .. list-table:: **test-android-hw-a51-11-0-aarch64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-tp6m-live-chrome-m-facebook-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-fenix-facebook-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-geckoview-facebook-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-android-hw-a55-14-0-android-aarch64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -19944,7 +19498,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -19965,38 +19519,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-tp6-chrome-facebook**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-firefox-facebook**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-live-chrome-facebook**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-live-firefox-facebook**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -20017,28 +19540,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-tp6-firefox-facebook**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-live-firefox-facebook**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -20073,22 +19575,29 @@ Tests for page-load performance. The links direct to the actual websites that ar
 .. dropdown:: fandom
    :class-container: anchor-id-fandom-d
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t fandom
+
    **Owner**: PerfTest Team
 
-   * **alert on**: fcp, loadtime, ContentfulSpeedIndex, PerceptualSpeedIndex, SpeedIndex, FirstVisualChange, LastVisualChange, largestContentfulPaint
+   * **alert on**: `fcp <raptor-metrics.html#first-paint>`__, `loadtime <raptor-metrics.html#load-time>`__, `ContentfulSpeedIndex <raptor-metrics.html#contentful-speed-index>`__, `PerceptualSpeedIndex <raptor-metrics.html#perceptual-speed-index>`__, `SpeedIndex <raptor-metrics.html#speed-index>`__, `FirstVisualChange <raptor-metrics.html#first-visual-change>`__, `LastVisualChange <raptor-metrics.html#last-visual-change>`__, `largestContentfulPaint <raptor-metrics.html#largest-contentful-paint>`__
    * **alert threshold**: 2.0
    * **apps**: firefox, chrome, safari, custom-car
    * **benchmark page**: false
    * **browser cycles**: 25
    * **expected**: pass
    * **gecko profile interval**: 1
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/desktop/browsertime-tp6.toml#59>`__
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/desktop/browsertime-tp6.toml#62>`__
    * **lower is better**: true
    * **page cycles**: 25
    * **page timeout**: 60000
    * **playback**: mitmproxy
    * **playback pageset manifest**: mitm5-linux-firefox-fandom.manifest
    * **playback version**: 8.1.1
+   * **support class**: browsertime_pageload.py
    * **test url**: `<https://www.fandom.com/articles/fallout-76-will-live-and-die-on-the-creativity-of-its-playerbase>`__
    * **type**: pageload
    * **unit**: ms
@@ -20285,11 +19794,6 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
         - ❌
         - ❌
-      * - **browsertime-tp6-essential-custom-car-fandom**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
       * - **browsertime-tp6-essential-firefox-fandom**
         - ✅
         - ✅
@@ -20312,7 +19816,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -20338,43 +19842,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-tp6-bytecode-firefox-fandom**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-essential-chrome-fandom**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-essential-firefox-fandom**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-live-chrome-fandom**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-live-firefox-fandom**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -20400,33 +19868,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-tp6-bytecode-firefox-fandom**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-essential-firefox-fandom**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-live-firefox-fandom**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -20471,24 +19913,31 @@ Tests for page-load performance. The links direct to the actual websites that ar
 .. dropdown:: google-docs
    :class-container: anchor-id-google-docs-d
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t google-docs
+
    **Owner**: PerfTest Team
 
-   * **alert on**: fcp, loadtime, ContentfulSpeedIndex, PerceptualSpeedIndex, SpeedIndex, FirstVisualChange, LastVisualChange, largestContentfulPaint
+   * **alert on**: `fcp <raptor-metrics.html#first-paint>`__, `loadtime <raptor-metrics.html#load-time>`__, `ContentfulSpeedIndex <raptor-metrics.html#contentful-speed-index>`__, `PerceptualSpeedIndex <raptor-metrics.html#perceptual-speed-index>`__, `SpeedIndex <raptor-metrics.html#speed-index>`__, `FirstVisualChange <raptor-metrics.html#first-visual-change>`__, `LastVisualChange <raptor-metrics.html#last-visual-change>`__, `largestContentfulPaint <raptor-metrics.html#largest-contentful-paint>`__
    * **alert threshold**: 2.0
    * **apps**: firefox, chrome, safari, custom-car
    * **benchmark page**: true
    * **browser cycles**: 25
    * **expected**: pass
    * **gecko profile interval**: 1
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/desktop/browsertime-tp6.toml#64>`__
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/desktop/browsertime-tp6.toml#67>`__
    * **lower is better**: true
    * **page complete wait time**: 8000
    * **page cycles**: 25
    * **page timeout**: 60000
    * **playback**: mitmproxy
-   * **playback pageset manifest**: mitm7-linux-firefox-google-docs.manifest
+   * **playback pageset manifest**: mitm8-linux-firefox-google-docs.manifest
    * **playback version**: 8.1.1
    * **secondary url**: `<https://docs.google.com/document/d/1vUnn0ePU-ynArE1OdxyEHXR2G0sl74ja_st_4OOzlgE/preview>`__
+   * **support class**: browsertime_pageload.py
    * **test url**: `<https://docs.google.com/document/d/1US-07msg12slQtI_xchzYxcKlTs6Fp7WqIc6W5GK5M8/edit?usp=sharing>`__
    * **type**: pageload
    * **unit**: ms
@@ -20667,7 +20116,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -20688,38 +20137,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-tp6-chrome-google-docs**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-firefox-google-docs**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-live-chrome-google-docs**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-live-firefox-google-docs**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -20740,28 +20158,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-tp6-firefox-google-docs**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-live-firefox-google-docs**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -20796,22 +20193,29 @@ Tests for page-load performance. The links direct to the actual websites that ar
 .. dropdown:: google-mail
    :class-container: anchor-id-google-mail-d
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t google-mail
+
    **Owner**: PerfTest Team
 
-   * **alert on**: fcp, loadtime, ContentfulSpeedIndex, PerceptualSpeedIndex, SpeedIndex, FirstVisualChange, LastVisualChange, largestContentfulPaint
+   * **alert on**: `fcp <raptor-metrics.html#first-paint>`__, `loadtime <raptor-metrics.html#load-time>`__, `ContentfulSpeedIndex <raptor-metrics.html#contentful-speed-index>`__, `PerceptualSpeedIndex <raptor-metrics.html#perceptual-speed-index>`__, `SpeedIndex <raptor-metrics.html#speed-index>`__, `FirstVisualChange <raptor-metrics.html#first-visual-change>`__, `LastVisualChange <raptor-metrics.html#last-visual-change>`__, `largestContentfulPaint <raptor-metrics.html#largest-contentful-paint>`__
    * **alert threshold**: 2.0
    * **apps**: firefox, chrome, safari, custom-car
    * **benchmark page**: false
    * **browser cycles**: 25
    * **expected**: pass
    * **gecko profile interval**: 1
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/desktop/browsertime-tp6.toml#69>`__
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/desktop/browsertime-tp6.toml#73>`__
    * **lower is better**: true
    * **page cycles**: 25
    * **page timeout**: 60000
    * **playback**: mitmproxy
    * **playback pageset manifest**: mitm5-linux-firefox-google-mail.manifest
    * **playback version**: 8.1.1
+   * **support class**: browsertime_pageload.py
    * **test url**: `<https://mail.google.com/>`__
    * **type**: pageload
    * **unit**: ms
@@ -20990,7 +20394,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -21011,38 +20415,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-tp6-chrome-google-mail**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-firefox-google-mail**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-live-chrome-google-mail**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-live-firefox-google-mail**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -21063,28 +20436,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-tp6-firefox-google-mail**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-live-firefox-google-mail**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -21119,22 +20471,29 @@ Tests for page-load performance. The links direct to the actual websites that ar
 .. dropdown:: google-search
    :class-container: anchor-id-google-search-d
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t google-search
+
    **Owner**: PerfTest Team
 
-   * **alert on**: fcp, loadtime, ContentfulSpeedIndex, PerceptualSpeedIndex, SpeedIndex, FirstVisualChange, LastVisualChange, largestContentfulPaint
+   * **alert on**: `fcp <raptor-metrics.html#first-paint>`__, `loadtime <raptor-metrics.html#load-time>`__, `ContentfulSpeedIndex <raptor-metrics.html#contentful-speed-index>`__, `PerceptualSpeedIndex <raptor-metrics.html#perceptual-speed-index>`__, `SpeedIndex <raptor-metrics.html#speed-index>`__, `FirstVisualChange <raptor-metrics.html#first-visual-change>`__, `LastVisualChange <raptor-metrics.html#last-visual-change>`__, `largestContentfulPaint <raptor-metrics.html#largest-contentful-paint>`__
    * **alert threshold**: 2.0
    * **apps**: firefox, chrome, safari, custom-car
    * **benchmark page**: true
    * **browser cycles**: 25
    * **expected**: pass
    * **gecko profile interval**: 1
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/desktop/browsertime-tp6.toml#74>`__
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/desktop/browsertime-tp6.toml#78>`__
    * **lower is better**: true
    * **page cycles**: 25
    * **page timeout**: 60000
    * **playback**: mitmproxy
-   * **playback pageset manifest**: mitm5-linux-firefox-google-search.manifest
+   * **playback pageset manifest**: mitm8-linux-firefox-google-search.manifest
    * **playback version**: 8.1.1
+   * **support class**: browsertime_pageload.py
    * **test url**: `<https://www.google.com/search?hl=en&q=barack+obama&cad=h>`__
    * **type**: pageload
    * **unit**: ms
@@ -21313,7 +20672,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -21334,38 +20693,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-tp6-chrome-google-search**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-firefox-google-search**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-live-chrome-google-search**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-live-firefox-google-search**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -21386,28 +20714,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-tp6-firefox-google-search**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-live-firefox-google-search**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -21442,16 +20749,22 @@ Tests for page-load performance. The links direct to the actual websites that ar
 .. dropdown:: google-slides
    :class-container: anchor-id-google-slides-d
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t google-slides
+
    **Owner**: PerfTest Team
 
-   * **alert on**: fcp, loadtime, ContentfulSpeedIndex, PerceptualSpeedIndex, SpeedIndex, FirstVisualChange, LastVisualChange, largestContentfulPaint
+   * **alert on**: `fcp <raptor-metrics.html#first-paint>`__, `loadtime <raptor-metrics.html#load-time>`__, `ContentfulSpeedIndex <raptor-metrics.html#contentful-speed-index>`__, `PerceptualSpeedIndex <raptor-metrics.html#perceptual-speed-index>`__, `SpeedIndex <raptor-metrics.html#speed-index>`__, `FirstVisualChange <raptor-metrics.html#first-visual-change>`__, `LastVisualChange <raptor-metrics.html#last-visual-change>`__, `largestContentfulPaint <raptor-metrics.html#largest-contentful-paint>`__
    * **alert threshold**: 2.0
    * **apps**: firefox, chrome, safari, custom-car
    * **benchmark page**: false
    * **browser cycles**: 25
    * **expected**: pass
    * **gecko profile interval**: 1
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/desktop/browsertime-tp6.toml#78>`__
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/desktop/browsertime-tp6.toml#82>`__
    * **lower is better**: true
    * **page cycles**: 25
    * **page timeout**: 60000
@@ -21459,6 +20772,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
    * **playback pageset manifest**: mitm8-linux-firefox-google-slides.manifest
    * **playback version**: 8.1.1
    * **secondary url**: `<https://docs.google.com/presentation/d/e/2PACX-1vRWwPQQFMDkSR4RtYc7HSAGm-hoprespfemIk5SatJxd2o8yrFfrMeAAUkjdfalC5PpjJ9ZKgfsuQ1T/pub?start=false&loop=false&delayms=3000>`__
+   * **support class**: browsertime_pageload.py
    * **test url**: `<https://docs.google.com/presentation/d/1Ici0ceWwpFvmIb3EmKeWSq_vAQdmmdFcWqaiLqUkJng/edit?usp=sharing>`__
    * **type**: pageload
    * **unit**: ms
@@ -21655,11 +20969,6 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
         - ❌
         - ❌
-      * - **browsertime-tp6-essential-custom-car-google-slides**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
       * - **browsertime-tp6-essential-firefox-google-slides**
         - ✅
         - ✅
@@ -21682,7 +20991,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -21708,43 +21017,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-tp6-bytecode-firefox-google-slides**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-essential-chrome-google-slides**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-essential-firefox-google-slides**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-live-chrome-google-slides**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-live-firefox-google-slides**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -21770,33 +21043,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-tp6-bytecode-firefox-google-slides**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-essential-firefox-google-slides**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-live-firefox-google-slides**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -21841,23 +21088,30 @@ Tests for page-load performance. The links direct to the actual websites that ar
 .. dropdown:: imdb
    :class-container: anchor-id-imdb-d
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t imdb
+
    **Owner**: PerfTest Team
 
-   * **alert on**: fcp, loadtime, ContentfulSpeedIndex, PerceptualSpeedIndex, SpeedIndex, FirstVisualChange, LastVisualChange, largestContentfulPaint
+   * **alert on**: `fcp <raptor-metrics.html#first-paint>`__, `loadtime <raptor-metrics.html#load-time>`__, `ContentfulSpeedIndex <raptor-metrics.html#contentful-speed-index>`__, `PerceptualSpeedIndex <raptor-metrics.html#perceptual-speed-index>`__, `SpeedIndex <raptor-metrics.html#speed-index>`__, `FirstVisualChange <raptor-metrics.html#first-visual-change>`__, `LastVisualChange <raptor-metrics.html#last-visual-change>`__, `largestContentfulPaint <raptor-metrics.html#largest-contentful-paint>`__
    * **alert threshold**: 2.0
    * **apps**: firefox, chrome, safari, custom-car
    * **benchmark page**: true
    * **browser cycles**: 25
    * **expected**: pass
    * **gecko profile interval**: 1
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/desktop/browsertime-tp6.toml#84>`__
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/desktop/browsertime-tp6.toml#88>`__
    * **lower is better**: true
    * **page cycles**: 25
    * **page timeout**: 60000
    * **playback**: mitmproxy
-   * **playback pageset manifest**: mitm7-linux-firefox-imdb.manifest
+   * **playback pageset manifest**: mitm8-linux-firefox-imdb.manifest
    * **playback version**: 8.1.1
    * **secondary url**: `<https://www.imdb.com/title/tt0084967/episodes/?ref_=tt_ov_epl>`__
+   * **support class**: browsertime_pageload.py
    * **test url**: `<https://www.imdb.com/title/tt0084967/?ref_=nv_sr_2>`__
    * **type**: pageload
    * **unit**: ms
@@ -21911,6 +21165,67 @@ Tests for page-load performance. The links direct to the actual websites that ar
 
 
    .. list-table:: **test-android-hw-a51-11-0-aarch64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-tp6m-chrome-m-imdb**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-chrome-m-imdb-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-fenix-imdb**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-fenix-imdb-nofis**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-geckoview-imdb**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-geckoview-imdb-nofis**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-chrome-m-imdb-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-fenix-imdb-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-geckoview-imdb-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-refbrow-imdb**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-android-hw-a55-14-0-android-aarch64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -22143,7 +21458,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -22164,38 +21479,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-tp6-chrome-imdb**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-firefox-imdb**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-live-chrome-imdb**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-live-firefox-imdb**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -22216,28 +21500,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-tp6-firefox-imdb**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-live-firefox-imdb**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -22272,16 +21535,22 @@ Tests for page-load performance. The links direct to the actual websites that ar
 .. dropdown:: imgur
    :class-container: anchor-id-imgur-d
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t imgur
+
    **Owner**: PerfTest Team
 
-   * **alert on**: fcp, loadtime, ContentfulSpeedIndex, PerceptualSpeedIndex, SpeedIndex, FirstVisualChange, LastVisualChange, largestContentfulPaint
+   * **alert on**: `fcp <raptor-metrics.html#first-paint>`__, `loadtime <raptor-metrics.html#load-time>`__, `ContentfulSpeedIndex <raptor-metrics.html#contentful-speed-index>`__, `PerceptualSpeedIndex <raptor-metrics.html#perceptual-speed-index>`__, `SpeedIndex <raptor-metrics.html#speed-index>`__, `FirstVisualChange <raptor-metrics.html#first-visual-change>`__, `LastVisualChange <raptor-metrics.html#last-visual-change>`__, `largestContentfulPaint <raptor-metrics.html#largest-contentful-paint>`__
    * **alert threshold**: 2.0
    * **apps**: firefox, chrome, safari, custom-car
    * **benchmark page**: false
    * **browser cycles**: 25
    * **expected**: pass
    * **gecko profile interval**: 1
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/desktop/browsertime-tp6.toml#88>`__
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/desktop/browsertime-tp6.toml#93>`__
    * **lower is better**: true
    * **page cycles**: 25
    * **page timeout**: 60000
@@ -22290,6 +21559,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
    * **playback version**: 8.1.1
    * **preferences**: media.autoplay.default=5 media.autoplay.ask-permission=true media.autoplay.blocking_policy=1 media.allowed-to-play.enabled=false media.block-autoplay-until-in-foreground=true
    * **secondary url**: `<https://imgur.com/gallery/WuOobqV>`__
+   * **support class**: browsertime_pageload.py
    * **test url**: `<https://imgur.com/gallery/uTI7fKy>`__
    * **type**: pageload
    * **unit**: ms
@@ -22458,7 +21728,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -22479,33 +21749,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-tp6-chrome-imgur**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-firefox-imgur**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-live-firefox-imgur**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -22526,28 +21770,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-tp6-firefox-imgur**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-live-firefox-imgur**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -22577,16 +21800,22 @@ Tests for page-load performance. The links direct to the actual websites that ar
 .. dropdown:: instagram
    :class-container: anchor-id-instagram-d
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t instagram
+
    **Owner**: PerfTest Team
 
-   * **alert on**: fcp, loadtime, ContentfulSpeedIndex, PerceptualSpeedIndex, SpeedIndex, FirstVisualChange, LastVisualChange, largestContentfulPaint
+   * **alert on**: `fcp <raptor-metrics.html#first-paint>`__, `loadtime <raptor-metrics.html#load-time>`__, `ContentfulSpeedIndex <raptor-metrics.html#contentful-speed-index>`__, `PerceptualSpeedIndex <raptor-metrics.html#perceptual-speed-index>`__, `SpeedIndex <raptor-metrics.html#speed-index>`__, `FirstVisualChange <raptor-metrics.html#first-visual-change>`__, `LastVisualChange <raptor-metrics.html#last-visual-change>`__, `largestContentfulPaint <raptor-metrics.html#largest-contentful-paint>`__
    * **alert threshold**: 2.0
    * **apps**: firefox, chrome, safari, custom-car
    * **benchmark page**: true
    * **browser cycles**: 25
    * **expected**: pass
    * **gecko profile interval**: 1
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/desktop/browsertime-tp6.toml#100>`__
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/desktop/browsertime-tp6.toml#105>`__
    * **lower is better**: true
    * **page cycles**: 25
    * **page timeout**: 60000
@@ -22594,6 +21823,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
    * **playback pageset manifest**: mitm8-darwin-firefox-instagram.manifest
    * **playback version**: 8.1.1
    * **secondary url**: `<https://www.instagram.com/nobelprize_org/>`__
+   * **support class**: browsertime_pageload.py
    * **test url**: `<https://www.instagram.com/>`__
    * **type**: pageload
    * **unit**: ms
@@ -22647,6 +21877,67 @@ Tests for page-load performance. The links direct to the actual websites that ar
 
 
    .. list-table:: **test-android-hw-a51-11-0-aarch64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-tp6m-chrome-m-instagram**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-chrome-m-instagram-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-fenix-instagram**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-fenix-instagram-nofis**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-geckoview-instagram**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-geckoview-instagram-nofis**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-chrome-m-instagram-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-fenix-instagram-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-geckoview-instagram-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-refbrow-instagram**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-android-hw-a55-14-0-android-aarch64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -22897,11 +22188,6 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
         - ❌
         - ❌
-      * - **browsertime-tp6-essential-custom-car-instagram**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
       * - **browsertime-tp6-essential-firefox-instagram**
         - ✅
         - ✅
@@ -22919,7 +22205,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -22945,43 +22231,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-tp6-bytecode-firefox-instagram**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-essential-chrome-instagram**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-essential-firefox-instagram**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-live-chrome-instagram**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-live-firefox-instagram**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -23007,33 +22257,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-tp6-bytecode-firefox-instagram**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-essential-firefox-instagram**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-live-firefox-instagram**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -23078,16 +22302,22 @@ Tests for page-load performance. The links direct to the actual websites that ar
 .. dropdown:: linkedin
    :class-container: anchor-id-linkedin-d
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t linkedin
+
    **Owner**: PerfTest Team
 
-   * **alert on**: fcp, loadtime, ContentfulSpeedIndex, PerceptualSpeedIndex, SpeedIndex, FirstVisualChange, LastVisualChange, largestContentfulPaint
+   * **alert on**: `fcp <raptor-metrics.html#first-paint>`__, `loadtime <raptor-metrics.html#load-time>`__, `ContentfulSpeedIndex <raptor-metrics.html#contentful-speed-index>`__, `PerceptualSpeedIndex <raptor-metrics.html#perceptual-speed-index>`__, `SpeedIndex <raptor-metrics.html#speed-index>`__, `FirstVisualChange <raptor-metrics.html#first-visual-change>`__, `LastVisualChange <raptor-metrics.html#last-visual-change>`__, `largestContentfulPaint <raptor-metrics.html#largest-contentful-paint>`__
    * **alert threshold**: 2.0
    * **apps**: firefox, chrome, safari, custom-car
    * **benchmark page**: true
    * **browser cycles**: 25
    * **expected**: pass
    * **gecko profile interval**: 1
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/desktop/browsertime-tp6.toml#105>`__
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/desktop/browsertime-tp6.toml#110>`__
    * **lower is better**: true
    * **page cycles**: 25
    * **page timeout**: 60000
@@ -23095,6 +22325,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
    * **playback pageset manifest**: mitm6-linux-firefox-linkedin.manifest
    * **playback version**: 8.1.1
    * **secondary url**: `<https://www.linkedin.com/in/thommy-harris-hk-385723106/>`__
+   * **support class**: browsertime_pageload.py
    * **test url**: `<https://www.linkedin.com/feed/>`__
    * **type**: pageload
    * **unit**: ms
@@ -23273,7 +22504,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -23294,38 +22525,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-tp6-chrome-linkedin**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-firefox-linkedin**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-live-chrome-linkedin**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-live-firefox-linkedin**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -23346,28 +22546,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-tp6-firefox-linkedin**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-live-firefox-linkedin**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -23402,23 +22581,30 @@ Tests for page-load performance. The links direct to the actual websites that ar
 .. dropdown:: microsoft
    :class-container: anchor-id-microsoft-d
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t microsoft
+
    **Owner**: PerfTest Team
 
-   * **alert on**: fcp, loadtime, ContentfulSpeedIndex, PerceptualSpeedIndex, SpeedIndex, FirstVisualChange, LastVisualChange, largestContentfulPaint
+   * **alert on**: `fcp <raptor-metrics.html#first-paint>`__, `loadtime <raptor-metrics.html#load-time>`__, `ContentfulSpeedIndex <raptor-metrics.html#contentful-speed-index>`__, `PerceptualSpeedIndex <raptor-metrics.html#perceptual-speed-index>`__, `SpeedIndex <raptor-metrics.html#speed-index>`__, `FirstVisualChange <raptor-metrics.html#first-visual-change>`__, `LastVisualChange <raptor-metrics.html#last-visual-change>`__, `largestContentfulPaint <raptor-metrics.html#largest-contentful-paint>`__
    * **alert threshold**: 2.0
    * **apps**: firefox, chrome, safari, custom-car
    * **benchmark page**: true
    * **browser cycles**: 25
    * **expected**: pass
    * **gecko profile interval**: 1
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/desktop/browsertime-tp6.toml#110>`__
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/desktop/browsertime-tp6.toml#115>`__
    * **lower is better**: true
    * **page cycles**: 25
    * **page timeout**: 60000
    * **playback**: mitmproxy
-   * **playback pageset manifest**: mitm7-linux-firefox-microsoft.manifest
+   * **playback pageset manifest**: mitm8-linux-firefox-microsoft.manifest
    * **playback version**: 8.1.1
    * **secondary url**: `<https://support.microsoft.com/en-us>`__
+   * **support class**: browsertime_pageload.py
    * **test url**: `<https://www.microsoft.com/en-us/>`__
    * **type**: pageload
    * **unit**: ms
@@ -23597,7 +22783,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -23618,38 +22804,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-tp6-chrome-microsoft**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-firefox-microsoft**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-live-chrome-microsoft**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-live-firefox-microsoft**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -23670,28 +22825,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-tp6-firefox-microsoft**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-live-firefox-microsoft**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -23726,16 +22860,22 @@ Tests for page-load performance. The links direct to the actual websites that ar
 .. dropdown:: netflix
    :class-container: anchor-id-netflix-d
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t netflix
+
    **Owner**: PerfTest Team
 
-   * **alert on**: fcp, loadtime, ContentfulSpeedIndex, PerceptualSpeedIndex, SpeedIndex, FirstVisualChange, LastVisualChange, largestContentfulPaint
+   * **alert on**: `fcp <raptor-metrics.html#first-paint>`__, `loadtime <raptor-metrics.html#load-time>`__, `ContentfulSpeedIndex <raptor-metrics.html#contentful-speed-index>`__, `PerceptualSpeedIndex <raptor-metrics.html#perceptual-speed-index>`__, `SpeedIndex <raptor-metrics.html#speed-index>`__, `FirstVisualChange <raptor-metrics.html#first-visual-change>`__, `LastVisualChange <raptor-metrics.html#last-visual-change>`__, `largestContentfulPaint <raptor-metrics.html#largest-contentful-paint>`__
    * **alert threshold**: 2.0
    * **apps**: firefox, chrome, safari, custom-car
    * **benchmark page**: true
    * **browser cycles**: 25
    * **expected**: pass
    * **gecko profile interval**: 1
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/desktop/browsertime-tp6.toml#114>`__
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/desktop/browsertime-tp6.toml#120>`__
    * **lower is better**: true
    * **page cycles**: 25
    * **page timeout**: 60000
@@ -23743,6 +22883,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
    * **playback pageset manifest**: mitm6-linux-firefox-netflix.manifest
    * **playback version**: 8.1.1
    * **secondary url**: `<https://www.netflix.com/title/699257>`__
+   * **support class**: browsertime_pageload.py
    * **test url**: `<https://www.netflix.com/title/80117263>`__
    * **type**: pageload
    * **unit**: ms
@@ -23916,7 +23057,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -23937,38 +23078,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-tp6-chrome-netflix**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-firefox-netflix**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-live-chrome-netflix**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-live-firefox-netflix**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -23989,28 +23099,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-tp6-firefox-netflix**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-live-firefox-netflix**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -24045,16 +23134,22 @@ Tests for page-load performance. The links direct to the actual websites that ar
 .. dropdown:: nytimes
    :class-container: anchor-id-nytimes-d
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t nytimes
+
    **Owner**: PerfTest Team
 
-   * **alert on**: fcp, loadtime, ContentfulSpeedIndex, PerceptualSpeedIndex, SpeedIndex, FirstVisualChange, LastVisualChange, largestContentfulPaint
+   * **alert on**: `fcp <raptor-metrics.html#first-paint>`__, `loadtime <raptor-metrics.html#load-time>`__, `ContentfulSpeedIndex <raptor-metrics.html#contentful-speed-index>`__, `PerceptualSpeedIndex <raptor-metrics.html#perceptual-speed-index>`__, `SpeedIndex <raptor-metrics.html#speed-index>`__, `FirstVisualChange <raptor-metrics.html#first-visual-change>`__, `LastVisualChange <raptor-metrics.html#last-visual-change>`__, `largestContentfulPaint <raptor-metrics.html#largest-contentful-paint>`__
    * **alert threshold**: 2.0
    * **apps**: firefox, chrome, safari, custom-car
    * **benchmark page**: true
    * **browser cycles**: 25
    * **expected**: pass
    * **gecko profile interval**: 1
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/desktop/browsertime-tp6.toml#119>`__
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/desktop/browsertime-tp6.toml#125>`__
    * **lower is better**: true
    * **page cycles**: 25
    * **page timeout**: 60000
@@ -24062,6 +23157,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
    * **playback pageset manifest**: mitm7-linux-firefox-nytimes.manifest
    * **playback version**: 8.1.1
    * **secondary url**: `<https://www.nytimes.com/section/opinion/columnists>`__
+   * **support class**: browsertime_pageload.py
    * **test url**: `<https://www.nytimes.com/2020/02/19/opinion/surprise-medical-bill.html>`__
    * **type**: pageload
    * **unit**: ms
@@ -24090,6 +23186,32 @@ Tests for page-load performance. The links direct to the actual websites that ar
 
 
    .. list-table:: **test-android-hw-a51-11-0-aarch64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-tp6m-live-chrome-m-nytimes-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-fenix-nytimes-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-geckoview-nytimes-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-android-hw-a55-14-0-android-aarch64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -24237,7 +23359,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -24253,28 +23375,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-tp6-chrome-nytimes**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-firefox-nytimes**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -24290,23 +23391,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-tp6-firefox-nytimes**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -24331,16 +23416,22 @@ Tests for page-load performance. The links direct to the actual websites that ar
 .. dropdown:: office
    :class-container: anchor-id-office-d
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t office
+
    **Owner**: PerfTest Team
 
-   * **alert on**: fcp, loadtime, ContentfulSpeedIndex, PerceptualSpeedIndex, SpeedIndex, FirstVisualChange, LastVisualChange, largestContentfulPaint
+   * **alert on**: `fcp <raptor-metrics.html#first-paint>`__, `loadtime <raptor-metrics.html#load-time>`__, `ContentfulSpeedIndex <raptor-metrics.html#contentful-speed-index>`__, `PerceptualSpeedIndex <raptor-metrics.html#perceptual-speed-index>`__, `SpeedIndex <raptor-metrics.html#speed-index>`__, `FirstVisualChange <raptor-metrics.html#first-visual-change>`__, `LastVisualChange <raptor-metrics.html#last-visual-change>`__, `largestContentfulPaint <raptor-metrics.html#largest-contentful-paint>`__
    * **alert threshold**: 2.0
    * **apps**: firefox, chrome, safari, custom-car
    * **benchmark page**: true
    * **browser cycles**: 25
    * **expected**: pass
    * **gecko profile interval**: 1
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/desktop/browsertime-tp6.toml#123>`__
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/desktop/browsertime-tp6.toml#129>`__
    * **lower is better**: true
    * **page cycles**: 25
    * **page timeout**: 60000
@@ -24348,6 +23439,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
    * **playback pageset manifest**: mitm7-linux-firefox-office.manifest
    * **playback version**: 8.1.1
    * **secondary url**: `<https://www.office.com/>`__
+   * **support class**: browsertime_pageload.py
    * **test url**: `<https://www.office.com/launch/powerpoint?auth=1>`__
    * **type**: pageload
    * **unit**: ms
@@ -24476,7 +23568,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -24492,28 +23584,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-tp6-chrome-office**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-firefox-office**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -24529,23 +23600,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-tp6-firefox-office**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -24570,16 +23625,22 @@ Tests for page-load performance. The links direct to the actual websites that ar
 .. dropdown:: openai
    :class-container: anchor-id-openai-d
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t openai
+
    **Owner**: PerfTest Team
 
-   * **alert on**: fcp, loadtime, ContentfulSpeedIndex, PerceptualSpeedIndex, SpeedIndex, FirstVisualChange, LastVisualChange, largestContentfulPaint
+   * **alert on**: `fcp <raptor-metrics.html#first-paint>`__, `loadtime <raptor-metrics.html#load-time>`__, `ContentfulSpeedIndex <raptor-metrics.html#contentful-speed-index>`__, `PerceptualSpeedIndex <raptor-metrics.html#perceptual-speed-index>`__, `SpeedIndex <raptor-metrics.html#speed-index>`__, `FirstVisualChange <raptor-metrics.html#first-visual-change>`__, `LastVisualChange <raptor-metrics.html#last-visual-change>`__, `largestContentfulPaint <raptor-metrics.html#largest-contentful-paint>`__
    * **alert threshold**: 2.0
    * **apps**: firefox, chrome
    * **benchmark page**: false
    * **browser cycles**: 25
    * **expected**: pass
    * **gecko profile interval**: 1
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp7/desktop/browsertime-tp7.toml#26>`__
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp7/desktop/browsertime-tp7.toml#27>`__
    * **lower is better**: true
    * **page cycles**: 25
    * **page timeout**: 60000
@@ -24587,6 +23648,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
    * **playback pageset manifest**: mitm8-linux-firefox-openai.manifest
    * **playback version**: 8.1.1
    * **secondary url**: `<https://openai.com/blog>`__
+   * **support class**: browsertime_pageload.py
    * **test url**: `<https://openai.com/>`__
    * **type**: pageload
    * **unit**: ms
@@ -24699,7 +23761,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -24715,28 +23777,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-tp7-chrome-openai**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp7-firefox-openai**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -24752,23 +23793,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-tp7-firefox-openai**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -24793,22 +23818,29 @@ Tests for page-load performance. The links direct to the actual websites that ar
 .. dropdown:: outlook
    :class-container: anchor-id-outlook-d
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t outlook
+
    **Owner**: PerfTest Team
 
-   * **alert on**: fcp, loadtime, ContentfulSpeedIndex, PerceptualSpeedIndex, SpeedIndex, FirstVisualChange, LastVisualChange, largestContentfulPaint
+   * **alert on**: `fcp <raptor-metrics.html#first-paint>`__, `loadtime <raptor-metrics.html#load-time>`__, `ContentfulSpeedIndex <raptor-metrics.html#contentful-speed-index>`__, `PerceptualSpeedIndex <raptor-metrics.html#perceptual-speed-index>`__, `SpeedIndex <raptor-metrics.html#speed-index>`__, `FirstVisualChange <raptor-metrics.html#first-visual-change>`__, `LastVisualChange <raptor-metrics.html#last-visual-change>`__, `largestContentfulPaint <raptor-metrics.html#largest-contentful-paint>`__
    * **alert threshold**: 2.0
    * **apps**: firefox, chrome, safari, custom-car
    * **benchmark page**: true
    * **browser cycles**: 25
    * **expected**: pass
    * **gecko profile interval**: 1
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/desktop/browsertime-tp6.toml#127>`__
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/desktop/browsertime-tp6.toml#133>`__
    * **lower is better**: true
    * **page cycles**: 25
    * **page timeout**: 60000
    * **playback**: mitmproxy
    * **playback pageset manifest**: mitm5-linux-firefox-live.manifest
    * **playback version**: 8.1.1
+   * **support class**: browsertime_pageload.py
    * **test url**: `<https://outlook.live.com/mail/inbox>`__
    * **type**: pageload
    * **unit**: ms
@@ -24982,7 +24014,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -25003,38 +24035,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-tp6-chrome-outlook**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-firefox-outlook**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-live-chrome-outlook**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-live-firefox-outlook**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -25055,28 +24056,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-tp6-firefox-outlook**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-live-firefox-outlook**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -25111,22 +24091,29 @@ Tests for page-load performance. The links direct to the actual websites that ar
 .. dropdown:: paypal
    :class-container: anchor-id-paypal-d
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t paypal
+
    **Owner**: PerfTest Team
 
-   * **alert on**: fcp, loadtime, ContentfulSpeedIndex, PerceptualSpeedIndex, SpeedIndex, FirstVisualChange, LastVisualChange, largestContentfulPaint
+   * **alert on**: `fcp <raptor-metrics.html#first-paint>`__, `loadtime <raptor-metrics.html#load-time>`__, `ContentfulSpeedIndex <raptor-metrics.html#contentful-speed-index>`__, `PerceptualSpeedIndex <raptor-metrics.html#perceptual-speed-index>`__, `SpeedIndex <raptor-metrics.html#speed-index>`__, `FirstVisualChange <raptor-metrics.html#first-visual-change>`__, `LastVisualChange <raptor-metrics.html#last-visual-change>`__, `largestContentfulPaint <raptor-metrics.html#largest-contentful-paint>`__
    * **alert threshold**: 2.0
    * **apps**: firefox, chrome, safari, custom-car
    * **benchmark page**: true
    * **browser cycles**: 25
    * **expected**: pass
    * **gecko profile interval**: 1
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/desktop/browsertime-tp6.toml#131>`__
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/desktop/browsertime-tp6.toml#137>`__
    * **lower is better**: true
    * **page cycles**: 25
    * **page timeout**: 60000
    * **playback**: mitmproxy
    * **playback pageset manifest**: mitm5-linux-firefox-paypal.manifest
    * **playback version**: 8.1.1
+   * **support class**: browsertime_pageload.py
    * **test url**: `<https://www.paypal.com/myaccount/summary/>`__
    * **type**: pageload
    * **unit**: ms
@@ -25305,7 +24292,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -25326,38 +24313,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-tp6-chrome-paypal**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-firefox-paypal**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-live-chrome-paypal**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-live-firefox-paypal**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -25378,28 +24334,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-tp6-firefox-paypal**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-live-firefox-paypal**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -25434,16 +24369,22 @@ Tests for page-load performance. The links direct to the actual websites that ar
 .. dropdown:: pinterest
    :class-container: anchor-id-pinterest-d
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t pinterest
+
    **Owner**: PerfTest Team
 
-   * **alert on**: fcp, loadtime, ContentfulSpeedIndex, PerceptualSpeedIndex, SpeedIndex, FirstVisualChange, LastVisualChange, largestContentfulPaint
+   * **alert on**: `fcp <raptor-metrics.html#first-paint>`__, `loadtime <raptor-metrics.html#load-time>`__, `ContentfulSpeedIndex <raptor-metrics.html#contentful-speed-index>`__, `PerceptualSpeedIndex <raptor-metrics.html#perceptual-speed-index>`__, `SpeedIndex <raptor-metrics.html#speed-index>`__, `FirstVisualChange <raptor-metrics.html#first-visual-change>`__, `LastVisualChange <raptor-metrics.html#last-visual-change>`__, `largestContentfulPaint <raptor-metrics.html#largest-contentful-paint>`__
    * **alert threshold**: 2.0
    * **apps**: firefox, chrome, safari, custom-car
    * **benchmark page**: false
    * **browser cycles**: 25
    * **expected**: pass
    * **gecko profile interval**: 1
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/desktop/browsertime-tp6.toml#135>`__
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/desktop/browsertime-tp6.toml#141>`__
    * **lower is better**: true
    * **page cycles**: 25
    * **page timeout**: 60000
@@ -25451,6 +24392,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
    * **playback pageset manifest**: mitm6-linux-firefox-pinterest.manifest
    * **playback version**: 8.1.1
    * **secondary url**: `<https://www.pinterest.com/today/best/halloween-costumes-for-your-furry-friends/75787/>`__
+   * **support class**: browsertime_pageload.py
    * **test url**: `<https://pinterest.com/>`__
    * **type**: pageload
    * **unit**: ms
@@ -25629,7 +24571,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -25650,38 +24592,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-tp6-chrome-pinterest**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-firefox-pinterest**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-live-chrome-pinterest**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-live-firefox-pinterest**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -25702,28 +24613,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-tp6-firefox-pinterest**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-live-firefox-pinterest**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -25758,23 +24648,30 @@ Tests for page-load performance. The links direct to the actual websites that ar
 .. dropdown:: reddit
    :class-container: anchor-id-reddit-d
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t reddit
+
    **Owner**: PerfTest Team
 
-   * **alert on**: fcp, loadtime, ContentfulSpeedIndex, PerceptualSpeedIndex, SpeedIndex, FirstVisualChange, LastVisualChange, largestContentfulPaint
+   * **alert on**: `fcp <raptor-metrics.html#first-paint>`__, `loadtime <raptor-metrics.html#load-time>`__, `ContentfulSpeedIndex <raptor-metrics.html#contentful-speed-index>`__, `PerceptualSpeedIndex <raptor-metrics.html#perceptual-speed-index>`__, `SpeedIndex <raptor-metrics.html#speed-index>`__, `FirstVisualChange <raptor-metrics.html#first-visual-change>`__, `LastVisualChange <raptor-metrics.html#last-visual-change>`__, `largestContentfulPaint <raptor-metrics.html#largest-contentful-paint>`__
    * **alert threshold**: 2.0
    * **apps**: firefox, chrome, safari, custom-car
    * **benchmark page**: false
    * **browser cycles**: 25
    * **expected**: pass
    * **gecko profile interval**: 1
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/desktop/browsertime-tp6.toml#141>`__
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/desktop/browsertime-tp6.toml#147>`__
    * **lower is better**: true
    * **page cycles**: 25
    * **page timeout**: 60000
    * **playback**: mitmproxy
-   * **playback pageset manifest**: mitm6-linux-firefox-reddit.manifest
+   * **playback pageset manifest**: mitm8-linux-firefox-reddit.manifest
    * **playback version**: 8.1.1
    * **secondary url**: `<https://www.reddit.com/r/technology/>`__
+   * **support class**: browsertime_pageload.py
    * **test url**: `<https://www.reddit.com/r/technology/comments/9sqwyh/we_posed_as_100_senators_to_run_ads_on_facebook/>`__
    * **type**: pageload
    * **unit**: ms
@@ -25828,6 +24725,67 @@ Tests for page-load performance. The links direct to the actual websites that ar
 
 
    .. list-table:: **test-android-hw-a51-11-0-aarch64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-tp6m-chrome-m-reddit**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-chrome-m-reddit-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-fenix-reddit**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-fenix-reddit-nofis**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-geckoview-reddit**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-geckoview-reddit-nofis**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-chrome-m-reddit-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-fenix-reddit-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-geckoview-reddit-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-refbrow-reddit**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-android-hw-a55-14-0-android-aarch64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -26060,7 +25018,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -26081,38 +25039,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-tp6-chrome-reddit**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-firefox-reddit**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-live-chrome-reddit**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-live-firefox-reddit**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -26133,28 +25060,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-tp6-firefox-reddit**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-live-firefox-reddit**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -26189,16 +25095,22 @@ Tests for page-load performance. The links direct to the actual websites that ar
 .. dropdown:: samsung
    :class-container: anchor-id-samsung-d
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t samsung
+
    **Owner**: PerfTest Team
 
-   * **alert on**: fcp, loadtime, ContentfulSpeedIndex, PerceptualSpeedIndex, SpeedIndex, FirstVisualChange, LastVisualChange, largestContentfulPaint
+   * **alert on**: `fcp <raptor-metrics.html#first-paint>`__, `loadtime <raptor-metrics.html#load-time>`__, `ContentfulSpeedIndex <raptor-metrics.html#contentful-speed-index>`__, `PerceptualSpeedIndex <raptor-metrics.html#perceptual-speed-index>`__, `SpeedIndex <raptor-metrics.html#speed-index>`__, `FirstVisualChange <raptor-metrics.html#first-visual-change>`__, `LastVisualChange <raptor-metrics.html#last-visual-change>`__, `largestContentfulPaint <raptor-metrics.html#largest-contentful-paint>`__
    * **alert threshold**: 2.0
    * **apps**: firefox, chrome
    * **benchmark page**: false
    * **browser cycles**: 25
    * **expected**: pass
    * **gecko profile interval**: 1
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp7/desktop/browsertime-tp7.toml#31>`__
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp7/desktop/browsertime-tp7.toml#32>`__
    * **lower is better**: true
    * **page cycles**: 25
    * **page timeout**: 60000
@@ -26206,6 +25118,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
    * **playback pageset manifest**: mitm8-linux-firefox-samsung.manifest
    * **playback version**: 8.1.1
    * **secondary url**: `<https://www.samsung.com/us/mobile>`__
+   * **support class**: browsertime_pageload.py
    * **test url**: `<https://www.samsung.com/us>`__
    * **type**: pageload
    * **unit**: ms
@@ -26318,7 +25231,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -26334,28 +25247,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-tp7-chrome-samsung**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp7-firefox-samsung**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -26371,23 +25263,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-tp7-firefox-samsung**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -26412,16 +25288,22 @@ Tests for page-load performance. The links direct to the actual websites that ar
 .. dropdown:: tiktok
    :class-container: anchor-id-tiktok-d
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t tiktok
+
    **Owner**: PerfTest Team
 
-   * **alert on**: fcp, loadtime, ContentfulSpeedIndex, PerceptualSpeedIndex, SpeedIndex, FirstVisualChange, LastVisualChange, largestContentfulPaint
+   * **alert on**: `fcp <raptor-metrics.html#first-paint>`__, `loadtime <raptor-metrics.html#load-time>`__, `ContentfulSpeedIndex <raptor-metrics.html#contentful-speed-index>`__, `PerceptualSpeedIndex <raptor-metrics.html#perceptual-speed-index>`__, `SpeedIndex <raptor-metrics.html#speed-index>`__, `FirstVisualChange <raptor-metrics.html#first-visual-change>`__, `LastVisualChange <raptor-metrics.html#last-visual-change>`__, `largestContentfulPaint <raptor-metrics.html#largest-contentful-paint>`__
    * **alert threshold**: 2.0
    * **apps**: firefox, chrome
    * **benchmark page**: false
    * **browser cycles**: 25
    * **expected**: pass
    * **gecko profile interval**: 1
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp7/desktop/browsertime-tp7.toml#27>`__
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp7/desktop/browsertime-tp7.toml#28>`__
    * **lower is better**: true
    * **page cycles**: 25
    * **page timeout**: 60000
@@ -26429,6 +25311,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
    * **playback pageset manifest**: mitm8-linux-firefox-tiktok.manifest
    * **playback version**: 8.1.1
    * **secondary url**: `<https://www.tiktok.com/explore>`__
+   * **support class**: browsertime_pageload.py
    * **test url**: `<https://www.tiktok.com/en>`__
    * **type**: pageload
    * **unit**: ms
@@ -26541,7 +25424,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -26557,28 +25440,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-tp7-chrome-tiktok**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp7-firefox-tiktok**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -26594,23 +25456,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-tp7-firefox-tiktok**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -26635,16 +25481,22 @@ Tests for page-load performance. The links direct to the actual websites that ar
 .. dropdown:: tumblr
    :class-container: anchor-id-tumblr-d
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t tumblr
+
    **Owner**: PerfTest Team
 
-   * **alert on**: fcp, loadtime, ContentfulSpeedIndex, PerceptualSpeedIndex, SpeedIndex, FirstVisualChange, LastVisualChange, largestContentfulPaint
+   * **alert on**: `fcp <raptor-metrics.html#first-paint>`__, `loadtime <raptor-metrics.html#load-time>`__, `ContentfulSpeedIndex <raptor-metrics.html#contentful-speed-index>`__, `PerceptualSpeedIndex <raptor-metrics.html#perceptual-speed-index>`__, `SpeedIndex <raptor-metrics.html#speed-index>`__, `FirstVisualChange <raptor-metrics.html#first-visual-change>`__, `LastVisualChange <raptor-metrics.html#last-visual-change>`__, `largestContentfulPaint <raptor-metrics.html#largest-contentful-paint>`__
    * **alert threshold**: 2.0
    * **apps**: firefox, chrome, safari, custom-car
    * **benchmark page**: true
    * **browser cycles**: 25
    * **expected**: pass
    * **gecko profile interval**: 1
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/desktop/browsertime-tp6.toml#147>`__
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/desktop/browsertime-tp6.toml#153>`__
    * **lower is better**: true
    * **page cycles**: 25
    * **page timeout**: 60000
@@ -26652,6 +25504,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
    * **playback pageset manifest**: mitm6-linux-firefox-tumblr.manifest
    * **playback version**: 8.1.1
    * **secondary url**: `<https://www.tumblr.com/tagged/funny+cats?sort=top>`__
+   * **support class**: browsertime_pageload.py
    * **test url**: `<https://www.tumblr.com/dashboard>`__
    * **type**: pageload
    * **unit**: ms
@@ -26830,7 +25683,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -26851,38 +25704,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-tp6-chrome-tumblr**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-firefox-tumblr**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-live-chrome-tumblr**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-live-firefox-tumblr**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -26903,28 +25725,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-tp6-firefox-tumblr**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-live-firefox-tumblr**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -26959,16 +25760,22 @@ Tests for page-load performance. The links direct to the actual websites that ar
 .. dropdown:: twitch
    :class-container: anchor-id-twitch-d
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t twitch
+
    **Owner**: PerfTest Team
 
-   * **alert on**: fcp, loadtime, ContentfulSpeedIndex, PerceptualSpeedIndex, SpeedIndex, FirstVisualChange, LastVisualChange
+   * **alert on**: `fcp <raptor-metrics.html#first-paint>`__, `loadtime <raptor-metrics.html#load-time>`__, `ContentfulSpeedIndex <raptor-metrics.html#contentful-speed-index>`__, `PerceptualSpeedIndex <raptor-metrics.html#perceptual-speed-index>`__, `SpeedIndex <raptor-metrics.html#speed-index>`__, `FirstVisualChange <raptor-metrics.html#first-visual-change>`__, `LastVisualChange <raptor-metrics.html#last-visual-change>`__
    * **alert threshold**: 2.0
    * **apps**: firefox, chrome, safari, custom-car
    * **benchmark page**: true
    * **browser cycles**: 25
    * **expected**: pass
    * **gecko profile interval**: 1
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/desktop/browsertime-tp6.toml#152>`__
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/desktop/browsertime-tp6.toml#158>`__
    * **lower is better**: true
    * **measure**: fcp, loadtime, ContentfulSpeedIndex, PerceptualSpeedIndex, SpeedIndex, FirstVisualChange, LastVisualChange
    * **page cycles**: 25
@@ -26978,6 +25785,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
    * **playback version**: 8.1.1
    * **preferences**: media.autoplay.default=5 media.autoplay.ask-permission=true media.autoplay.blocking_policy=1 media.allowed-to-play.enabled=false media.block-autoplay-until-in-foreground=true
    * **secondary url**: `<https://www.twitch.tv/gmashley>`__
+   * **support class**: browsertime_pageload.py
    * **test url**: `<https://www.twitch.tv/videos/894226211>`__
    * **type**: pageload
    * **unit**: ms
@@ -27156,7 +25964,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -27177,38 +25985,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-tp6-chrome-twitch**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-firefox-twitch**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-live-chrome-twitch**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-live-firefox-twitch**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -27229,28 +26006,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-tp6-firefox-twitch**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-live-firefox-twitch**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -27285,22 +26041,29 @@ Tests for page-load performance. The links direct to the actual websites that ar
 .. dropdown:: twitter
    :class-container: anchor-id-twitter-d
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t twitter
+
    **Owner**: PerfTest Team
 
-   * **alert on**: fcp, loadtime, ContentfulSpeedIndex, PerceptualSpeedIndex, SpeedIndex, FirstVisualChange, LastVisualChange, largestContentfulPaint
+   * **alert on**: `fcp <raptor-metrics.html#first-paint>`__, `loadtime <raptor-metrics.html#load-time>`__, `ContentfulSpeedIndex <raptor-metrics.html#contentful-speed-index>`__, `PerceptualSpeedIndex <raptor-metrics.html#perceptual-speed-index>`__, `SpeedIndex <raptor-metrics.html#speed-index>`__, `FirstVisualChange <raptor-metrics.html#first-visual-change>`__, `LastVisualChange <raptor-metrics.html#last-visual-change>`__, `largestContentfulPaint <raptor-metrics.html#largest-contentful-paint>`__
    * **alert threshold**: 2.0
    * **apps**: firefox, chrome, safari, custom-car
    * **benchmark page**: false
    * **browser cycles**: 25
    * **expected**: pass
    * **gecko profile interval**: 1
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/desktop/browsertime-tp6.toml#165>`__
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/desktop/browsertime-tp6.toml#171>`__
    * **lower is better**: true
    * **page cycles**: 25
    * **page timeout**: 60000
    * **playback**: mitmproxy
    * **playback pageset manifest**: mitm5-linux-firefox-twitter.manifest
    * **playback version**: 8.1.1
+   * **support class**: browsertime_pageload.py
    * **test url**: `<https://twitter.com/BarackObama>`__
    * **type**: pageload
    * **unit**: ms
@@ -27497,11 +26260,6 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
         - ❌
         - ❌
-      * - **browsertime-tp6-essential-custom-car-twitter**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
       * - **browsertime-tp6-essential-firefox-twitter**
         - ✅
         - ✅
@@ -27519,7 +26277,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -27545,43 +26303,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-tp6-bytecode-firefox-twitter**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-essential-chrome-twitter**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-essential-firefox-twitter**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-live-chrome-twitter**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-live-firefox-twitter**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -27607,33 +26329,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-tp6-bytecode-firefox-twitter**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-essential-firefox-twitter**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-live-firefox-twitter**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -27678,16 +26374,22 @@ Tests for page-load performance. The links direct to the actual websites that ar
 .. dropdown:: weather
    :class-container: anchor-id-weather-d
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t weather
+
    **Owner**: PerfTest Team
 
-   * **alert on**: fcp, loadtime, ContentfulSpeedIndex, PerceptualSpeedIndex, SpeedIndex, FirstVisualChange, LastVisualChange, largestContentfulPaint
+   * **alert on**: `fcp <raptor-metrics.html#first-paint>`__, `loadtime <raptor-metrics.html#load-time>`__, `ContentfulSpeedIndex <raptor-metrics.html#contentful-speed-index>`__, `PerceptualSpeedIndex <raptor-metrics.html#perceptual-speed-index>`__, `SpeedIndex <raptor-metrics.html#speed-index>`__, `FirstVisualChange <raptor-metrics.html#first-visual-change>`__, `LastVisualChange <raptor-metrics.html#last-visual-change>`__, `largestContentfulPaint <raptor-metrics.html#largest-contentful-paint>`__
    * **alert threshold**: 2.0
    * **apps**: firefox, chrome
    * **benchmark page**: false
    * **browser cycles**: 25
    * **expected**: pass
    * **gecko profile interval**: 1
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp7/desktop/browsertime-tp7.toml#40>`__
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp7/desktop/browsertime-tp7.toml#41>`__
    * **lower is better**: true
    * **page cycles**: 25
    * **page timeout**: 60000
@@ -27695,6 +26397,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
    * **playback pageset manifest**: mitm8-linux-firefox-weather.manifest
    * **playback version**: 8.1.1
    * **secondary url**: `<https://weather.com/en-CA/weather/monthly/l/43.67%2C-79.42>`__
+   * **support class**: browsertime_pageload.py
    * **test url**: `<https://weather.com/en-CA/weather/today/l/43.67%2C-79.42>`__
    * **type**: pageload
    * **unit**: ms
@@ -27807,7 +26510,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -27823,28 +26526,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-tp7-chrome-weather**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp7-firefox-weather**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -27860,23 +26542,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-tp7-firefox-weather**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -27901,16 +26567,22 @@ Tests for page-load performance. The links direct to the actual websites that ar
 .. dropdown:: wikia
    :class-container: anchor-id-wikia-d
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t wikia
+
    **Owner**: PerfTest Team
 
-   * **alert on**: fcp, loadtime, ContentfulSpeedIndex, PerceptualSpeedIndex, SpeedIndex, FirstVisualChange, LastVisualChange, largestContentfulPaint
+   * **alert on**: `fcp <raptor-metrics.html#first-paint>`__, `loadtime <raptor-metrics.html#load-time>`__, `ContentfulSpeedIndex <raptor-metrics.html#contentful-speed-index>`__, `PerceptualSpeedIndex <raptor-metrics.html#perceptual-speed-index>`__, `SpeedIndex <raptor-metrics.html#speed-index>`__, `FirstVisualChange <raptor-metrics.html#first-visual-change>`__, `LastVisualChange <raptor-metrics.html#last-visual-change>`__, `largestContentfulPaint <raptor-metrics.html#largest-contentful-paint>`__
    * **alert threshold**: 2.0
    * **apps**: firefox, chrome, safari, custom-car
    * **benchmark page**: false
    * **browser cycles**: 25
    * **expected**: pass
    * **gecko profile interval**: 1
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/desktop/browsertime-tp6.toml#170>`__
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/desktop/browsertime-tp6.toml#176>`__
    * **lower is better**: true
    * **page cycles**: 25
    * **page timeout**: 60000
@@ -27918,6 +26590,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
    * **playback pageset manifest**: mitm7-linux-firefox-wikia.manifest
    * **playback version**: 8.1.1
    * **secondary url**: `<https://marvel.fandom.com/wiki/Celestials>`__
+   * **support class**: browsertime_pageload.py
    * **test url**: `<https://marvel.fandom.com/wiki/Black_Panther>`__
    * **type**: pageload
    * **unit**: ms
@@ -28046,7 +26719,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -28062,28 +26735,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-tp6-chrome-wikia**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-firefox-wikia**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -28099,23 +26751,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-tp6-firefox-wikia**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -28140,16 +26776,22 @@ Tests for page-load performance. The links direct to the actual websites that ar
 .. dropdown:: wikipedia
    :class-container: anchor-id-wikipedia-d
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t wikipedia
+
    **Owner**: PerfTest Team
 
-   * **alert on**: fcp, loadtime, ContentfulSpeedIndex, PerceptualSpeedIndex, SpeedIndex, FirstVisualChange, LastVisualChange, largestContentfulPaint
+   * **alert on**: `fcp <raptor-metrics.html#first-paint>`__, `loadtime <raptor-metrics.html#load-time>`__, `ContentfulSpeedIndex <raptor-metrics.html#contentful-speed-index>`__, `PerceptualSpeedIndex <raptor-metrics.html#perceptual-speed-index>`__, `SpeedIndex <raptor-metrics.html#speed-index>`__, `FirstVisualChange <raptor-metrics.html#first-visual-change>`__, `LastVisualChange <raptor-metrics.html#last-visual-change>`__, `largestContentfulPaint <raptor-metrics.html#largest-contentful-paint>`__
    * **alert threshold**: 2.0
    * **apps**: firefox, chrome, safari, custom-car
    * **benchmark page**: true
    * **browser cycles**: 25
    * **expected**: pass
    * **gecko profile interval**: 1
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/desktop/browsertime-tp6.toml#175>`__
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/desktop/browsertime-tp6.toml#181>`__
    * **lower is better**: true
    * **page cycles**: 25
    * **page timeout**: 60000
@@ -28157,6 +26799,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
    * **playback pageset manifest**: mitm7-linux-firefox-wikipedia.manifest
    * **playback version**: 8.1.1
    * **secondary url**: `<https://en.wikipedia.org/wiki/Joe_Biden>`__
+   * **support class**: browsertime_pageload.py
    * **test url**: `<https://en.wikipedia.org/wiki/Barack_Obama>`__
    * **type**: pageload
    * **unit**: ms
@@ -28210,6 +26853,67 @@ Tests for page-load performance. The links direct to the actual websites that ar
 
 
    .. list-table:: **test-android-hw-a51-11-0-aarch64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-tp6m-chrome-m-wikipedia**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-chrome-m-wikipedia-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-fenix-wikipedia**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-fenix-wikipedia-nofis**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-geckoview-wikipedia**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-geckoview-wikipedia-nofis**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-chrome-m-wikipedia-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-fenix-wikipedia-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-geckoview-wikipedia-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-refbrow-wikipedia**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-android-hw-a55-14-0-android-aarch64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -28460,11 +27164,6 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
         - ❌
         - ❌
-      * - **browsertime-tp6-essential-custom-car-wikipedia**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
       * - **browsertime-tp6-essential-firefox-wikipedia**
         - ✅
         - ✅
@@ -28487,7 +27186,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -28513,43 +27212,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-tp6-bytecode-firefox-wikipedia**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-essential-chrome-wikipedia**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-essential-firefox-wikipedia**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-live-chrome-wikipedia**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-live-firefox-wikipedia**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -28575,33 +27238,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-tp6-bytecode-firefox-wikipedia**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-essential-firefox-wikipedia**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-live-firefox-wikipedia**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -28646,22 +27283,29 @@ Tests for page-load performance. The links direct to the actual websites that ar
 .. dropdown:: yahoo-mail
    :class-container: anchor-id-yahoo-mail-d
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t yahoo-mail
+
    **Owner**: PerfTest Team
 
-   * **alert on**: fcp, loadtime, ContentfulSpeedIndex, PerceptualSpeedIndex, SpeedIndex, FirstVisualChange, LastVisualChange, largestContentfulPaint
+   * **alert on**: `fcp <raptor-metrics.html#first-paint>`__, `loadtime <raptor-metrics.html#load-time>`__, `ContentfulSpeedIndex <raptor-metrics.html#contentful-speed-index>`__, `PerceptualSpeedIndex <raptor-metrics.html#perceptual-speed-index>`__, `SpeedIndex <raptor-metrics.html#speed-index>`__, `FirstVisualChange <raptor-metrics.html#first-visual-change>`__, `LastVisualChange <raptor-metrics.html#last-visual-change>`__, `largestContentfulPaint <raptor-metrics.html#largest-contentful-paint>`__
    * **alert threshold**: 2.0
    * **apps**: firefox, chrome, safari, custom-car
    * **benchmark page**: false
    * **browser cycles**: 25
    * **expected**: pass
    * **gecko profile interval**: 1
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/desktop/browsertime-tp6.toml#179>`__
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/desktop/browsertime-tp6.toml#185>`__
    * **lower is better**: true
    * **page cycles**: 25
    * **page timeout**: 60000
    * **playback**: mitmproxy
    * **playback pageset manifest**: mitm5-linux-firefox-yahoo-mail.manifest
    * **playback version**: 8.1.1
+   * **support class**: browsertime_pageload.py
    * **test url**: `<https://mail.yahoo.com/>`__
    * **type**: pageload
    * **unit**: ms
@@ -28858,11 +27502,6 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
         - ❌
         - ❌
-      * - **browsertime-tp6-essential-custom-car-yahoo-mail**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
       * - **browsertime-tp6-essential-firefox-yahoo-mail**
         - ✅
         - ✅
@@ -28885,7 +27524,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -28911,43 +27550,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-tp6-bytecode-firefox-yahoo-mail**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-essential-chrome-yahoo-mail**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-essential-firefox-yahoo-mail**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-live-chrome-yahoo-mail**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-live-firefox-yahoo-mail**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -28973,33 +27576,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-tp6-bytecode-firefox-yahoo-mail**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-essential-firefox-yahoo-mail**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-live-firefox-yahoo-mail**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -29044,16 +27621,22 @@ Tests for page-load performance. The links direct to the actual websites that ar
 .. dropdown:: youtube
    :class-container: anchor-id-youtube-d
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t youtube
+
    **Owner**: PerfTest Team
 
-   * **alert on**: fcp, loadtime, ContentfulSpeedIndex, PerceptualSpeedIndex, SpeedIndex, FirstVisualChange, LastVisualChange, largestContentfulPaint
+   * **alert on**: `fcp <raptor-metrics.html#first-paint>`__, `loadtime <raptor-metrics.html#load-time>`__, `ContentfulSpeedIndex <raptor-metrics.html#contentful-speed-index>`__, `PerceptualSpeedIndex <raptor-metrics.html#perceptual-speed-index>`__, `SpeedIndex <raptor-metrics.html#speed-index>`__, `FirstVisualChange <raptor-metrics.html#first-visual-change>`__, `LastVisualChange <raptor-metrics.html#last-visual-change>`__, `largestContentfulPaint <raptor-metrics.html#largest-contentful-paint>`__
    * **alert threshold**: 2.0
    * **apps**: firefox, chrome, safari, custom-car
    * **benchmark page**: true
    * **browser cycles**: 25
    * **expected**: pass
    * **gecko profile interval**: 1
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/desktop/browsertime-tp6.toml#184>`__
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/desktop/browsertime-tp6.toml#190>`__
    * **lower is better**: true
    * **page cycles**: 25
    * **page timeout**: 60000
@@ -29061,6 +27644,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
    * **playback pageset manifest**: mitm7-linux-firefox-youtube.manifest
    * **playback version**: 8.1.1
    * **secondary url**: `<https://www.youtube.com/watch?v=JrdEMERq8MA>`__
+   * **support class**: browsertime_pageload.py
    * **test url**: `<https://www.youtube.com>`__
    * **type**: pageload
    * **unit**: ms
@@ -29114,6 +27698,67 @@ Tests for page-load performance. The links direct to the actual websites that ar
 
 
    .. list-table:: **test-android-hw-a51-11-0-aarch64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-tp6m-chrome-m-youtube**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-chrome-m-youtube-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-fenix-youtube**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-fenix-youtube-nofis**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-geckoview-youtube**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-geckoview-youtube-nofis**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-chrome-m-youtube-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-fenix-youtube-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-geckoview-youtube-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-refbrow-youtube**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-android-hw-a55-14-0-android-aarch64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -29346,7 +27991,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -29367,38 +28012,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-tp6-chrome-youtube**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-firefox-youtube**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-live-chrome-youtube**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-live-firefox-youtube**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -29419,28 +28033,7 @@ Tests for page-load performance. The links direct to the actual websites that ar
         - ❌
 
 
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-tp6-firefox-youtube**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-live-firefox-youtube**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -29480,25 +28073,32 @@ Browsertime tests that interact with the webpage. Includes responsiveness tests 
 .. dropdown:: cnn-nav
    :class-container: anchor-id-cnn-nav-i
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t cnn-nav
+
    **Owner**: PerfTest Team
 
    **Description**: Navigates to cnn main page, then to the world sub-page.
 
    * **accept zero vismet**: true
-   * **alert on**: fcp, loadtime, ContentfulSpeedIndex, PerceptualSpeedIndex, SpeedIndex, FirstVisualChange, LastVisualChange
+   * **alert on**: `fcp <raptor-metrics.html#first-paint>`__, `loadtime <raptor-metrics.html#load-time>`__, `ContentfulSpeedIndex <raptor-metrics.html#contentful-speed-index>`__, `PerceptualSpeedIndex <raptor-metrics.html#perceptual-speed-index>`__, `SpeedIndex <raptor-metrics.html#speed-index>`__, `FirstVisualChange <raptor-metrics.html#first-visual-change>`__, `LastVisualChange <raptor-metrics.html#last-visual-change>`__
    * **alert threshold**: 2.0
    * **apps**: firefox, chrome, safari
    * **browser cycles**: 10
    * **expected**: pass
    * **gecko profile interval**: 1
    * **interactive**: true
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/interactive/browsertime-responsiveness.toml#24>`__
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/interactive/browsertime-responsiveness.toml#25>`__
    * **lower is better**: true
    * **page cycles**: 25
    * **page timeout**: 60000
    * **playback**: mitmproxy
    * **playback pageset manifest**: mitm7-linux-firefox-cnn-nav.manifest
    * **playback version**: 8.1.1
+   * **support class**: browsertime_pageload.py
    * **test cmds**: ['measure.start', 'landing'] ['navigate', 'https://www.cnn.com'] ['wait.byTime', '4000'] ['measure.stop', ''] ['measure.start', 'world'] ['click.byXpathAndWait', '/html/body/div[5]/div/div/header/div/div[1]/div/div[2]/nav/ul/li[2]/a'] ['wait.byTime', '1000'] ['measure.stop', '']
    * **test url**: `<https://www.cnn.com/>`__
    * **type**: pageload
@@ -29628,7 +28228,7 @@ Browsertime tests that interact with the webpage. Includes responsiveness tests 
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -29644,28 +28244,7 @@ Browsertime tests that interact with the webpage. Includes responsiveness tests 
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-responsiveness-chrome-cnn-nav**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-responsiveness-firefox-cnn-nav**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -29681,23 +28260,7 @@ Browsertime tests that interact with the webpage. Includes responsiveness tests 
         - ❌
 
 
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-responsiveness-firefox-cnn-nav**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -29722,25 +28285,32 @@ Browsertime tests that interact with the webpage. Includes responsiveness tests 
 .. dropdown:: facebook-nav
    :class-container: anchor-id-facebook-nav-i
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t facebook-nav
+
    **Owner**: PerfTest Team
 
    **Description**: Navigates to facebook, then the sub-pages friends, marketplace, groups.
 
    * **accept zero vismet**: true
-   * **alert on**: fcp, loadtime, ContentfulSpeedIndex, PerceptualSpeedIndex, SpeedIndex, FirstVisualChange, LastVisualChange
+   * **alert on**: `fcp <raptor-metrics.html#first-paint>`__, `loadtime <raptor-metrics.html#load-time>`__, `ContentfulSpeedIndex <raptor-metrics.html#contentful-speed-index>`__, `PerceptualSpeedIndex <raptor-metrics.html#perceptual-speed-index>`__, `SpeedIndex <raptor-metrics.html#speed-index>`__, `FirstVisualChange <raptor-metrics.html#first-visual-change>`__, `LastVisualChange <raptor-metrics.html#last-visual-change>`__
    * **alert threshold**: 2.0
    * **apps**: firefox, chrome, safari
    * **browser cycles**: 10
    * **expected**: pass
    * **gecko profile interval**: 1
    * **interactive**: true
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/interactive/browsertime-responsiveness.toml#39>`__
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/interactive/browsertime-responsiveness.toml#40>`__
    * **lower is better**: true
    * **page cycles**: 25
    * **page timeout**: 90000
    * **playback**: mitmproxy
    * **playback pageset manifest**: mitm6-windows-firefox-facebook-nav.manifest
    * **playback version**: 8.1.1
+   * **support class**: browsertime_pageload.py
    * **test cmds**: ['measure.start', 'landing'] ['navigate', 'https://www.facebook.com/'] ['wait.byTime', '5000'] ['measure.stop', ''] ['measure.start', 'marketplace'] ['navigate', 'https://www.facebook.com/marketplace'] ['wait.byTime', '5000'] ['measure.stop', ''] ['measure.start', 'groups'] ['navigate', 'https://www.facebook.com/groups/discover/'] ['wait.byTime', '5000'] ['measure.stop', ''] ['measure.start', 'friends'] ['navigate', 'https://www.facebook.com/friends/'] ['wait.byTime', '5000'] ['measure.stop', '']
    * **test url**: `<https://www.facebook.com>`__
    * **type**: pageload
@@ -29870,7 +28440,7 @@ Browsertime tests that interact with the webpage. Includes responsiveness tests 
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -29886,28 +28456,7 @@ Browsertime tests that interact with the webpage. Includes responsiveness tests 
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-responsiveness-chrome-facebook-nav**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-responsiveness-firefox-facebook-nav**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -29923,23 +28472,7 @@ Browsertime tests that interact with the webpage. Includes responsiveness tests 
         - ❌
 
 
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-responsiveness-firefox-facebook-nav**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -29964,25 +28497,32 @@ Browsertime tests that interact with the webpage. Includes responsiveness tests 
 .. dropdown:: reddit-billgates-ama
    :class-container: anchor-id-reddit-billgates-ama-i
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t reddit-billgates-ama
+
    **Owner**: PerfTest Team
 
    **Description**: Navigates from the Bill Gates AMA to the Reddit members section.
 
    * **accept zero vismet**: true
-   * **alert on**: fcp, loadtime, ContentfulSpeedIndex, PerceptualSpeedIndex, SpeedIndex, FirstVisualChange, LastVisualChange
+   * **alert on**: `fcp <raptor-metrics.html#first-paint>`__, `loadtime <raptor-metrics.html#load-time>`__, `ContentfulSpeedIndex <raptor-metrics.html#contentful-speed-index>`__, `PerceptualSpeedIndex <raptor-metrics.html#perceptual-speed-index>`__, `SpeedIndex <raptor-metrics.html#speed-index>`__, `FirstVisualChange <raptor-metrics.html#first-visual-change>`__, `LastVisualChange <raptor-metrics.html#last-visual-change>`__
    * **alert threshold**: 2.0
    * **apps**: firefox, chrome, safari
    * **browser cycles**: 10
    * **expected**: pass
    * **gecko profile interval**: 1
    * **interactive**: true
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/interactive/browsertime-responsiveness.toml#63>`__
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/interactive/browsertime-responsiveness.toml#64>`__
    * **lower is better**: true
    * **page cycles**: 25
    * **page timeout**: 240000
    * **playback**: mitmproxy
    * **playback pageset manifest**: mitm6-windows-firefox-reddit-billgates-ama.manifest
    * **playback version**: 8.1.1
+   * **support class**: browsertime_pageload.py
    * **test cmds**: ['measure.start', 'billg-ama'] ['navigate', 'https://www.reddit.com/r/IAmA/comments/m8n4vt/im_bill_gates_cochair_of_the_bill_and_melinda/'] ['wait.byTime', '5000'] ['measure.stop', ''] ['measure.start', 'members'] ['click.byXpathAndWait', '/html/body/div[1]/div/div[2]/div[2]/div/div[3]/div[2]/div/div[1]/div/div[4]/div[1]/div'] ['wait.byTime', '1000'] ['measure.stop', '']
    * **test url**: `<https://www.reddit.com/>`__
    * **type**: pageload
@@ -30112,7 +28652,7 @@ Browsertime tests that interact with the webpage. Includes responsiveness tests 
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -30128,28 +28668,7 @@ Browsertime tests that interact with the webpage. Includes responsiveness tests 
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-responsiveness-chrome-reddit-billgates-ama**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-responsiveness-firefox-reddit-billgates-ama**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -30165,23 +28684,7 @@ Browsertime tests that interact with the webpage. Includes responsiveness tests 
         - ❌
 
 
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-responsiveness-firefox-reddit-billgates-ama**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -30206,25 +28709,32 @@ Browsertime tests that interact with the webpage. Includes responsiveness tests 
 .. dropdown:: reddit-billgates-post-1
    :class-container: anchor-id-reddit-billgates-post-1-i
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t reddit-billgates-post-1
+
    **Owner**: PerfTest Team
 
    **Description**: Navigates the `thisisbillgates` user starting at the main user page, then to the posts, comments, hot, and top sections.
 
    * **accept zero vismet**: true
-   * **alert on**: fcp, loadtime, ContentfulSpeedIndex, PerceptualSpeedIndex, SpeedIndex, FirstVisualChange, LastVisualChange
+   * **alert on**: `fcp <raptor-metrics.html#first-paint>`__, `loadtime <raptor-metrics.html#load-time>`__, `ContentfulSpeedIndex <raptor-metrics.html#contentful-speed-index>`__, `PerceptualSpeedIndex <raptor-metrics.html#perceptual-speed-index>`__, `SpeedIndex <raptor-metrics.html#speed-index>`__, `FirstVisualChange <raptor-metrics.html#first-visual-change>`__, `LastVisualChange <raptor-metrics.html#last-visual-change>`__
    * **alert threshold**: 2.0
    * **apps**: firefox, chrome, safari
    * **browser cycles**: 10
    * **expected**: pass
    * **gecko profile interval**: 1
    * **interactive**: true
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/interactive/browsertime-responsiveness.toml#79>`__
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/interactive/browsertime-responsiveness.toml#80>`__
    * **lower is better**: true
    * **page cycles**: 25
    * **page timeout**: 90000
    * **playback**: mitmproxy
    * **playback pageset manifest**: mitm6-windows-firefox-reddit-billgates-post.manifest
    * **playback version**: 8.1.1
+   * **support class**: browsertime_pageload.py
    * **test cmds**: ['measure.start', 'billg'] ['navigate', 'https://www.reddit.com/user/thisisbillgates/'] ['wait.byTime', '500'] ['measure.stop', ''] ['measure.start', 'posts'] ['click.byXpathAndWait', '/html/body/div[1]/div/div[2]/div[2]/div/div/div/div[2]/div[2]/div/div/div/a[2]'] ['wait.byTime', '500'] ['measure.stop', ''] ['measure.start', 'comments'] ['click.byXpathAndWait', '/html/body/div[1]/div/div[2]/div[2]/div/div/div/div[2]/div[2]/div/div/div/a[3]'] ['wait.byTime', '500'] ['measure.stop', ''] ['wait.byTime', '500']
    * **test url**: `<https://www.reddit.com/user/thisisbillgates/>`__
    * **type**: pageload
@@ -30354,7 +28864,7 @@ Browsertime tests that interact with the webpage. Includes responsiveness tests 
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -30370,28 +28880,7 @@ Browsertime tests that interact with the webpage. Includes responsiveness tests 
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-responsiveness-chrome-reddit-billgates-post-1**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-responsiveness-firefox-reddit-billgates-post-1**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -30407,23 +28896,7 @@ Browsertime tests that interact with the webpage. Includes responsiveness tests 
         - ❌
 
 
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-responsiveness-firefox-reddit-billgates-post-1**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -30448,25 +28921,32 @@ Browsertime tests that interact with the webpage. Includes responsiveness tests 
 .. dropdown:: reddit-billgates-post-2
    :class-container: anchor-id-reddit-billgates-post-2-i
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t reddit-billgates-post-2
+
    **Owner**: PerfTest Team
 
    **Description**: Navigates the `thisisbillgates` user starting at the main user page, then to the posts, comments, hot, and top sections.
 
    * **accept zero vismet**: true
-   * **alert on**: fcp, loadtime, ContentfulSpeedIndex, PerceptualSpeedIndex, SpeedIndex, FirstVisualChange, LastVisualChange
+   * **alert on**: `fcp <raptor-metrics.html#first-paint>`__, `loadtime <raptor-metrics.html#load-time>`__, `ContentfulSpeedIndex <raptor-metrics.html#contentful-speed-index>`__, `PerceptualSpeedIndex <raptor-metrics.html#perceptual-speed-index>`__, `SpeedIndex <raptor-metrics.html#speed-index>`__, `FirstVisualChange <raptor-metrics.html#first-visual-change>`__, `LastVisualChange <raptor-metrics.html#last-visual-change>`__
    * **alert threshold**: 2.0
    * **apps**: firefox, chrome, safari
    * **browser cycles**: 10
    * **expected**: pass
    * **gecko profile interval**: 1
    * **interactive**: true
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/interactive/browsertime-responsiveness.toml#100>`__
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/interactive/browsertime-responsiveness.toml#101>`__
    * **lower is better**: true
    * **page cycles**: 25
    * **page timeout**: 90000
    * **playback**: mitmproxy
    * **playback pageset manifest**: mitm6-windows-firefox-reddit-billgates-post.manifest
    * **playback version**: 8.1.1
+   * **support class**: browsertime_pageload.py
    * **test cmds**: ['measure.start', 'billg'] ['navigate', 'https://www.reddit.com/user/thisisbillgates/'] ['wait.byTime', '500'] ['measure.stop', ''] ['click.byXpathAndWait', '/html/body/div[1]/div/div[2]/div[2]/div/div/div/div[2]/div[2]/div/div/div/a[3]'] ['wait.byTime', '500'] ['measure.start', 'hot'] ['click.byXpathAndWait', '/html/body/div[1]/div/div[2]/div[2]/div/div/div/div[2]/div[4]/div[1]/div[1]/div[2]/a[2]'] ['wait.byTime', '500'] ['measure.stop', ''] ['measure.start', 'top'] ['click.byXpathAndWait', '/html/body/div[1]/div/div[2]/div[2]/div/div/div/div[2]/div[4]/div[1]/div[1]/div[2]/a[3]'] ['wait.byTime', '500'] ['measure.stop', ''] ['wait.byTime', '500']
    * **test url**: `<https://www.reddit.com/user/thisisbillgates/>`__
    * **type**: pageload
@@ -30596,7 +29076,7 @@ Browsertime tests that interact with the webpage. Includes responsiveness tests 
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -30612,28 +29092,7 @@ Browsertime tests that interact with the webpage. Includes responsiveness tests 
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-responsiveness-chrome-reddit-billgates-post-2**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-responsiveness-firefox-reddit-billgates-post-2**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -30649,23 +29108,7 @@ Browsertime tests that interact with the webpage. Includes responsiveness tests 
         - ❌
 
 
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-responsiveness-firefox-reddit-billgates-post-2**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -30695,17 +29138,24 @@ A set of test pages that are run as live sites instead of recorded versions. The
 .. dropdown:: booking-sf
    :class-container: anchor-id-booking-sf-l
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t booking-sf
+
    **Owner**: PerfTest Team
 
-   * **alert on**: fcp, loadtime, ContentfulSpeedIndex, PerceptualSpeedIndex, SpeedIndex, FirstVisualChange, LastVisualChange
+   * **alert on**: `fcp <raptor-metrics.html#first-paint>`__, `loadtime <raptor-metrics.html#load-time>`__, `ContentfulSpeedIndex <raptor-metrics.html#contentful-speed-index>`__, `PerceptualSpeedIndex <raptor-metrics.html#perceptual-speed-index>`__, `SpeedIndex <raptor-metrics.html#speed-index>`__, `FirstVisualChange <raptor-metrics.html#first-visual-change>`__, `LastVisualChange <raptor-metrics.html#last-visual-change>`__
    * **alert threshold**: 2.0
    * **apps**: geckoview, fenix, refbrow, chrome-m, firefox, chrome
    * **browser cycles**: 15
    * **expected**: pass
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/live/browsertime-live.toml#16>`__
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/live/browsertime-live.toml#17>`__
    * **lower is better**: true
    * **page cycles**: 25
    * **page timeout**: 60000
+   * **support class**: browsertime_pageload.py
    * **test url**: `<https://www.booking.com/hotel/us/edwardian-san-francisco.html>`__
    * **type**: pageload
    * **unit**: ms
@@ -30759,21 +29209,54 @@ A set of test pages that are run as live sites instead of recorded versions. The
         - ❌
 
 
+   .. list-table:: **test-android-hw-a55-14-0-android-aarch64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-tp6m-live-chrome-m-booking-sf-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-fenix-booking-sf-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-geckoview-booking-sf-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
 
 .. dropdown:: discord
    :class-container: anchor-id-discord-l
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t discord
+
    **Owner**: PerfTest Team
 
-   * **alert on**: fcp, loadtime, ContentfulSpeedIndex, PerceptualSpeedIndex, SpeedIndex, FirstVisualChange, LastVisualChange
+   * **alert on**: `fcp <raptor-metrics.html#first-paint>`__, `loadtime <raptor-metrics.html#load-time>`__, `ContentfulSpeedIndex <raptor-metrics.html#contentful-speed-index>`__, `PerceptualSpeedIndex <raptor-metrics.html#perceptual-speed-index>`__, `SpeedIndex <raptor-metrics.html#speed-index>`__, `FirstVisualChange <raptor-metrics.html#first-visual-change>`__, `LastVisualChange <raptor-metrics.html#last-visual-change>`__
    * **alert threshold**: 2.0
    * **apps**: geckoview, fenix, refbrow, chrome-m, firefox, chrome
    * **browser cycles**: 15
    * **expected**: pass
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/live/browsertime-live.toml#19>`__
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/live/browsertime-live.toml#20>`__
    * **lower is better**: true
    * **page cycles**: 25
    * **page timeout**: 60000
+   * **support class**: browsertime_pageload.py
    * **test url**: `<https://discordapp.com/>`__
    * **type**: pageload
    * **unit**: ms
@@ -30827,21 +29310,54 @@ A set of test pages that are run as live sites instead of recorded versions. The
         - ❌
 
 
+   .. list-table:: **test-android-hw-a55-14-0-android-aarch64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-tp6m-live-chrome-m-discord-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-fenix-discord-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-geckoview-discord-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
 
 .. dropdown:: fashionbeans
    :class-container: anchor-id-fashionbeans-l
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t fashionbeans
+
    **Owner**: PerfTest Team
 
-   * **alert on**: fcp, loadtime, ContentfulSpeedIndex, PerceptualSpeedIndex, SpeedIndex, FirstVisualChange, LastVisualChange
+   * **alert on**: `fcp <raptor-metrics.html#first-paint>`__, `loadtime <raptor-metrics.html#load-time>`__, `ContentfulSpeedIndex <raptor-metrics.html#contentful-speed-index>`__, `PerceptualSpeedIndex <raptor-metrics.html#perceptual-speed-index>`__, `SpeedIndex <raptor-metrics.html#speed-index>`__, `FirstVisualChange <raptor-metrics.html#first-visual-change>`__, `LastVisualChange <raptor-metrics.html#last-visual-change>`__
    * **alert threshold**: 2.0
    * **apps**: geckoview, fenix, refbrow, chrome-m, firefox, chrome
    * **browser cycles**: 15
    * **expected**: pass
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/live/browsertime-live.toml#22>`__
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/live/browsertime-live.toml#23>`__
    * **lower is better**: true
    * **page cycles**: 25
    * **page timeout**: 60000
+   * **support class**: browsertime_pageload.py
    * **test url**: `<https://fashionbeans.com/article/coolest-menswear-stores-in-the-world>`__
    * **type**: pageload
    * **unit**: ms
@@ -30895,21 +29411,54 @@ A set of test pages that are run as live sites instead of recorded versions. The
         - ❌
 
 
+   .. list-table:: **test-android-hw-a55-14-0-android-aarch64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-tp6m-live-chrome-m-fashionbeans-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-fenix-fashionbeans-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-geckoview-fashionbeans-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
 
 .. dropdown:: google-accounts
    :class-container: anchor-id-google-accounts-l
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t google-accounts
+
    **Owner**: PerfTest Team
 
-   * **alert on**: fcp, loadtime, ContentfulSpeedIndex, PerceptualSpeedIndex, SpeedIndex, FirstVisualChange, LastVisualChange
+   * **alert on**: `fcp <raptor-metrics.html#first-paint>`__, `loadtime <raptor-metrics.html#load-time>`__, `ContentfulSpeedIndex <raptor-metrics.html#contentful-speed-index>`__, `PerceptualSpeedIndex <raptor-metrics.html#perceptual-speed-index>`__, `SpeedIndex <raptor-metrics.html#speed-index>`__, `FirstVisualChange <raptor-metrics.html#first-visual-change>`__, `LastVisualChange <raptor-metrics.html#last-visual-change>`__
    * **alert threshold**: 2.0
    * **apps**: geckoview, fenix, refbrow, chrome-m, firefox, chrome
    * **browser cycles**: 15
    * **expected**: pass
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/live/browsertime-live.toml#25>`__
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/live/browsertime-live.toml#26>`__
    * **lower is better**: true
    * **page cycles**: 25
    * **page timeout**: 60000
+   * **support class**: browsertime_pageload.py
    * **test url**: `<https://accounts.google.com>`__
    * **type**: pageload
    * **unit**: ms
@@ -30963,21 +29512,54 @@ A set of test pages that are run as live sites instead of recorded versions. The
         - ❌
 
 
+   .. list-table:: **test-android-hw-a55-14-0-android-aarch64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-tp6m-live-chrome-m-google-accounts-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-fenix-google-accounts-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-geckoview-google-accounts-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
 
 .. dropdown:: imdb-firefox
    :class-container: anchor-id-imdb-firefox-l
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t imdb-firefox
+
    **Owner**: PerfTest Team
 
-   * **alert on**: fcp, loadtime, ContentfulSpeedIndex, PerceptualSpeedIndex, SpeedIndex, FirstVisualChange, LastVisualChange
+   * **alert on**: `fcp <raptor-metrics.html#first-paint>`__, `loadtime <raptor-metrics.html#load-time>`__, `ContentfulSpeedIndex <raptor-metrics.html#contentful-speed-index>`__, `PerceptualSpeedIndex <raptor-metrics.html#perceptual-speed-index>`__, `SpeedIndex <raptor-metrics.html#speed-index>`__, `FirstVisualChange <raptor-metrics.html#first-visual-change>`__, `LastVisualChange <raptor-metrics.html#last-visual-change>`__
    * **alert threshold**: 2.0
    * **apps**: geckoview, fenix, refbrow, chrome-m, firefox, chrome
    * **browser cycles**: 15
    * **expected**: pass
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/live/browsertime-live.toml#28>`__
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/live/browsertime-live.toml#29>`__
    * **lower is better**: true
    * **page cycles**: 25
    * **page timeout**: 60000
+   * **support class**: browsertime_pageload.py
    * **test url**: `<https://m.imdb.com/title/tt0083943/>`__
    * **type**: pageload
    * **unit**: ms
@@ -31031,21 +29613,54 @@ A set of test pages that are run as live sites instead of recorded versions. The
         - ❌
 
 
+   .. list-table:: **test-android-hw-a55-14-0-android-aarch64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-tp6m-live-chrome-m-imdb-firefox-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-fenix-imdb-firefox-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-geckoview-imdb-firefox-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
 
 .. dropdown:: medium-article
    :class-container: anchor-id-medium-article-l
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t medium-article
+
    **Owner**: PerfTest Team
 
-   * **alert on**: fcp, loadtime, ContentfulSpeedIndex, PerceptualSpeedIndex, SpeedIndex, FirstVisualChange, LastVisualChange
+   * **alert on**: `fcp <raptor-metrics.html#first-paint>`__, `loadtime <raptor-metrics.html#load-time>`__, `ContentfulSpeedIndex <raptor-metrics.html#contentful-speed-index>`__, `PerceptualSpeedIndex <raptor-metrics.html#perceptual-speed-index>`__, `SpeedIndex <raptor-metrics.html#speed-index>`__, `FirstVisualChange <raptor-metrics.html#first-visual-change>`__, `LastVisualChange <raptor-metrics.html#last-visual-change>`__
    * **alert threshold**: 2.0
    * **apps**: geckoview, fenix, refbrow, chrome-m, firefox, chrome
    * **browser cycles**: 15
    * **expected**: pass
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/live/browsertime-live.toml#31>`__
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/live/browsertime-live.toml#32>`__
    * **lower is better**: true
    * **page cycles**: 25
    * **page timeout**: 60000
+   * **support class**: browsertime_pageload.py
    * **test url**: `<https://medium.com/s/coincidences-are-a-lie/could-america-have-also-been-the-birthplace-of-impressionism-cb3d31a2e22d>`__
    * **type**: pageload
    * **unit**: ms
@@ -31099,21 +29714,54 @@ A set of test pages that are run as live sites instead of recorded versions. The
         - ❌
 
 
+   .. list-table:: **test-android-hw-a55-14-0-android-aarch64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-tp6m-live-chrome-m-medium-article-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-fenix-medium-article-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-geckoview-medium-article-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
 
 .. dropdown:: people-article
    :class-container: anchor-id-people-article-l
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t people-article
+
    **Owner**: PerfTest Team
 
-   * **alert on**: fcp, loadtime, ContentfulSpeedIndex, PerceptualSpeedIndex, SpeedIndex, FirstVisualChange, LastVisualChange
+   * **alert on**: `fcp <raptor-metrics.html#first-paint>`__, `loadtime <raptor-metrics.html#load-time>`__, `ContentfulSpeedIndex <raptor-metrics.html#contentful-speed-index>`__, `PerceptualSpeedIndex <raptor-metrics.html#perceptual-speed-index>`__, `SpeedIndex <raptor-metrics.html#speed-index>`__, `FirstVisualChange <raptor-metrics.html#first-visual-change>`__, `LastVisualChange <raptor-metrics.html#last-visual-change>`__
    * **alert threshold**: 2.0
    * **apps**: geckoview, fenix, refbrow, chrome-m, firefox, chrome
    * **browser cycles**: 15
    * **expected**: pass
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/live/browsertime-live.toml#34>`__
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/live/browsertime-live.toml#35>`__
    * **lower is better**: true
    * **page cycles**: 25
    * **page timeout**: 60000
+   * **support class**: browsertime_pageload.py
    * **test url**: `<https://people.com/amp-stories/royal-a-to-z/>`__
    * **type**: pageload
    * **unit**: ms
@@ -31167,21 +29815,54 @@ A set of test pages that are run as live sites instead of recorded versions. The
         - ❌
 
 
+   .. list-table:: **test-android-hw-a55-14-0-android-aarch64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-tp6m-live-chrome-m-people-article-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-fenix-people-article-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-geckoview-people-article-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
 
 .. dropdown:: reddit-thread
    :class-container: anchor-id-reddit-thread-l
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t reddit-thread
+
    **Owner**: PerfTest Team
 
-   * **alert on**: fcp, loadtime, ContentfulSpeedIndex, PerceptualSpeedIndex, SpeedIndex, FirstVisualChange, LastVisualChange
+   * **alert on**: `fcp <raptor-metrics.html#first-paint>`__, `loadtime <raptor-metrics.html#load-time>`__, `ContentfulSpeedIndex <raptor-metrics.html#contentful-speed-index>`__, `PerceptualSpeedIndex <raptor-metrics.html#perceptual-speed-index>`__, `SpeedIndex <raptor-metrics.html#speed-index>`__, `FirstVisualChange <raptor-metrics.html#first-visual-change>`__, `LastVisualChange <raptor-metrics.html#last-visual-change>`__
    * **alert threshold**: 2.0
    * **apps**: geckoview, fenix, refbrow, chrome-m, firefox, chrome
    * **browser cycles**: 15
    * **expected**: pass
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/live/browsertime-live.toml#37>`__
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/live/browsertime-live.toml#38>`__
    * **lower is better**: true
    * **page cycles**: 25
    * **page timeout**: 60000
+   * **support class**: browsertime_pageload.py
    * **test url**: `<https://www.reddit.com/r/firefox/comments/7dkq03/its_been_a_while/>`__
    * **type**: pageload
    * **unit**: ms
@@ -31235,21 +29916,54 @@ A set of test pages that are run as live sites instead of recorded versions. The
         - ❌
 
 
+   .. list-table:: **test-android-hw-a55-14-0-android-aarch64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-tp6m-live-chrome-m-reddit-thread-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-fenix-reddit-thread-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-geckoview-reddit-thread-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
 
 .. dropdown:: rumble-fox
    :class-container: anchor-id-rumble-fox-l
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t rumble-fox
+
    **Owner**: PerfTest Team
 
-   * **alert on**: fcp, loadtime, ContentfulSpeedIndex, PerceptualSpeedIndex, SpeedIndex, FirstVisualChange, LastVisualChange
+   * **alert on**: `fcp <raptor-metrics.html#first-paint>`__, `loadtime <raptor-metrics.html#load-time>`__, `ContentfulSpeedIndex <raptor-metrics.html#contentful-speed-index>`__, `PerceptualSpeedIndex <raptor-metrics.html#perceptual-speed-index>`__, `SpeedIndex <raptor-metrics.html#speed-index>`__, `FirstVisualChange <raptor-metrics.html#first-visual-change>`__, `LastVisualChange <raptor-metrics.html#last-visual-change>`__
    * **alert threshold**: 2.0
    * **apps**: geckoview, fenix, refbrow, chrome-m, firefox, chrome
    * **browser cycles**: 15
    * **expected**: pass
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/live/browsertime-live.toml#40>`__
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/live/browsertime-live.toml#41>`__
    * **lower is better**: true
    * **page cycles**: 25
    * **page timeout**: 60000
+   * **support class**: browsertime_pageload.py
    * **test url**: `<https://rumble.com/v3c44t-foxes-jumping-on-my-trampoline.html>`__
    * **type**: pageload
    * **unit**: ms
@@ -31303,21 +30017,54 @@ A set of test pages that are run as live sites instead of recorded versions. The
         - ❌
 
 
+   .. list-table:: **test-android-hw-a55-14-0-android-aarch64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-tp6m-live-chrome-m-rumble-fox-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-fenix-rumble-fox-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-geckoview-rumble-fox-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
 
 .. dropdown:: stackoverflow-question
    :class-container: anchor-id-stackoverflow-question-l
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t stackoverflow-question
+
    **Owner**: PerfTest Team
 
-   * **alert on**: fcp, loadtime, ContentfulSpeedIndex, PerceptualSpeedIndex, SpeedIndex, FirstVisualChange, LastVisualChange
+   * **alert on**: `fcp <raptor-metrics.html#first-paint>`__, `loadtime <raptor-metrics.html#load-time>`__, `ContentfulSpeedIndex <raptor-metrics.html#contentful-speed-index>`__, `PerceptualSpeedIndex <raptor-metrics.html#perceptual-speed-index>`__, `SpeedIndex <raptor-metrics.html#speed-index>`__, `FirstVisualChange <raptor-metrics.html#first-visual-change>`__, `LastVisualChange <raptor-metrics.html#last-visual-change>`__
    * **alert threshold**: 2.0
    * **apps**: geckoview, fenix, refbrow, chrome-m, firefox, chrome
    * **browser cycles**: 15
    * **expected**: pass
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/live/browsertime-live.toml#43>`__
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/live/browsertime-live.toml#44>`__
    * **lower is better**: true
    * **page cycles**: 25
    * **page timeout**: 60000
+   * **support class**: browsertime_pageload.py
    * **test url**: `<https://stackoverflow.com/questions/927358/how-do-i-undo-the-most-recent-commits-in-git>`__
    * **type**: pageload
    * **unit**: ms
@@ -31371,21 +30118,54 @@ A set of test pages that are run as live sites instead of recorded versions. The
         - ❌
 
 
+   .. list-table:: **test-android-hw-a55-14-0-android-aarch64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-tp6m-live-chrome-m-stackoverflow-question-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-fenix-stackoverflow-question-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-geckoview-stackoverflow-question-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
 
 .. dropdown:: urbandictionary-define
    :class-container: anchor-id-urbandictionary-define-l
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t urbandictionary-define
+
    **Owner**: PerfTest Team
 
-   * **alert on**: fcp, loadtime, ContentfulSpeedIndex, PerceptualSpeedIndex, SpeedIndex, FirstVisualChange, LastVisualChange
+   * **alert on**: `fcp <raptor-metrics.html#first-paint>`__, `loadtime <raptor-metrics.html#load-time>`__, `ContentfulSpeedIndex <raptor-metrics.html#contentful-speed-index>`__, `PerceptualSpeedIndex <raptor-metrics.html#perceptual-speed-index>`__, `SpeedIndex <raptor-metrics.html#speed-index>`__, `FirstVisualChange <raptor-metrics.html#first-visual-change>`__, `LastVisualChange <raptor-metrics.html#last-visual-change>`__
    * **alert threshold**: 2.0
    * **apps**: geckoview, fenix, refbrow, chrome-m, firefox, chrome
    * **browser cycles**: 15
    * **expected**: pass
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/live/browsertime-live.toml#46>`__
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/live/browsertime-live.toml#47>`__
    * **lower is better**: true
    * **page cycles**: 25
    * **page timeout**: 60000
+   * **support class**: browsertime_pageload.py
    * **test url**: `<https://urbandictionary.com/define.php?term=awesome%20sauce>`__
    * **type**: pageload
    * **unit**: ms
@@ -31439,21 +30219,54 @@ A set of test pages that are run as live sites instead of recorded versions. The
         - ❌
 
 
+   .. list-table:: **test-android-hw-a55-14-0-android-aarch64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-tp6m-live-chrome-m-urbandictionary-define-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-fenix-urbandictionary-define-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-geckoview-urbandictionary-define-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
 
 .. dropdown:: wikia-marvel
    :class-container: anchor-id-wikia-marvel-l
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t wikia-marvel
+
    **Owner**: PerfTest Team
 
-   * **alert on**: fcp, loadtime, ContentfulSpeedIndex, PerceptualSpeedIndex, SpeedIndex, FirstVisualChange, LastVisualChange
+   * **alert on**: `fcp <raptor-metrics.html#first-paint>`__, `loadtime <raptor-metrics.html#load-time>`__, `ContentfulSpeedIndex <raptor-metrics.html#contentful-speed-index>`__, `PerceptualSpeedIndex <raptor-metrics.html#perceptual-speed-index>`__, `SpeedIndex <raptor-metrics.html#speed-index>`__, `FirstVisualChange <raptor-metrics.html#first-visual-change>`__, `LastVisualChange <raptor-metrics.html#last-visual-change>`__
    * **alert threshold**: 2.0
    * **apps**: geckoview, fenix, refbrow, chrome-m, firefox, chrome
    * **browser cycles**: 15
    * **expected**: pass
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/live/browsertime-live.toml#49>`__
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/live/browsertime-live.toml#50>`__
    * **lower is better**: true
    * **page cycles**: 25
    * **page timeout**: 60000
+   * **support class**: browsertime_pageload.py
    * **test url**: `<https://marvel.wikia.com/wiki/Black_Panther>`__
    * **type**: pageload
    * **unit**: ms
@@ -31507,6 +30320,32 @@ A set of test pages that are run as live sites instead of recorded versions. The
         - ❌
 
 
+   .. list-table:: **test-android-hw-a55-14-0-android-aarch64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-tp6m-live-chrome-m-wikia-marvel-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-fenix-wikia-marvel-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-geckoview-wikia-marvel-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
 
 
 Mobile
@@ -31516,21 +30355,28 @@ Page-load performance test suite on Android. The links direct to the actual webs
 .. dropdown:: allrecipes
    :class-container: anchor-id-allrecipes-m
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t allrecipes
+
    **Owner**: PerfTest Team
 
-   * **alert on**: fcp, loadtime, ContentfulSpeedIndex, PerceptualSpeedIndex, SpeedIndex, FirstVisualChange, LastVisualChange, largestContentfulPaint
+   * **alert on**: `fcp <raptor-metrics.html#first-paint>`__, `loadtime <raptor-metrics.html#load-time>`__, `ContentfulSpeedIndex <raptor-metrics.html#contentful-speed-index>`__, `PerceptualSpeedIndex <raptor-metrics.html#perceptual-speed-index>`__, `SpeedIndex <raptor-metrics.html#speed-index>`__, `FirstVisualChange <raptor-metrics.html#first-visual-change>`__, `LastVisualChange <raptor-metrics.html#last-visual-change>`__, `largestContentfulPaint <raptor-metrics.html#largest-contentful-paint>`__
    * **alert threshold**: 2.0
    * **apps**: geckoview, fenix, refbrow, chrome-m
    * **benchmark page**: true
    * **browser cycles**: 15
    * **expected**: pass
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/mobile/browsertime-tp6m.toml#21>`__
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/mobile/browsertime-tp6m.toml#22>`__
    * **lower is better**: true
    * **page cycles**: 25
    * **page timeout**: 60000
    * **playback**: mitmproxy-android
    * **playback pageset manifest**: mitm6-android-fenix-allrecipes.manifest
    * **playback version**: 8.1.1
+   * **support class**: browsertime_pageload.py
    * **test url**: `<https://www.allrecipes.com/>`__
    * **type**: pageload
    * **unit**: ms
@@ -31609,25 +30455,73 @@ Page-load performance test suite on Android. The links direct to the actual webs
         - ❌
 
 
+   .. list-table:: **test-android-hw-a55-14-0-android-aarch64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-tp6m-essential-chrome-m-allrecipes-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-essential-fenix-allrecipes-nofis**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-essential-geckoview-allrecipes-nofis**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-chrome-m-allrecipes-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-fenix-allrecipes-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-geckoview-allrecipes-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
 
 .. dropdown:: amazon
    :class-container: anchor-id-amazon-m
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t amazon
+
    **Owner**: PerfTest Team
 
-   * **alert on**: fcp, loadtime, ContentfulSpeedIndex, PerceptualSpeedIndex, SpeedIndex, FirstVisualChange, LastVisualChange, largestContentfulPaint
+   * **alert on**: `fcp <raptor-metrics.html#first-paint>`__, `loadtime <raptor-metrics.html#load-time>`__, `ContentfulSpeedIndex <raptor-metrics.html#contentful-speed-index>`__, `PerceptualSpeedIndex <raptor-metrics.html#perceptual-speed-index>`__, `SpeedIndex <raptor-metrics.html#speed-index>`__, `FirstVisualChange <raptor-metrics.html#first-visual-change>`__, `LastVisualChange <raptor-metrics.html#last-visual-change>`__, `largestContentfulPaint <raptor-metrics.html#largest-contentful-paint>`__
    * **alert threshold**: 2.0
    * **apps**: geckoview, fenix, refbrow, chrome-m
    * **benchmark page**: true
    * **browser cycles**: 15
    * **expected**: pass
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/mobile/browsertime-tp6m.toml#24>`__
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/mobile/browsertime-tp6m.toml#25>`__
    * **lower is better**: true
    * **page cycles**: 25
    * **page timeout**: 60000
    * **playback**: mitmproxy-android
    * **playback pageset manifest**: mitm6-android-fenix-amazon.manifest
    * **playback version**: 8.1.1
+   * **support class**: browsertime_pageload.py
    * **test url**: `<https://www.amazon.com>`__
    * **type**: pageload
    * **unit**: ms
@@ -31681,6 +30575,67 @@ Page-load performance test suite on Android. The links direct to the actual webs
 
 
    .. list-table:: **test-android-hw-a51-11-0-aarch64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-tp6m-chrome-m-amazon**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-chrome-m-amazon-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-fenix-amazon**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-fenix-amazon-nofis**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-geckoview-amazon**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-geckoview-amazon-nofis**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-chrome-m-amazon-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-fenix-amazon-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-geckoview-amazon-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-refbrow-amazon**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-android-hw-a55-14-0-android-aarch64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -31966,11 +30921,6 @@ Page-load performance test suite on Android. The links direct to the actual webs
         - ❌
         - ❌
         - ❌
-      * - **browsertime-tp6-essential-custom-car-amazon**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
       * - **browsertime-tp6-essential-firefox-amazon**
         - ✅
         - ✅
@@ -32003,7 +30953,7 @@ Page-load performance test suite on Android. The links direct to the actual webs
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -32034,48 +30984,7 @@ Page-load performance test suite on Android. The links direct to the actual webs
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-tp6-bytecode-firefox-amazon**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-essential-chrome-amazon**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-essential-firefox-amazon**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-live-chrome-amazon**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-live-firefox-amazon**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-webextensions-firefox-amazon**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -32106,38 +31015,7 @@ Page-load performance test suite on Android. The links direct to the actual webs
         - ❌
 
 
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-tp6-bytecode-firefox-amazon**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-essential-firefox-amazon**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-live-firefox-amazon**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-webextensions-firefox-amazon**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -32187,21 +31065,28 @@ Page-load performance test suite on Android. The links direct to the actual webs
 .. dropdown:: amazon-search
    :class-container: anchor-id-amazon-search-m
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t amazon-search
+
    **Owner**: PerfTest Team
 
-   * **alert on**: fcp, loadtime, ContentfulSpeedIndex, PerceptualSpeedIndex, SpeedIndex, FirstVisualChange, LastVisualChange, largestContentfulPaint
+   * **alert on**: `fcp <raptor-metrics.html#first-paint>`__, `loadtime <raptor-metrics.html#load-time>`__, `ContentfulSpeedIndex <raptor-metrics.html#contentful-speed-index>`__, `PerceptualSpeedIndex <raptor-metrics.html#perceptual-speed-index>`__, `SpeedIndex <raptor-metrics.html#speed-index>`__, `FirstVisualChange <raptor-metrics.html#first-visual-change>`__, `LastVisualChange <raptor-metrics.html#last-visual-change>`__, `largestContentfulPaint <raptor-metrics.html#largest-contentful-paint>`__
    * **alert threshold**: 2.0
    * **apps**: geckoview, fenix, refbrow, chrome-m
    * **benchmark page**: true
    * **browser cycles**: 15
    * **expected**: pass
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/mobile/browsertime-tp6m.toml#27>`__
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/mobile/browsertime-tp6m.toml#28>`__
    * **lower is better**: true
    * **page cycles**: 25
    * **page timeout**: 60000
    * **playback**: mitmproxy-android
    * **playback pageset manifest**: mitm6-android-fenix-amazon-search.manifest
    * **playback version**: 8.1.1
+   * **support class**: browsertime_pageload.py
    * **test url**: `<https://www.amazon.com/s/ref=nb_sb_noss_2/139-6317191-5622045?url=search-alias%3Daps&field-keywords=mobile+phone>`__
    * **type**: pageload
    * **unit**: ms
@@ -32290,25 +31175,78 @@ Page-load performance test suite on Android. The links direct to the actual webs
         - ❌
 
 
+   .. list-table:: **test-android-hw-a55-14-0-android-aarch64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-tp6m-essential-chrome-m-amazon-search-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-essential-fenix-amazon-search-nofis**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-essential-geckoview-amazon-search-nofis**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-chrome-m-amazon-search-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-fenix-amazon-search-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-geckoview-amazon-search-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-webextensions-fenix-amazon-search-nofis**
+        - ✅
+        - ❌
+        - ❌
+        - ❌
+
+
 
 .. dropdown:: bild-de
    :class-container: anchor-id-bild-de-m
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t bild-de
+
    **Owner**: PerfTest Team
 
-   * **alert on**: fcp, loadtime, ContentfulSpeedIndex, PerceptualSpeedIndex, SpeedIndex, FirstVisualChange, LastVisualChange, largestContentfulPaint
+   * **alert on**: `fcp <raptor-metrics.html#first-paint>`__, `loadtime <raptor-metrics.html#load-time>`__, `ContentfulSpeedIndex <raptor-metrics.html#contentful-speed-index>`__, `PerceptualSpeedIndex <raptor-metrics.html#perceptual-speed-index>`__, `SpeedIndex <raptor-metrics.html#speed-index>`__, `FirstVisualChange <raptor-metrics.html#first-visual-change>`__, `LastVisualChange <raptor-metrics.html#last-visual-change>`__, `largestContentfulPaint <raptor-metrics.html#largest-contentful-paint>`__
    * **alert threshold**: 2.0
    * **apps**: geckoview, fenix, refbrow, chrome-m
    * **benchmark page**: true
    * **browser cycles**: 15
    * **expected**: pass
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/mobile/browsertime-tp6m.toml#30>`__
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/mobile/browsertime-tp6m.toml#31>`__
    * **lower is better**: true
    * **page cycles**: 25
    * **page timeout**: 60000
    * **playback**: mitmproxy-android
    * **playback pageset manifest**: mitm8-android-fenix-bild-de.manifest
    * **playback version**: 8.1.1
+   * **support class**: browsertime_pageload.py
    * **test url**: `<https://www.bild.de/sport/american-football/nfl/super-bowl-rekordquote-fuer-die-nfl-87139668.bild.html>`__
    * **type**: pageload
    * **unit**: ms
@@ -32422,25 +31360,93 @@ Page-load performance test suite on Android. The links direct to the actual webs
         - ❌
 
 
+   .. list-table:: **test-android-hw-a55-14-0-android-aarch64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-tp6m-chrome-m-bild-de**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-chrome-m-bild-de-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-fenix-bild-de**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-fenix-bild-de-nofis**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-geckoview-bild-de**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-geckoview-bild-de-nofis**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-chrome-m-bild-de-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-fenix-bild-de-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-geckoview-bild-de-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-refbrow-bild-de**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
 
 .. dropdown:: bing
    :class-container: anchor-id-bing-m
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t bing
+
    **Owner**: PerfTest Team
 
-   * **alert on**: fcp, loadtime, ContentfulSpeedIndex, PerceptualSpeedIndex, SpeedIndex, FirstVisualChange, LastVisualChange, largestContentfulPaint
+   * **alert on**: `fcp <raptor-metrics.html#first-paint>`__, `loadtime <raptor-metrics.html#load-time>`__, `ContentfulSpeedIndex <raptor-metrics.html#contentful-speed-index>`__, `PerceptualSpeedIndex <raptor-metrics.html#perceptual-speed-index>`__, `SpeedIndex <raptor-metrics.html#speed-index>`__, `FirstVisualChange <raptor-metrics.html#first-visual-change>`__, `LastVisualChange <raptor-metrics.html#last-visual-change>`__, `largestContentfulPaint <raptor-metrics.html#largest-contentful-paint>`__
    * **alert threshold**: 2.0
    * **apps**: geckoview, fenix, refbrow, chrome-m
    * **benchmark page**: true
    * **browser cycles**: 15
    * **expected**: pass
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/mobile/browsertime-tp6m.toml#34>`__
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/mobile/browsertime-tp6m.toml#35>`__
    * **lower is better**: true
    * **page cycles**: 25
    * **page timeout**: 60000
    * **playback**: mitmproxy-android
    * **playback pageset manifest**: mitm6-android-fenix-bing.manifest
    * **playback version**: 8.1.1
+   * **support class**: browsertime_pageload.py
    * **test url**: `<https://www.bing.com/>`__
    * **type**: pageload
    * **unit**: ms
@@ -32554,25 +31560,93 @@ Page-load performance test suite on Android. The links direct to the actual webs
         - ❌
 
 
+   .. list-table:: **test-android-hw-a55-14-0-android-aarch64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-tp6m-chrome-m-bing**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-chrome-m-bing-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-fenix-bing**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-fenix-bing-nofis**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-geckoview-bing**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-geckoview-bing-nofis**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-chrome-m-bing-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-fenix-bing-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-geckoview-bing-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-refbrow-bing**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
 
 .. dropdown:: bing-search-restaurants
    :class-container: anchor-id-bing-search-restaurants-m
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t bing-search-restaurants
+
    **Owner**: PerfTest Team
 
-   * **alert on**: fcp, loadtime, ContentfulSpeedIndex, PerceptualSpeedIndex, SpeedIndex, FirstVisualChange, LastVisualChange, largestContentfulPaint
+   * **alert on**: `fcp <raptor-metrics.html#first-paint>`__, `loadtime <raptor-metrics.html#load-time>`__, `ContentfulSpeedIndex <raptor-metrics.html#contentful-speed-index>`__, `PerceptualSpeedIndex <raptor-metrics.html#perceptual-speed-index>`__, `SpeedIndex <raptor-metrics.html#speed-index>`__, `FirstVisualChange <raptor-metrics.html#first-visual-change>`__, `LastVisualChange <raptor-metrics.html#last-visual-change>`__, `largestContentfulPaint <raptor-metrics.html#largest-contentful-paint>`__
    * **alert threshold**: 2.0
    * **apps**: geckoview, fenix, refbrow, chrome-m
    * **benchmark page**: true
    * **browser cycles**: 15
    * **expected**: pass
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/mobile/browsertime-tp6m.toml#37>`__
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/mobile/browsertime-tp6m.toml#38>`__
    * **lower is better**: true
    * **page cycles**: 25
    * **page timeout**: 60000
    * **playback**: mitmproxy-android
    * **playback pageset manifest**: mitm6-android-fenix-bing-search-restaurants.manifest
    * **playback version**: 8.1.1
+   * **support class**: browsertime_pageload.py
    * **test url**: `<https://www.bing.com/search?q=restaurants+in+exton+pa+19341>`__
    * **type**: pageload
    * **unit**: ms
@@ -32686,25 +31760,93 @@ Page-load performance test suite on Android. The links direct to the actual webs
         - ❌
 
 
+   .. list-table:: **test-android-hw-a55-14-0-android-aarch64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-tp6m-chrome-m-bing-search-restaurants**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-chrome-m-bing-search-restaurants-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-fenix-bing-search-restaurants**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-fenix-bing-search-restaurants-nofis**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-geckoview-bing-search-restaurants**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-geckoview-bing-search-restaurants-nofis**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-chrome-m-bing-search-restaurants-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-fenix-bing-search-restaurants-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-geckoview-bing-search-restaurants-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-refbrow-bing-search-restaurants**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
 
 .. dropdown:: booking
    :class-container: anchor-id-booking-m
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t booking
+
    **Owner**: PerfTest Team
 
-   * **alert on**: fcp, loadtime, ContentfulSpeedIndex, PerceptualSpeedIndex, SpeedIndex, FirstVisualChange, LastVisualChange, largestContentfulPaint
+   * **alert on**: `fcp <raptor-metrics.html#first-paint>`__, `loadtime <raptor-metrics.html#load-time>`__, `ContentfulSpeedIndex <raptor-metrics.html#contentful-speed-index>`__, `PerceptualSpeedIndex <raptor-metrics.html#perceptual-speed-index>`__, `SpeedIndex <raptor-metrics.html#speed-index>`__, `FirstVisualChange <raptor-metrics.html#first-visual-change>`__, `LastVisualChange <raptor-metrics.html#last-visual-change>`__, `largestContentfulPaint <raptor-metrics.html#largest-contentful-paint>`__
    * **alert threshold**: 2.0
    * **apps**: geckoview, fenix, refbrow, chrome-m
    * **benchmark page**: true
    * **browser cycles**: 15
    * **expected**: pass
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/mobile/browsertime-tp6m.toml#40>`__
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/mobile/browsertime-tp6m.toml#41>`__
    * **lower is better**: true
    * **page cycles**: 25
    * **page timeout**: 60000
    * **playback**: mitmproxy-android
    * **playback pageset manifest**: mitm6-android-fenix-booking.manifest
    * **playback version**: 8.1.1
+   * **support class**: browsertime_pageload.py
    * **test url**: `<https://www.booking.com/>`__
    * **type**: pageload
    * **unit**: ms
@@ -32818,25 +31960,93 @@ Page-load performance test suite on Android. The links direct to the actual webs
         - ❌
 
 
+   .. list-table:: **test-android-hw-a55-14-0-android-aarch64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-tp6m-chrome-m-booking**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-chrome-m-booking-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-fenix-booking**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-fenix-booking-nofis**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-geckoview-booking**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-geckoview-booking-nofis**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-chrome-m-booking-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-fenix-booking-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-geckoview-booking-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-refbrow-booking**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
 
 .. dropdown:: cnn
    :class-container: anchor-id-cnn-m
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t cnn
+
    **Owner**: PerfTest Team
 
-   * **alert on**: fcp, loadtime, ContentfulSpeedIndex, PerceptualSpeedIndex, SpeedIndex, FirstVisualChange, LastVisualChange, largestContentfulPaint
+   * **alert on**: `fcp <raptor-metrics.html#first-paint>`__, `loadtime <raptor-metrics.html#load-time>`__, `ContentfulSpeedIndex <raptor-metrics.html#contentful-speed-index>`__, `PerceptualSpeedIndex <raptor-metrics.html#perceptual-speed-index>`__, `SpeedIndex <raptor-metrics.html#speed-index>`__, `FirstVisualChange <raptor-metrics.html#first-visual-change>`__, `LastVisualChange <raptor-metrics.html#last-visual-change>`__, `largestContentfulPaint <raptor-metrics.html#largest-contentful-paint>`__
    * **alert threshold**: 2.0
    * **apps**: geckoview, fenix, refbrow, chrome-m
    * **benchmark page**: true
    * **browser cycles**: 15
    * **expected**: pass
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/mobile/browsertime-tp6m.toml#43>`__
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/mobile/browsertime-tp6m.toml#44>`__
    * **lower is better**: true
    * **page cycles**: 25
    * **page timeout**: 60000
    * **playback**: mitmproxy-android
    * **playback pageset manifest**: mitm6-android-fenix-cnn.manifest
    * **playback version**: 8.1.1
+   * **support class**: browsertime_pageload.py
    * **test url**: `<https://cnn.com>`__
    * **type**: pageload
    * **unit**: ms
@@ -32890,6 +32100,67 @@ Page-load performance test suite on Android. The links direct to the actual webs
 
 
    .. list-table:: **test-android-hw-a51-11-0-aarch64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-tp6m-chrome-m-cnn**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-chrome-m-cnn-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-fenix-cnn**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-fenix-cnn-nofis**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-geckoview-cnn**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-geckoview-cnn-nofis**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-chrome-m-cnn-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-fenix-cnn-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-geckoview-cnn-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-refbrow-cnn**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-android-hw-a55-14-0-android-aarch64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -33135,11 +32406,6 @@ Page-load performance test suite on Android. The links direct to the actual webs
         - ❌
         - ❌
         - ❌
-      * - **browsertime-tp6-essential-custom-car-cnn**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
       * - **browsertime-tp6-essential-firefox-cnn**
         - ✅
         - ✅
@@ -33152,7 +32418,7 @@ Page-load performance test suite on Android. The links direct to the actual webs
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -33178,38 +32444,7 @@ Page-load performance test suite on Android. The links direct to the actual webs
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-tp6-bytecode-firefox-cnn**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-essential-chrome-cnn**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-essential-firefox-cnn**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-live-sheriffed-firefox-cnn**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -33235,33 +32470,7 @@ Page-load performance test suite on Android. The links direct to the actual webs
         - ❌
 
 
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-tp6-bytecode-firefox-cnn**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-essential-firefox-cnn**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-live-sheriffed-firefox-cnn**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -33301,21 +32510,28 @@ Page-load performance test suite on Android. The links direct to the actual webs
 .. dropdown:: cnn-ampstories
    :class-container: anchor-id-cnn-ampstories-m
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t cnn-ampstories
+
    **Owner**: PerfTest Team
 
-   * **alert on**: fcp, loadtime, ContentfulSpeedIndex, PerceptualSpeedIndex, SpeedIndex, FirstVisualChange, LastVisualChange, largestContentfulPaint
+   * **alert on**: `fcp <raptor-metrics.html#first-paint>`__, `loadtime <raptor-metrics.html#load-time>`__, `ContentfulSpeedIndex <raptor-metrics.html#contentful-speed-index>`__, `PerceptualSpeedIndex <raptor-metrics.html#perceptual-speed-index>`__, `SpeedIndex <raptor-metrics.html#speed-index>`__, `FirstVisualChange <raptor-metrics.html#first-visual-change>`__, `LastVisualChange <raptor-metrics.html#last-visual-change>`__, `largestContentfulPaint <raptor-metrics.html#largest-contentful-paint>`__
    * **alert threshold**: 2.0
    * **apps**: geckoview, fenix, refbrow, chrome-m
    * **benchmark page**: true
    * **browser cycles**: 15
    * **expected**: pass
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/mobile/browsertime-tp6m.toml#46>`__
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/mobile/browsertime-tp6m.toml#47>`__
    * **lower is better**: true
    * **page cycles**: 25
    * **page timeout**: 60000
    * **playback**: mitmproxy-android
    * **playback pageset manifest**: mitm6-android-fenix-cnn-ampstories.manifest
    * **playback version**: 8.1.1
+   * **support class**: browsertime_pageload.py
    * **test url**: `<https://cnn.com/ampstories/us/why-hurricane-michael-is-a-monster-unlike-any-other>`__
    * **type**: pageload
    * **unit**: ms
@@ -33429,25 +32645,93 @@ Page-load performance test suite on Android. The links direct to the actual webs
         - ❌
 
 
+   .. list-table:: **test-android-hw-a55-14-0-android-aarch64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-tp6m-chrome-m-cnn-ampstories**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-chrome-m-cnn-ampstories-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-fenix-cnn-ampstories**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-fenix-cnn-ampstories-nofis**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-geckoview-cnn-ampstories**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-geckoview-cnn-ampstories-nofis**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-chrome-m-cnn-ampstories-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-fenix-cnn-ampstories-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-geckoview-cnn-ampstories-nofis**
+        - ❌
+        - ✅
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-refbrow-cnn-ampstories**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
 
 .. dropdown:: dailymail
    :class-container: anchor-id-dailymail-m
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t dailymail
+
    **Owner**: PerfTest Team
 
-   * **alert on**: fcp, loadtime, ContentfulSpeedIndex, PerceptualSpeedIndex, SpeedIndex, FirstVisualChange, LastVisualChange, largestContentfulPaint
+   * **alert on**: `fcp <raptor-metrics.html#first-paint>`__, `loadtime <raptor-metrics.html#load-time>`__, `ContentfulSpeedIndex <raptor-metrics.html#contentful-speed-index>`__, `PerceptualSpeedIndex <raptor-metrics.html#perceptual-speed-index>`__, `SpeedIndex <raptor-metrics.html#speed-index>`__, `FirstVisualChange <raptor-metrics.html#first-visual-change>`__, `LastVisualChange <raptor-metrics.html#last-visual-change>`__, `largestContentfulPaint <raptor-metrics.html#largest-contentful-paint>`__
    * **alert threshold**: 2.0
    * **apps**: geckoview, fenix, refbrow, chrome-m
    * **benchmark page**: true
    * **browser cycles**: 15
    * **expected**: pass
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/mobile/browsertime-tp6m.toml#49>`__
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/mobile/browsertime-tp6m.toml#50>`__
    * **lower is better**: true
    * **page cycles**: 25
    * **page timeout**: 60000
    * **playback**: mitmproxy-android
    * **playback pageset manifest**: mitm6-android-fenix-dailymail.manifest
    * **playback version**: 8.1.1
+   * **support class**: browsertime_pageload.py
    * **test url**: `<https://www.dailymail.co.uk/sciencetech/article-9749081/Experts-say-Hubble-repair-despite-NASA-insisting-multiple-options-fix.html>`__
    * **type**: pageload
    * **unit**: ms
@@ -33561,25 +32845,93 @@ Page-load performance test suite on Android. The links direct to the actual webs
         - ❌
 
 
+   .. list-table:: **test-android-hw-a55-14-0-android-aarch64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-tp6m-chrome-m-dailymail**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-chrome-m-dailymail-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-fenix-dailymail**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-fenix-dailymail-nofis**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-geckoview-dailymail**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-geckoview-dailymail-nofis**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-chrome-m-dailymail-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-fenix-dailymail-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-geckoview-dailymail-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-refbrow-dailymail**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
 
 .. dropdown:: ebay-kleinanzeigen
    :class-container: anchor-id-ebay-kleinanzeigen-m
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t ebay-kleinanzeigen
+
    **Owner**: PerfTest Team
 
-   * **alert on**: fcp, loadtime, ContentfulSpeedIndex, PerceptualSpeedIndex, SpeedIndex, FirstVisualChange, LastVisualChange, largestContentfulPaint
+   * **alert on**: `fcp <raptor-metrics.html#first-paint>`__, `loadtime <raptor-metrics.html#load-time>`__, `ContentfulSpeedIndex <raptor-metrics.html#contentful-speed-index>`__, `PerceptualSpeedIndex <raptor-metrics.html#perceptual-speed-index>`__, `SpeedIndex <raptor-metrics.html#speed-index>`__, `FirstVisualChange <raptor-metrics.html#first-visual-change>`__, `LastVisualChange <raptor-metrics.html#last-visual-change>`__, `largestContentfulPaint <raptor-metrics.html#largest-contentful-paint>`__
    * **alert threshold**: 2.0
    * **apps**: geckoview, fenix, refbrow, chrome-m
    * **benchmark page**: true
    * **browser cycles**: 15
    * **expected**: pass
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/mobile/browsertime-tp6m.toml#52>`__
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/mobile/browsertime-tp6m.toml#53>`__
    * **lower is better**: true
    * **page cycles**: 25
    * **page timeout**: 60000
    * **playback**: mitmproxy-android
    * **playback pageset manifest**: mitm6-android-fenix-ebay-kleinanzeigen.manifest
    * **playback version**: 8.1.1
+   * **support class**: browsertime_pageload.py
    * **test url**: `<https://m.ebay-kleinanzeigen.de>`__
    * **type**: pageload
    * **unit**: ms
@@ -33693,25 +33045,93 @@ Page-load performance test suite on Android. The links direct to the actual webs
         - ❌
 
 
+   .. list-table:: **test-android-hw-a55-14-0-android-aarch64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-tp6m-chrome-m-ebay-kleinanzeigen**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-chrome-m-ebay-kleinanzeigen-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-fenix-ebay-kleinanzeigen**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-fenix-ebay-kleinanzeigen-nofis**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-geckoview-ebay-kleinanzeigen**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-geckoview-ebay-kleinanzeigen-nofis**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-chrome-m-ebay-kleinanzeigen-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-fenix-ebay-kleinanzeigen-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-geckoview-ebay-kleinanzeigen-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-refbrow-ebay-kleinanzeigen**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
 
 .. dropdown:: ebay-kleinanzeigen-search
    :class-container: anchor-id-ebay-kleinanzeigen-search-m
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t ebay-kleinanzeigen-search
+
    **Owner**: PerfTest Team
 
-   * **alert on**: fcp, loadtime, ContentfulSpeedIndex, PerceptualSpeedIndex, SpeedIndex, FirstVisualChange, LastVisualChange, largestContentfulPaint
+   * **alert on**: `fcp <raptor-metrics.html#first-paint>`__, `loadtime <raptor-metrics.html#load-time>`__, `ContentfulSpeedIndex <raptor-metrics.html#contentful-speed-index>`__, `PerceptualSpeedIndex <raptor-metrics.html#perceptual-speed-index>`__, `SpeedIndex <raptor-metrics.html#speed-index>`__, `FirstVisualChange <raptor-metrics.html#first-visual-change>`__, `LastVisualChange <raptor-metrics.html#last-visual-change>`__, `largestContentfulPaint <raptor-metrics.html#largest-contentful-paint>`__
    * **alert threshold**: 2.0
    * **apps**: geckoview, fenix, refbrow, chrome-m
    * **benchmark page**: true
    * **browser cycles**: 15
    * **expected**: pass
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/mobile/browsertime-tp6m.toml#55>`__
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/mobile/browsertime-tp6m.toml#56>`__
    * **lower is better**: true
    * **page cycles**: 25
    * **page timeout**: 60000
    * **playback**: mitmproxy-android
    * **playback pageset manifest**: mitm6-android-fenix-ebay-kleinanzeigen-search.manifest
    * **playback version**: 8.1.1
+   * **support class**: browsertime_pageload.py
    * **test url**: `<https://m.ebay-kleinanzeigen.de/s-anzeigen/auf-zeit-wg-berlin/zimmer/c199-l3331>`__
    * **type**: pageload
    * **unit**: ms
@@ -33825,25 +33245,93 @@ Page-load performance test suite on Android. The links direct to the actual webs
         - ❌
 
 
+   .. list-table:: **test-android-hw-a55-14-0-android-aarch64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-tp6m-chrome-m-ebay-kleinanzeigen-search**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-chrome-m-ebay-kleinanzeigen-search-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-fenix-ebay-kleinanzeigen-search**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-fenix-ebay-kleinanzeigen-search-nofis**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-geckoview-ebay-kleinanzeigen-search**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-geckoview-ebay-kleinanzeigen-search-nofis**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-chrome-m-ebay-kleinanzeigen-search-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-fenix-ebay-kleinanzeigen-search-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-geckoview-ebay-kleinanzeigen-search-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-refbrow-ebay-kleinanzeigen-search**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
 
 .. dropdown:: espn
    :class-container: anchor-id-espn-m
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t espn
+
    **Owner**: PerfTest Team
 
-   * **alert on**: fcp, loadtime, ContentfulSpeedIndex, PerceptualSpeedIndex, SpeedIndex, FirstVisualChange, LastVisualChange, largestContentfulPaint
+   * **alert on**: `fcp <raptor-metrics.html#first-paint>`__, `loadtime <raptor-metrics.html#load-time>`__, `ContentfulSpeedIndex <raptor-metrics.html#contentful-speed-index>`__, `PerceptualSpeedIndex <raptor-metrics.html#perceptual-speed-index>`__, `SpeedIndex <raptor-metrics.html#speed-index>`__, `FirstVisualChange <raptor-metrics.html#first-visual-change>`__, `LastVisualChange <raptor-metrics.html#last-visual-change>`__, `largestContentfulPaint <raptor-metrics.html#largest-contentful-paint>`__
    * **alert threshold**: 2.0
    * **apps**: geckoview, fenix, refbrow, chrome-m
    * **benchmark page**: true
    * **browser cycles**: 15
    * **expected**: pass
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/mobile/browsertime-tp6m.toml#58>`__
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/mobile/browsertime-tp6m.toml#59>`__
    * **lower is better**: true
    * **page cycles**: 25
    * **page timeout**: 60000
    * **playback**: mitmproxy-android
    * **playback pageset manifest**: mitm6-android-fenix-espn.manifest
    * **playback version**: 8.1.1
+   * **support class**: browsertime_pageload.py
    * **test url**: `<http://www.espn.com/nba/story/_/page/allstarweekend25788027/the-comparison-lebron-james-michael-jordan-their-own-words>`__
    * **type**: pageload
    * **unit**: ms
@@ -33882,6 +33370,47 @@ Page-load performance test suite on Android. The links direct to the actual webs
 
 
    .. list-table:: **test-android-hw-a51-11-0-aarch64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-tp6m-essential-chrome-m-espn-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-essential-fenix-espn-nofis**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-essential-geckoview-espn-nofis**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-chrome-m-espn-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-fenix-espn-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-geckoview-espn-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-android-hw-a55-14-0-android-aarch64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -34044,7 +33573,7 @@ Page-load performance test suite on Android. The links direct to the actual webs
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -34060,28 +33589,7 @@ Page-load performance test suite on Android. The links direct to the actual webs
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-tp6-chrome-espn**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-firefox-espn**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -34097,23 +33605,7 @@ Page-load performance test suite on Android. The links direct to the actual webs
         - ❌
 
 
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-tp6-firefox-espn**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -34138,15 +33630,21 @@ Page-load performance test suite on Android. The links direct to the actual webs
 .. dropdown:: facebook
    :class-container: anchor-id-facebook-m
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t facebook
+
    **Owner**: PerfTest Team
 
-   * **alert on**: fcp, loadtime, ContentfulSpeedIndex, PerceptualSpeedIndex, SpeedIndex, FirstVisualChange, LastVisualChange, largestContentfulPaint
+   * **alert on**: `fcp <raptor-metrics.html#first-paint>`__, `loadtime <raptor-metrics.html#load-time>`__, `ContentfulSpeedIndex <raptor-metrics.html#contentful-speed-index>`__, `PerceptualSpeedIndex <raptor-metrics.html#perceptual-speed-index>`__, `SpeedIndex <raptor-metrics.html#speed-index>`__, `FirstVisualChange <raptor-metrics.html#first-visual-change>`__, `LastVisualChange <raptor-metrics.html#last-visual-change>`__, `largestContentfulPaint <raptor-metrics.html#largest-contentful-paint>`__
    * **alert threshold**: 2.0
    * **apps**: geckoview, fenix, refbrow, chrome-m
    * **benchmark page**: true
    * **browser cycles**: 15
    * **expected**: pass
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/mobile/browsertime-tp6m.toml#61>`__
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/mobile/browsertime-tp6m.toml#62>`__
    * **login**: true
    * **lower is better**: true
    * **page cycles**: 25
@@ -34154,6 +33652,7 @@ Page-load performance test suite on Android. The links direct to the actual webs
    * **playback**: mitmproxy-android
    * **playback pageset manifest**: mitm6-g5-fenix-facebook.manifest
    * **playback version**: 8.1.1
+   * **support class**: browsertime_pageload.py
    * **test url**: `<https://m.facebook.com>`__
    * **type**: pageload
    * **unit**: ms
@@ -34182,6 +33681,32 @@ Page-load performance test suite on Android. The links direct to the actual webs
 
 
    .. list-table:: **test-android-hw-a51-11-0-aarch64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-tp6m-live-chrome-m-facebook-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-fenix-facebook-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-geckoview-facebook-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-android-hw-a55-14-0-android-aarch64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -34374,7 +33899,7 @@ Page-load performance test suite on Android. The links direct to the actual webs
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -34395,38 +33920,7 @@ Page-load performance test suite on Android. The links direct to the actual webs
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-tp6-chrome-facebook**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-firefox-facebook**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-live-chrome-facebook**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-live-firefox-facebook**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -34447,28 +33941,7 @@ Page-load performance test suite on Android. The links direct to the actual webs
         - ❌
 
 
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-tp6-firefox-facebook**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-live-firefox-facebook**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -34503,21 +33976,28 @@ Page-load performance test suite on Android. The links direct to the actual webs
 .. dropdown:: facebook-cristiano
    :class-container: anchor-id-facebook-cristiano-m
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t facebook-cristiano
+
    **Owner**: PerfTest Team
 
-   * **alert on**: fcp, loadtime, ContentfulSpeedIndex, PerceptualSpeedIndex, SpeedIndex, FirstVisualChange, LastVisualChange, largestContentfulPaint
+   * **alert on**: `fcp <raptor-metrics.html#first-paint>`__, `loadtime <raptor-metrics.html#load-time>`__, `ContentfulSpeedIndex <raptor-metrics.html#contentful-speed-index>`__, `PerceptualSpeedIndex <raptor-metrics.html#perceptual-speed-index>`__, `SpeedIndex <raptor-metrics.html#speed-index>`__, `FirstVisualChange <raptor-metrics.html#first-visual-change>`__, `LastVisualChange <raptor-metrics.html#last-visual-change>`__, `largestContentfulPaint <raptor-metrics.html#largest-contentful-paint>`__
    * **alert threshold**: 2.0
    * **apps**: geckoview, fenix, refbrow, chrome-m
    * **benchmark page**: true
    * **browser cycles**: 15
    * **expected**: pass
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/mobile/browsertime-tp6m.toml#66>`__
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/mobile/browsertime-tp6m.toml#67>`__
    * **lower is better**: true
    * **page cycles**: 25
    * **page timeout**: 60000
    * **playback**: mitmproxy-android
    * **playback pageset manifest**: mitm6-android-fenix-facebook-cristiano.manifest
    * **playback version**: 8.1.1
+   * **support class**: browsertime_pageload.py
    * **test url**: `<https://m.facebook.com/Cristiano>`__
    * **type**: pageload
    * **unit**: ms
@@ -34631,19 +34111,86 @@ Page-load performance test suite on Android. The links direct to the actual webs
         - ❌
 
 
+   .. list-table:: **test-android-hw-a55-14-0-android-aarch64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-tp6m-chrome-m-facebook-cristiano**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-chrome-m-facebook-cristiano-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-fenix-facebook-cristiano**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-fenix-facebook-cristiano-nofis**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-geckoview-facebook-cristiano**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-geckoview-facebook-cristiano-nofis**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-chrome-m-facebook-cristiano-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-fenix-facebook-cristiano-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-geckoview-facebook-cristiano-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-refbrow-facebook-cristiano**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
 
 .. dropdown:: google
    :class-container: anchor-id-google-m
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t google
+
    **Owner**: PerfTest Team
 
-   * **alert on**: fcp, loadtime, ContentfulSpeedIndex, PerceptualSpeedIndex, SpeedIndex, FirstVisualChange, LastVisualChange, largestContentfulPaint
+   * **alert on**: `fcp <raptor-metrics.html#first-paint>`__, `loadtime <raptor-metrics.html#load-time>`__, `ContentfulSpeedIndex <raptor-metrics.html#contentful-speed-index>`__, `PerceptualSpeedIndex <raptor-metrics.html#perceptual-speed-index>`__, `SpeedIndex <raptor-metrics.html#speed-index>`__, `FirstVisualChange <raptor-metrics.html#first-visual-change>`__, `LastVisualChange <raptor-metrics.html#last-visual-change>`__, `largestContentfulPaint <raptor-metrics.html#largest-contentful-paint>`__
    * **alert threshold**: 2.0
    * **apps**: geckoview, fenix, refbrow, chrome-m
    * **benchmark page**: true
    * **browser cycles**: 15
    * **expected**: pass
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/mobile/browsertime-tp6m.toml#69>`__
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/mobile/browsertime-tp6m.toml#70>`__
    * **login**: true
    * **lower is better**: true
    * **page cycles**: 25
@@ -34651,6 +34198,7 @@ Page-load performance test suite on Android. The links direct to the actual webs
    * **playback**: mitmproxy-android
    * **playback pageset manifest**: mitm6-g5-fenix-google.manifest
    * **playback version**: 8.1.1
+   * **support class**: browsertime_pageload.py
    * **test url**: `<https://www.google.com>`__
    * **type**: pageload
    * **unit**: ms
@@ -34729,25 +34277,73 @@ Page-load performance test suite on Android. The links direct to the actual webs
         - ❌
 
 
+   .. list-table:: **test-android-hw-a55-14-0-android-aarch64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-tp6m-essential-chrome-m-google-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-essential-fenix-google-nofis**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-essential-geckoview-google-nofis**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-chrome-m-google-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-fenix-google-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-geckoview-google-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
 
 .. dropdown:: google-maps
    :class-container: anchor-id-google-maps-m
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t google-maps
+
    **Owner**: PerfTest Team
 
-   * **alert on**: fcp, loadtime, ContentfulSpeedIndex, PerceptualSpeedIndex, SpeedIndex, FirstVisualChange, LastVisualChange, largestContentfulPaint
+   * **alert on**: `fcp <raptor-metrics.html#first-paint>`__, `loadtime <raptor-metrics.html#load-time>`__, `ContentfulSpeedIndex <raptor-metrics.html#contentful-speed-index>`__, `PerceptualSpeedIndex <raptor-metrics.html#perceptual-speed-index>`__, `SpeedIndex <raptor-metrics.html#speed-index>`__, `FirstVisualChange <raptor-metrics.html#first-visual-change>`__, `LastVisualChange <raptor-metrics.html#last-visual-change>`__, `largestContentfulPaint <raptor-metrics.html#largest-contentful-paint>`__
    * **alert threshold**: 2.0
    * **apps**: geckoview, fenix, refbrow, chrome-m
    * **benchmark page**: true
    * **browser cycles**: 15
    * **expected**: pass
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/mobile/browsertime-tp6m.toml#74>`__
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/mobile/browsertime-tp6m.toml#75>`__
    * **lower is better**: true
    * **page cycles**: 25
    * **page timeout**: 60000
    * **playback**: mitmproxy-android
    * **playback pageset manifest**: mitm6-android-fenix-google-maps.manifest
    * **playback version**: 8.1.1
+   * **support class**: browsertime_pageload.py
    * **test url**: `<https://www.google.com/maps?force=pwa>`__
    * **type**: pageload
    * **unit**: ms
@@ -34861,19 +34457,86 @@ Page-load performance test suite on Android. The links direct to the actual webs
         - ❌
 
 
+   .. list-table:: **test-android-hw-a55-14-0-android-aarch64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-tp6m-chrome-m-google-maps**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-chrome-m-google-maps-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-fenix-google-maps**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-fenix-google-maps-nofis**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-geckoview-google-maps**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-geckoview-google-maps-nofis**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-chrome-m-google-maps-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-fenix-google-maps-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-geckoview-google-maps-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-refbrow-google-maps**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
 
 .. dropdown:: google-search-restaurants
    :class-container: anchor-id-google-search-restaurants-m
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t google-search-restaurants
+
    **Owner**: PerfTest Team
 
-   * **alert on**: fcp, loadtime, ContentfulSpeedIndex, PerceptualSpeedIndex, SpeedIndex, FirstVisualChange, LastVisualChange, largestContentfulPaint
+   * **alert on**: `fcp <raptor-metrics.html#first-paint>`__, `loadtime <raptor-metrics.html#load-time>`__, `ContentfulSpeedIndex <raptor-metrics.html#contentful-speed-index>`__, `PerceptualSpeedIndex <raptor-metrics.html#perceptual-speed-index>`__, `SpeedIndex <raptor-metrics.html#speed-index>`__, `FirstVisualChange <raptor-metrics.html#first-visual-change>`__, `LastVisualChange <raptor-metrics.html#last-visual-change>`__, `largestContentfulPaint <raptor-metrics.html#largest-contentful-paint>`__
    * **alert threshold**: 2.0
    * **apps**: geckoview, fenix, refbrow, chrome-m
    * **benchmark page**: true
    * **browser cycles**: 15
    * **expected**: pass
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/mobile/browsertime-tp6m.toml#77>`__
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/mobile/browsertime-tp6m.toml#78>`__
    * **login**: true
    * **lower is better**: true
    * **page cycles**: 25
@@ -34881,6 +34544,7 @@ Page-load performance test suite on Android. The links direct to the actual webs
    * **playback**: mitmproxy-android
    * **playback pageset manifest**: mitm6-g5-fenix-google-search-restaurants.manifest
    * **playback version**: 8.1.1
+   * **support class**: browsertime_pageload.py
    * **test url**: `<https://www.google.com/search?q=restaurants+near+me>`__
    * **type**: pageload
    * **unit**: ms
@@ -34994,25 +34658,93 @@ Page-load performance test suite on Android. The links direct to the actual webs
         - ❌
 
 
+   .. list-table:: **test-android-hw-a55-14-0-android-aarch64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-tp6m-chrome-m-google-search-restaurants**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-chrome-m-google-search-restaurants-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-fenix-google-search-restaurants**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-fenix-google-search-restaurants-nofis**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-geckoview-google-search-restaurants**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-geckoview-google-search-restaurants-nofis**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-chrome-m-google-search-restaurants-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-fenix-google-search-restaurants-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-geckoview-google-search-restaurants-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-refbrow-google-search-restaurants**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
 
 .. dropdown:: imdb
    :class-container: anchor-id-imdb-m
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t imdb
+
    **Owner**: PerfTest Team
 
-   * **alert on**: fcp, loadtime, ContentfulSpeedIndex, PerceptualSpeedIndex, SpeedIndex, FirstVisualChange, LastVisualChange, largestContentfulPaint
+   * **alert on**: `fcp <raptor-metrics.html#first-paint>`__, `loadtime <raptor-metrics.html#load-time>`__, `ContentfulSpeedIndex <raptor-metrics.html#contentful-speed-index>`__, `PerceptualSpeedIndex <raptor-metrics.html#perceptual-speed-index>`__, `SpeedIndex <raptor-metrics.html#speed-index>`__, `FirstVisualChange <raptor-metrics.html#first-visual-change>`__, `LastVisualChange <raptor-metrics.html#last-visual-change>`__, `largestContentfulPaint <raptor-metrics.html#largest-contentful-paint>`__
    * **alert threshold**: 2.0
    * **apps**: geckoview, fenix, refbrow, chrome-m
    * **benchmark page**: true
    * **browser cycles**: 15
    * **expected**: pass
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/mobile/browsertime-tp6m.toml#82>`__
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/mobile/browsertime-tp6m.toml#83>`__
    * **lower is better**: true
    * **page cycles**: 25
    * **page timeout**: 60000
    * **playback**: mitmproxy-android
    * **playback pageset manifest**: mitm6-android-fenix-imdb.manifest
    * **playback version**: 8.1.1
+   * **support class**: browsertime_pageload.py
    * **test url**: `<https://m.imdb.com/>`__
    * **type**: pageload
    * **unit**: ms
@@ -35066,6 +34798,67 @@ Page-load performance test suite on Android. The links direct to the actual webs
 
 
    .. list-table:: **test-android-hw-a51-11-0-aarch64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-tp6m-chrome-m-imdb**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-chrome-m-imdb-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-fenix-imdb**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-fenix-imdb-nofis**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-geckoview-imdb**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-geckoview-imdb-nofis**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-chrome-m-imdb-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-fenix-imdb-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-geckoview-imdb-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-refbrow-imdb**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-android-hw-a55-14-0-android-aarch64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -35298,7 +35091,7 @@ Page-load performance test suite on Android. The links direct to the actual webs
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -35319,38 +35112,7 @@ Page-load performance test suite on Android. The links direct to the actual webs
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-tp6-chrome-imdb**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-firefox-imdb**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-live-chrome-imdb**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-live-firefox-imdb**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -35371,28 +35133,7 @@ Page-load performance test suite on Android. The links direct to the actual webs
         - ❌
 
 
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-tp6-firefox-imdb**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-live-firefox-imdb**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -35427,15 +35168,21 @@ Page-load performance test suite on Android. The links direct to the actual webs
 .. dropdown:: instagram
    :class-container: anchor-id-instagram-m
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t instagram
+
    **Owner**: PerfTest Team
 
-   * **alert on**: fcp, loadtime, ContentfulSpeedIndex, PerceptualSpeedIndex, SpeedIndex, FirstVisualChange, LastVisualChange, largestContentfulPaint
+   * **alert on**: `fcp <raptor-metrics.html#first-paint>`__, `loadtime <raptor-metrics.html#load-time>`__, `ContentfulSpeedIndex <raptor-metrics.html#contentful-speed-index>`__, `PerceptualSpeedIndex <raptor-metrics.html#perceptual-speed-index>`__, `SpeedIndex <raptor-metrics.html#speed-index>`__, `FirstVisualChange <raptor-metrics.html#first-visual-change>`__, `LastVisualChange <raptor-metrics.html#last-visual-change>`__, `largestContentfulPaint <raptor-metrics.html#largest-contentful-paint>`__
    * **alert threshold**: 2.0
    * **apps**: geckoview, fenix, refbrow, chrome-m
    * **benchmark page**: true
    * **browser cycles**: 15
    * **expected**: pass
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/mobile/browsertime-tp6m.toml#85>`__
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/mobile/browsertime-tp6m.toml#86>`__
    * **login**: true
    * **lower is better**: true
    * **page cycles**: 25
@@ -35443,6 +35190,7 @@ Page-load performance test suite on Android. The links direct to the actual webs
    * **playback**: mitmproxy-android
    * **playback pageset manifest**: mitm8-android-gve-instagram.manifest
    * **playback version**: 8.1.1
+   * **support class**: browsertime_pageload.py
    * **test url**: `<https://www.instagram.com>`__
    * **type**: pageload
    * **unit**: ms
@@ -35496,6 +35244,67 @@ Page-load performance test suite on Android. The links direct to the actual webs
 
 
    .. list-table:: **test-android-hw-a51-11-0-aarch64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-tp6m-chrome-m-instagram**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-chrome-m-instagram-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-fenix-instagram**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-fenix-instagram-nofis**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-geckoview-instagram**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-geckoview-instagram-nofis**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-chrome-m-instagram-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-fenix-instagram-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-geckoview-instagram-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-refbrow-instagram**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-android-hw-a55-14-0-android-aarch64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -35746,11 +35555,6 @@ Page-load performance test suite on Android. The links direct to the actual webs
         - ❌
         - ❌
         - ❌
-      * - **browsertime-tp6-essential-custom-car-instagram**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
       * - **browsertime-tp6-essential-firefox-instagram**
         - ✅
         - ✅
@@ -35768,7 +35572,7 @@ Page-load performance test suite on Android. The links direct to the actual webs
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -35794,43 +35598,7 @@ Page-load performance test suite on Android. The links direct to the actual webs
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-tp6-bytecode-firefox-instagram**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-essential-chrome-instagram**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-essential-firefox-instagram**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-live-chrome-instagram**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-live-firefox-instagram**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -35856,33 +35624,7 @@ Page-load performance test suite on Android. The links direct to the actual webs
         - ❌
 
 
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-tp6-bytecode-firefox-instagram**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-essential-firefox-instagram**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-live-firefox-instagram**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -35927,21 +35669,28 @@ Page-load performance test suite on Android. The links direct to the actual webs
 .. dropdown:: microsoft-support
    :class-container: anchor-id-microsoft-support-m
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t microsoft-support
+
    **Owner**: PerfTest Team
 
-   * **alert on**: fcp, loadtime, ContentfulSpeedIndex, PerceptualSpeedIndex, SpeedIndex, FirstVisualChange, LastVisualChange, largestContentfulPaint
+   * **alert on**: `fcp <raptor-metrics.html#first-paint>`__, `loadtime <raptor-metrics.html#load-time>`__, `ContentfulSpeedIndex <raptor-metrics.html#contentful-speed-index>`__, `PerceptualSpeedIndex <raptor-metrics.html#perceptual-speed-index>`__, `SpeedIndex <raptor-metrics.html#speed-index>`__, `FirstVisualChange <raptor-metrics.html#first-visual-change>`__, `LastVisualChange <raptor-metrics.html#last-visual-change>`__, `largestContentfulPaint <raptor-metrics.html#largest-contentful-paint>`__
    * **alert threshold**: 2.0
    * **apps**: geckoview, fenix, refbrow, chrome-m
    * **benchmark page**: true
    * **browser cycles**: 15
    * **expected**: pass
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/mobile/browsertime-tp6m.toml#90>`__
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/mobile/browsertime-tp6m.toml#91>`__
    * **lower is better**: true
    * **page cycles**: 25
    * **page timeout**: 60000
    * **playback**: mitmproxy-android
    * **playback pageset manifest**: mitm6-android-fenix-microsoft-support.manifest
    * **playback version**: 8.1.1
+   * **support class**: browsertime_pageload.py
    * **test url**: `<https://support.microsoft.com/en-us>`__
    * **type**: pageload
    * **unit**: ms
@@ -36020,25 +35769,73 @@ Page-load performance test suite on Android. The links direct to the actual webs
         - ❌
 
 
+   .. list-table:: **test-android-hw-a55-14-0-android-aarch64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-tp6m-essential-chrome-m-microsoft-support-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-essential-fenix-microsoft-support-nofis**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-essential-geckoview-microsoft-support-nofis**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-chrome-m-microsoft-support-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-fenix-microsoft-support-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-geckoview-microsoft-support-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
 
 .. dropdown:: reddit
    :class-container: anchor-id-reddit-m
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t reddit
+
    **Owner**: PerfTest Team
 
-   * **alert on**: fcp, loadtime, ContentfulSpeedIndex, PerceptualSpeedIndex, SpeedIndex, FirstVisualChange, LastVisualChange, largestContentfulPaint
+   * **alert on**: `fcp <raptor-metrics.html#first-paint>`__, `loadtime <raptor-metrics.html#load-time>`__, `ContentfulSpeedIndex <raptor-metrics.html#contentful-speed-index>`__, `PerceptualSpeedIndex <raptor-metrics.html#perceptual-speed-index>`__, `SpeedIndex <raptor-metrics.html#speed-index>`__, `FirstVisualChange <raptor-metrics.html#first-visual-change>`__, `LastVisualChange <raptor-metrics.html#last-visual-change>`__, `largestContentfulPaint <raptor-metrics.html#largest-contentful-paint>`__
    * **alert threshold**: 2.0
    * **apps**: geckoview, fenix, refbrow, chrome-m
    * **benchmark page**: true
    * **browser cycles**: 15
    * **expected**: pass
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/mobile/browsertime-tp6m.toml#93>`__
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/mobile/browsertime-tp6m.toml#94>`__
    * **lower is better**: true
    * **page cycles**: 25
    * **page timeout**: 60000
    * **playback**: mitmproxy-android
    * **playback pageset manifest**: mitm6-android-fenix-reddit.manifest
    * **playback version**: 8.1.1
+   * **support class**: browsertime_pageload.py
    * **test url**: `<https://www.reddit.com>`__
    * **type**: pageload
    * **unit**: ms
@@ -36092,6 +35889,67 @@ Page-load performance test suite on Android. The links direct to the actual webs
 
 
    .. list-table:: **test-android-hw-a51-11-0-aarch64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-tp6m-chrome-m-reddit**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-chrome-m-reddit-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-fenix-reddit**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-fenix-reddit-nofis**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-geckoview-reddit**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-geckoview-reddit-nofis**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-chrome-m-reddit-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-fenix-reddit-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-geckoview-reddit-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-refbrow-reddit**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-android-hw-a55-14-0-android-aarch64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -36324,7 +36182,7 @@ Page-load performance test suite on Android. The links direct to the actual webs
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -36345,38 +36203,7 @@ Page-load performance test suite on Android. The links direct to the actual webs
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-tp6-chrome-reddit**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-firefox-reddit**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-live-chrome-reddit**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-live-firefox-reddit**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -36397,28 +36224,7 @@ Page-load performance test suite on Android. The links direct to the actual webs
         - ❌
 
 
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-tp6-firefox-reddit**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-live-firefox-reddit**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -36453,21 +36259,28 @@ Page-load performance test suite on Android. The links direct to the actual webs
 .. dropdown:: sina
    :class-container: anchor-id-sina-m
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t sina
+
    **Owner**: PerfTest Team
 
-   * **alert on**: fcp, loadtime, ContentfulSpeedIndex, PerceptualSpeedIndex, SpeedIndex, FirstVisualChange, LastVisualChange, largestContentfulPaint
+   * **alert on**: `fcp <raptor-metrics.html#first-paint>`__, `loadtime <raptor-metrics.html#load-time>`__, `ContentfulSpeedIndex <raptor-metrics.html#contentful-speed-index>`__, `PerceptualSpeedIndex <raptor-metrics.html#perceptual-speed-index>`__, `SpeedIndex <raptor-metrics.html#speed-index>`__, `FirstVisualChange <raptor-metrics.html#first-visual-change>`__, `LastVisualChange <raptor-metrics.html#last-visual-change>`__, `largestContentfulPaint <raptor-metrics.html#largest-contentful-paint>`__
    * **alert threshold**: 2.0
    * **apps**: geckoview, fenix, refbrow, chrome-m
    * **benchmark page**: true
    * **browser cycles**: 15
    * **expected**: pass
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/mobile/browsertime-tp6m.toml#96>`__
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/mobile/browsertime-tp6m.toml#97>`__
    * **lower is better**: true
    * **page cycles**: 25
    * **page timeout**: 60000
    * **playback**: mitmproxy-android
    * **playback pageset manifest**: mitm8-android-fenix-sina.manifest
    * **playback version**: 8.1.1
+   * **support class**: browsertime_pageload.py
    * **test url**: `<https://www.sina.com.cn/>`__
    * **type**: pageload
    * **unit**: ms
@@ -36556,25 +36369,78 @@ Page-load performance test suite on Android. The links direct to the actual webs
         - ❌
 
 
+   .. list-table:: **test-android-hw-a55-14-0-android-aarch64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-tp6m-chrome-m-sina**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-chrome-m-sina-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-fenix-sina**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-fenix-sina-nofis**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-geckoview-sina**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-geckoview-sina-nofis**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-refbrow-sina**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
 
 .. dropdown:: stackoverflow
    :class-container: anchor-id-stackoverflow-m
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t stackoverflow
+
    **Owner**: PerfTest Team
 
-   * **alert on**: fcp, loadtime, ContentfulSpeedIndex, PerceptualSpeedIndex, SpeedIndex, FirstVisualChange, LastVisualChange, largestContentfulPaint
+   * **alert on**: `fcp <raptor-metrics.html#first-paint>`__, `loadtime <raptor-metrics.html#load-time>`__, `ContentfulSpeedIndex <raptor-metrics.html#contentful-speed-index>`__, `PerceptualSpeedIndex <raptor-metrics.html#perceptual-speed-index>`__, `SpeedIndex <raptor-metrics.html#speed-index>`__, `FirstVisualChange <raptor-metrics.html#first-visual-change>`__, `LastVisualChange <raptor-metrics.html#last-visual-change>`__, `largestContentfulPaint <raptor-metrics.html#largest-contentful-paint>`__
    * **alert threshold**: 2.0
    * **apps**: geckoview, fenix, refbrow, chrome-m
    * **benchmark page**: true
    * **browser cycles**: 15
    * **expected**: pass
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/mobile/browsertime-tp6m.toml#100>`__
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/mobile/browsertime-tp6m.toml#101>`__
    * **lower is better**: true
    * **page cycles**: 25
    * **page timeout**: 60000
    * **playback**: mitmproxy-android
    * **playback pageset manifest**: mitm6-android-fenix-stackoverflow.manifest
    * **playback version**: 8.1.1
+   * **support class**: browsertime_pageload.py
    * **test url**: `<https://stackoverflow.com/>`__
    * **type**: pageload
    * **unit**: ms
@@ -36688,25 +36554,93 @@ Page-load performance test suite on Android. The links direct to the actual webs
         - ❌
 
 
+   .. list-table:: **test-android-hw-a55-14-0-android-aarch64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-tp6m-chrome-m-stackoverflow**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-chrome-m-stackoverflow-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-fenix-stackoverflow**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-fenix-stackoverflow-nofis**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-geckoview-stackoverflow**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-geckoview-stackoverflow-nofis**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-chrome-m-stackoverflow-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-fenix-stackoverflow-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-geckoview-stackoverflow-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-refbrow-stackoverflow**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
 
 .. dropdown:: wikipedia
    :class-container: anchor-id-wikipedia-m
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t wikipedia
+
    **Owner**: PerfTest Team
 
-   * **alert on**: fcp, loadtime, ContentfulSpeedIndex, PerceptualSpeedIndex, SpeedIndex, FirstVisualChange, LastVisualChange, largestContentfulPaint
+   * **alert on**: `fcp <raptor-metrics.html#first-paint>`__, `loadtime <raptor-metrics.html#load-time>`__, `ContentfulSpeedIndex <raptor-metrics.html#contentful-speed-index>`__, `PerceptualSpeedIndex <raptor-metrics.html#perceptual-speed-index>`__, `SpeedIndex <raptor-metrics.html#speed-index>`__, `FirstVisualChange <raptor-metrics.html#first-visual-change>`__, `LastVisualChange <raptor-metrics.html#last-visual-change>`__, `largestContentfulPaint <raptor-metrics.html#largest-contentful-paint>`__
    * **alert threshold**: 2.0
    * **apps**: geckoview, fenix, refbrow, chrome-m
    * **benchmark page**: true
    * **browser cycles**: 15
    * **expected**: pass
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/mobile/browsertime-tp6m.toml#103>`__
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/mobile/browsertime-tp6m.toml#104>`__
    * **lower is better**: true
    * **page cycles**: 25
    * **page timeout**: 60000
    * **playback**: mitmproxy-android
    * **playback pageset manifest**: mitm6-android-fenix-wikipedia.manifest
    * **playback version**: 8.1.1
+   * **support class**: browsertime_pageload.py
    * **test url**: `<https://en.m.wikipedia.org/wiki/Main_Page>`__
    * **type**: pageload
    * **unit**: ms
@@ -36760,6 +36694,67 @@ Page-load performance test suite on Android. The links direct to the actual webs
 
 
    .. list-table:: **test-android-hw-a51-11-0-aarch64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-tp6m-chrome-m-wikipedia**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-chrome-m-wikipedia-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-fenix-wikipedia**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-fenix-wikipedia-nofis**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-geckoview-wikipedia**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-geckoview-wikipedia-nofis**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-chrome-m-wikipedia-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-fenix-wikipedia-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-geckoview-wikipedia-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-refbrow-wikipedia**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-android-hw-a55-14-0-android-aarch64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -37010,11 +37005,6 @@ Page-load performance test suite on Android. The links direct to the actual webs
         - ❌
         - ❌
         - ❌
-      * - **browsertime-tp6-essential-custom-car-wikipedia**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
       * - **browsertime-tp6-essential-firefox-wikipedia**
         - ✅
         - ✅
@@ -37037,7 +37027,7 @@ Page-load performance test suite on Android. The links direct to the actual webs
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -37063,43 +37053,7 @@ Page-load performance test suite on Android. The links direct to the actual webs
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-tp6-bytecode-firefox-wikipedia**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-essential-chrome-wikipedia**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-essential-firefox-wikipedia**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-live-chrome-wikipedia**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-live-firefox-wikipedia**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -37125,33 +37079,7 @@ Page-load performance test suite on Android. The links direct to the actual webs
         - ❌
 
 
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-tp6-bytecode-firefox-wikipedia**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-essential-firefox-wikipedia**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-live-firefox-wikipedia**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -37196,21 +37124,28 @@ Page-load performance test suite on Android. The links direct to the actual webs
 .. dropdown:: youtube
    :class-container: anchor-id-youtube-m
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t youtube
+
    **Owner**: PerfTest Team
 
-   * **alert on**: fcp, loadtime, ContentfulSpeedIndex, PerceptualSpeedIndex, SpeedIndex, FirstVisualChange, LastVisualChange, largestContentfulPaint
+   * **alert on**: `fcp <raptor-metrics.html#first-paint>`__, `loadtime <raptor-metrics.html#load-time>`__, `ContentfulSpeedIndex <raptor-metrics.html#contentful-speed-index>`__, `PerceptualSpeedIndex <raptor-metrics.html#perceptual-speed-index>`__, `SpeedIndex <raptor-metrics.html#speed-index>`__, `FirstVisualChange <raptor-metrics.html#first-visual-change>`__, `LastVisualChange <raptor-metrics.html#last-visual-change>`__, `largestContentfulPaint <raptor-metrics.html#largest-contentful-paint>`__
    * **alert threshold**: 2.0
    * **apps**: geckoview, fenix, refbrow, chrome-m
    * **benchmark page**: true
    * **browser cycles**: 15
    * **expected**: pass
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/mobile/browsertime-tp6m.toml#106>`__
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/mobile/browsertime-tp6m.toml#107>`__
    * **lower is better**: true
    * **page cycles**: 25
    * **page timeout**: 60000
    * **playback**: mitmproxy-android
    * **playback pageset manifest**: mitm6-android-fenix-youtube.manifest
    * **playback version**: 8.1.1
+   * **support class**: browsertime_pageload.py
    * **test url**: `<https://m.youtube.com>`__
    * **type**: pageload
    * **unit**: ms
@@ -37264,6 +37199,67 @@ Page-load performance test suite on Android. The links direct to the actual webs
 
 
    .. list-table:: **test-android-hw-a51-11-0-aarch64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-tp6m-chrome-m-youtube**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-chrome-m-youtube-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-fenix-youtube**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-fenix-youtube-nofis**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-geckoview-youtube**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-geckoview-youtube-nofis**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-chrome-m-youtube-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-fenix-youtube-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-geckoview-youtube-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-refbrow-youtube**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
+   .. list-table:: **test-android-hw-a55-14-0-android-aarch64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -37496,7 +37492,7 @@ Page-load performance test suite on Android. The links direct to the actual webs
         - ❌
 
 
-   .. list-table:: **test-windows10-32-qr/opt**
+   .. list-table:: **test-windows11-64-nightlyasrelease-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -37517,38 +37513,7 @@ Page-load performance test suite on Android. The links direct to the actual webs
         - ❌
 
 
-   .. list-table:: **test-windows10-32-shippable-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-tp6-chrome-youtube**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-firefox-youtube**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-live-chrome-youtube**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-live-firefox-youtube**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-nightlyasrelease-qr/opt**
+   .. list-table:: **test-windows11-64-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -37569,28 +37534,7 @@ Page-load performance test suite on Android. The links direct to the actual webs
         - ❌
 
 
-   .. list-table:: **test-windows10-64-qr/opt**
-      :widths: 30 15 15 15 15
-      :header-rows: 1
-
-      * - **Test Name**
-        - mozilla-central
-        - autoland
-        - mozilla-release
-        - mozilla-beta
-      * - **browsertime-tp6-firefox-youtube**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-      * - **browsertime-tp6-live-firefox-youtube**
-        - ❌
-        - ❌
-        - ❌
-        - ❌
-
-
-   .. list-table:: **test-windows10-64-shippable-qr/opt**
+   .. list-table:: **test-windows11-64-shippable-qr/opt**
       :widths: 30 15 15 15 15
       :header-rows: 1
 
@@ -37625,21 +37569,28 @@ Page-load performance test suite on Android. The links direct to the actual webs
 .. dropdown:: youtube-watch
    :class-container: anchor-id-youtube-watch-m
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t youtube-watch
+
    **Owner**: PerfTest Team
 
-   * **alert on**: fcp, loadtime, ContentfulSpeedIndex, PerceptualSpeedIndex, SpeedIndex, FirstVisualChange, LastVisualChange, largestContentfulPaint
+   * **alert on**: `fcp <raptor-metrics.html#first-paint>`__, `loadtime <raptor-metrics.html#load-time>`__, `ContentfulSpeedIndex <raptor-metrics.html#contentful-speed-index>`__, `PerceptualSpeedIndex <raptor-metrics.html#perceptual-speed-index>`__, `SpeedIndex <raptor-metrics.html#speed-index>`__, `FirstVisualChange <raptor-metrics.html#first-visual-change>`__, `LastVisualChange <raptor-metrics.html#last-visual-change>`__, `largestContentfulPaint <raptor-metrics.html#largest-contentful-paint>`__
    * **alert threshold**: 2.0
    * **apps**: geckoview, fenix, refbrow, chrome-m
    * **benchmark page**: true
    * **browser cycles**: 15
    * **expected**: pass
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/mobile/browsertime-tp6m.toml#109>`__
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/tp6/mobile/browsertime-tp6m.toml#110>`__
    * **lower is better**: true
    * **page cycles**: 25
    * **page timeout**: 60000
    * **playback**: mitmproxy-android
    * **playback pageset manifest**: mitm6-android-fenix-youtube-watch.manifest
    * **playback version**: 8.1.1
+   * **support class**: browsertime_pageload.py
    * **test url**: `<https://www.youtube.com/watch?v=COU5T-Wafa4>`__
    * **type**: pageload
    * **unit**: ms
@@ -37718,6 +37669,47 @@ Page-load performance test suite on Android. The links direct to the actual webs
         - ❌
 
 
+   .. list-table:: **test-android-hw-a55-14-0-android-aarch64-shippable-qr/opt**
+      :widths: 30 15 15 15 15
+      :header-rows: 1
+
+      * - **Test Name**
+        - mozilla-central
+        - autoland
+        - mozilla-release
+        - mozilla-beta
+      * - **browsertime-tp6m-essential-chrome-m-youtube-watch-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-essential-fenix-youtube-watch-nofis**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-essential-geckoview-youtube-watch-nofis**
+        - ✅
+        - ✅
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-chrome-m-youtube-watch-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-fenix-youtube-watch-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+      * - **browsertime-tp6m-live-geckoview-youtube-watch-nofis**
+        - ❌
+        - ❌
+        - ❌
+        - ❌
+
+
 
 
 Scenario
@@ -37727,17 +37719,24 @@ Tests that perform a specific action (a scenario), i.e. idle application, idle a
 .. dropdown:: idle
    :class-container: anchor-id-idle-s
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t idle
+
    **Owner**: PerfTest Team
 
    * **alert threshold**: 2.0
    * **apps**: fenix, geckoview, refbrow
    * **expected**: pass
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/scenario/idle.toml#14>`__
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/scenario/idle.toml#15>`__
    * **lower is better**: true
    * **measure**: fakeMeasure
    * **page cycles**: 1
    * **page timeout**: 1320000
    * **scenario time**: 1200000
+   * **support class**: browsertime_pageload.py
    * **test url**: `<about:blank>`__
    * **type**: scenario
    * **unit**: scenarioComplete
@@ -37745,18 +37744,25 @@ Tests that perform a specific action (a scenario), i.e. idle application, idle a
 .. dropdown:: idle-bg
    :class-container: anchor-id-idle-bg-s
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t idle-bg
+
    **Owner**: PerfTest Team
 
    * **alert threshold**: 2.0
    * **apps**: fenix, geckoview, refbrow
    * **browsertime args**: --browsertime.scenario_time=60000 --browsertime.background_app=false
    * **expected**: pass
-   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/scenario/idle.toml#16>`__
+   * **link searchfox**: `<https://searchfox.org/mozilla-central/source/testing/raptor/raptor/tests/scenario/idle.toml#17>`__
    * **lower is better**: true
    * **measure**: fakeMeasure
    * **page cycles**: 1
    * **page timeout**: 1320000
    * **scenario time**: 1200000
+   * **support class**: browsertime_pageload.py
    * **test url**: `<about:blank>`__
    * **type**: scenario
    * **unit**: scenarioComplete
@@ -37769,9 +37775,15 @@ These tests aren't used in standard testing, they are only used in the Raptor un
 .. dropdown:: test-page-1
    :class-container: anchor-id-test-page-1-u
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t test-page-1
+
    **Owner**: PerfTest Team
 
-   * **alert on**: fcp, loadtime
+   * **alert on**: `fcp <raptor-metrics.html#first-paint>`__, `loadtime <raptor-metrics.html#load-time>`__
    * **alert threshold**: 2.0
    * **apps**: firefox
    * **expected**: pass
@@ -37791,9 +37803,15 @@ These tests aren't used in standard testing, they are only used in the Raptor un
 .. dropdown:: test-page-2
    :class-container: anchor-id-test-page-2-u
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t test-page-2
+
    **Owner**: PerfTest Team
 
-   * **alert on**: fcp, loadtime
+   * **alert on**: `fcp <raptor-metrics.html#first-paint>`__, `loadtime <raptor-metrics.html#load-time>`__
    * **alert threshold**: 2.0
    * **apps**: firefox
    * **expected**: pass
@@ -37813,9 +37831,15 @@ These tests aren't used in standard testing, they are only used in the Raptor un
 .. dropdown:: test-page-3
    :class-container: anchor-id-test-page-3-u
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t test-page-3
+
    **Owner**: PerfTest Team
 
-   * **alert on**: fcp, loadtime
+   * **alert on**: `fcp <raptor-metrics.html#first-paint>`__, `loadtime <raptor-metrics.html#load-time>`__
    * **alert threshold**: 2.0
    * **apps**: firefox
    * **expected**: pass
@@ -37835,9 +37859,15 @@ These tests aren't used in standard testing, they are only used in the Raptor un
 .. dropdown:: test-page-4
    :class-container: anchor-id-test-page-4-u
 
+   * Command to Run Locally
+
+   .. code-block::
+
+      ./mach raptor -t test-page-4
+
    **Owner**: PerfTest Team
 
-   * **alert on**: fcp, loadtime
+   * **alert on**: `fcp <raptor-metrics.html#first-paint>`__, `loadtime <raptor-metrics.html#load-time>`__
    * **alert threshold**: 2.0
    * **apps**: firefox
    * **expected**: pass

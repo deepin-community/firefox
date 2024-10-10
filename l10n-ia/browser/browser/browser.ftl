@@ -547,6 +547,10 @@ urlbar-go-button =
     .tooltiptext = Ir al adresse in le barra de adresses
 urlbar-page-action-button =
     .tooltiptext = Actiones del pagina
+urlbar-revert-button =
+    .tooltiptext = Monstrar le adresse in le barra de adresses
+urlbar-show-page-actions-button =
+    .tooltiptext = Monstrar tote le actiones de pagina
 
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
@@ -637,6 +641,21 @@ urlbar-group-quickactions =
 #  $engine (String): the name of the search engine used to search.
 urlbar-group-recent-searches =
     .label = Recercas recente
+# The header shown above trending results.
+# Variables:
+#  $engine (String): the name of the search engine providing the trending suggestions
+urlbar-group-trending =
+    .label = Popular sur { $engine }
+# The result menu labels shown next to trending results.
+urlbar-result-menu-trending-dont-show =
+    .label = Non monstrar le recercas popular
+    .accesskey = N
+urlbar-result-menu-trending-why =
+    .label = Proque vide io isto?
+    .accesskey = P
+# A message that replaces a result when the user dismisses all suggestions of a
+# particular type.
+urlbar-trending-dismissal-acknowledgment = Gratias pro tu opinion. Le recercas popular non sera plus visualisate.
 
 ## Reader View toolbar buttons
 
@@ -987,6 +1006,10 @@ firefox-relay-offer-legal-notice = Si tu clicca “Usar masca email”, tu conco
 popup-notification-addon-install-unsigned =
     .value = (Non verificate)
 popup-notification-xpinstall-prompt-learn-more = Saper plus re le installation secur de additivos
+# Note: Access key is set to P to match "Private" in the corresponding localized label.
+popup-notification-addon-privatebrowsing-checkbox =
+    .label = Executar in fenestras private
+    .accesskey = p
 
 ## Pop-up warning
 
@@ -1016,3 +1039,24 @@ popup-warning-button =
 #   $popupURI (String): the URI for the pop-up window
 popup-show-popup-menuitem =
     .label = Monstrar “{ $popupURI }”
+
+## File-picker crash notification ("FilePickerCrashed.sys.mjs")
+
+file-picker-failed-open = Impossibile aperir fenestra de selection file de Windows. Nulle file o plica seligite.
+#   $path (string): The full path to which the file will be saved (e.g., 'C:\Users\Default User\Downloads\readme.txt').
+file-picker-failed-save-somewhere = Impossibile aperir fenestra de selection file de Windows. Le file o sera salvate a { $path }.
+file-picker-failed-save-nowhere = Impossibile aperir fenestra de selection file de Windows. Nulle plica predefinite e le file non sera salvate.
+file-picker-crashed-open = Le fenestra de selection file de Windows collabeva. Nulle file o plica seligite.
+#   $path (string): The full path to which the file will be saved (e.g., 'C:\Users\Default User\Downloads\readme.txt').
+file-picker-crashed-save-somewhere = Le fenestra de selection file de Windows collabeva. Le file o sera salvate a { $path }.
+file-picker-crashed-save-nowhere = Impossibile aperir fenestra de selection file de Windows. Nulle plica predefinite trovate; le file non sera salvate.
+
+# Button used with file-picker-crashed-save-default. Opens the folder in Windows
+# Explorer, with the saved file selected and in focus.
+#
+# The wording here should be consistent with the Windows variant of
+# `downloads-cmd-show-menuitem-2` and similar messages.
+
+file-picker-crashed-show-in-folder =
+    .label = Monstrar in plica
+    .accessKey = p

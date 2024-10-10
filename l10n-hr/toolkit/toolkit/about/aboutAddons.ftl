@@ -17,13 +17,13 @@ list-empty-get-language-packs-message = Nabavi jezične pakete na <a data-l10n-n
 ##
 
 list-empty-installed =
-    .value = Nemate instaliran nijedan dodatak ove vrste
+    .value = Nemaš instaliran nijedan dodatak ove vrste
 list-empty-available-updates =
-    .value = Nema nadogradnji
+    .value = Nema novih verzija
 list-empty-recent-updates =
     .value = U posljednje vrijeme nisi aktualizirao/la nijedan dodatak
 list-empty-find-updates =
-    .label = Provjeri dostupnost dopuna
+    .label = Traži nove verzije
 list-empty-button =
     .label = Saznaj više o dodacima
 help-button = Podrška za dodatke
@@ -37,15 +37,17 @@ show-unsigned-extensions-button =
 show-all-extensions-button =
     .label = Prikaži sva proširenja
 detail-version =
-    .label = Verzija
+    .label = Inačica
 detail-last-updated =
-    .label = Posljednja dopuna
+    .label = Zadnje aktualiziranje
+addon-detail-description-expand = Prikaži više
+addon-detail-description-collapse = Prikaži manje
 detail-contributions-description = Programer ovog proširenja te moli, da pomoću male donacije podržiš daljnji razvoj proširenja.
 detail-contributions-button = Doprinesi
     .title = Doprinesi razvoju ovog dodatka
     .accesskey = D
 detail-update-type =
-    .value = Automatske dopune
+    .value = Automatska aktualiziranja
 detail-update-default =
     .label = Standardno
     .tooltiptext = Instaliraj dopune automatski samo ako je to standardno postavljeno
@@ -80,23 +82,23 @@ detail-repository-value =
     .value = { detail-repository.label }
 detail-check-for-updates =
     .label = Provjeri dostupnost dopuna
-    .accesskey = r
-    .tooltiptext = Provjeri dostupnost dopuna za ovaj dodatak
+    .accesskey = u
+    .tooltiptext = Traži nove inačice za ovaj dodatak
 detail-show-preferences =
     .label =
         { PLATFORM() ->
             [windows] Mogućnosti
-           *[other] Osobitosti
+           *[other] Postavke
         }
     .accesskey =
         { PLATFORM() ->
             [windows] o
-           *[other] t
+           *[other] P
         }
     .tooltiptext =
         { PLATFORM() ->
             [windows] Promijeni mogućnosti ovog dodatka
-           *[other] Promijeni osobitosti ovog dodatka
+           *[other] Promijeni postavke ovog dodatka
         }
 detail-rating =
     .value = Ocjena
@@ -134,35 +136,42 @@ addon-category-locale-title =
 addon-category-available-updates = Dostupne dopune
 addon-category-available-updates-title =
     .title = Dostupne dopune
-addon-category-recent-updates = Nedavne dopune
+addon-category-recent-updates = Nedavna aktualiziranja
 addon-category-recent-updates-title =
-    .title = Nedavne dopune
+    .title = Nedavna aktualiziranja
 addon-category-sitepermission = Dozvole web-mjesta
 addon-category-sitepermission-title =
     .title = Dozvole web-mjesta
+# String displayed in about:addons in the Site Permissions section
+# Variables:
+#  $host (string) - DNS host name for which the webextension enables permissions
+addon-sitepermission-host = Dozvole stranice za { $host }
 
 ## These are global warnings
 
-extensions-warning-safe-mode = Siguran način rada isključio je sve dodatke.
+extensions-warning-safe-mode = Siguran modus je isključio sve dodatke.
 extensions-warning-check-compatibility = Provjera kompatibilnosti dodataka je isključena. Možda imaš nekompatibilne dodatke.
 extensions-warning-safe-mode2 =
-    .message = Siguran način rada isključio je sve dodatke.
+    .message = Siguran modus je isključio sve dodatke.
 extensions-warning-check-compatibility2 =
     .message = Provjera kompatibilnosti dodataka je isključena. Možda imaš nekompatibilne dodatke.
-extensions-warning-check-compatibility-button = Omogući
-    .title = Omogući provjeru kompatibilnosti dodataka
-extensions-warning-update-security = Provjera dostupnosti sigurnosnih nadogradnji za dodatke je isključena. Nadogradnje mogu naškoditi tvojoj sigurnosti.
+extensions-warning-check-compatibility-button = Aktiviraj
+    .title = Aktiviraj provjeru kompatibilnosti dodataka
+extensions-warning-update-security = Provjera sigurnosti aktualiziranja dodataka je isključena. Aktualiziranja mogu naškoditi tvojoj sigurnosti.
 extensions-warning-update-security2 =
     .message = Provjera dostupnosti sigurnosnih nadogradnji za dodatke je isključena. Nadogradnje mogu naškoditi tvojoj sigurnosti.
-extensions-warning-update-security-button = Omogući
-    .title = Omogući provjeru dostupnosti sigurnosnih dopuna za dodatke
+extensions-warning-update-security-button = Aktiviraj
+    .title = Aktiviraj provjeru sigurnosti aktualiziranja dodataka
+extensions-warning-imported-addons2 =
+    .message = Završite instaliranje dodataka uvezenih u { -brand-short-name }.
+extensions-warning-imported-addons-button = Instaliraj proširenja
 
 ## Strings connected to add-on updates
 
 addon-updates-check-for-updates = Provjeri dostupnost dopuna
-    .accesskey = d
-addon-updates-view-updates = Prikaži nedavne dopune
-    .accesskey = v
+    .accesskey = P
+addon-updates-view-updates = Prikaži nedavna aktualiziranja
+    .accesskey = P
 
 # This menu item is a checkbox that toggles the default global behavior for
 # add-on update checking.
@@ -185,7 +194,7 @@ addon-updates-reset-updates-to-manual = Postavi ručno aktualiziranje za sve dod
 
 addon-updates-updating = Aktualiziranje dodataka
 addon-updates-installed = Tvoji su dodaci aktualizirani.
-addon-updates-none-found = Nema dopuna
+addon-updates-none-found = Nisu pronađene dopune
 addon-updates-manual-updates-found = Prikaži dostupne dopune
 
 ## Add-on install/debug strings for page options menu
@@ -206,6 +215,9 @@ shortcuts-no-addons = Nemaš aktiviranih proširenja.
 shortcuts-no-commands = Sljedeći dodaci nemaju prečace:
 shortcuts-input =
     .placeholder = Upišite prečac
+# Accessible name for a trashcan icon button that removes an existent shortcut
+shortcuts-remove-button =
+    .aria-label = Ukloni prečac
 shortcuts-browserAction2 = Aktiviraj tipku na alatnoj traci
 shortcuts-pageAction = Aktiviraj radnju stranice
 shortcuts-sidebarAction = Prikaži/sakrij bočnu traku
@@ -229,6 +241,8 @@ shortcuts-duplicate-warning-message2 =
 # Variables:
 #   $addon (string) - Name of the add-on
 shortcuts-exists = Već se koristi za { $addon }
+# Variables:
+#   $numberToShow (number) - Number of other elements available to show
 shortcuts-card-expand-button =
     { $numberToShow ->
         [one] Prikaži još { $numberToShow }
@@ -244,12 +258,12 @@ header-back-button =
 # Explanatory introduction to the list of recommended add-ons. The action word
 # ("recommends") in the final sentence is a link to external documentation.
 discopane-intro =
-    Dodaci i teme su kao programi za preglednik i omogućavaju zaštitu za
-    lozinke, preuzimanje videozapisa, pronalaženje ponuda, blokiranje
-    dosadnih oglasa, izmjenu izgleda preglednika i još puno više. Ove male
-    programe često razvijaju treće strane. Ovdje je izbor dodataka koje
-    { -brand-product-name } <a data-l10n-name="learn-more-trigger">preporučuje</a> za dodatnu
-    sigurnost, perfomanse i funkcionalnost.
+    Dodaci i teme su kao programi za preglednik i omogućuju
+    zaštitu za lozinke, preuzimanje videa, pronalaženje ponuda,
+    blokiranje oglasa, mijenjanje izgleda preglednika i još više.
+    Ove male programe često razvijaju treće strane. Ovdje je izbor
+    dodataka koje { -brand-product-name } <a data-l10n-name="learn-more-trigger">preporučuje</a>
+    za sigurnost, perfomansu i funkcionalnost.
 # Notice to make user aware that the recommendations are personalized.
 discopane-notice-recommendations =
     Neki prijedlozi su specifični za tebe, jer se temelje na drugim već instaliranim
@@ -288,15 +302,15 @@ remove-addon-button = Ukloni
 # The link will always be shown after the other text.
 remove-addon-disabled-button = Ne može se ukloniti. <a data-l10n-name="link">Zašto?</a>
 disable-addon-button = Onemogući
-enable-addon-button = Omogući
+enable-addon-button = Aktiviraj
 # This is used for the toggle on the extension card, it's a checkbox and this
 # is always its label.
 extension-enable-addon-button-label =
-    .aria-label = Omogući
+    .aria-label = Aktiviraj
 preferences-addon-button =
     { PLATFORM() ->
         [windows] Mogućnosti
-       *[other] Mogućnosti
+       *[other] Postavke
     }
 details-addon-button = Detalji
 release-notes-addon-button = Napomene o izdanju
@@ -304,6 +318,7 @@ permissions-addon-button = Dozvole
 extension-enabled-heading = Aktivirano
 extension-disabled-heading = Onemogućeno
 theme-enabled-heading = Aktivirano
+theme-disabled-heading2 = Spremljene teme
 plugin-enabled-heading = Aktivirano
 plugin-disabled-heading = Onemogućeno
 dictionary-enabled-heading = Aktivirano
@@ -313,9 +328,9 @@ locale-disabled-heading = Onemogućeno
 sitepermission-enabled-heading = Aktivirano
 sitepermission-disabled-heading = Onemogućeno
 always-activate-button = Uvijek aktiviraj
-never-activate-button = Ne aktiviraj
+never-activate-button = Nikada ne aktiviraj
 addon-detail-author-label = Autor
-addon-detail-version-label = Verzija
+addon-detail-version-label = Inačica
 addon-detail-last-updated-label = Zadnje aktualiziranje
 addon-detail-homepage-label = Početna stranica
 addon-detail-rating-label = Ocjena
@@ -353,13 +368,17 @@ pending-uninstall-description = <span data-l10n-name="addon-name">{ $addon }</sp
 #   $addon (string) - Name of the add-on
 pending-uninstall-description2 =
     .message = { $addon } je uklonjen.
-pending-uninstall-undo-button = Vrati
+pending-uninstall-undo-button = Poništi
 addon-detail-updates-label = Dozvoli automatska aktualiziranja
 addon-detail-updates-radio-default = Standardno
 addon-detail-updates-radio-on = Uključeno
 addon-detail-updates-radio-off = Isključeno
 addon-detail-update-check-label = Provjeri dostupnost dopuna
 install-update-button = Aktualiziraj
+# aria-label associated to the updates row to help screen readers to announce the group
+# of input controls being entered.
+addon-detail-group-label-updates =
+    .aria-label = { addon-detail-updates-label }
 # This is the tooltip text for the private browsing badge in about:addons. The
 # badge is the private browsing icon included next to the extension's name.
 addon-badge-private-browsing-allowed2 =
@@ -368,10 +387,24 @@ addon-badge-private-browsing-allowed2 =
 addon-detail-private-browsing-help = Kad je dopušteno, dodatak će imati pristup tvojim aktivnostima dok si u privatnom pretraživanju. <a data-l10n-name="learn-more">Saznaj više</a>
 addon-detail-private-browsing-allow = Dozvoli
 addon-detail-private-browsing-disallow = Nemoj dozvoliti
+# aria-label associated to the private browsing row to help screen readers to announce the group
+# of input controls being entered.
+addon-detail-group-label-private-browsing =
+    .aria-label = { detail-private-browsing-label }
 
 ## "sites with restrictions" (internally called "quarantined") are special domains
 ## where add-ons are normally blocked for security reasons.
 
+# Used as a description for the option to allow or block an add-on on quarantined domains.
+addon-detail-quarantined-domains-label = Pokretanje na stranicama s ograničenjima
+# Used as help text part of the quarantined domains UI controls row.
+addon-detail-quarantined-domains-help = Kada je dopušteno, dodatak će imati pristup stranicama koje je ograničio { -vendor-short-name }. Dopusti samo ako vjeruješ ovom proširenju.
+# Used as label and tooltip text on the radio inputs associated to the quarantined domains UI controls.
+addon-detail-quarantined-domains-allow = Dozvoli
+addon-detail-quarantined-domains-disallow = Nemoj dopustiti
+# aria-label associated to the quarantined domains exempt row to help screen readers to announce the group.
+addon-detail-group-label-quarantined-domains =
+    .aria-label = { addon-detail-quarantined-domains-label }
 
 ## This is the tooltip text for the recommended badges for an extension in about:addons. The
 ## badge is a small icon displayed next to an extension when it is recommended on AMO.
@@ -391,7 +424,7 @@ addon-badge-verified2 =
 ##
 
 available-updates-heading = Dostupne dopune
-recent-updates-heading = Nedavne dopune
+recent-updates-heading = Nedavna aktualiziranja
 release-notes-loading = Učitavanje…
 release-notes-error = Došlo je do greške pri učitavanju napomena o izdanju.
 addon-permissions-empty = Ovaj dodatak ne zahtjeva nikakve dozvole.
@@ -400,6 +433,9 @@ addon-permissions-optional = Opcionalne dozvole za dodatnu funkcionalnost:
 addon-permissions-learnmore = Saznaj više o dozvolama
 recommended-extensions-heading = Preporučeni dodaci
 recommended-themes-heading = Preporučene teme
+# Variables:
+#   $hostname (string) - Host where the permissions are granted
+addon-sitepermissions-required = Daje sljedeće mogućnosti <span data-l10n-name="hostname">{ $hostname }</span>:
 # A recommendation for the Firefox Color theme shown at the bottom of the theme
 # list view. The "Firefox Color" name itself should not be translated.
 recommended-theme-1 = Želiš drugačiji dizajn? <a data-l10n-name="link">Izradi vlastiti motiv s Firefox Color.</a>
@@ -412,6 +448,7 @@ plugin-heading = Upravljaj priključcima
 dictionary-heading = Upravljaj rječnicima
 locale-heading = Upravljaj jezicima
 updates-heading = Upravljaj nadogradnjama
+sitepermission-heading = Upravljajte svojim dozvolama za stranicu
 discover-heading = Prilagodi svoj { -brand-short-name }
 shortcuts-heading = Upravljaj prečacima dodataka
 default-heading-search-label = Pronađi daljnje dodatke
@@ -425,12 +462,13 @@ addon-page-options-button =
 ##   $name (string) - Name of the add-on.
 
 # Variables:
-#   $version (String): application version.
+#   $version (string) - Application version.
 details-notification-incompatible = Dodatak { $name } je nekompatibilan s { -brand-short-name } { $version }.
 # Variables:
 #   $version (string) - Application version.
 details-notification-incompatible2 =
     .message = Dodatak { $name } je nekompatibilan s { -brand-short-name } { $version }.
+details-notification-incompatible-link = Više informacija
 details-notification-unsigned-and-disabled = { $name } nije mogao biti verificiran za rad u { -brand-short-name } te je onemogućen.
 details-notification-unsigned-and-disabled2 =
     .message = { $name } nije mogao biti verificiran za rad u { -brand-short-name } te je onemogućen.

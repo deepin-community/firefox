@@ -28,13 +28,21 @@ skip-if = ["os == 'mac'"]
 
 ["test_moz_card.html"]
 
+["test_moz_checkbox.html"]
+
+["test_moz_fieldset.html"]
+
 ["test_moz_five_star.html"]
 
 ["test_moz_label.html"]
 
+["test_moz_lit_element.html"]
+
 ["test_moz_message_bar.html"]
 
 ["test_moz_page_nav.html"]
+
+["test_moz_radio_group.html"]
 
 ["test_moz_support_link.html"]
 
@@ -71,3 +79,6 @@ skip-if = [
 ]
 
 ["test_videocontrols_onclickplay.html"]
+skip-if = [
+   "os == 'linux' && os_version == '18.04' && debug", # Bug 1787007
+]

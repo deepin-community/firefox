@@ -4,18 +4,28 @@
 
 tabbrowser-empty-tab-title = Nov zavihek
 tabbrowser-empty-private-tab-title = Nov zasebni zavihek
-
 tabbrowser-menuitem-close-tab =
     .label = Zapri zavihek
 tabbrowser-menuitem-close =
     .label = Zapri
-
 # Displayed as a tooltip on container tabs
 # Variables:
 #   $title (String): the title of the current tab.
 #   $containerName (String): the name of the current container.
 tabbrowser-container-tab-title = { $title } – { $containerName }
-
+# This text serves as an on-screen tooltip as well as an accessible name for
+# the "X" button that is shown on the active tab or, when multiple tabs are
+# selected, to all their "X" buttons.
+# Variables:
+#   $tabCount (Number): The number of tabs that will be closed.
+tabbrowser-close-tabs-button =
+    .tooltiptext =
+        { $tabCount ->
+            [one] Zapri zavihek
+            [two] Zapri { $tabCount } zavihka
+            [few] Zapri { $tabCount } zavihke
+           *[other] Zapri { $tabCount } zavihkov
+        }
 # Variables:
 #   $tabCount (Number): The number of tabs that will be closed.
 tabbrowser-close-tabs-tooltip =
@@ -136,13 +146,22 @@ tabbrowser-confirm-caretbrowsing-title = Brskanje s kazalko
 tabbrowser-confirm-caretbrowsing-message = Tipka F7 vključi ali izključi brskanje s kazalko. Ta možnost na spletne strani postavi premični kazalec, ki vam omogoča izbiro besedila s tipkovnico. Ali želite vključiti brskanje s kazalko?
 tabbrowser-confirm-caretbrowsing-checkbox = Tega pogovornega okna ne prikazuj več.
 
+## Confirmation dialog for closing all duplicate tabs
+
+tabbrowser-confirm-close-duplicate-tabs-title = Pozor
+tabbrowser-confirm-close-duplicate-tabs-text = Obdržali bomo zadnji aktivni zavihek
+tabbrowser-confirm-close-all-duplicate-tabs-title = Zaprem podvojene zavihke?
+tabbrowser-confirm-close-all-duplicate-tabs-text =
+    V tem oknu bomo zaprli podvojene zavihke. Zadnji dejavni
+    zavihek bo ostal odprt.
+tabbrowser-confirm-close-all-duplicate-tabs-button-closetabs = Zapri zavihke
+
 ##
 
 # Variables:
 #   $domain (String): URL of the page that is trying to steal focus.
 tabbrowser-allow-dialogs-to-get-focus =
     .label = Dovoli takšnim obvestilom z { $domain }, da preklopijo na svoj zavihek
-
 tabbrowser-customizemode-tab-title = Prilagodi { -brand-short-name }
 
 ## Context menu buttons, of which only one will be visible at a time
@@ -161,7 +180,6 @@ tabbrowser-context-mute-selected-tabs =
 tabbrowser-context-unmute-selected-tabs =
     .label = Povrni glasnost zavihkov
     .accesskey = r
-
 # This string is used as an additional tooltip and accessibility description for tabs playing audio
 tabbrowser-tab-audio-playing-description = Predvaja zvok
 

@@ -196,6 +196,8 @@ newtab-section-header-recent-activity = Ĵusa agado
 #   $provider (string) - Name of the corresponding content provider.
 newtab-section-header-pocket = Rekomendita de { $provider }
 newtab-section-header-stories = Pensigaj artikoloj
+# "picks" refers to recommended articles
+newtab-section-header-todays-picks = Niaj hodiaŭaj elektoj por vi
 
 ## Empty Section States: These show when there are no more items in a section. Ex. When there are no more Pocket story recommendations, in the space where there would have been stories, this is shown instead.
 
@@ -229,6 +231,19 @@ newtab-pocket-pocket-firefox-family = { -pocket-brand-name } estas parto de la f
 # A save to Pocket button that shows over the card thumbnail on hover.
 newtab-pocket-save = Konservi
 newtab-pocket-saved = Konservitaj
+
+## Thumbs up and down buttons that shows over a newtab stories card thumbnail on hover.
+
+# Clicking the thumbs up button for this story will result in more stories like this one being recommended
+newtab-pocket-thumbs-up-tooltip =
+    .title = Pli da ĉi tiaj
+# Clicking the thumbs down button for this story informs us that the user does not feel like the story is interesting for them
+newtab-pocket-thumbs-down-tooltip =
+    .title = Tio ne interesas min
+newtab-toast-thumbs-up-or-down = Dankon, viaj komentoj helpos nin plibonigi vian informan fonton.
+newtab-toast-dismiss-button =
+    .title = Ignori
+    .aria-label = I
 
 ## Pocket content onboarding experience dialog and modal for new users seeing the Pocket section for the first time, shown as the first item in the Pocket section.
 
@@ -268,6 +283,9 @@ newtab-custom-recent-subtitle = Elekto de ĵusaj retejoj kaj enhavoj
 newtab-custom-recent-toggle =
     .label = Ĵusa agado
     .description = Elekto de ĵusaj retejoj kaj enhavoj
+newtab-custom-weather-toggle =
+    .label = Vetero
+    .description = Rapida rigardo al la veterprognozo hodiaŭa
 newtab-custom-close-button = Fermi
 newtab-custom-settings = Administri aliajn agordojn
 
@@ -287,7 +305,125 @@ newtab-wallpaper-dark-panda = Ruĝa pando kaŝita en arbaro
 newtab-wallpaper-dark-sky = Pejzaĝo urba kun nokta ĉielo
 newtab-wallpaper-dark-mountain = Pejzaĝo monta
 newtab-wallpaper-dark-city = Purpura pejzaĝo urba
+
+## Solid Colors
+
+newtab-wallpaper-category-title-colors = Solidaj koloroj
+newtab-wallpaper-blue = Blua
+newtab-wallpaper-light-blue = Helblua
+newtab-wallpaper-light-purple = Helpurpura
+newtab-wallpaper-light-green = Helverda
+newtab-wallpaper-green = Verda
+newtab-wallpaper-beige = Grizflava
+newtab-wallpaper-yellow = Flava
+newtab-wallpaper-orange = Oranĝa
+newtab-wallpaper-pink = Roza
+newtab-wallpaper-light-pink = Helroza
+newtab-wallpaper-red = Ruĝa
+newtab-wallpaper-dark-blue = Malhelblua
+newtab-wallpaper-dark-purple = Malhelpurpura
+newtab-wallpaper-dark-green = Malhelverda
+newtab-wallpaper-brown = Bruna
+
+## Abstract
+
+newtab-wallpaper-category-title-abstract = Abstrakta
+newtab-wallpaper-abstract-green = Verdaj formoj
+newtab-wallpaper-abstract-blue = Bluaj formoj
+newtab-wallpaper-abstract-purple = Purpuraj formoj
+newtab-wallpaper-abstract-orange = Oranĝaj formoj
+newtab-wallpaper-gradient-orange = Gamo oranĝa kaj roza
+newtab-wallpaper-abstract-blue-purple = Bluaj kaj purpuraj formoj
+
+## Photographs
+
+newtab-wallpaper-category-title-photographs = Fotoj
+newtab-wallpaper-beach-at-sunrise = Strando dum suneliro
+newtab-wallpaper-beach-at-sunset = Strando dum sunsubiro
+newtab-wallpaper-storm-sky = Ŝtorma ĉielo
+newtab-wallpaper-sky-with-pink-clouds = Ĉielo kun rozkoloraj nuboj
+newtab-wallpaper-red-panda-yawns-in-a-tree = Ruĝa pando oscedas sur arbo
+newtab-wallpaper-white-mountains = Blankaj montoj
 # Variables
 #   $author_string (String) - The name of the creator of the photo.
 #   $webpage_string (String) - The name of the webpage where the photo is located.
 newtab-wallpaper-attribution = Fotita de <a data-l10n-name="name-link">{ $author_string }</a> en <a data-l10n-name="webpage-link">{ $webpage_string }</a>
+newtab-wallpaper-feature-highlight-header = Provu koloran tuŝeton
+newtab-wallpaper-feature-highlight-content = Donu al viaj langetoj novan aspekton per fonoj.
+newtab-wallpaper-feature-highlight-button = Mi komprenis
+# Tooltip for dismiss button
+feature-highlight-dismiss-button =
+    .title = Ignori
+    .aria-label = Fermi elŝprucaĵon
+feature-highlight-wallpaper =
+    .title = { -newtab-wallpaper-feature-highlight-header }
+    .aria-label = { -newtab-wallpaper-feature-highlight-content }
+
+## New Tab Weather
+
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-see-forecast =
+    .title = Vidi veterprognozon en { $provider }
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-sponsored = { $provider } ∙ Patronita
+newtab-weather-menu-change-location = Ŝanĝi lokon
+newtab-weather-change-location-search-input = Serĉi lokon
+newtab-weather-menu-weather-display = Montro de vetero
+# Display options are:
+# - Simple: Displays a current weather condition icon and the current temperature
+# - Detailed: Include simple information plus a short text summary: e.g. "Mostly cloudy"
+newtab-weather-menu-weather-display-option-simple = Simpla
+newtab-weather-menu-change-weather-display-simple = Montri la simplan vidon
+newtab-weather-menu-weather-display-option-detailed = Detala
+newtab-weather-menu-change-weather-display-detailed = Montri la detalan vidon
+newtab-weather-menu-temperature-units = Temperaturaj unuoj
+newtab-weather-menu-temperature-option-fahrenheit = Fahrenheit
+newtab-weather-menu-temperature-option-celsius = Celsius
+newtab-weather-menu-change-temperature-units-fahrenheit = Ŝanĝi al Fahrenheit
+newtab-weather-menu-change-temperature-units-celsius = Ŝanĝi al Celsius
+newtab-weather-menu-hide-weather = Kaŝi veteron en nova langeto
+newtab-weather-menu-learn-more = Pli da informo
+# This message is shown if user is working offline
+newtab-weather-error-not-available = En tiu ĉi momento ne haveblas veteraj datumoj.
+
+## Topic Labels
+
+newtab-topic-label-business = Negoco
+newtab-topic-label-career = Kariero
+newtab-topic-label-education = Eduko
+newtab-topic-label-arts = Distro
+newtab-topic-label-food = Manĝaĵo
+newtab-topic-label-health = Sano
+newtab-topic-label-hobbies = Ludo
+# ”Money” = “Personal Finance”, refers to articles and stories that help readers better manage
+# and understand their personal finances – from saving money to buying a home. See the
+# “Curated by our editors“ section at the top of https://getpocket.com/explore/personal-finance for more context
+newtab-topic-label-finance = Financo
+newtab-topic-label-society-parenting = Gepatreco
+newtab-topic-label-government = Politiko
+newtab-topic-label-education-science = Scienco
+# ”Life Hacks” = “Self Improvement”, refers to articles and stories aimed at helping readers improve various
+# aspects of their lives – from mental health to  productivity. See the “Curated by our editors“ section
+# at the top of https://getpocket.com/explore/self-improvement for more context.
+newtab-topic-label-society = Vivsimpligiloj
+newtab-topic-label-sports = Sporto
+newtab-topic-label-tech = Teknologio
+newtab-topic-label-travel = Vojaĝo
+newtab-topic-label-home = Domo kaj ĝardeno
+
+## Topic Selection Modal
+
+# “fine-tune” refers to the process of making small adjustments to something to get
+# the best or desired experience or performance.
+newtab-topic-selection-title = Elektu temojn por rafini vian informan fonton
+# “tailored” refers to process of (a tailor) making (clothes) to fit individual customers.
+# In other words, “Our expert curators prioritize stories to fit your selected interests”
+newtab-topic-selection-subtitle = Elektu du aŭ pli da temoj. Niaj spertaj informzorgantoj elektos unue artikolojn, kiuj kongruas kun viaj interesoj. Vi povas ĝisdatigi tion iam ajn.
+newtab-topic-selection-save-button = Konservi
+newtab-topic-selection-cancel-button = Nuligi
+newtab-topic-selection-button-maybe-later = Eble poste
+newtab-topic-selection-privacy-link = Pli da informo pri kiel ni protektas kaj administras datumojn
+newtab-topic-selection-button-update-interests = Ĝisdatigi viajn interesojn
+newtab-topic-selection-button-pick-interests = Elekti viajn interesojn

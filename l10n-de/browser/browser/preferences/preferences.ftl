@@ -57,6 +57,10 @@ category-experimental =
 pane-experimental-subtitle = Vorsicht!
 pane-experimental-search-results-header = { -brand-short-name } Experimente: Vorsicht!
 pane-experimental-description2 = Das Ändern von erweiterten Konfigurationseinstellungen kann sich auf die Leistung und Sicherheit von { -brand-short-name } auswirken.
+settings-pane-labs-title = { -firefoxlabs-brand-name }
+settings-category-labs =
+    .tooltiptext = { -firefoxlabs-brand-name }
+pane-experimental-description3 = Probieren Sie unsere experimentellen Funktionen aus! Sie sind noch in der Entwicklung und werden verändert, was sich auf die Funktionsweise von { -brand-short-name } auswirken könnte.
 pane-experimental-reset =
     .label = Standard wiederherstellen
     .accesskey = w
@@ -599,6 +603,10 @@ home-prefs-recent-activity-description = Eine Auswahl kürzlich besuchter Websit
 home-prefs-snippets-header =
     .label = Kurzinformationen
 home-prefs-snippets-description-new = Tipps und Neuigkeiten von { -vendor-short-name } und { -brand-product-name }
+home-prefs-weather-header =
+    .label = Wetter
+home-prefs-weather-description = Die heutige Wettervorhersage auf einen Blick
+home-prefs-weather-learn-more-link = Weitere Informationen
 # Variables:
 #   $num (number) - Number of rows displayed
 home-prefs-sections-rows-option =
@@ -912,6 +920,9 @@ forms-saved-passwords =
 forms-primary-pw-use =
     .label = Hauptpasswort verwenden
     .accesskey = v
+# This operation requires the user to authenticate with the operating system (device sign-in)
+forms-os-reauth =
+    .label = Anmeldung am Gerät zum Ausfüllen und Verwalten von Passwörtern verlangen
 forms-primary-pw-learn-more-link = Weitere Informationen
 # This string uses the former name of the Primary Password feature
 # ("Master Password" in English) so that the preferences can be found
@@ -944,6 +955,13 @@ primary-password-os-auth-dialog-message-win = Um ein Hauptpasswort zu erstellen,
 # notes are only valid for English. Please test in your locale.
 primary-password-os-auth-dialog-message-macosx = Hauptpasswort festlegen
 master-password-os-auth-dialog-caption = { -brand-full-name }
+# The macOS string is preceded by the operating system with "Firefox is trying to ".
+autofill-creditcard-os-dialog-message =
+    { PLATFORM() ->
+        [macos] die Einstellungen für Zahlungsmethoden ändern
+       *[other] { -brand-short-name } versucht, die Einstellungen für Zahlungsmethoden zu ändern. Verwenden Sie die Anmeldung auf dem Gerät, um dies zu erlauben.
+    }
+autofill-creditcard-os-auth-dialog-caption = { -brand-full-name }
 
 ## Privacy section - Autofill
 
@@ -958,14 +976,9 @@ autofill-payment-methods-checkbox-submessage = Einschließlich Kredit- und Debit
     .accesskey = E
 autofill-saved-payment-methods-button = Gespeicherte Zahlungsmethoden
     .accesskey = G
-autofill-reauth-checkbox =
-    { PLATFORM() ->
-        [macos] macOS-Authentifizierung anfordern, um Zahlungsmethoden auszufüllen und zu bearbeiten
-        [windows] Windows-Authentifizierung anfordern, um Zahlungsmethoden auszufüllen und zu bearbeiten
-        [linux] Linux-Authentifizierung anfordern, um Zahlungsmethoden auszufüllen und zu bearbeiten
-       *[other] Authentifizierung anfordern, um Zahlungsmethoden auszufüllen und zu bearbeiten
-    }
-    .accesskey = A
+# This operation requires the user to authenticate with the operating system (device sign-in)
+autofill-reauth-payment-methods-checkbox = Anmeldung am Gerät zum Ausfüllen und Verwalten von Zahlungsmethoden verlangen
+    .accesskey = u
 
 ## Privacy Section - History
 
@@ -1102,6 +1115,9 @@ addressbar-suggestions-settings = Einstellungen für Suchvorschläge ändern
 addressbar-locbar-showrecentsearches-option =
     .label = Letzte Suchanfragen anzeigen
     .accesskey = L
+addressbar-locbar-showtrendingsuggestions-option =
+    .label = Beliebte Suchvorschläge anzeigen
+    .accesskey = B
 addressbar-quickactions-learn-more = Weitere Informationen
 
 ## Privacy Section - Content Blocking
@@ -1293,6 +1309,14 @@ privacy-segmentation-radio-off =
 privacy-segmentation-radio-on =
     .label = Detaillierte Informationen anzeigen
 
+## Privacy Section - Website Advertising Preferences
+
+website-advertising-header = Werbeeinstellungen für Websites
+website-advertising-private-attribution =
+    .label = Websites erlauben, datenschutzfreundliche Werbe-Messungen durchzuführen
+    .accesskey = e
+website-advertising-private-attribution-description = Dies hilft Websites, die Leistung ihrer Anzeigen zu verstehen, ohne Daten über Sie zu sammeln.
+
 ## Privacy Section - Security
 ##
 ## It is important that wording follows the guidelines outlined on this page:
@@ -1336,13 +1360,20 @@ space-alert-under-5gb-message2 = <strong>{ -brand-short-name } verfügt über nu
 
 httpsonly-header = Nur-HTTPS-Modus
 httpsonly-description = HTTPS bietet eine sichere, verschlüsselte Verbindung zwischen { -brand-short-name } und den von Ihnen besuchten Websites. Die meisten Websites unterstützen HTTPS und wenn der Nur-HTTPS-Modus aktiviert ist, wird { -brand-short-name } alle Verbindungen zu HTTPS aufrüsten.
+httpsonly-description2 = { -brand-short-name } stellt sichere und verschlüsselte Verbindungen zu den von Ihnen besuchten Websites her. { -brand-short-name } warnt Sie, wenn eine Verbindung nicht sicher ist und der Nur-HTTPS-Modus aktiv ist.
 httpsonly-learn-more = Weitere Informationen
 httpsonly-radio-enabled =
     .label = Nur-HTTPS-Modus in allen Fenstern aktivieren
+httpsonly-radio-enabled2 =
+    .label = Nur HTTPS in allen Fenstern verwenden
 httpsonly-radio-enabled-pbm =
     .label = Nur-HTTPS-Modus nur in privaten Fenstern aktivieren
+httpsonly-radio-enabled-pbm2 =
+    .label = Nur HTTPS in privaten Fenstern verwenden
 httpsonly-radio-disabled =
     .label = Nur-HTTPS-Modus nicht aktivieren
+httpsonly-radio-disabled2 =
+    .label = Zuerst HTTPS ausprobieren, aber nicht sichere Verbindungen erlauben
 
 ## DoH Section
 

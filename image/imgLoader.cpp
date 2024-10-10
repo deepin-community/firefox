@@ -31,6 +31,7 @@
 #include "mozilla/StaticPrefs_image.h"
 #include "mozilla/StaticPrefs_network.h"
 #include "mozilla/StoragePrincipalHelper.h"
+#include "mozilla/dom/CacheExpirationTime.h"
 #include "mozilla/dom/ContentParent.h"
 #include "mozilla/dom/FetchPriority.h"
 #include "mozilla/dom/nsMixedContentBlocker.h"
@@ -1001,7 +1002,7 @@ imgCacheEntry::imgCacheEntry(imgLoader* loader, imgRequest* request,
       mDataSize(0),
       mTouchedTime(SecondsFromPRTime(PR_Now())),
       mLoadTime(SecondsFromPRTime(PR_Now())),
-      mExpiryTime(0),
+      mExpiryTime(CacheExpirationTime::Never()),
       mMustValidate(false),
       // We start off as evicted so we don't try to update the cache.
       // PutIntoCache will set this to false.
@@ -1391,11 +1392,10 @@ imgLoader::RemoveEntriesFromPrincipalInAllProcesses(nsIPrincipal* aPrincipal) {
   }
 
   imgLoader* loader;
-  if (aPrincipal->OriginAttributesRef().mPrivateBrowsingId ==
-      nsIScriptSecurityManager::DEFAULT_PRIVATE_BROWSING_ID) {
-    loader = imgLoader::NormalLoader();
-  } else {
+  if (aPrincipal->OriginAttributesRef().IsPrivateBrowsing()) {
     loader = imgLoader::PrivateBrowsingLoader();
+  } else {
+    loader = imgLoader::NormalLoader();
   }
 
   return loader->RemoveEntriesInternal(aPrincipal, nullptr);
@@ -1907,8 +1907,7 @@ bool imgLoader::ValidateEntry(
   // If the expiration time is zero, then the request has not gotten far enough
   // to know when it will expire, or we know it will never expire (see
   // nsContentUtils::GetSubresourceCacheValidationInfo).
-  uint32_t expiryTime = aEntry->GetExpiryTime();
-  bool hasExpired = expiryTime && expiryTime <= SecondsFromPRTime(PR_Now());
+  bool hasExpired = aEntry->GetExpiryTime().IsExpired();
 
   // Special treatment for file URLs - aEntry has expired if file has changed
   if (nsCOMPtr<nsIFileURL> fileUrl = do_QueryInterface(aURI)) {
@@ -2471,6 +2470,9 @@ nsresult imgLoader::LoadImage(
     if (cos) {
       if (aUseUrgentStartForChannel && !aLinkPreload) {
         cos->AddClassFlags(nsIClassOfService::UrgentStart);
+      }
+      if (StaticPrefs::image_priority_incremental()) {
+        cos->SetIncremental(true);
       }
 
       if (StaticPrefs::network_http_tailing_enabled() &&

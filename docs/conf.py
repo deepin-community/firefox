@@ -56,12 +56,14 @@ extensions = [
 # excluded from valid-jsdoc in the top-level .eslintrc.js.
 js_source_path = [
     "../browser/components/backup",
+    "../browser/components/backup/actors",
     "../browser/components/backup/resources",
     "../browser/components/extensions",
     "../browser/components/migration",
     "../browser/components/migration/content",
     "../browser/components/uitour",
     "../browser/components/urlbar",
+    "../js/xpconnect/loader",
     "../remote/marionette",
     "../testing/mochitest/BrowserTestUtils",
     "../testing/mochitest/tests/SimpleTest/SimpleTest.js",
@@ -72,6 +74,7 @@ js_source_path = [
     "../toolkit/components/extensions",
     "../toolkit/components/extensions/parent",
     "../toolkit/components/featuregates",
+    "../toolkit/components/ml/content/ONNXPipeline.mjs",
     "../toolkit/mozapps/extensions",
     "../toolkit/components/prompts/src",
     "../toolkit/components/pictureinpicture",

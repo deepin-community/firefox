@@ -41,16 +41,7 @@ class AppRequestInterceptor(
     ): RequestInterceptor.InterceptionResponse? {
         val services = context.components.services
 
-        return services.urlRequestInterceptor.onLoadRequest(
-            engineSession,
-            uri,
-            lastUri,
-            hasUserGesture,
-            isSameDomain,
-            isRedirect,
-            isDirectNavigation,
-            isSubframeRequest,
-        ) ?: services.appLinksInterceptor.onLoadRequest(
+        return services.appLinksInterceptor.onLoadRequest(
             engineSession,
             uri,
             lastUri,
@@ -66,11 +57,16 @@ class AppRequestInterceptor(
         session: EngineSession,
         errorType: ErrorType,
         uri: String?,
-    ): RequestInterceptor.ErrorResponse? {
+    ): RequestInterceptor.ErrorResponse {
         val improvedErrorType = improveErrorType(errorType)
         val riskLevel = getRiskLevel(improvedErrorType)
 
         ErrorPage.visitedError.record(ErrorPage.VisitedErrorExtra(improvedErrorType.name))
+
+        // Record additional telemetry for content URI not found
+        if (uri?.startsWith("content://") == true && improvedErrorType == ErrorType.ERROR_FILE_NOT_FOUND) {
+            ErrorPage.visitedError.record(ErrorPage.VisitedErrorExtra(errorType = "ERROR_CONTENT_URI_NOT_FOUND"))
+        }
 
         val errorPageUri = ErrorPages.createUrlEncodedErrorPage(
             context = context,
