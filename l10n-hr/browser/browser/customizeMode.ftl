@@ -3,7 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 customize-mode-restore-defaults =
-    .label = Vrati zadane vrijednosti
+    .label = Obnovi standardne vrijednosti
 customize-mode-menu-and-toolbars-header = Povuci omiljene stavke u alatnu traku ili dodatni izbornik.
 customize-mode-overflow-list-title = Dodatni izbornik
 customize-mode-uidensity =
@@ -19,7 +19,7 @@ customize-mode-uidensity-menu-touch =
     .accesskey = d
     .tooltiptext = Za dodir
 customize-mode-uidensity-auto-touch-mode-checkbox =
-    .label = Koristi dodir za rad s tabletom
+    .label = Koristi dodir u tablet modusu
 customize-mode-overflow-list-description = Povuci i ispusti stavke ovamo, kako bi ti bile pri ruci, ali izvan tvoje alatne trake …
 customize-mode-uidensity-menu-normal =
     .label = Normalno
@@ -30,7 +30,7 @@ customize-mode-uidensity-menu-compact-unsupported =
     .accesskey = K
     .tooltiptext = Kompaktno (nije podržano)
 customize-mode-undo-cmd =
-    .label = Vrati
+    .label = Poništi
 customize-mode-lwthemes-link = Upravljaj temama
 customize-mode-touchbar-cmd =
     .label = Prilagodi traku dodira…

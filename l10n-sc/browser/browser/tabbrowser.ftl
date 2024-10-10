@@ -13,6 +13,17 @@ tabbrowser-menuitem-close =
 #   $title (String): the title of the current tab.
 #   $containerName (String): the name of the current container.
 tabbrowser-container-tab-title = { $title } - { $containerName }
+# This text serves as an on-screen tooltip as well as an accessible name for
+# the "X" button that is shown on the active tab or, when multiple tabs are
+# selected, to all their "X" buttons.
+# Variables:
+#   $tabCount (Number): The number of tabs that will be closed.
+tabbrowser-close-tabs-button =
+    .tooltiptext =
+        { $tabCount ->
+            [one] Serra s'ischeda
+           *[other] Serra { $tabCount } ischedas
+        }
 # Variables:
 #   $tabCount (Number): The number of tabs that will be closed.
 tabbrowser-close-tabs-tooltip =
@@ -110,6 +121,16 @@ tabbrowser-confirm-open-multiple-tabs-checkbox = Avisa cando su de abèrrere med
 tabbrowser-confirm-caretbrowsing-title = Navigatzione cun su puntadore
 tabbrowser-confirm-caretbrowsing-message = Premende sa tecla F7 podes ativare o disativare sa navigatzione cun su puntadore. Custa funtzione ammustrat unu puntadore a intro de sa pàgina web e permitit sa seletzione de testu cun su tecladu. Boles ativare sa navigatzione cun su puntadore?
 tabbrowser-confirm-caretbrowsing-checkbox = No m'ammustres prus custu diàlogu.
+
+## Confirmation dialog for closing all duplicate tabs
+
+tabbrowser-confirm-close-duplicate-tabs-title = Atentzione
+tabbrowser-confirm-close-duplicate-tabs-text = Amus a lassare aberta s'ùrtima ischeda ativa
+tabbrowser-confirm-close-all-duplicate-tabs-title = Boles serrare is ischedas duplicadas?
+tabbrowser-confirm-close-all-duplicate-tabs-text =
+    Amus a serrare is ischedas duplicadas in custa ventana. S'ùrtima ischeda
+    ativa at a abarrare aberta.
+tabbrowser-confirm-close-all-duplicate-tabs-button-closetabs = Serra is ischedas
 
 ##
 

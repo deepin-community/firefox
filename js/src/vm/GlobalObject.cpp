@@ -12,6 +12,9 @@
 #include "builtin/AtomicsObject.h"
 #include "builtin/BigInt.h"
 #include "builtin/DataViewObject.h"
+#ifdef ENABLE_EXPLICIT_RESOURCE_MANAGEMENT
+#  include "builtin/DisposableStackObject.h"
+#endif
 #ifdef JS_HAS_INTL_API
 #  include "builtin/intl/Collator.h"
 #  include "builtin/intl/DateTimeFormat.h"
@@ -106,8 +109,12 @@ JS_PUBLIC_API const JSClass* js::ProtoKeyToClass(JSProtoKey key) {
 }
 
 static bool IsIteratorHelpersEnabled() {
-#ifdef NIGHTLY_BUILD
   return JS::Prefs::experimental_iterator_helpers();
+}
+
+static bool IsAsyncIteratorHelpersEnabled() {
+#ifdef NIGHTLY_BUILD
+  return JS::Prefs::experimental_async_iterator_helpers();
 #else
   return false;
 #endif
@@ -131,6 +138,10 @@ bool GlobalObject::skipDeselectedConstructor(JSContext* cx, JSProtoKey key) {
     case JSProto_Error:
     case JSProto_InternalError:
     case JSProto_AggregateError:
+#ifdef ENABLE_EXPLICIT_RESOURCE_MANAGEMENT
+    case JSProto_SuppressedError:
+    case JSProto_DisposableStack:
+#endif
     case JSProto_EvalError:
     case JSProto_RangeError:
     case JSProto_ReferenceError:
@@ -186,6 +197,9 @@ bool GlobalObject::skipDeselectedConstructor(JSContext* cx, JSProtoKey key) {
 #ifdef ENABLE_WASM_TYPE_REFLECTIONS
     case JSProto_WasmFunction:
 #endif
+#ifdef ENABLE_WASM_JSPI
+    case JSProto_WasmSuspending:
+#endif
     case JSProto_WasmException:
       return false;
 
@@ -235,11 +249,16 @@ bool GlobalObject::skipDeselectedConstructor(JSContext* cx, JSProtoKey key) {
       return JS::GetWeakRefsEnabled() == JS::WeakRefSpecifier::Disabled;
 
     case JSProto_Iterator:
-    case JSProto_AsyncIterator:
       return !IsIteratorHelpersEnabled();
+
+    case JSProto_AsyncIterator:
+      return !IsAsyncIteratorHelpersEnabled();
 
     case JSProto_ShadowRealm:
       return !JS::Prefs::experimental_shadow_realms();
+
+    case JSProto_Float16Array:
+      return !JS::Prefs::experimental_float16array();
 
     default:
       MOZ_CRASH("unexpected JSProtoKey");
@@ -920,6 +939,10 @@ bool GlobalObject::getSelfHostedFunction(JSContext* cx,
     return true;
   }
 
+  // Don't collect metadata for self-hosted functions or intrinsics.
+  // This is similar to the suppression in GlobalObject::resolveConstructor.
+  AutoSuppressAllocationMetadataBuilder suppressMetadata(cx);
+
   JSRuntime* runtime = cx->runtime();
   frontend::ScriptIndex index =
       runtime->getSelfHostedScriptIndexRange(selfHostedName)->start;
@@ -940,6 +963,10 @@ bool GlobalObject::getIntrinsicValueSlow(JSContext* cx,
                                          Handle<GlobalObject*> global,
                                          Handle<PropertyName*> name,
                                          MutableHandleValue value) {
+  // Don't collect metadata for self-hosted functions or intrinsics.
+  // This is similar to the suppression in GlobalObject::resolveConstructor.
+  AutoSuppressAllocationMetadataBuilder suppressMetadata(cx);
+
   // If this is a C++ intrinsic, simply define the function on the intrinsics
   // holder.
   if (const JSFunctionSpec* spec = js::FindIntrinsicSpec(name)) {
@@ -1008,7 +1035,7 @@ JSObject* GlobalObject::createIteratorPrototype(JSContext* cx,
 /* static */
 JSObject* GlobalObject::createAsyncIteratorPrototype(
     JSContext* cx, Handle<GlobalObject*> global) {
-  if (!IsIteratorHelpersEnabled()) {
+  if (!IsAsyncIteratorHelpersEnabled()) {
     return getOrCreateBuiltinProto(cx, global, ProtoKind::AsyncIteratorProto,
                                    initAsyncIteratorProto);
   }

@@ -41,7 +41,7 @@ class TotalCookieProtectionTest : TestSetup() {
         CFR_MINIMUM_NUMBER_OPENED_TABS = 5
     }
 
-    // TestRail link: https://testrail.stage.mozaws.net/index.php?/cases/view/2260552
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/2260552
     @Test
     fun openTotalCookieProtectionLearnMoreLinkTest() {
         val genericPage = getGenericAsset(mockWebServer, 1)
@@ -51,12 +51,12 @@ class TotalCookieProtectionTest : TestSetup() {
             waitForPageToLoad()
             verifyCookiesProtectionHintIsDisplayed(composeTestRule, true)
             clickTCPCFRLearnMore(composeTestRule)
-            verifyUrl("support.mozilla.org/en-US/kb/enhanced-tracking-protection-firefox-android")
+            verifyETPLearnMoreURL()
             verifyShouldShowCFRTCP(false, composeTestRule.activity.settings())
         }
     }
 
-    // TestRail link: https://testrail.stage.mozaws.net/index.php?/cases/view/1913589
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/1913589
     @Test
     fun dismissTotalCookieProtectionHintTest() {
         val genericPage = getGenericAsset(mockWebServer, 1)

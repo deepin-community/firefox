@@ -45,7 +45,7 @@ experimental-features-devtools-serviceworker-debugger-support-description = Atti
 # WebRTC global mute toggle controls
 experimental-features-webrtc-global-mute-toggles =
     .label = Attivazione/disattivazione audio e video WebRTC a livello globale
-experimental-features-webrtc-global-mute-toggles-description = Aggiungi controlli all’indicatore di condivisione WebRTC per consentire agli utenti di interrompere a livello globale la condivisione di microfono e fotocamera.
+experimental-features-webrtc-global-mute-toggles-description = Aggiunge controlli all’indicatore di condivisione WebRTC per consentire agli utenti di interrompere a livello globale la condivisione di microfono e fotocamera.
 
 # JS JIT Warp project
 experimental-features-js-warp =
@@ -57,4 +57,29 @@ experimental-features-ime-search =
     .label = Barra degli indirizzi: mostra risultati quando si usa la composizione IME
 experimental-features-ime-search-description = Un IME (Input Method Editor) è uno strumento che permette di inserire simboli complessi, come quelli utilizzati da lingue asiatiche o indiane, utilizzando una tastiera tradizionale. Attivando questo esperimento il pannello della barra degli indirizzi rimarrà aperto, mostrando risultati di ricerca e suggerimenti, anche quando si utilizza IME per inserire il testo. Alcuni IME utilizzano un pannello che potrebbe coprire i risultati della barra degli indirizzi, per cui si consiglia di attivare questa opzione solo per IME che non usano questo approccio.
 
+experimental-features-group-browsing =
+  .label = Navigazione
 
+# Updated sidebar settings
+sidebar-title =
+    .label = Barra laterale
+sidebar-description = Accedi facilmente a cronologia, schede da altri dispositivi, estensioni per la barra laterale e altro ancora mentre navighi. <a data-l10n-name="connect">Condividi il tuo feedback</a>
+vertical-tabs-title =
+    .label = Schede verticali
+vertical-tabs-description = Sposta le tue schede dalla parte superiore del browser a quella laterale. Per utilizzare questa funzione è necessario attivare anche la barra laterale. <a data-l10n-name="connect">Condividi il tuo feedback</a>
+
+experimental-features-group-developer-tools =
+  .label = Strumenti di sviluppo
+experimental-features-group-webpage-display =
+  .label = Visualizzazione pagine web
+experimental-features-group-customize-browsing =
+  .label = Personalizza la tua navigazione
+experimental-features-group-customize-browsing-description = Se provi queste funzioni, <a data-l10n-name="connect">facci conoscere la tua opinione su Connect</a>
+
+# Auto Picture-in-Picture
+experimental-features-auto-pip =
+    .label = Picture-in-Picture: apri automaticamente al cambio scheda
+experimental-features-auto-pip-description = Attiva Picture-in-Picture per i video in esecuzione quando si cambia scheda.
+
+genai-settings-chat-title =
+    .label = Chatbot IA

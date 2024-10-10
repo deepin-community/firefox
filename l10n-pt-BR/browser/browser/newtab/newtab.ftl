@@ -196,6 +196,8 @@ newtab-section-header-recent-activity = Atividade recente
 #   $provider (string) - Name of the corresponding content provider.
 newtab-section-header-pocket = Recomendado pelo { $provider }
 newtab-section-header-stories = Histórias que instigam o pensamento
+# "picks" refers to recommended articles
+newtab-section-header-todays-picks = Escolhas de hoje para você
 
 ## Empty Section States: These show when there are no more items in a section. Ex. When there are no more Pocket story recommendations, in the space where there would have been stories, this is shown instead.
 
@@ -229,6 +231,19 @@ newtab-pocket-pocket-firefox-family = O { -pocket-brand-name } faz parte da fam�
 # A save to Pocket button that shows over the card thumbnail on hover.
 newtab-pocket-save = Salvar
 newtab-pocket-saved = Salvo
+
+## Thumbs up and down buttons that shows over a newtab stories card thumbnail on hover.
+
+# Clicking the thumbs up button for this story will result in more stories like this one being recommended
+newtab-pocket-thumbs-up-tooltip =
+    .title = Mais conteúdo como este
+# Clicking the thumbs down button for this story informs us that the user does not feel like the story is interesting for them
+newtab-pocket-thumbs-down-tooltip =
+    .title = Não me interessa
+newtab-toast-thumbs-up-or-down = Obrigado. Sua opinião nos ajudará a melhorar seu canal de informações.
+newtab-toast-dismiss-button =
+    .title = Descartar
+    .aria-label = Descartar
 
 ## Pocket content onboarding experience dialog and modal for new users seeing the Pocket section for the first time, shown as the first item in the Pocket section.
 
@@ -268,12 +283,15 @@ newtab-custom-recent-subtitle = Uma seleção de sites e conteúdos recentes
 newtab-custom-recent-toggle =
     .label = Atividade recente
     .description = Uma seleção de sites e conteúdos recentes
+newtab-custom-weather-toggle =
+    .label = Tempo
+    .description = Visão geral da previsão para hoje
 newtab-custom-close-button = Fechar
 newtab-custom-settings = Gerenciar mais configurações
 
 ## New Tab Wallpapers
 
-newtab-wallpaper-title = Imagens de fundo
+newtab-wallpaper-title = Fundo de tela
 newtab-wallpaper-reset = Restaurar padrão
 newtab-wallpaper-light-red-panda = Panda vermelho
 newtab-wallpaper-light-mountain = Montanha branca
@@ -287,7 +305,125 @@ newtab-wallpaper-dark-panda = Panda vermelho escondido na floresta
 newtab-wallpaper-dark-sky = Paisagem de cidade com céu noturno
 newtab-wallpaper-dark-mountain = Paisagem com montanhas
 newtab-wallpaper-dark-city = Paisagem de cidade em tonalidade violeta
+
+## Solid Colors
+
+newtab-wallpaper-category-title-colors = Cores sólidas
+newtab-wallpaper-blue = Azul
+newtab-wallpaper-light-blue = Azul claro
+newtab-wallpaper-light-purple = Roxo claro
+newtab-wallpaper-light-green = Verde claro
+newtab-wallpaper-green = Verde
+newtab-wallpaper-beige = Bege
+newtab-wallpaper-yellow = Amarelo
+newtab-wallpaper-orange = Laranja
+newtab-wallpaper-pink = Rosa
+newtab-wallpaper-light-pink = Rosa claro
+newtab-wallpaper-red = Vermelho
+newtab-wallpaper-dark-blue = Azul escuro
+newtab-wallpaper-dark-purple = Roxo escuro
+newtab-wallpaper-dark-green = Verde escuro
+newtab-wallpaper-brown = Marrom
+
+## Abstract
+
+newtab-wallpaper-category-title-abstract = Abstrato
+newtab-wallpaper-abstract-green = Formas em tons de verde
+newtab-wallpaper-abstract-blue = Formas em tons de azul
+newtab-wallpaper-abstract-purple = Formas em tons de roxo
+newtab-wallpaper-abstract-orange = Formas em tons de laranja
+newtab-wallpaper-gradient-orange = Gradiente laranja e rosa
+newtab-wallpaper-abstract-blue-purple = Formas em tons de azul e roxo
+
+## Photographs
+
+newtab-wallpaper-category-title-photographs = Fotos
+newtab-wallpaper-beach-at-sunrise = Praia ao ao nascer do sol
+newtab-wallpaper-beach-at-sunset = Praia ao pôr do sol
+newtab-wallpaper-storm-sky = Céu de tempestade
+newtab-wallpaper-sky-with-pink-clouds = Céu com nuvens cor-de-rosa.
+newtab-wallpaper-red-panda-yawns-in-a-tree = Panda vermelho boceja em uma árvore
+newtab-wallpaper-white-mountains = Montanhas brancas
 # Variables
 #   $author_string (String) - The name of the creator of the photo.
 #   $webpage_string (String) - The name of the webpage where the photo is located.
 newtab-wallpaper-attribution = Foto de <a data-l10n-name="name-link">{ $author_string }</a> em <a data-l10n-name="webpage-link">{ $webpage_string }</a>
+newtab-wallpaper-feature-highlight-header = Experimente um toque de cores
+newtab-wallpaper-feature-highlight-content = Dê um novo visual à página de nova aba com fundos de tela.
+newtab-wallpaper-feature-highlight-button = OK
+# Tooltip for dismiss button
+feature-highlight-dismiss-button =
+    .title = Descartar
+    .aria-label = Fechar aviso
+feature-highlight-wallpaper =
+    .title = { -newtab-wallpaper-feature-highlight-header }
+    .aria-label = { -newtab-wallpaper-feature-highlight-content }
+
+## New Tab Weather
+
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-see-forecast =
+    .title = Ver previsão do tempo em { $provider }
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-sponsored = { $provider } ∙ Patrocinado
+newtab-weather-menu-change-location = Mudar local
+newtab-weather-change-location-search-input = Pesquisar local
+newtab-weather-menu-weather-display = Exibição do tempo
+# Display options are:
+# - Simple: Displays a current weather condition icon and the current temperature
+# - Detailed: Include simple information plus a short text summary: e.g. "Mostly cloudy"
+newtab-weather-menu-weather-display-option-simple = Simples
+newtab-weather-menu-change-weather-display-simple = Mudar para exibição simples
+newtab-weather-menu-weather-display-option-detailed = Detalhada
+newtab-weather-menu-change-weather-display-detailed = Mudar para exibição detalhada
+newtab-weather-menu-temperature-units = Unidades de temperatura
+newtab-weather-menu-temperature-option-fahrenheit = Fahrenheit
+newtab-weather-menu-temperature-option-celsius = Celsius
+newtab-weather-menu-change-temperature-units-fahrenheit = Mudar para Fahrenheit
+newtab-weather-menu-change-temperature-units-celsius = Mudar para Celsius
+newtab-weather-menu-hide-weather = Ocultar tempo em nova aba
+newtab-weather-menu-learn-more = Saiba mais
+# This message is shown if user is working offline
+newtab-weather-error-not-available = Dados sobre o tempo não estão disponíveis no momento.
+
+## Topic Labels
+
+newtab-topic-label-business = Negócios
+newtab-topic-label-career = Carreira
+newtab-topic-label-education = Educação
+newtab-topic-label-arts = Entretenimento
+newtab-topic-label-food = Alimentação
+newtab-topic-label-health = Saúde
+newtab-topic-label-hobbies = Jogos
+# ”Money” = “Personal Finance”, refers to articles and stories that help readers better manage
+# and understand their personal finances – from saving money to buying a home. See the
+# “Curated by our editors“ section at the top of https://getpocket.com/explore/personal-finance for more context
+newtab-topic-label-finance = Dinheiro
+newtab-topic-label-society-parenting = Criação dos filhos
+newtab-topic-label-government = Política
+newtab-topic-label-education-science = Ciências
+# ”Life Hacks” = “Self Improvement”, refers to articles and stories aimed at helping readers improve various
+# aspects of their lives – from mental health to  productivity. See the “Curated by our editors“ section
+# at the top of https://getpocket.com/explore/self-improvement for more context.
+newtab-topic-label-society = Aperfeiçoamento pessoal
+newtab-topic-label-sports = Esportes
+newtab-topic-label-tech = Tecnologia
+newtab-topic-label-travel = Viagens
+newtab-topic-label-home = Casa e jardim
+
+## Topic Selection Modal
+
+# “fine-tune” refers to the process of making small adjustments to something to get
+# the best or desired experience or performance.
+newtab-topic-selection-title = Selecione tópicos para ajustar seu feed
+# “tailored” refers to process of (a tailor) making (clothes) to fit individual customers.
+# In other words, “Our expert curators prioritize stories to fit your selected interests”
+newtab-topic-selection-subtitle = Escolha dois ou mais tópicos. Nossos consultores especializados priorizam histórias adaptadas aos seus interesses. Atualize quando quiser.
+newtab-topic-selection-save-button = Salvar
+newtab-topic-selection-cancel-button = Cancelar
+newtab-topic-selection-button-maybe-later = Talvez mais tarde
+newtab-topic-selection-privacy-link = Saiba como protegemos e gerenciamos dados
+newtab-topic-selection-button-update-interests = Atualize seus interesses
+newtab-topic-selection-button-pick-interests = Escolha seus interesses

@@ -13,6 +13,17 @@ tabbrowser-menuitem-close =
 #   $title (String): the title of the current tab.
 #   $containerName (String): the name of the current container.
 tabbrowser-container-tab-title = { $title } - { $containerName }
+# This text serves as an on-screen tooltip as well as an accessible name for
+# the "X" button that is shown on the active tab or, when multiple tabs are
+# selected, to all their "X" buttons.
+# Variables:
+#   $tabCount (Number): The number of tabs that will be closed.
+tabbrowser-close-tabs-button =
+    .tooltiptext =
+        { $tabCount ->
+            [one] Fechar separador
+           *[other] Fechar { $tabCount } separadores
+        }
 # Variables:
 #   $tabCount (Number): The number of tabs that will be closed.
 tabbrowser-close-tabs-tooltip =
@@ -110,6 +121,16 @@ tabbrowser-confirm-open-multiple-tabs-checkbox = Avisar-me quando abrir múltipl
 tabbrowser-confirm-caretbrowsing-title = Navegação por cursor
 tabbrowser-confirm-caretbrowsing-message = A tecla F7 ativa ou desativa a navegação por cursor. Esta característica coloca um cursor móvel nas páginas da Internet, permitindo-lhe selecionar texto com o teclado. Quer ativar a navegação por cursor?
 tabbrowser-confirm-caretbrowsing-checkbox = Não voltar a mostrar esta janela.
+
+## Confirmation dialog for closing all duplicate tabs
+
+tabbrowser-confirm-close-duplicate-tabs-title = Atenção
+tabbrowser-confirm-close-duplicate-tabs-text = Iremos manter aberto o último separador ativo
+tabbrowser-confirm-close-all-duplicate-tabs-title = Fechar os separadores duplicados?
+tabbrowser-confirm-close-all-duplicate-tabs-text =
+    Nós iremos fechar os separadores duplicados nesta janela. O último separador
+    ativo irá permanecer aberto.
+tabbrowser-confirm-close-all-duplicate-tabs-button-closetabs = Fechar separadores
 
 ##
 

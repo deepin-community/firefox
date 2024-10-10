@@ -303,6 +303,7 @@ class GeckoEngineSessionTest {
         var observedCanGoForward = false
         var cookieBanner = CookieBannerHandlingStatus.HANDLED
         var displaysProduct = false
+        var translationsProcessing = true
         engineSession.register(
             object : EngineSession.Observer {
                 override fun onLocationChange(url: String, hasUserGesture: Boolean) {
@@ -319,6 +320,10 @@ class GeckoEngineSessionTest {
                 override fun onProductUrlChange(isProductUrl: Boolean) {
                     displaysProduct = isProductUrl
                 }
+
+                override fun onTranslatePageChange() {
+                    translationsProcessing = false
+                }
             },
         )
 
@@ -330,6 +335,7 @@ class GeckoEngineSessionTest {
         assertEquals(CookieBannerHandlingStatus.NO_DETECTED, cookieBanner)
         // TO DO: add a positive test case after a test endpoint is implemented in desktop (Bug 1846341)
         assertEquals(false, displaysProduct)
+        assertEquals(false, translationsProcessing)
 
         navigationDelegate.value.onCanGoBack(mock(), true)
         assertEquals(true, observedCanGoBack)
@@ -349,7 +355,7 @@ class GeckoEngineSessionTest {
         val observer: EngineSession.Observer = mock()
         engineSession.register(observer)
 
-        val response = WebResponse.Builder("https://download.mozilla.org/image.png")
+        val response = WebResponse.Builder("https://download.mozilla.org/image%20name.png")
             .addHeader(Headers.Names.CONTENT_TYPE, "image/png")
             .addHeader(Headers.Names.CONTENT_LENGTH, "42")
             .skipConfirmation(true)
@@ -362,8 +368,8 @@ class GeckoEngineSessionTest {
         contentDelegate.value.onExternalResponse(mock(), response)
 
         verify(observer).onExternalResource(
-            url = eq("https://download.mozilla.org/image.png"),
-            fileName = eq("image.png"),
+            url = eq("https://download.mozilla.org/image%20name.png"),
+            fileName = eq("image name.png"),
             contentLength = eq(42),
             contentType = eq("image/png"),
             cookie = eq(null),
@@ -1049,6 +1055,7 @@ class GeckoEngineSessionTest {
         )
         engineSession.settings.historyTrackingDelegate = historyTrackingDelegate
         engineSession.appRedirectUrl = emptyPageUrl
+        engineSession.initialLoad = false
 
         class MockHistoryList(
             items: List<GeckoSession.HistoryDelegate.HistoryItem>,
@@ -1851,15 +1858,15 @@ class GeckoEngineSessionTest {
             geckoSessionProvider = geckoSessionProvider,
         ).settings
 
-        expectException(UnsupportedSettingException::class) {
+        expectException<UnsupportedSettingException> {
             settings.javascriptEnabled = true
         }
 
-        expectException(UnsupportedSettingException::class) {
+        expectException<UnsupportedSettingException> {
             settings.domStorageEnabled = false
         }
 
-        expectException(UnsupportedSettingException::class) {
+        expectException<UnsupportedSettingException> {
             settings.trackingProtectionPolicy = TrackingProtectionPolicy.strict()
         }
     }
@@ -2550,25 +2557,6 @@ class GeckoEngineSessionTest {
 
         assertTrue(onResultCalled)
         assertFalse(onExceptionCalled)
-    }
-
-    @Test
-    fun `WHEN session onProductUrlChange is successful THEN notify of completion`() {
-        val engineSession = GeckoEngineSession(mock(), geckoSessionProvider = geckoSessionProvider)
-        val delegate = engineSession.createContentDelegate()
-        var productUrlStatus = false
-        engineSession.register(
-            object : EngineSession.Observer {
-                override fun onProductUrlChange(isProductUrl: Boolean) {
-                    productUrlStatus = isProductUrl
-                }
-            },
-        )
-
-        delegate.onProductUrl(geckoSession)
-
-        assertTrue(productUrlStatus)
-        assertEquals(true, productUrlStatus)
     }
 
     @Test
@@ -3363,7 +3351,7 @@ class GeckoEngineSessionTest {
         var formData = false
         engineSession.register(
             object : EngineSession.Observer {
-                override fun onCheckForFormData(containsFormData: Boolean) {
+                override fun onCheckForFormData(containsFormData: Boolean, adjustPriority: Boolean) {
                     formData = true
                 }
             },
@@ -4361,7 +4349,7 @@ class GeckoEngineSessionTest {
             mockLoadRequest("sample:about", triggeredByRedirect = true),
         )
 
-        assertEquals(geckoResult!!, GeckoResult.fromValue(AllowOrDeny.ALLOW))
+        assertEquals(geckoResult!!, GeckoResult.allow())
     }
 
     @Test

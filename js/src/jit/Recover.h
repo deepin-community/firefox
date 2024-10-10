@@ -9,6 +9,7 @@
 
 #include "mozilla/Attributes.h"
 
+#include "jit/MIR-wasm.h"
 #include "jit/MIR.h"
 #include "jit/Snapshots.h"
 
@@ -116,6 +117,7 @@ namespace jit {
   _(TypeOfName)                   \
   _(ToDouble)                     \
   _(ToFloat32)                    \
+  _(ToFloat16)                    \
   _(TruncateToInt32)              \
   _(NewObject)                    \
   _(NewPlainObject)               \
@@ -130,6 +132,8 @@ namespace jit {
   _(ObjectState)                  \
   _(ArrayState)                   \
   _(AtomicIsLockFree)             \
+  _(Int32ToBigInt)                \
+  _(Int64ToBigInt)                \
   _(BigIntAsIntN)                 \
   _(BigIntAsUintN)                \
   _(CreateArgumentsObject)        \
@@ -744,6 +748,14 @@ class RToFloat32 final : public RInstruction {
                              SnapshotIterator& iter) const override;
 };
 
+class RToFloat16 final : public RInstruction {
+ public:
+  RINSTRUCTION_HEADER_NUM_OP_(ToFloat16, 1)
+
+  [[nodiscard]] bool recover(JSContext* cx,
+                             SnapshotIterator& iter) const override;
+};
+
 class RTruncateToInt32 final : public RInstruction {
  public:
   RINSTRUCTION_HEADER_NUM_OP_(TruncateToInt32, 1)
@@ -884,6 +896,24 @@ class RArrayState final : public RInstruction {
 class RAtomicIsLockFree final : public RInstruction {
  public:
   RINSTRUCTION_HEADER_NUM_OP_(AtomicIsLockFree, 1)
+
+  [[nodiscard]] bool recover(JSContext* cx,
+                             SnapshotIterator& iter) const override;
+};
+
+class RInt32ToBigInt final : public RInstruction {
+ public:
+  RINSTRUCTION_HEADER_NUM_OP_(Int32ToBigInt, 1)
+
+  [[nodiscard]] bool recover(JSContext* cx,
+                             SnapshotIterator& iter) const override;
+};
+
+class RInt64ToBigInt final : public RInstruction {
+  bool isUnsigned_;
+
+ public:
+  RINSTRUCTION_HEADER_NUM_OP_(Int64ToBigInt, 1)
 
   [[nodiscard]] bool recover(JSContext* cx,
                              SnapshotIterator& iter) const override;

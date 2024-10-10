@@ -89,6 +89,9 @@ shopping-show-less-button = ਘੱਟ ਵੇਖਾਓ
 
 shopping-settings-label =
     .label = ਸੈਟਿੰਗਾਂ
+shopping-settings-recommendations-toggle2 =
+    .label = ਸਿਫ਼ਾਰਸਾਂ ਅਤੇ ਸਪੌਂਸਰ ਕੀਤੀ ਸਮੱਗਰੀ ਵੇਖਾਓ
+shopping-settings-recommendations-learn-more3 = { -brand-product-name } ਤੁਹਾਡੇ ਨਿੱਜੀ ਡਾਟੇ ਨੂੰ ਸਾਂਝਾ ਨਹੀਂ ਕਰਦਾ ਹੈ, ਇਸਕਰਕੇ ਇਹ ਸਿਫ਼ਾਰਸ਼ਾਂ ਇੰਟਰਨੈੱਟ ਉੱਤੇ ਤੁਹਾਡੀ ਸੂਹ ਨਹੀਂ ਲੈਣਗੀਆਂ। <a data-l10n-name="review-quality-url">ਹੋਰ ਜਾਣੋ</a>
 shopping-settings-recommendations-toggle =
     .label = ਰੀਵਿਊ ਚੈਕਰ ਵਿੱਚ ਇਸ਼ਤਿਹਾਰ ਵੇਖਾਓ
 shopping-settings-recommendations-learn-more2 = ਤੁਸੀਂ ਕਦੇ ਕਦਾਈ ਸੰਬੰਧਿਤ ਉਤਪਾਦਾਂ ਲਈ ਇਸ਼ਤਿਹਾਰ ਵੇਖੋਗੇ। ਅਸੀਂ ਭਰੋਸੇਯੋਗ ਰੀਵਿਊ ਵਾਲੇ ਉਤਪਾਦ ਲਈ ਹੀ ਇਸ਼ਤਿਹਾਰ ਦਿੰਦੇ ਹਾਂ। <a data-l10n-name="review-quality-url">ਹੋਰ ਸਿੱਖੋ</a>
@@ -115,6 +118,7 @@ shopping-settings-sidebar-enabled-state = ਰੀਵਿਊ ਚੈਕਰ <strong>�
 shopping-adjusted-rating-label =
     .label = ਅਡਜੱਸਟ ਕੀਤੀ ਰੇਟਿੰਗ
 shopping-adjusted-rating-unreliable-reviews = ਗ਼ੈਰ-ਭਰੋਸੇਯੋਗ ਰੀਵਿਊ ਹਟਾਏ
+shopping-adjusted-rating-based-reliable-reviews = ਭਰੋਸੇਯੋਗ ਰੀਵਿਊਆਂ ਉੱਤੇ ਅਧਾਰਿਤ
 
 ## Strings for the review reliability component
 
@@ -133,6 +137,8 @@ shopping-analysis-explainer-learn-more2 = ਜਾਣੋ ਕਿ <a data-l10n-name=
 # websites, which will be inserted without being translated.
 #  $retailer (String) - capitalized name of the shopping website, for example, "Amazon".
 shopping-analysis-explainer-highlights-description = ਪਿਛਲੇ 80 ਦਿਨਾਂ ਵਿੱਚ { $retailer } ਰੀਵਿਊਆਂ ਵਿੱਚੋਂ <strong>ਹਾਈਲਾਈਟ</strong> ਹਨ, ਜੋ ਸਾਨੂੰ ਜਾਪਦਾ ਹੈ ਕਿ ਭਰੋਸੇਯੋਗ ਹਨ।
+# Fallback for analysis highlights explainer if the retailer is ever unknown
+shopping-analysis-explainer-highlights-description-unknown-retailer = ਪਿਛਲੇ 80 ਦਿਨਾਂ ਵਿੱਚ ਰੀਵਿਊਆਂ ਵਿੱਚੋਂ <strong>ਹਾਈਲਾਈਟ</strong> ਹਨ, ਜੋ ਸਾਨੂੰ ਜਾਪਦਾ ਹੈ ਕਿ ਭਰੋਸੇਯੋਗ ਹਨ।
 shopping-analysis-explainer-review-grading-scale-reliable = ਭਰੋਸੇਯੋਗ ਰੀਵਿਊ। ਅਸੀਂ ਮੰਨਦੇ ਹਾਂ ਕਿ ਰੀਵਿਊ ਅਸਲ ਗਾਹਕ ਵਲੋਂ ਹਨ, ਜਿਸ ਨੇ ਇਮਾਨਦਾਰੀ ਨਾਲ ਨਿਰਪੱਖ ਰੀਵਿਊ ਦਿੱਤੇ ਹਨ।
 shopping-analysis-explainer-review-grading-scale-mixed = ਅਸੀਂ ਮੰਨਦੇ ਹਾਂ ਕਿ ਭਰੋਸੇਯੋਗ ਅਤੇ ਗ਼ੈਰ-ਭਰੋਸੇਯੋਗ ਰੀਵਿਊ ਰਲਵੇਂ ਰੂਪ ਵਿੱਚ ਹੁੰਦੇ ਹਨ।
 shopping-analysis-explainer-review-grading-scale-unreliable = ਗ਼ੈਰਭਰੋਸੇਯੋਗ ਰੀਵਿਊ। ਅਸੀਂ ਮੰਨਦੇ ਹਾਂ ਕਿ ਰੀਵਿਊ ਨਕਲੀ, ਫ਼ਰਜ਼ੀ ਹੋਣ ਜਾਂ ਪੱਖਪਾਤੀ ਰੀਵਿਊ ਦੇਣ ਵਾਲਿਆਂ ਵਲੋਂ ਹੋਣ ਸਕਦੇ ਹਨ।
@@ -159,6 +165,7 @@ shopping-unanalyzed-product-analyze-button = ਰੀਵਿਊ ਕੁਆਲਟੀ 
 
 more-to-consider-ad-label =
     .label = ਵਿਚਾਰਨ ਲਈ ਹੋਰ
+shopping-sponsored-label = ਸਪੌਂਸਰ ਕੀਤੇ
 ad-by-fakespot = { -fakespot-brand-name } ਵਲੋਂ ਇਸ਼ਤਿਹਾਰ
 
 ## Shopping survey strings.

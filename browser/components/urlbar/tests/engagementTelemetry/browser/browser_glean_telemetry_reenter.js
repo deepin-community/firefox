@@ -10,7 +10,7 @@ const TEST_URL = "https://example.com/";
 
 add_task(async function () {
   await setup();
-  let deferred = Promise.withResolvers();
+  let onEngagementDeferred = Promise.withResolvers();
   const provider = new UrlbarTestUtils.TestProvider({
     results: [
       new UrlbarResult(
@@ -26,18 +26,18 @@ add_task(async function () {
       ),
     ],
     priority: 999,
-    onLegacyEngagement: () => {
-      info("Blur the address bar during the onLegacyEngagement notification");
+    onEngagement: () => {
+      info("Blur the address bar during the onEngagement notification");
       gURLBar.blur();
       // Run at the next tick to be sure spurious events would have happened.
       TestUtils.waitForTick().then(() => {
-        deferred.resolve();
+        onEngagementDeferred.resolve();
       });
     },
   });
   UrlbarProvidersManager.registerProvider(provider);
   // This should cover at least engagement and abandonment.
-  let engagementSpy = sinon.spy(provider, "onLegacyEngagement");
+  let engagementSpy = sinon.spy(provider, "onEngagement");
 
   let beforeRecordCall = false,
     recordReentered = false;
@@ -59,21 +59,12 @@ add_task(async function () {
     await openPopup("example");
     await selectRowByURL(TEST_URL);
     EventUtils.synthesizeKey("VK_RETURN");
-    await deferred.promise;
+    await Promise.all([onEngagementDeferred]);
 
     assertEngagementTelemetry([{ engagement_type: "enter" }]);
     assertAbandonmentTelemetry([]);
 
     Assert.ok(recordReentered, "`record()` was re-entered");
-    Assert.equal(
-      engagementSpy.callCount,
-      1,
-      "`onLegacyEngagement` was invoked twice"
-    );
-    Assert.equal(
-      engagementSpy.args[0][0],
-      "engagement",
-      "`engagement` notified"
-    );
+    Assert.equal(engagementSpy.callCount, 1, "`onEngagement` was invoked once");
   });
 });

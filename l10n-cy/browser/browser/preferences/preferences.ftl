@@ -57,6 +57,10 @@ category-experimental =
 pane-experimental-subtitle = Byddwch Ofalus
 pane-experimental-search-results-header = Arbrofion { -brand-short-name }: Byddwch yn Ofalus
 pane-experimental-description2 = Gall newid dewisiadau ffurfweddiad uwch effeithio ar berfformiad neu ddiogelwch { -brand-short-name }.
+settings-pane-labs-title = { -firefoxlabs-brand-name }
+settings-category-labs =
+    .tooltiptext = { -firefoxlabs-brand-name }
+pane-experimental-description3 = Rhowch gynnig ar ein nodweddion arbrofol! Maen nhw'n cael eu datblygu ac yn esblygu, a allai effeithio ar sut mae { -brand-short-name } yn gweithio.
 pane-experimental-reset =
     .label = Adfer y Rhagosodiadau
     .accesskey = A
@@ -611,6 +615,10 @@ home-prefs-recent-activity-description = Detholiad o wefannau a chynnwys diwedda
 home-prefs-snippets-header =
     .label = Pytiau
 home-prefs-snippets-description-new = Awgrymiadau a newyddion gan { -vendor-short-name } a { -brand-product-name }
+home-prefs-weather-header =
+    .label = Y Tywydd
+home-prefs-weather-description = Cipolwg ar ragolygon tywydd heddiw
+home-prefs-weather-learn-more-link = Dysgu rhagor
 # Variables:
 #   $num (number) - Number of rows displayed
 home-prefs-sections-rows-option =
@@ -928,6 +936,9 @@ forms-saved-passwords =
 forms-primary-pw-use =
     .label = Defnyddio Prif Gyfrinair
     .accesskey = P
+# This operation requires the user to authenticate with the operating system (device sign-in)
+forms-os-reauth =
+    .label = Gofyn am fewngofnodi dyfais i lenwi a rheoli cyfrineiriau
 forms-primary-pw-learn-more-link = Darllen rhagor
 # This string uses the former name of the Primary Password feature
 # ("Master Password" in English) so that the preferences can be found
@@ -960,6 +971,13 @@ primary-password-os-auth-dialog-message-win = I greu Prif Gyfrinair, nodwch fany
 # notes are only valid for English. Please test in your locale.
 primary-password-os-auth-dialog-message-macosx = creu Prif Gyfrinair
 master-password-os-auth-dialog-caption = { -brand-full-name }
+# The macOS string is preceded by the operating system with "Firefox is trying to ".
+autofill-creditcard-os-dialog-message =
+    { PLATFORM() ->
+        [macos] newid gosodiadau'r dulliau talu
+       *[other] Mae { -brand-short-name } yn ceisio newid gosodiadau cyfrineiriau. Defnyddiwch fewngofnodi eich dyfais i ganiatáu hyn.
+    }
+autofill-creditcard-os-auth-dialog-caption = { -brand-full-name }
 
 ## Privacy section - Autofill
 
@@ -974,14 +992,9 @@ autofill-payment-methods-checkbox-submessage = Yn cynnwys cardiau credyd a debyd
     .accesskey = Y
 autofill-saved-payment-methods-button = Dulliau talu wedi'u cadw
     .accesskey = D
-autofill-reauth-checkbox =
-    { PLATFORM() ->
-        [macos] Angen dilysu macOSi lanw a golygu dulliau talu.
-        [windows] Angen dilysu Windows i lanw a golygu dulliau talu.
-        [linux] Angen dilysu Linux i lanw a golygu dulliau talu.
-       *[other] Angen dilysu i lanw a golygu dulliau talu.
-    }
-    .accesskey = d
+# This operation requires the user to authenticate with the operating system (device sign-in)
+autofill-reauth-payment-methods-checkbox = Gofyn am fewngofnodi dyfais i lenwi a rheoli dulliau talu
+    .accesskey = t
 
 ## Privacy Section - History
 
@@ -1118,6 +1131,9 @@ addressbar-suggestions-settings = Newid dewisiadau am awgrymiadau peiriannau chw
 addressbar-locbar-showrecentsearches-option =
     .label = Dangos y chwilio diweddar
     .accesskey = D
+addressbar-locbar-showtrendingsuggestions-option =
+    .label = Dangos awgrymiadau chwilio tuedd
+    .accesskey = t
 addressbar-quickactions-learn-more = Darllen rhagor
 
 ## Privacy Section - Content Blocking
@@ -1309,6 +1325,14 @@ privacy-segmentation-radio-off =
 privacy-segmentation-radio-on =
     .label = Dangos gwybodaeth fanwl
 
+## Privacy Section - Website Advertising Preferences
+
+website-advertising-header = Dewisiadau Preifatrwydd Gwefan
+website-advertising-private-attribution =
+    .label = Caniatáu i wefannau fesur hysbysebion sy'n cadw preifatrwydd
+    .accesskey = h
+website-advertising-private-attribution-description = Mae hyn yn helpu gwefannau i ddeall sut mae eu hysbysebion yn perfformio heb gasglu data amdanoch chi.
+
 ## Privacy Section - Security
 ##
 ## It is important that wording follows the guidelines outlined on this page:
@@ -1352,13 +1376,20 @@ space-alert-under-5gb-message2 = <strong>Mae { -brand-short-name } yn brin o le 
 
 httpsonly-header = Modd HTTPS-yn-Unig
 httpsonly-description = Mae HTTPS yn darparu cysylltiad diogel, wedi'i amgryptio rhwng  { -brand-short-name } a'r gwefannau rydych chi'n ymweld â nhw. Mae'r mwyafrif o wefannau yn cefnogi HTTPS, ac os yw Modd HTTPS-yn-Unig wedi'i alluogi, yna bydd { -brand-short-name } yn uwchraddio'r holl gysylltiadau â HTTPS.
+httpsonly-description2 = Mae { -brand-short-name } yn creu cysylltiadau diogel ac wedi'u hamgryptio i wefannau rydych yn ymweld â nhw. Bydd { -brand-short-name } yn eich rhybuddio os nad yw cysylltiad yn ddiogel pan fydd Dim-ond-HTTPS ymlaen.
 httpsonly-learn-more = Darllen rhagor
 httpsonly-radio-enabled =
     .label = Galluogi Modd HTTPS-yn-Unig ym mhob ffenestr
+httpsonly-radio-enabled2 =
+    .label = Defnyddio dim ond HTTPS ym mhob ffenestr
 httpsonly-radio-enabled-pbm =
     .label = Galluogi Modd HTTPS-yn-Unig mewn ffenestri preifat yn unig
+httpsonly-radio-enabled-pbm2 =
+    .label = Defnyddio dim ond HTTPS ym mhob ffenestr breifat
 httpsonly-radio-disabled =
     .label = Peidio â galluogi Modd HTTPS-yn-Unig
+httpsonly-radio-disabled2 =
+    .label = Rhowch gynnig ar HTTPS yn gyntaf, ond caniatewch gysylltiadau heb fod yn ddiogel
 
 ## DoH Section
 

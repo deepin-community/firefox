@@ -344,6 +344,9 @@ has-seccomp-bpf = Seccomp-BPF (System Call sía)
 has-seccomp-tsync = Seccomp þráðasamstilling
 has-user-namespaces = Nafnarými notanda
 has-privileged-user-namespaces = Nafnarými notanda fyrir forgangsþræði
+# Variables
+# $status (string) - Boolean value of hasUserNamespaces (should only be false when support-user-namespaces-unavailable is used)
+support-user-namespaces-unavailable = { $status } — Þessi eiginleiki er ekki leyfður af kerfinu þínu. Þetta getur takmarkað öryggiseiginleika { -brand-short-name }.
 can-sandbox-content = Content Process Sandboxing
 can-sandbox-media = Media Plugin Sandboxing
 content-sandbox-level = Content Process Sandbox Level
@@ -411,6 +414,20 @@ support-printing-clear-settings-button = Hreinsa vistaðar prentstillingar
 support-printing-modified-settings = Breyttar prentstillingar
 support-printing-prefs-name = Heiti
 support-printing-prefs-value = Gildi
+
+## Remote Settings sections
+
+support-remote-settings-title = Fjarstillingar
+support-remote-settings-status = Staða
+support-remote-settings-status-ok = Í lagi
+# Status when synchronization is not working.
+support-remote-settings-status-broken = Ekki að virka
+support-remote-settings-last-check = Síðasta athugun
+support-remote-settings-local-timestamp = Staðbundið tímamerki
+support-remote-settings-sync-history = Ferill
+support-remote-settings-sync-history-status = Staða
+support-remote-settings-sync-history-datetime = Dagsetning
+support-remote-settings-sync-history-infos = Upplýsingar
 
 ## Normandy sections
 

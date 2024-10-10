@@ -23,7 +23,6 @@
 #include <cstdint>
 
 class nsDOMTokenList;
-class nsIFormControlFrame;
 class nsIFrame;
 class nsILayoutHistoryState;
 class nsIURI;
@@ -55,6 +54,8 @@ class nsGenericHTMLElement : public nsGenericHTMLElementBase {
  public:
   using Element::Focus;
   using Element::SetTabIndex;
+  using InvokeAction = mozilla::dom::InvokeAction;
+
   explicit nsGenericHTMLElement(
       already_AddRefed<mozilla::dom::NodeInfo>&& aNodeInfo)
       : nsGenericHTMLElementBase(std::move(aNodeInfo)) {
@@ -183,6 +184,12 @@ class nsGenericHTMLElement : public nsGenericHTMLElementBase {
   void ForgetPreviouslyFocusedElementAfterHidingPopover();
   MOZ_CAN_RUN_SCRIPT void FocusPreviousElementAfterHidingPopover();
 
+  bool IsValidInvokeAction(mozilla::dom::InvokeAction aAction) const override;
+
+  MOZ_CAN_RUN_SCRIPT bool HandleInvokeInternal(
+      Element* aInvoker, mozilla::dom::InvokeAction aAction,
+      ErrorResult& aRv) override;
+
   MOZ_CAN_RUN_SCRIPT void FocusCandidate(Element*, bool aClearUpFocus);
 
   void SetNonce(const nsAString& aNonce) {
@@ -198,7 +205,7 @@ class nsGenericHTMLElement : public nsGenericHTMLElementBase {
   }
 
   /** Returns whether a form control should be default-focusable. */
-  bool IsFormControlDefaultFocusable(bool aWithMouse) const;
+  bool IsFormControlDefaultFocusable(mozilla::IsFocusableFlags) const;
 
   /**
    * Returns the count of descendants (inclusive of this node) in
@@ -333,16 +340,17 @@ class nsGenericHTMLElement : public nsGenericHTMLElementBase {
   nsresult BindToTree(BindContext&, nsINode& aParent) override;
   void UnbindFromTree(UnbindContext&) override;
 
-  Focusable IsFocusableWithoutStyle(bool aWithMouse) override {
+  Focusable IsFocusableWithoutStyle(mozilla::IsFocusableFlags aFlags =
+                                        mozilla::IsFocusableFlags(0)) override {
     Focusable result;
-    IsHTMLFocusable(aWithMouse, &result.mFocusable, &result.mTabIndex);
+    IsHTMLFocusable(aFlags, &result.mFocusable, &result.mTabIndex);
     return result;
   }
   /**
    * Returns true if a subclass is not allowed to override the value returned
    * in aIsFocusable.
    */
-  virtual bool IsHTMLFocusable(bool aWithMouse, bool* aIsFocusable,
+  virtual bool IsHTMLFocusable(mozilla::IsFocusableFlags, bool* aIsFocusable,
                                int32_t* aTabIndex);
   MOZ_CAN_RUN_SCRIPT
   mozilla::Result<bool, nsresult> PerformAccesskey(
@@ -384,17 +392,6 @@ class nsGenericHTMLElement : public nsGenericHTMLElementBase {
    * @param aBaseTarget the base target [OUT]
    */
   void GetBaseTarget(nsAString& aBaseTarget) const;
-
-  /**
-   * Get the primary form control frame for this element.  Same as
-   * GetPrimaryFrame(), except it QI's to nsIFormControlFrame.
-   *
-   * @param aFlush whether to flush out frames so that they're up to date.
-   * @return the primary frame as nsIFormControlFrame
-   */
-  nsIFormControlFrame* GetFormControlFrame(bool aFlushFrames);
-
-  //----------------------------------------
 
   /**
    * Parse an alignment attribute (top/middle/bottom/baseline)
@@ -1137,9 +1134,10 @@ class nsGenericHTMLFormElement : public nsGenericHTMLElement {
   virtual bool CanBeDisabled() const { return false; }
 
   /**
-   * Returns if the readonly attribute applies.
+   * Returns true if :read-write pseudo class may match the element even if the
+   * element isn't part of designMode or contenteditable.
    */
-  virtual bool DoesReadOnlyApply() const { return false; }
+  virtual bool DoesReadWriteApply() const { return false; }
 
   /**
    *  Returns true if the element is a form associated element.
@@ -1166,6 +1164,11 @@ class nsGenericHTMLFormControlElement : public nsGenericHTMLFormElement,
   NS_IMPL_FROMNODE_HELPER(nsGenericHTMLFormControlElement,
                           IsHTMLFormControlElement())
 
+  [[nodiscard]] nsIFormControl* GetAsFormControl() final { return this; }
+  [[nodiscard]] const nsIFormControl* GetAsFormControl() const final {
+    return this;
+  }
+
   // nsINode
   nsINode* GetScopeChainParent() const override;
   bool IsHTMLFormControlElement() const final { return true; }
@@ -1176,12 +1179,8 @@ class nsGenericHTMLFormControlElement : public nsGenericHTMLFormElement,
   // nsGenericHTMLElement
   // autocapitalize attribute support
   void GetAutocapitalize(nsAString& aValue) const override;
-  bool IsHTMLFocusable(bool aWithMouse, bool* aIsFocusable,
+  bool IsHTMLFocusable(mozilla::IsFocusableFlags, bool* aIsFocusable,
                        int32_t* aTabIndex) override;
-
-  // EventTarget
-  void GetEventTargetParent(mozilla::EventChainPreVisitor& aVisitor) override;
-  nsresult PreHandleEvent(mozilla::EventChainVisitor& aVisitor) override;
 
   // nsIFormControl
   mozilla::dom::HTMLFieldSetElement* GetFieldSet() override;
@@ -1197,7 +1196,7 @@ class nsGenericHTMLFormControlElement : public nsGenericHTMLFormElement,
 
   // nsGenericHTMLFormElement
   bool CanBeDisabled() const override;
-  bool DoesReadOnlyApply() const override;
+  bool DoesReadWriteApply() const override;
   void SetFormInternal(mozilla::dom::HTMLFormElement* aForm,
                        bool aBindToTree) override;
   mozilla::dom::HTMLFormElement* GetFormInternal() const override;
@@ -1214,6 +1213,9 @@ class nsGenericHTMLFormControlElement : public nsGenericHTMLFormElement,
   bool IsAutocapitalizeInheriting() const;
 
   nsresult SubmitDirnameDir(mozilla::dom::FormData* aFormData);
+
+  void GetFormAutofillState(nsAString& aState) const;
+  void SetFormAutofillState(const nsAString& aState);
 
   /** The form that contains this control */
   mozilla::dom::HTMLFormElement* mForm;
@@ -1259,7 +1261,7 @@ class nsGenericHTMLFormControlElementWithState
   mozilla::dom::Element* GetInvokeTargetElement() const;
   void SetInvokeTargetElement(mozilla::dom::Element*);
   void GetInvokeAction(nsAString& aValue) const;
-  nsAtom* GetInvokeAction() const;
+  InvokeAction GetInvokeAction(nsAtom* aAtom) const;
   void SetInvokeAction(const nsAString& aValue) {
     SetHTMLAttr(nsGkAtoms::invokeaction, aValue);
   }

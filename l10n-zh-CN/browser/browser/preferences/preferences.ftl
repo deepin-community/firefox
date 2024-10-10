@@ -57,6 +57,10 @@ category-experimental =
 pane-experimental-subtitle = 三思而后行
 pane-experimental-search-results-header = { -brand-short-name } 实验：三思而后行
 pane-experimental-description2 = 更改高级配置的设置可能会影响 { -brand-short-name } 的性能和安全性。
+settings-pane-labs-title = { -firefoxlabs-brand-name }
+settings-category-labs =
+    .tooltiptext = { -firefoxlabs-brand-name }
+pane-experimental-description3 = 欢迎试用我们的实验性功能！这些功能尚在开发和改进，可能会影响 { -brand-short-name } 的运作方式。
 pane-experimental-reset =
     .label = 恢复默认设置
     .accesskey = R
@@ -202,7 +206,7 @@ containers-remove-alert-msg = 如果您现在移除此身份，{ $count } 个身
 containers-remove-ok-button = 移除此身份
 containers-remove-cancel-button = 不移除此身份
 settings-tabs-show-image-in-preview =
-    .label = 悬停在标签页上时显示预览图
+    .label = 悬停在标签页的标签上时显示预览图
     .accessKey = h
 
 ## General Section - Language & Appearance
@@ -595,6 +599,10 @@ home-prefs-recent-activity-description = 近期访问的网站与内容精选
 home-prefs-snippets-header =
     .label = 只言片语
 home-prefs-snippets-description-new = 来自 { -vendor-short-name } 和 { -brand-product-name } 的使用窍门与快讯
+home-prefs-weather-header =
+    .label = 天气
+home-prefs-weather-description = 速览今日天气预报
+home-prefs-weather-learn-more-link = 详细了解
 # Variables:
 #   $num (number) - Number of rows displayed
 home-prefs-sections-rows-option =
@@ -904,6 +912,9 @@ forms-saved-passwords =
 forms-primary-pw-use =
     .label = 使用主密码
     .accesskey = U
+# This operation requires the user to authenticate with the operating system (device sign-in)
+forms-os-reauth =
+    .label = 要填写或管理密码，需验证设备登录信息
 forms-primary-pw-learn-more-link = 详细了解
 # This string uses the former name of the Primary Password feature
 # ("Master Password" in English) so that the preferences can be found
@@ -936,6 +947,13 @@ primary-password-os-auth-dialog-message-win = 请输入 Windows 登录凭据，�
 # notes are only valid for English. Please test in your locale.
 primary-password-os-auth-dialog-message-macosx = 创建主密码
 master-password-os-auth-dialog-caption = { -brand-full-name }
+# The macOS string is preceded by the operating system with "Firefox is trying to ".
+autofill-creditcard-os-dialog-message =
+    { PLATFORM() ->
+        [macos] 更改付款方式设置
+       *[other] { -brand-short-name } 正尝试更改付款方式设置，请验证设备登录信息以允许此操作。
+    }
+autofill-creditcard-os-auth-dialog-caption = { -brand-full-name }
 
 ## Privacy section - Autofill
 
@@ -950,13 +968,8 @@ autofill-payment-methods-checkbox-submessage = 包括信用卡和借记卡
     .accesskey = I
 autofill-saved-payment-methods-button = 保存的付款方式
     .accesskey = v
-autofill-reauth-checkbox =
-    { PLATFORM() ->
-        [macos] 需要进行 macOS 身份验证以填写和编辑付款方式。
-        [windows] 需要进行 Windows 身份验证以填写和编辑付款方式。
-        [linux] 需要进行 Linux 身份验证以填写和编辑付款方式。
-       *[other] 需要进行身份验证以填写和编辑付款方式。
-    }
+# This operation requires the user to authenticate with the operating system (device sign-in)
+autofill-reauth-payment-methods-checkbox = 要填写和管理付款方式，需验证设备登录信息。
     .accesskey = o
 
 ## Privacy Section - History
@@ -1094,6 +1107,9 @@ addressbar-suggestions-settings = 更改搜索引擎建议的首选项
 addressbar-locbar-showrecentsearches-option =
     .label = 显示近期搜索
     .accesskey = r
+addressbar-locbar-showtrendingsuggestions-option =
+    .label = 显示热门搜索建议
+    .accesskey = t
 addressbar-quickactions-learn-more = 详细了解
 
 ## Privacy Section - Content Blocking
@@ -1285,6 +1301,14 @@ privacy-segmentation-radio-off =
 privacy-segmentation-radio-on =
     .label = 显示详细信息
 
+## Privacy Section - Website Advertising Preferences
+
+website-advertising-header = 网站广告首选项
+website-advertising-private-attribution =
+    .label = 允许网站进行隐私保护下的广告监测
+    .accesskey = a
+website-advertising-private-attribution-description = 此功能可帮助网站了解其广告表现，而无需收集关于您的数据。
+
 ## Privacy Section - Security
 ##
 ## It is important that wording follows the guidelines outlined on this page:
@@ -1328,13 +1352,20 @@ space-alert-under-5gb-message2 = <strong>{ -brand-short-name } 运行所需的�
 
 httpsonly-header = HTTPS-Only 模式
 httpsonly-description = HTTPS 可在 { -brand-short-name } 和您访问的网站之间提供安全、加密的连接。现今，大多数网站都支持 HTTPS，若选择启用 HTTPS-Only 模式，{ -brand-short-name } 将会升级所有连接为 HTTPS。
+httpsonly-description2 = { -brand-short-name } 会与您访问的网站创建安全的加密连接。HTTPS-Only 模式启用时，{ -brand-short-name } 会向您警示不安全连接。
 httpsonly-learn-more = 详细了解
 httpsonly-radio-enabled =
     .label = 在所有窗口启用 HTTPS-Only 模式
+httpsonly-radio-enabled2 =
+    .label = 在所有窗口中都仅使用 HTTPS
 httpsonly-radio-enabled-pbm =
     .label = 仅在隐私窗口启用 HTTPS-Only 模式
+httpsonly-radio-enabled-pbm2 =
+    .label = 在隐私窗口中仅使用 HTTPS
 httpsonly-radio-disabled =
     .label = 不启用 HTTPS-Only 模式
+httpsonly-radio-disabled2 =
+    .label = 首选 HTTPS，同时仍允许不安全连接
 
 ## DoH Section
 

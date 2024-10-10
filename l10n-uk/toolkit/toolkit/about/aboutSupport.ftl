@@ -352,6 +352,9 @@ has-seccomp-bpf = Seccomp-BPF (Фільтрування системних ви�
 has-seccomp-tsync = Синхронізація потоку Seccomp
 has-user-namespaces = Користувацькі простори імен
 has-privileged-user-namespaces = Користувацькі простори імен для привілейованих процесів
+# Variables
+# $status (string) - Boolean value of hasUserNamespaces (should only be false when support-user-namespaces-unavailable is used)
+support-user-namespaces-unavailable = { $status } – ця функція не дозволена вашою системою. Це може обмежити функції безпеки { -brand-short-name }.
 can-sandbox-content = Пісочниця для процесу вмісту
 can-sandbox-media = Пісочниця для плагіна медіа
 content-sandbox-level = Рівень пісочниці процесів вмісту
@@ -419,6 +422,20 @@ support-printing-clear-settings-button = Очистити збережені н�
 support-printing-modified-settings = Змінені налаштування друку
 support-printing-prefs-name = Назва
 support-printing-prefs-value = Значення
+
+## Remote Settings sections
+
+support-remote-settings-title = Віддалені налаштування
+support-remote-settings-status = Стан
+support-remote-settings-status-ok = OK
+# Status when synchronization is not working.
+support-remote-settings-status-broken = Не працює
+support-remote-settings-last-check = Остання перевірка
+support-remote-settings-local-timestamp = Локальна позначка часу
+support-remote-settings-sync-history = Історія
+support-remote-settings-sync-history-status = Стан
+support-remote-settings-sync-history-datetime = Дата
+support-remote-settings-sync-history-infos = Відомості
 
 ## Normandy sections
 

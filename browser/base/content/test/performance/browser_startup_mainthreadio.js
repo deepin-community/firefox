@@ -208,6 +208,12 @@ const startupPhases = {
       read: 1,
       close: 1,
     },
+    {
+      // This is the startup lock used to restrict only one Firefox startup at a time.
+      path: `TmpD:firefox-${AppConstants.MOZ_UPDATE_CHANNEL}/parent.lock`,
+      condition: WIN,
+      stat: 1,
+    },
   ],
 
   "before opening first browser window": [
@@ -286,18 +292,6 @@ const startupPhases = {
   // We reach this phase right after showing the first browser window.
   // This means that any I/O at this point delayed first paint.
   "before first paint": [
-    {
-      // bug 1545119
-      path: "OldUpdRootD:",
-      condition: WIN,
-      stat: 1,
-    },
-    {
-      // bug 1446012
-      path: "UpdRootD:updates/0/update.status",
-      condition: WIN,
-      stat: 1,
-    },
     {
       path: "XREAppFeat:formautofill@mozilla.org.xpi",
       condition: !WIN,

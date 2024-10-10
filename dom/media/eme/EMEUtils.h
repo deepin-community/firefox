@@ -62,6 +62,8 @@ bool IsClearkeyKeySystem(const nsAString& aKeySystem);
 bool IsWidevineKeySystem(const nsAString& aKeySystem);
 
 #ifdef MOZ_WMF_CDM
+bool IsMediaFoundationCDMPlaybackEnabled();
+
 bool IsPlayReadyEnabled();
 
 bool IsPlayReadyKeySystemAndSupported(const nsAString& aKeySystem);
@@ -92,8 +94,6 @@ bool IsHardwareDecryptionSupported(
     const dom::MediaKeySystemConfiguration& aConfig);
 bool IsHardwareDecryptionSupported(const KeySystemConfig& aConfig);
 
-const char* EncryptionSchemeStr(const CryptoScheme& aScheme);
-
 #ifdef MOZ_WMF_CDM
 void MFCDMCapabilitiesIPDLToKeySystemConfig(
     const MFCDMCapabilitiesIPDL& aCDMConfig, KeySystemConfig& aKeySystemConfig);
@@ -110,6 +110,8 @@ bool DoesKeySystemSupportHardwareDecryption(const nsAString& aKeySystem);
 
 void DeprecationWarningLog(const dom::Document* aDocument,
                            const char* aMsgName);
+
+Maybe<nsCString> GetOrigin(const dom::Document* aDocument);
 
 }  // namespace mozilla
 

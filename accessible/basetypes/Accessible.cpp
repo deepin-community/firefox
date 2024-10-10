@@ -76,6 +76,39 @@ bool Accessible::IsBefore(const Accessible* aAcc) const {
   return otherPos > 0;
 }
 
+const Accessible* Accessible::GetClosestCommonInclusiveAncestor(
+    const Accessible* aAcc) const {
+  if (aAcc == this) {
+    return this;
+  }
+
+  // Build the chain of parents.
+  const Accessible* thisAnc = this;
+  const Accessible* otherAnc = aAcc;
+  AutoTArray<const Accessible*, 30> thisAncs, otherAncs;
+  do {
+    thisAncs.AppendElement(thisAnc);
+    thisAnc = thisAnc->Parent();
+  } while (thisAnc);
+  do {
+    otherAncs.AppendElement(otherAnc);
+    otherAnc = otherAnc->Parent();
+  } while (otherAnc);
+
+  // Find where the parent chain differs.
+  size_t thisPos = thisAncs.Length(), otherPos = otherAncs.Length();
+  const Accessible* common = nullptr;
+  for (size_t len = std::min(thisPos, otherPos); len > 0; --len) {
+    const Accessible* thisChild = thisAncs.ElementAt(--thisPos);
+    const Accessible* otherChild = otherAncs.ElementAt(--otherPos);
+    if (thisChild != otherChild) {
+      break;
+    }
+    common = thisChild;
+  }
+  return common;
+}
+
 Accessible* Accessible::FocusedChild() {
   Accessible* doc = nsAccUtils::DocumentFor(this);
   Accessible* child = doc->FocusedChild();
@@ -508,6 +541,24 @@ const Accessible* Accessible::ActionAncestor() const {
 }
 
 nsStaticAtom* Accessible::LandmarkRole() const {
+  // For certain cases below (e.g. ARIA region, HTML <header>), whether it is
+  // actually a landmark is conditional. Rather than duplicating that
+  // conditional logic here, we check the Gecko role.
+  if (const nsRoleMapEntry* roleMapEntry = ARIARoleMap()) {
+    // Explicit ARIA role should take precedence.
+    if (roleMapEntry->Is(nsGkAtoms::region)) {
+      if (Role() == roles::REGION) {
+        return nsGkAtoms::region;
+      }
+    } else if (roleMapEntry->Is(nsGkAtoms::form)) {
+      if (Role() == roles::FORM) {
+        return nsGkAtoms::form;
+      }
+    } else if (roleMapEntry->IsOfType(eLandmark)) {
+      return roleMapEntry->roleAtom;
+    }
+  }
+
   nsAtom* tagName = TagName();
   if (!tagName) {
     // Either no associated content, or no cache.
@@ -539,13 +590,13 @@ nsStaticAtom* Accessible::LandmarkRole() const {
   }
 
   if (tagName == nsGkAtoms::section) {
-    if (!NameIsEmpty()) {
+    if (Role() == roles::REGION) {
       return nsGkAtoms::region;
     }
   }
 
   if (tagName == nsGkAtoms::form) {
-    if (!NameIsEmpty()) {
+    if (Role() == roles::FORM_LANDMARK) {
       return nsGkAtoms::form;
     }
   }
@@ -554,14 +605,14 @@ nsStaticAtom* Accessible::LandmarkRole() const {
     return nsGkAtoms::search;
   }
 
-  const nsRoleMapEntry* roleMapEntry = ARIARoleMap();
-  return roleMapEntry && roleMapEntry->IsOfType(eLandmark)
-             ? roleMapEntry->roleAtom
-             : nullptr;
+  return nullptr;
 }
 
 nsStaticAtom* Accessible::ComputedARIARole() const {
   const nsRoleMapEntry* roleMap = ARIARoleMap();
+  if (roleMap && roleMap->IsOfType(eDPub)) {
+    return roleMap->roleAtom;
+  }
   if (roleMap && roleMap->roleAtom != nsGkAtoms::_empty &&
       // region and form have their own Gecko roles and need to be handled
       // specially.
@@ -605,12 +656,15 @@ void Accessible::ApplyImplicitState(uint64_t& aState) const {
     }
   }
 
-  // If this is an ARIA item of the selectable widget and if it's focused and
-  // not marked unselected explicitly (i.e. aria-selected="false") then expose
-  // it as selected to make ARIA widget authors life easier.
+  // If this is an option, tab or treeitem and if it's focused and not marked
+  // unselected explicitly (i.e. aria-selected="false") then expose it as
+  // selected to make ARIA widget authors life easier.
   const nsRoleMapEntry* roleMapEntry = ARIARoleMap();
-  if (roleMapEntry && !(aState & states::SELECTED) &&
-      ARIASelected().valueOr(true)) {
+  if (roleMapEntry &&
+      (roleMapEntry->Is(nsGkAtoms::option) ||
+       roleMapEntry->Is(nsGkAtoms::tab) ||
+       roleMapEntry->Is(nsGkAtoms::treeitem)) &&
+      !(aState & states::SELECTED) && ARIASelected().valueOr(true)) {
     // Special case for tabs: focused tab or focus inside related tab panel
     // implies selected state.
     if (roleMapEntry->role == roles::PAGETAB) {

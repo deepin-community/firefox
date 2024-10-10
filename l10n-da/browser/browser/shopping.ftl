@@ -89,6 +89,9 @@ shopping-show-less-button = Vis færre
 
 shopping-settings-label =
     .label = Indstillinger
+shopping-settings-recommendations-toggle2 =
+    .label = Vis anbefalinger og sponsoreret indhold
+shopping-settings-recommendations-learn-more3 = { -brand-product-name } deler ikke dine personlige data, så disse anbefalinger kommer ikke til at følge dig rundt på nettet. <a data-l10n-name="review-quality-url">Læs mere</a>
 shopping-settings-recommendations-toggle =
     .label = Vis reklamer i verificering af anmeldelser
 shopping-settings-recommendations-learn-more2 = Du vil til tider få vist reklamer for relevante produkter. Vi reklamerer kun for produkter med pålidelige anmeldelser. <a data-l10n-name="review-quality-url">Læs mere</a>
@@ -115,6 +118,7 @@ shopping-settings-sidebar-enabled-state = Verificering af anmeldelser er <strong
 shopping-adjusted-rating-label =
     .label = Justeret bedømmelse
 shopping-adjusted-rating-unreliable-reviews = Upålidelige anmeldelser er blevet fjernet
+shopping-adjusted-rating-based-reliable-reviews = Baseret på pålidelige anmeldelser
 
 ## Strings for the review reliability component
 
@@ -133,6 +137,8 @@ shopping-analysis-explainer-learn-more2 = Læs mere om, <a data-l10n-name="revie
 # websites, which will be inserted without being translated.
 #  $retailer (String) - capitalized name of the shopping website, for example, "Amazon".
 shopping-analysis-explainer-highlights-description = <strong>Højdepunkter</strong> stammer fra { $retailer }-anmeldelser fra de seneste 80 dage, som vi vurderer er pålidelige.
+# Fallback for analysis highlights explainer if the retailer is ever unknown
+shopping-analysis-explainer-highlights-description-unknown-retailer = <strong>Højdepunkter</strong> stammer fra anmeldelser fra de seneste 80 dage, som vi vurderer er pålidelige.
 shopping-analysis-explainer-review-grading-scale-reliable = Pålidelige anmeldelser. Vi vurderer, at anmeldelserne sandsynligvis stammer fra rigtige kunder, der har givet ærlige og upartiske anmeldelser.
 shopping-analysis-explainer-review-grading-scale-mixed = Vi vurderer, at der findes en blanding af pålidelige og upålidelige anmeldelser.
 shopping-analysis-explainer-review-grading-scale-unreliable = Upålidelige anmeldelser. Vi vurderer, at anmeldelserne sandsynligvis er forfalskede eller stammer fra partiske anmeldere.
@@ -159,6 +165,7 @@ shopping-unanalyzed-product-analyze-button = Kontroller kvalitet af anmeldelser
 
 more-to-consider-ad-label =
     .label = Mere at overveje
+shopping-sponsored-label = Sponsoreret
 ad-by-fakespot = Reklame fra { -fakespot-brand-name }
 
 ## Shopping survey strings.

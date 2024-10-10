@@ -3,5 +3,5 @@ XPCOM_MANIFESTS += [
 ]
 
 EXTRA_JS_MODULES += [
-    'addonsInfo.jsm',
+    'addonsInfo.sys.mjs',
 ]

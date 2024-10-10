@@ -9,6 +9,7 @@ use crate::std::ffi::{OsStr, OsString};
 use crate::std::path::{Path, PathBuf};
 use crate::{lang, logging::LogTarget, std};
 use anyhow::Context;
+use once_cell::sync::Lazy;
 
 /// The number of the most recent minidump files to retain when pruning.
 const MINIDUMP_PRUNE_SAVE_COUNT: usize = 10;
@@ -81,13 +82,6 @@ impl Config {
     /// Load a configuration from the application environment.
     #[cfg_attr(mock, allow(unused))]
     pub fn read_from_environment(&mut self) -> anyhow::Result<()> {
-        /// Most environment variables are prefixed with `MOZ_CRASHREPORTER_`.
-        macro_rules! ekey {
-            ( $name:literal ) => {
-                concat!("MOZ_CRASHREPORTER_", $name)
-            };
-        }
-
         self.auto_submit = env_bool(ekey!("AUTO_SUBMIT"));
         self.dump_all_threads = env_bool(ekey!("DUMP_ALL_THREADS"));
         self.delete_dump = !env_bool(ekey!("NO_DELETE_DUMP"));
@@ -179,6 +173,9 @@ impl Config {
         }
 
         // Set the data dir if not already set.
+        // TODO bug 1910736: if we don't need to support VENDOR_KEY and PRODUCT_KEY in the extra
+        // file, it'd simplify the data_dir logic and things like glean initialization (which
+        // relies on the data dir).
         if self.data_dir.is_none() {
             let vendor = extra[VENDOR_KEY].as_str().unwrap_or(DEFAULT_VENDOR);
             let product = extra[PRODUCT_KEY].as_str().unwrap_or(DEFAULT_PRODUCT);
@@ -243,12 +240,22 @@ impl Config {
 
         let move_file = |from: &Path| -> anyhow::Result<PathBuf> {
             let to = pending_crashes_dir.join(from.file_name().unwrap());
-            std::fs::rename(from, &to).with_context(|| {
-                self.build_string("crashreporter-error-moving-path")
-                    .arg("from", from.display().to_string())
-                    .arg("to", to.display().to_string())
-                    .get()
-            })?;
+            // Try to rename, but copy and remove if it fails. `rename` won't work across
+            // mount points. (bug 506009)
+            if let Err(e) = std::fs::rename(from, &to) {
+                log::warn!("failed to move {} to {}: {e}", from.display(), to.display());
+                log::info!("trying to copy and remove instead");
+
+                std::fs::copy(from, &to).with_context(|| {
+                    self.build_string("crashreporter-error-moving-path")
+                        .arg("from", from.display().to_string())
+                        .arg("to", to.display().to_string())
+                        .get()
+                })?;
+                if let Err(e) = std::fs::remove_file(from) {
+                    log::warn!("failed to remove {}: {e}", from.display());
+                }
+            }
             Ok(to)
         };
 
@@ -492,18 +499,8 @@ impl Config {
 ///
 /// The returned path isn't guaranteed to exist.
 pub fn sibling_path<N: AsRef<OsStr>>(file: N) -> PathBuf {
-    // Expect shouldn't ever panic here because we need more than one argument to run
-    // the program in the first place (we've already previously iterated args).
-    //
-    // We use argv[0] rather than `std::env::current_exe` because `current_exe` doesn't define
-    // how symlinks are treated, and we want to support running directly from the local build
-    // directory (which uses symlinks on linux and macos).
-    let dir_path = {
-        let mut path = self_path();
-        // Pop the executable off to get the parent directory.
-        path.pop();
-        path
-    };
+    // Expect shouldn't panic as we don't invoke the program without a parent directory.
+    let dir_path = self_path().parent().expect("program invoked based on PATH");
 
     let mut path = dir_path.join(file.as_ref());
 
@@ -515,19 +512,28 @@ pub fn sibling_path<N: AsRef<OsStr>>(file: N) -> PathBuf {
         // The other applications we ship with Firefox are stored in the main bundle
         // (Firefox.app/Contents/MacOS/) so we we need to go back three directories
         // to reach them.
-        path = dir_path;
-        // 3 pops for `crashreporter.app/Contents/MacOS`.
-        for _ in 0..3 {
-            path.pop();
+
+        // 3rd ancestor (the 0th element of ancestors has no paths removed) to remove
+        // `crashreporter.app/Contents/MacOS`.
+        if let Some(ancestor) = dir_path.ancestors().nth(3) {
+            path = ancestor.join(file.as_ref());
         }
-        path.push(file.as_ref());
     }
 
     path
 }
 
-fn self_path() -> PathBuf {
-    PathBuf::from(std::env::args_os().next().expect("failed to get argv[0]"))
+fn self_path() -> &'static Path {
+    static PATH: Lazy<PathBuf> = Lazy::new(|| {
+        // Expect shouldn't ever panic here because we need more than one argument to run
+        // the program in the first place (we've already previously iterated args).
+        //
+        // We use argv[0] rather than `std::env::current_exe` because `current_exe` doesn't define
+        // how symlinks are treated, and we want to support running directly from the local build
+        // directory (which uses symlinks on linux and macos).
+        PathBuf::from(std::env::args_os().next().expect("failed to get argv[0]"))
+    });
+    &*PATH
 }
 
 fn env_bool<K: AsRef<OsStr>>(name: K) -> bool {

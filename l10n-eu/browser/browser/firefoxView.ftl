@@ -12,6 +12,8 @@ menu-tools-firefox-view =
     .label = { -firefoxview-brand-name }
     .accesskey = F
 firefoxview-page-title = { -firefoxview-brand-name }
+firefoxview-page-heading =
+    .heading = { -firefoxview-brand-name }
 firefoxview-page-label =
     .label = { -firefoxview-brand-name }
 firefoxview-close-button =
@@ -240,3 +242,19 @@ firefoxview-recentlyclosed-empty-description = Itxitako azken fitxak hemen aurki
 
 firefoxview-syncedtabs-device-notabs = Irekitako fitxarik ez gailu honetan
 firefoxview-syncedtabs-connect-another-device = Konektatu beste gailu bat
+firefoxview-pinned-tabs =
+    .title = Ainguratutako fitxak
+firefoxview-tabs =
+    .title = Fitxak
+
+## These tooltips will be displayed when hovering over a pinned tab on the Open Tabs page
+## Variables:
+##  $tabTitle (string) - Title of pinned tab that will be opened when selected
+
+firefoxview-opentabs-pinned-tab =
+    .title = Aldatu { $tabTitle } fitxara
+
+## These tooltips will be displayed when hovering over an unpinned Open Tab
+## Variables:
+##   $url (string) - URL of tab that will be opened when selected
+

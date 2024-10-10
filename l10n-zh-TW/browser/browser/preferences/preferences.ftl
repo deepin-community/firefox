@@ -57,6 +57,10 @@ category-experimental =
 pane-experimental-subtitle = 調整設定前請務必小心！
 pane-experimental-search-results-header = { -brand-short-name } 實驗功能: 調整設定前請務必小心！
 pane-experimental-description2 = 調整進階設定，可能會影響 { -brand-short-name } 的效能或安全性。
+settings-pane-labs-title = { -firefoxlabs-brand-name }
+settings-category-labs =
+    .tooltiptext = { -firefoxlabs-brand-name }
+pane-experimental-description3 = 試試看我們的實驗性功能！這些功能還在開發與進化中，可能會影響 { -brand-short-name } 運作方式。
 pane-experimental-reset =
     .label = 回復為預設值
     .accesskey = R
@@ -542,8 +546,8 @@ choose-bookmark =
 
 ## Home Section - Firefox Home Content Customization
 
-home-prefs-content-header2 = { -firefox-home-brand-name } 內容
-home-prefs-content-description2 = 選擇要在您的 { -firefox-home-brand-name } 畫面顯示哪些內容。
+home-prefs-content-header2 = { -firefox-home-brand-name }內容
+home-prefs-content-description2 = 選擇要在您的 { -firefox-home-brand-name }畫面顯示哪些內容。
 home-prefs-search-header =
     .label = 網頁搜尋
 home-prefs-shortcuts-header =
@@ -587,6 +591,10 @@ home-prefs-recent-activity-description = 近期造訪過的網站與內容精選
 home-prefs-snippets-header =
     .label = 隻字片語
 home-prefs-snippets-description-new = 來自 { -vendor-short-name } 及 { -brand-product-name } 的使用秘訣與新聞
+home-prefs-weather-header =
+    .label = 天氣
+home-prefs-weather-description = 讓您一目了然今天的天氣預報
+home-prefs-weather-learn-more-link = 更多資訊
 # Variables:
 #   $num (number) - Number of rows displayed
 home-prefs-sections-rows-option =
@@ -734,8 +742,8 @@ sync-sign-in =
 
 ## Sync section - enabling or disabling sync.
 
-prefs-syncing-on = 同步: 開啟
-prefs-syncing-off = 同步: 關閉
+prefs-syncing-on = 同步：開啟
+prefs-syncing-off = 同步：關閉
 prefs-sync-turn-on-syncing =
     .label = 開啟同步…
     .accesskey = s
@@ -752,7 +760,7 @@ prefs-syncing-button =
 
 ## The list of things currently syncing.
 
-sync-syncing-across-devices-heading = 您連線的裝置會同步下列項目:
+sync-syncing-across-devices-heading = 您連線的裝置會同步下列項目：
 sync-currently-syncing-bookmarks = 書籤
 sync-currently-syncing-history = 瀏覽紀錄
 sync-currently-syncing-tabs = 開啟的分頁
@@ -900,6 +908,9 @@ forms-saved-passwords =
 forms-primary-pw-use =
     .label = 使用主控密碼
     .accesskey = U
+# This operation requires the user to authenticate with the operating system (device sign-in)
+forms-os-reauth =
+    .label = 需要裝置登入才能填寫與管理密碼
 forms-primary-pw-learn-more-link = 了解更多
 # This string uses the former name of the Primary Password feature
 # ("Master Password" in English) so that the preferences can be found
@@ -932,6 +943,13 @@ primary-password-os-auth-dialog-message-win = 請在下方輸入您的 Windows �
 # notes are only valid for English. Please test in your locale.
 primary-password-os-auth-dialog-message-macosx = 建立主控密碼
 master-password-os-auth-dialog-caption = { -brand-full-name }
+# The macOS string is preceded by the operating system with "Firefox is trying to ".
+autofill-creditcard-os-dialog-message =
+    { PLATFORM() ->
+        [macos] 更改付款方式的選項
+       *[other] { -brand-short-name } 正嘗試更改付款方式的選項，請使用您的裝置登入後允許此動作。
+    }
+autofill-creditcard-os-auth-dialog-caption = { -brand-full-name }
 
 ## Privacy section - Autofill
 
@@ -946,13 +964,8 @@ autofill-payment-methods-checkbox-submessage = 包含信用卡與 Debit Card
     .accesskey = I
 autofill-saved-payment-methods-button = 儲存的付款方式
     .accesskey = v
-autofill-reauth-checkbox =
-    { PLATFORM() ->
-        [macos] 需要進行 macOS 驗證才能填寫或編輯付款方式資訊。
-        [windows] 需要進行 Windows 驗證才能填寫或編輯付款方式資訊。
-        [linux] 需要進行 Linux 驗證才能填寫或編輯付款方式資訊。
-       *[other] 需要進行驗證才能填寫或編輯付款方式資訊。
-    }
+# This operation requires the user to authenticate with the operating system (device sign-in)
+autofill-reauth-payment-methods-checkbox = 需要裝置登入才能填寫與管理付款資訊
     .accesskey = o
 
 ## Privacy Section - History
@@ -1090,6 +1103,9 @@ addressbar-suggestions-settings = 修改搜尋建議偏好設定
 addressbar-locbar-showrecentsearches-option =
     .label = 顯示近期搜尋項目
     .accesskey = r
+addressbar-locbar-showtrendingsuggestions-option =
+    .label = 顯示熱門搜尋建議
+    .accesskey = t
 addressbar-quickactions-learn-more = 了解更多
 
 ## Privacy Section - Content Blocking
@@ -1122,7 +1138,7 @@ enhanced-tracking-protection-setting-custom =
 content-blocking-etp-standard-desc = 兼顧保護與效能。網站可正常運作。
 content-blocking-etp-strict-desc = 保護更強大，但可能會導致某些網站或內容故障。
 content-blocking-etp-custom-desc = 選擇要封鎖哪些追蹤器與指令碼。
-content-blocking-etp-blocking-desc = { -brand-short-name } 封鎖下列項目:
+content-blocking-etp-blocking-desc = { -brand-short-name } 會封鎖下列項目：
 content-blocking-private-windows = 隱私視窗中的追蹤內容
 content-blocking-cross-site-cookies-in-all-windows2 = 所有視窗中的跨網站 Cookie
 content-blocking-cross-site-tracking-cookies = 跨網站追蹤 Cookie
@@ -1281,6 +1297,14 @@ privacy-segmentation-radio-off =
 privacy-segmentation-radio-on =
     .label = 顯示詳細資訊
 
+## Privacy Section - Website Advertising Preferences
+
+website-advertising-header = 網站廣告偏好設定
+website-advertising-private-attribution =
+    .label = 允許網站進行能保護隱私的廣告成效測量
+    .accesskey = a
+website-advertising-private-attribution-description = 此功能可在不收集您資料的前提下，幫助網站了解廣告成效。
+
 ## Privacy Section - Security
 ##
 ## It is important that wording follows the guidelines outlined on this page:
@@ -1324,13 +1348,20 @@ space-alert-under-5gb-message2 = <strong>{ -brand-short-name } 的磁碟空間�
 
 httpsonly-header = 純 HTTPS 模式
 httpsonly-description = HTTPS 讓您與要造訪的網站間，能夠有安全而加密過的連線。大部分的網站都支援 HTTPS，開啟純 HTTPS 模式後，{ -brand-short-name } 就會將所有的連線都升級為 HTTPS 連線。
+httpsonly-description2 = { -brand-short-name } 會與您造訪的網站建立安全、加密過的連線。開啟 HTTPS-Only 後，若遇到不安全的連線，{ -brand-short-name } 會警告您。
 httpsonly-learn-more = 了解更多
 httpsonly-radio-enabled =
     .label = 在所有視窗都開啟純 HTTPS 模式
+httpsonly-radio-enabled2 =
+    .label = 在所有視窗都只使用 HTTPS 連線
 httpsonly-radio-enabled-pbm =
     .label = 僅在隱私瀏覽視窗開啟純 HTTPS 模式
+httpsonly-radio-enabled-pbm2 =
+    .label = 在隱私視窗僅使用 HTTPS 連線
 httpsonly-radio-disabled =
     .label = 不開啟純 HTTPS 模式
+httpsonly-radio-disabled2 =
+    .label = 優先使用 HTTPS 連線，但也允許不安全的連線
 
 ## DoH Section
 

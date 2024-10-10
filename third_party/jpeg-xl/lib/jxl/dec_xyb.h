@@ -39,7 +39,7 @@ struct OutputEncodingInfo {
   // Used for the HLG OOTF and PQ tone mapping.
   float orig_intensity_target;
   // Opsin inverse matrix taken from the metadata.
-  Matrix3x3 orig_inverse_matrix;
+  float orig_inverse_matrix[9];
   bool default_transform;
   bool xyb_encoded;
   //
@@ -60,7 +60,7 @@ struct OutputEncodingInfo {
   // Luminances of color_encoding's primaries, used for the HLG inverse OOTF and
   // for PQ tone mapping.
   // Default to sRGB's.
-  Vector3 luminances;
+  float luminances[3];
   // Used for the HLG inverse OOTF and PQ tone mapping.
   float desired_intensity_target;
   bool cms_set = false;

@@ -14,27 +14,29 @@ pub mod import_rule;
 pub mod keyframes_rule;
 pub mod layer_rule;
 mod loader;
+mod margin_rule;
 mod media_rule;
 mod namespace_rule;
 pub mod origin;
 mod page_rule;
-mod margin_rule;
+pub mod position_try_rule;
 mod property_rule;
 mod rule_list;
 mod rule_parser;
 mod rules_iterator;
+pub mod scope_rule;
 mod starting_style_rule;
 mod style_rule;
 mod stylesheet;
 pub mod supports_rule;
-mod scope_rule;
 
 #[cfg(feature = "gecko")]
 use crate::gecko_bindings::sugar::refptr::RefCounted;
 #[cfg(feature = "gecko")]
 use crate::gecko_bindings::{bindings, structs};
 use crate::parser::{NestingContext, ParserContext};
-use crate::shared_lock::{DeepCloneParams, DeepCloneWithLock, Locked};
+use crate::properties::PropertyDeclarationBlock;
+use crate::shared_lock::{DeepCloneWithLock, Locked};
 use crate::shared_lock::{SharedRwLock, SharedRwLockReadGuard, ToCssWithGuard};
 use crate::str::CssStringWriter;
 use cssparser::{parse_one_rule, Parser, ParserInput};
@@ -42,11 +44,10 @@ use cssparser::{parse_one_rule, Parser, ParserInput};
 use malloc_size_of::{MallocSizeOfOps, MallocUnconditionalShallowSizeOf};
 use servo_arc::Arc;
 use std::borrow::Cow;
-use std::fmt;
+use std::fmt::{self, Write};
 #[cfg(feature = "gecko")]
 use std::mem::{self, ManuallyDrop};
 use style_traits::ParsingMode;
-#[cfg(feature = "gecko")]
 use to_shmem::{SharedMemoryBuilder, ToShmem};
 
 pub use self::container_rule::ContainerRule;
@@ -64,6 +65,7 @@ pub use self::media_rule::MediaRule;
 pub use self::namespace_rule::NamespaceRule;
 pub use self::origin::{Origin, OriginSet, OriginSetIterator, PerOrigin, PerOriginIter};
 pub use self::page_rule::{PagePseudoClassFlags, PageRule, PageSelector, PageSelectors};
+pub use self::position_try_rule::PositionTryRule;
 pub use self::property_rule::PropertyRule;
 pub use self::rule_list::{CssRules, CssRulesHelpers};
 pub use self::rule_parser::{InsertRuleContext, State, TopLevelRuleParser};
@@ -71,9 +73,9 @@ pub use self::rules_iterator::{AllRules, EffectiveRules};
 pub use self::rules_iterator::{
     EffectiveRulesIterator, NestedRuleIterationCondition, RulesIterator,
 };
+pub use self::scope_rule::ScopeRule;
 pub use self::starting_style_rule::StartingStyleRule;
 pub use self::style_rule::StyleRule;
-pub use self::scope_rule::ScopeRule;
 pub use self::stylesheet::{AllowImportRules, SanitizationData, SanitizationKind};
 pub use self::stylesheet::{DocumentStyleSheet, Namespaces, Stylesheet};
 pub use self::stylesheet::{StylesheetContents, StylesheetInDocument, UserAgentStylesheets};
@@ -110,8 +112,36 @@ pub enum CorsMode {
 pub struct UrlExtraData(usize);
 
 /// Extra data that the backend may need to resolve url values.
+#[cfg(feature = "servo")]
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct UrlExtraData(pub Arc<::url::Url>);
+
+#[cfg(feature = "servo")]
+impl UrlExtraData {
+    /// True if this URL scheme is chrome.
+    pub fn chrome_rules_enabled(&self) -> bool {
+        self.0.scheme() == "chrome"
+    }
+
+    /// Get the interior Url as a string.
+    pub fn as_str(&self) -> &str {
+        self.0.as_str()
+    }
+}
+
+#[cfg(feature = "servo")]
+impl From<::url::Url> for UrlExtraData {
+    fn from(url: ::url::Url) -> Self {
+        Self(Arc::new(url))
+    }
+}
+
 #[cfg(not(feature = "gecko"))]
-pub type UrlExtraData = ::servo_url::ServoUrl;
+impl ToShmem for UrlExtraData {
+    fn to_shmem(&self, _builder: &mut SharedMemoryBuilder) -> to_shmem::Result<Self> {
+        unimplemented!("If servo wants to share stylesheets across processes, ToShmem for Url must be implemented");
+    }
+}
 
 #[cfg(feature = "gecko")]
 impl Clone for UrlExtraData {
@@ -248,6 +278,46 @@ impl fmt::Debug for UrlExtraData {
 #[cfg(feature = "gecko")]
 impl Eq for UrlExtraData {}
 
+/// Serialize a page or style rule, starting with the opening brace.
+///
+/// https://drafts.csswg.org/cssom/#serialize-a-css-rule CSSStyleRule
+///
+/// This is not properly specified for page-rules, but we will apply the
+/// same process.
+fn style_or_page_rule_to_css(
+    rules: Option<&Arc<Locked<CssRules>>>,
+    block: &Locked<PropertyDeclarationBlock>,
+    guard: &SharedRwLockReadGuard,
+    dest: &mut CssStringWriter,
+) -> fmt::Result {
+    // Write the opening brace. The caller needs to serialize up to this point.
+    dest.write_char('{')?;
+
+    // Step 2
+    let declaration_block = block.read_with(guard);
+    let has_declarations = !declaration_block.declarations().is_empty();
+
+    // Step 3
+    if let Some(ref rules) = rules {
+        let rules = rules.read_with(guard);
+        // Step 6 (here because it's more convenient)
+        if !rules.is_empty() {
+            if has_declarations {
+                dest.write_str("\n  ")?;
+                declaration_block.to_css(dest)?;
+            }
+            return rules.to_css_block_without_opening(guard, dest);
+        }
+    }
+
+    // Steps 4 & 5
+    if has_declarations {
+        dest.write_char(' ')?;
+        declaration_block.to_css(dest)?;
+    }
+    dest.write_str(" }")
+}
+
 /// A CSS rule.
 ///
 /// TODO(emilio): Lots of spec links should be around.
@@ -275,6 +345,7 @@ pub enum CssRule {
     LayerStatement(Arc<LayerStatementRule>),
     Scope(Arc<ScopeRule>),
     StartingStyle(Arc<StartingStyleRule>),
+    PositionTry(Arc<Locked<PositionTryRule>>),
 }
 
 impl CssRule {
@@ -321,12 +392,15 @@ impl CssRule {
             },
             CssRule::StartingStyle(ref arc) => {
                 arc.unconditional_shallow_size_of(ops) + arc.size_of(guard, ops)
-            }
+            },
             // TODO(emilio): Add memory reporting for these rules.
             CssRule::LayerBlock(_) | CssRule::LayerStatement(_) => 0,
             CssRule::Scope(ref rule) => {
                 rule.unconditional_shallow_size_of(ops) + rule.size_of(guard, ops)
-            }
+            },
+            CssRule::PositionTry(ref lock) => {
+                lock.unconditional_shallow_size_of(ops) + lock.read_with(guard).size_of(guard, ops)
+            },
         }
     }
 }
@@ -368,6 +442,8 @@ pub enum CssRuleType {
     Scope = 21,
     // https://drafts.csswg.org/css-transitions-2/#the-cssstartingstylerule-interface
     StartingStyle = 22,
+    // https://drafts.csswg.org/css-anchor-position-1/#om-position-try
+    PositionTry = 23,
 }
 
 impl CssRuleType {
@@ -389,6 +465,9 @@ impl From<CssRuleType> for CssRuleTypes {
 }
 
 impl CssRuleTypes {
+    /// Rules where !important declarations are forbidden.
+    pub const IMPORTANT_FORBIDDEN: Self = Self(CssRuleType::PositionTry.bit() | CssRuleType::Keyframe.bit());
+
     /// Returns whether the rule is in the current set.
     #[inline]
     pub fn contains(self, ty: CssRuleType) -> bool {
@@ -457,6 +536,7 @@ impl CssRule {
             CssRule::Container(_) => CssRuleType::Container,
             CssRule::Scope(_) => CssRuleType::Scope,
             CssRule::StartingStyle(_) => CssRuleType::StartingStyle,
+            CssRule::PositionTry(_) => CssRuleType::PositionTry,
         }
     }
 
@@ -488,7 +568,7 @@ impl CssRule {
         // Override the nesting context with existing data.
         context.nesting_context = NestingContext::new(
             insert_rule_context.containing_rule_types,
-            insert_rule_context.parse_relative_rule_type
+            insert_rule_context.parse_relative_rule_type,
         );
 
         let state = if !insert_rule_context.containing_rule_types.is_empty() {
@@ -530,27 +610,26 @@ impl DeepCloneWithLock for CssRule {
         &self,
         lock: &SharedRwLock,
         guard: &SharedRwLockReadGuard,
-        params: &DeepCloneParams,
     ) -> CssRule {
         match *self {
             CssRule::Namespace(ref arc) => CssRule::Namespace(arc.clone()),
             CssRule::Import(ref arc) => {
                 let rule = arc
                     .read_with(guard)
-                    .deep_clone_with_lock(lock, guard, params);
+                    .deep_clone_with_lock(lock, guard);
                 CssRule::Import(Arc::new(lock.wrap(rule)))
             },
             CssRule::Style(ref arc) => {
                 let rule = arc.read_with(guard);
                 CssRule::Style(Arc::new(
-                    lock.wrap(rule.deep_clone_with_lock(lock, guard, params)),
+                    lock.wrap(rule.deep_clone_with_lock(lock, guard)),
                 ))
             },
             CssRule::Container(ref arc) => {
-                CssRule::Container(Arc::new(arc.deep_clone_with_lock(lock, guard, params)))
+                CssRule::Container(Arc::new(arc.deep_clone_with_lock(lock, guard)))
             },
             CssRule::Media(ref arc) => {
-                CssRule::Media(Arc::new(arc.deep_clone_with_lock(lock, guard, params)))
+                CssRule::Media(Arc::new(arc.deep_clone_with_lock(lock, guard)))
             },
             CssRule::FontFace(ref arc) => {
                 let rule = arc.read_with(guard);
@@ -565,19 +644,19 @@ impl DeepCloneWithLock for CssRule {
             CssRule::Keyframes(ref arc) => {
                 let rule = arc.read_with(guard);
                 CssRule::Keyframes(Arc::new(
-                    lock.wrap(rule.deep_clone_with_lock(lock, guard, params)),
+                    lock.wrap(rule.deep_clone_with_lock(lock, guard)),
                 ))
             },
             CssRule::Margin(ref arc) => {
-                CssRule::Margin(Arc::new(arc.deep_clone_with_lock(lock, guard, params)))
+                CssRule::Margin(Arc::new(arc.deep_clone_with_lock(lock, guard)))
             },
             CssRule::Supports(ref arc) => {
-                CssRule::Supports(Arc::new(arc.deep_clone_with_lock(lock, guard, params)))
+                CssRule::Supports(Arc::new(arc.deep_clone_with_lock(lock, guard)))
             },
             CssRule::Page(ref arc) => {
                 let rule = arc.read_with(guard);
                 CssRule::Page(Arc::new(
-                    lock.wrap(rule.deep_clone_with_lock(lock, guard, params)),
+                    lock.wrap(rule.deep_clone_with_lock(lock, guard)),
                 ))
             },
             CssRule::Property(ref arc) => {
@@ -586,17 +665,23 @@ impl DeepCloneWithLock for CssRule {
                 CssRule::Property(arc.clone())
             },
             CssRule::Document(ref arc) => {
-                CssRule::Document(Arc::new(arc.deep_clone_with_lock(lock, guard, params)))
+                CssRule::Document(Arc::new(arc.deep_clone_with_lock(lock, guard)))
             },
             CssRule::LayerStatement(ref arc) => CssRule::LayerStatement(arc.clone()),
             CssRule::LayerBlock(ref arc) => {
-                CssRule::LayerBlock(Arc::new(arc.deep_clone_with_lock(lock, guard, params)))
+                CssRule::LayerBlock(Arc::new(arc.deep_clone_with_lock(lock, guard)))
             },
             CssRule::Scope(ref arc) => {
-                CssRule::Scope(Arc::new(arc.deep_clone_with_lock(lock, guard, params)))
+                CssRule::Scope(Arc::new(arc.deep_clone_with_lock(lock, guard)))
             },
             CssRule::StartingStyle(ref arc) => {
-                CssRule::StartingStyle(Arc::new(arc.deep_clone_with_lock(lock, guard, params)))
+                CssRule::StartingStyle(Arc::new(arc.deep_clone_with_lock(lock, guard)))
+            },
+            CssRule::PositionTry(ref arc) => {
+                let rule = arc.read_with(guard);
+                CssRule::PositionTry(Arc::new(
+                    lock.wrap(rule.deep_clone_with_lock(lock, guard)),
+                ))
             },
         }
     }
@@ -625,6 +710,7 @@ impl ToCssWithGuard for CssRule {
             CssRule::Container(ref rule) => rule.to_css(guard, dest),
             CssRule::Scope(ref rule) => rule.to_css(guard, dest),
             CssRule::StartingStyle(ref rule) => rule.to_css(guard, dest),
+            CssRule::PositionTry(ref lock) => lock.read_with(guard).to_css(guard, dest),
         }
     }
 }

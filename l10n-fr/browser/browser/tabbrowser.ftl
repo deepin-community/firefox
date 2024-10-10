@@ -4,18 +4,26 @@
 
 tabbrowser-empty-tab-title = Nouvel onglet
 tabbrowser-empty-private-tab-title = Nouvel onglet privé
-
 tabbrowser-menuitem-close-tab =
     .label = Fermer l’onglet
 tabbrowser-menuitem-close =
     .label = Fermer
-
 # Displayed as a tooltip on container tabs
 # Variables:
 #   $title (String): the title of the current tab.
 #   $containerName (String): the name of the current container.
 tabbrowser-container-tab-title = { $title } - { $containerName }
-
+# This text serves as an on-screen tooltip as well as an accessible name for
+# the "X" button that is shown on the active tab or, when multiple tabs are
+# selected, to all their "X" buttons.
+# Variables:
+#   $tabCount (Number): The number of tabs that will be closed.
+tabbrowser-close-tabs-button =
+    .tooltiptext =
+        { $tabCount ->
+            [one] Fermer l’onglet
+           *[other] Fermer { $tabCount } onglets
+        }
 # Variables:
 #   $tabCount (Number): The number of tabs that will be closed.
 tabbrowser-close-tabs-tooltip =
@@ -114,13 +122,20 @@ tabbrowser-confirm-caretbrowsing-title = Navigation au curseur
 tabbrowser-confirm-caretbrowsing-message = L’appui sur F7 active ou désactive la navigation au curseur. Cette fonction place un curseur déplaçable dans les pages web, permettant de sélectionner du texte au clavier. Désirez-vous activer la navigation au curseur ?
 tabbrowser-confirm-caretbrowsing-checkbox = Ne plus afficher ce dialogue à l’avenir
 
+## Confirmation dialog for closing all duplicate tabs
+
+tabbrowser-confirm-close-duplicate-tabs-title = Attention
+tabbrowser-confirm-close-duplicate-tabs-text = Nous garderons le dernier onglet actif ouvert
+tabbrowser-confirm-close-all-duplicate-tabs-title = Fermer les onglets en double ?
+tabbrowser-confirm-close-all-duplicate-tabs-text = Nous allons fermer les onglets en double dans cette fenêtre. Le dernier onglet actif restera ouvert.
+tabbrowser-confirm-close-all-duplicate-tabs-button-closetabs = Fermer les onglets
+
 ##
 
 # Variables:
 #   $domain (String): URL of the page that is trying to steal focus.
 tabbrowser-allow-dialogs-to-get-focus =
     .label = Autoriser les notifications de ce type depuis { $domain } à basculer vers leur onglet
-
 tabbrowser-customizemode-tab-title = Personnaliser { -brand-short-name }
 
 ## Context menu buttons, of which only one will be visible at a time
@@ -139,7 +154,6 @@ tabbrowser-context-mute-selected-tabs =
 tabbrowser-context-unmute-selected-tabs =
     .label = Réactiver le son des onglets
     .accesskey = R
-
 # This string is used as an additional tooltip and accessibility description for tabs playing audio
 tabbrowser-tab-audio-playing-description = Lecture audio
 

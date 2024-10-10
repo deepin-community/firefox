@@ -46,7 +46,7 @@
 #include "js/PropertySpec.h"
 #include "js/Wrapper.h"
 #include "util/DifferentialTesting.h"
-#include "util/StringBuffer.h"
+#include "util/StringBuilder.h"
 #include "util/Text.h"
 #include "vm/DateObject.h"
 #include "vm/DateTime.h"
@@ -1060,7 +1060,11 @@ done:
 #undef NEED_NDIGITS
 }
 
-int FixupNonFullYear(int year) {
+/**
+ * Non-ISO years < 100 get fixed up, to allow 2-digit year formats.
+ * year < 50 becomes 2000-2049, 50-99 becomes 1950-1999.
+ */
+int FixupYear(int year) {
   if (year < 50) {
     year += 2000;
   } else if (year >= 50 && year < 100) {
@@ -1203,9 +1207,7 @@ static bool TryParseDashedDatePrefix(const CharT* s, size_t length,
     return false;
   }
 
-  if (yearDigits < 4) {
-    year = FixupNonFullYear(year);
-  }
+  year = FixupYear(year);
 
   *indexOut = i;
   *yearOut = year;
@@ -1295,9 +1297,7 @@ static bool TryParseDashedNumericDatePrefix(const CharT* s, size_t length,
     return false;
   }
 
-  if (year < 100) {
-    year = FixupNonFullYear(year);
-  }
+  year = FixupYear(year);
 
   *indexOut = i;
   *yearOut = year;
@@ -1750,7 +1750,7 @@ static bool ParseDate(DateTimeInfo::ForceUTC forceUTC, const CharT* s,
       // (again, for Chrome parity)
       year = 2001;
     } else {
-      year = FixupNonFullYear(mon);
+      year = FixupYear(mon);
       mon = 1;
     }
   }
@@ -1810,13 +1810,7 @@ static bool ParseDate(DateTimeInfo::ForceUTC forceUTC, const CharT* s,
       }
     }
 
-    // If the year is greater than or equal to 50 and less than 100, it is
-    // considered to be the number of years after 1900. If the year is less
-    // than 50 it is considered to be the number of years after 2000,
-    // otherwise it is considered to be the number of years after 0.
-    if (!seenFullYear) {
-      year = FixupNonFullYear(year);
-    }
+    year = FixupYear(year);
 
     if (negativeYear) {
       year = -year;
@@ -1847,7 +1841,7 @@ static bool ParseDate(DateTimeInfo::ForceUTC forceUTC, const CharT* s,
   return true;
 }
 
-static bool ParseDate(DateTimeInfo::ForceUTC forceUTC, JSLinearString* s,
+static bool ParseDate(DateTimeInfo::ForceUTC forceUTC, const JSLinearString* s,
                       ClippedTime* result) {
   AutoCheckCannotGC nogc;
   return s->hasLatin1Chars()
@@ -3481,7 +3475,7 @@ static bool date_toSource(JSContext* cx, unsigned argc, Value* vp) {
 
   JSStringBuilder sb(cx);
   if (!sb.append("(new Date(") ||
-      !NumberValueToStringBuffer(unwrapped->UTCTime(), sb) ||
+      !NumberValueToStringBuilder(unwrapped->UTCTime(), sb) ||
       !sb.append("))")) {
     return false;
   }
@@ -3585,8 +3579,11 @@ static bool date_toTemporalInstant(JSContext* cx, unsigned argc, Value* vp) {
 #endif /* JS_HAS_TEMPORAL_API */
 
 static const JSFunctionSpec date_static_methods[] = {
-    JS_FN("UTC", date_UTC, 7, 0), JS_FN("parse", date_parse, 1, 0),
-    JS_FN("now", date_now, 0, 0), JS_FS_END};
+    JS_FN("UTC", date_UTC, 7, 0),
+    JS_FN("parse", date_parse, 1, 0),
+    JS_FN("now", date_now, 0, 0),
+    JS_FS_END,
+};
 
 static const JSFunctionSpec date_methods[] = {
     JS_FN("getTime", date_getTime, 0, 0),
@@ -3645,7 +3642,8 @@ static const JSFunctionSpec date_methods[] = {
     JS_FN("toString", date_toString, 0, 0),
     JS_FN("valueOf", date_valueOf, 0, 0),
     JS_SYM_FN(toPrimitive, date_toPrimitive, 1, JSPROP_READONLY),
-    JS_FS_END};
+    JS_FS_END,
+};
 
 static bool NewDateObject(JSContext* cx, const CallArgs& args, ClippedTime t) {
   MOZ_ASSERT(args.isConstructing());
@@ -3669,8 +3667,8 @@ static bool ToDateString(JSContext* cx, const CallArgs& args, ClippedTime t) {
   if (!locale) {
     return false;
   }
-  return FormatDate(cx, ForceUTC(cx->realm()), locale,
-                    t.toDouble(), FormatSpec::DateTime, args.rval());
+  return FormatDate(cx, ForceUTC(cx->realm()), locale, t.toDouble(),
+                    FormatSpec::DateTime, args.rval());
 }
 
 static bool DateNoArguments(JSContext* cx, const CallArgs& args) {
@@ -3859,16 +3857,23 @@ static const ClassSpec DateObjectClassSpec = {
     nullptr,
     date_methods,
     nullptr,
-    FinishDateClassInit};
+    FinishDateClassInit,
+};
 
-const JSClass DateObject::class_ = {"Date",
-                                    JSCLASS_HAS_RESERVED_SLOTS(RESERVED_SLOTS) |
-                                        JSCLASS_HAS_CACHED_PROTO(JSProto_Date),
-                                    JS_NULL_CLASS_OPS, &DateObjectClassSpec};
+const JSClass DateObject::class_ = {
+    "Date",
+    JSCLASS_HAS_RESERVED_SLOTS(RESERVED_SLOTS) |
+        JSCLASS_HAS_CACHED_PROTO(JSProto_Date),
+    JS_NULL_CLASS_OPS,
+    &DateObjectClassSpec,
+};
 
 const JSClass DateObject::protoClass_ = {
-    "Date.prototype", JSCLASS_HAS_CACHED_PROTO(JSProto_Date), JS_NULL_CLASS_OPS,
-    &DateObjectClassSpec};
+    "Date.prototype",
+    JSCLASS_HAS_CACHED_PROTO(JSProto_Date),
+    JS_NULL_CLASS_OPS,
+    &DateObjectClassSpec,
+};
 
 JSObject* js::NewDateObjectMsec(JSContext* cx, ClippedTime t,
                                 HandleObject proto /* = nullptr */) {

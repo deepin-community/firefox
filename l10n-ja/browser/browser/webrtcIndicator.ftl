@@ -2,6 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+
 ## These strings are used so that the window has a title in tools that
 ## enumerate/look for window titles. It is not normally visible anywhere.
 
@@ -170,7 +171,7 @@ webrtc-share-monitor = 画面 { $monitorIndex }
 # Variables:
 #   $windowCount (Number): the number of windows currently displayed by the application.
 #   $appName (String): the name of the application.
-webrtc-share-application = { $appName } ({ $windowCount } ウィンドウ)
+webrtc-share-application = { $appName } (ウィンドウ { $windowCount } 個)
 
 ## These buttons are the possible answers to the various prompts in the "webrtc-allow-share-*" strings.
 
@@ -190,6 +191,9 @@ webrtc-action-not-now =
 ##
 
 webrtc-remember-allow-checkbox = 今後も同様に処理する
+webrtc-remember-allow-checkbox-camera = すべてのカメラを記憶する
+webrtc-remember-allow-checkbox-microphone = すべてのマイクを記憶する
+webrtc-remember-allow-checkbox-camera-and-microphone = すべてのカメラとマイクを記憶する
 webrtc-mute-notifications-checkbox = 共有中はウェブサイトからの通知を無効にする
 webrtc-reason-for-no-permanent-allow-screen = { -brand-short-name } はあなたの画面への永続的なアクセスを許可できません。
 webrtc-reason-for-no-permanent-allow-audio = { -brand-short-name } は共有を明示的に許可されない限り、あなたのタブの音声への永続的なアクセスを許可できません。

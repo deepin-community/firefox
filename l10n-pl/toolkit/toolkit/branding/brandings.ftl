@@ -140,3 +140,40 @@
                 [lower] przeglądzie Firefoksa
             }
     }
+# Firefox Labs is the name for a page in Settings to allow users to learn about
+# experimental and in-development features, and turn those features on and off.
+# The "Labs" portion can be localized, “Firefox” must be treated as a brand
+# and kept in English.
+-firefoxlabs-brand-name =
+    { $case ->
+        [gen]
+            { $capitalization ->
+                [lower] laboratorium Firefoksa
+               *[upper] Laboratorium Firefoksa
+            }
+        [dat]
+            { $capitalization ->
+                [lower] laboratorium Firefoksa
+               *[upper] Laboratorium Firefoksa
+            }
+        [acc]
+            { $capitalization ->
+                [lower] laboratorium Firefoksa
+               *[upper] Laboratorium Firefoksa
+            }
+        [ins]
+            { $capitalization ->
+                [lower] laboratorium Firefoksa
+               *[upper] Laboratorium Firefoksa
+            }
+        [loc]
+            { $capitalization ->
+                [lower] laboratorium Firefoksa
+               *[upper] Laboratorium Firefoksa
+            }
+       *[nom]
+            { $capitalization ->
+                [lower] laboratorium Firefoksa
+               *[upper] Laboratorium Firefoksa
+            }
+    }

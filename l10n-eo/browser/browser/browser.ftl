@@ -547,6 +547,10 @@ urlbar-go-button =
     .tooltiptext = Iri al la adreso en la retadresa strio
 urlbar-page-action-button =
     .tooltiptext = Retpaĝaj agoj
+urlbar-revert-button =
+    .tooltiptext = Montri adreson en la retadresa strio
+urlbar-show-page-actions-button =
+    .tooltiptext = Montri ĉiujn paĝajn agojn
 
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
@@ -637,6 +641,21 @@ urlbar-group-quickactions =
 #  $engine (String): the name of the search engine used to search.
 urlbar-group-recent-searches =
     .label = Ĵusaj serĉoj
+# The header shown above trending results.
+# Variables:
+#  $engine (String): the name of the search engine providing the trending suggestions
+urlbar-group-trending =
+    .label = Populara en { $engine }
+# The result menu labels shown next to trending results.
+urlbar-result-menu-trending-dont-show =
+    .label = Ne montri popularajn serĉojn
+    .accesskey = N
+urlbar-result-menu-trending-why =
+    .label = Kial mi vidas tion ĉi?
+    .accesskey = K
+# A message that replaces a result when the user dismisses all suggestions of a
+# particular type.
+urlbar-trending-dismissal-acknowledgment = Dankon pro viaj komentoj. Vi ne plu vidos popularajn serĉojn.
 
 ## Reader View toolbar buttons
 
@@ -987,6 +1006,10 @@ firefox-relay-offer-legal-notice = Se vi alklakas "Uzi retpoŝtan maskon" vi akc
 popup-notification-addon-install-unsigned =
     .value = (Nekontrolita)
 popup-notification-xpinstall-prompt-learn-more = Pli da informo pri sekura instalo de aldonaĵoj
+# Note: Access key is set to P to match "Private" in the corresponding localized label.
+popup-notification-addon-privatebrowsing-checkbox =
+    .label = Lanĉi en privataj fenestroj
+    .accesskey = p
 
 ## Pop-up warning
 
@@ -1016,3 +1039,24 @@ popup-warning-button =
 #   $popupURI (String): the URI for the pop-up window
 popup-show-popup-menuitem =
     .label = Montri '{ $popupURI }'
+
+## File-picker crash notification ("FilePickerCrashed.sys.mjs")
+
+file-picker-failed-open = Ne eblis malfermi la dosieran dialogon de Windows. Neniu dosierujo aŭ dosiero estis elektita.
+#   $path (string): The full path to which the file will be saved (e.g., 'C:\Users\Default User\Downloads\readme.txt').
+file-picker-failed-save-somewhere = Ne eblis malfermi la dosieran dialogon de Windows. La dosiero estos konservita en { $path }.
+file-picker-failed-save-nowhere = Ne eblis malfermi la dosieran dialogon de Windows. Neniu norma dosierujo estis trovita do la dosiero ne estos konservita.
+file-picker-crashed-open = La dosiera dialogo de Windows paneis. Neniu dosierujo aŭ dosiero estis elektita.
+#   $path (string): The full path to which the file will be saved (e.g., 'C:\Users\Default User\Downloads\readme.txt').
+file-picker-crashed-save-somewhere = La dosiera dialogo de Windows paneis. La dosiero estos konservita en { $path }.
+file-picker-crashed-save-nowhere = La dosiera dialogo de Windows paneis. Neniu dosierujo aŭ dosiero estis elektita.. Neniu norma dosierujo estis trovita do la dosiero ne estos konservita.
+
+# Button used with file-picker-crashed-save-default. Opens the folder in Windows
+# Explorer, with the saved file selected and in focus.
+#
+# The wording here should be consistent with the Windows variant of
+# `downloads-cmd-show-menuitem-2` and similar messages.
+
+file-picker-crashed-show-in-folder =
+    .label = Montri en dosierujo
+    .accessKey = d

@@ -84,6 +84,8 @@ policy-Handlers = Standardanwendungen für das Öffnen von Dateien, Protokollen 
 policy-HardwareAcceleration = Hardwarebeschleunigung deaktiviert, falls false
 # “lock” means that the user won’t be able to change this setting
 policy-Homepage = Startseite festlegen und optional zusätzlich unveränderbar setzen
+policy-HttpAllowlist = Quellen, die nicht auf HTTPS geändert werden
+policy-HttpsOnlyMode = Erlauben, dass Nur-HTTPS-Modus aktiviert wird
 policy-InstallAddonsPermission = Add-on-Installation von festgelegten Websites erlauben
 policy-LegacyProfiles = Erzwingen eines eigenen Profils für jede Installation deaktivieren
 
@@ -108,12 +110,16 @@ policy-OverrideFirstRunPage = Einmalig geöffnete Einführungsseite beim Starten
 policy-OverridePostUpdatePage = Firefox-Neuigkeiten-Seite - angezeigt nach Programmaktualisierung - festlegen. Ein leerer Wert deaktiviert das Öffnen der Seite.
 policy-PasswordManagerEnabled = Speichern von Passwörtern in der Passwortverwaltung aktivieren
 policy-PasswordManagerExceptions = { -brand-short-name } daran hindern, Passwörter für bestimmte Websites zu speichern
+# Post-quantum refers to cryptography that is safe from attacks by quantum
+# computers. See https://en.wikipedia.org/wiki/Post-quantum_cryptography
+policy-PostQuantumKeyAgreementEnabled = Post-Quanten-Schlüsselaustausch für TLS aktivieren
 # PDF.js and PDF should not be translated
 policy-PDFjs = Eingebauten PDF-Betrachter von { -brand-short-name } (PDF.js) deaktivieren oder konfigurieren
 policy-Permissions2 = Berechtigungen für Kamera, Mikrofon, Standort, Benachrichtigungen und automatische Wiedergabe festlegen
 policy-PictureInPicture = Bild-im-Bild-Modus aktivieren oder deaktivieren
 policy-PopupBlocking = Popups für festgelegte Websites standardmäßig anzeigen
 policy-Preferences = Werte von bestimmten Einstellungen festlegen und Änderungen daran verhindern
+policy-PrivateBrowsingModeAvailability = Verfügbarkeit des Privaten Modus festlegen
 policy-PromptForDownloadLocation = Für gestartete Downloads nach Speicherort fragen
 policy-Proxy = Proxy-Einstellungen festlegen
 policy-RequestedLocales = Sprachen für die Anwendungsoberfläche in bevorzugter Reihenfolge festlegen

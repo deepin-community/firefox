@@ -45,7 +45,6 @@ ChromeUtils.defineESModuleGetters(lazy, {
   ClientEnvironment: "resource://normandy/lib/ClientEnvironment.sys.mjs",
   CustomizableUI: "resource:///modules/CustomizableUI.sys.mjs",
   HomePage: "resource:///modules/HomePage.sys.mjs",
-  NimbusFeatures: "resource://nimbus/ExperimentAPI.sys.mjs",
   ProfileAge: "resource://gre/modules/ProfileAge.sys.mjs",
   Region: "resource://gre/modules/Region.sys.mjs",
   TargetingContext: "resource://messaging-system/targeting/Targeting.sys.mjs",
@@ -148,10 +147,17 @@ XPCOMUtils.defineLazyPreferenceGetter(
     return behaviorString === "embedded";
   }
 );
+XPCOMUtils.defineLazyPreferenceGetter(
+  lazy,
+  "totalSearches",
+  "browser.search.totalSearches",
+  0
+);
 
 XPCOMUtils.defineLazyServiceGetters(lazy, {
   AUS: ["@mozilla.org/updates/update-service;1", "nsIApplicationUpdateService"],
   BrowserHandler: ["@mozilla.org/browser/clh;1", "nsIBrowserHandler"],
+  ScreenManager: ["@mozilla.org/gfx/screenmanager;1", "nsIScreenManager"],
   TrackingDBService: [
     "@mozilla.org/tracking-db-service;1",
     "nsITrackingDBService",
@@ -308,6 +314,12 @@ export const QueryCache = {
     doesAppNeedPrivatePin: new CachedTargetingGetter(
       "doesAppNeedPin",
       true,
+      FRECENT_SITES_UPDATE_INTERVAL,
+      ShellService
+    ),
+    doesAppNeedStartMenuPin: new CachedTargetingGetter(
+      "doesAppNeedStartMenuPin",
+      null,
       FRECENT_SITES_UPDATE_INTERVAL,
       ShellService
     ),
@@ -833,7 +845,12 @@ const TargetingGetters = {
   },
 
   get doesAppNeedPin() {
-    return QueryCache.getters.doesAppNeedPin.get();
+    return (async () => {
+      return (
+        (await QueryCache.getters.doesAppNeedPin.get()) ||
+        (await QueryCache.getters.doesAppNeedStartMenuPin.get())
+      );
+    })();
   },
 
   get doesAppNeedPrivatePin() {
@@ -845,6 +862,19 @@ const TargetingGetters = {
       return false;
     }
     return lazy.WindowsLaunchOnLogin.getLaunchOnLoginEnabled();
+  },
+
+  get isMSIX() {
+    if (AppConstants.platform !== "win") {
+      return false;
+    }
+    // While we can write registry keys using external programs, we have no
+    // way of cleanup on uninstall. If we are on an MSIX build
+    // launch on login should never be enabled.
+    // Default to false so that the feature isn't unnecessarily
+    // disabled.
+    // See Bug 1888263.
+    return Services.sysinfo.getProperty("hasWinPackageId", false);
   },
 
   /**
@@ -874,17 +904,7 @@ const TargetingGetters = {
   },
 
   get userPrefersReducedMotion() {
-    let window = Services.appShell.hiddenDOMWindow;
-    return window?.matchMedia("(prefers-reduced-motion: reduce)")?.matches;
-  },
-
-  /**
-   * Whether or not the user is in the Major Release 2022 holdback study.
-   */
-  get inMr2022Holdback() {
-    return (
-      lazy.NimbusFeatures.majorRelease2022.getVariable("onboarding") === false
-    );
+    return Services.appinfo.prefersReducedMotion;
   },
 
   /**
@@ -1002,17 +1022,25 @@ const TargetingGetters = {
    * web content. The available height and width are each calculated taking
    * into account the presence of menu bars, docks, and other similar OS elements
    * @returns {Object} resolution The resolution object containing width and height
-   * @returns {string} resolution.width The available width of the primary monitor
-   * @returns {string} resolution.height The available height of the primary monitor
+   * @returns {number} resolution.width The available width of the primary monitor
+   * @returns {number} resolution.height The available height of the primary monitor
    */
   get primaryResolution() {
-    // Using hidden dom window ensures that we have a window object
-    // to grab a screen from in certain edge cases such as targeting evaluation
-    // during first startup before the browser is available, and in MacOS
-    let window = Services.appShell.hiddenDOMWindow;
+    const { primaryScreen } = lazy.ScreenManager;
+    const { defaultCSSScaleFactor } = primaryScreen;
+    let availDeviceLeft = {};
+    let availDeviceTop = {};
+    let availDeviceWidth = {};
+    let availDeviceHeight = {};
+    primaryScreen.GetAvailRect(
+      availDeviceLeft,
+      availDeviceTop,
+      availDeviceWidth,
+      availDeviceHeight
+    );
     return {
-      width: window?.screen.availWidth,
-      height: window?.screen.availHeight,
+      width: Math.floor(availDeviceWidth.value / defaultCSSScaleFactor),
+      height: Math.floor(availDeviceHeight.value / defaultCSSScaleFactor),
     };
   },
 
@@ -1040,6 +1068,10 @@ const TargetingGetters = {
       memory = Number(memory) / 1024 / 1024;
     }
     return memory;
+  },
+
+  get totalSearches() {
+    return lazy.totalSearches;
   },
 };
 

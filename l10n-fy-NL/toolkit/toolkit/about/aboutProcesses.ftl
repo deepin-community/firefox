@@ -12,6 +12,8 @@ about-processes-column-action =
 
 about-processes-shutdown-process =
     .title = Ljepblêden leechmeitsje en proses beëinigje
+about-processes-kill-process =
+    .title = Proses beëinigje
 about-processes-shutdown-tab =
     .title = Ljepblêd slute
 # Profiler icons
@@ -51,6 +53,7 @@ about-processes-remote-sandbox-broker-process = Remote Sandbox Broker ({ $pid })
 about-processes-fork-server-process = Forkserver ({ $pid })
 about-processes-preallocated-process = Yn it foar tawezen ({ $pid })
 about-processes-utility-process = Helpprogramma ({ $pid })
+about-processes-inference-process = Konklúzje ({ $pid })
 # Unknown process names
 # Variables:
 #    $pid (String) The process id of this process, assigned by the OS.

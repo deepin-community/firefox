@@ -70,16 +70,6 @@ with open('debian/l10n/recommends') as f:
     recommends[lang.strip()] = value.strip()
 
 RE = re.compile(r'^([^,\(]+)(?:, *([^\(]+) *)?(?: *\(.*\))?$')
-ICEWEASEL_L10N = set((
-    'ach', 'af', 'an', 'ar', 'as', 'ast', 'az', 'be', 'bg', 'bn-bd', 'bn-in', 'br',
-    'bs', 'ca', 'cs', 'cy', 'da', 'de', 'dsb', 'el', 'en-gb', 'en-za', 'eo',
-    'es-ar', 'es-cl', 'es-es', 'es-mx', 'et', 'eu', 'fa', 'ff', 'fi', 'fr',
-    'fy-nl', 'ga-ie', 'gd', 'gl', 'gn', 'gu-in', 'he', 'hi-in', 'hr', 'hsb', 'hu',
-    'hy-am', 'id', 'is', 'it', 'ja', 'kk', 'km', 'kn', 'ko', 'lij', 'lt', 'lv',
-    'mai', 'mk', 'ml', 'mr', 'ms', 'nb-no', 'nl', 'nn-no', 'or', 'pa-in', 'pl',
-    'pt-br', 'pt-pt', 'rm', 'ro', 'ru', 'si', 'sk', 'sl', 'son', 'sq', 'sr',
-    'sv-se', 'ta', 'te', 'th', 'tr', 'uk', 'uz', 'vi', 'xh', 'zh-cn', 'zh-tw',
-))
 
 for code in sys.argv[1:]:
   if '-' in code:
@@ -115,8 +105,4 @@ for code in sys.argv[1:]:
     print('%define L10N_RECOMMENDS', recommends[code.lower()])
   else:
     print('%undef L10N_RECOMMENDS')
-  if code.lower() in ICEWEASEL_L10N:
-    print('%define L10N_TRANSITION 1')
-  else:
-    print('%undef L10N_TRANSITION')
   print('%include @PRODUCT@-l10n.control.in')

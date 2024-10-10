@@ -1169,7 +1169,6 @@ var snapshotFormatters = {
         capabilities.persistent = findElementInArray(array, "persistent");
         capabilities.distinctive = findElementInArray(array, "distinctive");
         capabilities.sessionType = findElementInArray(array, "sessionType");
-        capabilities.scheme = findElementInArray(array, "scheme");
         capabilities.codec = getSupportedCodecs(array);
         return JSON.stringify(capabilities);
       }
@@ -1451,7 +1450,33 @@ var snapshotFormatters = {
       let keyStrId = toFluentID(key);
       let th = $.new("th", null, "column");
       document.l10n.setAttributes(th, keyStrId);
-      tbody.appendChild($.new("tr", [th, $.new("td", data[key])]));
+      let td = $.new("td", data[key]);
+      // Warning not applicable to Flatpak (see Bug 1882881), Snap or
+      // any "Packaged App" (eg. Debian package)
+      const isPackagedApp = Services.sysinfo.getPropertyAsBool("isPackagedApp");
+      if (key === "hasUserNamespaces" && !data[key] && !isPackagedApp) {
+        td = $.new("td", "");
+        td.classList.add("feature-unavailable");
+        let span = document.createElement("span");
+        document.l10n.setAttributes(
+          span,
+          "support-user-namespaces-unavailable",
+          {
+            status: data[key],
+          }
+        );
+        let supportLink = document.createElement("a", {
+          is: "moz-support-link",
+        });
+        supportLink.classList.add("user-namespaces-unavailabe-support-link");
+        supportLink.setAttribute(
+          "support-page",
+          "install-firefox-linux#w_install-firefox-from-mozilla-builds"
+        );
+        td.appendChild(span);
+        td.appendChild(supportLink);
+      }
+      tbody.appendChild($.new("tr", [th, td]));
     }
 
     if ("syscallLog" in data) {
@@ -1502,6 +1527,31 @@ var snapshotFormatters = {
     );
     $("intl-osprefs-regionalprefs").textContent = JSON.stringify(
       data.osPrefs.regionalPrefsLocales
+    );
+  },
+
+  remoteSettings(data) {
+    if (!data) {
+      return;
+    }
+    const { isSynchronizationBroken, lastCheck, localTimestamp, history } =
+      data;
+
+    $("support-remote-settings-status-ok").style.display =
+      isSynchronizationBroken ? "none" : "block";
+    $("support-remote-settings-status-broken").style.display =
+      isSynchronizationBroken ? "block" : "none";
+    $("support-remote-settings-last-check").textContent = lastCheck;
+    $("support-remote-settings-local-timestamp").textContent = localTimestamp;
+    $.append(
+      $("support-remote-settings-sync-history-tbody"),
+      history["settings-sync"].map(({ status, datetime, infos }) =>
+        $.new("tr", [
+          $.new("td", [document.createTextNode(status)]),
+          $.new("td", [document.createTextNode(datetime)]),
+          $.new("td", [document.createTextNode(JSON.stringify(infos))]),
+        ])
+      )
     );
   },
 

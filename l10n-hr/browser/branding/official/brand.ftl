@@ -19,12 +19,12 @@
 
 -brand-shorter-name =
     { $case ->
-       *[nom] Firefox
         [gen] Firefoxa
         [dat] Firefoxu
         [acc] Firefox
         [loc] Firefoxu
         [ins] Firefoxom
+       *[nom] Firefox
     }
     .gender = masculine
 -brand-short-name =
@@ -79,4 +79,4 @@
         [ins] Mozillom
     }
     .gender = feminine
-trademarkInfo = Firefox i Firefox logotipi zaštitni su znakovi zaklade Mozilla.
+trademarkInfo = Firefox i Firefox logotipi su zaštićeni znakovi zaklade Mozilla.

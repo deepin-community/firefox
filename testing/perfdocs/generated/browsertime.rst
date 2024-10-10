@@ -6,7 +6,7 @@ Raptor Browsertime
    :depth: 2
    :local:
 
-Browsertime is a harness for running performance tests, similar to Mozilla's Raptor testing framework. Browsertime is written in Node.js and uses Selenium WebDriver to drive multiple browsers including Chrome, Chrome for Android, Firefox, and Firefox for Android and GeckoView-based vehicles.
+Browsertime is a harness for running performance tests, similar to Mozilla's Raptor testing framework. Browsertime is written in Node.js and uses Selenium WebDriver to drive multiple browsers including Safari, Safari Technology Preview, Chrome, Chrome for Android, Firefox, and Firefox for Android and GeckoView-based vehicles.
 
 Source code:
 
@@ -98,6 +98,12 @@ Running on vanilla Browsertime:
 
   ./mach browsertime --android --browser firefox https://www.sitespeed.io
 
+Running Power Usage tests on Mobile
+-----------------------------------
+To gather power usage tests on mobile, you can pass ``--power-test`` to ``./mach raptor``. This will only work if the phone is hooked up to a `supported USB power meter <https://github.com/fqueze/usb-power-profiling/tree/5a6fc823ea4dd0553f810f29a04c43a3c9c49147?tab=readme-ov-file#supported-devices>`_.
+
+The data output is originally in picoWattHours, but are converted to microWattHours for the Perfherder Data JSON. The power usage is from the start of the pageload until the pageComplete check in browsertime completes.
+
 Running on Google Chrome
 ------------------------
 Chrome releases are tied to a specific version of ChromeDriver -- you will need to ensure the two are aligned.
@@ -126,6 +132,26 @@ Or for Raptor-Browsertime (use ``chrome`` for desktop, and ``chrome-m`` for mobi
 
   ./mach raptor -t amazon --app chrome --browsertime-chromedriver <PATH/TO/CHROMEDRIVER>
 
+Running on Safari Technology Preview
+------------------------------------
+
+Safari Technology Preview comes bundled with an appropriate ``safaridriver`` binary, and browsertime (via selenium) automatically launches this.
+
+You will need to have installed the most up to date application version either by updating an existing installation on your MacOS or downloading it from https://developer.apple.com/safari/resources/ and ensure you download the one appropriate to your MacOS version
+
+You can launch vanilla Browsertime with Safari Technology Preview as follows:
+
+::
+
+  ./mach browsertime https://www.sitespeed.io -b safari --safari.useTechnologyPreview
+
+
+Or with Raptor-Browsertime
+
+::
+
+  ./mach raptor -t speedometer3 --app safari-tp --binary "/Applications/Safari Technology Preview.app/Contents/MacOS/Safari Technology Preview"
+
 Running Page-load tests with third party WebExtensions
 ------------------------------------------------------
 Page-load tests can also be executed on both Firefox Desktop and Firefox for Android builds with a set of popular
@@ -148,20 +174,18 @@ it does not install it):
 
    ./mach raptor -t amazon --app fenix --binary org.mozilla.fenix --conditioned-profile settled-webext
 
-To run these jobs on try, make sure to select the tp6 jobs that include the string `webextensions`, as an example (add ``--no-push`` to force try fuzzy to only
-list the jobs selected by the try fuzzy query) to run all tp6 page-load webextensons jobs currently defined:
+To run these jobs on try, make sure to select the tp6 jobs that include the string `webextensions`, as an example (add ``--no-push`` to force try perf to only
+list the jobs selected by the try perf query) to run all tp6 page-load webextensons jobs currently defined:
 
 ::
 
-   ./mach try fuzzy -q "'tp6 'webextensions"
+   ./mach try perf --show-all -q "'tp6 'webextensions"
 
 Similarly for running tp6m (equivalent to tp6 but for mobile) on Firefox for Android builds:
 
 ::
 
-   ./mach try fuzzy --full -q "'tp6m 'webextensions"
-
-Note that this can also be done using ``./mach try perf --show-all -q "'tp6m 'webextensions"`` to produce a compare view link of the changes before/after the patch being tested.
+   ./mach try perf --show-all -q "'tp6m 'webextensions"
 
 The set of extensions installed are the ones listed in the ``"addons"`` property of the condprof customization file
 `webext.json`_ from the ``testing/condprofile/condprof/customization/`` directory.
@@ -202,14 +226,14 @@ To run this test on try and get a compare view link, run the following
 More Examples
 -------------
 
-`Browsertime docs <https://github.com/sitespeedio/browsertime/tree/main/docs/examples>`_
+`Browsertime docs <https://www.sitespeed.io/documentation/sitespeed.io/scripting/>`_
 
 Passing Additional Arguments to Browsertime
 -------------------------------------------
 
 Browsertime has many command line flags to configure its usage, see `Browsertime configuration <https://www.sitespeed.io/documentation/browsertime/configuration/>`_.
 
-There are multiple ways of adding additional arguments to Browsertime from Raptor. The primary method is to use ``--browsertime-arg``. For example: ``./mach raptor --browsertime -t amazon --browsertime-arg iterations=10``
+There are multiple ways of adding additional arguments to Browsertime from Raptor. The primary method is to use ``--browsertime-arg``. For example: ``./mach raptor -t amazon --browsertime-arg iterations=10``
 
 Other methods for adding additional arguments are:
 
@@ -306,7 +330,7 @@ If you're looking for the latest geckodriver being used there are two ways:
 * Alternatively, if you're trying to figure out which geckodriver a given CI task is using, you can click on the browsertime task in treeherder, and then click on the ``Task`` id in the bottom left of the pop-up interface. Then in the window that opens up, click on `See more` in the task details tab on the left, this will show you the dependent tasks with the latest toolchain-geckodriver being used. There's an Artifacts drop down on the right hand side for the toolchain-geckodriver task that you can find the latest geckodriver in.
 
 If you're trying to test Browsertime with a new geckodriver, you can do either of the following:
-* Request a new geckodriver build in your try run (i.e. through ``./mach try fuzzy``).
+* Request a new geckodriver build in your try run (i.e. through ``./mach try perf --show-all``).
 * Trigger a new geckodriver in a try push, then trigger the browsertime tests which will then use the newly built version in the try push.
 
 Comparing Before/After Browsertime Videos

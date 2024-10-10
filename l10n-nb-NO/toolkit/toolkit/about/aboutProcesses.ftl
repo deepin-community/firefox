@@ -12,6 +12,8 @@ about-processes-column-action =
 
 about-processes-shutdown-process =
     .title = Stopp faner og avslutt prosessen
+about-processes-kill-process =
+    .title = Avslutt prosessen
 about-processes-shutdown-tab =
     .title = Lukk fane
 # Profiler icons
@@ -51,6 +53,7 @@ about-processes-remote-sandbox-broker-process = Remote Sandbox Broker ({ $pid })
 about-processes-fork-server-process = Forkserver ({ $pid })
 about-processes-preallocated-process = Forhåndstildelt ({ $pid })
 about-processes-utility-process = Verktøy ({ $pid })
+about-processes-inference-process = Inferens ({ $pid })
 # Unknown process names
 # Variables:
 #    $pid (String) The process id of this process, assigned by the OS.

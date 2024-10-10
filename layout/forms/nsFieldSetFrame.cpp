@@ -15,6 +15,7 @@
 #include "mozilla/PresShell.h"
 #include "mozilla/Maybe.h"
 #include "mozilla/webrender/WebRenderAPI.h"
+#include "mozilla/ScrollContainerFrame.h"
 #include "nsBlockFrame.h"
 #include "nsCSSAnonBoxes.h"
 #include "nsCSSFrameConstructor.h"
@@ -22,7 +23,6 @@
 #include "nsDisplayList.h"
 #include "nsGkAtoms.h"
 #include "nsIFrameInlines.h"
-#include "nsIScrollableFrame.h"
 #include "nsLayoutUtils.h"
 #include "nsStyleConsts.h"
 
@@ -321,8 +321,8 @@ ImgDrawResult nsFieldSetFrame::PaintBorder(nsDisplayListBuilder* aBuilder,
   return result;
 }
 
-nscoord nsFieldSetFrame::GetIntrinsicISize(gfxContext* aRenderingContext,
-                                           IntrinsicISizeType aType) {
+nscoord nsFieldSetFrame::IntrinsicISize(gfxContext* aContext,
+                                        IntrinsicISizeType aType) {
   // Both inner and legend are children, and if the fieldset is
   // size-contained they should not contribute to the intrinsic size.
   if (Maybe<nscoord> containISize = ContainIntrinsicISize()) {
@@ -331,8 +331,7 @@ nscoord nsFieldSetFrame::GetIntrinsicISize(gfxContext* aRenderingContext,
 
   nscoord legendWidth = 0;
   if (nsIFrame* legend = GetLegend()) {
-    legendWidth =
-        nsLayoutUtils::IntrinsicForContainer(aRenderingContext, legend, aType);
+    legendWidth = nsLayoutUtils::IntrinsicForContainer(aContext, legend, aType);
   }
 
   nscoord contentWidth = 0;
@@ -341,18 +340,10 @@ nscoord nsFieldSetFrame::GetIntrinsicISize(gfxContext* aRenderingContext,
     // outer instead, and the padding computed for the inner is wrong
     // for percentage padding.
     contentWidth = nsLayoutUtils::IntrinsicForContainer(
-        aRenderingContext, inner, aType, nsLayoutUtils::IGNORE_PADDING);
+        aContext, inner, aType, Nothing(), nsLayoutUtils::IGNORE_PADDING);
   }
 
   return std::max(legendWidth, contentWidth);
-}
-
-nscoord nsFieldSetFrame::GetMinISize(gfxContext* aRenderingContext) {
-  return GetIntrinsicISize(aRenderingContext, IntrinsicISizeType::MinISize);
-}
-
-nscoord nsFieldSetFrame::GetPrefISize(gfxContext* aRenderingContext) {
-  return GetIntrinsicISize(aRenderingContext, IntrinsicISizeType::PrefISize);
 }
 
 /* virtual */
@@ -856,7 +847,7 @@ Maybe<nscoord> nsFieldSetFrame::GetNaturalBaselineBOffset(
   return Some(*result + BSize(aWM) - (innerBStart + inner->BSize(aWM)));
 }
 
-nsIScrollableFrame* nsFieldSetFrame::GetScrollTargetFrame() const {
+ScrollContainerFrame* nsFieldSetFrame::GetScrollTargetFrame() const {
   return do_QueryFrame(GetInner());
 }
 

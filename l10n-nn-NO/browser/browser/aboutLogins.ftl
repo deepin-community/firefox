@@ -140,6 +140,8 @@ login-item-copied-username-button-text = Kopiert!
 login-item-password-label = Passord
 login-item-password-reveal-checkbox =
     .aria-label = Vis passord
+login-item-password-conceal-checkbox =
+    .aria-label = Gøym passord
 login-item-copy-password-button-text = Kopier
 login-item-copied-password-button-text = Kopiert!
 login-item-save-changes-button = Lagre endringar
@@ -171,6 +173,13 @@ about-logins-edit-login-os-auth-dialog-message-win = Skriv inn innloggingsinform
 # This message can be seen when attempting to edit a login in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-edit-login-os-auth-dialog-message-macosx = rediger lagra innlogging
+# The macOS strings are preceded by the operating system with "Firefox is trying to ".
+# This message can be seen when attempting to disable osauth in about:preferences.
+about-logins-os-auth-dialog-message =
+    { PLATFORM() ->
+        [macos] Endre innstillingane for passord
+       *[other] { -brand-short-name } prøver å endre innstillingane for passord. Bruk einingsinnlogginga for å tillate dette.
+    }
 # This message can be seen when attempting to edit a login in about:logins on Windows.
 about-logins-edit-login-os-auth-dialog-message2-win = Skriv inn innloggingsinformasjonen for Windows for å redigere passordet. Dette vil gjere kontoane dine tryggare.
 # This message can be seen when attempting to edit a login in about:logins
@@ -456,6 +465,19 @@ about-logins-import-report-modified =
 about-logins-import-report-no-change =
     { $count ->
        *[other] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">duplikate innloggingar</div> <div data-l10n-name="not-imported">(ikkje importerte)</div>
+    }
+about-logins-import-report-added2 =
+    { $count ->
+       *[other] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">nye passord lagt til</div>
+    }
+about-logins-import-report-modified2 =
+    { $count ->
+        [one] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">eksisterande element oppdatert</div>
+       *[other] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">eksisterande element oppdatert</div>
+    }
+about-logins-import-report-no-change2 =
+    { $count ->
+       *[other] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">Duplikate element</div> <div data-l10n-name="not-imported">(ikkje importert)</div>
     }
 about-logins-import-report-error =
     { $count ->

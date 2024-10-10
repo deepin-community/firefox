@@ -15,9 +15,6 @@ const { NimbusFeatures } = ChromeUtils.importESModule(
 const { sinon } = ChromeUtils.importESModule(
   "resource://testing-common/Sinon.sys.mjs"
 );
-const { SearchUtils } = ChromeUtils.importESModule(
-  "resource://gre/modules/SearchUtils.sys.mjs"
-);
 
 AddonTestUtils.init(this);
 AddonTestUtils.overrideCertDB();
@@ -50,27 +47,12 @@ const params = [
   { name: "simple", value: "5" },
   { name: "term", value: "{searchTerms}" },
   { name: "lang", value: "{language}" },
-  { name: "locale", value: "{moz:locale}" },
   { name: "prefval", condition: "pref", pref: "code" },
 ];
 
 const CONFIG = [
   {
-    webExtension: {
-      id: "test@search.mozilla.org",
-    },
-    appliesTo: [
-      {
-        included: { everywhere: true },
-        default: "yes",
-      },
-    ],
-  },
-];
-const CONFIG_V2 = [
-  {
-    recordType: "engine",
-    identifier: "test",
+    identifier: "MozParamsTest",
     base: {
       name: "MozParamsTest",
       urls: {
@@ -120,10 +102,6 @@ const CONFIG_V2 = [
               value: "{language}",
             },
             {
-              name: "locale",
-              value: "{moz:locale}",
-            },
-            {
               name: "prefval",
               experimentConfig: "code",
             },
@@ -140,20 +118,6 @@ const CONFIG_V2 = [
         },
       },
     },
-    variants: [
-      {
-        environment: { allRegionsAndLocales: true },
-      },
-    ],
-  },
-  {
-    recordType: "defaultEngines",
-    globalDefault: "test",
-    specificDefaults: [],
-  },
-  {
-    recordType: "engineOrders",
-    orders: [],
   },
 ];
 
@@ -161,11 +125,7 @@ add_task(async function setup() {
   let readyStub = sinon.stub(NimbusFeatures.search, "ready").resolves();
   let updateStub = sinon.stub(NimbusFeatures.search, "onUpdate");
   await promiseStartupManager();
-  await SearchTestUtils.useTestEngines(
-    "data",
-    null,
-    SearchUtils.newSearchConfigEnabled ? CONFIG_V2 : CONFIG
-  );
+  await SearchTestUtils.setRemoteSettingsConfig(CONFIG);
   await Services.search.init();
   registerCleanupFunction(async () => {
     await promiseShutdownManager();
@@ -189,8 +149,6 @@ add_task(async function test_extension_setting_moz_params() {
       extraParams.push(`${p.name}=test`);
     } else if (p.value == "{language}") {
       extraParams.push(`${p.name}=${Services.locale.requestedLocale || "*"}`);
-    } else if (p.value == "{moz:locale}") {
-      extraParams.push(`${p.name}=${Services.locale.requestedLocale}`);
     } else {
       extraParams.push(`${p.name}=${p.value}`);
     }
@@ -205,9 +163,7 @@ add_task(async function test_extension_setting_moz_params() {
     ).uri.spec;
     equal(
       expectedURL,
-      SearchUtils.newSearchConfigEnabled
-        ? `https://example.com/?${p.name}=${p.value}&${paramStr}&q=test`
-        : `https://example.com/?q=test&${p.name}=${p.value}&${paramStr}`,
+      `https://example.com/?${p.name}=${p.value}&${paramStr}&q=test`,
       "search url is expected"
     );
   }
@@ -259,8 +215,6 @@ add_task(async function test_nimbus_params() {
       extraParams.push(`${p.name}=test`);
     } else if (p.value == "{language}") {
       extraParams.push(`${p.name}=${Services.locale.requestedLocale || "*"}`);
-    } else if (p.value == "{moz:locale}") {
-      extraParams.push(`${p.name}=${Services.locale.requestedLocale}`);
     } else if (p.condition !== "pref") {
       // Ignoring pref parameters
       extraParams.push(`${p.name}=${p.value}`);
@@ -280,9 +234,7 @@ add_task(async function test_nimbus_params() {
     ).uri.spec;
     equal(
       expectedURL,
-      SearchUtils.newSearchConfigEnabled
-        ? `https://example.com/?${p.name}=${p.value}&${paramStr}&q=test`
-        : `https://example.com/?q=test&${p.name}=${p.value}&${paramStr}`,
+      `https://example.com/?${p.name}=${p.value}&${paramStr}&q=test`,
       "search url is expected"
     );
   }

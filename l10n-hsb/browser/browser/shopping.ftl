@@ -89,6 +89,9 @@ shopping-show-less-button = Mjenje pokazać
 
 shopping-settings-label =
     .label = Nastajenja
+shopping-settings-recommendations-toggle2 =
+    .label = Poručenja a sponserowany wobsah pokazać
+shopping-settings-recommendations-learn-more3 = { -brand-product-name } waše wosobinske daty njedźěla, tohodla tute poručenja njebudu wam přez internet slědować. <a data-l10n-name="review-quality-url">Dalše informacije</a>
 shopping-settings-recommendations-toggle =
     .label = Wabjenje w kontroli pohódnoćenjow pokazać
 shopping-settings-recommendations-learn-more2 = Budźeće hdys a hdys wabjenje za relewantne produkty widźeć. Wabimy jenož za produkty ze spušćomnymi pohódnoćenjemi. <a data-l10n-name="review-quality-url">Dalše informacije</a>
@@ -115,6 +118,7 @@ shopping-settings-sidebar-enabled-state = Kontrola pohódnoćenjow je <strong>zm
 shopping-adjusted-rating-label =
     .label = Přiměrjene hódnoćenje
 shopping-adjusted-rating-unreliable-reviews = Njespušćomne pohódnoćenja wotstronjene
+shopping-adjusted-rating-based-reliable-reviews = Bazuje na spušćomnych pohódnoćenjach
 
 ## Strings for the review reliability component
 
@@ -135,6 +139,8 @@ shopping-analysis-explainer-learn-more2 = Zhońće wjace wo tym, <a data-l10n-na
 # websites, which will be inserted without being translated.
 #  $retailer (String) - capitalized name of the shopping website, for example, "Amazon".
 shopping-analysis-explainer-highlights-description = <strong>Wjerški</strong> su z pohódnoćenjow { $retailer } w běhu poslednich 80 dnjow, kotrež mamy za spušćomne.
+# Fallback for analysis highlights explainer if the retailer is ever unknown
+shopping-analysis-explainer-highlights-description-unknown-retailer = <strong>Wjerški</strong> su z pohódnoćenjow w běhu poslednich 80 dnjow, kotrež mamy za spušćomne.
 shopping-analysis-explainer-review-grading-scale-reliable = Spušćomne pohódnoćenja. Myslimy sej, zo pohódnoćenja su najskerje wot woprawdźitych kupcow, kotřiž su sprawne, bjezpředsudne pohódnoćenja zawostajili.
 shopping-analysis-explainer-review-grading-scale-mixed = Wěrimy, zo je měšeńca spušćomnych a njespušćomnych pohódnoćenjow.
 shopping-analysis-explainer-review-grading-scale-unreliable = Njespušćomne pohódnoćenja. Myslimy sej, zo pohódnoćenja su najskerje sfalšowane abo wot pohódnoćowacych z předsudkami.
@@ -161,6 +167,7 @@ shopping-unanalyzed-product-analyze-button = Kwalitu pohódnoćenjow kontrolowa�
 
 more-to-consider-ad-label =
     .label = Dalše móžnosće
+shopping-sponsored-label = Sponserowany
 ad-by-fakespot = Wabjenje wot { -fakespot-brand-name }
 
 ## Shopping survey strings.

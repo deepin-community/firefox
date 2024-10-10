@@ -7,10 +7,10 @@ Subject: Adjust our gfx/skia/moz.build patch to upstream changes
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/gfx/skia/moz.build b/gfx/skia/moz.build
-index ab1581d..60d159b 100644
+index d0d5c4f..a8950d0 100644
 --- a/gfx/skia/moz.build
 +++ b/gfx/skia/moz.build
-@@ -362,7 +362,7 @@ UNIFIED_SOURCES += [
+@@ -371,7 +371,7 @@ UNIFIED_SOURCES += [
  ]
  
  # Work around https://gcc.gnu.org/bugzilla/show_bug.cgi?id=110606

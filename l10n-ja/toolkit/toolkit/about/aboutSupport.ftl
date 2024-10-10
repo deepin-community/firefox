@@ -322,6 +322,9 @@ has-seccomp-bpf = Seccomp-BPF (システムコールフィルタリング)
 has-seccomp-tsync = Seccomp スレッド同期
 has-user-namespaces = ユーザー名前空間
 has-privileged-user-namespaces = 特権プロセス用のユーザー名前空間
+# Variables
+# $status (string) - Boolean value of hasUserNamespaces (should only be false when support-user-namespaces-unavailable is used)
+support-user-namespaces-unavailable = { $status } — この機能はご使用のシステムにより許可されていません。これは { -brand-short-name } のセキュリティ機能を制限できます。
 can-sandbox-content = コンテンツプロセスのサンドボックス化
 can-sandbox-media = メディアプラグインのサンドボックス化
 content-sandbox-level = コンテンツプロセスのサンドボックスレベル
@@ -389,6 +392,20 @@ support-printing-clear-settings-button = 保存した印刷設定を消去
 support-printing-modified-settings = 変更された印刷設定
 support-printing-prefs-name = 設定名
 support-printing-prefs-value = 値
+
+## Remote Settings sections
+
+support-remote-settings-title = リモート設定
+support-remote-settings-status = 状態
+support-remote-settings-status-ok = OK
+# Status when synchronization is not working.
+support-remote-settings-status-broken = 動作していません
+support-remote-settings-last-check = 最終確認
+support-remote-settings-local-timestamp = ローカルタイムスタンプ
+support-remote-settings-sync-history = 履歴
+support-remote-settings-sync-history-status = 状態
+support-remote-settings-sync-history-datetime = 日時
+support-remote-settings-sync-history-infos = 情報
 
 ## Normandy sections
 

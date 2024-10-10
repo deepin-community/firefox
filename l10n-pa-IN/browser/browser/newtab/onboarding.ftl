@@ -189,6 +189,8 @@ mr2022-onboarding-pin-primary-button-label =
         [macos] { -brand-short-name } ਡੌਕ ਵਿੱਚ ਰੱਖੋ
        *[other] { -brand-short-name } ਟਾਸਕਬਾਰ ਵਿੱਚ ਟੰਗੋ
     }
+# Primary button string used on welcome page for when Firefox is not pinned on MSIX
+mr2022-onboarding-pin-primary-button-label-msix = { -brand-short-name } ਨੂੰ ਟਾਸਕ-ਬਾਰ ਤੇ ਸਟਾਰਟ ਮੇਨੂ ਵਿੱਚ ਟੰਗੋ
 # Subtitle will be used when user already has Firefox pinned, but
 # has not set it as their default browser.
 # When translating "zip", please feel free to pick a verb that signifies movement and/or exploration
@@ -335,6 +337,14 @@ onboarding-device-migration-title = ਫਿਰ ਜੀ ਆਇਆਂ ਨੂੰ!
 onboarding-device-migration-subtitle = ਆਪਣੇ ਬੁੱਕਮਾਰਕਾਂ, ਪਾਸਵਰਡਾਂ ਅਤੇ ਅਤੀਤ ਨੂੰ ਆਪਣੇ ਨਵੇਂ ਡਿਵਾਈਸ ਉੱਤੇ ਆਪਣੇ ਨਾਲ ਲਿਆਉਣ ਵਾਸਤੇ ਆਪਣੇ { -fxaccount-brand-name(capitalization: "sentence") } ਵਿੱਚ ਸਾਈਨ ਇਨ ਕਰੋ।
 onboarding-device-migration-subtitle2 = ਆਪਣੇ ਨਵੇਂ ਡਿਵਾਈਸ ਉੱਤੇ ਆਪਣੇ ਬੁੱਕਮਾਰਕ, ਪਾਸਵਰਡ ਅਤੇ ਅਤੀਤ ਨੂੰ ਆਪਣੇ ਨਾਲ ਲਿਆਉਣ ਲਈ ਆਪਣੇ ਖਾਤੇ ਵਿੱਚ ਸਾਈਨ ਇਨ ਕਰੋ।
 onboarding-device-migration-primary-button-label = ਸਾਈਨ ਇਨ
+
+## Add-ons Picker screen
+
+amo-picker-title = ਆਪਣੇ { -brand-short-name } ਨੂੰ ਪਸੰਦ ਮੁਤਾਬਕ ਢਾਲੋ
+amo-picker-subtitle = ਇਕਸਟੈਨਸ਼ਨਾਂ ਤੁਹਾਡੇ ਬਰਾਊਜ਼ਰ ਵਿੱਚ ਐਪਾਂ ਵਰਗੀਆਂ ਲੱਗਦੀਆਂ ਹਨ ਅਤੇ ਉਹ ਤੁਹਾਡੇ ਪਾਸਵਰਡਾਂ ਨੂੰ ਸੁਰੱਖਿਅਤ ਕਰਨ, ਵੀਡੀਓ ਡਾਊਨਲੋਡ ਕਰੋ, ਡੀਲਾਂ ਲੱਭਣ , ਖਿਝਾਉ ਇਸ਼ਤਿਹਾਰਾਂ ਉੱਤੇ ਪਾਬੰਦੀ ਲਾਉਣ, ਤੁਹਾਡੇ ਬਰਾਊਜ਼ਰ ਦੀ ਦਿੱਖ ਬਦਲਣ ਅਤੇ ਹੋਰ ਕੋਈ ਕੁਝ ਕਰਨ ਲਈ ਮਦਦ ਕਰਦੀਆਂ ਹਨ।
+amo-picker-install-button-label = { -brand-short-name } ਨੂੰ ਜੋੜੋ
+amo-picker-install-complete-label = ਇੰਸਟਾਲ ਹੋਏ
+amo-picker-collection-link = ਹੋਰ ਐਡ-ਆਨ ਨੂੰ ਵੇਖੋ
 
 ## The following screens have been updated to use security and privacy focused strings:
 

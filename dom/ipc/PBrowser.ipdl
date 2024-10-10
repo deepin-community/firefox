@@ -73,6 +73,7 @@ using class mozilla::WidgetKeyboardEvent from "ipc/nsGUIEventIPC.h";
 using class mozilla::WidgetMouseEvent from "ipc/nsGUIEventIPC.h";
 using class mozilla::WidgetWheelEvent from "ipc/nsGUIEventIPC.h";
 using class mozilla::WidgetDragEvent from "ipc/nsGUIEventIPC.h";
+using class mozilla::WidgetPointerEvent from "ipc/nsGUIEventIPC.h";
 using struct nsRect from "nsRect.h";
 using class mozilla::WidgetSelectionEvent from "ipc/nsGUIEventIPC.h";
 using class mozilla::WidgetTouchEvent from "ipc/nsGUIEventIPC.h";
@@ -376,23 +377,12 @@ parent:
      * Set the native cursor.
      * @param value
      *   The widget cursor to set.
-     * @param hasCustomCursor
-     *   Whether there's any custom cursor represented by cursorData and
-     *   company.
-     * @param customCursorData
-     *   Serialized image data.
-     * @param width
-     *   Width of the image.
-     * @param height
-     *   Height of the image.
+     * @param customCursor
+     *   Serialized image data for custom cursor.
      * @param resolutionX
      *   Resolution of the image X axis in dppx units.
      * @param resolutionY
      *   Resolution of the image Y axis in dppx units.
-     * @param stride
-     *   Stride used in the image data.
-     * @param format
-     *   Image format, see gfx::SurfaceFormat for possible values.
      * @param hotspotX
      *   Horizontal hotspot of the image, as specified by the css cursor property.
      * @param hotspotY
@@ -402,11 +392,8 @@ parent:
      *   update.
      */
     async SetCursor(nsCursor value,
-                    bool hasCustomCursor,
-                    BigBuffer? customCursorData,
-                    uint32_t width, uint32_t height,
+                    IPCImage? customCursor,
                     float resolutionX, float resolutionY,
-                    uint32_t stride, SurfaceFormat format,
                     uint32_t hotspotX, uint32_t hotspotY, bool force);
 
     /**
@@ -568,16 +555,21 @@ parent:
     async ImageLoadComplete(nsresult aResult);
 
     /**
-     * Child informs the parent that a pointer lock has requested/released.
-     */
-    async RequestPointerLock() returns (nsCString error);
-    async ReleasePointerLock();
-
-    /**
      * Child informs the parent that a pointer capture has requested/released.
      */
     async RequestPointerCapture(uint32_t aPointerId) returns (bool aSuccess);
     async ReleasePointerCapture(uint32_t aPointerId);
+
+    /**
+     * Child informs the parent that a pointer lock has requested.
+     */
+    async RequestPointerLock() returns (nsCString error);
+
+both:
+    /**
+     * informs that a pointer lock has released.
+     */
+    async ReleasePointerLock();
 
 child:
     async NativeSynthesisResponse(uint64_t aObserverId, nsCString aResponse);
@@ -705,7 +697,9 @@ child:
 
     async DynamicToolbarMaxHeightChanged(ScreenIntCoord height);
 
-    async DynamicToolbarOffsetChanged(ScreenIntCoord height);
+    async DynamicToolbarOffsetChanged(ScreenIntCoord offset);
+
+    async KeyboardHeightChanged(ScreenIntCoord height);
 
     /**
      * StopIMEStateManagement() is called when the process loses focus and
@@ -763,6 +757,14 @@ child:
     async NormalPriorityRealMouseButtonEvent(WidgetMouseEvent event,
                                              ScrollableLayerGuid aGuid,
                                              uint64_t aInputBlockId);
+
+    [Priority=input]
+    async RealPointerButtonEvent(WidgetPointerEvent event,
+                                 ScrollableLayerGuid aGuid,
+                                 uint64_t aInputBlockId);
+    async NormalPriorityRealPointerButtonEvent(WidgetPointerEvent event,
+                                               ScrollableLayerGuid aGuid,
+                                               uint64_t aInputBlockId);
 
     [Priority=input]
     async RealMouseEnterExitWidgetEvent(WidgetMouseEvent event,
@@ -852,6 +854,18 @@ child:
      */
     [Priority=input] async InsertText(nsString aStringToInsert);
     async NormalPriorityInsertText(nsString aStringToInsert);
+
+    /**
+     * Dispatch eContentCommandReplaceText event in the remote process.
+     */
+    [Priority=input] async ReplaceText(nsString aReplacementString,
+                                       nsString aStringToInsert,
+                                       uint32_t aOffset,
+				       bool aPreventSetSelection);
+    async NormalPriorityReplaceText(nsString aReplacementString,
+                                    nsString aStringToInsert,
+                                    uint32_t aOffset,
+				    bool aPreventSetSelection);
 
     /**
      * Call PasteTransferable via a controller on the content process
@@ -1003,6 +1017,22 @@ child:
 
     async WillChangeProcess();
 
+    async InvokeChildDragSession(
+        MaybeDiscardedWindowContext aSourceWindowContext,
+        MaybeDiscardedWindowContext aSourceTopWindowContext,
+        nullable nsIPrincipal aPrincipal,
+        IPCTransferableData[] transfers, uint32_t action);
+
+    async UpdateDragSession(
+        nullable nsIPrincipal aPrincipal,
+        IPCTransferableData[] transfers,
+                            EventMessage message);
+
+    async EndDragSession(bool aDoneDrag, bool aUserCancelled,
+                         LayoutDeviceIntPoint aDragEndPoint,
+                         uint32_t aKeyModifiers,
+                         uint32_t aDropEffect);
+
 parent:
     /**
      * Fetches whether this window supports protected media, which is sent back in response.
@@ -1028,6 +1058,8 @@ parent:
      */
     async NewWindowGlobal(ManagedEndpoint<PWindowGlobalParent> aEndpoint,
                           WindowGlobalInit aInit);
+
+    async UpdateDropEffect(uint32_t aDragAction, uint32_t aDropEffect);
 
 /*
  * FIXME: write protocol!

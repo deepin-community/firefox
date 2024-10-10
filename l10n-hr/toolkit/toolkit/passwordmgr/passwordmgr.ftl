@@ -8,19 +8,25 @@
 # Variables
 #   $host (String) - Hostname for which the password is saved for.
 password-manager-save-password-message = Spremiti lozinku za { $host }?
+password-manager-save-password-button-deny =
+    .label = Ne sada
+    .accesskey = N
 password-manager-save-password-button-allow =
     .label = Spremi
     .accesskey = S
 password-manager-save-password-button-never =
-    .label = Nikad ne spremaj
+    .label = Nikada ne spremaj
     .accesskey = e
 # Variables
 #   $host (String) - Hostname for which the password is updated for.
 password-manager-update-password-message = Aktualizirati lozinku za { $host }?
+password-manager-update-password-button-delete =
+    .label = Ukloni spremljenu lozinku
+    .accesskey = U
 password-manager-update-login-add-username = Dodati korisničko ime spremljenoj lozinki?
 password-manager-password-password-button-allow =
-    .label = Dopuna
-    .accesskey = V
+    .label = Aktualiziraj
+    .accesskey = A
 password-manager-update-password-button-deny =
     .label = Nemoj aktualizirati
     .accesskey = i

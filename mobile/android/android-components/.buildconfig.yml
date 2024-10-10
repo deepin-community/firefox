@@ -533,7 +533,12 @@ projects:
     path: components/feature/accounts-push
     publish: true
     upstream_dependencies:
+    - browser-errorpages
+    - browser-state
+    - concept-awesomebar
     - concept-base
+    - concept-engine
+    - concept-fetch
     - concept-push
     - concept-storage
     - concept-sync
@@ -545,8 +550,10 @@ projects:
     - support-base
     - support-ktx
     - support-test
+    - support-test-libstate
     - support-utils
     - tooling-lint
+    - ui-icons
   feature-addons:
     description: A feature that provides for managing add-ons.
     path: components/feature/addons
@@ -560,6 +567,7 @@ projects:
     - concept-fetch
     - concept-menu
     - concept-storage
+    - concept-toolbar
     - lib-publicsuffixlist
     - lib-state
     - support-base
@@ -607,6 +615,7 @@ projects:
     - concept-engine
     - concept-fetch
     - concept-storage
+    - concept-toolbar
     - lib-fetch-okhttp
     - lib-publicsuffixlist
     - service-digitalassetlinks
@@ -773,6 +782,7 @@ projects:
     - concept-engine
     - concept-fetch
     - concept-storage
+    - concept-toolbar
     - lib-publicsuffixlist
     - lib-state
     - support-android-test
@@ -2272,6 +2282,7 @@ projects:
     - concept-engine
     - concept-fetch
     - concept-storage
+    - concept-toolbar
     - lib-publicsuffixlist
     - support-base
     - support-ktx

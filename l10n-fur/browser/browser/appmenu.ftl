@@ -77,16 +77,10 @@ appmenu-remote-tabs-turn-on-sync =
 appmenu-remote-tabs-showmore =
     .label = Mostre plui schedis
     .tooltiptext = Mostre plui schedis di chest dispositîf
-# This is shown when there are inactive tabs which are not being shown.
-# Variables
-# $count (Number) - The number of inactive tabs which are not being shown (at least 1)
-appmenu-remote-tabs-showinactive =
-    .label =
-        { $count ->
-            [one] Mostre une schede inative
-           *[other] Mostre { $count } schedis inativis
-        }
-    .tooltiptext = Mostre lis schedis inativis su chest dispositîf
+# This is shown as the label for an element to show inactive tabs from this device.
+appmenu-remote-tabs-show-inactive-tabs =
+    .label = Schedis inativis
+    .tooltiptext = Viôt lis schedis inativis su chest dispositîf
 # This is shown beneath the name of a device when that device has no open tabs
 appmenu-remote-tabs-notabs = Nissune schede vierte
 # This is shown when Sync is configured but syncing tabs is disabled.
@@ -202,6 +196,9 @@ profiler-popup-presets-power-description = Pre-configurazion par investigâ sui 
 # "Power" is used in the sense of energy (electricity used by the computer).
 profiler-popup-presets-power-label =
     .label = Energjie
+profiler-popup-presets-debug-description = Impostazion prestabilide pal debug in { -brand-shorter-name }. Overhead elevât, no sta doprâlu pes analisis des prestazions, ma dome par capî il compuartament dal navigadôr.
+profiler-popup-presets-debug-label =
+    .label = Debug
 profiler-popup-presets-custom-label =
     .label = Personalizât
 

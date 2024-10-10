@@ -84,6 +84,8 @@ policy-Handlers = Varsayılan uygulama işleyicilerini yapılandır.
 policy-HardwareAcceleration = false ise donanım ivmelenmesini kapat.
 # “lock” means that the user won’t be able to change this setting
 policy-Homepage = Giriş sayfasını ayarla ve isteğe bağlı olarak kilitle.
+policy-HttpAllowlist = HTTPS’e yükseltilmeyecek kökenler.
+policy-HttpsOnlyMode = Yalnızca HTTPS modunun etkinleştirilmesine izin ver.
 policy-InstallAddonsPermission = Belirli web sitelerinin eklenti yüklemesine izin ver.
 policy-LegacyProfiles = Her kurulum için ayrı bir profil oluşturmayı zorunlu tutan özelliği devre dışı bırak
 
@@ -108,12 +110,16 @@ policy-OverrideFirstRunPage = İlk açılış sayfasını değiştir. İlk açı
 policy-OverridePostUpdatePage = Güncelleme sonrası “Yenilikler” sayfasını değiştir. Güncelleme sonrası sayfasını devre dışı bırakmak istiyorsanız bu ilkeyi boş olarak ayarlayabilirsiniz.
 policy-PasswordManagerEnabled = Parolaları parola yöneticisine kaydetmeyi aç.
 policy-PasswordManagerExceptions = { -brand-short-name } tarayıcısının belirli sitelerde parola kaydetmesini engelle.
+# Post-quantum refers to cryptography that is safe from attacks by quantum
+# computers. See https://en.wikipedia.org/wiki/Post-quantum_cryptography
+policy-PostQuantumKeyAgreementEnabled = TLS için post-quantum anahtar anlaşmasını etkinleştir.
 # PDF.js and PDF should not be translated
 policy-PDFjs = Dahili { -brand-short-name } PDF görüntüleyicisi olan PDF.js’i devre dışı bırak veya yapılandır.
 policy-Permissions2 = Kamera, mikrofon, konum, bildirim ve otomatik oynatma izinlerini yapılandır.
 policy-PictureInPicture = Görüntü içinde görüntü özelliğini aç veya kapat.
 policy-PopupBlocking = Belirli web sitelerin varsayılan olarak açılır pencere açmasına izin ver.
 policy-Preferences = Bir tercihler alt kümesinin değerini ayarlayıp kilitle.
+policy-PrivateBrowsingModeAvailability = Gizli gezinti modunun kullanılabilirliğini ayarla.
 policy-PromptForDownloadLocation = Dosya indirirken nereye kaydedileceklerini sor.
 policy-Proxy = Vekil sunucu ayarlarını yapılandır.
 policy-RequestedLocales = Uygulamada kullanılması istenen dilleri tercih sırasına göre ayarla.

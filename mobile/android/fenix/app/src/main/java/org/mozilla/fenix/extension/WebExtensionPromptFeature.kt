@@ -121,7 +121,7 @@ class WebExtensionPromptFeature(
         addon: Addon,
         promptRequest: WebExtensionPromptRequest.AfterInstallation.Permissions.Required,
     ) {
-        showPermissionDialog(addon = addon, promptRequest = promptRequest)
+        showPermissionDialog(addon = addon, promptRequest = promptRequest, permissions = promptRequest.permissions)
     }
 
     @VisibleForTesting
@@ -141,7 +141,7 @@ class WebExtensionPromptFeature(
             addon = addon,
             promptRequest = promptRequest,
             forOptionalPermissions = true,
-            optionalPermissions = promptRequest.permissions,
+            permissions = promptRequest.permissions,
         )
     }
 
@@ -173,6 +173,10 @@ class WebExtensionPromptFeature(
                 } else {
                     context.getString(R.string.mozac_feature_addons_extension_failed_to_install)
                 }
+            }
+
+            is WebExtensionInstallException.AdminInstallOnly -> {
+                context.getString(R.string.mozac_feature_addons_admin_install_only, addonName)
             }
 
             is WebExtensionInstallException.NetworkFailure -> {
@@ -219,7 +223,7 @@ class WebExtensionPromptFeature(
         addon: Addon,
         promptRequest: WebExtensionPromptRequest.AfterInstallation.Permissions,
         forOptionalPermissions: Boolean = false,
-        optionalPermissions: List<String> = emptyList(),
+        permissions: List<String> = emptyList(),
     ) {
         if (isInstallationInProgress || hasExistingPermissionDialogFragment()) {
             return
@@ -228,7 +232,7 @@ class WebExtensionPromptFeature(
         val dialog = PermissionsDialogFragment.newInstance(
             addon = addon,
             forOptionalPermissions = forOptionalPermissions,
-            optionalPermissions = optionalPermissions,
+            permissions = permissions,
             promptsStyling = AddonDialogFragment.PromptsStyling(
                 gravity = Gravity.BOTTOM,
                 shouldWidthMatchParent = true,

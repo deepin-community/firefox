@@ -1083,6 +1083,9 @@ interface TestInterface {
   undefined passUnionArrayBuffer((DOMString or ArrayBuffer) foo);
   undefined passUnionAllowSharedArrayBuffer((DOMString or [AllowShared] ArrayBuffer) foo);
 
+  [Frozen, ReflectedHTMLAttributeReturningFrozenArray]
+  attribute sequence<Element>? reflectedHTMLAttributeReturningFrozenArray;
+
   // If you add things here, add them to TestExampleGen as well
 };
 
@@ -1528,7 +1531,7 @@ interface TestFuncConstructorForInterface {
   constructor();
 };
 
-[Exposed=Window, Func="Document::AreWebAnimationsTimelinesEnabled"]
+[Exposed=Window, Func="Document::IsCallerChromeOrAddon"]
 interface TestFuncConstructorForDifferentFuncInterface {
   // Since the constructor has a different Func attribute from the interface,
   // the generated constructor should still check for its conditional func.

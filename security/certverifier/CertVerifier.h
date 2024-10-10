@@ -39,7 +39,6 @@ namespace ct {
 // dependent headers and force us to export them in moz.build.
 // Just forward-declare the classes here instead.
 class MultiLogCTVerifier;
-class CTDiversityPolicy;
 
 }  // namespace ct
 }  // namespace mozilla
@@ -105,9 +104,7 @@ class PinningTelemetryInfo {
 
 class CertificateTransparencyInfo {
  public:
-  CertificateTransparencyInfo()
-      : enabled(false),
-        policyCompliance(mozilla::ct::CTPolicyCompliance::Unknown) {
+  CertificateTransparencyInfo() : enabled(false), policyCompliance(Nothing()) {
     Reset();
   }
 
@@ -116,7 +113,7 @@ class CertificateTransparencyInfo {
   // Verification result of the processed SCTs.
   mozilla::ct::CTVerifyResult verifyResult;
   // Connection compliance to the CT Policy.
-  mozilla::ct::CTPolicyCompliance policyCompliance;
+  Maybe<mozilla::ct::CTPolicyCompliance> policyCompliance;
 
   void Reset();
 };
@@ -133,6 +130,31 @@ class DelegatedCredentialInfo {
 
   // The size of the key, in bits.
   uint32_t authKeyBits;
+};
+
+class SkipInvalidSANsForNonBuiltInRootsPolicy
+    : public pkix::NameMatchingPolicy {
+ public:
+  explicit SkipInvalidSANsForNonBuiltInRootsPolicy(bool rootIsBuiltIn)
+      : mRootIsBuiltIn(rootIsBuiltIn) {}
+
+  virtual pkix::Result FallBackToCommonName(
+      pkix::Time,
+      /*out*/ pkix::FallBackToSearchWithinSubject& fallBackToCommonName)
+      override {
+    fallBackToCommonName = pkix::FallBackToSearchWithinSubject::No;
+    return pkix::Success;
+  }
+
+  virtual pkix::HandleInvalidSubjectAlternativeNamesBy
+  HandleInvalidSubjectAlternativeNames() override {
+    return mRootIsBuiltIn
+               ? pkix::HandleInvalidSubjectAlternativeNamesBy::Halting
+               : pkix::HandleInvalidSubjectAlternativeNamesBy::Skipping;
+  }
+
+ private:
+  bool mRootIsBuiltIn;
 };
 
 class NSSCertDBTrustDomain;
@@ -241,7 +263,6 @@ class CertVerifier {
   // We only have a forward declarations of these classes (see above)
   // so we must allocate dynamically.
   UniquePtr<mozilla::ct::MultiLogCTVerifier> mCTVerifier;
-  UniquePtr<mozilla::ct::CTDiversityPolicy> mCTDiversityPolicy;
 
   void LoadKnownCTLogs();
   mozilla::pkix::Result VerifyCertificateTransparencyPolicy(

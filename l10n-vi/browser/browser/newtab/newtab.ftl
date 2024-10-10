@@ -200,6 +200,8 @@ newtab-section-header-recent-activity = Hoạt động gần đây
 #   $provider (string) - Name of the corresponding content provider.
 newtab-section-header-pocket = Được đề xuất bởi { $provider }
 newtab-section-header-stories = Những câu chuyện kích động tư tưởng
+# "picks" refers to recommended articles
+newtab-section-header-todays-picks = Lựa chọn hôm nay dành cho bạn
 
 ## Empty Section States: These show when there are no more items in a section. Ex. When there are no more Pocket story recommendations, in the space where there would have been stories, this is shown instead.
 
@@ -233,6 +235,19 @@ newtab-pocket-pocket-firefox-family = { -pocket-brand-name } là một phần c�
 # A save to Pocket button that shows over the card thumbnail on hover.
 newtab-pocket-save = Lưu
 newtab-pocket-saved = Đã lưu
+
+## Thumbs up and down buttons that shows over a newtab stories card thumbnail on hover.
+
+# Clicking the thumbs up button for this story will result in more stories like this one being recommended
+newtab-pocket-thumbs-up-tooltip =
+    .title = Thêm những nội dung giống thế này
+# Clicking the thumbs down button for this story informs us that the user does not feel like the story is interesting for them
+newtab-pocket-thumbs-down-tooltip =
+    .title = Không hợp với tôi
+newtab-toast-thumbs-up-or-down = Cảm ơn. Những phản hồi của bạn sẽ giúp chúng tôi cải thiện bản tin của bạn.
+newtab-toast-dismiss-button =
+    .title = Bỏ qua
+    .aria-label = Bỏ qua
 
 ## Pocket content onboarding experience dialog and modal for new users seeing the Pocket section for the first time, shown as the first item in the Pocket section.
 
@@ -271,6 +286,9 @@ newtab-custom-recent-subtitle = Tuyển chọn các trang và nội dung gần �
 newtab-custom-recent-toggle =
     .label = Hoạt động gần đây
     .description = Tuyển chọn các trang và nội dung gần đây
+newtab-custom-weather-toggle =
+    .label = Thời tiết
+    .description = Sơ lược về dự báo hôm nay
 newtab-custom-close-button = Đóng
 newtab-custom-settings = Quản lý các cài đặt khác
 
@@ -290,7 +308,125 @@ newtab-wallpaper-dark-panda = Gấu trúc đỏ ẩn trong rừng
 newtab-wallpaper-dark-sky = Cảnh quan thành phố với bầu trời đêm
 newtab-wallpaper-dark-mountain = Phong cảnh núi
 newtab-wallpaper-dark-city = Phong cảnh thành phố màu tím
+
+## Solid Colors
+
+newtab-wallpaper-category-title-colors = Màu
+newtab-wallpaper-blue = Xanh dương
+newtab-wallpaper-light-blue = Xanh dương nhạt
+newtab-wallpaper-light-purple = Tím nhạt
+newtab-wallpaper-light-green = Xanh lục nhạt
+newtab-wallpaper-green = Xanh lục
+newtab-wallpaper-beige = Be
+newtab-wallpaper-yellow = Vàng
+newtab-wallpaper-orange = Da cam
+newtab-wallpaper-pink = Hồng
+newtab-wallpaper-light-pink = Hồng nhạt
+newtab-wallpaper-red = Đỏ
+newtab-wallpaper-dark-blue = Xanh dương đậm
+newtab-wallpaper-dark-purple = Tím đậm
+newtab-wallpaper-dark-green = Xanh lục đậm
+newtab-wallpaper-brown = Nâu
+
+## Abstract
+
+newtab-wallpaper-category-title-abstract = Trừu tượng
+newtab-wallpaper-abstract-green = Hình dạng màu xanh lục
+newtab-wallpaper-abstract-blue = Hình dạng màu xanh dương
+newtab-wallpaper-abstract-purple = Hình dạng màu tím
+newtab-wallpaper-abstract-orange = Hình dạng màu cam
+newtab-wallpaper-gradient-orange = Gradient màu cam và màu hồng
+newtab-wallpaper-abstract-blue-purple = Hình dạng màu xanh dương và màu tím
+
+## Photographs
+
+newtab-wallpaper-category-title-photographs = Hình ảnh
+newtab-wallpaper-beach-at-sunrise = Bãi biển lúc bình minh
+newtab-wallpaper-beach-at-sunset = Bãi biển lúc hoàng hôn
+newtab-wallpaper-storm-sky = Trời giông bão
+newtab-wallpaper-sky-with-pink-clouds = Bầu trời với đám mây màu hồng
+newtab-wallpaper-red-panda-yawns-in-a-tree = Gấu trúc đỏ ngáp trên cây
+newtab-wallpaper-white-mountains = Núi trắng
 # Variables
 #   $author_string (String) - The name of the creator of the photo.
 #   $webpage_string (String) - The name of the webpage where the photo is located.
 newtab-wallpaper-attribution = Hình ảnh bởi <a data-l10n-name="name-link">{ $author_string }</a> trên <a data-l10n-name="webpage-link">{ $webpage_string }</a>
+newtab-wallpaper-feature-highlight-header = Thử một chút màu sắc
+newtab-wallpaper-feature-highlight-content = Mang lại diện mạo mới cho thẻ mới của bạn bằng hình nền.
+newtab-wallpaper-feature-highlight-button = Đã hiểu
+# Tooltip for dismiss button
+feature-highlight-dismiss-button =
+    .title = Bỏ qua
+    .aria-label = Đóng cửa sổ bật lên
+feature-highlight-wallpaper =
+    .title = { -newtab-wallpaper-feature-highlight-header }
+    .aria-label = { -newtab-wallpaper-feature-highlight-content }
+
+## New Tab Weather
+
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-see-forecast =
+    .title = Xem dự báo với { $provider }
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-sponsored = { $provider } ∙ Được tài trợ
+newtab-weather-menu-change-location = Thay đổi khu vực
+newtab-weather-change-location-search-input = Tìm kiếm khu vực
+newtab-weather-menu-weather-display = Cách hiển thị thời tiết
+# Display options are:
+# - Simple: Displays a current weather condition icon and the current temperature
+# - Detailed: Include simple information plus a short text summary: e.g. "Mostly cloudy"
+newtab-weather-menu-weather-display-option-simple = Đơn giản
+newtab-weather-menu-change-weather-display-simple = Chuyển sang xem đơn giản
+newtab-weather-menu-weather-display-option-detailed = Chi tiết
+newtab-weather-menu-change-weather-display-detailed = Chuyển sang xem chi tiết
+newtab-weather-menu-temperature-units = Đơn vị nhiệt độ
+newtab-weather-menu-temperature-option-fahrenheit = Độ F
+newtab-weather-menu-temperature-option-celsius = Độ C
+newtab-weather-menu-change-temperature-units-fahrenheit = Chuyển sang độ F
+newtab-weather-menu-change-temperature-units-celsius = Chuyển sang độ C
+newtab-weather-menu-hide-weather = Ẩn thời tiết trên thẻ mới
+newtab-weather-menu-learn-more = Tìm hiểu thêm
+# This message is shown if user is working offline
+newtab-weather-error-not-available = Dữ liệu thời tiết hiện không có sẵn.
+
+## Topic Labels
+
+newtab-topic-label-business = Kinh doanh
+newtab-topic-label-career = Cơ hội nghề nghiệp
+newtab-topic-label-education = Giáo dục
+newtab-topic-label-arts = Giải trí
+newtab-topic-label-food = Thực phẩm
+newtab-topic-label-health = Sức khỏe
+newtab-topic-label-hobbies = Trò chơi
+# ”Money” = “Personal Finance”, refers to articles and stories that help readers better manage
+# and understand their personal finances – from saving money to buying a home. See the
+# “Curated by our editors“ section at the top of https://getpocket.com/explore/personal-finance for more context
+newtab-topic-label-finance = Tài chính cá nhân
+newtab-topic-label-society-parenting = Nuôi dạy con cái
+newtab-topic-label-government = Chính trị
+newtab-topic-label-education-science = Khoa học
+# ”Life Hacks” = “Self Improvement”, refers to articles and stories aimed at helping readers improve various
+# aspects of their lives – from mental health to  productivity. See the “Curated by our editors“ section
+# at the top of https://getpocket.com/explore/self-improvement for more context.
+newtab-topic-label-society = Mẹo vặt cuộc sống
+newtab-topic-label-sports = Thể thao
+newtab-topic-label-tech = Công nghệ
+newtab-topic-label-travel = Du lịch
+newtab-topic-label-home = Nhà & vườn
+
+## Topic Selection Modal
+
+# “fine-tune” refers to the process of making small adjustments to something to get
+# the best or desired experience or performance.
+newtab-topic-selection-title = Chọn chủ đề để tinh chỉnh nguồn cấp dữ liệu của bạn
+# “tailored” refers to process of (a tailor) making (clothes) to fit individual customers.
+# In other words, “Our expert curators prioritize stories to fit your selected interests”
+newtab-topic-selection-subtitle = Chọn hai hoặc nhiều chủ đề. Các người chuyên gia giám tuyển của chúng tôi sẽ ưu tiên những câu chuyện phù hợp với sở thích của bạn. Cập nhật bất cứ lúc nào.
+newtab-topic-selection-save-button = Lưu
+newtab-topic-selection-cancel-button = Hủy bỏ
+newtab-topic-selection-button-maybe-later = Có lẽ để sau
+newtab-topic-selection-privacy-link = Tìm hiểu cách chúng tôi bảo vệ và quản lý dữ liệu
+newtab-topic-selection-button-update-interests = Cập nhật sở thích của bạn
+newtab-topic-selection-button-pick-interests = Chọn sở thích của bạn

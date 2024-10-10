@@ -89,6 +89,9 @@ shopping-show-less-button = 表示を減らす
 
 shopping-settings-label =
     .label = 設定
+shopping-settings-recommendations-toggle2 =
+    .label = おすすめと広告コンテンツを表示する
+shopping-settings-recommendations-learn-more3 = { -brand-product-name } はユーザーの個人データを共有しないため、これらのおすすめコンテンツがインターネット上であなたを追跡することはありません。 <a data-l10n-name="review-quality-url">詳細情報</a>
 shopping-settings-recommendations-toggle =
     .label = レビューチェッカーに広告を表示する
 shopping-settings-recommendations-learn-more2 = 時々、関連製品の広告が表示されます。私たちは信頼できるレビューの付いた製品のみを広告します。<a data-l10n-name="review-quality-url">詳細情報</a>
@@ -115,6 +118,7 @@ shopping-settings-sidebar-enabled-state = レビューチェッカーが <strong
 shopping-adjusted-rating-label =
     .label = レートが調整されています
 shopping-adjusted-rating-unreliable-reviews = 信頼できないレビューを削除しました
+shopping-adjusted-rating-based-reliable-reviews = 信頼できるレビューに基づく
 
 ## Strings for the review reliability component
 
@@ -133,6 +137,8 @@ shopping-analysis-explainer-learn-more2 = 詳細は、<a data-l10n-name="review-
 # websites, which will be inserted without being translated.
 #  $retailer (String) - capitalized name of the shopping website, for example, "Amazon".
 shopping-analysis-explainer-highlights-description = <strong>注目レビュー</strong> は最近 80 日以内の { $retailer } からのレビューで私たちが信頼するに足ると評価したものです。
+# Fallback for analysis highlights explainer if the retailer is ever unknown
+shopping-analysis-explainer-highlights-description-unknown-retailer =<strong>注目レビュー</strong> は最近 80 日以内の私たちが信頼するに足ると評価したレビューです。
 shopping-analysis-explainer-review-grading-scale-reliable = 信頼できるレビューです。これは正直で偏見を持たない本物の顧客によるレビューであると思われます。
 shopping-analysis-explainer-review-grading-scale-mixed = 信頼できるレビューと信頼できないレビューが混在していると思われます。
 shopping-analysis-explainer-review-grading-scale-unreliable = 信頼できないレビューです。これは偽物または偏見を持ったレビュアーによるレビューであると思われます。
@@ -159,6 +165,7 @@ shopping-unanalyzed-product-analyze-button = レビュー品質を確認
 
 more-to-consider-ad-label =
     .label = さらに検討する
+shopping-sponsored-label = 広告
 ad-by-fakespot = { -fakespot-brand-name } による広告
 
 ## Shopping survey strings.

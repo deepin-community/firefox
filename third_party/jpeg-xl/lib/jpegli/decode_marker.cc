@@ -23,22 +23,23 @@ constexpr uint8_t kIccProfileTag[12] = "ICC_PROFILE";
 
 // Macros for commonly used error conditions.
 
-#define JPEG_VERIFY_LEN(n)                               \
-  if (pos + (n) > len) {                                 \
-    JPEGLI_ERROR("Unexpected end of marker: pos=%" PRIuS \
-                 " need=%d len=%" PRIuS,                 \
-                 pos, static_cast<int>(n), len);         \
+#define JPEG_VERIFY_LEN(n)                                      \
+  if (pos + (n) > len) {                                        \
+    return JPEGLI_ERROR("Unexpected end of marker: pos=%" PRIuS \
+                        " need=%d len=%" PRIuS,                 \
+                        pos, static_cast<int>(n), len);         \
   }
 
-#define JPEG_VERIFY_INPUT(var, low, high)                        \
-  if ((var) < (low) || (var) > (high)) {                         \
-    JPEGLI_ERROR("Invalid " #var ": %d", static_cast<int>(var)); \
+#define JPEG_VERIFY_INPUT(var, low, high)                               \
+  if ((var) < (low) || (var) > (high)) {                                \
+    return JPEGLI_ERROR("Invalid " #var ": %d", static_cast<int>(var)); \
   }
 
-#define JPEG_VERIFY_MARKER_END()                                              \
-  if (pos != len) {                                                           \
-    JPEGLI_ERROR("Invalid marker length: declared=%" PRIuS " actual=%" PRIuS, \
-                 len, pos);                                                   \
+#define JPEG_VERIFY_MARKER_END()                                  \
+  if (pos != len) {                                               \
+    return JPEGLI_ERROR("Invalid marker length: declared=%" PRIuS \
+                        " actual=%" PRIuS,                        \
+                        len, pos);                                \
   }
 
 inline int ReadUint8(const uint8_t* data, size_t* pos) {
@@ -181,7 +182,7 @@ void ProcessSOS(j_decompress_ptr cinfo, const uint8_t* data, size_t len) {
   for (int i = 0; i < cinfo->comps_in_scan; ++i) {
     int id = ReadUint8(data, &pos);
     if (ids_seen[id]) {  // (cf. section B.2.3, regarding CSj)
-      JPEGLI_ERROR("Duplicate ID %d in SOS.", id);
+      return JPEGLI_ERROR("Duplicate ID %d in SOS.", id);
     }
     ids_seen[id] = 1;
     jpeg_component_info* comp = nullptr;
@@ -192,7 +193,8 @@ void ProcessSOS(j_decompress_ptr cinfo, const uint8_t* data, size_t len) {
       }
     }
     if (!comp) {
-      JPEGLI_ERROR("SOS marker: Could not find component with id %d", id);
+      return JPEGLI_ERROR("SOS marker: Could not find component with id %d",
+                          id);
     }
     int c = ReadUint8(data, &pos);
     comp->dc_tbl_no = c >> 4;
@@ -260,12 +262,12 @@ void ProcessSOS(j_decompress_ptr cinfo, const uint8_t* data, size_t len) {
     int comp_idx = cinfo->cur_comp_info[i]->component_index;
     for (int k = cinfo->Ss; k <= cinfo->Se; ++k) {
       if (m->scan_progression_[comp_idx][k] & scan_bitmask) {
-        JPEGLI_ERROR(
+        return JPEGLI_ERROR(
             "Overlapping scans: component=%d k=%d prev_mask: %u cur_mask %u",
             comp_idx, k, m->scan_progression_[i][k], scan_bitmask);
       }
       if (m->scan_progression_[comp_idx][k] & refinement_bitmask) {
-        JPEGLI_ERROR(
+        return JPEGLI_ERROR(
             "Invalid scan order, a more refined scan was already done: "
             "component=%d k=%d prev_mask=%u cur_mask=%u",
             comp_idx, k, m->scan_progression_[i][k], scan_bitmask);
@@ -274,7 +276,7 @@ void ProcessSOS(j_decompress_ptr cinfo, const uint8_t* data, size_t len) {
     }
   }
   if (cinfo->Al > 10) {
-    JPEGLI_ERROR("Scan parameter Al=%d is not supported.", cinfo->Al);
+    return JPEGLI_ERROR("Scan parameter Al=%d is not supported.", cinfo->Al);
   }
 }
 
@@ -284,7 +286,7 @@ void ProcessSOS(j_decompress_ptr cinfo, const uint8_t* data, size_t len) {
 void ProcessDHT(j_decompress_ptr cinfo, const uint8_t* data, size_t len) {
   size_t pos = 2;
   if (pos == len) {
-    JPEGLI_ERROR("DHT marker: no Huffman table found");
+    return JPEGLI_ERROR("DHT marker: no Huffman table found");
   }
   while (pos < len) {
     JPEG_VERIFY_LEN(1 + kJpegHuffmanMaxBitLength);
@@ -342,7 +344,7 @@ void ProcessDQT(j_decompress_ptr cinfo, const uint8_t* data, size_t len) {
   }
   size_t pos = 2;
   if (pos == len) {
-    JPEGLI_ERROR("DQT marker: no quantization table found");
+    return JPEGLI_ERROR("DQT marker: no quantization table found");
   }
   while (pos < len) {
     JPEG_VERIFY_LEN(1);
@@ -376,7 +378,7 @@ void ProcessDNL(j_decompress_ptr cinfo, const uint8_t* data, size_t len) {
 void ProcessDRI(j_decompress_ptr cinfo, const uint8_t* data, size_t len) {
   jpeg_decomp_master* m = cinfo->master;
   if (m->found_dri_) {
-    JPEGLI_ERROR("Duplicate DRI marker.");
+    return JPEGLI_ERROR("Duplicate DRI marker.");
   }
   m->found_dri_ = true;
   size_t pos = 2;
@@ -410,24 +412,24 @@ void ProcessAPP(j_decompress_ptr cinfo, const uint8_t* data, size_t len) {
       payload += sizeof(kIccProfileTag);
       payload_size -= sizeof(kIccProfileTag);
       if (payload_size < 2) {
-        JPEGLI_ERROR("ICC chunk is too small.");
+        return JPEGLI_ERROR("ICC chunk is too small.");
       }
       uint8_t index = payload[0];
       uint8_t total = payload[1];
       ++m->icc_index_;
       if (m->icc_index_ != index) {
-        JPEGLI_ERROR("Invalid ICC chunk order.");
+        return JPEGLI_ERROR("Invalid ICC chunk order.");
       }
       if (total == 0) {
-        JPEGLI_ERROR("Invalid ICC chunk total.");
+        return JPEGLI_ERROR("Invalid ICC chunk total.");
       }
       if (m->icc_total_ == 0) {
         m->icc_total_ = total;
       } else if (m->icc_total_ != total) {
-        JPEGLI_ERROR("Invalid ICC chunk total.");
+        return JPEGLI_ERROR("Invalid ICC chunk total.");
       }
       if (m->icc_index_ > m->icc_total_) {
-        JPEGLI_ERROR("Invalid ICC chunk index.");
+        return JPEGLI_ERROR("Invalid ICC chunk index.");
       }
       m->icc_profile_.insert(m->icc_profile_.end(), payload + 2,
                              payload + payload_size);

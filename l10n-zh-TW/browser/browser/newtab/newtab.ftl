@@ -196,6 +196,8 @@ newtab-section-header-recent-activity = 近期動態
 #   $provider (string) - Name of the corresponding content provider.
 newtab-section-header-pocket = { $provider } 推薦
 newtab-section-header-stories = 發人深省的文章
+# "picks" refers to recommended articles
+newtab-section-header-todays-picks = 本日精選文章
 
 ## Empty Section States: These show when there are no more items in a section. Ex. When there are no more Pocket story recommendations, in the space where there would have been stories, this is shown instead.
 
@@ -229,6 +231,19 @@ newtab-pocket-pocket-firefox-family = { -pocket-brand-name } 是 { -brand-produc
 # A save to Pocket button that shows over the card thumbnail on hover.
 newtab-pocket-save = 儲存
 newtab-pocket-saved = 已儲存
+
+## Thumbs up and down buttons that shows over a newtab stories card thumbnail on hover.
+
+# Clicking the thumbs up button for this story will result in more stories like this one being recommended
+newtab-pocket-thumbs-up-tooltip =
+    .title = 更多這樣的內容
+# Clicking the thumbs down button for this story informs us that the user does not feel like the story is interesting for them
+newtab-pocket-thumbs-down-tooltip =
+    .title = 我沒興趣
+newtab-toast-thumbs-up-or-down = 感謝您。您的意見可幫助我們改善顯示的內容。
+newtab-toast-dismiss-button =
+    .title = 知道了！
+    .aria-label = 知道了！
 
 ## Pocket content onboarding experience dialog and modal for new users seeing the Pocket section for the first time, shown as the first item in the Pocket section.
 
@@ -268,6 +283,9 @@ newtab-custom-recent-subtitle = 近期造訪過的網站與內容精選
 newtab-custom-recent-toggle =
     .label = 近期動態
     .description = 近期造訪過的網站與內容精選
+newtab-custom-weather-toggle =
+    .label = 天氣
+    .description = 快速了解本日天氣
 newtab-custom-close-button = 關閉
 newtab-custom-settings = 管理更多設定
 
@@ -287,7 +305,125 @@ newtab-wallpaper-dark-panda = 隱藏在森林中的小貓熊
 newtab-wallpaper-dark-sky = 城市的夜空景觀
 newtab-wallpaper-dark-mountain = 山景
 newtab-wallpaper-dark-city = 紫色城市風景
+
+## Solid Colors
+
+newtab-wallpaper-category-title-colors = 純色
+newtab-wallpaper-blue = 藍色
+newtab-wallpaper-light-blue = 淺藍色
+newtab-wallpaper-light-purple = 淺紫色
+newtab-wallpaper-light-green = 淺綠色
+newtab-wallpaper-green = 綠色
+newtab-wallpaper-beige = 米色
+newtab-wallpaper-yellow = 黃色
+newtab-wallpaper-orange = 橘色
+newtab-wallpaper-pink = 粉紅色
+newtab-wallpaper-light-pink = 淺粉紅色
+newtab-wallpaper-red = 紅色
+newtab-wallpaper-dark-blue = 深藍色
+newtab-wallpaper-dark-purple = 深紫色
+newtab-wallpaper-dark-green = 深綠色
+newtab-wallpaper-brown = 棕色
+
+## Abstract
+
+newtab-wallpaper-category-title-abstract = 抽象派
+newtab-wallpaper-abstract-green = 綠色造型
+newtab-wallpaper-abstract-blue = 藍色造型
+newtab-wallpaper-abstract-purple = 紫色造型
+newtab-wallpaper-abstract-orange = 橘色造型
+newtab-wallpaper-gradient-orange = 橘色粉紅色漸層
+newtab-wallpaper-abstract-blue-purple = 藍色紫色造型
+
+## Photographs
+
+newtab-wallpaper-category-title-photographs = 相片
+newtab-wallpaper-beach-at-sunrise = 海邊日出
+newtab-wallpaper-beach-at-sunset = 海邊日落
+newtab-wallpaper-storm-sky = 暴風雨的天空
+newtab-wallpaper-sky-with-pink-clouds = 有粉紅色雲朵的天空
+newtab-wallpaper-red-panda-yawns-in-a-tree = 在樹上打呵欠的小貓熊
+newtab-wallpaper-white-mountains = 白色山脈
 # Variables
 #   $author_string (String) - The name of the creator of the photo.
 #   $webpage_string (String) - The name of the webpage where the photo is located.
 newtab-wallpaper-attribution = 相片由 <a data-l10n-name="name-link">{ $author_string }</a> 於 <a data-l10n-name="webpage-link">{ $webpage_string }</a> 提供
+newtab-wallpaper-feature-highlight-header = 試用新色彩
+newtab-wallpaper-feature-highlight-content = 讓您的「新分頁」耳目一新！
+newtab-wallpaper-feature-highlight-button = 知道了！
+# Tooltip for dismiss button
+feature-highlight-dismiss-button =
+    .title = 隱藏
+    .aria-label = 關閉彈出視窗
+feature-highlight-wallpaper =
+    .title = { -newtab-wallpaper-feature-highlight-header }
+    .aria-label = { -newtab-wallpaper-feature-highlight-content }
+
+## New Tab Weather
+
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-see-forecast =
+    .title = 到 { $provider } 檢視天氣預報
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-sponsored = { $provider } ∙ 贊助資訊
+newtab-weather-menu-change-location = 更改位置
+newtab-weather-change-location-search-input = 搜尋位置
+newtab-weather-menu-weather-display = 顯示天氣
+# Display options are:
+# - Simple: Displays a current weather condition icon and the current temperature
+# - Detailed: Include simple information plus a short text summary: e.g. "Mostly cloudy"
+newtab-weather-menu-weather-display-option-simple = 簡潔
+newtab-weather-menu-change-weather-display-simple = 切換為簡潔畫面
+newtab-weather-menu-weather-display-option-detailed = 詳細
+newtab-weather-menu-change-weather-display-detailed = 切換為詳細畫面
+newtab-weather-menu-temperature-units = 溫度單位
+newtab-weather-menu-temperature-option-fahrenheit = 華氏
+newtab-weather-menu-temperature-option-celsius = 攝氏
+newtab-weather-menu-change-temperature-units-fahrenheit = 切換為華氏溫度
+newtab-weather-menu-change-temperature-units-celsius = 切換為攝氏溫度
+newtab-weather-menu-hide-weather = 隱藏新分頁的天氣資訊
+newtab-weather-menu-learn-more = 更多資訊
+# This message is shown if user is working offline
+newtab-weather-error-not-available = 目前暫時無法提供天氣資訊。
+
+## Topic Labels
+
+newtab-topic-label-business = 商業
+newtab-topic-label-career = 職涯
+newtab-topic-label-education = 教育
+newtab-topic-label-arts = 娛樂
+newtab-topic-label-food = 美食
+newtab-topic-label-health = 健康
+newtab-topic-label-hobbies = 遊戲
+# ”Money” = “Personal Finance”, refers to articles and stories that help readers better manage
+# and understand their personal finances – from saving money to buying a home. See the
+# “Curated by our editors“ section at the top of https://getpocket.com/explore/personal-finance for more context
+newtab-topic-label-finance = 個人財務
+newtab-topic-label-society-parenting = 育兒
+newtab-topic-label-government = 政治
+newtab-topic-label-education-science = 科學
+# ”Life Hacks” = “Self Improvement”, refers to articles and stories aimed at helping readers improve various
+# aspects of their lives – from mental health to  productivity. See the “Curated by our editors“ section
+# at the top of https://getpocket.com/explore/self-improvement for more context.
+newtab-topic-label-society = 自我成長
+newtab-topic-label-sports = 體育
+newtab-topic-label-tech = 科技
+newtab-topic-label-travel = 旅遊
+newtab-topic-label-home = 家庭與園藝
+
+## Topic Selection Modal
+
+# “fine-tune” refers to the process of making small adjustments to something to get
+# the best or desired experience or performance.
+newtab-topic-selection-title = 請選擇主題來調整您的資訊來源
+# “tailored” refers to process of (a tailor) making (clothes) to fit individual customers.
+# In other words, “Our expert curators prioritize stories to fit your selected interests”
+newtab-topic-selection-subtitle = 選擇兩組以上的主題，我們的策展專家會依照您的興趣優先顯示。內容隨時更新。
+newtab-topic-selection-save-button = 儲存
+newtab-topic-selection-cancel-button = 取消
+newtab-topic-selection-button-maybe-later = 之後再說
+newtab-topic-selection-privacy-link = 了解我們如何保護與管理資料
+newtab-topic-selection-button-update-interests = 更新您有興趣的項目
+newtab-topic-selection-button-pick-interests = 挑選您有興趣的項目

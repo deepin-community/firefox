@@ -12,6 +12,8 @@ about-processes-column-action =
 
 about-processes-shutdown-process =
     .title = 卸载标签页并结束进程
+about-processes-kill-process =
+    .title = 结束进程
 about-processes-shutdown-tab =
     .title = 关闭标签页
 # Profiler icons
@@ -50,6 +52,7 @@ about-processes-remote-sandbox-broker-process = 远程沙箱中介（{ $pid }）
 about-processes-fork-server-process = Fork 服务器（{ $pid }）
 about-processes-preallocated-process = 预分配（{ $pid }）
 about-processes-utility-process = 工具（{ $pid }）
+about-processes-inference-process = 推理进程{ $pid }
 # Unknown process names
 # Variables:
 #    $pid (String) The process id of this process, assigned by the OS.

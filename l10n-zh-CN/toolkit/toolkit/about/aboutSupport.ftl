@@ -327,6 +327,9 @@ has-seccomp-bpf = Seccomp-BPF（系统调用过滤）
 has-seccomp-tsync = Seccomp 线程同步
 has-user-namespaces = 用户命名空间
 has-privileged-user-namespaces = 用于特权进程的用户命名空间
+# Variables
+# $status (string) - Boolean value of hasUserNamespaces (should only be false when support-user-namespaces-unavailable is used)
+support-user-namespaces-unavailable = { $status } - 您的系统不允许此功能，可能限制 { -brand-short-name } 的安全功能发挥作用。
 can-sandbox-content = 内容进程沙盒化
 can-sandbox-media = 媒体插件沙盒化
 content-sandbox-level = 内容进程沙盒级别
@@ -394,6 +397,20 @@ support-printing-clear-settings-button = 清除保存的打印设置
 support-printing-modified-settings = 修改过的打印设置
 support-printing-prefs-name = 名称
 support-printing-prefs-value = 值
+
+## Remote Settings sections
+
+support-remote-settings-title = 远程设置
+support-remote-settings-status = 状态
+support-remote-settings-status-ok = 确定
+# Status when synchronization is not working.
+support-remote-settings-status-broken = 未生效
+support-remote-settings-last-check = 上次检查
+support-remote-settings-local-timestamp = 本地时间戳
+support-remote-settings-sync-history = 历史
+support-remote-settings-sync-history-status = 状态
+support-remote-settings-sync-history-datetime = 日期
+support-remote-settings-sync-history-infos = 信息
 
 ## Normandy sections
 

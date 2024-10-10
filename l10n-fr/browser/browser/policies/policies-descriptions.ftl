@@ -84,6 +84,8 @@ policy-Handlers = Configurer les gestionnaires d’applications par défaut.
 policy-HardwareAcceleration = Positionner à false pour désactiver l’accélération matérielle.
 # “lock” means that the user won’t be able to change this setting
 policy-Homepage = Définir la page d’accueil et permettre de la verrouiller.
+policy-HttpAllowlist = Origines qui ne seront pas mises à niveau vers HTTPS.
+policy-HttpsOnlyMode = Autoriser l’activation du mode HTTPS uniquement.
 policy-InstallAddonsPermission = Autoriser certains sites web à installer des extensions.
 policy-LegacyProfiles = Désactiver la fonctionnalité qui impose l’utilisation d’un profil distinct pour chaque installation.
 
@@ -108,12 +110,16 @@ policy-OverrideFirstRunPage = Contrôler la page de premier démarrage. Laissez 
 policy-OverridePostUpdatePage = Contrôler la page « Nouveautés » après une mise à jour. Laissez cette règle vide pour désactiver la page après une mise à jour.
 policy-PasswordManagerEnabled = Activer l’enregistrement des mots de passe dans le gestionnaire de mots de passe.
 policy-PasswordManagerExceptions = Empêcher { -brand-short-name } d’enregistrer les mots de passe pour certains sites.
+# Post-quantum refers to cryptography that is safe from attacks by quantum
+# computers. See https://en.wikipedia.org/wiki/Post-quantum_cryptography
+policy-PostQuantumKeyAgreementEnabled = Activer l’acceptation de clé post-quantique pour TLS.
 # PDF.js and PDF should not be translated
 policy-PDFjs = Désactiver ou configurer PDF.js, la visionneuse PDF intégrée dans { -brand-short-name }.
 policy-Permissions2 = Configurer les permissions pour la caméra, le microphone, la localisation, les notifications et la lecture automatique.
 policy-PictureInPicture = Activer ou désactiver l’incrustation vidéo
 policy-PopupBlocking = Autoriser certains sites web à afficher des popups par défaut.
 policy-Preferences = Définir et verrouiller la valeur d’un sous-ensemble de préférences.
+policy-PrivateBrowsingModeAvailability = Définir la disponibilité du mode de navigation privée.
 policy-PromptForDownloadLocation = Demander où enregistrer les fichiers lors du téléchargement.
 policy-Proxy = Configurer les paramètres du proxy.
 policy-RequestedLocales = Définir la liste des locales demandées par l’application, dans l’ordre de préférence.

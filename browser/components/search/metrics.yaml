@@ -136,6 +136,8 @@ serp:
     type: event
     description: >
       Recorded when a search engine results page (SERP) is shown to a user.
+      The feature began rolling out to all users with Firefox 115, and was
+      permanently enabled in Firefox 119.
     bugs:
       - https://bugzilla.mozilla.org/show_bug.cgi?id=1813162
       - https://bugzilla.mozilla.org/show_bug.cgi?id=1824543
@@ -192,6 +194,12 @@ serp:
       is_private:
         description:
           Indicates if the page was loaded while in Private Browsing Mode.
+          Added in Firefox 120.
+        type: boolean
+      is_signed_in:
+        description:
+          Indicates if the page was loaded while the user is signed in to a
+          provider's account. Added in Firefox 127.
         type: boolean
 
   engagement:
@@ -203,6 +211,7 @@ serp:
       - https://bugzilla.mozilla.org/show_bug.cgi?id=1816730
       - https://bugzilla.mozilla.org/show_bug.cgi?id=1816735
       - https://bugzilla.mozilla.org/show_bug.cgi?id=1849371
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1901839
     data_reviews:
       - https://bugzilla.mozilla.org/show_bug.cgi?id=1814773
       - https://bugzilla.mozilla.org/show_bug.cgi?id=1816730
@@ -233,13 +242,18 @@ serp:
           `ad_carousel`,
           `ad_image_row`,
           `ad_link`,
+          `ad_popover`,
           `ad_sidebar`,
           `ad_sitelink`,
+          `ad_uncategorized` (added in Firefox 129),
           `cookie_banner`,
           `incontent_searchbox`,
           `non_ads_link`,
           `refined_search_buttons`,
           `shopping_tab`.
+          `ad_uncategorized` are likely the result of an engagement with an ad
+          loaded after the page was categorized for components (e.g. infinite
+          scrolling).
         type: string
 
   ad_impression:
@@ -250,9 +264,11 @@ serp:
       - https://bugzilla.mozilla.org/show_bug.cgi?id=1816728
       - https://bugzilla.mozilla.org/show_bug.cgi?id=1816729
       - https://bugzilla.mozilla.org/show_bug.cgi?id=1849371
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1909979
     data_reviews:
       - https://bugzilla.mozilla.org/show_bug.cgi?id=1816728
       - https://bugzilla.mozilla.org/show_bug.cgi?id=1849371
+      - https://phabricator.services.mozilla.com/D217999
     data_sensitivity:
       - interaction
     notification_emails:
@@ -267,12 +283,17 @@ serp:
           `ad_carousel`,
           `ad_image_row`,
           `ad_link`,
+          `ad_popover`,
           `ad_sidebar`,
           `ad_sitelink`,
           `cookie_banner`,
           `refined_search_buttons`,
           `shopping_tab`.
-          Defaults to `ad_link`.
+          Defaults to `ad_link`. `ad_popover` was added as a temporary component
+          in August 2024 as a response to clients reporting an extra hidden ad
+          and stopped being reported in telemetry with Firefox 131 as the
+          version added the ability to categorize links but not report them in
+          telemetry.
         type: string
       ads_loaded:
         description: >
@@ -340,6 +361,7 @@ serp:
       - https://bugzilla.mozilla.org/show_bug.cgi?id=1868476
       - https://bugzilla.mozilla.org/show_bug.cgi?id=1869064
       - https://bugzilla.mozilla.org/show_bug.cgi?id=1887686
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1892267
     data_reviews:
       - https://bugzilla.mozilla.org/show_bug.cgi?id=1868476
     data_sensitivity:
@@ -423,6 +445,16 @@ serp:
         description: >
           Indicates if the page is a shopping page.
         type: boolean
+      num_ads_hidden:
+        description: >
+          Number of ads hidden on the page at the time of categorizing the
+          page.
+        type: quantity
+      num_ads_loaded:
+        description: >
+          Number of ads loaded on the page at the time of categorizing the
+          page.
+        type: quantity
       num_ads_visible:
         description: >
           Number of ads visible on the page at the time of categorizing the
@@ -432,6 +464,72 @@ serp:
         description: >
           Number of ads clicked on the page.
         type: quantity
+    send_in_pings:
+      - serp-categorization
+
+  ads_blocked_count:
+    type: labeled_counter
+    description: >
+      Counts the specific type of block.
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1907097
+    data_reviews:
+      - https://phabricator.services.mozilla.com/D216208
+    notification_emails:
+      - fx-search-telemetry@mozilla.com
+      - rev-data@mozilla.com
+    expires: never
+    data_sensitivity:
+      - technical
+    labels:
+      - beyond_viewport
+      - hidden_parent
+      - hidden_child
+
+  experiment_info:
+    type: object
+    description: >
+      Whether the client is enrolled in a specified experiment and if so, which
+      branch the client is assigned to. The target experiment is specified in
+      the Nimbus config by creating a "targetExperiment" key and setting its
+      value to the experiment's slug (and ensuring the featureId is "search").
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1879667
+    data_reviews:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1868476
+    data_sensitivity:
+      - technical
+    notification_emails:
+      - fx-search-telemetry@mozilla.com
+      - rev-data@mozilla.com
+    expires: never
+    structure:
+      type: object
+      properties:
+        slug:
+          type: string
+        branch:
+          type: string
+    send_in_pings:
+      - serp-categorization
+
+  categorization_no_map_found:
+    type: counter
+    description: >
+      A count incremented upon a SERP categorization event being recorded
+      without a corresponding impression event being recorded. This metric
+      effectively counts missing impressions due to issues with the
+      domain-to-categories map.
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1900094
+    data_reviews:
+      - https://phabricator.services.mozilla.com/D214868
+    data_sensitivity:
+      - technical
+    notification_emails:
+      - fx-search-telemetry@mozilla.com
+      - rev-data@mozilla.com
+    expires: never
     send_in_pings:
       - serp-categorization
 

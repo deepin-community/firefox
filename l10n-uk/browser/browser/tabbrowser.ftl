@@ -13,6 +13,18 @@ tabbrowser-menuitem-close =
 #   $title (String): the title of the current tab.
 #   $containerName (String): the name of the current container.
 tabbrowser-container-tab-title = { $title } – { $containerName }
+# This text serves as an on-screen tooltip as well as an accessible name for
+# the "X" button that is shown on the active tab or, when multiple tabs are
+# selected, to all their "X" buttons.
+# Variables:
+#   $tabCount (Number): The number of tabs that will be closed.
+tabbrowser-close-tabs-button =
+    .tooltiptext =
+        { $tabCount ->
+            [one] Закрити вкладку
+            [few] Закрити { $tabCount } вкладки
+           *[many] Закрити { $tabCount } вкладок
+        }
 # Variables:
 #   $tabCount (Number): The number of tabs that will be closed.
 tabbrowser-close-tabs-tooltip =
@@ -126,6 +138,16 @@ tabbrowser-confirm-open-multiple-tabs-checkbox = Попереджати, кол�
 tabbrowser-confirm-caretbrowsing-title = Перегляд з курсором
 tabbrowser-confirm-caretbrowsing-message = Натискання F7 вмикає та вимикає Перегляд з курсором. Це дає можливість помістити рухомий курсор на вебсторінку, дозволяючи вам вибирати блоки тексту клавіатурою. Хочете увімкнути Перегляд з курсором?
 tabbrowser-confirm-caretbrowsing-checkbox = Більше не показувати це вікно.
+
+## Confirmation dialog for closing all duplicate tabs
+
+tabbrowser-confirm-close-duplicate-tabs-title = Увага
+tabbrowser-confirm-close-duplicate-tabs-text = Ми залишимо відкритою останню активну вкладку
+tabbrowser-confirm-close-all-duplicate-tabs-title = Закрити дублікати вкладок?
+tabbrowser-confirm-close-all-duplicate-tabs-text =
+    Ми закриємо дублікати вкладок у цьому вікні. Остання активна
+    вкладка залишиться відкритою.
+tabbrowser-confirm-close-all-duplicate-tabs-button-closetabs = Закрити вкладки
 
 ##
 

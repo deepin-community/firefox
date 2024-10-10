@@ -28,7 +28,7 @@ class CacheDomain {
   static constexpr uint64_t TransformMatrix = ((uint64_t)0x1) << 10;
   static constexpr uint64_t ScrollPosition = ((uint64_t)0x1) << 11;
   static constexpr uint64_t Table = ((uint64_t)0x1) << 12;
-  static constexpr uint64_t Spelling = ((uint64_t)0x1) << 13;
+  static constexpr uint64_t TextOffsetAttributes = ((uint64_t)0x1) << 13;
   static constexpr uint64_t Viewport = ((uint64_t)0x1) << 14;
   static constexpr uint64_t ARIA = ((uint64_t)0x1) << 15;
   static constexpr uint64_t Relations = ((uint64_t)0x1) << 16;
@@ -173,6 +173,9 @@ class CacheKey {
   // bool, CacheDomain::Bounds
   // Whether the Accessible is fully clipped.
   static constexpr nsStaticAtom* IsClipped = nsGkAtoms::clip_rule;
+  // nsAtom, CacheDomain::Text
+  // As returned by Accessible::Language.
+  static constexpr nsStaticAtom* Language = nsGkAtoms::language;
   // nsString, CacheUpdateType::Initial
   static constexpr nsStaticAtom* MimeType = nsGkAtoms::headerContentType;
   // double, CacheDomain::Value
@@ -207,9 +210,10 @@ class CacheKey {
   static constexpr nsStaticAtom* RowSpan = nsGkAtoms::rowspan;
   // nsTArray<int32_t, 2>, CacheDomain::ScrollPosition
   static constexpr nsStaticAtom* ScrollPosition = nsGkAtoms::scrollPosition;
-  // nsTArray<int32_t>, CacheDomain::Spelling | CacheDomain::Text
-  // The offsets of spelling errors.
-  static constexpr nsStaticAtom* SpellingErrors = nsGkAtoms::spelling;
+  // nsTArray<TextOffsetAttribute>,
+  // CacheDomain::TextOffsetAttributes | CacheDomain::Text
+  // Text offset attributes such as spelling errors.
+  static constexpr nsStaticAtom* TextOffsetAttributes = nsGkAtoms::spelling;
   // nsString, CacheDomain::Value
   // The src URL of images.
   static constexpr nsStaticAtom* SrcURL = nsGkAtoms::src;
@@ -243,6 +247,8 @@ class CacheKey {
   static constexpr nsStaticAtom* TextValue = nsGkAtoms::aria_valuetext;
   // gfx::Matrix4x4, CacheDomain::TransformMatrix
   static constexpr nsStaticAtom* TransformMatrix = nsGkAtoms::transform;
+  // int32_t, CacheDomain::Value
+  static constexpr nsStaticAtom* ValueRegion = nsGkAtoms::valuetype;
   // nsTArray<uint64_t>, CacheDomain::Viewport
   // The list of Accessibles in the viewport used for hit testing and on-screen
   // determination.

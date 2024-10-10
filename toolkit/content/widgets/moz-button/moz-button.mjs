@@ -2,8 +2,11 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { html, ifDefined } from "../vendor/lit.all.mjs";
+import { html, ifDefined, classMap } from "../vendor/lit.all.mjs";
 import { MozLitElement } from "../lit-utils.mjs";
+
+// eslint-disable-next-line import/no-unassigned-import
+import "chrome://global/content/elements/moz-label.mjs";
 
 /**
  * A button with multiple types and two sizes.
@@ -19,8 +22,11 @@ import { MozLitElement } from "../lit-utils.mjs";
  * @property {string} titleAttribute - Internal, map title attribute to the title JS property.
  * @property {string} tooltipText - Set the title property, the title attribute will be used first.
  * @property {string} ariaLabel - The button's arial-label attribute, used in shadow DOM and therefore not as an attribute on moz-button.
+ * @property {string} iconSrc - Path to the icon that should be displayed in the button.
  * @property {string} ariaLabelAttribute - Internal, map aria-label attribute to the ariaLabel JS property.
+ * @property {string} hasVisibleLabel - Internal, tracks whether or not the button has a visible label.
  * @property {HTMLButtonElement} buttonEl - The internal button element in the shadow DOM.
+ * @property {HTMLButtonElement} slotEl - The internal slot element in the shadow DOM.
  * @slot default - The button's content, overrides label property.
  * @fires click - The click event.
  */
@@ -31,23 +37,28 @@ export default class MozButton extends MozLitElement {
   };
 
   static properties = {
-    label: { type: String, reflect: true },
+    label: { type: String, reflect: true, fluent: true },
     type: { type: String, reflect: true },
     size: { type: String, reflect: true },
     disabled: { type: Boolean, reflect: true },
     title: { type: String, state: true },
     titleAttribute: { type: String, attribute: "title", reflect: true },
-    tooltipText: { type: String },
+    tooltipText: { type: String, fluent: true },
     ariaLabelAttribute: {
       type: String,
       attribute: "aria-label",
       reflect: true,
     },
     ariaLabel: { type: String, state: true },
+    iconSrc: { type: String },
+    hasVisibleLabel: { type: Boolean, state: true },
+    accessKeyAttribute: { type: String, attribute: "accesskey", reflect: true },
+    accessKey: { type: String, state: true },
   };
 
   static queries = {
     buttonEl: "button",
+    slotEl: "slot",
   };
 
   constructor() {
@@ -55,6 +66,7 @@ export default class MozButton extends MozLitElement {
     this.type = "default";
     this.size = "default";
     this.disabled = false;
+    this.hasVisibleLabel = !!this.label;
   }
 
   willUpdate(changes) {
@@ -66,11 +78,28 @@ export default class MozButton extends MozLitElement {
       this.ariaLabel = this.ariaLabelAttribute;
       this.ariaLabelAttribute = null;
     }
+    if (changes.has("accessKeyAttribute")) {
+      this.accessKey = this.accessKeyAttribute;
+      this.accessKeyAttribute = null;
+    }
   }
 
   // Delegate clicks on host to the button element.
   click() {
     this.buttonEl.click();
+  }
+
+  checkForLabelText() {
+    this.hasVisibleLabel = this.slotEl
+      ?.assignedNodes()
+      .some(node => node.textContent.trim());
+  }
+
+  labelTemplate() {
+    if (this.label) {
+      return this.label;
+    }
+    return html`<slot @slotchange=${this.checkForLabelText}></slot>`;
   }
 
   render() {
@@ -86,8 +115,19 @@ export default class MozButton extends MozLitElement {
         title=${ifDefined(this.title || this.tooltipText)}
         aria-label=${ifDefined(this.ariaLabel)}
         part="button"
+        class=${classMap({ labelled: this.label || this.hasVisibleLabel })}
+        accesskey=${ifDefined(this.accessKey)}
       >
-        <slot>${this.label}</slot>
+        ${this.iconSrc
+          ? html`<img src=${this.iconSrc} role="presentation" />`
+          : ""}
+        <label
+          is="moz-label"
+          part="label"
+          shownaccesskey=${ifDefined(this.accessKey)}
+        >
+          ${this.labelTemplate()}
+        </label>
       </button>
     `;
   }

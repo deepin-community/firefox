@@ -4,7 +4,117 @@ title: Changelog
 permalink: /changelog/
 ---
 
-# 126.0 (In Development)
+# 131.0 (In Development)
+* **All components**
+  * ⚠️Increased `compileSdkVersion` to 35 (Android 15)
+
+# 130.0
+
+* **ui-widgets**
+  * ⚠️ **Breaking change**: `SnackbarDelegate` now supports passing whether the snackbar should be shown/styled for an error. [Bug 1906657](https://bugzilla.mozilla.org/show_bug.cgi?id=1906657)
+  * ⚠️ **Breaking change**: `SnackbarDelegate` has a new method that allows passing in Strings for the snackbar text and action, not just string resource ids. [Bug 1892762](https://bugzilla.mozilla.org/show_bug.cgi?id=1892762).
+  * `DefaultSnackbarDelegate` will allow passing in Strings for the snackbar text and action beside string resource ids. [Bug 1892762](https://bugzilla.mozilla.org/show_bug.cgi?id=1892762).
+
+* **feature-prompts**:
+  * ⚠️ **Breaking change**: `FullScreenNotification` interface is now implemented using a `FullScreenNotificationToast`. `FullScreenNotificationDialog` has been removed, see [Bug 1902996](https://bugzilla.mozilla.org/show_bug.cgi?id=1902996).
+
+* **feature-customtabs**
+  * ⚠️ **Breaking change**: `CustomTabsToolbarFeature.updateTheme` was replaced with `CustomTabsToolbarFeature.customTabsColorsConfig` to allow more control over which UI elements should be themed or not. [Bug 1904325](https://bugzilla.mozilla.org/show_bug.cgi?id=1904325)
+  * 🆕 New `CustomTabConfig.getConfiguredColorSchemeParams` and `ColorSchemeParams?.getToolbarContrastColor` to help get the colors specified in custom tabs configurations. [Bug 1904325](https://bugzilla.mozilla.org/show_bug.cgi?id=1904325)
+  * 🆕 New `BrowserMenuBuilder?.addCustomMenuItems` method for populating the current menu builder with custom tabs items specified in the custom tabs configuration. [Bug 1904325](https://bugzilla.mozilla.org/show_bug.cgi?id=1904325)
+
+* **browser-engine-gecko**
+  * Added `fingerprintingProtection` and `fingerprintingProtectionPrivateBrowsing` to settings. This allows user to toggle `privacy.fingerprintingProtection` and `privacy.fingerprintingProtection.pbmode` pref. [bug #1878911](https://bugzilla.mozilla.org/show_bug.cgi?id=1878911)
+
+* **concept-engine**
+  * Added `fingerprintingProtection` and `fingerprintingProtectionPrivateBrowsing` to settings. This allows user to toggle `privacy.fingerprintingProtection` and `privacy.fingerprintingProtection.pbmode` pref. [bug #1878911](https://bugzilla.mozilla.org/show_bug.cgi?id=1878911)
+
+* **feature-accounts**
+  * Added support for logout and account deletion web channel messages that update the `FxaAccountManager` and also dismiss any UI affordance in applications.
+
+* **support-test**
+  * ⚠️ **Breaking change**: `expectException` now takes the expected exception class as a type parameter, instead of an argument, and returns the caught exception ([Bug 1908065](https://bugzilla.mozilla.org/show_bug.cgi?id=1908065)).
+
+* **browser-storage-sync**
+  * ⚠️ **Breaking change**: The type parameters of `RemoteTabsCommandQueue.CommandSender` are now `<T, U>`, where `T : DeviceCommandOutgoing`, and `U` is the result of sending the command ([Bug 1908065](https://bugzilla.mozilla.org/show_bug.cgi?id=1908065)).
+  * ⚠️ **Breaking change**: `RemoteTabsCommandQueue.SendResult` has been renamed to `SendCloseTabsResult`, and has a new `RetryFor` variant ([Bug 1908065](https://bugzilla.mozilla.org/show_bug.cgi?id=1908065)).
+
+* **service-firefox-accounts**
+  * 🆕 `SendCommandException` is now a sealed class, with `TabsNotClosed` and `Other` variants ([Bug 1908065](https://bugzilla.mozilla.org/show_bug.cgi?id=1908065)).
+  * ⚠️ **Breaking change**: `FxaDeviceConstellation.sendCommandToDevice()` now throws an instance of `SendCommandException.TabsNotClosed` if some URLs in a `DeviceCommandOutgoing.CloseTab` couldn't be sent in the command ([Bug 1908065](https://bugzilla.mozilla.org/show_bug.cgi?id=1908065)).
+
+# 129.0
+
+* **browser-engine-gecko**
+    * Added `WebExtensionInstallException.AdminInstallOnly` to handle the `ERROR_ADMIN_INSTALL_ONLY` error returned by Gecko when the add-on can only be installed via Enterprise Policies.
+
+* **browser-icons**
+  * Increased size of single-letter fallback-favicon, see [Bug 1905393](https://bugzilla.mozilla.org/show_bug.cgi?id=1905393).
+
+* **feature-accounts-push**
+  * `CloseTabsUseCases.close()` now returns an `UndoableOperation`.
+  * 🆕 New `CloseTabsCommandReceiver` class for processing "close synced tabs" commands received from other devices.
+  * ⚠️ **Breaking change**: `CloseTabsFeature()` now takes a `CloseTabsCommandReceiver` instead of an `onTabsClosed` callback.
+
+* **lib-state**
+  * Introduce a `UiStore` that is similar to a regular `Store` but all the actions are dispatched and processed _immediately_ on the Main thread.
+    * ⚠️ **Note:** Using a `UiStore` means that long running work will block the main thread like any other long running UI work would. Ensure you are dispatching async work to an appropriate background dispatcher.
+
+# 128.0
+
+* **browser-toolbar**
+  * Added new data classes `CustomTabsToolbarButtonConfig` and `CustomTabsToolbarListeners` to `CustomTabsToolbarFeature`, see [Bug 1897811](https://bugzilla.mozilla.org/show_bug.cgi?id=1897811).
+  * Added new parameters for `showRefreshButton` and `showMenu` to `CustomTabsToolbarButtonConfig`, see [Bug 1897811](https://bugzilla.mozilla.org/show_bug.cgi?id=1897811).
+  * Added a new parameter for `refreshListener` and moved `shareListener` to `CustomTabsToolbarListeners`, see [Bug 1897811](https://bugzilla.mozilla.org/show_bug.cgi?id=1897811).
+
+* **browser-state**, **browser-engine-gecko**
+    * Added a new parameter `adjustPriority` to `onCheckForFormData`, `UpdateHasFormDataAction` and `checkForFormData` to specify whether or not to adjust session priority after checking from data. [Bug 1893846](https://bugzilla.mozilla.org/show_bug.cgi?id=1893846)
+
+* **concept-sync**
+  * 🆕 New `DeviceCommandQueue` interface for implementing a queue that holds device commands until they're ready to be sent.
+
+* **browser-storage-sync**
+  * 🆕 New `RemoteTabsCommandQueue` class for persisting outgoing remote tabs commands.
+
+* **feature-syncedtabs**
+  * 🆕 New `SyncedTabsCommands` class that sends synced tabs commands to other devices when flushed.
+  * 🆕 New `SyncedTabsCommandsFlushScheduler` class for scheduling a `SyncedTabsCommandsFlushWorker` to flush the `SyncedTabsCommands` queue.
+  * 🆕 New `GlobalSyncedTabsCommandsProvider` object for providing the `SyncedTabsCommands` queue to the `SyncedTabsCommandsFlushWorker`.
+  * ⚠️ **Breaking change**: `SyncedTabsFeature` now takes the `SyncedTabsCommands` queue as an argument, and registers an observer to refresh the synced tabs list when the queue changes.
+
+* **feature-accounts-push**
+  * ⚠️ **Breaking change**: `CloseTabsUseCases()` now takes a generic remote tabs command queue as its argument.
+  * ⚠️ **Breaking change**: `CloseTabsUseCases.close()` no longer returns a value.
+
+# 127.0
+
+* **feature-prompts** **browser-storage-sync**
+  * A new `isLoginAutofillEnabled` callback is available in `PromptFeature` and `GeckoLoginStorageDelegate` to allow clients controlling whether saved logins should be autofilled or not. Default is false
+
+* **browser-state**
+  * Added `TabSessionState.getUrl()` extension function that will return the URL that could be
+    used for various features such as bookmarks or share regardless of the mode the browser is in (e.g. Reader mode). [Bug 1885628](https://bugzilla.mozilla.org/show_bug.cgi?id=1885628).
+
+* **support-base**
+  * Added `StartForegroundService` to safely start a foreground service, see [Bug 1839039](https://bugzilla.mozilla.org/show_bug.cgi?id=1839039) for crash reference.
+  * Added `ProcessInfoProvider` and `BuildVersionProvider` to get information about the app process and the build version.
+
+* **support-utils**
+  * Added `DebouncedQueue`, a queue that manages function execution with a debounce mechanism.
+
+* **browser-engine-gecko**
+    * For screenshot capture, include exception in failure result rather than throwing.
+
+* **feature-accounts-push**
+    * 🆕 New `CloseTabsFeature` for closing tabs on this device from other devices that are signed to the same Mozilla account.
+    * 🆕 New `CloseTabsUseCase` for closing tabs on other devices from this device.
+
+* **concept-sync**
+    * 🆕 New `DeviceCapability.CLOSE_TABS` variant to indicate that a device supports closing synced tabs.
+    * 🆕 New `DeviceCommandIncoming.TabsClosed` variant to represent a "close synced tabs" command received from another device.
+    * 🆕 New `DeviceCommandOutgoing.CloseTab` variant to represent a "close synced tabs" sent to another device.
+
+# 126.0
 
 * **browser-menu**
   * Added enabled state to `BrowserMenuImageText`, see [Bug 1884769](https://bugzilla.mozilla.org/show_bug.cgi?id=1884769).

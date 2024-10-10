@@ -200,6 +200,8 @@ newtab-section-header-recent-activity = Senaste aktivitet
 #   $provider (string) - Name of the corresponding content provider.
 newtab-section-header-pocket = Rekommenderas av { $provider }
 newtab-section-header-stories = Tankeväckande berättelser
+# "picks" refers to recommended articles
+newtab-section-header-todays-picks = Dagens val för dig
 
 ## Empty Section States: These show when there are no more items in a section. Ex. When there are no more Pocket story recommendations, in the space where there would have been stories, this is shown instead.
 
@@ -233,6 +235,19 @@ newtab-pocket-pocket-firefox-family = { -pocket-brand-name } är en del av famil
 # A save to Pocket button that shows over the card thumbnail on hover.
 newtab-pocket-save = Spara
 newtab-pocket-saved = Sparad
+
+## Thumbs up and down buttons that shows over a newtab stories card thumbnail on hover.
+
+# Clicking the thumbs up button for this story will result in more stories like this one being recommended
+newtab-pocket-thumbs-up-tooltip =
+    .title = Mer sånt här
+# Clicking the thumbs down button for this story informs us that the user does not feel like the story is interesting for them
+newtab-pocket-thumbs-down-tooltip =
+    .title = Inte för mig
+newtab-toast-thumbs-up-or-down = Tack. Din feedback hjälper oss att förbättra ditt flöde.
+newtab-toast-dismiss-button =
+    .title = Ignorera
+    .aria-label = Ignorera
 
 ## Pocket content onboarding experience dialog and modal for new users seeing the Pocket section for the first time, shown as the first item in the Pocket section.
 
@@ -272,6 +287,9 @@ newtab-custom-recent-subtitle = Ett urval av senaste webbplatser och innehåll
 newtab-custom-recent-toggle =
     .label = Senaste aktivitet
     .description = Ett urval av senaste webbplatser och innehåll
+newtab-custom-weather-toggle =
+    .label = Väder
+    .description = Dagens prognos i korthet
 newtab-custom-close-button = Stäng
 newtab-custom-settings = Hantera fler inställningar
 
@@ -291,7 +309,125 @@ newtab-wallpaper-dark-panda = Röd panda dold i skogen
 newtab-wallpaper-dark-sky = Stadslandskap med en natthimmel
 newtab-wallpaper-dark-mountain = Landskap med berg
 newtab-wallpaper-dark-city = Lila stadslandskap
+
+## Solid Colors
+
+newtab-wallpaper-category-title-colors = Enfärgade färger
+newtab-wallpaper-blue = Blå
+newtab-wallpaper-light-blue = Ljusblå
+newtab-wallpaper-light-purple = Ljuslila
+newtab-wallpaper-light-green = Ljusgrön
+newtab-wallpaper-green = Grön
+newtab-wallpaper-beige = Beige
+newtab-wallpaper-yellow = Gul
+newtab-wallpaper-orange = Orange
+newtab-wallpaper-pink = Rosa
+newtab-wallpaper-light-pink = Ljusrosa
+newtab-wallpaper-red = Röd
+newtab-wallpaper-dark-blue = Mörkblå
+newtab-wallpaper-dark-purple = Mörklila
+newtab-wallpaper-dark-green = Mörkgrön
+newtab-wallpaper-brown = Brun
+
+## Abstract
+
+newtab-wallpaper-category-title-abstract = Abstrakt
+newtab-wallpaper-abstract-green = Gröna former
+newtab-wallpaper-abstract-blue = Blå former
+newtab-wallpaper-abstract-purple = Lila former
+newtab-wallpaper-abstract-orange = Orange former
+newtab-wallpaper-gradient-orange = Gradient orange och rosa
+newtab-wallpaper-abstract-blue-purple = Blå och lila former
+
+## Photographs
+
+newtab-wallpaper-category-title-photographs = Fotografier
+newtab-wallpaper-beach-at-sunrise = Strand vid soluppgång
+newtab-wallpaper-beach-at-sunset = Strand vid solnedgång
+newtab-wallpaper-storm-sky = Stormhimlen
+newtab-wallpaper-sky-with-pink-clouds = Himmel med rosa moln
+newtab-wallpaper-red-panda-yawns-in-a-tree = Röd panda gäspar i ett träd
+newtab-wallpaper-white-mountains = Vita berg
 # Variables
 #   $author_string (String) - The name of the creator of the photo.
 #   $webpage_string (String) - The name of the webpage where the photo is located.
 newtab-wallpaper-attribution = Foto av <a data-l10n-name="name-link">{ $author_string }</a> från <a data-l10n-name="webpage-link">{ $webpage_string }</a>
+newtab-wallpaper-feature-highlight-header = Prova en skvätt färg
+newtab-wallpaper-feature-highlight-content = Ge din Nya flik ett fräscht utseende med bakgrundsbilder.
+newtab-wallpaper-feature-highlight-button = Jag förstår
+# Tooltip for dismiss button
+feature-highlight-dismiss-button =
+    .title = Ignorera
+    .aria-label = Stäng popup
+feature-highlight-wallpaper =
+    .title = { -newtab-wallpaper-feature-highlight-header }
+    .aria-label = { -newtab-wallpaper-feature-highlight-content }
+
+## New Tab Weather
+
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-see-forecast =
+    .title = Se prognos i { $provider }
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-sponsored = { $provider } ∙ Sponsrad
+newtab-weather-menu-change-location = Ändra plats
+newtab-weather-change-location-search-input = Sök plats
+newtab-weather-menu-weather-display = Vädervisning
+# Display options are:
+# - Simple: Displays a current weather condition icon and the current temperature
+# - Detailed: Include simple information plus a short text summary: e.g. "Mostly cloudy"
+newtab-weather-menu-weather-display-option-simple = Enkel
+newtab-weather-menu-change-weather-display-simple = Växla till enkel vy
+newtab-weather-menu-weather-display-option-detailed = Detaljerad
+newtab-weather-menu-change-weather-display-detailed = Växla till detaljerad vy
+newtab-weather-menu-temperature-units = Temperaturenheter
+newtab-weather-menu-temperature-option-fahrenheit = Fahrenheit
+newtab-weather-menu-temperature-option-celsius = Celsius
+newtab-weather-menu-change-temperature-units-fahrenheit = Byt till Fahrenheit
+newtab-weather-menu-change-temperature-units-celsius = Byt till Celsius
+newtab-weather-menu-hide-weather = Dölj väder på ny flik
+newtab-weather-menu-learn-more = Läs mer
+# This message is shown if user is working offline
+newtab-weather-error-not-available = Väderdata är inte tillgänglig just nu.
+
+## Topic Labels
+
+newtab-topic-label-business = Företag
+newtab-topic-label-career = Karriär
+newtab-topic-label-education = Utbildning
+newtab-topic-label-arts = Underhållning
+newtab-topic-label-food = Livsmedel
+newtab-topic-label-health = Hälsa
+newtab-topic-label-hobbies = Spel
+# ”Money” = “Personal Finance”, refers to articles and stories that help readers better manage
+# and understand their personal finances – from saving money to buying a home. See the
+# “Curated by our editors“ section at the top of https://getpocket.com/explore/personal-finance for more context
+newtab-topic-label-finance = Pengar
+newtab-topic-label-society-parenting = Föräldraskap
+newtab-topic-label-government = Politik
+newtab-topic-label-education-science = Vetenskap
+# ”Life Hacks” = “Self Improvement”, refers to articles and stories aimed at helping readers improve various
+# aspects of their lives – from mental health to  productivity. See the “Curated by our editors“ section
+# at the top of https://getpocket.com/explore/self-improvement for more context.
+newtab-topic-label-society = Lifehack
+newtab-topic-label-sports = Sport
+newtab-topic-label-tech = Teknik
+newtab-topic-label-travel = Resa
+newtab-topic-label-home = Hem & trädgård
+
+## Topic Selection Modal
+
+# “fine-tune” refers to the process of making small adjustments to something to get
+# the best or desired experience or performance.
+newtab-topic-selection-title = Välj ämnen för att finjustera ditt flöde
+# “tailored” refers to process of (a tailor) making (clothes) to fit individual customers.
+# In other words, “Our expert curators prioritize stories to fit your selected interests”
+newtab-topic-selection-subtitle = Välj två eller flera ämnen. Våra expertkuratorer prioriterar nyheter anpassade efter dina intressen. Uppdatera när som helst.
+newtab-topic-selection-save-button = Spara
+newtab-topic-selection-cancel-button = Avbryt
+newtab-topic-selection-button-maybe-later = Kanske senare
+newtab-topic-selection-privacy-link = Lär dig hur vi skyddar och hanterar data
+newtab-topic-selection-button-update-interests = Uppdatera dina intressen
+newtab-topic-selection-button-pick-interests = Välj dina intressen

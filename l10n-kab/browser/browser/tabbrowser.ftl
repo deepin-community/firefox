@@ -13,6 +13,17 @@ tabbrowser-menuitem-close =
 #   $title (String): the title of the current tab.
 #   $containerName (String): the name of the current container.
 tabbrowser-container-tab-title = { $title } - { $containerName }
+# This text serves as an on-screen tooltip as well as an accessible name for
+# the "X" button that is shown on the active tab or, when multiple tabs are
+# selected, to all their "X" buttons.
+# Variables:
+#   $tabCount (Number): The number of tabs that will be closed.
+tabbrowser-close-tabs-button =
+    .tooltiptext =
+        { $tabCount ->
+            [one] Mdel Iccer
+           *[other] Mdel { $tabCount } iccaren
+        }
 # Variables:
 #   $tabCount (Number): The number of tabs that will be closed.
 tabbrowser-close-tabs-tooltip =
@@ -110,6 +121,12 @@ tabbrowser-confirm-open-multiple-tabs-checkbox = Lɣu-yid ticki ẓẓay { -bran
 tabbrowser-confirm-caretbrowsing-title = Tunigin s teḥnaccaṭ
 tabbrowser-confirm-caretbrowsing-message = Asiti ɣef F7 ad irmed neɣ ad isens tunigin s teḥnaccat. Tamahilt-a ad tsers taḥnaccaṭ i ileḥḥun  deg yisebtar n web, ayen ara ak-yeǧǧen ad tferneḍ aḍris s unasiw. Tebɣiḍ ad tremdeḍ tunigin s teḥnaccaṭ?
 tabbrowser-confirm-caretbrowsing-checkbox = Ur iy-id-skan ara akka d asawen tanaka-yagi n udiwenni.
+
+## Confirmation dialog for closing all duplicate tabs
+
+tabbrowser-confirm-close-duplicate-tabs-title = Ḥader
+tabbrowser-confirm-close-all-duplicate-tabs-title = Mdel accaren i d-yettεawden?
+tabbrowser-confirm-close-all-duplicate-tabs-button-closetabs = Mdel accaren
 
 ##
 

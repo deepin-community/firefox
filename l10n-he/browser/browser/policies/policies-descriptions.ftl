@@ -84,6 +84,8 @@ policy-Handlers = קביעת תצורה של מטפלים ביישומי ברי�
 policy-HardwareAcceleration = כיבוי האצת חומרה אם מוגדר כ־false.
 # “lock” means that the user won’t be able to change this setting
 policy-Homepage = הגדרה ונעילה כרשות של דף הבית.
+policy-HttpAllowlist = כתובות שלא ישודרגו ל־HTTPS.
+policy-HttpsOnlyMode = לאפשר הפעלה של מצב HTTPS בלבד
 policy-InstallAddonsPermission = לאפשר לאתרים מסוימים להתקין תוספות.
 policy-LegacyProfiles = השבתת התכונה האוכפת פרופיל נפרד לכל התקנה
 
@@ -106,12 +108,16 @@ policy-OverrideFirstRunPage = עקיפת דף ההפעלה הראשון. נית�
 policy-OverridePostUpdatePage = שינוי כתובת הדף ״מה חדש״ המוצג לאחר עדכון. ניתן לקבוע מדיניות זו לריקה כדי להשבית את הצגת הדף לאחר עדכון.
 policy-PasswordManagerEnabled = הפעלה של שמירת ססמאות במנהל הססמאות.
 policy-PasswordManagerExceptions = למנוע מ־{ -brand-short-name } לשמור ססמאות עבור אתרים ספציפיים.
+# Post-quantum refers to cryptography that is safe from attacks by quantum
+# computers. See https://en.wikipedia.org/wiki/Post-quantum_cryptography
+policy-PostQuantumKeyAgreementEnabled = הפעלת הסכם מפתח פוסט-קוונטי עבור TLS.
 # PDF.js and PDF should not be translated
 policy-PDFjs = השבתה או הגדרת התצורה של PDF.js, מציג ה־PDF המובנה ב־{ -brand-short-name }.
 policy-Permissions2 = קביעת תצורה של הרשאות עבור מצלמה, מיקרופון, מיקום, התרעות וניגון אוטומטי.
 policy-PictureInPicture = הפעלה או השבתה של תמונה בתוך תמונה.
 policy-PopupBlocking = לאפשר לאתרים מסוימים להקפיץ חלונות כברירת מחדל.
 policy-Preferences = הגדרה ונעילת הערכים עבור חלק מההעדפות.
+policy-PrivateBrowsingModeAvailability = הגדרת הזמינות של מצב הגלישה הפרטית.
 policy-PromptForDownloadLocation = הצגת שאלה היכן לשמור קבצים בזמן הורדה.
 policy-Proxy = קביעת תצורה של הגדרות שרת מתווך.
 policy-RequestedLocales = הגדרת רשימת השפות המבוקשות עבור היישום לפי סדר העדפה.

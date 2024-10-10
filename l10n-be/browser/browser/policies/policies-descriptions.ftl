@@ -84,6 +84,8 @@ policy-Handlers = Наладзіць прадвызначаныя апрацоў
 policy-HardwareAcceleration = Калі false, адключыць апаратнае паскарэнне.
 # “lock” means that the user won’t be able to change this setting
 policy-Homepage = Усталяваць хатнюю старонку і па жаданні забараніць змяненне.
+policy-HttpAllowlist = Крыніцы, якія не будуць абноўлены да HTTPS.
+policy-HttpsOnlyMode = Дазволіць уключэнне рэжыму «Толькі HTTPS».
 policy-InstallAddonsPermission = Дазволіць пэўным вэб-сайтам усталёўваць дадаткі.
 policy-LegacyProfiles = Адключыць функцыю, якая забяспечвае асобны профіль для кожнай ўсталёўкі
 
@@ -108,12 +110,16 @@ policy-OverrideFirstRunPage = Перавызначыць старонку пер
 policy-OverridePostUpdatePage = Перавызначыць старонку "Што новага" пасля абнаўлення. Усталюйце гэту палітыку ў пустое значэнне, калі хочаце выключыць старонку пасля абнаўлення.
 policy-PasswordManagerEnabled = Уключыць захаванне пароляў у менеджары пароляў.
 policy-PasswordManagerExceptions = Не дазваляць { -brand-short-name } захоўваць паролi для пэўных сайтаў.
+# Post-quantum refers to cryptography that is safe from attacks by quantum
+# computers. See https://en.wikipedia.org/wiki/Post-quantum_cryptography
+policy-PostQuantumKeyAgreementEnabled = Уключыць постквантавае пагадненне ключоў для TLS.
 # PDF.js and PDF should not be translated
 policy-PDFjs = Адключыць або наладзіць PDF.js, убудаваны ў { -brand-short-name } праглядальнік PDF.
 policy-Permissions2 = Наладзіць дазволы для камеры, мікрафона, месцазнаходжання, абвестак і аўтапрайгравання.
 policy-PictureInPicture = Уключыць або выключыць выяву ў выяве.
 policy-PopupBlocking = Дазволіць пэўным вэб-сайтам тыпова паказваць усплыўныя вокны.
 policy-Preferences = Устанавіць і зафіксаваць значэнне для падмноства пераваг.
+policy-PrivateBrowsingModeAvailability = Наладзіць доступ да рэжыму прыватнага аглядання.
 policy-PromptForDownloadLocation = Пытаць, куды захаваць файлы, пры сцягванні.
 policy-Proxy = Наладзіць параметры проксі.
 policy-RequestedLocales = Усталяваць пералік запытаных моў для праграмы ў парадку пераважання.

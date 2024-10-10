@@ -48,7 +48,10 @@ class RemoteAccessible : public Accessible, public HyperTextAccessibleBase {
 
   virtual uint32_t ChildCount() const override { return mChildren.Length(); }
   RemoteAccessible* RemoteChildAt(uint32_t aIdx) const {
-    return mChildren.SafeElementAt(aIdx);
+    RemoteAccessible* child = mChildren.SafeElementAt(aIdx);
+    MOZ_ASSERT(!child || child->mParent == this,
+               "Child's parent should be this");
+    return child;
   }
   RemoteAccessible* RemoteFirstChild() const {
     return mChildren.Length() ? mChildren[0] : nullptr;
@@ -365,12 +368,17 @@ class RemoteAccessible : public Accessible, public HyperTextAccessibleBase {
 
   virtual void DOMNodeID(nsString& aID) const override;
 
+  virtual void DOMNodeClass(nsString& aClass) const override;
+
   virtual void ScrollToPoint(uint32_t aScrollType, int32_t aX,
                              int32_t aY) override;
 
 #if !defined(XP_WIN)
   void Announce(const nsString& aAnnouncement, uint16_t aPriority);
 #endif  // !defined(XP_WIN)
+
+  // HTMLMeterAccessible
+  int32_t ValueRegion() const;
 
   // HyperTextAccessibleBase
   virtual already_AddRefed<AccAttributes> DefaultTextAttributes() override;
@@ -403,7 +411,7 @@ class RemoteAccessible : public Accessible, public HyperTextAccessibleBase {
                    AccType aType, AccGenericType aGenericTypes,
                    uint8_t aRoleMapEntryIndex)
       : Accessible(aType, aGenericTypes, aRoleMapEntryIndex),
-        mParent(kNoParent),
+        mParent(nullptr),
         mDoc(aDoc),
         mWrapper(0),
         mID(aID),
@@ -413,7 +421,7 @@ class RemoteAccessible : public Accessible, public HyperTextAccessibleBase {
   }
 
   explicit RemoteAccessible(DocAccessibleParent* aThisAsDoc)
-      : mParent(kNoParent),
+      : mParent(nullptr),
         mDoc(aThisAsDoc),
         mWrapper(0),
         mID(0),
@@ -471,8 +479,7 @@ class RemoteAccessible : public Accessible, public HyperTextAccessibleBase {
   virtual nsTArray<int32_t>& GetCachedHyperTextOffsets() override;
 
  private:
-  uintptr_t mParent;
-  static const uintptr_t kNoParent = UINTPTR_MAX;
+  RemoteAccessible* mParent;
 
   friend DocAccessibleParent;
   friend TextLeafPoint;

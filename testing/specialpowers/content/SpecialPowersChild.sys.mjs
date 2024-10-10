@@ -75,7 +75,6 @@ SPConsoleListener.prototype = {
       errorMessage: null,
       cssSelectors: null,
       sourceName: null,
-      sourceLine: null,
       lineNumber: null,
       columnNumber: null,
       category: null,
@@ -88,7 +87,6 @@ SPConsoleListener.prototype = {
       m.errorMessage = msg.errorMessage;
       m.cssSelectors = msg.cssSelectors;
       m.sourceName = msg.sourceName;
-      m.sourceLine = msg.sourceLine;
       m.lineNumber = msg.lineNumber;
       m.columnNumber = msg.columnNumber;
       m.category = msg.category;
@@ -1136,15 +1134,6 @@ export class SpecialPowersChild extends JSWindowActorChild {
     return Cc["@mozilla.org/satchel/form-fill-controller;1"].getService(
       Ci.nsIFormFillController
     );
-  }
-  attachFormFillControllerTo(window) {
-    this.getFormFillController().attachPopupElementToDocument(
-      window.document,
-      this._getAutoCompletePopup(window)
-    );
-  }
-  detachFormFillControllerFrom(window) {
-    this.getFormFillController().detachFromDocument(window.document);
   }
   isBackButtonEnabled(window) {
     return !this._getTopChromeWindow(window)

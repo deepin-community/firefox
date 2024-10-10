@@ -50,10 +50,8 @@ void ensure_have_alpha(PackedFrame* frame) {
       /*endianness=*/JXL_NATIVE_ENDIAN,
       /*align=*/0,
   };
-  JXL_ASSIGN_OR_DIE(PackedImage image,
-                    PackedImage::Create(frame->color.xsize, frame->color.ysize,
-                                        alpha_format));
-  frame->extra_channels.emplace_back(std::move(image));
+  frame->extra_channels.emplace_back(frame->color.xsize, frame->color.ysize,
+                                     alpha_format);
   // We need to set opaque-by-default.
   std::fill_n(static_cast<uint8_t*>(frame->extra_channels[0].pixels()),
               frame->color.xsize * frame->color.ysize, 255u);
@@ -188,9 +186,7 @@ Status DecodeImageGIF(Span<const uint8_t> bytes, const ColorHints& color_hints,
   }
   const PackedRgba background_rgba{background_color.Red, background_color.Green,
                                    background_color.Blue, 0};
-  JXL_ASSIGN_OR_RETURN(
-      PackedFrame canvas,
-      PackedFrame::Create(gif->SWidth, gif->SHeight, canvas_format));
+  PackedFrame canvas(gif->SWidth, gif->SHeight, canvas_format);
   std::fill_n(static_cast<PackedRgba*>(canvas.color.pixels()),
               canvas.color.xsize * canvas.color.ysize, background_rgba);
   Rect canvas_rect{0, 0, canvas.color.xsize, canvas.color.ysize};
@@ -234,14 +230,8 @@ Status DecodeImageGIF(Span<const uint8_t> bytes, const ColorHints& color_hints,
     }
 
     // Allocates the frame buffer.
-    {
-      JXL_ASSIGN_OR_RETURN(
-          PackedFrame frame,
-          PackedFrame::Create(total_rect.xsize(), total_rect.ysize(),
-                              packed_frame_format));
-      ppf->frames.emplace_back(std::move(frame));
-    }
-
+    ppf->frames.emplace_back(total_rect.xsize(), total_rect.ysize(),
+                             packed_frame_format);
     PackedFrame* frame = &ppf->frames.back();
 
     // We cannot tell right from the start whether there will be a
@@ -311,10 +301,8 @@ Status DecodeImageGIF(Span<const uint8_t> bytes, const ColorHints& color_hints,
     }
 
     // Update the canvas by creating a copy first.
-    JXL_ASSIGN_OR_RETURN(
-        PackedImage new_canvas_image,
-        PackedImage::Create(canvas.color.xsize, canvas.color.ysize,
-                            canvas.color.format));
+    PackedImage new_canvas_image(canvas.color.xsize, canvas.color.ysize,
+                                 canvas.color.format);
     memcpy(new_canvas_image.pixels(), canvas.color.pixels(),
            new_canvas_image.pixels_size);
     for (size_t y = 0, byte_index = 0; y < image_rect.ysize(); ++y) {

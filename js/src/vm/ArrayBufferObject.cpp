@@ -58,12 +58,9 @@
 #include "vm/NativeObject-inl.h"
 #include "vm/Realm-inl.h"  // js::AutoRealm
 
-using JS::ToInt32;
-
 using js::wasm::IndexType;
 using js::wasm::Pages;
 using mozilla::Atomic;
-using mozilla::CheckedInt;
 using mozilla::DebugOnly;
 using mozilla::Maybe;
 using mozilla::Nothing;
@@ -207,6 +204,7 @@ void* js::MapBufferMemory(wasm::IndexType t, size_t mappedSize,
   void* data = nullptr;
   if (int err = posix_memalign(&data, gc::SystemPageSize(), mappedSize)) {
     MOZ_ASSERT(err == ENOMEM);
+    (void)err;
     return nullptr;
   }
   MOZ_ASSERT(data);
@@ -349,9 +347,7 @@ static const JSPropertySpec arraybuffer_properties[] = {
 
 static const JSFunctionSpec arraybuffer_proto_functions[] = {
     JS_SELF_HOSTED_FN("slice", "ArrayBufferSlice", 2, 0),
-#ifdef NIGHTLY_BUILD
     JS_FN("resize", ArrayBufferObject::resize, 1, 0),
-#endif
     JS_FN("transfer", ArrayBufferObject::transfer, 0, 0),
     JS_FN("transferToFixedLength", ArrayBufferObject::transferToFixedLength, 0,
           0),
@@ -360,10 +356,8 @@ static const JSFunctionSpec arraybuffer_proto_functions[] = {
 
 static const JSPropertySpec arraybuffer_proto_properties[] = {
     JS_PSG("byteLength", ArrayBufferObject::byteLengthGetter, 0),
-#ifdef NIGHTLY_BUILD
     JS_PSG("maxByteLength", ArrayBufferObject::maxByteLengthGetter, 0),
     JS_PSG("resizable", ArrayBufferObject::resizableGetter, 0),
-#endif
     JS_PSG("detached", ArrayBufferObject::detachedGetter, 0),
     JS_STRING_SYM_PS(toStringTag, "ArrayBuffer", JSPROP_READONLY),
     JS_PS_END,
@@ -427,11 +421,9 @@ static bool IsArrayBuffer(HandleValue v) {
   return v.isObject() && v.toObject().is<ArrayBufferObject>();
 }
 
-#ifdef NIGHTLY_BUILD
 static bool IsResizableArrayBuffer(HandleValue v) {
   return v.isObject() && v.toObject().is<ResizableArrayBufferObject>();
 }
-#endif
 
 MOZ_ALWAYS_INLINE bool ArrayBufferObject::byteLengthGetterImpl(
     JSContext* cx, const CallArgs& args) {
@@ -523,7 +515,6 @@ static ArrayBufferObject* ArrayBufferCopyAndDetach(
                                           arrayBuffer);
 }
 
-#ifdef NIGHTLY_BUILD
 /**
  * get ArrayBuffer.prototype.maxByteLength
  *
@@ -582,7 +573,6 @@ bool ArrayBufferObject::resizableGetter(JSContext* cx, unsigned argc,
   CallArgs args = CallArgsFromVp(argc, vp);
   return CallNonGenericMethod<IsArrayBuffer, resizableGetterImpl>(cx, args);
 }
-#endif
 
 /**
  * get ArrayBuffer.prototype.detached
@@ -676,7 +666,6 @@ bool ArrayBufferObject::transferToFixedLength(JSContext* cx, unsigned argc,
                                                                         args);
 }
 
-#ifdef NIGHTLY_BUILD
 /**
  * ArrayBuffer.prototype.resize ( newLength )
  *
@@ -731,7 +720,6 @@ bool ArrayBufferObject::resize(JSContext* cx, unsigned argc, Value* vp) {
   CallArgs args = CallArgsFromVp(argc, vp);
   return CallNonGenericMethod<IsResizableArrayBuffer, resizeImpl>(cx, args);
 }
-#endif
 
 /*
  * ArrayBuffer.isView(obj); ES6 (Dec 2013 draft) 24.1.3.1
@@ -762,7 +750,6 @@ bool ArrayBufferObject::class_constructor(JSContext* cx, unsigned argc,
 
   // Step 3.
   mozilla::Maybe<uint64_t> maxByteLength;
-#ifdef NIGHTLY_BUILD
   if (JS::Prefs::experimental_arraybuffer_resizable()) {
     // Inline call to GetArrayBufferMaxByteLengthOption.
     if (args.get(1).isObject()) {
@@ -789,7 +776,6 @@ bool ArrayBufferObject::class_constructor(JSContext* cx, unsigned argc,
       }
     }
   }
-#endif
 
   // Step 4 (Inlined 25.1.3.1 AllocateArrayBuffer).
   // 25.1.3.1, step 4 (Inlined 10.1.13 OrdinaryCreateFromConstructor, step 2).
@@ -842,6 +828,8 @@ static ArrayBufferContents AllocateUninitializedArrayBufferContents(
     p = static_cast<uint8_t*>(cx->runtime()->onOutOfMemoryCanGC(
         js::AllocFunction::Malloc, js::ArrayBufferContentsArena, nbytes));
     if (!p) {
+      MOZ_DIAGNOSTIC_ASSERT(!cx->brittleMode,
+                            "OOM in AllocateUninitializedArrayBufferContents");
       ReportOutOfMemory(cx);
     }
   }
@@ -913,6 +901,7 @@ void ArrayBufferObject::detach(JSContext* cx,
   auto& innerViews = ObjectRealm::get(buffer).innerViews.get();
   if (InnerViewTable::ViewVector* views =
           innerViews.maybeViewsUnbarriered(buffer)) {
+    AutoTouchingGrayThings tgt;
     for (size_t i = 0; i < views->length(); i++) {
       JSObject* view = (*views)[i];
       view->as<ArrayBufferViewObject>().notifyBufferDetached();
@@ -962,6 +951,7 @@ void ResizableArrayBufferObject::resize(size_t newByteLength) {
   auto& innerViews = ObjectRealm::get(this).innerViews.get();
   if (InnerViewTable::ViewVector* views =
           innerViews.maybeViewsUnbarriered(this)) {
+    AutoTouchingGrayThings tgt;
     for (auto& view : *views) {
       view->notifyBufferResized();
     }
@@ -1672,7 +1662,7 @@ ArrayBufferObject* ArrayBufferObject::wasmMovingGrowToPages(
     return nullptr;
   }
   MOZ_ASSERT(newPages <= wasm::MaxMemoryPages(t) &&
-             newPages.byteLength() < ArrayBufferObject::ByteLengthLimit);
+             newPages.byteLength() <= ArrayBufferObject::ByteLengthLimit);
 
   // We have checked against the clamped maximum and so we know we can convert
   // to byte lengths now.
@@ -1752,6 +1742,7 @@ static ArrayBufferType* NewArrayBufferObject(JSContext* cx, HandleObject proto_,
   if (!proto) {
     proto = GlobalObject::getOrCreatePrototype(cx, JSProto_ArrayBuffer);
     if (!proto) {
+      MOZ_DIAGNOSTIC_ASSERT(!cx->brittleMode, "creating ArrayBuffer proto");
       return nullptr;
     }
   }
@@ -1769,6 +1760,7 @@ static ArrayBufferType* NewArrayBufferObject(JSContext* cx, HandleObject proto_,
       SharedShape::getInitialShape(cx, clasp, cx->realm(), AsTaggedProto(proto),
                                    nfixed, ObjectFlags()));
   if (!shape) {
+    MOZ_DIAGNOSTIC_ASSERT(!cx->brittleMode, "get ArrayBuffer initial shape");
     return nullptr;
   }
 
@@ -1777,7 +1769,12 @@ static ArrayBufferType* NewArrayBufferObject(JSContext* cx, HandleObject proto_,
   MOZ_ASSERT(!CanNurseryAllocateFinalizedClass(clasp));
   constexpr gc::Heap heap = gc::Heap::Tenured;
 
-  return NativeObject::create<ArrayBufferType>(cx, allocKind, heap, shape);
+  auto* buffer =
+      NativeObject::create<ArrayBufferType>(cx, allocKind, heap, shape);
+  if (!buffer) {
+    MOZ_DIAGNOSTIC_ASSERT(!cx->brittleMode, "create NativeObject failed");
+  }
+  return buffer;
 }
 
 // Creates a new ArrayBufferObject with %ArrayBuffer.prototype% as proto and no
@@ -1888,6 +1885,15 @@ ArrayBufferObject::createUninitializedBufferAndData(
                ? AllocateUninitializedArrayBufferContents(cx, nbytes)
                : AllocateArrayBufferContents(cx, nbytes);
     if (!data) {
+      if (cx->brittleMode) {
+        if (nbytes < INT32_MAX) {
+          MOZ_DIAGNOSTIC_ASSERT(false, "ArrayBuffer allocation OOM < 2GB - 1");
+        } else {
+          MOZ_DIAGNOSTIC_ASSERT(
+              false,
+              "ArrayBuffer allocation OOM between 2GB and ByteLengthLimit");
+        }
+      }
       return {nullptr, nullptr};
     }
   }
@@ -2246,6 +2252,7 @@ ArrayBufferObject* ArrayBufferObject::createZeroed(
     JSContext* cx, size_t nbytes, HandleObject proto /* = nullptr */) {
   // 24.1.1.1, step 3 (Inlined 6.2.6.1 CreateByteDataBlock, step 2).
   if (!CheckArrayBufferTooLarge(cx, nbytes)) {
+    MOZ_DIAGNOSTIC_ASSERT(!cx->brittleMode, "buffer too large");
     return nullptr;
   }
 
@@ -2468,6 +2475,7 @@ bool ArrayBufferObject::ensureNonInline(JSContext* cx,
   if (buffer->isLengthPinned()) {
     JS_ReportErrorNumberASCII(cx, GetErrorMessage, nullptr,
                               JSMSG_ARRAYBUFFER_LENGTH_PINNED);
+    MOZ_DIAGNOSTIC_ASSERT(!cx->brittleMode, "ArrayBuffer length pinned");
     return false;
   }
 
@@ -2578,8 +2586,15 @@ size_t ArrayBufferObject::objectMoved(JSObject* obj, JSObject* old) {
   auto& dst = obj->as<ArrayBufferType>();
   const auto& src = old->as<ArrayBufferType>();
 
-  MOZ_ASSERT(
-      !obj->runtimeFromMainThread()->gc.nursery().isInside(src.dataPointer()));
+#ifdef DEBUG
+  // Check the data pointer is not inside the nursery, but take account of the
+  // fact that inline data pointers for zero length buffers can point to the end
+  // of a chunk which can abut the start of the nursery.
+  if (src.byteLength() != 0 || (uintptr_t(src.dataPointer()) & gc::ChunkMask)) {
+    Nursery& nursery = obj->runtimeFromMainThread()->gc.nursery();
+    MOZ_ASSERT(!nursery.isInside(src.dataPointer()));
+  }
+#endif
 
   // Fix up possible inline data pointer.
   if (src.hasInlineData()) {

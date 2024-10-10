@@ -12,20 +12,6 @@ about-reader-color-scheme-sepia = Sepia
     .title = Cynllun Lliw Sepia
 about-reader-color-scheme-auto = Awtomatig
     .title = Cynllun Lliw Awtomatig
-about-reader-color-theme-light = Golau
-    .title = Lliw Thema Golau
-about-reader-color-theme-dark = Tywyll
-    .title = Lliw Thema Dywyll
-about-reader-color-theme-sepia = Sepia
-    .title = Lliw Thema Sepia
-about-reader-color-theme-auto = Awto
-    .title = Lliw Thema Awto
-about-reader-color-theme-gray = Llwyd
-    .title = Lliw Thema Lwyd
-about-reader-color-theme-contrast = Cyferbyniad
-    .title = Cyferbyniad Lliw Thema
-about-reader-color-theme-custom = Lliwiau cyfaddas
-    .title = Lliwiau Thema Gyfaddas
 about-reader-color-light-theme = Golau
     .title = Thema olau
 about-reader-color-dark-theme = Tywyll
@@ -36,7 +22,7 @@ about-reader-color-auto-theme = Awtomatig
     .title = Thema awtomatig
 about-reader-color-gray-theme = Llwyd
     .title = Thema lwyd
-about-reader-color-contrast-theme = Cyferbyniol
+about-reader-color-contrast-theme = Cyferbyniad
     .title = Thema gyferbyniol
 # An estimate for how long it takes to read an article,
 # expressed as a range covering both slow and fast readers.
@@ -72,12 +58,12 @@ about-reader-toolbar-lineheightplus =
 
 about-reader-font-type-serif = Serif
 about-reader-font-type-sans-serif = Sans-serif
+about-reader-font-type-monospace = Monospace
 
 ## Reader View toolbar buttons
 
 about-reader-toolbar-close = Cau'r Golwg Darllen
 about-reader-toolbar-type-controls = Rheoli'r math
-about-reader-toolbar-color-controls = Lliwiau
 about-reader-toolbar-text-layout-controls = Testun a chynllun
 about-reader-toolbar-theme-controls = Thema
 about-reader-toolbar-savetopocket = Cadw i { -pocket-brand-name }
@@ -102,21 +88,25 @@ about-reader-custom-colors-visited-links = Dolenni wedi cael ymweliad
     .title = Golygu'r lliw
 about-reader-custom-colors-selection-highlight = Amlygwr ar gyfer darllen yn uchel
     .title = Golygu'r lliw
-about-reader-custom-colors-reset-button = Ailosod rhagosodiadau
+about-reader-reset-button = Ailosod rhagosodiadau
 
 ## Reader View improved text and layout menu
 
+about-reader-text-header = Testun
+about-reader-text-size-label = Maint testun
+about-reader-font-type-selector-label = Ffont
+about-reader-font-weight-selector-label = Pwysau ffont
+about-reader-font-weight-light = Golau
+about-reader-font-weight-regular = Arferol
+about-reader-font-weight-bold = Trwm
 about-reader-layout-header = Cynllun
-about-reader-advanced-layout-header = Uwch
-about-reader-slider-label-width-narrow = Cul
-about-reader-slider-label-width-wide = Llydan
-about-reader-slider-label-spacing-narrow = Cul
 about-reader-slider-label-spacing-standard = Safonol
 about-reader-slider-label-spacing-wide = Llydan
 about-reader-content-width-label =
     .label = Lled cynnwys
 about-reader-line-spacing-label =
     .label = Bylchu llinellau
+about-reader-advanced-layout-header = Uwch
 about-reader-character-spacing-label =
     .label = Bylchu nodau
 about-reader-word-spacing-label =

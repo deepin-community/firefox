@@ -652,6 +652,14 @@ urlbar-group-quickactions =
 #  $engine (String): the name of the search engine used to search.
 urlbar-group-recent-searches =
     .label = Klaskoù nevesañ
+# The header shown above trending results.
+# Variables:
+#  $engine (String): the name of the search engine providing the trending suggestions
+urlbar-group-trending =
+    .label = Diouzh ar c’hiz war { $engine }
+urlbar-result-menu-trending-why =
+    .label = Perak e welan kement-mañ?
+    .accesskey = P
 
 ## Reader View toolbar buttons
 
@@ -993,6 +1001,10 @@ firefox-relay-offer-legal-notice = En ur glikañ war “Implij an aliaz postel�
 popup-notification-addon-install-unsigned =
     .value = (Nann-gwiriet)
 popup-notification-xpinstall-prompt-learn-more = Gouzout hiroc’h a-zivout staliañ askouezhioù en un doare diogel
+# Note: Access key is set to P to match "Private" in the corresponding localized label.
+popup-notification-addon-privatebrowsing-checkbox =
+    .label = Lañsañ en ur prenestr prevez
+    .accesskey = p
 
 ## Pop-up warning
 
@@ -1032,3 +1044,16 @@ popup-warning-button =
 #   $popupURI (String): the URI for the pop-up window
 popup-show-popup-menuitem =
     .label = Diskouez '{ $popupURI }'
+
+## File-picker crash notification ("FilePickerCrashed.sys.mjs")
+
+
+# Button used with file-picker-crashed-save-default. Opens the folder in Windows
+# Explorer, with the saved file selected and in focus.
+#
+# The wording here should be consistent with the Windows variant of
+# `downloads-cmd-show-menuitem-2` and similar messages.
+
+file-picker-crashed-show-in-folder =
+    .label = Diskouez en teuliad
+    .accessKey = t

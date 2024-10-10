@@ -177,7 +177,7 @@ newtab-section-menu-remove-section = ਸੈਕਸ਼ਨ ਹਟਾਓ
 newtab-section-menu-collapse-section = ਸੈਕਸ਼ਨ ਨੂੰ ਸਮੇਟੋ
 newtab-section-menu-expand-section = ਸੈਕਸ਼ਨ ਦੀ ਫੈਲਾਓ
 newtab-section-menu-manage-section = ਸੈਕਸ਼ਨ ਦਾ ਬੰਦੋਬਸਤ
-newtab-section-menu-manage-webext = ਇਕਸਟੈਨਸ਼ਨਾਂ ਦਾ ਬੰਦੋਬਸਤ
+newtab-section-menu-manage-webext = ਇਕਸਟੈਨਸ਼ਨ ਦਾ ਇੰਤਜ਼ਾਮ
 newtab-section-menu-add-topsite = ਚੋਟੀ ਦੀਆਂ ਸਾਈਟਾਂ ਜੋੜੋ
 newtab-section-menu-add-search-engine = ਖੋਜ ਇੰਜਣ ਜੋੜੋ
 newtab-section-menu-move-up = ਉੱਤੇ ਭੇਜੋ
@@ -199,6 +199,8 @@ newtab-section-header-recent-activity = ਤਾਜ਼ਾ ਸਰਗਰਮੀ
 #   $provider (string) - Name of the corresponding content provider.
 newtab-section-header-pocket = { $provider } ਵਲੋਂ ਸਿਫਾਰਸ਼ੀ
 newtab-section-header-stories = ਸੋਚਣ ਲਈ ਮਜ਼ਬੂਰ ਕਰਨ ਵਾਲੇ ਲੇਖ
+# "picks" refers to recommended articles
+newtab-section-header-todays-picks = ਤੁਹਾਡੇ ਲਈ ਅੱਜ ਦੀਆਂ ਚੋਣਾਂ
 
 ## Empty Section States: These show when there are no more items in a section. Ex. When there are no more Pocket story recommendations, in the space where there would have been stories, this is shown instead.
 
@@ -232,6 +234,19 @@ newtab-pocket-pocket-firefox-family = { -pocket-brand-name } { -brand-product-na
 # A save to Pocket button that shows over the card thumbnail on hover.
 newtab-pocket-save = ਸੰਭਾਲੋ
 newtab-pocket-saved = ਸੰਭਾਲਿਆ
+
+## Thumbs up and down buttons that shows over a newtab stories card thumbnail on hover.
+
+# Clicking the thumbs up button for this story will result in more stories like this one being recommended
+newtab-pocket-thumbs-up-tooltip =
+    .title = ਇਸ ਵਰਗੇ ਹੋਰ
+# Clicking the thumbs down button for this story informs us that the user does not feel like the story is interesting for them
+newtab-pocket-thumbs-down-tooltip =
+    .title = ਮੇਰੇ ਲਈ ਨਹੀਂ
+newtab-toast-thumbs-up-or-down = ਧੰਨਵਾਦ! ਤੁਹਾਡਾ ਸੁਝਾਅ ਸਾਡੀ ਫੀਡ ਸੁਧਾਰਨ ਲਈ ਮਦਦਗਾਰ ਹੋਵੇਗਾ।
+newtab-toast-dismiss-button =
+    .title = ਖ਼ਾਰਜ ਕਰੋ
+    .aria-label = ਖ਼ਾਰਜ ਕਰੋ
 
 ## Pocket content onboarding experience dialog and modal for new users seeing the Pocket section for the first time, shown as the first item in the Pocket section.
 
@@ -271,6 +286,9 @@ newtab-custom-recent-subtitle = ਤਾਜ਼ਾ ਸਾਈਟਾਂ ਤੇ ਸਮੱ
 newtab-custom-recent-toggle =
     .label = ਤਾਜ਼ਾ ਸਰਗਰਮੀ
     .description = ਤਾਜ਼ਾ ਸਾਈਟਾਂ ਤੇ ਸਮੱਗਰੀ ਦੀ ਚੋਣ
+newtab-custom-weather-toggle =
+    .label = ਮੌਸਮ
+    .description = ਅੱਜ ਦੇ ਮੌਸਮ ਬਾਰੇ ਝਾਤ
 newtab-custom-close-button = ਬੰਦ ਕਰੋ
 newtab-custom-settings = ਹੋਰ ਸੈਟਿੰਗਾਂ ਦਾ ਇੰਤਜ਼ਾਮ ਕਰੋ
 
@@ -290,7 +308,125 @@ newtab-wallpaper-dark-panda = ਜੰਗਲ ਵਿੱਚ ਲੁਕਿਆ ਫਿ�
 newtab-wallpaper-dark-sky = ਨੀਲੇ ਅੰਬਰ ਨਾਲ ਸ਼ਹਿਰ ਦਾ ਦ੍ਰਿਸ਼
 newtab-wallpaper-dark-mountain = ਲੈਂਡਸਕੇਪ ਪਹਾੜ
 newtab-wallpaper-dark-city = ਜਾਮਨੀ ਸ਼ਹਿਰੀ ਦ੍ਰਿਸ਼
+
+## Solid Colors
+
+newtab-wallpaper-category-title-colors = ਇਕਸਾਰ ਰੰਗ
+newtab-wallpaper-blue = ਨੀਲਾ
+newtab-wallpaper-light-blue = ਹਲਕਾ ਨੀਲਾ
+newtab-wallpaper-light-purple = ਹਲਕਾ ਜਾਮਨੀ
+newtab-wallpaper-light-green = ਹਲਕਾ ਹਰਾ
+newtab-wallpaper-green = ਹਰਾ
+newtab-wallpaper-beige = ਬਿਸਕੁਟੀ
+newtab-wallpaper-yellow = ਪੀਲਾ
+newtab-wallpaper-orange = ਸੰਤਰੀ
+newtab-wallpaper-pink = ਗੁਲਾਬੀ
+newtab-wallpaper-light-pink = ਹਲਕਾ ਗੁਲਾਬੀ
+newtab-wallpaper-red = ਲਾਲ
+newtab-wallpaper-dark-blue = ਗੂੜ੍ਹਾ ਨੀਲਾ
+newtab-wallpaper-dark-purple = ਗੂੜ੍ਹਾ ਜਾਮਨੀ
+newtab-wallpaper-dark-green = ਗੂੜ੍ਹਾ ਹਰਾ
+newtab-wallpaper-brown = ਭੂਰਾ
+
+## Abstract
+
+newtab-wallpaper-category-title-abstract = ਸੰਖੇਪ
+newtab-wallpaper-abstract-green = ਹਰੀਆਂ ਸ਼ਕਲਾਂ
+newtab-wallpaper-abstract-blue = ਨੀਲੀਆਂ ਸ਼ਕਲਾਂ
+newtab-wallpaper-abstract-purple = ਜਾਮਨੀ ਸ਼ਕਲਾਂ
+newtab-wallpaper-abstract-orange = ਸੰਤਰੀ ਸ਼ਕਲਾਂ
+newtab-wallpaper-gradient-orange = ਗਰੇਡੀਐਂਟ ਸੰਤਰੀ ਤੇ ਗੁਲਾਬੀ
+newtab-wallpaper-abstract-blue-purple = ਨੀਲੀਆਂ ਤੇ ਜਾਮਨੀ ਸ਼ਕਲਾਂ
+
+## Photographs
+
+newtab-wallpaper-category-title-photographs = ਫ਼ੋਟੋਗਰਾਫ਼
+newtab-wallpaper-beach-at-sunrise = ਬੀਚ ਉੱਤੇ ਚੜ੍ਹਦਾ ਸੂਰਜ
+newtab-wallpaper-beach-at-sunset = ਬੀਚ ਉੱਤੇ ਡੁੱਬਦਾ ਸੂਰਜ
+newtab-wallpaper-storm-sky = ਤੂਫ਼ਾਨੀ ਅੰਬਰ
+newtab-wallpaper-sky-with-pink-clouds = ਗੁਲਾਬੀ ਬੱਦਲਾਂ ਨਾਲ ਅੰਬਰ
+newtab-wallpaper-red-panda-yawns-in-a-tree = ਲਾਲ ਪਾਂਡਾ ਰੁੱਖ ਹੇਠ ਉਬਾਸੀਆਂ ਲੈਂਦਾ ਹੋਇਆ
+newtab-wallpaper-white-mountains = ਚਿੱਟੇ ਪਹਾੜ
 # Variables
 #   $author_string (String) - The name of the creator of the photo.
 #   $webpage_string (String) - The name of the webpage where the photo is located.
 newtab-wallpaper-attribution = <a data-l10n-name="name-link">{ $author_string }</a> ਵਲੋਂ <a data-l10n-name="webpage-link">{ $webpage_string }</a> ਉੱਤੇ ਪਾਈ ਫ਼ੋਟੋ
+newtab-wallpaper-feature-highlight-header = ਰੰਗ ਪਾ ਕੇ ਵੇਖੋ
+newtab-wallpaper-feature-highlight-content = ਆਪਣੀ ਨਵੀਂ ਟੈਬ ਨੂੰ ਵਾਲਪੇਪਰ ਨਾਲ ਤਾਜ਼ਾ ਦਿੱਖ ਦਿਓ।
+newtab-wallpaper-feature-highlight-button = ਸਮਝੇ
+# Tooltip for dismiss button
+feature-highlight-dismiss-button =
+    .title = ਖ਼ਾਰਜ ਕਰੋ
+    .aria-label = ਪੌਪ-ਅੱਪ ਨੂੰ ਬੰਦ ਕਰੋ
+feature-highlight-wallpaper =
+    .title = { -newtab-wallpaper-feature-highlight-header }
+    .aria-label = { -newtab-wallpaper-feature-highlight-content }
+
+## New Tab Weather
+
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-see-forecast =
+    .title = { $provider } ਵਿੱਚ ਭਵਿੱਖਬਾਣੀ ਵੇਖੋ
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-sponsored = { $provider } ∙ ਸਪਾਂਸਰ
+newtab-weather-menu-change-location = ਟਿਕਾਣੇ ਨੂੰ ਬਦਲੋ
+newtab-weather-change-location-search-input = ਟਿਕਾਣੇ ਨੂੰ ਖੋਜੋ
+newtab-weather-menu-weather-display = ਮੌਸਮ ਦੀ ਝਲਕ
+# Display options are:
+# - Simple: Displays a current weather condition icon and the current temperature
+# - Detailed: Include simple information plus a short text summary: e.g. "Mostly cloudy"
+newtab-weather-menu-weather-display-option-simple = ਸਧਾਰਨ
+newtab-weather-menu-change-weather-display-simple = ਸਰਲ ਝਲਕ ਲਈ ਬਦਲੋ
+newtab-weather-menu-weather-display-option-detailed = ਵੇਰਵੇ ਸਮੇਤ
+newtab-weather-menu-change-weather-display-detailed = ਵੇਰਵੇ ਸਮੇਤ ਝਲਕ ਲਈ ਬਦਲੋ
+newtab-weather-menu-temperature-units = ਤਾਪਮਾਨ ਦੀ ਇਕਾਈ
+newtab-weather-menu-temperature-option-fahrenheit = ਫਾਹਰਨਹੀਟ
+newtab-weather-menu-temperature-option-celsius = ਸੈਲਸੀਅਸ
+newtab-weather-menu-change-temperature-units-fahrenheit = ਫਾਹਰਨਹੀਟ ਵਿੱਚ ਬਦਲੋ
+newtab-weather-menu-change-temperature-units-celsius = ਸੈਲਸੀਅ ਵਿੱਚ ਬਦਲੋ
+newtab-weather-menu-hide-weather = ਨਵੀਂ ਟੈਬ ਉੱਤੇ ਮੌਸਮ ਨੂੰ ਲੁਕਾਓ
+newtab-weather-menu-learn-more = ਹੋਰ ਜਾਣੋ
+# This message is shown if user is working offline
+newtab-weather-error-not-available = ਮੌਸਮ ਦਾ ਡਾਟਾ ਹਾਲੇ ਮੌਜੂਦ ਨਹੀਂ ਹੈ।
+
+## Topic Labels
+
+newtab-topic-label-business = ਵਪਾਰਕ
+newtab-topic-label-career = ਕੈਰੀਅਰ
+newtab-topic-label-education = ਸਿੱਖਿਆ
+newtab-topic-label-arts = ਮਨੋਰੰਜਨ
+newtab-topic-label-food = ਖਾਣ-ਪੀਣ
+newtab-topic-label-health = ਸਿਹਤ
+newtab-topic-label-hobbies = ਗੇਮਾਂ
+# ”Money” = “Personal Finance”, refers to articles and stories that help readers better manage
+# and understand their personal finances – from saving money to buying a home. See the
+# “Curated by our editors“ section at the top of https://getpocket.com/explore/personal-finance for more context
+newtab-topic-label-finance = ਪੈਸਾ
+newtab-topic-label-society-parenting = ਮਾਪੇ
+newtab-topic-label-government = ਰਾਜਨੀਤੀ
+newtab-topic-label-education-science = ਵਿਗਿਆਨ
+# ”Life Hacks” = “Self Improvement”, refers to articles and stories aimed at helping readers improve various
+# aspects of their lives – from mental health to  productivity. See the “Curated by our editors“ section
+# at the top of https://getpocket.com/explore/self-improvement for more context.
+newtab-topic-label-society = ਜ਼ਿੰਦਗੀ ਦੇ ਟੋਟਕੇ
+newtab-topic-label-sports = ਖੇਡਾਂ
+newtab-topic-label-tech = ਤਕਨੀਕੀ
+newtab-topic-label-travel = ਯਾਤਰਾ
+newtab-topic-label-home = ਘਰ ਤੇ ਬਗੀਚੀ
+
+## Topic Selection Modal
+
+# “fine-tune” refers to the process of making small adjustments to something to get
+# the best or desired experience or performance.
+newtab-topic-selection-title = ਆਪਣੀ ਫ਼ੀਡ ਨੂੰ ਮੁਆਫ਼ਕ ਬਣਾਉਣ ਲਈ ਵਿਸ਼ਿਆਂ ਨੂੰ ਚੁਣੋ
+# “tailored” refers to process of (a tailor) making (clothes) to fit individual customers.
+# In other words, “Our expert curators prioritize stories to fit your selected interests”
+newtab-topic-selection-subtitle = ਦੋ ਜਾਂ ਵੱਧ ਵਿਸ਼ਿਆਂ ਨੂੰ ਚੁਣੋ। ਸਾਡੇ ਮਾਹਰ ਨਿਗਰਾਨ ਤੁਹਾਡੀਆਂ ਦਿਲਚਪੀਆਂ ਮੁਤਾਬਕ ਕਹਾਣੀਆਂ ਨੂੰ ਤਰਜੀਹ ਦਿੰਦੇ ਹਨ। ਕਿਸੇ ਵੀ ਵੇਲੇ ਅੱਪਡੇਟ ਕਰੋ।
+newtab-topic-selection-save-button = ਸੰਭਾਲੋ
+newtab-topic-selection-cancel-button = ਰੱਦ ਕਰੋ
+newtab-topic-selection-button-maybe-later = ਫੇਰ ਕਦੇ
+newtab-topic-selection-privacy-link = ਜਾਣੋ ਕਿ ਅਸੀਂ ਡਾਟੇ ਨੂੰ ਕਿਵੇਂ ਸੁਰੱਖਿਅਤ ਰੱਖਦੇ ਅਤੇ ਇਸ ਦਾ ਇੰਤਜ਼ਾਮ ਕਰਦੇ ਹਾਂ
+newtab-topic-selection-button-update-interests = ਆਪਣੀਆਂ ਦਿਲਚਸਪੀਆਂ ਨੂੰ ਅੱਪਡੇਟ ਕਰੋ
+newtab-topic-selection-button-pick-interests = ਆਪਣੀਆਂ ਦਿਲਚਸਪੀਆਂ ਨੂੰ ਚੁਣੋ

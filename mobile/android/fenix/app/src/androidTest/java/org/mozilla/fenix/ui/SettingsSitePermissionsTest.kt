@@ -4,11 +4,11 @@
 
 package org.mozilla.fenix.ui
 
+import androidx.compose.ui.test.junit4.AndroidComposeTestRule
 import androidx.core.net.toUri
 import androidx.test.espresso.Espresso.pressBack
 import androidx.test.filters.SdkSuppress
 import mozilla.components.concept.engine.mediasession.MediaSession
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.mozilla.fenix.customannotations.SmokeTest
@@ -38,14 +38,16 @@ class SettingsSitePermissionsTest : TestSetup() {
     private val testPageSubstring = "https://mozilla-mobile.github.io:443"
 
     @get:Rule
-    val activityTestRule = HomeActivityTestRule(
-        isJumpBackInCFREnabled = false,
-        isPWAsPromptEnabled = false,
-        isTCPCFREnabled = false,
-        isDeleteSitePermissionsEnabled = true,
-    )
+    val activityTestRule = AndroidComposeTestRule(
+        HomeActivityTestRule(
+            isJumpBackInCFREnabled = false,
+            isPWAsPromptEnabled = false,
+            isTCPCFREnabled = false,
+            isDeleteSitePermissionsEnabled = true,
+        ),
+    ) { it.activity }
 
-    // TestRail link: https://testrail.stage.mozaws.net/index.php?/cases/view/246974
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/246974
     @Test
     fun sitePermissionsItemsTest() {
         homeScreen {
@@ -66,7 +68,7 @@ class SettingsSitePermissionsTest : TestSetup() {
         }
     }
 
-    // TestRail link: https://testrail.stage.mozaws.net/index.php?/cases/view/247680
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/247680
     // Verifies that you can go to System settings and change app's permissions from inside the app
     @SmokeTest
     @Test
@@ -106,7 +108,7 @@ class SettingsSitePermissionsTest : TestSetup() {
         }
     }
 
-    // TestRail link: https://testrail.stage.mozaws.net/index.php?/cases/view/2095125
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/2095125
     @SmokeTest
     @Test
     fun verifyAutoplayBlockAudioOnlySettingOnNotMutedVideoTest() {
@@ -124,7 +126,7 @@ class SettingsSitePermissionsTest : TestSetup() {
         navigationToolbar {
         }.enterURLAndEnterToBrowser(genericPage.url) {
             verifyPageContent(genericPage.content)
-        }.openTabDrawer {
+        }.openTabDrawer(activityTestRule) {
             closeTab()
         }
         navigationToolbar {
@@ -133,7 +135,7 @@ class SettingsSitePermissionsTest : TestSetup() {
                 verifyPageContent(videoTestPage.content)
                 clickPageObject(itemWithText("Play"))
                 assertPlaybackState(browserStore, MediaSession.PlaybackState.PLAYING)
-            } catch (e: java.lang.AssertionError) {
+            } catch (e: AssertionError) {
                 navigationToolbar {
                 }.openThreeDotMenu {
                 }.refreshPage {
@@ -145,8 +147,7 @@ class SettingsSitePermissionsTest : TestSetup() {
         }
     }
 
-    // TestRail link: https://testrail.stage.mozaws.net/index.php?/cases/view/2286807
-    @Ignore("Failing, see https://bugzilla.mozilla.org/show_bug.cgi?id=1827599")
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/2286807
     @SmokeTest
     @Test
     fun verifyAutoplayBlockAudioOnlySettingOnMutedVideoTest() {
@@ -156,14 +157,14 @@ class SettingsSitePermissionsTest : TestSetup() {
         navigationToolbar {
         }.enterURLAndEnterToBrowser(genericPage.url) {
             verifyPageContent(genericPage.content)
-        }.openTabDrawer {
+        }.openTabDrawer(activityTestRule) {
             closeTab()
         }
         navigationToolbar {
         }.enterURLAndEnterToBrowser(mutedVideoTestPage.url) {
             try {
                 verifyPageContent("Media file is playing")
-            } catch (e: java.lang.AssertionError) {
+            } catch (e: AssertionError) {
                 navigationToolbar {
                 }.openThreeDotMenu {
                 }.refreshPage {
@@ -173,7 +174,7 @@ class SettingsSitePermissionsTest : TestSetup() {
         }
     }
 
-    // TestRail link: https://testrail.stage.mozaws.net/index.php?/cases/view/2095124
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/2095124
     @Test
     fun verifyAutoplayAllowAudioVideoSettingOnNotMutedVideoTestTest() {
         val genericPage = getGenericAsset(mockWebServer, 1)
@@ -190,7 +191,7 @@ class SettingsSitePermissionsTest : TestSetup() {
         navigationToolbar {
         }.enterURLAndEnterToBrowser(genericPage.url) {
             verifyPageContent(genericPage.content)
-        }.openTabDrawer {
+        }.openTabDrawer(activityTestRule) {
             closeTab()
         }
         navigationToolbar {
@@ -198,7 +199,7 @@ class SettingsSitePermissionsTest : TestSetup() {
             try {
                 verifyPageContent(videoTestPage.content)
                 assertPlaybackState(browserStore, MediaSession.PlaybackState.PLAYING)
-            } catch (e: java.lang.AssertionError) {
+            } catch (e: AssertionError) {
                 navigationToolbar {
                 }.openThreeDotMenu {
                 }.refreshPage {
@@ -209,8 +210,7 @@ class SettingsSitePermissionsTest : TestSetup() {
         }
     }
 
-    // TestRail link: https://testrail.stage.mozaws.net/index.php?/cases/view/2286806
-    @Ignore("Failing, see https://bugzilla.mozilla.org/show_bug.cgi?id=1827599")
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/2286806
     @Test
     fun verifyAutoplayAllowAudioVideoSettingOnMutedVideoTest() {
         val mutedVideoTestPage = getMutedVideoPageAsset(mockWebServer)
@@ -227,7 +227,7 @@ class SettingsSitePermissionsTest : TestSetup() {
         }.enterURLAndEnterToBrowser(mutedVideoTestPage.url) {
             try {
                 verifyPageContent("Media file is playing")
-            } catch (e: java.lang.AssertionError) {
+            } catch (e: AssertionError) {
                 navigationToolbar {
                 }.openThreeDotMenu {
                 }.refreshPage {
@@ -237,7 +237,7 @@ class SettingsSitePermissionsTest : TestSetup() {
         }
     }
 
-    // TestRail link: https://testrail.stage.mozaws.net/index.php?/cases/view/2095126
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/2095126
     @Test
     fun verifyAutoplayBlockAudioAndVideoSettingOnNotMutedVideoTest() {
         val videoTestPage = getVideoPageAsset(mockWebServer)
@@ -256,7 +256,7 @@ class SettingsSitePermissionsTest : TestSetup() {
                 verifyPageContent(videoTestPage.content)
                 clickPageObject(itemWithText("Play"))
                 assertPlaybackState(browserStore, MediaSession.PlaybackState.PLAYING)
-            } catch (e: java.lang.AssertionError) {
+            } catch (e: AssertionError) {
                 navigationToolbar {
                 }.openThreeDotMenu {
                 }.refreshPage {
@@ -268,7 +268,7 @@ class SettingsSitePermissionsTest : TestSetup() {
         }
     }
 
-    // TestRail link: https://testrail.stage.mozaws.net/index.php?/cases/view/2286808
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/2286808
     @Test
     fun verifyAutoplayBlockAudioAndVideoSettingOnMutedVideoTest() {
         val mutedVideoTestPage = getMutedVideoPageAsset(mockWebServer)
@@ -287,7 +287,7 @@ class SettingsSitePermissionsTest : TestSetup() {
             clickPageObject(itemWithText("Play"))
             try {
                 verifyPageContent("Media file is playing")
-            } catch (e: java.lang.AssertionError) {
+            } catch (e: AssertionError) {
                 navigationToolbar {
                 }.openThreeDotMenu {
                 }.refreshPage {
@@ -298,7 +298,7 @@ class SettingsSitePermissionsTest : TestSetup() {
         }
     }
 
-    // TestRail link: https://testrail.stage.mozaws.net/index.php?/cases/view/247362
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/247362
     @Test
     fun verifyCameraPermissionSettingsTest() {
         navigationToolbar {
@@ -324,7 +324,7 @@ class SettingsSitePermissionsTest : TestSetup() {
         }
     }
 
-    // TestRail link: https://testrail.stage.mozaws.net/index.php?/cases/view/247364
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/247364
     @Test
     fun verifyMicrophonePermissionSettingsTest() {
         navigationToolbar {
@@ -350,7 +350,7 @@ class SettingsSitePermissionsTest : TestSetup() {
         }
     }
 
-    // TestRail link: https://testrail.stage.mozaws.net/index.php?/cases/view/247363
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/247363
     @Test
     fun verifyLocationPermissionSettingsTest() {
         navigationToolbar {
@@ -375,7 +375,7 @@ class SettingsSitePermissionsTest : TestSetup() {
         }
     }
 
-    // TestRail link: https://testrail.stage.mozaws.net/index.php?/cases/view/247365
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/247365
     @Test
     fun verifyNotificationsPermissionSettingsTest() {
         navigationToolbar {
@@ -400,7 +400,7 @@ class SettingsSitePermissionsTest : TestSetup() {
         }
     }
 
-    // TestRail link: https://testrail.stage.mozaws.net/index.php?/cases/view/1923415
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/1923415
     @Test
     fun verifyPersistentStoragePermissionSettingsTest() {
         navigationToolbar {
@@ -425,7 +425,7 @@ class SettingsSitePermissionsTest : TestSetup() {
         }
     }
 
-    // TestRail link: https://testrail.stage.mozaws.net/index.php?/cases/view/1923417
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/1923417
     @Test
     fun verifyDRMControlledContentPermissionSettingsTest() {
         navigationToolbar {
@@ -463,7 +463,7 @@ class SettingsSitePermissionsTest : TestSetup() {
         }
     }
 
-    // TestRail link: https://testrail.stage.mozaws.net/index.php?/cases/view/246976
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/246976
     @SmokeTest
     @Test
     fun clearAllSitePermissionsExceptionsTest() {
@@ -486,7 +486,7 @@ class SettingsSitePermissionsTest : TestSetup() {
         }
     }
 
-    // TestRail link: https://testrail.stage.mozaws.net/index.php?/cases/view/247007
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/247007
     @Test
     fun addAndClearOneWebPagePermission() {
         navigationToolbar {
@@ -509,7 +509,7 @@ class SettingsSitePermissionsTest : TestSetup() {
         }
     }
 
-    // TestRail link: https://testrail.stage.mozaws.net/index.php?/cases/view/326477
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/326477
     @Test
     fun clearIndividuallyAWebPagePermission() {
         navigationToolbar {

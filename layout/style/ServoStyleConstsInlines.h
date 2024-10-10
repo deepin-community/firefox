@@ -45,6 +45,7 @@ template struct StyleStrong<StyleLockedKeyframesRule>;
 template struct StyleStrong<StyleMediaRule>;
 template struct StyleStrong<StyleDocumentRule>;
 template struct StyleStrong<StyleNamespaceRule>;
+template struct StyleStrong<StyleMarginRule>;
 template struct StyleStrong<StyleLockedPageRule>;
 template struct StyleStrong<StylePropertyRule>;
 template struct StyleStrong<StyleSupportsRule>;
@@ -55,6 +56,7 @@ template struct StyleStrong<StyleLockedCounterStyleRule>;
 template struct StyleStrong<StyleContainerRule>;
 template struct StyleStrong<StyleScopeRule>;
 template struct StyleStrong<StyleStartingStyleRule>;
+template struct StyleStrong<StyleLockedPositionTryRule>;
 
 template <typename T>
 inline void StyleOwnedSlice<T>::Clear() {
@@ -805,6 +807,8 @@ IMPL_LENGTHPERCENTAGE_FORWARDS(LengthPercentageOrAuto)
 IMPL_LENGTHPERCENTAGE_FORWARDS(StyleSize)
 IMPL_LENGTHPERCENTAGE_FORWARDS(StyleMaxSize)
 
+#undef IMPL_LENGTHPERCENTAGE_FORWARDS
+
 template <>
 inline bool LengthOrAuto::IsLength() const {
   return IsLengthPercentage();
@@ -825,15 +829,20 @@ inline bool StyleFlexBasis::IsAuto() const {
   return IsSize() && AsSize().IsAuto();
 }
 
-template <>
-inline bool StyleSize::BehavesLikeInitialValueOnBlockAxis() const {
-  return IsAuto() || !IsLengthPercentage();
-}
+#define IMPL_BEHAVES_LIKE_SIZE_METHODS(ty_, isInitialValMethod_)       \
+  template <>                                                          \
+  inline bool ty_::BehavesLikeStretchOnInlineAxis() const {            \
+    return IsStretch() || IsMozAvailable() || IsWebkitFillAvailable(); \
+  }                                                                    \
+  template <>                                                          \
+  inline bool ty_::BehavesLikeInitialValueOnBlockAxis() const {        \
+    return isInitialValMethod_() || !IsLengthPercentage();             \
+  }
 
-template <>
-inline bool StyleMaxSize::BehavesLikeInitialValueOnBlockAxis() const {
-  return IsNone() || !IsLengthPercentage();
-}
+IMPL_BEHAVES_LIKE_SIZE_METHODS(StyleSize, IsAuto)
+IMPL_BEHAVES_LIKE_SIZE_METHODS(StyleMaxSize, IsNone)
+
+#undef IMPL_BEHAVES_LIKE_SIZE_METHODS
 
 template <>
 inline bool StyleBackgroundSize::IsInitialValue() const {

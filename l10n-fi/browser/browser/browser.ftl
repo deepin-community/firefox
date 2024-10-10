@@ -547,6 +547,10 @@ urlbar-go-button =
     .tooltiptext = Siirry osoitepalkissa olevaan osoitteeseen
 urlbar-page-action-button =
     .tooltiptext = Sivun toiminnot
+urlbar-revert-button =
+    .tooltiptext = Näytä osoite sijaintipalkissa
+urlbar-show-page-actions-button =
+    .tooltiptext = Näytä kaikki sivutoiminnot
 
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
@@ -637,6 +641,21 @@ urlbar-group-quickactions =
 #  $engine (String): the name of the search engine used to search.
 urlbar-group-recent-searches =
     .label = Viimeisimmät haut
+# The header shown above trending results.
+# Variables:
+#  $engine (String): the name of the search engine providing the trending suggestions
+urlbar-group-trending =
+    .label = Suosittuja hakukoneessa { $engine }
+# The result menu labels shown next to trending results.
+urlbar-result-menu-trending-dont-show =
+    .label = Älä näytä suositujja hakuja
+    .accesskey = Ä
+urlbar-result-menu-trending-why =
+    .label = Miksi näen tämän?
+    .accesskey = M
+# A message that replaces a result when the user dismisses all suggestions of a
+# particular type.
+urlbar-trending-dismissal-acknowledgment = Kiitos palautteestasi. Et näe enää suosittuja hakuja.
 
 ## Reader View toolbar buttons
 
@@ -987,6 +1006,10 @@ firefox-relay-offer-legal-notice = Napsauttamalla “Käytä sähköpostimaskia�
 popup-notification-addon-install-unsigned =
     .value = (Varmentamaton)
 popup-notification-xpinstall-prompt-learn-more = Lue lisää lisäosien asentamisesta turvallisesti
+# Note: Access key is set to P to match "Private" in the corresponding localized label.
+popup-notification-addon-privatebrowsing-checkbox =
+    .label = Suorita yksityisissä ikkunoissa
+    .accesskey = S
 
 ## Pop-up warning
 
@@ -1016,3 +1039,24 @@ popup-warning-button =
 #   $popupURI (String): the URI for the pop-up window
 popup-show-popup-menuitem =
     .label = Näytä ”{ $popupURI }”
+
+## File-picker crash notification ("FilePickerCrashed.sys.mjs")
+
+file-picker-failed-open = Windowsin tiedostovalintaikkunaa ei voitu avata. Tiedostoa tai kansiota ei voitu valita.
+#   $path (string): The full path to which the file will be saved (e.g., 'C:\Users\Default User\Downloads\readme.txt').
+file-picker-failed-save-somewhere = Windowsin tiedostovalintaikkunaa ei voitu avata. Tiedosto tallennetaan sijaintiin { $path }.
+file-picker-failed-save-nowhere = Windowsin tiedostovalintaikkunaa ei voitu avata. Oletuskansiota ei löytynyt; tiedostoa ei tallenneta.
+file-picker-crashed-open = Windowsin tiedostovalintaikkuna on kaatunut. Tiedostoa tai kansiota ei voitu valita.
+#   $path (string): The full path to which the file will be saved (e.g., 'C:\Users\Default User\Downloads\readme.txt').
+file-picker-crashed-save-somewhere = Windowsin tiedostovalintaikkuna on kaatunut. Tiedosto tallennetaan sijaintiin { $path }.
+file-picker-crashed-save-nowhere = Windowsin tiedostovalintaikkuna on kaatunut. Oletuskansiota ei löytynyt; tiedostoa ei tallenneta.
+
+# Button used with file-picker-crashed-save-default. Opens the folder in Windows
+# Explorer, with the saved file selected and in focus.
+#
+# The wording here should be consistent with the Windows variant of
+# `downloads-cmd-show-menuitem-2` and similar messages.
+
+file-picker-crashed-show-in-folder =
+    .label = Näytä kansiossa
+    .accessKey = K

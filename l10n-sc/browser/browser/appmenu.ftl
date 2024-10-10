@@ -77,6 +77,10 @@ appmenu-remote-tabs-turn-on-sync =
 appmenu-remote-tabs-showmore =
     .label = Ammustra prus ischedas
     .tooltiptext = Ammustra prus ischedas dae custu dispositivu
+# This is shown as the label for an element to show inactive tabs from this device.
+appmenu-remote-tabs-show-inactive-tabs =
+    .label = Ischedas inativas
+    .tooltiptext = Mustra is ischedas inativas in custu dispositivu
 # This is shown beneath the name of a device when that device has no open tabs
 appmenu-remote-tabs-notabs = Nissuna ischeda aberta
 # This is shown when Sync is configured but syncing tabs is disabled.
@@ -168,6 +172,11 @@ profiler-popup-capture-shortcut =
 # devtools/client/performance-new/shared/background.jsm.js
 # Please take care that the same values are also defined in devtools' perftools.ftl.
 
+
+# Presets and their l10n IDs are defined in the file
+# devtools/client/performance-new/shared/background.sys.mjs
+# Please take care that the same values are also defined in devtools' perftools.ftl.
+
 profiler-popup-presets-web-developer-description = Paràmetros cussigiados pro sa curretzione de faddinas de sa majoria de aplicatziones web, cun subra-càrriga (overhead) bàscia.
 profiler-popup-presets-web-developer-label =
     .label = Isvilupu web
@@ -187,6 +196,8 @@ profiler-popup-presets-power-description = Profilu pro compidare faddinas de imp
 # "Power" is used in the sense of energy (electricity used by the computer).
 profiler-popup-presets-power-label =
     .label = Energia
+profiler-popup-presets-debug-label =
+    .label = Curregi faddinas
 profiler-popup-presets-custom-label =
     .label = Personalizadu
 
@@ -257,3 +268,13 @@ appmenu-developer-tools-extensions =
     .label = Estensiones pro s'isvilupu
 appmenuitem-report-broken-site =
     .label = Sinnala unu situ chi non funtzionat
+
+## Panel for privacy and security products
+
+appmenuitem-sign-in-account = Intra in su contu tuo
+appmenuitem-monitor-title = { -monitor-brand-short-name }
+appmenuitem-monitor-description = Retzi avisos a subra de violatziones de datos
+appmenuitem-relay-title = { -relay-brand-short-name }
+appmenuitem-relay-description = Cua s'indiritzu de posta eletrònica e su nùmeru de telèfonu tuos reales
+appmenuitem-vpn-title = { -mozilla-vpn-brand-name }
+appmenuitem-vpn-description = Ampara sa faina tua in lìnia

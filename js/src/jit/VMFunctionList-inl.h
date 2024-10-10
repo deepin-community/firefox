@@ -48,6 +48,8 @@ namespace jit {
 // non-argument Values the VM wrapper should pop from the stack. This is used
 // for tail calls for Baseline ICs. This list must be sorted on the name field.
 #define VMFUNCTION_LIST(_)                                                     \
+  IF_EXPLICIT_RESOURCE_MANAGEMENT(                                             \
+      _(AddDisposableResource, js::jit::AddDisposableResource))                \
   _(AddOrUpdateSparseElementHelper, js::AddOrUpdateSparseElementHelper)        \
   _(AddSlotAndCallAddPropHook, js::AddSlotAndCallAddPropHook)                  \
   _(ArgumentsObjectCreateForInlinedIon,                                        \
@@ -126,10 +128,13 @@ namespace jit {
   _(CodePointAt, js::jit::CodePointAt)                                         \
   _(ConcatStrings, js::ConcatStrings<CanGC>)                                   \
   _(CreateAsyncFromSyncIterator, js::CreateAsyncFromSyncIterator)              \
+  _(CreateBigIntFromInt32, js::jit::CreateBigIntFromInt32)                     \
   _(CreateBigIntFromInt64, js::jit::CreateBigIntFromInt64)                     \
   _(CreateBigIntFromUint64, js::jit::CreateBigIntFromUint64)                   \
   _(CreateGenerator, js::jit::CreateGenerator)                                 \
   _(CreateGeneratorFromFrame, js::jit::CreateGeneratorFromFrame)               \
+  IF_EXPLICIT_RESOURCE_MANAGEMENT(                                             \
+      _(CreateSuppressedError, js::jit::CreateSuppressedError))                \
   _(CreateThisFromIC, js::jit::CreateThisFromIC)                               \
   _(CreateThisFromIon, js::jit::CreateThisFromIon)                             \
   _(DebugAfterYield, js::jit::DebugAfterYield)                                 \
@@ -173,6 +178,7 @@ namespace jit {
   _(DoToBoolFallback, js::jit::DoToBoolFallback)                               \
   _(DoToPropertyKeyFallback, js::jit::DoToPropertyKeyFallback)                 \
   _(DoTrialInlining, js::jit::DoTrialInlining)                                 \
+  _(DoTypeOfEqFallback, js::jit::DoTypeOfEqFallback)                           \
   _(DoTypeOfFallback, js::jit::DoTypeOfFallback)                               \
   _(DoUnaryArithFallback, js::jit::DoUnaryArithFallback, 1)                    \
   _(EnterWith, js::jit::EnterWith)                                             \
@@ -187,6 +193,7 @@ namespace jit {
   VMFUNCTION_FUZZILLI_LIST(_)                                                  \
   _(GeneratorThrowOrReturn, js::jit::GeneratorThrowOrReturn)                   \
   _(GetAndClearException, js::GetAndClearException)                            \
+  _(GetElemMaybeCached, js::jit::GetElemMaybeCached)                           \
   _(GetFirstDollarIndexRaw, js::GetFirstDollarIndexRaw)                        \
   _(GetImportOperation, js::GetImportOperation)                                \
   _(GetIntrinsicValue, js::jit::GetIntrinsicValue)                             \
@@ -195,6 +202,7 @@ namespace jit {
   _(GetNonSyntacticGlobalThis, js::GetNonSyntacticGlobalThis)                  \
   _(GetOrCreateModuleMetaObject, js::GetOrCreateModuleMetaObject)              \
   _(GetPendingExceptionStack, js::GetPendingExceptionStack)                    \
+  _(GetPropMaybeCached, js::jit::GetPropMaybeCached)                           \
   _(GetPrototypeOf, js::jit::GetPrototypeOf)                                   \
   _(GetSparseElementHelper, js::GetSparseElementHelper)                        \
   _(GlobalDeclInstantiationFromIon, js::jit::GlobalDeclInstantiationFromIon)   \
@@ -211,7 +219,6 @@ namespace jit {
   _(InterpretResume, js::jit::InterpretResume)                                 \
   _(InterruptCheck, js::jit::InterruptCheck)                                   \
   _(InvokeFunction, js::jit::InvokeFunction)                                   \
-  _(InvokeNativeFunction, js::jit::InvokeNativeFunction)                       \
   _(IonBinaryArithICUpdate, js::jit::IonBinaryArithIC::update)                 \
   _(IonBindNameICUpdate, js::jit::IonBindNameIC::update)                       \
   _(IonCheckPrivateFieldICUpdate, js::jit::IonCheckPrivateFieldIC::update)     \

@@ -89,6 +89,9 @@ shopping-show-less-button = 顯示更少
 
 shopping-settings-label =
     .label = 設定
+shopping-settings-recommendations-toggle2 =
+    .label = 顯示推薦與贊助內容
+shopping-settings-recommendations-learn-more3 = { -brand-product-name } 不會將您的個人資料與他人分享，這些建議設定不會在網路上偷偷跟蹤您。<a data-l10n-name="review-quality-url">更多資訊</a>
 shopping-settings-recommendations-toggle =
     .label = 在商品評論檢查器中顯示廣告
 shopping-settings-recommendations-learn-more2 = 您會偶而看到相關商品的廣告，我們僅會推薦評論品質可靠的商品。<a data-l10n-name="review-quality-url">了解更多資訊</a>
@@ -115,6 +118,7 @@ shopping-settings-sidebar-enabled-state = 商品評論檢查器<strong>已開啟
 shopping-adjusted-rating-label =
     .label = 調整後評分
 shopping-adjusted-rating-unreliable-reviews = 已移除不可靠的評論
+shopping-adjusted-rating-based-reliable-reviews = 根據可靠評論調整
 
 ## Strings for the review reliability component
 
@@ -133,6 +137,8 @@ shopping-analysis-explainer-learn-more2 = 了解<a data-l10n-name="review-qualit
 # websites, which will be inserted without being translated.
 #  $retailer (String) - capitalized name of the shopping website, for example, "Amazon".
 shopping-analysis-explainer-highlights-description = <strong>重點資訊</strong>是根據過去 80 天中，我們相信是可靠的 { $retailer } 評論所整理出的資訊。
+# Fallback for analysis highlights explainer if the retailer is ever unknown
+shopping-analysis-explainer-highlights-description-unknown-retailer = <strong>重點資訊</strong>是根據過去 80 天中，我們相信是可靠的評論所整理出的資訊。
 shopping-analysis-explainer-review-grading-scale-reliable = 評論可靠。我們相信此商品的評論內容很可能是來自實際客戶所留下真實而中立的評論。
 shopping-analysis-explainer-review-grading-scale-mixed = 我們相信此商品評論混和了可靠與不可靠的評論。
 shopping-analysis-explainer-review-grading-scale-unreliable = 評論不可靠。我們相信此商品的評論內容很可能是由虛假或偏頗的評論者所留下。
@@ -159,6 +165,7 @@ shopping-unanalyzed-product-analyze-button = 檢查評論品質
 
 more-to-consider-ad-label =
     .label = 可參考其他產品
+shopping-sponsored-label = 贊助項目
 ad-by-fakespot = { -fakespot-brand-name } 提供的商品廣告
 
 ## Shopping survey strings.

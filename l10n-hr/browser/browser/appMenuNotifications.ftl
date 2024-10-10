@@ -3,14 +3,14 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 appmenu-update-available2 =
-    .label = Dostupna je dopuna
+    .label = Dostupna je nova inačica
     .buttonlabel = Preuzmi
     .buttonaccesskey = P
     .secondarybuttonlabel = Odbaci
     .secondarybuttonaccesskey = O
 appmenu-update-available-message2 = Preuzmi najnoviju verziju { -brand-shorter-name(case: "gen") }.
 appmenu-update-manual2 =
-    .label = Dostupna je dopuna
+    .label = Dostupna je nova inačica
     .buttonlabel = Preuzmi
     .buttonaccesskey = P
     .secondarybuttonlabel = Odbaci
@@ -24,12 +24,12 @@ appmenu-update-unsupported2 =
     .secondarybuttonaccesskey = O
 appmenu-update-unsupported-message2 = Tvoj operacijski sustav nije kompatibilan s najnovijom verzijom preglednika { -brand-shorter-name }.
 appmenu-update-restart2 =
-    .label = Dostupna je nadogradnja
-    .buttonlabel = Nadogradi i ponovno pokreni
-    .buttonaccesskey = N
+    .label = Dostupna je nova verzija
+    .buttonlabel = Preuzmi i ponovo pokreni
+    .buttonaccesskey = P
     .secondarybuttonlabel = Odbaci
     .secondarybuttonaccesskey = d
-appmenu-update-restart-message2 = Nabavi najnoviju verziju { -brand-shorter-name(case: "gen") }. Otvorene kartice i prozori bit će vraćeni.
+appmenu-update-restart-message2 = Nabavi najnoviju verziju { -brand-shorter-name(case: "gen") }. Otvorene kartice i prozori će se obnoviti.
 appmenu-update-other-instance =
     .label = { -brand-shorter-name } ne može se automatski aktualizirati na najnoviju verziju.
     .buttonlabel = Aktualiziraj ipak { -brand-shorter-name }
@@ -37,7 +37,6 @@ appmenu-update-other-instance =
     .secondarybuttonlabel = Ne sada
     .secondarybuttonaccesskey = N
 appmenu-update-other-instance-message = Novo aktualiziranje za { -brand-shorter-name } je dostupno, ali ne može se instalirati jer je pokrenuta druga instanca { -brand-shorter-name(case: "gen") }. Potrebno ju je zatvoriti za nastavak aktualizacije ili ipak nastaviti aktualizaciju bez zatvaranja (druga instanca možda neće raditi ispravno dok nije ponovno pokrenuta).
-
 appmenu-addon-private-browsing-installed2 =
     .buttonlabel = U redu
     .buttonaccesskey = U
@@ -45,7 +44,6 @@ appmenu-addon-post-install-message3 = Upravljaj svojim dodacima i temama iz izbo
 appmenu-addon-post-install-incognito-checkbox =
     .label = Dozvoli ovom dodatku da radi u privatnom prozoru
     .accesskey = a
-
 appmenu-new-tab-controlled-changes =
     .label = Tvoja nova kartica je promijenjena.
     .buttonlabel = Zadrži promjene

@@ -129,7 +129,7 @@ urlbar-result-menu-tip-get-help =
 ## Variables:
 ##  $engineName (String): The name of the user's default search engine. e.g. "Google" or "DuckDuckGo".
 
-urlbar-search-tips-onboard = 打得更少，找到更多: 直接從網址列進行 { $engineName } 搜尋。
+urlbar-search-tips-onboard = 打得更少，找到更多：直接從網址列進行 { $engineName } 搜尋。
 urlbar-search-tips-redirect-2 = 在網址列進行搜尋，就可看見由 { $engineName } 及瀏覽紀錄提供的搜尋建議。
 # Make sure to match the name of the Search panel in settings.
 urlbar-search-tips-persist = 搜尋功能變得更簡單了，您可以直接在網址列讓搜尋變得更明確。若要改回顯示網址，請到設定當中的「搜尋」切換。
@@ -547,6 +547,10 @@ urlbar-go-button =
     .tooltiptext = 按此前往網址列中的網址
 urlbar-page-action-button =
     .tooltiptext = 頁面操作
+urlbar-revert-button =
+    .tooltiptext = 在網址列顯示網址
+urlbar-show-page-actions-button =
+    .tooltiptext = 顯示所有頁面操作
 
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
@@ -637,6 +641,21 @@ urlbar-group-quickactions =
 #  $engine (String): the name of the search engine used to search.
 urlbar-group-recent-searches =
     .label = 最近搜尋內容
+# The header shown above trending results.
+# Variables:
+#  $engine (String): the name of the search engine providing the trending suggestions
+urlbar-group-trending =
+    .label = { $engine } 上的熱門趨勢
+# The result menu labels shown next to trending results.
+urlbar-result-menu-trending-dont-show =
+    .label = 不要顯示搜尋趨勢
+    .accesskey = D
+urlbar-result-menu-trending-why =
+    .label = 為什麼我會看到這個？
+    .accesskey = W
+# A message that replaces a result when the user dismisses all suggestions of a
+# particular type.
+urlbar-trending-dismissal-acknowledgment = 感謝您的意見回饋，不再會看到熱門搜尋趨勢。
 
 ## Reader View toolbar buttons
 
@@ -985,6 +1004,10 @@ firefox-relay-offer-legal-notice = 若點擊「使用轉寄信箱」，代表您
 popup-notification-addon-install-unsigned =
     .value = （未驗證）
 popup-notification-xpinstall-prompt-learn-more = 了解如何於安裝附加元件時確保安全的更多資訊
+# Note: Access key is set to P to match "Private" in the corresponding localized label.
+popup-notification-addon-privatebrowsing-checkbox =
+    .label = 於隱私視窗中執行
+    .accesskey = P
 
 ## Pop-up warning
 
@@ -1014,3 +1037,24 @@ popup-warning-button =
 #   $popupURI (String): the URI for the pop-up window
 popup-show-popup-menuitem =
     .label = 顯示「{ $popupURI }」
+
+## File-picker crash notification ("FilePickerCrashed.sys.mjs")
+
+file-picker-failed-open = 無法開啟 Windows 檔案對話框，無法選擇任何檔案或資料夾。
+#   $path (string): The full path to which the file will be saved (e.g., 'C:\Users\Default User\Downloads\readme.txt').
+file-picker-failed-save-somewhere = 無法開啟 Windows 檔案對話框，檔案將儲存至 { $path }。
+file-picker-failed-save-nowhere = 無法開啟 Windows 檔案對話框，找不到預設資料夾，無法儲存檔案。
+file-picker-crashed-open = Windows 檔案對話框發生錯誤，無法選擇任何檔案或資料夾。
+#   $path (string): The full path to which the file will be saved (e.g., 'C:\Users\Default User\Downloads\readme.txt').
+file-picker-crashed-save-somewhere = Windows 檔案對話框發生錯誤，檔案將儲存至 { $path }。
+file-picker-crashed-save-nowhere = Windows 檔案對話框發生錯誤，找不到預設資料夾，無法儲存檔案。
+
+# Button used with file-picker-crashed-save-default. Opens the folder in Windows
+# Explorer, with the saved file selected and in focus.
+#
+# The wording here should be consistent with the Windows variant of
+# `downloads-cmd-show-menuitem-2` and similar messages.
+
+file-picker-crashed-show-in-folder =
+    .label = 於資料夾顯示
+    .accessKey = F

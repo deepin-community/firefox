@@ -45,6 +45,7 @@ from .protocol import (AccessibilityProtocolPart,
                        PrintProtocolPart,
                        DebugProtocolPart,
                        VirtualSensorProtocolPart,
+                       DevicePostureProtocolPart,
                        merge_dicts)
 
 
@@ -749,6 +750,17 @@ class MarionetteVirtualSensorProtocolPart(VirtualSensorProtocolPart):
         raise NotImplementedError("get_virtual_sensor_information not yet implemented")
 
 
+class MarionetteDevicePostureProtocolPart(DevicePostureProtocolPart):
+    def setup(self):
+        self.marionette = self.parent.marionette
+
+    def set_device_posture(self, posture):
+        raise NotImplementedError("set_device_posture not yet implemented")
+
+    def clear_device_posture(self):
+        raise NotImplementedError("clear_device_posture not yet implemented")
+
+
 class MarionetteProtocol(Protocol):
     implements = [MarionetteBaseProtocolPart,
                   MarionetteTestharnessProtocolPart,
@@ -769,7 +781,8 @@ class MarionetteProtocol(Protocol):
                   MarionettePrintProtocolPart,
                   MarionetteDebugProtocolPart,
                   MarionetteAccessibilityProtocolPart,
-                  MarionetteVirtualSensorProtocolPart]
+                  MarionetteVirtualSensorProtocolPart,
+                  MarionetteDevicePostureProtocolPart]
 
     def __init__(self, executor, browser, capabilities=None, timeout_multiplier=1, e10s=True, ccov=False):
         do_delayed_imports()
@@ -939,8 +952,8 @@ class MarionetteTestharnessExecutor(TestharnessExecutor):
         if marionette is None:
             do_delayed_imports()
 
-    def setup(self, runner):
-        super().setup(runner)
+    def setup(self, runner, protocol=None):
+        super().setup(runner, protocol)
         for extension_path in self.install_extensions:
             self.logger.info("Installing extension from %s" % extension_path)
             addons = Addons(self.protocol.marionette)
@@ -1068,8 +1081,8 @@ class MarionetteRefTestExecutor(RefTestExecutor):
         return (InternalRefTestImplementation if reftest_internal
                 else RefTestImplementation)(self)
 
-    def setup(self, runner):
-        super().setup(runner)
+    def setup(self, runner, protocol=None):
+        super().setup(runner, protocol)
         for extension_path in self.install_extensions:
             self.logger.info("Installing extension from %s" % extension_path)
             addons = Addons(self.protocol.marionette)
@@ -1322,8 +1335,8 @@ class MarionettePrintRefTestExecutor(MarionetteRefTestExecutor):
                                            debug=debug,
                                            **kwargs)
 
-    def setup(self, runner):
-        super().setup(runner)
+    def setup(self, runner, protocol=None):
+        super().setup(runner, protocol)
         if not isinstance(self.implementation, InternalRefTestImplementation):
             self.protocol.pdf_print.load_runner()
 

@@ -34,7 +34,7 @@ from collections import defaultdict
 from contextlib import closing
 from ctypes.util import find_library
 from datetime import datetime, timedelta
-from distutils import spawn
+from shutil import which
 
 import bisection
 import mozcrash
@@ -60,9 +60,11 @@ try:
     from marionette_driver.addons import Addons
     from marionette_driver.marionette import Marionette
 except ImportError as e:  # noqa
+    error = e
+
     # Defer ImportError until attempt to use Marionette
     def reraise(*args, **kwargs):
-        raise (e)  # noqa
+        raise error  # noqa
 
     Marionette = reraise
 
@@ -891,9 +893,9 @@ def findTestMediaDevices(log):
         return None
 
     # Feed it a frame of output so it has something to display
-    gst01 = spawn.find_executable("gst-launch-0.1")
-    gst010 = spawn.find_executable("gst-launch-0.10")
-    gst10 = spawn.find_executable("gst-launch-1.0")
+    gst01 = which("gst-launch-0.1")
+    gst010 = which("gst-launch-0.10")
+    gst10 = which("gst-launch-1.0")
     if gst01:
         gst = gst01
     if gst010:
@@ -1724,12 +1726,6 @@ toolbar#nav-bar {
                 subsuite(options.subsuite),
             ]
 
-            # Allow for only running tests/manifests which match this tag
-            if options.conditionedProfile:
-                if not options.test_tags:
-                    options.test_tags = []
-                options.test_tags.append("condprof")
-
             if options.test_tags:
                 filters.append(tags(options.test_tags))
 
@@ -1784,6 +1780,10 @@ toolbar#nav-bar {
             if options.runFailures:
                 filters.append(failures(options.runFailures))
                 noDefaultFilters = True
+
+            # TODO: remove this when crashreporter is fixed on mac via bug 1910777
+            if info["os"] == "mac" and info["os_version"] == "14.40":
+                info["crashreporter"] = False
 
             tests = manifest.active_tests(
                 exists=False,
@@ -2407,14 +2407,14 @@ toolbar#nav-bar {
 
         # Whitelist the _tests directory (../..) so that TESTING_JS_MODULES work
         tests_dir = os.path.dirname(os.path.dirname(SCRIPT_DIR))
-        sandbox_whitelist_paths = [tests_dir] + options.sandboxReadWhitelist
+        sandbox_allowlist_paths = [tests_dir] + options.sandboxReadWhitelist
         if platform.system() == "Linux" or platform.system() in (
             "Windows",
             "Microsoft",
         ):
             # Trailing slashes are needed to indicate directories on Linux and Windows
-            sandbox_whitelist_paths = [
-                os.path.join(p, "") for p in sandbox_whitelist_paths
+            sandbox_allowlist_paths = [
+                os.path.join(p, "") for p in sandbox_allowlist_paths
             ]
 
         if options.conditionedProfile:
@@ -2437,7 +2437,7 @@ toolbar#nav-bar {
             addons=extensions,
             locations=self.locations,
             proxy=self.proxy(options),
-            whitelistpaths=sandbox_whitelist_paths,
+            allowlistpaths=sandbox_allowlist_paths,
         )
 
         # Fix options.profilePath for legacy consumers.
@@ -2589,7 +2589,7 @@ toolbar#nav-bar {
         options.manifestFile = None
 
         if hasattr(self, "virtualDeviceIdList"):
-            pactl = spawn.find_executable("pactl")
+            pactl = which("pactl")
 
             if not pactl:
                 self.log.error("Could not find pactl on system")
@@ -3069,7 +3069,7 @@ toolbar#nav-bar {
         if not mozinfo.isLinux:
             return
 
-        pactl = spawn.find_executable("pactl")
+        pactl = which("pactl")
 
         if not pactl:
             self.log.error("Could not find pactl on system")
@@ -3883,6 +3883,32 @@ toolbar#nav-bar {
         self.log.warning("Force-terminating active process(es).")
 
         browser_pid = browser_pid or proc.pid
+
+        # Send a signal to start the profiler - if we're running on Linux or MacOS
+        if mozinfo.isLinux or mozinfo.isMac:
+            self.log.info(
+                "Attempting to start the profiler to help with diagnosing the hang."
+            )
+            self.log.info("Sending SIGUSR1 to pid %d start the profiler." % browser_pid)
+            os.kill(browser_pid, signal.SIGUSR1)
+            self.log.info("Waiting 10s to capture a profile.")
+            time.sleep(10)
+            self.log.info("Sending SIGUSR2 to pid %d stop the profiler." % browser_pid)
+            os.kill(browser_pid, signal.SIGUSR2)
+            # We trigger `killPid` further down in this function, which will
+            # stop the profiler writing to disk. As we might still be writing a
+            # profile when we run `killPid`, we might end up with a truncated
+            # profile. Instead, we give the profiler ten seconds to write a
+            # profile (which should be plenty of time!) See Bug 1906151 for more
+            # details, and Bug 1905929 for an intermediate solution that would
+            # allow this test to watch for the profile file being completed.
+            self.log.info("Wait 10s for Firefox to write the profile to disk.")
+            time.sleep(10)
+        else:
+            self.log.info(
+                "Not sending a signal to start the profiler - not on MacOS or Linux. See Bug 1823370."
+            )
+
         child_pids = self.extract_child_pids(processLog, browser_pid)
         self.log.info("Found child pids: %s" % child_pids)
 

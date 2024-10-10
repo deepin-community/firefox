@@ -24,6 +24,7 @@ namespace mozilla {
 namespace net {
 
 class Cookie;
+class CookieParser;
 
 // Inherit from CookieKey so this can be stored in nsTHashTable
 // TODO: why aren't we using nsClassHashTable<CookieKey, ArrayType>?
@@ -92,10 +93,14 @@ class CookieStorage : public nsIObserver, public nsSupportsWeakReference {
   uint32_t CountCookiesFromHost(const nsACString& aBaseDomain,
                                 uint32_t aPrivateBrowsingId);
 
+  uint32_t CountCookieBytesNotMatchingCookie(const Cookie& cookie,
+                                             const nsACString& baseDomain);
+
   void GetAll(nsTArray<RefPtr<nsICookie>>& aResult) const;
 
-  const nsTArray<RefPtr<Cookie>>* GetCookiesFromHost(
-      const nsACString& aBaseDomain, const OriginAttributes& aOriginAttributes);
+  void GetCookiesFromHost(const nsACString& aBaseDomain,
+                          const OriginAttributes& aOriginAttributes,
+                          nsTArray<RefPtr<Cookie>>& aCookies);
 
   void GetCookiesWithOriginAttributes(const OriginAttributesPattern& aPattern,
                                       const nsACString& aBaseDomain,
@@ -117,20 +122,38 @@ class CookieStorage : public nsIObserver, public nsSupportsWeakReference {
 
   void NotifyChanged(nsISupports* aSubject,
                      nsICookieNotification::Action aAction,
-                     const nsACString& aBaseDomain,
+                     const nsACString& aBaseDomain, bool aIsThirdParty = false,
                      dom::BrowsingContext* aBrowsingContext = nullptr,
                      bool aOldCookieIsSession = false);
 
-  void AddCookie(nsIConsoleReportCollector* aCRC, const nsACString& aBaseDomain,
+  void AddCookie(CookieParser* aCookieParser, const nsACString& aBaseDomain,
                  const OriginAttributes& aOriginAttributes, Cookie* aCookie,
                  int64_t aCurrentTimeInUsec, nsIURI* aHostURI,
                  const nsACString& aCookieHeader, bool aFromHttp,
-                 dom::BrowsingContext* aBrowsingContext);
+                 bool aIsThirdParty, dom::BrowsingContext* aBrowsingContext);
+
+  // return true if we finish within the byte limit
+  bool RemoveCookiesFromBackUntilUnderLimit(
+      nsTArray<CookieListIter>& aCookieListIter, Cookie* aCookie,
+      const nsACString& aBaseDomain, nsCOMPtr<nsIArray>& aPurgedList);
+
+  void RemoveOlderCookiesUntilUnderLimit(CookieEntry* aEntry, Cookie* aCookie,
+                                         const nsACString& aBaseDomain,
+                                         nsCOMPtr<nsIArray>& aPurgedList);
+
+  // prevent excessive purging by using a soft and hard limit
+  // the soft limit (aka quota) is derived directly from partitionLimitCapacity
+  // pref while the hard limit is 1.2 times the partitionLimitCapacity pref we
+  // use the hard limit to trigger purging and telemetry and when we do purge,
+  // we purge down to the soft limit (quota)
+  int32_t PartitionLimitExceededBytes(Cookie* aCookie,
+                                      const nsACString& aBaseDomain,
+                                      bool aHardMax);
 
   static void CreateOrUpdatePurgeList(nsCOMPtr<nsIArray>& aPurgedList,
                                       nsICookie* aCookie);
 
-  virtual void StaleCookies(const nsTArray<Cookie*>& aCookieList,
+  virtual void StaleCookies(const nsTArray<RefPtr<Cookie>>& aCookieList,
                             int64_t aCurrentTimeInUsec) = 0;
 
   virtual void Close() = 0;
@@ -199,10 +222,6 @@ class CookieStorage : public nsIObserver, public nsSupportsWeakReference {
   virtual already_AddRefed<nsIArray> PurgeCookies(int64_t aCurrentTimeInUsec,
                                                   uint16_t aMaxNumberOfCookies,
                                                   int64_t aCookiePurgeAge) = 0;
-
-  // This method returns true if aBaseDomain contains any colons since only
-  // IPv6 baseDomains may contain colons.
-  static bool isIPv6BaseDomain(const nsACString& aBaseDomain);
 
   // Serialize aBaseDomain e.g. apply "zero abbreveation" (::), use single
   // zeros and remove brackets to match principal base domain representation.

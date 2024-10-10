@@ -63,6 +63,7 @@
 #include "mozilla/AbstractThread.h"
 #include "mozilla/FilePreferences.h"
 #include "mozilla/IOInterposer.h"
+#include "mozilla/NeverDestroyed.h"
 #include "mozilla/ProcessType.h"
 #include "mozilla/RDDProcessImpl.h"
 #include "mozilla/ipc/UtilityProcessImpl.h"
@@ -140,6 +141,7 @@ using mozilla::ipc::ProcessChild;
 
 using mozilla::dom::ContentParent;
 using mozilla::dom::ContentProcess;
+using mozilla::dom::UniqueContentParentKeepAlive;
 
 using mozilla::gmp::GMPProcessChild;
 
@@ -190,10 +192,6 @@ void XRE_SetAndroidChildFds(JNIEnv* env, const XRE_AndroidChildFds& fds) {
   CrashReporter::SetNotificationPipeForChild(fds.mCrashFd);
 }
 #endif  // defined(MOZ_WIDGET_ANDROID)
-
-void XRE_SetProcessType(const char* aProcessTypeString) {
-  SetGeckoProcessType(aProcessTypeString);
-}
 
 #if defined(XP_WIN)
 void SetTaskbarGroupId(const nsString& aId) {
@@ -739,22 +737,25 @@ void XRE_ShutdownChildProcess() {
 }
 
 namespace {
-ContentParent* gContentParent;  // long-lived, manually refcounted
+UniqueContentParentKeepAlive& TestShellContentParent() {
+  static NeverDestroyed<UniqueContentParentKeepAlive> sContentParent;
+  return *sContentParent;
+}
+
 TestShellParent* GetOrCreateTestShellParent() {
-  if (!gContentParent) {
+  if (!TestShellContentParent()) {
     // Use a "web" child process by default.  File a bug if you don't like
     // this and you're sure you wouldn't be better off writing a "browser"
     // chrome mochitest where you can have multiple types of content
     // processes.
-    RefPtr<ContentParent> parent =
+    TestShellContentParent() =
         ContentParent::GetNewOrUsedBrowserProcess(DEFAULT_REMOTE_TYPE);
-    parent.forget(&gContentParent);
-  } else if (gContentParent->IsShuttingDown()) {
+  } else if (TestShellContentParent()->IsShuttingDown()) {
     return nullptr;
   }
-  TestShellParent* tsp = gContentParent->GetTestShellSingleton();
+  TestShellParent* tsp = TestShellContentParent()->GetTestShellSingleton();
   if (!tsp) {
-    tsp = gContentParent->CreateTestShell();
+    tsp = TestShellContentParent()->CreateTestShell();
   }
   return tsp;
 }
@@ -784,15 +785,15 @@ bool XRE_SendTestShellCommand(JSContext* aCx, JSString* aCommand,
 }
 
 bool XRE_ShutdownTestShell() {
-  if (!gContentParent) {
+  if (!TestShellContentParent()) {
     return true;
   }
   bool ret = true;
-  if (gContentParent->IsAlive()) {
-    ret = gContentParent->DestroyTestShell(
-        gContentParent->GetTestShellSingleton());
+  if (TestShellContentParent()->IsAlive()) {
+    ret = TestShellContentParent()->DestroyTestShell(
+        TestShellContentParent()->GetTestShellSingleton());
   }
-  NS_RELEASE(gContentParent);
+  TestShellContentParent().reset();
   return ret;
 }
 

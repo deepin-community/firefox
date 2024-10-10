@@ -317,7 +317,7 @@ static IsolationBehavior IsolationBehaviorForURI(nsIURI* aURI, bool aIsSubframe,
 
   // Protocols used by Thunderbird to display email messages.
   if (scheme == "imap"_ns || scheme == "mailbox"_ns || scheme == "news"_ns ||
-      scheme == "nntp"_ns || scheme == "snews"_ns) {
+      scheme == "nntp"_ns || scheme == "snews"_ns || scheme == "x-moz-ews"_ns) {
     return IsolationBehavior::Parent;
   }
 
@@ -416,6 +416,24 @@ static already_AddRefed<BasePrincipal> GetAboutReaderURLPrincipal(
     }
   }
   return nullptr;
+}
+
+/**
+ * Check the Cross-Origin-Opener-Policy of the given channel or ancestor
+ * BrowsingContext, checking if the response should be cross-origin isolated.
+ */
+static bool ShouldCrossOriginIsolate(nsIChannel* aChannel,
+                                     WindowGlobalParent* aParentWindow) {
+  nsILoadInfo::CrossOriginOpenerPolicy coop =
+      nsILoadInfo::OPENER_POLICY_UNSAFE_NONE;
+  if (aParentWindow) {
+    coop = aParentWindow->BrowsingContext()->Top()->GetOpenerPolicy();
+  } else if (nsCOMPtr<nsIHttpChannelInternal> httpChannel =
+                 do_QueryInterface(aChannel)) {
+    MOZ_ALWAYS_SUCCEEDS(httpChannel->GetCrossOriginOpenerPolicy(&coop));
+  }
+  return coop ==
+         nsILoadInfo::OPENER_POLICY_SAME_ORIGIN_EMBEDDER_POLICY_REQUIRE_CORP;
 }
 
 /**
@@ -580,6 +598,8 @@ Result<NavigationIsolationOptions, nsresult> IsolationOptionsForNavigation(
 
   NavigationIsolationOptions options;
   options.mReplaceBrowsingContext = aHasCOOPMismatch;
+  options.mShouldCrossOriginIsolate =
+      ShouldCrossOriginIsolate(aChannel, aParentWindow);
 
   // Check if this load has an explicit remote type override. This is used to
   // perform an about:blank load within a specific content process.
@@ -871,28 +891,9 @@ Result<NavigationIsolationOptions, nsresult> IsolationOptionsForNavigation(
     webProcessType = WebProcessType::WebIsolated;
   }
 
-  // Check if we should be loading in a webCOOP+COEP remote type due to our COOP
-  // status.
-  nsILoadInfo::CrossOriginOpenerPolicy coop =
-      nsILoadInfo::OPENER_POLICY_UNSAFE_NONE;
-  if (aParentWindow) {
-    coop = aTopBC->GetOpenerPolicy();
-  } else if (nsCOMPtr<nsIHttpChannelInternal> httpChannel =
-                 do_QueryInterface(aChannel)) {
-    MOZ_ALWAYS_SUCCEEDS(httpChannel->GetCrossOriginOpenerPolicy(&coop));
-  }
-  if (coop ==
-      nsILoadInfo::OPENER_POLICY_SAME_ORIGIN_EMBEDDER_POLICY_REQUIRE_CORP) {
+  // Check if we should be cross-origin isolated.
+  if (options.mShouldCrossOriginIsolate) {
     webProcessType = WebProcessType::WebCoopCoep;
-
-    // If we're changing BrowsingContext, and are going to end up within a
-    // webCOOP+COEP group, ensure we use a cross-origin isolated BCG ID.
-    if (options.mReplaceBrowsingContext) {
-      MOZ_ASSERT(!options.mSpecificGroupId,
-                 "overriding previously-specified BCG ID");
-      options.mSpecificGroupId = BrowsingContextGroup::CreateId(
-          /* aPotentiallyCrossOriginIsolated */ true);
-    }
   }
 
   switch (webProcessType) {

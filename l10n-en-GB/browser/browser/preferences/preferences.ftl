@@ -57,6 +57,10 @@ category-experimental =
 pane-experimental-subtitle = Proceed with Caution
 pane-experimental-search-results-header = { -brand-short-name } Experiments: Proceed with Caution
 pane-experimental-description2 = Changing advanced configuration settings can impact { -brand-short-name } performance or security.
+settings-pane-labs-title = { -firefoxlabs-brand-name }
+settings-category-labs =
+    .tooltiptext = { -firefoxlabs-brand-name }
+pane-experimental-description3 = Give our experimental features a try! They’re in development and evolving, which could impact how { -brand-short-name } works.
 pane-experimental-reset =
     .label = Restore Defaults
     .accesskey = R
@@ -493,7 +497,7 @@ browsing-search-on-start-typing =
     .label = Search for text when you start typing
     .accesskey = x
 browsing-picture-in-picture-toggle-enabled =
-    .label = Enable picture-in-picture video controls
+    .label = Enable Picture-in-Picture video controls
     .accesskey = E
 browsing-picture-in-picture-learn-more = Learn more
 browsing-media-control =
@@ -599,6 +603,10 @@ home-prefs-recent-activity-description = A selection of recent sites and content
 home-prefs-snippets-header =
     .label = Snippets
 home-prefs-snippets-description-new = Tips and news from { -vendor-short-name } and { -brand-product-name }
+home-prefs-weather-header =
+    .label = Weather
+home-prefs-weather-description = Today’s forecast at a glance
+home-prefs-weather-learn-more-link = Learn more
 # Variables:
 #   $num (number) - Number of rows displayed
 home-prefs-sections-rows-option =
@@ -912,6 +920,9 @@ forms-saved-passwords =
 forms-primary-pw-use =
     .label = Use a Primary Password
     .accesskey = U
+# This operation requires the user to authenticate with the operating system (device sign-in)
+forms-os-reauth =
+    .label = Require device sign in to fill and manage passwords
 forms-primary-pw-learn-more-link = Learn more
 # This string uses the former name of the Primary Password feature
 # ("Master Password" in English) so that the preferences can be found
@@ -944,6 +955,13 @@ primary-password-os-auth-dialog-message-win = To create a Primary Password, ente
 # notes are only valid for English. Please test in your locale.
 primary-password-os-auth-dialog-message-macosx = create a Primary Password
 master-password-os-auth-dialog-caption = { -brand-full-name }
+# The macOS string is preceded by the operating system with "Firefox is trying to ".
+autofill-creditcard-os-dialog-message =
+    { PLATFORM() ->
+        [macos] change the settings for payment methods
+       *[other] { -brand-short-name } is trying to change the settings for payment methods. Use your device sign in to allow this.
+    }
+autofill-creditcard-os-auth-dialog-caption = { -brand-full-name }
 
 ## Privacy section - Autofill
 
@@ -958,13 +976,8 @@ autofill-payment-methods-checkbox-submessage = Includes credit and debit cards
     .accesskey = I
 autofill-saved-payment-methods-button = Saved payment methods
     .accesskey = v
-autofill-reauth-checkbox =
-    { PLATFORM() ->
-        [macos] Require macOS authentication to fill and edit payment methods.
-        [windows] Require Windows authentication to fill and edit payment methods.
-        [linux] Require Linux authentication to fill and edit payment methods.
-       *[other] Require authentication to fill and edit payment methods.
-    }
+# This operation requires the user to authenticate with the operating system (device sign-in)
+autofill-reauth-payment-methods-checkbox = Require device sign in to fill and manage payment methods
     .accesskey = o
 
 ## Privacy Section - History
@@ -1063,7 +1076,7 @@ cookie-banner-handling-description = { -brand-short-name } automatically tries t
 
 cookie-banner-blocker-header = Cookie Banner Blocker
 cookie-banner-blocker-description = When a site asks if they can use cookies in private browsing mode, { -brand-short-name } automatically refuses for you. Only on supported sites.
-cookie-banner-learn-more = Learn More
+cookie-banner-learn-more = Learn more
 forms-handle-cookie-banners =
     .label = Reduce Cookie Banners
 cookie-banner-blocker-checkbox-label =
@@ -1102,6 +1115,9 @@ addressbar-suggestions-settings = Change preferences for search engine suggestio
 addressbar-locbar-showrecentsearches-option =
     .label = Show recent searches
     .accesskey = r
+addressbar-locbar-showtrendingsuggestions-option =
+    .label = Show trending search suggestions
+    .accesskey = t
 addressbar-quickactions-learn-more = Learn more
 
 ## Privacy Section - Content Blocking
@@ -1293,6 +1309,14 @@ privacy-segmentation-radio-off =
 privacy-segmentation-radio-on =
     .label = Show detailed information
 
+## Privacy Section - Website Advertising Preferences
+
+website-advertising-header = Web Site Advertising Preferences
+website-advertising-private-attribution =
+    .label = Allow web sites to perform privacy-preserving ad measurement
+    .accesskey = a
+website-advertising-private-attribution-description = This helps sites understand how their ads perform without collecting data about you.
+
 ## Privacy Section - Security
 ##
 ## It is important that wording follows the guidelines outlined on this page:
@@ -1336,13 +1360,20 @@ space-alert-under-5gb-message2 = <strong>{ -brand-short-name } is running out of
 
 httpsonly-header = HTTPS-Only Mode
 httpsonly-description = HTTPS provides a secure, encrypted connection between { -brand-short-name } and the web sites you visit. Most web sites support HTTPS, and if HTTPS-Only Mode is enabled, then { -brand-short-name } will upgrade all connections to HTTPS.
+httpsonly-description2 = { -brand-short-name } creates secure and encrypted connections to sites you visit. { -brand-short-name } will warn you if a connection isn’t secure when HTTPS-Only is on.
 httpsonly-learn-more = Learn more
 httpsonly-radio-enabled =
     .label = Enable HTTPS-Only Mode in all windows
+httpsonly-radio-enabled2 =
+    .label = Only use HTTPS in all windows
 httpsonly-radio-enabled-pbm =
     .label = Enable HTTPS-Only Mode in private windows only
+httpsonly-radio-enabled-pbm2 =
+    .label = Only use HTTPS in private windows
 httpsonly-radio-disabled =
     .label = Don’t enable HTTPS-Only Mode
+httpsonly-radio-disabled2 =
+    .label = Try HTTPS first, but allow connections that are not secure
 
 ## DoH Section
 

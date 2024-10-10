@@ -57,6 +57,10 @@ category-experimental =
 pane-experimental-subtitle = Z glědanim pókšacowaś
 pane-experimental-search-results-header = Eksperimenty { -brand-short-name }: pókšacujśo z glědanim
 pane-experimental-description2 = Gaž nastajenja rozšyrjoneje konfiguracije změnijośo, móžo to wugbaśe abo wěstotu { -brand-short-name } wobwliwowaś.
+settings-pane-labs-title = { -firefoxlabs-brand-name }
+settings-category-labs =
+    .tooltiptext = { -firefoxlabs-brand-name }
+pane-experimental-description3 = Wopytajśo eksperimentalne funkcije! Su we wuwiśu a změnjaju se hyšći, což se mógło na to wustatkowaś, kak { -brand-short-name } funkcioněrujo.
 pane-experimental-reset =
     .label = Standard wótnowiś
     .accesskey = S
@@ -164,7 +168,7 @@ warn-on-open-many-tabs =
     .label = Warnowaś, gaby wócynjanje někotarych rejtarikow mógło { -brand-short-name } spomałšyś
     .accesskey = k
 switch-to-new-tabs =
-    .label = Ned na wótkaz, wobraz abo medij pśešaltowaś, kótaryž jo se w nowem rejtarku wócynił
+    .label = Ned na wótkaz, wobraz abo medium pśešaltowaś, kótaryž jo se w nowem rejtariku wócynił
     .accesskey = N
 show-tabs-in-taskbar =
     .label = Rejtarikowe pśeglědy we Windowsowej nadawkowej rědce pokazaś
@@ -441,7 +445,7 @@ update-setting-write-failure-title2 = Zmólka pśi składowanju aktualizěrowań
 # The newlines between the main text and the line containing the path is
 # intentional so the path is easier to identify.
 update-setting-write-failure-message2 =
-    { -brand-short-name } jo starcył na zmólku a njejo toś tu změnu składł. Źiwajśo na to, až se změnjanje toś togo aktualizěrowańskego nastajenja pisańske pšawo za slědujucu dataju pomina. Wy abo systemowy administrator móžotej zmólku pórěźiś, gaž wužywarskej kupce połnu kontrolu nad toś teju dataju dajotej.
+    { -brand-short-name } jo starcył na zmólku a njejo toś tu změnu składł. Źiwajśo na to, až se změnjanje toś togo aktualizěrowańskego nastajenja pisańske pšawo za slědujucu dataju pomina. Wy abo systemowy administrator móžotej zmólku pórěźiś, gaž wužywaŕskej kupce połnu kontrolu nad toś teju dataju dajotej.
     
     Njedajo se do dataje pisaś: { $path }
 update-in-progress-title = Aktualizacija běžy
@@ -487,7 +491,7 @@ browsing-always-underline-links =
     .label = Wótkaze pśecej pódšmarnuś
     .accesskey = c
 browsing-use-onscreen-keyboard =
-    .label = Dotykańsku tastaturu pokazaś, jolic trěbne
+    .label = Dotykańsku tastaturu pokazaś, jolic trjebne
     .accesskey = k
 browsing-use-cursor-navigation =
     .label = Pśecej kursorowe tasty za pógibowanje na bokach wužywaś
@@ -605,6 +609,10 @@ home-prefs-recent-activity-description = Wuběrk nejnowšych sedłow a nejnowše
 home-prefs-snippets-header =
     .label = Kuski
 home-prefs-snippets-description-new = Pokazki a nowosći wót { -vendor-short-name } a { -brand-product-name }
+home-prefs-weather-header =
+    .label = Wjedro
+home-prefs-weather-description = Źinsajšna wjedrowa pśedpowěsć na jadno póglědnjenje
+home-prefs-weather-learn-more-link = Dalšne informacije
 # Variables:
 #   $num (number) - Number of rows displayed
 home-prefs-sections-rows-option =
@@ -700,7 +708,7 @@ containers-remove-button =
 ## more discrete ("signed in" no longer means "and sync is connected").
 
 sync-signedout-caption = Wzejśo swój web sobu
-sync-signedout-description2 = Synchronizěrujśo swóje cytańske znamjenja, historiju, rejtarki, gronidła, dodanki a nastajenja mjazy wšymi wašymi rědami.
+sync-signedout-description2 = Synchronizěrujśo swóje cytańske znamjenja, historiju, rejtariki, gronidła, dodanki a nastajenja mjazy wšymi wašymi rědami.
 sync-signedout-account-signin3 =
     .label = Pla Sync pśizjawiś…
     .accesskey = i
@@ -759,7 +767,7 @@ prefs-syncing-off = Synchronizacija: WUŠALTOWANA
 prefs-sync-turn-on-syncing =
     .label = Synchronizaciju zmóžniś…
     .accesskey = S
-prefs-sync-offer-setup-label2 = Synchronizěrujśo swóje cytańske znamjenja, historiju, rejtarki, gronidła, dodanki a nastajenja mjazy wšymi wašymi rědami.
+prefs-sync-offer-setup-label2 = Synchronizěrujśo swóje cytańske znamjenja, historiju, rejtariki, gronidła, dodanki a nastajenja mjazy wšymi wašymi rědami.
 prefs-sync-now =
     .labelnotsyncing = Něnto synchronizěrowaś
     .accesskeynotsyncing = N
@@ -920,6 +928,9 @@ forms-saved-passwords =
 forms-primary-pw-use =
     .label = Głowne gronidło wužywaś
     .accesskey = G
+# This operation requires the user to authenticate with the operating system (device sign-in)
+forms-os-reauth =
+    .label = Rědowe pśizjawjenje za wupołnjenje a zastojanje gronidłow pominaś
 forms-primary-pw-learn-more-link = Dalšne informacije
 # This string uses the former name of the Primary Password feature
 # ("Master Password" in English) so that the preferences can be found
@@ -952,6 +963,13 @@ primary-password-os-auth-dialog-message-win = Zapódajśo swóje pśizjawjeńske
 # notes are only valid for English. Please test in your locale.
 primary-password-os-auth-dialog-message-macosx = głowne gronidło napóraś
 master-password-os-auth-dialog-caption = { -brand-full-name }
+# The macOS string is preceded by the operating system with "Firefox is trying to ".
+autofill-creditcard-os-dialog-message =
+    { PLATFORM() ->
+        [macos] nastajenja za płaśeńske metody změniś
+       *[other] { -brand-short-name } wopytujo, nastajenja za płaśeńske metody změniś. Wužywajśo swóje rědowe pśizjawjenje, aby to dowólił.
+    }
+autofill-creditcard-os-auth-dialog-caption = { -brand-full-name }
 
 ## Privacy section - Autofill
 
@@ -966,14 +984,9 @@ autofill-payment-methods-checkbox-submessage = Zapśimujo kreditowe a debetowe k
     .accesskey = Z
 autofill-saved-payment-methods-button = Skłaźone płaśeńske metody
     .accesskey = k
-autofill-reauth-checkbox =
-    { PLATFORM() ->
-        [macos] Awtentificěrowanje macOS za wupołnjenje a wobźěłowanje płaśeńskich metodow pominaś.
-        [windows] Awtentificěrowanje Windows za wupołnjenje a wobźěłowanje płaśeńskich metodow pominaś.
-        [linux] Awtentificěrowanje Linux za wupołnjenje a wobźěłowanje płaśeńskich metodow pominaś.
-       *[other] Awtentificěrowanje za wupołnjenje a wobźěłowanje płaśeńskich metodow pominaś.
-    }
-    .accesskey = t
+# This operation requires the user to authenticate with the operating system (device sign-in)
+autofill-reauth-payment-methods-checkbox = Rědowe pśizjawjenje za wupołnjenje a zastojanje płaśeńskcih metodow pominaś
+    .accesskey = d
 
 ## Privacy Section - History
 
@@ -1110,6 +1123,9 @@ addressbar-suggestions-settings = Nastajenja za naraźenja pytnice změniś
 addressbar-locbar-showrecentsearches-option =
     .label = Nejnowše pytanja pokazaś
     .accesskey = n
+addressbar-locbar-showtrendingsuggestions-option =
+    .label = Trendowe pytańske naraźenja pokazaś
+    .accesskey = d
 addressbar-quickactions-learn-more = Dalšne informacije
 
 ## Privacy Section - Content Blocking
@@ -1290,9 +1306,9 @@ addon-recommendations-link = Dalšne informacije
 # This message is displayed above disabled data sharing options in developer builds
 # or builds with no Telemetry support available.
 collection-health-report-disabled = Datowe rozpšawjenje jo znjemóžnjone za toś tu programowu konfiguraciju
-collection-backlogged-crash-reports-with-link = { -brand-short-name } dowóliś, aby se njepósłane wowaleńske rozpšawy we wašom mjenju pósłali <a data-l10n-name="crash-reports-link">Dalšne informacije</a>
+collection-backlogged-crash-reports-with-link = { -brand-short-name } dowóliś, aby njepósłane wowaleńske rozpšawy we wašom mjenju pósłał <a data-l10n-name="crash-reports-link">Dalšne informacije</a>
     .accesskey = d
-collection-backlogged-crash-reports = { -brand-short-name } dowóliś, aby se njepósłane wowaleńske rozpšawy we wašom mjenju pósłali
+collection-backlogged-crash-reports = { -brand-short-name } dowóliś, aby njepósłane wowaleńske rozpšawy we wašom mjenju pósłał
     .accesskey = d
 privacy-segmentation-section-header = Nowe funkcije, kótarež wašo pśeglědowanje pólěpšaju
 privacy-segmentation-section-description = Gaž funkcije póbitujomy, kótarež waše daty wužywaju, aby my wam wěcej wósobinske dožywjenje bitowali:
@@ -1300,6 +1316,14 @@ privacy-segmentation-radio-off =
     .label = Dopórucenja { -brand-product-name } wužywaś
 privacy-segmentation-radio-on =
     .label = Detailěrowane informacije pokazaś
+
+## Privacy Section - Website Advertising Preferences
+
+website-advertising-header = Nastajenja za wabjenje websedła
+website-advertising-private-attribution =
+    .label = Websedłam dowóliś, wabjeńske měrjenje pśewjasć, kótarež priwatnosć wobchowujo
+    .accesskey = b
+website-advertising-private-attribution-description = To websedłam pomaga rozměś, kak jich wabjenje funkcioněrujo, bźez togo aby se daty wó was gromaźili.
 
 ## Privacy Section - Security
 ##
@@ -1344,13 +1368,20 @@ space-alert-under-5gb-message2 = <strong>{ -brand-short-name } njama wěcej dos�
 
 httpsonly-header = Modus Jano-HTTPS
 httpsonly-description = HTTPS wěsty, skoděrowany zwisk mjazy { -brand-short-name } a websedłami bitujo, ku kótarymž se woglědujośo. Nejwěcej websedłow HTTPS pódpěra, a jolic modus Jano-HTTPS jo zmóžnjony, { -brand-short-name } buźo wše zwiski na HTTPS aktualizěrowaś.
+httpsonly-description2 = { -brand-short-name } wěste a skoděrowane zwiski ze sedłami, ku kótarymž se woglědujośo, napórajo. { -brand-short-name } buźo was warnowaś, jolic zwisk njejo wěsty, gaž Jano-HTTPS jo aktiwny.
 httpsonly-learn-more = Dalšne informacije
 httpsonly-radio-enabled =
     .label = Modus Jano-HTTPS we wšych woknach zmóžniś
+httpsonly-radio-enabled2 =
+    .label = HTTPS jano we wšych woknach wužywaś
 httpsonly-radio-enabled-pbm =
     .label = Modus Jano-HTTPS jano w priwatnych woknach zmóžniś
+httpsonly-radio-enabled-pbm2 =
+    .label = HTTPS jano w priwatnych woknach wužywaś
 httpsonly-radio-disabled =
     .label = Modus Jano-HTTPS njezmóžniś
+httpsonly-radio-disabled2 =
+    .label = HTTPS nejpjerwjej wopytaś, ale zwiski dowóliś, kótarež njejsu wěste
 
 ## DoH Section
 

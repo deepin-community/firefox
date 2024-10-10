@@ -653,7 +653,7 @@ Call::Call(const CallConfig& config,
       aggregate_network_up_(false),
       receive_stats_(&env_.clock()),
       send_stats_(&env_.clock()),
-      receive_side_cc_(&env_.clock(),
+      receive_side_cc_(env_,
                        absl::bind_front(&PacketRouter::SendCombinedRtcpPacket,
                                         transport_send->packet_router()),
                        absl::bind_front(&PacketRouter::SendRemb,
@@ -744,10 +744,10 @@ webrtc::AudioSendStream* Call::CreateAudioSendStream(
     }
   }
 
-  AudioSendStream* send_stream = new AudioSendStream(
-      &env_.clock(), config, config_.audio_state, &env_.task_queue_factory(),
-      transport_send_.get(), bitrate_allocator_.get(), &env_.event_log(),
-      call_stats_->AsRtcpRttStats(), suspended_rtp_state, trials());
+  AudioSendStream* send_stream =
+      new AudioSendStream(env_, config, config_.audio_state,
+                          transport_send_.get(), bitrate_allocator_.get(),
+                          call_stats_->AsRtcpRttStats(), suspended_rtp_state);
   RTC_DCHECK(audio_send_ssrcs_.find(config.rtp.ssrc) ==
              audio_send_ssrcs_.end());
   audio_send_ssrcs_[config.rtp.ssrc] = send_stream;
@@ -875,13 +875,11 @@ webrtc::VideoSendStream* Call::CreateVideoSendStream(
   std::vector<uint32_t> ssrcs = config.rtp.ssrcs;
 
   VideoSendStreamImpl* send_stream = new VideoSendStreamImpl(
-      &env_.clock(), num_cpu_cores_, &env_.task_queue_factory(),
-      call_stats_->AsRtcpRttStats(), transport_send_.get(),
-      config_.encode_metronome, bitrate_allocator_.get(),
-      video_send_delay_stats_.get(), &env_.event_log(), std::move(config),
+      env_, num_cpu_cores_, call_stats_->AsRtcpRttStats(),
+      transport_send_.get(), config_.encode_metronome, bitrate_allocator_.get(),
+      video_send_delay_stats_.get(), std::move(config),
       std::move(encoder_config), suspended_video_send_ssrcs_,
-      suspended_video_payload_states_, std::move(fec_controller),
-      env_.field_trials());
+      suspended_video_payload_states_, std::move(fec_controller));
 
   for (uint32_t ssrc : ssrcs) {
     RTC_DCHECK(video_send_ssrcs_.find(ssrc) == video_send_ssrcs_.end());
@@ -1360,6 +1358,11 @@ void Call::DeliverRtpPacket(
   if (media_type != MediaType::AUDIO && media_type != MediaType::VIDEO) {
     return;
   }
+
+  const TimeDelta nw_to_deliver_delay =
+      env_.clock().CurrentTime() - packet.arrival_time();
+  RTC_HISTOGRAM_COUNTS_100000("WebRTC.TimeFromNetworkToDeliverRtpPacketUs",
+                              nw_to_deliver_delay.us());
 
   RtpStreamReceiverController& receiver_controller =
       media_type == MediaType::AUDIO ? audio_receiver_controller_

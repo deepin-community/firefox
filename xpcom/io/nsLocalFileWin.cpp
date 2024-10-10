@@ -108,8 +108,7 @@ static HWND GetMostRecentNavigatorHWND() {
   }
 
   nsCOMPtr<mozIDOMWindowProxy> navWin;
-  rv = winMediator->GetMostRecentWindow(u"navigator:browser",
-                                        getter_AddRefs(navWin));
+  rv = winMediator->GetMostRecentBrowserWindow(getter_AddRefs(navWin));
   if (NS_FAILED(rv) || !navWin) {
     return nullptr;
   }
@@ -635,6 +634,9 @@ static nsresult GetFileInfo(const nsString& aName,
   aInfo->size = fileData.nFileSizeHigh;
   aInfo->size = (aInfo->size << 32) + fileData.nFileSizeLow;
 
+  // modifyTime must be initialized before creationTime refers it.
+  FileTimeToPRTime(&fileData.ftLastWriteTime, &aInfo->modifyTime);
+
   if (0 == fileData.ftCreationTime.dwLowDateTime &&
       0 == fileData.ftCreationTime.dwHighDateTime) {
     aInfo->creationTime = aInfo->modifyTime;
@@ -643,7 +645,6 @@ static nsresult GetFileInfo(const nsString& aName,
   }
 
   FileTimeToPRTime(&fileData.ftLastAccessTime, &aInfo->accessTime);
-  FileTimeToPRTime(&fileData.ftLastWriteTime, &aInfo->modifyTime);
 
   return NS_OK;
 }
@@ -2390,17 +2391,11 @@ nsresult nsLocalFile::GetDateImpl(PRTime* aTime,
   FileInfo* pInfo;
 
   if (aFollowLinks) {
-    if (nsresult rv = GetFileInfo(mWorkingPath, &symlinkInfo); NS_FAILED(rv)) {
-      return rv;
-    }
-
-    pInfo = &symlinkInfo;
-  } else {
-    if (nsresult rv = ResolveAndStat(); NS_FAILED(rv)) {
-      return rv;
-    }
-
+    MOZ_TRY(ResolveAndStat());
     pInfo = &mFileInfo;
+  } else {
+    MOZ_TRY(GetFileInfo(mWorkingPath, &symlinkInfo));
+    pInfo = &symlinkInfo;
   }
 
   switch (aTimeField) {
@@ -2554,6 +2549,10 @@ nsresult nsLocalFile::SetDateImpl(PRTime aTime,
   }
 
   CloseHandle(file);
+
+  if (NS_SUCCEEDED(rv)) {
+    MakeDirty();
+  }
 
   return rv;
 }
@@ -2775,11 +2774,12 @@ nsLocalFile::GetDiskSpaceAvailable(int64_t* aDiskSpaceAvailable) {
   }
 
   if (mFileInfo.type == PR_FILE_FILE) {
-    // Since GetDiskFreeSpaceExW works only on directories, use the parent.
+    // Since GetDiskFreeSpaceExW works only on directories, use the parent
+    // which must exist if we are a file.
     nsCOMPtr<nsIFile> parent;
-    if (NS_SUCCEEDED(GetParent(getter_AddRefs(parent))) && parent) {
-      return parent->GetDiskSpaceAvailable(aDiskSpaceAvailable);
-    }
+    rv = GetParent(getter_AddRefs(parent));
+    NS_ENSURE_SUCCESS(rv, rv);
+    return parent->GetDiskSpaceAvailable(aDiskSpaceAvailable);
   }
 
   int64_t dummy = 0;
@@ -3520,6 +3520,11 @@ nsLocalFile::SetNativeLeafName(const nsACString& aLeafName) {
   }
 
   return rv;
+}
+
+NS_IMETHODIMP
+nsLocalFile::HostPath(JSContext* aCx, dom::Promise** aPromise) {
+  return NS_ERROR_NOT_IMPLEMENTED;
 }
 
 nsString nsLocalFile::NativePath() { return mWorkingPath; }

@@ -547,6 +547,10 @@ urlbar-go-button =
     .tooltiptext = Gå til adressa i adresselinja
 urlbar-page-action-button =
     .tooltiptext = Sidehandlingar
+urlbar-revert-button =
+    .tooltiptext = Vis adressa i adresselinja
+urlbar-show-page-actions-button =
+    .tooltiptext = Vis alle sidehandlingar
 
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
@@ -637,6 +641,21 @@ urlbar-group-quickactions =
 #  $engine (String): the name of the search engine used to search.
 urlbar-group-recent-searches =
     .label = Nylege søk
+# The header shown above trending results.
+# Variables:
+#  $engine (String): the name of the search engine providing the trending suggestions
+urlbar-group-trending =
+    .label = Populær på { $engine }
+# The result menu labels shown next to trending results.
+urlbar-result-menu-trending-dont-show =
+    .label = Ikkje vis populære søk
+    .accesskey = v
+urlbar-result-menu-trending-why =
+    .label = Kvifor ser eg dette?
+    .accesskey = K
+# A message that replaces a result when the user dismisses all suggestions of a
+# particular type.
+urlbar-trending-dismissal-acknowledgment = Takk for tilbakemeldinga di. Du vil ikkje lenger sjå populære søk.
 
 ## Reader View toolbar buttons
 
@@ -914,7 +933,15 @@ data-reporting-notification-button =
     .accesskey = V
 # Label for the indicator shown in the private browsing window titlebar.
 private-browsing-indicator-label = Privat nettlesing
+# Tooltip for the indicator shown in the window titlebar when content analysis is active.
+# Variables:
+#   $agentName (String): The name of the DLP agent that is connected
+content-analysis-indicator-tooltip =
+    .tooltiptext = Førebygging av datatap (DLP) av { $agentName }. Klikk for meir info.
 content-analysis-panel-title = Datavern
+# Variables:
+#   $agentName (String): The name of the DLP agent that is connected
+content-analysis-panel-text = Organisasjonen din brukar { $agentName } for å beskytte mot tap av data. <a data-l10n-name="info">Les meir</a>
 
 ## Unified extensions (toolbar) button
 
@@ -979,6 +1006,10 @@ firefox-relay-offer-legal-notice = Ved å klikke «Bruk e-postalias» godtek du 
 popup-notification-addon-install-unsigned =
     .value = (Ikkje stadfesta)
 popup-notification-xpinstall-prompt-learn-more = Les meir om sikker installering av tillegg
+# Note: Access key is set to P to match "Private" in the corresponding localized label.
+popup-notification-addon-privatebrowsing-checkbox =
+    .label = Køyr i privat vindauge
+    .accesskey = P
 
 ## Pop-up warning
 
@@ -1008,3 +1039,24 @@ popup-warning-button =
 #   $popupURI (String): the URI for the pop-up window
 popup-show-popup-menuitem =
     .label = Vis «{ $popupURI }»
+
+## File-picker crash notification ("FilePickerCrashed.sys.mjs")
+
+file-picker-failed-open = Klarte ikkje å opne Windows-fildialogvindauget. Inga fil eller mappe kunne veljast.
+#   $path (string): The full path to which the file will be saved (e.g., 'C:\Users\Default User\Downloads\readme.txt').
+file-picker-failed-save-somewhere = Klarte ikkje å opne Windows fildialog. Fila vert lagra i { $path }.
+file-picker-failed-save-nowhere = Klarte ikkje å opne Windows fildialog. Fann ingen standardmapp, og fila vil ikkje bli lagra.
+file-picker-crashed-open = Windows-fildialogvindauget har krasja. Ingen fil eller mappe kunne veljast.
+#   $path (string): The full path to which the file will be saved (e.g., 'C:\Users\Default User\Downloads\readme.txt').
+file-picker-crashed-save-somewhere = Windows-fildialogvindauget har krasja. Fila vil bli lagra i { $path }.
+file-picker-crashed-save-nowhere = Windows-fildialogvindauget har krasja. Fann inga standardmappe, og fila vil ikkje bli lagra.
+
+# Button used with file-picker-crashed-save-default. Opens the folder in Windows
+# Explorer, with the saved file selected and in focus.
+#
+# The wording here should be consistent with the Windows variant of
+# `downloads-cmd-show-menuitem-2` and similar messages.
+
+file-picker-crashed-show-in-folder =
+    .label = Vis i mappe
+    .accessKey = i

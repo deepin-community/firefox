@@ -66,6 +66,8 @@ import-source-page-title = Внасяне на настройки и данни
 import-items-page-title = Елементи за внасяне
 import-items-description = Изберете елементите за внасяне:
 import-permissions-page-title = Дайте права на { -brand-short-name }
+# Do not translate "Safari" (the name of the browser on Apple devices)
+import-safari-permissions-string = macOS изисква изрично да разрешите на { -brand-short-name } да има достъп до данните на Safari. Кликнете „Напред“, изберете папката „Safari“ в диалога на Finder, който се появява, и след това кликнете „Отваряне“.
 import-migrating-page-title = Внасяне…
 import-migrating-description = В момента се внасят следните елементи…
 import-select-profile-page-title = Избиране на профил
@@ -143,3 +145,7 @@ browser-data-session-checkbox =
     .label = Прозорци и раздели
 browser-data-session-label =
     .value = Прозорци и раздели
+browser-data-payment-methods-checkbox =
+    .label = Начини на плащане
+browser-data-payment-methods-label =
+    .value = Начини на плащане

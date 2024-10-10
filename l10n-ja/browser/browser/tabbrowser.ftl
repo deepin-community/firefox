@@ -13,11 +13,22 @@ tabbrowser-menuitem-close =
 #   $title (String): the title of the current tab.
 #   $containerName (String): the name of the current container.
 tabbrowser-container-tab-title = { $title } — { $containerName }
+# This text serves as an on-screen tooltip as well as an accessible name for
+# the "X" button that is shown on the active tab or, when multiple tabs are
+# selected, to all their "X" buttons.
+# Variables:
+#   $tabCount (Number): The number of tabs that will be closed.
+tabbrowser-close-tabs-button =
+    .tooltiptext =
+        { NUMBER($tabCount) ->
+            [one] タブを閉じます
+           *[other] { $tabCount } 個のタブを閉じます
+        }
 # Variables:
 #   $tabCount (Number): The number of tabs that will be closed.
 tabbrowser-close-tabs-tooltip =
     .label =
-        { $tabCount ->
+        { NUMBER($tabCount) ->
             [one] タブを閉じます
            *[other] { $tabCount } 個のタブを閉じます
         }
@@ -30,7 +41,7 @@ tabbrowser-close-tabs-tooltip =
 #   $shortcut (String): The keyboard shortcut for "Mute tab".
 tabbrowser-mute-tab-audio-tooltip =
     .label =
-        { $tabCount ->
+        { NUMBER($tabCount) ->
             [one] タブをミュートします ({ $shortcut })
            *[other] { $tabCount } 個のタブをミュートします ({ $shortcut })
         }
@@ -38,25 +49,25 @@ tabbrowser-mute-tab-audio-tooltip =
 #   $shortcut (String): The keyboard shortcut for "Unmute tab".
 tabbrowser-unmute-tab-audio-tooltip =
     .label =
-        { $tabCount ->
+        { NUMBER($tabCount) ->
             [one] タブのミュートを解除します ({ $shortcut })
            *[other] { $tabCount } 個のタブのミュートを解除します ({ $shortcut })
         }
 tabbrowser-mute-tab-audio-background-tooltip =
     .label =
-        { $tabCount ->
+        { NUMBER($tabCount) ->
             [one] タブをミュートします
            *[other] { $tabCount } 個のタブをミュートします
         }
 tabbrowser-unmute-tab-audio-background-tooltip =
     .label =
-        { $tabCount ->
+        { NUMBER($tabCount) ->
             [one] タブのミュートを解除します
            *[other] { $tabCount } 個のタブのミュートを解除します
         }
 tabbrowser-unblock-tab-audio-tooltip =
     .label =
-        { $tabCount ->
+        { NUMBER($tabCount) ->
             [one] タブの音声を再生します
            *[other] { $tabCount } 個のタブの音声を再生します
         }
@@ -67,10 +78,7 @@ tabbrowser-unblock-tab-audio-tooltip =
 # The singular form is not considered since this string is used only for multiple tabs.
 # Variables:
 #   $tabCount (Number): The number of tabs that will be closed.
-tabbrowser-confirm-close-tabs-title =
-    { $tabCount ->
-       *[other] { $tabCount } 個のタブを閉じますか？
-    }
+tabbrowser-confirm-close-tabs-title = { $tabCount } 個のタブを閉じますか？
 tabbrowser-confirm-close-tabs-button = タブを閉じる
 tabbrowser-confirm-close-tabs-checkbox = 同時に複数のタブを閉じる前に確認する
 
@@ -80,10 +88,7 @@ tabbrowser-confirm-close-tabs-checkbox = 同時に複数のタブを閉じる前
 # multiple windows.
 # Variables:
 #   $windowCount (Number): The number of windows that will be closed.
-tabbrowser-confirm-close-windows-title =
-    { $windowCount ->
-       *[other] { $windowCount } 個のウィンドウを閉じますか？
-    }
+tabbrowser-confirm-close-windows-title = { $windowCount } 個のウィンドウを閉じますか？
 tabbrowser-confirm-close-windows-button =
     { PLATFORM() ->
         [windows] 閉じて終了
@@ -104,10 +109,7 @@ tabbrowser-confirm-close-tabs-with-key-checkbox = { $quitKey } キーで終了�
 tabbrowser-confirm-open-multiple-tabs-title = 確認
 # Variables:
 #   $tabCount (Number): The number of tabs that will be opened.
-tabbrowser-confirm-open-multiple-tabs-message =
-    { $tabCount ->
-       *[other] { $tabCount } 個のタブを開こうとしています。この操作を行うと、ページの読み込み中は { -brand-short-name } が遅くなる可能性があります。続行しますか？
-    }
+tabbrowser-confirm-open-multiple-tabs-message = { $tabCount } 個のタブを開こうとしています。この操作を行うと、ページの読み込み中は { -brand-short-name } が遅くなる可能性があります。続行しますか？
 tabbrowser-confirm-open-multiple-tabs-button = タブを開く
 tabbrowser-confirm-open-multiple-tabs-checkbox = 複数のタブを開くときに { -brand-short-name } が遅くなりそうなときは警告する
 
@@ -116,6 +118,14 @@ tabbrowser-confirm-open-multiple-tabs-checkbox = 複数のタブを開くとき�
 tabbrowser-confirm-caretbrowsing-title = キャレットブラウジング
 tabbrowser-confirm-caretbrowsing-message = F7 を押すとキャレットブラウジングのオンオフを切り替えられます。この機能はウェブページに移動可能なカーソルを配置して、キーボードでテキストを選択できるようにします。キャレットブラウジングをオンにしますか？
 tabbrowser-confirm-caretbrowsing-checkbox = 次回からはこのダイアログを表示しない。
+
+## Confirmation dialog for closing all duplicate tabs
+
+tabbrowser-confirm-close-duplicate-tabs-title = お知らせ
+tabbrowser-confirm-close-duplicate-tabs-text = 最後に表示していたタブは閉じずに残します
+tabbrowser-confirm-close-all-duplicate-tabs-title = 重複タブを閉じますか？
+tabbrowser-confirm-close-all-duplicate-tabs-text = このウィンドウ内の重複タブを閉じます。最後に表示していたタブは閉じずに残します。
+tabbrowser-confirm-close-all-duplicate-tabs-button-closetabs = タブを閉じる
 
 ##
 

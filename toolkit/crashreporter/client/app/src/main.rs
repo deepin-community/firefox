@@ -36,10 +36,10 @@ use crate::std::sync::Arc;
 use anyhow::Context;
 use config::Config;
 
+// A few macros are defined here to allow use in all submodules via textual scope lookup.
+
 /// cc is short for Clone Capture, a shorthand way to clone a bunch of values before an expression
 /// (particularly useful for closures).
-///
-/// It is defined here to allow it to be used in all submodules (textual scope lookup).
 macro_rules! cc {
     ( ($($c:ident),*) $e:expr ) => {
         {
@@ -49,9 +49,19 @@ macro_rules! cc {
     }
 }
 
+/// Create a string literal to be used as an environment variable name.
+///
+/// This adds the application prefix `MOZ_CRASHREPORTER_`.
+macro_rules! ekey {
+    ( $name:literal ) => {
+        concat!("MOZ_CRASHREPORTER_", $name)
+    };
+}
+
 mod async_task;
 mod config;
 mod data;
+mod glean;
 mod lang;
 mod logging;
 mod logic;
@@ -117,6 +127,7 @@ fn main() {
                             "ServerURL": "https://reports.example",
                             "TelemetryServerURL": "https://telemetry.example",
                             "TelemetryClientId": "telemetry_client",
+                            "TelemetryProfileGroupId": "telemetry_profile_group",
                             "TelemetrySessionId": "telemetry_session",
                             "URL": "https://url.example"
                         }"#;
@@ -126,6 +137,10 @@ fn main() {
     const MOCK_CURRENT_TIME: &str = "2004-11-09T12:34:56Z";
     const MOCK_PING_UUID: uuid::Uuid = uuid::Uuid::nil();
     const MOCK_REMOTE_CRASH_ID: &str = "8cbb847c-def2-4f68-be9e-000000000000";
+
+    // Initialize logging but don't set it in the configuration, so that it won't be redirected to
+    // a file (only shown on stderr).
+    logging::init();
 
     // Create a default set of files which allow successful operation.
     let mock_files = MockFiles::new();
@@ -162,7 +177,7 @@ fn main() {
         crate::std::time::MockCurrentTime,
         time::OffsetDateTime::parse(
             MOCK_CURRENT_TIME,
-            &time::format_description::well_known::Rfc3339,
+            &time::format_description::well_known::Iso8601::DEFAULT,
         )
         .unwrap()
         .into(),
@@ -177,6 +192,7 @@ fn main() {
         cfg.dump_file = Some("minidump.dmp".into());
         cfg.restart_command = Some("mockfox".into());
         cfg.strings = Some(lang::load().unwrap());
+
         let mut cfg = Arc::new(cfg);
         try_run(&mut cfg)
     });
@@ -217,12 +233,21 @@ fn try_run(config: &mut Arc<Config>) -> anyhow::Result<bool> {
         }
 
         let extra = {
-            // Perform a few things which may change the config, then treat is as immutable.
+            // Perform a few things which may change the config, then treat it as immutable.
             let config = Arc::get_mut(config).expect("unexpected config references");
             let extra = config.load_extra_file()?;
             config.move_crash_data_to_pending()?;
             extra
         };
+
+        // Initialize glean here since it relies on the data directory (which will not change after
+        // this point). We could potentially initialize it even later (only just before we need
+        // it), however we may use it for more than just the crash ping in the future, in which
+        // case it makes more sense to do it as early as possible.
+        //
+        // When we are testing, glean will already be initialized (if needed).
+        #[cfg(not(test))]
+        glean::init(&config);
 
         logic::ReportCrash::new(config.clone(), extra)?.run()
     }

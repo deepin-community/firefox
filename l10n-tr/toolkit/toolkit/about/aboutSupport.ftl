@@ -347,6 +347,9 @@ has-seccomp-bpf = Seccomp-BPF (sistem çağrısı filtreleme)
 has-seccomp-tsync = Seccomp işlem senkronizasyonu
 has-user-namespaces = Kullanıcı isim uzayları
 has-privileged-user-namespaces = Ayrıcalıklı işlemler için kullanıcı isim uzayları
+# Variables
+# $status (string) - Boolean value of hasUserNamespaces (should only be false when support-user-namespaces-unavailable is used)
+support-user-namespaces-unavailable = { $status } — Sisteminiz bu özelliğe izin vermiyor. Bu durum { -brand-short-name } tarayıcısının güvenlik özelliklerini kısıtlayabilir.
 can-sandbox-content = İçerik işlemi sandbox’ı
 can-sandbox-media = Ortam yan uygulaması sandbox’ı
 content-sandbox-level = İçerik işlemi sandbox düzeyi
@@ -414,6 +417,20 @@ support-printing-clear-settings-button = Kayıtlı yazdırma ayarlarını temizl
 support-printing-modified-settings = Değiştirilmiş yazdırma ayarları
 support-printing-prefs-name = Ad
 support-printing-prefs-value = Değer
+
+## Remote Settings sections
+
+support-remote-settings-title = Uzak ayarlar
+support-remote-settings-status = Durum
+support-remote-settings-status-ok = Tamam
+# Status when synchronization is not working.
+support-remote-settings-status-broken = Çalışmıyor
+support-remote-settings-last-check = Son kontrol
+support-remote-settings-local-timestamp = Yerel zaman damgası
+support-remote-settings-sync-history = Geçmiş
+support-remote-settings-sync-history-status = Durum
+support-remote-settings-sync-history-datetime = Tarih
+support-remote-settings-sync-history-infos = Bilgiler
 
 ## Normandy sections
 

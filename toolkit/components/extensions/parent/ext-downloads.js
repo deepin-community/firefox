@@ -685,6 +685,9 @@ this.downloads = class extends ExtensionAPIPersistent {
               throw new ExtensionError("filename must not be an absolute path");
             }
 
+            // % is not permitted but relatively common.
+            filename = filename.replaceAll("%", "_");
+
             const pathComponents = PathUtils.splitRelative(filename, {
               allowEmpty: true,
               allowCurrentDir: true,
@@ -698,9 +701,10 @@ this.downloads = class extends ExtensionAPIPersistent {
             }
 
             if (
-              pathComponents.some(component => {
+              pathComponents.some((component, i) => {
                 let sanitized = DownloadPaths.sanitize(component, {
                   compressWhitespaces: false,
+                  allowDirectoryNames: i < pathComponents.length - 1,
                 });
                 return component != sanitized;
               })

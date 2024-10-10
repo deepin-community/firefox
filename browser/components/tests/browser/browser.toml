@@ -4,11 +4,18 @@ support-files = [
   "../../../../dom/security/test/csp/dummy.pdf",
 ]
 
+["browser_browserGlue_client_association_ping.js"]
+
+["browser_browserGlue_os_auth.js"]
+skip-if = ["os == 'linux'"]
+
 ["browser_browserGlue_showModal_trigger.js"]
 
 ["browser_browserGlue_telemetry.js"]
 
 ["browser_browserGlue_upgradeDialog_trigger.js"]
+
+["browser_browserGlue_userNamespacesNotification.js"]
 
 ["browser_bug538331.js"]
 skip-if = ["!updater"]

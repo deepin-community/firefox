@@ -37,8 +37,10 @@ import mozilla.appservices.places.BookmarkRoot
 import mozilla.components.concept.engine.prompt.ShareData
 import mozilla.components.concept.storage.BookmarkNode
 import mozilla.components.concept.storage.BookmarkNodeType
+import mozilla.components.feature.accounts.push.SendTabUseCases
 import mozilla.components.lib.state.ext.consumeFrom
 import mozilla.components.support.base.feature.UserInteractionHandler
+import mozilla.components.support.base.feature.ViewBoundFeatureWrapper
 import mozilla.components.support.ktx.kotlin.toShortUrl
 import mozilla.components.ui.widgets.withCenterAlignedButtons
 import mozilla.telemetry.glean.private.NoExtras
@@ -56,6 +58,8 @@ import org.mozilla.fenix.ext.nav
 import org.mozilla.fenix.ext.requireComponents
 import org.mozilla.fenix.ext.setTextColor
 import org.mozilla.fenix.library.LibraryPageFragment
+import org.mozilla.fenix.snackbar.FenixSnackbarDelegate
+import org.mozilla.fenix.snackbar.SnackbarBinding
 import org.mozilla.fenix.tabstray.Page
 import org.mozilla.fenix.utils.allowUndo
 
@@ -67,9 +71,7 @@ class BookmarkFragment : LibraryPageFragment<BookmarkNode>(), UserInteractionHan
 
     private lateinit var bookmarkStore: BookmarkFragmentStore
     private lateinit var bookmarkView: BookmarkView
-    private var _bookmarkInteractor: BookmarkFragmentInteractor? = null
-    private val bookmarkInteractor: BookmarkFragmentInteractor
-        get() = _bookmarkInteractor!!
+    private lateinit var bookmarkInteractor: BookmarkFragmentInteractor
 
     private val sharedViewModel: BookmarksSharedViewModel by activityViewModels()
     private val desktopFolders by lazy { DesktopFolders(requireContext(), showMobileRoot = false) }
@@ -78,6 +80,7 @@ class BookmarkFragment : LibraryPageFragment<BookmarkNode>(), UserInteractionHan
 
     private var _binding: FragmentBookmarkBinding? = null
     private val binding get() = _binding!!
+    private val snackbarBinding = ViewBoundFeatureWrapper<SnackbarBinding>()
 
     override val selectedItems get() = bookmarkStore.state.mode.selectedItems
 
@@ -92,7 +95,7 @@ class BookmarkFragment : LibraryPageFragment<BookmarkNode>(), UserInteractionHan
             BookmarkFragmentStore(BookmarkFragmentState(null))
         }
 
-        _bookmarkInteractor = BookmarkFragmentInteractor(
+        bookmarkInteractor = BookmarkFragmentInteractor(
             bookmarksController = DefaultBookmarkController(
                 activity = requireActivity() as HomeActivity,
                 navController = findNavController(),
@@ -121,6 +124,20 @@ class BookmarkFragment : LibraryPageFragment<BookmarkNode>(), UserInteractionHan
             ),
         )
 
+        snackbarBinding.set(
+            feature = SnackbarBinding(
+                context = requireContext(),
+                browserStore = requireContext().components.core.store,
+                appStore = requireContext().components.appStore,
+                snackbarDelegate = FenixSnackbarDelegate(binding.root),
+                navController = findNavController(),
+                sendTabUseCases = SendTabUseCases(requireComponents.backgroundServices.accountManager),
+                customTabSessionId = null,
+            ),
+            owner = this,
+            view = binding.root,
+        )
+
         return binding.root
     }
 
@@ -129,7 +146,6 @@ class BookmarkFragment : LibraryPageFragment<BookmarkNode>(), UserInteractionHan
             FenixSnackbar.make(
                 view = it,
                 duration = FenixSnackbar.LENGTH_LONG,
-                isDisplayedWithBrowserToolbar = false,
             ).setText(text).show()
         }
     }
@@ -191,7 +207,7 @@ class BookmarkFragment : LibraryPageFragment<BookmarkNode>(), UserInteractionHan
 
                     menu.findItem(R.id.delete_bookmarks_multi_select).title =
                         SpannableString(getString(R.string.bookmark_menu_delete_button)).apply {
-                            setTextColor(requireContext(), R.attr.textWarning)
+                            setTextColor(requireContext(), R.attr.textCritical)
                         }
                 }
             }
@@ -391,7 +407,6 @@ class BookmarkFragment : LibraryPageFragment<BookmarkNode>(), UserInteractionHan
 
     override fun onDestroyView() {
         super.onDestroyView()
-        _bookmarkInteractor = null
         _binding = null
     }
 

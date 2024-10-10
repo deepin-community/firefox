@@ -89,6 +89,9 @@ shopping-show-less-button = Daha az göster
 
 shopping-settings-label =
     .label = Ayarlar
+shopping-settings-recommendations-toggle2 =
+    .label = Önerileri ve sponsorlu içerikleri göster
+shopping-settings-recommendations-learn-more3 = { -brand-product-name } kişisel verilerinizi paylaşmaz, yani internette gezinirken bu öneriler bir daha karşınıza çıkmaz. <a data-l10n-name="review-quality-url">Daha fazla bilgi alın</a>
 shopping-settings-recommendations-toggle =
     .label = Değerlendirme kontrolcüsünde reklamları göster
 shopping-settings-recommendations-learn-more2 = Ara sıra ilginizi çekebilecek ürünlerin reklamlarını göreceksiniz. Yalnızca güvenilir değerlendirmelere sahip ürünlerin reklamını yapıyoruz. <a data-l10n-name="review-quality-url">Bilgi alın</a>
@@ -115,6 +118,7 @@ shopping-settings-sidebar-enabled-state = Değerlendirme kontrolcüsü <strong>a
 shopping-adjusted-rating-label =
     .label = Düzeltilmiş puan
 shopping-adjusted-rating-unreliable-reviews = Güvenilmez değerlendirmeler kaldırıldı
+shopping-adjusted-rating-based-reliable-reviews = Güvenilir değerlendirmelere dayanarak
 
 ## Strings for the review reliability component
 
@@ -133,6 +137,8 @@ shopping-analysis-explainer-learn-more2 = <a data-l10n-name="review-quality-url"
 # websites, which will be inserted without being translated.
 #  $retailer (String) - capitalized name of the shopping website, for example, "Amazon".
 shopping-analysis-explainer-highlights-description = <strong>Öne çıkanlar</strong> son 80 gün içindeki güvenilir olduğunu düşündüğümüz { $retailer } değerlendirmelerinden alınmıştır.
+# Fallback for analysis highlights explainer if the retailer is ever unknown
+shopping-analysis-explainer-highlights-description-unknown-retailer = <strong>Öne çıkanlar</strong> son 80 gün içindeki güvenilir olduğunu düşündüğümüz değerlendirmelerden alınmıştır.
 shopping-analysis-explainer-review-grading-scale-reliable = Güvenilir değerlendirmeler. Değerlendirmelerin büyük olasılıkla dürüst, tarafsız incelemeler yazan gerçek müşterilerden geldiğini düşünüyoruz.
 shopping-analysis-explainer-review-grading-scale-mixed = Güvenilir ve güvenilmez değerlendirmelerin bir karışımı olduğunu düşünüyoruz.
 shopping-analysis-explainer-review-grading-scale-unreliable = Güvenilmez değerlendirmeler. Değerlendirmelerin büyük ihtimalle sahte olduğunu veya önyargılı kişilerden geldiğini düşünüyoruz.
@@ -159,6 +165,7 @@ shopping-unanalyzed-product-analyze-button = Değerlendirme kalitesini kontrol e
 
 more-to-consider-ad-label =
     .label = İlginizi çekebilir
+shopping-sponsored-label = Sponsorlu
 ad-by-fakespot = { -fakespot-brand-name } reklamı
 
 ## Shopping survey strings.

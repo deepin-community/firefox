@@ -172,6 +172,10 @@ internal class EngineObserver(
         store.dispatch(ContentAction.UpdateProductUrlStateAction(tabId, isProductUrl))
     }
 
+    override fun onTranslatePageChange() {
+        store.dispatch(TranslationsAction.SetTranslateProcessingAction(tabId, isProcessing = false))
+    }
+
     override fun onLongPress(hitResult: HitResult) {
         store.dispatch(
             ContentAction.UpdateHitResultAction(tabId, hitResult),
@@ -461,8 +465,8 @@ internal class EngineObserver(
         store.dispatch(EngineAction.SaveToPdfCompleteAction(tabId))
     }
 
-    override fun onCheckForFormData(containsFormData: Boolean) {
-        store.dispatch(ContentAction.UpdateHasFormDataAction(tabId, containsFormData))
+    override fun onCheckForFormData(containsFormData: Boolean, adjustPriority: Boolean) {
+        store.dispatch(ContentAction.UpdateHasFormDataAction(tabId, containsFormData, adjustPriority))
     }
 
     override fun onCheckForFormDataException(throwable: Throwable) {

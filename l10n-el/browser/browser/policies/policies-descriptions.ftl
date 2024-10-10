@@ -28,7 +28,7 @@ policy-BlockAboutSupport = Αποκλεισμός πρόσβασης στη σε
 policy-Bookmarks = Δημιουργία σελιδοδεικτών στη γραμμή σελιδοδεικτών, στο μενού σελιδοδεικτών ή σε ένα συγκεκριμένο φάκελο μέσα τους.
 policy-CaptivePortal = Ενεργοποίηση ή απενεργοποίηση υποστήριξης πυλών υποδοχής.
 policy-CertificatesDescription = Προσθήκη πιστοποιητικών ή χρήση ενσωματωμένων πιστοποιητικών.
-policy-ContentAnalysis = Ενεργοποίηση ή απενεργοποίηση σύνδεσης παρόχου αποτροπής απώλειας δεδομένων.
+policy-ContentAnalysis = Ενεργοποίηση ή απενεργοποίηση σύνδεσης παράγοντα αποτροπής απώλειας δεδομένων.
 policy-Cookies = Αποδοχή ή άρνηση αιτημάτων αποθήκευσης cookie.
 # Containers in this context is referring to container tabs in Firefox.
 policy-Containers = Ορισμός πολιτικών που σχετίζονται με τις θεματικές ενότητες.
@@ -39,8 +39,11 @@ policy-DisableAppUpdate = Αποτροπή ενημέρωσης προγράμμ
 policy-DisableBuiltinPDFViewer = Απενεργοποίηση PDF.js, του ενσωματωμένου προγράμματος προβολής PDF στο { -brand-short-name }.
 policy-DisableDefaultBrowserAgent = Αποτροπή οποιασδήποτε ενέργειας από την προεπιλεγμένη λειτουργία προγράμματος περιήγησης. Ισχύει μόνο για Windows· οι άλλες πλατφόρμες δεν έχουν τέτοια υπηρεσία.
 policy-DisableDeveloperTools = Αποκλεισμός πρόσβασης στα εργαλεία ανάπτυξης.
+policy-DisableEncryptedClientHello = Απενεργοποίηση χρήσης λειτουργίας TLS Encrypted Client Hello (ECH).
 policy-DisableFeedbackCommands = Απενεργοποίηση εντολών για αποστολή σχολίων από το μενού «Βοήθεια» («Υποβολή σχολίων» και «Αναφορά παραπλανητικού ιστοτόπου»).
 policy-DisableFirefoxAccounts = Απενεργοποίηση υπηρεσιών { -fxaccount-brand-name(case: "gen", capitalization: "lower") }, καθώς και του συγχρονισμού.
+# This string is in the process of being deprecated in favor of policy-DisableAccounts.
+policy-DisableFirefoxAccounts1 = Απενεργοποίηση υπηρεσιών που βασίζονται σε λογαριασμό, συμπεριλαμβανομένου του συγχρονισμού.
 # Firefox Screenshots is the name of the feature, and should not be translated.
 policy-DisableFirefoxScreenshots = Απενεργοποίηση λειτουργίας Firefox Screenshots.
 policy-DisableFirefoxStudies = Αποτροπή εκτέλεσης μελετών του { -brand-short-name }.
@@ -81,6 +84,8 @@ policy-Handlers = Ρύθμιση παραμέτρων χειριστών προ�
 policy-HardwareAcceleration = Αν είναι ψευδές, απενεργοποίηση επιτάχυνσης υλικού.
 # “lock” means that the user won’t be able to change this setting
 policy-Homepage = Ορισμός και προαιρετικό κλείδωμα της αρχικής σελίδας.
+policy-HttpAllowlist = Προελεύσεις που δεν θα αναβαθμίζονται σε HTTPS.
+policy-HttpsOnlyMode = Να επιτρέπεται η ενεργοποίηση της λειτουργίας «Μόνο HTTPS».
 policy-InstallAddonsPermission = Αποδοχή εγκατάστασης προσθέτων από ορισμένους ιστοτόπους.
 policy-LegacyProfiles = Απενεργοποίηση της λειτουργίας που απαιτεί ξεχωριστό προφίλ για κάθε εγκατάσταση.
 
@@ -105,12 +110,16 @@ policy-OverrideFirstRunPage = Παράκαμψη της σελίδας πρώτ�
 policy-OverridePostUpdatePage = Παράκαμψη της σελίδας «Τι νέο υπάρχει» μετά την ενημέρωση. Αφήστε αυτήν την πολιτική κενή αν θέλετε να απενεργοποιήσετε τη σελίδα μετά την ενημέρωση.
 policy-PasswordManagerEnabled = Ενεργοποίηση αποθήκευσης κωδικών πρόσβασης στη διαχείριση κωδικών πρόσβασης.
 policy-PasswordManagerExceptions = Αποτροπή αποθήκευσης κωδικών πρόσβασης στο { -brand-short-name } για ορισμένους ιστοτόπους.
+# Post-quantum refers to cryptography that is safe from attacks by quantum
+# computers. See https://en.wikipedia.org/wiki/Post-quantum_cryptography
+policy-PostQuantumKeyAgreementEnabled = Ενεργοποίηση μετακβαντικής συμφωνίας κλειδιού για το TLS.
 # PDF.js and PDF should not be translated
 policy-PDFjs = Απενεργοποίηση ή ρύθμιση του PDF.js, του ενσωματωμένου προγράμματος προβολής PDF στο { -brand-short-name }.
 policy-Permissions2 = Ρύθμιση δικαιωμάτων για κάμερα, μικρόφωνο, τοποθεσία, ειδοποιήσεις και αυτόματη αναπαραγωγή.
 policy-PictureInPicture = Ενεργοποίηση ή απενεργοποίηση λειτουργίας «Εικόνα εντός εικόνας».
 policy-PopupBlocking = Αποδοχή αναδυόμενων από ορισμένους ιστοτόπους, από προεπιλογή.
 policy-Preferences = Ορισμός και κλείδωμα τιμής ενός υποσυνόλου προτιμήσεων.
+policy-PrivateBrowsingModeAvailability = Καθορισμός της διαθεσιμότητας της λειτουργίας ιδιωτικής περιήγησης.
 policy-PromptForDownloadLocation = Ερώτηση για την τοποθεσία αποθήκευσης αρχείων κατά τη λήψη.
 policy-Proxy = Προσαρμογή ρυθμίσεων μεσολάβησης.
 policy-RequestedLocales = Ορισμός λίστας απαιτούμενων γλωσσών για την εφαρμογή σε σειρά προτίμησης.

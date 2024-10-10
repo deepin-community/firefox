@@ -48,6 +48,7 @@
 #include "mozilla/dom/Element.h"
 #include "mozilla/dom/KeyboardEventBinding.h"
 #include "mozilla/dom/WindowGlobalParent.h"
+#include "mozilla/dom/MediaDeviceInfoBinding.h"
 #include "mozilla/fallible.h"
 #include "mozilla/XorShift128PlusRNG.h"
 
@@ -100,6 +101,8 @@ static mozilla::LazyLogModule gResistFingerprintingLog(
 
 static mozilla::LazyLogModule gFingerprinterDetection("FingerprinterDetection");
 
+static mozilla::LazyLogModule gTimestamps("Timestamps");
+
 #define RESIST_FINGERPRINTINGPROTECTION_OVERRIDE_PREF \
   "privacy.fingerprintingProtection.overrides"
 #define GLEAN_DATA_SUBMISSION_PREF "datareporting.healthreport.uploadEnabled"
@@ -124,12 +127,21 @@ static constexpr uint32_t kVideoDroppedRatio = 5;
 // Fingerprinting protections that are enabled by default. This can be
 // overridden using the privacy.fingerprintingProtection.overrides pref.
 #if defined(MOZ_WIDGET_ANDROID)
-const RFPTarget kDefaultFingerprintingProtections =
-    RFPTarget::CanvasRandomization;
+// NOLINTNEXTLINE(bugprone-macro-parentheses)
+#  define ANDROID_DEFAULT(name) RFPTarget::name |
+#  define DESKTOP_DEFAULT(name)
 #else
-const RFPTarget kDefaultFingerprintingProtections =
-    RFPTarget::CanvasRandomization | RFPTarget::FontVisibilityLangPack;
+#  define ANDROID_DEFAULT(name)
+// NOLINTNEXTLINE(bugprone-macro-parentheses)
+#  define DESKTOP_DEFAULT(name) RFPTarget::name |
 #endif
+
+const RFPTarget kDefaultFingerprintingProtections =
+#include "RFPTargetsDefault.inc"
+    static_cast<RFPTarget>(0);
+
+#undef ANDROID_DEFAULT
+#undef DESKTOP_DEFAULT
 
 static constexpr uint32_t kSuspiciousFingerprintingActivityThreshold = 1;
 
@@ -410,7 +422,7 @@ sec_per_extra_frame = 1 / (extra_frames_per_frame * 60) // 833.33
 min_per_extra_frame = sec_per_extra_frame / 60 // 13.89
 ```
 We expect an extra frame every ~14 minutes, which is enough to be smooth.
-16.67 would be ~1.4 minutes, which is OK, but is more noticable.
+16.67 would be ~1.4 minutes, which is OK, but is more noticeable.
 Put another way, if this is the only unacceptable hitch you have across 14
 minutes, I'm impressed, and we might revisit this.
 */
@@ -631,14 +643,13 @@ double nsRFPService::ReduceTimePrecisionImpl(double aTime, TimeScale aTimeScale,
     nsAutoCString type;
     TypeToText(aType, type);
     MOZ_LOG(
-        gResistFingerprintingLog, LogLevel::Error,
+        gTimestamps, LogLevel::Error,
         ("About to assert. aTime=%lli<%lli aContextMixin=%" PRId64 " aType=%s",
          timeAsInt, kFeb282008, aContextMixin, type.get()));
-    MOZ_ASSERT(
-        false,
-        "ReduceTimePrecisionImpl was given a relative time "
-        "with an empty context mix-in (or your clock is 10+ years off.) "
-        "Run this with MOZ_LOG=nsResistFingerprinting:1 to get more details.");
+    MOZ_ASSERT(false,
+               "ReduceTimePrecisionImpl was given a relative time "
+               "with an empty context mix-in (or your clock is 10+ years off.) "
+               "Run this with MOZ_LOG=Timestamps:1 to get more details.");
   }
 
   // Cast the resolution (in microseconds) to an int.
@@ -673,7 +684,7 @@ double nsRFPService::ReduceTimePrecisionImpl(double aTime, TimeScale aTimeScale,
   double ret = double(clampedAndJittered) / (1000000.0 / double(aTimeScale));
 
   MOZ_LOG(
-      gResistFingerprintingLog, LogLevel::Verbose,
+      gTimestamps, LogLevel::Verbose,
       ("Given: (%.*f, Scaled: %.*f, Converted: %lli), Rounding %s with (%lli, "
        "Originally %.*f), "
        "Intermediate: (%lli), Clamped: (%lli) Jitter: (%i Context: %" PRId64
@@ -1338,6 +1349,59 @@ Maybe<nsTArray<uint8_t>> nsRFPService::GenerateKey(nsIChannel* aChannel) {
   return key;
 }
 
+// static
+Maybe<nsTArray<uint8_t>> nsRFPService::GenerateKeyForServiceWorker(
+    nsIURI* aURI, bool aForeignByAncestorContext) {
+  MOZ_ASSERT(XRE_IsParentProcess());
+  MOZ_ASSERT(aURI);
+
+  RefPtr<nsRFPService> service = GetOrCreate();
+
+  RefPtr<nsIPrincipal> principal =
+      BasePrincipal::CreateContentPrincipal(aURI->GetSpecOrDefault());
+  OriginAttributes attrs = principal->OriginAttributesRef();
+  attrs.SetPartitionKey(aURI, aForeignByAncestorContext);
+
+  nsAutoCString oaSuffix;
+  attrs.CreateSuffix(oaSuffix);
+
+  nsID sessionKey = {};
+  if (NS_FAILED(service->GetBrowsingSessionKey(attrs, sessionKey))) {
+    return Nothing();
+  }
+  auto sessionKeyStr = sessionKey.ToString();
+
+  // Generate the key by using the hMAC. The key is based on the session key and
+  // the partitionKey, i.e. top-level site.
+  HMAC hmac;
+
+  nsresult rv = hmac.Begin(
+      SEC_OID_SHA256,
+      Span(reinterpret_cast<const uint8_t*>(sessionKeyStr.get()), NSID_LENGTH));
+  if (NS_WARN_IF(NS_FAILED(rv))) {
+    return Nothing();
+  }
+
+  // Using the OriginAttributes to get the top level site. The site is composed
+  // of scheme, host, and port.
+  NS_ConvertUTF16toUTF8 topLevelSite(attrs.mPartitionKey);
+  rv = hmac.Update(reinterpret_cast<const uint8_t*>(topLevelSite.get()),
+                   topLevelSite.Length());
+  if (NS_WARN_IF(NS_FAILED(rv))) {
+    return Nothing();
+  }
+
+  Maybe<nsTArray<uint8_t>> key;
+  key.emplace();
+
+  rv = hmac.End(key.ref());
+  if (NS_WARN_IF(NS_FAILED(rv))) {
+    return Nothing();
+  }
+
+  return key;
+}
+
 NS_IMETHODIMP
 nsRFPService::CleanAllRandomKeys() {
   MOZ_ASSERT(XRE_IsParentProcess());
@@ -1879,6 +1943,22 @@ bool nsRFPService::CheckSuspiciousFingerprintingActivity(
 }
 
 /* static */
+bool nsRFPService::IsSoftwareRenderingOptionExposed(JSContext* aCx,
+                                                    JSObject* aObj) {
+  if (!NS_IsMainThread()) {
+    return false;
+  }
+
+  nsIPrincipal* principal = nsContentUtils::SubjectPrincipal(aCx);
+  if (principal->IsSystemPrincipal()) {
+    return true;
+  }
+
+  return principal->Equals(
+      nsContentUtils::GetFingerprintingProtectionPrincipal());
+}
+
+/* static */
 nsresult nsRFPService::CreateOverrideDomainKey(
     nsIFingerprintingOverride* aOverride, nsACString& aDomainKey) {
   MOZ_ASSERT(aOverride);
@@ -2268,4 +2348,36 @@ Maybe<RFPTarget> nsRFPService::GetOverriddenFingerprintingSettingsForURI(
   }
 
   return result;
+}
+
+/* static */
+void nsRFPService::GetMediaDeviceName(nsString& aName,
+                                      dom::MediaDeviceKind aKind) {
+  switch (aKind) {
+    case dom::MediaDeviceKind::Audioinput:
+      aName.Assign(u"Internal Microphone"_ns);
+      break;
+    case dom::MediaDeviceKind::Videoinput:
+      aName = u"Internal Camera"_ns;
+      break;
+    case dom::MediaDeviceKind::Audiooutput:
+      aName = u"Internal Speaker"_ns;
+      break;
+  }
+}
+
+/* static */
+void nsRFPService::GetMediaDeviceGroup(nsString& aGroup,
+                                       dom::MediaDeviceKind aKind) {
+  switch (aKind) {
+    case dom::MediaDeviceKind::Audioinput:
+      aGroup.Assign(u"Audio Device Group"_ns);
+      break;
+    case dom::MediaDeviceKind::Videoinput:
+      aGroup = u"Video Device Group"_ns;
+      break;
+    case dom::MediaDeviceKind::Audiooutput:
+      aGroup = u"Speaker Device Group"_ns;
+      break;
+  }
 }

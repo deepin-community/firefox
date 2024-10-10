@@ -22,7 +22,7 @@ aboutdialog-update-downloading = ਅੱਪਡੇਟ ਡਾਊਨਲੋਡ ਕੀ
 ##
 
 update-applying = ਅੱਪਡੇਟ ਨੂੰ ਲਾਗੂ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ...
-update-failed = ਅੱਪਡੇਟ ਅਸਫਲ ਹੋਈ। <label data-l10n-name="failed-link">ਨਵੀਂ ਵੰਨਗੀ ਡਾਊਨਲੋਡ ਕਰੋ</label>
+update-failed = ਅੱਪਡੇਟ ਫੇਲ੍ਹ ਹੋਇਆ। <label data-l10n-name="failed-link">ਨਵਾਂ ਵਰਜ਼ਨ ਡਾਊਨਲੋਡ ਕਰੋ</label>
 update-failed-main = ਅੱਪਡੇਟ ਨਾਕਾਮਯਾਬ ਹੋਈ। <a data-l10n-name="failed-link-main">ਸੱਜਰੀ ਵੰਨਗੀ ਡਾਊਨਲੋਡ ਕਰੋ</a>
 update-adminDisabled = ਤੁਹਾਡੇ ਢਾਂਚਾ ਪਰਸ਼ਾਸ਼ਕ ਵਲੋਂ ਅੱਪਡੇਟਾਂ ਤੇ ਪਾਬੰਦੀ ਲੱਗੀ ਹੋਈ ਹੈ।
 update-policy-disabled = ਅੱਪਡੇਟ ਆਪਣੇ ਸੰਗਠਨ ਵਲੋਂ ਅਸਮਰੱਥ ਕੀਤੇ ਹਨ
@@ -64,3 +64,14 @@ aboutDialog-version = { $version } ({ $bits }-ਬਿੱਟ)
 #   $isodate (String): date in ISO format, e.g. 2019-01-16
 #   $bits (Number): bits of the architecture (32 or 64)
 aboutDialog-version-nightly = { $version } ({ $isodate }) ({ $bits }-ਬਿੱਟ)
+# Example of resulting string: 131.0a1 (aarch64)
+# Variables:
+#   $version (String): version of Firefox, e.g. 66.0.1
+#   $arch (String): name of the architecture (arm, aarch64, etc.)
+aboutdialog-version-arch = { $version } ({ $arch })
+# Example of resulting string: 131.0a1 (2024-08-27) (aarch64)
+# Variables:
+#   $version (String): version of Firefox for Nightly builds, e.g. 66.0a1
+#   $isodate (String): date in ISO format, e.g. 2019-01-16
+#   $arch (String): name of the architecture (arm, aarch64, etc.)
+aboutdialog-version-arch-nightly = { $version } ({ $isodate }) ({ $arch })

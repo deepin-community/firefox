@@ -351,13 +351,26 @@ static SVGTextFrame* FrameIfAnonymousChildReflowed(SVGTextFrame* aFrame) {
   return aFrame;
 }
 
-static double GetContextScale(const gfxMatrix& aMatrix) {
-  // The context scale is the ratio of the length of the transformed
-  // diagonal vector (1,1) to the length of the untransformed diagonal
-  // (which is sqrt(2)).
-  gfxPoint p = aMatrix.TransformPoint(gfxPoint(1, 1)) -
-               aMatrix.TransformPoint(gfxPoint(0, 0));
-  return SVGContentUtils::ComputeNormalizedHypotenuse(p.x, p.y);
+// FIXME(emilio): SVG is a special-case where transforms affect layout. We don't
+// want that to go outside the SVG stuff (and really we should aim to remove
+// that).
+static float GetContextScale(SVGTextFrame* aFrame) {
+  if (aFrame->HasAnyStateBits(NS_FRAME_IS_NONDISPLAY)) {
+    // When we are non-display, we could be painted in different coordinate
+    // spaces, and we don't want to have to reflow for each of these.  We just
+    // assume that the context scale is 1.0 for them all, so we don't get stuck
+    // with a font size scale factor based on whichever referencing frame
+    // happens to reflow first.
+    return 1.0f;
+  }
+  auto matrix = nsLayoutUtils::GetTransformToAncestor(
+      RelativeTo{aFrame}, RelativeTo{SVGUtils::GetOuterSVGFrame(aFrame)});
+  Matrix transform2D;
+  if (!matrix.CanDraw2D(&transform2D)) {
+    return {};
+  }
+  auto scales = transform2D.ScaleFactors();
+  return std::max(1.0f, std::max(scales.xScale, scales.yScale));
 }
 
 // ============================================================================
@@ -868,12 +881,6 @@ SVGBBox TextRenderedRun::GetRunUserSpaceRect(nsPresContext* aContext,
       gfxRect(fillInAppUnits.x, fillInAppUnits.y, fillInAppUnits.width,
               fillInAppUnits.height),
       aContext);
-
-  if (vertical) {
-    fill.Scale(1.0, mLengthAdjustScaleFactor);
-  } else {
-    fill.Scale(mLengthAdjustScaleFactor, 1.0);
-  }
 
   // Scale the rectangle up due to any mFontSizeScaleFactor.
   fill.Scale(1.0 / mFontSizeScaleFactor);
@@ -2554,14 +2561,8 @@ void SVGTextDrawPathCallbacks::SetupContext() {
   // XXX This is copied from nsSVGGlyphFrame::Render, but cairo doesn't actually
   // seem to do anything with the antialias mode.  So we can perhaps remove it,
   // or make SetAntialiasMode set cairo text antialiasing too.
-  switch (mFrame->StyleText()->mTextRendering) {
-    case StyleTextRendering::Optimizespeed:
-      mContext.SetAntialiasMode(AntialiasMode::NONE);
-      break;
-    default:
-      mContext.SetAntialiasMode(AntialiasMode::SUBPIXEL);
-      break;
-  }
+  mContext.SetAntialiasMode(
+      SVGUtils::ToAntialiasMode(mFrame->StyleText()->mTextRendering));
 }
 
 void SVGTextDrawPathCallbacks::HandleTextGeometry() {
@@ -3005,16 +3006,16 @@ void SVGTextFrame::NotifySVGChanged(uint32_t aFlags) {
   // do not get too far out of sync with the final font size on the screen.
   if (needNewCanvasTM && mLastContextScale != 0.0f) {
     mCanvasTM = nullptr;
-    // If we are a non-display frame, then we don't want to call
-    // GetCanvasTM(), since the context scale does not use it.
-    gfxMatrix newTM =
-        HasAnyStateBits(NS_FRAME_IS_NONDISPLAY) ? gfxMatrix() : GetCanvasTM();
-    // Compare the old and new context scales.
-    float scale = GetContextScale(newTM);
-    float change = scale / mLastContextScale;
-    if (change >= 2.0f || change <= 0.5f) {
-      needNewBounds = true;
-      needGlyphMetricsUpdate = true;
+    // If we are a non-display frame, then we don't want to get the transform
+    // since the context scale does not use it.
+    if (!HasAnyStateBits(NS_FRAME_IS_NONDISPLAY)) {
+      // Compare the old and new context scales.
+      float scale = GetContextScale(this);
+      float change = scale / mLastContextScale;
+      if (change >= 2.0f || change <= 0.5f) {
+        needNewBounds = true;
+        needGlyphMetricsUpdate = true;
+      }
     }
   }
 
@@ -3142,7 +3143,7 @@ void SVGTextFrame::PaintSVG(gfxContext& aContext, const gfxMatrix& aTransform,
   while (run.mFrame) {
     nsTextFrame* frame = run.mFrame;
 
-    RefPtr<SVGContextPaintImpl> contextPaint = new SVGContextPaintImpl();
+    auto contextPaint = MakeRefPtr<SVGContextPaintImpl>();
     DrawMode drawMode = contextPaint->Init(&aDrawTarget, initialMatrix, frame,
                                            outerContextPaint, aImgParams);
     if (drawMode & DrawMode::GLYPH_STROKE) {
@@ -4518,7 +4519,8 @@ already_AddRefed<Path> SVGTextFrame::GetTextPath(nsIFrame* aTextPathFrame) {
   if (tp->mPath.IsRendered()) {
     // This is just an attribute so there's no transform that can apply
     // so we can just return the path directly.
-    return tp->mPath.GetAnimValue().BuildPathForMeasuring();
+    return tp->mPath.GetAnimValue().BuildPathForMeasuring(
+        aTextPathFrame->Style()->EffectiveZoom().ToFloat());
   }
 
   SVGGeometryElement* geomElement =
@@ -4532,11 +4534,10 @@ already_AddRefed<Path> SVGTextFrame::GetTextPath(nsIFrame* aTextPathFrame) {
     return nullptr;
   }
 
-  gfxMatrix matrix = geomElement->PrependLocalTransformsTo(gfxMatrix());
+  // Apply the geometry element's transform if appropriate.
+  auto matrix = geomElement->LocalTransform();
   if (!matrix.IsIdentity()) {
-    // Apply the geometry element's transform
-    RefPtr<PathBuilder> builder =
-        path->TransformedCopyToBuilder(ToMatrix(matrix));
+    RefPtr<PathBuilder> builder = path->TransformedCopyToBuilder(matrix);
     path = builder->Finish();
   }
 
@@ -4576,7 +4577,7 @@ gfxFloat SVGTextFrame::GetStartOffset(nsIFrame* aTextPathFrame) {
                       100.0
                 : 0.0;
   }
-  float lengthValue = length->GetAnimValue(tp);
+  float lengthValue = length->GetAnimValueWithZoom(tp);
   // If offsetScale is infinity we want to return 0 not NaN
   return lengthValue == 0 ? 0.0 : lengthValue * GetOffsetScale(aTextPathFrame);
 }
@@ -4739,8 +4740,8 @@ void SVGTextFrame::DoAnchoring() {
   }
 
   bool vertical = GetWritingMode().IsVertical();
-  uint32_t start = it.TextElementCharIndex();
-  while (start < mPositions.Length()) {
+  for (uint32_t start = it.TextElementCharIndex(); start < mPositions.Length();
+       start = it.TextElementCharIndex()) {
     it.AdvanceToCharacter(start);
     nsTextFrame* chunkFrame = it.TextFrame();
 
@@ -4776,8 +4777,6 @@ void SVGTextFrame::DoAnchoring() {
 
       ShiftAnchoredChunk(mPositions, start, end, left, right, anchor, vertical);
     }
-
-    start = it.TextElementCharIndex();
   }
 }
 
@@ -4814,7 +4813,7 @@ void SVGTextFrame::DoGlyphPositioning() {
       element->EnumAttributes()[SVGTextContentElement::LENGTHADJUST]
           .GetAnimValue();
   bool adjustingTextLength = textLengthAttr->IsExplicitlySet();
-  float expectedTextLength = textLengthAttr->GetAnimValue(element);
+  float expectedTextLength = textLengthAttr->GetAnimValueWithZoom(element);
 
   if (adjustingTextLength &&
       (expectedTextLength < 0.0f || lengthAdjust == LENGTHADJUST_UNKNOWN)) {
@@ -4840,15 +4839,19 @@ void SVGTextFrame::DoGlyphPositioning() {
   TruncateTo(deltas, charPositions);
   TruncateTo(mPositions, charPositions);
 
-  // Fill in an unspecified character position at index 0.
-  if (!mPositions[0].IsXSpecified()) {
-    mPositions[0].mPosition.x = 0.0;
+  // Fill in an unspecified position for the first addressable character.
+  uint32_t first = 0;
+  while (first + 1 < mPositions.Length() && mPositions[first].mUnaddressable) {
+    ++first;
   }
-  if (!mPositions[0].IsYSpecified()) {
-    mPositions[0].mPosition.y = 0.0;
+  if (!mPositions[first].IsXSpecified()) {
+    mPositions[first].mPosition.x = 0.0;
   }
-  if (!mPositions[0].IsAngleSpecified()) {
-    mPositions[0].mAngle = 0.0;
+  if (!mPositions[first].IsYSpecified()) {
+    mPositions[first].mPosition.y = 0.0;
+  }
+  if (!mPositions[first].IsAngleSpecified()) {
+    mPositions[first].mAngle = 0.0;
   }
 
   nsPresContext* presContext = PresContext();
@@ -5128,8 +5131,6 @@ void SVGTextFrame::DoReflow() {
 bool SVGTextFrame::UpdateFontSizeScaleFactor() {
   double oldFontSizeScaleFactor = mFontSizeScaleFactor;
 
-  nsPresContext* presContext = PresContext();
-
   bool geometricPrecision = false;
   CSSCoord min = std::numeric_limits<float>::max();
   CSSCoord max = std::numeric_limits<float>::min();
@@ -5167,30 +5168,8 @@ bool SVGTextFrame::UpdateFontSizeScaleFactor() {
     return mFontSizeScaleFactor != oldFontSizeScaleFactor;
   }
 
-  // When we are non-display, we could be painted in different coordinate
-  // spaces, and we don't want to have to reflow for each of these.  We
-  // just assume that the context scale is 1.0 for them all, so we don't
-  // get stuck with a font size scale factor based on whichever referencing
-  // frame happens to reflow first.
-  double contextScale = 1.0;
-  if (!HasAnyStateBits(NS_FRAME_IS_NONDISPLAY)) {
-    gfxMatrix m(GetCanvasTM());
-    if (!m.IsSingular()) {
-      contextScale = GetContextScale(m);
-      if (!std::isfinite(contextScale)) {
-        contextScale = 1.0f;
-      }
-    }
-  }
+  float contextScale = GetContextScale(this);
   mLastContextScale = contextScale;
-
-  // But we want to ignore any scaling required due to HiDPI displays, since
-  // regular CSS text frames will still create text runs using the font size
-  // in CSS pixels, and we want SVG text to have the same rendering as HTML
-  // text for regular font sizes.
-  float cssPxPerDevPx = nsPresContext::AppUnitsToFloatCSSPixels(
-      presContext->AppUnitsPerDevPixel());
-  contextScale *= cssPxPerDevPx;
 
   double minTextRunSize = min * contextScale;
   double maxTextRunSize = max * contextScale;

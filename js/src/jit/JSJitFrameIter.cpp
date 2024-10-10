@@ -26,22 +26,29 @@ using namespace js;
 using namespace js::jit;
 
 JSJitFrameIter::JSJitFrameIter(const JitActivation* activation)
-    : JSJitFrameIter(activation, FrameType::Exit, activation->jsExitFP()) {}
-
-JSJitFrameIter::JSJitFrameIter(const JitActivation* activation,
-                               FrameType frameType, uint8_t* fp)
-    : current_(fp),
-      type_(frameType),
-      resumePCinCurrentFrame_(nullptr),
-      cachedSafepointIndex_(nullptr),
+    : current_(activation->jsExitFP()),
+      type_(FrameType::Exit),
       activation_(activation) {
-  MOZ_ASSERT(type_ == FrameType::JSJitToWasm || type_ == FrameType::Exit);
+  // If we're currently performing a bailout, we have to use the activation's
+  // bailout data when we start iterating over the activation's frames.
   if (activation_->bailoutData()) {
     current_ = activation_->bailoutData()->fp();
     type_ = FrameType::Bailout;
-  } else {
-    MOZ_ASSERT(!TlsContext.get()->inUnsafeCallWithABI);
   }
+  MOZ_ASSERT(!TlsContext.get()->inUnsafeCallWithABI);
+}
+
+JSJitFrameIter::JSJitFrameIter(const JitActivation* activation, uint8_t* fp,
+                               bool unwinding)
+    : current_(fp), type_(FrameType::Exit), activation_(activation) {
+  // This constructor is only used when resuming iteration after iterating Wasm
+  // frames in the same JitActivation so ignore activation_->bailoutData().
+  if (unwinding) {
+    MOZ_ASSERT(fp == activation->jsExitFP());
+  } else {
+    MOZ_ASSERT(fp > activation->jsOrWasmExitFP());
+  }
+  MOZ_ASSERT(!TlsContext.get()->inUnsafeCallWithABI);
 }
 
 bool JSJitFrameIter::checkInvalidation() const {
@@ -397,9 +404,6 @@ void JSJitFrameIter::dump() const {
       break;
     case FrameType::Exit:
       fprintf(stderr, " Exit frame\n");
-      break;
-    case FrameType::JSJitToWasm:
-      fprintf(stderr, " Wasm exit frame\n");
       break;
   };
   fputc('\n', stderr);
@@ -804,7 +808,6 @@ void JSJitProfilingFrameIterator::moveToNextFrame(CommonFrameLayout* frame) {
     case FrameType::TrampolineNative:
     case FrameType::Exit:
     case FrameType::Bailout:
-    case FrameType::JSJitToWasm:
       // Rectifier and Baseline Interpreter entry frames are handled before
       // this switch. The other frame types can't call JS functions directly.
       break;

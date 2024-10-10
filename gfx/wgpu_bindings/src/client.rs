@@ -13,7 +13,6 @@ use crate::SwapChainId;
 use wgc::{id, identity::IdentityManager};
 use wgt::{Backend, TextureFormat};
 
-pub use wgc::command::{compute_ffi::*, render_ffi::*};
 use wgc::id::markers;
 
 use parking_lot::Mutex;
@@ -38,16 +37,38 @@ fn make_byte_buf<T: serde::Serialize>(data: &T) -> ByteBuf {
 }
 
 #[repr(C)]
+pub struct ConstantEntry {
+    key: RawString,
+    value: f64,
+}
+
+#[repr(C)]
 pub struct ProgrammableStageDescriptor {
     module: id::ShaderModuleId,
     entry_point: RawString,
+    constants: *const ConstantEntry,
+    constants_length: usize,
 }
 
 impl ProgrammableStageDescriptor {
     fn to_wgpu(&self) -> wgc::pipeline::ProgrammableStageDescriptor {
+        let constants = make_slice(self.constants, self.constants_length)
+            .iter()
+            .map(|ce| {
+                (
+                    unsafe { std::ffi::CStr::from_ptr(ce.key) }
+                        .to_str()
+                        .unwrap()
+                        .to_string(),
+                    ce.value,
+                )
+            })
+            .collect();
         wgc::pipeline::ProgrammableStageDescriptor {
             module: self.module,
             entry_point: cow_label(&self.entry_point),
+            constants: Cow::Owned(constants),
+            zero_initialize_workgroup_memory: true,
         }
     }
 }
@@ -268,6 +289,7 @@ pub struct RenderBundleEncoderDescriptor<'a> {
 struct IdentityHub {
     adapters: IdentityManager<markers::Adapter>,
     devices: IdentityManager<markers::Device>,
+    queues: IdentityManager<markers::Queue>,
     buffers: IdentityManager<markers::Buffer>,
     command_buffers: IdentityManager<markers::CommandBuffer>,
     render_bundles: IdentityManager<markers::RenderBundle>,
@@ -287,6 +309,7 @@ impl Default for IdentityHub {
         IdentityHub {
             adapters: IdentityManager::new(),
             devices: IdentityManager::new(),
+            queues: IdentityManager::new(),
             buffers: IdentityManager::new(),
             command_buffers: IdentityManager::new(),
             render_bundles: IdentityManager::new(),
@@ -309,7 +332,7 @@ impl ImplicitLayout<'_> {
             pipeline: identities.pipeline_layouts.process(backend),
             bind_groups: Cow::Owned(
                 (0..8) // hal::MAX_BIND_GROUPS
-                    .map(|_| Some(identities.bind_group_layouts.process(backend)))
+                    .map(|_| identities.bind_group_layouts.process(backend))
                     .collect(),
             ),
         }
@@ -487,27 +510,45 @@ pub extern "C" fn wgpu_client_adapter_extract_info(
     };
 }
 
-#[no_mangle]
-pub extern "C" fn wgpu_client_serialize_device_descriptor(
-    desc: &wgt::DeviceDescriptor<Option<&nsACString>>,
-    bb: &mut ByteBuf,
-) {
-    let label = wgpu_string(desc.label);
-    *bb = make_byte_buf(&desc.map_label(|_| label));
+#[repr(C)]
+pub struct FfiDeviceDescriptor<'a> {
+    pub label: Option<&'a nsACString>,
+    pub required_features: wgt::Features,
+    pub required_limits: wgt::Limits,
 }
 
 #[no_mangle]
-pub extern "C" fn wgpu_client_make_device_id(
+pub extern "C" fn wgpu_client_serialize_device_descriptor(
+    desc: &FfiDeviceDescriptor,
+    bb: &mut ByteBuf,
+) {
+    let label = wgpu_string(desc.label);
+    let desc = wgt::DeviceDescriptor {
+        label,
+        required_features: desc.required_features.clone(),
+        required_limits: desc.required_limits.clone(),
+        memory_hints: wgt::MemoryHints::MemoryUsage,
+    };
+    *bb = make_byte_buf(&desc);
+}
+
+#[repr(C)]
+pub struct DeviceQueueId {
+    device: id::DeviceId,
+    queue: id::QueueId,
+}
+
+#[no_mangle]
+pub extern "C" fn wgpu_client_make_device_queue_id(
     client: &Client,
     adapter_id: id::AdapterId,
-) -> id::DeviceId {
+) -> DeviceQueueId {
     let backend = adapter_id.backend();
-    client
-        .identities
-        .lock()
-        .select(backend)
-        .devices
-        .process(backend)
+    let mut identities_guard = client.identities.lock();
+    let hub = identities_guard.select(backend);
+    let device = hub.devices.process(backend);
+    let queue = hub.queues.process(backend);
+    DeviceQueueId { device, queue }
 }
 
 #[no_mangle]
@@ -525,17 +566,9 @@ pub extern "C" fn wgpu_client_make_buffer_id(
 }
 
 #[no_mangle]
-pub extern "C" fn wgpu_client_free_buffer_id(
-    client: &Client,
-    id: id::BufferId,
-) {
+pub extern "C" fn wgpu_client_free_buffer_id(client: &Client, id: id::BufferId) {
     let backend = id.backend();
-    client
-        .identities
-        .lock()
-        .select(backend)
-        .buffers
-        .free(id)
+    client.identities.lock().select(backend).buffers.free(id)
 }
 
 #[no_mangle]
@@ -569,19 +602,10 @@ pub extern "C" fn wgpu_client_create_texture(
 }
 
 #[no_mangle]
-pub extern "C" fn wgpu_client_free_texture_id(
-    client: &Client,
-    id: id::TextureId,
-) {
+pub extern "C" fn wgpu_client_free_texture_id(client: &Client, id: id::TextureId) {
     let backend = id.backend();
-    client
-        .identities
-        .lock()
-        .select(backend)
-        .textures
-        .free(id)
+    client.identities.lock().select(backend).textures.free(id)
 }
-
 
 #[no_mangle]
 pub extern "C" fn wgpu_client_create_texture_view(
@@ -619,10 +643,7 @@ pub extern "C" fn wgpu_client_create_texture_view(
 }
 
 #[no_mangle]
-pub extern "C" fn wgpu_client_free_texture_view_id(
-    client: &Client,
-    id: id::TextureViewId,
-) {
+pub extern "C" fn wgpu_client_free_texture_view_id(client: &Client, id: id::TextureViewId) {
     let backend = id.backend();
     client
         .identities
@@ -667,17 +688,9 @@ pub extern "C" fn wgpu_client_create_sampler(
 }
 
 #[no_mangle]
-pub extern "C" fn wgpu_client_free_sampler_id(
-    client: &Client,
-    id: id::SamplerId,
-) {
+pub extern "C" fn wgpu_client_free_sampler_id(client: &Client, id: id::SamplerId) {
     let backend = id.backend();
-    client
-        .identities
-        .lock()
-        .select(backend)
-        .samplers
-        .free(id)
+    client.identities.lock().select(backend).samplers.free(id)
 }
 
 #[no_mangle]
@@ -692,23 +705,19 @@ pub extern "C" fn wgpu_client_make_encoder_id(
         .select(backend)
         .command_buffers
         .process(backend)
-        .transmute()
+        .into_command_encoder_id()
 }
 
 #[no_mangle]
-pub extern "C" fn wgpu_client_free_command_encoder_id(
-    client: &Client,
-    id: id::CommandEncoderId,
-) {
+pub extern "C" fn wgpu_client_free_command_encoder_id(client: &Client, id: id::CommandEncoderId) {
     let backend = id.backend();
     client
         .identities
         .lock()
         .select(backend)
         .command_buffers
-        .free(id.transmute())
+        .free(id.into_command_buffer_id())
 }
-
 
 #[no_mangle]
 pub extern "C" fn wgpu_client_create_command_encoder(
@@ -726,7 +735,7 @@ pub extern "C" fn wgpu_client_create_command_encoder(
         .select(backend)
         .command_buffers
         .process(backend)
-        .transmute();
+        .into_command_encoder_id();
 
     let action = DeviceAction::CreateCommandEncoder(id, desc.map_label(|_| label));
     *bb = make_byte_buf(&action);
@@ -771,7 +780,6 @@ pub extern "C" fn wgpu_device_create_render_bundle_encoder(
         }
     }
 }
-
 
 #[no_mangle]
 pub unsafe extern "C" fn wgpu_render_bundle_encoder_destroy(
@@ -829,10 +837,7 @@ pub unsafe extern "C" fn wgpu_client_create_render_bundle_error(
 }
 
 #[no_mangle]
-pub extern "C" fn wgpu_client_free_render_bundle_id(
-    client: &Client,
-    id: id::RenderBundleId,
-) {
+pub extern "C" fn wgpu_client_free_render_bundle_id(client: &Client, id: id::RenderBundleId) {
     let backend = id.backend();
     client
         .identities
@@ -845,11 +850,11 @@ pub extern "C" fn wgpu_client_free_render_bundle_id(
 #[repr(C)]
 pub struct ComputePassDescriptor<'a> {
     pub label: Option<&'a nsACString>,
-    pub timestamp_writes: Option<&'a ComputePassTimestampWrites<'a>>,
+    pub timestamp_writes: Option<&'a PassTimestampWrites<'a>>,
 }
 
 #[repr(C)]
-pub struct ComputePassTimestampWrites<'a> {
+pub struct PassTimestampWrites<'a> {
     pub query_set: id::QuerySetId,
     pub beginning_of_pass_write_index: Option<&'a u32>,
     pub end_of_pass_write_index: Option<&'a u32>,
@@ -867,14 +872,14 @@ pub unsafe extern "C" fn wgpu_command_encoder_begin_compute_pass(
     let label = wgpu_string(label);
 
     let timestamp_writes = timestamp_writes.map(|tsw| {
-        let &ComputePassTimestampWrites {
+        let &PassTimestampWrites {
             query_set,
             beginning_of_pass_write_index,
             end_of_pass_write_index,
         } = tsw;
         let beginning_of_pass_write_index = beginning_of_pass_write_index.cloned();
         let end_of_pass_write_index = end_of_pass_write_index.cloned();
-        wgc::command::ComputePassTimestampWrites {
+        wgc::command::PassTimestampWrites {
             query_set,
             beginning_of_pass_write_index,
             end_of_pass_write_index,
@@ -909,15 +914,8 @@ pub struct RenderPassDescriptor<'a> {
     pub color_attachments: *const wgc::command::RenderPassColorAttachment,
     pub color_attachments_length: usize,
     pub depth_stencil_attachment: *const wgc::command::RenderPassDepthStencilAttachment,
-    pub timestamp_writes: Option<&'a RenderPassTimestampWrites<'a>>,
+    pub timestamp_writes: Option<&'a PassTimestampWrites<'a>>,
     pub occlusion_query_set: Option<wgc::id::QuerySetId>,
-}
-
-#[repr(C)]
-pub struct RenderPassTimestampWrites<'a> {
-    pub query_set: wgc::id::QuerySetId,
-    pub beginning_of_pass_write_index: Option<&'a u32>,
-    pub end_of_pass_write_index: Option<&'a u32>,
 }
 
 #[no_mangle]
@@ -936,14 +934,14 @@ pub unsafe extern "C" fn wgpu_command_encoder_begin_render_pass(
     let label = wgpu_string(label);
 
     let timestamp_writes = timestamp_writes.map(|tsw| {
-        let &RenderPassTimestampWrites {
+        let &PassTimestampWrites {
             query_set,
             beginning_of_pass_write_index,
             end_of_pass_write_index,
         } = tsw;
         let beginning_of_pass_write_index = beginning_of_pass_write_index.cloned();
         let end_of_pass_write_index = end_of_pass_write_index.cloned();
-        wgc::command::RenderPassTimestampWrites {
+        wgc::command::PassTimestampWrites {
             query_set,
             beginning_of_pass_write_index,
             end_of_pass_write_index,
@@ -1160,10 +1158,7 @@ pub unsafe extern "C" fn wgpu_client_create_pipeline_layout(
 }
 
 #[no_mangle]
-pub extern "C" fn wgpu_client_free_pipeline_layout_id(
-    client: &Client,
-    id: id::PipelineLayoutId,
-) {
+pub extern "C" fn wgpu_client_free_pipeline_layout_id(client: &Client, id: id::PipelineLayoutId) {
     let backend = id.backend();
     client
         .identities
@@ -1221,10 +1216,7 @@ pub unsafe extern "C" fn wgpu_client_create_bind_group(
 }
 
 #[no_mangle]
-pub extern "C" fn wgpu_client_free_bind_group_id(
-    client: &Client,
-    id: id::BindGroupId,
-) {
+pub extern "C" fn wgpu_client_free_bind_group_id(client: &Client, id: id::BindGroupId) {
     let backend = id.backend();
     client
         .identities
@@ -1249,10 +1241,7 @@ pub extern "C" fn wgpu_client_make_shader_module_id(
 }
 
 #[no_mangle]
-pub extern "C" fn wgpu_client_free_shader_module_id(
-    client: &Client,
-    id: id::ShaderModuleId,
-) {
+pub extern "C" fn wgpu_client_free_shader_module_id(client: &Client, id: id::ShaderModuleId) {
     let backend = id.backend();
     client
         .identities
@@ -1284,6 +1273,7 @@ pub unsafe extern "C" fn wgpu_client_create_compute_pipeline(
         label,
         layout: desc.layout,
         stage: desc.stage.to_wgpu(),
+        cache: None,
     };
 
     let implicit = match desc.layout {
@@ -1292,7 +1282,7 @@ pub unsafe extern "C" fn wgpu_client_create_compute_pipeline(
             let implicit = ImplicitLayout::new(identities.select(backend), backend);
             ptr::write(implicit_pipeline_layout_id, Some(implicit.pipeline));
             for (i, bgl_id) in implicit.bind_groups.iter().enumerate() {
-                *implicit_bind_group_layout_ids.add(i) = *bgl_id;
+                *implicit_bind_group_layout_ids.add(i) = Some(*bgl_id);
             }
             Some(implicit)
         }
@@ -1304,10 +1294,7 @@ pub unsafe extern "C" fn wgpu_client_create_compute_pipeline(
 }
 
 #[no_mangle]
-pub extern "C" fn wgpu_client_free_compute_pipeline_id(
-    client: &Client,
-    id: id::ComputePipelineId,
-) {
+pub extern "C" fn wgpu_client_free_compute_pipeline_id(client: &Client, id: id::ComputePipelineId) {
     let backend = id.backend();
     client
         .identities
@@ -1341,6 +1328,7 @@ pub unsafe extern "C" fn wgpu_client_create_render_pipeline(
         depth_stencil: desc.depth_stencil.cloned(),
         multisample: desc.multisample.clone(),
         multiview: None,
+        cache: None,
     };
 
     let implicit = match desc.layout {
@@ -1349,7 +1337,7 @@ pub unsafe extern "C" fn wgpu_client_create_render_pipeline(
             let implicit = ImplicitLayout::new(identities.select(backend), backend);
             ptr::write(implicit_pipeline_layout_id, Some(implicit.pipeline));
             for (i, bgl_id) in implicit.bind_groups.iter().enumerate() {
-                *implicit_bind_group_layout_ids.add(i) = *bgl_id;
+                *implicit_bind_group_layout_ids.add(i) = Some(*bgl_id);
             }
             Some(implicit)
         }
@@ -1361,10 +1349,7 @@ pub unsafe extern "C" fn wgpu_client_create_render_pipeline(
 }
 
 #[no_mangle]
-pub extern "C" fn wgpu_client_free_render_pipeline_id(
-    client: &Client,
-    id: id::RenderPipelineId,
-) {
+pub extern "C" fn wgpu_client_free_render_pipeline_id(client: &Client, id: id::RenderPipelineId) {
     let backend = id.backend();
     client
         .identities

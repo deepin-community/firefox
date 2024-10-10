@@ -129,7 +129,7 @@ urlbar-result-menu-tip-get-help =
 ## Variables:
 ##  $engineName (String): The name of the user's default search engine. e.g. "Google" or "DuckDuckGo".
 
-urlbar-search-tips-onboard = Tipkajte manj, najdite več: Iščite z iskalnikom { $engineName } iz vrstice z naslovom.
+urlbar-search-tips-onboard = Tipkajte manj, najdite več: Iščite z iskalnikom { $engineName } iz naslovne vrstice.
 urlbar-search-tips-redirect-2 = Začnite z iskanjem v naslovni vrstici ter spremljajte predloge iskalnika { $engineName } in zgodovine vašega brskanja.
 # Make sure to match the name of the Search panel in settings.
 urlbar-search-tips-persist = Iskanje je pravkar postalo preprostejše. Poskusite z natančnejšim iskanjem tukaj v naslovni vrstici. Za prikaz spletnega naslova si oglejte Iskanje v nastavitvah.
@@ -555,9 +555,13 @@ urlbar-switch-to-tab =
 urlbar-extension =
     .value = Razširitev:
 urlbar-go-button =
-    .tooltiptext = Odpri mesto v vrstici z naslovom
+    .tooltiptext = Odpri mesto v naslovni vrstici
 urlbar-page-action-button =
     .tooltiptext = Dejanja strani
+urlbar-revert-button =
+    .tooltiptext = Prikaži naslov v naslovni vrstici
+urlbar-show-page-actions-button =
+    .tooltiptext = Prikaži vsa dejanja strani
 
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
@@ -613,6 +617,12 @@ urlbar-result-action-copy-to-clipboard = Kopiraj
 #  $result (String): the string representation for a formula result
 urlbar-result-action-calculator-result = = { $result }
 
+## Strings used for buttons in the urlbar
+
+# Label prompting user to search with a particular search engine.
+#  $engine (String): the name of a search engine that searches a specific site
+urlbar-result-search-with = Išči z iskalnikom { $engine }
+
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
 ## In these actions "Search" is a verb, followed by where the search is performed.
@@ -642,6 +652,21 @@ urlbar-group-quickactions =
 #  $engine (String): the name of the search engine used to search.
 urlbar-group-recent-searches =
     .label = Nedavna iskanja
+# The header shown above trending results.
+# Variables:
+#  $engine (String): the name of the search engine providing the trending suggestions
+urlbar-group-trending =
+    .label = Trenutno priljubljeno – { $engine }
+# The result menu labels shown next to trending results.
+urlbar-result-menu-trending-dont-show =
+    .label = Ne prikazuj trenutno priljubljenih iskanj
+    .accesskey = N
+urlbar-result-menu-trending-why =
+    .label = Zakaj se to prikazuje?
+    .accesskey = Z
+# A message that replaces a result when the user dismisses all suggestions of a
+# particular type.
+urlbar-trending-dismissal-acknowledgment = Hvala za povratne informacije. Trenutno priljubljena iskanja se ne bodo več prikazovala.
 
 ## Reader View toolbar buttons
 
@@ -919,6 +944,15 @@ data-reporting-notification-button =
     .accesskey = I
 # Label for the indicator shown in the private browsing window titlebar.
 private-browsing-indicator-label = Zasebno brskanje
+# Tooltip for the indicator shown in the window titlebar when content analysis is active.
+# Variables:
+#   $agentName (String): The name of the DLP agent that is connected
+content-analysis-indicator-tooltip =
+    .tooltiptext = Preprečevanje izgube podatkov, ki ga omogoča { $agentName }. Kliknite za več informacij.
+content-analysis-panel-title = Varstvo podatkov
+# Variables:
+#   $agentName (String): The name of the DLP agent that is connected
+content-analysis-panel-text = Vaša organizacija za zaščito pred izgubo podatkov uporablja { $agentName }. <a data-l10n-name="info">Več o tem</a>
 
 ## Unified extensions (toolbar) button
 
@@ -983,6 +1017,10 @@ firefox-relay-offer-legal-notice = S klikom na "Uporabi e-poštno masko" se stri
 popup-notification-addon-install-unsigned =
     .value = (Nepotrjeno)
 popup-notification-xpinstall-prompt-learn-more = Več o varni namestitvi dodatkov
+# Note: Access key is set to P to match "Private" in the corresponding localized label.
+popup-notification-addon-privatebrowsing-checkbox =
+    .label = Delovanje v zasebnih oknih
+    .accesskey = z
 
 ## Pop-up warning
 
@@ -1019,3 +1057,24 @@ popup-warning-button =
 #   $popupURI (String): the URI for the pop-up window
 popup-show-popup-menuitem =
     .label = Pokaži '{ $popupURI }'
+
+## File-picker crash notification ("FilePickerCrashed.sys.mjs")
+
+file-picker-failed-open = Okna sistema Windows za izbiro mesta shranjevanja ni bilo mogoče odpreti. Datoteke ali mape ni bilo mogoče izbrati.
+#   $path (string): The full path to which the file will be saved (e.g., 'C:\Users\Default User\Downloads\readme.txt').
+file-picker-failed-save-somewhere = Okna sistema Windows za izbiro mesta shranjevanja ni bilo mogoče odpreti. Datoteka se bo shranila v { $path }.
+file-picker-failed-save-nowhere = Okna sistema Windows za izbiro mesta shranjevanja ni bilo mogoče odpreti. Privzete mape ni bilo mogoče najti, zato datoteka ne bo shranjena.
+file-picker-crashed-open = Okno sistema Windows za izbiro mesta shranjevanja se je sesulo. Datoteke ali mape ni bilo mogoče izbrati.
+#   $path (string): The full path to which the file will be saved (e.g., 'C:\Users\Default User\Downloads\readme.txt').
+file-picker-crashed-save-somewhere = Okno sistema Windows za izbiro mesta shranjevanja se je sesulo. Datoteka se bo shranila v { $path }.
+file-picker-crashed-save-nowhere = Okno sistema Windows za izbiro mesta shranjevanja se je sesulo. Privzete mape ni bilo mogoče najti, zato datoteka ne bo shranjena.
+
+# Button used with file-picker-crashed-save-default. Opens the folder in Windows
+# Explorer, with the saved file selected and in focus.
+#
+# The wording here should be consistent with the Windows variant of
+# `downloads-cmd-show-menuitem-2` and similar messages.
+
+file-picker-crashed-show-in-folder =
+    .label = Prikaži v mapi
+    .accessKey = m

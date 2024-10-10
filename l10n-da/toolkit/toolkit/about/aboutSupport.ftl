@@ -74,7 +74,7 @@ app-basics-launcher-process-status = Launcher Process
 app-basics-multi-process-support = Multiproces-vinduer
 app-basics-fission-support = Fission-vinduer
 app-basics-remote-processes-count = Fjern-processer
-app-basics-enterprise-policies = Virksomheds-politikker
+app-basics-enterprise-policies = Virksomhedspolitikker
 app-basics-location-service-key-google = Google Location Service-nøgle
 app-basics-safebrowsing-key-google = Google Safebrowsing-nøgle
 app-basics-key-mozilla = Mozilla Location Service-nøgle
@@ -347,6 +347,9 @@ has-seccomp-bpf = Seccomp-BPF (filtrering af systemkald)
 has-seccomp-tsync = Seccomp tråd-synkronisering
 has-user-namespaces = Navneområder
 has-privileged-user-namespaces = Navneområder for priviligerede processer
+# Variables
+# $status (string) - Boolean value of hasUserNamespaces (should only be false when support-user-namespaces-unavailable is used)
+support-user-namespaces-unavailable = { $status } - Denne funktion tillades ikke af dit system. Det kan begrænse sikkerhedsfunktionerne i { -brand-short-name }.
 can-sandbox-content = Sandboxning indholdsprocesser
 can-sandbox-media = Sandboxning af medie-plugin
 content-sandbox-level = Content Process Sandbox Level
@@ -414,6 +417,20 @@ support-printing-clear-settings-button = Ryd gemte indstillinger for udskrivning
 support-printing-modified-settings = Ændrede indstillinger for udskrivning
 support-printing-prefs-name = Navn
 support-printing-prefs-value = Værdi
+
+## Remote Settings sections
+
+support-remote-settings-title = Fjernindstillinger
+support-remote-settings-status = Status
+support-remote-settings-status-ok = OK
+# Status when synchronization is not working.
+support-remote-settings-status-broken = Virker ikke
+support-remote-settings-last-check = Seneste tjek
+support-remote-settings-local-timestamp = Lokalt tidsstempel
+support-remote-settings-sync-history = Historik
+support-remote-settings-sync-history-status = Status
+support-remote-settings-sync-history-datetime = Dato
+support-remote-settings-sync-history-infos = Oplysninger
 
 ## Normandy sections
 

@@ -73,7 +73,7 @@ class Perftest(object):
         app,
         binary,
         run_local=False,
-        noinstall=False,
+        no_install=False,
         obj_path=None,
         profile_class=None,
         installerpath=None,
@@ -111,6 +111,7 @@ class Perftest(object):
         benchmark_branch=None,
         clean=False,
         screenshot_on_failure=False,
+        power_test=False,
         **kwargs
     ):
         self._remote_test_root = None
@@ -158,6 +159,7 @@ class Perftest(object):
             "benchmark_branch": benchmark_branch,
             "clean": clean,
             "screenshot_on_failure": screenshot_on_failure,
+            "power_test": power_test,
         }
 
         self.firefox_android_apps = FIREFOX_ANDROID_APPS
@@ -695,7 +697,11 @@ class PerftestAndroid(Perftest):
             device = ADBDeviceFactory(verbose=True)
 
             # Chrome uses a specific binary that we don't set as a command line option
-            binary = "com.android.chrome"
+            binary = (
+                "com.android.chrome"
+                if self.config["app"] == "chrome-m"
+                else "org.chromium.chrome"
+            )
             if self.config["app"] not in CHROME_ANDROID_APPS:
                 binary = self.config["binary"]
 

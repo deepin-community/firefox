@@ -139,6 +139,8 @@ login-item-copied-username-button-text = Көшірілді!
 login-item-password-label = Пароль
 login-item-password-reveal-checkbox =
     .aria-label = Парольді көрсету
+login-item-password-conceal-checkbox =
+    .aria-label = Парольді жасыру
 login-item-copy-password-button-text = Көшіріп алу
 login-item-copied-password-button-text = Көшірілді!
 login-item-save-changes-button = Өзгерістерді сақтау
@@ -170,6 +172,13 @@ about-logins-edit-login-os-auth-dialog-message-win = Логиніңізді тү
 # This message can be seen when attempting to edit a login in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-edit-login-os-auth-dialog-message-macosx = сақталған логинді түзету
+# The macOS strings are preceded by the operating system with "Firefox is trying to ".
+# This message can be seen when attempting to disable osauth in about:preferences.
+about-logins-os-auth-dialog-message =
+    { PLATFORM() ->
+        [macos] парольдер үшін баптауларды өзгерту
+       *[other] { -brand-short-name } парольдер параметрлерін өзгертуге әрекеттенуде. Бұған рұқсат беру үшін құрылғыңызға кіруді пайдаланыңыз.
+    }
 # This message can be seen when attempting to edit a login in about:logins on Windows.
 about-logins-edit-login-os-auth-dialog-message2-win = Пароліңізді түзету  үшін, Windows ішіне кірудің есептік жазба мәліметтерін енгізіңіз. Бұл тіркелгілеріңіздің қауіпсіздігін қорғауға көмектеседі.
 # This message can be seen when attempting to edit a login in about:logins
@@ -246,12 +255,6 @@ about-logins-confirm-remove-all-sync-dialog-message =
     { $count ->
         [1] Бұл { -brand-short-name } жүйесіне сақтаған логинді сіздің барлық { -fxaccount-brand-name } арқылы синхрондалған құрылғылардан өшіреді. Сонымен қатар, осы жерде көрсетілетін бұзушылық туралы ескертулерді өшіреді. Бұл әрекетті болдырмау мүмкін болмайды.
        *[other] Бұл { -brand-short-name } жүйесіне сақтаған барлық логиндерді сіздің барлық { -fxaccount-brand-name } арқылы синхрондалған құрылғылардан өшіреді. Сонымен қатар, осы жерде көрсетілетін бұзушылық туралы ескертулерді өшіреді. Бұл әрекетті болдырмау мүмкін болмайды.
-    }
-about-logins-confirm-remove-all-sync-dialog-message2 =
-    { $count ->
-        [1] Бұл { -brand-short-name } ішіне сақтаған логинді сіздің тіркелгіңізге синхрондалған барлық құрылғылардан өшіреді. Сонымен қатар, осы жерде көрсетілетін бұзушылық туралы ескертулерді өшіреді. Бұл әрекетті болдырмау мүмкін болмайды.
-        [one] Бұл { -brand-short-name } ішіне сақтаған логинді сіздің тіркелгіңізге синхрондалған барлық құрылғылардан өшіреді. Сонымен қатар, осы жерде көрсетілетін бұзушылық туралы ескертулерді өшіреді. Бұл әрекетті болдырмау мүмкін болмайды.
-       *[other] Бұл { -brand-short-name } ішіне сақтаған барлық логиндерді сіздің тіркелгіңізге синхрондалған барлық құрылғылардан өшіреді. Сонымен қатар, осы жерде көрсетілетін бұзушылық туралы ескертулерді өшіреді. Бұл әрекетті болдырмау мүмкін болмайды.
     }
 # Checkbox for modal to confirm the removal of saved passwords
 about-logins-confirm-remove-all-dialog-checkbox-label2 =

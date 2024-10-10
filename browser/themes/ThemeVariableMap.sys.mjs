@@ -27,7 +27,6 @@ export const ThemeVariableMap = [
     "--tab-loading-fill",
     {
       lwtProperty: "tab_loading",
-      optionalElementID: "tabbrowser-tabs",
     },
   ],
   [
@@ -46,7 +45,6 @@ export const ThemeVariableMap = [
     "--lwt-tab-line-color",
     {
       lwtProperty: "tab_line",
-      optionalElementID: "TabsToolbar",
     },
   ],
   [
@@ -140,7 +138,7 @@ export const ThemeVariableMap = [
     },
   ],
   [
-    "--sidebar-border-color",
+    "--lwt-sidebar-border-color",
     {
       lwtProperty: "sidebar_border",
     },

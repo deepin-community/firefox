@@ -199,6 +199,8 @@ newtab-section-header-recent-activity = Nedavna dejavnost
 #   $provider (string) - Name of the corresponding content provider.
 newtab-section-header-pocket = Priporoča { $provider }
 newtab-section-header-stories = Zgodbe, ki spodbujajo k razmisleku
+# "picks" refers to recommended articles
+newtab-section-header-todays-picks = Današnji izbor za vas
 
 ## Empty Section States: These show when there are no more items in a section. Ex. When there are no more Pocket story recommendations, in the space where there would have been stories, this is shown instead.
 
@@ -232,6 +234,19 @@ newtab-pocket-pocket-firefox-family = { -pocket-brand-name } je del družine { -
 # A save to Pocket button that shows over the card thumbnail on hover.
 newtab-pocket-save = Shrani
 newtab-pocket-saved = Shranjeno
+
+## Thumbs up and down buttons that shows over a newtab stories card thumbnail on hover.
+
+# Clicking the thumbs up button for this story will result in more stories like this one being recommended
+newtab-pocket-thumbs-up-tooltip =
+    .title = Več takšnih
+# Clicking the thumbs down button for this story informs us that the user does not feel like the story is interesting for them
+newtab-pocket-thumbs-down-tooltip =
+    .title = Ni zame
+newtab-toast-thumbs-up-or-down = Hvala. Povratne informacije nam bodo pomagale izboljšati vaš vir.
+newtab-toast-dismiss-button =
+    .title = Skrij
+    .aria-label = Skrij
 
 ## Pocket content onboarding experience dialog and modal for new users seeing the Pocket section for the first time, shown as the first item in the Pocket section.
 
@@ -273,5 +288,147 @@ newtab-custom-recent-subtitle = Izbor nedavnih spletnih mest in vsebin
 newtab-custom-recent-toggle =
     .label = Nedavna dejavnost
     .description = Izbor nedavnih spletnih mest in vsebin
+newtab-custom-weather-toggle =
+    .label = Vreme
+    .description = Današnja napoved vedno na očeh
 newtab-custom-close-button = Zapri
 newtab-custom-settings = Več nastavitev
+
+## New Tab Wallpapers
+
+newtab-wallpaper-title = Ozadja
+newtab-wallpaper-reset = Ponastavi privzeto
+newtab-wallpaper-light-red-panda = Mačji panda
+newtab-wallpaper-light-mountain = Bela gora
+newtab-wallpaper-light-sky = Nebo z vijoličastimi in rožnatimi oblaki
+newtab-wallpaper-light-color = Modri, rožnati in rumeni liki
+newtab-wallpaper-light-landscape = Gorska pokrajina z modrimi meglicami
+newtab-wallpaper-light-beach = Plaža s palmo
+newtab-wallpaper-dark-aurora = Severni sij
+newtab-wallpaper-dark-color = Rdeči in modri liki
+newtab-wallpaper-dark-panda = Mačji panda, skrit v gozdu
+newtab-wallpaper-dark-sky = Mestna pokrajina z nočnim nebom
+newtab-wallpaper-dark-mountain = Gorska pokrajina
+newtab-wallpaper-dark-city = Vijolična mestna pokrajina
+
+## Solid Colors
+
+newtab-wallpaper-category-title-colors = Enobarvna
+newtab-wallpaper-blue = Modro
+newtab-wallpaper-light-blue = Svetlo modro
+newtab-wallpaper-light-purple = Svetlo vijolično
+newtab-wallpaper-light-green = Svetlo zeleno
+newtab-wallpaper-green = Zeleno
+newtab-wallpaper-beige = Bež
+newtab-wallpaper-yellow = Rumeno
+newtab-wallpaper-orange = Oranžno
+newtab-wallpaper-pink = Roza
+newtab-wallpaper-light-pink = Svetlo roza
+newtab-wallpaper-red = Rdeče
+newtab-wallpaper-dark-blue = Temno modro
+newtab-wallpaper-dark-purple = Temno vijolično
+newtab-wallpaper-dark-green = Temno zeleno
+newtab-wallpaper-brown = Rjavo
+
+## Abstract
+
+newtab-wallpaper-category-title-abstract = Abstraktna
+newtab-wallpaper-abstract-green = Zelene oblike
+newtab-wallpaper-abstract-blue = Modre oblike
+newtab-wallpaper-abstract-purple = Vijoličaste oblike
+newtab-wallpaper-abstract-orange = Oranžne oblike
+newtab-wallpaper-gradient-orange = Preliv oranžne in roza
+newtab-wallpaper-abstract-blue-purple = Modre in vijolične oblike
+
+## Photographs
+
+newtab-wallpaper-category-title-photographs = Fotografije
+newtab-wallpaper-beach-at-sunrise = Plaža ob sončnem vzhodu
+newtab-wallpaper-beach-at-sunset = Plaža ob sončnem zahodu
+newtab-wallpaper-storm-sky = Nevihtno nebo
+newtab-wallpaper-sky-with-pink-clouds = Nebo z rožnatimi oblaki
+newtab-wallpaper-red-panda-yawns-in-a-tree = Zehajoč mačji panda na drevesu
+newtab-wallpaper-white-mountains = Bele gore
+# Variables
+#   $author_string (String) - The name of the creator of the photo.
+#   $webpage_string (String) - The name of the webpage where the photo is located.
+newtab-wallpaper-attribution = Avtor fotografije: <a data-l10n-name="name-link">{ $author_string }</a>, <a data-l10n-name="webpage-link">{ $webpage_string }</a>
+newtab-wallpaper-feature-highlight-header = Poskusite s kančkom barve
+newtab-wallpaper-feature-highlight-content = Vdahnite strani novega zavihka svež videz in ji nastavite ozadje.
+newtab-wallpaper-feature-highlight-button = Razumem
+# Tooltip for dismiss button
+feature-highlight-dismiss-button =
+    .title = Skrij
+    .aria-label = Zapri okence
+feature-highlight-wallpaper =
+    .title = { -newtab-wallpaper-feature-highlight-header }
+    .aria-label = { -newtab-wallpaper-feature-highlight-content }
+
+## New Tab Weather
+
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-see-forecast =
+    .title = Prikaži napoved v storitvi { $provider }
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-sponsored = { $provider } ∙ Sponzorirano
+newtab-weather-menu-change-location = Spremeni lokacijo
+newtab-weather-change-location-search-input = Išči lokacijo
+newtab-weather-menu-weather-display = Prikazovalnik vremena
+# Display options are:
+# - Simple: Displays a current weather condition icon and the current temperature
+# - Detailed: Include simple information plus a short text summary: e.g. "Mostly cloudy"
+newtab-weather-menu-weather-display-option-simple = Preprosto
+newtab-weather-menu-change-weather-display-simple = Preklopi na preprost pogled
+newtab-weather-menu-weather-display-option-detailed = Podrobno
+newtab-weather-menu-change-weather-display-detailed = Preklopi na podroben pogled
+newtab-weather-menu-temperature-units = Enote za temperaturo
+newtab-weather-menu-temperature-option-fahrenheit = Fahrenheit
+newtab-weather-menu-temperature-option-celsius = Celzij
+newtab-weather-menu-change-temperature-units-fahrenheit = Preklopi na stopinje Fahrenheita
+newtab-weather-menu-change-temperature-units-celsius = Preklopi na stopinje Celzija
+newtab-weather-menu-hide-weather = Skrij vreme na novem zavihku
+newtab-weather-menu-learn-more = Več o tem
+# This message is shown if user is working offline
+newtab-weather-error-not-available = Podatki o vremenu trenutno niso na voljo.
+
+## Topic Labels
+
+newtab-topic-label-business = Posel
+newtab-topic-label-career = Kariera
+newtab-topic-label-education = Izobraževanje
+newtab-topic-label-arts = Zabava
+newtab-topic-label-food = Hrana
+newtab-topic-label-health = Zdravje
+newtab-topic-label-hobbies = Igre
+# ”Money” = “Personal Finance”, refers to articles and stories that help readers better manage
+# and understand their personal finances – from saving money to buying a home. See the
+# “Curated by our editors“ section at the top of https://getpocket.com/explore/personal-finance for more context
+newtab-topic-label-finance = Denar
+newtab-topic-label-society-parenting = Starševstvo
+newtab-topic-label-government = Politika
+newtab-topic-label-education-science = Znanost
+# ”Life Hacks” = “Self Improvement”, refers to articles and stories aimed at helping readers improve various
+# aspects of their lives – from mental health to  productivity. See the “Curated by our editors“ section
+# at the top of https://getpocket.com/explore/self-improvement for more context.
+newtab-topic-label-society = Življenjske zvijače
+newtab-topic-label-sports = Šport
+newtab-topic-label-tech = Tehnologija
+newtab-topic-label-travel = Potovanje
+newtab-topic-label-home = Dom in vrt
+
+## Topic Selection Modal
+
+# “fine-tune” refers to the process of making small adjustments to something to get
+# the best or desired experience or performance.
+newtab-topic-selection-title = Izberite teme za fino nastavitev vira
+# “tailored” refers to process of (a tailor) making (clothes) to fit individual customers.
+# In other words, “Our expert curators prioritize stories to fit your selected interests”
+newtab-topic-selection-subtitle = Izberite dve ali več tem. Naši strokovnjaki dajejo prednost zgodbam, prilagojenim vašim zanimanjem. Nastavitve lahko spremenite kadarkoli.
+newtab-topic-selection-save-button = Shrani
+newtab-topic-selection-cancel-button = Prekliči
+newtab-topic-selection-button-maybe-later = Morda pozneje
+newtab-topic-selection-privacy-link = Kako ščitimo in upravljamo podatke
+newtab-topic-selection-button-update-interests = Posodobite svoja zanimanja
+newtab-topic-selection-button-pick-interests = Izberite svoja zanimanja

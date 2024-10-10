@@ -82,6 +82,18 @@ class Handle;
 #define CHECK_GE(lhs, rhs) MOZ_RELEASE_ASSERT((lhs) >= (rhs))
 #define CONSTEXPR_DCHECK MOZ_ASSERT
 
+// These assertions are necessary to preserve the soundness of the V8
+// sandbox. In V8, they are debug-only if the sandbox is off, but release
+// asserts if the sandbox is turned on. We don't have an equivalent sandbox,
+// so they can be debug checks for now.
+#define SBXCHECK MOZ_ASSERT
+#define SBXCHECK_EQ(lhs, rhs) MOZ_ASSERT((lhs) == (rhs))
+#define SBXCHECK_NE(lhs, rhs) MOZ_ASSERT((lhs) != (rhs))
+#define SBXCHECK_GT(lhs, rhs) MOZ_ASSERT((lhs) > (rhs))
+#define SBXCHECK_GE(lhs, rhs) MOZ_ASSERT((lhs) >= (rhs))
+#define SBXCHECK_LT(lhs, rhs) MOZ_ASSERT((lhs) < (rhs))
+#define SBXCHECK_LE(lhs, rhs) MOZ_ASSERT((lhs) <= (rhs))
+
 #define MemCopy memcpy
 
 // Origin:
@@ -242,6 +254,9 @@ class Optional {
 
   bool has_value() const { return inner_.isSome(); }
   const T& value() const { return inner_.ref(); }
+
+  T* operator->() { return &inner_.ref(); }
+  T& operator*() { return inner_.ref(); }
 };
 
 namespace bits {
@@ -646,6 +661,18 @@ class Tagged {
   T value_;
 };
 
+// Adapted from v8/src/objects/casting.h
+
+template <typename To, typename From>
+inline Tagged<To> UncheckedCast(Tagged<From> value) {
+  return Tagged<To>(To::cast(value));
+}
+
+template <typename To, typename From>
+inline Tagged<To> Cast(const From& value) {
+  return UncheckedCast<To>(Tagged(value));
+}
+
 // A fixed-size array with Objects (aka Values) as element types.
 // Implemented using the dense elements of an ArrayObject.
 // Used for named captures.
@@ -723,6 +750,17 @@ class ByteArray : public HeapObject {
   }
 
   friend class SMRegExpMacroAssembler;
+};
+
+// A byte array that can be trusted to not contain malicious data.
+// See https://issues.chromium.org/issues/40069826.
+class TrustedByteArray : public ByteArray {
+ public:
+  static TrustedByteArray cast(Object object) {
+    TrustedByteArray b;
+    b.setValue(object.value());
+    return b;
+  }
 };
 
 // This is only used in assertions. In debug builds, we put a magic value
@@ -896,6 +934,14 @@ inline Handle<T> handle(T object, Isolate* isolate) {
   return Handle<T>(object, isolate);
 }
 
+// DirectHandle is currently an optional feature, when disabled, it is defined
+// as a normal indirect Handle. A DirectHandle points directly at the V8 JS
+// Heap, normal Handles have an extra layer of indirection. This distinction
+// does not matter for our implementation. See:
+// https://github.com/v8/v8/blob/887ec63c43e23c4fefba1c52d4525654bdc71e5b/src/common/globals.h#L1000-L1003
+template <typename T>
+using DirectHandle = Handle<T>;
+
 // RAII Guard classes
 
 using DisallowGarbageCollection = JS::AutoAssertNoGC;
@@ -1008,38 +1054,11 @@ inline base::Vector<const base::uc16> String::GetCharVector(
   return flat.ToUC16Vector();
 }
 
-class JSRegExp : public HeapObject {
+class JSRegExp {
  public:
-  JSRegExp() : HeapObject() {}
-  JSRegExp(js::RegExpShared* re) { setValue(JS::PrivateGCThingValue(re)); }
-
-  // ******************************************************
-  // Methods that are called from inside the implementation
-  // ******************************************************
-  void TierUpTick() { inner()->tierUpTick(); }
-
-  Object bytecode(bool is_latin1) const {
-    return Object(JS::PrivateValue(inner()->getByteCode(is_latin1)));
-  }
-
-  // TODO: should we expose this?
-  uint32_t backtrack_limit() const { return 0; }
-
-  static JSRegExp cast(Object object) {
-    JSRegExp regexp;
-    js::gc::Cell* regexpShared = object.value().toGCThing();
-    MOZ_ASSERT(regexpShared->is<js::RegExpShared>());
-    regexp.setValue(JS::PrivateGCThingValue(regexpShared));
-    return regexp;
-  }
-
   // Each capture (including the match itself) needs two registers.
   static constexpr int RegistersForCaptureCount(int count) {
     return (count + 1) * 2;
-  }
-
-  inline uint32_t max_register_count() const {
-    return inner()->getMaxRegisters();
   }
 
   // ******************************
@@ -1049,6 +1068,37 @@ class JSRegExp : public HeapObject {
   static constexpr int kMaxCaptures = (1 << 15) - 1;
 
   static constexpr int kNoBacktrackLimit = 0;
+};
+
+class IrRegExpData : public HeapObject {
+ public:
+  IrRegExpData() : HeapObject() {}
+  IrRegExpData(js::RegExpShared* re) { setValue(JS::PrivateGCThingValue(re)); }
+
+  // ******************************************************
+  // Methods that are called from inside the implementation
+  // ******************************************************
+  void TierUpTick() { inner()->tierUpTick(); }
+
+  Tagged<TrustedByteArray> bytecode(bool is_latin1) const {
+    return TrustedByteArray::cast(
+        Object(JS::PrivateValue(inner()->getByteCode(is_latin1))));
+  }
+
+  // TODO: should we expose this?
+  uint32_t backtrack_limit() const { return 0; }
+
+  static IrRegExpData cast(Object object) {
+    IrRegExpData regexp;
+    js::gc::Cell* regexpShared = object.value().toGCThing();
+    MOZ_ASSERT(regexpShared->is<js::RegExpShared>());
+    regexp.setValue(JS::PrivateGCThingValue(regexpShared));
+    return regexp;
+  }
+
+  inline uint32_t max_register_count() const {
+    return inner()->getMaxRegisters();
+  }
 
  private:
   js::RegExpShared* inner() const {
@@ -1152,6 +1202,9 @@ class Isolate {
   inline Factory* factory() { return this; }
 
   Handle<ByteArray> NewByteArray(
+      int length, AllocationType allocation = AllocationType::kYoung);
+
+  Handle<TrustedByteArray> NewTrustedByteArray(
       int length, AllocationType allocation = AllocationType::kYoung);
 
   // Allocates a fixed array initialized with undefined values.

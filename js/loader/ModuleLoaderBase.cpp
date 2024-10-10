@@ -623,11 +623,13 @@ nsresult ModuleLoaderBase::OnFetchComplete(ModuleLoadRequest* aRequest,
   if (NS_SUCCEEDED(rv)) {
     rv = CreateModuleScript(aRequest);
 
+#if defined(MOZ_DIAGNOSTIC_ASSERT_ENABLED)
     // If a module script was created, it should either have a module record
     // object or a parse error.
     if (ModuleScript* ms = aRequest->mModuleScript) {
       MOZ_DIAGNOSTIC_ASSERT(bool(ms->ModuleRecord()) != ms->HasParseError());
     }
+#endif
 
     aRequest->ClearScriptSource();
 
@@ -967,6 +969,7 @@ nsresult ModuleLoaderBase::StartDynamicImport(ModuleLoadRequest* aRequest) {
   nsresult rv = StartModuleLoad(aRequest);
   if (NS_FAILED(rv)) {
     mLoader->ReportErrorToConsole(aRequest, rv);
+    RemoveDynamicImport(aRequest);
     FinishDynamicImportAndReject(aRequest, rv);
   }
   return rv;
@@ -1001,6 +1004,9 @@ void ModuleLoaderBase::FinishDynamicImport(
   // succeeded, evaluationPromise may still be null, but in this case it will
   // be handled by rejecting the dynamic module import promise in the JSAPI.
   MOZ_ASSERT_IF(NS_FAILED(aResult), !aEvaluationPromise);
+
+  // The request should been removed from mDynamicImportRequests.
+  MOZ_ASSERT(!aRequest->mLoader->HasDynamicImport(aRequest));
 
   // Complete the dynamic import, report failures indicated by aResult or as a
   // pending exception on the context.
@@ -1088,6 +1094,10 @@ void ModuleLoaderBase::CancelDynamicImport(ModuleLoadRequest* aRequest,
 
   RefPtr<ScriptLoadRequest> req = mDynamicImportRequests.Steal(aRequest);
   if (!aRequest->IsCanceled()) {
+    // If the mDynamicPromise has been cleared, then it should be remove from
+    // mDynamicImportRequests as well.
+    MOZ_ASSERT(aRequest->mDynamicPromise);
+
     aRequest->Cancel();
     // FinishDynamicImport must happen exactly once for each dynamic import
     // request. If the load is aborted we do it when we remove the request
@@ -1299,8 +1309,7 @@ nsresult ModuleLoaderBase::EvaluateModuleInContext(
   NS_ENSURE_SUCCESS(rv, rv);
 
   if (request->HasScriptLoadContext()) {
-    TRACE_FOR_TEST(aRequest->GetScriptLoadContext()->GetScriptElement(),
-                   "scriptloader_evaluate_module");
+    TRACE_FOR_TEST(aRequest, "scriptloader_evaluate_module");
   }
 
   JS::Rooted<JS::Value> rval(aCx);
@@ -1445,9 +1454,11 @@ void ModuleLoaderBase::RegisterImportMap(UniquePtr<ImportMap> aImportMap) {
           "Non-preload module loads should block import maps");
       MOZ_DIAGNOSTIC_ASSERT(!script->HadImportMap(),
                             "Only one import map can be registered");
+#if defined(MOZ_DIAGNOSTIC_ASSERT_ENABLED)
       if (JSObject* module = script->ModuleRecord()) {
         MOZ_DIAGNOSTIC_ASSERT(!JS::ModuleIsLinked(module));
       }
+#endif
       script->Shutdown();
     }
   }
@@ -1488,6 +1499,17 @@ void ModuleLoaderBase::MoveModulesTo(ModuleLoaderBase* aDest) {
   }
 
   mFetchedModules.Clear();
+}
+
+bool ModuleLoaderBase::IsFetchingAndHasWaitingRequest(
+    ModuleLoadRequest* aRequest) {
+  auto entry = mFetchingModules.Lookup(aRequest->mURI);
+  if (!entry) {
+    return false;
+  }
+
+  RefPtr<LoadingRequest> loadingRequest = entry.Data();
+  return !loadingRequest->mWaiting.IsEmpty();
 }
 
 #undef LOG

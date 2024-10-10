@@ -73,6 +73,7 @@ Register IonIC::scratchRegisterForEntryJump() {
       return asOptimizeGetIteratorIC()->temp();
     case CacheKind::Call:
     case CacheKind::TypeOf:
+    case CacheKind::TypeOfEq:
     case CacheKind::ToBool:
     case CacheKind::GetIntrinsic:
     case CacheKind::NewArray:
@@ -263,6 +264,9 @@ bool IonSetPropertyIC::update(JSContext* cx, HandleScript outerScript,
         MOZ_ASSERT(deferType != DeferType::None);
         break;
     }
+    if (deferType == DeferType::None && !attached) {
+      ic->state().trackNotAttached();
+    }
   }
 
   jsbytecode* pc = ic->pc();
@@ -339,9 +343,9 @@ bool IonSetPropertyIC::update(JSContext* cx, HandleScript outerScript,
         MOZ_ASSERT_UNREACHABLE("Invalid attach result");
         break;
     }
-  }
-  if (!attached && canAttachStub) {
-    ic->state().trackNotAttached();
+    if (!attached) {
+      ic->state().trackNotAttached();
+    }
   }
 
   return true;
@@ -364,7 +368,7 @@ bool IonGetNameIC::update(JSContext* cx, HandleScript outerScript,
     return false;
   }
 
-  if (JSOp(*GetNextPc(pc)) == JSOp::Typeof) {
+  if (IsTypeOfNameOp(JSOp(*GetNextPc(pc)))) {
     return FetchName<GetNameMode::TypeOf>(cx, obj, holder, name, prop, res);
   }
 

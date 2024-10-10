@@ -8,6 +8,7 @@
 #include "mozilla/TextUtils.h"
 #include "mozilla/dom/Document.h"
 #include "mozilla/Preferences.h"
+#include "mozilla/StaticPrefs_dom.h"
 #include "mozilla/StaticPrefs_security.h"
 #include "nsCOMPtr.h"
 #include "nsContentUtils.h"
@@ -18,6 +19,9 @@
 #include "nsReadableUtils.h"
 #include "nsServiceManagerUtils.h"
 #include "nsUnicharUtils.h"
+
+#include <cstdint>
+#include <utility>
 
 using namespace mozilla;
 using namespace mozilla::dom;
@@ -77,6 +81,14 @@ bool isNumberToken(char16_t aSymbol) {
 bool isValidHexDig(char16_t aHexDig) {
   return (isNumberToken(aHexDig) || (aHexDig >= 'A' && aHexDig <= 'F') ||
           (aHexDig >= 'a' && aHexDig <= 'f'));
+}
+
+bool isGroupDelim(char16_t aSymbol) {
+  return (aSymbol == '{' || aSymbol == '}' || aSymbol == ',' ||
+          aSymbol == '/' || aSymbol == ':' || aSymbol == ';' ||
+          aSymbol == '<' || aSymbol == '=' || aSymbol == '>' ||
+          aSymbol == '?' || aSymbol == '@' || aSymbol == '[' ||
+          aSymbol == '\\' || aSymbol == ']' || aSymbol == '"');
 }
 
 static bool isValidBase64Value(const char16_t* cur, const char16_t* end) {
@@ -171,7 +183,7 @@ void nsCSPParser::logWarningErrorToConsole(uint32_t aSeverityFlag,
   // send console messages off to the context and let the context
   // deal with it (potentially messages need to be queued up)
   mCSPContext->logToConsole(aProperty, aParams,
-                            u""_ns,          // aSourceName
+                            ""_ns,           // aSourceName
                             u""_ns,          // aSourceLine
                             0,               // aLineNumber
                             1,               // aColumnNumber
@@ -685,6 +697,13 @@ nsCSPBaseSrc* nsCSPParser::sourceExpression() {
   return nullptr;
 }
 
+void nsCSPParser::logWarningForIgnoringNoneKeywordToConsole() {
+  AutoTArray<nsString, 1> params;
+  params.AppendElement(CSP_EnumToUTF16Keyword(CSP_NONE));
+  logWarningErrorToConsole(nsIScriptError::warningFlag, "ignoringUnknownOption",
+                           params);
+}
+
 // source-list = *WSP [ source-expression *( 1*WSP source-expression ) *WSP ]
 //               / *WSP "'none'" *WSP
 void nsCSPParser::sourceList(nsTArray<nsCSPBaseSrc*>& outSrcs) {
@@ -725,10 +744,7 @@ void nsCSPParser::sourceList(nsTArray<nsCSPBaseSrc*>& outSrcs) {
     }
     // Otherwise, we ignore 'none' and report a warning
     else {
-      AutoTArray<nsString, 1> params;
-      params.AppendElement(CSP_EnumToUTF16Keyword(CSP_NONE));
-      logWarningErrorToConsole(nsIScriptError::warningFlag,
-                               "ignoringUnknownOption", params);
+      logWarningForIgnoringNoneKeywordToConsole();
     }
   }
 }
@@ -775,6 +791,44 @@ void nsCSPParser::reportURIList(nsCSPDirective* aDir) {
   mPolicy->addDirective(aDir);
 }
 
+void nsCSPParser::reportGroup(nsCSPDirective* aDir) {
+  CSPPARSERLOG(("nsCSPParser::reportGroup"));
+
+  if (mCurDir.Length() < 2) {
+    AutoTArray<nsString, 1> directiveName = {mCurToken};
+    logWarningErrorToConsole(nsIScriptError::warningFlag,
+                             "ignoringDirectiveWithNoValues", directiveName);
+    delete aDir;
+    return;
+  }
+
+  nsTArray<nsCSPBaseSrc*> srcs;
+  mCurToken = mCurDir[1];
+
+  CSPPARSERLOG(("nsCSPParser::reportGroup, mCurToken: %s, mCurValue: %s",
+                NS_ConvertUTF16toUTF8(mCurToken).get(),
+                NS_ConvertUTF16toUTF8(mCurValue).get()));
+
+  resetCurChar(mCurToken);
+  while (!atEnd()) {
+    if (isGroupDelim(*mCurChar) ||
+        nsContentUtils::IsHTMLWhitespace(*mCurChar)) {
+      AutoTArray<nsString, 1> params = {mCurToken};
+      logWarningErrorToConsole(nsIScriptError::warningFlag,
+                               "invalidGroupSyntax", params);
+      delete aDir;
+      return;
+    }
+    advance();
+  }
+
+  nsCSPGroup* group = new nsCSPGroup(mCurToken);
+  srcs.AppendElement(group);
+  aDir->addSrcs(srcs);
+  mPolicy->addDirective(aDir);
+  aDir = nullptr;
+};
+
 /* Helper function for parsing sandbox flags. This function solely concatenates
  * all the source list tokens (the sandbox flags) so the attribute parser
  * (nsContentUtils::ParseSandboxAttributeToFlags) can parse them.
@@ -813,6 +867,141 @@ void nsCSPParser::sandboxFlagList(nsCSPDirective* aDir) {
   mPolicy->addDirective(aDir);
 }
 
+// https://w3c.github.io/trusted-types/dist/spec/#integration-with-content-security-policy
+static constexpr nsLiteralString kValidRequireTrustedTypesForDirectiveValue =
+    u"'script'"_ns;
+
+static bool IsValidRequireTrustedTypesForDirectiveValue(
+    const nsAString& aToken) {
+  return aToken.Equals(kValidRequireTrustedTypesForDirectiveValue);
+}
+
+void nsCSPParser::handleRequireTrustedTypesForDirective(nsCSPDirective* aDir) {
+  // "srcs" start at index 1. Here "srcs" should represent Trusted Types' sink
+  // groups
+  // (https://w3c.github.io/trusted-types/dist/spec/#require-trusted-types-for-csp-directive).
+
+  if (mCurDir.Length() != 2) {
+    nsString numberOfTokensStr;
+
+    // Casting is required to avoid ambiguous function calls on some platforms.
+    numberOfTokensStr.AppendInt(static_cast<uint64_t>(mCurDir.Length()));
+
+    AutoTArray<nsString, 1> numberOfTokensArr = {std::move(numberOfTokensStr)};
+    logWarningErrorToConsole(nsIScriptError::errorFlag,
+                             "invalidNumberOfTrustedTypesForDirectiveValues",
+                             numberOfTokensArr);
+    return;
+  }
+
+  mCurToken = mCurDir.LastElement();
+
+  CSPPARSERLOG(
+      ("nsCSPParser::handleRequireTrustedTypesForDirective, mCurToken: %s",
+       NS_ConvertUTF16toUTF8(mCurToken).get()));
+
+  if (!IsValidRequireTrustedTypesForDirectiveValue(mCurToken)) {
+    AutoTArray<nsString, 1> token = {mCurToken};
+    logWarningErrorToConsole(nsIScriptError::errorFlag,
+                             "invalidRequireTrustedTypesForDirectiveValue",
+                             token);
+    return;
+  }
+
+  nsTArray<nsCSPBaseSrc*> srcs = {
+      new nsCSPRequireTrustedTypesForDirectiveValue(mCurToken)};
+
+  aDir->addSrcs(srcs);
+  mPolicy->addDirective(aDir);
+}
+
+// https://w3c.github.io/trusted-types/dist/spec/#trusted-types-csp-directive
+static bool IsValidTrustedTypesWildcard(const nsAString& aToken) {
+  // tt-wildcard = "*"
+  return aToken.Length() == 1 && aToken.First() == WILDCARD;
+}
+
+static bool IsValidTrustedTypesPolicyNameChar(char16_t aChar) {
+  // tt-policy-name = 1*( ALPHA / DIGIT / "-" / "#" / "=" / "_" / "/" / "@" /
+  // "." / "%")
+  return nsContentUtils::IsAlphanumeric(aChar) || aChar == DASH ||
+         aChar == NUMBER_SIGN || aChar == EQUALS || aChar == UNDERLINE ||
+         aChar == SLASH || aChar == ATSYMBOL || aChar == DOT ||
+         aChar == PERCENT_SIGN;
+}
+
+// https://w3c.github.io/trusted-types/dist/spec/#trusted-types-csp-directive
+static bool IsValidTrustedTypesPolicyName(const nsAString& aToken) {
+  // tt-policy-name = 1*( ALPHA / DIGIT / "-" / "#" / "=" / "_" / "/" / "@" /
+  // "." / "%")
+
+  if (aToken.IsEmpty()) {
+    return false;
+  }
+
+  for (uint32_t i = 0; i < aToken.Length(); ++i) {
+    if (!IsValidTrustedTypesPolicyNameChar(aToken.CharAt(i))) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+void nsCSPParser::handleTrustedTypesDirective(nsCSPDirective* aDir) {
+  CSPPARSERLOG(("nsCSPParser::handleTrustedTypesDirective"));
+
+  nsTArray<nsCSPBaseSrc*> trustedTypesExpressions;
+
+  bool containsKeywordNone = false;
+
+  // "srcs" start and index 1. Here they should represent the tt-expressions
+  // (https://w3c.github.io/trusted-types/dist/spec/#trusted-types-csp-directive).
+  for (uint32_t i = 1; i < mCurDir.Length(); ++i) {
+    mCurToken = mCurDir[i];
+
+    CSPPARSERLOG(("nsCSPParser::handleTrustedTypesDirective, mCurToken: %s",
+                  NS_ConvertUTF16toUTF8(mCurToken).get()));
+
+    // tt-expression = tt-policy-name  / tt-keyword / tt-wildcard
+    if (IsValidTrustedTypesPolicyName(mCurToken)) {
+      trustedTypesExpressions.AppendElement(
+          new nsCSPTrustedTypesDirectivePolicyName(mCurToken));
+    } else if (CSP_IsKeyword(mCurToken, CSP_NONE)) {
+      containsKeywordNone = true;
+    } else if (CSP_IsKeyword(mCurToken, CSP_ALLOW_DUPLICATES)) {
+      trustedTypesExpressions.AppendElement(
+          new nsCSPKeywordSrc(CSP_ALLOW_DUPLICATES));
+    } else if (IsValidTrustedTypesWildcard(mCurToken)) {
+      trustedTypesExpressions.AppendElement(
+          new nsCSPTrustedTypesDirectivePolicyName(mCurToken));
+    } else {
+      AutoTArray<nsString, 1> token = {mCurToken};
+      logWarningErrorToConsole(nsIScriptError::errorFlag,
+                               "invalidTrustedTypesExpression", token);
+
+      for (auto* trustedTypeExpression : trustedTypesExpressions) {
+        delete trustedTypeExpression;
+      }
+
+      return;
+    }
+  }
+
+  if (trustedTypesExpressions.IsEmpty()) {
+    // No tt-expression is equivalent to 'none', see
+    // <https://w3c.github.io/trusted-types/dist/spec/#trusted-types-csp-directive>.
+    trustedTypesExpressions.AppendElement(new nsCSPKeywordSrc(CSP_NONE));
+  } else if (containsKeywordNone) {
+    // See step 2.4's note at
+    // <https://w3c.github.io/trusted-types/dist/spec/#should-block-create-policy>.
+    logWarningForIgnoringNoneKeywordToConsole();
+  }
+
+  aDir->addSrcs(trustedTypesExpressions);
+  mPolicy->addDirective(aDir);
+}
+
 // directive-value = *( WSP / <VCHAR except ";" and ","> )
 void nsCSPParser::directiveValue(nsTArray<nsCSPBaseSrc*>& outSrcs) {
   CSPPARSERLOG(("nsCSPParser::directiveValue"));
@@ -829,7 +1018,11 @@ nsCSPDirective* nsCSPParser::directiveName() {
 
   // Check if it is a valid directive
   CSPDirective directive = CSP_StringToCSPDirective(mCurToken);
-  if (directive == nsIContentSecurityPolicy::NO_DIRECTIVE) {
+  if (directive == nsIContentSecurityPolicy::NO_DIRECTIVE ||
+      (!StaticPrefs::dom_security_trusted_types_enabled() &&
+       (directive ==
+            nsIContentSecurityPolicy::REQUIRE_TRUSTED_TYPES_FOR_DIRECTIVE ||
+        directive == nsIContentSecurityPolicy::TRUSTED_TYPES_DIRECTIVE))) {
     AutoTArray<nsString, 1> params = {mCurToken};
     logWarningErrorToConsole(nsIScriptError::warningFlag,
                              "couldNotProcessUnknownDirective", params);
@@ -1000,11 +1193,32 @@ void nsCSPParser::directive() {
     return;
   }
 
+  // special case handling for report-to directive (since it doesn't contain
+  // a valid source list but rather an endpoint group)
+  if (CSP_IsDirective(mCurDir[0],
+                      nsIContentSecurityPolicy::REPORT_TO_DIRECTIVE)) {
+    reportGroup(cspDir);
+    return;
+  }
+
   // special case handling for sandbox directive (since it doe4sn't contain
   // a valid source list but rather special sandbox flags)
   if (CSP_IsDirective(mCurDir[0],
                       nsIContentSecurityPolicy::SANDBOX_DIRECTIVE)) {
     sandboxFlagList(cspDir);
+    return;
+  }
+
+  // Special case handling since these directives don't contain source lists.
+  if (CSP_IsDirective(
+          mCurDir[0],
+          nsIContentSecurityPolicy::REQUIRE_TRUSTED_TYPES_FOR_DIRECTIVE)) {
+    handleRequireTrustedTypesForDirective(cspDir);
+    return;
+  }
+
+  if (cspDir->equals(nsIContentSecurityPolicy::TRUSTED_TYPES_DIRECTIVE)) {
+    handleTrustedTypesDirective(cspDir);
     return;
   }
 
@@ -1220,14 +1434,16 @@ nsCSPPolicy* nsCSPParser::parseContentSecurityPolicy(
   // Check that report-only policies define a report-uri, otherwise log warning.
   if (aReportOnly) {
     policy->setReportOnlyFlag(true);
-    if (!policy->hasDirective(nsIContentSecurityPolicy::REPORT_URI_DIRECTIVE)) {
+    if (!policy->hasDirective(nsIContentSecurityPolicy::REPORT_TO_DIRECTIVE) &&
+        !policy->hasDirective(nsIContentSecurityPolicy::REPORT_URI_DIRECTIVE)) {
       nsAutoCString prePath;
       nsresult rv = aSelfURI->GetPrePath(prePath);
       NS_ENSURE_SUCCESS(rv, policy);
       AutoTArray<nsString, 1> params;
       CopyUTF8toUTF16(prePath, *params.AppendElement());
-      parser.logWarningErrorToConsole(nsIScriptError::warningFlag,
-                                      "reportURInotInReportOnlyHeader", params);
+      parser.logWarningErrorToConsole(
+          nsIScriptError::warningFlag,
+          "reportURINorReportToNotInReportOnlyHeader", params);
     }
   }
 

@@ -40,6 +40,7 @@ site-permission-install-first-prompt-midi-message = No es garanteix que aquest a
 ##
 
 xpinstall-disabled-locked = L'administrador del sistema ha inhabilitat la instal·lació de programari.
+xpinstall-disabled-by-policy = La vostra organització ha inhabilitat la instal·lació de programari.
 xpinstall-disabled = Actualment la instal·lació de programari està inhabilitada. Feu clic a Habilita i torneu-ho a provar.
 xpinstall-disabled-button =
     .label = Habilita
@@ -51,6 +52,13 @@ xpinstall-disabled-button =
 addon-install-blocked-by-policy = L'administrador del sistema ha blocat { $addonName } ({ $addonId }).
 # This message is shown when the installation of add-ons from a domain is blocked by enterprise policy.
 addon-domain-blocked-by-policy = L'administrador del sistema ha evitat que aquest lloc us demani instal·lar programari al vostre ordinador.
+# This message is shown when the installation of an add-on is blocked by enterprise policy.
+# Variables:
+#   $addonName (String): the name of the add-on.
+#   $addonId (String): the ID of add-on.
+addon-installation-blocked-by-policy = La vostra organització ha blocat { $addonName } ({ $addonId })
+# This message is shown when the installation of add-ons from a domain is blocked by enterprise policy.
+addon-install-domain-blocked-by-policy = La vostra organització ha evitat que aquest lloc us demani instal·lar programari a l'ordinador.
 addon-install-full-screen-blocked = No es permet instal·lar cap complement mentre estigueu en el mode de pantalla completa, o abans d'entrar-hi.
 # Variables:
 #   $addonName (String): the localized name of the sideloaded add-on.
@@ -111,13 +119,13 @@ addon-confirm-install-some-unsigned-message = Precaució: Aquest lloc vol instal
 
 addon-install-error-network-failure = No s'ha pogut baixar el complement perquè s'ha produït un problema de connexió.
 addon-install-error-incorrect-hash = No s'ha pogut instal·lar el complement perquè no coincideix amb el complement que esperava el { -brand-short-name }.
-addon-install-error-corrupt-file = No s'ha pogut instal·lar el complement baixat perquè sembla que era defectuós.
+addon-install-error-corrupt-file = No s'ha pogut instal·lar el complement baixat d'aquest lloc perquè sembla que està malmès.
 addon-install-error-file-access = No s'ha pogut instal·lar el complement «{ $addonName }» perquè el { -brand-short-name } no ha pogut modificar un fitxer necessari.
 addon-install-error-not-signed = El { -brand-short-name } ha evitat que aquest lloc instal·li un complement no verificat.
 addon-install-error-invalid-domain = El complement { $addonName } no es pot instal·lar des d'aquesta ubicació.
 addon-local-install-error-network-failure = No s'ha pogut instal·lar el complement per un error del sistema de fitxers.
 addon-local-install-error-incorrect-hash = No s'ha pogut instal·lar aquest complement perquè no coincideix amb el complement que esperava el { -brand-short-name }.
-addon-local-install-error-corrupt-file = No es pot instal·lar el complement perquè sembla estar malmès.
+addon-local-install-error-corrupt-file = No s'ha pogut instal·lar aquest complement perquè sembla que està malmès.
 addon-local-install-error-file-access = No s'ha pogut instal·lar el complement «{ $addonName }» perquè el { -brand-short-name } no ha pogut modificar un fitxer necessari.
 addon-local-install-error-not-signed = No es pot instal·lar aquest complement perquè no està verificat.
 # Variables:

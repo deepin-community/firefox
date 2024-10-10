@@ -12,20 +12,6 @@ about-reader-color-scheme-sepia = セピア
     .title = セピアの色設定
 about-reader-color-scheme-auto = 自動
     .title = 自動の色設定
-about-reader-color-theme-light = ライト
-    .title = ライトカラーテーマ
-about-reader-color-theme-dark = ダーク
-    .title = ダークカラーテーマ
-about-reader-color-theme-sepia = セピア
-    .title = セピアカラーテーマ
-about-reader-color-theme-auto = 自動
-    .title = 自動カラーテーマ
-about-reader-color-theme-gray = グレー
-    .title = グレーカラーテーマ
-about-reader-color-theme-contrast = コントラスト
-    .title = コントラストカラーテーマ
-about-reader-color-theme-custom = カスタムカラー
-    .title = カスタムカラーテーマ
 about-reader-color-light-theme = ライト
     .title = ライトテーマ
 about-reader-color-dark-theme = ダーク
@@ -64,12 +50,12 @@ about-reader-toolbar-lineheightplus =
 
 about-reader-font-type-serif = Serif
 about-reader-font-type-sans-serif = Sans-serif
+about-reader-font-type-monospace = 等幅
 
 ## Reader View toolbar buttons
 
 about-reader-toolbar-close = リーダービューを閉じる
 about-reader-toolbar-type-controls = 書体コントロール
-about-reader-toolbar-color-controls = 配色
 about-reader-toolbar-text-layout-controls = テキストとレイアウト
 about-reader-toolbar-theme-controls = テーマ
 about-reader-toolbar-savetopocket = { -pocket-brand-name } に保存
@@ -94,28 +80,30 @@ about-reader-custom-colors-visited-links = 訪問済みリンク
     .title = 訪問済みリンクの色を変更します
 about-reader-custom-colors-selection-highlight = 読み上げ部分の強調
     .title = 読み上げ部分の色を変更します
-about-reader-custom-colors-reset-button = 既定に戻す
+about-reader-reset-button = 既定に戻す
 
 ## Reader View improved text and layout menu
 
+about-reader-text-header = テキスト
+about-reader-text-size-label = テキストサイズ
+about-reader-font-type-selector-label = フォント
+about-reader-font-weight-selector-label = フォントの太さ
+about-reader-font-weight-light = 細字
+about-reader-font-weight-regular = 通常
+about-reader-font-weight-bold = 太字
 about-reader-layout-header = レイアウト
-about-reader-advanced-layout-header = 詳細設定
-
-about-reader-slider-label-width-narrow = 狭める
-about-reader-slider-label-width-wide = 広げる
-about-reader-slider-label-spacing-narrow = 狭める
 about-reader-slider-label-spacing-standard = 標準
 about-reader-slider-label-spacing-wide = 広げる
-
 about-reader-content-width-label =
-  .label = 本文の幅
+    .label = 本文の幅
 about-reader-line-spacing-label =
-  .label = 行間隔
+    .label = 行間隔
+about-reader-advanced-layout-header = 詳細設定
 about-reader-character-spacing-label =
-  .label = 文字間隔
+    .label = 文字間隔
 about-reader-word-spacing-label =
-  .label = 単語間隔
-about-reader-text-alignment-label = 文字揃え
+    .label = 単語間隔
+about-reader-text-alignment-label = テキスト配置
 about-reader-text-alignment-left =
     .title = 左揃え
 about-reader-text-alignment-center =

@@ -177,7 +177,7 @@ void BuildHuffmanLookupTable(j_decompress_ptr cinfo, JHUFF_TBL* table,
   for (int i = 0; i < total_count; ++i) {
     int value = table->huffval[i];
     if (values_seen[value]) {
-      JPEGLI_ERROR("Duplicate Huffman code value %d", value);
+      return JPEGLI_ERROR("Duplicate Huffman code value %d", value);
     }
     values_seen[value] = 1;
     values[i] = value;
@@ -225,7 +225,7 @@ void PrepareForScan(j_decompress_ptr cinfo) {
       HuffmanTableEntry* huff_lut =
           &m->dc_huff_lut_[dc_tbl_idx * kJpegHuffmanLutSize];
       if (!table) {
-        JPEGLI_ERROR("DC Huffman table %d not found", dc_tbl_idx);
+        return JPEGLI_ERROR("DC Huffman table %d not found", dc_tbl_idx);
       }
       BuildHuffmanLookupTable(cinfo, table, huff_lut);
     }
@@ -235,7 +235,7 @@ void PrepareForScan(j_decompress_ptr cinfo) {
       HuffmanTableEntry* huff_lut =
           &m->ac_huff_lut_[ac_tbl_idx * kJpegHuffmanLutSize];
       if (!table) {
-        JPEGLI_ERROR("AC Huffman table %d not found", ac_tbl_idx);
+        return JPEGLI_ERROR("AC Huffman table %d not found", ac_tbl_idx);
       }
       BuildHuffmanLookupTable(cinfo, table, huff_lut);
     }
@@ -740,11 +740,8 @@ void jpegli_calc_output_dimensions(j_decompress_ptr cinfo) {
 }
 
 boolean jpegli_has_multiple_scans(j_decompress_ptr cinfo) {
-  if (cinfo->global_state != jpegli::kDecHeaderDone &&
-      cinfo->global_state != jpegli::kDecProcessScan &&
-      cinfo->global_state != jpegli::kDecProcessMarkers) {
-    JPEGLI_ERROR("jpegli_has_multiple_scans: unexpected state %d",
-                 cinfo->global_state);
+  if (cinfo->input_scan_number == 0) {
+    JPEGLI_ERROR("No SOS marker found.");
   }
   return TO_JXL_BOOL(cinfo->master->is_multiscan_);
 }

@@ -7,9 +7,9 @@
 #include "nsComponentManagerUtils.h"
 #include "nsDirectoryServiceUtils.h"
 #include "nsHttpConnectionInfo.h"
+#include "nsHttpHandler.h"
 #include "nsICaptivePortalService.h"
 #include "nsIFile.h"
-#include "nsIParentalControlsService.h"
 #include "nsINetworkLinkService.h"
 #include "nsIObserverService.h"
 #include "nsIOService.h"
@@ -170,7 +170,7 @@ static void EventTelemetryPrefChanged(const char* aPref, void* aData) {
       StaticPrefs::network_trr_confirmation_telemetry_enabled());
 }
 
-nsresult TRRService::Init() {
+nsresult TRRService::Init(bool aNativeHTTPSQueryEnabled) {
   MOZ_ASSERT(NS_IsMainThread(), "wrong thread");
   if (mInitialized) {
     return NS_OK;
@@ -189,13 +189,14 @@ nsresult TRRService::Init() {
 
   sTRRServicePtr = this;
 
+  mNativeHTTPSQueryEnabled = aNativeHTTPSQueryEnabled;
   ReadPrefs(nullptr);
   mConfirmation.HandleEvent(ConfirmationEvent::Init);
 
   if (XRE_IsParentProcess()) {
     mCaptiveIsPassed = CheckCaptivePortalIsPassed();
 
-    mParentalControlEnabled = GetParentalControlEnabledInternal();
+    mParentalControlEnabled = GetParentalControlsEnabledInternal();
 
     mLinkService = do_GetService(NS_NETWORK_LINK_SERVICE_CONTRACTID);
     if (mLinkService) {
@@ -223,17 +224,14 @@ nsresult TRRService::Init() {
 }
 
 // static
-bool TRRService::GetParentalControlEnabledInternal() {
-  nsCOMPtr<nsIParentalControlsService> pc =
-      do_CreateInstance("@mozilla.org/parental-controls-service;1");
-  if (pc) {
-    bool result = false;
-    pc->GetParentalControlsEnabled(&result);
-    LOG(("TRRService::GetParentalControlEnabledInternal=%d\n", result));
-    return result;
-  }
+bool TRRService::GetParentalControlsEnabledInternal() {
+  return nsHttpHandler::GetParentalControlsEnabled();
+}
 
-  return false;
+// static, for testing purposes only
+bool TRRService::ReloadParentalControlsEnabled() {
+  nsHttpHandler::UpdateParentalControlsEnabled(true /* wait for completion */);
+  return nsHttpHandler::GetParentalControlsEnabled();
 }
 
 void TRRService::SetDetectedTrrURI(const nsACString& aURI) {
@@ -531,8 +529,7 @@ nsresult TRRService::DispatchTRRRequestInternal(TRR* aTrrRequest,
 }
 
 already_AddRefed<nsIThread> TRRService::MainThreadOrTRRThread(bool aWithLock) {
-  if (!StaticPrefs::network_trr_fetch_off_main_thread() ||
-      XRE_IsSocketProcess() || mDontUseTRRThread) {
+  if (XRE_IsSocketProcess() || mDontUseTRRThread) {
     return do_GetMainThread();
   }
 
@@ -1021,7 +1018,9 @@ bool TRRService::IsExcludedFromTRR_unlocked(const nsACString& aHost) {
       return true;
     }
     if (mDNSSuffixDomains.Contains(subdomain)) {
-      LOG(("Subdomain [%s] of host [%s] Is Excluded From TRR via pref\n",
+      LOG(
+          ("Subdomain [%s] of host [%s] Is Excluded From TRR via DNSSuffix "
+           "domains\n",
            subdomain.BeginReading(), aHost.BeginReading()));
       return true;
     }

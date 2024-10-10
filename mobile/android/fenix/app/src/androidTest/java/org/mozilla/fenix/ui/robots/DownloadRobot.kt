@@ -9,27 +9,38 @@ package org.mozilla.fenix.ui.robots
 import android.content.Intent
 import android.net.Uri
 import android.util.Log
+import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.filter
+import androidx.compose.ui.test.hasContentDescription
+import androidx.compose.ui.test.hasTestTag
+import androidx.compose.ui.test.longClick
+import androidx.compose.ui.test.onChildren
+import androidx.compose.ui.test.onFirst
+import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTouchInput
 import androidx.test.espresso.Espresso.onView
-import androidx.test.espresso.action.ViewActions.click
-import androidx.test.espresso.action.ViewActions.longClick
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.intent.Intents
 import androidx.test.espresso.intent.matcher.IntentMatchers
-import androidx.test.espresso.matcher.ViewMatchers.hasSibling
 import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
 import androidx.test.espresso.matcher.ViewMatchers.withContentDescription
 import androidx.test.espresso.matcher.ViewMatchers.withId
-import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.uiautomator.By
 import androidx.test.uiautomator.UiSelector
 import androidx.test.uiautomator.Until
 import org.hamcrest.CoreMatchers.allOf
 import org.mozilla.fenix.R
+import org.mozilla.fenix.downloads.listscreen.DownloadsListTestTag
 import org.mozilla.fenix.helpers.AppAndSystemHelper.assertExternalAppOpens
 import org.mozilla.fenix.helpers.AppAndSystemHelper.getPermissionAllowID
 import org.mozilla.fenix.helpers.Constants.PackageName.GOOGLE_APPS_PHOTOS
+import org.mozilla.fenix.helpers.Constants.RETRY_COUNT
 import org.mozilla.fenix.helpers.Constants.TAG
 import org.mozilla.fenix.helpers.DataGenerationHelper.getStringResource
+import org.mozilla.fenix.helpers.HomeActivityComposeTestRule
 import org.mozilla.fenix.helpers.MatcherHelper.assertUIObjectExists
 import org.mozilla.fenix.helpers.MatcherHelper.itemContainingText
 import org.mozilla.fenix.helpers.MatcherHelper.itemWithDescription
@@ -37,6 +48,7 @@ import org.mozilla.fenix.helpers.MatcherHelper.itemWithResId
 import org.mozilla.fenix.helpers.MatcherHelper.itemWithResIdAndText
 import org.mozilla.fenix.helpers.MatcherHelper.itemWithResIdContainingText
 import org.mozilla.fenix.helpers.TestAssetHelper.waitingTime
+import org.mozilla.fenix.helpers.TestAssetHelper.waitingTimeLong
 import org.mozilla.fenix.helpers.TestHelper.mDevice
 import org.mozilla.fenix.helpers.TestHelper.packageName
 import org.mozilla.fenix.helpers.click
@@ -77,22 +89,35 @@ class DownloadRobot {
             itemWithResId("$packageName:id/download_dialog_filename"),
         )
 
-    fun verifyDownloadFailedPrompt(fileName: String) =
-        assertUIObjectExists(
-            itemWithResId("$packageName:id/download_dialog_icon"),
-            itemWithResIdContainingText(
-                "$packageName:id/download_dialog_title",
-                getStringResource(R.string.mozac_feature_downloads_failed_notification_text2),
-            ),
-            itemWithResIdContainingText(
-                "$packageName:id/download_dialog_filename",
-                fileName,
-            ),
-            itemWithResIdContainingText(
-                "$packageName:id/download_dialog_action_button",
-                getStringResource(R.string.mozac_feature_downloads_button_try_again),
-            ),
-        )
+    fun verifyDownloadFailedPrompt(fileName: String) {
+        for (i in 1..RETRY_COUNT) {
+            Log.i(TAG, "verifyDownloadFailedPrompt: Started try #$i")
+            try {
+                assertUIObjectExists(
+                    itemWithResId("$packageName:id/download_dialog_icon"),
+                    itemWithResIdContainingText(
+                        "$packageName:id/download_dialog_title",
+                        getStringResource(R.string.mozac_feature_downloads_failed_notification_text2),
+                    ),
+                    itemWithResIdContainingText(
+                        "$packageName:id/download_dialog_filename",
+                        fileName,
+                    ),
+                    itemWithResIdContainingText(
+                        "$packageName:id/download_dialog_action_button",
+                        getStringResource(R.string.mozac_feature_downloads_button_try_again),
+                    ),
+                )
+
+                break
+            } catch (e: AssertionError) {
+                Log.i(TAG, "verifyDownloadFailedPrompt: AssertionError caught, executing fallback methods")
+                if (i == RETRY_COUNT) {
+                    throw e
+                }
+            }
+        }
+    }
 
     fun clickTryAgainButton() {
         Log.i(TAG, "clickTryAgainButton: Trying to click the \"TRY AGAIN\" in app prompt button")
@@ -107,63 +132,6 @@ class DownloadRobot {
 
     fun verifyDownloadedFileName(fileName: String) =
         assertUIObjectExists(itemContainingText(fileName))
-
-    fun verifyDownloadedFileIcon() = assertUIObjectExists(itemWithResId("$packageName:id/favicon"))
-
-    fun verifyEmptyDownloadsList() {
-        Log.i(TAG, "verifyEmptyDownloadsList: Waiting for $waitingTime ms for for empty download list to exist")
-        mDevice.findObject(UiSelector().resourceId("$packageName:id/download_empty_view"))
-            .waitForExists(waitingTime)
-        Log.i(TAG, "verifyEmptyDownloadsList: Waited for $waitingTime ms for for empty download list to exist")
-        Log.i(TAG, "verifyEmptyDownloadsList: Trying to verify that the \"No downloaded files\" list message is displayed")
-        onView(withText("No downloaded files")).check(matches(isDisplayed()))
-        Log.i(TAG, "verifyEmptyDownloadsList: Verified that the \"No downloaded files\" list message is displayed")
-    }
-
-    fun waitForDownloadsListToExist() =
-        assertUIObjectExists(itemWithResId("$packageName:id/download_list"))
-
-    fun openDownloadedFile(fileName: String) {
-        Log.i(TAG, "openDownloadedFile: Trying to verify that the downloaded file: $fileName is displayed")
-        downloadedFile(fileName).check(matches(isDisplayed()))
-        Log.i(TAG, "openDownloadedFile: Verified that the downloaded file: $fileName is displayed")
-        Log.i(TAG, "openDownloadedFile: Trying to click downloaded file: $fileName")
-        downloadedFile(fileName).click()
-        Log.i(TAG, "openDownloadedFile: Clicked downloaded file: $fileName")
-    }
-
-    fun deleteDownloadedItem(fileName: String) {
-        Log.i(TAG, "deleteDownloadedItem: Trying to click the trash bin icon to delete downloaded file: $fileName")
-        onView(
-            allOf(
-                withId(R.id.overflow_menu),
-                hasSibling(withText(fileName)),
-            ),
-        ).click()
-        Log.i(TAG, "deleteDownloadedItem: Clicked the trash bin icon to delete downloaded file: $fileName")
-    }
-
-    fun longClickDownloadedItem(title: String) {
-        Log.i(TAG, "longClickDownloadedItem: Trying to long click downloaded file: $title")
-        onView(
-            allOf(
-                withId(R.id.title),
-                withText(title),
-            ),
-        ).perform(longClick())
-        Log.i(TAG, "longClickDownloadedItem: Long clicked downloaded file: $title")
-    }
-
-    fun selectDownloadedItem(title: String) {
-        Log.i(TAG, "selectDownloadedItem: Trying click downloaded file: $title to select it")
-        onView(
-            allOf(
-                withId(R.id.title),
-                withText(title),
-            ),
-        ).perform(click())
-        Log.i(TAG, "selectDownloadedItem: Clicked downloaded file: $title to select it")
-    }
 
     fun openMultiSelectMoreOptionsMenu() {
         Log.i(TAG, "openMultiSelectMoreOptionsMenu: Trying to click multi-select more options button")
@@ -180,11 +148,55 @@ class DownloadRobot {
     fun openPageAndDownloadFile(url: Uri, downloadFile: String) {
         navigationToolbar {
         }.enterURLAndEnterToBrowser(url) {
-            waitForPageToLoad()
+            waitForPageToLoad(pageLoadWaitingTime = waitingTimeLong)
         }.clickDownloadLink(downloadFile) {
             verifyDownloadPrompt(downloadFile)
         }.clickDownload {
         }
+    }
+
+    @OptIn(ExperimentalTestApi::class)
+    fun verifyDownloadedFileExistsInDownloadsList(testRule: HomeActivityComposeTestRule, fileName: String) {
+        Log.i(TAG, "verifyDownloadedFileName: Trying to verify that the downloaded file: $fileName is displayed")
+        testRule.waitUntilAtLeastOneExists(
+            hasTestTag("${DownloadsListTestTag.DOWNLOADS_LIST_ITEM}.$fileName"),
+        )
+        testRule.onNodeWithTag("${DownloadsListTestTag.DOWNLOADS_LIST_ITEM}.$fileName")
+            .assertIsDisplayed()
+        Log.i(TAG, "verifyDownloadedFileName: Trying to verify that the downloaded file: $fileName is displayed")
+    }
+
+    fun verifyEmptyDownloadsList(testRule: HomeActivityComposeTestRule) {
+        Log.i(TAG, "verifyEmptyDownloadsList: Trying to verify that the \"No downloaded files\" list message is displayed")
+        testRule.onNodeWithText(text = testRule.activity.getString(R.string.download_empty_message_1))
+            .assertIsDisplayed()
+        Log.i(TAG, "verifyEmptyDownloadsList: Verified that the \"No downloaded files\" list message is displayed")
+    }
+
+    fun deleteDownloadedItem(testRule: HomeActivityComposeTestRule, fileName: String) {
+        Log.i(TAG, "deleteDownloadedItem: Trying to click the trash bin icon to delete downloaded file: $fileName")
+        testRule.onNodeWithTag("${DownloadsListTestTag.DOWNLOADS_LIST_ITEM}.$fileName")
+            .onChildren()
+            .filter(hasContentDescription(testRule.activity.getString(R.string.download_delete_item_1)))
+            .onFirst()
+            .performClick()
+        Log.i(TAG, "deleteDownloadedItem: Clicked the trash bin icon to delete downloaded file: $fileName")
+    }
+
+    fun clickDownloadedItem(testRule: HomeActivityComposeTestRule, fileName: String) {
+        Log.i(TAG, "clickDownloadedItem: Trying to click downloaded file: $fileName")
+        testRule.onNodeWithTag("${DownloadsListTestTag.DOWNLOADS_LIST_ITEM}.$fileName")
+            .performClick()
+        Log.i(TAG, "clickDownloadedItem: Clicked downloaded file: $fileName")
+    }
+
+    fun longClickDownloadedItem(testRule: HomeActivityComposeTestRule, title: String) {
+        Log.i(TAG, "longClickDownloadedItem: Trying to long click downloaded file: $title")
+        testRule.onNodeWithTag("${DownloadsListTestTag.DOWNLOADS_LIST_ITEM}.$title")
+            .performTouchInput {
+                longClick()
+            }
+        Log.i(TAG, "longClickDownloadedItem: Long clicked downloaded file: $title")
     }
 
     class Transition {
@@ -271,7 +283,5 @@ private fun downloadButton() =
 
 private fun openDownloadButton() =
     mDevice.findObject(UiSelector().resourceId("$packageName:id/download_dialog_action_button"))
-
-private fun downloadedFile(fileName: String) = onView(withText(fileName))
 
 private fun goBackButton() = onView(withContentDescription("Navigate up"))

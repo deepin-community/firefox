@@ -260,7 +260,8 @@ void GeckoProfilerThread::exit(JSContext* cx, JSScript* script) {
 UniqueChars GeckoProfilerRuntime::allocProfileString(JSContext* cx,
                                                      BaseScript* script) {
   // Note: this profiler string is regexp-matched by
-  // devtools/client/profiler/cleopatra/js/parserWorker.js.
+  // profiler code. Most recently at
+  // https://github.com/firefox-devtools/profiler/blob/245b1a400c5c368ccc13641d0335398bafa0e870/src/profile-logic/process-profile.js#L520-L525
 
   // If the script has a function, try calculating its name.
   bool hasName = false;
@@ -371,12 +372,11 @@ void GeckoProfilerRuntime::fixupStringsMapAfterMovingGC() {
 
 #ifdef JSGC_HASH_TABLE_CHECKS
 void GeckoProfilerRuntime::checkStringsMapAfterMovingGC() {
-  for (auto r = strings().all(); !r.empty(); r.popFront()) {
-    BaseScript* script = r.front().key();
+  CheckTableAfterMovingGC(strings(), [](const auto& entry) {
+    BaseScript* script = entry.key();
     CheckGCThingAfterMovingGC(script);
-    auto ptr = strings().lookup(script);
-    MOZ_RELEASE_ASSERT(ptr.found() && &*ptr == &r.front());
-  }
+    return script;
+  });
 }
 #endif
 

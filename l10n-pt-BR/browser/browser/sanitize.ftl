@@ -33,7 +33,7 @@ clear-time-duration-prefix =
     .value = Intervalo de tempo a limpar:{ " " }
     .accesskey = t
 clear-time-duration-prefix2 =
-    .value = Quando:
+    .value = Período:
     .accesskey = Q
 clear-time-duration-value-last-hour =
     .label = Última hora
@@ -41,6 +41,10 @@ clear-time-duration-value-last-2-hours =
     .label = Últimas duas horas
 clear-time-duration-value-last-4-hours =
     .label = Últimas quatro horas
+# Variables:
+#   $midnightTime (String) - Time of midnight (00:00 hours) - to inform the user that history will be cleared after midnight
+clear-time-duration-value-since-midnight =
+    .label = Desde { $midnightTime }
 clear-time-duration-value-today =
     .label = Hoje
 clear-time-duration-value-everything =
@@ -67,11 +71,11 @@ item-cookies =
 #   $unit (String) - Abbreviation of the unit that $amount is in, e.g. "MB"
 item-cookies-site-data-with-size =
     .label = Cookies e dados de sites ({ $amount } { $unit })
-    .accesskey = e
+    .accesskey = k
 item-cookies-site-data =
     .label = Cookies e dados de sites
-    .accesskey = e
-item-cookies-site-data-description = Pode desconectar de contas de sites ou esvaziar carrinhos de compras
+    .accesskey = k
+item-cookies-site-data-description = Limpar pode desconectar de contas de sites ou esvaziar carrinhos de compras
 item-active-logins =
     .label = Contas de acesso ativas
     .accesskey = n
@@ -82,19 +86,19 @@ item-cache =
 #   $amount (Number) - Amount of cached data
 #   $unit (String) - Abbreviation of the unit that $amount is in, e.g. "MB"
 item-cached-content-with-size =
-    .label = Arquivos e páginas em cache temporário ({ $amount } { $unit })
-    .accesskey = h
+    .label = Cache temporário de arquivos e páginas ({ $amount } { $unit })
+    .accesskey = C
 item-cached-content =
-    .label = Arquivos e páginas temporariamente em cache
-    .accesskey = A
-item-cached-content-description = Limpa itens que ajudam a carregar sites mais rápido
+    .label = Cache temporário de arquivos e páginas
+    .accesskey = C
+item-cached-content-description = Limpa itens que foram salvos localmente (ajudam a carregar sites mais rápido, pois não precisa baixar novamente)
 item-form-search-history =
     .label = Histórico de formulários e pesquisa
     .accesskey = f
 item-site-prefs =
     .label = Configurações de sites
-    .accesskey = i
-item-site-prefs-description = Redefine suas permissões e preferências de sites para as configurações originais
+    .accesskey = f
+item-site-prefs-description = Redefine suas permissões e preferências de sites para a configuração original
 data-section-label = Dados
 item-site-settings =
     .label = Configurações de sites
@@ -122,4 +126,4 @@ sanitize-everything-warning = Todo o histórico será limpo.
 # Warning that appears when "Time range to clear" is set to "Everything" in Clear
 # Recent History dialog, provided that the user has modified the default set of
 # history items to clear.
-sanitize-selected-warning = Todos os itens selecionados serão limpos.
+sanitize-selected-warning = Será limpo tudo dos itens selecionados.

@@ -188,6 +188,8 @@ mr2022-onboarding-pin-primary-button-label =
         [macos] { -brand-short-name } өнімін Dock ішінде ұстау
        *[other] { -brand-short-name } өнімін тапсырмалар панеліне бекіту
     }
+# Primary button string used on welcome page for when Firefox is not pinned on MSIX
+mr2022-onboarding-pin-primary-button-label-msix = { -brand-short-name } өнімін тапсырмалар панеліне және басты мәзірге бекіту
 # Subtitle will be used when user already has Firefox pinned, but
 # has not set it as their default browser.
 # When translating "zip", please feel free to pick a verb that signifies movement and/or exploration
@@ -334,6 +336,14 @@ onboarding-device-migration-title = Қайта келуіңізбен!
 onboarding-device-migration-subtitle = Бетбелгілер, парольдер және тарихты жаңа құрылғыда өзіңізбен бірге алып келу үшін{ -fxaccount-brand-name(capitalization: "sentence") } тіркегісіне кіріңіз.
 onboarding-device-migration-subtitle2 = Жаңа құрылғыңызға бетбелгілер, парольдер және тарихты өзіңізбен бірге алып келу үшін өз тіркелгіңізге кіріңіз.
 onboarding-device-migration-primary-button-label = Кіру
+
+## Add-ons Picker screen
+
+amo-picker-title = Өз { -brand-short-name } баптаңыз
+amo-picker-subtitle = Кеңейтулер браузеріңізге арналған қолданбалар сияқты және олар парольдерді қорғау, видеоларды жүктеп алу, мәмілелерді табу, тітіркендіргіш жарнамаларды блоктау, браузердің сыртқы түрін өзгерту және т.б. мүмкіндіктерін береді.
+amo-picker-install-button-label = { -brand-short-name } ішіне қосу
+amo-picker-install-complete-label = Орнатылған
+amo-picker-collection-link = Көбірек қосымшаларды шолу
 
 ## The following screens have been updated to use security and privacy focused strings:
 

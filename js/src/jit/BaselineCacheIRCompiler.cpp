@@ -427,13 +427,18 @@ bool BaselineCacheIRCompiler::emitGuardSpecificAtom(StringOperandId strId,
 
   Address atomAddr(stubAddress(expectedOffset));
 
-  Label done;
+  Label done, notCachedAtom;
   masm.branchPtr(Assembler::Equal, atomAddr, str, &done);
 
   // The pointers are not equal, so if the input string is also an atom it
   // must be a different string.
   masm.branchTest32(Assembler::NonZero, Address(str, JSString::offsetOfFlags()),
                     Imm32(JSString::ATOM_BIT), failure->label());
+
+  masm.tryFastAtomize(str, scratch, scratch, &notCachedAtom);
+  masm.branchPtr(Assembler::Equal, atomAddr, scratch, &done);
+  masm.jump(failure->label());
+  masm.bind(&notCachedAtom);
 
   // Check the length.
   masm.loadPtr(atomAddr, scratch);
@@ -443,8 +448,7 @@ bool BaselineCacheIRCompiler::emitGuardSpecificAtom(StringOperandId strId,
 
   // We have a non-atomized string with the same length. Call a helper
   // function to do the comparison.
-  LiveRegisterSet volatileRegs(GeneralRegisterSet::Volatile(),
-                               liveVolatileFloatRegs());
+  LiveRegisterSet volatileRegs = liveVolatileRegs();
   masm.PushRegsInMask(volatileRegs);
 
   using Fn = bool (*)(JSString* str1, JSString* str2);
@@ -894,8 +898,7 @@ bool BaselineCacheIRCompiler::emitAddAndStoreSlotShared(
       return false;
     }
 
-    LiveRegisterSet save(GeneralRegisterSet::Volatile(),
-                         liveVolatileFloatRegs());
+    LiveRegisterSet save = liveVolatileRegs();
     masm.PushRegsInMask(save);
 
     using Fn = bool (*)(JSContext* cx, NativeObject* obj, uint32_t newCount);
@@ -1464,12 +1467,15 @@ bool BaselineCacheIRCompiler::emitHasClassResult(ObjOperandId objId,
 
 void BaselineCacheIRCompiler::emitAtomizeString(Register str, Register temp,
                                                 Label* failure) {
-  Label isAtom;
+  Label isAtom, notCachedAtom;
   masm.branchTest32(Assembler::NonZero, Address(str, JSString::offsetOfFlags()),
                     Imm32(JSString::ATOM_BIT), &isAtom);
+  masm.tryFastAtomize(str, temp, str, &notCachedAtom);
+  masm.jump(&isAtom);
+  masm.bind(&notCachedAtom);
+
   {
-    LiveRegisterSet save(GeneralRegisterSet::Volatile(),
-                         liveVolatileFloatRegs());
+    LiveRegisterSet save = liveVolatileRegs();
     masm.PushRegsInMask(save);
 
     using Fn = JSAtom* (*)(JSContext* cx, JSString* str);
@@ -2032,6 +2038,7 @@ bool BaselineCacheIRCompiler::init(CacheKind kind) {
       break;
     case CacheKind::GetProp:
     case CacheKind::TypeOf:
+    case CacheKind::TypeOfEq:
     case CacheKind::ToPropertyKey:
     case CacheKind::GetIterator:
     case CacheKind::OptimizeSpreadCall:
@@ -2129,7 +2136,11 @@ static void ResetEnteredCounts(const ICEntry* icEntry) {
 
 static const uint32_t MaxFoldedShapes = 16;
 
-const JSClass ShapeListObject::class_ = {"JIT ShapeList", 0, &classOps_};
+const JSClass ShapeListObject::class_ = {
+    "JIT ShapeList",
+    0,
+    &classOps_,
+};
 
 const JSClassOps ShapeListObject::classOps_ = {
     nullptr,                 // addProperty
@@ -2189,8 +2200,13 @@ bool ShapeListObject::traceWeak(JSTracer* trc) {
   }
 
   MOZ_ASSERT(dst <= end);
-  length = dst - elements_;
-  setDenseInitializedLength(length);
+  uint32_t newLength = dst - elements_;
+  setDenseInitializedLength(newLength);
+
+  if (length != newLength) {
+    JitSpew(JitSpew_StubFolding, "Cleared %u/%u shapes from %p",
+            length - newLength, length, this);
+  }
 
   return length != 0;
 }
@@ -2382,6 +2398,12 @@ bool js::jit::TryFoldingStubs(JSContext* cx, ICFallbackStub* fallback,
   }
   MOZ_ASSERT(result == ICAttachResult::Attached);
 
+  JitSpew(JitSpew_StubFolding,
+          "Folded stub at offset %u (icScript: %p) with %zu shapes (%s:%u:%u)",
+          fallback->pcOffset(), icScript, shapeList.length(),
+          script->filename(), script->lineno(),
+          script->column().oneOriginValue());
+
   fallback->setMayHaveFoldedStub();
   return true;
 }
@@ -2500,6 +2522,9 @@ static bool AddToFoldedStub(JSContext* cx, const CacheIRWriter& writer,
     cx->recoverFromOutOfMemory();
     return false;
   }
+
+  JitSpew(JitSpew_StubFolding, "ShapeListObject %p: new length: %u",
+          foldedShapes.get(), foldedShapes->length());
 
   return true;
 }
@@ -2627,6 +2652,11 @@ ICAttachResult js::jit::AttachBaselineCacheIRStub(
   // Try including this case in an existing folded stub.
   if (stub->mayHaveFoldedStub() &&
       AddToFoldedStub(cx, writer, icScript, stub)) {
+    JitSpew(JitSpew_StubFolding,
+            "Added to folded stub at offset %u (icScript: %p) (%s:%u:%u)",
+            stub->pcOffset(), icScript, outerScript->filename(),
+            outerScript->lineno(), outerScript->column().oneOriginValue());
+
     // Instead of adding a new stub, we have added a new case to an existing
     // folded stub. We do not have to invalidate Warp, because the
     // ShapeListObject that stores the cases is shared between baseline and
@@ -2637,6 +2667,10 @@ ICAttachResult js::jit::AttachBaselineCacheIRStub(
     JSScript* owningScript = nullptr;
     if (cx->zone()->jitZone()->hasStubFoldingBailoutData(outerScript)) {
       owningScript = cx->zone()->jitZone()->stubFoldingBailoutParent();
+      JitSpew(JitSpew_StubFolding,
+              "Found stub folding bailout parent: %s:%u:%u",
+              owningScript->filename(), owningScript->lineno(),
+              owningScript->column().oneOriginValue());
     } else {
       owningScript = icScript->isInlined()
                          ? icScript->inliningRoot()->owningScript()
@@ -3680,22 +3714,20 @@ bool BaselineCacheIRCompiler::emitCallInlinedFunction(ObjOperandId calleeId,
 template <typename IdType>
 bool BaselineCacheIRCompiler::emitCallScriptedProxyGetShared(
     ValOperandId targetId, ObjOperandId receiverId, ObjOperandId handlerId,
-    uint32_t trapOffset, IdType id, uint32_t nargsAndFlags) {
-  Address trapAddr(stubAddress(trapOffset));
+    ObjOperandId trapId, IdType id, uint32_t nargsAndFlags) {
   Register handler = allocator.useRegister(masm, handlerId);
   ValueOperand target = allocator.useValueRegister(masm, targetId);
   Register receiver = allocator.useRegister(masm, receiverId);
+  Register callee = allocator.useRegister(masm, trapId);
   ValueOperand idVal;
   if constexpr (std::is_same_v<IdType, ValOperandId>) {
     idVal = allocator.useValueRegister(masm, id);
   }
 
   AutoScratchRegister code(allocator, masm);
-  AutoScratchRegister callee(allocator, masm);
+
   AutoScratchRegister scratch(allocator, masm);
   ValueOperand scratchVal(scratch);
-
-  masm.loadPtr(trapAddr, callee);
 
   allocator.discardStack(masm);
 
@@ -3770,20 +3802,20 @@ bool BaselineCacheIRCompiler::emitCallScriptedProxyGetShared(
 
 bool BaselineCacheIRCompiler::emitCallScriptedProxyGetResult(
     ValOperandId targetId, ObjOperandId receiverId, ObjOperandId handlerId,
-    uint32_t trapOffset, uint32_t idOffset, uint32_t nargsAndFlags) {
+    ObjOperandId trapId, uint32_t idOffset, uint32_t nargsAndFlags) {
   JitSpew(JitSpew_Codegen, "%s", __FUNCTION__);
 
-  return emitCallScriptedProxyGetShared(targetId, receiverId, handlerId,
-                                        trapOffset, idOffset, nargsAndFlags);
+  return emitCallScriptedProxyGetShared(targetId, receiverId, handlerId, trapId,
+                                        idOffset, nargsAndFlags);
 }
 
 bool BaselineCacheIRCompiler::emitCallScriptedProxyGetByValueResult(
     ValOperandId targetId, ObjOperandId receiverId, ObjOperandId handlerId,
-    ValOperandId idId, uint32_t trapOffset, uint32_t nargsAndFlags) {
+    ValOperandId idId, ObjOperandId trapId, uint32_t nargsAndFlags) {
   JitSpew(JitSpew_Codegen, "%s", __FUNCTION__);
 
-  return emitCallScriptedProxyGetShared(targetId, receiverId, handlerId,
-                                        trapOffset, idId, nargsAndFlags);
+  return emitCallScriptedProxyGetShared(targetId, receiverId, handlerId, trapId,
+                                        idId, nargsAndFlags);
 }
 #endif
 

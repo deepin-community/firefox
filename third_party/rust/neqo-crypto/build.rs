@@ -103,10 +103,10 @@ fn get_bash() -> PathBuf {
 
     // When running under MOZILLABUILD, we need to make sure not to invoke
     // another instance of bash that might be sitting around (like WSL).
-    match env::var("MOZILLABUILD") {
-        Ok(d) => PathBuf::from(d).join("msys").join("bin").join("bash.exe"),
-        Err(_) => PathBuf::from("bash"),
-    }
+    env::var("MOZILLABUILD").map_or_else(
+        |_| PathBuf::from("bash"),
+        |d| PathBuf::from(d).join("msys").join("bin").join("bash.exe"),
+    )
 }
 
 fn build_nss(dir: PathBuf) {
@@ -421,6 +421,7 @@ fn setup_for_gecko() -> Vec<String> {
 }
 
 fn main() {
+    println!("cargo:rustc-check-cfg=cfg(nss_nodb)");
     let flags = if cfg!(feature = "gecko") {
         setup_for_gecko()
     } else if let Ok(nss_dir) = env::var("NSS_DIR") {

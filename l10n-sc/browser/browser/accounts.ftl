@@ -45,6 +45,9 @@ account-send-tab-to-device-verify = Verìfica su contu tuo…
 # The title shown in a notification when either this device or another device
 # has connected to, or disconnected from, a Firefox account.
 account-connection-title = { -fxaccount-brand-name(capitalization: "uppercase") }
+# The title shown in a notification when either this device or another device
+# has connected to, or disconnected from, a Firefox account.
+account-connection-title-2 = Contu
 # Variables:
 #   $deviceName (String): the name of the new device
 account-connection-connected-with = Custu elaboradore est connètidu immoe cun { $deviceName }.
@@ -92,4 +95,16 @@ account-multiple-tabs-arriving-from-unknown-device =
     { $tabCount ->
         [one] { $tabCount } ischeda retzida
        *[other] { $tabCount } ischedas retzidas
+    }
+
+## These strings are used in notifications in which the user remotely closed
+## tabs from other devices
+## Variables:
+##   $closedCount (Number): the number of tabs closed
+
+account-view-recently-closed-tabs = Ammustra ischedas serradas pagora
+account-tabs-closed-remotely =
+    { $closedCount ->
+        [one] { $closedCount } ischeda de { -brand-short-name } serrada
+       *[other] { $closedCount } ischedas de { -brand-short-name } serradas
     }

@@ -32,6 +32,7 @@
 #include "mozilla/ScopeExit.h"
 #include "mozilla/ScrollingMetrics.h"
 #include "mozilla/SharedStyleSheetCache.h"
+#include "mozilla/dom/SharedScriptCache.h"
 #include "mozilla/SpinEventLoopUntil.h"
 #include "mozilla/TimeStamp.h"
 #include "mozilla/dom/ContentParent.h"
@@ -57,7 +58,6 @@
 #include "mozilla/RemoteDecoderManagerChild.h"
 #include "mozilla/KeySystemConfig.h"
 #include "mozilla/WheelHandlingHelper.h"
-#include "IOActivityMonitor.h"
 #include "nsNativeTheme.h"
 #include "nsThreadUtils.h"
 #include "mozJSModuleLoader.h"
@@ -187,23 +187,22 @@ void ChromeUtils::ReleaseAssert(GlobalObject& aGlobal, bool aCondition,
   }
 
   // Extract the current stack from the JS runtime to embed in the crash reason.
-  nsAutoString filename;
+  nsAutoCString filename;
   uint32_t lineNo = 0;
 
   if (nsCOMPtr<nsIStackFrame> location = GetCurrentJSStack(1)) {
     location->GetFilename(aGlobal.Context(), filename);
     lineNo = location->GetLineNumber(aGlobal.Context());
   } else {
-    filename.Assign(u"<unknown>"_ns);
+    filename.Assign("<unknown>"_ns);
   }
 
   // Convert to utf-8 for adding as the MozCrashReason.
-  NS_ConvertUTF16toUTF8 filenameUtf8(filename);
   NS_ConvertUTF16toUTF8 messageUtf8(aMessage);
 
   // Actually crash.
   MOZ_CRASH_UNSAFE_PRINTF("Failed ChromeUtils.releaseAssert(\"%s\") @ %s:%u",
-                          messageUtf8.get(), filenameUtf8.get(), lineNo);
+                          messageUtf8.get(), filename.get(), lineNo);
 }
 
 /* static */
@@ -896,14 +895,22 @@ static bool JSLazyGetter(JSContext* aCx, unsigned aArgc, JS::Value* aVp) {
 static bool DefineLazyGetter(JSContext* aCx, JS::Handle<JSObject*> aTarget,
                              JS::Handle<JS::Value> aName,
                              JS::Handle<JSObject*> aLambda) {
-  JS::Rooted<jsid> id(aCx);
+  JS::Rooted<JS::PropertyKey> id(aCx);
   if (!JS_ValueToId(aCx, aName, &id)) {
     return false;
   }
 
+  JS::Rooted<JS::PropertyKey> funId(aCx);
+  if (id.isAtom()) {
+    funId = id;
+  } else {
+    // Don't care int and symbol cases.
+    funId = JS::PropertyKey::NonIntAtom(JS_GetEmptyString(aCx));
+  }
+
   JS::Rooted<JSObject*> getter(
-      aCx, JS_GetFunctionObject(
-               js::NewFunctionByIdWithReserved(aCx, JSLazyGetter, 0, 0, id)));
+      aCx, JS_GetFunctionObject(js::NewFunctionByIdWithReserved(
+               aCx, JSLazyGetter, 0, 0, funId)));
   if (!getter) {
     JS_ReportOutOfMemory(aCx);
     return false;
@@ -1365,6 +1372,20 @@ void ChromeUtils::ClearStyleSheetCache(GlobalObject&) {
   SharedStyleSheetCache::Clear();
 }
 
+void ChromeUtils::ClearScriptCacheByPrincipal(GlobalObject&,
+                                              nsIPrincipal* aForPrincipal) {
+  SharedScriptCache::Clear(aForPrincipal);
+}
+
+void ChromeUtils::ClearScriptCacheByBaseDomain(GlobalObject&,
+                                               const nsACString& aBaseDomain) {
+  SharedScriptCache::Clear(nullptr, &aBaseDomain);
+}
+
+void ChromeUtils::ClearScriptCache(GlobalObject&) {
+  SharedScriptCache::Clear();
+}
+
 #define PROCTYPE_TO_WEBIDL_CASE(_procType, _webidl) \
   case mozilla::ProcType::_procType:                \
     return WebIDLProcType::_webidl
@@ -1388,6 +1409,7 @@ static WebIDLProcType ProcTypeToWebIDL(mozilla::ProcType aType) {
     PROCTYPE_TO_WEBIDL_CASE(PrivilegedMozilla, Privilegedmozilla);
     PROCTYPE_TO_WEBIDL_CASE(WebCOOPCOEP, WithCoopCoep);
     PROCTYPE_TO_WEBIDL_CASE(WebServiceWorker, WebServiceWorker);
+    PROCTYPE_TO_WEBIDL_CASE(Inference, Inference);
 
 #define GECKO_PROCESS_TYPE(enum_value, enum_name, string_name, proc_typename, \
                            process_bin_type, procinfo_typename,               \
@@ -1572,6 +1594,8 @@ already_AddRefed<Promise> ChromeUtils::RequestProcInfo(GlobalObject& aGlobal,
       type = mozilla::ProcType::PrivilegedMozilla;
     } else if (remoteType == PREALLOC_REMOTE_TYPE) {
       type = mozilla::ProcType::Preallocated;
+    } else if (remoteType == INFERENCE_REMOTE_TYPE) {
+      type = mozilla::ProcType::Inference;
     } else if (StringBeginsWith(remoteType, DEFAULT_REMOTE_TYPE)) {
       type = mozilla::ProcType::Web;
     } else {
@@ -1841,22 +1865,6 @@ void ChromeUtils::CreateError(const GlobalObject& aGlobal,
 
   cleanup.release();
   aRetVal.set(retVal);
-}
-
-/* static */
-already_AddRefed<Promise> ChromeUtils::RequestIOActivity(GlobalObject& aGlobal,
-                                                         ErrorResult& aRv) {
-  MOZ_ASSERT(XRE_IsParentProcess());
-  MOZ_ASSERT(Preferences::GetBool(IO_ACTIVITY_ENABLED_PREF, false));
-  nsCOMPtr<nsIGlobalObject> global = do_QueryInterface(aGlobal.GetAsSupports());
-  MOZ_ASSERT(global);
-  RefPtr<Promise> domPromise = Promise::Create(global, aRv);
-  if (NS_WARN_IF(aRv.Failed())) {
-    return nullptr;
-  }
-  MOZ_ASSERT(domPromise);
-  mozilla::net::IOActivityMonitor::RequestActivities(domPromise);
-  return domPromise.forget();
 }
 
 /* static */

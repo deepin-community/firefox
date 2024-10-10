@@ -265,7 +265,7 @@ quickactions-cmd-clearhistory = изчистване на историята
 quickactions-downloads2 = Преглед на изтеглените файлове
 quickactions-cmd-downloads = изтегляния
 # Opens about:addons page in the extensions section
-quickactions-extensions = Управление на добавки
+quickactions-extensions = Управление на разширения
 quickactions-cmd-extensions = разширения
 # Opens the devtools web inspector
 quickactions-inspector2 = Развойни инструменти
@@ -287,7 +287,7 @@ quickactions-private2 = Поверителен прозорец
 quickactions-cmd-private = поверително разглеждане
 # Opens a SUMO article explaining how to refresh
 quickactions-refresh = Освежаване на { -brand-short-name }
-quickactions-cmd-refresh = освежаване, опресняване
+quickactions-cmd-refresh = освежаване, опресняване, презареждане
 # Restarts the browser
 quickactions-restart = Рестартиране на { -brand-short-name }
 quickactions-cmd-restart = рестарт, рестартиране
@@ -509,19 +509,19 @@ urlbar-placeholder-search-mode-web-2 =
 #  $name (String): the name of a search engine that searches a specific site
 #  (e.g. Amazon).
 urlbar-placeholder-search-mode-other-engine =
-    .placeholder = Въведете търсене
+    .placeholder = Въведете за търсене
     .aria-label = Търсете в { $name }
 # This placeholder is used when searching bookmarks.
 urlbar-placeholder-search-mode-other-bookmarks =
-    .placeholder = Въведете търсене
+    .placeholder = Въведете за търсене
     .aria-label = Търсене в отметки
 # This placeholder is used when searching history.
 urlbar-placeholder-search-mode-other-history =
-    .placeholder = Въведете търсене
+    .placeholder = Въведете за търсене
     .aria-label = Търсене в история
 # This placeholder is used when searching open tabs.
 urlbar-placeholder-search-mode-other-tabs =
-    .placeholder = Въведете търсене
+    .placeholder = Въведете за търсене
     .aria-label = Търсене в раздели
 # This placeholder is used when searching quick actions.
 urlbar-placeholder-search-mode-other-actions =
@@ -602,6 +602,12 @@ urlbar-result-action-copy-to-clipboard = Копиране
 #  $result (String): the string representation for a formula result
 urlbar-result-action-calculator-result = = { $result }
 
+## Strings used for buttons in the urlbar
+
+# Label prompting user to search with a particular search engine.
+#  $engine (String): the name of a search engine that searches a specific site
+urlbar-result-search-with = Търсене с { $engine }
+
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
 ## In these actions "Search" is a verb, followed by where the search is performed.
@@ -631,6 +637,21 @@ urlbar-group-quickactions =
 #  $engine (String): the name of the search engine used to search.
 urlbar-group-recent-searches =
     .label = Скорошни търсения
+# The header shown above trending results.
+# Variables:
+#  $engine (String): the name of the search engine providing the trending suggestions
+urlbar-group-trending =
+    .label = Набиращи популярност в { $engine }
+# The result menu labels shown next to trending results.
+urlbar-result-menu-trending-dont-show =
+    .label = Без показване на набиращи популярност търсения
+    .accesskey = Б
+urlbar-result-menu-trending-why =
+    .label = Защо виждам това?
+    .accesskey = в
+# A message that replaces a result when the user dismisses all suggestions of a
+# particular type.
+urlbar-trending-dismissal-acknowledgment = Благодарим ви за обратната връзка. Вече няма да виждате набиращи популярност търсения.
 
 ## Reader View toolbar buttons
 
@@ -772,7 +793,7 @@ toolbar-settings-button =
            *[other] Отваряне на настройките
         }
 toolbar-overflow-customize-button =
-    .label = Приспособяване…
+    .label = Персонализиране на лентата…
     .accesskey = П
 toolbar-button-email-link =
     .label = Препратка по имейл
@@ -908,6 +929,15 @@ data-reporting-notification-button =
     .accesskey = И
 # Label for the indicator shown in the private browsing window titlebar.
 private-browsing-indicator-label = Поверително разглеждане
+# Tooltip for the indicator shown in the window titlebar when content analysis is active.
+# Variables:
+#   $agentName (String): The name of the DLP agent that is connected
+content-analysis-indicator-tooltip =
+    .tooltiptext = Предотвратяване загуба на данни (DLP) от { $agentName }. Натиснете за повече информация.
+content-analysis-panel-title = Защита на данните
+# Variables:
+#   $agentName (String): The name of the DLP agent that is connected
+content-analysis-panel-text = Вашата организация използва { $agentName } за защита срещу загубата на данни. <a data-l10n-name="info">Научете повече</a>
 
 ## Unified extensions (toolbar) button
 
@@ -961,12 +991,19 @@ refresh-blocked-allow =
 
 ## Firefox Relay integration
 
+# Variables:
+#  $useremail (String): user email that will receive messages
+firefox-relay-offer-what-relay-provides = Всички имейли, изпратени до вашите имейл маски, ще бъдат препращани към <strong>{ $useremail }</strong> (освен ако не решите да ги блокирате).
 
 ## Add-on Pop-up Notifications
 
 popup-notification-addon-install-unsigned =
     .value = (непроверено)
 popup-notification-xpinstall-prompt-learn-more = Научете повече за безопасното инсталиране на добавки
+# Note: Access key is set to P to match "Private" in the corresponding localized label.
+popup-notification-addon-privatebrowsing-checkbox =
+    .label = Да работи в поверителни прозорци
+    .accesskey = п
 
 ## Pop-up warning
 
@@ -996,3 +1033,24 @@ popup-warning-button =
 #   $popupURI (String): the URI for the pop-up window
 popup-show-popup-menuitem =
     .label = Показване на „{ $popupURI }“
+
+## File-picker crash notification ("FilePickerCrashed.sys.mjs")
+
+file-picker-failed-open = Файловият диалогов прозорец на Windows не може да бъде отворен. Не може да бъде избран файл или папка.
+#   $path (string): The full path to which the file will be saved (e.g., 'C:\Users\Default User\Downloads\readme.txt').
+file-picker-failed-save-somewhere = Файловият диалогов прозорец на Windows не може да бъде отворен. Файлът ще бъде запазен в { $path }.
+file-picker-failed-save-nowhere = Файловият диалогов прозорец на Windows не може да бъде отворен. Не може да бъде намерена папка по подразбиране; файлът няма да бъде записан.
+file-picker-crashed-open = Файловият диалогов прозорец на Windows се срина. Не може да бъде избран файл или папка.
+#   $path (string): The full path to which the file will be saved (e.g., 'C:\Users\Default User\Downloads\readme.txt').
+file-picker-crashed-save-somewhere = Файловият диалогов прозорец на Windows се срина. Файлът ще бъде запазен в { $path }.
+file-picker-crashed-save-nowhere = Файловият диалогов прозорец на Windows се срина. Не може да бъде намерена папка по подразбиране. Файлът няма да бъде записан.
+
+# Button used with file-picker-crashed-save-default. Opens the folder in Windows
+# Explorer, with the saved file selected and in focus.
+#
+# The wording here should be consistent with the Windows variant of
+# `downloads-cmd-show-menuitem-2` and similar messages.
+
+file-picker-crashed-show-in-folder =
+    .label = Показване в папка
+    .accessKey = о

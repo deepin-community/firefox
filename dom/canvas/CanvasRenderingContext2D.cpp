@@ -972,6 +972,7 @@ CanvasRenderingContext2D::ContextState::ContextState(const ContextState& aOther)
       textRendering(aOther.textRendering),
       letterSpacing(aOther.letterSpacing),
       wordSpacing(aOther.wordSpacing),
+      fontLineHeight(aOther.fontLineHeight),
       letterSpacingStr(aOther.letterSpacingStr),
       wordSpacingStr(aOther.wordSpacingStr),
       shadowColor(aOther.shadowColor),
@@ -1089,6 +1090,7 @@ CanvasRenderingContext2D::CanvasRenderingContext2D(
 }
 
 CanvasRenderingContext2D::~CanvasRenderingContext2D() {
+  CanvasImageCache::NotifyCanvasDestroyed(this);
   RemovePostRefreshObserver();
   RemoveShutdownObserver();
   ResetBitmap();
@@ -1119,6 +1121,7 @@ void CanvasRenderingContext2D::GetContextAttributes(
 
   aSettings.mAlpha = mContextAttributesHasAlpha;
   aSettings.mWillReadFrequently = mWillReadFrequently;
+  aSettings.mForceSoftwareRendering = mForceSoftwareRendering;
 
   // We don't support the 'desynchronized' and 'colorSpace' attributes, so
   // those just keep their default values.
@@ -1469,7 +1472,7 @@ bool CanvasRenderingContext2D::BorrowTarget(const IntRect& aPersistedRect,
   // acceleration, then we skip trying to use this provider so that it will be
   // recreated by EnsureTarget later.
   if (!mBufferProvider || mBufferProvider->RequiresRefresh() ||
-      (mBufferProvider->IsAccelerated() && GetEffectiveWillReadFrequently())) {
+      (mBufferProvider->IsAccelerated() && UseSoftwareRendering())) {
     return false;
   }
   mTarget = mBufferProvider->BorrowDrawTarget(aPersistedRect);
@@ -1505,7 +1508,8 @@ bool CanvasRenderingContext2D::BorrowTarget(const IntRect& aPersistedRect,
 
 bool CanvasRenderingContext2D::EnsureTarget(ErrorResult& aError,
                                             const gfx::Rect* aCoveredRect,
-                                            bool aWillClear) {
+                                            bool aWillClear,
+                                            bool aSkipTransform) {
   if (AlreadyShutDown()) {
     gfxCriticalNoteOnce << "Attempt to render into a Canvas2d after shutdown.";
     SetErrorState();
@@ -1551,9 +1555,10 @@ bool CanvasRenderingContext2D::EnsureTarget(ErrorResult& aError,
   // from the previous frame and/or clearing the canvas.
   gfx::Rect canvasRect(0, 0, mWidth, mHeight);
   bool canDiscardContent =
-      aCoveredRect && CurrentState()
-                          .transform.TransformBounds(*aCoveredRect)
-                          .Contains(canvasRect);
+      aCoveredRect &&
+      (aSkipTransform ? *aCoveredRect
+                      : CurrentState().transform.TransformBounds(*aCoveredRect))
+          .Contains(canvasRect);
 
   // If a clip is active we don't know for sure that the next drawing command
   // will really cover the entire canvas.
@@ -1616,6 +1621,21 @@ bool CanvasRenderingContext2D::EnsureTarget(ErrorResult& aError,
 
   if (needsClear) {
     newTarget->ClearRect(canvasRect);
+  }
+
+  // Ensure any Path state is compatible with the type of DrawTarget used. This
+  // may require making a copy with the correct type if they (rarely) mismatch.
+  if (mPathBuilder &&
+      mPathBuilder->GetBackendType() != newTarget->GetBackendType()) {
+    RefPtr<Path> path = mPathBuilder->Finish();
+    mPathBuilder = newTarget->CreatePathBuilder(path->GetFillRule());
+    path->StreamToSink(mPathBuilder);
+  }
+  if (mPath && mPath->GetBackendType() != newTarget->GetBackendType()) {
+    RefPtr<PathBuilder> builder =
+        newTarget->CreatePathBuilder(mPath->GetFillRule());
+    mPath->StreamToSink(builder);
+    mPath = builder->Finish();
   }
 
   mTarget = std::move(newTarget);
@@ -1718,7 +1738,7 @@ bool CanvasRenderingContext2D::TryAcceleratedTarget(
   }
   // Don't try creating an accelerate DrawTarget if either acceleration failed
   // previously or if the application expects acceleration to be slow.
-  if (!mAllowAcceleration || GetEffectiveWillReadFrequently()) {
+  if (!mAllowAcceleration || UseSoftwareRendering()) {
     return false;
   }
 
@@ -1775,7 +1795,7 @@ bool CanvasRenderingContext2D::TrySharedTarget(
 
     aOutProvider = renderer->CreatePersistentBufferProvider(
         GetSize(), GetSurfaceFormat(),
-        !mAllowAcceleration || GetEffectiveWillReadFrequently());
+        !mAllowAcceleration || UseSoftwareRendering());
   } else if (mOffscreenCanvas) {
     if (!StaticPrefs::gfx_offscreencanvas_shared_provider()) {
       return false;
@@ -1789,7 +1809,7 @@ bool CanvasRenderingContext2D::TrySharedTarget(
 
     aOutProvider = PersistentBufferProviderShared::Create(
         GetSize(), GetSurfaceFormat(), imageBridge,
-        !mAllowAcceleration || GetEffectiveWillReadFrequently(),
+        !mAllowAcceleration || UseSoftwareRendering(),
         mOffscreenCanvas->GetWindowID());
   }
 
@@ -1810,7 +1830,7 @@ bool CanvasRenderingContext2D::TryBasicTarget(
     RefPtr<layers::PersistentBufferProvider>& aOutProvider,
     ErrorResult& aError) {
   aOutDT = gfxPlatform::GetPlatform()->CreateOffscreenCanvasDrawTarget(
-      GetSize(), GetSurfaceFormat());
+      GetSize(), GetSurfaceFormat(), UseSoftwareRendering());
   if (!aOutDT) {
     aError.ThrowInvalidStateError("Canvas could not create basic draw target.");
     return false;
@@ -2023,6 +2043,7 @@ CanvasRenderingContext2D::SetContextOptions(JSContext* aCx,
   }
 
   mWillReadFrequently = attributes.mWillReadFrequently;
+  mForceSoftwareRendering = attributes.mForceSoftwareRendering;
 
   mContextAttributesHasAlpha = attributes.mAlpha;
   UpdateIsOpaque();
@@ -2393,7 +2414,7 @@ already_AddRefed<CanvasPattern> CanvasRenderingContext2D::CreatePattern(
     HTMLCanvasElement* canvas = &aSource.GetAsHTMLCanvasElement();
     element = canvas;
 
-    nsIntSize size = canvas->GetSize();
+    CSSIntSize size = canvas->GetSize();
     if (size.width == 0) {
       aError.ThrowInvalidStateError("Passed-in canvas has width 0");
       return nullptr;
@@ -2436,7 +2457,7 @@ already_AddRefed<CanvasPattern> CanvasRenderingContext2D::CreatePattern(
   } else if (aSource.IsOffscreenCanvas()) {
     offscreenCanvas = &aSource.GetAsOffscreenCanvas();
 
-    nsIntSize size = offscreenCanvas->GetWidthHeight();
+    CSSIntSize size = offscreenCanvas->GetWidthHeight();
     if (size.width == 0) {
       aError.ThrowInvalidStateError("Passed-in canvas has width 0");
       return nullptr;
@@ -2883,15 +2904,30 @@ void CanvasRenderingContext2D::ParseSpacing(const nsACString& aSpacing,
   *aValue = value;
 }
 
-class CanvasUserSpaceMetrics : public UserSpaceMetricsWithSize {
+class CanvasUserSpaceMetrics final : public UserSpaceMetricsWithSize {
  public:
   CanvasUserSpaceMetrics(const gfx::IntSize& aSize, const nsFont& aFont,
+                         const StyleLineHeight& aLineHeight,
+                         RefPtr<nsAtom> aFontLanguage,
+                         bool aFontExplicitLanguage,
                          const ComputedStyle* aCanvasStyle,
                          nsPresContext* aPresContext)
       : mSize(aSize),
         mFont(aFont),
+        mLineHeight(aLineHeight),
+        mFontLanguage(std::move(aFontLanguage)),
+        mFontExplicitLanguage(aFontExplicitLanguage),
         mCanvasStyle(aCanvasStyle),
         mPresContext(aPresContext) {}
+
+  float GetZoom() const override {
+    return mCanvasStyle ? mCanvasStyle->EffectiveZoom().ToFloat() : 1.0f;
+  }
+
+  float GetRootZoom() const override {
+    return UserSpaceMetrics::GetZoom(
+        mPresContext->Document()->GetRootElement());
+  }
 
   float GetEmLength(Type aType) const override {
     switch (aType) {
@@ -2909,6 +2945,26 @@ class CanvasUserSpaceMetrics : public UserSpaceMetricsWithSize {
 
   CSSSize GetCSSViewportSize() const override {
     return GetCSSViewportSizeFromContext(mPresContext);
+  }
+
+  float GetLineHeight(Type aType) const override {
+    // This is used if a filter is added through `url()`, and if the SVG
+    // filter being referred to is using line-height units.
+    switch (aType) {
+      case Type::This: {
+        const auto wm = GetWritingModeForType(aType);
+        const auto lh = ReflowInput::CalcLineHeightForCanvas(
+            mLineHeight, mFont, mFontLanguage, mFontExplicitLanguage,
+            mPresContext, wm);
+        return nsPresContext::AppUnitsToFloatCSSPixels(lh);
+      }
+      case Type::Root: {
+        return SVGContentUtils::GetLineHeight(
+            mPresContext->Document()->GetRootElement());
+      }
+    }
+    MOZ_ASSERT_UNREACHABLE("Was a new value added to the enumeration?");
+    return 1.0f;
   }
 
  private:
@@ -2946,6 +3002,9 @@ class CanvasUserSpaceMetrics : public UserSpaceMetricsWithSize {
 
   gfx::IntSize mSize;
   const nsFont& mFont;
+  StyleLineHeight mLineHeight;
+  RefPtr<nsAtom> mFontLanguage;
+  bool mFontExplicitLanguage;
   RefPtr<const ComputedStyle> mCanvasStyle;
   nsPresContext* mPresContext;
 };
@@ -3001,8 +3060,10 @@ void CanvasRenderingContext2D::UpdateFilter(bool aFlushIfNeeded) {
   CurrentState().filter = FilterInstance::GetFilterDescription(
       mCanvasElement, CurrentState().filterChain.AsSpan(),
       CurrentState().autoSVGFiltersObserver, writeOnly,
-      CanvasUserSpaceMetrics(GetSize(), CurrentState().fontFont, canvasStyle,
-                             presContext),
+      CanvasUserSpaceMetrics(
+          GetSize(), CurrentState().fontFont, CurrentState().fontLineHeight,
+          CurrentState().fontLanguage, CurrentState().fontExplicitLanguage,
+          canvasStyle, presContext),
       gfxRect(0, 0, mWidth, mHeight), CurrentState().filterAdditionalImages);
   CurrentState().filterSourceGraphicTainted = writeOnly;
 }
@@ -4043,6 +4104,7 @@ bool CanvasRenderingContext2D::SetFontInternal(const nsACString& aFont,
   CurrentState().fontFont.size = fontStyle->mSize;
   CurrentState().fontLanguage = fontStyle->mLanguage;
   CurrentState().fontExplicitLanguage = fontStyle->mExplicitLanguage;
+  CurrentState().fontLineHeight = data.mStyle->StyleFont()->mLineHeight;
 
   return true;
 }
@@ -4251,6 +4313,8 @@ bool CanvasRenderingContext2D::SetFontInternalDisconnected(
   CurrentState().fontFont.variantCaps = fontStyle.variantCaps;
   CurrentState().fontLanguage = nullptr;
   CurrentState().fontExplicitLanguage = false;
+  // We don't have any computed style, assume normal height.
+  CurrentState().fontLineHeight = StyleLineHeight::Normal();
   return true;
 }
 
@@ -5382,14 +5446,34 @@ MaybeGetSurfaceDescriptorForRemoteCanvas(
     return Nothing();
   }
 
-  const auto& sdv = sd.ref().get_SurfaceDescriptorGPUVideo();
+  auto& sdv = sd.ref().get_SurfaceDescriptorGPUVideo();
   const auto& sdvType = sdv.type();
   if (sdvType ==
       layers::SurfaceDescriptorGPUVideo::TSurfaceDescriptorRemoteDecoder) {
-    const auto& sdrd = sdv.get_SurfaceDescriptorRemoteDecoder();
-    const auto& subdesc = sdrd.subdesc();
+    auto& sdrd = sdv.get_SurfaceDescriptorRemoteDecoder();
+    auto& subdesc = sdrd.subdesc();
     const auto& subdescType = subdesc.type();
     if (subdescType == layers::RemoteDecoderVideoSubDescriptor::Tnull_t) {
+      return sd;
+    }
+    if (subdescType == layers::RemoteDecoderVideoSubDescriptor::
+                           TSurfaceDescriptorMacIOSurface) {
+      return sd;
+    }
+    if (subdescType ==
+            layers::RemoteDecoderVideoSubDescriptor::TSurfaceDescriptorD3D10 &&
+        StaticPrefs::gfx_canvas_remote_use_draw_image_fast_path_d3d()) {
+      auto& descD3D10 = subdesc.get_SurfaceDescriptorD3D10();
+      if (descD3D10.gpuProcessQueryId().isSome() &&
+          descD3D10.gpuProcessQueryId().ref().mOnlyForOverlay) {
+        return Nothing();
+      }
+      // Clear FileHandleWrapper, since FileHandleWrapper::mHandle could not be
+      // cross process delivered by using Shmem. Cross-process delivery of
+      // FileHandleWrapper::mHandle is not possible simply by using shmen. When
+      // it is tried, parent side process just causes crash during destroying
+      // FileHandleWrapper.
+      descD3D10.handle() = nullptr;
       return sd;
     }
   }
@@ -5446,7 +5530,7 @@ void CanvasRenderingContext2D::DrawImage(const CanvasImageSource& aImage,
   if (aImage.IsHTMLCanvasElement()) {
     HTMLCanvasElement* canvas = &aImage.GetAsHTMLCanvasElement();
     element = canvas;
-    nsIntSize size = canvas->GetSize();
+    CSSIntSize size = canvas->GetSize();
     if (size.width == 0 || size.height == 0) {
       return aError.ThrowInvalidStateError("Passed-in canvas is empty");
     }
@@ -5456,7 +5540,7 @@ void CanvasRenderingContext2D::DrawImage(const CanvasImageSource& aImage,
     }
   } else if (aImage.IsOffscreenCanvas()) {
     offscreenCanvas = &aImage.GetAsOffscreenCanvas();
-    nsIntSize size = offscreenCanvas->GetWidthHeight();
+    CSSIntSize size = offscreenCanvas->GetWidthHeight();
     if (size.IsEmpty()) {
       return aError.ThrowInvalidStateError("Passed-in canvas is empty");
     }
@@ -5502,9 +5586,8 @@ void CanvasRenderingContext2D::DrawImage(const CanvasImageSource& aImage,
       element = video;
     }
 
-    srcSurf =
-        CanvasImageCache::LookupCanvas(element, mCanvasElement, mTarget,
-                                       &imgSize, &intrinsicImgSize, &cropRect);
+    srcSurf = CanvasImageCache::LookupCanvas(element, this, mTarget, &imgSize,
+                                             &intrinsicImgSize, &cropRect);
   }
 
   DirectDrawInfo drawInfo;
@@ -5578,9 +5661,8 @@ void CanvasRenderingContext2D::DrawImage(const CanvasImageSource& aImage,
 
     if (srcSurf) {
       if (res.mImageRequest) {
-        CanvasImageCache::NotifyDrawImage(element, mCanvasElement, mTarget,
-                                          srcSurf, imgSize, intrinsicImgSize,
-                                          cropRect);
+        CanvasImageCache::NotifyDrawImage(element, this, mTarget, srcSurf,
+                                          imgSize, intrinsicImgSize, cropRect);
       }
     } else {
       drawInfo = res.mDrawInfo;
@@ -5683,6 +5765,10 @@ void CanvasRenderingContext2D::DrawImage(const CanvasImageSource& aImage,
       // We avoid copying the whole canvas by manually copying just the part
       // that we need.
       srcSurf = ExtractSubrect(srcSurf, &sourceRect, mTarget);
+      // The SFE result may inadvertently keep the snapshot alive, forcing a
+      // copy when MarkChanged is called. Clear out possibly the last reference
+      // to the original snapshot to avoid this.
+      res.mSourceSurface = nullptr;
     }
 
     AdjustedTarget tempTarget(this, bounds.IsEmpty() ? nullptr : &bounds, true);
@@ -6373,7 +6459,7 @@ void CanvasRenderingContext2D::PutImageData_explicit(
   // composition operator must not affect the getImageData() and
   // putImageData() methods.
   const gfx::Rect putRect(dirtyRect);
-  if (!EnsureTarget(aRv, &putRect)) {
+  if (!EnsureTarget(aRv, &putRect, true, true)) {
     return;
   }
 
@@ -6609,9 +6695,10 @@ void CanvasRenderingContext2D::SetWriteOnly() {
   }
 }
 
-bool CanvasRenderingContext2D::GetEffectiveWillReadFrequently() const {
-  return StaticPrefs::gfx_canvas_willreadfrequently_enabled_AtStartup() &&
-         mWillReadFrequently;
+bool CanvasRenderingContext2D::UseSoftwareRendering() const {
+  return (StaticPrefs::gfx_canvas_willreadfrequently_enabled_AtStartup() &&
+          mWillReadFrequently) ||
+         mForceSoftwareRendering;
 }
 
 NS_IMPL_CYCLE_COLLECTION_WRAPPERCACHE(CanvasPath, mParent)
@@ -6654,7 +6741,7 @@ already_AddRefed<CanvasPath> CanvasPath::Constructor(
 }
 
 already_AddRefed<CanvasPath> CanvasPath::Constructor(
-    const GlobalObject& aGlobal, const nsAString& aPathString) {
+    const GlobalObject& aGlobal, const nsACString& aPathString) {
   RefPtr<gfx::Path> tempPath = SVGContentUtils::GetPath(aPathString);
   if (!tempPath) {
     return Constructor(aGlobal);

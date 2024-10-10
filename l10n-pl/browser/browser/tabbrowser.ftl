@@ -4,18 +4,27 @@
 
 tabbrowser-empty-tab-title = Nowa karta
 tabbrowser-empty-private-tab-title = Nowa karta prywatna
-
 tabbrowser-menuitem-close-tab =
     .label = Zamknij kartę
 tabbrowser-menuitem-close =
     .label = Zamknij
-
 # Displayed as a tooltip on container tabs
 # Variables:
 #   $title (String): the title of the current tab.
 #   $containerName (String): the name of the current container.
 tabbrowser-container-tab-title = { $title } — { $containerName }
-
+# This text serves as an on-screen tooltip as well as an accessible name for
+# the "X" button that is shown on the active tab or, when multiple tabs are
+# selected, to all their "X" buttons.
+# Variables:
+#   $tabCount (Number): The number of tabs that will be closed.
+tabbrowser-close-tabs-button =
+    .tooltiptext =
+        { $tabCount ->
+            [one] Zamknij kartę
+            [few] Zamknij { $tabCount } karty
+           *[many] Zamknij { $tabCount } kart
+        }
 # Variables:
 #   $tabCount (Number): The number of tabs that will be closed.
 tabbrowser-close-tabs-tooltip =
@@ -130,13 +139,22 @@ tabbrowser-confirm-caretbrowsing-title = Przeglądanie z użyciem kursora
 tabbrowser-confirm-caretbrowsing-message = Naciśnięcie klawisza F7 włącza lub wyłącza tryb przeglądania z użyciem kursora. Opcja ta wyświetla ruchomy kursor na stronach WWW, pozwalając na zaznaczanie tekstu przy pomocy klawiatury. Czy włączyć opcję przeglądania z użyciem kursora?
 tabbrowser-confirm-caretbrowsing-checkbox = Nie pytaj ponownie.
 
+## Confirmation dialog for closing all duplicate tabs
+
+tabbrowser-confirm-close-duplicate-tabs-title = Uwaga
+tabbrowser-confirm-close-duplicate-tabs-text = Ostatnia aktywna karta nie zostanie zamknięta
+tabbrowser-confirm-close-all-duplicate-tabs-title = Czy zamknąć podwójne karty?
+tabbrowser-confirm-close-all-duplicate-tabs-text =
+    Zamkniemy podwójne karty w tym oknie. Ostatnia aktywna
+    karta nie zostanie zamknięta.
+tabbrowser-confirm-close-all-duplicate-tabs-button-closetabs = Zamknij karty
+
 ##
 
 # Variables:
 #   $domain (String): URL of the page that is trying to steal focus.
 tabbrowser-allow-dialogs-to-get-focus =
     .label = Zezwalaj powiadomieniom tego typu z { $domain } przełączać na kartę, z której są otwierane
-
 tabbrowser-customizemode-tab-title = Dostosowywanie { -brand-short-name(case: "gen") }
 
 ## Context menu buttons, of which only one will be visible at a time
@@ -155,7 +173,6 @@ tabbrowser-context-mute-selected-tabs =
 tabbrowser-context-unmute-selected-tabs =
     .label = Włącz dźwięki
     .accesskey = W
-
 # This string is used as an additional tooltip and accessibility description for tabs playing audio
 tabbrowser-tab-audio-playing-description = Odtwarza dźwięk
 

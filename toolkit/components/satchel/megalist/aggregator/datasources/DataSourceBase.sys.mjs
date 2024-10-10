@@ -4,6 +4,7 @@
 
 import { BinarySearch } from "resource://gre/modules/BinarySearch.sys.mjs";
 import { XPCOMUtils } from "resource://gre/modules/XPCOMUtils.sys.mjs";
+import { AppConstants } from "resource://gre/modules/AppConstants.sys.mjs";
 
 const lazy = {};
 
@@ -63,7 +64,50 @@ export class DataSourceBase {
     this.#aggregatorApi.refreshAllLinesOnScreen();
   }
 
+  setLayout(layout) {
+    this.#aggregatorApi.setLayout(layout);
+  }
+
   formatMessages = createFormatMessages("preview/megalist.ftl");
+  static ftl = new Localization(["branding/brand.ftl", "preview/megalist.ftl"]);
+
+  async localizeStrings(strings) {
+    const keys = Object.keys(strings);
+    const localisationIds = Object.values(strings)
+      .filter(id => id)
+      .map(id => ({ id }));
+    const messages = await DataSourceBase.ftl.formatMessages(localisationIds);
+
+    for (let i = 0; i < messages.length; i++) {
+      let { attributes, value } = messages[i];
+      if (attributes) {
+        value = attributes.reduce(
+          (result, { name, value }) => ({ ...result, [name]: value }),
+          {}
+        );
+      }
+      strings[keys[i]] = value;
+    }
+    return strings;
+  }
+
+  getPlatformFtl(messageId) {
+    // OS auth is only supported on Windows and macOS
+    if (
+      AppConstants.platform == "linux" &&
+      "passwords-export-os-auth-dialog-message"
+    ) {
+      return null;
+    }
+
+    if (AppConstants.platform == "macosx") {
+      messageId += "-macosx";
+    } else if (AppConstants.platform == "win") {
+      messageId += "-win";
+    }
+
+    return messageId;
+  }
 
   /**
    * Prototype for the each line.
@@ -94,8 +138,18 @@ export class DataSourceBase {
       return true;
     },
 
+    isEditing() {
+      return this.editingValue !== undefined;
+    },
+
     copyToClipboard(text) {
-      lazy.ClipboardHelper.copyString(text, lazy.ClipboardHelper.Sensitive);
+      lazy.ClipboardHelper.copyString(
+        text,
+        null,
+        lazy.ClipboardHelper.Sensitive
+      );
+
+      this.refreshOnScreen();
     },
 
     openLinkInTab(url) {
@@ -135,6 +189,9 @@ export class DataSourceBase {
     refreshOnScreen() {
       this.source.refreshSingleLineOnScreen(this);
     },
+    setLayout(data) {
+      this.source.setLayout(data);
+    },
   };
 
   /**
@@ -143,11 +200,10 @@ export class DataSourceBase {
    * @param {string} label for the section
    * @returns {object} section header line
    */
-  createHeaderLine(label) {
-    const toggleCommand = { id: "Toggle", label: "" };
+  createHeaderLine(label, tooltip) {
     const result = {
       label,
-      value: "",
+      value: {},
       collapsed: false,
       start: true,
       end: true,
@@ -164,17 +220,17 @@ export class DataSourceBase {
 
       lineIsReady: () => true,
 
-      commands: [toggleCommand],
+      commands: [{ id: "Toggle", label: "command-toggle" }],
+
+      get toggleTooltip() {
+        return this.collapsed ? tooltip.expand : tooltip.collapse;
+      },
 
       executeToggle() {
         this.collapsed = !this.collapsed;
         this.source.refreshAllLinesOnScreen();
       },
     };
-
-    this.formatMessages("command-toggle").then(([toggleLabel]) => {
-      toggleCommand.label = toggleLabel;
-    });
 
     return result;
   }
@@ -208,7 +264,10 @@ export class DataSourceBase {
    * It will forget lines that are no longer at the source and refresh screen.
    */
   afterReloadingDataSource() {
-    if (this.#linesToForget.size) {
+    // We do a null checks on `linesToForget` despite being initialized to a
+    // Set in `beforeReloadingDataSource`. We should re-evaluate the callsites
+    // of before/afterReloadingDataSource.
+    if (this.#linesToForget?.size) {
       for (let i = this.lines.length; i >= 0; i--) {
         if (this.#linesToForget.has(this.lines[i])) {
           this.lines.splice(i, 1);
@@ -235,13 +294,17 @@ export class DataSourceBase {
     );
 
     if (found) {
-      this.#linesToForget.delete(this.lines[index]);
+      this.#linesToForget?.delete(this.lines[index]);
     } else {
       const line = Object.create(fieldPrototype, { id: { value: id } });
       this.lines.splice(index, 0, line);
     }
     this.lines[index].record = record;
     return this.lines[index];
+  }
+
+  cancelDialog() {
+    this.setLayout(null);
   }
 
   *enumerateLinesForMatchingRecords(searchText, stats, match) {

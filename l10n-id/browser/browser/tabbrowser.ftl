@@ -13,6 +13,13 @@ tabbrowser-menuitem-close =
 #   $title (String): the title of the current tab.
 #   $containerName (String): the name of the current container.
 tabbrowser-container-tab-title = { $title } - { $containerName }
+# This text serves as an on-screen tooltip as well as an accessible name for
+# the "X" button that is shown on the active tab or, when multiple tabs are
+# selected, to all their "X" buttons.
+# Variables:
+#   $tabCount (Number): The number of tabs that will be closed.
+tabbrowser-close-tabs-button =
+    .tooltiptext = Tutup { $tabCount } tab
 # Variables:
 #   $tabCount (Number): The number of tabs that will be closed.
 tabbrowser-close-tabs-tooltip =
@@ -87,6 +94,10 @@ tabbrowser-confirm-caretbrowsing-title = Jelajah Caret
 tabbrowser-confirm-caretbrowsing-message = Tekan F7 untuk mengaktifkan/menonaktifkan Penjelajahan Caret. Fitur ini menempatkan kursor dalam laman web sehingga Anda bisa memilih teks dengan papan ketik. Ingin mengaktifkan Penjelajahan Caret?
 tabbrowser-confirm-caretbrowsing-checkbox = Jangan tampilkan kotak dialog ini lagi.
 
+## Confirmation dialog for closing all duplicate tabs
+
+tabbrowser-confirm-close-duplicate-tabs-title = Perhatian
+
 ##
 
 # Variables:
@@ -123,5 +134,9 @@ tabbrowser-ctrl-tab-list-all-tabs =
 
 ## Tab manager menu buttons
 
+tabbrowser-manager-mute-tab =
+    .tooltiptext = Senyapkan tab
+tabbrowser-manager-unmute-tab =
+    .tooltiptext = Bunyikan tab
 tabbrowser-manager-close-tab =
     .tooltiptext = Tutup tab

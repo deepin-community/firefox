@@ -189,6 +189,8 @@ mr2022-onboarding-pin-primary-button-label =
         [macos] Eguereko { -brand-short-name } Dock-pe
        *[other] Emboja { -brand-short-name } tembiapo rendáre
     }
+# Primary button string used on welcome page for when Firefox is not pinned on MSIX
+mr2022-onboarding-pin-primary-button-label-msix = Emboja { -brand-short-name } tembiapo ra’ãngarupa ha ñepyrũha poravorãre
 # Subtitle will be used when user already has Firefox pinned, but
 # has not set it as their default browser.
 # When translating "zip", please feel free to pick a verb that signifies movement and/or exploration
@@ -221,7 +223,7 @@ mr2022-onboarding-set-default-subtitle = Eiporu peteĩ kundahára atyguasu viru�
 
 # When translating "zip", please feel free to pick a verb that signifies movement and/or exploration
 # and makes sense in the context of navigating the web.
-mr2022-onboarding-get-started-primary-subtitle = Ore rembiapo ipyahuvéva rojapo ndéve g̃uarã, eikundaha hag̃ua apañuãi’ỹre. Oreko heta tembiapoite ro’éva ehayhutaha.
+mr2022-onboarding-get-started-primary-subtitle = Ore rembiapo ipyahuvéva rojapo ndéve g̃uarã, eikundaha hag̃ua apañuai’ỹre. Oreko heta tembiapoite ro’éva ehayhutaha.
 mr2022-onboarding-get-started-primary-button-label = Emboheko sapy’aitépe
 
 ## MR2022 Import Settings screen strings
@@ -335,6 +337,13 @@ onboarding-device-migration-title = ¡Eg̃uahẽporã jey!
 onboarding-device-migration-subtitle = Emoñepyrũ tembiapo { -fxaccount-brand-name(capitalization: "sentence") } eguerujey hag̃ua techaukaha, ñe’ẽñemi ha tembiasakue mba’e’oka pyahúpe.
 onboarding-device-migration-subtitle2 = Eñepyrũ tembiapo ne mba’etépe eru hag̃ua nde rechaukaha, ñe’ẽñemi ha tembiasakue ne mba’e’oka pyahúpe.
 onboarding-device-migration-primary-button-label = Eñepyrũ tembiapo
+
+## Add-ons Picker screen
+
+amo-picker-title = Emomba’e nde { -brand-short-name }
+amo-picker-install-button-label = Embojuaju { -brand-short-name } rehe
+amo-picker-install-complete-label = Oñemohendapyréva
+amo-picker-collection-link = Ejepovyvyve moĩmbaháre
 
 ## The following screens have been updated to use security and privacy focused strings:
 

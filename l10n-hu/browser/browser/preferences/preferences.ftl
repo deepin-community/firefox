@@ -57,6 +57,10 @@ category-experimental =
 pane-experimental-subtitle = Óvatosan haladjon tovább
 pane-experimental-search-results-header = { -brand-short-name }-kísérletek: Óvatosan menjen tovább
 pane-experimental-description2 = A speciális beállítások megváltoztatása befolyásolhatja a { -brand-short-name } teljesítményét vagy biztonságát.
+settings-pane-labs-title = { -firefoxlabs-brand-name }
+settings-category-labs =
+    .tooltiptext = { -firefoxlabs-brand-name }
+pane-experimental-description3 = Próbálja ki kísérleti funkcióinkat! Fejlesztés alatt vannak, fejlődnek, és befolyásolhatják a { -brand-short-name } működését.
 pane-experimental-reset =
     .label = Alapértelmezések visszaállítása
     .accesskey = v
@@ -532,11 +536,11 @@ home-restore-defaults =
 home-mode-choice-default-fx =
     .label = { -firefox-home-brand-name } (alapértelmezett)
 home-mode-choice-custom =
-    .label = Egyéni URL-ek…
+    .label = Egyéni webcímek…
 home-mode-choice-blank =
     .label = Üres lap
 home-homepage-custom-url =
-    .placeholder = Illesszen be egy URL-t…
+    .placeholder = Illesszen be egy webcímet…
 # This string has a special case for '1' and [other] (default). If necessary for
 # your language, you can add {$tabCount} to your translations and use the
 # standard CLDR forms, or only use the form for [other] if both strings should
@@ -599,6 +603,10 @@ home-prefs-recent-activity-description = Válogatás a legutóbbi webhelyekből 
 home-prefs-snippets-header =
     .label = Töredékek
 home-prefs-snippets-description-new = Tippek és hírek a { -vendor-short-name } és a { -brand-product-name } felől
+home-prefs-weather-header =
+    .label = Időjárás
+home-prefs-weather-description = A mai előrejelzés egy pillantásnyira
+home-prefs-weather-learn-more-link = További tudnivalók
 # Variables:
 #   $num (number) - Number of rows displayed
 home-prefs-sections-rows-option =
@@ -912,6 +920,9 @@ forms-saved-passwords =
 forms-primary-pw-use =
     .label = Elsődleges jelszó használata
     .accesskey = E
+# This operation requires the user to authenticate with the operating system (device sign-in)
+forms-os-reauth =
+    .label = Az eszköz által biztosított bejelentkezés megkövetelése a jelszavak kitöltéséhez és kezeléséhez
 forms-primary-pw-learn-more-link = Tudjon meg többet
 # This string uses the former name of the Primary Password feature
 # ("Master Password" in English) so that the preferences can be found
@@ -944,6 +955,13 @@ primary-password-os-auth-dialog-message-win = Elsődleges jelszó létrehozásá
 # notes are only valid for English. Please test in your locale.
 primary-password-os-auth-dialog-message-macosx = elsődleges jelszó létrehozása
 master-password-os-auth-dialog-caption = { -brand-full-name }
+# The macOS string is preceded by the operating system with "Firefox is trying to ".
+autofill-creditcard-os-dialog-message =
+    { PLATFORM() ->
+        [macos] módosítani a fizetési módok beállításait
+       *[other] A { -brand-short-name } megpróbálja módosítani a fizetési módok beállításait. Ennek engedélyezéséhez jelentkezzen be az eszközére.
+    }
+autofill-creditcard-os-auth-dialog-caption = { -brand-full-name }
 
 ## Privacy section - Autofill
 
@@ -958,13 +976,8 @@ autofill-payment-methods-checkbox-submessage = Hitel- és bankkártyák belevét
     .accesskey = b
 autofill-saved-payment-methods-button = Mentett fizetési módok
     .accesskey = z
-autofill-reauth-checkbox =
-    { PLATFORM() ->
-        [macos] MacOS-hitelesítés megkövetelése a kitöltéshez és a fizetési módok szerkesztéséhez.
-        [windows] Windows-hitelesítés megkövetelése a kitöltéshez és a fizetési módok szerkesztéséhez.
-        [linux] Linux-hitelesítés megkövetelése a kitöltéshez és a fizetési módok szerkesztéséhez.
-       *[other] Hitelesítés megkövetelése a kitöltéshez és a fizetési módok szerkesztéséhez.
-    }
+# This operation requires the user to authenticate with the operating system (device sign-in)
+autofill-reauth-payment-methods-checkbox = Az eszköz által biztosított bejelentkezés megkövetelése a fizetési módok kitöltéséhez és kezeléséhez
     .accesskey = o
 
 ## Privacy Section - History
@@ -1102,6 +1115,9 @@ addressbar-suggestions-settings = Keresőszolgáltatás-javaslatok beállítása
 addressbar-locbar-showrecentsearches-option =
     .label = Legutóbbi keresések megjelenítése
     .accesskey = L
+addressbar-locbar-showtrendingsuggestions-option =
+    .label = Felkapott keresési javaslatok megjelenítése
+    .accesskey = F
 addressbar-quickactions-learn-more = További tudnivalók
 
 ## Privacy Section - Content Blocking
@@ -1293,6 +1309,14 @@ privacy-segmentation-radio-off =
 privacy-segmentation-radio-on =
     .label = Részletes információk megjelenítése
 
+## Privacy Section - Website Advertising Preferences
+
+website-advertising-header = Webhely hirdetési beállításai
+website-advertising-private-attribution =
+    .label = Engedélyezés a webhelyek számára, hogy adatvédelmet védő hirdetésmérést végezzenek
+    .accesskey = E
+website-advertising-private-attribution-description = Ez anélkül segít a webhelyeknek megérteni, hogyan teljesítenek a hirdetéseik, hogy adatokat gyűjtenének Önről.
+
 ## Privacy Section - Security
 ##
 ## It is important that wording follows the guidelines outlined on this page:
@@ -1336,13 +1360,20 @@ space-alert-under-5gb-message2 = <strong>A { -brand-short-name } kezd kifogyni a
 
 httpsonly-header = Csak HTTPS mód
 httpsonly-description = A HTTPS biztonságos, titkosított kapcsolatot biztosít a { -brand-short-name } és a meglátogatott webhelyek között. A legtöbb webhely támogatja a HTTPS-t, és ha a Csak HTTPS mód engedélyezve van, akkor a { -brand-short-name } HTTPS-re frissíti az összes kapcsolatot.
+httpsonly-description2 = A { -brand-short-name } biztonságos és titkosított kapcsolatokat hoz létre a felkeresett webhelyekkel. A „csak HTTPS” mód esetén a { -brand-short-name } figyelmeztet, ha a kapcsolat nem biztonságos.
 httpsonly-learn-more = További tudnivalók
 httpsonly-radio-enabled =
     .label = A Csak HTTPS mód engedélyezése az összes ablakban
+httpsonly-radio-enabled2 =
+    .label = Csak HTTPS mód használata az összes ablakban
 httpsonly-radio-enabled-pbm =
     .label = A Csak HTTPS mód engedélyezése csak privát ablakokban
+httpsonly-radio-enabled-pbm2 =
+    .label = Csak HTTPS mód használata a privát ablakokban
 httpsonly-radio-disabled =
     .label = Ne engedélyezze a Csak HTTPS módot
+httpsonly-radio-disabled2 =
+    .label = Először próbálja ki a HTTPS-t, de engedélyezze a nem biztonságos kapcsolatokat
 
 ## DoH Section
 

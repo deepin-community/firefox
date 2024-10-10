@@ -13,6 +13,17 @@ tabbrowser-menuitem-close =
 #   $title (String): the title of the current tab.
 #   $containerName (String): the name of the current container.
 tabbrowser-container-tab-title = { $title } - { $containerName }
+# This text serves as an on-screen tooltip as well as an accessible name for
+# the "X" button that is shown on the active tab or, when multiple tabs are
+# selected, to all their "X" buttons.
+# Variables:
+#   $tabCount (Number): The number of tabs that will be closed.
+tabbrowser-close-tabs-button =
+    .tooltiptext =
+        { $tabCount ->
+            [one] Lat att fane
+           *[other] Lat at { $tabCount } faner
+        }
 # Variables:
 #   $tabCount (Number): The number of tabs that will be closed.
 tabbrowser-close-tabs-tooltip =
@@ -110,6 +121,16 @@ tabbrowser-confirm-open-multiple-tabs-checkbox = Åtvar meg når opning av fleir
 tabbrowser-confirm-caretbrowsing-title = Nettlesing med tekstveljar
 tabbrowser-confirm-caretbrowsing-message = Nettlesing med tekstveljar kan slåast på eller av med F7. Denne funksjonen gjer at du kan merke tekst med tastaturet ved hjelp av ein flyttbar markør. Vil du slå på nettlesing med tekstveljar?
 tabbrowser-confirm-caretbrowsing-checkbox = Ikkje vis denne dialogen igjen.
+
+## Confirmation dialog for closing all duplicate tabs
+
+tabbrowser-confirm-close-duplicate-tabs-title = Varsel
+tabbrowser-confirm-close-duplicate-tabs-text = Vi held den siste aktive fana open
+tabbrowser-confirm-close-all-duplicate-tabs-title = Late att dupliserte faner?
+tabbrowser-confirm-close-all-duplicate-tabs-text =
+    Vi vil late att dupliserte faner i dette vindauget. Siste aktive
+    fane held fram med å vere open.
+tabbrowser-confirm-close-all-duplicate-tabs-button-closetabs = Lat att faner
 
 ##
 

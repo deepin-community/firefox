@@ -89,6 +89,9 @@ shopping-show-less-button = 折叠
 
 shopping-settings-label =
     .label = 设置
+shopping-settings-recommendations-toggle2 =
+    .label = 显示推荐内容和赞助内容
+shopping-settings-recommendations-learn-more3 = { -brand-product-name } 不会共享您的个人数据。因此，此类推荐内容不会在网络上跟踪您。<a data-l10n-name="review-quality-url">详细了解</a>
 shopping-settings-recommendations-toggle =
     .label = 在核查评价中展示广告
 shopping-settings-recommendations-learn-more2 = 您会偶尔看到相关产品的广告。我们只宣传获得可靠评价的产品。<a data-l10n-name="review-quality-url">详细了解</a>
@@ -115,6 +118,7 @@ shopping-settings-sidebar-enabled-state = 核查评价已<strong>开启</strong>
 shopping-adjusted-rating-label =
     .label = 调整后的评分
 shopping-adjusted-rating-unreliable-reviews = 已排除不可信的评价
+shopping-adjusted-rating-based-reliable-reviews = 基于可信评价调整
 
 ## Strings for the review reliability component
 
@@ -133,6 +137,8 @@ shopping-analysis-explainer-learn-more2 = 详细了解 <a data-l10n-name="review
 # websites, which will be inserted without being translated.
 #  $retailer (String) - capitalized name of the shopping website, for example, "Amazon".
 shopping-analysis-explainer-highlights-description = <strong>最有帮助的评价</strong>选自我们认为可信的最近 80 天内的 { $retailer } 评价。
+# Fallback for analysis highlights explainer if the retailer is ever unknown
+shopping-analysis-explainer-highlights-description-unknown-retailer = <strong>最有帮助的评价</strong>选自我们认为可信的最近 80 天内的评价。
 shopping-analysis-explainer-review-grading-scale-reliable = 评价可信。分析认为这些评价大概率是由真实消费者作出的诚实公正的评价。
 shopping-analysis-explainer-review-grading-scale-mixed = 分析认为对此商品的评价鱼龙混杂。
 shopping-analysis-explainer-review-grading-scale-unreliable = 评价不可信。分析认为这些评价大概率不实，或是由“水军”所作出。
@@ -159,6 +165,7 @@ shopping-unanalyzed-product-analyze-button = 核查评价质量
 
 more-to-consider-ad-label =
     .label = 可参考其他商品
+shopping-sponsored-label = 赞助推广
 ad-by-fakespot = { -fakespot-brand-name } 提供的广告
 
 ## Shopping survey strings.

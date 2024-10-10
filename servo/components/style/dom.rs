@@ -16,6 +16,7 @@ use crate::media_queries::Device;
 use crate::properties::{AnimationDeclarations, ComputedValues, PropertyDeclarationBlock};
 use crate::selector_parser::{AttrValue, Lang, PseudoElement, SelectorImpl};
 use crate::shared_lock::{Locked, SharedRwLock};
+use crate::stylesheets::scope_rule::ImplicitScopeRoot;
 use crate::stylist::CascadeData;
 use crate::values::computed::Display;
 use crate::values::AtomIdent;
@@ -24,7 +25,7 @@ use atomic_refcell::{AtomicRef, AtomicRefMut};
 use dom::ElementState;
 use selectors::matching::{ElementSelectorFlags, QuirksMode, VisitedHandlingMode};
 use selectors::sink::Push;
-use selectors::Element as SelectorsElement;
+use selectors::{Element as SelectorsElement, OpaqueElement};
 use servo_arc::{Arc, ArcBorrow};
 use std::fmt;
 use std::fmt::Debug;
@@ -375,6 +376,11 @@ pub trait TShadowRoot: Sized + Copy + Clone + Debug + PartialEq {
     {
         Err(())
     }
+
+    /// Get the implicit scope for a stylesheet in given index.
+    fn implicit_scope_for_sheet(&self, _sheet_index: usize) -> Option<ImplicitScopeRoot> {
+        None
+    }
 }
 
 /// The element trait, the main abstraction the style crate acts over.
@@ -389,6 +395,9 @@ pub trait TElement:
     /// TODO(emilio): We should eventually replace this with the `impl Trait`
     /// syntax.
     type TraversalChildrenIterator: Iterator<Item = Self::ConcreteNode>;
+
+    /// Convert an opaque element back into the element.
+    fn unopaque(opaque: OpaqueElement) -> Self;
 
     /// Get this element as a node.
     fn as_node(&self) -> Self::ConcreteNode;

@@ -14,7 +14,7 @@ appmenuitem-banner-update-manual =
 appmenuitem-banner-update-unsupported =
     .label = Não foi possível atualizar — sistema incompatível
 appmenuitem-banner-update-restart =
-    .label = Atualização disponível — Reiniciar o Firefox
+    .label = Atualização disponível, reiniciar o Firefox
 appmenuitem-new-tab =
     .label = Nova aba
 appmenuitem-new-window =
@@ -77,16 +77,10 @@ appmenu-remote-tabs-turn-on-sync =
 appmenu-remote-tabs-showmore =
     .label = Mostrar mais abas
     .tooltiptext = Mostrar mais abas deste dispositivo
-# This is shown when there are inactive tabs which are not being shown.
-# Variables
-# $count (Number) - The number of inactive tabs which are not being shown (at least 1)
-appmenu-remote-tabs-showinactive =
-    .label =
-        { $count ->
-            [one] Mostrar uma aba inativa
-           *[other] Mostrar { $count } abas inativas
-        }
-    .tooltiptext = Mostrar abas inativas neste dispositivo
+# This is shown as the label for an element to show inactive tabs from this device.
+appmenu-remote-tabs-show-inactive-tabs =
+    .label = Abas inativas
+    .tooltiptext = Ver abas inativas neste dispositivo
 # This is shown beneath the name of a device when that device has no open tabs
 appmenu-remote-tabs-notabs = Nenhuma aba aberta
 # This is shown when Sync is configured but syncing tabs is disabled.
@@ -202,6 +196,9 @@ profiler-popup-presets-power-description = Ajuste prévio para investigar bugs d
 # "Power" is used in the sense of energy (electricity used by the computer).
 profiler-popup-presets-power-label =
     .label = Energia
+profiler-popup-presets-debug-description = Configuração prévia de depuração no { -brand-shorter-name }. Alta sobrecarga, não usar para analisar desempenho, útil para se concentrar em entender o comportamento do navegador.
+profiler-popup-presets-debug-label =
+    .label = Debug
 profiler-popup-presets-custom-label =
     .label = Personalizado
 

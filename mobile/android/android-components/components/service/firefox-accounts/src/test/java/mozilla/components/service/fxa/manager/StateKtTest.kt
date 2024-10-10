@@ -83,8 +83,8 @@ class StateKtTest {
     private fun instantiateEvent(eventClassSimpleName: String): Event {
         return when (eventClassSimpleName) {
             "Start" -> Event.Account.Start
-            "BeginPairingFlow" -> Event.Account.BeginPairingFlow("http://some.pairing.url.com", mock())
-            "BeginEmailFlow" -> Event.Account.BeginEmailFlow(mock())
+            "BeginPairingFlow" -> Event.Account.BeginPairingFlow("http://some.pairing.url.com", mock(), mock())
+            "BeginEmailFlow" -> Event.Account.BeginEmailFlow(mock(), mock())
             "CancelAuth" -> Event.Progress.CancelAuth
             "StartedOAuthFlow" -> Event.Progress.StartedOAuthFlow("https://example.com/oauth-start")
             "AuthenticationError" -> Event.Account.AuthenticationError("fxa op")
@@ -109,7 +109,7 @@ class StateKtTest {
     @Test
     fun `state transition matrix`() {
         // We want to test every combination of state/event. Do that by iterating over entire sets.
-        ProgressState.values().forEach { state ->
+        ProgressState.entries.forEach { state ->
             Event.Progress::class.sealedSubclasses.map { instantiateEvent(it.simpleName!!) }.forEach {
                 val ss = State.Active(state)
                 assertNextStateForStateEventPair(

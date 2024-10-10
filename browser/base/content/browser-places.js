@@ -25,6 +25,15 @@ XPCOMUtils.defineLazyPreferenceGetter(
     }, console.error);
   }
 );
+
+// Set by sync after syncing bookmarks successfully once.
+XPCOMUtils.defineLazyPreferenceGetter(
+  this,
+  "SHOW_MOBILE_BOOKMARKS",
+  "browser.bookmarks.showMobileBookmarks",
+  false
+);
+
 ChromeUtils.defineESModuleGetters(this, {
   PanelMultiView: "resource:///modules/PanelMultiView.sys.mjs",
   RecentlyClosedTabsAndWindowsMenuUtils:
@@ -55,7 +64,6 @@ var StarUI = {
     delete this.panel;
     this._createPanelIfNeeded();
     var element = this._element("editBookmarkPanel");
-    window.ensureCustomElements("moz-button-group");
     // initially the panel is hidden
     // to avoid impacting startup / new window performance
     element.hidden = false;
@@ -116,12 +124,13 @@ var StarUI = {
             this.panel.hidePopup();
             break;
           // This case is for catching character-generating keypresses
-          case 0:
+          case 0: {
             let accessKey = document.getElementById("key_close");
             if (eventMatchesKey(aEvent, accessKey)) {
               this.panel.hidePopup();
             }
             break;
+          }
         }
         break;
       case "compositionend":
@@ -694,7 +703,7 @@ class HistoryMenu extends PlacesMenu {
     super._onPopupShowing(aEvent);
 
     // Don't handle events for submenus.
-    if (aEvent.target != aEvent.currentTarget) {
+    if (aEvent.target != this.rootElement) {
       return;
     }
 
@@ -705,7 +714,7 @@ class HistoryMenu extends PlacesMenu {
   }
 
   _onCommand(aEvent) {
-    aEvent = getRootEvent(aEvent);
+    aEvent = BrowserUtils.getRootEvent(aEvent);
     let placesNode = aEvent.target._placesNode;
     if (placesNode) {
       if (!PrivateBrowsingUtils.isWindowPrivate(window)) {
@@ -1343,7 +1352,7 @@ var BookmarkingUI = {
 
   onPopupShowing: function BUI_onPopupShowing(event) {
     // Don't handle events for submenus.
-    if (event.target != event.currentTarget) {
+    if (event.target.id != "BMB_bookmarksPopup") {
       return;
     }
 
@@ -1374,11 +1383,12 @@ var BookmarkingUI = {
       return;
     }
 
-    this._initMobileBookmarks(document.getElementById("BMB_mobileBookmarks"));
+    document.getElementById("BMB_mobileBookmarks").hidden =
+      !SHOW_MOBILE_BOOKMARKS;
 
     this.updateLabel(
       "BMB_viewBookmarksSidebar",
-      SidebarUI.currentID == "viewBookmarksSidebar"
+      SidebarController.currentID == "viewBookmarksSidebar"
     );
     this.updateLabel("BMB_viewBookmarksToolbar", !this.toolbar.collapsed);
   },
@@ -1580,17 +1590,6 @@ var BookmarkingUI = {
     ) {
       PlacesCommandHook.showPlacesOrganizer("BookmarksToolbar");
     }
-  },
-
-  // Set by sync after syncing bookmarks successfully once.
-  MOBILE_BOOKMARKS_PREF: "browser.bookmarks.showMobileBookmarks",
-
-  _shouldShowMobileBookmarks() {
-    return Services.prefs.getBoolPref(this.MOBILE_BOOKMARKS_PREF, false);
-  },
-
-  _initMobileBookmarks(mobileMenuItem) {
-    mobileMenuItem.hidden = !this._shouldShowMobileBookmarks();
   },
 
   _uninitView: function BUI__uninitView() {
@@ -1938,11 +1937,12 @@ var BookmarkingUI = {
 
   onMainMenuPopupShowing: function BUI_onMainMenuPopupShowing(event) {
     // Don't handle events for submenus.
-    if (event.target != event.currentTarget) {
+    if (event.target.id != "bookmarksMenuPopup") {
       return;
     }
 
-    this._initMobileBookmarks(document.getElementById("menu_mobileBookmarks"));
+    document.getElementById("menu_mobileBookmarks").hidden =
+      !SHOW_MOBILE_BOOKMARKS;
   },
 
   showSubView(anchor) {
@@ -1999,6 +1999,13 @@ var BookmarkingUI = {
       case "ViewHiding":
         this.onPanelMenuViewHiding(aEvent);
         break;
+      case "command":
+        if (aEvent.target.id == "panelMenu_searchBookmarks") {
+          PlacesCommandHook.searchBookmarks();
+        } else if (aEvent.target.id == "panelMenu_viewBookmarksToolbar") {
+          this.toggleBookmarksToolbar("bookmark-tools");
+        }
+        break;
     }
   },
 
@@ -2026,12 +2033,15 @@ var BookmarkingUI = {
       panelview
     );
     panelview.removeEventListener("ViewShowing", this);
+    panelview.addEventListener("command", this);
   },
 
   onPanelMenuViewHiding: function BUI_onViewHiding(aEvent) {
     this._panelMenuView.uninit();
     delete this._panelMenuView;
-    aEvent.target.removeEventListener("ViewHiding", this);
+    let panelview = aEvent.target;
+    panelview.removeEventListener("ViewHiding", this);
+    panelview.removeEventListener("command", this);
   },
 
   handlePlacesEvents(aEvents) {

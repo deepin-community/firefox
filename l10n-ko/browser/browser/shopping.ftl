@@ -82,13 +82,16 @@ shopping-highlight-packaging = 포장
 
 ## Strings for show more card
 
-shopping-show-more-button = 자세히 보기
-shopping-show-less-button = 간단히 보기
+shopping-show-more-button = 더 보기
+shopping-show-less-button = 덜 보기
 
 ## Strings for the settings card
 
 shopping-settings-label =
     .label = 설정
+shopping-settings-recommendations-toggle2 =
+    .label = 추천 및 스폰서 콘텐츠 표시
+shopping-settings-recommendations-learn-more3 = { -brand-product-name }는 개인 데이터를 공유하지 않으므로 이러한 추천 항목은 인터넷에서 사용자를 따라다니지 않습니다. <a data-l10n-name="review-quality-url">더 알아보기</a>
 shopping-settings-recommendations-toggle =
     .label = 리뷰 검사기에 광고 표시
 shopping-settings-recommendations-learn-more2 = 관련 제품에 대한 광고가 가끔 표시됩니다. 믿을 수 있는 리뷰가 있는 제품만을 광고합니다. <a data-l10n-name="review-quality-url">더 알아보기</a>
@@ -115,6 +118,7 @@ shopping-settings-sidebar-enabled-state = 리뷰 검사기가 <strong>켜짐</st
 shopping-adjusted-rating-label =
     .label = 조정된 평점
 shopping-adjusted-rating-unreliable-reviews = 신뢰할 수 없는 리뷰는 삭제됨
+shopping-adjusted-rating-based-reliable-reviews = 신뢰할 수 있는 리뷰에 바탕
 
 ## Strings for the review reliability component
 
@@ -135,6 +139,8 @@ shopping-analysis-explainer-learn-more2 = <a data-l10n-name="review-quality-url"
 # websites, which will be inserted without being translated.
 #  $retailer (String) - capitalized name of the shopping website, for example, "Amazon".
 shopping-analysis-explainer-highlights-description = <strong>하이라이트</strong>는 지난 80일 동안 신뢰할 수 있는 { $retailer } 리뷰에서 나온 것입니다.
+# Fallback for analysis highlights explainer if the retailer is ever unknown
+shopping-analysis-explainer-highlights-description-unknown-retailer = <strong>하이라이트</strong>는 지난 80일 동안 신뢰할 수 있는 리뷰에서 나온 것입니다.
 shopping-analysis-explainer-review-grading-scale-reliable = 신뢰할 수 있는 리뷰. 솔직하고 공정한 리뷰를 남긴 실제 고객의 리뷰일 가능성이 높다고 생각합니다.
 shopping-analysis-explainer-review-grading-scale-mixed = 신뢰할 수 있는 리뷰와 신뢰할 수 없는 리뷰가 혼합되어 있다고 생각합니다.
 shopping-analysis-explainer-review-grading-scale-unreliable = 신뢰할 수 없는 리뷰. 리뷰가 가짜이거나 편향된 리뷰어의 리뷰일 가능성이 있다고 생각합니다.
@@ -161,6 +167,7 @@ shopping-unanalyzed-product-analyze-button = 리뷰 품질 확인
 
 more-to-consider-ad-label =
     .label = 더 보기
+shopping-sponsored-label = 스폰서
 ad-by-fakespot = { -fakespot-brand-name }의 광고
 
 ## Shopping survey strings.
@@ -178,7 +185,7 @@ shopping-survey-q2-radio-2-label = 아니오
 shopping-survey-q2-radio-3-label = 모름
 shopping-survey-next-button-label = 다음
 shopping-survey-submit-button-label = 제출
-shopping-survey-terms-link = 사용 약관
+shopping-survey-terms-link = 이용 약관
 shopping-survey-thanks =
     .heading = 의견을 보내 주셔서 감사합니다!
 
@@ -222,7 +229,7 @@ shopping-onboarding-dynamic-subtitle-1 = 구매하기 전에 <b>{ $currentSite }
 #   $currentSite (str) - The current shopping page name
 shopping-onboarding-single-subtitle = 구매하기 전에 <b>{ $currentSite }</b>에서 제품 리뷰가 얼마나 신뢰할 수 있는지 확인하세요. { -brand-product-name }의 실험적 기능인 리뷰 검사기가 브라우저에 바로 내장되어 있습니다.
 shopping-onboarding-body = { -fakespot-brand-full-name }의 기능을 사용하여 편향되고 허위 리뷰를 방지하는 데 도움을 드립니다. AI 모델은 쇼핑하는 동안 사용자를 보호하기 위해 항상 개선되고 있습니다. <a data-l10n-name="learn_more">더 알아보기</a>
-shopping-onboarding-opt-in-privacy-policy-and-terms-of-use3 = "{ shopping-onboarding-opt-in-button }"을 선택하면 { -brand-product-name }의 <a data-l10n-name="privacy_policy">개인정보처리방침</a> 및 { -fakespot-brand-name }의 <a data-l10n-name="terms_of_use">사용 약관</a>에 동의하게 됩니다.
+shopping-onboarding-opt-in-privacy-policy-and-terms-of-use3 = "{ shopping-onboarding-opt-in-button }"을 선택하면 { -brand-product-name }의 <a data-l10n-name="privacy_policy">개인정보처리방침</a> 및 { -fakespot-brand-name }의 <a data-l10n-name="terms_of_use">이용 약관</a>에 동의하게 됩니다.
 shopping-onboarding-opt-in-button = 사용해보기
 shopping-onboarding-not-now-button = 나중에
 shopping-onboarding-dialog-close-button =

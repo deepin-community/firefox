@@ -16,7 +16,7 @@ use std::collections::BTreeMap;
 pub fn load() -> anyhow::Result<LangStrings> {
     // TODO support langpacks, bug 1873210
     omnijar::read().unwrap_or_else(|e| {
-        log::warn!("failed to read localization data from the omnijar ({e}), falling back to bundled content");
+        log::warn!("failed to read localization data from the omnijar ({e:#}), falling back to bundled content");
         Default::default()
     }).load_strings()
 }
@@ -33,6 +33,11 @@ pub type LangStringsArgs<'a> = BTreeMap<&'a str, Cow<'a, str>>;
 impl LangStrings {
     pub fn new(bundle: FluentBundle<FluentResource, IntlLangMemoizer>, rtl: bool) -> Self {
         LangStrings { bundle, rtl }
+    }
+
+    /// Return the language identifier string for the primary locale.
+    pub fn locale(&self) -> String {
+        self.bundle.locales.first().unwrap().to_string()
     }
 
     /// Return whether the localized language has right-to-left text flow.

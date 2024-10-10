@@ -200,6 +200,8 @@ newtab-section-header-recent-activity = Activitad recenta
 #   $provider (string) - Name of the corresponding content provider.
 newtab-section-header-pocket = Recumandà da { $provider }
 newtab-section-header-stories = Istorgias che dattan da pensar
+# "picks" refers to recommended articles
+newtab-section-header-todays-picks = Noss tips dad oz per tai
 
 ## Empty Section States: These show when there are no more items in a section. Ex. When there are no more Pocket story recommendations, in the space where there would have been stories, this is shown instead.
 
@@ -233,6 +235,19 @@ newtab-pocket-pocket-firefox-family = { -pocket-brand-name } fa part da la palet
 # A save to Pocket button that shows over the card thumbnail on hover.
 newtab-pocket-save = Memorisar
 newtab-pocket-saved = Memorisà
+
+## Thumbs up and down buttons that shows over a newtab stories card thumbnail on hover.
+
+# Clicking the thumbs up button for this story will result in more stories like this one being recommended
+newtab-pocket-thumbs-up-tooltip =
+    .title = Dapli da quai
+# Clicking the thumbs down button for this story informs us that the user does not feel like the story is interesting for them
+newtab-pocket-thumbs-down-tooltip =
+    .title = Na m’interessescha betg
+newtab-toast-thumbs-up-or-down = Grazia. Tes resun ans vegn a gidar a meglierar tes pavel.
+newtab-toast-dismiss-button =
+    .title = Serrar
+    .aria-label = Serrar
 
 ## Pocket content onboarding experience dialog and modal for new users seeing the Pocket section for the first time, shown as the first item in the Pocket section.
 
@@ -272,6 +287,9 @@ newtab-custom-recent-subtitle = Ina selecziun da websites e cuntegn visità dacu
 newtab-custom-recent-toggle =
     .label = Activitad recenta
     .description = Ina selecziun da websites e cuntegn visità dacurt
+newtab-custom-weather-toggle =
+    .label = Aura
+    .description = La previsiun da l’aura actuala en in’egliada
 newtab-custom-close-button = Serrar
 newtab-custom-settings = Administrar ulteriurs parameters
 
@@ -291,7 +309,125 @@ newtab-wallpaper-dark-panda = Panda cotschen zuppà en il guaud
 newtab-wallpaper-dark-sky = Cuntrada da citad cun tschiel nocturn
 newtab-wallpaper-dark-mountain = Cuntrada da muntognas
 newtab-wallpaper-dark-city = Cuntrada da citad violetta
+
+## Solid Colors
+
+newtab-wallpaper-category-title-colors = Colurs uni
+newtab-wallpaper-blue = Blau
+newtab-wallpaper-light-blue = Blau cler
+newtab-wallpaper-light-purple = Violet cler
+newtab-wallpaper-light-green = Verd cler
+newtab-wallpaper-green = Verd
+newtab-wallpaper-beige = Beige
+newtab-wallpaper-yellow = Mellen
+newtab-wallpaper-orange = Oransch
+newtab-wallpaper-pink = Rosa
+newtab-wallpaper-light-pink = Rosa cler
+newtab-wallpaper-red = Cotschen
+newtab-wallpaper-dark-blue = Blau stgir
+newtab-wallpaper-dark-purple = Violet stgir
+newtab-wallpaper-dark-green = Verd stgir
+newtab-wallpaper-brown = Brin
+
+## Abstract
+
+newtab-wallpaper-category-title-abstract = Abstract
+newtab-wallpaper-abstract-green = Furmas verdas
+newtab-wallpaper-abstract-blue = Furmas blauas
+newtab-wallpaper-abstract-purple = Furmas violetas
+newtab-wallpaper-abstract-orange = Furmas oranschas
+newtab-wallpaper-gradient-orange = Dissoluziun dad oransch e rosa
+newtab-wallpaper-abstract-blue-purple = Furmas blauas e violetas
+
+## Photographs
+
+newtab-wallpaper-category-title-photographs = Fotografias
+newtab-wallpaper-beach-at-sunrise = Splagia sin il far di
+newtab-wallpaper-beach-at-sunset = Splagia sin il far notg
+newtab-wallpaper-storm-sky = Tschiel stemprà
+newtab-wallpaper-sky-with-pink-clouds = Tschiel cun nivels rosa
+newtab-wallpaper-red-panda-yawns-in-a-tree = Panda cotschen che susda sin ina planta
+newtab-wallpaper-white-mountains = Muntognas alvas
 # Variables
 #   $author_string (String) - The name of the creator of the photo.
 #   $webpage_string (String) - The name of the webpage where the photo is located.
 newtab-wallpaper-attribution = Foto da <a data-l10n-name="name-link">{ $author_string }</a> sin <a data-l10n-name="webpage-link">{ $webpage_string }</a>
+newtab-wallpaper-feature-highlight-header = Emprova cun in zic colur
+newtab-wallpaper-feature-highlight-content = Embellescha tes nov tab cun in nov look e maletgs dal fund davos.
+newtab-wallpaper-feature-highlight-button = Chapì
+# Tooltip for dismiss button
+feature-highlight-dismiss-button =
+    .title = Serrar
+    .aria-label = Serrar il pop-up
+feature-highlight-wallpaper =
+    .title = { -newtab-wallpaper-feature-highlight-header }
+    .aria-label = { -newtab-wallpaper-feature-highlight-content }
+
+## New Tab Weather
+
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-see-forecast =
+    .title = Mussar la previsiun da l’aura en { $provider }
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-sponsored = { $provider } ∙ Sponsurà
+newtab-weather-menu-change-location = Midar la posiziun
+newtab-weather-change-location-search-input = Tschertgar in lieu
+newtab-weather-menu-weather-display = Visualisaziun da l’aura
+# Display options are:
+# - Simple: Displays a current weather condition icon and the current temperature
+# - Detailed: Include simple information plus a short text summary: e.g. "Mostly cloudy"
+newtab-weather-menu-weather-display-option-simple = Simpla
+newtab-weather-menu-change-weather-display-simple = Midar a la vista simpla
+newtab-weather-menu-weather-display-option-detailed = Detagliada
+newtab-weather-menu-change-weather-display-detailed = Midar a la vista detagliada
+newtab-weather-menu-temperature-units = Unitads da temperatura
+newtab-weather-menu-temperature-option-fahrenheit = Fahrenheit
+newtab-weather-menu-temperature-option-celsius = Celsius
+newtab-weather-menu-change-temperature-units-fahrenheit = Midar a fahrenheit
+newtab-weather-menu-change-temperature-units-celsius = Midar a celsius
+newtab-weather-menu-hide-weather = Zuppentar l’aura sin ils novs tabs
+newtab-weather-menu-learn-more = Ulteriuras infurmaziuns
+# This message is shown if user is working offline
+newtab-weather-error-not-available = Datas meteorologicas n’èn actualmain betg disponiblas.
+
+## Topic Labels
+
+newtab-topic-label-business = Economia
+newtab-topic-label-career = Carriera
+newtab-topic-label-education = Furmaziun
+newtab-topic-label-arts = Divertiment
+newtab-topic-label-food = Nutriment
+newtab-topic-label-health = Sanadad
+newtab-topic-label-hobbies = Gieus
+# ”Money” = “Personal Finance”, refers to articles and stories that help readers better manage
+# and understand their personal finances – from saving money to buying a home. See the
+# “Curated by our editors“ section at the top of https://getpocket.com/explore/personal-finance for more context
+newtab-topic-label-finance = Daners
+newtab-topic-label-society-parenting = Educaziun
+newtab-topic-label-government = Politica
+newtab-topic-label-education-science = Scienza
+# ”Life Hacks” = “Self Improvement”, refers to articles and stories aimed at helping readers improve various
+# aspects of their lives – from mental health to  productivity. See the “Curated by our editors“ section
+# at the top of https://getpocket.com/explore/self-improvement for more context.
+newtab-topic-label-society = Life hacks
+newtab-topic-label-sports = Sport
+newtab-topic-label-tech = Tecnologia
+newtab-topic-label-travel = Viagiar
+newtab-topic-label-home = Chasa e curtin
+
+## Topic Selection Modal
+
+# “fine-tune” refers to the process of making small adjustments to something to get
+# the best or desired experience or performance.
+newtab-topic-selection-title = Tscherna temas per persunalisar tes feed
+# “tailored” refers to process of (a tailor) making (clothes) to fit individual customers.
+# In other words, “Our expert curators prioritize stories to fit your selected interests”
+newtab-topic-selection-subtitle = Tscherna dus u dapli temas. Noss curaturs experts prioriseschan istorgias che correspundan a tes interess. Ils temas pos ti adattar da tut temp.
+newtab-topic-selection-save-button = Memorisar
+newtab-topic-selection-cancel-button = Interrumper
+newtab-topic-selection-button-maybe-later = Forsa pli tard
+newtab-topic-selection-privacy-link = Ve a savair co nus protegin e gestin las datas
+newtab-topic-selection-button-update-interests = Actualisescha tes interess
+newtab-topic-selection-button-pick-interests = Tscherna tes interess

@@ -96,10 +96,6 @@ export class AboutLoginsChild extends JSWindowActorChild {
         this.#aboutLoginsSyncEnable();
         break;
       }
-      case "AboutLoginsSyncOptions": {
-        this.#aboutLoginsSyncOptions();
-        break;
-      }
       case "AboutLoginsUpdateLogin": {
         this.#aboutLoginsUpdateLogin(event.detail);
         break;
@@ -160,7 +156,11 @@ export class AboutLoginsChild extends JSWindowActorChild {
   }
 
   #aboutLoginsCopyLoginDetail(detail) {
-    lazy.ClipboardHelper.copyString(detail, lazy.ClipboardHelper.Sensitive);
+    lazy.ClipboardHelper.copyString(
+      detail,
+      this.windowContext,
+      lazy.ClipboardHelper.Sensitive
+    );
   }
 
   #aboutLoginsCreateLogin(login) {
@@ -241,10 +241,6 @@ export class AboutLoginsChild extends JSWindowActorChild {
 
   #aboutLoginsSyncEnable() {
     this.sendAsyncMessage("AboutLogins:SyncEnable");
-  }
-
-  #aboutLoginsSyncOptions() {
-    this.sendAsyncMessage("AboutLogins:SyncOptions");
   }
 
   #aboutLoginsUpdateLogin(login) {

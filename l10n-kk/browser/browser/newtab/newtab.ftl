@@ -200,6 +200,8 @@ newtab-section-header-recent-activity = Соңғы белсенділігі
 #   $provider (string) - Name of the corresponding content provider.
 newtab-section-header-pocket = Ұсынушы { $provider }
 newtab-section-header-stories = Ойландыратын оқиғалар
+# "picks" refers to recommended articles
+newtab-section-header-todays-picks = Бүгінгі таңдаулар сіз үшін
 
 ## Empty Section States: These show when there are no more items in a section. Ex. When there are no more Pocket story recommendations, in the space where there would have been stories, this is shown instead.
 
@@ -233,6 +235,19 @@ newtab-pocket-pocket-firefox-family = { -pocket-brand-name } өнімі { -brand
 # A save to Pocket button that shows over the card thumbnail on hover.
 newtab-pocket-save = Сақтау
 newtab-pocket-saved = Сақталған
+
+## Thumbs up and down buttons that shows over a newtab stories card thumbnail on hover.
+
+# Clicking the thumbs up button for this story will result in more stories like this one being recommended
+newtab-pocket-thumbs-up-tooltip =
+    .title = Осы сияқты көбірек
+# Clicking the thumbs down button for this story informs us that the user does not feel like the story is interesting for them
+newtab-pocket-thumbs-down-tooltip =
+    .title = Мен үшін емес
+newtab-toast-thumbs-up-or-down = Рахмет. Сіздің пікіріңіз бізге арнаңызды жақсартуға көмектеседі.
+newtab-toast-dismiss-button =
+    .title = Елемеу
+    .aria-label = Елемеу
 
 ## Pocket content onboarding experience dialog and modal for new users seeing the Pocket section for the first time, shown as the first item in the Pocket section.
 
@@ -271,6 +286,9 @@ newtab-custom-recent-subtitle = Жуырдағы сайттар мен құра�
 newtab-custom-recent-toggle =
     .label = Жуырдағы белсенділік
     .description = Жуырдағы сайттар мен құрама таңдауы
+newtab-custom-weather-toggle =
+    .label = Ауа райы
+    .description = Бүгінге қысқа болжам
 newtab-custom-close-button = Жабу
 newtab-custom-settings = Көбірек баптауларды басқару
 
@@ -290,7 +308,125 @@ newtab-wallpaper-dark-panda = Орманда жасырылған қызыл п�
 newtab-wallpaper-dark-sky = Түнгі аспаны бар қала пейзажы
 newtab-wallpaper-dark-mountain = Таулы пейзаж
 newtab-wallpaper-dark-city = Күлгін қала пейзажы
+
+## Solid Colors
+
+newtab-wallpaper-category-title-colors = Тұтас түстер
+newtab-wallpaper-blue = Көк
+newtab-wallpaper-light-blue = Ашық көк
+newtab-wallpaper-light-purple = Ашық күлгін
+newtab-wallpaper-light-green = Ашық жасыл
+newtab-wallpaper-green = Жасыл
+newtab-wallpaper-beige = Беж
+newtab-wallpaper-yellow = Сары
+newtab-wallpaper-orange = Қызғылт сары
+newtab-wallpaper-pink = Қызғылт
+newtab-wallpaper-light-pink = Ашық қызғылт
+newtab-wallpaper-red = Қызыл
+newtab-wallpaper-dark-blue = Қою көк
+newtab-wallpaper-dark-purple = Қою күлгін
+newtab-wallpaper-dark-green = Қою жасыл
+newtab-wallpaper-brown = Қоңыр
+
+## Abstract
+
+newtab-wallpaper-category-title-abstract = Абстрактты
+newtab-wallpaper-abstract-green = Жасыл пішіндер
+newtab-wallpaper-abstract-blue = Көк пішіндер
+newtab-wallpaper-abstract-purple = Күлгін пішіндер
+newtab-wallpaper-abstract-orange = Қызғылт сары пішіндер
+newtab-wallpaper-gradient-orange = Градиент қызғылт сары және қызғылт
+newtab-wallpaper-abstract-blue-purple = Көк және күлгін пішіндер
+
+## Photographs
+
+newtab-wallpaper-category-title-photographs = Фотосуреттер
+newtab-wallpaper-beach-at-sunrise = Күн шыққанда жағажай
+newtab-wallpaper-beach-at-sunset = Күн батқанда жағажай
+newtab-wallpaper-storm-sky = Дауылды аспан
+newtab-wallpaper-sky-with-pink-clouds = Қызғылт бұлттары бар аспан
+newtab-wallpaper-red-panda-yawns-in-a-tree = Қызыл панда ағашта есінейді
+newtab-wallpaper-white-mountains = Ақ таулар
 # Variables
 #   $author_string (String) - The name of the creator of the photo.
 #   $webpage_string (String) - The name of the webpage where the photo is located.
 newtab-wallpaper-attribution = <a data-l10n-name="webpage-link">{ $webpage_string }</a> ішіндегі <a data-l10n-name="name-link">{ $author_string }</a>  ұсынған фото
+newtab-wallpaper-feature-highlight-header = Түстер шашырауын қолданып көріңіз
+newtab-wallpaper-feature-highlight-content = Жаңа бетке тұсқағаздар арқылы жаңа көрініс беріңіз.
+newtab-wallpaper-feature-highlight-button = Түсіндім
+# Tooltip for dismiss button
+feature-highlight-dismiss-button =
+    .title = Елемеу
+    .aria-label = Қалқымалы терезені жабу
+feature-highlight-wallpaper =
+    .title = { -newtab-wallpaper-feature-highlight-header }
+    .aria-label = { -newtab-wallpaper-feature-highlight-content }
+
+## New Tab Weather
+
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-see-forecast =
+    .title = { $provider } ішінде болжамды қарау
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-sponsored = { $provider } ∙ Демеушілік
+newtab-weather-menu-change-location = Орналасуды ауыстыру
+newtab-weather-change-location-search-input = Орналасуды іздеу
+newtab-weather-menu-weather-display = Ауа райын көрсету
+# Display options are:
+# - Simple: Displays a current weather condition icon and the current temperature
+# - Detailed: Include simple information plus a short text summary: e.g. "Mostly cloudy"
+newtab-weather-menu-weather-display-option-simple = Қарапайым
+newtab-weather-menu-change-weather-display-simple = Қарапайым көрінісіне ауысу
+newtab-weather-menu-weather-display-option-detailed = Толық ақпаратты
+newtab-weather-menu-change-weather-display-detailed = Толық ақпаратты көрінісіне ауысу
+newtab-weather-menu-temperature-units = Температураның өлшем бірліктері
+newtab-weather-menu-temperature-option-fahrenheit = Фаренгейт
+newtab-weather-menu-temperature-option-celsius = Цельсий
+newtab-weather-menu-change-temperature-units-fahrenheit = Фаренгейтке ауысу
+newtab-weather-menu-change-temperature-units-celsius = Цельсийге ауысу
+newtab-weather-menu-hide-weather = Жаңа бетте ауа райын жасыру
+newtab-weather-menu-learn-more = Көбірек білу
+# This message is shown if user is working offline
+newtab-weather-error-not-available = Ауа-райы деректері қазір қолжетімді емес.
+
+## Topic Labels
+
+newtab-topic-label-business = Бизнес
+newtab-topic-label-career = Мансап
+newtab-topic-label-education = Білім алу
+newtab-topic-label-arts = Ойын-сауық
+newtab-topic-label-food = Тамақ
+newtab-topic-label-health = Денсаулық
+newtab-topic-label-hobbies = Ойын
+# ”Money” = “Personal Finance”, refers to articles and stories that help readers better manage
+# and understand their personal finances – from saving money to buying a home. See the
+# “Curated by our editors“ section at the top of https://getpocket.com/explore/personal-finance for more context
+newtab-topic-label-finance = Ақша
+newtab-topic-label-society-parenting = Тәрбие беру
+newtab-topic-label-government = Саясат
+newtab-topic-label-education-science = Ғылым
+# ”Life Hacks” = “Self Improvement”, refers to articles and stories aimed at helping readers improve various
+# aspects of their lives – from mental health to  productivity. See the “Curated by our editors“ section
+# at the top of https://getpocket.com/explore/self-improvement for more context.
+newtab-topic-label-society = Лайфхактар
+newtab-topic-label-sports = Спорт
+newtab-topic-label-tech = Техника
+newtab-topic-label-travel = Саяхат
+newtab-topic-label-home = Үй және бақша
+
+## Topic Selection Modal
+
+# “fine-tune” refers to the process of making small adjustments to something to get
+# the best or desired experience or performance.
+newtab-topic-selection-title = Таспаңызды дәл баптау үшін тақырыптарды таңдаңыз
+# “tailored” refers to process of (a tailor) making (clothes) to fit individual customers.
+# In other words, “Our expert curators prioritize stories to fit your selected interests”
+newtab-topic-selection-subtitle = Екі немесе одан да көп тақырыпты таңдаңыз. Біздің сарапшы кураторлар сіздің қызығушылықтарыңызға бейімделген мақалаларға басымдық береді. Кез келген уақытта жаңартуға болады.
+newtab-topic-selection-save-button = Сақтау
+newtab-topic-selection-cancel-button = Бас тарту
+newtab-topic-selection-button-maybe-later = Мүмкін, кейінірек
+newtab-topic-selection-privacy-link = Деректерді қалай қорғайтынымызды және басқаратынымызды біліңіз
+newtab-topic-selection-button-update-interests = Қызығушылықтарыңызды жаңартыңыз
+newtab-topic-selection-button-pick-interests = Қызығушылықтарыңызды таңдаңыз

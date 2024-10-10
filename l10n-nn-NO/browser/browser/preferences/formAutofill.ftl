@@ -39,8 +39,6 @@ address-capture-manage-address-button =
     .label = Adresseinnstillingar
 address-capture-learn-more-button =
     .label = Les meir
-# The dialog title for creating addresses in browser preferences.
-autofill-add-new-address-title = Legg til ny adresse
 address-capture-open-menu-button =
     .aria-label = Opne meny
 address-capture-edit-address-button =
@@ -49,10 +47,10 @@ address-capture-edit-address-button =
 autofill-add-address-title = Legg til adresse
 # The dialog title for editing addresses in browser preferences.
 autofill-edit-address-title = Rediger adresse
-autofill-address-name = Namn
 autofill-address-given-name = Fornamn
 autofill-address-additional-name = Mellomnamn
 autofill-address-family-name = Etternamn
+autofill-address-name = Namn
 autofill-address-organization = Organisasjon
 autofill-address-street-address = Gateadresse
 autofill-address-street = Gateadresse
@@ -62,10 +60,10 @@ autofill-address-street = Gateadresse
 # Used in IR, MX
 autofill-address-neighborhood = Grannelag
 # Used in MY
-autofill-address-village-township = Tettstad eller Township
+autofill-address-village-township = Landsby eller tettstad
 autofill-address-island = Øy
 # Used in IE
-autofill-address-townland = Townland
+autofill-address-townland = Tettstad
 
 ## address-level-2 names
 
@@ -81,7 +79,7 @@ autofill-address-suburb = Forstad
 
 autofill-address-province = Provins
 autofill-address-state = Stat
-autofill-address-county = Land
+autofill-address-county = Fylke/storkommune
 # Used in BB, JM
 autofill-address-parish = Sokn
 # Used in JP
@@ -111,6 +109,8 @@ autofill-address-eircode = Eircode
 
 ##
 
+# The dialog title for creating addresses in browser preferences.
+autofill-add-new-address-title = Legg til ny adresse
 autofill-address-country = Land eller region
 autofill-address-country-only = Land
 autofill-address-tel = Telefon

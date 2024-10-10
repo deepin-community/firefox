@@ -22,9 +22,12 @@ class FFmpegVideoEncoder : public MediaDataEncoder {};
 
 template <>
 class FFmpegVideoEncoder<LIBAV_VER> : public FFmpegDataEncoder<LIBAV_VER> {
-  using DurationMap = SimpleMap<int64_t>;
+  using DurationMap = SimpleMap<int64_t, int64_t, ThreadSafePolicy>;
+  using PtsMap = SimpleMap<int64_t, int64_t, NoOpPolicy>;
 
  public:
+  NS_INLINE_DECL_THREADSAFE_REFCOUNTING(FFmpegVideoEncoder, final);
+
   FFmpegVideoEncoder(const FFmpegLibWrapper* aLib, AVCodecID aCodecID,
                      const RefPtr<TaskQueue>& aTaskQueue,
                      const EncoderConfig& aConfig);
@@ -32,6 +35,7 @@ class FFmpegVideoEncoder<LIBAV_VER> : public FFmpegDataEncoder<LIBAV_VER> {
   nsCString GetDescriptionName() const override;
 
  protected:
+  virtual ~FFmpegVideoEncoder() = default;
   // Methods only called on mTaskQueue.
   virtual nsresult InitSpecific() override;
 #if LIBAVCODEC_VERSION_MAJOR >= 58
@@ -48,6 +52,7 @@ class FFmpegVideoEncoder<LIBAV_VER> : public FFmpegDataEncoder<LIBAV_VER> {
     // A key-value pair for av_opt_set.
     std::pair<nsCString, nsCString> mSettingKeyValue;
   };
+  bool SvcEnabled() const;
   Maybe<SVCSettings> GetSVCSettings();
   struct H264Settings {
     int mProfile;
@@ -58,13 +63,20 @@ class FFmpegVideoEncoder<LIBAV_VER> : public FFmpegDataEncoder<LIBAV_VER> {
   H264Settings GetH264Settings(const H264Specific& aH264Specific);
   struct SVCInfo {
     explicit SVCInfo(nsTArray<uint8_t>&& aTemporalLayerIds)
-        : mTemporalLayerIds(std::move(aTemporalLayerIds)), mNextIndex(0) {}
+        : mTemporalLayerIds(std::move(aTemporalLayerIds)), mCurrentIndex(0) {}
     const nsTArray<uint8_t> mTemporalLayerIds;
-    size_t mNextIndex;
-    // Return the current temporal layer id and update the next.
-    uint8_t UpdateTemporalLayerId();
+    size_t mCurrentIndex;
+    void UpdateTemporalLayerId();
+    void ResetTemporalLayerId();
+    uint8_t CurrentTemporalLayerId();
   };
   Maybe<SVCInfo> mSVCInfo{};
+  // Some codecs use the input frames pts for rate control. We'd rather only use
+  // the duration. Synthetize fake pts based on integrating over the duration of
+  // input frames.
+  int64_t mFakePts = 0;
+  int64_t mCurrentFramePts = 0;
+  PtsMap mPtsMap;
 };
 
 }  // namespace mozilla

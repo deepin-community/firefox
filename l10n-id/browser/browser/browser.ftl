@@ -543,6 +543,8 @@ urlbar-go-button =
     .tooltiptext = Pindah ke alamat di Bilah Lokasi
 urlbar-page-action-button =
     .tooltiptext = Tindakan laman
+urlbar-show-page-actions-button =
+    .tooltiptext = Tampilkan semua tindakan laman
 
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
@@ -598,6 +600,12 @@ urlbar-result-action-copy-to-clipboard = Salin
 #  $result (String): the string representation for a formula result
 urlbar-result-action-calculator-result = = { $result }
 
+## Strings used for buttons in the urlbar
+
+# Label prompting user to search with a particular search engine.
+#  $engine (String): the name of a search engine that searches a specific site
+urlbar-result-search-with = Cari lewat { $engine }
+
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
 ## In these actions "Search" is a verb, followed by where the search is performed.
@@ -627,6 +635,21 @@ urlbar-group-quickactions =
 #  $engine (String): the name of the search engine used to search.
 urlbar-group-recent-searches =
     .label = Pencarian Terkini
+# The header shown above trending results.
+# Variables:
+#  $engine (String): the name of the search engine providing the trending suggestions
+urlbar-group-trending =
+    .label = Ngetren di { $engine }
+# The result menu labels shown next to trending results.
+urlbar-result-menu-trending-dont-show =
+    .label = Jangan tampilkan penelusuran ngetren
+    .accesskey = J
+urlbar-result-menu-trending-why =
+    .label = Mengapa saya melihat ini?
+    .accesskey = M
+# A message that replaces a result when the user dismisses all suggestions of a
+# particular type.
+urlbar-trending-dismissal-acknowledgment = Terima kasih atas tanggapan Anda. Anda tidak akan melihat pencarian ngetren lagi.
 
 ## Reader View toolbar buttons
 
@@ -892,6 +915,10 @@ tabs-toolbar-list-all-tabs =
 restore-session-startup-suggestion-message = <strong>Buka tab sebelumnya?</strong> Anda dapat memulihkan sesi sebelumnya dari menu aplikasi { -brand-short-name } <img data-l10n-name="icon"/>, di bawah menu Riwayat.
 restore-session-startup-suggestion-button = Tunjukkan caranya
 
+## Infobar shown when the user tries to open a file picker and file pickers are blocked by enterprise policy
+
+filepicker-blocked-infobar = Organisasi Anda telah memblokir akses ke berkas lokal di komputer ini
+
 ## Mozilla data reporting notification (Telemetry, Firefox Health Report, etc)
 
 data-reporting-notification-message = { -brand-short-name } mengirimkan beberapa jenis data ke { -vendor-short-name } agar kami dapat meningkatkan pengalaman Anda.
@@ -900,6 +927,15 @@ data-reporting-notification-button =
     .accesskey = P
 # Label for the indicator shown in the private browsing window titlebar.
 private-browsing-indicator-label = Penjelajahan pribadi
+# Tooltip for the indicator shown in the window titlebar when content analysis is active.
+# Variables:
+#   $agentName (String): The name of the DLP agent that is connected
+content-analysis-indicator-tooltip =
+    .tooltiptext = Pencegahan kehilangan data (DLP) oleh { $agentName }. Klik untuk info lebih lanjut.
+content-analysis-panel-title = Perlindungan data
+# Variables:
+#   $agentName (String): The name of the DLP agent that is connected
+content-analysis-panel-text = Organisasi Anda menggunakan { $agentName } untuk melindungi dari kehilangan data. <a data-l10n-name="info">Pelajari lebih lanjut</a>
 
 ## Unified extensions (toolbar) button
 
@@ -962,6 +998,10 @@ firefox-relay-offer-legal-notice = Dengan mengklik “Gunakan masker surel”, A
 popup-notification-addon-install-unsigned =
     .value = (Belum Diverifikasi)
 popup-notification-xpinstall-prompt-learn-more = Pelajari lebih lanjut tentang memasang pengaya dengan aman
+# Note: Access key is set to P to match "Private" in the corresponding localized label.
+popup-notification-addon-privatebrowsing-checkbox =
+    .label = Jalankan di Jendela Pribadi
+    .accesskey = P
 
 ## Pop-up warning
 
@@ -987,3 +1027,24 @@ popup-warning-button =
 #   $popupURI (String): the URI for the pop-up window
 popup-show-popup-menuitem =
     .label = Tampilkan “{ $popupURI }”
+
+## File-picker crash notification ("FilePickerCrashed.sys.mjs")
+
+file-picker-failed-open = Dialog berkas Windows tidak dapat dibuka. Tidak ada berkas atau folder yang dapat dipilih.
+#   $path (string): The full path to which the file will be saved (e.g., 'C:\Users\Default User\Downloads\readme.txt').
+file-picker-failed-save-somewhere = Dialog berkas Windows tidak dapat dibuka. Berkas akan disimpan ke { $path }.
+file-picker-failed-save-nowhere = Dialog berkas Windows tidak dapat dibuka. Tidak ada folder baku yang dapat ditemukan; berkas tidak akan disimpan.
+file-picker-crashed-open = Dialog berkas Windows mogok. Tidak ada berkas atau folder yang dapat dipilih.
+#   $path (string): The full path to which the file will be saved (e.g., 'C:\Users\Default User\Downloads\readme.txt').
+file-picker-crashed-save-somewhere = Dialog berkas Windows mogok. Berkas akan disimpan ke { $path }.
+file-picker-crashed-save-nowhere = Dialog berkas Windows mogok. Tidak ada folder baku yang dapat ditemukan; berkas tidak akan disimpan.
+
+# Button used with file-picker-crashed-save-default. Opens the folder in Windows
+# Explorer, with the saved file selected and in focus.
+#
+# The wording here should be consistent with the Windows variant of
+# `downloads-cmd-show-menuitem-2` and similar messages.
+
+file-picker-crashed-show-in-folder =
+    .label = Tampilkan di Folder
+    .accessKey = F

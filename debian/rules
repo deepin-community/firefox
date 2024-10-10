@@ -6,6 +6,7 @@ include debian/make.mk
 # via configure options.
 dpkg_buildflags = $(and $(1),$(shell DEB_CFLAGS_MAINT_STRIP="-g" dpkg-buildflags --get $(1)))
 $(call lazy,CFLAGS,$$(call dpkg_buildflags,CFLAGS))
+$(call lazy,CXXFLAGS,$$(call dpkg_buildflags,CXXFLAGS))
 $(call lazy,CPPFLAGS,$$(call dpkg_buildflags,CPPFLAGS))
 $(call lazy,LDFLAGS,$$(call dpkg_buildflags,LDFLAGS))
 
@@ -21,15 +22,12 @@ PRODUCT := browser
 include debian/upstream.mk
 include /usr/share/dpkg/buildopts.mk
 
-SYSTEM_LIBS = zlib ffi
-ifeq (,$(filter buster bullseye,$(DIST)))
+SYSTEM_LIBS = zlib ffi libevent
+ifeq (,$(filter bullseye,$(DIST)))
 SYSTEM_LIBS += nspr vpx
 endif
-ifeq (,$(filter buster bullseye bookworm,$(DIST)))
+ifeq (,$(filter bullseye bookworm,$(DIST)))
 SYSTEM_LIBS += nss
-endif
-ifeq (,$(filter buster,$(DIST)))
-SYSTEM_LIBS += libevent
 endif
 
 define system_lib
@@ -55,12 +53,6 @@ endif
 endif
 endif
 
-ifeq (firefox-esr,$(DEBIAN_SOURCE))
-ifneq (,$(filter buster,$(DIST)))
-TRANSITION = 1
-endif
-endif
-
 COMMON_CONFIGURE_FLAGS += --target=$(DEB_HOST_GNU_TYPE)
 COMMON_CONFIGURE_FLAGS += --host=$(DEB_BUILD_GNU_TYPE)
 COMMON_CONFIGURE_FLAGS += --prefix=/usr
@@ -73,7 +65,7 @@ COMMON_CONFIGURE_FLAGS += $(if $(filter $(BRANDING),$(OFFICIAL_BRANDING)),--enab
 $(PRODUCT) := $(call lc,$(PRODUCT_NAME))
 uc_first = $(strip $(eval __tmp := $(1))$(foreach l,$(letters),$(eval __tmp := $(subst $(l),$(l) ,$(__tmp))))$(call uc,$(firstword $(__tmp)))$(1:$(firstword $(__tmp))%=%))
 DISPLAY_NAME := $(call uc_first,$(PRODUCT_DOWNLOAD_NAME))$(if $(filter %-esr,$(PRODUCT_NAME)), ESR)
-$(call uc,$(PRODUCT)) := $(call uc,$(DISPLAY_NAME))
+$(call uc,$(PRODUCT)) := $(call uc,$($(PRODUCT)))
 Product := $(call uc_first,$(PRODUCT))
 $(Product) := $(DISPLAY_NAME)
 
@@ -139,11 +131,15 @@ ifeq (default,$(origin CXX))
 CXX := g++
 endif
 
+ifeq ($(DIST),bookworm)
+CC := gcc-11
+CXX := g++-11
+endif
+
 ifneq (,$(filter mips mipsel,$(DEB_HOST_ARCH)))
 CONFIGURE_FLAGS += --disable-jit
 endif
 
-CXXFLAGS := $(CFLAGS)
 # Work around https://sourceware.org/bugzilla/show_bug.cgi?id=30578
 ifneq (,$(filter trixie,$(DIST)))
 ifneq (,$(filter amd64,$(DEB_HOST_ARCH)))
@@ -179,24 +175,12 @@ $(call lazy,LIBAVCODEC,$$(shell awk -F\" '/libavcodec\.so\./ { sub(/libavcodec\.
 
 $(PREPROCESSED_FILES): stamps/mozbuild-state
 stamps/mozbuild-state::
-	MOZ_OBJDIR=debian/objdir MACH_BUILD_PYTHON_NATIVE_PACKAGE_SOURCE=none $(PYTHON) ./mach python -c ""
+	MOZ_OBJDIR=debian/objdir MACH_BUILD_PYTHON_NATIVE_PACKAGE_SOURCE=none $(PYTHON) ./mach python --virtualenv build -c ""
 
-$(PREPROCESSED_FILES): VARS = GRE_VERSION PRODUCT_DOWNLOAD_NAME $(PRODUCT) $(call uc,$(PRODUCT)) $(Product) MOZ_APP_REMOTINGNAME $(SYSTEM_LIBS_VARS) SHORT_SOURCE_CHANNEL DIST TRANSITION MOZ_ENABLE_V4L2 CRASH_REPORTER DEB_HOST_ARCH
+$(PREPROCESSED_FILES): VARS = GRE_VERSION PRODUCT_DOWNLOAD_NAME $(PRODUCT) $(call uc,$(PRODUCT)) $(Product) MOZ_APP_REMOTINGNAME $(SYSTEM_LIBS_VARS) SHORT_SOURCE_CHANNEL DIST MOZ_ENABLE_V4L2 CRASH_REPORTER DEB_HOST_ARCH
 debian/control: VARS += L10N_PACKAGES_DEPS PRODUCT LIBAVCODEC
 $(PREPROCESSED_FILES):
-	MOZ_OBJDIR=debian/objdir MACH_BUILD_PYTHON_NATIVE_PACKAGE_SOURCE=none $(PYTHON) ./mach python python/mozbuild/mozbuild/preprocessor.py --marker % -Fsubstitution $(foreach var,$(VARS),-D$(var)="$($(var))" )$< -o $@
-
-ifdef TRANSITION
-MAINTSCRIPTS := $(addprefix debian/,$(addsuffix .maintscript,$(shell awk -F/ '$$1 != "searchplugins" { next } $$2 == "locale" && $$3 != "en-US" { p="iceweasel-l10n-" $$3 } $$2 == "common" || ($$2 "/" $$3 == "locale/en-US") { p="iceweasel" } !done[p] { print p; done[p] = 1 }' debian/removed_conffiles)))
-
-GENERATED_FILES += $(MAINTSCRIPTS)
-
-debian/iceweasel.maintscript: debian/removed_conffiles
-	(grep -v searchplugins/locale $<; grep searchplugins/locale/en-US $<) | awk '{print "rm_conffile /etc/iceweasel/" $$0, "45.0esr-2~", "iceweasel"}' > $@
-
-debian/iceweasel-l10n-%.maintscript: debian/removed_conffiles
-	grep -i searchplugins/locale/$* $< | awk '{print "rm_conffile /etc/iceweasel/" $$0, "45.0esr-2~", "iceweasel-l10n-$*"}' > $@
-endif
+	MOZ_OBJDIR=debian/objdir MACH_BUILD_PYTHON_NATIVE_PACKAGE_SOURCE=none $(PYTHON) ./mach python --virtualenv build python/mozbuild/mozbuild/preprocessor.py --marker % -Fsubstitution $(foreach var,$(VARS),-D$(var)="$($(var))" )$< -o $@
 
 override_dh_auto_configure:
 
@@ -221,10 +205,7 @@ stamps/configure-check-$(PRODUCT):: stamps/configure-$(PRODUCT)
 	} \
 	END { if (error) { exit 1 }}' debian/$($(PRODUCT)).mozconfig
 
-stamps/virtualenv::
-	MACH_BUILD_PYTHON_NATIVE_PACKAGE_SOURCE=none ./mach python --virtualenv build < /dev/null
-
-stamps/configure-$(PRODUCT):: debian/$($(PRODUCT)).mozconfig stamps/virtualenv
+stamps/configure-$(PRODUCT):: debian/$($(PRODUCT)).mozconfig stamps/mozbuild-state
 ifeq (armhf,$(DEB_BUILD_ARCH))
 ifeq (,$(shell grep -l cpu:type:aarch64 /sys/devices/system/cpu/modalias))
 	# There is not enough memory in armhf userspace with a 32-bits kernel.
@@ -257,7 +238,7 @@ L10N_BUILD_STAMPS = $(foreach lang,$(L10N_LANGS),stamps/build-l10n-$(lang))
 stamps/build-l10n::
 	debian/rules $(addprefix -j,$(DEB_BUILD_OPTION_PARALLEL)) $(L10N_BUILD_STAMPS)
 
-$(L10N_BUILD_STAMPS):: stamps/build-l10n-%: stamps/virtualenv
+$(L10N_BUILD_STAMPS):: stamps/build-l10n-%: stamps/mozbuild-state
 	$(if $(wildcard build-l10n/$*),,mkdir -p build-l10n/$*)
 	$(if $(wildcard l10n),,mkdir -p l10n)
 	cd build-l10n/$* && \
@@ -329,12 +310,6 @@ override_dh_strip_nondeterminism:
 
 override_dh_shlibdeps:
 	dh_shlibdeps -a -l$(CURDIR)/debian/tmp$(LIB_DIR)
-
-ifdef TRANSITION
-override_dh_gencontrol-indep:
-	dh_gencontrol$(foreach pkg,$(subst $($(PRODUCT)),iceweasel,$(L10N_PACKAGES)) iceweasel-l10n-all, -p$(pkg)) -- -v1:$(DEBIAN_VERSION)
-	dh_gencontrol$(foreach pkg,$(subst $($(PRODUCT)),iceweasel,$(L10N_PACKAGES)) iceweasel-l10n-all, -N$(pkg))
-endif
 
 install binary binary-arch binary-indep: $(filter-out %.pc,$(GENERATED_FILES))
 

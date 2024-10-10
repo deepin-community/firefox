@@ -189,6 +189,8 @@ mr2022-onboarding-pin-primary-button-label =
         [macos] Ten { -brand-short-name } tal Dock
        *[other] Fisse { -brand-short-name } te sbare des aplicazions
     }
+# Primary button string used on welcome page for when Firefox is not pinned on MSIX
+mr2022-onboarding-pin-primary-button-label-msix = Fisse { -brand-short-name } te sbare des aplicazions e tal menù Start
 # Subtitle will be used when user already has Firefox pinned, but
 # has not set it as their default browser.
 # When translating "zip", please feel free to pick a verb that signifies movement and/or exploration
@@ -335,6 +337,14 @@ onboarding-device-migration-title = Bentornâts!
 onboarding-device-migration-subtitle = Jentre tal to { -fxaccount-brand-name(capitalization: "sentence") } par puartâti daûr i tiei segnelibris, lis passwords e la cronologjie sul to gnûf dispositîf.
 onboarding-device-migration-subtitle2 = Jentre tal to account par puartâ cun te, sul to gnûf dispositîf, i tiei segnelibris, lis passwords e la cronologjie.
 onboarding-device-migration-primary-button-label = Jentre
+
+## Add-ons Picker screen
+
+amo-picker-title = Personalize { -brand-short-name }
+amo-picker-subtitle = Lis estensions a son come aplicazions pal to navigadôr, ti permetin di protezi passwords, discjariâ videos, sparagnâ tes compris in rêt, blocâ publicitâts fastidiosis, cambiâ l’aspiet dal navigadôr e tant altri.
+amo-picker-install-button-label = Zonte a { -brand-short-name }
+amo-picker-install-complete-label = Instalât
+amo-picker-collection-link = Esplore altris components adizionâi
 
 ## The following screens have been updated to use security and privacy focused strings:
 

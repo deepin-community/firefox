@@ -31,7 +31,6 @@ import org.mozilla.fenix.GleanMetrics.Pings
 import org.mozilla.fenix.GleanMetrics.TopSites
 import org.mozilla.fenix.R
 import org.mozilla.fenix.components.AppStore
-import org.mozilla.fenix.components.FenixSnackbar
 import org.mozilla.fenix.databinding.TopSiteItemBinding
 import org.mozilla.fenix.ext.bitmapForUrl
 import org.mozilla.fenix.ext.components
@@ -63,24 +62,11 @@ class TopSiteItemViewHolder(
                     is TopSiteItemMenu.Item.OpenInPrivateTab -> interactor.onOpenInPrivateTabClicked(
                         topSite,
                     )
-                    is TopSiteItemMenu.Item.RenameTopSite -> interactor.onRenameTopSiteClicked(
+                    is TopSiteItemMenu.Item.EditTopSite -> interactor.onEditTopSiteClicked(
                         topSite,
                     )
                     is TopSiteItemMenu.Item.RemoveTopSite -> {
                         interactor.onRemoveTopSiteClicked(topSite)
-                        FenixSnackbar.make(
-                            view = it,
-                            duration = FenixSnackbar.LENGTH_LONG,
-                            isDisplayedWithBrowserToolbar = false,
-                        )
-                            .setText(it.context.getString(R.string.snackbar_top_site_removed))
-                            .setAction(it.context.getString(R.string.snackbar_deleted_undo)) {
-                                it.context.components.useCases.topSitesUseCase.addPinnedSites(
-                                    topSite.title.toString(),
-                                    topSite.url,
-                                )
-                            }
-                            .show()
                     }
                     is TopSiteItemMenu.Item.Settings -> interactor.onSettingsClicked()
                     is TopSiteItemMenu.Item.SponsorPrivacy -> interactor.onSponsorPrivacyClicked()
@@ -137,6 +123,7 @@ class TopSiteItemViewHolder(
         }
 
         binding.topSiteTitle.text = topSite.title
+        binding.topSiteSubtitle.isVisible = topSite is TopSite.Provided
 
         if (topSite is TopSite.Pinned || topSite is TopSite.Default) {
             val pinIndicator = getDrawable(itemView.context, R.drawable.ic_new_pin)
@@ -146,8 +133,6 @@ class TopSiteItemViewHolder(
         }
 
         if (topSite is TopSite.Provided) {
-            binding.topSiteSubtitle.isVisible = true
-
             viewLifecycleOwner.lifecycleScope.launch(IO) {
                 itemView.context.components.core.client.bitmapForUrl(topSite.imageUrl)?.let { bitmap ->
                     withContext(Main) {

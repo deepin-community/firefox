@@ -89,6 +89,9 @@ shopping-show-less-button = Xem ít hơn
 
 shopping-settings-label =
     .label = Cài đặt
+shopping-settings-recommendations-toggle2 =
+    .label = Hiển thị đề xuất và nội dung được tài trợ
+shopping-settings-recommendations-learn-more3 = { -brand-product-name } không chia sẻ dữ liệu cá nhân của bạn, vì vậy những đề xuất này sẽ không theo bạn trên internet. <a data-l10n-name="review-quality-url">Tìm hiểu thêm</a>
 shopping-settings-recommendations-toggle =
     .label = Hiển thị quảng cáo trong trình kiểm tra đánh giá
 shopping-settings-recommendations-learn-more2 = Bạn sẽ thấy quảng cáo không thường xuyên cho các sản phẩm có liên quan. Chúng tôi chỉ quảng cáo những sản phẩm có đánh giá đáng tin cậy. <a data-l10n-name="review-quality-url">Tìm hiểu thêm</a>
@@ -115,6 +118,7 @@ shopping-settings-sidebar-enabled-state = Trình kiểm tra đánh giá đang <s
 shopping-adjusted-rating-label =
     .label = Đánh giá đã được điều chỉnh
 shopping-adjusted-rating-unreliable-reviews = Đã xóa các đánh giá không đáng tin cậy
+shopping-adjusted-rating-based-reliable-reviews = Dựa trên những đánh giá đáng tin cậy
 
 ## Strings for the review reliability component
 
@@ -133,6 +137,8 @@ shopping-analysis-explainer-learn-more2 = Tìm hiểu thêm về <a data-l10n-na
 # websites, which will be inserted without being translated.
 #  $retailer (String) - capitalized name of the shopping website, for example, "Amazon".
 shopping-analysis-explainer-highlights-description = <strong>Điểm nổi bật</strong> từ { $retailer } đánh giá trong vòng 80 ngày qua mà chúng tôi tin là đáng tin cậy.
+# Fallback for analysis highlights explainer if the retailer is ever unknown
+shopping-analysis-explainer-highlights-description-unknown-retailer = <strong>Điểm nổi bật</strong> từ đánh giá trong vòng 80 ngày qua mà chúng tôi tin là đáng tin cậy.
 shopping-analysis-explainer-review-grading-scale-reliable = Đánh giá đáng tin cậy. Chúng tôi tin rằng các đánh giá có thể đến từ những khách hàng thực sự đã để lại những đánh giá trung thực, không thiên vị.
 shopping-analysis-explainer-review-grading-scale-mixed = Chúng tôi tin rằng có sự kết hợp giữa các đánh giá đáng tin cậy và không đáng tin cậy.
 shopping-analysis-explainer-review-grading-scale-unreliable = Đánh giá không đáng tin cậy. Chúng tôi tin rằng các đánh giá có thể là giả mạo hoặc từ những người đánh giá thiên vị.
@@ -159,6 +165,7 @@ shopping-unanalyzed-product-analyze-button = Kiểm tra chất lượng đánh g
 
 more-to-consider-ad-label =
     .label = Thêm điều cần xem xét
+shopping-sponsored-label = Được tài trợ
 ad-by-fakespot = Quảng cáo bởi { -fakespot-brand-name }
 
 ## Shopping survey strings.

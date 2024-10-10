@@ -4,18 +4,26 @@
 
 tabbrowser-empty-tab-title = Ovetã pyahu
 tabbrowser-empty-private-tab-title = Tendayke pyahu ñemigua
-
 tabbrowser-menuitem-close-tab =
     .label = Tendayke mboty
 tabbrowser-menuitem-close =
     .label = Mboty
-
 # Displayed as a tooltip on container tabs
 # Variables:
 #   $title (String): the title of the current tab.
 #   $containerName (String): the name of the current container.
 tabbrowser-container-tab-title = { $title } - { $containerName }
-
+# This text serves as an on-screen tooltip as well as an accessible name for
+# the "X" button that is shown on the active tab or, when multiple tabs are
+# selected, to all their "X" buttons.
+# Variables:
+#   $tabCount (Number): The number of tabs that will be closed.
+tabbrowser-close-tabs-button =
+    .tooltiptext =
+        { $tabCount ->
+            [one] Emboty tendayke
+           *[other] Emboty { $tabCount } tendayke
+        }
 # Variables:
 #   $tabCount (Number): The number of tabs that will be closed.
 tabbrowser-close-tabs-tooltip =
@@ -114,13 +122,19 @@ tabbrowser-confirm-caretbrowsing-title = Kundaha hekaha ndive
 tabbrowser-confirm-caretbrowsing-message = Ejopývo F7 emyandy térã ambogue kundaha hekaha ndive. Tembiapoite omoĩ hekaha oku’éva ñanduti kuatiaroguépe, omoneĩvo embosa’y moñe’ẽrã tairenda ndive. ¿Emyandyse kundaha hekaha ndive.
 tabbrowser-confirm-caretbrowsing-checkbox = Anive ehechaukajey ko ñomongeta.
 
+## Confirmation dialog for closing all duplicate tabs
+
+tabbrowser-confirm-close-duplicate-tabs-title = Ema’ẽmi
+tabbrowser-confirm-close-duplicate-tabs-text = Rombojurujáta tendayke paha hendyhápe
+tabbrowser-confirm-close-all-duplicate-tabs-title = ¿Emboty tendayke ikõiva?
+tabbrowser-confirm-close-all-duplicate-tabs-button-closetabs = Emboty tendayke
+
 ##
 
 # Variables:
 #   $domain (String): URL of the page that is trying to steal focus.
 tabbrowser-allow-dialogs-to-get-focus =
     .label = Emoneĩ marandu’i ãichagua { $domain } mba’e oguerahávo pe tendayképe
-
 tabbrowser-customizemode-tab-title = { -brand-short-name } ñemomba’ete
 
 ## Context menu buttons, of which only one will be visible at a time
@@ -139,7 +153,6 @@ tabbrowser-context-mute-selected-tabs =
 tabbrowser-context-unmute-selected-tabs =
     .label = Embopujey tendayke
     .accesskey = m
-
 # This string is used as an additional tooltip and accessibility description for tabs playing audio
 tabbrowser-tab-audio-playing-description = Ehendu mba’epu
 

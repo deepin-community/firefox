@@ -76,37 +76,38 @@ extern PropertyName* EnvironmentCoordinateNameSlow(JSScript* script,
  *    |   |   |
  *    |   |   +--VarEnvironmentObject   See VarScope in Scope.h.
  *    |   |   |
- *    |   |   +--ModuleEnvironmentObject
- *    |   |   |                         Module top-level environment
- *    |   |   |
- *    |   |   +--WasmInstanceEnvironmentObject
- *    |   |   |
- *    |   |   +--WasmFunctionCallObject
- *    |   |   |
- *    |   |   +--LexicalEnvironmentObject
+ *    |   |   +--(DisposableEnvironmentObject)
+ *    |   |   |   |                     Environment for `using x = ...`
+ *    |   |   |   |                     (exists only when
+ *    |   |   |   |                      ENABLE_EXPLICIT_RESOURCE_MANAGEMENT is
+ *    |   |   |   |                      defined)
  *    |   |   |   |
- *    |   |   |   +--ScopedLexicalEnvironmentObject
- *    |   |   |   |   |                 Non-extensible lexical environment
- *    |   |   |   |   |
- *    |   |   |   |   +--BlockLexicalEnvironmentObject
- *    |   |   |   |   |   |             Blocks and such: syntactic,
- *    |   |   |   |   |   |             non-extensible
- *    |   |   |   |   |   |
- *    |   |   |   |   |   +--NamedLambdaObject
- *    |   |   |   |   |                 Environment for `(function f(){...})`
- *    |   |   |   |   |                 containing only a binding for `f`
- *    |   |   |   |   |
- *    |   |   |   |   +--ClassBodyLexicalEnvironmentObject
- *    |   |   |   |                     Environment for class body, containing
- *    |   |   |   |                     private names, private brands, and
- *    |   |   |   |                     static initializers list
+ *    |   |   |   +--ModuleEnvironmentObject
  *    |   |   |   |
- *    |   |   |   +--ExtensibleLexicalEnvironmentObject
+ *    |   |   |   +--LexicalEnvironmentObject
  *    |   |   |       |
- *    |   |   |       +--GlobalLexicalEnvironmentObject
- *    |   |   |       |                 Top-level let/const/class in scripts
+ *    |   |   |       +--ScopedLexicalEnvironmentObject
+ *    |   |   |       |   |             Non-extensible lexical environment
+ *    |   |   |       |   |
+ *    |   |   |       |   +--BlockLexicalEnvironmentObject
+ *    |   |   |       |   |   |         Blocks and such: syntactic,
+ *    |   |   |       |   |   |         non-extensible
+ *    |   |   |       |   |   |
+ *    |   |   |       |   |   +--NamedLambdaObject
+ *    |   |   |       |   |             Environment for `(function f(){...})`
+ *    |   |   |       |   |             containing only a binding for `f`
+ *    |   |   |       |   |
+ *    |   |   |       |   +--ClassBodyLexicalEnvironmentObject
+ *    |   |   |       |                 Environment for class body, containing
+ *    |   |   |       |                 private names, private brands, and
+ *    |   |   |       |                 static initializers list
  *    |   |   |       |
- *    |   |   |       +--NonSyntacticLexicalEnvironmentObject
+ *    |   |   |       +--ExtensibleLexicalEnvironmentObject
+ *    |   |   |           |
+ *    |   |   |           +--GlobalLexicalEnvironmentObject
+ *    |   |   |           |             Top-level let/const/class in scripts
+ *    |   |   |           |
+ *    |   |   |           +--NonSyntacticLexicalEnvironmentObject
  *    |   |   |                         See "Non-syntactic environments" below
  *    |   |   |
  *    |   |   +--NonSyntacticVariablesObject
@@ -514,6 +515,31 @@ class EnvironmentObject : public NativeObject {
 #endif /* defined(DEBUG) || defined(JS_JITSPEW) */
 };
 
+#ifdef ENABLE_EXPLICIT_RESOURCE_MANAGEMENT
+class DisposableEnvironmentObject : public EnvironmentObject {
+ protected:
+  static constexpr uint32_t DISPOSABLE_RESOURCE_STACK_SLOT = 1;
+
+ public:
+  static constexpr uint32_t RESERVED_SLOTS = 2;
+
+  ArrayObject* getOrCreateDisposeCapability(JSContext* cx);
+
+  // Used to get the Disposable objects within the
+  // lexical scope, it returns a ArrayObject if there
+  // is a non empty list of Disposables, else
+  // UndefinedValue.
+  JS::Value getDisposables();
+
+  void clearDisposables();
+
+  // For JITs
+  static size_t offsetOfDisposeCapability() {
+    return getFixedSlotOffset(DISPOSABLE_RESOURCE_STACK_SLOT);
+  }
+};
+#endif
+
 class CallObject : public EnvironmentObject {
  protected:
   static constexpr uint32_t CALLEE_SLOT = 1;
@@ -615,8 +641,17 @@ class VarEnvironmentObject : public EnvironmentObject {
   bool isForNonStrictEval() const { return scope().kind() == ScopeKind::Eval; }
 };
 
+#ifdef ENABLE_EXPLICIT_RESOURCE_MANAGEMENT
+class ModuleEnvironmentObject : public DisposableEnvironmentObject {
+#else
 class ModuleEnvironmentObject : public EnvironmentObject {
+#endif
+#ifdef ENABLE_EXPLICIT_RESOURCE_MANAGEMENT
+  static constexpr uint32_t MODULE_SLOT =
+      DisposableEnvironmentObject::RESERVED_SLOTS;
+#else
   static constexpr uint32_t MODULE_SLOT = 1;
+#endif
 
   static const ObjectOps objectOps_;
   static const JSClassOps classOps_;
@@ -626,7 +661,16 @@ class ModuleEnvironmentObject : public EnvironmentObject {
 
   static const JSClass class_;
 
+#ifdef ENABLE_EXPLICIT_RESOURCE_MANAGEMENT
+  // While there are only 3 reserved slots, this needs to be set to 4, given
+  // there are some code expect the number of fixed slot to be same as the
+  // number of reserved slots for the lexical environments (bug 1913864).
+  static constexpr uint32_t RESERVED_SLOTS =
+      DisposableEnvironmentObject::RESERVED_SLOTS + 2;
+#else
   static constexpr uint32_t RESERVED_SLOTS = 2;
+#endif
+
   static constexpr ObjectFlags OBJECT_FLAGS = {ObjectFlag::NotExtensible,
                                                ObjectFlag::QualifiedVarObj};
 
@@ -724,19 +768,34 @@ class WasmFunctionCallObject : public EnvironmentObject {
 // Abstract base class for environments that can contain let/const bindings,
 // plus a few other kinds of environments, such as `catch` blocks, that have
 // similar behavior.
+#ifdef ENABLE_EXPLICIT_RESOURCE_MANAGEMENT
+class LexicalEnvironmentObject : public DisposableEnvironmentObject {
+#else
 class LexicalEnvironmentObject : public EnvironmentObject {
+#endif
  protected:
   // Global and non-syntactic lexical environments need to store a 'this'
   // object and all other lexical environments have a fixed shape and store a
   // backpointer to the LexicalScope.
   //
   // Since the two sets are disjoint, we only use one slot to save space.
+#ifdef ENABLE_EXPLICIT_RESOURCE_MANAGEMENT
+  static constexpr uint32_t THIS_VALUE_OR_SCOPE_SLOT =
+      DisposableEnvironmentObject::RESERVED_SLOTS;
+#else
   static constexpr uint32_t THIS_VALUE_OR_SCOPE_SLOT = 1;
+#endif
 
  public:
   static const JSClass class_;
 
+#ifdef ENABLE_EXPLICIT_RESOURCE_MANAGEMENT
+  // See comment on RESERVED_SLOTS in ModuleEnvironmentObject.
+  static constexpr uint32_t RESERVED_SLOTS =
+      DisposableEnvironmentObject::RESERVED_SLOTS + 2;
+#else
   static constexpr uint32_t RESERVED_SLOTS = 2;
+#endif
 
  protected:
   static LexicalEnvironmentObject* create(JSContext* cx,
@@ -1279,9 +1338,9 @@ class DebugEnvironments {
    * The map from live frames which have optimized-away environments to the
    * corresponding debug environments.
    */
-  typedef HashMap<MissingEnvironmentKey, WeakHeapPtr<DebugEnvironmentProxy*>,
-                  MissingEnvironmentKey, ZoneAllocPolicy>
-      MissingEnvironmentMap;
+  using MissingEnvironmentMap =
+      HashMap<MissingEnvironmentKey, WeakHeapPtr<DebugEnvironmentProxy*>,
+              MissingEnvironmentKey, ZoneAllocPolicy>;
   MissingEnvironmentMap missingEnvs;
 
   /*
@@ -1292,9 +1351,9 @@ class DebugEnvironments {
    * debugger lazy updates of liveEnvs need only fill in the new
    * environments.
    */
-  typedef GCHashMap<WeakHeapPtr<JSObject*>, LiveEnvironmentVal,
-                    StableCellHasher<WeakHeapPtr<JSObject*>>, ZoneAllocPolicy>
-      LiveEnvironmentMap;
+  using LiveEnvironmentMap =
+      GCHashMap<WeakHeapPtr<JSObject*>, LiveEnvironmentVal,
+                StableCellHasher<WeakHeapPtr<JSObject*>>, ZoneAllocPolicy>;
   LiveEnvironmentMap liveEnvs;
 
  public:
@@ -1376,6 +1435,14 @@ inline bool JSObject::is<js::EnvironmentObject>() const {
          is<js::NonSyntacticVariablesObject>() ||
          is<js::RuntimeLexicalErrorObject>();
 }
+
+#ifdef ENABLE_EXPLICIT_RESOURCE_MANAGEMENT
+template <>
+inline bool JSObject::is<js::DisposableEnvironmentObject>() const {
+  return is<js::LexicalEnvironmentObject>() ||
+         is<js::ModuleEnvironmentObject>();
+}
+#endif
 
 template <>
 inline bool JSObject::is<js::ScopedLexicalEnvironmentObject>() const {

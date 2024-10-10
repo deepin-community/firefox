@@ -20,10 +20,13 @@
 #include <utility>
 #include <vector>
 
+#include "absl/strings/match.h"
 #include "absl/strings/str_replace.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
 #include "api/array_view.h"
+#include "api/environment/environment.h"
+#include "api/environment/environment_factory.h"
 #include "api/test/metrics/global_metrics_logger_and_exporter.h"
 #include "api/test/metrics/metric.h"
 #include "api/transport/field_trial_based_config.h"
@@ -78,7 +81,7 @@ void ConfigureSimulcast(VideoCodec* codec_settings) {
   const std::vector<webrtc::VideoStream> streams = cricket::GetSimulcastConfig(
       /*min_layer=*/1, codec_settings->numberOfSimulcastStreams,
       codec_settings->width, codec_settings->height, kBitratePriority, kMaxQp,
-      /* is_screenshare = */ false, true, trials);
+      /* is_screenshare = */ false, true, trials, webrtc::kVideoCodecVP8);
 
   for (size_t i = 0; i < streams.size(); ++i) {
     SimulcastStream* ss = &codec_settings->simulcastStream[i];
@@ -176,7 +179,14 @@ SdpVideoFormat CreateSdpVideoFormat(
 
     return SdpVideoFormat(config.codec_name, codec_params);
   } else if (config.codec_settings.codecType == kVideoCodecVP9) {
-    return SdpVideoFormat(config.codec_name, {{"profile-id", "0"}});
+    return SdpVideoFormat::VP9Profile0();
+  } else if (config.codec_settings.codecType == kVideoCodecAV1) {
+    // Extra condition to not fallback to the default creation of
+    // SdpVideoFormat. This is needed for backwards compatibility in downstream
+    // projects that still use the preliminary codec name AV1X.
+    if (absl::EqualsIgnoreCase(config.codec_name, cricket::kAv1CodecName)) {
+      return SdpVideoFormat::AV1Profile0();
+    }
   }
 
   return SdpVideoFormat(config.codec_name);
@@ -436,6 +446,7 @@ VideoCodecTestFixtureImpl::VideoCodecTestFixtureImpl(Config config)
                            webrtc::LibvpxVp9DecoderTemplateAdapter,
                            webrtc::OpenH264DecoderTemplateAdapter,
                            webrtc::Dav1dDecoderTemplateAdapter>>()),
+      env_(CreateEnvironment()),
       config_(config) {}
 
 VideoCodecTestFixtureImpl::VideoCodecTestFixtureImpl(
@@ -444,6 +455,7 @@ VideoCodecTestFixtureImpl::VideoCodecTestFixtureImpl(
     std::unique_ptr<VideoEncoderFactory> encoder_factory)
     : encoder_factory_(std::move(encoder_factory)),
       decoder_factory_(std::move(decoder_factory)),
+      env_(CreateEnvironment()),
       config_(config) {}
 
 VideoCodecTestFixtureImpl::~VideoCodecTestFixtureImpl() = default;
@@ -699,7 +711,7 @@ bool VideoCodecTestFixtureImpl::CreateEncoderAndDecoder() {
     decoder_format = *config_.decoder_format;
   }
 
-  encoder_ = encoder_factory_->CreateVideoEncoder(encoder_format);
+  encoder_ = encoder_factory_->Create(env_, encoder_format);
   EXPECT_TRUE(encoder_) << "Encoder not successfully created.";
   if (encoder_ == nullptr) {
     return false;
@@ -709,7 +721,7 @@ bool VideoCodecTestFixtureImpl::CreateEncoderAndDecoder() {
       config_.NumberOfSimulcastStreams(), config_.NumberOfSpatialLayers());
   for (size_t i = 0; i < num_simulcast_or_spatial_layers; ++i) {
     std::unique_ptr<VideoDecoder> decoder =
-        decoder_factory_->CreateVideoDecoder(decoder_format);
+        decoder_factory_->Create(env_, decoder_format);
     EXPECT_TRUE(decoder) << "Decoder not successfully created.";
     if (decoder == nullptr) {
       return false;
@@ -806,7 +818,7 @@ bool VideoCodecTestFixtureImpl::SetUpAndInitObjects(
 
   task_queue->SendTask([this]() {
     processor_ = std::make_unique<VideoProcessor>(
-        encoder_.get(), &decoders_, source_frame_reader_.get(), config_,
+        env_, encoder_.get(), &decoders_, source_frame_reader_.get(), config_,
         &stats_, &encoded_frame_writers_,
         decoded_frame_writers_.empty() ? nullptr : &decoded_frame_writers_);
   });

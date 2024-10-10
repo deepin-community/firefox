@@ -320,7 +320,11 @@ bookmark-panel-cancel =
 # Variables:
 #  $count (number): number of bookmarks that will be removed
 bookmark-panel-remove =
-    .label = { $count } 個のブックマークを削除
+    .label =
+        { NUMBER($count) ->
+            [1] ブックマークを削除
+           *[other] { $count } 個のブックマークを削除
+        }
     .accesskey = R
 bookmark-panel-show-editor-checkbox =
     .label = 追加時にエディターを表示する
@@ -428,17 +432,17 @@ browser-tab-audio-pip = ピクチャーインピクチャー
 ##  $count (number): number of affected tabs
 
 browser-tab-mute =
-    { $count ->
+    { NUMBER($count) ->
         [1] タブをミュート
        *[other] { $count } 個のタブをミュート
     }
 browser-tab-unmute =
-    { $count ->
+    { NUMBER($count) ->
         [1] タブのミュートを解除
        *[other] { $count } 個のタブのミュートを解除
     }
 browser-tab-unblock =
-    { $count ->
+    { NUMBER($count) ->
         [1] タブのメディアを再生
        *[other] { $count } 個のタブのメディアを再生
     }
@@ -543,6 +547,10 @@ urlbar-go-button =
     .tooltiptext = アドレスバーに入力された URL へ移動します
 urlbar-page-action-button =
     .tooltiptext = ページ操作
+urlbar-revert-button =
+    .tooltiptext = ロケーションバーにアドレスを表示します
+urlbar-show-page-actions-button =
+    .tooltiptext = すべてのページ操作を表示します
 
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
@@ -633,6 +641,21 @@ urlbar-group-quickactions =
 #  $engine (String): the name of the search engine used to search.
 urlbar-group-recent-searches =
     .label = 最近の検索
+# The header shown above trending results.
+# Variables:
+#  $engine (String): the name of the search engine providing the trending suggestions
+urlbar-group-trending =
+  .label = { $engine } の検索トレンド
+# The result menu labels shown next to trending results.
+urlbar-result-menu-trending-dont-show =
+    .label = 検索トレンドを表示しない
+    .accesskey = D
+urlbar-result-menu-trending-why =
+    .label = これが表示されるのはなぜ？
+    .accesskey = W
+# A message that replaces a result when the user dismisses all suggestions of a
+# particular type.
+urlbar-trending-dismissal-acknowledgment = フィードバックありがとうございます。今後は検索トレンドが表示されなくなります。
 
 ## Reader View toolbar buttons
 
@@ -983,16 +1006,27 @@ firefox-relay-offer-legal-notice = [メールマスクを使用] をクリック
 popup-notification-addon-install-unsigned =
     .value = (未検証)
 popup-notification-xpinstall-prompt-learn-more = アドオンの安全なインストールの詳細
+# Note: Access key is set to P to match "Private" in the corresponding localized label.
+popup-notification-addon-privatebrowsing-checkbox =
+    .label = プライベートウィンドウで実行する
+    .accesskey = P
 
 ## Pop-up warning
 
 # Variables:
 #   $popupCount (Number): the number of pop-ups blocked.
-popup-warning-message = { -brand-short-name } が { $popupCount } 個のポップアップをブロックしました。
+popup-warning-message =
+    { NUMBER($popupCount) ->
+        [1] { -brand-short-name } がこのサイトでポップアップウィンドウをブロックしました。
+       *[other] { -brand-short-name } がこのサイトで { $popupCount } 個のポップアップウィンドウをブロックしました。
+    }
 # The singular form is left out for English, since the number of blocked pop-ups is always greater than 1.
 # Variables:
 #   $popupCount (Number): the number of pop-ups blocked.
-popup-warning-exceeded-message = { -brand-short-name } がこのサイトで { $popupCount } 個のポップアップウィンドウをブロックしました。
+popup-warning-exceeded-message = 
+    { NUMBER($popupCount) ->
+       *[other] { -brand-short-name } がこのサイトで { $popupCount } 個以上のポップアップウィンドウをブロックしました。
+    }
 popup-warning-button =
     .label =
         { PLATFORM() ->
@@ -1008,3 +1042,22 @@ popup-warning-button =
 #   $popupURI (String): the URI for the pop-up window
 popup-show-popup-menuitem =
     .label = “{ $popupURI }” を表示
+
+## File-picker crash notification ("FilePickerCrashed.sys.mjs")
+
+file-picker-failed-open = Windows のファイルダイアログを開けませんでした。ファイルまたはフォルダーを選択できません。
+#   $path (string): The full path to which the file will be saved (e.g., 'C:\Users\Default User\Downloads\readme.txt').
+file-picker-failed-save-somewhere = Windows のファイルダイアログを開けませんでした。ファイルは { $path } に保存されます。
+file-picker-failed-save-nowhere = Windows のファイルダイアログを開けませんでした。既定のフォルダーが見つからないためファイルは保存されません。
+file-picker-crashed-open = Windows のファイルダイアログがクラッシュしました。ファイルまたはフォルダーを選択できません。
+#   $path (string): The full path to which the file will be saved (e.g., 'C:\Users\Default User\Downloads\readme.txt').
+file-picker-crashed-save-somewhere = Windows のファイルダイアログがクラッシュしました。ファイルは { $path } に保存されます。
+file-picker-crashed-save-nowhere = Windows のファイルダイアログがクラッシュしました。既定のフォルダーが見つからないためファイルは保存されません。
+# Button used with file-picker-crashed-save-default. Opens the folder in Windows
+# Explorer, with the saved file selected and in focus.
+#
+# The wording here should be consistent with the Windows variant of
+# `downloads-cmd-show-menuitem-2` and similar messages.
+file-picker-crashed-show-in-folder =
+    .label = フォルダーを開く
+    .accessKey = F

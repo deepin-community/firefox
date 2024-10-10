@@ -33,6 +33,7 @@
 #include "mozilla/dom/PerformanceObserverBinding.h"
 #include "mozilla/dom/PerformanceNavigationTiming.h"
 #include "mozilla/IntegerPrintfMacros.h"
+#include "mozilla/Perfetto.h"
 #include "mozilla/Preferences.h"
 #include "mozilla/TimeStamp.h"
 #include "mozilla/dom/WorkerPrivate.h"
@@ -343,10 +344,10 @@ already_AddRefed<PerformanceMark> Performance::Mark(
 
   InsertUserEntry(performanceMark);
 
-  if (profiler_is_collecting_markers()) {
+  if (profiler_thread_is_being_profiled_for_markers()) {
     Maybe<uint64_t> innerWindowId;
-    if (GetOwner()) {
-      innerWindowId = Some(GetOwner()->WindowID());
+    if (nsGlobalWindowInner* owner = GetOwnerWindow()) {
+      innerWindowId = Some(owner->WindowID());
     }
     TimeStamp startTimeStamp =
         CreationTimeStamp() +
@@ -764,13 +765,32 @@ already_AddRefed<PerformanceMeasure> Performance::Measure(
     detail.setNull();
   }
 
+#ifdef MOZ_PERFETTO
+  // Perfetto requires that events are properly nested within each category.
+  // Since this is not a guarantee here, we need to define a dynamic category
+  // for each measurement so it's not prematurely ended by another measurement
+  // that overlaps.  We also use the usertiming category to guard these markers
+  // so it's easy to toggle.
+  if (TRACE_EVENT_CATEGORY_ENABLED("usertiming")) {
+    NS_ConvertUTF16toUTF8 str(aName);
+    perfetto::DynamicCategory category{str.get()};
+    TimeStamp startTimeStamp =
+        CreationTimeStamp() + TimeDuration::FromMilliseconds(startTime);
+    TimeStamp endTimeStamp =
+        CreationTimeStamp() + TimeDuration::FromMilliseconds(endTime);
+    PERFETTO_TRACE_EVENT_BEGIN(category, perfetto::DynamicString{str.get()},
+                               startTimeStamp);
+    PERFETTO_TRACE_EVENT_END(category, endTimeStamp);
+  }
+#endif
+
   RefPtr<PerformanceMeasure> performanceMeasure = new PerformanceMeasure(
       GetParentObject(), aName, startTime, endTime, detail);
   InsertUserEntry(performanceMeasure);
 
   MaybeEmitExternalProfilerMarker(aName, options, startMark, aEndMark);
 
-  if (profiler_is_collecting_markers()) {
+  if (profiler_thread_is_being_profiled_for_markers()) {
     auto [startTimeStamp, endTimeStamp] =
         GetTimeStampsForMarker(startMark, aEndMark, options, aRv);
 
@@ -780,8 +800,8 @@ already_AddRefed<PerformanceMeasure> Performance::Measure(
     }
 
     Maybe<uint64_t> innerWindowId;
-    if (GetOwner()) {
-      innerWindowId = Some(GetOwner()->WindowID());
+    if (nsGlobalWindowInner* owner = GetOwnerWindow()) {
+      innerWindowId = Some(owner->WindowID());
     }
     profiler_add_marker("UserTiming", geckoprofiler::category::DOM,
                         {MarkerTiming::Interval(startTimeStamp, endTimeStamp),
@@ -822,10 +842,8 @@ void Performance::TimingNotification(PerformanceEntry* aEntry,
 
   RefPtr<PerformanceEntryEvent> perfEntryEvent =
       PerformanceEntryEvent::Constructor(this, u"performanceentry"_ns, init);
-
-  nsCOMPtr<EventTarget> et = do_QueryInterface(GetOwner());
-  if (et) {
-    et->DispatchEvent(*perfEntryEvent);
+  if (RefPtr<nsGlobalWindowInner> owner = GetOwnerWindow()) {
+    owner->DispatchEvent(*perfEntryEvent);
   }
 }
 

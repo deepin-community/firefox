@@ -59,6 +59,7 @@ class ZstdWrapper {
  public:
   ZstdWrapper() {
     mDStream = ZSTD_createDStream();
+    MOZ_RELEASE_ASSERT(mDStream);  // we'll crash anyways if it fails
     ZSTD_DCtx_setParameter(mDStream, ZSTD_d_windowLogMax, 23 /*8*1024*1024*/);
   }
   ~ZstdWrapper() {
@@ -166,7 +167,7 @@ nsHTTPCompressConv::MaybeRetarget(nsIRequest* request) {
   if (!req) {
     return NS_ERROR_NO_INTERFACE;
   }
-  if (!StaticPrefs::network_decompression_off_mainthread()) {
+  if (!StaticPrefs::network_decompression_off_mainthread2()) {
     return NS_OK;
   }
   nsCOMPtr<nsISerialEventTarget> target;
@@ -260,11 +261,7 @@ nsHTTPCompressConv::OnStopRequest(nsIRequest* request, nsresult aStatus) {
     if (fpChannel && !isPending) {
       fpChannel->ForcePending(true);
     }
-    bool allowTruncatedEmpty =
-        StaticPrefs::network_compress_allow_truncated_empty_brotli();
-    if (mBrotli && ((allowTruncatedEmpty && NS_FAILED(mBrotli->mStatus)) ||
-                    (!allowTruncatedEmpty && mBrotli->mTotalOut == 0 &&
-                     !mBrotli->mBrotliStateIsStreamEnd))) {
+    if (mBrotli && NS_FAILED(mBrotli->mStatus)) {
       status = NS_ERROR_INVALID_CONTENT_ENCODING;
     }
     LOG(("nsHttpCompresssConv %p onstop brotlihandler rv %" PRIx32 "\n", this,
@@ -667,7 +664,7 @@ nsHTTPCompressConv::OnDataAvailable(nsIRequest* request, nsIInputStream* iStr,
             return NS_ERROR_INVALID_CONTENT_ENCODING;
           }
         } /* for */
-      }   /* gzip */
+      } /* gzip */
       break;
 
     case HTTP_COMPRESS_BROTLI: {
@@ -736,8 +733,15 @@ nsresult nsHTTPCompressConv::do_OnDataAvailable(nsIRequest* request,
                                                 uint64_t offset,
                                                 const char* buffer,
                                                 uint32_t count) {
-  LOG(("nsHttpCompressConv %p do_OnDataAvailable mDispatchToMainThread %d",
-       this, mDispatchToMainThread));
+  LOG(
+      ("nsHttpCompressConv %p do_OnDataAvailable mDispatchToMainThread %d "
+       "count %u",
+       this, mDispatchToMainThread, count));
+  if (count == 0) {
+    // Never send 0-byte OnDataAvailables; imglib at least barfs on them and
+    // they're not useful
+    return NS_OK;
+  }
   if (mDispatchToMainThread && !NS_IsMainThread()) {
     nsCOMPtr<nsIInputStream> stream;
     MOZ_TRY(NS_NewByteInputStream(getter_AddRefs(stream), Span(buffer, count),
@@ -937,7 +941,8 @@ uint32_t nsHTTPCompressConv::check_header(nsIInputStream* iStr,
 
 NS_IMETHODIMP
 nsHTTPCompressConv::CheckListenerChain() {
-  if (XRE_IsContentProcess()) {
+  if (XRE_IsContentProcess() &&
+      StaticPrefs::network_decompression_off_mainthread2()) {
     // handle decompression OMT always.  If the chain needs to be MT,
     // we'll determine that in OnStartRequest and dispatch to MT
     return NS_OK;

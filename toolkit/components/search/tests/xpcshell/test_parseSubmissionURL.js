@@ -9,14 +9,13 @@
 
 add_task(async function setup() {
   useHttpServer();
-  await AddonTestUtils.promiseStartupManager();
 });
 
 add_task(async function test_parseSubmissionURL() {
-  let engine1 = await SearchTestUtils.promiseNewSearchEngine({
+  let engine1 = await SearchTestUtils.installOpenSearchEngine({
     url: `${gDataUrl}engine.xml`,
   });
-  let engine2 = await SearchTestUtils.promiseNewSearchEngine({
+  let engine2 = await SearchTestUtils.installOpenSearchEngine({
     url: `${gDataUrl}engine-fr.xml`,
   });
 
@@ -36,7 +35,7 @@ add_task(async function test_parseSubmissionURL() {
 
   // The following engine provides it's query keyword in
   // its template in the form of q={searchTerms}
-  let engine5 = await SearchTestUtils.promiseNewSearchEngine({
+  let engine5 = await SearchTestUtils.installOpenSearchEngine({
     url: `${gDataUrl}engine2.xml`,
   });
 

@@ -188,6 +188,8 @@ mr2022-onboarding-pin-primary-button-label =
         [macos] Ponechať { -brand-short-name } v Docku
        *[other] Pripnúť { -brand-short-name } na hlavný panel úloh
     }
+# Primary button string used on welcome page for when Firefox is not pinned on MSIX
+mr2022-onboarding-pin-primary-button-label-msix = Pripnúť { -brand-short-name } na panel úloh a do ponuky Štart
 # Subtitle will be used when user already has Firefox pinned, but
 # has not set it as their default browser.
 # When translating "zip", please feel free to pick a verb that signifies movement and/or exploration
@@ -334,6 +336,14 @@ onboarding-device-migration-title = Vitajte späť
 onboarding-device-migration-subtitle = Prihláste sa do svojho { -fxaccount-brand-name(capitalization: "sentence", case: "gen") } a vezmite si svoje záložky, heslá a históriu so sebou na nové zariadenie.
 onboarding-device-migration-subtitle2 = Prihláste sa do svojho účtu a preneste si svoje záložky, heslá a históriu na vaše nové zariadenie.
 onboarding-device-migration-primary-button-label = Prihlásiť sa
+
+## Add-ons Picker screen
+
+amo-picker-title = Prispôsobte si svoj { -brand-short-name }
+amo-picker-subtitle = Rozšírenia sú ako aplikácie pre váš prehliadač a umožňujú vám chrániť heslá, sťahovať videá, hľadať ponuky, blokovať otravné reklamy, meniť vzhľad vášho prehliadača a oveľa viac.
+amo-picker-install-button-label = Pridať do { -brand-short-name(case: "gen") }
+amo-picker-install-complete-label = Nainštalované
+amo-picker-collection-link = Preskúmajte ďalšie doplnky
 
 ## The following screens have been updated to use security and privacy focused strings:
 

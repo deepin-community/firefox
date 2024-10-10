@@ -26,7 +26,7 @@ synced-tabs-context-open-in-tab =
     .label = Åpne i ny fane
     .accesskey = p
 synced-tabs-context-open-in-container-tab =
-    .label = Åpne i ny innholdsfane
+    .label = Åpne i ny beholderfane
     .accesskey = o
 synced-tabs-context-open-in-window =
     .label = Åpne i nytt vindu
@@ -59,3 +59,8 @@ synced-tabs-context-sync-now =
     .accesskey = r
 synced-tabs-fxa-sign-in = Logg inn for å synkronisere
 synced-tabs-turn-on-sync = Slå på synkronisering
+# Context for hovering over the close tab button that will
+# send a push to the device to close said tab
+# Variables
+# $deviceName - the name of the device the user is closing a tab for
+synced-tabs-context-close-tab = Lukk fanen på { $deviceName }

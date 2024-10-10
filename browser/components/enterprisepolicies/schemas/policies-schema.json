@@ -265,7 +265,10 @@
         "ShowBlockedResult": {
           "type": "boolean"
         },
-        "DefaultAllow": {
+        "DefaultResult": {
+          "type": "number"
+        },
+        "BypassForSameTabOperations": {
           "type": "boolean"
         }
       }
@@ -423,6 +426,10 @@
     },
 
     "DisableDeveloperTools": {
+      "type": "boolean"
+    },
+
+    "DisableEncryptedClientHello": {
       "type": "boolean"
     },
 
@@ -832,6 +839,19 @@
       }
     },
 
+    "HttpAllowlist": {
+      "type": "array",
+      "strict": false,
+      "items": {
+        "type": "origin"
+      }
+    },
+
+    "HttpsOnlyMode": {
+      "type": "string",
+      "enum": ["allowed", "disallowed", "enabled", "force_enabled"]
+    },
+
     "InstallAddonsPermission": {
       "type": "object",
       "properties": {
@@ -1180,6 +1200,10 @@
       }
     },
 
+    "PostQuantumKeyAgreementEnabled": {
+      "type": "boolean"
+    },
+
     "Preferences": {
       "type": ["object", "JSON"],
       "patternProperties": {
@@ -1208,6 +1232,11 @@
 
     "PrintingEnabled": {
       "type": "boolean"
+    },
+
+    "PrivateBrowsingModeAvailability": {
+      "type": "number",
+      "enum": [0, 1, 2]
     },
 
     "PromptForDownloadLocation": {
@@ -1457,6 +1486,9 @@
           "type": "boolean"
         },
         "MoreFromMozilla": {
+          "type": "boolean"
+        },
+        "FirefoxLabs": {
           "type": "boolean"
         },
         "Locked": {

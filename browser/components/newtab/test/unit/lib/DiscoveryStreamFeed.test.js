@@ -86,6 +86,7 @@ describe("DiscoveryStreamFeed", () => {
           "discoverystream.spocs.personalized": true,
           "discoverystream.recs.personalized": true,
           "system.showSponsored": false,
+          "discoverystream.spocs.startupCache.enabled": true,
         },
       },
     });
@@ -440,8 +441,8 @@ describe("DiscoveryStreamFeed", () => {
       feed.store = createStore(combineReducers(reducers), {
         Prefs: {
           values: {
+            "discoverystream.spoc-positions": "1, 2",
             pocketConfig: {
-              spocPositions: "1, 2",
               widgetPositions: "3, 4",
             },
           },
@@ -613,7 +614,11 @@ describe("DiscoveryStreamFeed", () => {
     let fakeDiscoveryStream;
     beforeEach(() => {
       fakeDiscoveryStream = {
-        Prefs: {},
+        Prefs: {
+          values: {
+            "discoverystream.spocs.startupCache.enabled": true,
+          },
+        },
         DiscoveryStream: {
           layout: [
             { components: [{ feed: { url: "foo.com" } }] },
@@ -2755,9 +2760,7 @@ describe("DiscoveryStreamFeed", () => {
       feed.store.getState = () => ({
         Prefs: {
           values: {
-            pocketConfig: {
-              spocsCacheTimeout: 1,
-            },
+            "discoverystream.spocs.cacheTimeout": 1,
           },
         },
       });
@@ -2769,9 +2772,7 @@ describe("DiscoveryStreamFeed", () => {
       feed.store.getState = () => ({
         Prefs: {
           values: {
-            pocketConfig: {
-              spocsCacheTimeout: 31,
-            },
+            "discoverystream.spocs.cacheTimeout": 31,
           },
         },
       });
@@ -2782,9 +2783,7 @@ describe("DiscoveryStreamFeed", () => {
       feed.store.getState = () => ({
         Prefs: {
           values: {
-            pocketConfig: {
-              spocsCacheTimeout: 20,
-            },
+            "discoverystream.spocs.cacheTimeout": 20,
           },
         },
       });
@@ -3383,6 +3382,16 @@ describe("DiscoveryStreamFeed", () => {
     });
   });
 
+  describe("#onAction: TOPIC_SELECTION_MAYBE_LATER", () => {
+    it("should call topicSelectionMaybeLaterEvent", async () => {
+      sandbox.stub(feed, "topicSelectionMaybeLaterEvent").resolves();
+      await feed.onAction({
+        type: at.TOPIC_SELECTION_MAYBE_LATER,
+      });
+      assert.calledOnce(feed.topicSelectionMaybeLaterEvent);
+    });
+  });
+
   describe("#observe", () => {
     it("should call configReset on Pocket button pref change", async () => {
       sandbox.stub(feed, "configReset").returns();
@@ -3465,6 +3474,22 @@ describe("DiscoveryStreamFeed", () => {
       assert.equal(
         layout[0].components[2].feed.url,
         "https://bffApi/desktop/v1/recommendations?locale=$locale&region=$region&count=30"
+      );
+    });
+    it("should update the new feed url with pocketFeedParameters", async () => {
+      globals.set("NimbusFeatures", {
+        pocketNewtab: {
+          getVariable: sandbox.stub(),
+        },
+      });
+      global.NimbusFeatures.pocketNewtab.getVariable
+        .withArgs("pocketFeedParameters")
+        .returns("&enableRankingByRegion=1");
+      await feed.loadLayout(feed.store.dispatch);
+      const { layout } = feed.store.getState().DiscoveryStream;
+      assert.equal(
+        layout[0].components[2].feed.url,
+        "https://bffApi/desktop/v1/recommendations?locale=$locale&region=$region&count=30&enableRankingByRegion=1"
       );
     });
     it("should fetch proper data from getComponentFeed", async () => {

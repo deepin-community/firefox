@@ -47,6 +47,7 @@ const DELETION_REQUEST_PING_TYPE = "deletion-request";
 const TEST_PING_TYPE = "test-ping-type";
 
 var gClientID = null;
+var gProfileGroupID = null;
 
 ChromeUtils.defineLazyGetter(this, "DATAREPORTING_PATH", async function () {
   return PathUtils.join(PathUtils.profileDir, "datareporting");
@@ -120,6 +121,7 @@ function checkPingFormat(aPing, aType, aHasClientId, aHasEnvironment) {
 
   // Check the clientId and environment fields, as needed.
   Assert.equal("clientId" in aPing, aHasClientId);
+  Assert.equal("profileGroupId" in aPing, aHasClientId);
   Assert.equal("environment" in aPing, aHasEnvironment);
 }
 
@@ -198,12 +200,18 @@ add_task(async function test_disableDataUpload() {
   let ping = await PingServer.promiseNextPing();
   checkPingFormat(ping, TEST_PING_TYPE, true, false);
   let firstClientId = ping.clientId;
+  let firstProfileGroupId = ping.profileGroupId;
 
   Assert.ok(firstClientId, "Test ping needs a client ID");
   Assert.notEqual(
     TelemetryUtils.knownClientID,
     firstClientId,
     "Client ID should be valid and random"
+  );
+  Assert.notEqual(
+    TelemetryUtils.knownProfileGroupID,
+    firstProfileGroupId,
+    "Profile group ID should be valid and random"
   );
 
   // The next step should trigger an event, watch for it.
@@ -255,6 +263,13 @@ add_task(async function test_disableDataUpload() {
     firstClientId,
     secondClientId,
     "The client id must have changed"
+  );
+  let secondProfileGroupId =
+    TelemetryController.getCurrentPingData().profileGroupId;
+  Assert.notEqual(
+    firstProfileGroupId,
+    secondProfileGroupId,
+    "The profile group id must have changed"
   );
   // Simulate a failure in sending the deletion-request ping by disabling the HTTP server.
   await PingServer.stop();
@@ -321,6 +336,11 @@ add_task(async function test_disableDataUpload() {
     ping.clientId,
     "Client ID should be different from the previous value"
   );
+  Assert.notEqual(
+    firstProfileGroupId,
+    ping.profileGroupId,
+    "The profile group ID should change"
+  );
 
   // The "deletion-request" ping should come next, as it was pending.
   ping = await PingServer.promiseNextPing();
@@ -329,6 +349,11 @@ add_task(async function test_disableDataUpload() {
     secondClientId,
     ping.clientId,
     "Deletion must be requested for correct client id"
+  );
+  Assert.equal(
+    secondProfileGroupId,
+    ping.profileGroupId,
+    "Deletion must be requested for correct profile group id"
   );
 
   // Wait on ping activity to settle before moving on to the next test. If we were
@@ -369,12 +394,18 @@ add_task(async function test_pingHasClientId() {
   // don't unintentionally trigger its loading. We'll still need the client ID
   // to see if the ping looks sane.
   gClientID = await ClientID.getClientID();
+  gProfileGroupID = await ClientID.getProfileGroupID();
 
   checkPingFormat(ping, TEST_PING_TYPE, true, false);
   Assert.equal(
     ping.clientId,
     gClientID,
     "The correct clientId must be reported."
+  );
+  Assert.equal(
+    ping.profileGroupId,
+    gProfileGroupID,
+    "The correct profileGroupId must be reported."
   );
 
   // Shutdown Telemetry so we can safely restart it.
@@ -397,6 +428,11 @@ add_task(async function test_pingHasClientId() {
     gClientID,
     "Telemetry should report the correct cached clientId."
   );
+  Assert.equal(
+    ping.profileGroupId,
+    gProfileGroupID,
+    "Telemetry should report the correct cached profileGroupId."
+  );
 
   // Check that sending a ping without relying on the cache, after the
   // initialization, still works.
@@ -411,6 +447,11 @@ add_task(async function test_pingHasClientId() {
     ping.clientId,
     gClientID,
     "The correct clientId must be reported."
+  );
+  Assert.equal(
+    ping.profileGroupId,
+    gProfileGroupID,
+    "The correct profileGroupId must be reported."
   );
   Assert.equal(
     h.snapshot().sum,
@@ -442,6 +483,11 @@ add_task(async function test_pingHasEnvironmentAndClientId() {
     ping.clientId,
     gClientID,
     "The correct clientId must be reported."
+  );
+  Assert.equal(
+    ping.profileGroupId,
+    gProfileGroupID,
+    "The correct profileGroupId must be reported."
   );
 });
 
@@ -704,6 +750,7 @@ add_task(async function test_sendNewProfile() {
     await TelemetryController.testShutdown();
     await TelemetryStorage.testClearPendingPings();
     PingServer.clearRequests();
+    await TelemetryController.testReset();
   };
   await resetTest();
 
@@ -721,6 +768,12 @@ add_task(async function test_sendNewProfile() {
   await TelemetryController.testReset();
   let req = await nextReq;
   let ping = decodeRequestPayload(req);
+  if (ping.type == "event") {
+    // We might have received an event ping if the new-profile ping was sent
+    // after the event ping. In that case, check again for the new-profile ping.
+    req = await PingServer.promiseNextRequest();
+    ping = decodeRequestPayload(req);
+  }
   checkPingFormat(ping, NEWPROFILE_PING_TYPE, true, true);
   Assert.equal(
     ping.payload.reason,
@@ -731,6 +784,30 @@ add_task(async function test_sendNewProfile() {
     "parent" in ping.payload.processes,
     "The new-profile ping generated after startup must have processes.parent data"
   );
+
+  if (
+    AppConstants.platform == "win" &&
+    AppConstants.MOZ_APP_NAME !== "thunderbird"
+  ) {
+    Assert.ok(
+      "scalars" in ping.payload.processes.parent,
+      "The new-profile ping should have a field for scalars"
+    );
+
+    Assert.ok(
+      "installation.firstSeen.failure_reason" in
+        ping.payload.processes.parent.scalars,
+      "The new-profile ping should have an installation.firstSeen.failure_reason scalar"
+    );
+
+    Assert.equal(
+      ping.payload.processes.parent.scalars[
+        "installation.firstSeen.failure_reason"
+      ],
+      "NotFoundError",
+      "The new-profile ping should return NotFoundError as we don't have a telemetry state file"
+    );
+  }
 
   // Check that is not sent with the pingsender during startup.
   Assert.throws(
@@ -749,6 +826,12 @@ add_task(async function test_sendNewProfile() {
   await TelemetryController.testShutdown();
   req = await nextReq;
   ping = decodeRequestPayload(req);
+  if (ping.type == "event") {
+    // We might have received an event ping if the new-profile ping was sent
+    // after the event ping. In that case, check again for the new-profile ping.
+    req = await PingServer.promiseNextRequest();
+    ping = decodeRequestPayload(req);
+  }
   checkPingFormat(ping, NEWPROFILE_PING_TYPE, true, true);
   Assert.equal(
     ping.payload.reason,
@@ -759,6 +842,30 @@ add_task(async function test_sendNewProfile() {
     "parent" in ping.payload.processes,
     "The new-profile ping generated at shutdown must have processes.parent data"
   );
+
+  if (
+    AppConstants.platform == "win" &&
+    AppConstants.MOZ_APP_NAME !== "thunderbird"
+  ) {
+    Assert.ok(
+      "scalars" in ping.payload.processes.parent,
+      "The new-profile ping should have a field for scalars"
+    );
+
+    Assert.ok(
+      "installation.firstSeen.failure_reason" in
+        ping.payload.processes.parent.scalars,
+      "The new-profile ping should have an installation.firstSeen.failure_reason scalar"
+    );
+
+    Assert.equal(
+      ping.payload.processes.parent.scalars[
+        "installation.firstSeen.failure_reason"
+      ],
+      "NotFoundError",
+      "The new-profile ping should return NotFoundError as we don't have a telemetry state file"
+    );
+  }
 
   // Check that the new-profile ping is sent at shutdown using the pingsender.
   Assert.equal(

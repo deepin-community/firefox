@@ -57,6 +57,10 @@ category-experimental =
 pane-experimental-subtitle = Gå varsamt til verks
 pane-experimental-search-results-header = { -brand-short-name }-eksperiment: Fortset med varsemd
 pane-experimental-description2 = Endrar du avanserte konfigurasjonsinnstillingar kan det påverke yting eller sikkerheit i { -brand-short-name }.
+settings-pane-labs-title = { -firefoxlabs-brand-name }
+settings-category-labs =
+    .tooltiptext = { -firefoxlabs-brand-name }
+pane-experimental-description3 = Prøv dei eksperimentelle funksjonane våre! Dei er framleis under utvikling og vert kontinuerleg forbetra, noko som kan påverke korleis { -brand-short-name } fungerer.
 pane-experimental-reset =
     .label = Gjenopprett standard
     .accesskey = G
@@ -94,7 +98,7 @@ extension-controlling-password-saving = <img data-l10n-name="icon"/> <strong>{ $
 extension-controlling-web-notifications = <img data-l10n-name="icon"/> <strong>{ $name }</strong> kontrollerer denne innstillinga.
 # This string is shown to notify the user that Container Tabs
 # are being enabled by an extension.
-extension-controlling-privacy-containers = <img data-l10n-name="icon"/> <strong>{ $name }</strong> krev innhaldsfaner.
+extension-controlling-privacy-containers = <img data-l10n-name="icon"/> <strong>{ $name }</strong> krev behaldarfaner.
 # This string is shown to notify the user that their content blocking "All Detected Trackers"
 # preferences are being controlled by an extension.
 extension-controlling-websites-content-blocking-all-trackers = <img data-l10n-name="icon"/> <strong>{ $name }</strong> kontrollerer denne innstillinga.
@@ -170,26 +174,26 @@ show-tabs-in-taskbar =
     .label = Vis førehandsvising av faner i Windows-oppgåvelinja
     .accesskey = s
 browser-containers-enabled =
-    .label = Aktiver innhaldsfaner
+    .label = Aktiver behaldarfaner
     .accesskey = k
 browser-containers-learn-more = Les meir
 browser-containers-settings =
     .label = Innstillingar…
     .accesskey = I
-containers-disable-alert-title = Late att alle innhaldsfaner?
+containers-disable-alert-title = Late att alle behaldarfaner?
 
 ## Variables:
 ##   $tabCount (number) - Number of tabs
 
 containers-disable-alert-desc =
     { $tabCount ->
-        [one] Dersom du deaktiverer innhaldsfaner no, vil { $tabCount } innhaldsfane bli stengt. Er du sikker på at du vil deaktivere innhaldsfaner?
-       *[other] Dersom du deaktiverer innhaldsfaner no, vil { $tabCount } innhaldsfaner bli stengt. Er du sikker på at du vil deaktivere innhaldsfaner?
+        [one] Dersom du deaktiverer behaldarfaner no, vil { $tabCount } innhaldsfane bli stengt. Er du sikker på at du vil deaktivere behaldarfaner?
+       *[other] Dersom du deaktiverer behaldarfaner no, vil { $tabCount } behaldarfaner bli stengt. Er du sikker på at du vil deaktivere behaldarfaner?
     }
 containers-disable-alert-ok-button =
     { $tabCount ->
         [one] Lat att { $tabCount } innhaldsfane
-       *[other] Lat att { $tabCount } innhaldsfaner
+       *[other] Lat att { $tabCount } behaldarfaner
     }
 
 ##
@@ -205,6 +209,9 @@ containers-remove-alert-msg =
     }
 containers-remove-ok-button = Fjern denne behaldaren
 containers-remove-cancel-button = Ikkje fjern denne behaldaren
+settings-tabs-show-image-in-preview =
+    .label = Vis ei førehandsvising når du held musepeikaren over ei fane
+    .accessKey = f
 
 ## General Section - Language & Appearance
 
@@ -596,6 +603,10 @@ home-prefs-recent-activity-description = Eit utval av nylige nettstadar og innha
 home-prefs-snippets-header =
     .label = Snuttar
 home-prefs-snippets-description-new = Tips og nyheiter frå { -vendor-short-name } og { -brand-product-name }
+home-prefs-weather-header =
+    .label = Vêr
+home-prefs-weather-description = Vêrmeldinga i dag, i korte trekk
+home-prefs-weather-learn-more-link = Les meir
 # Variables:
 #   $num (number) - Number of rows displayed
 home-prefs-sections-rows-option =
@@ -673,7 +684,7 @@ search-keyword-warning-bookmark = Du har valt eit nøkkelord som allereie vert b
 
 containers-back-button2 =
     .aria-label = Tilbake til innstillingar
-containers-header = Innhaldsfaner
+containers-header = Behaldarfaner
 containers-add-button =
     .label = Legg til ny behaldar
     .accesskey = L
@@ -710,6 +721,8 @@ sync-profile-picture =
 sync-profile-picture-with-alt =
     .tooltiptext = Endre profilbilde
     .alt = Endre profilbilde
+sync-profile-picture-account-problem =
+    .alt = Kontoprofilbilde
 fxa-login-rejected-warning =
     .alt = Åtvaring
 sync-sign-out =
@@ -886,6 +899,9 @@ forms-breach-alerts =
 forms-breach-alerts-learn-more-link = Les meir
 preferences-relay-integration-checkbox =
     .label = Foreslå { -relay-brand-name } e-postalias for å beskytte e-postadressa di
+preferences-relay-integration-checkbox2 =
+    .label = Føreslå { -relay-brand-name } e-postalias for å beskytte e-postadressa di
+    .accesskey = F
 relay-integration-learn-more-link = Les meir
 # Checkbox which controls filling saved logins into fields automatically when they appear, in some cases without user interaction.
 forms-fill-logins-and-passwords =
@@ -894,12 +910,19 @@ forms-fill-logins-and-passwords =
 forms-saved-logins =
     .label = Lagre innloggingar…
     .accesskey = L
+# Checkbox which controls filling saved logins into fields automatically when they appear, in some cases without user interaction.
+forms-fill-usernames-and-passwords =
+    .label = Fyll ut brukarnamn og passord automatisk
+    .accesskey = F
 forms-saved-passwords =
     .label = Lagra passord
     .accesskey = L
 forms-primary-pw-use =
     .label = Bruk eit hovudpassord
     .accesskey = B
+# This operation requires the user to authenticate with the operating system (device sign-in)
+forms-os-reauth =
+    .label = Krev einingsinnlogging for å fylle ut og behandle passord
 forms-primary-pw-learn-more-link = Les meir
 # This string uses the former name of the Primary Password feature
 # ("Master Password" in English) so that the preferences can be found
@@ -932,14 +955,30 @@ primary-password-os-auth-dialog-message-win = Skriv inn innloggingsinformasjonen
 # notes are only valid for English. Please test in your locale.
 primary-password-os-auth-dialog-message-macosx = lag eit hovudpassord
 master-password-os-auth-dialog-caption = { -brand-full-name }
+# The macOS string is preceded by the operating system with "Firefox is trying to ".
+autofill-creditcard-os-dialog-message =
+    { PLATFORM() ->
+        [macos] endre innstillingane for betalingsmåtar
+       *[other] { -brand-short-name } prøver å endre innstillingane for betalingsmåtar. Bruk einingsinnlogginga di for å tillate dette.
+    }
+autofill-creditcard-os-auth-dialog-caption = { -brand-full-name }
 
 ## Privacy section - Autofill
 
 pane-privacy-autofill-header = Autofyll
+autofill-addresses-checkbox = Lagre og fyll ut adresser
+    .accesskey = L
 autofill-saved-addresses-button = Lagra adresser
     .accesskey = L
+autofill-payment-methods-checkbox-message = Lagre og fyll inn betalingsmåtar
+    .accesskey = L
+autofill-payment-methods-checkbox-submessage = Inkluderer kreditt- og debetkort
+    .accesskey = I
 autofill-saved-payment-methods-button = Lagra betaslingsmetodar
     .accesskey = a
+# This operation requires the user to authenticate with the operating system (device sign-in)
+autofill-reauth-payment-methods-checkbox = Krev einingsinnlogging for å fylle ut og behandle betalingsmåtar
+    .accesskey = o
 
 ## Privacy Section - History
 
@@ -995,6 +1034,7 @@ sitedata-delete-on-close =
     .label = Slett infokapslar og nettstaddata når { -brand-short-name } stenger
     .accesskey = S
 sitedata-delete-on-close-private-browsing = I permanent privat nettlesingsmodus vil infokapslar og nettstaddata alltid bli sletta når { -brand-short-name } er avslutta.
+sitedata-delete-on-close-private-browsing2 = Basert på historikkinnstillingane dine, slettar { -brand-short-name } infokapslar og nettstadsdata frå økta di når du lèt att nettlesaren.
 sitedata-allow-cookies-option =
     .label = Tillat infokapslar og nettsidedata
     .accesskey = a
@@ -1035,6 +1075,7 @@ cookie-banner-handling-description = { -brand-short-name } prøver automatisk å
 ## Privacy Section - Cookie Banner Blocking
 
 cookie-banner-blocker-header = Blokkering av infokapselbanner
+cookie-banner-blocker-description = Når ein nettstad spør om dei kan bruke infokapslar i privat nettlesingsmodus, så avviser { -brand-short-name } førespurnaden automatisk for deg. Berre på støtta nettstadar.
 cookie-banner-learn-more = Les meir
 forms-handle-cookie-banners =
     .label = Reduser infokapselbanner
@@ -1073,6 +1114,9 @@ addressbar-locbar-quickactions-option =
 addressbar-suggestions-settings = Endre innstillingar for søkjeforslag
 addressbar-locbar-showrecentsearches-option =
     .label = Vis nylege søk
+    .accesskey = V
+addressbar-locbar-showtrendingsuggestions-option =
+    .label = Vi populære søkjeforslag
     .accesskey = V
 addressbar-quickactions-learn-more = Les meir
 
@@ -1118,11 +1162,11 @@ content-blocking-unvisited-cookies = Infokapslar frå ikkje-besøkte nettsider
 content-blocking-all-windows-tracking-content = Sporingsinnhald i alle vindauge
 content-blocking-all-cross-site-cookies = Alle infokapslar på tvers av nettstadar
 content-blocking-cryptominers = Kryptoutvinnarar
-content-blocking-fingerprinters = Fingerprinters
+content-blocking-fingerprinters = Nettlesaravtrykk
 # The known fingerprinters are those that are known for collecting browser fingerprints from user devices. And
 # the suspected fingerprinters are those that we are uncertain about browser fingerprinting activities. But they could
 # possibly acquire browser fingerprints because of the behavior on accessing APIs that expose browser fingerprints.
-content-blocking-known-and-suspected-fingerprinters = Kjende og mistenkte nettlesaravtrykksporarar
+content-blocking-known-and-suspected-fingerprinters = Kjende og mistenkte nettlesaravtrykk
 
 # The tcp-rollout strings are no longer used for the rollout but for tcp-by-default in the standard section
 
@@ -1166,12 +1210,12 @@ content-blocking-fingerprinters-label =
 #
 # The known fingerprinters are those that are known for collecting browser fingerprints from user devices.
 content-blocking-known-fingerprinters-label =
-    .label = Kjende nettlesaravtrykksporarar
+    .label = Kjende nettlesaravtrykk
     .accesskey = K
 # The suspected fingerprinters are those that we are uncertain about browser fingerprinting activities. But they could
 # possibly acquire browser fingerprints because of the behavior on accessing APIs that expose browser fingerprints.
 content-blocking-suspected-fingerprinters-label =
-    .label = Mistenkte nettlesaravtrykksporarar
+    .label = Mistenkte nettlesaravtrykk
     .accesskey = M
 
 ## Privacy Section - Tracking
@@ -1265,6 +1309,14 @@ privacy-segmentation-radio-off =
 privacy-segmentation-radio-on =
     .label = Vis detaljert informasjon
 
+## Privacy Section - Website Advertising Preferences
+
+website-advertising-header = Annonseinnstillingar for nettstad
+website-advertising-private-attribution =
+    .label = Tillat nettsteadar å utføre personvernbevarande annonsemåling
+    .accesskey = a
+website-advertising-private-attribution-description = Dette hjelper nettstadar med å forstå korleis annonsane deira fungerer utan å samle inn data om deg.
+
 ## Privacy Section - Security
 ##
 ## It is important that wording follows the guidelines outlined on this page:
@@ -1308,18 +1360,26 @@ space-alert-under-5gb-message2 = <strong>{ -brand-short-name } er i ferd med å 
 
 httpsonly-header = Berre HTTPS-modus
 httpsonly-description = HTTPS gir eit trygt, kryptert samband mellom { -brand-short-name } og nettstadane du besøkjer. Dei fleste nettstadar støttar HTTPS, og dersom berre HTTPS-modus er slått på, vil { -brand-short-name } oppgradere alle tilkoplingar til HTTPS.
+httpsonly-description2 = { -brand-short-name } opprettar sikre og krypterte tilkoplingar til nettstadar du besøkjer. { -brand-short-name } vil åtvare deg dersom ei tilkopling ikkje er sikker når Berre-HTTPS er på.
 httpsonly-learn-more = Les meir
 httpsonly-radio-enabled =
     .label = Slå på berre HTTPS-modus i alle vindauge
+httpsonly-radio-enabled2 =
+    .label = Bruk berre HTTPS i alle vindauge
 httpsonly-radio-enabled-pbm =
     .label = Slå på berre HTTPS-modus kun i private vindauge
+httpsonly-radio-enabled-pbm2 =
+    .label = Bruk berre HTTPS i private vindauge
 httpsonly-radio-disabled =
     .label = Ikkje slå på berre HTTPS-modus
+httpsonly-radio-disabled2 =
+    .label = Prøv HTTPS først, bmen tillat tilkoplingar som ikkje er trygge
 
 ## DoH Section
 
 preferences-doh-header = DNS over HTTPS
 preferences-doh-description = Domain Name System (DNS) over HTTPS sender førespurnaden din om eit domennamn via ei kryptert tilkopling, lagar ein sikker DNS og gjer det vanskelegare for andre å sjå kva for nettstad du er i ferd med å besøkje.
+preferences-doh-description2 = Domain Name System (DNS) over HTTPS sender førespurnaden din om eit domenenamn gjennom ei kryptert tilkopling, og gir eit sikkert DNS og gjer det vanskelegare for andre å sjå kva for nettstad du er i ferd med å besøke.
 # Variables:
 #   $status (string) - The status of the DoH connection
 preferences-doh-status = Status: { $status }

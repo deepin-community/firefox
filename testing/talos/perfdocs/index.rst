@@ -125,7 +125,7 @@ At a glance
 -  Tests are defined in
    `testing/talos/talos/test.py <https://searchfox.org/mozilla-central/source/testing/talos/talos/test.py>`__
 -  Treeherder abbreviations are defined in
-   `taskcluster/ci/test/talos.yml <https://searchfox.org/mozilla-central/source/taskcluster/ci/test/talos.yml>`__
+   `taskcluster/kinds/test/talos.yml <https://searchfox.org/mozilla-central/source/taskcluster/kinds/test/talos.yml>`__
 -  Suites are defined for production in
    `testing/talos/talos.json <https://searchfox.org/mozilla-central/source/testing/talos/talos.json>`__
 
@@ -133,7 +133,7 @@ Test lifecycle
 **************
 
 -  Taskcluster schedules `talos
-   jobs <https://searchfox.org/mozilla-central/source/taskcluster/ci/test/talos.yml>`__
+   jobs <https://searchfox.org/mozilla-central/source/taskcluster/kinds/test/talos.yml>`__
 -  Taskcluster runs a Talos job on a hardware machine when one is
    available - this is bootstrapped by
    `mozharness <https://searchfox.org/mozilla-central/source/testing/mozharness/mozharness/mozilla/testing/talos.py>`__
@@ -409,28 +409,6 @@ every 20 seconds. This metric is collected on linux only.
 
 Cpu usage tracked during tp5 test runs. This metric is sampled every 20
 seconds. This metric is collected on windows only.
-
-Responsiveness
---------------
-
-contact: :jimm, :overholt
-
-Measures the delay for the event loop to process a `tracer
-event <https://wiki.mozilla.org/Performance/Snappy#Current_Infrastructure>`__.
-For more details, see `bug
-631571 <https://bugzilla.mozilla.org/show_bug.cgi?id=631571>`__.
-
-The score on this benchmark is proportional to the sum of squares of all
-event delays that exceed a 20ms threshold. Lower is better.
-
-We collect 8000+ data points from the browser during the test and apply
-`this
-formula <https://dxr.mozilla.org/mozilla-central/source/testing/talos/talos/output.py#l95>`__
-to the results:
-
-.. code-block:: python
-
-   return sum([float(x)*float(x) / 1000000.0 for x in val_list])
 
 tpaint
 ======

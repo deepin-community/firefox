@@ -26,7 +26,7 @@ interface nsIDOMWindowUtils;
 interface nsIPrintSettings;
 
 // http://www.whatwg.org/specs/web-apps/current-work/
-[Global, LegacyUnenumerableNamedProperties, NeedResolve,
+[Global=Window, LegacyUnenumerableNamedProperties, NeedResolve,
  Exposed=Window,
  InstrumentedProps=(AbsoluteOrientationSensor,
                     Accelerometer,
@@ -204,6 +204,7 @@ interface nsIPrintSettings;
   [PutForwards=href, LegacyUnforgeable, CrossOriginReadable,
    CrossOriginWritable] readonly attribute Location location;
   [Throws] readonly attribute History history;
+  [Func="Navigation::IsAPIEnabled"] readonly attribute Navigation navigation;
   readonly attribute CustomElementRegistry customElements;
   [Replaceable, Throws] readonly attribute BarProp locationbar;
   [Replaceable, Throws] readonly attribute BarProp menubar;
@@ -217,7 +218,7 @@ interface nsIPrintSettings;
   [Throws] undefined stop();
   [Throws, CrossOriginCallable, NeedsCallerType] undefined focus();
   [Throws, CrossOriginCallable, NeedsCallerType] undefined blur();
-  [Replaceable, Pref="dom.window.event.enabled"] readonly attribute (Event or undefined) event;
+  [Replaceable] readonly attribute (Event or undefined) event;
 
   // other browsing contexts
   [Replaceable, Throws, CrossOriginReadable] readonly attribute WindowProxy frames;
@@ -234,7 +235,7 @@ interface nsIPrintSettings;
 
   // the user agent
   readonly attribute Navigator navigator;
-  [Pref="dom.window.clientinformation.enabled", BinaryName="Navigator"]
+  [Replaceable, Pref="dom.window.clientinformation.enabled", BinaryName="Navigator"]
   readonly attribute Navigator clientInformation;
 
   [Replaceable] readonly attribute External external;

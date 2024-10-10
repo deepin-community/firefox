@@ -159,7 +159,7 @@ webrtc-allow-share-screen = { $origin } dowóliś, se wašu wobazowku woglědaś
 # another audio output connection.
 webrtc-allow-share-speaker = { $origin } dowóliś, druhe awdiowudawańske rědy wužywaś?
 webrtc-allow-share-camera-and-microphone = { $origin } dowóliś, wašu kameru a waš mikrofon wužywaś?
-webrtc-allow-share-camera-and-audio-capture = Cośo { $origin } dowóliś, swóju kameru wužywaś a na awdio toś togo rejtarka słuchaś?
+webrtc-allow-share-camera-and-audio-capture = Cośo { $origin } dowóliś, swóju kameru wužywaś a na awdio toś togo rejtarika słuchaś?
 webrtc-allow-share-screen-and-microphone = Cośo { $origin } dowóliś, swój mikrofon wužywaś a swóju wobrazowku wiźeś?
 webrtc-allow-share-screen-and-audio-capture = Cośo { $origin } dowóliś, na awdio toś togo rejtarika słuchaś a swóju wobrazowku wiźeś?
 
@@ -173,7 +173,7 @@ webrtc-allow-share-screen-with-file = Cośo toś tej lokalnej dataji dowóliś, 
 # another audio output connection.
 webrtc-allow-share-speaker-with-file = Cośo toś tej lokalnej dataji dowóliś, druge głosniki wužywaś?
 webrtc-allow-share-camera-and-microphone-with-file = Cośo toś tej lokalnej dataji dowóliś, wašu kameru a waš mikrofon wužywaś?
-webrtc-allow-share-camera-and-audio-capture-with-file = Cośo toś tej lokalnej dataji dowóliś, swóju kameru wužywaś a na awdio toś togo rejtarka słuchaś?
+webrtc-allow-share-camera-and-audio-capture-with-file = Cośo toś tej lokalnej dataji dowóliś, swóju kameru wužywaś a na awdio toś togo rejtaroka słuchaś?
 webrtc-allow-share-screen-and-microphone-with-file = Cośo toś tej lokalnej dataji dowóliś, swój mikrofon wužywaś a swóju wobrazowku wiźeś?
 webrtc-allow-share-screen-and-audio-capture-with-file = Cośo toś tej lokalnej dataji dowóliś, na awdio toś togo rejtarika słuchaś a swóju wobrazowku wiźeś?
 
@@ -233,6 +233,9 @@ webrtc-action-not-now =
 ##
 
 webrtc-remember-allow-checkbox = Toś ten rozsud se spomnjeś
+webrtc-remember-allow-checkbox-camera = Se za wšykne kamery spomnjeś
+webrtc-remember-allow-checkbox-microphone = Se za wšykne mikrofony spomnjeś
+webrtc-remember-allow-checkbox-camera-and-microphone = Se za wšykne kamery a mikrofony spomnjeś
 webrtc-mute-notifications-checkbox = Powěźeńki websedła pśi źělenju pódušyś
 webrtc-reason-for-no-permanent-allow-screen = { -brand-short-name } njamóžo trajny pśistup k wašej wobrazowce dopušćiś.
 webrtc-reason-for-no-permanent-allow-audio = { -brand-short-name } njamóžo trajny pśistup k awdio wašogo rejtarika dowóliś mimo, aby se pšašał, kótary ma se źěliś.

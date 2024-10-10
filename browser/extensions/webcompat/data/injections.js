@@ -233,20 +233,6 @@ const AVAILABLE_INJECTIONS = [
     },
   },
   {
-    id: "bug1712833",
-    platform: "all",
-    domain: "buskocchi.desuca.co.jp",
-    bug: "1712833",
-    contentScripts: {
-      matches: ["*://buskocchi.desuca.co.jp/*"],
-      css: [
-        {
-          file: "injections/css/bug1712833-buskocchi.desuca.co.jp-fix-map-height.css",
-        },
-      ],
-    },
-  },
-  {
     id: "bug1722955",
     platform: "android",
     domain: "frontgate.com",
@@ -304,6 +290,8 @@ const AVAILABLE_INJECTIONS = [
         "*://www.facebook.com/*", // Bug 1739489
         "*://twitter.com/*", // Bug 1776229
         "*://mobile.twitter.com/*", // Bug 1776229
+        "*://x.com/*", // Bug 1776229
+        "*://mobile.x.com/*", // Bug 1776229
         "*://*.reddit.com/*", // Bug 1829755
       ],
       js: [
@@ -511,7 +499,6 @@ const AVAILABLE_INJECTIONS = [
         "*://*.fieldstoneamherst.com/*", // #132974
         "*://*.gslbriarcreek.com/*", // #126401
         "*://*.hpixeniatrails.com/*", // #131703
-        "*://*.liveatlasathens.com/*", // #111189
         "*://*.liveobserverpark.com/*", // #105244
         "*://*.liveupark.com/*", // #121083
         "*://*.midwayurban.com/*", // #116523
@@ -535,6 +522,20 @@ const AVAILABLE_INJECTIONS = [
     platform: "linux",
     domain: "www.samsung.com",
     bug: "1799968",
+    contentScripts: {
+      matches: ["*://www.samsung.com/*"],
+      js: [
+        {
+          file: "injections/js/bug1799968-www.samsung.com-appVersion-linux-fix.js",
+        },
+      ],
+    },
+  },
+  {
+    id: "bug1860417",
+    platform: "android",
+    domain: "www.samsung.com",
+    bug: "1860417",
     contentScripts: {
       matches: ["*://www.samsung.com/*"],
       js: [
@@ -585,6 +586,7 @@ const AVAILABLE_INJECTIONS = [
         "*://drafthouse.com/*", // 126385
         "*://*.lafoodbank.org/*", // 127006
         "*://rutamayacoffee.com/*", // 129353
+        "*://ottoandspike.com.au/*", // bugzilla 1644602
       ],
       js: [
         {
@@ -639,7 +641,7 @@ const AVAILABLE_INJECTIONS = [
     },
   },
   {
-    id: "bug1827678-webc77727",
+    id: "bug1827678-webc77727-js",
     platform: "android",
     domain: "free4talk.com",
     bug: "1827678",
@@ -690,20 +692,6 @@ const AVAILABLE_INJECTIONS = [
       css: [
         {
           file: "injections/css/bug1829949-tomshardware.com-scrollbar-width.css",
-        },
-      ],
-    },
-  },
-  {
-    id: "bug1830747",
-    platform: "android",
-    domain: "my.babbel.com",
-    bug: "1830747",
-    contentScripts: {
-      matches: ["*://my.babbel.com/*"],
-      css: [
-        {
-          file: "injections/css/bug1830747-babbel.com-page-height.css",
         },
       ],
     },
@@ -923,20 +911,6 @@ const AVAILABLE_INJECTIONS = [
     },
   },
   {
-    id: "bug1849019",
-    platform: "android",
-    domain: "axa-assistance.pl",
-    bug: "1849019",
-    contentScripts: {
-      matches: ["*://*.axa-assistance.pl/*"],
-      css: [
-        {
-          file: "injections/css/bug1849019-axa-assistance.pl-datepicker-fix.css",
-        },
-      ],
-    },
-  },
-  {
     id: "bug1849058",
     platform: "all",
     domain: "nicochannel.jp",
@@ -1020,24 +994,11 @@ const AVAILABLE_INJECTIONS = [
       matches: [
         "*://www.tvmovie.de/tv/fernsehprogramm",
         "*://www.tvmovie.de/tv/fernsehprogramm*",
+        "*://www.goodcarbadcar.net/*",
       ],
       css: [
         {
           file: "injections/css/bug1868345-tvmovie.de-scroll-fix.css",
-        },
-      ],
-    },
-  },
-  {
-    id: "bug1877346",
-    platform: "android",
-    domain: "offerup.com",
-    bug: "1877346",
-    contentScripts: {
-      matches: ["*://offerup.com/*"],
-      css: [
-        {
-          file: "injections/css/bug1877346-offerup.com-infinite-scroll-fix.css",
         },
       ],
     },
@@ -1052,6 +1013,178 @@ const AVAILABLE_INJECTIONS = [
       css: [
         {
           file: "injections/css/bug1884842-foodora.cz-height-fix.css",
+        },
+      ],
+    },
+  },
+  {
+    id: "bug1897120",
+    platform: "desktop",
+    domain: "turn.js breakage",
+    bug: "1897120",
+    contentScripts: {
+      matches: ["*://flipbook.se.com/*", "*://*.flipbookpdf.net/*"],
+      js: [
+        {
+          file: "injections/js/bug1897120-turnjs-zoom-fix.js",
+        },
+      ],
+      allFrames: true,
+    },
+  },
+  {
+    id: "1896383",
+    platform: "all",
+    domain: "unimarc.cl",
+    bug: "1896383",
+    contentScripts: {
+      matches: ["*://*.unimarc.cl/*"],
+      js: [
+        {
+          file: "injections/js/bug1896383-error-capturestacktrace-shim.js",
+        },
+      ],
+    },
+  },
+  {
+    id: "bug1889326",
+    platform: "desktop",
+    domain: "Office 365 email handling prompt",
+    bug: "1889326",
+    contentScripts: {
+      matches: [
+        "*://*.live.com/*",
+        "*://*.office.com/*",
+        "*://*.office365.com/*",
+        "*://*.office365.us/*",
+        "*://*.outlook.cn/*",
+        "*://*.outlook.com/*",
+        "*://*.sharepoint.com/*",
+      ],
+      js: [
+        {
+          file: "injections/js/bug1889326-office365-email-handling-prompt-autohide.js",
+        },
+      ],
+      allFrames: true,
+    },
+  },
+  {
+    id: "bug1881922",
+    platform: "all",
+    domain: "helpdeskgeek.com",
+    bug: "1881922",
+    contentScripts: {
+      matches: ["*://helpdeskgeek.com/*"],
+      js: [
+        {
+          file: "injections/js/bug1881922-disable-legacy-mutation-events.js",
+        },
+      ],
+    },
+  },
+  {
+    id: "bug1901780",
+    platform: "all",
+    domain: "vanbreda-health.be",
+    bug: "1901780",
+    contentScripts: {
+      matches: ["*://www.vanbreda-health.be/*"],
+      js: [
+        {
+          file: "injections/js/bug1881922-disable-legacy-mutation-events.js",
+        },
+      ],
+    },
+  },
+  {
+    id: "bug1896571",
+    platform: "all",
+    domain: "gracobaby.ca",
+    bug: "1896571",
+    contentScripts: {
+      matches: ["*://www.gracobaby.ca/*"],
+      css: [
+        {
+          file: "injections/css/bug1896571-gracobaby.ca-unlock-scrolling.css",
+        },
+      ],
+    },
+  },
+  {
+    id: "bug1895994",
+    platform: "android",
+    domain: "www.softrans.ro",
+    bug: "1895994",
+    contentScripts: {
+      matches: ["*://*.softrans.ro/*"],
+      css: [
+        {
+          file: "injections/css/bug1895994-softtrans.ro-unlock-scrolling.css",
+        },
+      ],
+    },
+  },
+  {
+    id: "bug1898952",
+    platform: "desktop",
+    domain: "digits.t-mobile.com",
+    bug: "1898952",
+    contentScripts: {
+      matches: ["*://digits.t-mobile.com/*"],
+      js: [
+        {
+          file: "injections/js/bug1898952-digits.t-mobile.com.js",
+        },
+      ],
+    },
+  },
+  {
+    id: "bug1815733",
+    platform: "desktop",
+    domain: "Office 365 Outlook locations",
+    bug: "1815733",
+    contentScripts: {
+      matches: [
+        "*://outlook.live.com/*",
+        "*://outlook.office.com/*",
+        "*://outlook.office365.com/*",
+        "*://outlook.office365.us/*",
+        "*://*.outlook.cn/*",
+        "*://*.outlook.com/*",
+      ],
+      js: [
+        {
+          file: "injections/js/bug1815733-outlook365-clipboard-read-noop.js",
+        },
+      ],
+      allFrames: true,
+    },
+  },
+  {
+    id: "bug1899937",
+    platform: "all",
+    domain: "plus.nhk.jp",
+    bug: "1899937",
+    contentScripts: {
+      matches: ["*://plus.nhk.jp/*"],
+      js: [
+        {
+          file: "injections/js/bug1899937-plus.nhk.jp-request-picture-in-picture.js",
+        },
+      ],
+    },
+  },
+  {
+    id: "bug1905278",
+    platform: "all",
+    domain: "personalizedplates.revenue.tn.gov",
+    bug: "1905278",
+    contentScripts: {
+      matches: ["*://personalizedplates.revenue.tn.gov/*"],
+      css: [
+        {
+          file: "injections/css/bug1905278-personalizedplates.revenue.tn.gov-pointer-events.css",
         },
       ],
     },

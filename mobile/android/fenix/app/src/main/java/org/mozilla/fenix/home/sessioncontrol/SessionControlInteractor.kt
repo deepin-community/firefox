@@ -11,14 +11,14 @@ import mozilla.components.service.nimbus.messaging.Message
 import mozilla.components.service.pocket.PocketStory
 import org.mozilla.fenix.browser.browsingmode.BrowsingMode
 import org.mozilla.fenix.components.appstate.AppState
+import org.mozilla.fenix.home.bookmarks.Bookmark
+import org.mozilla.fenix.home.bookmarks.controller.BookmarksController
+import org.mozilla.fenix.home.bookmarks.interactor.BookmarksInteractor
 import org.mozilla.fenix.home.pocket.PocketRecommendedStoriesCategory
 import org.mozilla.fenix.home.pocket.PocketStoriesController
 import org.mozilla.fenix.home.pocket.PocketStoriesInteractor
 import org.mozilla.fenix.home.privatebrowsing.controller.PrivateBrowsingController
 import org.mozilla.fenix.home.privatebrowsing.interactor.PrivateBrowsingInteractor
-import org.mozilla.fenix.home.recentbookmarks.RecentBookmark
-import org.mozilla.fenix.home.recentbookmarks.controller.RecentBookmarksController
-import org.mozilla.fenix.home.recentbookmarks.interactor.RecentBookmarksInteractor
 import org.mozilla.fenix.home.recentsyncedtabs.RecentSyncedTab
 import org.mozilla.fenix.home.recentsyncedtabs.controller.RecentSyncedTabController
 import org.mozilla.fenix.home.recentsyncedtabs.interactor.RecentSyncedTabInteractor
@@ -31,7 +31,6 @@ import org.mozilla.fenix.home.recentvisits.controller.RecentVisitsController
 import org.mozilla.fenix.home.recentvisits.interactor.RecentVisitsInteractor
 import org.mozilla.fenix.home.toolbar.ToolbarController
 import org.mozilla.fenix.home.toolbar.ToolbarInteractor
-import org.mozilla.fenix.search.ExtraAction
 import org.mozilla.fenix.search.toolbar.SearchSelectorController
 import org.mozilla.fenix.search.toolbar.SearchSelectorInteractor
 import org.mozilla.fenix.search.toolbar.SearchSelectorMenu
@@ -150,11 +149,11 @@ interface TopSiteInteractor {
     fun onOpenInPrivateTabClicked(topSite: TopSite)
 
     /**
-     * Opens a dialog to rename the given top site. Called when an user clicks on the "Rename" top site menu item.
+     * Opens a dialog to edit the given top site. Called when an user clicks on the "Edit" top site menu item.
      *
-     * @param topSite The top site that will be renamed.
+     * @param topSite The top site that will be edited.
      */
-    fun onRenameTopSiteClicked(topSite: TopSite)
+    fun onEditTopSiteClicked(topSite: TopSite)
 
     /**
      * Removes the given top site. Called when an user clicks on the "Remove" top site menu item.
@@ -229,7 +228,7 @@ class SessionControlInteractor(
     private val controller: SessionControlController,
     private val recentTabController: RecentTabController,
     private val recentSyncedTabController: RecentSyncedTabController,
-    private val recentBookmarksController: RecentBookmarksController,
+    private val bookmarksController: BookmarksController,
     private val recentVisitsController: RecentVisitsController,
     private val pocketStoriesController: PocketStoriesController,
     private val privateBrowsingController: PrivateBrowsingController,
@@ -242,7 +241,7 @@ class SessionControlInteractor(
     MessageCardInteractor,
     RecentTabInteractor,
     RecentSyncedTabInteractor,
-    RecentBookmarksInteractor,
+    BookmarksInteractor,
     RecentVisitsInteractor,
     CustomizeHomeIteractor,
     PocketStoriesInteractor,
@@ -278,8 +277,8 @@ class SessionControlInteractor(
         controller.handleOpenInPrivateTabClicked(topSite)
     }
 
-    override fun onRenameTopSiteClicked(topSite: TopSite) {
-        controller.handleRenameTopSiteClicked(topSite)
+    override fun onEditTopSiteClicked(topSite: TopSite) {
+        controller.handleEditTopSiteClicked(topSite)
     }
 
     override fun onRemoveTopSiteClicked(topSite: TopSite) {
@@ -334,8 +333,8 @@ class SessionControlInteractor(
         toolbarController.handlePaste(clipboardText)
     }
 
-    override fun onNavigateSearch(extraAction: ExtraAction) {
-        toolbarController.handleNavigateSearch(extraAction)
+    override fun onNavigateSearch() {
+        toolbarController.handleNavigateSearch()
     }
 
     override fun onRemoveCollectionsPlaceholder() {
@@ -366,16 +365,16 @@ class SessionControlInteractor(
         recentSyncedTabController.handleRecentSyncedTabRemoved(tab)
     }
 
-    override fun onRecentBookmarkClicked(bookmark: RecentBookmark) {
-        recentBookmarksController.handleBookmarkClicked(bookmark)
+    override fun onBookmarkClicked(bookmark: Bookmark) {
+        bookmarksController.handleBookmarkClicked(bookmark)
     }
 
     override fun onShowAllBookmarksClicked() {
-        recentBookmarksController.handleShowAllBookmarksClicked()
+        bookmarksController.handleShowAllBookmarksClicked()
     }
 
-    override fun onRecentBookmarkRemoved(bookmark: RecentBookmark) {
-        recentBookmarksController.handleBookmarkRemoved(bookmark)
+    override fun onBookmarkRemoved(bookmark: Bookmark) {
+        bookmarksController.handleBookmarkRemoved(bookmark)
     }
 
     override fun onHistoryShowAllClicked() {

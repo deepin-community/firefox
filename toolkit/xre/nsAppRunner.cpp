@@ -40,6 +40,7 @@
 #include "mozilla/glean/GleanPings.h"
 #include "mozilla/widget/TextRecognition.h"
 #include "BaseProfiler.h"
+#include "mozJSModuleLoader.h"
 
 #include "nsAppRunner.h"
 #include "mozilla/XREAppData.h"
@@ -49,10 +50,6 @@
 #  include "nsUpdateSyncManager.h"
 #endif
 #include "ProfileReset.h"
-
-#ifdef MOZ_INSTRUMENT_EVENT_LOOP
-#  include "EventTracer.h"
-#endif
 
 #ifdef XP_MACOSX
 #  include "nsVersionComparator.h"
@@ -267,6 +264,9 @@
 #ifdef MOZ_WIDGET_GTK
 #  include "nsAppShell.h"
 #endif
+#ifdef MOZ_ENABLE_DBUS
+#  include "DBusService.h"
+#endif
 
 extern uint32_t gRestartMode;
 extern void InstallSignalHandlers(const char* ProgramName);
@@ -313,8 +313,7 @@ extern const char gToolkitBuildID[];
 
 static nsIProfileLock* gProfileLock;
 #if defined(MOZ_HAS_REMOTE)
-static nsRemoteService* gRemoteService;
-bool gRestartWithoutRemote = false;
+static RefPtr<nsRemoteService> gRemoteService;
 #endif
 
 int gRestartArgc;
@@ -496,7 +495,10 @@ static MOZ_FORMAT_PRINTF(2, 3) void Output(bool isError, const char* fmt, ...) {
     MultiByteToWideChar(CP_ACP, 0, msg.get(), -1, wide_msg,
                         sizeof(wide_msg) / sizeof(wchar_t));
 
-    MessageBoxW(nullptr, wide_msg, L"XULRunner", flags);
+    wchar_t wide_caption[128];
+    MultiByteToWideChar(CP_ACP, 0, gAppData ? gAppData->name : "XULRunner", -1,
+                        wide_caption, sizeof(wide_caption) / sizeof(wchar_t));
+    MessageBoxW(nullptr, wide_msg, wide_caption, flags);
   }
 #elif defined(MOZ_WIDGET_ANDROID)
   SmprintfPointer msg = mozilla::Vsmprintf(fmt, ap);
@@ -567,13 +569,17 @@ bool BrowserTabsRemoteAutostart() {
   gBrowserTabsRemoteAutostart = true;
   E10sStatus status = kE10sEnabledByDefault;
 
-  // We use "are non-local connections disabled" as a proxy for
-  // "are we running some kind of automated test". It would be nicer to use
-  // xpc::IsInAutomation(), but that depends on some prefs being set, which
-  // they are not in (at least) gtests (where we can't) and xpcshell.
-  // Long-term, hopefully we can make all tests e10s-friendly,
-  // then we could remove this automation-only env variable.
-  if (gBrowserTabsRemoteAutostart && xpc::AreNonLocalConnectionsDisabled()) {
+// We are checking to ensure that either MOZILLA_OFFICIAL is undefined or that
+// xpc::AreNonLocalConnectionsDisabled() is true. If either check matches,
+// we move on to check the MOZ_FORCE_DISABLE_E10S environment variable which
+// must equal "1" to proceed with disabling e10s.
+#if defined(MOZILLA_OFFICIAL)
+  bool allowDisablingE10s = xpc::AreNonLocalConnectionsDisabled();
+#else
+  bool allowDisablingE10s = true;
+#endif
+
+  if (gBrowserTabsRemoteAutostart && allowDisablingE10s) {
     const char* forceDisable = PR_GetEnv("MOZ_FORCE_DISABLE_E10S");
     if (forceDisable && !strcmp(forceDisable, "1")) {
       gBrowserTabsRemoteAutostart = false;
@@ -782,11 +788,6 @@ nsIXULRuntime::ContentWin32kLockdownState GetLiveWin32kLockdownState() {
       return nsIXULRuntime::ContentWin32kLockdownState::
           IncompatibleMitigationPolicy;
     }
-  }
-
-  // Non-native theming is required as well
-  if (!StaticPrefs::widget_non_native_theme_enabled()) {
-    return nsIXULRuntime::ContentWin32kLockdownState::MissingNonNativeTheming;
   }
 
   // Win32k Lockdown requires Remote WebGL, but it may be disabled on
@@ -1502,15 +1503,6 @@ nsXULAppInfo::GetIsTextRecognitionSupported(bool* aResult) {
 }
 
 NS_IMETHODIMP
-nsXULAppInfo::EnsureContentProcess() {
-  if (!XRE_IsParentProcess()) return NS_ERROR_NOT_AVAILABLE;
-
-  RefPtr<ContentParent> unused =
-      ContentParent::GetNewOrUsedBrowserProcess(DEFAULT_REMOTE_TYPE);
-  return NS_OK;
-}
-
-NS_IMETHODIMP
 nsXULAppInfo::InvalidateCachesOnRestart() {
   nsCOMPtr<nsIFile> file;
   nsresult rv =
@@ -1801,38 +1793,26 @@ nsXULAppInfo::GetExtraFileForID(const nsAString& aId, nsIFile** aExtraFile) {
 NS_IMETHODIMP
 nsXULAppInfo::AnnotateCrashReport(const nsACString& key,
                                   const nsACString& data) {
-  CrashReporter::Annotation annotation;
-
-  if (!AnnotationFromString(annotation, PromiseFlatCString(key).get())) {
-    return NS_ERROR_INVALID_ARG;
-  }
-
-  CrashReporter::RecordAnnotationNSCString(annotation, data);
+  auto annotation = CrashReporter::AnnotationFromString(key);
+  NS_ENSURE_TRUE(annotation.isSome(), NS_ERROR_INVALID_ARG);
+  CrashReporter::RecordAnnotationNSCString(*annotation, data);
   return NS_OK;
 }
 
 NS_IMETHODIMP
 nsXULAppInfo::RemoveCrashReportAnnotation(const nsACString& key) {
-  CrashReporter::Annotation annotation;
-
-  if (!AnnotationFromString(annotation, PromiseFlatCString(key).get())) {
-    return NS_ERROR_INVALID_ARG;
-  }
-
-  CrashReporter::UnrecordAnnotation(annotation);
+  auto annotation = CrashReporter::AnnotationFromString(key);
+  NS_ENSURE_TRUE(annotation.isSome(), NS_ERROR_INVALID_ARG);
+  CrashReporter::UnrecordAnnotation(*annotation);
   return NS_OK;
 }
 
 NS_IMETHODIMP
 nsXULAppInfo::IsAnnotationAllowedForPing(const nsACString& aValue,
                                          bool* aIsAllowed) {
-  CrashReporter::Annotation annotation;
-
-  if (!AnnotationFromString(annotation, PromiseFlatCString(aValue).get())) {
-    return NS_ERROR_INVALID_ARG;
-  }
-
-  *aIsAllowed = CrashReporter::IsAnnotationAllowedForPing(annotation);
+  auto annotation = CrashReporter::AnnotationFromString(aValue);
+  NS_ENSURE_TRUE(annotation.isSome(), NS_ERROR_INVALID_ARG);
+  *aIsAllowed = CrashReporter::IsAnnotationAllowedForPing(*annotation);
 
   return NS_OK;
 }
@@ -2059,6 +2039,13 @@ nsresult ScopedXPCOMStartup::SetWindowCreator(nsINativeAppSupport* native) {
   return do_AddRef(ScopedXPCOMStartup::gNativeAppSupport);
 }
 
+#ifdef MOZ_HAS_REMOTE
+/* static */ already_AddRefed<nsIRemoteService> GetRemoteService() {
+  nsCOMPtr<nsIRemoteService> remoteService = gRemoteService.get();
+  return remoteService.forget();
+}
+#endif
+
 nsINativeAppSupport* ScopedXPCOMStartup::gNativeAppSupport;
 
 static void DumpArbitraryHelp() {
@@ -2108,9 +2095,9 @@ static void DumpHelp() {
       "  --profile <path>   Start with profile at <path>.\n"
       "  --migration        Start with migration wizard.\n"
       "  --ProfileManager   Start with ProfileManager.\n"
+      "  --origin-to-force-quic-on <origin>\n"
+      "                     Force to use QUIC for the specified origin.\n"
 #ifdef MOZ_HAS_REMOTE
-      "  --no-remote        Do not accept or send remote commands; implies\n"
-      "                     --new-instance.\n"
       "  --new-instance     Open new instance, not a new window in running "
       "instance.\n"
 #endif
@@ -2137,6 +2124,14 @@ static void DumpHelp() {
 
 #if defined(XP_WIN) || defined(MOZ_WIDGET_GTK) || defined(XP_MACOSX)
   printf("  --headless         Run without a GUI.\n");
+#endif
+
+#if defined(MOZ_ENABLE_DBUS)
+  printf(
+      "  --dbus-service <launcher>  Run as DBus service for "
+      "org.freedesktop.Application and\n"
+      "                             set a launcher (usually /usr/bin/appname "
+      "script) for it.");
 #endif
 
   // this works, but only after the components have registered.  so if you drop
@@ -2522,12 +2517,6 @@ nsresult LaunchChild(bool aBlankCommandLine, bool aTryExec) {
     gRestartArgv[gRestartArgc] = nullptr;
   }
 
-#if defined(MOZ_HAS_REMOTE)
-  if (gRestartWithoutRemote) {
-    SaveToEnv("MOZ_NO_REMOTE=1");
-  }
-#endif
-
   SaveToEnv("MOZ_LAUNCHED_CHILD=1");
 #if defined(MOZ_LAUNCHER_PROCESS)
   SaveToEnv("MOZ_LAUNCHER_PROCESS=1");
@@ -2635,8 +2624,8 @@ static nsresult ProfileMissingDialog(nsINativeAppSupport* aNative) {
 #  ifdef MOZ_BACKGROUNDTASKS
   if (BackgroundTasks::IsBackgroundTaskMode()) {
     // We should never get to this point in background task mode.
-    Output(false,
-           "Could not determine any profile running in backgroundtask mode!\n");
+    printf_stderr(
+        "Could not determine any profile running in backgroundtask mode!\n");
     return NS_ERROR_ABORT;
   }
 #  endif  // MOZ_BACKGROUNDTASKS
@@ -2708,6 +2697,10 @@ static ReturnAbortOnError ProfileLockedDialog(nsIFile* aProfileDir,
 
   rv = xpcom.SetWindowCreator(aNative);
   NS_ENSURE_SUCCESS(rv, NS_ERROR_FAILURE);
+
+#ifdef XP_MACOSX
+  InitializeMacApp();
+#endif
 
   {  // extra scoping is needed so we release these components before xpcom
      // shutdown
@@ -2786,7 +2779,6 @@ static ReturnAbortOnError ProfileLockedDialog(nsIFile* aProfileDir,
 #if defined(MOZ_HAS_REMOTE)
         if (gRemoteService) {
           gRemoteService->UnlockStartup();
-          gRemoteService = nullptr;
         }
 #endif
         return LaunchChild(false, true);
@@ -2800,11 +2792,9 @@ static ReturnAbortOnError ProfileLockedDialog(nsIFile* aProfileDir,
   }
 }
 
-static const char kProfileManagerURL[] =
-    "chrome://mozapps/content/profile/profileSelection.xhtml";
-
-static ReturnAbortOnError ShowProfileManager(
-    nsIToolkitProfileService* aProfileSvc, nsINativeAppSupport* aNative) {
+static ReturnAbortOnError ShowProfileDialog(
+    nsIToolkitProfileService* aProfileSvc, nsINativeAppSupport* aNative,
+    const char* aDialogURL, const char* aTelemetryEnvVar) {
   nsresult rv;
 
   nsCOMPtr<nsIFile> profD, profLD;
@@ -2849,9 +2839,9 @@ static ReturnAbortOnError ShowProfileManager(
         features.AppendLiteral(",private");
       }
       nsCOMPtr<mozIDOMWindowProxy> newWindow;
-      rv = windowWatcher->OpenWindow(
-          nullptr, nsDependentCString(kProfileManagerURL), "_blank"_ns,
-          features, ioParamBlock, getter_AddRefs(newWindow));
+      rv = windowWatcher->OpenWindow(nullptr, nsDependentCString(aDialogURL),
+                                     "_blank"_ns, features, ioParamBlock,
+                                     getter_AddRefs(newWindow));
 
       NS_ENSURE_SUCCESS_LOG(rv, rv);
 
@@ -2881,13 +2871,12 @@ static ReturnAbortOnError ShowProfileManager(
   // User requested that we restart back into the profile manager.
   if (dialogReturn == nsIToolkitProfileService::restart) {
     SaveToEnv("XRE_RESTART_TO_PROFILE_MANAGER=1");
-    SaveToEnv("XRE_RESTARTED_BY_PROFILE_MANAGER=1");
   } else {
     MOZ_ASSERT(dialogReturn == nsIToolkitProfileService::launchWithProfile);
     SaveFileToEnv("XRE_PROFILE_PATH", profD);
     SaveFileToEnv("XRE_PROFILE_LOCAL_PATH", profLD);
-    SaveToEnv("XRE_RESTARTED_BY_PROFILE_MANAGER=1");
   }
+  SaveToEnv(aTelemetryEnvVar);
 
   if (gRestartedByOS) {
     // Re-add this argument when actually starting the application.
@@ -2901,10 +2890,28 @@ static ReturnAbortOnError ShowProfileManager(
 #if defined(MOZ_HAS_REMOTE)
   if (gRemoteService) {
     gRemoteService->UnlockStartup();
-    gRemoteService = nullptr;
   }
 #endif
   return LaunchChild(false, true);
+}
+
+static ReturnAbortOnError ShowProfileManager(
+    nsIToolkitProfileService* aProfileSvc, nsINativeAppSupport* aNative) {
+  static const char kProfileManagerURL[] =
+      "chrome://mozapps/content/profile/profileSelection.xhtml";
+  static const char kTelemetryEnv[] = "XRE_RESTARTED_BY_PROFILE_MANAGER=1";
+
+  return ShowProfileDialog(aProfileSvc, aNative, kProfileManagerURL,
+                           kTelemetryEnv);
+}
+
+static ReturnAbortOnError ShowProfileSelector(
+    nsIToolkitProfileService* aProfileSvc, nsINativeAppSupport* aNative) {
+  static const char kProfileSelectorURL[] = "about:profilemanager";
+  static const char kTelemetryEnv[] = "XRE_RESTARTED_BY_PROFILE_SELECTOR=1";
+
+  return ShowProfileDialog(aProfileSvc, aNative, kProfileSelectorURL,
+                           kTelemetryEnv);
 }
 
 static bool gDoMigration = false;
@@ -3061,6 +3068,11 @@ static void SubmitDowngradeTelemetry(const nsCString& aLastVersion,
   rv = prefBranch->GetCharPref("toolkit.telemetry.cachedClientID", clientId);
   NS_ENSURE_SUCCESS_VOID(rv);
 
+  nsCString profileGroupId;
+  rv = prefBranch->GetCharPref("toolkit.telemetry.cachedProfileGroupID",
+                               profileGroupId);
+  NS_ENSURE_SUCCESS_VOID(rv);
+
   rv = prefSvc->GetDefaultBranch(nullptr, getter_AddRefs(prefBranch));
   NS_ENSURE_SUCCESS_VOID(rv);
 
@@ -3143,6 +3155,7 @@ static void SubmitDowngradeTelemetry(const nsCString& aLastVersion,
     w.StringProperty("creationDate", MakeStringSpan(date));
     w.IntProperty("version", TELEMETRY_PING_FORMAT_VERSION);
     w.StringProperty("clientId", clientId);
+    w.StringProperty("profileGroupId", profileGroupId);
     w.StartObjectProperty("application");
     {
       w.StringProperty("architecture", arch);
@@ -3686,9 +3699,6 @@ class XREMain {
   nsCOMPtr<nsIFile> mProfD;
   nsCOMPtr<nsIFile> mProfLD;
   nsCOMPtr<nsIProfileLock> mProfileLock;
-#if defined(MOZ_HAS_REMOTE)
-  RefPtr<nsRemoteService> mRemoteService;
-#endif
 
   UniquePtr<ScopedXPCOMStartup> mScopedXPCOM;
   UniquePtr<XREAppData> mAppData;
@@ -3701,9 +3711,9 @@ class XREMain {
 #endif
 
   bool mStartOffline = false;
+  nsAutoCString mOriginToForceQUIC;
 #if defined(MOZ_HAS_REMOTE)
   bool mDisableRemoteClient = false;
-  bool mDisableRemoteServer = false;
 #endif
 };
 
@@ -3763,8 +3773,15 @@ static bool CheckForUserMismatch() { return false; }
 void mozilla::startup::IncreaseDescriptorLimits() {
 #ifdef XP_UNIX
   // Increase the fd limit to accomodate IPC resources like shared memory.
+#  ifdef XP_DARWIN
+  // We use Mach IPC for shared memory, so a lower limit suffices.
   // See also the Darwin case in config/external/nspr/pr/moz.build
-  static const rlim_t kFDs = 4096;
+  static constexpr rlim_t kFDs = 4096;
+#  else   // Unix but not Darwin
+  // This can be increased if needed, but also be aware that Linux
+  // distributions may impose hard limits less than this.
+  static constexpr rlim_t kFDs = 65536;
+#  endif  // Darwin or not
   struct rlimit rlim;
 
   if (getrlimit(RLIMIT_NOFILE, &rlim) != 0) {
@@ -3994,9 +4011,11 @@ int XREMain::XRE_mainInit(bool* aExitFlag) {
     gKioskMonitor = atoi(kioskMonitorNumber);
   }
 
-  gAllowContentAnalysisArgPresent =
-      CheckArg("allow-content-analysis", nullptr, CheckArgFlag::RemoveArg) ==
-      ARG_FOUND;
+  if (XRE_IsParentProcess()) {
+    gAllowContentAnalysisArgPresent =
+        CheckArg("allow-content-analysis", nullptr, CheckArgFlag::None) ==
+        ARG_FOUND;
+  }
 
   nsresult rv;
   ArgResult ar;
@@ -4322,20 +4341,12 @@ int XREMain::XRE_mainInit(bool* aExitFlag) {
   CrashReporter::RegisterAnnotationBool(CrashReporter::Annotation::SafeMode,
                                         &gSafeMode);
 
-#if defined(MOZ_HAS_REMOTE)
-  // Handle --no-remote and --new-instance command line arguments. Setup
-  // the environment to better accommodate other components and various
-  // restart scenarios.
-  ar = CheckArg("no-remote");
-  if (ar == ARG_FOUND || EnvHasValue("MOZ_NO_REMOTE")) {
-    mDisableRemoteClient = true;
-    mDisableRemoteServer = true;
-    gRestartWithoutRemote = true;
-    // We don't want to propagate MOZ_NO_REMOTE to potential child
-    // process.
-    SaveToEnv("MOZ_NO_REMOTE=");
-  }
+  // Strip the now unsupported no-remote command line argument.
+  CheckArg("no-remote");
 
+#if defined(MOZ_HAS_REMOTE)
+  // Handle the --new-instance command line arguments. Setup the environment to
+  // better accommodate other components and various restart scenarios.
   ar = CheckArg("new-instance");
   if (ar == ARG_FOUND || EnvHasValue("MOZ_NEW_INSTANCE")) {
     mDisableRemoteClient = true;
@@ -4343,13 +4354,19 @@ int XREMain::XRE_mainInit(bool* aExitFlag) {
 #else
   // These arguments do nothing in platforms with no remoting support but we
   // should remove them from the command line anyway.
-  CheckArg("no-remote");
   CheckArg("new-instance");
 #endif
 
   ar = CheckArg("offline");
   if (ar || EnvHasValue("XRE_START_OFFLINE")) {
     mStartOffline = true;
+  }
+
+  const char* origin = nullptr;
+  if (!PR_GetEnv("MOZ_FORCE_QUIC_ON") &&
+      ARG_FOUND == CheckArg("origin-to-force-quic-on", &origin,
+                            CheckArgFlag::RemoveArg)) {
+    mOriginToForceQUIC.Assign(origin);
   }
 
   // On Windows, to get working console arrangements so help/version/etc
@@ -4376,6 +4393,24 @@ int XREMain::XRE_mainInit(bool* aExitFlag) {
     *aExitFlag = true;
     return 0;
   }
+
+#ifdef MOZ_ENABLE_DBUS
+  const char* dbusServiceLauncher = nullptr;
+  ar = CheckArg("dbus-service", &dbusServiceLauncher, CheckArgFlag::None);
+  if (ar == ARG_BAD) {
+    Output(true, "Missing launcher param for --dbus-service\n");
+    return 1;
+  }
+  if (ar == ARG_FOUND) {
+    UniquePtr<DBusService> dbusService =
+        MakeUnique<DBusService>(dbusServiceLauncher);
+    if (dbusService->Init()) {
+      dbusService->Run();
+    }
+    *aExitFlag = true;
+    return 0;
+  }
+#endif
 
   rv = XRE_InitCommandLine(gArgc, gArgv);
   NS_ENSURE_SUCCESS(rv, 1);
@@ -4701,7 +4736,6 @@ int XREMain::XRE_mainStartup(bool* aExitFlag) {
 #ifdef MOZ_HAS_REMOTE
   if (gfxPlatform::IsHeadless()) {
     mDisableRemoteClient = true;
-    mDisableRemoteServer = true;
   }
 #endif
 
@@ -4821,10 +4855,9 @@ int XREMain::XRE_mainStartup(bool* aExitFlag) {
 #endif
 #if defined(MOZ_HAS_REMOTE)
   // handle --remote now that xpcom is fired up
-  mRemoteService = new nsRemoteService(gAppData->remotingName);
-  if (mRemoteService && !mDisableRemoteServer) {
-    mRemoteService->LockStartup();
-    gRemoteService = mRemoteService;
+  gRemoteService = new nsRemoteService(gAppData->remotingName);
+  if (gRemoteService) {
+    gRemoteService->LockStartup();
   }
 #endif
 #if defined(MOZ_WIDGET_GTK)
@@ -4891,42 +4924,61 @@ int XREMain::XRE_mainStartup(bool* aExitFlag) {
   }
 
 #if defined(MOZ_HAS_REMOTE)
-  if (mRemoteService) {
-    // We want a unique profile name to identify the remote instance.
-    nsCString profileName;
-    if (profile) {
-      rv = profile->GetName(profileName);
-    }
-    if (!profile || NS_FAILED(rv) || profileName.IsEmpty()) {
-      // Couldn't get a name from the profile. Use the directory name?
-      nsString leafName;
-      rv = mProfD->GetLeafName(leafName);
-      if (NS_SUCCEEDED(rv)) {
-        CopyUTF16toUTF8(leafName, profileName);
-      }
-    }
+  if (gRemoteService) {
+    // Use the full profile path to identify the profile.
+    nsCString profilePath;
 
-    mRemoteService->SetProfile(profileName);
-
-    if (!mDisableRemoteClient) {
-      // Try to remote the entire command line. If this fails, start up
-      // normally.
-#  ifdef MOZ_WIDGET_GTK
-      const auto& startupToken =
-          GdkIsWaylandDisplay() ? mXDGActivationToken : mDesktopStartupID;
+#  ifdef XP_WIN
+    nsString path;
+    rv = mProfD->GetPath(path);
+    if (NS_SUCCEEDED(rv)) {
+      CopyUTF16toUTF8(path, profilePath);
+    }
 #  else
-      const nsCString startupToken;
+    rv = mProfD->GetNativePath(profilePath);
 #  endif
-      RemoteResult rr = mRemoteService->StartClient(
-          startupToken.IsEmpty() ? nullptr : startupToken.get());
-      if (rr == REMOTE_FOUND) {
-        *aExitFlag = true;
-        mRemoteService->UnlockStartup();
-        return 0;
-      }
-      if (rr == REMOTE_ARG_BAD) {
-        mRemoteService->UnlockStartup();
-        return 1;
+
+    if (NS_SUCCEEDED(rv)) {
+      gRemoteService->SetProfile(profilePath);
+
+      if (!mDisableRemoteClient) {
+        // Try to remote the entire command line. If this fails, start up
+        // normally.
+#  ifdef MOZ_WIDGET_GTK
+        auto& startupToken =
+            GdkIsWaylandDisplay() ? mXDGActivationToken : mDesktopStartupID;
+#    ifdef MOZ_X11
+        if (GdkIsX11Display() && startupToken.IsEmpty()) {
+          startupToken = SynthesizeStartupToken();
+        }
+#    endif /* MOZ_X11 */
+        gRemoteService->SetStartupToken(startupToken);
+#  endif
+        rv = gRemoteService->StartClient();
+
+        if (rv == NS_ERROR_NOT_AVAILABLE && profile) {
+          // Older versions would use the profile name in preference to the
+          // path.
+          nsCString profileName;
+          profile->GetName(profileName);
+          gRemoteService->SetProfile(profileName);
+
+          rv = gRemoteService->StartClient();
+
+          // Reset back to the path.
+          gRemoteService->SetProfile(profilePath);
+        }
+
+        if (NS_SUCCEEDED(rv)) {
+          *aExitFlag = true;
+          gRemoteService->UnlockStartup();
+          return 0;
+        }
+
+        if (rv == NS_ERROR_INVALID_ARG) {
+          gRemoteService->UnlockStartup();
+          return 1;
+        }
       }
     }
   }
@@ -5032,24 +5084,31 @@ int XREMain::XRE_mainStartup(bool* aExitFlag) {
   }
 #endif
 
+  bool useSelectedProfile;
+  rv = mProfileSvc->GetStartWithLastProfile(&useSelectedProfile);
+  NS_ENSURE_SUCCESS(rv, 1);
+
   // We now know there is no existing instance using the selected profile. If
   // the profile wasn't selected by specific command line arguments and the
   // user has chosen to show the profile manager on startup then do that.
-  if (wasDefaultSelection) {
-    bool useSelectedProfile;
-    rv = mProfileSvc->GetStartWithLastProfile(&useSelectedProfile);
-    NS_ENSURE_SUCCESS(rv, 1);
-
-    if (!useSelectedProfile) {
-      rv = ShowProfileManager(mProfileSvc, mNativeApp);
-      if (rv == NS_ERROR_LAUNCHED_CHILD_PROCESS || rv == NS_ERROR_ABORT) {
-        *aExitFlag = true;
-        return 0;
-      }
-      if (NS_FAILED(rv)) {
-        return 1;
-      }
+  if (wasDefaultSelection && !useSelectedProfile) {
+    rv = ShowProfileManager(mProfileSvc, mNativeApp);
+  } else if (profile) {
+    bool showSelector = false;
+    profile->GetShowProfileSelector(&showSelector);
+    if (showSelector) {
+      rv = ShowProfileSelector(mProfileSvc, mNativeApp);
+    } else {
+      rv = NS_OK;
     }
+  }
+
+  if (rv == NS_ERROR_LAUNCHED_CHILD_PROCESS || rv == NS_ERROR_ABORT) {
+    *aExitFlag = true;
+    return 0;
+  }
+  if (NS_FAILED(rv)) {
+    return 1;
   }
 
   // We always want to lock the profile even if we're actually going to reset
@@ -5147,6 +5206,9 @@ int XREMain::XRE_mainStartup(bool* aExitFlag) {
   // the command line regardless of whether this is a downgrade or not.
   if (!CheckArg("allow-downgrade") && isDowngrade &&
       !EnvHasValue("MOZ_ALLOW_DOWNGRADE")) {
+#  ifdef XP_MACOSX
+    InitializeMacApp();
+#  endif
     rv = CheckDowngrade(mProfD, mNativeApp, mProfileSvc, lastVersion);
     if (rv == NS_ERROR_LAUNCHED_CHILD_PROCESS || rv == NS_ERROR_ABORT) {
       *aExitFlag = true;
@@ -5339,6 +5401,10 @@ nsresult XREMain::XRE_mainRun() {
       io->SetOffline(true);
     }
 
+    if (!mOriginToForceQUIC.IsEmpty()) {
+      PR_SetEnv(ToNewCString("MOZ_FORCE_QUIC_ON="_ns + mOriginToForceQUIC));
+    }
+
 #ifdef XP_WIN
     mozilla::DllPrefetchExperimentRegistryInfo prefetchRegInfo;
     mozilla::AlteredDllPrefetchMode dllPrefetchMode =
@@ -5461,6 +5527,22 @@ nsresult XREMain::XRE_mainRun() {
     // AutoConfig files require JS execution. Note that this means AutoConfig
     // files can't override JS engine start-up prefs.
     mDirProvider.FinishInitializingUserPrefs();
+
+    // Do a canary load of a JS based module here. This will help us detect
+    // missing resources during startup and make us react appropriate, that
+    // is inform the user before exiting with a crash.
+    {
+      mozilla::dom::AutoJSAPI jsapi;
+      MOZ_ALWAYS_TRUE(jsapi.Init(xpc::PrivilegedJunkScope()));
+      JS::Rooted<JSObject*> mod(jsapi.cx());
+      // AppConstants.sys.mjs is small, widely used and most likely will
+      // never go away.
+      rv = mozJSModuleLoader::Get()->ImportESModule(
+          jsapi.cx(), "resource://gre/modules/AppConstants.sys.mjs"_ns, &mod);
+      if (NS_FAILED(rv)) {
+        return NS_ERROR_OMNIJAR_OR_DIR_MISSING;
+      }
+    }
 
 #if defined(MOZ_SANDBOX) && defined(XP_WIN)
     // Now that we have preferences and the directory provider, we can
@@ -5658,22 +5740,14 @@ nsresult XREMain::XRE_mainRun() {
 #if defined(MOZ_HAS_REMOTE)
       // if we have X remote support, start listening for requests on the
       // proxy window.
-      if (mRemoteService && !mDisableRemoteServer) {
-        mRemoteService->StartupServer();
-        mRemoteService->UnlockStartup();
-        gRemoteService = nullptr;
+      if (gRemoteService) {
+        gRemoteService->StartupServer();
+        gRemoteService->UnlockStartup();
       }
 #endif /* MOZ_WIDGET_GTK */
 
       mNativeApp->Enable();
     }
-
-#ifdef MOZ_INSTRUMENT_EVENT_LOOP
-    if (PR_GetEnv("MOZ_INSTRUMENT_EVENT_LOOP")) {
-      bool logToConsole = true;
-      mozilla::InitEventTracing(logToConsole);
-    }
-#endif /* MOZ_INSTRUMENT_EVENT_LOOP */
 
     // Send Telemetry about Gecko version and buildid
     mozilla::glean::gecko::version.Set(nsDependentCString(gAppData->version));
@@ -5683,19 +5757,8 @@ nsresult XREMain::XRE_mainRun() {
     // If we're on Linux, we now have information about the OS capabilities
     // available to us.
     SandboxInfo sandboxInfo = SandboxInfo::Get();
-    Telemetry::Accumulate(Telemetry::SANDBOX_HAS_SECCOMP_BPF,
-                          sandboxInfo.Test(SandboxInfo::kHasSeccompBPF));
-    Telemetry::Accumulate(Telemetry::SANDBOX_HAS_SECCOMP_TSYNC,
-                          sandboxInfo.Test(SandboxInfo::kHasSeccompTSync));
-    Telemetry::Accumulate(
-        Telemetry::SANDBOX_HAS_USER_NAMESPACES_PRIVILEGED,
-        sandboxInfo.Test(SandboxInfo::kHasPrivilegedUserNamespaces));
     Telemetry::Accumulate(Telemetry::SANDBOX_HAS_USER_NAMESPACES,
                           sandboxInfo.Test(SandboxInfo::kHasUserNamespaces));
-    Telemetry::Accumulate(Telemetry::SANDBOX_CONTENT_ENABLED,
-                          sandboxInfo.Test(SandboxInfo::kEnabledForContent));
-    Telemetry::Accumulate(Telemetry::SANDBOX_MEDIA_ENABLED,
-                          sandboxInfo.Test(SandboxInfo::kEnabledForMedia));
 
     CrashReporter::RecordAnnotationU32(
         CrashReporter::Annotation::ContentSandboxCapabilities,
@@ -5952,17 +6015,44 @@ int XREMain::XRE_main(int argc, char* argv[], const BootstrapConfig& aConfig) {
   mScopedXPCOM = MakeUnique<ScopedXPCOMStartup>();
 
   rv = mScopedXPCOM->Initialize(/* aInitJSContext = */ false);
+  if (rv == NS_ERROR_OMNIJAR_CORRUPT) {
+    if (XRE_IsParentProcess()
+#ifdef MOZ_BACKGROUNDTASKS
+        && !mozilla::BackgroundTasks::IsBackgroundTaskMode()
+#endif
+    ) {
+      Output(
+          true,
+          "The installation seems to be corrupt.\nPlease check your hardware "
+          "and disk setup\nand/or re-install.\n");
+    }
+    MOZ_CRASH("NS_ERROR_OMNIJAR_CORRUPT");
+  }
   NS_ENSURE_SUCCESS(rv, 1);
 
   // run!
   rv = XRE_mainRun();
+  if (rv == NS_ERROR_OMNIJAR_OR_DIR_MISSING) {
+    if (XRE_IsParentProcess()
+#ifdef MOZ_BACKGROUNDTASKS
+        && !mozilla::BackgroundTasks::IsBackgroundTaskMode()
+#endif
+    ) {
+      Output(true,
+             "The installation seems to be incomplete.\nPlease check your "
+             "hardware and disk setup\nand/or re-install.\n");
+    }
+    if (mozilla::IsPackagedBuild()) {
+      // IsPackagedBuild just looks for omni.ja on disk. If we were able to
+      // find and open it before but not to load the expected JS module from
+      // it now, signal corruption.
+      MOZ_CRASH("NS_ERROR_OMNIJAR_CORRUPT");
+    }
+    MOZ_CRASH("NS_ERROR_OMNIJAR_OR_DIR_MISSING");
+  }
 
 #ifdef MOZ_X11
   XRE_CleanupX11ErrorHandler();
-#endif
-
-#ifdef MOZ_INSTRUMENT_EVENT_LOOP
-  mozilla::ShutdownEventTracing();
 #endif
 
   gAbsoluteArgv0Path.Truncate();
@@ -5971,8 +6061,9 @@ int XREMain::XRE_main(int argc, char* argv[], const BootstrapConfig& aConfig) {
   // Shut down the remote service. We must do this before calling LaunchChild
   // if we're restarting because otherwise the new instance will attempt to
   // remote to this instance.
-  if (mRemoteService && !mDisableRemoteServer) {
-    mRemoteService->ShutdownServer();
+  if (gRemoteService) {
+    gRemoteService->ShutdownServer();
+    gRemoteService = nullptr;
   }
 #endif /* MOZ_WIDGET_GTK */
 
@@ -6066,6 +6157,7 @@ nsresult XRE_InitCommandLine(int aArgc, char* aArgv[]) {
       return NS_ERROR_FAILURE;
     }
     mozilla::Omnijar::Init(greOmni, greOmni);
+    MOZ_RELEASE_ASSERT(IsPackagedBuild(), "Android builds are always packaged");
   }
 #endif
 
@@ -6085,6 +6177,8 @@ GeckoProcessType XRE_GetProcessType() { return GetGeckoProcessType(); }
 const char* XRE_GetProcessTypeString() {
   return XRE_GeckoProcessTypeToString(XRE_GetProcessType());
 }
+
+GeckoChildID XRE_GetChildID() { return GetGeckoChildID(); }
 
 bool XRE_IsE10sParentProcess() {
 #ifdef MOZ_WIDGET_ANDROID

@@ -19,6 +19,11 @@ struct ParamTraits;
 
 }  // namespace IPC
 
+namespace JS {
+class ArrayBufferOrView;
+class AutoCheckCannotGC;
+}  // namespace JS
+
 namespace mozilla::dom::indexedDB {
 
 class Key {
@@ -218,7 +223,9 @@ class Key {
   Result<Ok, nsresult> EncodeString(Span<const T> aInput, uint8_t aTypeOffset);
 
   template <typename T>
-  Result<Ok, nsresult> EncodeAsString(Span<const T> aInput, uint8_t aType);
+  Result<Ok, nsresult> EncodeAsString(Span<const T> aInput,
+                                      JS::AutoCheckCannotGC&& aNoGC,
+                                      uint8_t aType);
 
   Result<Ok, nsresult> EncodeLocaleString(const nsAString& aString,
                                           uint8_t aTypeOffset,
@@ -226,8 +233,8 @@ class Key {
 
   Result<Ok, nsresult> EncodeNumber(double aFloat, uint8_t aType);
 
-  Result<Ok, nsresult> EncodeBinary(JSObject* aObject, bool aIsViewObject,
-                                    uint8_t aTypeOffset);
+  Result<Ok, nsresult> EncodeBinary(
+      const JS::ArrayBufferOrView& aArrayBufferOrView, uint8_t aTypeOffset);
 
   // Decoding functions. aPos points into mBuffer and is adjusted to point
   // past the consumed value. (Note: this may be beyond aEnd).

@@ -89,6 +89,9 @@ shopping-show-less-button = Vis mindre
 
 shopping-settings-label =
     .label = Innstillinger
+shopping-settings-recommendations-toggle2 =
+    .label = Vis anbefalinger og sponset innhold
+shopping-settings-recommendations-learn-more3 = { -brand-product-name } deler ikke dine personlige data, så disse anbefalingene følger deg ikke rundt på internett. <a data-l10n-name="review-quality-url">Finn ut mer</a>
 shopping-settings-recommendations-toggle =
     .label = Vis annonser i vurderingskontrollen
 shopping-settings-recommendations-learn-more2 = Du ser sporadiske annonser for relevante produkter. Vi annonserer kun produkter med pålitelige anmeldelser. <a data-l10n-name="review-quality-url">Les mer</a>
@@ -115,6 +118,7 @@ shopping-settings-sidebar-enabled-state = Vurderingskontrollør er <strong>på</
 shopping-adjusted-rating-label =
     .label = Justert vurdering
 shopping-adjusted-rating-unreliable-reviews = Upålitelige vuderinger er fjernet
+shopping-adjusted-rating-based-reliable-reviews = Basert på pålitelige vurderinger
 
 ## Strings for the review reliability component
 
@@ -133,6 +137,8 @@ shopping-analysis-explainer-learn-more2 = Les mer om <a data-l10n-name="review-q
 # websites, which will be inserted without being translated.
 #  $retailer (String) - capitalized name of the shopping website, for example, "Amazon".
 shopping-analysis-explainer-highlights-description = <strong>Høydepunkter</strong> er fra { $retailer }-vurderinger i løpet av de siste 80 dagene som vi mener er pålitelige.
+# Fallback for analysis highlights explainer if the retailer is ever unknown
+shopping-analysis-explainer-highlights-description-unknown-retailer = <strong>Høydepunkter</strong> er fra vurderinger i løpet av de siste 80 dagene som vi mener er pålitelige.
 shopping-analysis-explainer-review-grading-scale-reliable = Pålitelige vurderinger. Vi tror at vurderingene sannsynligvis kommer fra ekte kunder som har gitt ærlige, objektive vurderinger.
 shopping-analysis-explainer-review-grading-scale-mixed = Vi tror det er en blanding av pålitelige og upålitelige vurderinger.
 shopping-analysis-explainer-review-grading-scale-unreliable = Upålitelige vurderinger. Vi mener vurderingene sannsynligvis er falske eller fra partiske vurderere.
@@ -159,6 +165,7 @@ shopping-unanalyzed-product-analyze-button = Kontrollerer kvaliteten på vurderi
 
 more-to-consider-ad-label =
     .label = Mer å vurdere
+shopping-sponsored-label = Sponset
 ad-by-fakespot = Reklame fra { -fakespot-brand-name }
 
 ## Shopping survey strings.

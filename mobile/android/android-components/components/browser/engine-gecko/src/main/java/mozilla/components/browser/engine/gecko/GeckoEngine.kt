@@ -47,6 +47,7 @@ import mozilla.components.concept.engine.translate.Language
 import mozilla.components.concept.engine.translate.LanguageModel
 import mozilla.components.concept.engine.translate.LanguageSetting
 import mozilla.components.concept.engine.translate.ModelManagementOptions
+import mozilla.components.concept.engine.translate.ModelState
 import mozilla.components.concept.engine.translate.TranslationError
 import mozilla.components.concept.engine.translate.TranslationSupport
 import mozilla.components.concept.engine.translate.TranslationsRuntime
@@ -341,11 +342,19 @@ class GeckoEngine(
         this.webExtensionDelegate = webExtensionDelegate
 
         val promptDelegate = object : WebExtensionController.PromptDelegate {
-            override fun onInstallPrompt(ext: org.mozilla.geckoview.WebExtension): GeckoResult<AllowOrDeny> {
-                val extension = GeckoWebExtension(ext, runtime)
+            override fun onInstallPrompt(
+                ext: org.mozilla.geckoview.WebExtension,
+                permissions: Array<out String>,
+                origins: Array<out String>,
+            ): GeckoResult<AllowOrDeny>? {
                 val result = GeckoResult<AllowOrDeny>()
 
-                webExtensionDelegate.onInstallPermissionRequest(extension) { allow ->
+                webExtensionDelegate.onInstallPermissionRequest(
+                    GeckoWebExtension(ext, runtime),
+                    // We pass both permissions and origins as a single list of
+                    // permissions to be shown to the user.
+                    permissions.toList() + origins.toList(),
+                ) { allow ->
                     if (allow) result.complete(AllowOrDeny.ALLOW) else result.complete(AllowOrDeny.DENY)
                 }
 
@@ -362,6 +371,8 @@ class GeckoEngine(
                 webExtensionDelegate.onUpdatePermissionRequest(
                     GeckoWebExtension(current, runtime),
                     GeckoWebExtension(updated, runtime),
+                    // We pass both permissions and origins as a single list of
+                    // permissions to be shown to the user.
                     newPermissions.toList() + newOrigins.toList(),
                 ) { allow ->
                     if (allow) result.complete(AllowOrDeny.ALLOW) else result.complete(AllowOrDeny.DENY)
@@ -425,6 +436,10 @@ class GeckoEngine(
                     extension.toSafeWebExtension(),
                     exception as WebExtensionInstallException,
                 )
+            }
+
+            override fun onOptionalPermissionsChanged(extension: org.mozilla.geckoview.WebExtension) {
+                webExtensionDelegate.onOptionalPermissionsChanged(GeckoWebExtension(extension, runtime))
             }
         }
 
@@ -792,13 +807,14 @@ class GeckoEngine(
         TranslationsController.RuntimeTranslation.listModelDownloadStates().then(
             {
                 if (it != null) {
-                    var listOfModels = mutableListOf<LanguageModel>()
+                    val listOfModels = mutableListOf<LanguageModel>()
                     for (each in it) {
-                        var language = each.language?.let {
+                        val language = each.language?.let {
                                 language ->
                             Language(language.code, each.language?.localizedDisplayName)
                         }
-                        var model = LanguageModel(language, each.isDownloaded, each.size)
+                        val status = if (each.isDownloaded) ModelState.DOWNLOADED else ModelState.NOT_DOWNLOADED
+                        val model = LanguageModel(language, status, each.size)
                         listOfModels.add(model)
                     }
                     onSuccess(listOfModels)
@@ -1315,6 +1331,26 @@ class GeckoEngine(
         override var globalPrivacyControlEnabled: Boolean
             get() = runtime.settings.globalPrivacyControl
             set(value) { runtime.settings.setGlobalPrivacyControl(value) }
+
+        override var fingerprintingProtection: Boolean
+            get() = runtime.settings.fingerprintingProtection
+            set(value) { runtime.settings.setFingerprintingProtection(value) }
+
+        override var fingerprintingProtectionPrivateBrowsing: Boolean
+            get() = runtime.settings.fingerprintingProtectionPrivateBrowsing
+            set(value) { runtime.settings.setFingerprintingProtectionPrivateBrowsing(value) }
+
+        override var fingerprintingProtectionOverrides: String
+            get() = runtime.settings.fingerprintingProtectionOverrides
+            set(value) { runtime.settings.setFingerprintingProtectionOverrides(value) }
+
+        override var fdlibmMathEnabled: Boolean
+            get() = runtime.settings.fdlibmMathEnabled
+            set(value) { runtime.settings.setFdlibmMathEnabled(value) }
+
+        override var userCharacteristicPingCurrentVersion: Int
+            get() = runtime.settings.userCharacteristicPingCurrentVersion
+            set(value) { runtime.settings.setUserCharacteristicPingCurrentVersion(value) }
     }.apply {
         defaultSettings?.let {
             this.javascriptEnabled = it.javascriptEnabled
@@ -1340,7 +1376,12 @@ class GeckoEngine(
             this.cookieBannerHandlingGlobalRules = it.cookieBannerHandlingGlobalRules
             this.cookieBannerHandlingGlobalRulesSubFrames = it.cookieBannerHandlingGlobalRulesSubFrames
             this.globalPrivacyControlEnabled = it.globalPrivacyControlEnabled
+            this.fingerprintingProtection = it.fingerprintingProtection
+            this.fingerprintingProtectionPrivateBrowsing = it.fingerprintingProtectionPrivateBrowsing
+            this.fingerprintingProtectionOverrides = it.fingerprintingProtectionOverrides
+            this.fdlibmMathEnabled = it.fdlibmMathEnabled
             this.emailTrackerBlockingPrivateBrowsing = it.emailTrackerBlockingPrivateBrowsing
+            this.userCharacteristicPingCurrentVersion = it.userCharacteristicPingCurrentVersion
         }
     }
 
@@ -1486,6 +1527,7 @@ internal fun ContentBlockingController.LogEntry.BlockingData.unBlockedBySmartBlo
 internal fun ContentBlockingController.LogEntry.BlockingData.getBlockedCategory(): TrackingCategory {
     return when (category) {
         Event.BLOCKED_FINGERPRINTING_CONTENT -> TrackingCategory.FINGERPRINTING
+        Event.BLOCKED_SUSPICIOUS_FINGERPRINTING -> TrackingCategory.FINGERPRINTING
         Event.BLOCKED_CRYPTOMINING_CONTENT -> TrackingCategory.CRYPTOMINING
         Event.BLOCKED_SOCIALTRACKING_CONTENT, Event.COOKIES_BLOCKED_SOCIALTRACKER -> TrackingCategory.MOZILLA_SOCIAL
         Event.BLOCKED_TRACKING_CONTENT -> TrackingCategory.SCRIPTS_AND_SUB_RESOURCES

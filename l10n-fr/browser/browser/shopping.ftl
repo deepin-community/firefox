@@ -89,6 +89,9 @@ shopping-show-less-button = Moins de détails
 
 shopping-settings-label =
     .label = Paramètres
+shopping-settings-recommendations-toggle2 =
+    .label = Afficher des recommandations et du contenu sponsorisé
+shopping-settings-recommendations-learn-more3 = { -brand-product-name } ne partage pas vos données personnelles. Ces recommandations ne vont donc pas vous suivre sur Internet. <a data-l10n-name="review-quality-url">En savoir plus</a>
 shopping-settings-recommendations-toggle =
     .label = Afficher des publicités dans le vérificateur d’avis
 shopping-settings-recommendations-learn-more2 = Vous verrez à l’occasion des publicités pour des produits pertinents.  Nous faisons uniquement la promotion de produits dont les avis sont fiables. <a data-l10n-name="review-quality-url">En savoir plus</a>
@@ -115,6 +118,7 @@ shopping-settings-sidebar-enabled-state = Le vérificateur d’avis est <strong>
 shopping-adjusted-rating-label =
     .label = Évaluation corrigée
 shopping-adjusted-rating-unreliable-reviews = Avis non fiables supprimés
+shopping-adjusted-rating-based-reliable-reviews = Sur la base d’avis fiables
 
 ## Strings for the review reliability component
 
@@ -133,6 +137,8 @@ shopping-analysis-explainer-learn-more2 = En savoir plus sur <a data-l10n-name="
 # websites, which will be inserted without being translated.
 #  $retailer (String) - capitalized name of the shopping website, for example, "Amazon".
 shopping-analysis-explainer-highlights-description = Les <strong>points essentiels</strong> proviennent des avis laissés sur { $retailer } au cours des 80 derniers jours que nous estimons fiables.
+# Fallback for analysis highlights explainer if the retailer is ever unknown
+shopping-analysis-explainer-highlights-description-unknown-retailer = Les <strong>points essentiels</strong> proviennent des avis des 80 derniers jours que nous estimons fiables.
 shopping-analysis-explainer-review-grading-scale-reliable = Avis fiables. Nous pensons que les avis proviennent probablement de véritables client·e·s qui ont laissé des avis sincères et objectifs.
 shopping-analysis-explainer-review-grading-scale-mixed = Nous pensons que les avis regroupent des avis fiables et non fiables.
 shopping-analysis-explainer-review-grading-scale-unreliable = Avis non fiables. Nous pensons que les avis sont probablement contrefaits ou proviennent d’utilisateurs partiaux.
@@ -159,6 +165,7 @@ shopping-unanalyzed-product-analyze-button = Évaluer la qualité des avis
 
 more-to-consider-ad-label =
     .label = Produits alternatifs
+shopping-sponsored-label = Sponsorisé
 ad-by-fakespot = Publicité de { -fakespot-brand-name }
 
 ## Shopping survey strings.

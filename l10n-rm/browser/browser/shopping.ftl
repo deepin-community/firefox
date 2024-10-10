@@ -89,6 +89,9 @@ shopping-show-less-button = Mussar damain
 
 shopping-settings-label =
     .label = Parameters
+shopping-settings-recommendations-toggle2 =
+    .label = Mussar recumandaziuns e cuntegn sponsurà
+shopping-settings-recommendations-learn-more3 = { -brand-product-name } na cundivida betg tias datas persunalas, uschia che questas recumandaziuns na ta suondan betg en l’internet. <a data-l10n-name="review-quality-url">Ulteriuras infurmaziuns</a>
 shopping-settings-recommendations-toggle =
     .label = Mussar reclamas en la verificaziun da recensiuns
 shopping-settings-recommendations-learn-more2 = Ti vegns a vesair reclamas occasiunalas per products relevants. Nus faschain mo reclama per products cun recensiuns fidablas. <a data-l10n-name="review-quality-url">Ulteriuras infurmaziuns</a>
@@ -115,6 +118,7 @@ shopping-settings-sidebar-enabled-state = La verificaziun da recensiuns è <stro
 shopping-adjusted-rating-label =
     .label = Valitaziun rectifitgada
 shopping-adjusted-rating-unreliable-reviews = Allontanà recensiuns dubiusas
+shopping-adjusted-rating-based-reliable-reviews = A basa da recensiuns fidablas
 
 ## Strings for the review reliability component
 
@@ -135,6 +139,8 @@ shopping-analysis-explainer-learn-more2 = Ve a savair pli detagliadamain <a data
 # websites, which will be inserted without being translated.
 #  $retailer (String) - capitalized name of the shopping website, for example, "Amazon".
 shopping-analysis-explainer-highlights-description = Ils elements <strong>accentuads</strong> derivan da las recensiun sin { $retailer } dals ultims 80 dis che nus tegnain per fidablas.
+# Fallback for analysis highlights explainer if the retailer is ever unknown
+shopping-analysis-explainer-highlights-description-unknown-retailer = Ils elements <strong>accentuads</strong> derivan da las recensiuns dals ultims 80 dis che nus tegnain per fidablas.
 shopping-analysis-explainer-review-grading-scale-reliable = Recensiuns fidablas. Nus cartain che las recensiuns èn cun auta probabilitad da dretgs clients che han scrit recensiuns onestas independentas.
 shopping-analysis-explainer-review-grading-scale-mixed = Nus cartain ch'i sa tracta dad ina maschaida da recensiuns fidablas e dubiusas.
 shopping-analysis-explainer-review-grading-scale-unreliable = Revistas dubiusas. Nus cartain che las recensiuns èn sfalsifitgadas u da recensents partischants.
@@ -161,6 +167,7 @@ shopping-unanalyzed-product-analyze-button = Controllar la qualitad da las recen
 
 more-to-consider-ad-label =
     .label = Dapli pussaivladads
+shopping-sponsored-label = Sponsurà
 ad-by-fakespot = Reclama da { -fakespot-brand-name }
 
 ## Shopping survey strings.

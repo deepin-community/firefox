@@ -17,8 +17,8 @@ ChromeUtils.defineESModuleGetters(lazy, {
   LoginExport: "resource://gre/modules/LoginExport.sys.mjs",
   LoginHelper: "resource://gre/modules/LoginHelper.sys.mjs",
   MigrationUtils: "resource:///modules/MigrationUtils.sys.mjs",
-  OSKeyStore: "resource://gre/modules/OSKeyStore.sys.mjs",
   UIState: "resource://services-sync/UIState.sys.mjs",
+  FxAccounts: "resource://gre/modules/FxAccounts.sys.mjs",
 });
 
 ChromeUtils.defineLazyGetter(lazy, "log", () => {
@@ -35,12 +35,6 @@ XPCOMUtils.defineLazyPreferenceGetter(
   "FXA_ENABLED",
   "identity.fxaccounts.enabled",
   false
-);
-XPCOMUtils.defineLazyPreferenceGetter(
-  lazy,
-  "OS_AUTH_ENABLED",
-  "signon.management.page.os-auth.enabled",
-  true
 );
 XPCOMUtils.defineLazyPreferenceGetter(
   lazy,
@@ -118,10 +112,6 @@ export class AboutLoginsParent extends JSWindowActorParent {
       }
       case "AboutLogins:SyncEnable": {
         this.#syncEnable();
-        break;
-      }
-      case "AboutLogins:SyncOptions": {
-        this.#syncOptions();
         break;
       }
       case "AboutLogins:ImportFromBrowser": {
@@ -227,10 +217,6 @@ export class AboutLoginsParent extends JSWindowActorParent {
     this.#ownerGlobal.gSync.openFxAEmailFirstPage("password-manager");
   }
 
-  #syncOptions() {
-    this.#ownerGlobal.gSync.openFxAManagePage("password-manager");
-  }
-
   #importFromBrowser() {
     try {
       lazy.MigrationUtils.showMigrationWizard(this.#ownerGlobal, {
@@ -266,11 +252,15 @@ export class AboutLoginsParent extends JSWindowActorParent {
     let messageText = { value: "NOT SUPPORTED" };
     let captionText = { value: "" };
 
+    const isOSAuthEnabled = lazy.LoginHelper.getOSAuthEnabled(
+      lazy.LoginHelper.OS_AUTH_FOR_PASSWORDS_PREF
+    );
+
     // This feature is only supported on Windows and macOS
     // but we still call in to OSKeyStore on Linux to get
     // the proper auth_details for Telemetry.
     // See bug 1614874 for Linux support.
-    if (lazy.OS_AUTH_ENABLED && lazy.OSKeyStore.canReauth()) {
+    if (isOSAuthEnabled) {
       messageId += "-" + AppConstants.platform;
       [messageText, captionText] = await lazy.AboutLoginsL10n.formatMessages([
         {
@@ -284,7 +274,7 @@ export class AboutLoginsParent extends JSWindowActorParent {
 
     let { isAuthorized, telemetryEvent } = await lazy.LoginHelper.requestReauth(
       this.browsingContext.embedderElement,
-      lazy.OS_AUTH_ENABLED,
+      isOSAuthEnabled,
       AboutLogins._authExpirationTime,
       messageText.value,
       captionText.value
@@ -309,7 +299,7 @@ export class AboutLoginsParent extends JSWindowActorParent {
 
     const logins = await AboutLogins.getAllLogins();
     try {
-      let syncState = AboutLogins.getSyncState();
+      let syncState = await AboutLogins.getSyncState();
 
       let selectedSort = Services.prefs.getCharPref(
         "signon.management.page.sort",
@@ -378,11 +368,15 @@ export class AboutLoginsParent extends JSWindowActorParent {
     let messageText = { value: "NOT SUPPORTED" };
     let captionText = { value: "" };
 
+    const isOSAuthEnabled = lazy.LoginHelper.getOSAuthEnabled(
+      lazy.LoginHelper.OS_AUTH_FOR_PASSWORDS_PREF
+    );
+
     // This feature is only supported on Windows and macOS
     // but we still call in to OSKeyStore on Linux to get
     // the proper auth_details for Telemetry.
     // See bug 1614874 for Linux support.
-    if (lazy.OSKeyStore.canReauth()) {
+    if (isOSAuthEnabled) {
       const messageId =
         EXPORT_PASSWORD_OS_AUTH_DIALOG_MESSAGE_IDS[AppConstants.platform];
       if (!messageId) {
@@ -567,7 +561,10 @@ class AboutLoginsInternal {
         break;
       }
       case lazy.UIState.ON_UPDATE: {
-        this.#messageSubscribers("AboutLogins:SyncState", this.getSyncState());
+        this.#messageSubscribers(
+          "AboutLogins:SyncState",
+          await this.getSyncState()
+        );
         break;
       }
       case "passwordmgr-storage-changed": {
@@ -825,13 +822,16 @@ class AboutLoginsInternal {
     }
   }
 
-  getSyncState() {
+  async getSyncState() {
     const state = lazy.UIState.get();
     // As long as Sync is configured, about:logins will treat it as
     // authenticated. More diagnostics and error states can be handled
     // by other more Sync-specific pages.
     const loggedIn = state.status != lazy.UIState.STATUS_NOT_CONFIGURED;
     const passwordSyncEnabled = state.syncEnabled && lazy.PASSWORD_SYNC_ENABLED;
+    const accountURL = await lazy.FxAccounts.config.promiseManageURI(
+      "password-manager"
+    );
 
     return {
       loggedIn,
@@ -839,11 +839,15 @@ class AboutLoginsInternal {
       avatarURL: state.avatarURL,
       fxAccountsEnabled: lazy.FXA_ENABLED,
       passwordSyncEnabled,
+      accountURL,
     };
   }
 
-  onPasswordSyncEnabledPreferenceChange(_data, _previous, _latest) {
-    this.#messageSubscribers("AboutLogins:SyncState", this.getSyncState());
+  async onPasswordSyncEnabledPreferenceChange(_data, _previous, _latest) {
+    this.#messageSubscribers(
+      "AboutLogins:SyncState",
+      await this.getSyncState()
+    );
   }
 
   #observedTopics = [
@@ -879,5 +883,5 @@ XPCOMUtils.defineLazyPreferenceGetter(
   "PASSWORD_SYNC_ENABLED",
   "services.sync.engine.passwords",
   false,
-  AboutLogins.onPasswordSyncEnabledPreferenceChange
+  AboutLogins.onPasswordSyncEnabledPreferenceChange.bind(AboutLogins)
 );

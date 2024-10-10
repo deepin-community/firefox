@@ -26,6 +26,18 @@ about-reader-color-theme-contrast = Αντίθεση
     .title = Θέμα χρωμάτων: Αντίθεση
 about-reader-color-theme-custom = Προσαρμοσμένα χρώματα
     .title = Θέμα χρωμάτων: Προσαρμοσμένο
+about-reader-color-light-theme = Φωτεινό
+    .title = Φωτεινό θέμα
+about-reader-color-dark-theme = Σκοτεινό
+    .title = Σκοτεινό θέμα
+about-reader-color-sepia-theme = Σέπια
+    .title = Σέπια θέμα
+about-reader-color-auto-theme = Αυτόματο
+    .title = Αυτόματο θέμα
+about-reader-color-gray-theme = Γκρι
+    .title = Γκρι θέμα
+about-reader-color-contrast-theme = Αντίθεση
+    .title = Αντίθεση θέματος
 # An estimate for how long it takes to read an article,
 # expressed as a range covering both slow and fast readers.
 # Variables:
@@ -56,6 +68,7 @@ about-reader-toolbar-lineheightplus =
 
 about-reader-font-type-serif = Serif
 about-reader-font-type-sans-serif = Sans-serif
+about-reader-font-type-monospace = Σταθερού πλάτους
 
 ## Reader View toolbar buttons
 
@@ -87,12 +100,32 @@ about-reader-custom-colors-visited-links = Σύνδεσμοι που έχετε 
 about-reader-custom-colors-selection-highlight = Επισήμανση για εκφώνηση
     .title = Επεξεργασία χρώματος
 about-reader-custom-colors-reset-button = Επαναφορά προεπιλογών
+about-reader-reset-button = Επαναφορά προεπιλογών
 
 ## Reader View improved text and layout menu
 
+about-reader-text-header = Κείμενο
+about-reader-text-size-label = Μέγεθος κειμένου
+about-reader-font-type-selector-label = Γραμματοσειρά
+about-reader-font-weight-selector-label = Βάρος γραμματοσειράς
+about-reader-font-weight-light = Αχνή
+about-reader-font-weight-regular = Κανονική
+about-reader-font-weight-bold = Έντονη
 about-reader-layout-header = Διάταξη
+about-reader-slider-label-spacing-standard = Τυπικό
+about-reader-slider-label-spacing-wide = Πλατύ
 about-reader-content-width-label =
     .label = Πλάτος περιεχομένου
+about-reader-line-spacing-label =
+    .label = Διάστιχο
+about-reader-advanced-layout-header = Για προχωρημένους
+about-reader-slider-label-width-narrow = Στενό
+about-reader-slider-label-width-wide = Πλατύ
+about-reader-slider-label-spacing-narrow = Στενό
+about-reader-character-spacing-label =
+    .label = Διάστιχο χαρακτήρων
+about-reader-word-spacing-label =
+    .label = Διάστιχο λέξεων
 about-reader-text-alignment-label = Στοίχιση κειμένου
 about-reader-text-alignment-left =
     .title = Στοίχιση κειμένου αριστερά

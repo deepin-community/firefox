@@ -45,6 +45,7 @@ class TenuredChunk;
   _("gcNumber", JSGC_NUMBER, false)                                         \
   _("majorGCNumber", JSGC_MAJOR_GC_NUMBER, false)                           \
   _("minorGCNumber", JSGC_MINOR_GC_NUMBER, false)                           \
+  _("sliceNumber", JSGC_SLICE_NUMBER, false)                                \
   _("incrementalGCEnabled", JSGC_INCREMENTAL_GC_ENABLED, true)              \
   _("perZoneGCEnabled", JSGC_PER_ZONE_GC_ENABLED, true)                     \
   _("unusedChunks", JSGC_UNUSED_CHUNKS, false)                              \
@@ -66,6 +67,7 @@ class TenuredChunk;
   _("minEmptyChunkCount", JSGC_MIN_EMPTY_CHUNK_COUNT, true)                 \
   _("maxEmptyChunkCount", JSGC_MAX_EMPTY_CHUNK_COUNT, true)                 \
   _("compactingEnabled", JSGC_COMPACTING_ENABLED, true)                     \
+  _("nurseryEnabled", JSGC_NURSERY_ENABLED, true)                           \
   _("parallelMarkingEnabled", JSGC_PARALLEL_MARKING_ENABLED, true)          \
   _("parallelMarkingThresholdMB", JSGC_PARALLEL_MARKING_THRESHOLD_MB, true) \
   _("minLastDitchGCPeriod", JSGC_MIN_LAST_DITCH_GC_PERIOD, true)            \
@@ -82,9 +84,12 @@ class TenuredChunk;
   _("helperThreadRatio", JSGC_HELPER_THREAD_RATIO, true)                    \
   _("maxHelperThreads", JSGC_MAX_HELPER_THREADS, true)                      \
   _("helperThreadCount", JSGC_HELPER_THREAD_COUNT, false)                   \
-  _("markingThreadCount", JSGC_MARKING_THREAD_COUNT, true)                  \
+  _("maxMarkingThreads", JSGC_MAX_MARKING_THREADS, true)                    \
+  _("markingThreadCount", JSGC_MARKING_THREAD_COUNT, false)                 \
   _("systemPageSizeKB", JSGC_SYSTEM_PAGE_SIZE_KB, false)                    \
-  _("semispaceNurseryEnabled", JSGC_SEMISPACE_NURSERY_ENABLED, true)
+  _("semispaceNurseryEnabled", JSGC_SEMISPACE_NURSERY_ENABLED, true)        \
+  _("generateMissingAllocSites", JSGC_GENERATE_MISSING_ALLOC_SITES, true)   \
+  _("highFrequencyMode", JSGC_HIGH_FREQUENCY_MODE, false)
 
 // Get the key and writability give a GC parameter name.
 extern bool GetGCParameterInfo(const char* name, JSGCParamKey* keyOut,

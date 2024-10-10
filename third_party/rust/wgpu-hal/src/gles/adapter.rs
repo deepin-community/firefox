@@ -104,7 +104,7 @@ impl super::Adapter {
         }
     }
 
-    fn make_info(vendor_orig: String, renderer_orig: String) -> wgt::AdapterInfo {
+    fn make_info(vendor_orig: String, renderer_orig: String, version: String) -> wgt::AdapterInfo {
         let vendor = vendor_orig.to_lowercase();
         let renderer = renderer_orig.to_lowercase();
 
@@ -184,8 +184,8 @@ impl super::Adapter {
             vendor: vendor_id,
             device: 0,
             device_type: inferred_device_type,
-            driver: String::new(),
-            driver_info: String::new(),
+            driver: "".to_owned(),
+            driver_info: version,
             backend: wgt::Backend::Gl,
         }
     }
@@ -471,7 +471,6 @@ impl super::Adapter {
             wgt::Features::SHADER_EARLY_DEPTH_TEST,
             supported((3, 1), (4, 2)) || extensions.contains("GL_ARB_shader_image_load_store"),
         );
-        features.set(wgt::Features::SHADER_UNUSED_VERTEX_OUTPUT, true);
         if extensions.contains("GL_ARB_timer_query") {
             features.set(wgt::Features::TIMESTAMP_QUERY, true);
             features.set(wgt::Features::TIMESTAMP_QUERY_INSIDE_ENCODERS, true);
@@ -504,11 +503,14 @@ impl super::Adapter {
             wgt::Features::TEXTURE_COMPRESSION_BC,
             bcn_exts.iter().all(|&ext| extensions.contains(ext)),
         );
+        features.set(
+            wgt::Features::TEXTURE_COMPRESSION_BC_SLICED_3D,
+            bcn_exts.iter().all(|&ext| extensions.contains(ext)), // BC guaranteed Sliced 3D
+        );
         let has_etc = if cfg!(any(webgl, Emscripten)) {
             extensions.contains("WEBGL_compressed_texture_etc")
         } else {
-            // This is a required part of GLES3, but not part of Desktop GL at all.
-            es_ver.is_some()
+            es_ver.is_some() || extensions.contains("GL_ARB_ES3_compatibility")
         };
         features.set(wgt::Features::TEXTURE_COMPRESSION_ETC2, has_etc);
 
@@ -728,6 +730,8 @@ impl super::Adapter {
             } else {
                 !0
             },
+            min_subgroup_size: 0,
+            max_subgroup_size: 0,
             max_push_constant_size: super::MAX_PUSH_CONSTANTS as u32 * 4,
             min_uniform_buffer_offset_alignment,
             min_storage_buffer_offset_alignment,
@@ -776,7 +780,7 @@ impl super::Adapter {
             },
             max_compute_workgroups_per_dimension,
             max_buffer_size: i32::MAX as u64,
-            max_non_sampler_bindings: std::u32::MAX,
+            max_non_sampler_bindings: u32::MAX,
         };
 
         let mut workarounds = super::Workarounds::empty();
@@ -825,7 +829,7 @@ impl super::Adapter {
                     max_msaa_samples: max_samples,
                 }),
             },
-            info: Self::make_info(vendor, renderer),
+            info: Self::make_info(vendor, renderer, version),
             features,
             capabilities: crate::Capabilities {
                 limits,
@@ -929,6 +933,7 @@ impl crate::Adapter for super::Adapter {
         &self,
         features: wgt::Features,
         _limits: &wgt::Limits,
+        _memory_hints: &wgt::MemoryHints,
     ) -> Result<crate::OpenDevice<super::Api>, crate::DeviceError> {
         let gl = &self.shared.context.lock();
         unsafe { gl.pixel_store_i32(glow::UNPACK_ALIGNMENT, 1) };
@@ -966,6 +971,7 @@ impl crate::Adapter for super::Adapter {
                 main_vao,
                 #[cfg(all(native, feature = "renderdoc"))]
                 render_doc: Default::default(),
+                counters: Default::default(),
             },
             queue: super::Queue {
                 shared: Arc::clone(&self.shared),
@@ -1091,7 +1097,7 @@ impl crate::Adapter for super::Adapter {
             Tf::Rgba8Sint => renderable | storage,
             Tf::Rgb10a2Uint => renderable,
             Tf::Rgb10a2Unorm => filterable_renderable,
-            Tf::Rg11b10Float => filterable | float_renderable,
+            Tf::Rg11b10UFloat => filterable | float_renderable,
             Tf::Rg32Uint => renderable,
             Tf::Rg32Sint => renderable,
             Tf::Rg32Float => unfilterable | float_renderable | texture_float_linear,
@@ -1150,6 +1156,11 @@ impl crate::Adapter for super::Adapter {
         &self,
         surface: &super::Surface,
     ) -> Option<crate::SurfaceCapabilities> {
+        #[cfg(webgl)]
+        if self.shared.context.webgl2_context != surface.webgl2_context {
+            return None;
+        }
+
         if surface.presentable {
             let mut formats = vec![
                 wgt::TextureFormat::Rgba8Unorm,

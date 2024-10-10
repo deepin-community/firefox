@@ -207,7 +207,11 @@ void nsContainerFrame::SafelyDestroyFrameListProp(
   // delete the property -- that's why we fetch the property again before
   // removing each frame rather than fetching it once and iterating the list.
   while (nsFrameList* frameList = GetProperty(aProp)) {
-    nsIFrame* frame = frameList->RemoveFirstChild();
+    // Note: Similar to nsFrameList::DestroyFrames(), we remove the frames in
+    // reverse order to avoid unnecessary updates to the first-continuation and
+    // first-in-flow cache. If we delete them from front to back, updating the
+    // cache has a O(n^2) time complexity.
+    nsIFrame* frame = frameList->RemoveLastChild();
     if (MOZ_LIKELY(frame)) {
       frame->Destroy(aContext);
     } else {
@@ -780,7 +784,7 @@ void nsContainerFrame::SyncFrameViewAfterReflow(nsPresContext* aPresContext,
   if (!(aFlags & ReflowChildFlags::NoSizeView)) {
     nsViewManager* vm = aView->GetViewManager();
 
-    vm->ResizeView(aView, aInkOverflowArea, true);
+    vm->ResizeView(aView, aInkOverflowArea);
   }
 }
 
@@ -812,19 +816,15 @@ LogicalSize nsContainerFrame::ComputeAutoSize(
     const mozilla::LogicalSize& aBorderPadding,
     const StyleSizeOverrides& aSizeOverrides, ComputeSizeFlags aFlags) {
   LogicalSize result(aWM, 0xdeadbeef, NS_UNCONSTRAINEDSIZE);
-  nscoord availBased =
-      aAvailableISize - aMargin.ISize(aWM) - aBorderPadding.ISize(aWM);
   if (aFlags.contains(ComputeSizeFlag::ShrinkWrap)) {
-    // Only bother computing our 'auto' ISize if the result will be used.
-    const auto& styleISize = aSizeOverrides.mStyleISize
-                                 ? *aSizeOverrides.mStyleISize
-                                 : StylePosition()->ISize(aWM);
-    if (styleISize.IsAuto()) {
-      result.ISize(aWM) =
-          ShrinkISizeToFit(aRenderingContext, availBased, aFlags);
-    }
+    // Delegate to nsIFrame::ComputeAutoSize() for computing the shrink-wrapping
+    // size.
+    result = nsIFrame::ComputeAutoSize(aRenderingContext, aWM, aCBSize,
+                                       aAvailableISize, aMargin, aBorderPadding,
+                                       aSizeOverrides, aFlags);
   } else {
-    result.ISize(aWM) = availBased;
+    result.ISize(aWM) =
+        aAvailableISize - aMargin.ISize(aWM) - aBorderPadding.ISize(aWM);
   }
 
   if (IsTableCaption()) {
@@ -956,9 +956,6 @@ void nsContainerFrame::PositionChildViews(nsIFrame* aFrame) {
   // Currently only nsMenuFrame has a popupList and during layout will adjust
   // the view manually to position the popup.
   for (const auto& [list, listID] : aFrame->ChildLists()) {
-    if (listID == FrameChildListID::Popup) {
-      continue;
-    }
     for (nsIFrame* childFrame : list) {
       // Position the frame's view (if it has one) otherwise recursively
       // process its children
@@ -2244,22 +2241,19 @@ LogicalSize nsContainerFrame::ComputeSizeWithIntrinsicDimensions(
   Stretch stretchB = eNoStretch;  // stretch behavior in the block axis
 
   const bool isOrthogonal = aWM.IsOrthogonalTo(parentFrame->GetWritingMode());
-  const bool isVertical = aWM.IsVertical();
   const LogicalSize fallbackIntrinsicSize(aWM, kFallbackIntrinsicSize);
-  const auto& isizeCoord =
-      isVertical ? aIntrinsicSize.height : aIntrinsicSize.width;
-  const bool hasIntrinsicISize = isizeCoord.isSome();
-  nscoord intrinsicISize = std::max(0, isizeCoord.valueOr(0));
+  const Maybe<nscoord>& maybeIntrinsicISize = aIntrinsicSize.ISize(aWM);
+  const bool hasIntrinsicISize = maybeIntrinsicISize.isSome();
+  nscoord intrinsicISize = std::max(0, maybeIntrinsicISize.valueOr(0));
 
-  const auto& bsizeCoord =
-      isVertical ? aIntrinsicSize.width : aIntrinsicSize.height;
-  const bool hasIntrinsicBSize = bsizeCoord.isSome();
-  nscoord intrinsicBSize = std::max(0, bsizeCoord.valueOr(0));
+  const auto& maybeIntrinsicBSize = aIntrinsicSize.BSize(aWM);
+  const bool hasIntrinsicBSize = maybeIntrinsicBSize.isSome();
+  nscoord intrinsicBSize = std::max(0, maybeIntrinsicBSize.valueOr(0));
 
   if (!isAutoOrMaxContentISize) {
     iSize = ComputeISizeValue(aRenderingContext, aWM, aCBSize, boxSizingAdjust,
                               boxSizingToMarginEdgeISize, styleISize,
-                              aSizeOverrides, aFlags)
+                              styleBSize, aspectRatio, aFlags)
                 .mISize;
   } else if (MOZ_UNLIKELY(isGridItem) &&
              !parentFrame->IsMasonry(isOrthogonal ? LogicalAxis::Block
@@ -2293,7 +2287,7 @@ LogicalSize nsContainerFrame::ComputeSizeWithIntrinsicDimensions(
       !(isFlexItem && flexMainAxis == LogicalAxis::Inline)) {
     maxISize = ComputeISizeValue(aRenderingContext, aWM, aCBSize,
                                  boxSizingAdjust, boxSizingToMarginEdgeISize,
-                                 maxISizeCoord, aSizeOverrides, aFlags)
+                                 maxISizeCoord, styleBSize, aspectRatio, aFlags)
                    .mISize;
   } else {
     maxISize = nscoord_MAX;
@@ -2309,7 +2303,7 @@ LogicalSize nsContainerFrame::ComputeSizeWithIntrinsicDimensions(
       !(isFlexItem && flexMainAxis == LogicalAxis::Inline)) {
     minISize = ComputeISizeValue(aRenderingContext, aWM, aCBSize,
                                  boxSizingAdjust, boxSizingToMarginEdgeISize,
-                                 minISizeCoord, aSizeOverrides, aFlags)
+                                 minISizeCoord, styleBSize, aspectRatio, aFlags)
                    .mISize;
   } else {
     // Treat "min-width: auto" as 0.
@@ -2469,12 +2463,12 @@ LogicalSize nsContainerFrame::ComputeSizeWithIntrinsicDimensions(
         bSize = autoSize.height;
       } else {
         // Not honoring an intrinsic ratio: clamp the dimensions independently.
-        iSize = NS_CSS_MINMAX(tentISize, minISize, maxISize);
-        bSize = NS_CSS_MINMAX(tentBSize, minBSize, maxBSize);
+        iSize = CSSMinMax(tentISize, minISize, maxISize);
+        bSize = CSSMinMax(tentBSize, minBSize, maxBSize);
       }
     } else {
       // 'auto' iSize, non-'auto' bSize
-      bSize = NS_CSS_MINMAX(bSize, minBSize, maxBSize);
+      bSize = CSSMinMax(bSize, minBSize, maxBSize);
       if (stretchI != eStretch) {
         if (aspectRatio) {
           iSize = aspectRatio.ComputeRatioDependentSize(
@@ -2488,12 +2482,12 @@ LogicalSize nsContainerFrame::ComputeSizeWithIntrinsicDimensions(
           iSize = fallbackIntrinsicSize.ISize(aWM);
         }
       }  // else - leave iSize as is to fill the CB
-      iSize = NS_CSS_MINMAX(iSize, minISize, maxISize);
+      iSize = CSSMinMax(iSize, minISize, maxISize);
     }
   } else {
     if (isAutoBSize) {
       // non-'auto' iSize, 'auto' bSize
-      iSize = NS_CSS_MINMAX(iSize, minISize, maxISize);
+      iSize = CSSMinMax(iSize, minISize, maxISize);
       if (stretchB != eStretch) {
         if (aspectRatio) {
           bSize = aspectRatio.ComputeRatioDependentSize(LogicalAxis::Block, aWM,
@@ -2507,12 +2501,12 @@ LogicalSize nsContainerFrame::ComputeSizeWithIntrinsicDimensions(
           bSize = fallbackIntrinsicSize.BSize(aWM);
         }
       }  // else - leave bSize as is to fill the CB
-      bSize = NS_CSS_MINMAX(bSize, minBSize, maxBSize);
+      bSize = CSSMinMax(bSize, minBSize, maxBSize);
 
     } else {
       // non-'auto' iSize, non-'auto' bSize
-      iSize = NS_CSS_MINMAX(iSize, minISize, maxISize);
-      bSize = NS_CSS_MINMAX(bSize, minBSize, maxBSize);
+      iSize = CSSMinMax(iSize, minISize, maxISize);
+      bSize = CSSMinMax(bSize, minBSize, maxBSize);
     }
   }
 

@@ -46,3 +46,25 @@ experimental-features-js-warp-description = Povoľte projekt Warp, ktorý má zl
 experimental-features-ime-search =
     .label = Panel s adresou: zobrazovať výsledky počas zostavovania IME
 experimental-features-ime-search-description = IME (Input Method Editor) je nástroj, ktorý vám umožňuje zadávať zložité symboly, napríklad tie, ktoré sa používajú vo východoázijských alebo indických písaných jazykoch, pomocou štandardnej klávesnice. Povolením tohto experimentu zostane panel s adresou otvorený a zobrazia sa výsledky vyhľadávania a návrhy, zatiaľ čo na zadávanie textu sa používa editor IME. Upozorňujeme, že editor IME môže zobrazovať panel, ktorý prekrýva výsledky panela s adresou, preto sa táto predvoľba odporúča iba pre editor IME, ktorý tento typ panela nepoužíva.
+# Auto Picture-in-Picture
+experimental-features-auto-pip =
+    .label = Obraz v obraze: automatické otváranie po prepnutí kariet
+experimental-features-auto-pip-description = Povolí obraz v obraze na aktívnych videách pri prepínaní kariet.
+genai-settings-chat-title =
+    .label = AI chatbot
+# Updated sidebar settings
+sidebar-title =
+    .label = Bočný panel
+sidebar-description = Počas prehliadania získate jednoduchý prístup k svojej histórii, kartám z iných zariadení, rozšíreniam bočného panela a ďalším položkám. <a data-l10n-name="connect">Zdieľajte spätnú väzbu</a>
+vertical-tabs-title =
+    .label = Vertikálne karty
+vertical-tabs-description = Presuňte karty z hornej časti prehliadača na stranu. Vyžaduje používanie bočného panela. <a data-l10n-name="connect">Zdieľajte spätnú väzbu</a>
+experimental-features-group-browsing =
+    .label = Prehliadanie
+experimental-features-group-developer-tools =
+    .label = Vývojárske nástroje
+experimental-features-group-webpage-display =
+    .label = Zobrazenie webovej stránky
+experimental-features-group-customize-browsing =
+    .label = Prispôsobte si prehliadanie
+experimental-features-group-customize-browsing-description = Ak vyskúšate tieto funkcie, <a data-l10n-name="connect">podeľte sa o svoje názory na fórach Connect</a>

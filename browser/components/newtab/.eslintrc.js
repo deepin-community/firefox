@@ -23,14 +23,14 @@ module.exports = {
     {
       // These files use fluent-dom to insert content
       files: [
-        "content-src/asrouter/templates/OnboardingMessage/**",
-        "content-src/asrouter/templates/FirstRun/**",
         "content-src/components/TopSites/**",
         "content-src/components/MoreRecommendations/MoreRecommendations.jsx",
         "content-src/components/CollapsibleSection/CollapsibleSection.jsx",
         "content-src/components/DiscoveryStreamComponents/DSEmptyState/DSEmptyState.jsx",
         "content-src/components/DiscoveryStreamComponents/DSPrivacyModal/DSPrivacyModal.jsx",
         "content-src/components/CustomizeMenu/**",
+        "content-src/components/WallpapersSection/**",
+        "content-src/components/DiscoveryStreamComponents/TopicSelection/TopicSelection.jsx",
       ],
       rules: {
         "jsx-a11y/anchor-has-content": "off",

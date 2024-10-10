@@ -588,18 +588,19 @@ static int adjust_q_cbr(const AV1_COMP *cpi, int q, int active_worst_quality,
   // Apply some control/clamp to QP under certain conditions.
   // Delay the use of the clamping for svc until after num_temporal_layers,
   // to make they have been set for each temporal layer.
+  // Check for rc->q_1/2_frame > 0 in case they have not been set due to
+  // dropped frames.
   if (!frame_is_intra_only(cm) && rc->frames_since_key > 1 &&
+      rc->q_1_frame > 0 && rc->q_2_frame > 0 &&
       (!cpi->ppi->use_svc ||
        svc->current_superframe > (unsigned int)svc->number_temporal_layers) &&
       !change_target_bits_mb && !cpi->rc.rtc_external_ratectrl &&
       (!cpi->oxcf.rc_cfg.gf_cbr_boost_pct ||
        !(refresh_frame->alt_ref_frame || refresh_frame->golden_frame))) {
     // If in the previous two frames we have seen both overshoot and undershoot
-    // clamp Q between the two. Check for rc->q_1/2_frame > 0 in case they have
-    // not been set due to dropped frames.
+    // clamp Q between the two.
     if (rc->rc_1_frame * rc->rc_2_frame == -1 &&
-        rc->q_1_frame != rc->q_2_frame && rc->q_1_frame > 0 &&
-        rc->q_2_frame > 0 && !overshoot_buffer_low) {
+        rc->q_1_frame != rc->q_2_frame && !overshoot_buffer_low) {
       int qclamp = clamp(q, AOMMIN(rc->q_1_frame, rc->q_2_frame),
                          AOMMAX(rc->q_1_frame, rc->q_2_frame));
       // If the previous frame had overshoot and the current q needs to
@@ -2550,16 +2551,17 @@ void av1_rc_set_gf_interval_range(const AV1_COMP *const cpi,
 void av1_rc_update_framerate(AV1_COMP *cpi, int width, int height) {
   const AV1EncoderConfig *const oxcf = &cpi->oxcf;
   RATE_CONTROL *const rc = &cpi->rc;
-  int vbr_max_bits;
   const int MBs = av1_get_MBs(width, height);
 
-  rc->avg_frame_bandwidth =
-      (int)round(oxcf->rc_cfg.target_bandwidth / cpi->framerate);
-  rc->min_frame_bandwidth =
-      (int)(rc->avg_frame_bandwidth * oxcf->rc_cfg.vbrmin_section / 100);
+  const double avg_frame_bandwidth =
+      round(oxcf->rc_cfg.target_bandwidth / cpi->framerate);
+  rc->avg_frame_bandwidth = (int)AOMMIN(avg_frame_bandwidth, INT_MAX);
 
-  rc->min_frame_bandwidth =
-      AOMMAX(rc->min_frame_bandwidth, FRAME_OVERHEAD_BITS);
+  int64_t vbr_min_bits =
+      (int64_t)rc->avg_frame_bandwidth * oxcf->rc_cfg.vbrmin_section / 100;
+  vbr_min_bits = AOMMIN(vbr_min_bits, INT_MAX);
+
+  rc->min_frame_bandwidth = AOMMAX((int)vbr_min_bits, FRAME_OVERHEAD_BITS);
 
   // A maximum bitrate for a frame is defined.
   // The baseline for this aligns with HW implementations that
@@ -2568,11 +2570,12 @@ void av1_rc_update_framerate(AV1_COMP *cpi, int width, int height) {
   // a very high rate is given on the command line or the the rate cannnot
   // be acheived because of a user specificed max q (e.g. when the user
   // specifies lossless encode.
-  vbr_max_bits =
-      (int)(((int64_t)rc->avg_frame_bandwidth * oxcf->rc_cfg.vbrmax_section) /
-            100);
+  int64_t vbr_max_bits =
+      (int64_t)rc->avg_frame_bandwidth * oxcf->rc_cfg.vbrmax_section / 100;
+  vbr_max_bits = AOMMIN(vbr_max_bits, INT_MAX);
+
   rc->max_frame_bandwidth =
-      AOMMAX(AOMMAX((MBs * MAX_MB_RATE), MAXRATE_1080P), vbr_max_bits);
+      AOMMAX(AOMMAX((MBs * MAX_MB_RATE), MAXRATE_1080P), (int)vbr_max_bits);
 
   av1_rc_set_gf_interval_range(cpi, rc);
 }
@@ -2592,6 +2595,8 @@ static void vbr_rate_correction(AV1_COMP *cpi, int *this_frame_target) {
 #else
   int64_t vbr_bits_off_target = p_rc->vbr_bits_off_target;
 #endif
+  int64_t frame_target = *this_frame_target;
+
   const int stats_count =
       cpi->ppi->twopass.stats_buf_ctx->total_stats != NULL
           ? (int)cpi->ppi->twopass.stats_buf_ctx->total_stats->count
@@ -2600,13 +2605,13 @@ static void vbr_rate_correction(AV1_COMP *cpi, int *this_frame_target) {
       16, (int)(stats_count - (int)cpi->common.current_frame.frame_number));
   assert(VBR_PCT_ADJUSTMENT_LIMIT <= 100);
   if (frame_window > 0) {
-    const int max_delta = (int)AOMMIN(
-        abs((int)(vbr_bits_off_target / frame_window)),
-        ((int64_t)(*this_frame_target) * VBR_PCT_ADJUSTMENT_LIMIT) / 100);
+    const int64_t max_delta =
+        AOMMIN(llabs((vbr_bits_off_target / frame_window)),
+               (frame_target * VBR_PCT_ADJUSTMENT_LIMIT) / 100);
 
     // vbr_bits_off_target > 0 means we have extra bits to spend
     // vbr_bits_off_target < 0 we are currently overshooting
-    *this_frame_target += (vbr_bits_off_target >= 0) ? max_delta : -max_delta;
+    frame_target += (vbr_bits_off_target >= 0) ? max_delta : -max_delta;
   }
 
 #if CONFIG_FPMT_TEST
@@ -2623,32 +2628,35 @@ static void vbr_rate_correction(AV1_COMP *cpi, int *this_frame_target) {
       p_rc->vbr_bits_off_target_fast &&
 #endif
       !rc->is_src_frame_alt_ref) {
-    int one_frame_bits = AOMMAX(rc->avg_frame_bandwidth, *this_frame_target);
-    int fast_extra_bits;
+    int64_t one_frame_bits = AOMMAX(rc->avg_frame_bandwidth, frame_target);
+    int64_t fast_extra_bits;
 #if CONFIG_FPMT_TEST
-    fast_extra_bits = (int)AOMMIN(vbr_bits_off_target_fast, one_frame_bits);
+    fast_extra_bits = AOMMIN(vbr_bits_off_target_fast, one_frame_bits);
     fast_extra_bits =
-        (int)AOMMIN(fast_extra_bits,
-                    AOMMAX(one_frame_bits / 8, vbr_bits_off_target_fast / 8));
+        AOMMIN(fast_extra_bits,
+               AOMMAX(one_frame_bits / 8, vbr_bits_off_target_fast / 8));
 #else
+    fast_extra_bits = AOMMIN(p_rc->vbr_bits_off_target_fast, one_frame_bits);
     fast_extra_bits =
-        (int)AOMMIN(p_rc->vbr_bits_off_target_fast, one_frame_bits);
-    fast_extra_bits = (int)AOMMIN(
-        fast_extra_bits,
-        AOMMAX(one_frame_bits / 8, p_rc->vbr_bits_off_target_fast / 8));
+        AOMMIN(fast_extra_bits,
+               AOMMAX(one_frame_bits / 8, p_rc->vbr_bits_off_target_fast / 8));
 #endif
+    fast_extra_bits = AOMMIN(fast_extra_bits, INT_MAX);
     if (fast_extra_bits > 0) {
-      // Update this_frame_target only if additional bits are available from
+      // Update frame_target only if additional bits are available from
       // local undershoot.
-      *this_frame_target += (int)fast_extra_bits;
+      frame_target += fast_extra_bits;
     }
     // Store the fast_extra_bits of the frame and reduce it from
     // vbr_bits_off_target_fast during postencode stage.
-    rc->frame_level_fast_extra_bits = fast_extra_bits;
+    rc->frame_level_fast_extra_bits = (int)fast_extra_bits;
     // Retaining the condition to udpate during postencode stage since
     // fast_extra_bits are calculated based on vbr_bits_off_target_fast.
     cpi->do_update_vbr_bits_off_target_fast = 1;
   }
+
+  // Clamp the target for the frame to the maximum allowed for one frame.
+  *this_frame_target = (int)AOMMIN(frame_target, INT_MAX);
 }
 
 void av1_set_target_rate(AV1_COMP *cpi, int width, int height) {
@@ -3073,7 +3081,7 @@ static void rc_scene_detection_onepass_rt(AV1_COMP *cpi,
   }
   int num_zero_temp_sad = 0;
   uint32_t min_thresh = 10000;
-  if (cpi->oxcf.tune_cfg.content != AOM_CONTENT_SCREEN) {
+  if (cpi->sf.rt_sf.higher_thresh_scene_detection) {
     min_thresh = cm->width * cm->height <= 320 * 240 && cpi->framerate < 10.0
                      ? 50000
                      : 100000;

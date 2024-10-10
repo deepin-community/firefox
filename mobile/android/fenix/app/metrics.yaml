@@ -45,7 +45,7 @@ events:
       source:
         description: |
           The view the user was on when they initiated the search (For example:
-          `HOME`, `HOME_QR`, `HOME_VOICE` or `BROWSER`)
+          `Home` or `Browser`)
         type: string
     bugs:
       - https://github.com/mozilla-mobile/fenix/issues/959
@@ -212,6 +212,7 @@ events:
     expires: never
   marketing_notification_allowed:
     type: boolean
+    lifetime: application
     description: |
       True if marketing notifications are allowed, otherwise false.
     bugs:
@@ -868,11 +869,12 @@ translations:
           A string containing the name of the item the user tapped. These items
           include:
           main_flow_toolbar, main_flow_browser, page_settings, global_settings,
-          global_lang_settings, global_site_settings, downloads
+          global_lang_settings, global_site_settings, downloads, global_settings_from_preferences
         type: string
     bugs:
       - https://bugzilla.mozilla.org/show_bug.cgi?id=1883968
       - https://bugzilla.mozilla.org/show_bug.cgi?id=1886851
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1890838
     data_reviews:
       - https://bugzilla.mozilla.org/show_bug.cgi?id=1883968#c6
       - https://bugzilla.mozilla.org/show_bug.cgi?id=1886851#c8
@@ -1672,6 +1674,22 @@ onboarding:
     metadata:
       tags:
         - Onboarding
+  started:
+    type: event
+    description: |
+      User started onboarding.
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1872968
+    data_reviews:
+      - https://phabricator.services.mozilla.com/D215034
+    data_sensitivity:
+      - interaction
+    notification_emails:
+      - android-probes@mozilla.com
+    expires: never
+    metadata:
+      tags:
+        - Onboarding
 
 search_shortcuts:
   selected:
@@ -1893,6 +1911,39 @@ login_dialog:
       tags:
         - Logins
 
+generated_password_dialog:
+  shown:
+    type: event
+    description: |
+      The password generator prompt was pressed
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1877238
+    data_reviews:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1877238
+    data_sensitivity:
+      - interaction
+    notification_emails:
+      - android-probes@mozilla.com
+    expires: never
+    metadata:
+      tags:
+        - Logins
+  filled:
+    type: event
+    description: |
+      The password generator prompt "Use password" was pressed
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1877238
+    data_reviews:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1877238
+    data_sensitivity:
+      - interaction
+    notification_emails:
+      - android-probes@mozilla.com
+    expires: never
+    metadata:
+      tags:
+        - Logins
 metrics:
   default_browser:
     type: boolean
@@ -2648,21 +2699,6 @@ metrics:
     metadata:
       tags:
         - Performance
-  install_source:
-    type: string
-    lifetime: application
-    description: |
-      Used to identify the source the app was installed from.
-    bugs:
-      - https://github.com/mozilla-mobile/fenix/issues/22138
-    data_reviews:
-      - https://github.com/mozilla-mobile/fenix/pull/22224#issuecomment-956749994
-      - https://github.com/mozilla-mobile/fenix/pull/23453#issuecomment-1024694220
-    data_sensitivity:
-      - technical
-    notification_emails:
-      - android-probes@mozilla.com
-    expires: never
   inactive_tabs_count:
     type: quantity
     description: |
@@ -2707,6 +2743,7 @@ metrics:
         - Wallpapers
   notifications_allowed:
     type: boolean
+    lifetime: application
     description: |
       True if notifications are allowed, otherwise false.
     send_in_pings:
@@ -2790,6 +2827,7 @@ metrics:
 customize_home:
   most_visited_sites:
     type: boolean
+    lifetime: application
     description: |
       An indication of whether the most visited sites
       are enabled to be displayed
@@ -2809,6 +2847,7 @@ customize_home:
     expires: never
   jump_back_in:
     type: boolean
+    lifetime: application
     description: |
       An indication of whether the Jump back
       in section is enabled to be displayed
@@ -2826,11 +2865,12 @@ customize_home:
     notification_emails:
       - android-probes@mozilla.com
     expires: never
-  recently_saved:
+  bookmarks:
     type: boolean
+    lifetime: application
     description: |
       An indication of whether the recently
-      saved section is enabled to be displayed
+      saved section is enabled to be displayed. This was previously customize_home.recently_saved.
     send_in_pings:
       - metrics
     bugs:
@@ -2847,6 +2887,7 @@ customize_home:
     expires: never
   recently_visited:
     type: boolean
+    lifetime: application
     description: |
       An indication of whether the Recently
       visited section is enabled to be displayed
@@ -2866,6 +2907,7 @@ customize_home:
     expires: never
   pocket:
     type: boolean
+    lifetime: application
     description: |
       An indication of whether Pocket is enabled to be displayed
     send_in_pings:
@@ -2887,6 +2929,7 @@ customize_home:
         - PocketIntegration
   sponsored_pocket:
     type: boolean
+    lifetime: application
     description: |
       An indication of whether Pocket sponsored stories are enabled
       to be displayed
@@ -2908,6 +2951,7 @@ customize_home:
         - PocketIntegration
   contile:
     type: boolean
+    lifetime: application
     description: |
       An indication of whether Contile is enabled to be displayed
     send_in_pings:
@@ -2936,7 +2980,8 @@ customize_home:
           toggled.
 
           We currently track: most_visited_sites, jump_back_in,
-          recently_visited, recently_saved, pocket, and contile.
+          recently_visited, bookmarks, pocket, and contile.
+          We previously tracked bookmarks as recently_saved.
       enabled:
         type: boolean
         description: "Whether or not the preference is *now* enabled"
@@ -2954,6 +2999,7 @@ customize_home:
     expires: never
   opening_screen:
     type: string
+    lifetime: application
     description: |
       What opening screen preference the user has selected
       under "Customize Home".
@@ -2974,6 +3020,7 @@ customize_home:
 preferences:
   studies_enabled:
     type: boolean
+    lifetime: application
     description: >
       A metric indicating whether or not the user has studies enabled
       default: true
@@ -3007,6 +3054,7 @@ preferences:
     expires: never
   search_suggestions_enabled:
     type: boolean
+    lifetime: application
     description: |
       Whether or not the user has search suggestions enabled
       default: true
@@ -3031,6 +3079,7 @@ preferences:
         - Settings
   remote_debugging_enabled:
     type: boolean
+    lifetime: application
     description: |
       Whether or not the user has remote debugging enabled
       default: false
@@ -3056,6 +3105,7 @@ preferences:
         - Settings
   telemetry_enabled:
     type: boolean
+    lifetime: application
     description: |
       Whether or not the user has telemetry enabled. Note we should
       never receive a "false" value for this since telemetry would
@@ -3082,6 +3132,7 @@ preferences:
         - Settings
   enhanced_tracking_protection:
     type: string
+    lifetime: application
     description: |
       What type of enhanced tracking protection the user has enabled.
       "standard," "strict," "custom," or "" (if disabled)
@@ -3109,6 +3160,7 @@ preferences:
         - Settings
   etp_custom_cookies_selection:
     type: string
+    lifetime: application
     description: |
       The option user has selected in the "Custom" mode of the
       Enhanced Tracking Protection settings.
@@ -3136,6 +3188,7 @@ preferences:
         - Settings
   bookmarks_suggestion:
     type: boolean
+    lifetime: application
     description: |
       Whether or not the user has enabled bookmark search suggestions
       default: true
@@ -3161,6 +3214,7 @@ preferences:
         - Settings
   browsing_history_suggestion:
     type: boolean
+    lifetime: application
     description: |
       Whether or not the user has enabled browsing history suggestions.
       default: true
@@ -3186,6 +3240,7 @@ preferences:
         - Settings
   clipboard_suggestions_enabled:
     type: boolean
+    lifetime: application
     description: |
       Whether or not the user has enabled clipboard search suggestions.
       default: true
@@ -3211,6 +3266,7 @@ preferences:
         - Settings
   search_shortcuts_enabled:
     type: boolean
+    lifetime: application
     description: |
       Whether or not the user has enabled search shortcuts.
       default: true
@@ -3235,6 +3291,7 @@ preferences:
         - Settings
   signed_in_sync:
     type: boolean
+    lifetime: application
     description: |
       Whether or not the user is signed into FxA
       default: false
@@ -3261,6 +3318,7 @@ preferences:
         - Settings
   sync_items:
     type: string_list
+    lifetime: application
     description: |
       The list of items the user has chosen to sync with FxA.
       default: "" if the user is signed out. Otherwise defaults to
@@ -3288,6 +3346,7 @@ preferences:
         - Settings
   voice_search_enabled:
     type: boolean
+    lifetime: application
     description: |
       Whether or not the user has enabled the voice search button.
       default: true
@@ -3315,6 +3374,7 @@ preferences:
         - Settings
   toolbar_position_setting:
     type: string
+    lifetime: application
     description: |
       The position of the toolbar
       default: bottom (defaults to top if the user has accessibility services)
@@ -3339,6 +3399,7 @@ preferences:
         - Settings
   accessibility_services:
     type: string_list
+    lifetime: application
     description: |
       Whether or not the user has touch exploration or switch services enabled.
       These are built into the Android OS, not Fenix prefs.
@@ -3363,6 +3424,7 @@ preferences:
         - Settings
   open_links_in_app_enabled:
     type: string
+    lifetime: application
     description: |
       The user has the open links in apps feature enabled.
       "ask_before_opening", "always" or "never".
@@ -3383,6 +3445,7 @@ preferences:
         - Settings
   user_theme:
     type: string
+    lifetime: application
     description: |
       The theme the user has enabled. "light," "dark," "system," or "battery"
       default: "system" for API 28+, else "light"
@@ -3407,6 +3470,7 @@ preferences:
         - Settings
   inactive_tabs_enabled:
     type: boolean
+    lifetime: application
     description: |
       Whether or not the user has the inactive tabs feature enabled.
       default: true
@@ -5594,24 +5658,6 @@ tab_strip:
     metadata:
       tags:
         - Tabs
-  enabled:
-    type: boolean
-    description: |
-      Whether or not the tab strip feature is enabled
-    send_in_pings:
-      - metrics
-    bugs:
-      - https://bugzilla.mozilla.org/show_bug.cgi?id=1882111
-    data_reviews:
-      - https://bugzilla.mozilla.org/show_bug.cgi?id=1882111
-    data_sensitivity:
-      - interaction
-    notification_emails:
-      - android-probes@mozilla.com
-    expires: never
-    metadata:
-      tags:
-        - Tabs
 
 collections:
   renamed:
@@ -6697,6 +6743,7 @@ logins:
         - Logins
   saved_all:
     type: quantity
+    lifetime: application
     description: |
       Counter of number of passwords currently saved by user.
     bugs:
@@ -7081,11 +7128,11 @@ top_sites:
     expires: never
   context_id:
     type: uuid
+    lifetime: application
     description: |
       A UUID that is unjoinable with other browser metrics. This ID will not be
       shared with AdM, only for internal uses. This ID is shared across all
       contextual services features.
-    lifetime: application
     send_in_pings:
       - topsites-impression
     bugs:
@@ -7642,6 +7689,7 @@ first_session:
         - Attribution
   distribution_id:
     type: string
+    lifetime: application
     description: |
       A string containing the distribution identifier. This is currently used
       to identify installs from Mozilla Online.
@@ -7729,6 +7777,28 @@ first_session:
       tags:
         - Performance
         - Attribution
+  install_source:
+    type: string
+    lifetime: application
+    description: |
+      Used to identify the source the app was installed from.
+    send_in_pings:
+      - metrics
+      - first-session
+      - baseline
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1898363
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1908383
+    data_reviews:
+      - https://phabricator.services.mozilla.com/D212913
+      - https://phabricator.services.mozilla.com/D216935
+    data_sensitivity:
+      - technical
+    notification_emails:
+      - android-probes@mozilla.com
+    expires: never
+    no_lint:
+      - BASELINE_PING
 play_store_attribution:
   install_referrer_response:
     type: text
@@ -8088,6 +8158,7 @@ addons:
         - WebExtensions
   has_installed_addons:
     type: boolean
+    lifetime: application
     description: |
       Whether or not the user has installed add-ons on the device.
     send_in_pings:
@@ -8111,6 +8182,7 @@ addons:
         - WebExtensions
   has_enabled_addons:
     type: boolean
+    lifetime: application
     description: |
       Whether or not the user has enabled add-ons on the device.
     send_in_pings:
@@ -8134,6 +8206,7 @@ addons:
         - WebExtensions
   installed_addons:
     type: string_list
+    lifetime: application
     description: |
       A list of all installed add-ons on the device.
     send_in_pings:
@@ -8157,6 +8230,7 @@ addons:
         - WebExtensions
   enabled_addons:
     type: string_list
+    lifetime: application
     description: |
       A list of all enabled add-ons on the device.
     send_in_pings:
@@ -9175,6 +9249,52 @@ engine_tab:
       - android-probes@mozilla.com
     expires: never
 
+app_exit_info:
+  process_exited:
+    type: event
+    description: |
+      A process has exited.
+    extra_keys:
+      date:
+        type: string
+        description: |
+          The date of the process exit.
+      importance:
+        type: string
+        description: |
+          The process' importance for the OS at the time of exiting.
+          See ActivityManager.RunningAppProcessInfo.
+      process_type:
+        type: string
+        description: |
+          The type of process that experienced an exit.
+      pss:
+        type: quantity
+        description: |
+          The PSS (Proportional Set Size) of the process in megabytes at the time of exiting.
+      rss:
+        type: quantity
+        description: |
+          The RSS (Residential Set Size) of the process in megabytes at the time of exiting.
+      reason:
+        type: string
+        description: |
+          The reason why process has exited.
+          See ApplicationExitInfo for the reason values.
+      death_description:
+        type: string
+        description: |
+          The human readable description of process' death.
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1836795
+    data_reviews:
+      - https://phabricator.services.mozilla.com/D206782
+    data_sensitivity:
+      - technical
+    notification_emails:
+      - android-probes@mozilla.com
+    expires: never
+
 synced_tabs:
   synced_tabs_suggestion_clicked:
     type: event
@@ -9467,6 +9587,7 @@ awesomebar:
 android_autofill:
   supported:
     type: boolean
+    lifetime: application
     description: |
       Whether or not Android Autofill is supported by the device and is
       supported for this user.
@@ -9484,6 +9605,7 @@ android_autofill:
     expires: never
   enabled:
     type: boolean
+    lifetime: application
     description: |
       Whether or not Firefox is the Android Autofill provider for this user.
       provider.
@@ -9670,6 +9792,34 @@ home_menu:
       tags:
         - Settings
         - MainMenu
+
+menu:
+  show_cfr:
+    type: event
+    description: |
+      Menu CFR was shown to the user.
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1885640
+    data_reviews:
+      - https://phabricator.services.mozilla.com/D216600
+    data_sensitivity:
+      - interaction
+    notification_emails:
+      - android-probes@mozilla.com
+    expires: never
+  dismiss_cfr:
+    type: event
+    description: |
+      A user has dismissed the Menu CFR.
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1885640
+    data_reviews:
+      - https://phabricator.services.mozilla.com/D216600
+    data_sensitivity:
+      - interaction
+    notification_emails:
+      - android-probes@mozilla.com
+    expires: never
 
 home_screen:
   home_screen_displayed:
@@ -9892,11 +10042,11 @@ recent_tabs:
       - android-probes@mozilla.com
     expires: never
 
-recent_bookmarks:
+home_bookmarks:
   shown:
     type: event
     description: |
-      Recent bookmarks section was shown to the user.
+      Bookmarks section of home was shown to the user. This was previously recent_bookmarks.shown.
     bugs:
       - https://github.com/mozilla-mobile/fenix/issues/22103
     data_reviews:
@@ -9913,8 +10063,8 @@ recent_bookmarks:
     lifetime: application
     description: |
       A counter that indicates the number of times that a user
-      has clicked on a recently saved bookmark from the home
-      screen.
+      has clicked on a bookmark from the home
+      screen. This was previously recent_bookmarks.bookmark_clicked.
     send_in_pings:
       - metrics
     bugs:
@@ -9934,8 +10084,8 @@ recent_bookmarks:
     lifetime: application
     description: |
       A counter that indicates the number of times that a user
-      has clicked the show all button for recently saved bookmarks
-      on the home screen.
+      has clicked the show all button for bookmarks
+      on the home screen. This was previously recent_bookmarks.show_all_bookmarks.
     send_in_pings:
       - metrics
     bugs:
@@ -9950,11 +10100,11 @@ recent_bookmarks:
     notification_emails:
       - android-probes@mozilla.com
     expires: never
-  recent_bookmarks_count:
+  bookmarks_count:
     type: quantity
     description: |
       The number of bookmarked items appearing in the
-      Recently Saved section on the home page.
+      Bookmarks section on the home page. This was previously recent_bookmarks.recent_bookmarks_count.
     bugs:
       - https://github.com/mozilla-mobile/fenix/issues/22075
     data_reviews:
@@ -9994,6 +10144,7 @@ recent_searches:
 credit_cards:
   saved:
     type: counter
+    lifetime: application
     description: |
       A counter of the number of credit cards that have been saved
       manually by the user.
@@ -11345,6 +11496,7 @@ shopping:
 shopping.settings:
   component_opted_out:
     type: boolean
+    lifetime: application
     description: |
       Whether or not the user opted out of review quality check feature.
     send_in_pings:
@@ -11364,6 +11516,7 @@ shopping.settings:
         - Shopping
   nimbus_disabled_shopping:
     type: boolean
+    lifetime: application
     description: |
       Whether or not Nimbus has disabled the use of the shopping component.
     send_in_pings:
@@ -11383,6 +11536,7 @@ shopping.settings:
         - Shopping
   user_has_onboarded:
     type: boolean
+    lifetime: application
     description: |
       Whether or the user has completed the review quality check onboarding.
     send_in_pings:
@@ -11402,6 +11556,7 @@ shopping.settings:
         - Shopping
   disabled_ads:
     type: boolean
+    lifetime: application
     description: |
       Indicates if the user has disabled ads.
     send_in_pings:
@@ -11588,6 +11743,58 @@ debug_drawer:
     expires: never
 
 navigation_bar:
+  navigation_bar_cfr_shown:
+    type: event
+    description: |
+      Navigation bar CFR was shown to the user.
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1889474
+    data_reviews:
+      - https://phabricator.services.mozilla.com/D211225
+    data_sensitivity:
+      - interaction
+    notification_emails:
+      - android-probes@mozilla.com
+    expires: never
+  navigation_bar_cfr_dismissed:
+    type: event
+    description: |
+      A user has dismissed the navigation bar CFR.
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1889474
+    data_reviews:
+      - https://phabricator.services.mozilla.com/D211225
+    data_sensitivity:
+      - interaction
+    notification_emails:
+      - android-probes@mozilla.com
+    expires: never
+  navigation_buttons_cfr_shown:
+    type: event
+    description: |
+      Navigation Buttons CFR was shown to the user.
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1891615
+    data_reviews:
+      - https://phabricator.services.mozilla.com/D216332
+    data_sensitivity:
+      - interaction
+    notification_emails:
+      - android-probes@mozilla.com
+    expires: never
+  navigation_buttons_cfr_dismissed:
+    type: event
+    description: |
+      A user has dismissed the navigation buttons CFR.
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1891615
+    data_reviews:
+      - https://phabricator.services.mozilla.com/D216332
+    data_sensitivity:
+      - interaction
+    notification_emails:
+      - android-probes@mozilla.com
+    expires: never
   home_search_tapped:
     type: event
     description: |
@@ -11609,6 +11816,19 @@ navigation_bar:
       - https://bugzilla.mozilla.org/show_bug.cgi?id=1889484
     data_reviews:
       - https://bugzilla.mozilla.org/show_bug.cgi?id=1889484
+    data_sensitivity:
+      - interaction
+    notification_emails:
+      - android-probes@mozilla.com
+    expires: never
+  home_tab_tray_long_tapped:
+    type: event
+    description: |
+      When navigation bar tab tray button is long tapped by the user.
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1894512
+    data_reviews:
+      - https://phabricator.services.mozilla.com/D214362
     data_sensitivity:
       - interaction
     notification_emails:
@@ -11679,6 +11899,32 @@ navigation_bar:
     notification_emails:
       - android-probes@mozilla.com
     expires: never
+  browser_new_tab_tapped:
+    type: event
+    description: |
+      When navigation bar new tab button is tapped by the user.
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1908836
+    data_reviews:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1908836
+    data_sensitivity:
+      - interaction
+    notification_emails:
+      - android-probes@mozilla.com
+    expires: never
+  browser_new_tab_long_tapped:
+    type: event
+    description: |
+      When navigation bar new tab button is long tapped by the user.
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1908836
+    data_reviews:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1908836
+    data_sensitivity:
+      - interaction
+    notification_emails:
+      - android-probes@mozilla.com
+    expires: never
   browser_tab_tray_tapped:
     type: event
     description: |
@@ -11687,6 +11933,19 @@ navigation_bar:
       - https://bugzilla.mozilla.org/show_bug.cgi?id=1889484
     data_reviews:
       - https://bugzilla.mozilla.org/show_bug.cgi?id=1889484
+    data_sensitivity:
+      - interaction
+    notification_emails:
+      - android-probes@mozilla.com
+    expires: never
+  browser_tab_tray_long_tapped:
+    type: event
+    description: |
+      When navigation bar tab tray button is long tapped by the user.
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1894512
+    data_reviews:
+      - https://phabricator.services.mozilla.com/D214362
     data_sensitivity:
       - interaction
     notification_emails:
@@ -11715,6 +11974,23 @@ navigation_bar:
       - https://bugzilla.mozilla.org/show_bug.cgi?id=1889484
     data_sensitivity:
       - interaction
+    notification_emails:
+      - android-probes@mozilla.com
+    expires: never
+
+  os_navigation_uses_gestures:
+    type: boolean
+    lifetime: application
+    description: |
+      Whether gesture navigation is used instead of the traditional navigation bar.
+    send_in_pings:
+      - metrics
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1917757
+    data_reviews:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1917757
+    data_sensitivity:
+      - technical
     notification_emails:
       - android-probes@mozilla.com
     expires: never
@@ -11758,4 +12034,72 @@ address_toolbar:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
+    expires: never
+  tablet_navigation_cfr_shown:
+    type: event
+    description: |
+      Tablet navigation bar CFR was shown to the user.
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1908425
+    data_reviews:
+      - https://phabricator.services.mozilla.com/D218373
+    data_sensitivity:
+      - interaction
+    notification_emails:
+      - android-probes@mozilla.com
+    expires: never
+  tablet_navigation_cfr_dismissed:
+    type: event
+    description: |
+      A user has dismissed the tablet navigation bar CFR.
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1908425
+    data_reviews:
+      - https://phabricator.services.mozilla.com/D218373
+    data_sensitivity:
+      - interaction
+    notification_emails:
+      - android-probes@mozilla.com
+    expires: never
+
+customization_settings:
+  dynamic_toolbar:
+    type: boolean
+    lifetime: application
+    description: |
+      True if the user has dynamic toolbar enabled, false if the user has dynamic toolbar disabled.
+    send_in_pings:
+      - metrics
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1908769
+    data_reviews:
+      - https://phabricator.services.mozilla.com/D218789
+    data_sensitivity:
+      - interaction
+    notification_emails:
+      - android-probes@mozilla.com
+    expires: never
+    metadata:
+      tags:
+        - Settings
+
+nimbus_system:
+  recorded_nimbus_context:
+    type: object
+    structure:
+      type: object
+      properties:
+        is_first_run:
+          type: boolean
+    description: |
+      The Nimbus context object that is recorded to Glean
+    bugs:
+      - 'https://bugzilla.mozilla.org/show_bug.cgi?id=1898552'
+    data_reviews:
+      - 'https://bugzilla.mozilla.org/show_bug.cgi?id=1898552#c3'
+    data_sensitivity:
+      - interaction
+    notification_emails:
+      - chumphreys@mozilla.com
+      - project-nimbus@mozilla.com
     expires: never

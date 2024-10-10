@@ -567,6 +567,11 @@ urlbar-result-action-search-w-engine = Bilatu { $engine } erabiliz
 urlbar-result-action-sponsored = Babesleak hornituta
 urlbar-result-action-switch-tab = Aldatu fitxara
 urlbar-result-action-visit = Bisitatu
+# "Switch to tab with container" is used when the target tab is located in a
+# different container.
+# Variables
+# $container (String): the name of the target container
+urlbar-result-action-switch-tab-with-container = Aldatu fitxara · <span>{ $container }</span>
 # Allows the user to visit a URL that was previously copied to the clipboard.
 urlbar-result-action-visit-from-clipboard = Bisitatu arbeletik
 # Directs a user to press the Tab key to perform a search with the specified
@@ -597,6 +602,12 @@ urlbar-result-action-copy-to-clipboard = Kopiatu
 #  $result (String): the string representation for a formula result
 urlbar-result-action-calculator-result = = { $result }
 
+## Strings used for buttons in the urlbar
+
+# Label prompting user to search with a particular search engine.
+#  $engine (String): the name of a search engine that searches a specific site
+urlbar-result-search-with = Bilatu { $engine } erabiliz
+
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
 ## In these actions "Search" is a verb, followed by where the search is performed.
@@ -626,6 +637,9 @@ urlbar-group-quickactions =
 #  $engine (String): the name of the search engine used to search.
 urlbar-group-recent-searches =
     .label = Azken bilaketak
+urlbar-result-menu-trending-why =
+    .label = Zergatik agertu zait hau?
+    .accesskey = Z
 
 ## Reader View toolbar buttons
 
@@ -891,6 +905,10 @@ tabs-toolbar-list-all-tabs =
 restore-session-startup-suggestion-message = <strong>Ireki aurreko fitxak?</strong> Aurreko zure saioa berrezar dezakezu { -brand-short-name } aplikazio-menutik <img data-l10n-name="icon"/>, Historia barnean.
 restore-session-startup-suggestion-button = Erakuts iezadazu nola
 
+## Infobar shown when the user tries to open a file picker and file pickers are blocked by enterprise policy
+
+filepicker-blocked-infobar = Zure erakundeak blokeatu egin du ordenagailu honetako fitxategi lokaletarako sarbidea
+
 ## Mozilla data reporting notification (Telemetry, Firefox Health Report, etc)
 
 data-reporting-notification-message = { -brand-short-name }(e)k zenbait datu automatikoki bidaltzen ditu { -vendor-short-name }(e)ra zure esperientzia hobetzeko.
@@ -899,6 +917,7 @@ data-reporting-notification-button =
     .accesskey = A
 # Label for the indicator shown in the private browsing window titlebar.
 private-browsing-indicator-label = Nabigatze pribatua
+content-analysis-panel-title = Datuen babesa
 
 ## Unified extensions (toolbar) button
 
@@ -952,12 +971,21 @@ refresh-blocked-allow =
 
 ## Firefox Relay integration
 
+firefox-relay-offer-why-to-use-relay = Gure maskara seguru eta erabilerrazak zure identitatea babesten du eta spama saihesten du zure helbide elektronikoa ezkutatuz.
+# Variables:
+#  $useremail (String): user email that will receive messages
+firefox-relay-offer-what-relay-provides = Zure helbide elektronikoko maskaretara bidalitako mezu elektroniko guztiak <strong>{ $useremail }</strong> helbidera birbidaliko dira (blokeatzea erabaki ezean).
+firefox-relay-offer-legal-notice = "Erabili posta-maskara" aukeratzean, <label data-l10n-name="tos-url">Zerbitzu-baldintzak</label> eta <label data-l10n-name="privacy-url">Pribatutasun-oharra </label> onartzen dituzu.
 
 ## Add-on Pop-up Notifications
 
 popup-notification-addon-install-unsigned =
     .value = (Egiaztatu gabea)
 popup-notification-xpinstall-prompt-learn-more = Gehigarriak modu seguruan instalatzeko argibide gehiago
+# Note: Access key is set to P to match "Private" in the corresponding localized label.
+popup-notification-addon-privatebrowsing-checkbox =
+    .label = Exekutatu leiho pribatuetan
+    .accesskey = b
 
 ## Pop-up warning
 
@@ -987,3 +1015,16 @@ popup-warning-button =
 #   $popupURI (String): the URI for the pop-up window
 popup-show-popup-menuitem =
     .label = Erakutsi '{ $popupURI }'
+
+## File-picker crash notification ("FilePickerCrashed.sys.mjs")
+
+
+# Button used with file-picker-crashed-save-default. Opens the folder in Windows
+# Explorer, with the saved file selected and in focus.
+#
+# The wording here should be consistent with the Windows variant of
+# `downloads-cmd-show-menuitem-2` and similar messages.
+
+file-picker-crashed-show-in-folder =
+    .label = Erakutsi karpetan
+    .accessKey = k

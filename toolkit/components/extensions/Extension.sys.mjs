@@ -44,6 +44,7 @@ ChromeUtils.defineESModuleGetters(lazy, {
   E10SUtils: "resource://gre/modules/E10SUtils.sys.mjs",
   ExtensionDNR: "resource://gre/modules/ExtensionDNR.sys.mjs",
   ExtensionDNRStore: "resource://gre/modules/ExtensionDNRStore.sys.mjs",
+  ExtensionMenus: "resource://gre/modules/ExtensionMenus.sys.mjs",
   ExtensionPermissions: "resource://gre/modules/ExtensionPermissions.sys.mjs",
   ExtensionPreferencesManager:
     "resource://gre/modules/ExtensionPreferencesManager.sys.mjs",
@@ -161,6 +162,13 @@ XPCOMUtils.defineLazyPreferenceGetter(
   30 * 1000
 );
 
+XPCOMUtils.defineLazyPreferenceGetter(
+  lazy,
+  "installIncludesOrigins",
+  "extensions.originControls.grantByDefault",
+  false
+);
+
 var {
   GlobalManager,
   IconDetails,
@@ -191,13 +199,6 @@ ChromeUtils.defineLazyGetter(lazy, "NO_PROMPT_PERMISSIONS", async () => {
       "PermissionPrivileged",
     ])
   );
-});
-
-// TODO(Bug 1789718): Remove after the deprecated XPIProvider-based implementation is also removed.
-ChromeUtils.defineLazyGetter(lazy, "SCHEMA_SITE_PERMISSIONS", async () => {
-  // Wait until all extension API schemas have been loaded and parsed.
-  await Management.lazyInit();
-  return lazy.Schemas.getPermissionNames(["SitePermission"]);
 });
 
 const { sharedData } = Services.ppmm;
@@ -444,7 +445,8 @@ function clearCacheForExtensionPrincipal(principal, clearAll = false) {
   const clearDataFlags = clearAll
     ? Ci.nsIClearDataService.CLEAR_ALL_CACHES
     : Ci.nsIClearDataService.CLEAR_IMAGE_CACHE |
-      Ci.nsIClearDataService.CLEAR_CSS_CACHE;
+      Ci.nsIClearDataService.CLEAR_CSS_CACHE |
+      Ci.nsIClearDataService.CLEAR_JS_CACHE;
 
   return new Promise(resolve =>
     Services.clearData.deleteDataFromPrincipal(
@@ -509,14 +511,36 @@ var ExtensionAddonObserver = {
   },
 
   onUninstalled(addon) {
+    this.clearOnUninstall(addon.id);
+  },
+
+  /**
+   * Clears persistent state from the add-on post install.
+   *
+   * @param {string} addonId The ID of the addon that has been uninstalled.
+   */
+  clearOnUninstall(addonId) {
+    const tasks = [];
+    function addShutdownBlocker(name, promise) {
+      lazy.AsyncShutdown.profileChangeTeardown.addBlocker(name, promise);
+      tasks.push({ name, promise });
+    }
+    function notifyUninstallTaskObservers() {
+      Management.emit("cleanupAfterUninstall", addonId, tasks);
+    }
+
     // Cleanup anything that is used by non-extension addon types
     // since only extensions have uuid's.
-    lazy.ExtensionPermissions.removeAll(addon.id);
+    addShutdownBlocker(
+      `Clear ExtensionPermissions for ${addonId}`,
+      lazy.ExtensionPermissions.removeAll(addonId)
+    );
 
-    lazy.QuarantinedDomains.clearUserPref(addon.id);
+    lazy.QuarantinedDomains.clearUserPref(addonId);
 
-    let uuid = UUIDMap.get(addon.id, false);
+    let uuid = UUIDMap.get(addonId, false);
     if (!uuid) {
+      notifyUninstallTaskObservers();
       return;
     }
 
@@ -527,8 +551,8 @@ var ExtensionAddonObserver = {
     );
 
     // Clear all cached resources (e.g. CSS and images);
-    lazy.AsyncShutdown.profileChangeTeardown.addBlocker(
-      `Clear cache for ${addon.id}`,
+    addShutdownBlocker(
+      `Clear cache for ${addonId}`,
       clearCacheForExtensionPrincipal(principal, /* clearAll */ true)
     );
 
@@ -549,38 +573,44 @@ var ExtensionAddonObserver = {
     // down because is being uninstalled) and then cleared from
     // the persisted serviceworker registration on the next
     // startup.
-    lazy.AsyncShutdown.profileChangeTeardown.addBlocker(
-      `Clear ServiceWorkers for ${addon.id}`,
+    addShutdownBlocker(
+      `Clear ServiceWorkers for ${addonId}`,
       lazy.ServiceWorkerCleanUp.removeFromPrincipal(principal)
+    );
+
+    // Clear the persisted menus created with the menus/contextMenus API (if any).
+    addShutdownBlocker(
+      `Clear menus store for ${addonId}`,
+      lazy.ExtensionMenus.clearPersistedMenusOnUninstall(addonId)
     );
 
     // Clear the persisted dynamic content scripts created with the scripting
     // API (if any).
-    lazy.AsyncShutdown.profileChangeTeardown.addBlocker(
-      `Clear scripting store for ${addon.id}`,
-      lazy.ExtensionScriptingStore.clearOnUninstall(addon.id)
+    addShutdownBlocker(
+      `Clear scripting store for ${addonId}`,
+      lazy.ExtensionScriptingStore.clearOnUninstall(addonId)
     );
 
     // Clear the DNR API's rules data persisted on disk (if any).
-    lazy.AsyncShutdown.profileChangeTeardown.addBlocker(
-      `Clear declarativeNetRequest store for ${addon.id}`,
+    addShutdownBlocker(
+      `Clear declarativeNetRequest store for ${addonId}`,
       lazy.ExtensionDNRStore.clearOnUninstall(uuid)
     );
 
     if (!Services.prefs.getBoolPref(LEAVE_STORAGE_PREF, false)) {
       // Clear browser.storage.local backends.
-      lazy.AsyncShutdown.profileChangeTeardown.addBlocker(
-        `Clear Extension Storage ${addon.id} (File Backend)`,
-        lazy.ExtensionStorage.clear(addon.id, { shouldNotifyListeners: false })
+      addShutdownBlocker(
+        `Clear Extension Storage ${addonId} (File Backend)`,
+        lazy.ExtensionStorage.clear(addonId, { shouldNotifyListeners: false })
       );
 
       // Clear browser.storage.sync rust-based backend.
       // (storage.sync clearOnUninstall will resolve and log an error on the
       // browser console in case of unexpected failures).
       if (!lazy.storageSyncOldKintoBackend) {
-        lazy.AsyncShutdown.profileChangeTeardown.addBlocker(
-          `Clear Extension StorageSync ${addon.id}`,
-          lazy.extensionStorageSync.clearOnUninstall(addon.id)
+        addShutdownBlocker(
+          `Clear Extension StorageSync ${addonId}`,
+          lazy.extensionStorageSync.clearOnUninstall(addonId)
         );
       }
 
@@ -595,7 +625,7 @@ var ExtensionAddonObserver = {
         });
       Services.qms.clearStoragesForPrincipal(storagePrincipal);
 
-      lazy.ExtensionStorageIDB.clearMigratedExtensionPref(addon.id);
+      lazy.ExtensionStorageIDB.clearMigratedExtensionPref(addonId);
 
       // If LSNG is not enabled, we need to clear localStorage explicitly using
       // the old API.
@@ -632,8 +662,10 @@ var ExtensionAddonObserver = {
 
     if (!Services.prefs.getBoolPref(LEAVE_UUID_PREF, false)) {
       // Clear the entry in the UUID map
-      UUIDMap.remove(addon.id);
+      UUIDMap.remove(addonId);
     }
+
+    notifyUninstallTaskObservers();
   },
 
   onPropertyChanged(addon, properties) {
@@ -853,8 +885,6 @@ const manifestTypes = new Map([
   ["locale", "manifest.WebExtensionLangpackManifest"],
   ["dictionary", "manifest.WebExtensionDictionaryManifest"],
   ["extension", "manifest.WebExtensionManifest"],
-  // TODO(Bug 1789718): Remove after the deprecated XPIProvider-based implementation is also removed.
-  ["sitepermission-deprecated", "manifest.WebExtensionSitePermissionsManifest"],
 ]);
 
 /**
@@ -1172,8 +1202,10 @@ export class ExtensionData {
    * includes the contents of the "permissions" property as well as other
    * capabilities that are derived from manifest fields that users should
    * be informed of (e.g., origins where content scripts are injected).
+   *
+   * For MV3 extensions with origin controls, this does not include origins.
    */
-  get manifestPermissions() {
+  getRequiredPermissions() {
     if (this.type !== "extension") {
       return null;
     }
@@ -1217,6 +1249,41 @@ export class ExtensionData {
   }
 
   /**
+   * @returns {MatchPatternSet} MatchPatternSet for only the origins that are
+   * referenced in manifest via permissions, host_permissions, or content_scripts keys.
+   */
+  getManifestOriginsMatchPatternSet() {
+    if (this.type !== "extension") {
+      return null;
+    }
+    if (this._manifestOriginsMatchPatternSet) {
+      return this._manifestOriginsMatchPatternSet;
+    }
+    this._manifestOriginsMatchPatternSet = new MatchPatternSet(
+      this.getManifestOrigins(),
+      {
+        restrictSchemes: this.restrictSchemes,
+        ignorePath: true,
+      }
+    );
+    return this._manifestOriginsMatchPatternSet;
+  }
+
+  /**
+   * Returns additional permissions that extensions is requesting based on its
+   * manifest. For now, this is host_permissions (and content scripts) in mv3.
+   */
+  getRequestedPermissions() {
+    if (this.type !== "extension") {
+      return null;
+    }
+    if (this.originControls && lazy.installIncludesOrigins) {
+      return { permissions: [], origins: this.getManifestOrigins() };
+    }
+    return { permissions: [], origins: [] };
+  }
+
+  /**
    * Returns optional permissions from the manifest, including host permissions
    * if originControls is true.
    */
@@ -1226,7 +1293,8 @@ export class ExtensionData {
     }
 
     let { permissions, origins } = this.permissionsObject(
-      this.manifest.optional_permissions
+      this.manifest.optional_permissions,
+      this.manifest.optional_host_permissions
     );
     if (this.originControls) {
       for (let origin of this.getManifestOrigins()) {
@@ -1474,6 +1542,8 @@ export class ExtensionData {
       },
       preprocessors: {},
       manifestVersion: this.manifestVersion,
+      // We introduced this context param in Bug 1831417.
+      ignoreUnrecognizedProperties: false,
     };
 
     if (this.fluentL10n || this.localeData) {
@@ -1542,9 +1612,6 @@ export class ExtensionData {
       this.type = "locale";
     } else if (manifest.dictionaries) {
       this.type = "dictionary";
-    } else if (manifest.site_permissions) {
-      // TODO(Bug 1789718): Remove after the deprecated XPIProvider-based implementation is also removed.
-      this.type = "sitepermission-deprecated";
     } else {
       this.type = "extension";
     }
@@ -1813,11 +1880,20 @@ export class ExtensionData {
 
       result.contentScripts = [];
       for (let options of manifest.content_scripts || []) {
+        let { match_about_blank, match_origin_as_fallback } = options;
+        if (match_origin_as_fallback !== null) {
+          // match_about_blank is ignored when match_origin_as_fallback is set.
+          // When match_about_blank=true and match_origin_as_fallback=false,
+          // then match_about_blank should be treated as false.
+          match_about_blank = false;
+        }
         result.contentScripts.push({
           allFrames: options.all_frames,
-          matchAboutBlank: options.match_about_blank,
+          matchAboutBlank: match_about_blank,
+          matchOriginAsFallback: match_origin_as_fallback,
           frameID: options.frame_id,
           runAt: options.run_at,
+          world: options.world,
 
           matches: options.matches,
           excludeMatches: options.exclude_matches || [],
@@ -2447,7 +2523,6 @@ export class ExtensionData {
     // a less-generic message than addons with site permissions.
     // NOTE: this is used as part of the synthetic addon install flow implemented for the
     // SitePermissionAddonProvider.
-    // (and so it should not be removed as part of Bug 1789718 changes, while this additional note should be).
     // FIXME
     if (addon?.type === lazy.SITEPERMS_ADDON_TYPE) {
       // We simplify the origin to make it more user friendly. The origin is assured to be
@@ -2473,7 +2548,9 @@ export class ExtensionData {
       return result;
     }
 
-    // TODO(Bug 1789718): Remove after the deprecated XPIProvider-based implementation is also removed.
+    // NOTE: this is used as part of the synthetic addon implemented for the
+    // SitePermissionAddonProvider to render the site permissions in the
+    // about:addon detail view for the synthetic addon entries.
     if (sitePermissions) {
       for (let permission of sitePermissions) {
         let permMsg;
@@ -2797,23 +2874,6 @@ class LangpackBootstrapScope extends BootstrapScope {
   }
 }
 
-// TODO(Bug 1789718): Remove after the deprecated XPIProvider-based implementation is also removed.
-class SitePermissionBootstrapScope extends BootstrapScope {
-  install() {}
-  uninstall() {}
-
-  startup(data) {
-    // eslint-disable-next-line no-use-before-define
-    this.sitepermission = new SitePermission(data);
-    return this.sitepermission.startup();
-  }
-
-  async shutdown(data, reason) {
-    this.sitepermission.shutdown(BootstrapScope.BOOTSTRAP_REASON_MAP[reason]);
-    this.sitepermission = null;
-  }
-}
-
 let activeExtensionIDs = new Set();
 
 let pendingExtensions = new Map();
@@ -2831,8 +2891,19 @@ export class Extension extends ExtensionData {
   /** @type {import("ExtensionShortcuts.sys.mjs").ExtensionShortcuts} */
   shortcuts;
 
-  /** @type {TabManagerBase} */
+  /**
+   * Extension's TabManager, initialized at "startup" event of Management.
+   *
+   * @type {TabManagerBase}
+   */
   tabManager;
+
+  /**
+   * Extension's WindowManager, initialized at "startup" event of Management.
+   *
+   * @type {WindowManagerBase}
+   */
+  windowManager;
 
   /** @type {(options?: { ignoreDevToolsAttached?: boolean, disableResetIdleForTest?: boolean }) => Promise} */
   terminateBackground;
@@ -2925,10 +2996,6 @@ export class Extension extends ExtensionData {
     this.registeredContentScripts = new Map();
 
     this.emitter = new EventEmitter();
-
-    if (this.startupData.lwtData && this.startupReason == "APP_STARTUP") {
-      lazy.LightweightThemeManager.fallbackThemeData = this.startupData.lwtData;
-    }
 
     /* eslint-disable mozilla/balanced-listeners */
     this.on("add-permissions", (ignoreEvent, permissions) => {
@@ -3507,6 +3574,18 @@ export class Extension extends ExtensionData {
     });
     sharedData.set("extensions/pending", pendingExtensions);
 
+    if (
+      // Cannot use this.type because we haven't parsed the manifest yet.
+      this.addonData.type === "theme" &&
+      this.startupData.lwtData &&
+      this.startupReason == "APP_STARTUP"
+    ) {
+      // Avoid FOUC at browser startup by setting the fallback theme data as
+      // soon as the static theme is starting. Not doing so can result in a
+      // FOUC because loadManifest + runManifest (and other steps) are async.
+      lazy.LightweightThemeManager.fallbackThemeData = this.startupData.lwtData;
+    }
+
     lazy.ExtensionTelemetry.extensionStartup.stopwatchStart(this);
     try {
       this.state = "Startup: Loading manifest";
@@ -3705,8 +3784,8 @@ export class Extension extends ExtensionData {
 
     if (
       this.originControls &&
-      this.manifest.granted_host_permissions &&
-      this.startupReason === "ADDON_INSTALL"
+      this.startupReason === "ADDON_INSTALL" &&
+      (this.manifest.granted_host_permissions || lazy.installIncludesOrigins)
     ) {
       let origins = this.getManifestOrigins();
       lazy.ExtensionPermissions.add(this.id, { permissions: [], origins });
@@ -3994,121 +4073,6 @@ export class Langpack extends ExtensionData {
     }
 
     lazy.resourceProtocol.setSubstitution(this.startupData.langpackId, null);
-  }
-}
-
-// TODO(Bug 1789718): Remove after the deprecated XPIProvider-based implementation is also removed.
-export class SitePermission extends ExtensionData {
-  constructor(addonData) {
-    super(addonData.resourceURI);
-    this.id = addonData.id;
-    this.hasShutdown = false;
-  }
-
-  async loadManifest() {
-    let [manifestData] = await Promise.all([this.parseManifest()]);
-
-    if (!manifestData) {
-      return;
-    }
-
-    this.manifest = manifestData.manifest;
-    this.type = manifestData.type;
-    this.sitePermissions = this.manifest.site_permissions;
-    // 1 install_origins is mandatory for this addon type
-    this.siteOrigin = this.manifest.install_origins[0];
-
-    return this.manifest;
-  }
-
-  static getBootstrapScope() {
-    return new SitePermissionBootstrapScope();
-  }
-
-  // Array of principals that may be set by the addon.
-  getSupportedPrincipals() {
-    if (!this.siteOrigin) {
-      return [];
-    }
-    const uri = Services.io.newURI(this.siteOrigin);
-    return [
-      Services.scriptSecurityManager.createContentPrincipal(uri, {}),
-      Services.scriptSecurityManager.createContentPrincipal(uri, {
-        privateBrowsingId: 1,
-      }),
-    ];
-  }
-
-  async startup() {
-    await this.loadManifest();
-
-    this.ensureNoErrors();
-
-    let site_permissions = await lazy.SCHEMA_SITE_PERMISSIONS;
-    let perms = await lazy.ExtensionPermissions.get(this.id);
-
-    if (this.hasShutdown) {
-      // Startup was interrupted and shutdown() has taken care of unloading
-      // the extension and running cleanup logic.
-      return;
-    }
-
-    let privateAllowed = perms.permissions.includes(PRIVATE_ALLOWED_PERMISSION);
-    let principals = this.getSupportedPrincipals();
-
-    // Remove any permissions not contained in site_permissions
-    for (let principal of principals) {
-      let existing = Services.perms.getAllForPrincipal(principal);
-      for (let perm of existing) {
-        if (
-          site_permissions.includes(perm) &&
-          !this.sitePermissions.includes(perm)
-        ) {
-          Services.perms.removeFromPrincipal(principal, perm.type);
-        }
-      }
-    }
-
-    // Ensure all permissions in site_permissions have been set, but do not
-    // overwrite the permission so the user can override the values in preferences.
-    for (let perm of this.sitePermissions) {
-      for (let principal of principals) {
-        let permission = Services.perms.testExactPermissionFromPrincipal(
-          principal,
-          perm
-        );
-        if (permission == Ci.nsIPermissionManager.UNKNOWN_ACTION) {
-          let { privateBrowsingId } = principal.originAttributes;
-          let allow = privateBrowsingId == 0 || privateAllowed;
-          Services.perms.addFromPrincipal(
-            principal,
-            perm,
-            allow ? Services.perms.ALLOW_ACTION : Services.perms.DENY_ACTION,
-            Services.perms.EXPIRE_NEVER
-          );
-        }
-      }
-    }
-
-    Services.obs.notifyObservers(
-      { wrappedJSObject: { sitepermissions: this } },
-      "webextension-sitepermissions-startup"
-    );
-  }
-
-  async shutdown(reason) {
-    this.hasShutdown = true;
-    // Permissions are retained across restarts
-    if (reason == "APP_SHUTDOWN") {
-      return;
-    }
-    let principals = this.getSupportedPrincipals();
-
-    for (let perm of this.sitePermissions || []) {
-      for (let principal of principals) {
-        Services.perms.removeFromPrincipal(principal, perm);
-      }
-    }
   }
 }
 

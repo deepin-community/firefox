@@ -244,6 +244,22 @@ namespace ChromeUtils {
   undefined clearStyleSheetCache();
 
   /**
+   * Clears the JavaScript cache by baseDomain. This includes associated
+   * state-partitioned cache.
+   */
+  undefined clearScriptCacheByBaseDomain(UTF8String baseDomain);
+
+  /**
+   * Clears the JavaScript cache by principal.
+   */
+  undefined clearScriptCacheByPrincipal(Principal principal);
+
+  /**
+   * Clears the entire JavaScript cache.
+   */
+  undefined clearScriptCache();
+
+  /**
    * If the profiler is currently running and recording the current thread,
    * add a marker for the current thread. No-op otherwise.
    *
@@ -618,12 +634,6 @@ partial namespace ChromeUtils {
   Promise<DOMString> collectPerfStats();
 
   /**
-  * Returns a Promise containing a sequence of I/O activities
-  */
-  [NewObject]
-  Promise<sequence<IOActivityDataDictionary>> requestIOActivity();
-
-  /**
   * Returns a Promise containing all processes info
   */
   [NewObject]
@@ -781,6 +791,7 @@ enum WebIDLProcType {
  "rdd",
  "socket",
  "remoteSandboxBroker",
+ "inference",
 #ifdef MOZ_ENABLE_FORKSERVER
  "forkServer",
 #endif
@@ -928,18 +939,6 @@ dictionary ParentProcInfoDictionary {
 };
 
 /**
- * Used by requestIOActivity() to return the number of bytes
- * that were read (rx) and/or written (tx) for a given location.
- *
- * Locations can be sockets or files.
- */
-dictionary IOActivityDataDictionary {
-  ByteString location = "";
-  unsigned long long rx = 0;
-  unsigned long long tx = 0;
-};
-
-/**
  * Used by principals and the script security manager to represent origin
  * attributes. The first dictionary is designed to contain the full set of
  * OriginAttributes, the second is used for pattern-matching (i.e. does this
@@ -951,7 +950,7 @@ dictionary IOActivityDataDictionary {
  *     serialization, deserialization, and inheritance.
  * (3) Update the methods on mozilla::OriginAttributesPattern, including matching.
  */
-[GenerateInitFromJSON]
+[GenerateInitFromJSON, GenerateEqualityOperator]
 dictionary OriginAttributesDictionary {
   unsigned long userContextId = 0;
   unsigned long privateBrowsingId = 0;
@@ -983,6 +982,11 @@ dictionary CompileScriptOptionsDictionary {
    * The character set from which to decode the script.
    */
   DOMString charset = "utf-8";
+
+  /**
+   * The filename to associate with the script. Defaults to the source's URL.
+   */
+  DOMString filename;
 
   /**
    * If true, certain parts of the script may be parsed lazily, the first time

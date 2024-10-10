@@ -89,28 +89,6 @@ subprojects {
         }
     }
 
-
-    // Allow local appservices substitution in each subproject.
-    def appServicesSrcDir = null
-    if (gradle.hasProperty('localProperties.autoPublish.application-services.dir')) {
-        appServicesSrcDir = gradle.getProperty('localProperties.autoPublish.application-services.dir')
-    } else if (gradle.hasProperty('localProperties.branchBuild.application-services.dir')) {
-        appServicesSrcDir = gradle.getProperty('localProperties.branchBuild.application-services.dir')
-    }
-    if (appServicesSrcDir) {
-        if (appServicesSrcDir.startsWith("/")) {
-            apply from: "${appServicesSrcDir}/build-scripts/substitute-local-appservices.gradle"
-        } else {
-            apply from: "${rootProject.projectDir}/${appServicesSrcDir}/build-scripts/substitute-local-appservices.gradle"
-        }
-    }
-
-    // Allow local Glean substitution in each subproject.
-    if (gradle.hasProperty('localProperties.autoPublish.glean.dir')) {
-        ext.gleanSrcDir = gradle."localProperties.autoPublish.glean.dir"
-        apply from: "${rootProject.projectDir}/${gleanSrcDir}/build-scripts/substitute-local-glean.gradle"
-    }
-
     if (gradle.hasProperty('localProperties.dependencySubstitutions.geckoviewTopsrcdir')) {
         if (gradle.hasProperty('localProperties.dependencySubstitutions.geckoviewTopobjdir')) {
             ext.topobjdir = gradle."localProperties.dependencySubstitutions.geckoviewTopobjdir"
@@ -357,7 +335,8 @@ tasks.register("ktlint", JavaExec) {
     description = "Check Kotlin code style."
     classpath = configurations.ktlint
     mainClass.set("com.pinterest.ktlint.Main")
-    args "components/**/*.kt" , "samples/**/*.kt", "!**/build/**/*.kt", "buildSrc/**/*.kt", "--baseline=ktlint-baseline.xml"
+    args "components/**/*.kt" , "samples/**/*.kt", "!**/build/**/*.kt", "buildSrc/**/*.kt", "--baseline=ktlint-baseline.xml",
+        "--reporter=json,output=build/reports/ktlint/ktlint.json", "--reporter=plain"
 }
 
 tasks.register("ktlintFormat", JavaExec) {
@@ -374,11 +353,4 @@ tasks.register("listRepositories") {
         println "Repositories:"
         project.repositories.each { println "Name: " + it.name + "; url: " + it.url }
    }
-}
-
-tasks.register("testToolsDir", Exec) {
-    group = "verification"
-    description = "Run tests in the tools/ directory."
-    workingDir = "tools"
-    commandLine = ["python3", "test_list_compatible_dependency_versions.py"]
 }

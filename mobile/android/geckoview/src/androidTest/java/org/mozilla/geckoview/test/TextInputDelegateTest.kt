@@ -155,14 +155,48 @@ class TextInputDelegateTest : BaseSessionTest() {
             ic.commitText(text, newCursorPosition)
             return
         }
+        // InputConnection.commitText might not dispatch composition event if no composition.
+        // So we look both input event and compositionend event for the completion.
         val promise = mainSession.evaluatePromiseJS(
             when (id) {
-                "#designmode" -> "new Promise(r => document.querySelector('$id').contentDocument.addEventListener('compositionend', r, { once: true }))"
-                else -> "new Promise(r => document.querySelector('$id').addEventListener('compositionend', r, { once: true }))"
+                "#designmode" -> """(function() {
+                      const doc = document.querySelector('$id').contentDocument;
+                      const p1 = new Promise(r => doc.addEventListener('compositionend', r, { once: true }));
+                      const p2 = new Promise(
+                          r => doc.addEventListener('input',
+                              function handler(e) {
+                                if (!e.isComposing) {
+                                  r();
+                                  doc.removeEventListener('input', handler);
+                                }
+                              }));
+                      return Promise.any([p1, p2]);
+                    })()
+                """.trimIndent()
+                else -> """(function() {
+                      const element = document.querySelector('$id');
+                      const p1 = new Promise(r => element.addEventListener('compositionend', r, { once: true }));
+                      const p2 = new Promise(
+                          r => element.addEventListener('input',
+                              function handler(e) {
+                                if (!e.isComposing) {
+                                  r();
+                                  element.removeEventListener('input', handler);
+                                }
+                              }));
+                      return Promise.any([p1, p2]);
+                    })()
+                """.trimIndent()
             },
         )
         ic.commitText(text, newCursorPosition)
         promise.value
+
+        // In Gecko, commit text always set caret position to the end of committed text.
+        // So if the newCursorPosition isn't 1, Gecko may notify new position after committing text.
+        if (newCursorPosition != 1) {
+            mainSession.waitForJS("new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)))")
+        }
     }
 
     private fun deleteSurroundingText(ic: InputConnection, before: Int, after: Int) {
@@ -1296,14 +1330,40 @@ class TextInputDelegateTest : BaseSessionTest() {
         setupContent("")
         val ic = mainSession.textInput.onCreateInputConnection(EditorInfo())!!
 
+        val promise = mainSession.evaluatePromiseJS(
+            when (id) {
+                "#designmode" -> """
+                      new Promise(
+                          r => document.querySelector('$id').contentDocument.addEventListener('keyup', function handler(e) {
+                                if (e.key == "c") {
+                                  r();
+                                  document.querySelector('$id').contentDocument.removeEventListener('keyup', handler);
+                                }
+                              }))
+                """.trimIndent()
+
+                else -> """
+                      new Promise(
+                          r => document.querySelector('$id').addEventListener('keyup', function handler(e) {
+                                if (e.key == "c") {
+                                  r();
+                                  document.querySelector('$id').removeEventListener('keyup', handler);
+                                }
+                              }))
+                """.trimIndent()
+            },
+        )
+
         // Emulate GBoard's InputConnection API calls
         ic.beginBatchEdit()
-        ic.commitText("( ", 1)
-        ic.commitText(")", -1)
+        ic.commitText("ab", 1)
+        ic.commitText("c", -1)
         ic.endBatchEdit()
+
+        promise.value
         processChildEvents()
 
-        assertText("commit ()", ic, "( )")
+        assertText("committed text is \"abc\"", ic, "abc")
     }
 
     // Bug 1593683 - Cursor is jumping when using the arrow keys in input field on GBoard

@@ -25,15 +25,13 @@ use std::ops::Add;
 use style_traits::values::specified::AllowedNumericType;
 use style_traits::{CssWriter, ParseError, SpecifiedValueInfo, StyleParseErrorKind, ToCss};
 
-#[cfg(feature = "gecko")]
-pub use self::align::{AlignContent, AlignItems, AlignSelf, AlignTracks, ContentDistribution};
-#[cfg(feature = "gecko")]
-pub use self::align::{JustifyContent, JustifyItems, JustifySelf, JustifyTracks, SelfAlignment};
+pub use self::align::{AlignContent, AlignItems, AlignSelf, ContentDistribution};
+pub use self::align::{JustifyContent, JustifyItems, JustifySelf, SelfAlignment};
 pub use self::angle::{AllowUnitlessZeroAngle, Angle};
 pub use self::animation::{
-    AnimationIterationCount, AnimationName, AnimationTimeline, AnimationPlayState,
-    AnimationFillMode, AnimationComposition, AnimationDirection, ScrollAxis,
-    ScrollTimelineName, TransitionBehavior, TransitionProperty, ViewTimelineInset
+    AnimationComposition, AnimationDirection, AnimationDuration, AnimationFillMode,
+    AnimationIterationCount, AnimationName, AnimationPlayState, AnimationTimeline, ScrollAxis,
+    TimelineName, TransitionBehavior, TransitionProperty, ViewTimelineInset, ViewTransitionName,
 };
 pub use self::background::{BackgroundRepeat, BackgroundSize};
 pub use self::basic_shape::FillRule;
@@ -80,8 +78,15 @@ pub use self::motion::{OffsetPath, OffsetPosition, OffsetRotate};
 pub use self::outline::OutlineStyle;
 pub use self::page::{PageName, PageOrientation, PageSize, PageSizeOrientation, PaperSize};
 pub use self::percentage::{NonNegativePercentage, Percentage};
+pub use self::position::AnchorName;
+pub use self::position::AnchorScope;
 pub use self::position::AspectRatio;
+pub use self::position::PositionAnchor;
+pub use self::position::PositionTryFallbacks;
+pub use self::position::PositionTryOrder;
+pub use self::position::PositionVisibility;
 pub use self::position::{GridAutoFlow, GridTemplateAreas, Position, PositionOrAuto};
+pub use self::position::{PositionArea, PositionAreaKeyword};
 pub use self::position::{MasonryAutoFlow, MasonryItemOrder, MasonryPlacement};
 pub use self::position::{PositionComponent, ZIndex};
 pub use self::ratio::Ratio;
@@ -89,7 +94,7 @@ pub use self::rect::NonNegativeLengthOrNumberRect;
 pub use self::resolution::Resolution;
 pub use self::svg::{DProperty, MozContextProperties};
 pub use self::svg::{SVGLength, SVGOpacity, SVGPaint};
-pub use self::svg::{SVGPaintOrder, SVGStrokeDashArray, SVGWidth};
+pub use self::svg::{SVGPaintOrder, SVGStrokeDashArray, SVGWidth, VectorEffect};
 pub use self::svg_path::SVGPathData;
 pub use self::text::HyphenateCharacter;
 pub use self::text::RubyPosition;
@@ -107,7 +112,6 @@ pub use self::ui::CursorImage;
 pub use self::ui::{BoolInteger, Cursor, UserSelect};
 pub use super::generics::grid::GridTemplateComponent as GenericGridTemplateComponent;
 
-#[cfg(feature = "gecko")]
 pub mod align;
 pub mod angle;
 pub mod animation;

@@ -189,6 +189,8 @@ mr2022-onboarding-pin-primary-button-label =
         [macos] Wobchowajće { -brand-short-name } w doku
        *[other] Připniće { -brand-short-name } k nadawkowej lajsće
     }
+# Primary button string used on welcome page for when Firefox is not pinned on MSIX
+mr2022-onboarding-pin-primary-button-label-msix = { -brand-short-name } k nadawkowej lajsće a startowemu menijej připjeć
 # Subtitle will be used when user already has Firefox pinned, but
 # has not set it as their default browser.
 # When translating "zip", please feel free to pick a verb that signifies movement and/or exploration
@@ -335,6 +337,14 @@ onboarding-device-migration-title = Witajće wróćo!
 onboarding-device-migration-subtitle = Přizjewće so pola { -fxaccount-brand-name(capitalization: "sentence") }, zo byšće swoje zapołožki, hesła a historiju na swojim nowym graće sobu wzał.
 onboarding-device-migration-subtitle2 = Přizjewće so pola swojeho konta, zo byšće swoje zapołožki, hesła a swoju historiju na swój nowy grat přenošował.
 onboarding-device-migration-primary-button-label = Přizjewić
+
+## Add-ons Picker screen
+
+amo-picker-title = Přiměrće swój { -brand-short-name }
+amo-picker-subtitle = Rozšěrjenja kaž nałoženja za waš wobhladowak a móžeće z nimi hesła škitać, wideja sćahnyć, poskitki namakać, wobćežowace wabjenje blokować, napohlad wašeho wobhladowaka změnić a wjele wjace.
+amo-picker-install-button-label = { -brand-short-name } přidać
+amo-picker-install-complete-label = Instalowany
+amo-picker-collection-link = Wuslědźće dalše přidatki
 
 ## The following screens have been updated to use security and privacy focused strings:
 

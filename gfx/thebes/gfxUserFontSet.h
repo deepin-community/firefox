@@ -442,7 +442,8 @@ class gfxUserFontSet {
             aKey->mFontEntry->Weight().AsScalar(),
             aKey->mFontEntry->SlantStyle().AsScalar(),
             aKey->mFontEntry->Stretch().AsScalar(),
-            aKey->mFontEntry->mRangeFlags, aKey->mFontEntry->mLanguageOverride);
+            aKey->mFontEntry->AutoRangeFlags(),
+            aKey->mFontEntry->mLanguageOverride);
       }
 
       enum { ALLOW_MEMMOVE = false };
@@ -545,8 +546,8 @@ class gfxUserFontSet {
   // font families defined by @font-face rules
   nsRefPtrHashtable<nsCStringHashKey, gfxUserFontFamily> mFontFamilies;
 
-  uint64_t mGeneration;         // bumped on any font load change
-  uint64_t mRebuildGeneration;  // only bumped on rebuilds
+  mozilla::Atomic<uint64_t> mGeneration;  // bumped on any font load change
+  uint64_t mRebuildGeneration;            // only bumped on rebuilds
 
   // true when local names have been looked up, false otherwise
   bool mLocalRulesUsed;
@@ -645,6 +646,9 @@ class gfxUserFontEntry : public gfxFontEntry {
   // load the font - starts the loading of sources which continues until
   // a valid font resource is found or all sources fail
   void Load();
+
+  // Invalidates appropriately when the load finishes.
+  void FontLoadComplete();
 
   // methods to expose some information to FontFaceSet::UserFontSet
   // since we can't make that class a friend
@@ -762,10 +766,6 @@ class gfxUserFontEntry : public gfxFontEntry {
   // font entry has been added to.  This will at least include the owner of this
   // user font entry.
   virtual void GetUserFontSets(nsTArray<RefPtr<gfxUserFontSet>>& aResult);
-
-  // Calls IncrementGeneration() on all user font sets that contain this
-  // user font entry.
-  void IncrementGeneration();
 
   // general load state
   UserFontLoadState mUserFontLoadState;

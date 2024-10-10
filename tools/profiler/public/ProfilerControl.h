@@ -40,7 +40,7 @@ static inline void profiler_init(void* stackTop) {}
 static inline void profiler_shutdown(
     IsFastShutdown aIsFastShutdown = IsFastShutdown::No) {}
 
-static inline void profiler_lookup_download_directory() {}
+static inline void profiler_lookup_async_signal_dump_directory() {}
 
 #else  // !MOZ_GECKO_PROFILER
 
@@ -60,6 +60,9 @@ static constexpr mozilla::PowerOfTwo32 PROFILER_DEFAULT_ENTRIES =
 
 static constexpr mozilla::PowerOfTwo32 PROFILER_DEFAULT_STARTUP_ENTRIES =
     mozilla::baseprofiler::BASE_PROFILER_DEFAULT_STARTUP_ENTRIES;
+
+static constexpr mozilla::PowerOfTwo32 PROFILER_DEFAULT_SIGHANDLE_ENTRIES =
+    mozilla::MakePowerOfTwo32<64 * 1024 * 1024>();  // 64M entries = 512MiB
 
 #  define PROFILER_DEFAULT_INTERVAL BASE_PROFILER_DEFAULT_INTERVAL
 #  define PROFILER_MAX_INTERVAL BASE_PROFILER_MAX_INTERVAL
@@ -135,7 +138,7 @@ void profiler_ensure_started(
 // third option, by giving us a hook to look for the download directory when
 // the time is right. This might be triggered internally (e.g. when we start
 // profiling), or externally, e.g. after the directory service is initialised.
-void profiler_lookup_download_directory();
+void profiler_lookup_async_signal_dump_directory();
 
 //---------------------------------------------------------------------------
 // Control the profiler

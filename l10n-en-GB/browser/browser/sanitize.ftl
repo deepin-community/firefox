@@ -41,6 +41,10 @@ clear-time-duration-value-last-2-hours =
     .label = Last two hours
 clear-time-duration-value-last-4-hours =
     .label = Last four hours
+# Variables:
+#   $midnightTime (String) - Time of midnight (00:00 hours) - to inform the user that history will be cleared after midnight
+clear-time-duration-value-since-midnight =
+    .label = Since { $midnightTime }
 clear-time-duration-value-today =
     .label = Today
 clear-time-duration-value-everything =
@@ -87,7 +91,7 @@ item-cached-content-with-size =
 item-cached-content =
     .label = Temporary cached files and pages
     .accesskey = f
-item-cached-content-description = Clears items that helps sites load faster
+item-cached-content-description = Clears items that help sites load faster
 item-form-search-history =
     .label = Form & search history
     .accesskey = F

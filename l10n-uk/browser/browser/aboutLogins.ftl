@@ -145,6 +145,8 @@ login-item-copied-username-button-text = Скопійовано!
 login-item-password-label = Пароль
 login-item-password-reveal-checkbox =
     .aria-label = Показати пароль
+login-item-password-conceal-checkbox =
+    .aria-label = Приховати пароль
 login-item-copy-password-button-text = Копіювати
 login-item-copied-password-button-text = Скопійовано!
 login-item-save-changes-button = Зберегти зміни
@@ -176,6 +178,13 @@ about-logins-edit-login-os-auth-dialog-message-win = Щоб змінити за�
 # This message can be seen when attempting to edit a login in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-edit-login-os-auth-dialog-message-macosx = редагувати збережений пароль
+# The macOS strings are preceded by the operating system with "Firefox is trying to ".
+# This message can be seen when attempting to disable osauth in about:preferences.
+about-logins-os-auth-dialog-message =
+    { PLATFORM() ->
+        [macos] змінити налаштування паролів
+       *[other] { -brand-short-name } намагається змінити налаштування паролів. Щоб дозволити це, увійдіть на своєму пристрої.
+    }
 # This message can be seen when attempting to edit a login in about:logins on Windows.
 about-logins-edit-login-os-auth-dialog-message2-win = Щоб змінити пароль, введіть свої облікові дані для входу у Windows. Це допомагає захистити ваші збережені паролі.
 # This message can be seen when attempting to edit a login in about:logins

@@ -36,7 +36,7 @@ impl NestingContext {
         Self {
             rule_types,
             parse_relative: parse_nested_rule_type
-                .map_or(ParseRelative::No, Self::parse_relative_for)
+                .map_or(ParseRelative::No, Self::parse_relative_for),
         }
     }
 
@@ -131,6 +131,12 @@ impl<'a> ParserContext<'a> {
         self.nesting_context.rule_types.contains(CssRuleType::Page)
     }
 
+    /// Returns whether !important declarations are forbidden.
+    #[inline]
+    pub fn allows_important_declarations(&self) -> bool {
+        !self.nesting_context.rule_types.intersects(CssRuleTypes::IMPORTANT_FORBIDDEN)
+    }
+
     /// Get the rule type, which assumes that one is available.
     pub fn rule_types(&self) -> CssRuleTypes {
         self.nesting_context.rule_types
@@ -178,6 +184,9 @@ impl<'a> ParserContext<'a> {
 ///  * `#[parse(condition = "function")]` can be used to make the parsing of the
 ///    value conditional on `function`, which needs to fulfill
 ///    `fn(&ParserContext) -> bool`.
+///
+///  * `#[parse(parse_fn = "function")]` can be used to specify a function other than Parser::parse
+///    for a particular variant.
 pub trait Parse: Sized {
     /// Parse a value of this type.
     ///

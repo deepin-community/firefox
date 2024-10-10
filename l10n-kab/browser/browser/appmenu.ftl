@@ -77,6 +77,10 @@ appmenu-remote-tabs-turn-on-sync =
 appmenu-remote-tabs-showmore =
     .label = Sken ugar n waccaren
     .tooltiptext = Sken ugar n waccaren seg yibenk-a
+# This is shown as the label for an element to show inactive tabs from this device.
+appmenu-remote-tabs-show-inactive-tabs =
+    .label = Accaren arurmiden
+    .tooltiptext = Wali accaren irurmiden ɣef yibenk-a
 # This is shown beneath the name of a device when that device has no open tabs
 appmenu-remote-tabs-notabs = Ulac accaren yeldin
 # This is shown when Sync is configured but syncing tabs is disabled.
@@ -192,6 +196,8 @@ profiler-popup-presets-power-description = Uzwirfren yettufeṣṣlen i usekyed 
 # "Power" is used in the sense of energy (electricity used by the computer).
 profiler-popup-presets-power-label =
     .label = Tazmert
+profiler-popup-presets-debug-label =
+    .label = Taseɣtit
 profiler-popup-presets-custom-label =
     .label = Udmawan
 
@@ -267,5 +273,8 @@ appmenuitem-report-broken-site =
 
 appmenuitem-sign-in-account = Kcem ɣer umiḍan-ik
 appmenuitem-monitor-title = { -monitor-brand-short-name }
+appmenuitem-monitor-description = Awi alɣu mi ara ffɣen yisefka
 appmenuitem-relay-title = { -relay-brand-short-name }
+appmenuitem-relay-description = Ffer imayl-ik d wuṭṭun n tiliɣri n tidet
 appmenuitem-vpn-title = { -mozilla-vpn-brand-name }
+appmenuitem-vpn-description = Mmesten armud-ik srid

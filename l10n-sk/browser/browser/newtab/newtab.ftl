@@ -196,6 +196,8 @@ newtab-section-header-recent-activity = Nedávna aktivita
 #   $provider (string) - Name of the corresponding content provider.
 newtab-section-header-pocket = Odporúča { $provider }
 newtab-section-header-stories = Príbehy na zamyslenie
+# "picks" refers to recommended articles
+newtab-section-header-todays-picks = Dnešný výber pre vás
 
 ## Empty Section States: These show when there are no more items in a section. Ex. When there are no more Pocket story recommendations, in the space where there would have been stories, this is shown instead.
 
@@ -229,6 +231,19 @@ newtab-pocket-pocket-firefox-family = { -pocket-brand-name } je súčasťou rodi
 # A save to Pocket button that shows over the card thumbnail on hover.
 newtab-pocket-save = Uložiť
 newtab-pocket-saved = Uložené
+
+## Thumbs up and down buttons that shows over a newtab stories card thumbnail on hover.
+
+# Clicking the thumbs up button for this story will result in more stories like this one being recommended
+newtab-pocket-thumbs-up-tooltip =
+    .title = Ďalšie podobné
+# Clicking the thumbs down button for this story informs us that the user does not feel like the story is interesting for them
+newtab-pocket-thumbs-down-tooltip =
+    .title = Nie je pre mňa
+newtab-toast-thumbs-up-or-down = Vďaka. Vaša spätná väzba nám pomôže zlepšiť váš informačný kanál.
+newtab-toast-dismiss-button =
+    .title = Zavrieť
+    .aria-label = Zavrieť
 
 ## Pocket content onboarding experience dialog and modal for new users seeing the Pocket section for the first time, shown as the first item in the Pocket section.
 
@@ -269,6 +284,9 @@ newtab-custom-recent-subtitle = Výber z nedávno navštívených stránok a obs
 newtab-custom-recent-toggle =
     .label = Nedávna aktivita
     .description = Výber z nedávno navštívených stránok a obsahu
+newtab-custom-weather-toggle =
+    .label = Počasie
+    .description = Dnešná predpoveď v skratke
 newtab-custom-close-button = Zavrieť
 newtab-custom-settings = Ďalšie nastavenia
 
@@ -288,7 +306,125 @@ newtab-wallpaper-dark-panda = Panda červená ukrytá v lese
 newtab-wallpaper-dark-sky = Mestská scenéria s nočnou oblohou
 newtab-wallpaper-dark-mountain = Horská scenéria
 newtab-wallpaper-dark-city = Fialová mestská scenéria
+
+## Solid Colors
+
+newtab-wallpaper-category-title-colors = Plné farby
+newtab-wallpaper-blue = Modrá
+newtab-wallpaper-light-blue = Svetlomodrá
+newtab-wallpaper-light-purple = Svetlofialová
+newtab-wallpaper-light-green = Svetlozelená
+newtab-wallpaper-green = Zelená
+newtab-wallpaper-beige = Béžová
+newtab-wallpaper-yellow = Žltá
+newtab-wallpaper-orange = Oranžová
+newtab-wallpaper-pink = Ružová
+newtab-wallpaper-light-pink = Svetloružová
+newtab-wallpaper-red = Červená
+newtab-wallpaper-dark-blue = Tmavomodrá
+newtab-wallpaper-dark-purple = Tmavofialová
+newtab-wallpaper-dark-green = Tmavozelená
+newtab-wallpaper-brown = Hnedá
+
+## Abstract
+
+newtab-wallpaper-category-title-abstract = Abstraktné
+newtab-wallpaper-abstract-green = Zelené tvary
+newtab-wallpaper-abstract-blue = Modré tvary
+newtab-wallpaper-abstract-purple = Fialové tvary
+newtab-wallpaper-abstract-orange = Oranžové tvary
+newtab-wallpaper-gradient-orange = Prechod oranžový a ružový
+newtab-wallpaper-abstract-blue-purple = Modré a fialové tvary
+
+## Photographs
+
+newtab-wallpaper-category-title-photographs = Fotografie
+newtab-wallpaper-beach-at-sunrise = Pláž pri východe slnka
+newtab-wallpaper-beach-at-sunset = Pláž pri západe slnka
+newtab-wallpaper-storm-sky = Búrková obloha
+newtab-wallpaper-sky-with-pink-clouds = Obloha s ružovými oblakmi
+newtab-wallpaper-red-panda-yawns-in-a-tree = Panda červená zíva na strome
+newtab-wallpaper-white-mountains = Biele hory
 # Variables
 #   $author_string (String) - The name of the creator of the photo.
 #   $webpage_string (String) - The name of the webpage where the photo is located.
 newtab-wallpaper-attribution = Autor fotografie: <a data-l10n-name="name-link">{ $author_string }</a>, zdroj: <a data-l10n-name="webpage-link">{ $webpage_string }</a>
+newtab-wallpaper-feature-highlight-header = Vyskúšajte nádych farieb
+newtab-wallpaper-feature-highlight-content = Dodajte svojej novej karte svieži vzhľad pomocou tapiet.
+newtab-wallpaper-feature-highlight-button = Rozumiem
+# Tooltip for dismiss button
+feature-highlight-dismiss-button =
+    .title = Zavrieť
+    .aria-label = Zavrieť vyskakovacie okno
+feature-highlight-wallpaper =
+    .title = { -newtab-wallpaper-feature-highlight-header }
+    .aria-label = { -newtab-wallpaper-feature-highlight-content }
+
+## New Tab Weather
+
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-see-forecast =
+    .title = Pozrite si predpoveď od { $provider }
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-sponsored = { $provider } ∙ Sponzorované
+newtab-weather-menu-change-location = Zmeniť oblasť
+newtab-weather-change-location-search-input = Hľadať oblasť
+newtab-weather-menu-weather-display = Zobrazenie počasia
+# Display options are:
+# - Simple: Displays a current weather condition icon and the current temperature
+# - Detailed: Include simple information plus a short text summary: e.g. "Mostly cloudy"
+newtab-weather-menu-weather-display-option-simple = Jednoduché
+newtab-weather-menu-change-weather-display-simple = Prepnúť na jednoduché zobrazenie
+newtab-weather-menu-weather-display-option-detailed = Podrobné
+newtab-weather-menu-change-weather-display-detailed = Prepnúť na podrobné zobrazenie
+newtab-weather-menu-temperature-units = Jednotky teploty
+newtab-weather-menu-temperature-option-fahrenheit = Fahrenheit
+newtab-weather-menu-temperature-option-celsius = Celzius
+newtab-weather-menu-change-temperature-units-fahrenheit = Prepnúť na stupne Fahrenheita
+newtab-weather-menu-change-temperature-units-celsius = Prepnite na stupne Celzia
+newtab-weather-menu-hide-weather = Skryť počasie na novej karte
+newtab-weather-menu-learn-more = Ďalšie informácie
+# This message is shown if user is working offline
+newtab-weather-error-not-available = Údaje o počasí nie sú momentálne k dispozícii.
+
+## Topic Labels
+
+newtab-topic-label-business = Podnikanie
+newtab-topic-label-career = Kariéra
+newtab-topic-label-education = Vzdelávanie
+newtab-topic-label-arts = Zábava
+newtab-topic-label-food = Jedlo
+newtab-topic-label-health = Zdravie
+newtab-topic-label-hobbies = Hranie hier
+# ”Money” = “Personal Finance”, refers to articles and stories that help readers better manage
+# and understand their personal finances – from saving money to buying a home. See the
+# “Curated by our editors“ section at the top of https://getpocket.com/explore/personal-finance for more context
+newtab-topic-label-finance = Financie
+newtab-topic-label-society-parenting = Rodičovstvo
+newtab-topic-label-government = Politika
+newtab-topic-label-education-science = Veda
+# ”Life Hacks” = “Self Improvement”, refers to articles and stories aimed at helping readers improve various
+# aspects of their lives – from mental health to  productivity. See the “Curated by our editors“ section
+# at the top of https://getpocket.com/explore/self-improvement for more context.
+newtab-topic-label-society = Zaujímavé tipy
+newtab-topic-label-sports = Šport
+newtab-topic-label-tech = Technológie
+newtab-topic-label-travel = Cestovanie
+newtab-topic-label-home = Dom a záhrada
+
+## Topic Selection Modal
+
+# “fine-tune” refers to the process of making small adjustments to something to get
+# the best or desired experience or performance.
+newtab-topic-selection-title = Vyberte témy na doladenie informačného kanála
+# “tailored” refers to process of (a tailor) making (clothes) to fit individual customers.
+# In other words, “Our expert curators prioritize stories to fit your selected interests”
+newtab-topic-selection-subtitle = Vyberte si dve alebo viac tém. Naši odborní kurátori uprednostňujú príbehy prispôsobené vašim záujmom. Aktualizovať môžete kedykoľvek.
+newtab-topic-selection-save-button = Uložiť
+newtab-topic-selection-cancel-button = Zrušiť
+newtab-topic-selection-button-maybe-later = Možno neskôr
+newtab-topic-selection-privacy-link = Zistite, ako chránime a spravujeme údaje
+newtab-topic-selection-button-update-interests = Aktualizujte svoje záujmy
+newtab-topic-selection-button-pick-interests = Vyberte si svoje záujmy

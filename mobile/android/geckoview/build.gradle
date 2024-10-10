@@ -52,7 +52,7 @@ android {
 
         // Keep in sync with actual user agent in nsHttpHandler::BuildUserAgent
         buildConfigField 'String', "USER_AGENT_GECKOVIEW_MOBILE", "\"Mozilla/5.0 (Android \" + android.os.Build.VERSION.RELEASE + \"; Mobile; rv:\" + ${mozconfig.defines.MOZILLA_UAVERSION} + \") Gecko/\" + ${mozconfig.defines.MOZILLA_UAVERSION} + \" Firefox/\" + ${mozconfig.defines.MOZILLA_UAVERSION}";
-        buildConfigField 'String', "USER_AGENT_GECKOVIEW_TABLET", "\"Mozilla/5.0 (Android \" + android.os.Build.VERSION.RELEASE + \"; Tablet; rv:\" + ${mozconfig.defines.MOZILLA_UAVERSION} + \") Gecko/\" + ${mozconfig.defines.MOZILLA_UAVERSION} + \" Firefox/\" + ${mozconfig.defines.MOZILLA_UAVERSION}";
+        buildConfigField 'String', "USER_AGENT_GECKOVIEW_MOBILE_ANDROID_10", "\"Mozilla/5.0 (Android 10; Mobile; rv:\" + ${mozconfig.defines.MOZILLA_UAVERSION} + \") Gecko/\" + ${mozconfig.defines.MOZILLA_UAVERSION} + \" Firefox/\" + ${mozconfig.defines.MOZILLA_UAVERSION}";
 
         buildConfigField 'int', 'MIN_SDK_VERSION', mozconfig.substs.MOZ_ANDROID_MIN_SDK_VERSION;
 
@@ -82,11 +82,6 @@ android {
 
     project.configureProductFlavors.delegate = it
     project.configureProductFlavors()
-
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_17
-        targetCompatibility JavaVersion.VERSION_17
-    }
 
     lintOptions {
         abortOnError false
@@ -189,7 +184,6 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile) {
 
     kotlinOptions {
         allWarningsAsErrors = true
-        jvmTarget = JavaVersion.VERSION_17
     }
 
     doFirst {
@@ -229,9 +223,12 @@ configurations {
 
 dependencies {
     implementation ComponentsDependencies.androidx_annotation
+    implementation ComponentsDependencies.androidx_collection
+    implementation ComponentsDependencies.androidx_core
 
-    implementation "com.google.android.gms:play-services-fido:20.0.1"
+    implementation ComponentsDependencies.play_services_fido
     implementation "org.yaml:snakeyaml:2.2"
+    implementation 'androidx.core:core:1.12.0'
 
     implementation ComponentsDependencies.androidx_lifecycle_common
     implementation ComponentsDependencies.androidx_lifecycle_process
@@ -384,20 +381,6 @@ android.libraryVariants.all { variant ->
     }
 }
 
-android.libraryVariants.all { variant ->
-    // At this point, the Android-Gradle plugin has created all the Android
-    // tasks and configurations.  This is the time for us to declare additional
-    // Glean files to package into AAR files.  This packs `metrics.yaml` in the
-    // root of the AAR, sibling to `AndroidManifest.xml` and `classes.jar`.  By
-    // default, consumers of the AAR will ignore this file, but consumers that
-    // look for it can find it (provided GeckoView is a `module()` dependency
-    // and not a `project()` dependency.)  Under the hood this uses that the
-    // task provided by `packageLibraryProvider` task is a Maven `Zip` task,
-    // and we can simply extend its inputs.  See
-    // https://android.googlesource.com/platform/tools/base/+/0cbe8846f7d02c0bb6f07156b9f4fde16d96d329/build-system/gradle-core/src/main/java/com/android/build/gradle/tasks/BundleAar.kt#94.
-    variant.packageLibraryProvider.get().from("${topsrcdir}/toolkit/components/telemetry/geckoview/streaming/metrics.yaml")
-}
-
 apply plugin: 'maven-publish'
 
 version = getVersionNumber()
@@ -523,14 +506,15 @@ task("generateSDKBindings", type: JavaExec) {
     ]
 
     mainClass = 'org.mozilla.gecko.annotationProcessors.SDKProcessor'
-    // We only want to generate bindings for the main framework JAR,
-    // but not any of the additional android.test libraries.
-    args android.bootClasspath.findAll { it.getName().startsWith('android.jar') }
-    args 29
-    args "${topobjdir}/widget/android/bindings"
 
     // Configure the arguments at evaluation-time, not at configuration-time.
     doFirst {
+        // We only want to generate bindings for the main framework JAR,
+        // but not any of the additional android.test libraries.
+        args android.bootClasspath.findAll { it.getName().startsWith('android.jar') }
+        args 29
+        args "${topobjdir}/widget/android/bindings"
+
         // From -Pgenerate_sdk_bindings_args=... on command line; missing in
         // `android-gradle-dependencies` toolchain task.
         if (project.hasProperty('generate_sdk_bindings_args')) {
@@ -549,6 +533,10 @@ apiLint {
     // TODO: Change this to `org` after hiding org.mozilla.gecko
     packageFilter = 'org.mozilla.geckoview'
     changelogFileName = 'src/main/java/org/mozilla/geckoview/doc-files/CHANGELOG.md'
+    // Put those files in ${buildDir}/intermediates/javac/<variant>
+    // instead of ${buildDir}/intermediates/javac/<variant>/compile<Variant>JavaWithJavac/classes
+    jsonResultFileName = '../../apilint-result.json'
+    apiOutputFileName = '../../api.txt'
     skipClassesRegex = [
         '^org.mozilla.geckoview.BuildConfig$',
         '^org.mozilla.geckoview.R$',

@@ -12,6 +12,8 @@ about-processes-column-action =
 
 about-processes-shutdown-process =
     .title = Rejtariki wuwólniś a proces znicyś
+about-processes-kill-process =
+    .title = Proces skóńcyś
 about-processes-shutdown-tab =
     .title = Rejtarik zacyniś
 # Profiler icons
@@ -53,6 +55,7 @@ about-processes-remote-sandbox-broker-process = Broker zdalonego pěskowego kaš
 about-processes-fork-server-process = Serwer Fork ({ $pid })
 about-processes-preallocated-process = Do togo pśipokazany ({ $pid })
 about-processes-utility-process = Pomocny program ({ $pid })
+about-processes-inference-process = Inferenca ({ $pid })
 # Unknown process names
 # Variables:
 #    $pid (String) The process id of this process, assigned by the OS.

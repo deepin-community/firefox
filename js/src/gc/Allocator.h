@@ -58,8 +58,7 @@ class CellAllocator {
                                  AllocKind allocKind, size_t thingSize,
                                  AllocSite* site);
   template <AllowGC allowGC>
-  static void* TryNewTenuredCell(JSContext* cx, AllocKind kind,
-                                 size_t thingSize);
+  static void* TryNewTenuredCell(JSContext* cx, AllocKind kind);
 
 #if defined(DEBUG) || defined(JS_GC_ZEAL) || defined(JS_OOM_BREAKPOINT)
   template <AllowGC allowGC>
@@ -69,6 +68,12 @@ class CellAllocator {
   static bool PreAllocChecks(JSContext* cx, AllocKind kind) {
     return true;
   }
+#endif
+
+#ifdef JS_GC_ZEAL
+  static AllocSite* MaybeGenerateMissingAllocSite(JSContext* cx,
+                                                  JS::TraceKind traceKind,
+                                                  AllocSite* site);
 #endif
 
 #ifdef DEBUG
@@ -87,7 +92,7 @@ class CellAllocator {
 
   // Allocate a cell in the tenured heap.
   template <AllowGC allowGC>
-  static void* AllocTenuredCell(JSContext* cx, gc::AllocKind kind, size_t size);
+  static void* AllocTenuredCell(JSContext* cx, gc::AllocKind kind);
 
   // Allocate a string. Use cx->newCell<T>([heap]).
   //

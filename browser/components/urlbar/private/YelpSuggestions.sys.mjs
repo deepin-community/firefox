@@ -100,15 +100,14 @@ export class YelpSuggestions extends BaseFeature {
 
     let resultProperties = {
       isRichSuggestion: true,
-      richSuggestionIconSize: 38,
       showFeedbackMenu: true,
     };
     if (!suggestion.is_top_pick) {
-      resultProperties.richSuggestionIconSize = 16;
-      resultProperties.isSuggestedIndexRelativeToGroup = true;
-      resultProperties.suggestedIndex = lazy.UrlbarPrefs.get(
-        "yelpSuggestNonPriorityIndex"
-      );
+      let suggestedIndex = lazy.UrlbarPrefs.get("yelpSuggestNonPriorityIndex");
+      if (suggestedIndex !== null) {
+        resultProperties.isSuggestedIndexRelativeToGroup = true;
+        resultProperties.suggestedIndex = suggestedIndex;
+      }
     }
 
     return Object.assign(
@@ -119,7 +118,6 @@ export class YelpSuggestions extends BaseFeature {
           url: url.toString(),
           originalUrl: suggestion.url,
           title: [title, lazy.UrlbarUtils.HIGHLIGHT.TYPED],
-          shouldShowUrl: true,
           bottomTextL10n: { id: "firefox-suggest-yelp-bottom-text" },
         })
       ),
@@ -227,10 +225,18 @@ export class YelpSuggestions extends BaseFeature {
   }
 
   get #minKeywordLength() {
+    // Use the pref value if it has a user value (which means the user clicked
+    // "Show less frequently") or if there's no Nimbus value. Otherwise use the
+    // Nimbus value. This lets us override the pref's default value using Nimbus
+    // if necessary.
+    let hasUserValue = Services.prefs.prefHasUserValue(
+      "browser.urlbar.yelp.minKeywordLength"
+    );
+    let nimbusValue = lazy.UrlbarPrefs.get("yelpMinKeywordLength");
     let minLength =
-      lazy.UrlbarPrefs.get("yelp.minKeywordLength") ||
-      lazy.UrlbarPrefs.get("yelpMinKeywordLength") ||
-      0;
+      hasUserValue || nimbusValue === null
+        ? lazy.UrlbarPrefs.get("yelp.minKeywordLength")
+        : nimbusValue;
     return Math.max(minLength, 0);
   }
 

@@ -89,6 +89,9 @@ shopping-show-less-button = Показать меньше
 
 shopping-settings-label =
     .label = Настройки
+shopping-settings-recommendations-toggle2 =
+    .label = Показать рекомендации и спонсируемое содержимое
+shopping-settings-recommendations-learn-more3 = { -brand-product-name } не делится вашими личными данными, поэтому эти рекомендации не будут следовать за вами в Интернете. <a data-l10n-name="review-quality-url">Подробнее</a>
 shopping-settings-recommendations-toggle =
     .label = Показывать рекламу в инструменте проверки отзывов
 shopping-settings-recommendations-learn-more2 = Время от времени вы будете видеть рекламу соответствующих продуктов. Мы рекламируем только товары с достоверными отзывами. <a data-l10n-name="review-quality-url">Подробнее</a>
@@ -115,6 +118,7 @@ shopping-settings-sidebar-enabled-state = Проверка отзывов <stron
 shopping-adjusted-rating-label =
     .label = Скорректированный рейтинг
 shopping-adjusted-rating-unreliable-reviews = Недостоверные отзывы удалены
+shopping-adjusted-rating-based-reliable-reviews = На основе достоверных отзывов
 
 ## Strings for the review reliability component
 
@@ -133,6 +137,8 @@ shopping-analysis-explainer-learn-more2 = Узнайте больше о том,
 # websites, which will be inserted without being translated.
 #  $retailer (String) - capitalized name of the shopping website, for example, "Amazon".
 shopping-analysis-explainer-highlights-description = <strong>Основные сведения</strong> взяты из отзывов на { $retailer } за последние 80 дней, которые мы считаем надежными.
+# Fallback for analysis highlights explainer if the retailer is ever unknown
+shopping-analysis-explainer-highlights-description-unknown-retailer = <strong>Основные сведения</strong> взяты из отзывов за последние 80 дней, которые мы считаем надежными.
 shopping-analysis-explainer-review-grading-scale-reliable = Достоверные отзывы. Мы считаем, что эти отзывы, скорее всего, написаны реальными клиентами, которые оставили честные и объективные отзывы.
 shopping-analysis-explainer-review-grading-scale-mixed = Мы считаем, что здесь находится смесь достоверных и недостоверных отзывов.
 shopping-analysis-explainer-review-grading-scale-unreliable = Недостоверные отзывы. Мы считаем, что эти отзывы, скорее всего, фейковые или написаны предвзятыми рецензентами.
@@ -159,6 +165,7 @@ shopping-unanalyzed-product-analyze-button = Проверить качество
 
 more-to-consider-ad-label =
     .label = На что ещё обратить внимание
+shopping-sponsored-label = Спонсировано
 ad-by-fakespot = Реклама от { -fakespot-brand-name }
 
 ## Shopping survey strings.

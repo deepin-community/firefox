@@ -2,7 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-synced-tabs-sidebar-title = 受同步的标签页
+synced-tabs-sidebar-title = 同步的标签页
 synced-tabs-sidebar-noclients-subtitle = 想查看您在其他设备上的标签页吗？
 synced-tabs-sidebar-intro = 查看来自您的其他设备的标签页列表。
 synced-tabs-sidebar-unverified = 您的账户需要验证。
@@ -11,7 +11,7 @@ synced-tabs-sidebar-open-settings = 打开同步设置
 synced-tabs-sidebar-tabsnotsyncing = 开启标签页同步服务，即可查看您的其他设备上的标签页列表。
 synced-tabs-sidebar-connect-another-device = 关联其他设备
 synced-tabs-sidebar-search =
-    .placeholder = 在受同步的标签页中搜索
+    .placeholder = 在同步的标签页中搜索
 
 ## Displayed in the Synced Tabs sidebar's context menu when right-clicking tabs
 ## and/or devices in the list. The "Open" strings below should be translated
@@ -59,3 +59,8 @@ synced-tabs-context-sync-now =
     .accesskey = S
 synced-tabs-fxa-sign-in = 登录同步服务
 synced-tabs-turn-on-sync = 开启同步
+# Context for hovering over the close tab button that will
+# send a push to the device to close said tab
+# Variables
+# $deviceName - the name of the device the user is closing a tab for
+synced-tabs-context-close-tab = 关闭 { $deviceName } 上的标签页

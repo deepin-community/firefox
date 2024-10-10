@@ -12,6 +12,8 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Configuration
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
@@ -46,6 +48,7 @@ import org.mozilla.fenix.customtabs.ExternalAppBrowserActivity
 import org.mozilla.fenix.helpers.Constants.PackageName.PIXEL_LAUNCHER
 import org.mozilla.fenix.helpers.Constants.PackageName.YOUTUBE_APP
 import org.mozilla.fenix.helpers.Constants.TAG
+import org.mozilla.fenix.helpers.MatcherHelper.itemWithResIdContainingText
 import org.mozilla.fenix.helpers.TestAssetHelper.waitingTime
 import org.mozilla.fenix.helpers.TestAssetHelper.waitingTimeShort
 import org.mozilla.fenix.helpers.TestHelper.appContext
@@ -308,6 +311,9 @@ object AppAndSystemHelper {
                 Log.i(TAG, "assertExternalAppOpens: Matched open intent to $appPackageName.")
             } catch (e: AssertionFailedError) {
                 Log.i(TAG, "assertExternalAppOpens: Intent match failure. ${e.message}")
+            } finally {
+                // Stop the app from running in the background
+                forceCloseApp(appPackageName)
             }
         } else {
             Log.i(TAG, "assertExternalAppOpens: Trying to verify the \"Could not open file\" message.")
@@ -331,6 +337,9 @@ object AppAndSystemHelper {
                     .waitForExists(waitingTime),
             )
             Log.i(TAG, "assertNativeAppOpens: App package name matched.")
+
+            // Stop the app from running in the background
+            forceCloseApp(appPackageName)
         } else {
             Log.i(TAG, "assertNativeAppOpens: Trying to verify the page redirect URL.")
             BrowserRobot().verifyUrl(url)
@@ -342,6 +351,20 @@ object AppAndSystemHelper {
         Log.i(TAG, "assertYoutubeAppOpens: Trying to check the intent to YouTube.")
         intended(toPackage(YOUTUBE_APP))
         Log.i(TAG, "assertYoutubeAppOpens: Verified the intent matches YouTube.")
+
+        // Stop the app from running in the background
+        forceCloseApp(YOUTUBE_APP)
+    }
+
+    /**
+     * Force stops the app from running in the background.
+     *
+     * @param appPackageName The package name of the app to be stopped.
+     */
+    fun forceCloseApp(appPackageName: String) {
+        Log.i(TAG, "forceCloseApp: Trying to stop the $appPackageName app from running in the background.")
+        mDevice.executeShellCommand("am force-stop $appPackageName")
+        Log.i(TAG, "forceCloseApp: Force-stopped the $appPackageName app.")
     }
 
     /**
@@ -559,7 +582,10 @@ object AppAndSystemHelper {
     fun runWithCondition(condition: Boolean, testBlock: () -> Unit) {
         Log.i(TAG, "runWithCondition: Trying to run the test based on condition. The condition is: $condition.")
         if (condition) {
+            Log.i(TAG, "runWithCondition: The condition was true. Running the test.")
             testBlock()
+        } else {
+            Log.i(TAG, "runWithCondition: The condition was false. Skipping the test.")
         }
     }
 
@@ -585,5 +611,29 @@ object AppAndSystemHelper {
             Log.i(TAG, "runWithLauncherIntent: Exception caught while running the test block: ${e.message}")
             e.printStackTrace()
         }
+    }
+
+    fun dismissSetAsDefaultBrowserOnboardingDialog() {
+        Log.i(TAG, "dismissSetAsDefaultBrowserOnboardingDialog: Detected API ${Build.VERSION.SDK_INT}")
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            Log.i(TAG, "dismissSetAsDefaulltBrowserOnboardingDialog: Trying to click the \"Cancel\" dialog button.")
+            itemWithResIdContainingText("android:id/button2", "Cancel").click()
+            Log.i(TAG, "dismissSetAsDefaulltBrowserOnboardingDialog: Clicked the \"Cancel\" dialog button.")
+        }
+    }
+
+    fun isNetworkConnected(): Boolean {
+        val connectivityManager =
+            appContext.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+
+        val network = connectivityManager.activeNetwork
+        val networkCapabilities = connectivityManager.getNetworkCapabilities(network)
+        val isConnected =
+            networkCapabilities != null &&
+                networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) &&
+                networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
+
+        Log.i(TAG, "isNetworkConnected: Checking if network is connected: $isConnected")
+        return isConnected
     }
 }

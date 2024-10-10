@@ -1,0 +1,109 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+
+## Labels for sidebar history panel
+
+# Variables:
+#   $date (string) - Date to be formatted based on locale
+sidebar-history-date-today =
+    .heading = Ass-a - { DATETIME($date, dateStyle: "full") }
+sidebar-history-date-yesterday =
+    .heading = Iḍelli - { DATETIME($date, dateStyle: "full") }
+sidebar-history-date-this-month =
+    .heading = { DATETIME($date, dateStyle: "full") }
+sidebar-history-date-prev-month =
+    .heading = { DATETIME($date, month: "long", year: "numeric") }
+sidebar-history-delete =
+    .title = Kkes seg umazray
+sidebar-history-sort-by-date =
+    .label = Asmizzwer s wazemz
+sidebar-history-sort-by-site =
+    .label = Smizzwer s usmel
+sidebar-history-clear =
+    .label = Sfeḍ amazray
+
+## Labels for sidebar search
+
+# "Search" is a noun (as in "Results of the search for")
+# Variables:
+#   $query (String) - The search query used for searching through browser history.
+sidebar-search-results-header =
+    .heading = Nadi igmaḍ i “{ $query }”
+
+## Labels for sidebar customize panel
+
+sidebar-customize-extensions-header = Isiɣzaf n ufeggag adisan
+sidebar-customize-firefox-tools-header =
+    .label = Ifecka n { -brand-product-name }
+sidebar-customize-firefox-settings = Sefrek iɣewwaren n { -brand-short-name }
+sidebar-position-left =
+    .label = Sken deg zelmeḍ
+sidebar-position-right =
+    .label = Sken deg yeffus
+sidebar-customize-tabs-header =
+    .label = Iɣewwaren n yiccer
+sidebar-customize-settings-header =
+    .label = Iɣewwaren n ufeggag adisan
+sidebar-visibility-always-show =
+    .label = Sken yal tikelt
+sidebar-visibility-hide-sidebar =
+    .label = Ffer afeggag adisan
+
+## Labels for sidebar context menu items
+
+sidebar-context-menu-manage-extension =
+    .label = Sefrek asiɣzef
+sidebar-context-menu-remove-extension =
+    .label = Kkes asiɣzef
+sidebar-context-menu-report-extension =
+    .label = Mmel asiɣzef
+sidebar-context-menu-open-in-window =
+    .label = Ldi deg usfaylu amaynut
+sidebar-context-menu-open-in-private-window =
+    .label = Ldi deg usfaylu uslig amaynut
+sidebar-context-menu-bookmark-tab =
+    .label = Iccer n tecraḍ n yisebtar…
+sidebar-context-menu-copy-link =
+    .label = Nɣel aseɣwen
+# Variables:
+#   $deviceName (String) - The name of the device the user is closing a tab for
+sidebar-context-menu-close-remote-tab =
+    .label = Mdel iccer ɣef { $deviceName }
+
+## Labels for sidebar history context menu items
+
+sidebar-history-context-menu-delete-page =
+    .label = Kkes seg umazray
+
+## Labels for sidebar menu items.
+
+sidebar-menu-genai-chat-label =
+    .label = AI chatbot
+sidebar-menu-history-label =
+    .label = Azray
+sidebar-menu-synced-tabs-label =
+    .label = Iccaren seg ibenkan nniḍen
+sidebar-menu-bookmarks-label =
+    .label = Ticraḍ n isebtar
+sidebar-menu-customize-label =
+    .label = Sagen afeggag adigan
+
+## Headings for sidebar menu panels.
+
+sidebar-menu-customize-header =
+    .heading = Sagen afeggag adigan
+sidebar-menu-history-header =
+    .heading = Azray
+sidebar-menu-syncedtabs-header =
+    .heading = Iccaren seg ibenkan nniḍen
+
+## Context for closing synced tabs when hovering over the items
+
+# Context for hovering over the close tab button that will
+# send a push to the device to close said tab
+# Variables:
+#   $deviceName (String) - the name of the device the user is closing a tab for
+synced-tabs-context-close-tab-title =
+    .title = Mdel iccer ɣef { $deviceName }

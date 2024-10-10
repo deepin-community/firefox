@@ -550,6 +550,10 @@ urlbar-go-button =
     .tooltiptext = It adres yn de lokaasjebalke iepenje
 urlbar-page-action-button =
     .tooltiptext = Side-aksjes
+urlbar-revert-button =
+    .tooltiptext = Adres yn de lokaasjebalke toane
+urlbar-show-page-actions-button =
+    .tooltiptext = Alle side-aksjes toane
 
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
@@ -640,6 +644,21 @@ urlbar-group-quickactions =
 #  $engine (String): the name of the search engine used to search.
 urlbar-group-recent-searches =
     .label = Resinte sykopdrachten
+# The header shown above trending results.
+# Variables:
+#  $engine (String): the name of the search engine providing the trending suggestions
+urlbar-group-trending =
+    .label = Trending op { $engine }
+# The result menu labels shown next to trending results.
+urlbar-result-menu-trending-dont-show =
+    .label = Gjin trending sykopdrachten toane
+    .accesskey = G
+urlbar-result-menu-trending-why =
+    .label = Wêrom sjoch ik dit?
+    .accesskey = W
+# A message that replaces a result when the user dismisses all suggestions of a
+# particular type.
+urlbar-trending-dismissal-acknowledgment = Tank foar jo kommentaar. Jo sille gjin trending sykopdrachten mear sjen.
 
 ## Reader View toolbar buttons
 
@@ -990,6 +1009,10 @@ firefox-relay-offer-legal-notice = Troch op ‘E-mailmasker brûke’ te klikken
 popup-notification-addon-install-unsigned =
     .value = (Net ferifiearre)
 popup-notification-xpinstall-prompt-learn-more = Mear ynfo oer it feilich ynstallearjen fan add-ons
+# Note: Access key is set to P to match "Private" in the corresponding localized label.
+popup-notification-addon-privatebrowsing-checkbox =
+    .label = Utfiere yn priveefinsters
+    .accesskey = p
 
 ## Pop-up warning
 
@@ -1019,3 +1042,24 @@ popup-warning-button =
 #   $popupURI (String): the URI for the pop-up window
 popup-show-popup-menuitem =
     .label = “{ $popupURI }” sjen litte
+
+## File-picker crash notification ("FilePickerCrashed.sys.mjs")
+
+file-picker-failed-open = It Windows-bestânsdialoochfinster koe net iepene wurde. Der is gjin bestân of map selektearre.
+#   $path (string): The full path to which the file will be saved (e.g., 'C:\Users\Default User\Downloads\readme.txt').
+file-picker-failed-save-somewhere = It Windows-bestânsdialoochfinster koe net iepene wurde. It bestân wurdt bewarre yn { $path }.
+file-picker-failed-save-nowhere = It Windows-bestânsdialoochfinster koe net iepene wurde. Der is gjin standertmap fûn; it bestân sil net bewarre wurde.
+file-picker-crashed-open = It Windows-bestânsdialoochfinster is ferûngelokke. Der is gjin bestân of map selektearre.
+#   $path (string): The full path to which the file will be saved (e.g., 'C:\Users\Default User\Downloads\readme.txt').
+file-picker-crashed-save-somewhere = It Windows-bestânsdialoochfinster is ferûngelokke. It bestân wurdt bewarre yn { $path }.
+file-picker-crashed-save-nowhere = It Windows-bestânsdialoochfinster is ferûngelokke. Der is gjin standertmap fûn; it bestân sil net bewarre wurde.
+
+# Button used with file-picker-crashed-save-default. Opens the folder in Windows
+# Explorer, with the saved file selected and in focus.
+#
+# The wording here should be consistent with the Windows variant of
+# `downloads-cmd-show-menuitem-2` and similar messages.
+
+file-picker-crashed-show-in-folder =
+    .label = Yn map toane
+    .accessKey = m
