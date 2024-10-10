@@ -15,3 +15,13 @@ debian-hacks/Set-DPI-to-system-settings.patch
 debian-hacks/Don-t-auto-disable-extensions-in-system-directories.patch
 debian-hacks/Work-around-GCC-ICE-on-ppc64el.patch
 debian-hacks/Adjust-our-gfx-skia-moz.build-patch-to-upstream-chan.patch
+deepin-hacks/0002-Enable-VA-API-support-for-AMD-GPUs.patch
+porting-loong64/0003-Add-support-for-LoongArch64.patch
+porting-loong64/0004-update-gn_processor.py-to-support-linux-on-loong64.patch
+porting-loong64/0005-Re-generate-libwebrtc-moz.build-files.patch
+porting-loong64/0006-enable-webrtc-for-loongarch64-in-toolkit-moz.configu.patch
+porting-loong64/0007-Fix-libyuv-unified-source-and-LoongArch-SIMD-build.patch
+porting-loong64/0008-Fix-missing-loongarch-subdir-in-libpng-moz.yaml.patch
+porting-loong64/0009-Vendor-missing-loongarch-files-of-libpng.patch
+porting-loong64/0010-Enable-LoongArch-LSX-optimization-for-libpng.patch
+porting-riscv64/allowriscv64-use-gles.patch
