@@ -1,3 +1,11 @@
+firefox (131.0.2-1deepin1) unstable; urgency=medium
+
+  * Sync LoongArch patches from AOSC OS.
+  * Enable AMD GPU VA-API support.
+  * Enable GLES support for RISC-V (riscv64).
+
+ -- Mingcong Bai <baimingcong@uniontech.com>  Thu, 10 Oct 2024 21:17:33 +0800
+
 firefox (131.0.2-1) unstable; urgency=medium
 
   * New upstream release.
