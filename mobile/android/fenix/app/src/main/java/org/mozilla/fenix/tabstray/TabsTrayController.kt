@@ -7,7 +7,9 @@ package org.mozilla.fenix.tabstray
 import androidx.annotation.VisibleForTesting
 import androidx.navigation.NavController
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import mozilla.components.browser.state.action.DebugAction
 import mozilla.components.browser.state.action.LastAccessAction
 import mozilla.components.browser.state.selector.findTab
@@ -21,6 +23,7 @@ import mozilla.components.browser.storage.sync.Tab
 import mozilla.components.concept.base.profiler.Profiler
 import mozilla.components.concept.engine.mediasession.MediaSession.PlaybackState
 import mozilla.components.concept.engine.prompt.ShareData
+import mozilla.components.feature.accounts.push.CloseTabsUseCases
 import mozilla.components.feature.downloads.ui.DownloadCancelDialogFragment
 import mozilla.components.feature.tabs.TabsUseCases
 import mozilla.components.lib.state.DelicateAction
@@ -185,11 +188,14 @@ interface TabsTrayController : SyncedTabsController, InactiveTabsController, Tab
  * @param navigationInteractor [NavigationInteractor] used to perform navigation actions with side effects.
  * @param tabsUseCases Use case wrapper for interacting with tabs.
  * @param bookmarksUseCase Use case wrapper for interacting with bookmarks.
- * @param ioDispatcher [CoroutineContext] used to handle saving tabs as bookmarks.
+ * @param closeSyncedTabsUseCases Use cases for closing synced tabs.
+ * @param ioDispatcher [CoroutineContext] used for storage operations.
  * @param collectionStorage Storage layer for interacting with collections.
  * @param selectTabPosition Lambda used to scroll the tabs tray to the desired position.
  * @param dismissTray Lambda used to dismiss/minimize the tabs tray.
- * @param showUndoSnackbarForTab Lambda used to display an UNDO Snackbar.
+ * @param showUndoSnackbarForTab Lambda used to display an undo snackbar when a normal or private tab is closed.
+ * @param showUndoSnackbarForInactiveTab Lambda used to display an undo snackbar when an inactive tab is closed.
+ * @param showUndoSnackbarForSyncedTab Lambda used to display an undo snackbar when a synced tab is closed.
  * @property showCancelledDownloadWarning Lambda used to display a cancelled download warning.
  * @param showBookmarkSnackbar Lambda used to display a snackbar upon saving tabs as bookmarks.
  * @param showCollectionSnackbar Lambda used to display a snackbar upon successfully saving tabs
@@ -210,11 +216,14 @@ class DefaultTabsTrayController(
     private val navigationInteractor: NavigationInteractor,
     private val tabsUseCases: TabsUseCases,
     private val bookmarksUseCase: BookmarksUseCase,
+    private val closeSyncedTabsUseCases: CloseTabsUseCases,
     private val ioDispatcher: CoroutineContext,
     private val collectionStorage: TabCollectionStorage,
     private val selectTabPosition: (Int, Boolean) -> Unit,
     private val dismissTray: () -> Unit,
     private val showUndoSnackbarForTab: (Boolean) -> Unit,
+    private val showUndoSnackbarForInactiveTab: (Int) -> Unit,
+    private val showUndoSnackbarForSyncedTab: (CloseTabsUseCases.UndoableOperation) -> Unit,
     internal val showCancelledDownloadWarning: (downloadCount: Int, tabId: String?, source: String?) -> Unit,
     private val showBookmarkSnackbar: (tabSize: Int) -> Unit,
     private val showCollectionSnackbar: (
@@ -246,6 +255,14 @@ class DefaultTabsTrayController(
     private fun openNewTab(isPrivate: Boolean) {
         val startTime = profiler?.getProfilerTime()
         browsingModeManager.mode = BrowsingMode.fromBoolean(isPrivate)
+
+        if (settings.enableHomepageAsNewTab) {
+            tabsUseCases.addTab.invoke(
+                startLoading = false,
+                private = isPrivate,
+            )
+        }
+
         navController.navigate(
             TabsTrayFragmentDirections.actionGlobalHome(focusOnAddressBar = true),
         )
@@ -260,10 +277,12 @@ class DefaultTabsTrayController(
     override fun handleTrayScrollingToPosition(position: Int, smoothScroll: Boolean) {
         val page = Page.positionToPage(position)
 
-        when (page) {
-            Page.NormalTabs -> TabsTray.normalModeTapped.record(NoExtras())
-            Page.PrivateTabs -> TabsTray.privateModeTapped.record(NoExtras())
-            Page.SyncedTabs -> TabsTray.syncedModeTapped.record(NoExtras())
+        if (page != tabsTrayStore.state.selectedPage) {
+            when (page) {
+                Page.NormalTabs -> TabsTray.normalModeTapped.record(NoExtras())
+                Page.PrivateTabs -> TabsTray.privateModeTapped.record(NoExtras())
+                Page.SyncedTabs -> TabsTray.syncedModeTapped.record(NoExtras())
+            }
         }
 
         selectTabPosition(position, smoothScroll)
@@ -520,6 +539,15 @@ class DefaultTabsTrayController(
         )
     }
 
+    override fun handleSyncedTabClosed(deviceId: String, tab: Tab) {
+        CoroutineScope(ioDispatcher).launch {
+            val operation = closeSyncedTabsUseCases.close(deviceId, tab.active().url)
+            withContext(Dispatchers.Main) {
+                showUndoSnackbarForSyncedTab(operation)
+            }
+        }
+    }
+
     override fun handleTabLongClick(tab: TabSessionState): Boolean {
         return if (tab.isNormalTab() && tabsTrayStore.state.mode.selectedTabs.isEmpty()) {
             Collections.longPress.record(NoExtras())
@@ -594,11 +622,13 @@ class DefaultTabsTrayController(
     }
 
     override fun handleDeleteAllInactiveTabsClicked() {
+        val numTabs: Int
         TabsTray.closeAllInactiveTabs.record(NoExtras())
         browserStore.state.potentialInactiveTabs.map { it.id }.let {
             tabsUseCases.removeTabs(it)
+            numTabs = it.size
         }
-        showUndoSnackbarForTab(false)
+        showUndoSnackbarForInactiveTab(numTabs)
     }
 
     /**

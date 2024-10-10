@@ -56,7 +56,6 @@
 #include "nsTArray.h"
 #include "nsTableWrapperFrame.h"
 #include "nsTableCellFrame.h"
-#include "nsIScrollableFrame.h"
 #include "nsCCUncollectableMarker.h"
 #include "nsIDocumentEncoder.h"
 #include "nsTextFragment.h"
@@ -87,6 +86,10 @@
 
 #include "nsFocusManager.h"
 #include "nsPIDOMWindow.h"
+
+#ifdef ACCESSIBILITY
+#  include "nsAccessibilityService.h"
+#endif
 
 namespace mozilla {
 // "Selection" logs only the calls of AddRangesForSelectableNodes and
@@ -299,6 +302,58 @@ nsCString SelectionChangeReasonsToCString(int16_t aReasons) {
 }
 
 }  // namespace mozilla
+
+SelectionNodeCache::SelectionNodeCache(PresShell& aOwningPresShell)
+    : mOwningPresShell(aOwningPresShell) {
+  MOZ_ASSERT(!mOwningPresShell.mSelectionNodeCache);
+  mOwningPresShell.mSelectionNodeCache = this;
+}
+
+SelectionNodeCache::~SelectionNodeCache() {
+  mOwningPresShell.mSelectionNodeCache = nullptr;
+}
+
+bool SelectionNodeCache::MaybeCollectNodesAndCheckIfFullySelectedInAnyOf(
+    const nsINode* aNode, const nsTArray<Selection*>& aSelections) {
+  for (const auto* sel : aSelections) {
+    if (MaybeCollectNodesAndCheckIfFullySelected(aNode, sel)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+const nsTHashSet<const nsINode*>& SelectionNodeCache::MaybeCollect(
+    const Selection* aSelection) {
+  MOZ_ASSERT(aSelection);
+  return mSelectedNodes.LookupOrInsertWith(aSelection, [sel = RefPtr(
+                                                            aSelection)] {
+    nsTHashSet<const nsINode*> fullySelectedNodes;
+    for (size_t rangeIndex = 0; rangeIndex < sel->RangeCount(); ++rangeIndex) {
+      AbstractRange* range = sel->GetAbstractRangeAt(rangeIndex);
+      const RangeBoundary& startRef = range->MayCrossShadowBoundaryStartRef();
+      const RangeBoundary& endRef = range->MayCrossShadowBoundaryEndRef();
+
+      const nsINode* startContainer =
+          startRef.IsStartOfContainer() ? nullptr : startRef.Container();
+      const nsINode* endContainer =
+          endRef.IsEndOfContainer() ? nullptr : endRef.Container();
+      UnsafePreContentIterator iter;
+      iter.Init(range);
+      for (; !iter.IsDone(); iter.Next()) {
+        if (const nsINode* node = iter.GetCurrentNode()) {
+          // Only collect start and end container if they are fully
+          // selected (they are null in that case).
+          if (node == startContainer || node == endContainer) {
+            continue;
+          }
+          fullySelectedNodes.Insert(node);
+        }
+      }
+    }
+    return fullySelectedNodes;
+  });
+}
 
 // #define DEBUG_SELECTION // uncomment for printf describing every collapse and
 //  extend. #define DEBUG_NAVIGATION
@@ -1170,6 +1225,10 @@ nsresult Selection::StyledRanges::AddRangeAndIgnoreOverlaps(
   if (mRanges.Length() == 0) {
     mRanges.AppendElement(StyledRange(aRange));
     aRange->RegisterSelection(MOZ_KnownLive(mSelection));
+#ifdef ACCESSIBILITY
+    a11y::SelectionManager::SelectionRangeChanged(mSelection.GetType(),
+                                                  *aRange);
+#endif
     return NS_OK;
   }
 
@@ -1195,6 +1254,9 @@ nsresult Selection::StyledRanges::AddRangeAndIgnoreOverlaps(
 
   mRanges.InsertElementAt(startIndex, StyledRange(aRange));
   aRange->RegisterSelection(MOZ_KnownLive(mSelection));
+#ifdef ACCESSIBILITY
+  a11y::SelectionManager::SelectionRangeChanged(mSelection.GetType(), *aRange);
+#endif
   return NS_OK;
 }
 
@@ -1211,6 +1273,10 @@ nsresult Selection::StyledRanges::MaybeAddRangeAndTruncateOverlaps(
     // pretended earlier.
     mRanges.AppendElement(StyledRange(aRange));
     aRange->RegisterSelection(MOZ_KnownLive(mSelection));
+#ifdef ACCESSIBILITY
+    a11y::SelectionManager::SelectionRangeChanged(mSelection.GetType(),
+                                                  *aRange);
+#endif
 
     aOutIndex->emplace(0u);
     return NS_OK;
@@ -1244,6 +1310,14 @@ nsresult Selection::StyledRanges::MaybeAddRangeAndTruncateOverlaps(
     aOutIndex->emplace(startIndex);
     return NS_OK;
   }
+
+  // Beyond this point, we will expand the selection to cover aRange.
+  // Accessibility doesn't need to know about ranges split due to overlaps. It
+  // just needs a range that covers any text leaf that is impacted by the
+  // change.
+#ifdef ACCESSIBILITY
+  a11y::SelectionManager::SelectionRangeChanged(mSelection.GetType(), *aRange);
+#endif
 
   if (startIndex == endIndex) {
     // The new range doesn't overlap any existing ranges
@@ -1321,6 +1395,9 @@ nsresult Selection::StyledRanges::RemoveRangeAndUnregisterSelection(
 
   mRanges.RemoveElementAt(idx);
   aRange.UnregisterSelection(mSelection);
+#ifdef ACCESSIBILITY
+  a11y::SelectionManager::SelectionRangeChanged(mSelection.GetType(), aRange);
+#endif
 
   return NS_OK;
 }
@@ -1929,6 +2006,29 @@ UniquePtr<SelectionDetails> Selection::LookUpSelection(
   }
 
   nsTArray<AbstractRange*> overlappingRanges;
+  SelectionNodeCache* cache =
+      GetPresShell() ? GetPresShell()->GetSelectionNodeCache() : nullptr;
+  if (cache && RangeCount() == 1) {
+    const bool isFullySelected =
+        cache->MaybeCollectNodesAndCheckIfFullySelected(aContent, this);
+    if (isFullySelected) {
+      auto newHead = MakeUnique<SelectionDetails>();
+
+      newHead->mNext = std::move(aDetailsHead);
+      newHead->mStart = AssertedCast<int32_t>(0);
+      newHead->mEnd = AssertedCast<int32_t>(aContentLength);
+      newHead->mSelectionType = aSelectionType;
+      newHead->mHighlightData = mHighlightData;
+      StyledRange* rd = mStyledRanges.FindRangeData(GetAbstractRangeAt(0));
+      if (rd) {
+        newHead->mTextRangeStyle = rd->mTextRangeStyle;
+      }
+      auto detailsHead = std::move(newHead);
+
+      return detailsHead;
+    }
+  }
+
   nsresult rv = GetAbstractRangesForIntervalArray(
       aContent, aContentOffset, aContent, aContentOffset + aContentLength,
       false, &overlappingRanges);
@@ -2100,6 +2200,14 @@ void Selection::StyledRanges::UnregisterSelection() {
 }
 
 void Selection::StyledRanges::Clear() {
+#ifdef ACCESSIBILITY
+  for (auto& range : mRanges) {
+    if (!a11y::SelectionManager::SelectionRangeChanged(mSelection.GetType(),
+                                                       *range.mRange)) {
+      break;
+    }
+  }
+#endif
   mRanges.Clear();
   mInvalidStaticRanges.Clear();
 }
@@ -2784,16 +2892,25 @@ AbstractRange* Selection::GetAbstractRangeAt(uint32_t aIndex) const {
   return mStyledRanges.mRanges.SafeElementAt(aIndex, empty).mRange;
 }
 
+// https://www.w3.org/TR/selection-api/#dom-selection-direction
 void Selection::GetDirection(nsAString& aDirection) const {
   if (mStyledRanges.mRanges.IsEmpty() ||
       (mFrameSelection && (mFrameSelection->IsDoubleClickSelection() ||
                            mFrameSelection->IsTripleClickSelection()))) {
     // Empty range and double/triple clicks result a directionless selection.
     aDirection.AssignLiteral("none");
-  } else if (mDirection == nsDirection::eDirPrevious) {
-    aDirection.AssignLiteral("backward");
-  } else {
+  } else if (mDirection == nsDirection::eDirNext) {
+    // This is the default direction. It could be that the direction
+    // is really "forward", or the direction is "none" if the selection
+    // is collapsed.
+    if (AreNormalAndCrossShadowBoundaryRangesCollapsed()) {
+      aDirection.AssignLiteral("none");
+      return;
+    }
     aDirection.AssignLiteral("forward");
+  } else {
+    MOZ_ASSERT(!AreNormalAndCrossShadowBoundaryRangesCollapsed());
+    aDirection.AssignLiteral("backward");
   }
 }
 
@@ -3539,21 +3656,6 @@ nsresult Selection::PostScrollSelectionIntoViewEvent(SelectionRegion aRegion,
   return NS_OK;
 }
 
-void Selection::ScrollIntoView(int16_t aRegion, bool aIsSynchronous,
-                               int16_t aVPercent, int16_t aHPercent,
-                               ErrorResult& aRv) {
-  int32_t flags = aIsSynchronous ? Selection::SCROLL_SYNCHRONOUS : 0;
-  // -1 means nearest in this API.
-  const auto v =
-      aVPercent == -1 ? WhereToScroll::Nearest : WhereToScroll(aVPercent);
-  const auto h =
-      aHPercent == -1 ? WhereToScroll::Nearest : WhereToScroll(aHPercent);
-  nsresult rv = ScrollIntoView(aRegion, ScrollAxis(v), ScrollAxis(h), flags);
-  if (NS_FAILED(rv)) {
-    aRv.Throw(rv);
-  }
-}
-
 nsresult Selection::ScrollIntoView(SelectionRegion aRegion,
                                    ScrollAxis aVertical, ScrollAxis aHorizontal,
                                    int32_t aFlags) {
@@ -3727,6 +3829,24 @@ void Selection::NotifySelectionListeners() {
 
   mStyledRanges.mRangesMightHaveChanged = true;
 
+  // This flag will be set to Double or Triple if a selection by double click or
+  // triple click is detected. As soon as the selection is modified, it needs to
+  // be reset to NotApplicable.
+  mFrameSelection->SetClickSelectionType(ClickSelectionType::NotApplicable);
+
+  // If we're batching changes, record our batching flag and bail out, we'll be
+  // called once the batch ends.
+  if (mFrameSelection->IsBatching()) {
+    mChangesDuringBatching = true;
+    return;
+  }
+  // If being called at end of batching, `mFrameSelection->IsBatching()` will
+  // return false. In this case, this method will only be called if
+  // `mChangesDuringBatching` was true.
+  // (see `nsFrameSelection::EndBatchChanges()`).
+  // Since arriving here means that batching ended, the flag needs to be reset.
+  mChangesDuringBatching = false;
+
   // Our internal code should not move focus with using this class while
   // this moves focus nor from selection listeners.
   AutoRestore<bool> calledByJSRestorer(mCalledByJS);
@@ -3742,28 +3862,13 @@ void Selection::NotifySelectionListeners() {
     mStyledRanges.MaybeFocusCommonEditingHost(presShell);
   }
 
-  RefPtr<nsFrameSelection> frameSelection = mFrameSelection;
-
-  // This flag will be set to Double or Triple if a selection by double click or
-  // triple click is detected. As soon as the selection is modified, it needs to
-  // be reset to NotApplicable.
-  frameSelection->SetClickSelectionType(ClickSelectionType::NotApplicable);
-
-  if (frameSelection->IsBatching()) {
-    frameSelection->SetChangesDuringBatchingFlag();
-    return;
-  }
-  if (mSelectionListeners.IsEmpty() && !mNotifyAutoCopy &&
-      !mAccessibleCaretEventHub && !mSelectionChangeEventDispatcher) {
-    // If there are no selection listeners, we're done!
-    return;
-  }
-
   nsCOMPtr<Document> doc;
   if (PresShell* presShell = GetPresShell()) {
     doc = presShell->GetDocument();
     presShell->ScheduleContentRelevancyUpdate(ContentRelevancyReason::Selected);
   }
+
+  RefPtr<nsFrameSelection> frameSelection = mFrameSelection;
 
   // We've notified all selection listeners even when some of them are removed
   // (and may be destroyed) during notifying one of them.  Therefore, we should
@@ -3771,28 +3876,27 @@ void Selection::NotifySelectionListeners() {
   const CopyableAutoTArray<nsCOMPtr<nsISelectionListener>, 5>
       selectionListeners = mSelectionListeners;
 
+  int32_t amount = static_cast<int32_t>(frameSelection->GetCaretMoveAmount());
   int16_t reason = frameSelection->PopChangeReasons();
   if (calledByJSRestorer.SavedValue()) {
     reason |= nsISelectionListener::JS_REASON;
   }
+  if (mSelectionType == SelectionType::eNormal) {
+    if (mNotifyAutoCopy) {
+      AutoCopyListener::OnSelectionChange(doc, *this, reason);
+    }
 
-  int32_t amount = static_cast<int32_t>(frameSelection->GetCaretMoveAmount());
+    if (mAccessibleCaretEventHub) {
+      RefPtr<AccessibleCaretEventHub> hub(mAccessibleCaretEventHub);
+      hub->OnSelectionChange(doc, this, reason);
+    }
 
-  if (mNotifyAutoCopy) {
-    AutoCopyListener::OnSelectionChange(doc, *this, reason);
+    if (mSelectionChangeEventDispatcher) {
+      RefPtr<SelectionChangeEventDispatcher> dispatcher(
+          mSelectionChangeEventDispatcher);
+      dispatcher->OnSelectionChange(doc, this, reason);
+    }
   }
-
-  if (mAccessibleCaretEventHub) {
-    RefPtr<AccessibleCaretEventHub> hub(mAccessibleCaretEventHub);
-    hub->OnSelectionChange(doc, this, reason);
-  }
-
-  if (mSelectionChangeEventDispatcher) {
-    RefPtr<SelectionChangeEventDispatcher> dispatcher(
-        mSelectionChangeEventDispatcher);
-    dispatcher->OnSelectionChange(doc, this, reason);
-  }
-
   for (const auto& listener : selectionListeners) {
     // MOZ_KnownLive because 'selectionListeners' is guaranteed to
     // keep it alive.

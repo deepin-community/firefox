@@ -353,25 +353,31 @@ data class Metadata(
     val version: String,
 
     /**
-     * Required extension permissions:
+     * Required API permissions:
      * https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json/permissions#API_permissions
      */
-    val permissions: List<String>,
+    val requiredPermissions: List<String>,
 
     /**
-     * Optional permissions requested or granted to this extension:
+     * Required origin permissions:
+     * https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json/permissions#Host_permissions
+     */
+    val requiredOrigins: List<String>,
+
+    /**
+     * Optional API permissions for this extension:
      * https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json/optional_permissions
      */
     val optionalPermissions: List<String>,
 
     /**
-     * Optional permissions granted to this extension:
+     * Optional API permissions granted to this extension:
      * https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json/optional_permissions
      */
     val grantedOptionalPermissions: List<String>,
 
     /**
-     * Optional origin permissions requested or granted to this extension:
+     * Optional origin permissions for this extension:
      * https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json/optional_permissions
      */
     val optionalOrigins: List<String>,
@@ -381,11 +387,6 @@ data class Metadata(
      * https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json/optional_permissions
      */
     val grantedOptionalOrigins: List<String>,
-    /**
-     * Required host permissions:
-     * https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json/permissions#Host_permissions
-     */
-    val hostPermissions: List<String>,
 
     /**
      * Name of the extension:
@@ -673,5 +674,11 @@ sealed class WebExtensionInstallException(
      * The extension install failed because the extension type is not supported.
      */
     class UnsupportedAddonType(override val extensionName: String? = null, throwable: Throwable) :
+        WebExtensionInstallException(throwable = throwable)
+
+    /**
+     * The extension can only be installed via Enterprise Policies.
+     */
+    class AdminInstallOnly(override val extensionName: String? = null, throwable: Throwable) :
         WebExtensionInstallException(throwable = throwable)
 }

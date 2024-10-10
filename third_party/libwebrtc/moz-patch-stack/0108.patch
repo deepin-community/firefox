@@ -1,27 +1,23 @@
-From: Jan Grulich <jgrulich@redhat.com>
-Date: Tue, 5 Mar 2024 08:38:00 +0000
-Subject: Bug 1615282 - WebRTC backport: PipeWire capturer - set capturer as
- failed when session is closed r=pehrsons,webrtc-reviewers
+From: Michael Froman <mfroman@mozilla.com>
+Date: Fri, 17 May 2024 22:30:00 -0500
+Subject: Bug 1897501 - (fix-09bb4f09e1) keep default python intepreter as
+ python3
 
-This is a simple backport of an WebRTC upstream change.
-
-Upstream commit: 058bfe3ae37a7a245f9c8c6c03f4f7ac48fe179d
-
-Differential Revision: https://phabricator.services.mozilla.com/D202788
-Mercurial Revision: https://hg.mozilla.org/mozilla-central/rev/633149c5da9337f67b6659e5d5bead2233027460
+Mercurial Revision: https://hg.mozilla.org/mozilla-central/rev/b21ca84c8b2620a98515624de0e43a237698726c
 ---
- modules/desktop_capture/linux/wayland/base_capturer_pipewire.cc | 1 +
- 1 file changed, 1 insertion(+)
+ .gn | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/modules/desktop_capture/linux/wayland/base_capturer_pipewire.cc b/modules/desktop_capture/linux/wayland/base_capturer_pipewire.cc
-index 40764de7ae..81caa9bd2d 100644
---- a/modules/desktop_capture/linux/wayland/base_capturer_pipewire.cc
-+++ b/modules/desktop_capture/linux/wayland/base_capturer_pipewire.cc
-@@ -112,6 +112,7 @@ void BaseCapturerPipeWire::OnScreenCastSessionClosed() {
-   if (!capturer_failed_) {
-     options_.screencast_stream()->StopScreenCastStream();
-   }
-+  capturer_failed_ = true;
- }
+diff --git a/.gn b/.gn
+index 5796d30b7b..23da4f21b9 100644
+--- a/.gn
++++ b/.gn
+@@ -13,7 +13,7 @@ buildconfig = "//build/config/BUILDCONFIG.gn"
  
- void BaseCapturerPipeWire::UpdateResolution(uint32_t width, uint32_t height) {
+ # The python interpreter to use by default. On Windows, this will look
+ # for vpython3.exe and vpython3.bat.
+-script_executable = "vpython3"
++script_executable = "python3"
+ 
+ # The secondary source root is a parallel directory tree where
+ # GN build files are placed when they can not be placed directly

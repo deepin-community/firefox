@@ -5,13 +5,14 @@
 # "Search" is a verb, as in "Search through tabs".
 all-tabs-menu-search-tabs =
     .label = Pesquisar separadores
-
 all-tabs-menu-new-user-context =
     .label = Novo separador contentor
-
 all-tabs-menu-hidden-tabs =
     .label = Separadores ocultados
-
 all-tabs-menu-manage-user-context =
     .label = Gerir contentores
     .accesskey = O
+all-tabs-menu-close-duplicate-tabs =
+    .label = Fechar separadores duplicados
+all-tabs-menu-close-all-duplicate-tabs =
+    .label = Fechar todos os separadores duplicados

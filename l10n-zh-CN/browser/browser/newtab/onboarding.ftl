@@ -172,6 +172,8 @@ mr2022-onboarding-pin-primary-button-label =
         [macos] 在程序坞中保留 { -brand-short-name }
        *[other] 将 { -brand-short-name } 固定到任务栏
     }
+# Primary button string used on welcome page for when Firefox is not pinned on MSIX
+mr2022-onboarding-pin-primary-button-label-msix = 将 { -brand-short-name } 固定到任务栏和“开始”菜单
 # Subtitle will be used when user already has Firefox pinned, but
 # has not set it as their default browser.
 # When translating "zip", please feel free to pick a verb that signifies movement and/or exploration
@@ -318,6 +320,14 @@ onboarding-device-migration-title = 欢迎回来！
 onboarding-device-migration-subtitle = 登录 { -fxaccount-brand-name(capitalization: "sentence") }，把书签、密码、历史记录同步到新设备上。
 onboarding-device-migration-subtitle2 = 登录账户即可将您的书签、密码、历史记录同步到新设备。
 onboarding-device-migration-primary-button-label = 登录
+
+## Add-ons Picker screen
+
+amo-picker-title = 定制您的 { -brand-short-name }
+amo-picker-subtitle = 扩展就像浏览器中的”小程序“，可帮助您保管密码、下载视频、查找优惠信息、拦截恼人广告、改变浏览器外观等等。
+amo-picker-install-button-label = 添加到 { -brand-short-name }
+amo-picker-install-complete-label = 已安装
+amo-picker-collection-link = 探索更多附加组件
 
 ## The following screens have been updated to use security and privacy focused strings:
 

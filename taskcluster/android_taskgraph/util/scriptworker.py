@@ -6,14 +6,14 @@ import itertools
 import os
 from copy import deepcopy
 from datetime import datetime
+from functools import lru_cache
 
 import jsone
-from taskgraph.util.memoize import memoize
 from taskgraph.util.schema import resolve_keyed_by
 from taskgraph.util.taskcluster import get_artifact_prefix
 from taskgraph.util.yaml import load_yaml
 
-cached_load_yaml = memoize(load_yaml)
+cached_load_yaml = lru_cache(maxsize=None)(load_yaml)
 
 
 def generate_beetmover_upstream_artifacts(
@@ -258,6 +258,7 @@ def generate_beetmover_artifact_map(config, job, **kwargs):
                 resolve_keyed_by(platforms, key, job["label"], platform=platform)
 
         version = config.params["version"]
+        build_number = config.params["build_number"]
         upload_date = datetime.fromtimestamp(config.params["build_date"])
 
         if "nightly" in job["attributes"].get("build-type", ""):
@@ -265,7 +266,7 @@ def generate_beetmover_artifact_map(config, job, **kwargs):
             # TODO: Remove this when version.txt has versioning fixed
             version = version.split("-")[0]
         else:
-            folder_prefix = f"{version}/android/"
+            folder_prefix = f"{version}-candidates/build{build_number}/android/"
 
         kwargs.update(
             {"locale": locale, "version": version, "folder_prefix": folder_prefix}

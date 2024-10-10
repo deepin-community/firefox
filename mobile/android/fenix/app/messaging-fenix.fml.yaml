@@ -44,6 +44,11 @@ import:
               INACTIVE_4_DAYS: "'app_launched'|eventLastSeen('Days', 0) >= 4"
               INACTIVE_5_DAYS: "'app_launched'|eventLastSeen('Days', 0) >= 5"
 
+              # Behavioral Targeting Events
+              # See https://experimenter.info/mobile-behavioral-targeting for more info
+              RECENTLY_PRINTED:  "'print_tapped'|eventLastSeen('Hours') <= 24"
+              SECOND_HOMEPAGE_VIEW: "'home_screen_displayed'|eventSum('Years', 4, 0) >= 2"
+
               # Has the user signed in the last 4 years
               FXA_SIGNED_IN: "'sync_auth.sign_in'|eventLastSeen('Years', 0) <= 4"
               FXA_NOT_SIGNED_IN: "'sync_auth.sign_in'|eventLastSeen('Years', 0) > 4"
@@ -94,10 +99,14 @@ import:
               NOTIFICATION:
                 priority: 50
                 max-display-count: 1
+              MICROSURVEY:
+                priority: 50
+                max-display-count: 5
             $$surfaces:
               - homescreen
               - notification
               - survey
+              - microsurvey
 
         - channel: developer
           value:

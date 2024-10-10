@@ -30,6 +30,7 @@ namespace mozilla::widget::filedialog {
 class Command;
 class Results;
 enum class FileDialogType : uint8_t;
+struct Error;
 }  // namespace mozilla::widget::filedialog
 
 class nsBaseWinFilePicker : public nsBaseFilePicker {
@@ -56,12 +57,11 @@ class nsFilePicker final : public nsBaseWinFilePicker {
   using Maybe = mozilla::Maybe<T>;
   template <typename T>
   using Result = mozilla::Result<T, HRESULT>;
-  template <typename Res>
-  using FPPromise = RefPtr<mozilla::MozPromise<Maybe<Res>, HRESULT, true>>;
 
   using Command = mozilla::widget::filedialog::Command;
   using Results = mozilla::widget::filedialog::Results;
   using FileDialogType = mozilla::widget::filedialog::FileDialogType;
+  using Error = mozilla::widget::filedialog::Error;
 
  public:
   nsFilePicker();
@@ -89,22 +89,11 @@ class nsFilePicker final : public nsBaseWinFilePicker {
   NS_IMETHOD Open(nsIFilePickerShownCallback* aCallback) override;
 
  private:
-  RefPtr<mozilla::MozPromise<bool, HRESULT, true>> ShowFolderPicker(
+  using Unit = mozilla::Ok;
+  RefPtr<mozilla::MozPromise<bool, Error, true>> ShowFolderPicker(
       const nsString& aInitialDir);
-  RefPtr<mozilla::MozPromise<bool, HRESULT, true>> ShowFilePicker(
+  RefPtr<mozilla::MozPromise<bool, Error, true>> ShowFilePicker(
       const nsString& aInitialDir);
-
-  // Show the dialog out-of-process.
-  static FPPromise<Results> ShowFilePickerRemote(
-      HWND aParent, FileDialogType type, nsTArray<Command> const& commands);
-  static FPPromise<nsString> ShowFolderPickerRemote(
-      HWND aParent, nsTArray<Command> const& commands);
-
-  // Show the dialog in-process.
-  static FPPromise<Results> ShowFilePickerLocal(
-      HWND aParent, FileDialogType type, nsTArray<Command> const& commands);
-  static FPPromise<nsString> ShowFolderPickerLocal(
-      HWND aParent, nsTArray<Command> const& commands);
 
   void ClearFiles();
   using ContentAnalysisResponse = mozilla::MozPromise<bool, nsresult, true>;
@@ -115,6 +104,11 @@ class nsFilePicker final : public nsBaseWinFilePicker {
   bool IsPrivacyModeEnabled();
   bool IsDefaultPathLink();
   bool IsDefaultPathHtml();
+
+  using FallbackResult = mozilla::Result<RefPtr<nsIFile>, nsresult>;
+  FallbackResult ComputeFallbackSavePath() const;
+  void SendFailureNotification(ResultCode aResult, Error error,
+                               FallbackResult fallback) const;
 
   nsCOMPtr<nsIWidget> mParentWidget;
   nsString mTitle;

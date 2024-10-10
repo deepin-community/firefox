@@ -56,15 +56,15 @@ GPU_IMPL_JS_WRAP(Device)
 
 RefPtr<WebGPUChild> Device::GetBridge() { return mBridge; }
 
-Device::Device(Adapter* const aParent, RawId aId,
+Device::Device(Adapter* const aParent, RawId aDeviceId, RawId aQueueId,
                const ffi::WGPULimits& aRawLimits)
     : DOMEventTargetHelper(aParent->GetParentObject()),
-      mId(aId),
+      mId(aDeviceId),
       // features are filled in Adapter::RequestDevice
       mFeatures(new SupportedFeatures(aParent)),
       mLimits(new SupportedLimits(aParent, aRawLimits)),
       mBridge(aParent->mBridge),
-      mQueue(new class Queue(this, aParent->mBridge, aId)) {
+      mQueue(new class Queue(this, aParent->mBridge, aQueueId)) {
   mBridge->RegisterDevice(this);
 }
 
@@ -498,14 +498,6 @@ MOZ_CAN_RUN_SCRIPT void reportCompilationMessagesToConsole(
   }
 
   const auto& cx = api.cx();
-
-  ErrorResult rv;
-  RefPtr<dom::Console> console =
-      nsGlobalWindowInner::Cast(global->GetAsInnerWindow())->GetConsole(cx, rv);
-  if (rv.Failed()) {
-    return;
-  }
-
   dom::GlobalObject globalObj(cx, global->GetGlobalJSObject());
 
   dom::Sequence<JS::Value> args;
@@ -572,7 +564,7 @@ MOZ_CAN_RUN_SCRIPT void reportCompilationMessagesToConsole(
           u"Encountered one or more warnings while creating shader module");
       appendNiceLabelIfPresent(&msg);
       SetSingleStrAsArgs(msg, &args);
-      console->Warn(globalObj, args);
+      dom::Console::Warn(globalObj, args);
       break;
     }
     case WebGPUCompilationMessageType::Error: {
@@ -580,7 +572,7 @@ MOZ_CAN_RUN_SCRIPT void reportCompilationMessagesToConsole(
           u"Encountered one or more errors while creating shader module");
       appendNiceLabelIfPresent(&msg);
       SetSingleStrAsArgs(msg, &args);
-      console->Error(globalObj, args);
+      dom::Console::Error(globalObj, args);
       break;
     }
   }
@@ -596,23 +588,23 @@ MOZ_CAN_RUN_SCRIPT void reportCompilationMessagesToConsole(
   header.AppendInt(infoCount);
   header.AppendLiteral(u" info)");
   SetSingleStrAsArgs(header, &args);
-  console->GroupCollapsed(globalObj, args);
+  dom::Console::GroupCollapsed(globalObj, args);
 
   for (const auto& message : aMessages) {
     SetSingleStrAsArgs(message.message, &args);
     switch (message.messageType) {
       case WebGPUCompilationMessageType::Error:
-        console->Error(globalObj, args);
+        dom::Console::Error(globalObj, args);
         break;
       case WebGPUCompilationMessageType::Warning:
-        console->Warn(globalObj, args);
+        dom::Console::Warn(globalObj, args);
         break;
       case WebGPUCompilationMessageType::Info:
-        console->Info(globalObj, args);
+        dom::Console::Info(globalObj, args);
         break;
     }
   }
-  console->GroupEnd(globalObj);
+  dom::Console::GroupEnd(globalObj);
 }
 
 already_AddRefed<ShaderModule> Device::CreateShaderModule(
@@ -667,6 +659,8 @@ RawId CreateComputePipelineImpl(PipelineCreationContext* const aContext,
                                 ipc::ByteBuf* const aByteBuf) {
   ffi::WGPUComputePipelineDescriptor desc = {};
   nsCString entryPoint;
+  nsTArray<nsCString> constantKeys;
+  nsTArray<ffi::WGPUConstantEntry> constants;
 
   webgpu::StringHelper label(aDesc.mLabel);
   desc.label = label.Get();
@@ -684,6 +678,21 @@ RawId CreateComputePipelineImpl(PipelineCreationContext* const aContext,
     desc.stage.entry_point = entryPoint.get();
   } else {
     desc.stage.entry_point = nullptr;
+  }
+  if (aDesc.mCompute.mConstants.WasPassed()) {
+    const auto& descConstants = aDesc.mCompute.mConstants.Value().Entries();
+    constantKeys.SetCapacity(descConstants.Length());
+    constants.SetCapacity(descConstants.Length());
+    for (const auto& entry : descConstants) {
+      ffi::WGPUConstantEntry constantEntry = {};
+      nsCString key = NS_ConvertUTF16toUTF8(entry.mKey);
+      constantKeys.AppendElement(key);
+      constantEntry.key = key.get();
+      constantEntry.value = entry.mValue;
+      constants.AppendElement(constantEntry);
+    }
+    desc.stage.constants = constants.Elements();
+    desc.stage.constants_length = constants.Length();
   }
 
   RawId implicit_bgl_ids[WGPUMAX_BIND_GROUPS] = {};
@@ -708,6 +717,8 @@ RawId CreateRenderPipelineImpl(PipelineCreationContext* const aContext,
   nsTArray<ffi::WGPUVertexAttribute> vertexAttributes;
   ffi::WGPURenderPipelineDescriptor desc = {};
   nsCString vsEntry, fsEntry;
+  nsTArray<nsCString> vsConstantKeys, fsConstantKeys;
+  nsTArray<ffi::WGPUConstantEntry> vsConstants, fsConstants;
   ffi::WGPUIndexFormat stripIndexFormat = ffi::WGPUIndexFormat_Uint16;
   ffi::WGPUFace cullFace = ffi::WGPUFace_Front;
   ffi::WGPUVertexState vertexState = {};
@@ -734,6 +745,21 @@ RawId CreateRenderPipelineImpl(PipelineCreationContext* const aContext,
       vertexState.stage.entry_point = vsEntry.get();
     } else {
       vertexState.stage.entry_point = nullptr;
+    }
+    if (stage.mConstants.WasPassed()) {
+      const auto& descConstants = stage.mConstants.Value().Entries();
+      vsConstantKeys.SetCapacity(descConstants.Length());
+      vsConstants.SetCapacity(descConstants.Length());
+      for (const auto& entry : descConstants) {
+        ffi::WGPUConstantEntry constantEntry = {};
+        nsCString key = NS_ConvertUTF16toUTF8(entry.mKey);
+        vsConstantKeys.AppendElement(key);
+        constantEntry.key = key.get();
+        constantEntry.value = entry.mValue;
+        vsConstants.AppendElement(constantEntry);
+      }
+      vertexState.stage.constants = vsConstants.Elements();
+      vertexState.stage.constants_length = vsConstants.Length();
     }
 
     for (const auto& vertex_desc : stage.mBuffers) {
@@ -774,6 +800,21 @@ RawId CreateRenderPipelineImpl(PipelineCreationContext* const aContext,
       fragmentState.stage.entry_point = fsEntry.get();
     } else {
       fragmentState.stage.entry_point = nullptr;
+    }
+    if (stage.mConstants.WasPassed()) {
+      const auto& descConstants = stage.mConstants.Value().Entries();
+      fsConstantKeys.SetCapacity(descConstants.Length());
+      fsConstants.SetCapacity(descConstants.Length());
+      for (const auto& entry : descConstants) {
+        ffi::WGPUConstantEntry constantEntry = {};
+        nsCString key = NS_ConvertUTF16toUTF8(entry.mKey);
+        fsConstantKeys.AppendElement(key);
+        constantEntry.key = key.get();
+        constantEntry.value = entry.mValue;
+        fsConstants.AppendElement(constantEntry);
+      }
+      fragmentState.stage.constants = fsConstants.Elements();
+      fragmentState.stage.constants_length = fsConstants.Length();
     }
 
     // Note: we pre-collect the blend states into a different array
@@ -978,10 +1019,6 @@ bool Device::CheckNewWarning(const nsACString& aMessage) {
 }
 
 void Device::Destroy() {
-  if (IsLost()) {
-    return;
-  }
-
   // Unmap all buffers from this device, as specified by
   // https://gpuweb.github.io/gpuweb/#dom-gpudevice-destroy.
   dom::AutoJSAPI jsapi;
@@ -992,6 +1029,13 @@ void Device::Destroy() {
     }
 
     mTrackedBuffers.Clear();
+  }
+
+  if (!IsBridgeAlive()) {
+    // Resolve our lost promise in the same way as if we had a successful
+    // round-trip through the bridge.
+    ResolveLost(Some(dom::GPUDeviceLostReason::Destroyed), u""_ns);
+    return;
   }
 
   mBridge->SendDeviceDestroy(mId);

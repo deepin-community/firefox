@@ -347,6 +347,9 @@ has-seccomp-bpf = Seccomp-BPF (Filtrado de llamadas del sistema)
 has-seccomp-tsync = Sincronización de hilos seccomp
 has-user-namespaces = User Namespaces
 has-privileged-user-namespaces = User Namespaces for privileged processes
+# Variables
+# $status (string) - Boolean value of hasUserNamespaces (should only be false when support-user-namespaces-unavailable is used)
+support-user-namespaces-unavailable = { $status } — Este sistema no permite esta función. Esto puede restringir las características de seguridad de { -brand-short-name }.
 can-sandbox-content = Content Process Sandboxing
 can-sandbox-media = Media Plugin Sandboxing
 content-sandbox-level = Content Process Sandbox Level
@@ -414,6 +417,20 @@ support-printing-clear-settings-button = Eliminar los ajustes de impresión guar
 support-printing-modified-settings = Ajustes de impresión modificados
 support-printing-prefs-name = Nombre
 support-printing-prefs-value = Valor
+
+## Remote Settings sections
+
+support-remote-settings-title = Configuración remota
+support-remote-settings-status = Estado
+support-remote-settings-status-ok = Aceptar
+# Status when synchronization is not working.
+support-remote-settings-status-broken = No funcionando
+support-remote-settings-last-check = Última verificación
+support-remote-settings-local-timestamp = Horario local
+support-remote-settings-sync-history = Historial
+support-remote-settings-sync-history-status = Estado
+support-remote-settings-sync-history-datetime = Fecha
+support-remote-settings-sync-history-infos = Información
 
 ## Normandy sections
 

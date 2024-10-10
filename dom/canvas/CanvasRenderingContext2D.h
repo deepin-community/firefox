@@ -715,12 +715,12 @@ class CanvasRenderingContext2D : public nsICanvasRenderingContextInternal,
    */
   bool EnsureTarget(ErrorResult& aError,
                     const gfx::Rect* aCoveredRect = nullptr,
-                    bool aWillClear = false);
+                    bool aWillClear = false, bool aSkipTransform = false);
 
   bool EnsureTarget(const gfx::Rect* aCoveredRect = nullptr,
-                    bool aWillClear = false) {
+                    bool aWillClear = false, bool aSkipTransform = false) {
     IgnoredErrorResult error;
-    return EnsureTarget(error, aCoveredRect, aWillClear);
+    return EnsureTarget(error, aCoveredRect, aWillClear, aSkipTransform);
   }
 
   // Attempt to borrow a new target from an existing buffer provider.
@@ -811,7 +811,7 @@ class CanvasRenderingContext2D : public nsICanvasRenderingContextInternal,
     return CurrentState().font;
   }
 
-  bool GetEffectiveWillReadFrequently() const;
+  bool UseSoftwareRendering() const;
 
   // Member vars
   int32_t mWidth, mHeight;
@@ -857,6 +857,8 @@ class CanvasRenderingContext2D : public nsICanvasRenderingContextInternal,
   // Whether the application expects to use operations that perform poorly with
   // acceleration.
   bool mWillReadFrequently = false;
+  // Whether to force software rendering
+  bool mForceSoftwareRendering = false;
   // Whether or not we have already shutdown.
   bool mHasShutdown = false;
   // Whether or not remote canvas is currently unavailable.
@@ -1051,6 +1053,8 @@ class CanvasRenderingContext2D : public nsICanvasRenderingContextInternal,
 
     gfx::Float letterSpacing = 0.0f;
     gfx::Float wordSpacing = 0.0f;
+    mozilla::StyleLineHeight fontLineHeight =
+        mozilla::StyleLineHeight::Normal();
     nsCString letterSpacingStr;
     nsCString wordSpacingStr;
 

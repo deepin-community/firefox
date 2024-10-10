@@ -191,6 +191,18 @@ media-codec-support-lack-of-extension = Installer utviding
 ## See EME Spec for more explanation for following technical terms
 ## https://w3c.github.io/encrypted-media/
 
+media-content-decryption-modules-title = Informasjon om innhaldsdekrypteringsmodular
+media-key-system-name = Nøkkelsystemnamn
+media-video-robustness = Videorobustheit
+media-audio-robustness = Lydrobustheit
+media-cdm-capabilities = Eigenskapar
+# Clear Lead isn't defined in the spec, which means the the first few seconds
+# are not encrypted. It allows playback to start without having to wait for
+# license response, improving video start time and user experience.
+media-cdm-clear-lead = Fri start
+# We choose 2.2 as this is the version which the video provider usually want to have in order to stream 4K video securely
+# HDCP version https://w3c.github.io/encrypted-media/#idl-def-hdcpversion
+media-hdcp-22-compatible = HDCP 2.2-kompatibel
 
 ##
 
@@ -270,6 +282,7 @@ try-newer-driver = Blokkert av grafikkdrivaren. Prøv å oppdatera grafikkdrivar
 # there are no good translations, these are only used in about:support
 clear-type-parameters = ClearType-parameter
 compositing = Kompositt
+support-font-determination = Feilsøkingsinformasjon for skriftsynlegheit
 hardware-h264 = H264 hardvaredekodning
 main-thread-no-omtc = hovudtråd, ingen OMTC
 yes = Ja
@@ -331,6 +344,9 @@ has-seccomp-bpf = Seccomp-BPF (Systemkall-filtrering)
 has-seccomp-tsync = Seccomp-trådsynkronisering
 has-user-namespaces = Brukarnamnområde
 has-privileged-user-namespaces = Brukarnamnområde for priviligerte prosessar
+# Variables
+# $status (string) - Boolean value of hasUserNamespaces (should only be false when support-user-namespaces-unavailable is used)
+support-user-namespaces-unavailable = { $status } — Denne funksjonen er ikkje tillaten av systemet ditt. Dette kan avgrense sikkerheitsfunksjonane til { -brand-short-name }.
 can-sandbox-content = Sandkasse for innhaldsprosessar
 can-sandbox-media = Sandkasse for media-programtillegg
 content-sandbox-level = Nivå for sandkasse for innhaldsprosessar
@@ -399,6 +415,20 @@ support-printing-modified-settings = Endra utskriftsinnstillingar
 support-printing-prefs-name = Namn
 support-printing-prefs-value = Verdi
 
+## Remote Settings sections
+
+support-remote-settings-title = Fjerninnstillingar
+support-remote-settings-status = Status
+support-remote-settings-status-ok = OK
+# Status when synchronization is not working.
+support-remote-settings-status-broken = Fungerer ikkje
+support-remote-settings-last-check = Siste sjekk
+support-remote-settings-local-timestamp = Lokalt tidsstempel
+support-remote-settings-sync-history = Historikk
+support-remote-settings-sync-history-status = Status
+support-remote-settings-sync-history-datetime = Dato
+support-remote-settings-sync-history-infos = Info
+
 ## Normandy sections
 
 support-remote-experiments-title = Eksterne eksperiment
@@ -418,4 +448,12 @@ pointing-device-none = Inga peikeeining
 
 ## Content Analysis (DLP)
 
+# DLP stands for Data Loss Prevention, an industry term for external software
+# that enterprises can set up to prevent sensitive data from being transferred
+# to external websites.
+content-analysis-title = Innhaldsanalyse (DLP)
 content-analysis-active = Aktiv
+content-analysis-connected-to-agent = Tilkopla til agent
+content-analysis-agent-path = Sti til agent
+content-analysis-agent-failed-signature-verification = Agenten klarte ikkje å verifisere signaturen
+content-analysis-request-count = Antal førespurnadar

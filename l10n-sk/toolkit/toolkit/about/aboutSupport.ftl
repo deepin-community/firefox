@@ -352,6 +352,9 @@ has-seccomp-bpf = Seccomp-BPF (filtrovanie systémových volaní)
 has-seccomp-tsync = Synchronizácia vlákien Seccomp
 has-user-namespaces = Priestory názvov používateľa
 has-privileged-user-namespaces = Priestory názvov používateľa pre privilegované procesy
+# Variables
+# $status (string) - Boolean value of hasUserNamespaces (should only be false when support-user-namespaces-unavailable is used)
+support-user-namespaces-unavailable = { $status } — túto funkciu váš systém nepovoľuje. Môže to obmedziť bezpečnostné funkcie { -brand-short-name(case: "gen") }.
 can-sandbox-content = Sandboxing procesov obsahu
 can-sandbox-media = Sandboxing zásuvných modulov médií
 content-sandbox-level = Úroveň sandboxu procesu s obsahom
@@ -419,6 +422,20 @@ support-printing-clear-settings-button = Vymazať uložené nastavenia tlače
 support-printing-modified-settings = Upravené nastavenia tlače
 support-printing-prefs-name = Názov
 support-printing-prefs-value = Hodnota
+
+## Remote Settings sections
+
+support-remote-settings-title = Vzdialené nastavenia
+support-remote-settings-status = Stav
+support-remote-settings-status-ok = OK
+# Status when synchronization is not working.
+support-remote-settings-status-broken = Nefunguje
+support-remote-settings-last-check = Posledná kontrola
+support-remote-settings-local-timestamp = Lokálna časová známka
+support-remote-settings-sync-history = História
+support-remote-settings-sync-history-status = Stav
+support-remote-settings-sync-history-datetime = Dátum
+support-remote-settings-sync-history-infos = Informácie
 
 ## Normandy sections
 

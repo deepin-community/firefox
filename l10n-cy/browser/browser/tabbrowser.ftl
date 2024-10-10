@@ -13,6 +13,21 @@ tabbrowser-menuitem-close =
 #   $title (String): the title of the current tab.
 #   $containerName (String): the name of the current container.
 tabbrowser-container-tab-title = { $title } - { $containerName }
+# This text serves as an on-screen tooltip as well as an accessible name for
+# the "X" button that is shown on the active tab or, when multiple tabs are
+# selected, to all their "X" buttons.
+# Variables:
+#   $tabCount (Number): The number of tabs that will be closed.
+tabbrowser-close-tabs-button =
+    .tooltiptext =
+        { $tabCount ->
+            [zero] Cau tab
+            [one] Cau { $tabCount } tab
+            [two] Cau { $tabCount } dab
+            [few] Cau { $tabCount } tab
+            [many] Cau { $tabCount } tab
+           *[other] Cau { $tabCount } tab
+        }
 # Variables:
 #   $tabCount (Number): The number of tabs that will be closed.
 tabbrowser-close-tabs-tooltip =
@@ -150,6 +165,16 @@ tabbrowser-confirm-open-multiple-tabs-checkbox = Rhybuddio y gall agor tabiau ni
 tabbrowser-confirm-caretbrowsing-title = Pori Caret
 tabbrowser-confirm-caretbrowsing-message = Mae pwyso F7 yn cychwyn a diffodd Pori Caret. Mae'r nodwedd hon yn gosod cyrchwr symudol ar dudalennau gwe, gan ganiatáu i chi ddewis testun gyda'r bysellfwrdd. Hoffech chi gychwyn Pori Caret?
 tabbrowser-confirm-caretbrowsing-checkbox = Peidio dangos y blwch deialog yma eto.
+
+## Confirmation dialog for closing all duplicate tabs
+
+tabbrowser-confirm-close-duplicate-tabs-title = Rhybudd
+tabbrowser-confirm-close-duplicate-tabs-text = Byddwn yn cadw'r tab gweithredol olaf ar agor
+tabbrowser-confirm-close-all-duplicate-tabs-title = Cau tabiau dyblyg?
+tabbrowser-confirm-close-all-duplicate-tabs-text =
+    Byddwn yn cau tabiau dyblyg yn y ffenestr hon. Bydd y tab
+    gweithredol olaf yn aros ar agor.
+tabbrowser-confirm-close-all-duplicate-tabs-button-closetabs = Cau tabiau
 
 ##
 

@@ -12,6 +12,8 @@ about-processes-column-action =
 
 about-processes-shutdown-process =
     .title = Descargar las pestañas y terminar el proceso
+about-processes-kill-process =
+    .title = Matar proceso
 about-processes-shutdown-tab =
     .title = Cerrar la pestaña
 # Profiler icons
@@ -51,6 +53,7 @@ about-processes-remote-sandbox-broker-process = Agente de espacio aislado remoto
 about-processes-fork-server-process = Servidor de bifurcación ({ $pid })
 about-processes-preallocated-process = Preasignado ({ $pid })
 about-processes-utility-process = Utilidad ({ $pid })
+about-processes-inference-process = Inferencia ({ $pid })
 # Unknown process names
 # Variables:
 #    $pid (String) The process id of this process, assigned by the OS.

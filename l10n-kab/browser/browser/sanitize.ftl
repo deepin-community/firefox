@@ -16,6 +16,7 @@ sanitize-dialog-title-everything =
     .title = Sfeḍ akk azray
     .style = min-width: 34em
 clear-data-settings-label = Ticki yemdel, { -brand-short-name } ad yekkes s wudem awurman iferdisen-agi meṛṛa
+sanitize-on-shutdown-description = Sfeḍ s wudem awurman meṛṛa iferdisen i yettwasneqden mi ara yemdel { -brand-short-name }.
 
 ## clear-time-duration-prefix is followed by a dropdown list, with
 ## values localized using clear-time-duration-value-* messages.
@@ -37,6 +38,10 @@ clear-time-duration-value-last-2-hours =
     .label = Sin isragen ineggura
 clear-time-duration-value-last-4-hours =
     .label = Kuz isragen ineggura
+# Variables:
+#   $midnightTime (String) - Time of midnight (00:00 hours) - to inform the user that history will be cleared after midnight
+clear-time-duration-value-since-midnight =
+    .label = Seg { $midnightTime }
 clear-time-duration-value-today =
     .label = Assa
 clear-time-duration-value-everything =
@@ -57,6 +62,12 @@ item-history-form-data-downloads =
 item-cookies =
     .label = Inagan n tuqqna
     .accesskey = I
+# Variables:
+#   $amount (Number) - Amount of site data currently stored on disk
+#   $unit (String) - Abbreviation of the unit that $amount is in, e.g. "MB"
+item-cookies-site-data-with-size =
+    .label = Inagan n tuqna akked isefka n usmel ({ $amount } { $unit })
+    .accesskey = e
 item-cookies-site-data =
     .label = Inagan n tuqqna d yisefka n usmel
     .accesskey = e

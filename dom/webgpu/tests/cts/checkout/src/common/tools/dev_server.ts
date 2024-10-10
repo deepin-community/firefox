@@ -107,8 +107,8 @@ const app = express();
 // Send Chrome Origin Trial tokens
 app.use((_req, res, next) => {
   res.header('Origin-Trial', [
-    // Token for http://localhost:8080
-    'AvyDIV+RJoYs8fn3W6kIrBhWw0te0klraoz04mw/nPb8VTus3w5HCdy+vXqsSzomIH745CT6B5j1naHgWqt/tw8AAABJeyJvcmlnaW4iOiJodHRwOi8vbG9jYWxob3N0OjgwODAiLCJmZWF0dXJlIjoiV2ViR1BVIiwiZXhwaXJ5IjoxNjYzNzE4Mzk5fQ==',
+    // "WebGPU Subgroups Feature" token for http://localhost:8080
+    'AkMLfHisU+Fsbpi9g6tfKSZF4ngpsmjW4Oai360fUvZE2rgSPZDWSWb8ryrliJX5HR/Rw0yig0ir9el2hrnODwcAAABaeyJvcmlnaW4iOiJodHRwOi8vbG9jYWxob3N0OjgwODAiLCJmZWF0dXJlIjoiV2ViR1BVU3ViZ3JvdXBzRmVhdHVyZXMiLCJleHBpcnkiOjE3Mzk5MjMxOTl9',
   ]);
   next();
 });
@@ -142,6 +142,19 @@ app.get('/out/:suite([a-zA-Z0-9_-]+)/listing.js', async (req, res, next) => {
   } catch (err) {
     next(err);
   }
+});
+
+// Serve .as_worker.js files by generating the necessary wrapper.
+app.get('/out/:suite([a-zA-Z0-9_-]+)/webworker/:filepath(*).as_worker.js', (req, res, next) => {
+  const { suite, filepath } = req.params;
+  const result = `\
+import { g } from '/out/${suite}/${filepath}.spec.js';
+import { wrapTestGroupForWorker } from '/out/common/runtime/helper/wrap_for_worker.js';
+
+wrapTestGroupForWorker(g);
+`;
+  res.setHeader('Content-Type', 'application/javascript');
+  res.send(result);
 });
 
 // Serve all other .js files by fetching the source .ts file and compiling it.

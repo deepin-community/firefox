@@ -10,13 +10,13 @@
 #  include <arpa/inet.h>
 #  include <arpa/nameser.h>
 #  include <resolv.h>
-#  define RES_RETRY_ON_FAILURE
 #endif
 
 #include <stdlib.h>
 #include <ctime>
 #include "nsHostResolver.h"
 #include "nsError.h"
+#include "nsIOService.h"
 #include "nsISupports.h"
 #include "nsISupportsUtils.h"
 #include "nsIThreadManager.h"
@@ -90,6 +90,40 @@ static const unsigned int NEGATIVE_RECORD_LIFETIME = 60;
 // for threads MaxResolverThreadsAnyPriority() + 1 -> MaxResolverThreads()
 #define ShortIdleTimeoutSeconds 60
 
+using namespace mozilla;
+
+namespace geckoprofiler::markers {
+
+struct HostResolverMarker {
+  static constexpr Span<const char> MarkerTypeName() {
+    return MakeStringSpan("HostResolver");
+  }
+  static void StreamJSONMarkerData(
+      mozilla::baseprofiler::SpliceableJSONWriter& aWriter,
+      const mozilla::ProfilerString8View& aHost,
+      const mozilla::ProfilerString8View& aOriginSuffix, uint16_t aType,
+      uint32_t aFlags) {
+    aWriter.StringProperty("host", aHost);
+    aWriter.StringProperty("originSuffix", aOriginSuffix);
+    aWriter.IntProperty("qtype", aType);
+    aWriter.StringProperty("flags", nsPrintfCString("0x%x", aFlags));
+  }
+  static MarkerSchema MarkerTypeDisplay() {
+    using MS = MarkerSchema;
+    MS schema(MS::Location::MarkerChart, MS::Location::MarkerTable);
+    schema.SetTableLabel("{marker.name} - {marker.data.host}");
+    schema.AddKeyFormatSearchable("host", MS::Format::SanitizedString,
+                                  MS::Searchable::Searchable);
+    schema.AddKeyFormatSearchable("originSuffix", MS::Format::SanitizedString,
+                                  MS::Searchable::Searchable);
+    schema.AddKeyFormat("qtype", MS::Format::Integer);
+    schema.AddKeyFormat("flags", MS::Format::String);
+    return schema;
+  }
+};
+
+}  // namespace geckoprofiler::markers
+
 //----------------------------------------------------------------------------
 
 namespace mozilla::net {
@@ -97,46 +131,6 @@ LazyLogModule gHostResolverLog("nsHostResolver");
 }  // namespace mozilla::net
 
 //----------------------------------------------------------------------------
-
-#if defined(RES_RETRY_ON_FAILURE)
-
-// this class represents the resolver state for a given thread.  if we
-// encounter a lookup failure, then we can invoke the Reset method on an
-// instance of this class to reset the resolver (in case /etc/resolv.conf
-// for example changed).  this is mainly an issue on GNU systems since glibc
-// only reads in /etc/resolv.conf once per thread.  it may be an issue on
-// other systems as well.
-
-class nsResState {
- public:
-  nsResState()
-      // initialize mLastReset to the time when this object
-      // is created.  this means that a reset will not occur
-      // if a thread is too young.  the alternative would be
-      // to initialize this to the beginning of time, so that
-      // the first failure would cause a reset, but since the
-      // thread would have just started up, it likely would
-      // already have current /etc/resolv.conf info.
-      : mLastReset(PR_IntervalNow()) {}
-
-  bool Reset() {
-    // reset no more than once per second
-    if (PR_IntervalToSeconds(PR_IntervalNow() - mLastReset) < 1) {
-      return false;
-    }
-
-    mLastReset = PR_IntervalNow();
-    auto result = res_ninit(&_res);
-
-    LOG(("nsResState::Reset() > 'res_ninit' returned %d", result));
-    return (result == 0);
-  }
-
- private:
-  PRIntervalTime mLastReset;
-};
-
-#endif  // RES_RETRY_ON_FAILURE
 
 class DnsThreadListener final : public nsIThreadPoolListener {
   NS_DECL_THREADSAFE_ISUPPORTS
@@ -146,11 +140,25 @@ class DnsThreadListener final : public nsIThreadPoolListener {
 };
 
 NS_IMETHODIMP
-DnsThreadListener::OnThreadCreated() { return NS_OK; }
+DnsThreadListener::OnThreadCreated() {
+#if defined(HAVE_RES_NINIT)
+  if (!(_res.options & RES_INIT)) {
+    auto result = res_ninit(&_res);
+    LOG(("'res_ninit' returned %d ", result));
+  }
+#endif
+  return NS_OK;
+}
 
 NS_IMETHODIMP
 DnsThreadListener::OnThreadShuttingDown() {
   DNSThreadShutdown();
+#if defined(HAVE_RES_NINIT)
+  if (_res.options & RES_INIT) {
+    res_nclose(&_res);
+    memset(&_res, 0, sizeof(_res));
+  }
+#endif
   return NS_OK;
 }
 
@@ -264,10 +272,19 @@ nsresult nsHostResolver::Init() MOZ_NO_THREAD_SAFETY_ANALYSIS {
 #endif
   LOG(("Native HTTPS records supported=%d", bool(sNativeHTTPSSupported)));
 
+  // The ThreadFunc has its own loop and will live very long and block one
+  // thread from the thread pool's point of view, such that the timeouts are
+  // less important here. The pool is mostly used to provide an easy way to
+  // create and shutdown those threads.
+  // TODO: It seems, the ThreadFunc resembles some quite similar timeout and
+  // wait for events logic as the pool offers, maybe we could simplify this
+  // a bit, see bug 1478732 for a previous attempt.
   nsCOMPtr<nsIThreadPool> threadPool = new nsThreadPool();
   MOZ_ALWAYS_SUCCEEDS(threadPool->SetThreadLimit(MaxResolverThreads()));
-  MOZ_ALWAYS_SUCCEEDS(threadPool->SetIdleThreadLimit(MaxResolverThreads()));
-  MOZ_ALWAYS_SUCCEEDS(threadPool->SetIdleThreadTimeout(poolTimeoutMs));
+  MOZ_ALWAYS_SUCCEEDS(threadPool->SetIdleThreadLimit(
+      std::max(MaxResolverThreads() / 4, (uint32_t)1)));
+  MOZ_ALWAYS_SUCCEEDS(threadPool->SetIdleThreadMaximumTimeout(poolTimeoutMs));
+  MOZ_ALWAYS_SUCCEEDS(threadPool->SetIdleThreadGraceTimeout(100));
   MOZ_ALWAYS_SUCCEEDS(
       threadPool->SetThreadStackSize(nsIThreadManager::kThreadPoolStackSize));
   MOZ_ALWAYS_SUCCEEDS(threadPool->SetName("DNS Resolver"_ns));
@@ -455,7 +472,32 @@ already_AddRefed<nsHostRecord> nsHostResolver::InitLoopbackRecord(
   return rec.forget();
 }
 
-static bool IsNativeHTTPSEnabled() {
+already_AddRefed<nsHostRecord> nsHostResolver::InitMockHTTPSRecord(
+    const nsHostKey& key) {
+  MOZ_ASSERT(IS_OTHER_TYPE(key.type));
+  if (key.type != nsIDNSService::RESOLVE_TYPE_HTTPSSVC) {
+    return nullptr;
+  }
+
+  RefPtr<nsHostRecord> rec = InitRecord(key);
+  LOG(("InitMockHTTPSRecord host=%s\n", rec->host.get()));
+
+  TypeRecordResultType result = AsVariant(mozilla::Nothing());
+  uint32_t ttl = UINT32_MAX;
+  nsresult rv =
+      CreateAndResolveMockHTTPSRecord(rec->host, rec->flags, result, ttl);
+  if (NS_FAILED(rv)) {
+    return nullptr;
+  }
+
+  RefPtr<TypeHostRecord> typeRec = do_QueryObject(rec);
+  typeRec->mResults = result;
+  typeRec->negative = false;
+  return rec.forget();
+}
+
+// static
+bool nsHostResolver::IsNativeHTTPSEnabled() {
   if (!StaticPrefs::network_dns_native_https_query()) {
     return false;
   }
@@ -476,6 +518,9 @@ nsresult nsHostResolver::ResolveHost(const nsACString& aHost,
   LOG(("Resolving host [%s]<%s>%s%s type %d. [this=%p]\n", host.get(),
        originSuffix.get(), flags & RES_BYPASS_CACHE ? " - bypassing cache" : "",
        flags & RES_REFRESH_CACHE ? " - refresh cache" : "", type, this));
+
+  PROFILER_MARKER("nsHostResolver::ResolveHost", NETWORK, {},
+                  HostResolverMarker, host, originSuffix, type, flags);
 
   // ensure that we are working with a valid hostname before proceeding.  see
   // bug 304904 for details.
@@ -527,6 +572,7 @@ nsresult nsHostResolver::ResolveHost(const nsACString& aHost,
     bool excludedFromTRR = false;
     if (TRRService::Get() && TRRService::Get()->IsExcludedFromTRR(host)) {
       flags |= nsIDNSService::RESOLVE_DISABLE_TRR;
+      flags |= nsIDNSService::RESOLVE_DISABLE_NATIVE_HTTPS_QUERY;
       excludedFromTRR = true;
 
       if (!aTrrServer.IsEmpty()) {
@@ -535,7 +581,7 @@ nsresult nsHostResolver::ResolveHost(const nsACString& aHost,
     }
 
     nsHostKey key(host, aTrrServer, type, flags, af,
-                  (aOriginAttributes.mPrivateBrowsingId > 0), originSuffix);
+                  (aOriginAttributes.IsPrivateBrowsing()), originSuffix);
 
     // Check if we have a localhost domain, if so hardcode to loopback
     if (IS_ADDR_TYPE(type) && IsLoopbackHostname(host)) {
@@ -546,6 +592,13 @@ nsresult nsHostResolver::ResolveHost(const nsACString& aHost,
       }
       MOZ_ASSERT(result);
       aCallback->OnResolveHostComplete(this, result, NS_OK);
+      return NS_OK;
+    }
+
+    if (flags & nsIDNSService::RESOLVE_CREATE_MOCK_HTTPS_RR) {
+      RefPtr<nsHostRecord> result = InitMockHTTPSRecord(key);
+      aCallback->OnResolveHostComplete(this, result,
+                                       result ? NS_OK : NS_ERROR_UNKNOWN_HOST);
       return NS_OK;
     }
 
@@ -603,7 +656,7 @@ nsresult nsHostResolver::ResolveHost(const nsACString& aHost,
     } else if (!rec->mResolving) {
       result =
           FromUnspecEntry(rec, host, aTrrServer, originSuffix, type, flags, af,
-                          aOriginAttributes.mPrivateBrowsingId > 0, status);
+                          aOriginAttributes.IsPrivateBrowsing(), status);
       // If this is a by-type request or if no valid record was found
       // in the cache or this is an AF_UNSPEC request, then start a
       // new lookup.
@@ -828,7 +881,7 @@ void nsHostResolver::DetachCallback(
     aOriginAttributes.CreateSuffix(originSuffix);
 
     nsHostKey key(host, aTrrServer, aType, flags, af,
-                  (aOriginAttributes.mPrivateBrowsingId > 0), originSuffix);
+                  (aOriginAttributes.IsPrivateBrowsing()), originSuffix);
     RefPtr<nsHostRecord> entry = mRecordDB.Get(key);
     if (entry) {
       // walk list looking for |callback|... we cannot assume
@@ -907,10 +960,14 @@ bool nsHostResolver::TRRServiceEnabledForRecord(nsHostRecord* aRec) {
     return true;
   }
 
+  if (gIOService->InSleepMode()) {
+    aRec->RecordReason(TRRSkippedReason::TRR_SYSTEM_SLEEP_MODE);
+    return false;
+  }
   if (NS_IsOffline()) {
     // If we are in the NOT_CONFIRMED state _because_ we lack connectivity,
     // then we should report that the browser is offline instead.
-    aRec->RecordReason(TRRSkippedReason::TRR_IS_OFFLINE);
+    aRec->RecordReason(TRRSkippedReason::TRR_BROWSER_IS_OFFLINE);
     return false;
   }
 
@@ -1182,8 +1239,14 @@ nsresult nsHostResolver::NameLookup(nsHostRecord* rec,
       (rec->mEffectiveTRRMode == nsIRequest::TRR_FIRST_MODE &&
        (rec->flags & nsIDNSService::RESOLVE_DISABLE_TRR || serviceNotReady ||
         NS_FAILED(rv)))) {
-    if (!IsNativeHTTPSEnabled() && !rec->IsAddrRecord()) {
-      return rv;
+    if (!rec->IsAddrRecord()) {
+      if (!IsNativeHTTPSEnabled()) {
+        return NS_ERROR_UNKNOWN_HOST;
+      }
+
+      if (rec->flags & nsIDNSService::RESOLVE_DISABLE_NATIVE_HTTPS_QUERY) {
+        return NS_ERROR_UNKNOWN_HOST;
+      }
     }
 
 #ifdef DEBUG
@@ -1639,6 +1702,10 @@ nsHostResolver::LookupStatus nsHostResolver::CompleteLookupLocked(
     }
   }
 
+  PROFILER_MARKER("nsHostResolver::CompleteLookupLocked", NETWORK, {},
+                  HostResolverMarker, addrRec->host, addrRec->originSuffix,
+                  addrRec->type, addrRec->flags);
+
   // get the list of pending callbacks for this lookup, and notify
   // them that the lookup is complete.
   mozilla::LinkedList<RefPtr<nsResolveHostCallback>> cbs =
@@ -1746,6 +1813,10 @@ nsHostResolver::LookupStatus nsHostResolver::CompleteLookupByTypeLocked(
     typeRec->RecordReason(aReason);
   }
 
+  PROFILER_MARKER("nsHostResolver::CompleteLookupByTypeLocked", NETWORK, {},
+                  HostResolverMarker, typeRec->host, typeRec->originSuffix,
+                  typeRec->type, typeRec->flags);
+
   mozilla::LinkedList<RefPtr<nsResolveHostCallback>> cbs =
       std::move(typeRec->mCallbacks);
 
@@ -1794,7 +1865,7 @@ void nsHostResolver::CancelAsyncRequest(
   // Lookup the host record associated with host, flags & address family
 
   nsHostKey key(host, aTrrServer, aType, flags, af,
-                (aOriginAttributes.mPrivateBrowsingId > 0), originSuffix);
+                (aOriginAttributes.IsPrivateBrowsing()), originSuffix);
   RefPtr<nsHostRecord> rec = mRecordDB.Get(key);
   if (!rec) {
     return;
@@ -1837,9 +1908,6 @@ size_t nsHostResolver::SizeOfIncludingThis(MallocSizeOf mallocSizeOf) const {
 void nsHostResolver::ThreadFunc() {
   LOG(("DNS lookup thread - starting execution.\n"));
 
-#if defined(RES_RETRY_ON_FAILURE)
-  nsResState rs;
-#endif
   RefPtr<nsHostRecord> rec;
   RefPtr<AddrInfo> ai;
 
@@ -1881,12 +1949,6 @@ void nsHostResolver::ThreadFunc() {
 
     nsresult status =
         GetAddrInfo(rec->host, rec->af, rec->flags, getter_AddRefs(ai), getTtl);
-#if defined(RES_RETRY_ON_FAILURE)
-    if (NS_FAILED(status) && rs.Reset()) {
-      status = GetAddrInfo(rec->host, rec->af, rec->flags, getter_AddRefs(ai),
-                           getTtl);
-    }
-#endif
 
     mozilla::glean::networking::dns_native_count
         .EnumGet(rec->pb ? glean::networking::DnsNativeCountLabel::ePrivate

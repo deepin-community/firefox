@@ -31,17 +31,22 @@ impl Ping {
         send_if_empty: bool,
         precise_timestamps: bool,
         include_info_sections: bool,
+        enabled: bool,
+        schedules_pings: Vec<String>,
         reason_codes: Vec<String>,
     ) -> Self {
         if need_ipc() {
             Ping::Child
         } else {
+            let name = name.into();
             Ping::Parent(glean::private::PingType::new(
-                name,
+                name.clone(),
                 include_client_id,
                 send_if_empty,
                 precise_timestamps,
                 include_info_sections,
+                enabled,
+                schedules_pings,
                 reason_codes,
             ))
         }
@@ -105,7 +110,7 @@ mod test {
 
     // Smoke test for what should be the generated code.
     static PROTOTYPE_PING: Lazy<Ping> =
-        Lazy::new(|| Ping::new("prototype", false, true, true, true, vec![]));
+        Lazy::new(|| Ping::new("prototype", false, true, true, true, true, vec![], vec![]));
 
     #[test]
     fn smoke_test_custom_ping() {

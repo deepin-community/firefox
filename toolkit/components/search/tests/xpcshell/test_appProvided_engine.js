@@ -11,7 +11,6 @@
 let CONFIG = [
   {
     identifier: "testEngine",
-    recordType: "engine",
     base: {
       aliases: ["testEngine1", "testEngine2"],
       charset: "EUC-JP",
@@ -50,11 +49,9 @@ let CONFIG = [
         },
       },
     },
-    variants: [{ environment: { allRegionsAndLocales: true } }],
   },
   {
     identifier: "testOtherValuesEngine",
-    recordType: "engine",
     base: {
       classification: "unknown",
       name: "testOtherValuesEngine name",
@@ -65,28 +62,60 @@ let CONFIG = [
         },
       },
     },
-    variants: [{ environment: { allRegionsAndLocales: true } }],
   },
   {
-    recordType: "defaultEngines",
+    identifier: "override",
+    recordType: "engine",
+    base: {
+      classification: "unknown",
+      name: "override name",
+      urls: {
+        search: {
+          base: "https://www.example.com/search",
+          params: [
+            {
+              name: "old_param",
+              value: "old_value",
+            },
+          ],
+          searchTermParamName: "q",
+        },
+      },
+    },
+    variants: [
+      {
+        environment: {
+          locales: ["en-US"],
+        },
+      },
+    ],
+  },
+  {
     globalDefault: "engine_no_initial_icon",
     specificDefaults: [],
   },
+];
+
+const TEST_CONFIG_OVERRIDE = [
   {
-    recordType: "engineOrders",
-    orders: [],
+    identifier: "override",
+    urls: {
+      search: {
+        params: [{ name: "new_param", value: "new_value" }],
+      },
+    },
+    telemetrySuffix: "tsfx",
+    clickUrl: "https://example.org/somewhere",
   },
 ];
 
 add_setup(async function () {
-  await SearchTestUtils.useTestEngines("simple-engines", null, CONFIG);
+  SearchTestUtils.setRemoteSettingsConfig(CONFIG);
   await Services.search.init();
 });
 
 add_task(async function test_engine_with_all_params_set() {
-  let engine = Services.search.getEngineById(
-    "testEngine@search.mozilla.orgdefault"
-  );
+  let engine = Services.search.getEngineById("testEngine");
   Assert.ok(engine, "Should have found the engine");
 
   Assert.equal(
@@ -144,9 +173,7 @@ add_task(async function test_engine_with_all_params_set() {
 });
 
 add_task(async function test_engine_with_some_params_set() {
-  let engine = Services.search.getEngineById(
-    "testOtherValuesEngine@search.mozilla.orgdefault"
-  );
+  let engine = Services.search.getEngineById("testOtherValuesEngine");
   Assert.ok(engine, "Should have found the engine");
 
   Assert.equal(
@@ -178,5 +205,50 @@ add_task(async function test_engine_with_some_params_set() {
     engine.getSubmission("test", SearchUtils.URL_TYPE.TRENDING_JSON),
     null,
     "Should not have a trending URL"
+  );
+});
+
+add_task(async function test_engine_remote_override() {
+  // First check the existing engine doesn't have the overrides.
+  let engine = Services.search.getEngineById("override");
+  Assert.ok(engine, "Should have found the override engine");
+
+  Assert.equal(engine.name, "override name", "Should have the expected name");
+  Assert.equal(
+    engine.telemetryId,
+    "override",
+    "Should have the overridden telemetry suffix"
+  );
+  Assert.equal(
+    engine.getSubmission("test").uri.spec,
+    "https://www.example.com/search?old_param=old_value&q=test",
+    "Should have the overridden URL"
+  );
+  Assert.equal(engine.clickUrl, null, "Should not have a click URL");
+
+  // Now apply and test the overrides.
+  await SearchTestUtils.updateRemoteSettingsConfig(
+    CONFIG,
+    TEST_CONFIG_OVERRIDE
+  );
+
+  engine = Services.search.getEngineById("override");
+  Assert.ok(engine, "Should have found the override engine");
+
+  Assert.equal(engine.name, "override name", "Should have the expected name");
+  Assert.equal(
+    engine.telemetryId,
+    "override-tsfx",
+    "Should have the overridden telemetry suffix"
+  );
+  Assert.equal(
+    engine.getSubmission("test").uri.spec,
+    "https://www.example.com/search?new_param=new_value&q=test",
+    "Should have the overridden URL"
+  );
+  Assert.equal(
+    engine.clickUrl,
+    "https://example.org/somewhere",
+    "Should have the click URL specified by the override"
   );
 });

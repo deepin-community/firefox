@@ -66,6 +66,7 @@ class nsAVIFDecoder final : public Decoder {
     FrameSizeChanged,
     InvalidCICP,
     NoSamples,
+    ConvertYCbCrFailure,
   };
   using DecodeResult =
       Variant<Mp4parseStatus, NonDecoderResult, Dav1dResult, AOMResult>;
@@ -125,6 +126,8 @@ class AVIFParser {
   ~AVIFParser();
 
   const Mp4parseAvifInfo& GetInfo() const { return mInfo; }
+
+  uint32_t GetFrameCount();
 
   nsAVIFDecoder::DecodeResult GetImage(AVIFImage& aImage);
 

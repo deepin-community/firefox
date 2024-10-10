@@ -99,3 +99,33 @@ account-multiple-tabs-arriving-from-unknown-device =
         [few] Byly přijaty { $tabCount } panely
        *[other] Bylo přijato { $tabCount } panelů
     }
+
+## These strings are used in notifications in which the user remotely closed
+## tabs from other devices
+## Variables:
+##   $closedCount (Number): the number of tabs closed
+
+account-view-recently-closed-tabs = Zobrazit nedávno zavřené panely
+account-tabs-closed-remotely =
+    { $closedCount ->
+        [one]
+            { -brand-short-name.case-status ->
+                [with-cases] { $closedCount } panel { -brand-short-name(case: "gen") } byl zavřen
+               *[no-cases] { $closedCount } panel aplikace { -brand-short-name } byl zavřen
+            }
+        [few]
+            { -brand-short-name.case-status ->
+                [with-cases] { $closedCount } panely { -brand-short-name(case: "gen") } byly zavřeny
+               *[no-cases] { $closedCount } panely aplikace { -brand-short-name } byly zavřeny
+            }
+        [many]
+            { -brand-short-name.case-status ->
+                [with-cases] { $closedCount } panelů { -brand-short-name(case: "gen") } bylo zavřeno
+               *[no-cases] { $closedCount } panelů aplikace { -brand-short-name } bylo zavřeno
+            }
+       *[other]
+            { -brand-short-name.case-status ->
+                [with-cases] { $closedCount } panelů { -brand-short-name(case: "gen") } bylo zavřeno
+               *[no-cases] { $closedCount } panelů aplikace { -brand-short-name } bylo zavřeno
+            }
+    }

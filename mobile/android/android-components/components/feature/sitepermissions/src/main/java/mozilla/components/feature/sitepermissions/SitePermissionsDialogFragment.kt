@@ -20,8 +20,11 @@ import android.widget.CheckBox
 import android.widget.ImageView
 import android.widget.LinearLayout.LayoutParams
 import android.widget.TextView
+import androidx.annotation.VisibleForTesting
 import androidx.appcompat.app.AppCompatDialogFragment
 import androidx.core.content.ContextCompat
+import mozilla.components.support.base.log.logger.Logger
+import mozilla.components.support.ktx.util.PromptAbuserDetector
 
 internal const val KEY_SESSION_ID = "KEY_SESSION_ID"
 internal const val KEY_TITLE = "KEY_TITLE"
@@ -41,6 +44,11 @@ private const val KEY_PERMISSION_ID = "KEY_PERMISSION_ID"
 
 internal open class SitePermissionsDialogFragment : AppCompatDialogFragment() {
 
+    private val logger = Logger("SitePermissionsDialogFragment")
+
+    @VisibleForTesting
+    internal var promptAbuserDetector =
+        PromptAbuserDetector(maxSuccessiveDialogSecondsLimit = TIME_SHOWN_OFFSET_SECONDS)
     // Safe Arguments
 
     private val safeArguments get() = requireNotNull(arguments)
@@ -106,6 +114,8 @@ internal open class SitePermissionsDialogFragment : AppCompatDialogFragment() {
             }
         }
 
+        promptAbuserDetector.updateJSDialogAbusedState()
+
         return sheetDialog
     }
 
@@ -159,8 +169,17 @@ internal open class SitePermissionsDialogFragment : AppCompatDialogFragment() {
         val negativeButton = rootView.findViewById<Button>(R.id.deny_button)
 
         positiveButton.setOnClickListener {
-            feature?.onPositiveButtonPress(permissionRequestId, sessionId, userSelectionCheckBox)
-            dismiss()
+            if (promptAbuserDetector.areDialogsBeingAbused()) {
+                promptAbuserDetector.updateJSDialogAbusedState()
+                logger.info("Button click happened before the security delay, click not handled")
+            } else {
+                feature?.onPositiveButtonPress(
+                    permissionRequestId,
+                    sessionId,
+                    userSelectionCheckBox,
+                )
+                dismiss()
+            }
         }
 
         if (positiveButtonBackgroundColor != DEFAULT_VALUE) {
@@ -254,5 +273,8 @@ internal open class SitePermissionsDialogFragment : AppCompatDialogFragment() {
             fragment.arguments = arguments
             return fragment
         }
+
+        // See https://searchfox.org/mozilla-central/rev/76cb3efe3b19e649bf675bb6ec5d4af8109b9771/toolkit/modules/PopupNotifications.sys.mjs#18
+        private const val TIME_SHOWN_OFFSET_SECONDS = 1
     }
 }

@@ -12,6 +12,8 @@ about-processes-column-action =
 
 about-processes-shutdown-process =
     .title = Emboguejy tendayke ha ejapopa tapereko
+about-processes-kill-process =
+    .title = Mba’eapo jejoko
 about-processes-shutdown-tab =
     .title = Emboty tendayke
 # Profiler icons
@@ -51,6 +53,7 @@ about-processes-remote-sandbox-broker-process = Remote Sandbox Broker ({ $pid })
 about-processes-fork-server-process = Fork Server ({ $pid })
 about-processes-preallocated-process = Ñeme’ẽmby ({ $pid })
 about-processes-utility-process = Jeporurã ({ $pid })
+about-processes-inference-process = Inferencia ({ $pid })
 # Unknown process names
 # Variables:
 #    $pid (String) The process id of this process, assigned by the OS.

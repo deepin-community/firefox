@@ -6,36 +6,36 @@
 //!
 //! TODO: document this!
 
-use api::{PremultipliedColorF, PropertyBinding};
+use api::{ColorF, PropertyBinding};
 use api::{BoxShadowClipMode, BorderStyle, ClipMode};
 use api::units::*;
 use euclid::Scale;
 use smallvec::SmallVec;
 use crate::composite::CompositorSurfaceKind;
-use crate::command_buffer::{PrimitiveCommand, CommandBufferIndex};
+use crate::command_buffer::{CommandBufferIndex, PrimitiveCommand};
 use crate::image_tiling::{self, Repetition};
 use crate::border::{get_max_scale_for_border, build_border_instances};
 use crate::clip::{ClipStore, ClipNodeRange};
+use crate::pattern::Pattern;
 use crate::spatial_tree::{SpatialNodeIndex, SpatialTree};
 use crate::clip::{ClipDataStore, ClipNodeFlags, ClipChainInstance, ClipItemKind};
 use crate::frame_builder::{FrameBuildingContext, FrameBuildingState, PictureContext, PictureState};
 use crate::gpu_cache::{GpuCacheHandle, GpuDataRequest};
 use crate::gpu_types::BrushFlags;
 use crate::internal_types::{FastHashMap, PlaneSplitAnchor, Filter};
-use crate::picture::{PicturePrimitive, SliceId, ClusterFlags, PictureCompositeMode};
+use crate::picture::{ClusterFlags, PictureCompositeMode, PicturePrimitive, SliceId};
 use crate::picture::{PrimitiveList, PrimitiveCluster, SurfaceIndex, TileCacheInstance, SubpixelMode, Picture3DContext};
 use crate::prim_store::line_dec::MAX_LINE_DECORATION_RESOLUTION;
 use crate::prim_store::*;
 use crate::quad;
-use crate::pattern::Pattern;
 use crate::prim_store::gradient::GradientGpuBlockBuilder;
 use crate::render_backend::DataStores;
 use crate::render_task_graph::RenderTaskId;
 use crate::render_task_cache::RenderTaskCacheKeyKind;
 use crate::render_task_cache::{RenderTaskCacheKey, to_cache_size, RenderTaskParent};
-use crate::render_task::{RenderTaskKind, RenderTask, SubPass, MaskSubPass, EmptyTask};
+use crate::render_task::{EmptyTask, MaskSubPass, RenderTask, RenderTaskKind, SubPass};
 use crate::segment::SegmentBuilder;
-use crate::util::{clamp_to_scale_factor, pack_as_float};
+use crate::util::{clamp_to_scale_factor, pack_as_float, ScaleOffset};
 use crate::visibility::{compute_conservative_visible_rect, PrimitiveVisibility, VisibilityState};
 
 
@@ -120,10 +120,6 @@ fn can_use_clip_chain_for_quad_path(
         let clip_node = &data_stores.clip[clip_instance.handle];
 
         match clip_node.item.kind {
-            ClipItemKind::Rectangle { mode: ClipMode::ClipOut, .. } |
-            ClipItemKind::RoundedRectangle { mode: ClipMode::ClipOut, .. } => {
-                return false;
-            }
             ClipItemKind::RoundedRectangle { .. } | ClipItemKind::Rectangle { .. } => {}
             ClipItemKind::BoxShadow { .. } => {
                 // legacy path for box-shadows for now (move them to a separate primitive next)
@@ -174,6 +170,7 @@ fn prepare_prim_for_render(
             pic_context.subpixel_mode,
             frame_state,
             frame_context,
+            data_stores,
             scratch,
             tile_caches,
         ) {
@@ -211,6 +208,33 @@ fn prepare_prim_for_render(
     let prim_instance = &mut prim_instances[prim_instance_index];
 
     if !is_passthrough {
+        fn may_need_repetition(stretch_size: LayoutSize, prim_rect: LayoutRect) -> bool {
+            stretch_size.width < prim_rect.width() ||
+                stretch_size.height < prim_rect.height()
+        }
+        // Bug 1887841: At the moment the quad shader does not support repetitions.
+        // Bug 1888349: Some primitives have brush segments that aren't handled by
+        // the quad infrastructure yet.
+        let disable_quad_path = match &prim_instance.kind {
+            PrimitiveInstanceKind::Rectangle { .. } => false,
+            PrimitiveInstanceKind::LinearGradient { data_handle, .. } => {
+                let prim_data = &data_stores.linear_grad[*data_handle];
+                !prim_data.brush_segments.is_empty() ||
+                    may_need_repetition(prim_data.stretch_size, prim_data.common.prim_rect)
+            }
+            PrimitiveInstanceKind::RadialGradient { data_handle, .. } => {
+                let prim_data = &data_stores.radial_grad[*data_handle];
+                !prim_data.brush_segments.is_empty() ||
+                    may_need_repetition(prim_data.stretch_size, prim_data.common.prim_rect)
+            }
+            // TODO(bug 1899546) Enable quad conic gradients with SWGL.
+            PrimitiveInstanceKind::ConicGradient { data_handle, .. } if !frame_context.fb_config.is_software => {
+                let prim_data = &data_stores.conic_grad[*data_handle];
+                !prim_data.brush_segments.is_empty() ||
+                    may_need_repetition(prim_data.stretch_size, prim_data.common.prim_rect)
+            }
+            _ => true,
+        };
 
         // In this initial patch, we only support non-masked primitives through the new
         // quad rendering path. Follow up patches will extend this to support masks, and
@@ -218,18 +242,20 @@ fn prepare_prim_for_render(
         // to skip the entry point to `update_clip_task` as that does old-style segmenting
         // and mask generation.
         let should_update_clip_task = match prim_instance.kind {
-            PrimitiveInstanceKind::Rectangle { ref mut use_legacy_path, .. } => {
-                *use_legacy_path = !can_use_clip_chain_for_quad_path(
+            PrimitiveInstanceKind::Rectangle { use_legacy_path: ref mut no_quads, .. }
+            | PrimitiveInstanceKind::RadialGradient { cached: ref mut no_quads, .. }
+            | PrimitiveInstanceKind::ConicGradient { cached: ref mut no_quads, .. }
+            => {
+                *no_quads = disable_quad_path || !can_use_clip_chain_for_quad_path(
                     &prim_instance.vis.clip_chain,
                     frame_state.clip_store,
                     data_stores,
                 );
 
-                *use_legacy_path
+                *no_quads
             }
-            PrimitiveInstanceKind::Picture { .. } => {
-                false
-            }
+            PrimitiveInstanceKind::BoxShadow { .. } |
+            PrimitiveInstanceKind::Picture { .. } => false,
             _ => true,
         };
 
@@ -295,6 +321,27 @@ fn prepare_interned_prim_for_render(
     let device_pixel_scale = frame_state.surfaces[pic_context.surface_index.0].device_pixel_scale;
 
     match &mut prim_instance.kind {
+        PrimitiveInstanceKind::BoxShadow { data_handle } => {
+            let prim_data = &mut data_stores.box_shadow[*data_handle];
+
+            quad::prepare_quad(
+                prim_data,
+                &prim_data.kind.outer_shadow_rect,
+                prim_instance_index,
+                prim_spatial_node_index,
+                &prim_instance.vis.clip_chain,
+                device_pixel_scale,
+                frame_context,
+                pic_context,
+                targets,
+                &data_stores.clip,
+                frame_state,
+                pic_state,
+                scratch,
+            );
+
+            return;
+        }
         PrimitiveInstanceKind::LineDecoration { data_handle, ref mut render_task, .. } => {
             profile_scope!("LineDecoration");
             let prim_data = &mut data_stores.line_decoration[*data_handle];
@@ -365,7 +412,7 @@ fn prepare_interned_prim_for_render(
                     frame_state.rg_builder,
                     None,
                     false,
-                    RenderTaskParent::Surface(pic_context.surface_index),
+                    RenderTaskParent::Surface,
                     &mut frame_state.surface_builder,
                     |rg_builder, _| {
                         rg_builder.add().init(RenderTask::new_dynamic(
@@ -520,7 +567,7 @@ fn prepare_interned_prim_for_render(
                     frame_state.rg_builder,
                     None,
                     false,          // TODO(gw): We don't calculate opacity for borders yet!
-                    RenderTaskParent::Surface(pic_context.surface_index),
+                    RenderTaskParent::Surface,
                     &mut frame_state.surface_builder,
                     |rg_builder, _| {
                         rg_builder.add().init(RenderTask::new_dynamic(
@@ -607,16 +654,8 @@ fn prepare_interned_prim_for_render(
             } else {
                 let prim_data = &data_stores.prim[*data_handle];
 
-                let pattern = match prim_data.kind {
-                    PrimitiveTemplateKind::Clear => Pattern::clear(),
-                    PrimitiveTemplateKind::Rectangle { ref color, .. } => {
-                        let color = frame_context.scene_properties.resolve_color(color);
-                        Pattern::color(color)
-                    }
-                };
-
-                quad::push_quad(
-                    &pattern,
+                quad::prepare_quad(
+                    prim_data,
                     &prim_data.common.prim_rect,
                     prim_instance_index,
                     prim_spatial_node_index,
@@ -669,7 +708,6 @@ fn prepare_interned_prim_for_render(
             image_data.update(
                 common_data,
                 image_instance,
-                pic_context.surface_index,
                 prim_spatial_node_index,
                 frame_state,
                 frame_context,
@@ -692,7 +730,7 @@ fn prepare_interned_prim_for_render(
 
             // Update the template this instane references, which may refresh the GPU
             // cache with any shared template data.
-            prim_data.update(frame_state, pic_context.surface_index);
+            prim_data.update(frame_state);
 
             if prim_data.stretch_size.width >= prim_data.common.prim_rect.width() &&
                 prim_data.stretch_size.height >= prim_data.common.prim_rect.height() {
@@ -758,7 +796,7 @@ fn prepare_interned_prim_for_render(
 
             // Update the template this instance references, which may refresh the GPU
             // cache with any shared template data.
-            prim_data.update(frame_state, pic_context.surface_index);
+            prim_data.update(frame_state);
 
             if prim_data.tile_spacing != LayoutSize::zero() {
                 prim_data.common.may_need_repetition = false;
@@ -780,16 +818,36 @@ fn prepare_interned_prim_for_render(
                 }
             }
         }
-        PrimitiveInstanceKind::RadialGradient { data_handle, ref mut visible_tiles_range, .. } => {
+        PrimitiveInstanceKind::RadialGradient { data_handle, ref mut visible_tiles_range, cached, .. } => {
             profile_scope!("RadialGradient");
             let prim_data = &mut data_stores.radial_grad[*data_handle];
 
+            if !*cached {
+                quad::prepare_quad(
+                    prim_data,
+                    &prim_data.common.prim_rect,
+                    prim_instance_index,
+                    prim_spatial_node_index,
+                    &prim_instance.vis.clip_chain,
+                    device_pixel_scale,
+                    frame_context,
+                    pic_context,
+                    targets,
+                    &data_stores.clip,
+                    frame_state,
+                    pic_state,
+                    scratch,
+                );
+
+                return;
+            }
+
             prim_data.common.may_need_repetition = prim_data.stretch_size.width < prim_data.common.prim_rect.width()
-                || prim_data.stretch_size.height < prim_data.common.prim_rect.height();
+            || prim_data.stretch_size.height < prim_data.common.prim_rect.height();
 
             // Update the template this instane references, which may refresh the GPU
             // cache with any shared template data.
-            prim_data.update(frame_state, pic_context.surface_index);
+            prim_data.update(frame_state);
 
             if prim_data.tile_spacing != LayoutSize::zero() {
                 prim_data.common.may_need_repetition = false;
@@ -810,20 +868,37 @@ fn prepare_interned_prim_for_render(
                     prim_instance.clear_visibility();
                 }
             }
-
-            // TODO(gw): Consider whether it's worth doing segment building
-            //           for gradient primitives.
         }
-        PrimitiveInstanceKind::ConicGradient { data_handle, ref mut visible_tiles_range, .. } => {
+        PrimitiveInstanceKind::ConicGradient { data_handle, ref mut visible_tiles_range, cached, .. } => {
             profile_scope!("ConicGradient");
             let prim_data = &mut data_stores.conic_grad[*data_handle];
+
+            if !*cached {
+                quad::prepare_quad(
+                    prim_data,
+                    &prim_data.common.prim_rect,
+                    prim_instance_index,
+                    prim_spatial_node_index,
+                    &prim_instance.vis.clip_chain,
+                    device_pixel_scale,
+                    frame_context,
+                    pic_context,
+                    targets,
+                    &data_stores.clip,
+                    frame_state,
+                    pic_state,
+                    scratch,
+                );
+
+                return;
+            }
 
             prim_data.common.may_need_repetition = prim_data.stretch_size.width < prim_data.common.prim_rect.width()
                 || prim_data.stretch_size.height < prim_data.common.prim_rect.height();
 
             // Update the template this instane references, which may refresh the GPU
             // cache with any shared template data.
-            prim_data.update(frame_state, pic_context.surface_index);
+            prim_data.update(frame_state);
 
             if prim_data.tile_spacing != LayoutSize::zero() {
                 prim_data.common.may_need_repetition = false;
@@ -870,7 +945,8 @@ fn prepare_interned_prim_for_render(
                     // may have changed due to downscaling. We could handle this separate
                     // case as a follow up.
                     Some(PictureCompositeMode::Filter(Filter::Blur { .. })) |
-                    Some(PictureCompositeMode::Filter(Filter::DropShadows { .. })) => {
+                    Some(PictureCompositeMode::Filter(Filter::DropShadows { .. })) |
+                    Some(PictureCompositeMode::SVGFEGraph( .. )) => {
                         true
                     }
                     _ => {
@@ -895,12 +971,16 @@ fn prepare_interned_prim_for_render(
                     .clipped_local_rect
                     .cast_unit();
 
+                let pattern = Pattern::color(ColorF::WHITE);
+
                 let prim_address_f = quad::write_prim_blocks(
                     &mut frame_state.frame_gpu_data.f32,
                     prim_local_rect,
                     prim_instance.vis.clip_chain.local_clip_rect,
-                    PremultipliedColorF::WHITE,
+                    pattern.base_color,
+                    pattern.texture_input.task_id,
                     &[],
+                    ScaleOffset::identity(),
                 );
 
                 // Handle masks on the source. This is the common case, and occurs for:
@@ -1179,6 +1259,9 @@ fn update_clip_task_for_brush(
     device_pixel_scale: DevicePixelScale,
 ) -> Option<ClipTaskIndex> {
     let segments = match instance.kind {
+        PrimitiveInstanceKind::BoxShadow { .. } => {
+            unreachable!("BUG: box-shadows should not hit legacy brush clip path");
+        }
         PrimitiveInstanceKind::Picture { .. } |
         PrimitiveInstanceKind::TextRun { .. } |
         PrimitiveInstanceKind::Clear { .. } |
@@ -1648,6 +1731,9 @@ fn build_segments_if_needed(
         PrimitiveInstanceKind::BackdropRender { .. } => {
             // These primitives don't support / need segments.
             return;
+        }
+        PrimitiveInstanceKind::BoxShadow { .. } => {
+            unreachable!("BUG: box-shadows should not hit legacy brush clip path");
         }
     };
 

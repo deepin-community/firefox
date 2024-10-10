@@ -40,9 +40,9 @@ XPCOMUtils.defineLazyServiceGetter(
 
 XPCOMUtils.defineLazyPreferenceGetter(
   lazy,
-  "isBounceTrackingProtectionEnabled",
-  "privacy.bounceTrackingProtection.enabled",
-  false
+  "bounceTrackingProtectionMode",
+  "privacy.bounceTrackingProtection.mode",
+  Ci.nsIBounceTrackingProtection.MODE_DISABLED
 );
 
 /**
@@ -465,6 +465,37 @@ const CSSCacheCleaner = {
 
   async deleteAll() {
     ChromeUtils.clearStyleSheetCache();
+  },
+};
+
+const JSCacheCleaner = {
+  async deleteByHost(aHost, aOriginAttributes) {
+    // Delete data from both HTTP and HTTPS sites.
+    let httpURI = Services.io.newURI("http://" + aHost);
+    let httpsURI = Services.io.newURI("https://" + aHost);
+    let httpPrincipal = Services.scriptSecurityManager.createContentPrincipal(
+      httpURI,
+      aOriginAttributes
+    );
+    let httpsPrincipal = Services.scriptSecurityManager.createContentPrincipal(
+      httpsURI,
+      aOriginAttributes
+    );
+
+    ChromeUtils.clearScriptCacheByPrincipal(httpPrincipal);
+    ChromeUtils.clearScriptCacheByPrincipal(httpsPrincipal);
+  },
+
+  async deleteByPrincipal(aPrincipal) {
+    ChromeUtils.clearScriptCacheByPrincipal(aPrincipal);
+  },
+
+  async deleteByBaseDomain(aBaseDomain) {
+    ChromeUtils.clearScriptCacheByBaseDomain(aBaseDomain);
+  },
+
+  async deleteAll() {
+    ChromeUtils.clearScriptCache();
   },
 };
 
@@ -1223,7 +1254,55 @@ const AuthCacheCleaner = {
   },
 };
 
-const PermissionsCleaner = {
+// helper functions for Permission cleaners
+const SHUTDOWN_EXCEPTION_PERMISSION = "cookie";
+
+function deleteSingleInternalPerm(
+  { baseDomain, host },
+  perm,
+  skipThirdPartyStoragePerms = false
+) {
+  let toBeRemoved;
+
+  if (baseDomain) {
+    toBeRemoved = perm.principal.baseDomain == baseDomain;
+  } else {
+    try {
+      toBeRemoved = Services.eTLD.hasRootDomain(perm.principal.host, host);
+    } catch (ex) {
+      return;
+    }
+  }
+
+  if (
+    !skipThirdPartyStoragePerms &&
+    !toBeRemoved &&
+    (perm.type.startsWith("3rdPartyStorage^") ||
+      perm.type.startsWith("3rdPartyFrameStorage^"))
+  ) {
+    let parts = perm.type.split("^");
+    let uri;
+    try {
+      uri = Services.io.newURI(parts[1]);
+    } catch (ex) {
+      return;
+    }
+
+    toBeRemoved = Services.eTLD.hasRootDomain(uri.host, baseDomain || host);
+  }
+
+  if (!toBeRemoved) {
+    return;
+  }
+
+  try {
+    Services.perms.removePermission(perm);
+  } catch (ex) {
+    // Ignore entry
+  }
+}
+
+const ShutdownExceptionsCleaner = {
   /**
    * Delete permissions by either base domain or host.
    * Clearing by host also clears associated subdomains.
@@ -1235,43 +1314,11 @@ const PermissionsCleaner = {
    */
   async _deleteInternal({ baseDomain, host }) {
     for (let perm of Services.perms.all) {
-      let toBeRemoved;
-
-      if (baseDomain) {
-        toBeRemoved = perm.principal.baseDomain == baseDomain;
-      } else {
-        try {
-          toBeRemoved = Services.eTLD.hasRootDomain(perm.principal.host, host);
-        } catch (ex) {
-          continue;
-        }
-      }
-
-      if (
-        !toBeRemoved &&
-        (perm.type.startsWith("3rdPartyStorage^") ||
-          perm.type.startsWith("3rdPartyFrameStorage^"))
-      ) {
-        let parts = perm.type.split("^");
-        let uri;
-        try {
-          uri = Services.io.newURI(parts[1]);
-        } catch (ex) {
-          continue;
-        }
-
-        toBeRemoved = Services.eTLD.hasRootDomain(uri.host, baseDomain || host);
-      }
-
-      if (!toBeRemoved) {
+      if (SHUTDOWN_EXCEPTION_PERMISSION != perm.type) {
         continue;
       }
 
-      try {
-        Services.perms.removePermission(perm);
-      } catch (ex) {
-        // Ignore entry
-      }
+      deleteSingleInternalPerm({ baseDomain, host }, perm, true);
     }
   },
 
@@ -1288,15 +1335,74 @@ const PermissionsCleaner = {
   },
 
   async deleteByRange(aFrom) {
-    Services.perms.removeAllSince(aFrom / 1000);
+    Services.perms.removeByTypeSince(
+      SHUTDOWN_EXCEPTION_PERMISSION,
+      aFrom / 1000
+    );
   },
 
   async deleteByOriginAttributes(aOriginAttributesString) {
-    Services.perms.removePermissionsWithAttributes(aOriginAttributesString);
+    Services.perms.removePermissionsWithAttributes(
+      aOriginAttributesString,
+      [SHUTDOWN_EXCEPTION_PERMISSION],
+      []
+    );
   },
 
   async deleteAll() {
-    Services.perms.removeAll();
+    Services.perms.removeByType(SHUTDOWN_EXCEPTION_PERMISSION);
+  },
+};
+
+const PermissionsCleaner = {
+  /**
+   * Delete permissions by either base domain or host.
+   * Clearing by host also clears associated subdomains.
+   * For example, clearing "example.com" will also clear permissions for
+   * "test.example.com" and "another.test.example.com".
+   * @param options
+   * @param {string} options.baseDomain - Base domain to delete permissions for.
+   * @param {string} options.host - Host to delete permissions for.
+   */
+  async _deleteInternal({ baseDomain, host }) {
+    for (let perm of Services.perms.all) {
+      // skip shutdown exception permission because it is handled by ShutDownExceptionsCleaner
+      if (SHUTDOWN_EXCEPTION_PERMISSION == perm.type) {
+        continue;
+      }
+
+      deleteSingleInternalPerm({ baseDomain, host }, perm);
+    }
+  },
+
+  deleteByHost(aHost) {
+    return this._deleteInternal({ host: aHost });
+  },
+
+  deleteByPrincipal(aPrincipal) {
+    return this.deleteByHost(aPrincipal.host, aPrincipal.originAttributes);
+  },
+
+  deleteByBaseDomain(aBaseDomain) {
+    return this._deleteInternal({ baseDomain: aBaseDomain });
+  },
+
+  async deleteByRange(aFrom) {
+    Services.perms.removeAllSinceWithTypeExceptions(aFrom / 1000, [
+      SHUTDOWN_EXCEPTION_PERMISSION,
+    ]);
+  },
+
+  async deleteByOriginAttributes(aOriginAttributesString) {
+    Services.perms.removePermissionsWithAttributes(
+      aOriginAttributesString,
+      [],
+      [SHUTDOWN_EXCEPTION_PERMISSION]
+    );
+  },
+
+  async deleteAll() {
+    Services.perms.removeAllExceptTypes([SHUTDOWN_EXCEPTION_PERMISSION]);
   },
 };
 
@@ -1692,14 +1798,20 @@ const IdentityCredentialStorageCleaner = {
 
 const BounceTrackingProtectionStateCleaner = {
   async deleteAll() {
-    if (!lazy.isBounceTrackingProtectionEnabled) {
+    if (
+      lazy.bounceTrackingProtectionMode ==
+      Ci.nsIBounceTrackingProtection.MODE_DISABLED
+    ) {
       return;
     }
     await lazy.bounceTrackingProtection.clearAll();
   },
 
   async deleteByPrincipal(aPrincipal) {
-    if (!lazy.isBounceTrackingProtectionEnabled) {
+    if (
+      lazy.bounceTrackingProtectionMode ==
+      Ci.nsIBounceTrackingProtection.MODE_DISABLED
+    ) {
       return;
     }
     let { baseDomain, originAttributes } = aPrincipal;
@@ -1710,21 +1822,30 @@ const BounceTrackingProtectionStateCleaner = {
   },
 
   async deleteByBaseDomain(aBaseDomain) {
-    if (!lazy.isBounceTrackingProtectionEnabled) {
+    if (
+      lazy.bounceTrackingProtectionMode ==
+      Ci.nsIBounceTrackingProtection.MODE_DISABLED
+    ) {
       return;
     }
     await lazy.bounceTrackingProtection.clearBySiteHost(aBaseDomain);
   },
 
   async deleteByRange(aFrom, aTo) {
-    if (!lazy.isBounceTrackingProtectionEnabled) {
+    if (
+      lazy.bounceTrackingProtectionMode ==
+      Ci.nsIBounceTrackingProtection.MODE_DISABLED
+    ) {
       return;
     }
     await lazy.bounceTrackingProtection.clearByTimeRange(aFrom, aTo);
   },
 
   async deleteByHost(aHost) {
-    if (!lazy.isBounceTrackingProtectionEnabled) {
+    if (
+      lazy.bounceTrackingProtectionMode ==
+      Ci.nsIBounceTrackingProtection.MODE_DISABLED
+    ) {
       return;
     }
     let baseDomain = getBaseDomainWithFallback(aHost);
@@ -1732,7 +1853,10 @@ const BounceTrackingProtectionStateCleaner = {
   },
 
   async deleteByOriginAttributes(aOriginAttributesPatternString) {
-    if (!lazy.isBounceTrackingProtectionEnabled) {
+    if (
+      lazy.bounceTrackingProtectionMode ==
+      Ci.nsIBounceTrackingProtection.MODE_DISABLED
+    ) {
       return;
     }
     await lazy.bounceTrackingProtection.clearByOriginAttributesPattern(
@@ -1744,14 +1868,30 @@ const BounceTrackingProtectionStateCleaner = {
 const StoragePermissionsCleaner = {
   async deleteByRange(aFrom) {
     // We lack the ability to clear by range, but can clear from a certain time to now
-    // We have to divice aFrom by 1000 to convert the time from ms to microseconds
+    // Convert aFrom from microseconds to ms
     Services.perms.removeByTypeSince("storage-access", aFrom / 1000);
-    Services.perms.removeByTypeSince("persistent-storage", aFrom / 1000);
+
+    let persistentStoragePermissions = Services.perms.getAllByTypeSince(
+      "persistent-storage",
+      aFrom / 1000
+    );
+    persistentStoragePermissions.forEach(perm => {
+      // If it is an Addon Principal, do nothing.
+      // We want their persistant-storage permissions to remain (Bug 1907732)
+      if (this._isAddonPrincipal(perm.principal)) {
+        return;
+      }
+      Services.perms.removePermission(perm);
+    });
   },
 
   async deleteByPrincipal(aPrincipal) {
     Services.perms.removeFromPrincipal(aPrincipal, "storage-access");
-    Services.perms.removeFromPrincipal(aPrincipal, "persistent-storage");
+
+    // Only remove persistent-storage if it is not an extension principal (Bug 1907732)
+    if (!this._isAddonPrincipal(aPrincipal)) {
+      Services.perms.removeFromPrincipal(aPrincipal, "persistent-storage");
+    }
   },
 
   async deleteByHost(aHost) {
@@ -1783,14 +1923,40 @@ const StoragePermissionsCleaner = {
 
   async deleteAll() {
     Services.perms.removeByType("storage-access");
-    Services.perms.removeByType("persistent-storage");
+
+    // We don't want to clear the persistent-storage permission from addons (Bug 1907732)
+    let persistentStoragePermissions = Services.perms.getAllByTypes([
+      "persistent-storage",
+    ]);
+    persistentStoragePermissions.forEach(perm => {
+      if (this._isAddonPrincipal(perm.principal)) {
+        return;
+      }
+
+      Services.perms.removePermission(perm);
+    });
   },
 
   _getStoragePermissions() {
-    return Services.perms.getAllByTypes([
+    let storagePermissions = Services.perms.getAllByTypes([
       "storage-access",
       "persistent-storage",
     ]);
+
+    return storagePermissions.filter(
+      permission =>
+        !this._isAddonPrincipal(permission.principal) ||
+        permission.type == "storage-access"
+    );
+  },
+
+  _isAddonPrincipal(aPrincipal) {
+    return (
+      // AddonPolicy() returns a WebExtensionPolicy that has been registered before,
+      // typically during extension startup. Since Disabled or uninstalled add-ons
+      // don't appear there, we should use schemeIs instead
+      aPrincipal.schemeIs("moz-extension")
+    );
   },
 };
 
@@ -1816,6 +1982,11 @@ const FLAGS_MAP = [
   {
     flag: Ci.nsIClearDataService.CLEAR_CSS_CACHE,
     cleaners: [CSSCacheCleaner],
+  },
+
+  {
+    flag: Ci.nsIClearDataService.CLEAR_JS_CACHE,
+    cleaners: [JSCacheCleaner],
   },
 
   {
@@ -1871,7 +2042,7 @@ const FLAGS_MAP = [
   },
 
   {
-    flag: Ci.nsIClearDataService.CLEAR_PERMISSIONS,
+    flag: Ci.nsIClearDataService.CLEAR_SITE_PERMISSIONS,
     cleaners: [PermissionsCleaner],
   },
 
@@ -1932,6 +2103,11 @@ const FLAGS_MAP = [
   {
     flag: Ci.nsIClearDataService.CLEAR_STORAGE_PERMISSIONS,
     cleaners: [StoragePermissionsCleaner],
+  },
+
+  {
+    flag: Ci.nsIClearDataService.CLEAR_SHUTDOWN_EXCEPTIONS,
+    cleaners: [ShutdownExceptionsCleaner],
   },
 ];
 

@@ -236,6 +236,21 @@ class Accessible {
   }
 
   /**
+   * Return the closest common ancestor of `this` and `aAcc`, potentially
+   * including `this`. That is, if `aAcc` is `this` or a descendant, this method
+   * will return `this`.
+   */
+  const Accessible* GetClosestCommonInclusiveAncestor(
+      const Accessible* aAcc) const;
+
+  Accessible* GetClosestCommonInclusiveAncestor(Accessible* aAcc) {
+    const Accessible* common =
+        const_cast<const Accessible*>(this)->GetClosestCommonInclusiveAncestor(
+            aAcc);
+    return const_cast<Accessible*>(common);
+  }
+
+  /**
    * Used by ChildAtPoint() method to get direct or deepest child at point.
    */
   enum class EWhichChildAtPoint { DirectChild, DeepestChild };
@@ -438,9 +453,14 @@ class Accessible {
   nsStaticAtom* LandmarkRole() const;
 
   /**
-   * Return the id of the dom node this accessible represents.
+   * Return the id of the DOM node this Accessible represents.
    */
   virtual void DOMNodeID(nsString& aID) const = 0;
+
+  /**
+   * Return the class of the DOM node this Accessible represents.
+   */
+  virtual void DOMNodeClass(nsString& aClass) const = 0;
 
   //////////////////////////////////////////////////////////////////////////////
   // ActionAccessible

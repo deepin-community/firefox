@@ -344,6 +344,9 @@ has-seccomp-bpf = Seccomp-BPF (Sistema-deien iragaztea)
 has-seccomp-tsync = Seccomp harien sinkronizazioa
 has-user-namespaces = Erabiltzaileen izen-eremuak
 has-privileged-user-namespaces = Erabiltzaileen izen-eremuak prozesu pribilegiatuentzat
+# Variables
+# $status (string) - Boolean value of hasUserNamespaces (should only be false when support-user-namespaces-unavailable is used)
+support-user-namespaces-unavailable = { $status } — Eginbide hau ez du onartzen zure sistemak. Honek { -brand-short-name }(r)en segurtasun-eginbideak muga ditzake.
 can-sandbox-content = Eduki-prozesuen isolamendua
 can-sandbox-media = Multimedia-pluginen isolamendua
 content-sandbox-level = Eduki-prozesuen isolamendu maila
@@ -411,6 +414,19 @@ support-printing-clear-settings-button = Garbitu gordetako inprimatze-ezarpenak
 support-printing-modified-settings = Aldatutako inprimatze-ezarpenak
 support-printing-prefs-name = Izena
 support-printing-prefs-value = Balioa
+
+## Remote Settings sections
+
+support-remote-settings-title = Urruneko ezarpenak
+support-remote-settings-status = Egoera
+support-remote-settings-status-ok = Ados
+# Status when synchronization is not working.
+support-remote-settings-status-broken = Ez dabil
+support-remote-settings-last-check = Azken egiaztapena
+support-remote-settings-sync-history = Historia
+support-remote-settings-sync-history-status = Egoera
+support-remote-settings-sync-history-datetime = Data
+support-remote-settings-sync-history-infos = Informazioa
 
 ## Normandy sections
 

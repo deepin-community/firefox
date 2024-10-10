@@ -52,7 +52,7 @@ newtab-topsites-title-input =
 newtab-topsites-url-label = URL
 newtab-topsites-url-input =
     .placeholder = URL zapódaś abo zasajźiś
-newtab-topsites-url-validation = Płaśiwy URL trěbny
+newtab-topsites-url-validation = Płaśiwy URL trjebny
 newtab-topsites-image-url-label = URL swójskego wobraza
 newtab-topsites-use-image-link = Swójski wobraz wužywaś…
 newtab-topsites-image-validation = Wobraz njedajo se zacytaś. Wopytajśo drugi URL.
@@ -200,6 +200,8 @@ newtab-section-header-recent-activity = Nejnowša aktiwita
 #   $provider (string) - Name of the corresponding content provider.
 newtab-section-header-pocket = Wót { $provider } dopórucony
 newtab-section-header-stories = Tšojeńka, kótarež k rozmyslowanju pógnuwaju
+# "picks" refers to recommended articles
+newtab-section-header-todays-picks = Źinsajšne pśirucenja za was
 
 ## Empty Section States: These show when there are no more items in a section. Ex. When there are no more Pocket story recommendations, in the space where there would have been stories, this is shown instead.
 
@@ -233,6 +235,19 @@ newtab-pocket-pocket-firefox-family = { -pocket-brand-name } jo źěl swójźby 
 # A save to Pocket button that shows over the card thumbnail on hover.
 newtab-pocket-save = Składowaś
 newtab-pocket-saved = Skłaźony
+
+## Thumbs up and down buttons that shows over a newtab stories card thumbnail on hover.
+
+# Clicking the thumbs up button for this story will result in more stories like this one being recommended
+newtab-pocket-thumbs-up-tooltip =
+    .title = Wěcej ako ta
+# Clicking the thumbs down button for this story informs us that the user does not feel like the story is interesting for them
+newtab-pocket-thumbs-down-tooltip =
+    .title = Nic za mnjo
+newtab-toast-thumbs-up-or-down = Źěkujomy se. Wašo měnjenje buźo nam pomagaś, waš kanal pólěpšyś.
+newtab-toast-dismiss-button =
+    .title = Zachyśiś
+    .aria-label = Zachyśiś
 
 ## Pocket content onboarding experience dialog and modal for new users seeing the Pocket section for the first time, shown as the first item in the Pocket section.
 
@@ -274,6 +289,9 @@ newtab-custom-recent-subtitle = Wuběrk nejnowšych sedłow a nejnowšego wopśi
 newtab-custom-recent-toggle =
     .label = Nejnowša aktiwita
     .description = Wuběrk nejnowšych sedłow a nejnowšego wopśimjeśa
+newtab-custom-weather-toggle =
+    .label = Wjedro
+    .description = Źinsajšna wjedrowa pśedpowěsć
 newtab-custom-close-button = Zacyniś
 newtab-custom-settings = Dalšne nastajenja zastojaś
 
@@ -293,7 +311,125 @@ newtab-wallpaper-dark-panda = Cerwjeny panda w lěsu schowany
 newtab-wallpaper-dark-sky = Měsćańska krajina z nocnym njebjom
 newtab-wallpaper-dark-mountain = Górinowa krajina
 newtab-wallpaper-dark-city = Wioletna měsćańska krajina
+
+## Solid Colors
+
+newtab-wallpaper-category-title-colors = Jadnotne barwy
+newtab-wallpaper-blue = Módry
+newtab-wallpaper-light-blue = Swětłomódry
+newtab-wallpaper-light-purple = Swětłowioletny
+newtab-wallpaper-light-green = Swětłozeleny
+newtab-wallpaper-green = Zeleny
+newtab-wallpaper-beige = Beige
+newtab-wallpaper-yellow = Žołty
+newtab-wallpaper-orange = Oranžowy
+newtab-wallpaper-pink = Pink
+newtab-wallpaper-light-pink = Swětłopink
+newtab-wallpaper-red = Cerwjeny
+newtab-wallpaper-dark-blue = Śamnomódry
+newtab-wallpaper-dark-purple = Śamnowioletny
+newtab-wallpaper-dark-green = Śamnozeleny
+newtab-wallpaper-brown = Bruny
+
+## Abstract
+
+newtab-wallpaper-category-title-abstract = Abstraktne
+newtab-wallpaper-abstract-green = Zelene formy
+newtab-wallpaper-abstract-blue = Módre formy
+newtab-wallpaper-abstract-purple = Wioletne formy
+newtab-wallpaper-abstract-orange = Oranžowe formy
+newtab-wallpaper-gradient-orange = Woběžk oranžowy a pink
+newtab-wallpaper-abstract-blue-purple = Módre a wioletne formy
+
+## Photographs
+
+newtab-wallpaper-category-title-photographs = Fota
+newtab-wallpaper-beach-at-sunrise = Pśibrjog pśi zejźenju słyńca
+newtab-wallpaper-beach-at-sunset = Pśibrjog pśi schowanju słyńca
+newtab-wallpaper-storm-sky = Wichorowe njebjo
+newtab-wallpaper-sky-with-pink-clouds = Njebjo z rožowymi mrokami
+newtab-wallpaper-red-panda-yawns-in-a-tree = Cerwjeny panda w bomje zewa
+newtab-wallpaper-white-mountains = Běłe góry
 # Variables
 #   $author_string (String) - The name of the creator of the photo.
 #   $webpage_string (String) - The name of the webpage where the photo is located.
 newtab-wallpaper-attribution = Foto wót <a data-l10n-name="name-link">{ $author_string }</a> na <a data-l10n-name="webpage-link">{ $webpage_string }</a>
+newtab-wallpaper-feature-highlight-header = Wopytajśo chrapku barwy
+newtab-wallpaper-feature-highlight-content = Dajśo swójomu rejtarikoju fryšne wuglědanje ze slězynowymi wobrazami.
+newtab-wallpaper-feature-highlight-button = Som zrozměł
+# Tooltip for dismiss button
+feature-highlight-dismiss-button =
+    .title = Zachyśiś
+    .aria-label = Wóskokujuce wokno zacyniś
+feature-highlight-wallpaper =
+    .title = { -newtab-wallpaper-feature-highlight-header }
+    .aria-label = { -newtab-wallpaper-feature-highlight-content }
+
+## New Tab Weather
+
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-see-forecast =
+    .title = Wjedrowu pśedpowěsć w { $provider } pokazaś
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-sponsored = { $provider } ∙ sponserowany
+newtab-weather-menu-change-location = Městno změniś
+newtab-weather-change-location-search-input = Městno pytaś
+newtab-weather-menu-weather-display = Wjedrowe pokazanje
+# Display options are:
+# - Simple: Displays a current weather condition icon and the current temperature
+# - Detailed: Include simple information plus a short text summary: e.g. "Mostly cloudy"
+newtab-weather-menu-weather-display-option-simple = Jadnory
+newtab-weather-menu-change-weather-display-simple = Jadnory naglěd wužywaś
+newtab-weather-menu-weather-display-option-detailed = Detailěrowany
+newtab-weather-menu-change-weather-display-detailed = Detailěrowany naglěd wužywaś
+newtab-weather-menu-temperature-units = Temperaturowe jadnotki
+newtab-weather-menu-temperature-option-fahrenheit = Fahrenheit
+newtab-weather-menu-temperature-option-celsius = Celsius
+newtab-weather-menu-change-temperature-units-fahrenheit = Fahrenheit wužywaś
+newtab-weather-menu-change-temperature-units-celsius = Celsius wužywaś
+newtab-weather-menu-hide-weather = Wjedro na nowem rejtariku schowaś
+newtab-weather-menu-learn-more = Dalšne informacije
+# This message is shown if user is working offline
+newtab-weather-error-not-available = Wjedrowe daty njejsu tuchylu k dispoziciji
+
+## Topic Labels
+
+newtab-topic-label-business = Pśekupniske
+newtab-topic-label-career = Kariera
+newtab-topic-label-education = Kubłanje
+newtab-topic-label-arts = Rozdrosćenje
+newtab-topic-label-food = Caroba
+newtab-topic-label-health = Strowje
+newtab-topic-label-hobbies = Graśe
+# ”Money” = “Personal Finance”, refers to articles and stories that help readers better manage
+# and understand their personal finances – from saving money to buying a home. See the
+# “Curated by our editors“ section at the top of https://getpocket.com/explore/personal-finance for more context
+newtab-topic-label-finance = Pjenjeze
+newtab-topic-label-society-parenting = Wótkubłanje
+newtab-topic-label-government = Politika
+newtab-topic-label-education-science = Wědomnosć
+# ”Life Hacks” = “Self Improvement”, refers to articles and stories aimed at helping readers improve various
+# aspects of their lives – from mental health to  productivity. See the “Curated by our editors“ section
+# at the top of https://getpocket.com/explore/self-improvement for more context.
+newtab-topic-label-society = Swójske pólěpšenja
+newtab-topic-label-sports = Sport
+newtab-topic-label-tech = Technologija
+newtab-topic-label-travel = Drogowanje
+newtab-topic-label-home = Dom a zagroda
+
+## Topic Selection Modal
+
+# “fine-tune” refers to the process of making small adjustments to something to get
+# the best or desired experience or performance.
+newtab-topic-selection-title = Wubjeŕśo temy, aby swój kanal optiměrował
+# “tailored” refers to process of (a tailor) making (clothes) to fit individual customers.
+# In other words, “Our expert curators prioritize stories to fit your selected interests”
+newtab-topic-selection-subtitle = Wubjeŕśo dwě temje abo wěcej z nich. Naše nazgónjone kuratory prioritu na tšojeńka kładu, kótarež su na waše zajmy wusměrjone. Pśiměŕśo to kuždy cas.
+newtab-topic-selection-save-button = Składowaś
+newtab-topic-selection-cancel-button = Pśetergnuś
+newtab-topic-selection-button-maybe-later = Snaź pózdźej
+newtab-topic-selection-privacy-link = Zgóńśo, kak daty šćitamy a zastojmy
+newtab-topic-selection-button-update-interests = Zaktualizěrujśo swóje zajmy
+newtab-topic-selection-button-pick-interests = Wubjeŕśo swóje zajmy

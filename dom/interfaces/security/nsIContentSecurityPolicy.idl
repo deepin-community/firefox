@@ -23,9 +23,14 @@ webidl Document;
 
 %{C++
 class nsCSPPolicy;
+namespace mozilla::dom {
+struct CSPViolationData;
+}
 %}
 
 [ptr] native CSPPolicyPtr(const nsCSPPolicy);
+
+native CSPViolationData(mozilla::dom::CSPViolationData&&);
 
 [scriptable, builtinclass, uuid(1d632008-6c97-48ae-a51c-16e2daa0f4f6)]
 interface nsIContentSecurityPolicy : nsISerializable
@@ -40,31 +45,34 @@ interface nsIContentSecurityPolicy : nsISerializable
    * add it to the CSPStrDirectives array in nsCSPUtils.h.
    */
   cenum CSPDirective : 8 {
-    NO_DIRECTIVE                   = 0,
-    DEFAULT_SRC_DIRECTIVE          = 1,
-    SCRIPT_SRC_DIRECTIVE           = 2,
-    OBJECT_SRC_DIRECTIVE           = 3,
-    STYLE_SRC_DIRECTIVE            = 4,
-    IMG_SRC_DIRECTIVE              = 5,
-    MEDIA_SRC_DIRECTIVE            = 6,
-    FRAME_SRC_DIRECTIVE            = 7,
-    FONT_SRC_DIRECTIVE             = 8,
-    CONNECT_SRC_DIRECTIVE          = 9,
-    REPORT_URI_DIRECTIVE           = 10,
-    FRAME_ANCESTORS_DIRECTIVE      = 11,
-    REFLECTED_XSS_DIRECTIVE        = 12,
-    BASE_URI_DIRECTIVE             = 13,
-    FORM_ACTION_DIRECTIVE          = 14,
-    WEB_MANIFEST_SRC_DIRECTIVE     = 15,
-    UPGRADE_IF_INSECURE_DIRECTIVE  = 16,
-    CHILD_SRC_DIRECTIVE            = 17,
-    BLOCK_ALL_MIXED_CONTENT        = 18,
-    SANDBOX_DIRECTIVE              = 19,
-    WORKER_SRC_DIRECTIVE           = 20,
-    SCRIPT_SRC_ELEM_DIRECTIVE      = 21,
-    SCRIPT_SRC_ATTR_DIRECTIVE      = 22,
-    STYLE_SRC_ELEM_DIRECTIVE       = 23,
-    STYLE_SRC_ATTR_DIRECTIVE       = 24,
+    NO_DIRECTIVE                          = 0,
+    DEFAULT_SRC_DIRECTIVE                 = 1,
+    SCRIPT_SRC_DIRECTIVE                  = 2,
+    OBJECT_SRC_DIRECTIVE                  = 3,
+    STYLE_SRC_DIRECTIVE                   = 4,
+    IMG_SRC_DIRECTIVE                     = 5,
+    MEDIA_SRC_DIRECTIVE                   = 6,
+    FRAME_SRC_DIRECTIVE                   = 7,
+    FONT_SRC_DIRECTIVE                    = 8,
+    CONNECT_SRC_DIRECTIVE                 = 9,
+    REPORT_URI_DIRECTIVE                  = 10,
+    FRAME_ANCESTORS_DIRECTIVE             = 11,
+    REFLECTED_XSS_DIRECTIVE               = 12,
+    BASE_URI_DIRECTIVE                    = 13,
+    FORM_ACTION_DIRECTIVE                 = 14,
+    WEB_MANIFEST_SRC_DIRECTIVE            = 15,
+    UPGRADE_IF_INSECURE_DIRECTIVE         = 16,
+    CHILD_SRC_DIRECTIVE                   = 17,
+    BLOCK_ALL_MIXED_CONTENT               = 18,
+    SANDBOX_DIRECTIVE                     = 19,
+    WORKER_SRC_DIRECTIVE                  = 20,
+    SCRIPT_SRC_ELEM_DIRECTIVE             = 21,
+    SCRIPT_SRC_ATTR_DIRECTIVE             = 22,
+    STYLE_SRC_ELEM_DIRECTIVE              = 23,
+    STYLE_SRC_ATTR_DIRECTIVE              = 24,
+    REQUIRE_TRUSTED_TYPES_FOR_DIRECTIVE   = 25,
+    TRUSTED_TYPES_DIRECTIVE               = 26,
+    REPORT_TO_DIRECTIVE                   = 27,
   };
 
   /**
@@ -222,7 +230,7 @@ interface nsIContentSecurityPolicy : nsISerializable
   void logViolationDetails(in unsigned short violationType,
                            in Element triggeringElement,
                            in nsICSPEventListener aCSPEventListener,
-                           in AString sourceFile,
+                           in ACString sourceFile,
                            in AString scriptSample,
                            in int32_t lineNum,
                            in int32_t columnNum,
@@ -231,6 +239,22 @@ interface nsIContentSecurityPolicy : nsISerializable
 
   const unsigned short VIOLATION_TYPE_EVAL                   = 1;
   const unsigned short VIOLATION_TYPE_WASM_EVAL              = 2;
+
+  /**
+   * Log violation details for the Trusted Types directive. No check happens
+   * that the policy is indeed violated. Requires the Trusted Types directive to
+   * belong to the policy referrenced by aCSPViolationData.
+   *
+   * Notifies observers, logs on the error console, sends a report to the
+   * directive's report-uris and may fire a violation event.
+   *
+   * @param aCSPEventListener Should be null for Windows
+   *                          (https://html.spec.whatwg.org/multipage/nav-history-apis.html#window),
+   *                          and non-null for Workers.
+   */
+  [noscript] void logTrustedTypesViolationDetailsUnchecked(
+    in CSPViolationData aCSPViolationData,
+    in nsICSPEventListener aCSPEventListener);
 
   /**
    * Called after the CSP object is created to fill in appropriate request

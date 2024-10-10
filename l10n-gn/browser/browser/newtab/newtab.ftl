@@ -199,6 +199,8 @@ newtab-section-header-recent-activity = Tembiapo ramovegua
 #   $provider (string) - Name of the corresponding content provider.
 newtab-section-header-pocket = { $provider } he’i ndéve reike hag̃ua
 newtab-section-header-stories = Tembiasakue nemoakãngetáva
+# "picks" refers to recommended articles
+newtab-section-header-todays-picks = Poravopyre ko arapegua ndéve g̃uarã
 
 ## Empty Section States: These show when there are no more items in a section. Ex. When there are no more Pocket story recommendations, in the space where there would have been stories, this is shown instead.
 
@@ -232,6 +234,19 @@ newtab-pocket-pocket-firefox-family = { -pocket-brand-name } ha’e { -brand-pro
 # A save to Pocket button that shows over the card thumbnail on hover.
 newtab-pocket-save = Ñongatu
 newtab-pocket-saved = Ñongatupyre
+
+## Thumbs up and down buttons that shows over a newtab stories card thumbnail on hover.
+
+# Clicking the thumbs up button for this story will result in more stories like this one being recommended
+newtab-pocket-thumbs-up-tooltip =
+    .title = Koichaguave
+# Clicking the thumbs down button for this story informs us that the user does not feel like the story is interesting for them
+newtab-pocket-thumbs-down-tooltip =
+    .title = Ndacheveg̃uarãi
+newtab-toast-thumbs-up-or-down = Aguyje. Nde jehai ore pytyvõta iporãve hag̃ua ne marandurã.
+newtab-toast-dismiss-button =
+    .title = Emboyke
+    .aria-label = Emboyke
 
 ## Pocket content onboarding experience dialog and modal for new users seeing the Pocket section for the first time, shown as the first item in the Pocket section.
 
@@ -271,6 +286,9 @@ newtab-custom-recent-subtitle = Tenda jeporavo ha tetepy ramovegua
 newtab-custom-recent-toggle =
     .label = Tembiapo ramovegua
     .description = Tenda jeporavo ha tetepy ramovegua
+newtab-custom-weather-toggle =
+    .label = Arapytu
+    .description = Ko árape g̃uara ára
 newtab-custom-close-button = Mboty
 newtab-custom-settings = Eñangareko hetave ñembohekóre
 
@@ -290,7 +308,122 @@ newtab-wallpaper-dark-panda = Pánda pytã okañýva ñañandýpe
 newtab-wallpaper-dark-sky = Táva jehecha ára pytũmby ndive
 newtab-wallpaper-dark-mountain = Yvyty jehecha
 newtab-wallpaper-dark-city = Táva jehecha pytãũva
+
+## Solid Colors
+
+newtab-wallpaper-category-title-colors = Sa’y ipeteĩva
+newtab-wallpaper-blue = Hovy
+newtab-wallpaper-light-blue = Hovy kamgy
+newtab-wallpaper-light-purple = Pytãũ kangy
+newtab-wallpaper-light-green = Hovyũ kangy
+newtab-wallpaper-green = Hovyũ
+newtab-wallpaper-beige = Morotĩngy
+newtab-wallpaper-yellow = Sa’yju
+newtab-wallpaper-orange = Naraha
+newtab-wallpaper-pink = Pytãngy
+newtab-wallpaper-light-pink = Pytãngy kangy
+newtab-wallpaper-red = Ñanduti
+newtab-wallpaper-dark-blue = Hovy pytũva
+newtab-wallpaper-dark-purple = Pytãũ pytũva
+newtab-wallpaper-dark-green = Hovyũ pytũva
+newtab-wallpaper-brown = Marrõ
+
+## Abstract
+
+newtab-wallpaper-category-title-abstract = Hecha’ỹva
+newtab-wallpaper-abstract-green = Hovyũva rehegua
+newtab-wallpaper-abstract-blue = Hovýva rehegua
+newtab-wallpaper-abstract-purple = Pytãũva rehegua
+newtab-wallpaper-abstract-orange = Ñarã rehegua
+newtab-wallpaper-gradient-orange = Oguejýva narãgui pytãngýpe
+newtab-wallpaper-abstract-blue-purple = Hovy ha pytãũva rehegua
+
+## Photographs
+
+newtab-wallpaper-category-title-photographs = Ta’ãnga
+newtab-wallpaper-beach-at-sunrise = Jejahuha ko’ẽmbotávo
+newtab-wallpaper-beach-at-sunset = Jejahuha ka’arupytũvo
+newtab-wallpaper-storm-sky = Ára vai
+newtab-wallpaper-sky-with-pink-clouds = Ára arai pytãngy ndive
+newtab-wallpaper-red-panda-yawns-in-a-tree = Pánda pytã hopehýi yvyráre
+newtab-wallpaper-white-mountains = Yvytysyry morotĩ
 # Variables
 #   $author_string (String) - The name of the creator of the photo.
 #   $webpage_string (String) - The name of the webpage where the photo is located.
 newtab-wallpaper-attribution = Ta’ãnga <a data-l10n-name="name-link">{ $author_string }</a> <a data-l10n-name="webpage-link">{ $webpage_string }</a>-pe
+newtab-wallpaper-feature-highlight-header = Eiporukuaa sa’y sa’imi
+newtab-wallpaper-feature-highlight-content = Eme’ẽ ne rendayke pyahúpe jehecharã ipyahúva.
+newtab-wallpaper-feature-highlight-button = Aikũmby
+# Tooltip for dismiss button
+feature-highlight-dismiss-button =
+    .title = Mboyke
+    .aria-label = Emboty mba’e iñapysẽva
+feature-highlight-wallpaper =
+    .title = { -newtab-wallpaper-feature-highlight-header }
+    .aria-label = { -newtab-wallpaper-feature-highlight-content }
+
+## New Tab Weather
+
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-see-forecast =
+    .title = Ehecha ára rehegua { $provider }-pe
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-sponsored = { $provider } ∙ Oykekóva
+newtab-weather-menu-change-location = Emoambue tendatee
+newtab-weather-change-location-search-input = Eheka tendatee
+newtab-weather-menu-weather-display = Ára jehechaha
+# Display options are:
+# - Simple: Displays a current weather condition icon and the current temperature
+# - Detailed: Include simple information plus a short text summary: e.g. "Mostly cloudy"
+newtab-weather-menu-weather-display-option-simple = Simple
+newtab-weather-menu-change-weather-display-simple = Eva simple jehechápe
+newtab-weather-menu-weather-display-option-detailed = Mba’emimi
+newtab-weather-menu-change-weather-display-detailed = Eva mba’emimi jehechápe
+newtab-weather-menu-temperature-units = Arareko ñeha’ãha
+newtab-weather-menu-temperature-option-fahrenheit = Fahrenheit
+newtab-weather-menu-temperature-option-celsius = Celsius
+newtab-weather-menu-change-temperature-units-fahrenheit = Eva Fahrenheit ndive
+newtab-weather-menu-change-temperature-units-celsius = Eva Celsius ndive
+newtab-weather-menu-hide-weather = Eñomi arareko Tendayke Pyahúpe
+newtab-weather-menu-learn-more = Eikuaave
+# This message is shown if user is working offline
+newtab-weather-error-not-available = Marandu ára rehegua ndaipóri ko’ag̃aite.
+
+## Topic Labels
+
+newtab-topic-label-business = Ñemuha
+newtab-topic-label-career = Mba’apoha
+newtab-topic-label-education = Tekombo’e
+newtab-topic-label-arts = Mbovy’aha
+newtab-topic-label-food = Tembi’u
+newtab-topic-label-health = Tesãi
+newtab-topic-label-hobbies = Ñembosarái
+# ”Money” = “Personal Finance”, refers to articles and stories that help readers better manage
+# and understand their personal finances – from saving money to buying a home. See the
+# “Curated by our editors“ section at the top of https://getpocket.com/explore/personal-finance for more context
+newtab-topic-label-finance = Viru
+newtab-topic-label-society-parenting = Tuvakuéra
+newtab-topic-label-government = Porureko
+newtab-topic-label-education-science = Tembikuaaty
+# ”Life Hacks” = “Self Improvement”, refers to articles and stories aimed at helping readers improve various
+# aspects of their lives – from mental health to  productivity. See the “Curated by our editors“ section
+# at the top of https://getpocket.com/explore/self-improvement for more context.
+newtab-topic-label-society = Kuaarã tekovépe g̃uarã
+newtab-topic-label-sports = Tetemongu’e
+newtab-topic-label-tech = Tembiporupyahu
+newtab-topic-label-travel = jehomombyry
+newtab-topic-label-home = Óga ha yvotyty
+
+## Topic Selection Modal
+
+# “fine-tune” refers to the process of making small adjustments to something to get
+# the best or desired experience or performance.
+newtab-topic-selection-title = Eiporavo téma emoporãve hag̃ua ne canal
+newtab-topic-selection-save-button = Ñongatu
+newtab-topic-selection-cancel-button = Heja
+newtab-topic-selection-button-maybe-later = Ikatu ag̃amieve
+newtab-topic-selection-privacy-link = Ehecha mba’éichapa romo’ã ha romboguata ne mba’ekuaarã
+newtab-topic-selection-button-update-interests = Embohekopyahu eipotáva
+newtab-topic-selection-button-pick-interests = Eiporavo eipotáva

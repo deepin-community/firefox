@@ -3,12 +3,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-# Note: This is currently placed under browser/base/content so that we can
-# get the strings to appear without having our localization community need
-# to go through and translate everything. Once these strings are ready for
-# translation, we'll move it to the locales folder.
-
-
 ## These strings are used so that the window has a title in tools that
 ## enumerate/look for window titles. It is not normally visible anywhere.
 
@@ -30,7 +24,6 @@ webrtc-item-browser = kartica
 
 # This is used for the website origin for the sharing menu if no readable origin could be deduced from the URL.
 webrtc-sharing-menuitem-unknown-host = Nepoznati izvor
-
 # Variables:
 #   $origin (String): The website origin (e.g. www.mozilla.org)
 #   $itemList (String): A formatted list of items (e.g. "camera, microphone and tab audio")
@@ -39,10 +32,9 @@ webrtc-sharing-menuitem =
 webrtc-sharing-menu =
     .label = Kartice koje dijele uređaje
     .accesskey = u
-
 webrtc-sharing-window = Dijeliš drugi prozor aplikacije.
 webrtc-sharing-browser-window = Dijeliš { -brand-short-name }.
-webrtc-sharing-screen = Dijeliš svoj cijeli zaslon
+webrtc-sharing-screen = Dijeliš svoj cijeli ekran.
 webrtc-stop-sharing-button = Prestani dijeliti
 webrtc-microphone-unmuted =
     .title = Isključi mikrofon
@@ -64,7 +56,7 @@ webrtc-camera-system-menu =
 webrtc-microphone-system-menu =
     .label = Dijeliš svoj mikrofon. Klikni za upravljanje dijeljenjem.
 webrtc-screen-system-menu =
-    .label = Dijeliš prozor ili zaslon. Klikni za upravljanje dijeljenjem.
+    .label = Dijeliš prozor ili ekran. Klikni za upravljanje dijeljenjem.
 
 ## Tooltips used by the legacy global sharing indicator
 
@@ -93,7 +85,6 @@ webrtc-indicator-menuitem-control-sharing =
     .label = Upravljanje dijeljenjem
 webrtc-indicator-menuitem-control-sharing-on =
     .label = Upravljanje dijeljenjem na "{ $streamTitle }"
-
 webrtc-indicator-menuitem-sharing-camera-with =
     .label = Dijeljenje kamere sa "{ $streamTitle }"
 webrtc-indicator-menuitem-sharing-camera-with-n-tabs =
@@ -103,7 +94,6 @@ webrtc-indicator-menuitem-sharing-camera-with-n-tabs =
             [few] Dijeljenje kamere sa { $tabCount } kartice
            *[other] Dijeljenje kamere sa { $tabCount } kartica
         }
-
 webrtc-indicator-menuitem-sharing-microphone-with =
     .label = Dijeljenje mikrofona sa "{ $streamTitle }"
 webrtc-indicator-menuitem-sharing-microphone-with-n-tabs =
@@ -113,9 +103,8 @@ webrtc-indicator-menuitem-sharing-microphone-with-n-tabs =
             [few] Dijeljenje mikrofona sa { $tabCount } kartice
            *[other] Dijeljenje mikrofona sa { $tabCount } kartica
         }
-
 webrtc-indicator-menuitem-sharing-application-with =
-    .label = Aplikacija se dijeli sa "{ $streamTitle }"
+    .label = Dijeljenje aplikacije sa „{ $streamTitle }”
 webrtc-indicator-menuitem-sharing-application-with-n-tabs =
     .label =
         { $tabCount ->
@@ -123,7 +112,6 @@ webrtc-indicator-menuitem-sharing-application-with-n-tabs =
             [few] Aplikacija se dijeli s { $tabCount } kartice
            *[other] Aplikacija se dijeli s { $tabCount } kartica
         }
-
 webrtc-indicator-menuitem-sharing-screen-with =
     .label = Dijeljenje ekrana sa "{ $streamTitle }"
 webrtc-indicator-menuitem-sharing-screen-with-n-tabs =
@@ -133,7 +121,6 @@ webrtc-indicator-menuitem-sharing-screen-with-n-tabs =
             [few] Dijeljenje ekrana sa { $tabCount } kartice
            *[other] Dijeljenje ekrana sa { $tabCount } kartica
         }
-
 webrtc-indicator-menuitem-sharing-window-with =
     .label = Dijeljenje prozora sa "{ $streamTitle }"
 webrtc-indicator-menuitem-sharing-window-with-n-tabs =
@@ -143,7 +130,6 @@ webrtc-indicator-menuitem-sharing-window-with-n-tabs =
             [few] Dijeljenje prozora sa { $tabCount } kartice
            *[other] Dijeljenje prozora sa { $tabCount } kartica
         }
-
 webrtc-indicator-menuitem-sharing-browser-with =
     .label = Dijeljenje kartice sa "{ $streamTitle }"
 # This message is shown when the contents of a tab is shared during a WebRTC
@@ -162,32 +148,49 @@ webrtc-indicator-menuitem-sharing-browser-with-n-tabs =
 webrtc-allow-share-audio-capture = Dopustiti stranici { $origin } slušanje zvuka ove kartice?
 webrtc-allow-share-camera = Dopustiti stranici { $origin } korištenje tvoje kamere?
 webrtc-allow-share-microphone = Dopustiti stranici { $origin } korištenje tvojeg mikrofona?
-webrtc-allow-share-screen = Dopustiti stranici { $origin } da vidi tvoj zaslon?
+webrtc-allow-share-screen = Dozvoliti stranici { $origin } da vidi tvoj ekran?
+# "Speakers" is used in a general sense that might include headphones or
+# another audio output connection.
+webrtc-allow-share-speaker = Dozvoliti { $origin } da koristi druge zvučnike?
 webrtc-allow-share-camera-and-microphone = Dopustiti stranici { $origin } korištenje kamere i mikrofona?
 webrtc-allow-share-camera-and-audio-capture = Dopustiti stranici { $origin } korištenje kamere i slušanje zvuka ove kartice?
-webrtc-allow-share-screen-and-microphone = Dopustiti stranici { $origin } korištenje mikrofona i pregledavanje tvog zaslona?
-webrtc-allow-share-screen-and-audio-capture = Dopustiti stranici { $origin } slušanje zvuka ove kartice i pregledavanje tvog zaslona?
+webrtc-allow-share-screen-and-microphone = Dozvoliti stranici { $origin } da koristi tvoj mikrofon i da vidi tvo ekran?
+webrtc-allow-share-screen-and-audio-capture = Dozvoliti stranici { $origin } da sluša zvuk ove kartice i da vidi tvoj ekran?
+
+## Special phrasing for sharing devices when the origin is a file url.
+
+webrtc-allow-share-audio-capture-with-file = Dopustiti ovoj lokalnoj datoteci da sluša zvuk ove kartice?
+webrtc-allow-share-camera-with-file = Dopustiti ovoj lokalnoj datoteci da koristi tvoju kameru?
+webrtc-allow-share-microphone-with-file = Dopustiti ovoj lokalnoj datoteci da koristi tvoj mikrofon?
+webrtc-allow-share-screen-with-file = Dopustiti ovoj lokalnoj datoteci da vidi tvoj ekran?
+# "Speakers" is used in a general sense that might include headphones or
+# another audio output connection.
+webrtc-allow-share-speaker-with-file = Dozvoliti ovoj lokalnoj datoteci da koristi druge zvučnike?
+webrtc-allow-share-camera-and-microphone-with-file = Dopustiti ovoj lokalnoj datoteci da koristi tvoju kameru i mikrofon?
+webrtc-allow-share-camera-and-audio-capture-with-file = Dopustiti ovoj lokalnoj datoteci da koristi tvoju kameru i da sluša zvuk ove kartice?
+webrtc-allow-share-screen-and-microphone-with-file = Dopustiti ovoj lokalnoj datoteci da koristi tvoj mikrofon i da vidi tvoj ekran?
+webrtc-allow-share-screen-and-audio-capture-with-file = Dopustiti ovoj lokalnoj datoteci da sluša zvuk ove kartice i da vidi tvoj ekran?
 
 ## Variables:
 ##   $origin (String): the first party origin.
 ##   $thirdParty (String): the third party origin.
 
-webrtc-allow-share-camera-unsafe-delegation = Dopustiti stranici { $origin } da stranici { $thirdParty } omogući pristup tvojoj kameri?
-webrtc-allow-share-microphone-unsafe-delegation = Dopustiti stranici { $origin } da stranici { $thirdParty } omogući pristup tvojem mikrofonu?
-webrtc-allow-share-screen-unsafe-delegation = Dopustiti stranici { $origin } da stranici { $thirdParty } dozvoli da vidi tvoj zaslon?
+webrtc-allow-share-audio-capture-unsafe-delegation = Dopustiti stranici { $origin } da stranici { $thirdParty } dozvoli slušanje zvuka ove kartice?
+webrtc-allow-share-camera-unsafe-delegation = Dopustiti stranici { $origin } da stranici { $thirdParty } dozvoli pristup tvojoj kameri?
+webrtc-allow-share-microphone-unsafe-delegation = Dopustiti stranici { $origin } da stranici { $thirdParty } dozvli pristup tvom mikrofonu?
+webrtc-allow-share-screen-unsafe-delegation = Dozvoliti stranici { $origin } da stranici { $thirdParty } dozvoli da vidi tvoj ekran?
 # "Speakers" is used in a general sense that might include headphones or
 # another audio output connection.
-webrtc-allow-share-speaker-unsafe-delegation = Dopustiti stranici { $origin } da stranici { $thirdParty } omogući pristup ostalim zvučnicima?
-webrtc-allow-share-camera-and-microphone-unsafe-delegation = Dopustiti { $origin } da { $thirdParty } omogući pristup tvojoj kameri i mikrofonu?
-webrtc-allow-share-camera-and-audio-capture-unsafe-delegation = Dopustiti { $origin } da { $thirdParty } omogući pristup tvojoj kameri i slušanje zvuka ove kartice?
-webrtc-allow-share-screen-and-microphone-unsafe-delegation = Dopustiti { $origin } da { $thirdParty } omogući pristup tvom mikrofonu i da vidi tvoj ekran?
-webrtc-allow-share-screen-and-audio-capture-unsafe-delegation = Dopustiti { $origin } da dade { $thirdParty } odobrenje za sluüanje zvuka ove kartice i za prikaz tvog ekrana?
+webrtc-allow-share-speaker-unsafe-delegation = Dopustiti stranici { $origin } da stranici { $thirdParty } dozvoli pristup drugim zvučnicima?
+webrtc-allow-share-camera-and-microphone-unsafe-delegation = Dopustiti stranici { $origin } da stranici { $thirdParty } dozvoli pristup tvojoj kameri i mikrofonu?
+webrtc-allow-share-camera-and-audio-capture-unsafe-delegation = Dopustiti stranici { $origin } da stranici { $thirdParty } omogući pristup tvojoj kameri i slušanje zvuka ove kartice?
+webrtc-allow-share-screen-and-microphone-unsafe-delegation = Dopustiti stranici { $origin } da stranici { $thirdParty } omogući pristup tvom mikrofonu i da vidi tvoj ekran?
+webrtc-allow-share-screen-and-audio-capture-unsafe-delegation = Dopustiti stranici { $origin } da stranici { $thirdParty } dozvoli slušanje zvuka ove kartice i da vidi tvoj ekran?
 
 ##
 
-webrtc-share-screen-warning = Dijeli ekrane samo s web lokacijama kojima vjeruješ. Dijeljenje može omogućiti obmanjujućim web-lokacijama da pregledavaju kao i ti, te ukrasti tvoje privatne podatke.
-webrtc-share-browser-warning = Dijeli { -brand-short-name } samo s web lokacijama kojima vjeruješ. Dijeljenje može omogućiti obmanjujućim web-lokacijama da pregledavaju kao ti, te ukrasti tvoje privatne podatke.
-
+webrtc-share-screen-warning = Dijeli ekrane samo s web stranicama kojima vjeruješ. Dijeljenje može dozvoliti obmanjujućim web stranicama da pregledavaju kao i ti, te ukrasti tvoje privatne podatke.
+webrtc-share-browser-warning = Dijeli { -brand-short-name } samo s web stranicama kojima vjeruješ. Dijeljenje može dozvoliti obmanjujućim web stranicama da pregledavaju kao ti, te ukrasti tvoje privatne podatke.
 webrtc-share-screen-learn-more = Saznaj više
 webrtc-pick-window-or-screen = Odaberi prozor ili ekran
 webrtc-share-entire-screen = Cijeli ekran
@@ -223,8 +226,10 @@ webrtc-action-not-now =
 ##
 
 webrtc-remember-allow-checkbox = Zapamti moju odluku
+webrtc-remember-allow-checkbox-camera = Zapamti za sve kamere
+webrtc-remember-allow-checkbox-microphone = Zapamti za sve mikrofone
+webrtc-remember-allow-checkbox-camera-and-microphone = Zapamti za sve kamere i mikrofone
 webrtc-mute-notifications-checkbox = Utišaj obavijesti web-stranice tijekom dijeljenja
-
 webrtc-reason-for-no-permanent-allow-screen = { -brand-short-name } ne može dozvoliti trajni pristup tvom ekranu.
 webrtc-reason-for-no-permanent-allow-audio = { -brand-short-name } ne može trajno dozvoliti pristup zvuku kartice, jer mora pitati koju karticu želiš dijeliti.
 webrtc-reason-for-no-permanent-allow-insecure = Veza s ovom stranicom nije sigurna. Kako bismo te zaštitili, { -brand-short-name } će dozvoliti pristup samo za trajanja ove sesije.

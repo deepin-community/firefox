@@ -1,7 +1,8 @@
+use std::ffi::CStr;
 use std::ptr;
 
 pub(super) use dxc::{compile_dxc, get_dxc_container, DxcContainer};
-use winapi::um::d3dcompiler;
+use windows::Win32::Graphics::Direct3D;
 
 use crate::auxil::dxgi::result::HResult;
 
@@ -14,54 +15,63 @@ use crate::auxil::dxgi::result::HResult;
 pub(super) fn compile_fxc(
     device: &super::Device,
     source: &str,
-    source_name: &str,
-    raw_ep: &std::ffi::CString,
+    source_name: Option<&CStr>,
+    raw_ep: &CStr,
     stage_bit: wgt::ShaderStages,
-    full_stage: String,
+    full_stage: &CStr,
 ) -> (
     Result<super::CompiledShader, crate::PipelineError>,
     log::Level,
 ) {
     profiling::scope!("compile_fxc");
-    let mut shader_data = d3d12::Blob::null();
-    let mut compile_flags = d3dcompiler::D3DCOMPILE_ENABLE_STRICTNESS;
+    let mut shader_data = None;
+    let mut compile_flags = Direct3D::Fxc::D3DCOMPILE_ENABLE_STRICTNESS;
     if device
         .private_caps
         .instance_flags
         .contains(wgt::InstanceFlags::DEBUG)
     {
-        compile_flags |= d3dcompiler::D3DCOMPILE_DEBUG | d3dcompiler::D3DCOMPILE_SKIP_OPTIMIZATION;
+        compile_flags |=
+            Direct3D::Fxc::D3DCOMPILE_DEBUG | Direct3D::Fxc::D3DCOMPILE_SKIP_OPTIMIZATION;
     }
-    let mut error = d3d12::Blob::null();
+
+    // If no name has been set, D3DCompile wants the null pointer.
+    let source_name = source_name.map(|cstr| cstr.as_ptr()).unwrap_or(ptr::null());
+
+    let mut error = None;
     let hr = unsafe {
-        profiling::scope!("d3dcompiler::D3DCompile");
-        d3dcompiler::D3DCompile(
+        profiling::scope!("Direct3D::Fxc::D3DCompile");
+        Direct3D::Fxc::D3DCompile(
+            // TODO: Update low-level bindings to accept a slice here
             source.as_ptr().cast(),
             source.len(),
-            source_name.as_ptr().cast(),
-            ptr::null(),
-            ptr::null_mut(),
-            raw_ep.as_ptr(),
-            full_stage.as_ptr().cast(),
+            windows::core::PCSTR(source_name.cast()),
+            None,
+            None,
+            windows::core::PCSTR(raw_ep.as_ptr().cast()),
+            windows::core::PCSTR(full_stage.as_ptr().cast()),
             compile_flags,
             0,
-            shader_data.mut_void().cast(),
-            error.mut_void().cast(),
+            &mut shader_data,
+            Some(&mut error),
         )
     };
 
     match hr.into_result() {
-        Ok(()) => (
-            Ok(super::CompiledShader::Fxc(shader_data)),
-            log::Level::Info,
-        ),
+        Ok(()) => {
+            let shader_data = shader_data.unwrap();
+            (
+                Ok(super::CompiledShader::Fxc(shader_data)),
+                log::Level::Info,
+            )
+        }
         Err(e) => {
             let mut full_msg = format!("FXC D3DCompile error ({e})");
-            if !error.is_null() {
+            if let Some(error) = error {
                 use std::fmt::Write as _;
                 let message = unsafe {
                     std::slice::from_raw_parts(
-                        error.GetBufferPointer() as *const u8,
+                        error.GetBufferPointer().cast(),
                         error.GetBufferSize(),
                     )
                 };
@@ -78,6 +88,7 @@ pub(super) fn compile_fxc(
 // The Dxc implementation is behind a feature flag so that users who don't want to use dxc can disable the feature.
 #[cfg(feature = "dxc_shader_compiler")]
 mod dxc {
+    use std::ffi::CStr;
     use std::path::PathBuf;
 
     // Destructor order should be fine since _dxil and _dxc don't rely on each other.
@@ -132,7 +143,7 @@ mod dxc {
     pub(crate) fn compile_dxc(
         device: &crate::dx12::Device,
         source: &str,
-        source_name: &str,
+        source_name: Option<&CStr>,
         raw_ep: &str,
         stage_bit: wgt::ShaderStages,
         full_stage: String,
@@ -143,7 +154,7 @@ mod dxc {
     ) {
         profiling::scope!("compile_dxc");
         let mut compile_flags = arrayvec::ArrayVec::<&str, 6>::new_const();
-        compile_flags.push("-Ges"); // d3dcompiler::D3DCOMPILE_ENABLE_STRICTNESS
+        compile_flags.push("-Ges"); // Direct3D::Fxc::D3DCOMPILE_ENABLE_STRICTNESS
         compile_flags.push("-Vd"); // Disable implicit validation to work around bugs when dxil.dll isn't in the local directory.
         compile_flags.push("-HV"); // Use HLSL 2018, Naga doesn't supported 2021 yet.
         compile_flags.push("2018");
@@ -153,8 +164,8 @@ mod dxc {
             .instance_flags
             .contains(wgt::InstanceFlags::DEBUG)
         {
-            compile_flags.push("-Zi"); // d3dcompiler::D3DCOMPILE_SKIP_OPTIMIZATION
-            compile_flags.push("-Od"); // d3dcompiler::D3DCOMPILE_DEBUG
+            compile_flags.push("-Zi"); // Direct3D::Fxc::D3DCOMPILE_SKIP_OPTIMIZATION
+            compile_flags.push("-Od"); // Direct3D::Fxc::D3DCOMPILE_DEBUG
         }
 
         let blob = match dxc_container
@@ -165,6 +176,10 @@ mod dxc {
             Ok(blob) => blob,
             Err(e) => return (Err(e), log::Level::Error),
         };
+
+        let source_name = source_name
+            .and_then(|cstr| cstr.to_str().ok())
+            .unwrap_or("");
 
         let compiled = dxc_container.compiler.compile(
             &blob,
@@ -263,6 +278,7 @@ mod dxc {
 // These are stubs for when the `dxc_shader_compiler` feature is disabled.
 #[cfg(not(feature = "dxc_shader_compiler"))]
 mod dxc {
+    use std::ffi::CStr;
     use std::path::PathBuf;
 
     pub(crate) struct DxcContainer {}
@@ -280,7 +296,7 @@ mod dxc {
     pub(crate) fn compile_dxc(
         _device: &crate::dx12::Device,
         _source: &str,
-        _source_name: &str,
+        _source_name: Option<&CStr>,
         _raw_ep: &str,
         _stage_bit: wgt::ShaderStages,
         _full_stage: String,

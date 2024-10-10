@@ -13,6 +13,12 @@ ShadowRoot.isInstance = element => element instanceof ShadowRoot;
 
 HTMLElement.prototype.ownerGlobal = window;
 
+// We cannot mock this in WebKit because we lack access to low-level APIs.
+// For completeness, we simply return true when the input type is "password".
+HTMLInputElement.prototype.hasBeenTypePassword = function () {
+  return this.type === "password";
+};
+
 HTMLInputElement.prototype.setUserInput = function (value) {
   this.value = value;
 
@@ -111,12 +117,18 @@ export const XPCOMUtils = withNotImplementedError({
   defineLazyModuleGetters(obj, modules) {
     internalModuleResolvers.resolveModules(obj, modules);
   },
+  defineLazyServiceGetter() {
+    // Don't do anything
+    // We need this for OS Auth fixes for formautofill.
+    // TODO(issam, Bug 1894967): Move os auth to separate module and remove this.
+  },
 });
 
 // eslint-disable-next-line no-shadow
 export const ChromeUtils = withNotImplementedError({
   defineLazyGetter: (obj, prop, getFn) => {
-    obj[prop] = getFn?.call(obj);
+    const callback = prop === "log" ? genericLogger : getFn;
+    obj[prop] = callback?.call(obj);
   },
   defineESModuleGetters(obj, modules) {
     internalModuleResolvers.resolveModules(obj, modules);
@@ -224,10 +236,12 @@ window.Glean = {
   formautofill: undefinedProxy(),
 };
 
-export const windowUtils = withNotImplementedError({
-  removeManuallyManagedState: () => {},
-  addManuallyManagedState: () => {},
-});
-window.windowUtils = windowUtils;
+const genericLogger = () =>
+  withNotImplementedError({
+    info: () => {},
+    error: () => {},
+    warn: () => {},
+    debug: () => {},
+  });
 
 export { IOSAppConstants as AppConstants } from "resource://gre/modules/shared/Constants.ios.mjs";

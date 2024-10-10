@@ -92,8 +92,6 @@ class LookAndFeel {
     TreeScrollDelay,
     // the maximum number of lines to be scrolled at ones
     TreeScrollLinesMax,
-    // What type of tab-order to use
-    TabFocusModel,
     // Should menu items blink when they're chosen?
     ChosenMenuItemsShouldBlink,
 
@@ -194,6 +192,12 @@ class LookAndFeel {
      * supported by the user's GTK version.
      */
     GTKCSDAvailable,
+
+    /*
+     * A boolean value indicating whether semi-transparent
+     * windows are available.
+     */
+    GTKCSDTransparencyAvailable,
 
     /*
      * A boolean value indicating whether client-side decorations should
@@ -310,6 +314,9 @@ class LookAndFeel {
 
     /* The StyleGtkThemeFamily of the current GTK theme. */
     GTKThemeFamily,
+
+    /* Whether macOS' full keyboard access is enabled */
+    FullKeyboardAccess,
 
     /*
      * Not an ID; used to define the range of valid IDs.  Must be last.
@@ -553,6 +560,8 @@ class LookAndFeel {
       DoHandleGlobalThemeChange();
     }
   }
+
+  static nsresult GetKeyboardLayout(nsACString& aLayout);
 
  protected:
   static void DoHandleGlobalThemeChange();

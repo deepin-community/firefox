@@ -4,18 +4,26 @@
 
 tabbrowser-empty-tab-title = Жаңа бет
 tabbrowser-empty-private-tab-title = Жаңа жекелік беті
-
 tabbrowser-menuitem-close-tab =
     .label = Бетті жабу
 tabbrowser-menuitem-close =
     .label = Жабу
-
 # Displayed as a tooltip on container tabs
 # Variables:
 #   $title (String): the title of the current tab.
 #   $containerName (String): the name of the current container.
 tabbrowser-container-tab-title = { $title } - { $containerName }
-
+# This text serves as an on-screen tooltip as well as an accessible name for
+# the "X" button that is shown on the active tab or, when multiple tabs are
+# selected, to all their "X" buttons.
+# Variables:
+#   $tabCount (Number): The number of tabs that will be closed.
+tabbrowser-close-tabs-button =
+    .tooltiptext =
+        { $tabCount ->
+            [one] Бетті жабу
+           *[other] { $tabCount } бетті жабу
+        }
 # Variables:
 #   $tabCount (Number): The number of tabs that will be closed.
 tabbrowser-close-tabs-tooltip =
@@ -114,13 +122,22 @@ tabbrowser-confirm-caretbrowsing-title = Белсенді курсор
 tabbrowser-confirm-caretbrowsing-message = F7 батырмасы белсенді курсор режимін іске қосады немесе сөндіреді. Осы режимде, курсорды бетке орналастырып, мәтінді пернетақтамен ерекшелей аласыз. Осы режимді іске қосу керек пе?
 tabbrowser-confirm-caretbrowsing-checkbox = Осы сұхбат терезесін маған келесі ретте көрсетпеу.
 
+## Confirmation dialog for closing all duplicate tabs
+
+tabbrowser-confirm-close-duplicate-tabs-title = Ескерту
+tabbrowser-confirm-close-duplicate-tabs-text = Біз соңғы белсенді бетті ашық ұстаймыз
+tabbrowser-confirm-close-all-duplicate-tabs-title = Қайталанатын беттерді жабу керек пе?
+tabbrowser-confirm-close-all-duplicate-tabs-text =
+    Бұл терезеде қайталанатын беттерді жабамыз. Соңғы белсенді
+    бет ашық қалады.
+tabbrowser-confirm-close-all-duplicate-tabs-button-closetabs = Беттерді жабу
+
 ##
 
 # Variables:
 #   $domain (String): URL of the page that is trying to steal focus.
 tabbrowser-allow-dialogs-to-get-focus =
     .label = { $domain } жіберген осындай хабарламаларға сізді ол бетке апаруға рұқсат ету
-
 tabbrowser-customizemode-tab-title = { -brand-short-name } баптау
 
 ## Context menu buttons, of which only one will be visible at a time
@@ -139,7 +156,6 @@ tabbrowser-context-mute-selected-tabs =
 tabbrowser-context-unmute-selected-tabs =
     .label = Беттер дыбысын іске қосу
     .accesskey = о
-
 # This string is used as an additional tooltip and accessibility description for tabs playing audio
 tabbrowser-tab-audio-playing-description = Аудио ойнату
 

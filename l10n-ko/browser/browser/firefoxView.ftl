@@ -150,8 +150,8 @@ firefoxview-opentabs-current-window-header =
     .title = 창 { $winID } (현재)
 firefoxview-opentabs-focus-tab =
     .title = 이 탭으로 전환
-firefoxview-show-more = 자세히 보기
-firefoxview-show-less = 간단히 보기
+firefoxview-show-more = 더 보기
+firefoxview-show-less = 덜 보기
 firefoxview-show-all = 모두 보기
 firefoxview-search-text-box-clear-button =
     .title = 지우기
@@ -205,7 +205,7 @@ firefoxview-history-site-localhost = (로컬 파일)
 ##
 
 firefoxview-show-all-history = 모든 기록 보기
-firefoxview-view-more-browsing-history = 탐색 기록 더보기
+firefoxview-view-more-browsing-history = 탐색 기록 더 보기
 
 ## Message displayed in Firefox View when the user has no history data
 

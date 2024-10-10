@@ -53,6 +53,8 @@ mr1-onboarding-import-primary-button-label-attribution = Importer frå { $previo
 mr1-onboarding-theme-header = Gjer han til din eigen
 mr1-onboarding-theme-subtitle = Tilpass { -brand-short-name } med eit tema.
 mr1-onboarding-theme-secondary-button-label = Ikkje no
+newtab-wallpaper-onboarding-title = Prøv ein fargeklatt
+newtab-wallpaper-onboarding-subtitle = Vel eit bakgrunnsbilde for å gi Ny fane-sida ein friskt utsjånad.
 newtab-wallpaper-onboarding-primary-button-label = Vel bakgrunnsbilde
 # System theme uses operating system color settings
 mr1-onboarding-theme-label-system = Systemtema
@@ -186,6 +188,8 @@ mr2022-onboarding-pin-primary-button-label =
         [macos] Behald { -brand-short-name } i Dock
        *[other] Fest { -brand-short-name } til oppgåvelinja
     }
+# Primary button string used on welcome page for when Firefox is not pinned on MSIX
+mr2022-onboarding-pin-primary-button-label-msix = Fest { -brand-short-name } til oppgåvelinja og startmenyen
 # Subtitle will be used when user already has Firefox pinned, but
 # has not set it as their default browser.
 # When translating "zip", please feel free to pick a verb that signifies movement and/or exploration
@@ -333,6 +337,14 @@ onboarding-device-migration-subtitle = Logg inn på { -fxaccount-brand-name } fo
 onboarding-device-migration-subtitle2 = Logg på kontoen din for å ta med deg bokmerka, passorda og historikken din på den nye eininga.
 onboarding-device-migration-primary-button-label = Logg inn
 
+## Add-ons Picker screen
+
+amo-picker-title = Tilpass { -brand-short-name }
+amo-picker-subtitle = Utvidingar er som appar for nettlesaren din og dei lèt deg deg beskytte passord, laste ned videoar, finne tilbod, blokkere irriterande annonsar, endre korleis nettlesaren din ser ut, og mykje meir.
+amo-picker-install-button-label = Legg til i { -brand-short-name }
+amo-picker-install-complete-label = Installert
+amo-picker-collection-link = Utforsk fleire tillegg
+
 ## The following screens have been updated to use security and privacy focused strings:
 
 # Easy setup screen
@@ -352,6 +364,7 @@ onboarding-new-user-familiarity-based-survey-title = Kor godt kjend er du med { 
 onboarding-new-user-survey-subtitle = Tilbakemeldinga di bidreg til å gjere { -brand-short-name } endå betre.
 # When translating "next" it means the next screen in onboarding.
 onboarding-new-user-survey-next-button-label = Neste
+onboarding-new-user-survey-legal-link-label = Ved å velje «{ onboarding-new-user-survey-next-button-label }» godtek du { -brand-product-name } si <a data-l10n-name="privacy_notice">personvernerklæring</a >
 # When translating "brand new" it means completely new.
 onboarding-new-user-survey-time-based-option-1 = Eg er heilt ny
 onboarding-new-user-survey-time-based-option-2 = Mindre enn 1 månad

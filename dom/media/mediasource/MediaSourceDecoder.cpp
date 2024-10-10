@@ -376,12 +376,12 @@ bool MediaSourceDecoder::HadCrossOriginRedirects() {
 void MediaSourceDecoder::MetadataLoaded(
     UniquePtr<MediaInfo> aInfo, UniquePtr<MetadataTags> aTags,
     MediaDecoderEventVisibility aEventVisibility) {
-  // If the previous state machine has loaded the metadata, then we don't need
-  // to load it again. This can happen when the media format or key system is
-  // not supported by previous state machine.
-  if (mFiredMetadataLoaded && mStateMachineRecreated) {
+  // If the metadata has been loaded before, we don't want to notify throughout
+  // that again when switching from media engine playback to normal playback.
+  if (mPendingStatusUpdateForNewlyCreatedStateMachine && mFiredMetadataLoaded) {
     MSE_DEBUG(
         "Metadata already loaded and being informed by previous state machine");
+    SetStatusUpdateForNewlyCreatedStateMachineIfNeeded();
     return;
   }
   MediaDecoder::MetadataLoaded(std::move(aInfo), std::move(aTags),

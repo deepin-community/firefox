@@ -3,11 +3,22 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 do-not-track-description = Enviar a los sitios web una señal de “No rastrear”, significa que no quieres ser rastreado
+do-not-track-description2 =
+    .label = Enviar a los sitios web una solicitud de “No rastrear”
+    .accesskey = d
 do-not-track-learn-more = Aprender más
 do-not-track-option-default-content-blocking-known =
     .label = Solo cuando { -brand-short-name } está configurado para bloquear los rastreadores conocidos
 do-not-track-option-always =
     .label = Siempre
+global-privacy-control-description =
+    .label = Decir a los sitios web que no vendan ni compartan mis datos
+    .accesskey = s
+non-technical-privacy-header = Preferencias de privacidad del sitio web
+# Do not translate.
+# "Global Privacy Control" or "GPC" are a web platform feature name and abbreviation
+# included to facilitate power-user search of the about:preferences page.
+global-privacy-control-search = Global Privacy Control (GPC)
 settings-page-title = Configuraciones
 # This is used to determine the width of the search field in about:preferences,
 # in order to make the entire placeholder string visible
@@ -21,6 +32,8 @@ search-input-box2 =
     .style = width: 15.4em
     .placeholder = Buscar en ajustes
 managed-notice = Tu organización gestiona el navegador.
+managed-notice-info-icon =
+    .alt = Información
 category-list =
     .aria-label = Categorías
 pane-general-title = General
@@ -44,6 +57,10 @@ category-experimental =
 pane-experimental-subtitle = Continuar con precaución
 pane-experimental-search-results-header = Experimentos de { -brand-short-name }: proceder con precaución
 pane-experimental-description2 = Modificar los parámetros de la configuración avanzada puede afectar el rendimiento o la seguridad de { -brand-short-name }.
+settings-pane-labs-title = { -firefoxlabs-brand-name }
+settings-category-labs =
+    .tooltiptext = { -firefoxlabs-brand-name }
+pane-experimental-description3 = ¡Prueba nuestras funciones experimentales! Están en desarrollo y evolucionando, lo que podría afectar el funcionamiento de { -brand-short-name }.
 pane-experimental-reset =
     .label = Restaurar predeterminados
     .accesskey = R
@@ -116,6 +133,10 @@ set-as-my-default-browser =
 startup-restore-windows-and-tabs =
     .label = Abrir ventanas y pestañas anteriores
     .accesskey = s
+windows-launch-on-login =
+    .label = Abrir { -brand-short-name } automáticamente cuando se inicie tu computadora
+    .accesskey = O
+windows-launch-on-login-disabled = Esta opción se ha deshabilitado en Windows. Para cambiarla, visita <a data-l10n-name="startup-link">Aplicaciones de inicio</a> en la configuración del sistema.
 startup-restore-warn-on-quit =
     .label = Advertir al salir del navegador
 disable-extension =
@@ -188,6 +209,9 @@ containers-remove-alert-msg =
     }
 containers-remove-ok-button = Eliminar este marcador
 containers-remove-cancel-button = No eliminar este marcador
+settings-tabs-show-image-in-preview =
+    .label = Mostrar una imagen de vista previa cuando pases el cursor sobre una pestaña
+    .accessKey = h
 
 ## General Section - Language & Appearance
 
@@ -243,6 +267,8 @@ preferences-default-zoom-value =
 preferences-zoom-text-only =
     .label = Hacer zoom en el texto solamente
     .accesskey = t
+preferences-text-zoom-override-warning =
+    .message = Advertencia: si seleccionas "Ampliar solo texto" y tu aumento predeterminado no está configurado en 100%, podría ser que algunos sitios o contenidos fallen.
 language-header = Idioma
 choose-language-description = Elegir el idioma preferido para mostrar las páginas web
 choose-button =
@@ -455,12 +481,18 @@ browsing-use-smooth-scrolling =
 browsing-gtk-use-non-overlay-scrollbars =
     .label = Mostrar siempre las barras de desplazamiento
     .accesskey = o
+browsing-always-underline-links =
+    .label = Siempre subrayar enlaces
+    .accesskey = u
 browsing-use-onscreen-keyboard =
     .label = Mostrar el teclado táctil cuando sea necesario
     .accesskey = t
 browsing-use-cursor-navigation =
     .label = Usar siempre las teclas del cursor para navegar dentro de las páginas
     .accesskey = c
+browsing-use-full-keyboard-navigation =
+    .label = Usa la tecla de tabulación para mover el foco entre los controles de formulario y los enlaces
+    .accesskey = p
 browsing-search-on-start-typing =
     .label = Buscar el texto cuando empiezas a escribir
     .accesskey = x
@@ -542,6 +574,9 @@ home-prefs-shortcuts-by-option-sponsored =
 home-prefs-recommended-by-header =
     .label = Recomendado por { $provider }
 home-prefs-recommended-by-description-new = Contenido excepcional seleccionado por { $provider }, parte de la familia { -brand-product-name }
+home-prefs-recommended-by-header-generic =
+    .label = Historias recomendadas
+home-prefs-recommended-by-description-generic = Contenido excepcional seleccionado por la familia { -brand-product-name }
 
 ##
 
@@ -568,6 +603,10 @@ home-prefs-recent-activity-description = Una selección de sitios y contenidos r
 home-prefs-snippets-header =
     .label = Fragmentos
 home-prefs-snippets-description-new = Consejos y noticias de { -vendor-short-name } y { -brand-product-name }
+home-prefs-weather-header =
+    .label = Clima
+home-prefs-weather-description = Pronóstico estimado para hoy
+home-prefs-weather-learn-more-link = Saber más
 # Variables:
 #   $num (number) - Number of rows displayed
 home-prefs-sections-rows-option =
@@ -595,6 +634,9 @@ search-suggestions-desc = Seleccionar como las sugerencias del motor búsqueda a
 search-suggestions-option =
     .label = Proporcionar sugerencias de búsqueda
     .accesskey = s
+search-show-suggestions-option =
+    .label = Mostrar sugerencias de búsqueda
+    .accesskey = S
 search-show-suggestions-url-bar-option =
     .label = Mostrar sugerencias de búsqueda en los resultados de la barra de direcciones
     .accesskey = l
@@ -679,6 +721,10 @@ sync-profile-picture =
 sync-profile-picture-with-alt =
     .tooltiptext = Cambiar imagen de perfil
     .alt = Cambiar imagen de perfil
+sync-profile-picture-account-problem =
+    .alt = Foto de perfil de cuenta
+fxa-login-rejected-warning =
+    .alt = Advertencia
 sync-sign-out =
     .label = Salir…
     .accesskey = g
@@ -696,6 +742,9 @@ sync-signedin-login-failure = Inicia sesión para reconectar { $email } Favor de
 sync-resend-verification =
     .label = Enviar verificación nuevamente
     .accesskey = d
+sync-verify-account =
+    .label = Verificar cuenta
+    .accesskey = V
 sync-remove-account =
     .label = Eliminar cuenta
     .accesskey = R
@@ -728,8 +777,10 @@ sync-currently-syncing-bookmarks = Marcadores
 sync-currently-syncing-history = Historial
 sync-currently-syncing-tabs = Abrir pestañas
 sync-currently-syncing-logins-passwords = Inicios de sesión y contraseñas
+sync-currently-syncing-passwords = Contraseñas
 sync-currently-syncing-addresses = Direcciones
 sync-currently-syncing-creditcards = Tarjetas de crédito
+sync-currently-syncing-payment-methods = Métodos de pago
 sync-currently-syncing-addons = Complementos
 sync-currently-syncing-settings = Configuración
 sync-change-options =
@@ -760,6 +811,10 @@ sync-engine-logins-passwords =
     .label = Inicios de sesión y contraseñas
     .tooltiptext = Nombres de usuario y contraseñas guardadas
     .accesskey = L
+sync-engine-passwords =
+    .label = Contraseñas
+    .tooltiptext = Contraseñas que has guardado
+    .accesskey = P
 sync-engine-addresses =
     .label = Direcciones
     .tooltiptext = Direcciones postales que guardaste (sólo escritorio)
@@ -768,6 +823,10 @@ sync-engine-creditcards =
     .label = Tarjetas de crédito
     .tooltiptext = Nombre, números y fechas de expiración (sólo escritorio)
     .accesskey = C
+sync-engine-payment-methods2 =
+    .label = Métodos de pago
+    .tooltiptext = Nombres, números de tarjetas y fechas de vencimiento
+    .accesskey = n
 sync-engine-addons =
     .label = Complementos
     .tooltiptext = Extensiones y temas para Firefox para escritorio
@@ -817,16 +876,32 @@ forms-ask-to-save-logins =
 
 ## Privacy Section - Passwords
 
+# "Logins" is the former term for "Passwords". Users should find password settings
+# by searching for the former term "logins". It's not displayed in the UI.
+pane-privacy-passwords-header = Contraseñas
+    .searchkeywords = inicios de sesión
+# Checkbox to control whether UI is shown to users to save or fill logins/passwords.
+forms-ask-to-save-passwords =
+    .label = Preguntar para guardar contraseñas
+    .accesskey = A
 forms-exceptions =
     .label = Excepciones…
     .accesskey = x
 forms-generate-passwords =
     .label = Sugiere y genera contraseñas fuertes
     .accesskey = u
+forms-suggest-passwords =
+    .label = Sugerir contraseñas seguras
+    .accesskey = S
 forms-breach-alerts =
     .label = Mostrar alertas sobre contraseñas para sitios web comprometidos
     .accesskey = b
 forms-breach-alerts-learn-more-link = Saber más
+preferences-relay-integration-checkbox =
+    .label = Sugerir máscaras de correo electrónico { -relay-brand-name } para proteger tu dirección de correo electrónico
+preferences-relay-integration-checkbox2 =
+    .label = Sugerir máscaras de correo electrónico { -relay-brand-name } para proteger su dirección de correo electrónico
+    .accesskey = r
 relay-integration-learn-more-link = Saber más
 # Checkbox which controls filling saved logins into fields automatically when they appear, in some cases without user interaction.
 forms-fill-logins-and-passwords =
@@ -835,9 +910,19 @@ forms-fill-logins-and-passwords =
 forms-saved-logins =
     .label = Inicios de sesión guardados…
     .accesskey = I
+# Checkbox which controls filling saved logins into fields automatically when they appear, in some cases without user interaction.
+forms-fill-usernames-and-passwords =
+    .label = Completar nombres de usuario y contraseñas automáticamente
+    .accesskey = F
+forms-saved-passwords =
+    .label = Contraseñas guardadas
+    .accesskey = d
 forms-primary-pw-use =
     .label = Utilizar una contraseña principal
     .accesskey = U
+# This operation requires the user to authenticate with the operating system (device sign-in)
+forms-os-reauth =
+    .label = Requerir inicio de sesión en el dispositivo para completar y administrar contraseñas
 forms-primary-pw-learn-more-link = Más información
 # This string uses the former name of the Primary Password feature
 # ("Master Password" in English) so that the preferences can be found
@@ -858,6 +943,7 @@ forms-windows-sso =
     .label = Permitir un solo inicio de sesión de Windows para Microsoft, cuentas de trabajo y cuentas escolares
 forms-windows-sso-learn-more-link = Saber más
 forms-windows-sso-desc = Administrar las cuentas en la configuración de tu dispositivo
+windows-passkey-settings-label = Administrar claves de acceso en la configuración del sistema
 
 ## OS Authentication dialog
 
@@ -869,9 +955,30 @@ primary-password-os-auth-dialog-message-win = Para crear una contraseña princip
 # notes are only valid for English. Please test in your locale.
 primary-password-os-auth-dialog-message-macosx = crear una contraseña principal
 master-password-os-auth-dialog-caption = { -brand-full-name }
+# The macOS string is preceded by the operating system with "Firefox is trying to ".
+autofill-creditcard-os-dialog-message =
+    { PLATFORM() ->
+        [macos] cambia los ajustes para los métodos de pago
+       *[other] { -brand-short-name } está intentando cambiar los ajustes de los métodos de pago. Usa el inicio de sesión de su dispositivo para permitir esto.
+    }
+autofill-creditcard-os-auth-dialog-caption = { -brand-full-name }
 
 ## Privacy section - Autofill
 
+pane-privacy-autofill-header = Autocompletar
+autofill-addresses-checkbox = Guardar y completar direcciones
+    .accesskey = a
+autofill-saved-addresses-button = Direcciones guardadas
+    .accesskey = S
+autofill-payment-methods-checkbox-message = Guardar y completar métodos de pago
+    .accesskey = m
+autofill-payment-methods-checkbox-submessage = Incluye tarjetas de crédito y débito.
+    .accesskey = I
+autofill-saved-payment-methods-button = Métodos de pago guardados
+    .accesskey = v
+# This operation requires the user to authenticate with the operating system (device sign-in)
+autofill-reauth-payment-methods-checkbox = Requerir inicio de sesión en el dispositivo para introducir y administrar métodos de pago
+    .accesskey = o
 
 ## Privacy Section - History
 
@@ -927,6 +1034,7 @@ sitedata-delete-on-close =
     .label = Eliminar cookies y datos del sitio cuando se cierra { -brand-short-name }
     .accesskey = c
 sitedata-delete-on-close-private-browsing = En el modo de navegación privada permanente, las cookies y los datos del sitio se borrarán siempre cuando se cierre { -brand-short-name }.
+sitedata-delete-on-close-private-browsing2 = Según la configuración de su historial, { -brand-short-name } elimina las cookies y los datos del sitio de su sesión cuando cierra el navegador.
 sitedata-allow-cookies-option =
     .label = Aceptar cookies y datos del sitio
     .accesskey = A
@@ -966,9 +1074,13 @@ cookie-banner-handling-description = { -brand-short-name } rechaza automáticame
 
 ## Privacy Section - Cookie Banner Blocking
 
+cookie-banner-blocker-header = Bloqueador de banners de cookies
+cookie-banner-blocker-description = Cuando un sitio pregunta si puede utilizar cookies en el modo de navegación privada, { -brand-short-name } se niega automáticamente. Solo en sitios compatibles.
 cookie-banner-learn-more = Saber más
 forms-handle-cookie-banners =
     .label = Reducir los avisos de cookies
+cookie-banner-blocker-checkbox-label =
+    .label = Rechazar automáticamente los avisos de cookies
 
 ## Privacy Section - Address Bar
 
@@ -980,6 +1092,9 @@ addressbar-locbar-history-option =
 addressbar-locbar-bookmarks-option =
     .label = Marcadores
     .accesskey = M
+addressbar-locbar-clipboard-option =
+    .label = Portapapeles
+    .accesskey = C
 addressbar-locbar-openpage-option =
     .label = Abrir pestañas
     .accesskey = O
@@ -997,6 +1112,12 @@ addressbar-locbar-quickactions-option =
     .label = Acciones rápidas
     .accesskey = Q
 addressbar-suggestions-settings = Cambiar las preferencias para las sugerencias del motor de búsqueda
+addressbar-locbar-showrecentsearches-option =
+    .label = Mostrar búsquedas recientes
+    .accesskey = r
+addressbar-locbar-showtrendingsuggestions-option =
+    .label = Mostrar las sugerencias de búsqueda más populares
+    .accesskey = t
 addressbar-quickactions-learn-more = Saber más
 
 ## Privacy Section - Content Blocking
@@ -1005,6 +1126,10 @@ content-blocking-enhanced-tracking-protection = Protección antirrastreo mejorad
 content-blocking-section-top-level-description = Los rastreadores te siguen en línea para recopilar información sobre tus hábitos e intereses de navegación. { -brand-short-name } bloquea muchos de estos rastreadores y otros scripts maliciosos.
 content-blocking-learn-more = Saber más
 content-blocking-fpi-incompatibility-warning = Estás usando First Party Isolation (FPI), que reemplaza algunas de las configuraciones de cookies de { -brand-short-name }.
+# There is no need to translate "Resist Fingerprinting (RFP)". This is a
+# feature that can only be enabled via about:config, and it's not exposed to
+# standard users (e.g. via Settings).
+content-blocking-rfp-incompatibility-warning = Estás usando Resist Fingerprinting (RFP), que reemplaza algunas de las configuraciones de protección de huellas digitales de { -brand-short-name }. Esto podría provocar que algunos sitios fallen.
 
 ## These strings are used to define the different levels of
 ## Enhanced Tracking Protection.
@@ -1038,6 +1163,10 @@ content-blocking-all-windows-tracking-content = Contenido de rastreo en todas la
 content-blocking-all-cross-site-cookies = Todas las cookies entre sitios
 content-blocking-cryptominers = Criptomineros
 content-blocking-fingerprinters = Huellas dactilares
+# The known fingerprinters are those that are known for collecting browser fingerprints from user devices. And
+# the suspected fingerprinters are those that we are uncertain about browser fingerprinting activities. But they could
+# possibly acquire browser fingerprints because of the behavior on accessing APIs that expose browser fingerprints.
+content-blocking-known-and-suspected-fingerprinters = Detectores de huellas digitales, conocidos y sospechosos
 
 # The tcp-rollout strings are no longer used for the rollout but for tcp-by-default in the standard section
 
@@ -1076,6 +1205,18 @@ content-blocking-cryptominers-label =
 content-blocking-fingerprinters-label =
     .label = Huellas dactilares
     .accesskey = F
+# Browser fingerprinting is a method of tracking users by the configuration and settings information (their "digital fingerprint")
+# that is visible to websites they browse, rather than traditional tracking methods such as IP addresses and unique cookies.
+#
+# The known fingerprinters are those that are known for collecting browser fingerprints from user devices.
+content-blocking-known-fingerprinters-label =
+    .label = Detectores de huellas digitales conocidos
+    .accesskey = K
+# The suspected fingerprinters are those that we are uncertain about browser fingerprinting activities. But they could
+# possibly acquire browser fingerprints because of the behavior on accessing APIs that expose browser fingerprints.
+content-blocking-suspected-fingerprinters-label =
+    .label = Presuntos detectores de huellas digitales
+    .accesskey = S
 
 ## Privacy Section - Tracking
 
@@ -1138,6 +1279,8 @@ permissions-addon-exceptions =
 ## Privacy Section - Data Collection
 
 collection-header = Recolección de datos y uso de { -brand-short-name }
+collection-header2 = Recolección de datos y uso de { -brand-short-name }
+    .searchkeywords = telemetría
 collection-description = Nos esforzamos en proporcionar opciones y recolectar solamente lo que necesitamos para proveer y mejorar { -brand-short-name } para todo el mundo. Siempre pedimos permiso antes de recibir información personal.
 collection-privacy-notice = Política de privacidad
 collection-health-report-telemetry-disabled = Ya no permites que { -vendor-short-name } capture datos técnicos y de interacción. Todos los datos anteriores se eliminarán en 30 días.
@@ -1165,6 +1308,14 @@ privacy-segmentation-radio-off =
     .label = Usa las recomendaciones de { -brand-product-name }
 privacy-segmentation-radio-on =
     .label = Mostrar información detallada
+
+## Privacy Section - Website Advertising Preferences
+
+website-advertising-header = Preferencias de publicidad para el sitio web
+website-advertising-private-attribution =
+    .label = Permitir que los sitios web realicen mediciones de anuncios con respeto a la privacidad
+    .accesskey = a
+website-advertising-private-attribution-description = Esto ayuda a los sitios a entender el rendimiento de sus anuncios sin recopilar datos sobre los usuarios.
 
 ## Privacy Section - Security
 ##
@@ -1196,6 +1347,9 @@ certs-view =
 certs-devices =
     .label = Dispositivos de seguridad…
     .accesskey = D
+certs-thirdparty-toggle =
+    .label = Permitir que { -brand-short-name } confíe automáticamente en los certificados raíz de terceros que se instalen
+    .accesskey = t
 space-alert-over-5gb-settings-button =
     .label = Abrir ajustes
     .accesskey = A
@@ -1206,18 +1360,26 @@ space-alert-under-5gb-message2 = <strong>{ -brand-short-name } se está quedando
 
 httpsonly-header = Modo solo HTTPS
 httpsonly-description = HTTPS proporciona una conexión segura y cifrada entre { -brand-short-name } y los sitios web que visitas. La mayoría de los sitios web admiten HTTPS, y si el modo HTTPS-Only está habilitado, entonces { -brand-short-name } actualizará todas las conexiones a HTTPS.
+httpsonly-description2 = { -brand-short-name } crea conexiones seguras y cifradas a los sitios que visitas. { -brand-short-name } te avisará si una conexión no es segura cuando el modo solo HTTPS esté activado.
 httpsonly-learn-more = Saber más
 httpsonly-radio-enabled =
     .label = Habilitar el modo solo HTTPS en todas las ventanas
+httpsonly-radio-enabled2 =
+    .label = Solo usar HTTPS en todas las ventanas
 httpsonly-radio-enabled-pbm =
     .label = Habilitar el modo solo HTTPS solo en ventanas privadas
+httpsonly-radio-enabled-pbm2 =
+    .label = Solo usar HTTPS en las ventanas privadas
 httpsonly-radio-disabled =
     .label = No habilitar el modo solo HTTPS
+httpsonly-radio-disabled2 =
+    .label = Probar HTTPS primero, pero permitir conexiones que no son seguras
 
 ## DoH Section
 
 preferences-doh-header = DNS sobre HTTPS
 preferences-doh-description = El sistema de nombres de dominio (DNS) sobre HTTPS envía los pedidos de un nombre de dominio a través de una conexión cifrada, lo que crea un DNS seguro y hace más difícil que otros vean que sitio web estás tratando de acceder.
+preferences-doh-description2 = El Sistema de nombres de dominio (DNS) a través de HTTPS envía tu solicitud de un nombre de dominio a través de una conexión cifrada, lo que entrega un DNS seguro y dificulta que otros vean a qué sitio web estás a punto de acceder.
 # Variables:
 #   $status (string) - The status of the DoH connection
 preferences-doh-status = Estado: { $status }
@@ -1234,6 +1396,7 @@ preferences-doh-status-disabled = Desactivado
 #   $reason (string) - A string representation of the reason DoH is not active. For example NS_ERROR_UNKNOWN_HOST or TRR_RCODE_FAIL.
 preferences-doh-status-not-active = Inactivo ({ $reason })
 preferences-doh-group-message = Habilitar DNS seguro usando:
+preferences-doh-group-message2 = Habilitar DNS sobre HTTPS usando:
 preferences-doh-expand-section =
     .tooltiptext = Más información
 preferences-doh-setting-default =

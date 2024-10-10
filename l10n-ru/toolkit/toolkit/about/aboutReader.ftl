@@ -12,20 +12,6 @@ about-reader-color-scheme-sepia = Сепия
     .title = Цветовая схема «Сепия»
 about-reader-color-scheme-auto = Авто
     .title = Цветовая схема «Авто»
-about-reader-color-theme-light = Светлая
-    .title = Светлая цветовая схема
-about-reader-color-theme-dark = Тёмная
-    .title = Тёмная цветовая схема
-about-reader-color-theme-sepia = Сепия
-    .title = Цветовая схема Сепия
-about-reader-color-theme-auto = Автоматическая
-    .title = Автоматическая световая схема
-about-reader-color-theme-gray = Серая
-    .title = Серая цветовая схема
-about-reader-color-theme-contrast = Контрастная
-    .title = Контрастная цветовая схема
-about-reader-color-theme-custom = Настраиваемые цвета
-    .title = Настраиваемая цветовая схема
 about-reader-color-light-theme = Светлая
     .title = Светлая тема
 about-reader-color-dark-theme = Тёмная
@@ -69,12 +55,12 @@ about-reader-toolbar-lineheightplus =
 
 about-reader-font-type-serif = С засечками
 about-reader-font-type-sans-serif = Без засечек
+about-reader-font-type-monospace = Моноширинный
 
 ## Reader View toolbar buttons
 
 about-reader-toolbar-close = Закрыть режим чтения
 about-reader-toolbar-type-controls = Настройка шрифтов
-about-reader-toolbar-color-controls = Цвета
 about-reader-toolbar-text-layout-controls = Текст и разбивка окна
 about-reader-toolbar-theme-controls = Тема
 about-reader-toolbar-savetopocket = Сохранить в { -pocket-brand-name }
@@ -99,21 +85,25 @@ about-reader-custom-colors-visited-links = Посещённые ссылки
     .title = Изменить цвет
 about-reader-custom-colors-selection-highlight = Подсветка для чтения вслух
     .title = Изменить цвет
-about-reader-custom-colors-reset-button = Восстановить по умолчанию
+about-reader-reset-button = Восстановить по умолчанию
 
 ## Reader View improved text and layout menu
 
+about-reader-text-header = Текст
+about-reader-text-size-label = Размер текста
+about-reader-font-type-selector-label = Шрифт
+about-reader-font-weight-selector-label = Размер шрифта
+about-reader-font-weight-light = Лёгкий
+about-reader-font-weight-regular = Обычный
+about-reader-font-weight-bold = Полужирный
 about-reader-layout-header = Разбивка окна
-about-reader-advanced-layout-header = Дополнительно
-about-reader-slider-label-width-narrow = Узкая
-about-reader-slider-label-width-wide = Широкая
-about-reader-slider-label-spacing-narrow = Узкая
 about-reader-slider-label-spacing-standard = Стандартная
 about-reader-slider-label-spacing-wide = Широкая
 about-reader-content-width-label =
     .label = Ширина содержимого
 about-reader-line-spacing-label =
     .label = Межстрочный интервал
+about-reader-advanced-layout-header = Дополнительно
 about-reader-character-spacing-label =
     .label = Межсимвольный интервал
 about-reader-word-spacing-label =

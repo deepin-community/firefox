@@ -14,7 +14,9 @@ default-browser-notification-button =
 
 default-browser-prompt-title-pin = Đặt { -brand-short-name } làm trình duyệt mặc định của bạn?
 default-browser-prompt-message-pin = Giữ { -brand-short-name } trong tầm tay bạn — đặt nó làm trình duyệt mặc định của bạn và ghim nó vào thanh tác vụ của bạn.
+default-browser-prompt-message-pin-msix = Giữ { -brand-short-name } trong tầm tay bạn — đặt nó làm trình duyệt mặc định của bạn và ghim nó vào thanh tác vụ và start menu của bạn.
 default-browser-prompt-message-pin-mac = Giữ { -brand-short-name } trong tầm tay bạn — đặt nó làm trình duyệt mặc định của bạn và giữ nó trong thanh Dock của bạn.
+default-browser-prompt-button-primary-set = Đặt làm trình duyệt mặc định
 default-browser-prompt-button-primary-pin = Đặt làm trình duyệt mặc định
 default-browser-prompt-title-alt = Đặt { -brand-short-name } làm trình duyệt mặc định của bạn?
 default-browser-prompt-message-alt = Tốc độ, an toàn và quyền riêng tư mỗi khi bạn duyệt.
@@ -36,5 +38,5 @@ default-browser-guidance-notification-body-instruction-win10 =
 default-browser-guidance-notification-body-instruction-win11 =
     Bước 1: Đi tới Cài đặt > Ứng dụng mặc định
     Bước 2: Chọn “Đặt làm mặc định” cho { -brand-short-name }
-default-browser-guidance-notification-info-page = Hiển thị cho tôi
+default-browser-guidance-notification-info-page = Hướng dẫn tôi
 default-browser-guidance-notification-dismiss = Xong

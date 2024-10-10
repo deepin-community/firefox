@@ -45,6 +45,7 @@ namespace js {
 class AutoAllocInAtomsZone;
 class AutoMaybeLeaveAtomsZone;
 class AutoRealm;
+class ExecutionTracer;
 struct PortableBaselineStack;
 
 namespace jit {
@@ -385,7 +386,7 @@ struct JS_PUBLIC_API JSContext : public JS::RootingContext,
     return offsetof(JSContext, jitActivation);
   }
 
-#ifdef DEBUG
+#ifdef JS_CHECK_UNSAFE_CALL_WITH_ABI
   static size_t offsetOfInUnsafeCallWithABI() {
     return offsetof(JSContext, inUnsafeCallWithABI);
   }
@@ -416,6 +417,16 @@ struct JS_PUBLIC_API JSContext : public JS::RootingContext,
   /* If non-null, report JavaScript entry points to this monitor. */
   js::ContextData<JS::dbg::AutoEntryMonitor*> entryMonitor;
 
+  // In brittle mode, any failure will produce a diagnostic assertion rather
+  // than propagating an error or throwing an exception. This is used for
+  // intermittent crash diagnostics: if an operation is failing for unknown
+  // reasons, turn on brittle mode and annotate the operations within
+  // SpiderMonkey that the failing operation uses with:
+  //
+  //   MOZ_DIAGNOSTIC_ASSERT(!cx->brittleMode, "specific failure");
+  //
+  bool brittleMode = false;
+
   /*
    * Stack of debuggers that currently disallow debuggee execution.
    *
@@ -425,9 +436,12 @@ struct JS_PUBLIC_API JSContext : public JS::RootingContext,
    */
   js::ContextData<js::EnterDebuggeeNoExecute*> noExecuteDebuggerTop;
 
-#ifdef DEBUG
+#ifdef JS_CHECK_UNSAFE_CALL_WITH_ABI
   js::ContextData<uint32_t> inUnsafeCallWithABI;
   js::ContextData<bool> hasAutoUnsafeCallWithABI;
+#endif
+
+#ifdef DEBUG
   js::ContextData<uint32_t> liveArraySortDataInstances;
 #endif
 
@@ -923,6 +937,28 @@ struct JS_PUBLIC_API JSContext : public JS::RootingContext,
   // has other references on the stack and does not need to be traced.
   js::ContextData<js::Debugger*> insideExclusiveDebuggerOnEval;
 
+  // This holds onto the JS execution tracer, a system which when turned on
+  // records function calls and other information about the JS which has been
+  // run under this context.
+  js::UniquePtr<js::ExecutionTracer> executionTracer_;
+
+  // Holds all of the consumers of the trace - each consumer is a Debugger
+  // object - when the first consumer is added, the tracer will be initialized,
+  // and when the last consumer is removed, the tracer will be cleaned up.
+  js::HashSet<const js::Debugger*, js::PointerHasher<const js::Debugger*>,
+              js::SystemAllocPolicy>
+      executionTracingConsumers_;
+
+  // For the following methods, see the comments over executionTracer_ and
+  // executionTracingConsumers_
+  bool hasExecutionTracer() const { return !!executionTracer_; }
+  js::ExecutionTracer& getExecutionTracer() const {
+    MOZ_ASSERT(hasExecutionTracer());
+    return *executionTracer_;
+  }
+  bool addExecutionTracingConsumer(const js::Debugger* dbg);
+  void removeExecutionTracingConsumer(const js::Debugger* dbg);
+
 }; /* struct JSContext */
 
 inline JSContext* JSRuntime::mainContextFromOwnThread() {
@@ -934,11 +970,8 @@ namespace js {
 
 struct MOZ_RAII AutoResolving {
  public:
-  enum Kind { LOOKUP, WATCH };
-
-  AutoResolving(JSContext* cx, HandleObject obj, HandleId id,
-                Kind kind = LOOKUP)
-      : context(cx), object(obj), id(id), kind(kind), link(cx->resolvingList) {
+  AutoResolving(JSContext* cx, HandleObject obj, HandleId id)
+      : context(cx), object(obj), id(id), link(cx->resolvingList) {
     MOZ_ASSERT(obj);
     cx->resolvingList = this;
   }
@@ -956,7 +989,6 @@ struct MOZ_RAII AutoResolving {
   JSContext* const context;
   HandleObject object;
   HandleId id;
-  Kind const kind;
   AutoResolving* const link;
 };
 
@@ -1064,19 +1096,22 @@ enum UnsafeABIStrictness {
 };
 
 // Should be used in functions called directly from JIT code (with
-// masm.callWithABI) to assert invariants in debug builds.
-// In debug mode, masm.callWithABI inserts code to verify that the
-// callee function uses AutoUnsafeCallWithABI.
-// While this object is live:
-// 1. cx->hasAutoUnsafeCallWithABI must be true.
-// 2. We can't GC.
-// 3. Exceptions should not be pending/thrown.
+// masm.callWithABI). This assert invariants in debug builds. Resets
+// JSContext::inUnsafeCallWithABI on destruction.
 //
-// Note that #3 is a precaution, not a requirement. By default, we
-// assert that the function is not called with a pending exception,
-// and that it does not throw an exception itself.
+// In debug mode, masm.callWithABI inserts code to verify that the callee
+// function uses AutoUnsafeCallWithABI.
+//
+// While this object is live:
+//   1. cx->hasAutoUnsafeCallWithABI must be true.
+//   2. We can't GC.
+//   3. Exceptions should not be pending/thrown.
+//
+// Note that #3 is a precaution, not a requirement. By default, we assert that
+// the function is not called with a pending exception, and that it does not
+// throw an exception itself.
 class MOZ_RAII AutoUnsafeCallWithABI {
-#ifdef DEBUG
+#ifdef JS_CHECK_UNSAFE_CALL_WITH_ABI
   JSContext* cx_;
   bool nested_;
   bool checkForPendingException_;
@@ -1084,7 +1119,7 @@ class MOZ_RAII AutoUnsafeCallWithABI {
   JS::AutoCheckCannotGC nogc;
 
  public:
-#ifdef DEBUG
+#ifdef JS_CHECK_UNSAFE_CALL_WITH_ABI
   explicit AutoUnsafeCallWithABI(
       UnsafeABIStrictness strictness = UnsafeABIStrictness::NoExceptions);
   ~AutoUnsafeCallWithABI();

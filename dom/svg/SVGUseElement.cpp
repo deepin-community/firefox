@@ -257,14 +257,13 @@ static bool NodeCouldBeRendered(const nsINode& aNode) {
   if (const auto* symbol = SVGSymbolElement::FromNode(aNode)) {
     return symbol->CouldBeRendered();
   }
-  if (const auto* svgGraphics = SVGGraphicsElement::FromNode(aNode)) {
-    if (!svgGraphics->PassesConditionalProcessingTests()) {
-      return false;
-    }
-  }
   if (auto* svgSwitch =
           SVGSwitchElement::FromNodeOrNull(aNode.GetParentNode())) {
     if (&aNode != svgSwitch->GetActiveChild()) {
+      return false;
+    }
+  } else if (const auto* svgGraphics = SVGGraphicsElement::FromNode(aNode)) {
+    if (!svgGraphics->PassesConditionalProcessingTests()) {
       return false;
     }
   }
@@ -296,9 +295,8 @@ auto SVGUseElement::ScanAncestors(const Element& aTarget) const -> ScanResult {
   return ScanAncestorsInternal(aTarget, count);
 }
 
-auto SVGUseElement::ScanAncestorsInternal(const Element& aTarget,
-                                          uint32_t& aCount) const
-    -> ScanResult {
+auto SVGUseElement::ScanAncestorsInternal(
+    const Element& aTarget, uint32_t& aCount) const -> ScanResult {
   if (&aTarget == this) {
     return ScanResult::CyclicReference;
   }
@@ -608,15 +606,8 @@ void SVGUseElement::UnlinkSource() {
 /* virtual */
 gfxMatrix SVGUseElement::PrependLocalTransformsTo(
     const gfxMatrix& aMatrix, SVGTransformTypes aWhich) const {
-  // 'transform' attribute:
-  gfxMatrix userToParent;
-
-  if (aWhich == eUserSpaceToParent || aWhich == eAllTransforms) {
-    userToParent = GetUserToParentTransform(mAnimateMotionTransform.get(),
-                                            mTransforms.get());
-    if (aWhich == eUserSpaceToParent) {
-      return userToParent * aMatrix;
-    }
+  if (aWhich == eUserSpaceToParent) {
+    return aMatrix;
   }
 
   // our 'x' and 'y' attributes:
@@ -626,13 +617,8 @@ gfxMatrix SVGUseElement::PrependLocalTransformsTo(
   }
 
   gfxMatrix childToUser = gfxMatrix::Translation(x, y);
-
-  if (aWhich == eAllTransforms) {
-    return childToUser * userToParent * aMatrix;
-  }
-
-  MOZ_ASSERT(aWhich == eChildToUserSpace, "Unknown TransformTypes");
-
+  MOZ_ASSERT(aWhich == eChildToUserSpace || aWhich == eAllTransforms,
+             "Unknown TransformTypes");
   // The following may look broken because pre-multiplying our eChildToUserSpace
   // transform with another matrix without including our eUserSpaceToParent
   // transform between the two wouldn't make sense.  We don't expect that to

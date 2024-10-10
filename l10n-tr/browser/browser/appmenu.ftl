@@ -77,16 +77,10 @@ appmenu-remote-tabs-turn-on-sync =
 appmenu-remote-tabs-showmore =
     .label = Daha fazla sekme göster
     .tooltiptext = Bu cihazdan daha fazla sekme göster
-# This is shown when there are inactive tabs which are not being shown.
-# Variables
-# $count (Number) - The number of inactive tabs which are not being shown (at least 1)
-appmenu-remote-tabs-showinactive =
-    .label =
-        { $count ->
-            [one] Pasif sekmeyi göster
-           *[other] { $count } pasif sekmeyi göster
-        }
-    .tooltiptext = Bu cihazdaki pasif sekmeleri göster
+# This is shown as the label for an element to show inactive tabs from this device.
+appmenu-remote-tabs-show-inactive-tabs =
+    .label = Pasif sekmeler
+    .tooltiptext = Bu cihazdaki pasif sekmelere bak
 # This is shown beneath the name of a device when that device has no open tabs
 appmenu-remote-tabs-notabs = Açık sekme yok
 # This is shown when Sync is configured but syncing tabs is disabled.
@@ -135,10 +129,10 @@ profiler-popup-button-idle =
     .tooltiptext = Bir performans profili kaydet
 profiler-popup-button-recording =
     .label = Profiler
-    .tooltiptext = Profil oluşturucu bir profili kaydediyor
+    .tooltiptext = Profilleyici bir profili kaydediyor
 profiler-popup-button-capturing =
     .label = Profiler
-    .tooltiptext = Profil oluşturucu bir profili yakalıyor
+    .tooltiptext = Profilleyici bir profili yakalıyor
 profiler-popup-header-text = { -profiler-brand-name }
 profiler-popup-reveal-description-button =
     .aria-label = Daha fazla bilgi göster
@@ -202,6 +196,8 @@ profiler-popup-presets-power-description = { -brand-shorter-name } tarayıcısı
 # "Power" is used in the sense of energy (electricity used by the computer).
 profiler-popup-presets-power-label =
     .label = Güç
+profiler-popup-presets-debug-label =
+    .label = Hata ayıklama
 profiler-popup-presets-custom-label =
     .label = Özel
 

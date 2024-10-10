@@ -188,6 +188,8 @@ mr2022-onboarding-pin-primary-button-label =
         [macos] Διατήρηση του { -brand-short-name } στο Dock
        *[other] Καρφίτσωμα του { -brand-short-name } στη γραμμή εργασιών
     }
+# Primary button string used on welcome page for when Firefox is not pinned on MSIX
+mr2022-onboarding-pin-primary-button-label-msix = Καρφίτσωμα { -brand-short-name } στη γραμμή εργασιών και το μενού έναρξης
 # Subtitle will be used when user already has Firefox pinned, but
 # has not set it as their default browser.
 # When translating "zip", please feel free to pick a verb that signifies movement and/or exploration
@@ -334,6 +336,14 @@ onboarding-device-migration-title = Καλώς ορίσατε και πάλι!
 onboarding-device-migration-subtitle = Συνδεθείτε στον { -fxaccount-brand-name(case: "acc", capitalization: "lower") } σας για να έχετε μαζί σας τους σελιδοδείκτες, τους κωδικούς πρόσβασης και το ιστορικό σας στη νέα σας συσκευή.
 onboarding-device-migration-subtitle2 = Συνδεθείτε στον λογαριασμό σας για να μεταφέρετε τους σελιδοδείκτες, τους κωδικούς πρόσβασης και το ιστορικό σας στη νέα σας συσκευή.
 onboarding-device-migration-primary-button-label = Σύνδεση
+
+## Add-ons Picker screen
+
+amo-picker-title = Προσαρμόστε το { -brand-short-name } σας
+amo-picker-subtitle = Οι επεκτάσεις είναι σαν εφαρμογές για το πρόγραμμα περιήγησής σας και σας επιτρέπουν να προστατεύσετε τους κωδικούς πρόσβασής σας, να κάνετε λήψη βίντεο, να βρείτε προσφορές, να αποκλείσετε ενοχλητικές διαφημίσεις, να αλλάξετε την εμφάνιση του προγράμματος περιήγησής σας και πολλά άλλα.
+amo-picker-install-button-label = Προσθήκη στο { -brand-short-name }
+amo-picker-install-complete-label = Εγκαταστάθηκε
+amo-picker-collection-link = Εξερεύνηση περισσότερων προσθέτων
 
 ## The following screens have been updated to use security and privacy focused strings:
 

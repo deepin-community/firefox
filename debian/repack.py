@@ -147,7 +147,7 @@ class ZipAsTar(object):
             yield tar_info
 
 
-def filter_archive(orig, new, filt, topdir = None):
+def filter_archive(orig, new, filt, topdir=None, strip=0, split_off=None):
     filt = TarFilterList(filt)
     is_url = urlparse(orig).scheme
     if orig.endswith(".zip"):
@@ -166,13 +166,38 @@ def filter_archive(orig, new, filt, topdir = None):
         tar = tarfile.open(orig, "r:" + file_extension(orig), fileobj)
         format = tar.format
 
-    new_tar = tarfile.open(new + ".new", "w:" + file_extension(new), format=format)
+    new_tars = {}
+
+    def apply_filter(info, namefilt):
+        info.name = namefilt(info.name)
+        if "path" in info.pax_headers:
+            info.pax_headers["path"] = namefilt(info.pax_headers["path"])
+
+    this_new = new
+    this_topdir = topdir
+
     for info in tar:
-        if topdir:
-            namefilt = lambda n: "/".join([topdir] + n.split("/")[1:])
-            info.name = namefilt(info.name)
-            if "path" in info.pax_headers:
-                info.pax_headers["path"] = namefilt(info.pax_headers["path"])
+        if strip:
+            apply_filter(info, lambda n: "/".join(n.split("/")[strip:]))
+
+        if split_off:
+            first = info.name.partition("/")[0]
+            if first not in split_off:
+                continue
+            this_new = new.replace("%", first)
+            if topdir:
+                this_topdir = topdir.replace("%", first)
+
+        new_tar = new_tars.get(this_new)
+        if not new_tar:
+            if split_off:
+                print(this_new)
+            new_tar = new_tars[this_new] = tarfile.open(
+                this_new + ".new", "w:" + file_extension(this_new), format=format
+            )
+
+        if this_topdir:
+            apply_filter(info, lambda n: "/".join([this_topdir] + n.split("/")[1:]))
 
         do_filt = filt.match(info.name)
         if do_filt == None:
@@ -205,8 +230,18 @@ def filter_archive(orig, new, filt, topdir = None):
             new_tar.addfile(info)
 
     tar.close()
-    new_tar.close()
-    os.rename(new_tar.name, new)
+    if split_off:
+        expected_new = set(new.replace("%", s) for s in split_off)
+        got_new = set(new_tars)
+        missing = expected_new - got_new
+        for m in sorted(missing):
+            print(f"Missing {m}")
+        if missing:
+            sys.exit(1)
+
+    for new, new_tar in new_tars.items():
+        new_tar.close()
+        os.rename(new_tar.name, new)
     unused = filt.unused()
     if unused:
         print('Unused filters:')
@@ -225,6 +260,10 @@ def main():
         help="use the given filter list", metavar="FILE")
     parser.add_option("-p", "--package", dest="package",
         help="use the given package name", metavar="NAME")
+    parser.add_option("--strip", dest="strip", type=int, default=0,
+        help="Strip n first elements of the path")
+    parser.add_option("--split-off", dest="split_off",
+        help="Comma-separated list of top-level directories to split in different output tarballs")
     parser.add_option("-o", "--output", dest="new_file",
         help="save the filtered tarball as the given file name", metavar="FILE")
     parser.add_option("-t", "--topdir", dest="topdir",
@@ -249,6 +288,17 @@ def main():
 
     if options.new_file:
         new_file = options.new_file
+    elif options.split_off:
+        parser.error("When using --split-off, --output must be given")
+
+    if options.split_off:
+        split_off = options.split_off.split(",")
+        if options.topdir and "%" not in options.topdir:
+            parser.error("When using --split-off, --topdir must contain a % character")
+        if "%" not in options.new_file:
+            parser.error("When using --split-off, --output must contain a % character")
+    else:
+        split_off = None
 
     if os.path.islink(args[0]):
         orig = os.path.realpath(args[0])
@@ -260,8 +310,17 @@ def main():
         if not new_file:
             new_file = options.package + "_" + options.upstream_version + ".orig.tar." + compression
             new_file = os.path.realpath(os.path.join(dirname(orig), new_file))
+
     print(orig, new_file)
-    filter_archive(orig, new_file, options.filter, options.topdir)
+    filter_archive(
+        orig,
+        new_file,
+        options.filter,
+        topdir=options.topdir,
+        strip=options.strip,
+        split_off=split_off,
+    )
+
 
 if __name__ == '__main__':
     main()

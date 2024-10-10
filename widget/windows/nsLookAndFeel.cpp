@@ -103,6 +103,9 @@ nsresult nsLookAndFeel::NativeGetColor(ColorID aID, ColorScheme aScheme,
 
   auto IsHighlightColor = [&] {
     switch (aID) {
+      case ColorID::MozButtonhoverface:
+      case ColorID::MozButtonactivetext:
+        return nsUXThemeData::IsHighContrastOn();
       case ColorID::MozMenuhover:
         return !UseNonNativeMenuColors(aScheme);
       case ColorID::Highlight:
@@ -120,6 +123,9 @@ nsresult nsLookAndFeel::NativeGetColor(ColorID aID, ColorScheme aScheme,
 
   auto IsHighlightTextColor = [&] {
     switch (aID) {
+      case ColorID::MozButtonhovertext:
+      case ColorID::MozButtonactiveface:
+        return nsUXThemeData::IsHighContrastOn();
       case ColorID::MozMenubarhovertext:
         if (UseNonNativeMenuColors(aScheme)) {
           return false;
@@ -311,7 +317,6 @@ nsresult nsLookAndFeel::NativeGetColor(ColorID aID, ColorScheme aScheme,
       break;
     case ColorID::Threedlightshadow:
     case ColorID::Buttonborder:
-    case ColorID::MozDisabledfield:
     case ColorID::MozSidebarborder:
       idx = COLOR_3DLIGHT;
       break;
@@ -327,14 +332,22 @@ nsresult nsLookAndFeel::NativeGetColor(ColorID aID, ColorScheme aScheme,
     case ColorID::Windowtext:
       idx = COLOR_WINDOWTEXT;
       break;
+    case ColorID::MozDisabledfield:
+      idx = nsUXThemeData::IsHighContrastOn() ? COLOR_BTNFACE : COLOR_3DLIGHT;
+      break;
+    case ColorID::Field:
+      idx = nsUXThemeData::IsHighContrastOn() ? COLOR_BTNFACE : COLOR_WINDOW;
+      break;
+    case ColorID::Fieldtext:
+      idx =
+          nsUXThemeData::IsHighContrastOn() ? COLOR_BTNTEXT : COLOR_WINDOWTEXT;
+      break;
     case ColorID::MozEventreerow:
     case ColorID::MozOddtreerow:
-    case ColorID::Field:
     case ColorID::MozSidebar:
     case ColorID::MozCombobox:
       idx = COLOR_WINDOW;
       break;
-    case ColorID::Fieldtext:
     case ColorID::MozSidebartext:
     case ColorID::MozComboboxtext:
       idx = COLOR_WINDOWTEXT;
@@ -365,6 +378,8 @@ nsresult nsLookAndFeel::NativeGetColor(ColorID aID, ColorScheme aScheme,
     case ColorID::Mark:
     case ColorID::SpellCheckerUnderline:
     case ColorID::MozAutofillBackground:
+    case ColorID::TargetTextBackground:
+    case ColorID::TargetTextForeground:
       aColor = GetStandinForNativeColor(aID, aScheme);
       return NS_OK;
     default:
@@ -861,6 +876,16 @@ auto nsLookAndFeel::ComputeTitlebarColors() -> TitlebarColors {
     result.mInactiveLight.mFg = result.mInactiveDark.mFg = *result.mAccentText;
   }
   return result;
+}
+
+nsresult nsLookAndFeel::GetKeyboardLayoutImpl(nsACString& aLayout) {
+  char layout[KL_NAMELENGTH];
+  if (!::GetKeyboardLayoutNameA(layout)) {
+    return NS_ERROR_NOT_AVAILABLE;
+  }
+  aLayout.Assign(layout);
+
+  return NS_OK;
 }
 
 void nsLookAndFeel::EnsureInit() {

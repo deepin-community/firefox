@@ -22,12 +22,10 @@ about-private-browsing-not-private = Trenutačno nisi u privatnom prozoru.
 about-private-browsing-info-description-private-window = Privatni prozor: { -brand-short-name } čisti tvoju povijest pretraživanja i pregledavanja kada zatvoriš sve privatne prozore. Ovo te ne čini anonimnim.
 about-private-browsing-info-description-simplified = { -brand-short-name } čisti tvoju povijest pretraživanja i pregledavanja kada zatvoriš sve privatne prozore, ali ovo te ne čini anonimnim.
 about-private-browsing-learn-more-link = Saznaj više
-
-about-private-browsing-hide-activity = Sakrij svoju aktivnost i lokaciju, gdje god da pregledavaš
-about-private-browsing-get-privacy = Zaštiti svoju privatnost gdje god da surfaš
-about-private-browsing-hide-activity-1 = Sakrij svoju aktivnost pregledavanja pomoću { -mozilla-vpn-brand-name }-a. Jedan klik stvara sigurnu vezu, čak i na javnom WiFi-ju.
+about-private-browsing-hide-activity = Sakrij svoju aktivnost i lokaciju gdje god pregledavaš
+about-private-browsing-get-privacy = Zaštiti svoju privatnost gdje god pregledavaš
+about-private-browsing-hide-activity-1 = Sakrij svoju aktivnost pregledavanja i mjesto pomoću { -mozilla-vpn-brand-name }. Jedan klik stvara sigurnu vezu, čak i putem javne WiFi mreže.
 about-private-browsing-prominent-cta = Sačuvaj privatnost uz { -mozilla-vpn-brand-name }
-
 about-private-browsing-focus-promo-cta = Preuzmi { -focus-brand-name }
 about-private-browsing-focus-promo-header = { -focus-brand-name }: Privatno pregledavanje na putu
 about-private-browsing-focus-promo-text = Naša mobilna aplikacija za privatno pregledavanje svaki put briše tvoju povijest i kolačiće.
@@ -38,20 +36,18 @@ about-private-browsing-focus-promo-header-b = Prenesi privatno pregledavanje na 
 about-private-browsing-focus-promo-text-b = Koristi { -focus-brand-name } za privatna pretraživanja za koja ne želiš da ih tvoj glavni preglednik mobilnih uređaja vidi.
 about-private-browsing-focus-promo-header-c = Nova razina privatnosti na mobilnim uređajima
 about-private-browsing-focus-promo-text-c = { -focus-brand-name } briše tvoju povijest svaki put te blokira oglase i programe za praćenje.
-
 # This string is the title for the banner for search engine selection
 # in a private window.
 # Variables:
 #   $engineName (String) - The engine name that will currently be used for the private window.
-about-private-browsing-search-banner-title = { $engineName } je tvoj zadani pretraživač u privatnim prozorima
+about-private-browsing-search-banner-title = { $engineName } je tvoj standardna tražilica u privatnim prozorima
 about-private-browsing-search-banner-description =
     { PLATFORM() ->
-        [windows] Za odabir jedne druge tražilice, idi na <a data-l10n-name="link-options">Mogućnosti</a>
-       *[other] Za odabir jedne druge tražilice, idi na <a data-l10n-name="link-options">Postavke</a>
+        [windows] Za odabir druge tražilice, idi na <a data-l10n-name="link-options">Mogućnosti</a>
+       *[other] Za odabir druge tražilice, idi na <a data-l10n-name="link-options">Postavke</a>
     }
 about-private-browsing-search-banner-close-button =
     .aria-label = Zatvori
-
 about-private-browsing-promo-close-button =
     .title = Zatvori
 
@@ -67,3 +63,18 @@ about-private-browsing-pin-promo-title = Bez spremljenih kolačića ili povijest
 
 ## Strings used in a promotion message for cookie banner reduction
 
+# Simplified version of the headline if the original text doesn't work
+# in your language: `See fewer cookie requests`.
+about-private-browsing-cookie-banners-promo-header = Vidi manje dijaloga kolačića!
+about-private-browsing-cookie-banners-promo-button = Smanji broj dijaloga kolačića
+about-private-browsing-cookie-banners-promo-message = Dopusti da { -brand-short-name } automatski odgovara na skočne prozore kolačića tako da se možeš vratiti na pregledavanje bez ometanja. Ako je moguće, { -brand-short-name } će odbiti sve zahtjeve.
+# Simplified version of the headline if the original text doesn't work
+# in your language: `{ -brand-short-name } will show fewer cookie requests`
+about-private-browsing-cookie-banners-promo-heading = { -brand-short-name } se brine o dijalozima kolačića umjesto tebe
+about-private-browsing-cookie-banners-promo-body = Sada automatski odbijamo mnoge dijaloge kolačića što smanjuje praćenje tvojih radnji na internetu i omogućuje pregledavanje bez ometanja.
+
+## Strings for Felt Privacy v1 experiments in 119
+
+about-private-browsing-felt-privacy-v1-info-header = Ne ostavljaj tragove na ovom uređaju.
+about-private-browsing-felt-privacy-v1-info-body = { -brand-short-name } briše kolačiće, povijest i podatke web stranica kada zatvoriš sve svoje privatne prozore.
+about-private-browsing-felt-privacy-v1-info-link = Tko može vidjeti moju aktivnost?

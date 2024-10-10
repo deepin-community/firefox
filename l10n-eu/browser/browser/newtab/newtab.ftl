@@ -45,6 +45,7 @@ newtab-topsites-add-search-engine-header = Gehitu bilaketa-motorra
 newtab-topsites-add-shortcut-header = Lasterbide berria
 newtab-topsites-edit-topsites-header = Editatu maiz erabilitako gunea
 newtab-topsites-edit-shortcut-header = Editatu lasterbidea
+newtab-topsites-add-shortcut-label = Gehitu lasterbidea
 newtab-topsites-title-label = Izenburua
 newtab-topsites-title-input =
     .placeholder = Idatzi izenburua
@@ -197,6 +198,7 @@ newtab-section-header-recent-activity = Azken jarduera
 # Variables:
 #   $provider (string) - Name of the corresponding content provider.
 newtab-section-header-pocket = { $provider } hornitzaileak gomendatuta
+newtab-section-header-stories = Hausnartzeko moduko istorioak
 
 ## Empty Section States: These show when there are no more items in a section. Ex. When there are no more Pocket story recommendations, in the space where there would have been stories, this is shown instead.
 
@@ -229,6 +231,12 @@ newtab-pocket-pocket-firefox-family = { -brand-product-name }(r)en familiakoa da
 newtab-pocket-save = Gorde
 newtab-pocket-saved = Gordeta
 
+## Thumbs up and down buttons that shows over a newtab stories card thumbnail on hover.
+
+newtab-toast-dismiss-button =
+    .title = Baztertu
+    .aria-label = Baztertu
+
 ## Pocket content onboarding experience dialog and modal for new users seeing the Pocket section for the first time, shown as the first item in the Pocket section.
 
 newtab-pocket-onboarding-discover = Aurkitu webeko onena
@@ -256,9 +264,6 @@ newtab-custom-row-selector =
 newtab-custom-sponsored-sites = Babesleen lasterbideak
 newtab-custom-pocket-title = { -pocket-brand-name }-ek gomendatua
 newtab-custom-pocket-subtitle = { -brand-product-name } familiakide den { -pocket-brand-name }-eko taldeak hautatutako aparteko edukia.
-newtab-custom-pocket-toggle =
-    .label = { -pocket-brand-name }-ek gomendatua
-    .description = { -brand-product-name } familiakide den { -pocket-brand-name }-eko taldeak hautatutako aparteko edukia.
 newtab-custom-pocket-sponsored = Babesleen istorioak
 newtab-custom-pocket-show-recent-saves = Erakutsi gordetako azkenak
 newtab-custom-recent-title = Azken jarduera
@@ -266,5 +271,94 @@ newtab-custom-recent-subtitle = Azken gune eta edukien hautapena
 newtab-custom-recent-toggle =
     .label = Azken jarduera
     .description = Azken gune eta edukien hautapena
+newtab-custom-weather-toggle =
+    .label = Eguraldia
+    .description = Gaurko eguraldi-iragarpena
 newtab-custom-close-button = Itxi
 newtab-custom-settings = Kudeatu ezarpen gehiago
+
+## New Tab Wallpapers
+
+newtab-wallpaper-title = Horma-paperak
+newtab-wallpaper-reset = Berrezarri lehenespenera
+newtab-wallpaper-light-red-panda = Panda gorria
+newtab-wallpaper-light-mountain = Mendi zuria
+newtab-wallpaper-dark-aurora = Aurora boreala
+
+## Solid Colors
+
+newtab-wallpaper-blue = Urdina
+newtab-wallpaper-light-blue = Urdin argia
+newtab-wallpaper-light-purple = More argia
+newtab-wallpaper-light-green = Berde argia
+newtab-wallpaper-green = Berdea
+newtab-wallpaper-yellow = Horia
+newtab-wallpaper-orange = Laranja
+newtab-wallpaper-pink = Arrosa
+newtab-wallpaper-light-pink = Arrosa argia
+newtab-wallpaper-red = Gorria
+newtab-wallpaper-dark-blue = Urdin iluna
+newtab-wallpaper-dark-purple = More iluna
+newtab-wallpaper-dark-green = Berde iluna
+newtab-wallpaper-brown = Marroia
+
+## Abstract
+
+newtab-wallpaper-category-title-abstract = Abstraktua
+
+## Photographs
+
+newtab-wallpaper-category-title-photographs = Argazkiak
+newtab-wallpaper-feature-highlight-header = Probatu kolore ukitu bat
+# Tooltip for dismiss button
+feature-highlight-dismiss-button =
+    .title = Utzi
+    .aria-label = Itxi laster-lehioa
+
+## New Tab Weather
+
+newtab-weather-menu-change-location = Aldatu kokapena
+newtab-weather-change-location-search-input = Bilatu kokapena
+newtab-weather-menu-weather-display = Eguraldia bistaratzea
+# Display options are:
+# - Simple: Displays a current weather condition icon and the current temperature
+# - Detailed: Include simple information plus a short text summary: e.g. "Mostly cloudy"
+newtab-weather-menu-weather-display-option-simple = Sinplea
+newtab-weather-menu-change-weather-display-simple = Aldatu ikuspegi sinplera
+newtab-weather-menu-weather-display-option-detailed = Xehatua
+newtab-weather-menu-change-weather-display-detailed = Aldatu ikuspegi xehatura
+newtab-weather-menu-temperature-units = Tenperatura-unitateak
+newtab-weather-menu-temperature-option-fahrenheit = Fahrenheit
+newtab-weather-menu-temperature-option-celsius = Celsius
+newtab-weather-menu-change-temperature-units-fahrenheit = Aldatu Fahrenheit-era
+newtab-weather-menu-change-temperature-units-celsius = Aldatu Celsius-era
+newtab-weather-menu-hide-weather = Ezkutatu eguraldia fitxa berrian
+newtab-weather-menu-learn-more = Argibide gehiago
+# This message is shown if user is working offline
+newtab-weather-error-not-available = Eguraldiari buruzko daturik ez dago erabilgarri orain.
+
+## Topic Labels
+
+newtab-topic-label-business = Negozioak
+newtab-topic-label-career = Lan-eskaintzak
+newtab-topic-label-education = Hezkuntza
+newtab-topic-label-arts = Entretenimendua
+newtab-topic-label-food = Janaria
+newtab-topic-label-health = Osasuna
+newtab-topic-label-hobbies = Jokoak
+# ”Money” = “Personal Finance”, refers to articles and stories that help readers better manage
+# and understand their personal finances – from saving money to buying a home. See the
+# “Curated by our editors“ section at the top of https://getpocket.com/explore/personal-finance for more context
+newtab-topic-label-finance = Finantzak
+newtab-topic-label-education-science = Zientzia
+newtab-topic-label-sports = Kirolak
+newtab-topic-label-tech = Teknologia
+newtab-topic-label-travel = Bidaiak
+
+## Topic Selection Modal
+
+newtab-topic-selection-save-button = Gorde
+newtab-topic-selection-cancel-button = Utzi
+newtab-topic-selection-button-maybe-later = Geroago agian
+newtab-topic-selection-button-update-interests = Eguneratu zure interesak
+newtab-topic-selection-button-pick-interests = Hautatu zure interesak

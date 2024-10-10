@@ -57,6 +57,10 @@ category-experimental =
 pane-experimental-subtitle = Pokročujće z kedźbliwosću
 pane-experimental-search-results-header = Eksperimenty { -brand-short-name }: pokročujće z kedźbliwosću
 pane-experimental-description2 = Hdyž nastajenja rozšěrjeneje konfiguracije změniće, móže to wukon abo wěstotu { -brand-short-name } wobwliwować.
+settings-pane-labs-title = { -firefoxlabs-brand-name }
+settings-category-labs =
+    .tooltiptext = { -firefoxlabs-brand-name }
+pane-experimental-description3 = Wupruwujće eksperimentalne funkcije! Su we wuwiću a měnjeja so hišće, štož so móhło na to wuskutkować, kak { -brand-short-name } funguje.
 pane-experimental-reset =
     .label = Standard wobnowić
     .accesskey = S
@@ -605,6 +609,10 @@ home-prefs-recent-activity-description = Wuběr najnowšich sydłow a najnowšeh
 home-prefs-snippets-header =
     .label = Šlipki
 home-prefs-snippets-description-new = Pokiwy a nowinki wot { -vendor-short-name } a { -brand-product-name }
+home-prefs-weather-header =
+    .label = Wjedro
+home-prefs-weather-description = Dźensniša wjedrowa předpowědź na jedyn pohlad
+home-prefs-weather-learn-more-link = Dalše informacije
 # Variables:
 #   $num (number) - Number of rows displayed
 home-prefs-sections-rows-option =
@@ -920,6 +928,9 @@ forms-saved-passwords =
 forms-primary-pw-use =
     .label = Hłowne hesło wužiwać
     .accesskey = H
+# This operation requires the user to authenticate with the operating system (device sign-in)
+forms-os-reauth =
+    .label = Gratowe přizjewjenje za wupjelnjenje a rjadowanje hesłow žadać
 forms-primary-pw-learn-more-link = Dalše informacije
 # This string uses the former name of the Primary Password feature
 # ("Master Password" in English) so that the preferences can be found
@@ -952,6 +963,13 @@ primary-password-os-auth-dialog-message-win = Zapodajće swoje přizjewjenske da
 # notes are only valid for English. Please test in your locale.
 primary-password-os-auth-dialog-message-macosx = Hłowne hesło wutworić
 master-password-os-auth-dialog-caption = { -brand-full-name }
+# The macOS string is preceded by the operating system with "Firefox is trying to ".
+autofill-creditcard-os-dialog-message =
+    { PLATFORM() ->
+        [macos] nastajenja za płaćenske metody změnić
+       *[other] { -brand-short-name } pospytuje, nastajenja za płaćenske metody změnić. Wužiwajće swoje gratowe přizjewjenje, zo byšće to dowolił.
+    }
+autofill-creditcard-os-auth-dialog-caption = { -brand-full-name }
 
 ## Privacy section - Autofill
 
@@ -966,14 +984,9 @@ autofill-payment-methods-checkbox-submessage = Zapřijima kreditne a debetowe ka
     .accesskey = Z
 autofill-saved-payment-methods-button = Składowane płaćenske metody
     .accesskey = d
-autofill-reauth-checkbox =
-    { PLATFORM() ->
-        [macos] Awtentifikaciju macOS za wupjelnjenje a wobdźěłowanje płaćenskich metodow žadać.
-        [windows] Awtentifikaciju Windows za wupjelnjenje a wobdźěłowanje płaćenskich metodow žadać.
-        [linux] Awtentifikaciju Linux za wupjelnjenje a wobdźěłowanje płaćenskich metodow žadać.
-       *[other] Awtentifikaciju za wupjelnjenje a wobdźěłowanje płaćenskich metodow žadać.
-    }
-    .accesskey = A
+# This operation requires the user to authenticate with the operating system (device sign-in)
+autofill-reauth-payment-methods-checkbox = Gratowe přizjewjenje za wupjelnjenje a rjadowanje płaćenskich metodow žadać
+    .accesskey = r
 
 ## Privacy Section - History
 
@@ -1110,6 +1123,9 @@ addressbar-suggestions-settings = Nastajenja za namjety pytawy změnić
 addressbar-locbar-showrecentsearches-option =
     .label = Najnowše pytanja pokazać
     .accesskey = n
+addressbar-locbar-showtrendingsuggestions-option =
+    .label = Trendowe pytanske namjety pokazać
+    .accesskey = d
 addressbar-quickactions-learn-more = Dalše informacije
 
 ## Privacy Section - Content Blocking
@@ -1290,9 +1306,9 @@ addon-recommendations-link = Dalše informacije
 # This message is displayed above disabled data sharing options in developer builds
 # or builds with no Telemetry support available.
 collection-health-report-disabled = Datowe rozprawjenje je znjemóžnjene za tutu programowu konfiguraciju
-collection-backlogged-crash-reports-with-link = { -brand-short-name } dowolić, zo bychu so njepósłane spadowe rozprawy we wašim mjenje pósłali <a data-l10n-name="crash-reports-link">Dalše informacije</a>
+collection-backlogged-crash-reports-with-link = { -brand-short-name } dowolić, zo by njepósłane spadowe rozprawy we wašim mjenje pósłał <a data-l10n-name="crash-reports-link">Dalše informacije</a>
     .accesskey = d
-collection-backlogged-crash-reports = { -brand-short-name } dowolić, zo bychu so njepósłane spadowe rozprawy we wašim mjenje pósłali
+collection-backlogged-crash-reports = { -brand-short-name } dowolić, zo by njepósłane spadowe rozprawy we wašim mjenje pósłał
     .accesskey = d
 privacy-segmentation-section-header = Nowe funkcije, kotrež waše přehladowanje polěpšeja
 privacy-segmentation-section-description = Hdyž funkcije poskicámy, kotrež waše daty wužiwaja, zo bychmy wam bóle wosobinske dožiwjenje skićili:
@@ -1300,6 +1316,14 @@ privacy-segmentation-radio-off =
     .label = Doporučenja { -brand-product-name } wužiwać
 privacy-segmentation-radio-on =
     .label = Nadrobne informacije pokazać
+
+## Privacy Section - Website Advertising Preferences
+
+website-advertising-header = Nastajenja za wabjenje websydła
+website-advertising-private-attribution =
+    .label = Websydłam dowolić, wabjenske měrjenje přewjesć, kotrež priwatnosć wobchowuje
+    .accesskey = d
+website-advertising-private-attribution-description = To websydłam pomha rozumić, kak jich wabjenje funguje, bjeztoho zo bychu so daty wo was hromadźili.
 
 ## Privacy Section - Security
 ##
@@ -1344,13 +1368,20 @@ space-alert-under-5gb-message2 = <strong>{ -brand-short-name } hižo dosć skła
 
 httpsonly-header = Modus Jenož-HTTPS
 httpsonly-description = HTTPS wěsty, zaklučowany zwisk mjez { -brand-short-name } a websydłami skići, kotrež wopytujeće. Najwjace websydłow HTTPS podpěruje, a jeli modus Jenož-HTTPS je zmóžnjeny, { -brand-short-name } budźe wšě zwiski na HTTPS aktualizować.
+httpsonly-description2 = { -brand-short-name } wěste a zaklučowane zwiski ze sydłami, kotrež wopytujeće, wutworja. { -brand-short-name } budźe was warnować, jeli zwisk wěsty njeje, hdyž Jenož-HTTPS je aktiwny.
 httpsonly-learn-more = Dalše informacije
 httpsonly-radio-enabled =
     .label = Modus Jenož-HTTPS we wšěch woknach zmóžnić
+httpsonly-radio-enabled2 =
+    .label = HTTPS jenož we wšěch woknach wužiwać
 httpsonly-radio-enabled-pbm =
     .label = Modus Jenož-HTTPS jenož w priwatnych woknach zmóžnić
+httpsonly-radio-enabled-pbm2 =
+    .label = HTTPS jenož w priwatnych woknach wužiwać
 httpsonly-radio-disabled =
     .label = Modus Jenož-HTTPS njezmóžnić
+httpsonly-radio-disabled2 =
+    .label = HTTPS najprjedy wupruwować, ale zwiski dowolić, kotrež wěste njejsu
 
 ## DoH Section
 

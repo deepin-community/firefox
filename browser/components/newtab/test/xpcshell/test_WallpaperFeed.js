@@ -27,16 +27,8 @@ add_task(async function test_construction() {
   Assert.ok(feed, "Could construct a WallpaperFeed");
   Assert.ok(feed.loaded === false, "WallpaperFeed is not loaded");
   Assert.ok(
-    feed.wallpaperClient === "",
-    "wallpaperClient is initialized as an empty string"
-  );
-  Assert.ok(
-    feed.wallpaperDB === "",
-    "wallpaperDB is initialized as an empty string"
-  );
-  Assert.ok(
-    feed.baseAttachmentURL === "",
-    "baseAttachmentURL is initialized as an empty string"
+    feed.wallpaperClient === null,
+    "wallpaperClient is initialized as null"
   );
 });
 
@@ -53,19 +45,12 @@ add_task(async function test_onAction_INIT() {
     get: () => [attachment],
     on: () => {},
   });
-  sandbox.stub(Utils, "SERVER_URL").returns("http://localhost:8888/v1");
   feed.store = {
     dispatch: sinon.spy(),
   };
-  sandbox.stub(feed, "fetch").resolves({
-    json: () => ({
-      capabilities: {
-        attachments: {
-          base_url: "http://localhost:8888/base_url/",
-        },
-      },
-    }),
-  });
+  sandbox
+    .stub(Utils, "baseAttachmentsURL")
+    .returns("http://localhost:8888/base_url/");
 
   info("WallpaperFeed.onAction INIT should initialize wallpapers");
 
@@ -73,15 +58,16 @@ add_task(async function test_onAction_INIT() {
     type: at.INIT,
   });
 
-  Assert.ok(feed.store.dispatch.calledOnce);
+  Assert.ok(feed.store.dispatch.calledThrice);
   Assert.ok(
-    feed.store.dispatch.calledWith(
+    feed.store.dispatch.secondCall.calledWith(
       ac.BroadcastToContent({
         type: at.WALLPAPERS_SET,
         data: [
           {
             ...attachment,
             wallpaperUrl: "http://localhost:8888/base_url/attachment",
+            category: "",
           },
         ],
         meta: {

@@ -228,6 +228,8 @@ class HttpBaseChannel : public nsHashPropertyBag,
   NS_IMETHOD GetRequestSucceeded(bool* aValue) override;
   NS_IMETHOD RedirectTo(nsIURI* newURI) override;
   NS_IMETHOD UpgradeToSecure() override;
+  NS_IMETHOD GetRequestObserversCalled(bool* aCalled) override;
+  NS_IMETHOD SetRequestObserversCalled(bool aCalled) override;
   NS_IMETHOD GetRequestContextID(uint64_t* aRCID) override;
   NS_IMETHOD GetTransferSize(uint64_t* aTransferSize) override;
   NS_IMETHOD GetRequestSize(uint64_t* aRequestSize) override;
@@ -271,7 +273,7 @@ class HttpBaseChannel : public nsHashPropertyBag,
   NS_IMETHOD GetRemoteAddress(nsACString& addr) override;
   NS_IMETHOD GetRemotePort(int32_t* port) override;
   NS_IMETHOD GetOnlyConnect(bool* aOnlyConnect) override;
-  NS_IMETHOD SetConnectOnly() override;
+  NS_IMETHOD SetConnectOnly(bool aTlsTunnel) override;
   NS_IMETHOD GetAllowSpdy(bool* aAllowSpdy) override;
   NS_IMETHOD SetAllowSpdy(bool aAllowSpdy) override;
   NS_IMETHOD GetAllowHttp3(bool* aAllowHttp3) override;
@@ -354,8 +356,6 @@ class HttpBaseChannel : public nsHashPropertyBag,
                          nsIHttpUpgradeListener* aListener) override;
   void DoDiagnosticAssertWhenOnStopNotCalledOnDestroy() override;
 
-  NS_IMETHOD SetWaitForHTTPSSVCRecord() override;
-
   NS_IMETHOD SetEarlyHintPreloaderId(uint64_t aEarlyHintPreloaderId) override;
   NS_IMETHOD GetEarlyHintPreloaderId(uint64_t* aEarlyHintPreloaderId) override;
 
@@ -364,6 +364,17 @@ class HttpBaseChannel : public nsHashPropertyBag,
 
   NS_IMETHOD SetIsUserAgentHeaderModified(bool value) override;
   NS_IMETHOD GetIsUserAgentHeaderModified(bool* value) override;
+
+  NS_IMETHOD GetLastTransportStatus(nsresult* aLastTransportStatus) override;
+
+  NS_IMETHOD GetCaps(uint32_t* aCaps) override {
+    if (!aCaps) {
+      return NS_ERROR_INVALID_ARG;
+    }
+
+    *aCaps = mCaps;
+    return NS_OK;
+  }
 
   NS_IMETHOD SetClassicScriptHintCharset(
       const nsAString& aClassicScriptHintCharset) override;
@@ -651,7 +662,7 @@ class HttpBaseChannel : public nsHashPropertyBag,
   static void CallTypeSniffers(void* aClosure, const uint8_t* aData,
                                uint32_t aCount);
 
-  nsresult CheckRedirectLimit(uint32_t aRedirectFlags) const;
+  nsresult CheckRedirectLimit(nsIURI* aNewURI, uint32_t aRedirectFlags) const;
 
   bool MaybeWaitForUploadStreamNormalization(nsIStreamListener* aListener,
                                              nsISupports* aContext);
@@ -690,6 +701,9 @@ class HttpBaseChannel : public nsHashPropertyBag,
   void SetChannelBlockedByOpaqueResponse();
   bool Http3Allowed() const;
 
+  virtual void ExplicitSetUploadStreamLength(uint64_t aContentLength,
+                                             bool aSetContentLengthHeader);
+
   friend class OpaqueResponseBlocker;
   friend class PrivateBrowsingChannel<HttpBaseChannel>;
   friend class InterceptFailedOnStop;
@@ -721,10 +735,11 @@ class HttpBaseChannel : public nsHashPropertyBag,
   // Proxy release all members above on main thread.
   void ReleaseMainThreadOnlyReferences();
 
-  void ExplicitSetUploadStreamLength(uint64_t aContentLength,
-                                     bool aSetContentLengthHeader);
-
   void MaybeResumeAsyncOpen();
+
+  nsresult SetRequestHeaderInternal(const nsACString& aHeader,
+                                    const nsACString& aValue, bool aMerge,
+                                    nsHttpHeaderArray::HeaderVariety aVariety);
 
  protected:
   nsCString mSpec;  // ASCII encoded URL spec
@@ -1015,6 +1030,9 @@ class HttpBaseChannel : public nsHashPropertyBag,
 
   bool mHasContentDecompressed;
 
+  // A flag that should be false if render-blocking is not stated
+  bool mRenderBlocking;
+
   // clang-format off
   MOZ_ATOMIC_BITFIELDS(mAtomicBitfields3, 8, (
     (bool, AsyncOpenTimeOverriden, 1),
@@ -1081,6 +1099,8 @@ class HttpBaseChannel : public nsHashPropertyBag,
   void RemoveAsNonTailRequest();
 
   void EnsureBrowserId();
+
+  bool PerformCORSCheck();
 };
 
 NS_DEFINE_STATIC_IID_ACCESSOR(HttpBaseChannel, HTTP_BASE_CHANNEL_IID)

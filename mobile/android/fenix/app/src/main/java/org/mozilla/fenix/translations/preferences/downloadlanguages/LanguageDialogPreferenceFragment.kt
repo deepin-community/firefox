@@ -17,6 +17,14 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.DialogFragment
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
+import mozilla.components.browser.state.action.TranslationsAction
+import mozilla.components.browser.state.store.BrowserStore
+import mozilla.components.concept.engine.translate.ModelManagementOptions
+import mozilla.components.concept.engine.translate.ModelOperation
+import mozilla.components.concept.engine.translate.ModelState
+import mozilla.components.concept.engine.translate.OperationLevel
+import org.mozilla.fenix.ext.requireComponents
+import org.mozilla.fenix.ext.runIfFragmentIsAttached
 import org.mozilla.fenix.ext.settings
 import org.mozilla.fenix.theme.FirefoxTheme
 
@@ -25,6 +33,7 @@ import org.mozilla.fenix.theme.FirefoxTheme
  */
 class LanguageDialogPreferenceFragment : DialogFragment() {
     private val args by navArgs<LanguageDialogPreferenceFragmentArgs>()
+    private val browserStore: BrowserStore by lazy { requireComponents.core.store }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog =
         super.onCreateDialog(savedInstanceState).apply {
@@ -39,14 +48,14 @@ class LanguageDialogPreferenceFragment : DialogFragment() {
         savedInstanceState: Bundle?,
     ): View {
         val view = ComposeView(requireContext())
-        if (args.downloadLanguageItemStatePreference.status == DownloadLanguageItemStatusPreference.Downloaded) {
-            setPrefDeleteLanguageFileDialog(view)
-        } else {
-            if (args.downloadLanguageItemStatePreference.status == DownloadLanguageItemStatusPreference.NotDownloaded) {
-                setDownloadLanguageFileDialog(view)
-            }
+        when (args.modelState) {
+            ModelState.NOT_DOWNLOADED -> setDownloadLanguageFileDialog(view)
+            ModelState.DOWNLOAD_IN_PROGRESS -> {}
+            ModelState.DOWNLOADED -> setPrefDeleteLanguageFileDialog(view)
+            ModelState.DELETION_IN_PROGRESS -> {}
+            ModelState.ERROR_DELETION -> {}
+            ModelState.ERROR_DOWNLOAD -> {}
         }
-
         return view
     }
 
@@ -55,13 +64,33 @@ class LanguageDialogPreferenceFragment : DialogFragment() {
             setContent {
                 FirefoxTheme {
                     DeleteLanguageFileDialog(
-                        language = args.languageNamePreference,
+                        language = args.languageDisplayName,
                         isAllLanguagesItemType =
-                        args.downloadLanguageItemStatePreference.type ==
+                        args.itemType ==
                             DownloadLanguageItemTypePreference.AllLanguages,
-                        fileSize = args.itemFileSizePreference,
-                        onConfirmDelete = { findNavController().popBackStack() },
-                        onCancel = { findNavController().popBackStack() },
+                        fileSize = args.modelSize,
+                        onConfirmDelete = {
+                            if (args.itemType == DownloadLanguageItemTypePreference.AllLanguages) {
+                                val options = ModelManagementOptions(
+                                    operation = ModelOperation.DELETE,
+                                    operationLevel = OperationLevel.ALL,
+                                )
+                                browserStore.dispatch(
+                                    TranslationsAction.ManageLanguageModelsAction(
+                                        options = options,
+                                    ),
+                                )
+                            } else {
+                                deleteOrDownloadModel(
+                                    modelOperation = ModelOperation.DELETE,
+                                    languageToManage = args.languageCode,
+                                )
+                            }
+                            runIfFragmentIsAttached {
+                                findNavController().popBackStack()
+                            }
+                        },
+                        onCancel = { runIfFragmentIsAttached { findNavController().popBackStack() } },
                     )
                 }
             }
@@ -73,20 +102,39 @@ class LanguageDialogPreferenceFragment : DialogFragment() {
             setContent {
                 FirefoxTheme {
                     var checkBoxEnabled by remember { mutableStateOf(false) }
+
                     DownloadLanguageFileDialog(
-                        downloadLanguageDialogType = if (args.downloadLanguageItemStatePreference.type ==
+                        downloadLanguageDialogType = if (args.itemType ==
                             DownloadLanguageItemTypePreference.AllLanguages
                         ) {
                             DownloadLanguageFileDialogType.AllLanguages
                         } else {
                             DownloadLanguageFileDialogType.Default
                         },
-                        fileSize = args.itemFileSizePreference,
+                        fileSize = args.modelSize,
                         isCheckBoxEnabled = checkBoxEnabled,
                         onSavingModeStateChange = { checkBoxEnabled = it },
                         onConfirmDownload = {
                             requireContext().settings().ignoreTranslationsDataSaverWarning =
                                 checkBoxEnabled
+
+                            if (args.itemType == DownloadLanguageItemTypePreference.AllLanguages) {
+                                val options = ModelManagementOptions(
+                                    operation = ModelOperation.DOWNLOAD,
+                                    operationLevel = OperationLevel.ALL,
+                                )
+                                browserStore.dispatch(
+                                    TranslationsAction.ManageLanguageModelsAction(
+                                        options = options,
+                                    ),
+                                )
+                            } else {
+                                deleteOrDownloadModel(
+                                    modelOperation = ModelOperation.DOWNLOAD,
+                                    languageToManage = args.languageCode,
+                                )
+                            }
+
                             findNavController().popBackStack()
                         },
                         onCancel = { findNavController().popBackStack() },
@@ -94,5 +142,18 @@ class LanguageDialogPreferenceFragment : DialogFragment() {
                 }
             }
         }
+    }
+
+    private fun deleteOrDownloadModel(modelOperation: ModelOperation, languageToManage: String?) {
+        val options = ModelManagementOptions(
+            languageToManage = languageToManage,
+            operation = modelOperation,
+            operationLevel = OperationLevel.LANGUAGE,
+        )
+        browserStore.dispatch(
+            TranslationsAction.ManageLanguageModelsAction(
+                options = options,
+            ),
+        )
     }
 }

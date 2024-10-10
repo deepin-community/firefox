@@ -20,28 +20,30 @@ unified-extensions-manage-extensions =
 #   $extensionName (String) - Name of the extension
 unified-extensions-item-open-menu =
     .aria-label = Abrir menú para { $extensionName }
-
 unified-extensions-item-message-manage = Gestionar extensión
 
 ## Extension's context menu
 
 unified-extensions-context-menu-pin-to-toolbar =
     .label = Anclar a la barra de herramientas
-
 unified-extensions-context-menu-manage-extension =
     .label = Gestionar extensión
-
 unified-extensions-context-menu-remove-extension =
     .label = Eliminar extensión
-
 unified-extensions-context-menu-report-extension =
     .label = Denunciar extensión
-
 unified-extensions-context-menu-move-widget-up =
     .label = Subir
-
 unified-extensions-context-menu-move-widget-down =
     .label = Bajar
 
 ## Notifications
 
+unified-extensions-mb-quarantined-domain-title = Algunas extensiones no están permitidas
+unified-extensions-mb-quarantined-domain-message = Solo algunas extensiones supervisadas por { -vendor-short-name } están permitidas en este sitio para proteger tus datos.
+# .heading is processed by moz-message-bar to be used as a heading attribute
+unified-extensions-mb-quarantined-domain-message-3 =
+    .heading = Algunas extensiones no están permitidas.
+    .message = Para proteger tus datos, algunas extensiones no pueden leer ni cambiar datos en este sitio. Utiliza la configuración de la extensión para permitir sitios restringidos por { -vendor-short-name }.
+unified-extensions-mb-quarantined-domain-learn-more = Saber más
+    .aria-label = Saber más: Algunas extensiones no están permitidas

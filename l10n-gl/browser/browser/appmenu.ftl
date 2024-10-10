@@ -192,6 +192,8 @@ profiler-popup-presets-power-description = Preestablecido para investigar erros 
 # "Power" is used in the sense of energy (electricity used by the computer).
 profiler-popup-presets-power-label =
     .label = Enerxía
+profiler-popup-presets-debug-label =
+    .label = Depurar
 profiler-popup-presets-custom-label =
     .label = Personalizado
 
@@ -269,5 +271,6 @@ appmenuitem-sign-in-account = Acceda á súa conta
 appmenuitem-monitor-title = { -monitor-brand-short-name }
 appmenuitem-monitor-description = Recibir alertas sobre filtracións de datos
 appmenuitem-relay-title = { -relay-brand-short-name }
+appmenuitem-relay-description = Oculte o seu correo electrónico e teléfono reais
 appmenuitem-vpn-title = { -mozilla-vpn-brand-name }
 appmenuitem-vpn-description = Protexa a súa actividade en liña

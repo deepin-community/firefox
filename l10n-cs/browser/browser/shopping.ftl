@@ -93,6 +93,9 @@ shopping-show-less-button = Zobrazit méně
 
 shopping-settings-label =
     .label = Nastavení
+shopping-settings-recommendations-toggle2 =
+    .label = Zobrazovat doporučení a sponzorovaný obsah
+shopping-settings-recommendations-learn-more3 = { -brand-product-name } nesdílí vaše osobní údaje, proto vás tato doporučení nebudou po internetu pronásledovat. <a data-l10n-name="review-quality-url">Zjistit více</a>
 shopping-settings-recommendations-toggle =
     .label = Zobrazovat reklamy v kontrole recenzí
 shopping-settings-recommendations-learn-more2 = Občas se vám zobrazí reklamy na příslušné produkty. Inzerujeme pouze produkty se spolehlivými recenzemi. <a data-l10n-name="review-quality-url">Dozvědět se více</a>
@@ -119,6 +122,7 @@ shopping-settings-sidebar-enabled-state = Kontrola recenzí je <strong>zapnuta</
 shopping-adjusted-rating-label =
     .label = Upravené hodnocení
 shopping-adjusted-rating-unreliable-reviews = Nespolehlivé recenze odebrány
+shopping-adjusted-rating-based-reliable-reviews = Na základě spolehlivých recenzí
 
 ## Strings for the review reliability component
 
@@ -137,6 +141,8 @@ shopping-analysis-explainer-learn-more2 = Přečtěte si další informace o tom
 # websites, which will be inserted without being translated.
 #  $retailer (String) - capitalized name of the shopping website, for example, "Amazon".
 shopping-analysis-explainer-highlights-description = <strong>Výběr</strong> z recenzí { $retailer } za posledních 80 dní, které považujeme za spolehlivé.
+# Fallback for analysis highlights explainer if the retailer is ever unknown
+shopping-analysis-explainer-highlights-description-unknown-retailer = <strong>Výběr</strong> z recenzí za posledních 80 dní, které považujeme za spolehlivé.
 shopping-analysis-explainer-review-grading-scale-reliable = Spolehlivé recenze. Věříme, že recenze pocházejí pravděpodobně od skutečných zákazníků, kteří zanechali upřímné a nezaujaté recenze.
 shopping-analysis-explainer-review-grading-scale-mixed = Věříme, že je zde směs spolehlivých a nespolehlivých recenzí.
 shopping-analysis-explainer-review-grading-scale-unreliable = Nespolehlivé recenze. Domníváme se, že tyto recenze jsou pravděpodobně falešné a nebo od zaujatých recenzentů.
@@ -163,6 +169,7 @@ shopping-unanalyzed-product-analyze-button = Zkontrolovat kvalitu recenzí
 
 more-to-consider-ad-label =
     .label = Další ke zvážení
+shopping-sponsored-label = Sponzorováno
 ad-by-fakespot = Reklama od { -fakespot-brand-name(case: "gen") }
 
 ## Shopping survey strings.

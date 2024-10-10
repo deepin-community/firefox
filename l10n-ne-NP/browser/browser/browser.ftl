@@ -282,6 +282,33 @@ quickactions-cmd-print = छाप्नुहोस्
 # Opens the print dialog at the save to PDF option
 quickactions-savepdf = पृष्ठ PDF को रूपमा बचत गर्नुहोस्
 quickactions-cmd-savepdf = pdf
+# Opens a new private browsing window
+quickactions-private2 = निजी सञ्झ्याल खोल्नुहोस्
+quickactions-cmd-private = निजी ब्राउजिङ्ग
+# Opens a SUMO article explaining how to refresh
+quickactions-refresh = { -brand-short-name } ताजा पार्नुहोस्
+quickactions-cmd-refresh = ताजा पार्नुहोस्
+# Restarts the browser
+quickactions-restart = { -brand-short-name } फेरि सुरू गर्नुहोस्
+quickactions-cmd-restart = पुनः शुरु
+# Opens the screenshot tool
+quickactions-screenshot3 = स्क्रिनसट लिनुहोस्
+quickactions-cmd-screenshot = स्क्रिनसट
+# Opens about:preferences
+quickactions-settings2 = सेटिङहरू प्रबन्ध गर्नुहोस्
+quickactions-cmd-settings = सेटिङहरू, प्राथमिकताहरू, विकल्पहरू
+# Opens about:addons page in the themes section
+quickactions-themes = विषयवस्तुहरू प्रबन्ध गर्नुहोस्
+quickactions-cmd-themes = विषयवस्तुहरू
+# Opens a SUMO article explaining how to update the browser
+quickactions-update = { -brand-short-name } अद्यावधिक गर्नुहोस्
+quickactions-cmd-update = अद्यावधिक
+# Opens the view-source UI with current pages source
+quickactions-viewsource2 = पृष्ठ श्रोत हेर्नुहोस्
+quickactions-cmd-viewsource = स्रोत हेर्नुहोस्, स्रोत
+# Tooltip text for the help button shown in the result.
+quickactions-learn-more =
+    .title = द्रुत कार्यहरू बारे थप जान्नुहोस्
 
 ## Bookmark Panel
 
@@ -313,10 +340,22 @@ bookmark-panel =
 
 ## Identity Panel
 
+# Variables
+#  $host (String): the hostname of the site that is being displayed.
+identity-site-information = { $host } को लागि साइट जानकारी
+# Variables
+#  $host (String): the hostname of the site that is being displayed.
+identity-header-security-with-host =
+    .title = { $host } का लागि जडान सुरक्षा
+identity-connection-not-secure = जडान सुरक्षित छैन
+identity-connection-secure = जडान सुरक्षित
+identity-connection-failure = जडान विफलता
 identity-connection-internal = यो सुरक्षित { -brand-short-name } पृष्ठ हो।
 identity-connection-file = यो पृष्ठ तपाईँको कम्प्युटरमा भण्डारण छ।
+identity-connection-associated = यो पृष्ठ अर्को पृष्ठबाट लोड गरिएको छ।
 identity-extension-page = यो पृष्ठ एक्स्टेनसन बाट लोड गरिएको हो।
 identity-active-blocked = { -brand-short-name } यस पृष्ठका असुरक्षित भागहरू अवरुद्ध गरिएको छ।
+identity-custom-root = Mozilla द्वारा पहिचान नभएको प्रमाणपत्र जारीकर्ता द्वारा प्रमाणित जडान।
 identity-passive-loaded = यो पृष्ठको भागहरू सुरक्षित छैनन् (जस्तै चित्रहरू)।
 identity-active-loaded = तपाईँले यो पृष्ठमा संरक्षण अक्षम गर्नुभएको छ।
 identity-weak-encryption = यो पेजले कमजोर इन्क्रिप्सन प्रयोग गर्छ।
@@ -393,19 +432,63 @@ browser-tab-audio-pip = चित्र-भित्र-चित्र
 ## Variables:
 ##  $count (number): number of affected tabs
 
+browser-tab-mute =
+    { $count ->
+        [1] म्यूट ट्याब
+        [one] म्यूट { $count } ट्याबहरू
+       *[other] म्यूट { $count } ट्याबहरू
+    }
+browser-tab-unmute =
+    { $count ->
+        [1] ट्याब अनम्यूट गर्नुहोस्
+        [one] { $count } ट्याबहरू अनम्यूट गर्नुहोस्
+       *[other] { $count } ट्याबहरू अनम्यूट गर्नुहोस्
+    }
+browser-tab-unblock =
+    { $count ->
+        [1] ट्याब प्ले गर्नुहोस्
+        [one] { $count } ट्याब प्ले गर्नुहोस्
+       *[other] { $count } ट्याब प्ले गर्नुहोस्
+    }
 
 ## Bookmarks toolbar items
 
+browser-import-button2 =
+    .label = बुकमार्कहरू आयात गर्नुहोस्...
+    .tooltiptext = अर्को ब्राउजरबाट { -brand-short-name } मा बुकमार्कहरू आयात गर्नुहोस्।
+bookmarks-toolbar-empty-message = द्रुत पहुँचको लागि, तपाईंको बुकमार्कहरू यहाँ बुकमार्क उपकरणपट्टीमा राख्नुहोस्। <a data-l10n-name="manage-bookmarks">बुकमार्कहरू व्यवस्थापन गर्नुहोस्...</a>
 
 ## WebRTC Pop-up notifications
 
+popup-select-camera-device =
+    .value = क्यामेरा:
+    .accesskey = C
+popup-select-camera-icon =
+    .tooltiptext = क्यामेरा
+popup-select-microphone-device =
+    .value = माइक्रोफोन:
+    .accesskey = M
+popup-select-microphone-icon =
+    .tooltiptext = माइक्रोफोन
+popup-select-speaker-icon =
+    .tooltiptext = स्पिकरहरू
+popup-select-window-or-screen =
+    .label = विन्डो वा स्क्रिन:
+    .accesskey = W
 popup-all-windows-shared = तपाईँको स्क्रिन मा सबै देखिने सञ्झ्यालहरू साझेदारी गरिनेछ।
 
 ## WebRTC window or screen share tab switch warning
 
+sharing-warning-window = तपाईंले { -brand-short-name } साझेदारी गर्दै हुनुहुन्छ। तपाईंले नयाँ ट्याबमा स्विच गर्दा अन्य मानिसहरूले देख्न सक्छन्।
+sharing-warning-screen = तपाईं आफ्नो सम्पूर्ण स्क्रिन साझा गर्दै हुनुहुन्छ। तपाईंले नयाँ ट्याबमा स्विच गर्दा अन्य मानिसहरूले देख्न सक्छन्।
+sharing-warning-proceed-to-tab =
+    .label = ट्याबमा जानुहोस्
+sharing-warning-disable-for-session =
+    .label = यस सत्रको लागि साझेदारी सुरक्षा असक्षम गर्नुहोस्
 
 ## DevTools F12 popup
 
+enable-devtools-popup-description2 = F12 सर्टकट प्रयोग गर्न, पहिले ब्राउजर उपकरण मेनु मार्फत DevTools खोल्नुहोस्।
 
 ## URL Bar
 
@@ -416,10 +499,49 @@ urlbar-search-mode-indicator-close =
 # engine is unknown.
 urlbar-placeholder =
     .placeholder = खोज वा ठेगाना राखनुहोस्।
+# This placeholder is used in search mode with search engines that search the
+# entire web.
+# Variables
+#  $name (String): the name of a search engine that searches the entire Web
+#  (e.g. Google).
+urlbar-placeholder-search-mode-web-2 =
+    .placeholder = वेबमा खोजी गर्नुहोस्
+    .aria-label = { $name } को साथ खोज्नुहोस्
+# This placeholder is used in search mode with search engines that search a
+# specific site (e.g., Amazon).
+# Variables
+#  $name (String): the name of a search engine that searches a specific site
+#  (e.g. Amazon).
+urlbar-placeholder-search-mode-other-engine =
+    .placeholder = खोजी स्ट्रिङ प्रविष्ट गर्नुहोस्
+    .aria-label = { $name } खोज्नुहोस्
+# This placeholder is used when searching bookmarks.
+urlbar-placeholder-search-mode-other-bookmarks =
+    .placeholder = खोज शब्दहरू प्रविष्ट गर्नुहोस्
+    .aria-label = बुकमार्कहरू खोज्नुहोस्
+# This placeholder is used when searching history.
+urlbar-placeholder-search-mode-other-history =
+    .placeholder = खोज शब्दहरू प्रविष्ट गर्नुहोस्
+    .aria-label = इतिहास खोज्नुहोस्
+# This placeholder is used when searching open tabs.
+urlbar-placeholder-search-mode-other-tabs =
+    .placeholder = खोज शब्दहरू प्रविष्ट गर्नुहोस्
+    .aria-label = ट्याबहरू खोज्नुहोस्
+# This placeholder is used when searching quick actions.
+urlbar-placeholder-search-mode-other-actions =
+    .placeholder = खोज शब्दहरू प्रविष्ट गर्नुहोस्
+    .aria-label = खोजी कार्यहरू
 # Variables
 #  $name (String): the name of the user's default search engine
 urlbar-placeholder-with-name =
     .placeholder = { $name } सँग खोज्नुहोस् वा ठेगाना राखनुहोस्।
+# Variables
+#  $component (String): the name of the component which forces remote control.
+#    Example: "DevTools", "Marionette", "RemoteAgent".
+urlbar-remote-control-notification-anchor2 =
+    .tooltiptext = ब्राउजर रिमोट कन्ट्रोल अन्तर्गत छ (कारण: { $component })
+urlbar-permissions-granted =
+    .tooltiptext = तपाईंले यो वेबसाइटलाई थप अनुमतिहरू दिनुभएको छ।
 urlbar-switch-to-tab =
     .value = यस ट्याबमा स्विच गर्नुहोस्:
 # Used to indicate that a selected autocomplete entry is provided by an extension.
@@ -429,23 +551,77 @@ urlbar-go-button =
     .tooltiptext = लोकेसन बारमा भएको स्थानमा जानुहोस्
 urlbar-page-action-button =
     .tooltiptext = पृष्ठ कार्यहरु
+urlbar-revert-button =
+    .tooltiptext = लोकेशन बारमा ठेगाना देखाउनुहोस्
 
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
 
+# Used when the private browsing engine differs from the default engine.
+# The "with" format was chosen because the search engine name can end with
+# "Search", and we would like to avoid strings like "Search MSN Search".
+# Variables
+#  $engine (String): the name of a search engine
+urlbar-result-action-search-in-private-w-engine = निजी विन्डोमा { $engine } मार्फत खोज्नुहोस्
+# Used when the private browsing engine is the same as the default engine.
+urlbar-result-action-search-in-private = निजी विन्डोमा खोज्नुहोस्
 # The "with" format was chosen because the search engine name can end with
 # "Search", and we would like to avoid strings like "Search MSN Search".
 # Variables
 #  $engine (String): the name of a search engine
 urlbar-result-action-search-w-engine = { $engine } संग खोज्नुहोस्
+urlbar-result-action-sponsored = प्रायोजित
 urlbar-result-action-switch-tab = ट्याबमा स्विच गर्नुहोस्
 urlbar-result-action-visit = भ्रमण गर्नुहोस्
+# "Switch to tab with container" is used when the target tab is located in a
+# different container.
+# Variables
+# $container (String): the name of the target container
+urlbar-result-action-switch-tab-with-container = ट्याबमा स्विच गर्नुहोस् · <span>{ $container }</span>
+# Allows the user to visit a URL that was previously copied to the clipboard.
+urlbar-result-action-visit-from-clipboard = क्लिपबोर्डबाट जानुहोस्
+# Directs a user to press the Tab key to perform a search with the specified
+# engine.
+# Variables
+#  $engine (String): the name of a search engine that searches the entire Web
+#  (e.g. Google).
+urlbar-result-action-before-tabtosearch-web = { $engine } मार्फत खोज गर्न ट्याब थिच्नुहोस्
+# Directs a user to press the Tab key to perform a search with the specified
+# engine.
+# Variables
+#  $engine (String): the name of a search engine that searches a specific site
+#  (e.g. Amazon).
+urlbar-result-action-before-tabtosearch-other = { $engine } खोज्न ट्याब थिच्नुहोस्
+# Variables
+#  $engine (String): the name of a search engine that searches the entire Web
+#  (e.g. Google).
+urlbar-result-action-tabtosearch-web = ठेगाना पट्टीबाट सिधै { $engine } सँग खोज्नुहोस्
+# Variables
+#  $engine (String): the name of a search engine that searches a specific site
+#  (e.g. Amazon).
+urlbar-result-action-tabtosearch-other-engine = ठेगाना पट्टीबाट सीधै { $engine } खोज्नुहोस्
+# Action text for copying to clipboard.
+urlbar-result-action-copy-to-clipboard = प्रतिलिपि गर्नुहोस्
+# Shows the result of a formula expression being calculated, the last = sign will be shown
+# as part of the result (e.g. "= 2").
+# Variables
+#  $result (String): the string representation for a formula result
+urlbar-result-action-calculator-result = ={ $result }
+
+## Strings used for buttons in the urlbar
+
+# Label prompting user to search with a particular search engine.
+#  $engine (String): the name of a search engine that searches a specific site
+urlbar-result-search-with = { $engine } मार्फत खोज्नुहोस्
 
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
 ## In these actions "Search" is a verb, followed by where the search is performed.
 
 urlbar-result-action-search-bookmarks = बुकमार्कहरू खोज्नुहोस्
+urlbar-result-action-search-history = खोज इतिहास
+urlbar-result-action-search-tabs = ट्याबहरू खोज्नुहोस्
+urlbar-result-action-search-actions = खोज कार्यहरू
 
 ## Labels shown above groups of urlbar results
 
@@ -453,6 +629,35 @@ urlbar-result-action-search-bookmarks = बुकमार्कहरू खो
 # urlbar results.
 urlbar-group-firefox-suggest =
     .label = { -firefox-suggest-brand-name }
+# A label shown above the search suggestions group in the urlbar results. It
+# should use sentence case.
+# Variables
+#  $engine (String): the name of the search engine providing the suggestions
+urlbar-group-search-suggestions =
+    .label = { $engine } सुझावहरू
+# A label shown above Quick Actions in the urlbar results.
+urlbar-group-quickactions =
+    .label = द्रुत कार्यहरू
+# A label shown above the recent searches group in the urlbar results.
+# Variables
+#  $engine (String): the name of the search engine used to search.
+urlbar-group-recent-searches =
+    .label = हालै गरिएका खोजहरू
+# The header shown above trending results.
+# Variables:
+#  $engine (String): the name of the search engine providing the trending suggestions
+urlbar-group-trending =
+    .label = { $engine } मा ट्रेन्डिङ
+# The result menu labels shown next to trending results.
+urlbar-result-menu-trending-dont-show =
+    .label = ट्रेन्डिङ खोजहरू नदेखाउनुहोस्
+    .accesskey = D
+urlbar-result-menu-trending-why =
+    .label = म यो किन देख्दै छु?
+    .accesskey = W
+# A message that replaces a result when the user dismisses all suggestions of a
+# particular type.
+urlbar-trending-dismissal-acknowledgment = तपाईंको प्रतिक्रियाको लागि धन्यवाद। तपाईंले अब ट्रेन्डिङ खोजहरू देख्नुहुने छैन।
 
 ## Reader View toolbar buttons
 
@@ -467,6 +672,15 @@ reader-view-close-button =
 ## Variables:
 ##   $shortcut (String) - Keyboard shortcut to execute the command.
 
+picture-in-picture-urlbar-button-open =
+    .tooltiptext = पिक्चर-इन-पिक्चर खोल्नुहोस् ({ $shortcut })
+picture-in-picture-urlbar-button-close =
+    .tooltiptext = बन्द गर्नुहोस् Picture-in-Picture ({ $shortcut })
+picture-in-picture-panel-header = चित्रमा चित्र
+picture-in-picture-panel-headline = यो वेबसाइटले Picture-in-Picture सिफारिस गर्दैन
+picture-in-picture-panel-body = Picture-in-Picture सक्षम हुँदा भिडियोहरू विकासकर्ताले चाहेजस्तो नदेख्न सक्छन्।
+picture-in-picture-enable-toggle =
+    .label = जे भए पनि सक्षम गर्नुहोस्
 
 ## Full Screen and Pointer Lock UI
 
@@ -516,6 +730,12 @@ bookmarks-tools-toolbar-visibility-menuitem =
             [true] पुस्तकचिनो उपकरणपट्टि लुकाउनुहोस्
            *[other] पुस्तकचिनो उपकरणपट्टि देखाउनुहोस्
         }
+bookmarks-tools-toolbar-visibility-panel =
+    .label =
+        { $isVisible ->
+            [true] बुकमार्क उपकरणपट्टी लुकाउनुहोस्
+           *[other] बुकमार्क उपकरणपट्टी देखाउनुहोस्
+        }
 bookmarks-tools-menu-button-visibility =
     .label =
         { $isVisible ->
@@ -529,32 +749,64 @@ bookmarks-search =
     .label = पुस्तकचिनोहरू खोज्नुहोस्
 bookmarks-tools =
     .label = पुस्तकचिनो लगाउने उपकरणहरू
+bookmarks-subview-edit-bookmark =
+    .label = यो बुकमार्क सम्पादन गर्नुहोस्...
+# The aria-label is a spoken label that should not include the word "toolbar" or
+# such, because screen readers already know that this container is a toolbar.
+# This avoids double-speaking.
+bookmarks-toolbar =
+    .toolbarname = बुकमार्क उपकरणपट्टी
+    .accesskey = B
+    .aria-label = बुकमार्कहरू
 bookmarks-toolbar-menu =
     .label = पुस्तकचिनो उपकरणपट्टि
 bookmarks-toolbar-placeholder =
     .title = उपकरणपट्टि मा वस्तुहरू पुस्तकचिनो लगाउनुहोस्
 bookmarks-toolbar-placeholder-button =
     .label = उपकरणपट्टि मा वस्तुहरू पुस्तकचिनो लगाउनुहोस्
+# "Bookmark" is a verb, as in "Add current tab to bookmarks".
+bookmarks-subview-bookmark-tab =
+    .label = हालको ट्याब बुकमार्क गर्नुहोस्...
 
 ## Library Panel items
 
 library-bookmarks-menu =
     .label = पुस्तकचिनोहरू
+library-recent-activity-title =
+    .value = हालको गतिविधि
 
 ## Pocket toolbar button
 
+save-to-pocket-button =
+    .label = { -pocket-brand-name } मा बचत गर्नुहोस्
+    .tooltiptext = { -pocket-brand-name } मा बचत गर्नुहोस्
 
 ## Repair text encoding toolbar button
 
+repair-text-encoding-button =
+    .label = पाठ एन्कोडिङ मर्मत गर्नुहोस्
+    .tooltiptext = पृष्ठ सामग्रीबाट सही पाठ इन्कोडिङ अनुमान गर्नुहोस्
 
 ## Customize Toolbar Buttons
 
+# Variables:
+#  $shortcut (String): keyboard shortcut to open settings (only on macOS)
+toolbar-settings-button =
+    .label = सेटिङहरू
+    .tooltiptext =
+        { PLATFORM() ->
+            [macos] सेटिङहरू खोल्नुहोस् ({ $shortcut })
+           *[other] सेटिङहरू खोल्नुहोस्
+        }
 toolbar-overflow-customize-button =
     .label = उपकरणपट्टि अनुकुलन गर्नुहोस्…
     .accesskey = C
 toolbar-button-email-link =
     .label = लिङ्कलाई इमेल गर्नुहोस्
     .tooltiptext = यस पृष्ठ को लिङ्क इमेल गर्नुहोस्
+toolbar-button-logins =
+    .label = पासवर्डहरू
+    .tooltiptext = तपाईंको सुरक्षित गरिएका पासवर्डहरू हेर्नुहोस् र व्यवस्थापन गर्नुहोस्
 # Variables:
 #  $shortcut (String): keyboard shortcut to save a copy of the page
 toolbar-button-save-page =
@@ -577,12 +829,21 @@ toolbar-button-new-private-window =
 ## EME notification panel
 
 eme-notifications-drm-content-playing = यो साइटमा रहेको केही अडियो या भिडियोले DRM प्रयोग गर्दछन्, तपाईँद्वारा { -brand-short-name } मार्फत गर्ने कुरामा कमी ल्याउन सक्छ।
+eme-notifications-drm-content-playing-manage = सेटिङहरू प्रबन्ध गर्नुहोस्
+eme-notifications-drm-content-playing-manage-accesskey = M
+eme-notifications-drm-content-playing-dismiss = खारेज गर्नुहोस्
+eme-notifications-drm-content-playing-dismiss-accesskey = D
 
 ## Password save/update panel
 
+panel-save-update-username = प्रयोगकर्ताको नाम
+panel-save-update-password = पासवर्ड
 
 ##
 
+# "More" item in macOS share menu
+menu-share-more =
+    .label = थप…
 ui-tour-info-panel-close =
     .tooltiptext = बन्द गर्नुहोस्
 
@@ -601,16 +862,33 @@ popups-infobar-block =
 popups-infobar-dont-show-message =
     .label = पप-अपहरू रोकिएका बेलामा यो सन्देश नदेखाउनुहोस्
     .accesskey = D
+edit-popup-settings =
+    .label = पप-अप सेटिङहरू व्यवस्थापन गर्नुहोस्...
+    .accesskey = M
+picture-in-picture-hide-toggle =
+    .label = चित्र-मा-चित्र टगल लुकाउनुहोस्
+    .accesskey = H
 
 ## Since the default position for PiP controls does not change for RTL layout,
 ## right-to-left languages should use "Left" and "Right" as in the English strings,
 
+picture-in-picture-move-toggle-right =
+    .label = पिक्चर-इन-पिक्चर टगललाई दायाँ तिर सार्नुहोस्
+    .accesskey = R
+picture-in-picture-move-toggle-left =
+    .label = पिक्चर-इन-पिक्चर टगललाई बायाँ तिर सार्नुहोस्
+    .accesskey = L
 
 ##
 
 
 # Navigator Toolbox
 
+# This string is a spoken label that should not include
+# the word "toolbar" or such, because screen readers already know that
+# this container is a toolbar. This avoids double-speaking.
+navbar-accessible =
+    .aria-label = दिशानिर्देश
 navbar-downloads =
     .label = डाउनलोडहरू
 navbar-overflow =
@@ -620,6 +898,9 @@ navbar-overflow =
 navbar-print =
     .label = मुद्रण गर्नुहोस्
     .tooltiptext = यो पृष्ठ छाप्नुहोस्… ({ $shortcut })
+navbar-home =
+    .label = गृह
+    .tooltiptext = { -brand-short-name } गृह पृष्ठ
 navbar-library =
     .label = Library
     .tooltiptext = इतिहास, संग्रह गरिएका पुस्तकचिनोहरू, र अन्य हेर्नुहोस्
@@ -638,9 +919,13 @@ tabs-toolbar-list-all-tabs =
 
 ## Infobar shown at startup to suggest session-restore
 
+# <img data-l10n-name="icon"/> will be replaced by the application menu icon
+restore-session-startup-suggestion-message = <strong>अघिल्लो ट्याबहरू खोल्नुहोस्?</strong> तपाईं इतिहास अन्तर्गत { -brand-short-name } अनुप्रयोग मेनु <img data-l10n-name="icon"/> बाट आफ्नो अघिल्लो सत्र पुनर्स्थापना गर्न सक्नुहुन्छ।
+restore-session-startup-suggestion-button = कसरी देखाउनुहोस्
 
 ## Infobar shown when the user tries to open a file picker and file pickers are blocked by enterprise policy
 
+filepicker-blocked-infobar = तपाईंको संगठनले यस कम्प्युटरमा स्थानीय फाइलहरूमा पहुँच रोकेको छ
 
 ## Mozilla data reporting notification (Telemetry, Firefox Health Report, etc)
 
@@ -648,20 +933,55 @@ data-reporting-notification-message = { -brand-short-name } ले केही 
 data-reporting-notification-button =
     .label = मैले बाँड्ने कुराहरू छान्छु
     .accesskey = C
+# Label for the indicator shown in the private browsing window titlebar.
+private-browsing-indicator-label = निजी ब्राउजिङ्ग
+# Tooltip for the indicator shown in the window titlebar when content analysis is active.
+# Variables:
+#   $agentName (String): The name of the DLP agent that is connected
+content-analysis-indicator-tooltip =
+    .tooltiptext = { $agentName } द्वारा डेटा हानि रोकथाम (DLP)। थप जानकारीको लागि क्लिक गर्नुहोस्।
+content-analysis-panel-title = डाटा संरक्षण
+# Variables:
+#   $agentName (String): The name of the DLP agent that is connected
+content-analysis-panel-text = तपाईंको संस्थाले डाटा हराउनबाट जोगाउन { $agentName } प्रयोग गर्छ। <a data-l10n-name="info">थप जान्नुहोस्</a>
 
 ## Unified extensions (toolbar) button
 
+unified-extensions-button =
+    .label = बिस्तारहरु
+    .tooltiptext = बिस्तारहरु
 
 ## Unified extensions button when permission(s) are needed.
 ## Note that the new line is intentionally part of the tooltip.
 
+unified-extensions-button-permissions-needed =
+    .label = बिस्तारहरु
+    .tooltiptext = बिस्तारहरु
 
 ## Unified extensions button when some extensions are quarantined.
 ## Note that the new line is intentionally part of the tooltip.
 
+unified-extensions-button-quarantined =
+    .label = बिस्तारहरु
+    .tooltiptext = बिस्तारहरु
 
 ## Private browsing reset button
 
+reset-pbm-toolbar-button =
+    .label = निजी सत्र समाप्त गर्नुहोस्
+    .tooltiptext = निजी सत्र समाप्त गर्नुहोस्
+reset-pbm-panel-heading = निजी सत्र अन्त्य गर्ने हो?
+reset-pbm-panel-description = सबै निजी ट्याबहरू बन्द गर्नुहोस् र इतिहास, कुकीहरू, र अन्य सबै साइट डेटा मेटाउनुहोस्।
+reset-pbm-panel-always-ask-checkbox =
+    .label = सधैं सोध्नुहोस्
+    .accesskey = A
+reset-pbm-panel-cancel-button =
+    .label = रद्द गर्नुहोस्
+    .accesskey = C
+reset-pbm-panel-confirm-button =
+    .label = सत्र डाटा मेटाउनुहोस्
+    .accesskey = D
+reset-pbm-panel-complete = निजी सत्र डाटा मेटाइयो
 
 ## Autorefresh blocker
 
@@ -673,11 +993,21 @@ refresh-blocked-allow =
 
 ## Firefox Relay integration
 
+firefox-relay-offer-why-to-use-relay = हाम्रो सुरक्षित, प्रयोग गर्न-सजिलो मास्कहरूले तपाईंको पहिचानलाई सुरक्षित गर्दछ र तपाईंको इमेल ठेगाना लुकाएर स्प्यामलाई रोक्छ।
+# Variables:
+#  $useremail (String): user email that will receive messages
+firefox-relay-offer-what-relay-provides = तपाईंको इमेल मास्कहरूमा पठाइएका सबै इमेलहरू <strong>{ $useremail }</strong> मा फर्वार्ड गरिने छन् (जबसम्म तपाईंले तिनीहरूलाई रोक्ने निर्णय गर्नुभएन)।
+firefox-relay-offer-legal-notice = "इमेल मास्क प्रयोग गर्नुहोस्" क्लिक गरेर, तपाइँ <label data-l10n-name="tos-url">सेवाका सर्तहरू</label> र <label data-l10n-name="privacy-url">गोपनीयता सूचनामा सहमत हुनुहुन्छ। </label>।
 
 ## Add-on Pop-up Notifications
 
 popup-notification-addon-install-unsigned =
     .value = (अप्रमाणित)
+popup-notification-xpinstall-prompt-learn-more = एड-अनहरू सुरक्षित रूपमा स्थापना गर्ने बारे थप जान्नुहोस्
+# Note: Access key is set to P to match "Private" in the corresponding localized label.
+popup-notification-addon-privatebrowsing-checkbox =
+    .label = निजी विन्डोजमा चलाउनुहोस्
+    .accesskey = P
 
 ## Pop-up warning
 
@@ -687,6 +1017,14 @@ popup-warning-message =
     { $popupCount ->
         [one] { -brand-short-name } ले यो साइटलाई पप-अप सञ्झ्याल खोल्नबाट रोक्यो।
        *[other] { -brand-short-name } ले यो साइटलाई { $popupCount } पप-अप सञ्झ्यालहरू खोल्नबाट रोक्यो।
+    }
+# The singular form is left out for English, since the number of blocked pop-ups is always greater than 1.
+# Variables:
+#   $popupCount (Number): the number of pop-ups blocked.
+popup-warning-exceeded-message =
+    { $popupCount ->
+        [one] { -brand-short-name } ले यो साइटलाई { $popupCount } भन्दा बढी पप-अप विन्डोहरू खोल्नबाट रोकेको छ।
+       *[other] { -brand-short-name } ले यो साइटलाई { $popupCount } भन्दा बढी पप-अप विन्डोहरू खोल्नबाट रोकेको छ।
     }
 popup-warning-button =
     .label =
@@ -703,3 +1041,24 @@ popup-warning-button =
 #   $popupURI (String): the URI for the pop-up window
 popup-show-popup-menuitem =
     .label = '{ $popupURI }' देखाउनुहोस्
+
+## File-picker crash notification ("FilePickerCrashed.sys.mjs")
+
+file-picker-failed-open = विन्डोज फाइल-संवाद खोल्न सकिएन। कुनै फाइल वा फोल्डर चयन गर्न सकिएन।
+#   $path (string): The full path to which the file will be saved (e.g., 'C:\Users\Default User\Downloads\readme.txt').
+file-picker-failed-save-somewhere = विन्डोज फाइल-संवाद खोल्न सकिएन। फाइल { $path } मा सुरक्षित हुनेछ।
+file-picker-failed-save-nowhere = विन्डोज फाइल-संवाद खोल्न सकिएन। कुनै पूर्वनिर्धारित फोल्डर फेला परेन; फाइल बचत हुनेछैन।
+file-picker-crashed-open = Windows फाइल-संवाद क्र्यास भएको छ। कुनै फाइल वा फोल्डर चयन गर्न सकिएन।
+#   $path (string): The full path to which the file will be saved (e.g., 'C:\Users\Default User\Downloads\readme.txt').
+file-picker-crashed-save-somewhere = Windows फाइल-संवाद क्र्यास भएको छ। फाइल { $path } मा सुरक्षित हुनेछ।
+file-picker-crashed-save-nowhere = Windows फाइल-संवाद क्र्यास भएको छ। कुनै पूर्वनिर्धारित फोल्डर फेला परेन; फाइल बचत हुनेछैन।
+
+# Button used with file-picker-crashed-save-default. Opens the folder in Windows
+# Explorer, with the saved file selected and in focus.
+#
+# The wording here should be consistent with the Windows variant of
+# `downloads-cmd-show-menuitem-2` and similar messages.
+
+file-picker-crashed-show-in-folder =
+    .label = फोल्डरमा देखाउनुहोस्
+    .accessKey = F

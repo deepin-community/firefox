@@ -2953,6 +2953,43 @@ var gCSSProperties = {
     ],
     invalid_values: ["20", "-1px", "50%"],
   },
+  "container-type": {
+    domProp: "containerType",
+    inherited: false,
+    type: CSS_TYPE_LONGHAND,
+    initial_values: ["normal"],
+    other_values: ["inline-size", "size"],
+    invalid_values: [
+      "none style",
+      "none inline-size",
+      "inline-size none",
+      "style none",
+      "style style",
+      "inline-size style inline-size",
+      "inline-size block-size",
+      "block-size",
+      "block-size style",
+      "size inline-size",
+      "size block-size",
+    ],
+  },
+  "container-name": {
+    domProp: "containerName",
+    inherited: false,
+    type: CSS_TYPE_LONGHAND,
+    initial_values: ["none"],
+    other_values: ["foo bar", "foo", "baz bazz", "foo foo"],
+    invalid_values: ["foo unset", "none bar", "foo initial", "initial foo"],
+  },
+  container: {
+    domProp: "container",
+    inherited: false,
+    type: CSS_TYPE_TRUE_SHORTHAND,
+    subproperties: ["container-type", "container-name"],
+    initial_values: ["none"],
+    other_values: ["foo / size", "foo bar / size", "foo / inline-size", "foo"],
+    invalid_values: ["size / foo", "size / foo bar"],
+  },
   d: {
     domProp: "d",
     inherited: false,
@@ -5382,7 +5419,6 @@ var gCSSProperties = {
       "counter(\\()",
       "counters(a\\+b, '.')",
       "counter(\\}, upper-alpha)",
-      "-moz-alt-content",
       "counter(foo, symbols('*'))",
       "counter(foo, symbols(numeric '0' '1'))",
       "counters(foo, '.', symbols('*'))",
@@ -5400,6 +5436,7 @@ var gCSSProperties = {
       "attr(-2)",
       "counter(2)",
       "counters(-2, '.')",
+      "-moz-alt-content",
       "-moz-alt-content 'foo'",
       "'foo' -moz-alt-content",
       "counter(one, two, three) 'foo'",
@@ -6248,11 +6285,12 @@ var gCSSProperties = {
       "max-content",
       "min-content",
       "fit-content",
-      "-moz-fit-content",
-      "-moz-available",
-      // these two keywords are the aliases of above first two.
+      "stretch",
       "-moz-max-content",
       "-moz-min-content",
+      "-moz-fit-content",
+      "-moz-available",
+      "-webkit-fill-available",
       "calc(2px)",
       "calc(50%)",
       "calc(3*25px)",
@@ -6694,11 +6732,12 @@ var gCSSProperties = {
       "max-content",
       "min-content",
       "fit-content",
-      "-moz-fit-content",
-      "-moz-available",
-      // these two keywords are the aliases of above first two.
+      "stretch",
       "-moz-max-content",
       "-moz-min-content",
+      "-moz-fit-content",
+      "-moz-available",
+      "-webkit-fill-available",
       "calc(2px)",
       "calc(-2px)",
       "calc(0px)",
@@ -6723,17 +6762,15 @@ var gCSSProperties = {
       "30px",
       "50%",
       "0",
-      // these four keywords compute to the initial value only when the
-      // writing mode is vertical, and we're testing with a horizontal
-      // writing mode
       "max-content",
       "min-content",
       "fit-content",
-      "-moz-fit-content",
-      "-moz-available",
-      // these two keywords are the aliases of above first two.
+      "stretch",
       "-moz-max-content",
       "-moz-min-content",
+      "-moz-fit-content",
+      "-moz-available",
+      "-webkit-fill-available",
       "calc(2px)",
       "calc(-2px)",
       "calc(0px)",
@@ -6760,11 +6797,12 @@ var gCSSProperties = {
       "max-content",
       "min-content",
       "fit-content",
-      "-moz-fit-content",
-      "-moz-available",
-      // these two keywords are the aliases of above first two.
+      "stretch",
       "-moz-max-content",
       "-moz-min-content",
+      "-moz-fit-content",
+      "-moz-available",
+      "-webkit-fill-available",
       "calc(-1%)",
       "calc(2px)",
       "calc(50%)",
@@ -6787,17 +6825,15 @@ var gCSSProperties = {
     other_values: [
       "30px",
       "50%",
-      // these four keywords compute to the initial value only when the
-      // writing mode is vertical, and we're testing with a horizontal
-      // writing mode
       "max-content",
       "min-content",
       "fit-content",
-      "-moz-fit-content",
-      "-moz-available",
-      // these two keywords are the aliases of above first two.
+      "stretch",
       "-moz-max-content",
       "-moz-min-content",
+      "-moz-fit-content",
+      "-moz-available",
+      "-webkit-fill-available",
       "calc(-1%)",
       "calc(2px)",
       "calc(50%)",
@@ -7905,7 +7941,19 @@ var gCSSProperties = {
     applies_to_placeholder: true,
     // don't know whether left and right are same as start
     initial_values: ["start"],
-    other_values: ["center", "justify", "end", "match-parent"],
+    other_values: [
+      "center",
+      "justify",
+      "end",
+      "match-parent",
+      // At least -webkit-center is needed for compat, see bug 1899042.
+      "-moz-center",
+      "-webkit-center",
+      "-moz-left",
+      "-webkit-left",
+      "-moz-right",
+      "-webkit-right",
+    ],
     invalid_values: [
       "true",
       "true true",
@@ -8772,20 +8820,15 @@ var gCSSProperties = {
       "15px",
       "3em",
       "15%",
-      // these three keywords compute to the initial value only when the
-      // writing mode is vertical, and we're testing with a horizontal
-      // writing mode
       "max-content",
       "min-content",
       "fit-content",
-      "-moz-fit-content",
-      // these two keywords are the aliases of above first two.
+      "stretch",
       "-moz-max-content",
       "-moz-min-content",
-      // whether -moz-available computes to the initial value depends on
-      // the container size, and for the container size we're testing
-      // with, it does
-      // "-moz-available",
+      "-moz-fit-content",
+      "-moz-available",
+      "-webkit-fill-available",
       "3e1px",
       "3e+1px",
       "3e0px",
@@ -9739,7 +9782,7 @@ var gCSSProperties = {
     applies_to_first_line: true,
     initial_values: ["none"],
     other_values: ["non-scaling-stroke"],
-    invalid_values: [],
+    invalid_values: ["none non-scaling-stroke"],
   },
   "-moz-window-dragging": {
     domProp: "MozWindowDragging",
@@ -10155,10 +10198,12 @@ var gCSSProperties = {
       "max-content",
       "min-content",
       "fit-content",
+      "stretch",
       "-moz-max-content",
       "-moz-min-content",
       "-moz-fit-content",
       "-moz-available",
+      "-webkit-fill-available",
       // valid calc() values
       "calc(-2px)",
       "calc(2px)",
@@ -10405,14 +10450,15 @@ var gCSSProperties = {
       "15px",
       "3em",
       "15%",
-      // These keywords are treated as initial value.
       "max-content",
       "min-content",
       "fit-content",
-      "-moz-fit-content",
-      "-moz-available",
+      "stretch",
       "-moz-max-content",
       "-moz-min-content",
+      "-moz-fit-content",
+      "-moz-available",
+      "-webkit-fill-available",
       "calc(2px)",
       "calc(50%)",
       "calc(3*25px)",
@@ -10756,20 +10802,15 @@ var gCSSProperties = {
       "15px",
       "3em",
       "15%",
-      // these three keywords compute to the initial value only when the
-      // writing mode is vertical, and we're testing with a horizontal
-      // writing mode
       "max-content",
       "min-content",
       "fit-content",
-      "-moz-fit-content",
-      // these two keywords are the aliases of above first two.
+      "stretch",
       "-moz-max-content",
       "-moz-min-content",
-      // whether -moz-available computes to the initial value depends on
-      // the container size, and for the container size we're testing
-      // with, it does
-      // "-moz-available",
+      "-moz-fit-content",
+      "-moz-available",
+      "-webkit-fill-available",
       "calc(2px)",
       "calc(50%)",
       "calc(3*25px)",
@@ -10909,14 +10950,15 @@ var gCSSProperties = {
     other_values: [
       "30px",
       "50%",
-      // These keywords are treated as initial value.
       "max-content",
       "min-content",
       "fit-content",
-      "-moz-fit-content",
-      "-moz-available",
+      "stretch",
       "-moz-max-content",
       "-moz-min-content",
+      "-moz-fit-content",
+      "-moz-available",
+      "-webkit-fill-available",
       "calc(2px)",
       "calc(50%)",
       "calc(3*25px)",
@@ -10939,17 +10981,15 @@ var gCSSProperties = {
     other_values: [
       "30px",
       "50%",
-      // these four keywords compute to the initial value only when the
-      // writing mode is vertical, and we're testing with a horizontal
-      // writing mode
       "max-content",
       "min-content",
       "fit-content",
-      "-moz-fit-content",
-      "-moz-available",
-      // these two keywords are the aliases of above first two.
+      "stretch",
       "-moz-max-content",
       "-moz-min-content",
+      "-moz-fit-content",
+      "-moz-available",
+      "-webkit-fill-available",
       "calc(2px)",
       "calc(50%)",
       "calc(3*25px)",
@@ -10972,14 +11012,15 @@ var gCSSProperties = {
     other_values: [
       "30px",
       "50%",
-      // These keywords are treated as initial value.
       "max-content",
       "min-content",
       "fit-content",
-      "-moz-fit-content",
-      "-moz-available",
+      "stretch",
       "-moz-max-content",
       "-moz-min-content",
+      "-moz-fit-content",
+      "-moz-available",
+      "-webkit-fill-available",
       "calc(-1%)",
       "calc(2px)",
       "calc(50%)",
@@ -11003,17 +11044,15 @@ var gCSSProperties = {
     other_values: [
       "30px",
       "50%",
-      // these four keywords compute to the initial value only when the
-      // writing mode is vertical, and we're testing with a horizontal
-      // writing mode
       "max-content",
       "min-content",
       "fit-content",
-      "-moz-fit-content",
-      "-moz-available",
-      // these two keywords are the aliases of above first two.
+      "stretch",
       "-moz-max-content",
       "-moz-min-content",
+      "-moz-fit-content",
+      "-moz-available",
+      "-webkit-fill-available",
       "calc(-1%)",
       "calc(2px)",
       "calc(50%)",
@@ -11724,6 +11763,18 @@ var gCSSProperties = {
     alias_for: "flex-flow",
     subproperties: ["flex-direction", "flex-wrap"],
   },
+  "-webkit-font-feature-settings": {
+    domProp: "webkitFontFeatureSettings",
+    inherited: true,
+    type: CSS_TYPE_SHORTHAND_AND_LONGHAND,
+    applies_to_first_letter: true,
+    applies_to_first_line: true,
+    applies_to_marker: true,
+    applies_to_placeholder: true,
+    applies_to_cue: true,
+    alias_for: "font-feature-settings",
+    subproperties: ["font-feature-settings"],
+  },
   "-webkit-line-clamp": {
     domProp: "webkitLineClamp",
     inherited: false,
@@ -11923,122 +11974,120 @@ function get_computed_value(cs, property) {
   }
 }
 
-if (IsCSSPropertyPrefEnabled("layout.css.individual-transform.enabled")) {
-  gCSSProperties.rotate = {
-    domProp: "rotate",
-    inherited: false,
-    type: CSS_TYPE_LONGHAND,
-    initial_values: ["none"],
-    other_values: [
-      "45deg",
-      "45grad",
-      "72rad",
-      "0.25turn",
-      ".57rad",
-      "0 0 0 0rad",
-      "0 0 1 45deg",
-      "0 0 1 0rad",
-      "0rad 0 0 1",
-      "10rad 10 20 30",
-      "x 10rad",
-      "y 10rad",
-      "z 10rad",
-      "10rad x",
-      "10rad y",
-      "10rad z",
-      /* valid calc() values */
-      "calc(1) 0 0 calc(45deg + 5rad)",
-      "0 1 0 calc(400grad + 1rad)",
-      "calc(0.5turn + 10deg)",
-    ],
-    invalid_values: [
-      "0",
-      "7",
-      "0, 0, 1, 45deg",
-      "0 0 45deg",
-      "0 0 20rad",
-      "0 0 0 0",
-      "x x 10rad",
-      "x y 10rad",
-      "0 0 1 10rad z",
-      "0 0 1 z 10rad",
-      "z 0 0 1 10rad",
-      "0 0 z 1 10rad",
-      /* invalid calc() values */
-      "0.5 1 0 calc(45deg + 10)",
-      "calc(0.5turn + 10%)",
-    ],
-  };
+gCSSProperties.rotate = {
+  domProp: "rotate",
+  inherited: false,
+  type: CSS_TYPE_LONGHAND,
+  initial_values: ["none"],
+  other_values: [
+    "45deg",
+    "45grad",
+    "72rad",
+    "0.25turn",
+    ".57rad",
+    "0 0 0 0rad",
+    "0 0 1 45deg",
+    "0 0 1 0rad",
+    "0rad 0 0 1",
+    "10rad 10 20 30",
+    "x 10rad",
+    "y 10rad",
+    "z 10rad",
+    "10rad x",
+    "10rad y",
+    "10rad z",
+    /* valid calc() values */
+    "calc(1) 0 0 calc(45deg + 5rad)",
+    "0 1 0 calc(400grad + 1rad)",
+    "calc(0.5turn + 10deg)",
+  ],
+  invalid_values: [
+    "0",
+    "7",
+    "0, 0, 1, 45deg",
+    "0 0 45deg",
+    "0 0 20rad",
+    "0 0 0 0",
+    "x x 10rad",
+    "x y 10rad",
+    "0 0 1 10rad z",
+    "0 0 1 z 10rad",
+    "z 0 0 1 10rad",
+    "0 0 z 1 10rad",
+    /* invalid calc() values */
+    "0.5 1 0 calc(45deg + 10)",
+    "calc(0.5turn + 10%)",
+  ],
+};
 
-  gCSSProperties.translate = {
-    domProp: "translate",
-    inherited: false,
-    type: CSS_TYPE_LONGHAND,
-    prerequisites: { width: "10px", height: "10px", display: "block" },
-    initial_values: ["none"],
-    other_values: [
-      "-4px",
-      "3px",
-      "4em",
-      "50%",
-      "4px 5px 6px",
-      "4px 5px",
-      "50% 5px 6px",
-      "50% 10% 6em",
-      /* valid calc() values */
-      "calc(5px + 10%)",
-      "calc(0.25 * 5px + 10% / 3)",
-      "calc(5px - 10% * 3)",
-      "calc(5px - 3 * 10%) 50px",
-      "-50px calc(5px - 10% * 3)",
-      "10px calc(min(5px,10%))",
-    ],
-    invalid_values: [
-      "1",
-      "-moz-min(5px,10%)",
-      "4px, 5px, 6px",
-      "3px 4px 1px 7px",
-      "4px 5px 10%",
-      /* invalid calc() values */
-      "calc(max(5px,10%) 10%)",
-      "calc(nonsense)",
-    ],
-  };
-  gCSSProperties.scale = {
-    domProp: "scale",
-    inherited: false,
-    type: CSS_TYPE_LONGHAND,
-    initial_values: ["none"],
-    other_values: [
-      "10",
-      "10%",
-      "10 20",
-      "10% 20%",
-      "10 20 30",
-      "10% 20% 30%",
-      "10 20% 30",
-      "-10",
-      "-10%",
-      "-10 20",
-      "-10% 20%",
-      "-10 20 -30",
-      "-10% 20% -30%",
-      "-10 20% -30",
-      "0 2.0",
-      /* valid calc() values */
-      "calc(1 + 2)",
-      "calc(10) calc(20) 30",
-    ],
-    invalid_values: [
-      "10px",
-      "10deg",
-      "10, 20, 30",
-      /* invalid calc() values */
-      "calc(1 + 20%)",
-      "10 calc(1 + 10px)",
-    ],
-  };
-}
+gCSSProperties.translate = {
+  domProp: "translate",
+  inherited: false,
+  type: CSS_TYPE_LONGHAND,
+  prerequisites: { width: "10px", height: "10px", display: "block" },
+  initial_values: ["none"],
+  other_values: [
+    "-4px",
+    "3px",
+    "4em",
+    "50%",
+    "4px 5px 6px",
+    "4px 5px",
+    "50% 5px 6px",
+    "50% 10% 6em",
+    /* valid calc() values */
+    "calc(5px + 10%)",
+    "calc(0.25 * 5px + 10% / 3)",
+    "calc(5px - 10% * 3)",
+    "calc(5px - 3 * 10%) 50px",
+    "-50px calc(5px - 10% * 3)",
+    "10px calc(min(5px,10%))",
+  ],
+  invalid_values: [
+    "1",
+    "-moz-min(5px,10%)",
+    "4px, 5px, 6px",
+    "3px 4px 1px 7px",
+    "4px 5px 10%",
+    /* invalid calc() values */
+    "calc(max(5px,10%) 10%)",
+    "calc(nonsense)",
+  ],
+};
+gCSSProperties.scale = {
+  domProp: "scale",
+  inherited: false,
+  type: CSS_TYPE_LONGHAND,
+  initial_values: ["none"],
+  other_values: [
+    "10",
+    "10%",
+    "10 20",
+    "10% 20%",
+    "10 20 30",
+    "10% 20% 30%",
+    "10 20% 30",
+    "-10",
+    "-10%",
+    "-10 20",
+    "-10% 20%",
+    "-10 20 -30",
+    "-10% 20% -30%",
+    "-10 20% -30",
+    "0 2.0",
+    /* valid calc() values */
+    "calc(1 + 2)",
+    "calc(10) calc(20) 30",
+  ],
+  invalid_values: [
+    "10px",
+    "10deg",
+    "10, 20, 30",
+    /* invalid calc() values */
+    "calc(1 + 20%)",
+    "10 calc(1 + 10px)",
+  ],
+};
 
 if (
   IsCSSPropertyPrefEnabled("layout.css.transform-box-content-stroke.enabled")
@@ -12348,14 +12397,6 @@ if (isGridTemplateMasonryValueEnabled) {
     other_values: ["pack ordered", "ordered next", "next definite-first"],
     invalid_values: ["auto", "none", "10px", "row", "dense"],
   };
-
-  let alignTracks = { ...gCSSProperties["align-content"] };
-  alignTracks.domProp = "alignTracks";
-  gCSSProperties["align-tracks"] = alignTracks;
-
-  let justifyTracks = { ...gCSSProperties["justify-content"] };
-  justifyTracks.domProp = "justifyTracks";
-  gCSSProperties["justify-tracks"] = justifyTracks;
 }
 
 gCSSProperties["display"].other_values.push("grid", "inline-grid");
@@ -13043,8 +13084,21 @@ if (IsCSSPropertyPrefEnabled("layout.css.osx-font-smoothing.enabled")) {
     applies_to_cue: true,
     applies_to_marker: true,
     initial_values: ["auto"],
-    other_values: ["grayscale"],
-    invalid_values: ["none", "subpixel-antialiased", "antialiased"],
+    other_values: ["grayscale", "subpixel-antialiased", "antialiased"],
+    invalid_values: ["none"],
+  };
+
+  gCSSProperties["-webkit-font-smoothing"] = {
+    domProp: "webkitFontSmoothing",
+    inherited: true,
+    type: CSS_TYPE_SHORTHAND_AND_LONGHAND,
+    applies_to_first_letter: true,
+    applies_to_first_line: true,
+    applies_to_placeholder: true,
+    applies_to_cue: true,
+    applies_to_marker: true,
+    alias_for: "-moz-osx-font-smoothing",
+    subproperties: ["-moz-osx-font-smoothing"],
   };
 }
 
@@ -13197,21 +13251,19 @@ gCSSProperties["hyphenate-character"] = {
   invalid_values: ["none", "auto auto", "1400", "U+1400"],
 };
 
-if (IsCSSPropertyPrefEnabled("layout.css.content-visibility.enabled")) {
-  gCSSProperties["content-visibility"] = {
-    domProp: "contentVisibility",
-    inherited: false,
-    type: CSS_TYPE_LONGHAND,
-    initial_values: ["visible"],
-    other_values: ["auto", "hidden"],
-    invalid_values: [
-      "invisible",
-      "partially-visible",
-      "auto auto",
-      "visible hidden",
-    ],
-  };
-}
+gCSSProperties["content-visibility"] = {
+  domProp: "contentVisibility",
+  inherited: false,
+  type: CSS_TYPE_LONGHAND,
+  initial_values: ["visible"],
+  other_values: ["auto", "hidden"],
+  invalid_values: [
+    "invisible",
+    "partially-visible",
+    "auto auto",
+    "visible hidden",
+  ],
+};
 
 if (IsCSSPropertyPrefEnabled("layout.css.contain-intrinsic-size.enabled")) {
   gCSSProperties["contain-intrinsic-width"] = {
@@ -13260,43 +13312,182 @@ if (IsCSSPropertyPrefEnabled("layout.css.contain-intrinsic-size.enabled")) {
   };
 }
 
-if (IsCSSPropertyPrefEnabled("layout.css.container-queries.enabled")) {
-  gCSSProperties["container-type"] = {
-    domProp: "containerType",
+if (IsCSSPropertyPrefEnabled("layout.css.anchor-positioning.enabled")) {
+  gCSSProperties["anchor-name"] = {
+    domProp: "anchorName",
+    inherited: false,
+    type: CSS_TYPE_LONGHAND,
+    initial_values: ["none"],
+    other_values: ["--foo", "--foo, --baz", "--foo,--baz", "--foo ,--baz"],
+    invalid_values: [
+      "--foo --bar",
+      "foo",
+      "none bar",
+      "none --baz",
+      "--foo bar",
+      ",--foo",
+      "--foo,",
+    ],
+  };
+
+  gCSSProperties["anchor-scope"] = {
+    domProp: "anchorScope",
+    inherited: false,
+    type: CSS_TYPE_LONGHAND,
+    initial_values: ["none"],
+    other_values: [
+      "all",
+      "--foo",
+      "--foo, --baz",
+      "--foo,--baz",
+      "--foo ,--baz",
+    ],
+    invalid_values: [
+      "all, --foo",
+      "--foo, all",
+      "--foo --bar",
+      "foo",
+      "none bar",
+      "none --baz",
+      "--foo bar",
+      ",--foo",
+      "--foo,",
+    ],
+  };
+
+  gCSSProperties["position-anchor"] = {
+    domProp: "positionAnchor",
+    inherited: false,
+    type: CSS_TYPE_LONGHAND,
+    initial_values: ["auto"],
+    other_values: ["--foo"],
+    invalid_values: ["none", "--foo, auto", "auto, --bar", "foo"],
+  };
+
+  gCSSProperties["position-area"] = {
+    domProp: "positionArea",
+    inherited: false,
+    type: CSS_TYPE_LONGHAND,
+    initial_values: ["none"],
+    other_values: [
+      "center",
+      "span-all",
+      "left",
+      "right",
+      "span-left",
+      "span-right",
+      "x-start",
+      "x-end",
+      "span-x-start",
+      "span-x-end",
+      "x-self-start",
+      "x-self-end",
+      "span-x-self-start",
+      "span-x-self-end",
+      "top",
+      "bottom",
+      "span-top",
+      "span-bottom",
+      "y-start",
+      "y-end",
+      "span-y-start",
+      "span-y-end",
+      "y-self-start",
+      "y-self-end",
+      "span-y-self-start",
+      "span-y-self-end",
+      "block-start",
+      "block-end",
+      "span-block-start",
+      "span-block-end",
+      "inline-start",
+      "inline-end",
+      "span-inline-start",
+      "span-inline-end",
+      "self-block-start",
+      "self-block-end",
+      "span-self-block-start",
+      "span-self-block-end",
+      "self-inline-start",
+      "self-inline-end",
+      "span-self-inline-start",
+      "span-self-inline-end",
+      "start",
+      "end",
+      "span-start",
+      "span-end",
+      "self-start",
+      "self-end",
+      "span-self-start",
+      "span-self-end",
+      "center span-all",
+      "left center",
+      "span-left bottom",
+      "span-block-end inline-start",
+      "span-inline-start block-end",
+      "self-block-end span-self-inline-start",
+      "start center",
+      "span-start span-end",
+      "self-end span-self-start",
+    ],
+    invalid_values: [
+      "auto",
+      "none left",
+      "left self-top",
+      "right block-end",
+      "top self-end",
+      "inline-start self-block-end",
+      "span-self-inline-start start",
+      "end span-self-start",
+    ],
+  };
+
+  gCSSProperties["position-try-fallbacks"] = {
+    domProp: "positionTryFallbacks",
+    inherited: false,
+    type: CSS_TYPE_LONGHAND,
+    initial_values: ["none"],
+    other_values: [
+      "--foo",
+      "flip-block",
+      "flip-inline",
+      "flip-start",
+      "left",
+      "span-y-start",
+      "span-block-start inline-end",
+      "span-all self-block-end",
+      "end span-start",
+      "center span-all",
+    ],
+    invalid_values: ["foo", "none none", "span-y-start self-block-end"],
+  };
+
+  gCSSProperties["position-try-order"] = {
+    domProp: "positionTryOrder",
     inherited: false,
     type: CSS_TYPE_LONGHAND,
     initial_values: ["normal"],
-    other_values: ["inline-size", "size"],
-    invalid_values: [
-      "none style",
-      "none inline-size",
-      "inline-size none",
-      "style none",
-      "style style",
-      "inline-size style inline-size",
-      "inline-size block-size",
-      "block-size",
-      "block-size style",
-      "size inline-size",
-      "size block-size",
+    other_values: [
+      "most-width",
+      "most-height",
+      "most-block-size",
+      "most-inline-size",
     ],
+    invalid_values: ["auto", "none", "foo"],
   };
-  gCSSProperties["container-name"] = {
-    domProp: "containerName",
+
+  gCSSProperties["position-visibility"] = {
+    domProp: "positionVisibility",
     inherited: false,
     type: CSS_TYPE_LONGHAND,
-    initial_values: ["none"],
-    other_values: ["foo bar", "foo", "baz bazz", "foo foo"],
-    invalid_values: ["foo unset", "none bar", "foo initial", "initial foo"],
-  };
-  gCSSProperties["container"] = {
-    domProp: "container",
-    inherited: false,
-    type: CSS_TYPE_TRUE_SHORTHAND,
-    subproperties: ["container-type", "container-name"],
-    initial_values: ["none"],
-    other_values: ["foo / size", "foo bar / size", "foo / inline-size", "foo"],
-    invalid_values: ["size / foo", "size / foo bar"],
+    initial_values: ["always"],
+    other_values: ["anchors-valid", "anchors-visible", "no-overflow"],
+    invalid_values: [
+      "none",
+      "auto",
+      "always anchors-valid",
+      "anchors-visible always",
+    ],
   };
 }
 
@@ -13758,22 +13949,10 @@ if (IsCSSPropertyPrefEnabled("layout.css.scroll-driven-animations.enabled")) {
   // Basically, web-platform-tests should cover most cases, so here we only
   // put some basic test cases.
   gCSSProperties["animation"].subproperties.push("animation-timeline");
-  gCSSProperties["animation"].initial_values.push(
-    "none none 0s 0s ease normal running 1.0 auto",
-    "none none auto"
-  );
-  gCSSProperties["animation"].other_values.push(
-    "none none 0s 0s cubic-bezier(0.25, 0.1, 0.25, 1.0) normal running 1.0 auto",
-    "bounce 1s linear 2s timeline",
-    "bounce 1s 2s linear none",
-    "bounce timeline",
-    "2s, 1s bounce timeline",
-    "1s bounce timeline, 2s",
-    "1s bounce none, 2s none auto"
-  );
-
   gCSSProperties["-moz-animation"].subproperties.push("animation-timeline");
   gCSSProperties["-webkit-animation"].subproperties.push("animation-timeline");
+
+  gCSSProperties["animation-duration"].initial_values.push("auto");
 
   gCSSProperties["animation-timeline"] = {
     domProp: "animationTimeline",
@@ -13783,45 +13962,43 @@ if (IsCSSPropertyPrefEnabled("layout.css.scroll-driven-animations.enabled")) {
     initial_values: ["auto"],
     other_values: [
       "none",
-      "all",
-      "ball",
-      "mall",
-      "color",
-      "bounce, bubble, opacity",
-      "foobar",
-      "\\32bounce",
-      "-bounce",
-      "-\\32bounce",
-      "\\32 0bounce",
-      "-\\32 0bounce",
-      "\\2bounce",
-      "-\\2bounce",
+      "--all",
+      "--ball",
+      "--mall",
+      "--color",
+      "--bounce, --bubble, --opacity",
+      "--foobar",
+      "--\\32bounce",
+      "--bounce",
+      "--\\32 0bounce",
+      "--\\2bounce",
       "scroll()",
       "scroll(block)",
       "scroll(inline)",
-      "scroll(horizontal)",
-      "scroll(vertical)",
+      "scroll(x)",
+      "scroll(y)",
       "scroll(root)",
       "scroll(nearest)",
       "scroll(inline nearest)",
-      "scroll(vertical root)",
-      "scroll(root horizontal)",
+      "scroll(y root)",
+      "scroll(root x)",
       "view()",
       "view(inline)",
       "view(auto)",
       "view(auto 1px)",
       "view(inline auto)",
-      "view(vertical auto auto)",
-      "view(horizontal 1px 1%)",
+      "view(y auto auto)",
+      "view(x 1px 1%)",
       "view(1px 1% block)",
     ],
     invalid_values: [
-      "bounce, initial",
-      "initial, bounce",
-      "bounce, inherit",
-      "inherit, bounce",
-      "bounce, unset",
-      "unset, bounce",
+      "abc",
+      "--bounce, initial",
+      "initial, --bounce",
+      "--bounce, inherit",
+      "inherit, --bounce",
+      "--bounce, unset",
+      "unset, --bounce",
     ],
   };
 
@@ -13831,21 +14008,18 @@ if (IsCSSPropertyPrefEnabled("layout.css.scroll-driven-animations.enabled")) {
     type: CSS_TYPE_LONGHAND,
     initial_values: ["none"],
     other_values: [
-      "all",
-      "auto",
-      "ball",
-      "mall",
-      "color",
-      "foobar",
-      "\\32bounce",
-      "-bounce",
-      "-\\32bounce",
-      "\\32 0bounce",
-      "-\\32 0bounce",
-      "\\2bounce",
-      "-\\2bounce",
+      "--all",
+      "--auto",
+      "--ball",
+      "--mall",
+      "--color",
+      "--foobar",
+      "--\\32bounce",
+      "--bounce",
+      "--\\32 0bounce",
+      "--\\2bounce",
     ],
-    invalid_values: ["abc bounce", "10px", "rgb(1, 2, 3)"],
+    invalid_values: ["abc", "abc --bounce", "10px", "rgb(1, 2, 3)"],
   };
 
   gCSSProperties["scroll-timeline-axis"] = {
@@ -13853,8 +14027,8 @@ if (IsCSSPropertyPrefEnabled("layout.css.scroll-driven-animations.enabled")) {
     inherited: false,
     type: CSS_TYPE_LONGHAND,
     initial_values: ["block"],
-    other_values: ["inline", "vertical", "horizontal"],
-    invalid_values: ["auto", "none", "abc"],
+    other_values: ["inline", "x", "y"],
+    invalid_values: ["auto", "none", "abc", "horizontal"],
   };
 
   gCSSProperties["scroll-timeline"] = {
@@ -13864,17 +14038,17 @@ if (IsCSSPropertyPrefEnabled("layout.css.scroll-driven-animations.enabled")) {
     subproperties: ["scroll-timeline-name", "scroll-timeline-axis"],
     initial_values: ["none block", "none"],
     other_values: [
-      "auto inline",
-      "bounce inline",
-      "bounce vertical",
-      "\\32bounce inline",
-      "-bounce block",
-      "\\32 0bounce vertical",
-      "-\\32 0bounce horizontal",
-      "a, b, c",
-      "a block, b inline, c vertical",
+      "--auto inline",
+      "--bounce inline",
+      "--bounce y",
+      "--\\32bounce inline",
+      "--bounce block",
+      "--\\32 0bounce y",
+      "--\\32 0bounce x",
+      "--a, --b, --c",
+      "--a block, --b inline, --c y",
     ],
-    invalid_values: ["", "bounce bounce", "horizontal a", "block abc"],
+    invalid_values: ["", "--bounce --bounce", "x --a", "block --abc"],
   };
 
   gCSSProperties["view-timeline-name"] = {
@@ -13883,23 +14057,20 @@ if (IsCSSPropertyPrefEnabled("layout.css.scroll-driven-animations.enabled")) {
     type: CSS_TYPE_LONGHAND,
     initial_values: ["none"],
     other_values: [
-      "all",
-      "auto",
-      "ball",
-      "mall",
-      "color",
-      "foobar",
-      "\\32bounce",
-      "-bounce",
-      "-\\32bounce",
-      "\\32 0bounce",
-      "-\\32 0bounce",
-      "\\2bounce",
-      "-\\2bounce",
-      "bounce, abc",
+      "--all",
+      "--auto",
+      "--ball",
+      "--mall",
+      "--color",
+      "--foobar",
+      "--\\32bounce",
+      "--bounce",
+      "--\\32 0bounce",
+      "--\\2bounce",
+      "--bounce, --abc",
       "none, none",
     ],
-    invalid_values: ["abc bounce", "10px", "rgb(1, 2, 3)"],
+    invalid_values: ["abc", "abc --bounce", "10px", "rgb(1, 2, 3)"],
   };
 
   gCSSProperties["view-timeline-axis"] = {
@@ -13907,8 +14078,8 @@ if (IsCSSPropertyPrefEnabled("layout.css.scroll-driven-animations.enabled")) {
     inherited: false,
     type: CSS_TYPE_LONGHAND,
     initial_values: ["block"],
-    other_values: ["inline", "vertical", "horizontal", "inline, block"],
-    invalid_values: ["auto", "none", "abc", "inline block"],
+    other_values: ["inline", "x", "y", "inline, block"],
+    invalid_values: ["auto", "none", "abc", "inline block", "vertical"],
   };
 
   gCSSProperties["view-timeline-inset"] = {
@@ -13927,17 +14098,17 @@ if (IsCSSPropertyPrefEnabled("layout.css.scroll-driven-animations.enabled")) {
     subproperties: ["view-timeline-name", "view-timeline-axis"],
     initial_values: ["none block", "none"],
     other_values: [
-      "auto inline",
-      "bounce inline",
-      "bounce vertical",
-      "\\32bounce inline",
-      "-bounce block",
-      "\\32 0bounce vertical",
-      "-\\32 0bounce horizontal",
-      "a, b, c",
-      "a block, b inline, c vertical",
+      "--auto inline",
+      "--bounce inline",
+      "--bounce y",
+      "--\\32bounce inline",
+      "--bounce block",
+      "--\\32 0bounce y",
+      "--\\32 0bounce x",
+      "--a, --b, --c",
+      "--a block, --b inline, --c y",
     ],
-    invalid_values: ["", ",", "abc abc", "horizontal a", "block abc"],
+    invalid_values: ["", ",", "--abc --abc", "x --a", "block --abc"],
   };
 }
 
@@ -14120,6 +14291,45 @@ if (IsCSSPropertyPrefEnabled("layout.css.transition-behavior.enabled")) {
   if (IsCSSPropertyPrefEnabled("layout.css.prefixes.transitions")) {
     gCSSProperties["-moz-transition"].subproperties.push("transition-behavior");
   }
+}
+
+if (IsCSSPropertyPrefEnabled("layout.css.field-sizing.enabled")) {
+  Object.assign(gCSSProperties, {
+    "field-sizing": {
+      domProp: "fieldSizing",
+      inherited: false,
+      type: CSS_TYPE_LONGHAND,
+      initial_values: ["fixed"],
+      other_values: ["content"],
+      invalid_values: ["none", "auto"],
+    },
+  });
+}
+
+if (IsCSSPropertyPrefEnabled("dom.viewTransitions.enabled")) {
+  Object.assign(gCSSProperties, {
+    "view-transition-name": {
+      domProp: "viewTransitionName",
+      inherited: false,
+      type: CSS_TYPE_LONGHAND,
+      initial_values: ["none"],
+      other_values: [
+        "all",
+        "ball",
+        "mall",
+        "color",
+        "foobar",
+        "\\32bounce",
+        "-bounce",
+        "-\\32bounce",
+        "\\32 0bounce",
+        "-\\32 0bounce",
+        "\\2bounce",
+        "-\\2bounce",
+      ],
+      invalid_values: ["auto", "abc --bounce", "10px", "rgb(1, 2, 3)"],
+    },
+  });
 }
 
 // Copy aliased properties' fields from their alias targets. Keep this logic

@@ -13,6 +13,17 @@ tabbrowser-menuitem-close =
 #   $title (String): the title of the current tab.
 #   $containerName (String): the name of the current container.
 tabbrowser-container-tab-title = { $title } - { $containerName }
+# This text serves as an on-screen tooltip as well as an accessible name for
+# the "X" button that is shown on the active tab or, when multiple tabs are
+# selected, to all their "X" buttons.
+# Variables:
+#   $tabCount (Number): The number of tabs that will be closed.
+tabbrowser-close-tabs-button =
+    .tooltiptext =
+        { $tabCount ->
+            [one] ਟੈਬ ਬੰਦ ਕਰੋ
+           *[other] { $tabCount }ਟੈਬਾਂ ਬੰਦ ਕਰੋ
+        }
 # Variables:
 #   $tabCount (Number): The number of tabs that will be closed.
 tabbrowser-close-tabs-tooltip =
@@ -110,6 +121,14 @@ tabbrowser-confirm-open-multiple-tabs-checkbox = ਜਦੋਂ ਕਈ ਟੈਬ�
 tabbrowser-confirm-caretbrowsing-title = ਕਰੈੱਟ ਬਰਾਊਜ਼ਿੰਗ
 tabbrowser-confirm-caretbrowsing-message = F7 ਦਬਾਉਣ ਨਾਲ ਕਰੈੱਟ ਬਰਾਊਜ਼ਿੰਗ ਚਾਲੂ ਜਾਂ ਬੰਦ ਹੁੰਦੀ ਹੈ। ਇਹ ਫੀਚਰ ਵੈੱਬ-ਸਫ਼ਿਆਂ ਵਿੱਚ ਹਿਲਣਯੋਗ ਕਰਸਰ ਰੱਖਦੀ ਹੈ, ਜਿਸ ਨਾਲ ਕੀ-ਬੋਰਡ ਰਾਹੀਂ ਤੁਸੀਂ ਲਿਖਤ ਚੁਣ ਸਕਦੇ ਹੋ। ਕੀ ਤੁਸੀਂ ਕਰੈੱਟ ਬਰਾਊਜ਼ਿੰਗ ਚਾਲੂ ਕਰਨੀ ਚਾਹੁੰਦੇ ਹੋ?
 tabbrowser-confirm-caretbrowsing-checkbox = ਇਹ ਡਾਈਲਾਗ ਬਾਕਸ ਮੈਨੂੰ ਮੁੜ ਨਾ ਵੇਖਾਓ।
+
+## Confirmation dialog for closing all duplicate tabs
+
+tabbrowser-confirm-close-duplicate-tabs-title = ਸਾਵਧਾਨ
+tabbrowser-confirm-close-duplicate-tabs-text = ਅਸੀਂ ਆਖਰੀ ਸਰਗਰਮ ਟੈਬ ਨੂੰ ਖੁੱਲ੍ਹਾਂ ਰੱਖਾਂਗੇ
+tabbrowser-confirm-close-all-duplicate-tabs-title = ਡੁਪਲੀਕੇਟ ਟੈਬਾਂ ਨੂੰ ਬੰਦ ਕਰਨਾ ਹੈ?
+tabbrowser-confirm-close-all-duplicate-tabs-text = ਅਸੀਂ ਇਸ ਟੈਬ ਵਿੱਚ ਡੁਪਲੀਕੇਟ ਟੈਬਾਂ ਨੂੰ ਬੰਦ ਕਰਾਂਗੇ। ਆਖਰੀ ਸਰਗਰਮ ਟੈਬ ਹਮੇਸ਼ਾਂ ਖੁੱਲ੍ਹੀ ਰਹੇਗੀ।
+tabbrowser-confirm-close-all-duplicate-tabs-button-closetabs = ਟੈਬਾਂ ਨੂੰ ਬੰਦ ਕਰੋ
 
 ##
 

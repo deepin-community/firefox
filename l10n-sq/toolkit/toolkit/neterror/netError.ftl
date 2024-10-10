@@ -22,7 +22,7 @@ neterror-open-portal-login-page-button = Hap Faqe Hyrjeje në Rrjet
 neterror-override-exception-button = Pranoni Rrezikun dhe Vazhdoni
 neterror-pref-reset-button = Rikthe rregullimet parazgjedhje
 neterror-return-to-previous-page-button = Kthehu Mbrapsht
-neterror-return-to-previous-page-recommended-button = Shko Mbrapsht (E këshilluar)
+neterror-return-to-previous-page-recommended-button = Shkoni Mbrapsht (E këshilluar)
 neterror-try-again-button = Riprovoni
 neterror-add-exception-button = Vazhdo përherë për këtë sajt
 neterror-settings-button = Ndryshoni rregullime DNS
@@ -64,6 +64,7 @@ neterror-dns-not-found-trr-offline = S’jeni i lidhur në internet.
 neterror-dns-not-found-trr-unknown-host2 = Ky sajt s’u gjet nga { $trrDomain }.
 neterror-dns-not-found-trr-server-problem = Pati një problem me { $trrDomain }.
 neterror-dns-not-found-bad-trr-url = URL e pavlefshme.
+neterror-dns-not-found-system-sleep = Sistemi gjendet nën mënyrën dremitje.
 neterror-dns-not-found-trr-unknown-problem = Problem i papritur.
 
 ## Native fallback specific messages

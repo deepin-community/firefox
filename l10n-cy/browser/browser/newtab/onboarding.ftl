@@ -189,6 +189,8 @@ mr2022-onboarding-pin-primary-button-label =
         [macos] Cadw { -brand-short-name } yn y Doc
        *[other] Pinio { -brand-short-name } i'r bar tasgau
     }
+# Primary button string used on welcome page for when Firefox is not pinned on MSIX
+mr2022-onboarding-pin-primary-button-label-msix = Pinio { -brand-short-name } i'r bar tasgau a'r ddewislen cychwyn
 # Subtitle will be used when user already has Firefox pinned, but
 # has not set it as their default browser.
 # When translating "zip", please feel free to pick a verb that signifies movement and/or exploration
@@ -335,6 +337,14 @@ onboarding-device-migration-title = Croeso nôl
 onboarding-device-migration-subtitle = Mewngofnodwch i'ch { -fxaccount-brand-name(capitalization: "sentence") } i ddod â'ch nodau tudalen, cyfrineiriau a hanes gyda chi ar eich dyfais newydd.
 onboarding-device-migration-subtitle2 = Mewngofnodwch i'ch cyfrif i ddod â'ch nodau tudalen, cyfrineiriau, a hanes gyda chi ar eich dyfais newydd.
 onboarding-device-migration-primary-button-label = Mewngofnodi
+
+## Add-ons Picker screen
+
+amo-picker-title = Cyfaddaswch eich { -brand-short-name }
+amo-picker-subtitle = Mae estyniadau yn debyg i apiau ar gyfer eich porwr, ac maen nhw'n caniatáu ichi ddiogelu cyfrineiriau, llwytho fideos, dod o hyd i fargeinion, rhwystro hysbysebion annifyr, newid golwg eich porwr, a llawer mwy.
+amo-picker-install-button-label = Ychwanegu at { -brand-short-name }
+amo-picker-install-complete-label = Gosodwyd
+amo-picker-collection-link = Archwiliwch ragor o ychwanegion
 
 ## The following screens have been updated to use security and privacy focused strings:
 

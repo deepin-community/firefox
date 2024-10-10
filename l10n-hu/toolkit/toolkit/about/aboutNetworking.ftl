@@ -4,10 +4,11 @@
 
 about-networking-title = Hálózatkezelés névjegye
 about-networking-http = HTTP
+about-networking-http-clear-cache-button = HTTP-gyorsítótár törlése
 about-networking-sockets = Foglalatok
 about-networking-dns = DNS
 about-networking-dns-clear-cache-button = DNS-gyorsítótár törlése
-about-networking-dns-trr-url = DoH URL
+about-networking-dns-trr-url = DoH webcím
 about-networking-dns-trr-mode = DoH mód
 about-networking-dns-suffix = DNS utótag
 about-networking-websockets = WebSocketek

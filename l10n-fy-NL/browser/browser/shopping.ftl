@@ -89,6 +89,9 @@ shopping-show-less-button = Minder toane
 
 shopping-settings-label =
     .label = Ynstellingen
+shopping-settings-recommendations-toggle2 =
+    .label = Oanrekommandaasjes en sponsore ynhâld toane
+shopping-settings-recommendations-learn-more3 = { -brand-product-name } dielt jo persoanlike gegevens net, dus dizze oanrekommandaasjes folgje jo net op it ynternet. <a data-l10n-name="review-quality-url">Mear ynfo</a>
 shopping-settings-recommendations-toggle =
     .label = Advertinsjes toane yn beoardielingskontrôle
 shopping-settings-recommendations-learn-more2 = Jo sjogge sa no en dan advertinsjes foar relevante produkten. Wy advertearje allinnich foar produkten mei betroubere beoardielingen. <a data-l10n-name="review-quality-url">Mear ynfo</a>
@@ -115,6 +118,7 @@ shopping-settings-sidebar-enabled-state = Beoardielingskontrôle is <strong>Oan<
 shopping-adjusted-rating-label =
     .label = Oanpaste wurdearring
 shopping-adjusted-rating-unreliable-reviews = Unbetroubere beoardielingen fuortsmiten
+shopping-adjusted-rating-based-reliable-reviews = Basearre op betroubere beoardielingen
 
 ## Strings for the review reliability component
 
@@ -135,6 +139,8 @@ shopping-analysis-explainer-learn-more2 = Mear ynfo oer <a data-l10n-name="revie
 # websites, which will be inserted without being translated.
 #  $retailer (String) - capitalized name of the shopping website, for example, "Amazon".
 shopping-analysis-explainer-highlights-description = <strong>Hichtepunten</strong> binne ôfkomstich fan beoardielingen fan { $retailer } yn de ôfrûne 80 dagen dy’t neffens ús betrouber binne.
+# Fallback for analysis highlights explainer if the retailer is ever unknown
+shopping-analysis-explainer-highlights-description-unknown-retailer = <strong>Hichtepunten</strong> binne ôfkomstich fan beoardielingen yn de ôfrûne 80 dagen dy’t neffens ús betrouber binne.
 shopping-analysis-explainer-review-grading-scale-reliable = Betroubere beoardielingen. Wy leauwe dat de beoardielingen wierskynlik ôfkomstich binne fan echte klanten dy’t earlike, ûnpartidige beoardielingen efterlitten hawwe.
 shopping-analysis-explainer-review-grading-scale-mixed = Wy leauwe dat der in miks is fan betroubere en ûnbetroubere beoardielingen.
 shopping-analysis-explainer-review-grading-scale-unreliable = Unbetroubere beoardielingen. Wy leauwe dat de beoardielingen wierskynlik nep binne of fan befoaroardiele beoardielers.
@@ -161,6 +167,7 @@ shopping-unanalyzed-product-analyze-button = Beoardielingskwaliteit kontrolearje
 
 more-to-consider-ad-label =
     .label = Mear oerwagingen
+shopping-sponsored-label = Sponsore
 ad-by-fakespot = Advertinsje fan { -fakespot-brand-name }
 
 ## Shopping survey strings.

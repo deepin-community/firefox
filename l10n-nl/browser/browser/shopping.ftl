@@ -89,6 +89,9 @@ shopping-show-less-button = Minder tonen
 
 shopping-settings-label =
     .label = Instellingen
+shopping-settings-recommendations-toggle2 =
+    .label = Aanbevelingen en gesponsorde inhoud tonen
+shopping-settings-recommendations-learn-more3 = { -brand-product-name } deelt uw persoonlijke gegevens niet, dus deze aanbevelingen volgen u niet op het internet. <a data-l10n-name="review-quality-url">Meer info</a>
 shopping-settings-recommendations-toggle =
     .label = Advertenties tonen in beoordelingscontrole
 shopping-settings-recommendations-learn-more2 = U ziet af en toe advertenties voor relevante producten. We adverteren alleen voor producten met betrouwbare beoordelingen. <a data-l10n-name="review-quality-url">Meer info</a>
@@ -115,6 +118,7 @@ shopping-settings-sidebar-enabled-state = Beoordelingscontrole is <strong>Aan</s
 shopping-adjusted-rating-label =
     .label = Aangepaste waardering
 shopping-adjusted-rating-unreliable-reviews = Onbetrouwbare beoordelingen verwijderd
+shopping-adjusted-rating-based-reliable-reviews = Gebaseerd op betrouwbare beoordelingen
 
 ## Strings for the review reliability component
 
@@ -133,6 +137,8 @@ shopping-analysis-explainer-learn-more2 = Meer info over <a data-l10n-name="revi
 # websites, which will be inserted without being translated.
 #  $retailer (String) - capitalized name of the shopping website, for example, "Amazon".
 shopping-analysis-explainer-highlights-description = <strong>Hoogtepunten</strong> zijn afkomstig van beoordelingen van { $retailer } in de afgelopen 80 dagen die volgens ons betrouwbaar zijn.
+# Fallback for analysis highlights explainer if the retailer is ever unknown
+shopping-analysis-explainer-highlights-description-unknown-retailer = <strong>Hoogtepunten</strong> zijn afkomstig van beoordelingen in de afgelopen 80 dagen die volgens ons betrouwbaar zijn.
 shopping-analysis-explainer-review-grading-scale-reliable = Betrouwbare beoordelingen. Wij zijn van mening dat de beoordelingen waarschijnlijk afkomstig zijn van echte klanten die eerlijke, onpartijdige beoordelingen hebben achtergelaten.
 shopping-analysis-explainer-review-grading-scale-mixed = Wij geloven dat er een mix is van betrouwbare en onbetrouwbare beoordelingen.
 shopping-analysis-explainer-review-grading-scale-unreliable = Onbetrouwbare beoordelingen. Wij zijn van mening dat de beoordelingen waarschijnlijk nep zijn of afkomstig zijn van bevooroordeelde beoordelaars.
@@ -159,6 +165,7 @@ shopping-unanalyzed-product-analyze-button = Beoordelingskwaliteit controleren
 
 more-to-consider-ad-label =
     .label = Meer overwegingen
+shopping-sponsored-label = Gesponsord
 ad-by-fakespot = Advertentie van { -fakespot-brand-name }
 
 ## Shopping survey strings.

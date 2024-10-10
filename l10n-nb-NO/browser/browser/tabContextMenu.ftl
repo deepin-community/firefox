@@ -58,7 +58,7 @@ tab-context-bookmark-tab =
     .label = Bokmerk fane …
     .accesskey = B
 tab-context-open-in-new-container-tab =
-    .label = Åpne i ny innholdsfane
+    .label = Åpne i ny beholderfane
     .accesskey = e
 move-to-start =
     .label = Flytt til begynnelsen
@@ -72,6 +72,9 @@ move-to-new-window =
 tab-context-close-multiple-tabs =
     .label = Lukk flere faner
     .accesskey = f
+tab-context-close-duplicate-tabs =
+    .label = Lukk dupliserte faner
+    .accesskey = u
 tab-context-share-url =
     .label = Del
     .accesskey = D
@@ -100,7 +103,6 @@ tab-context-move-tabs =
            *[other] Flytt faner
         }
     .accesskey = F
-
 tab-context-send-tabs-to-device =
     .label =
         { $tabCount ->

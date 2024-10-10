@@ -42,6 +42,7 @@ const KNOWN_ERROR_TITLE_IDS = new Set([
   "unsafeContentType-title",
   "netReset-title",
   "netTimeout-title",
+  "serverError-title",
   "unknownProtocolFound-title",
   "proxyConnectFailure-title",
   "proxyResolveFailure-title",
@@ -159,11 +160,6 @@ function setupAdvancedButton() {
     if (panel.hidden) {
       // Reveal
       revealAdvancedPanelSlowlyAsync();
-
-      // send event to trigger telemetry ping
-      document.dispatchEvent(
-        new CustomEvent("AboutNetErrorUIExpanded", { bubbles: true })
-      );
     } else {
       // Hide
       panel.hidden = true;
@@ -396,7 +392,8 @@ function initPage() {
       });
       longDesc = null;
 
-      document.getElementById("openInNewWindowContainer").hidden = false;
+      document.getElementById("openInNewWindowContainer").hidden =
+        RPMGetBoolPref("security.xfocsp.hideOpenInNewWindow");
 
       const openInNewWindowButton = document.getElementById(
         "openInNewWindowButton"
@@ -435,16 +432,14 @@ function initPage() {
     case "nssFailure2": {
       learnMore.hidden = false;
 
-      const errorCode = document.getNetErrorInfo().errorCodeString;
-      RPMRecordTelemetryEvent(
+      const netErrorInfo = document.getNetErrorInfo();
+      void recordSecurityUITelemetry(
         "security.ui.tlserror",
         "load",
         "abouttlserror",
-        errorCode,
-        {
-          is_frame: (window.parent != window).toString(),
-        }
+        netErrorInfo
       );
+      const errorCode = netErrorInfo.errorCodeString;
       switch (errorCode) {
         case "SSL_ERROR_UNSUPPORTED_VERSION":
         case "SSL_ERROR_PROTOCOL_VERSION_ALERT": {
@@ -539,7 +534,7 @@ function initPage() {
       } else if (skipReason == "TRR_TIMEOUT") {
         descriptionTag = "neterror-dns-not-found-trr-only-timeout";
       } else if (
-        skipReason == "TRR_IS_OFFLINE" ||
+        skipReason == "TRR_BROWSER_IS_OFFLINE" ||
         skipReason == "TRR_NO_CONNECTIVITY"
       ) {
         descriptionTag = "neterror-dns-not-found-trr-offline";
@@ -556,6 +551,8 @@ function initPage() {
         descriptionTag = "neterror-dns-not-found-trr-server-problem";
       } else if (skipReason == "TRR_BAD_URL") {
         descriptionTag = "neterror-dns-not-found-bad-trr-url";
+      } else if (skipReason == "TRR_SYSTEM_SLEEP_MODE") {
+        descriptionTag = "neterror-dns-not-found-system-sleep";
       }
 
       let trrMode = RPMGetIntPref("network.trr.mode").toString();
@@ -746,6 +743,7 @@ function getNetErrorDescParts() {
     case "netInterrupt":
     case "netReset":
     case "netTimeout":
+    case "serverError":
       return [
         ["li", "neterror-load-error-try-again"],
         ["li", "neterror-load-error-connection"],
@@ -996,39 +994,56 @@ function initPageCertError() {
   }
 
   const failedCertInfo = document.getFailedCertSecurityInfo();
-  // Truncate the error code to avoid going over the allowed
-  // string size limit for telemetry events.
-  const errorCode = failedCertInfo.errorCodeString.substring(0, 40);
-  RPMRecordTelemetryEvent(
+  void recordSecurityUITelemetry(
     "security.ui.certerror",
     "load",
     "aboutcerterror",
-    errorCode,
-    {
-      has_sts: gHasSts.toString(),
-      is_frame: (window.parent != window).toString(),
-    }
+    failedCertInfo
   );
 
   setCertErrorDetails();
+}
+
+async function recordSecurityUITelemetry(category, evt, objectName, errorInfo) {
+  // Truncate the error code to avoid going over the allowed
+  // string size limit for telemetry events.
+  let errorCode = errorInfo.errorCodeString.substring(0, 40);
+  let extraKeys = {
+    is_frame: (window.parent != window).toString(),
+  };
+  if (category == "security.ui.certerror") {
+    extraKeys.has_sts = gHasSts.toString();
+  }
+  if (evt == "load") {
+    extraKeys.channel_status = errorInfo.channelStatus.toString();
+  }
+  if (category == "security.ui.certerror" && evt == "load") {
+    extraKeys.issued_by_cca = false.toString();
+    let issuer = errorInfo.certChainStrings.at(-1);
+    if (issuer && errorCode == "SEC_ERROR_UNKNOWN_ISSUER") {
+      try {
+        let parsed = await parse(pemToDER(issuer));
+        extraKeys.issued_by_cca = (
+          parsed.issuer.dn == "c=IN, o=India PKI, cn=CCA India 2022 SPL" ||
+          parsed.issuer.dn == "c=IN, o=India PKI, cn=CCA India 2015 SPL"
+        ).toString();
+      } catch (e) {
+        console.error("error parsing issuer certificate:", e);
+      }
+    }
+  }
+  RPMRecordTelemetryEvent(category, evt, objectName, errorCode, extraKeys);
 }
 
 function recordClickTelemetry(e) {
   let target = e.originalTarget;
   let telemetryId = target.dataset.telemetryId;
   let failedCertInfo = document.getFailedCertSecurityInfo();
-  // Truncate the error code to avoid going over the allowed
-  // string size limit for telemetry events.
-  let errorCode = failedCertInfo.errorCodeString.substring(0, 40);
-  RPMRecordTelemetryEvent(
+  void recordSecurityUITelemetry(
     "security.ui.certerror",
     "click",
     telemetryId,
-    errorCode,
-    {
-      has_sts: gHasSts.toString(),
-      is_frame: (window.parent != window).toString(),
-    }
+    failedCertInfo
   );
 }
 

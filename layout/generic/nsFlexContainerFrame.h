@@ -147,8 +147,8 @@ class nsFlexContainerFrame final : public nsContainerFrame,
               const ReflowInput& aReflowInput,
               nsReflowStatus& aStatus) override;
 
-  nscoord GetMinISize(gfxContext* aRenderingContext) override;
-  nscoord GetPrefISize(gfxContext* aRenderingContext) override;
+  nscoord IntrinsicISize(gfxContext* aContext,
+                         mozilla::IntrinsicISizeType aType) override;
 
 #ifdef DEBUG_FRAME_DUMP
   nsresult GetFrameName(nsAString& aResult) const override;
@@ -159,10 +159,11 @@ class nsFlexContainerFrame final : public nsContainerFrame,
       BaselineExportContext) const override;
 
   // Unions the child overflow from our in-flow children.
-  void UnionInFlowChildOverflow(mozilla::OverflowAreas&);
+  void UnionInFlowChildOverflow(mozilla::OverflowAreas&,
+                                bool aAsIfScrolled = false);
 
   // Unions the child overflow from all our children, including out of flows.
-  void UnionChildOverflow(mozilla::OverflowAreas&) final;
+  void UnionChildOverflow(mozilla::OverflowAreas&, bool aAsIfScrolled) final;
 
   // nsContainerFrame overrides
   bool DrainSelfOverflowList() override;
@@ -604,6 +605,8 @@ class nsFlexContainerFrame final : public nsContainerFrame,
    * @param aItem           The flex item to be reflowed.
    * @param aFramePos       The position where the flex item's frame should
    *                        be placed. (pre-relative positioning)
+   * @param aIsAdjacentWithBStart True if aFramePos is adjacent with the flex
+   *                              container's content-box block-start edge.
    * @param aAvailableSize  The available size to reflow the child frame (in the
    *                        child frame's writing-mode).
    * @param aContainerSize  The flex container's size (required by some methods
@@ -614,6 +617,7 @@ class nsFlexContainerFrame final : public nsContainerFrame,
                                 const ReflowInput& aReflowInput,
                                 const FlexItem& aItem,
                                 const mozilla::LogicalPoint& aFramePos,
+                                const bool aIsAdjacentWithBStart,
                                 const mozilla::LogicalSize& aAvailableSize,
                                 const nsSize& aContainerSize);
 
@@ -644,13 +648,13 @@ class nsFlexContainerFrame final : public nsContainerFrame,
                           const nsSize& aContainerSize);
 
   /**
-   * Helper for GetMinISize / GetPrefISize.
+   * Helper to implement IntrinsicISize().
    */
-  nscoord IntrinsicISize(gfxContext* aRenderingContext,
-                         mozilla::IntrinsicISizeType aType);
+  nscoord ComputeIntrinsicISize(gfxContext* aContext,
+                                mozilla::IntrinsicISizeType aType);
 
   /**
-   * Cached values to optimize GetMinISize/GetPrefISize.
+   * Cached values to optimize IntrinsicISize().
    */
   nscoord mCachedMinISize = NS_INTRINSIC_ISIZE_UNKNOWN;
   nscoord mCachedPrefISize = NS_INTRINSIC_ISIZE_UNKNOWN;

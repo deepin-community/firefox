@@ -53,6 +53,8 @@ const val MAX_URI_LENGTH = 25000
 
 private const val FILE_PREFIX = "file://"
 private const val MAX_VALID_PORT = 65_535
+private const val SPACE = " "
+private const val UNDERSCORE = "_"
 
 /**
  * Shortens URLs to be more user friendly.
@@ -307,7 +309,26 @@ fun String.sanitizeFileName(): String {
         file.name.replace("\\.\\.+".toRegex(), ".")
     } else {
         file.name.replace(".", "")
-    }
+    }.replaceContinuousSpaces()
+        .replaceEscapedCharacters()
+        .trim()
+}
+
+/**
+ * Replaces <, >, *, ", :, ?, \, |, and control characters from ASCII 0 to ASCII 19 with '_' so
+ * the file name is valid and is correctly displayed.
+ */
+private fun String.replaceEscapedCharacters(): String {
+    val escapedCharactersRegex = "[\\x00-\\x13*\"?<>:|\\\\]".toRegex()
+    return replace(escapedCharactersRegex, UNDERSCORE)
+}
+
+/**
+ * Replaces continuous spaces with a single space.
+ */
+private fun String.replaceContinuousSpaces(): String {
+    val escapedCharactersRegex = "[\\p{Z}\\s]+".toRegex()
+    return replace(escapedCharactersRegex, SPACE)
 }
 
 /**
@@ -328,6 +349,15 @@ fun String.stripMailToProtocol(): String {
 fun String.urlEncode(): String {
     return URLEncoder.encode(this, Charsets.UTF_8.name())
 }
+
+/**
+ * Decodes '%'-escaped octets in the given string using the UTF-8 scheme.
+ * Replaces invalid octets with the unicode replacement character
+ * ("\\uFFFD").
+ *
+ * @see [Uri.decode]
+ */
+fun String.decode(): String = Uri.decode(this)
 
 /**
  * Returns the string if it's length is not higher than @param[maximumLength] or

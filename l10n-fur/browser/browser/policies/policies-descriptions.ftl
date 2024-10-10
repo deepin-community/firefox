@@ -84,6 +84,8 @@ policy-Handlers = Configure i gjestôrs di aplicazion predefinîts.
 policy-HardwareAcceleration = Se false (fals), distude la acelerazion vie hardware.
 # “lock” means that the user won’t be able to change this setting
 policy-Homepage = Stabilìs e, in maniere opzionâl, bloche la pagjine iniziâl.
+policy-HttpAllowlist = Origjins che no saran inzornadis a HTTPS.
+policy-HttpsOnlyMode = Permet la ativazion de modalitât Dome-HTTPS.
 policy-InstallAddonsPermission = Permet a cierts sîts web di instalâ components adizionâi.
 policy-LegacyProfiles = Disative la funzion par sfuarçâ un profîl separât par ogni instalazion.
 
@@ -108,12 +110,16 @@ policy-OverrideFirstRunPage = Anule la pagjine de prime esecuzion. Met cheste po
 policy-OverridePostUpdatePage = Anule la pagjine “Novitâts” sucessive al inzornament. Met cheste politiche a valôr vueit se tu desideris disativâ la pagjine visualizade daspò un inzornament.
 policy-PasswordManagerEnabled = Ative il salvament des passwords tal gjestôr des passwords.
 policy-PasswordManagerExceptions = Impedìs a { -brand-short-name } di salvâ lis passwords par determinâts sîts.
+# Post-quantum refers to cryptography that is safe from attacks by quantum
+# computers. See https://en.wikipedia.org/wiki/Post-quantum_cryptography
+policy-PostQuantumKeyAgreementEnabled = Ative l'acuardi de clâf post-cuantistiche par TLS.
 # PDF.js and PDF should not be translated
 policy-PDFjs = Disative o configure PDF.js, il visualizadôr PDF integrât in { -brand-short-name }.
 policy-Permissions2 = Configure i permès par fotocjamare, microfon, posizion, notifichis e pe riproduzion automatiche.
 policy-PictureInPicture = Ative o disative il Picture-in-Picture.
 policy-PopupBlocking = Permet a cierts sîts web di visualizâ i barcons a comparse in maniere predefinide.
 policy-Preferences = Stabilìs e bloche il valôr par un grup di preferencis.
+policy-PrivateBrowsingModeAvailability = Met la disponibilitât de modalitât di navigazion privade.
 policy-PromptForDownloadLocation = Domande dulà salvâ i files cuant che si ju discjarie.
 policy-Proxy = Configure lis impostazions dal proxy.
 policy-RequestedLocales = Stabilìs la liste des localizazions (lenghis) desideradis pe aplicazion par ordin di preference.

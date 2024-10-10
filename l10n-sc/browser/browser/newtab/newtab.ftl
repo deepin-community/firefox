@@ -45,6 +45,7 @@ newtab-topsites-add-search-engine-header = Agiunghe unu motore de chirca
 newtab-topsites-add-shortcut-header = Incurtzadura noa
 newtab-topsites-edit-topsites-header = Modìfica su situ populare
 newtab-topsites-edit-shortcut-header = Modìfica s'incurtzadura
+newtab-topsites-add-shortcut-label = Agiunghe curtzadòrgiu
 newtab-topsites-title-label = Tìtulu
 newtab-topsites-title-input =
     .placeholder = Inserta unu tìtulu
@@ -197,6 +198,7 @@ newtab-section-header-recent-activity = Atividade reghente
 # Variables:
 #   $provider (string) - Name of the corresponding content provider.
 newtab-section-header-pocket = Cussigiados dae { $provider }
+newtab-section-header-stories = Istòrias chi faghent pensare
 
 ## Empty Section States: These show when there are no more items in a section. Ex. When there are no more Pocket story recommendations, in the space where there would have been stories, this is shown instead.
 
@@ -205,6 +207,8 @@ newtab-empty-section-highlights = Comente cumintzes a navigare, amus a ammustrar
 # Variables:
 #   $provider (string) - Name of the content provider for this section, e.g "Pocket".
 newtab-empty-section-topstories = As giai bidu totu. Torra a chircare prus a tardu àteras istòrias dae { $provider }. Non bides s'ora? Seletziona unu faeddu populare pro agatare àteras istòrias bellas de sa rete.
+# Ex. When there are no more story recommendations, in the space where there would have been stories, this is shown instead.
+newtab-empty-section-topstories-generic = As giai bidu totu. Torra a chircare prus a tardu àteras istòrias. Non bides s'ora? Seletziona unu faeddu populare pro agatare àteras istòrias bellas de sa rete.
 
 ## Empty Section (Content Discovery Experience). These show when there are no more stories or when some stories fail to load.
 
@@ -228,6 +232,19 @@ newtab-pocket-pocket-firefox-family = { -pocket-brand-name } est parte de sa fam
 # A save to Pocket button that shows over the card thumbnail on hover.
 newtab-pocket-save = Sarva
 newtab-pocket-saved = Sarvadu
+
+## Thumbs up and down buttons that shows over a newtab stories card thumbnail on hover.
+
+# Clicking the thumbs up button for this story will result in more stories like this one being recommended
+newtab-pocket-thumbs-up-tooltip =
+    .title = Àteros cuntenutos comente custu
+# Clicking the thumbs down button for this story informs us that the user does not feel like the story is interesting for them
+newtab-pocket-thumbs-down-tooltip =
+    .title = Non pro mene
+newtab-toast-thumbs-up-or-down = Gràtzias. Torrende·nos cumprou nos agiudas a megiorare su feed tuo.
+newtab-toast-dismiss-button =
+    .title = Iscarta
+    .aria-label = Iscarta
 
 ## Pocket content onboarding experience dialog and modal for new users seeing the Pocket section for the first time, shown as the first item in the Pocket section.
 
@@ -257,9 +274,9 @@ newtab-custom-row-selector =
 newtab-custom-sponsored-sites = Curtzadòrgios patrotzinados
 newtab-custom-pocket-title = Cussigiadu dae { -pocket-brand-name }
 newtab-custom-pocket-subtitle = Cuntenutos de primore curados dae { -pocket-brand-name }, parte de sa famìlia de { -brand-product-name }
-newtab-custom-pocket-toggle =
-    .label = Cussigiadu dae { -pocket-brand-name }
-    .description = Cuntenutos de primore curados dae { -pocket-brand-name }, parte de sa famìlia de { -brand-product-name }
+newtab-custom-stories-toggle =
+    .label = Istòrias cussigiadas
+    .description = Cuntenutu de primore curadu dae sa famìlia de { -brand-product-name }
 newtab-custom-pocket-sponsored = Istòrias patrotzinadas
 newtab-custom-pocket-show-recent-saves = Ammustra is elementos sarvados de reghente
 newtab-custom-recent-title = Atividade reghente
@@ -267,5 +284,116 @@ newtab-custom-recent-subtitle = Una seletzione de sitos e cuntenutos reghentes
 newtab-custom-recent-toggle =
     .label = Atividade reghente
     .description = Una seletzione de sitos e cuntenutos reghentes
+newtab-custom-weather-toggle =
+    .label = Tempus
+    .description = Is previsiones de oe in curtzu
 newtab-custom-close-button = Serra
 newtab-custom-settings = Gesti prus cunfiguratziones
+
+## New Tab Wallpapers
+
+newtab-wallpaper-title = Isfundos de ischermu
+newtab-wallpaper-reset = Ripristina comente predefinidu
+newtab-wallpaper-light-red-panda = Panda ruju
+newtab-wallpaper-light-mountain = Monte biancu
+newtab-wallpaper-light-sky = Chelu cun nues tanadas e colore de rosa
+newtab-wallpaper-light-color = Formas biaitas, colore de rosa e grogas
+newtab-wallpaper-light-landscape = Paesàgiu de monte cun neulita biaita
+newtab-wallpaper-light-beach = Ispiàgia cun palma
+newtab-wallpaper-dark-aurora = Aurora Borealis
+newtab-wallpaper-dark-color = Formas rujas e biaitas
+newtab-wallpaper-dark-panda = Panda ruju cuadu in su padente
+newtab-wallpaper-dark-sky = Paesàgiu de tzitade cun chelu de note
+newtab-wallpaper-dark-mountain = Paesàgiu de monte
+newtab-wallpaper-dark-city = Paesàgiu de tzitade tanada
+
+## Solid Colors
+
+newtab-wallpaper-category-title-colors = Colores uniformes
+newtab-wallpaper-blue = Asulu
+newtab-wallpaper-light-blue = Asulu craru
+newtab-wallpaper-light-purple = Tanadu craru
+newtab-wallpaper-light-green = Birde craru
+newtab-wallpaper-green = Birde
+newtab-wallpaper-beige = Beige
+newtab-wallpaper-yellow = Grogu
+newtab-wallpaper-orange = Arantzu
+newtab-wallpaper-pink = Rosa
+newtab-wallpaper-light-pink = Rosa craru
+newtab-wallpaper-red = Ruju
+newtab-wallpaper-dark-blue = Asulu iscuru
+newtab-wallpaper-dark-purple = Tanadu iscuru
+newtab-wallpaper-dark-green = Birde iscuru
+newtab-wallpaper-brown = Marrone
+
+## Abstract
+
+newtab-wallpaper-category-title-abstract = Astratu
+newtab-wallpaper-abstract-green = Formas birdes
+newtab-wallpaper-abstract-blue = Formas asulas
+newtab-wallpaper-abstract-purple = Formas tanadas
+newtab-wallpaper-abstract-orange = Formas arantzu
+newtab-wallpaper-abstract-blue-purple = Formas asulas e tanadas
+
+## Photographs
+
+newtab-wallpaper-category-title-photographs = Fotografias
+newtab-wallpaper-beach-at-sunrise = Ispiàgia in s'arbeschidòrgiu
+newtab-wallpaper-beach-at-sunset = Ispiàgia in s'iscurigadòrgiu
+newtab-wallpaper-storm-sky = Chelu in traschia
+newtab-wallpaper-sky-with-pink-clouds = Chelu cun nues rosas
+newtab-wallpaper-red-panda-yawns-in-a-tree = Panda ruju cascat a subra de un'àrbore
+newtab-wallpaper-white-mountains = Montes biancos
+# Variables
+#   $author_string (String) - The name of the creator of the photo.
+#   $webpage_string (String) - The name of the webpage where the photo is located.
+newtab-wallpaper-attribution = Fotografia de <a data-l10n-name="name-link">{ $author_string }</a> subra <a data-l10n-name="webpage-link">{ $webpage_string }</a>
+newtab-wallpaper-feature-highlight-header = Proa un’istrichiddu de colore
+newtab-wallpaper-feature-highlight-content = Dona a s'ischeda noa una bisura frisca cun isfundos.
+newtab-wallpaper-feature-highlight-button = Apo cumprèndidu
+# Tooltip for dismiss button
+feature-highlight-dismiss-button =
+    .title = Serra
+    .aria-label = Serra ventanedda
+feature-highlight-wallpaper =
+    .title = { -newtab-wallpaper-feature-highlight-header }
+    .aria-label = { -newtab-wallpaper-feature-highlight-content }
+
+## New Tab Weather
+
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-see-forecast =
+    .title = Càstia is previsiones in { $provider }
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-sponsored = { $provider } ∙ Isponsorizadu
+newtab-weather-menu-change-location = Càmbia positzione
+newtab-weather-change-location-search-input = Chirca positzione
+newtab-weather-menu-weather-display = Vista de su tempus
+# Display options are:
+# - Simple: Displays a current weather condition icon and the current temperature
+# - Detailed: Include simple information plus a short text summary: e.g. "Mostly cloudy"
+newtab-weather-menu-weather-display-option-simple = Sèmplitze
+newtab-weather-menu-change-weather-display-simple = Passa a sa vista sèmplitze
+newtab-weather-menu-weather-display-option-detailed = A sa minuda
+newtab-weather-menu-change-weather-display-detailed = Passa a sa vista a sa minuda
+newtab-weather-menu-temperature-units = Unidades de temperadura
+newtab-weather-menu-temperature-option-fahrenheit = Fahrenheit
+newtab-weather-menu-temperature-option-celsius = Celsius
+newtab-weather-menu-change-temperature-units-fahrenheit = Passa a Fahrenheit
+newtab-weather-menu-change-temperature-units-celsius = Passa a Celsius
+newtab-weather-menu-hide-weather = Cua su tempus in s’ischeda noa
+newtab-weather-menu-learn-more = Àteras informatziones
+# This message is shown if user is working offline
+newtab-weather-error-not-available = Is datos de su tempus non sunt a disponimentu immoe.
+
+## Topic Labels
+
+# ”Money” = “Personal Finance”, refers to articles and stories that help readers better manage
+# and understand their personal finances – from saving money to buying a home. See the
+# “Curated by our editors“ section at the top of https://getpocket.com/explore/personal-finance for more context
+newtab-topic-label-finance = Dinare
+
+## Topic Selection Modal
+

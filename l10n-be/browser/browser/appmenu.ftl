@@ -77,17 +77,10 @@ appmenu-remote-tabs-turn-on-sync =
 appmenu-remote-tabs-showmore =
     .label = Паказаць больш картак
     .tooltiptext = Паказаць больш картак з гэтай прылады
-# This is shown when there are inactive tabs which are not being shown.
-# Variables
-# $count (Number) - The number of inactive tabs which are not being shown (at least 1)
-appmenu-remote-tabs-showinactive =
-    .label =
-        { $count ->
-            [one] Паказаць { $count } неактыўную картку
-            [few] Паказаць { $count } неактыўныя карткі
-           *[many] Паказаць { $count } неактыўных картак
-        }
-    .tooltiptext = Паказаць колькасць неактыўных картак на гэтай прыладзе
+# This is shown as the label for an element to show inactive tabs from this device.
+appmenu-remote-tabs-show-inactive-tabs =
+    .label = Неактыўныя карткі
+    .tooltiptext = Паглядзець неактыўныя карткі на гэтай прыладзе
 # This is shown beneath the name of a device when that device has no open tabs
 appmenu-remote-tabs-notabs = Няма адкрытых картак
 # This is shown when Sync is configured but syncing tabs is disabled.
@@ -203,6 +196,9 @@ profiler-popup-presets-power-description = Папярэднія налады д�
 # "Power" is used in the sense of energy (electricity used by the computer).
 profiler-popup-presets-power-label =
     .label = Сілкаванне
+profiler-popup-presets-debug-description = Папярэднія налады для адладкі ў { -brand-shorter-name }. Вялікія накладныя выдаткі, выкарыстоўвайце не для павышэння прадукцыйнасці, а для канцэнтрацыі ўвагі на разуменні паводзін браўзера.
+profiler-popup-presets-debug-label =
+    .label = Адладка
 profiler-popup-presets-custom-label =
     .label = Адмысловыя
 

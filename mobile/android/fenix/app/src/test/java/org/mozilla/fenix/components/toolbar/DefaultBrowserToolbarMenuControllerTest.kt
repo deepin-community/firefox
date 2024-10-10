@@ -6,6 +6,10 @@ package org.mozilla.fenix.components.toolbar
 
 import android.content.Intent
 import android.view.ViewGroup
+import androidx.fragment.app.Fragment
+import androidx.lifecycle.LifecycleCoroutineScope
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import io.mockk.MockKAnnotations
 import io.mockk.Runs
@@ -22,7 +26,6 @@ import io.mockk.unmockkObject
 import io.mockk.unmockkStatic
 import io.mockk.verify
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import mozilla.appservices.places.BookmarkRoot
 import mozilla.components.browser.state.action.CustomTabListAction
@@ -43,12 +46,12 @@ import mozilla.components.feature.top.sites.DefaultTopSitesStorage
 import mozilla.components.feature.top.sites.PinnedSiteStorage
 import mozilla.components.feature.top.sites.TopSite
 import mozilla.components.feature.top.sites.TopSitesUseCases
-import mozilla.components.service.glean.testing.GleanTestRule
 import mozilla.components.support.base.feature.ViewBoundFeatureWrapper
 import mozilla.components.support.test.ext.joinBlocking
 import mozilla.components.support.test.robolectric.testContext
 import mozilla.components.support.test.rule.MainCoroutineRule
 import mozilla.components.support.test.rule.runTestOnMain
+import mozilla.telemetry.glean.testing.GleanTestRule
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
@@ -69,17 +72,18 @@ import org.mozilla.fenix.browser.BrowserAnimator
 import org.mozilla.fenix.browser.BrowserFragmentDirections
 import org.mozilla.fenix.browser.readermode.ReaderModeController
 import org.mozilla.fenix.collections.SaveCollectionStep
+import org.mozilla.fenix.components.AppStore
 import org.mozilla.fenix.components.FenixSnackbar
 import org.mozilla.fenix.components.TabCollectionStorage
 import org.mozilla.fenix.components.accounts.AccountState
 import org.mozilla.fenix.components.accounts.FenixFxAEntryPoint
+import org.mozilla.fenix.components.appstate.AppAction.ShortcutAction
 import org.mozilla.fenix.ext.components
 import org.mozilla.fenix.ext.directionsEq
 import org.mozilla.fenix.helpers.FenixRobolectricTestRunner
 import org.mozilla.fenix.settings.deletebrowsingdata.deleteAndQuit
 import org.mozilla.fenix.utils.Settings
 
-@OptIn(ExperimentalCoroutinesApi::class)
 @RunWith(FenixRobolectricTestRunner::class)
 class DefaultBrowserToolbarMenuControllerTest {
 
@@ -90,6 +94,8 @@ class DefaultBrowserToolbarMenuControllerTest {
     val gleanTestRule = GleanTestRule(testContext)
 
     @MockK private lateinit var snackbarParent: ViewGroup
+
+    @RelaxedMockK private lateinit var fragment: Fragment
 
     @RelaxedMockK private lateinit var activity: HomeActivity
 
@@ -123,6 +129,8 @@ class DefaultBrowserToolbarMenuControllerTest {
 
     @RelaxedMockK private lateinit var pinnedSiteStorage: PinnedSiteStorage
 
+    @RelaxedMockK private lateinit var appStore: AppStore
+
     private lateinit var browserStore: BrowserStore
     private lateinit var selectedTab: TabSessionState
 
@@ -133,10 +141,10 @@ class DefaultBrowserToolbarMenuControllerTest {
         mockkStatic(
             "org.mozilla.fenix.settings.deletebrowsingdata.DeleteAndQuitKt",
         )
-        every { deleteAndQuit(any(), any(), any()) } just Runs
+        every { deleteAndQuit(any(), any()) } just Runs
 
         mockkObject(FenixSnackbar.Companion)
-        every { FenixSnackbar.make(any(), any(), any(), any()) } returns snackbar
+        every { FenixSnackbar.make(any(), any(), any()) } returns snackbar
 
         every { activity.components.useCases.sessionUseCases } returns sessionUseCases
         every { activity.components.useCases.customTabsUseCases } returns customTabUseCases
@@ -274,14 +282,18 @@ class DefaultBrowserToolbarMenuControllerTest {
 
     @Test
     fun `WHEN quit menu item is pressed THEN menu item is handled correctly`() = runTest {
-        val item = ToolbarMenu.Item.Quit
-        val testScope = this
+        mockkStatic("androidx.lifecycle.LifecycleOwnerKt") {
+            val lifecycleScope: LifecycleCoroutineScope = mockk(relaxed = true)
+            every { any<LifecycleOwner>().lifecycleScope } returns lifecycleScope
 
-        val controller = createController(scope = this, store = browserStore)
+            val item = ToolbarMenu.Item.Quit
 
-        controller.handleToolbarItemInteraction(item)
+            val controller = createController(scope = lifecycleScope, store = browserStore)
 
-        verify { deleteAndQuit(activity, testScope, null) }
+            controller.handleToolbarItemInteraction(item)
+
+            verify { deleteAndQuit(activity, lifecycleScope) }
+        }
     }
 
     @Test
@@ -537,8 +549,7 @@ class DefaultBrowserToolbarMenuControllerTest {
         assertEquals(1, snapshot.size)
         assertEquals("add_to_top_sites", snapshot.single().extra?.getValue("item"))
 
-        verify { addPinnedSiteUseCase.invoke(selectedTab.content.title, selectedTab.content.url) }
-        verify { snackbar.setText("Added to shortcuts!") }
+        verify { appStore.dispatch(ShortcutAction.ShortcutAdded) }
     }
 
     @Test
@@ -565,8 +576,7 @@ class DefaultBrowserToolbarMenuControllerTest {
         assertEquals(1, snapshot.size)
         assertEquals("remove_from_top_sites", snapshot.single().extra?.getValue("item"))
 
-        verify { snackbar.setText(snackbarMessage) }
-        verify { removePinnedSiteUseCase.invoke(topSite) }
+        verify { appStore.dispatch(ShortcutAction.ShortcutRemoved) }
     }
 
     @Test
@@ -659,6 +669,43 @@ class DefaultBrowserToolbarMenuControllerTest {
                 directionsEq(
                     NavGraphDirections.actionGlobalShareFragment(
                         sessionId = browserStore.state.selectedTabId,
+                        data = arrayOf(ShareData(url = "https://mozilla.org", title = "Mozilla")),
+                        showPage = true,
+                    ),
+                ),
+            )
+        }
+    }
+
+    @Test
+    fun `IF in customtab WHEN share menu item is pressed THEN navigate to share screen`() = runTest {
+        val item = ToolbarMenu.Item.Share
+        val title = "Mozilla"
+        val url = "https://mozilla.org"
+        val customTab = createCustomTab(
+            url = url,
+            title = title,
+        )
+        browserStore = BrowserStore(BrowserState(customTabs = listOf(customTab)))
+        val controller = createController(
+            scope = this,
+            store = browserStore,
+            customTabSessionId = customTab.id,
+        )
+        assertNull(Events.browserMenuAction.testGetValue())
+
+        controller.handleToolbarItemInteraction(item)
+
+        assertNotNull(Events.browserMenuAction.testGetValue())
+        val snapshot = Events.browserMenuAction.testGetValue()!!
+        assertEquals(1, snapshot.size)
+        assertEquals("share", snapshot.single().extra?.getValue("item"))
+
+        verify {
+            navController.navigate(
+                directionsEq(
+                    NavGraphDirections.actionGlobalShareFragment(
+                        sessionId = customTab.id,
                         data = arrayOf(ShareData(url = "https://mozilla.org", title = "Mozilla")),
                         showPage = true,
                     ),
@@ -836,9 +883,7 @@ class DefaultBrowserToolbarMenuControllerTest {
             verify {
                 navController.navigate(
                     directionsEq(
-                        BrowserFragmentDirections.actionBrowserFragmentToTranslationsDialogFragment(
-                            sessionId = selectedTab.id,
-                        ),
+                        BrowserFragmentDirections.actionBrowserFragmentToTranslationsDialogFragment(),
                     ),
                 )
             }
@@ -855,7 +900,9 @@ class DefaultBrowserToolbarMenuControllerTest {
         findInPageLauncher: () -> Unit = { },
         bookmarkTapped: (String, String) -> Unit = { _, _ -> },
     ) = DefaultBrowserToolbarMenuController(
+        fragment = fragment,
         store = store,
+        appStore = appStore,
         activity = activity,
         navController = navController,
         settings = settings,
@@ -864,14 +911,14 @@ class DefaultBrowserToolbarMenuControllerTest {
         customTabSessionId = customTabSessionId,
         openInFenixIntent = openInFenixIntent,
         scope = scope,
-        snackbarParent = snackbarParent,
         tabCollectionStorage = tabCollectionStorage,
         bookmarkTapped = bookmarkTapped,
         readerModeController = readerModeController,
         sessionFeature = sessionFeatureWrapper,
         topSitesStorage = topSitesStorage,
         pinnedSiteStorage = pinnedSiteStorage,
-        browserStore = browserStore,
+        onShowPinVerification = {},
+        onBiometricAuthenticationSuccessful = {},
     ).apply {
         ioScope = scope
     }

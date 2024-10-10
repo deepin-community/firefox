@@ -11,6 +11,8 @@ import org.junit.After
 import org.junit.Before
 import org.mozilla.fenix.ext.components
 import org.mozilla.fenix.helpers.Constants.TAG
+import org.mozilla.fenix.nimbus.FxNimbus
+import org.mozilla.fenix.nimbus.Translations
 import org.mozilla.fenix.ui.robots.notificationShade
 import java.util.Locale
 
@@ -26,6 +28,16 @@ open class TestSetup {
     @Before
     open fun setUp() {
         Log.i(TAG, "TestSetup: Starting the @Before setup")
+        Log.i(TAG, "TestSetup: Trying to disable the translations prompt")
+        // Prevents translations from opening a popup
+        FxNimbus.features.translations.withInitializer { _, _ ->
+            Translations(
+                mainFlowToolbarEnabled = false,
+                mainFlowBrowserMenuEnabled = false,
+            )
+        }
+        Log.i(TAG, "TestSetup: Disabled the translations prompt")
+
         runBlocking {
             // Reset locale to EN-US if needed.
             // Because of https://bugzilla.mozilla.org/show_bug.cgi?id=1812183, some items might not be updated.
@@ -78,6 +90,8 @@ open class TestSetup {
             if (Locale.getDefault() != Locale.US) {
                 AppAndSystemHelper.setSystemLocale(Locale.US)
             }
+            // Clear the downloads folder after each test even if the test fails.
+            AppAndSystemHelper.clearDownloadsFolder()
         }
     }
 }

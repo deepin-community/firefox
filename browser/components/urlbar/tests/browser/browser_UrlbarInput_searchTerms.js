@@ -5,14 +5,15 @@
 // These tests check the behavior of the Urlbar when loading a page
 // whose url matches that of the default search engine.
 
-let defaultTestEngine;
-
 // The main search string used in tests
 const SEARCH_STRING = "chocolate cake";
 
 add_setup(async function () {
   await SpecialPowers.pushPrefEnv({
-    set: [["browser.urlbar.showSearchTerms.featureGate", true]],
+    set: [
+      ["browser.urlbar.recentsearches.featureGate", false],
+      ["browser.urlbar.showSearchTerms.featureGate", true],
+    ],
   });
 
   await SearchTestUtils.installSearchExtension(
@@ -23,45 +24,11 @@ add_setup(async function () {
     },
     { setAsDefault: true }
   );
-  defaultTestEngine = Services.search.getEngineByName("MozSearch");
 
   registerCleanupFunction(async function () {
     await PlacesUtils.history.clear();
   });
 });
-
-// Starts a search with a tab and asserts that
-// the state of the Urlbar contains the search term
-async function searchWithTab(
-  searchString,
-  tab = null,
-  engine = defaultTestEngine
-) {
-  if (!tab) {
-    tab = await BrowserTestUtils.openNewForegroundTab(gBrowser);
-  }
-
-  let [expectedSearchUrl] = UrlbarUtils.getSearchQueryUrl(engine, searchString);
-  let browserLoadedPromise = BrowserTestUtils.browserLoaded(
-    tab.linkedBrowser,
-    false,
-    expectedSearchUrl
-  );
-
-  gURLBar.focus();
-  await UrlbarTestUtils.promiseAutocompleteResultPopup({
-    window,
-    waitForFocus,
-    value: searchString,
-    fireInputEvent: true,
-  });
-  EventUtils.synthesizeKey("KEY_Enter");
-  await browserLoadedPromise;
-
-  assertSearchStringIsInUrlbar(searchString);
-
-  return { tab, expectedSearchUrl };
-}
 
 // If a user does a search, goes to another page, and then
 // goes back to the SERP, the search term should show.
@@ -92,7 +59,7 @@ add_task(async function go_back() {
 add_task(async function load_url() {
   let tab = await BrowserTestUtils.openNewForegroundTab(gBrowser);
   let [expectedSearchUrl] = UrlbarUtils.getSearchQueryUrl(
-    defaultTestEngine,
+    Services.search.defaultEngine,
     SEARCH_STRING
   );
   let browserLoadedPromise = BrowserTestUtils.browserLoaded(
@@ -112,11 +79,15 @@ add_task(async function load_url() {
 add_task(async function focus_and_unfocus() {
   let { tab } = await searchWithTab(SEARCH_STRING);
 
-  gURLBar.focus();
+  EventUtils.synthesizeMouseAtCenter(gURLBar.inputField, {});
   Assert.equal(
     gURLBar.getAttribute("pageproxystate"),
     "invalid",
     "Should have matching pageproxystate."
+  );
+  Assert.ok(
+    !gURLBar.hasAttribute("persistsearchterms"),
+    "Urlbar does not have persistsearchterms attribute."
   );
 
   gURLBar.blur();
@@ -124,6 +95,10 @@ add_task(async function focus_and_unfocus() {
     gURLBar.getAttribute("pageproxystate"),
     "valid",
     "Should have matching pageproxystate."
+  );
+  Assert.ok(
+    gURLBar.hasAttribute("persistsearchterms"),
+    "Urlbar has persistsearchterms attribute."
   );
 
   BrowserTestUtils.removeTab(tab);
@@ -134,11 +109,15 @@ add_task(async function focus_and_unfocus() {
 add_task(async function focus_and_unfocus_modified() {
   let { tab } = await searchWithTab(SEARCH_STRING);
 
-  gURLBar.focus();
+  EventUtils.synthesizeMouseAtCenter(gURLBar.inputField, {});
   Assert.equal(
     gURLBar.getAttribute("pageproxystate"),
     "invalid",
     "Should have matching pageproxystate."
+  );
+  Assert.ok(
+    !gURLBar.hasAttribute("persistsearchterms"),
+    "Urlbar does not have persistsearchterms attribute."
   );
 
   await UrlbarTestUtils.promiseAutocompleteResultPopup({
@@ -154,6 +133,10 @@ add_task(async function focus_and_unfocus_modified() {
     "invalid",
     "Should have matching pageproxystate."
   );
+  Assert.ok(
+    !gURLBar.hasAttribute("persistsearchterms"),
+    "Urlbar does not have persistsearchterms attribute."
+  );
 
   BrowserTestUtils.removeTab(tab);
 });
@@ -162,15 +145,7 @@ add_task(async function focus_and_unfocus_modified() {
 // persist in the Urlbar.
 add_task(async function focus_after_top_sites() {
   await SpecialPowers.pushPrefEnv({
-    set: [
-      // Prevent the persist tip from interrupting clicking the Urlbar
-      // after the the SERP has been loaded.
-      [
-        `browser.urlbar.tipShownCount.${UrlbarProviderSearchTips.TIP_TYPE.PERSIST}`,
-        10000,
-      ],
-      ["browser.newtabpage.activity-stream.feeds.topsites", true],
-    ],
+    set: [["browser.newtabpage.activity-stream.feeds.topsites", true]],
   });
 
   // Populate Top Sites on a clean version of Places.
@@ -217,7 +192,7 @@ add_task(async function focus_after_top_sites() {
   }
 
   let [expectedSearchUrl] = UrlbarUtils.getSearchQueryUrl(
-    defaultTestEngine,
+    Services.search.defaultEngine,
     SEARCH_STRING
   );
   await UrlbarTestUtils.promiseAutocompleteResultPopup({

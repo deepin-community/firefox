@@ -4,7 +4,11 @@
 
 package org.mozilla.fenix.components.toolbar.navbar
 
+import android.content.res.Configuration
+import androidx.annotation.ColorInt
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
@@ -14,11 +18,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
-import androidx.compose.material.LocalContentColor
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
@@ -34,12 +40,15 @@ import mozilla.components.browser.state.selector.privateTabs
 import mozilla.components.browser.state.selector.selectedTab
 import mozilla.components.browser.state.store.BrowserStore
 import mozilla.components.lib.state.ext.observeAsState
+import mozilla.components.ui.tabcounter.TabCounterMenu
 import org.mozilla.fenix.R
 import org.mozilla.fenix.browser.browsingmode.BrowsingMode
 import org.mozilla.fenix.components.components
+import org.mozilla.fenix.components.toolbar.NewTabMenu
 import org.mozilla.fenix.compose.LongPressIconButton
-import org.mozilla.fenix.compose.TabCounter
 import org.mozilla.fenix.compose.annotation.LightDarkPreview
+import org.mozilla.fenix.compose.utils.KeyboardState
+import org.mozilla.fenix.compose.utils.keyboardAsState
 import org.mozilla.fenix.search.SearchDialogFragment
 import org.mozilla.fenix.theme.FirefoxTheme
 import org.mozilla.fenix.theme.Theme
@@ -52,13 +61,21 @@ import org.mozilla.fenix.theme.ThemeManager
  * @param browserStore The [BrowserStore] instance used to observe tabs state.
  * @param menuButton A [MenuButton] to be used as an [AndroidView]. The view implementation
  * contains the builder for the menu, so for the time being we are not implementing it as a composable.
+ * @param newTabMenu A [TabCounterMenu] to be used as an [AndroidView] for when the user
+ * long taps on the new tab button.
+ * @param tabsCounterMenu A lazy [TabCounterMenu] to be used as an [AndroidView] for when the user
+ * long taps on the tab counter.
  * @param onBackButtonClick Invoked when the user clicks on the back button in the navigation bar.
  * @param onBackButtonLongPress Invoked when the user long-presses the back button in the navigation bar.
  * @param onForwardButtonClick Invoked when the user clicks on the forward button in the navigation bar.
  * @param onForwardButtonLongPress Invoked when the user long-presses the forward button in the navigation bar.
- * @param onHomeButtonClick Invoked when the user clicks on the home button in the navigation bar.
+ * @param onNewTabButtonClick Invoked when the user click on the new tab button in the navigation bar.
+ * @param onNewTabButtonLongPress Invoked when the user long-presses the new tab button in the navigation bar.
  * @param onTabsButtonClick Invoked when the user clicks on the tabs button in the navigation bar.
+ * @param onTabsButtonLongPress Invoked when the user long-presses the tabs button in the navigation bar.
  * @param onMenuButtonClick Invoked when the user clicks on the menu button in the navigation bar.
+ * @param onVisibilityUpdated Invoked when the visibility of the navigation bar changes
+ * informing if the navigation bar is visible.
  * @param isMenuRedesignEnabled Whether or not the menu redesign is enabled.
  */
 @Suppress("LongParameterList")
@@ -67,13 +84,18 @@ fun BrowserNavBar(
     isPrivateMode: Boolean,
     browserStore: BrowserStore,
     menuButton: MenuButton,
+    newTabMenu: TabCounterMenu,
+    tabsCounterMenu: Lazy<TabCounterMenu>,
     onBackButtonClick: () -> Unit,
     onBackButtonLongPress: () -> Unit,
     onForwardButtonClick: () -> Unit,
     onForwardButtonLongPress: () -> Unit,
-    onHomeButtonClick: () -> Unit,
+    onNewTabButtonClick: () -> Unit,
+    onNewTabButtonLongPress: () -> Unit,
     onTabsButtonClick: () -> Unit,
+    onTabsButtonLongPress: () -> Unit,
     onMenuButtonClick: () -> Unit,
+    onVisibilityUpdated: (Boolean) -> Unit,
     isMenuRedesignEnabled: Boolean = components.settings.enableMenuRedesign,
 ) {
     val tabCount = browserStore.observeAsState(initialValue = 0) { browserState ->
@@ -88,7 +110,9 @@ fun BrowserNavBar(
         it.selectedTab?.content?.canGoForward ?: false
     }
 
-    NavBar {
+    NavBar(
+        onVisibilityUpdated = onVisibilityUpdated,
+    ) {
         BackButton(
             onBackButtonClick = onBackButtonClick,
             onBackButtonLongPress = onBackButtonLongPress,
@@ -101,13 +125,18 @@ fun BrowserNavBar(
             enabled = canGoForward,
         )
 
-        HomeButton(
-            onHomeButtonClick = onHomeButtonClick,
+        NewTabButton(
+            onClick = onNewTabButtonClick,
+            menu = newTabMenu,
+            onLongPress = onNewTabButtonLongPress,
         )
 
-        TabsButton(
-            onTabsButtonClick = onTabsButtonClick,
+        ToolbarTabCounterButton(
             tabCount = tabCount,
+            isPrivateMode = isPrivateMode,
+            onClick = onTabsButtonClick,
+            menu = tabsCounterMenu,
+            onLongPress = onTabsButtonLongPress,
         )
 
         MenuButton(
@@ -125,19 +154,25 @@ fun BrowserNavBar(
  * @param browserStore The [BrowserStore] instance used to observe tabs state.
  * @param menuButton A [MenuButton] to be used as an [AndroidView]. The view implementation
  * contains the builder for the menu, so for the time being we are not implementing it as a composable.
+ * @param tabsCounterMenu A lazy [TabCounterMenu] to be used as an [AndroidView] for when the user
+ * long taps on the tab counter.
  * @param onSearchButtonClick Invoked when the user clicks the search button in the nav bar. The button
  * is visible only on home screen and activates [SearchDialogFragment].
  * @param onTabsButtonClick Invoked when the user clicks the tabs button in the nav bar.
+ * @param onTabsButtonLongPress Invoked when the user long-presses the tabs button in the nav bar.
  * @param onMenuButtonClick Invoked when the user clicks on the menu button in the navigation bar.
  * @param isMenuRedesignEnabled Whether or not the menu redesign is enabled.
  */
+@Suppress("LongParameterList")
 @Composable
 fun HomeNavBar(
     isPrivateMode: Boolean,
     browserStore: BrowserStore,
     menuButton: MenuButton,
+    tabsCounterMenu: Lazy<TabCounterMenu>,
     onSearchButtonClick: () -> Unit,
     onTabsButtonClick: () -> Unit,
+    onTabsButtonLongPress: () -> Unit,
     onMenuButtonClick: () -> Unit,
     isMenuRedesignEnabled: Boolean = components.settings.enableMenuRedesign,
 ) {
@@ -176,9 +211,12 @@ fun HomeNavBar(
             onSearchButtonClick = onSearchButtonClick,
         )
 
-        TabsButton(
-            onTabsButtonClick = onTabsButtonClick,
+        ToolbarTabCounterButton(
             tabCount = tabCount,
+            isPrivateMode = isPrivateMode,
+            onClick = onTabsButtonClick,
+            menu = tabsCounterMenu,
+            onLongPress = onTabsButtonLongPress,
         )
 
         MenuButton(
@@ -202,6 +240,11 @@ fun HomeNavBar(
  * @param onForwardButtonLongPress Invoked when the user long-presses the forward button in the nav bar.
  * @param onOpenInBrowserButtonClick Invoked when the user clicks the open in fenix button in the nav bar.
  * @param onMenuButtonClick Invoked when the user clicks on the menu button in the navigation bar.
+ * @param backgroundColor Custom background color of the navigation bar.
+ * When `null`, [FirefoxTheme.layer1] will be used.
+ * @param buttonTint Custom button tint color of the navigation bar. When `null`, [Color.White] will be used.
+ * @param onVisibilityUpdated Invoked when the visibility of the navigation bar changes
+ * informing if the navigation bar is visible.
  * @param isMenuRedesignEnabled Whether or not the menu redesign is enabled.
  */
 @Composable
@@ -216,6 +259,9 @@ fun CustomTabNavBar(
     onForwardButtonLongPress: () -> Unit,
     onOpenInBrowserButtonClick: () -> Unit,
     onMenuButtonClick: () -> Unit,
+    @ColorInt backgroundColor: Int? = null,
+    @ColorInt buttonTint: Int? = null,
+    onVisibilityUpdated: (Boolean) -> Unit,
     isMenuRedesignEnabled: Boolean = components.settings.enableMenuRedesign,
 ) {
     // A follow up: https://bugzilla.mozilla.org/show_bug.cgi?id=1888573
@@ -225,43 +271,74 @@ fun CustomTabNavBar(
     val canGoForward by browserStore.observeAsState(initialValue = false) {
         it.findCustomTab(customTabSessionId)?.content?.canGoForward ?: false
     }
+    val background = backgroundColor?.let { Color(it) } ?: FirefoxTheme.colors.layer1
+    val iconTint = buttonTint?.let { Color(it) } ?: FirefoxTheme.colors.iconPrimary
 
-    NavBar {
+    NavBar(
+        background = background,
+        onVisibilityUpdated = onVisibilityUpdated,
+    ) {
         BackButton(
             onBackButtonClick = onBackButtonClick,
             onBackButtonLongPress = onBackButtonLongPress,
             enabled = canGoBack,
+            buttonEnabledTint = iconTint,
         )
 
         ForwardButton(
             onForwardButtonClick = onForwardButtonClick,
             onForwardButtonLongPress = onForwardButtonLongPress,
             enabled = canGoForward,
+            buttonEnabledTint = iconTint,
         )
 
-        OpenInBrowserButton(onOpenInBrowserButtonClick = onOpenInBrowserButtonClick)
+        OpenInBrowserButton(
+            onOpenInBrowserButtonClick = onOpenInBrowserButtonClick,
+            tint = iconTint,
+        )
 
         MenuButton(
             menuButton = menuButton,
             isMenuRedesignEnabled = isMenuRedesignEnabled,
             onMenuButtonClick = onMenuButtonClick,
+            tint = iconTint,
         )
     }
 }
 
+/**
+ * Navigation bar parent handling the basic configuration and behavior.
+ *
+ * @param background The background color of the navigation bar.
+ * @param onVisibilityUpdated Invoked when the visibility of the navigation bar changes informing if
+ * the navigation bar is visible.
+ * @param content The content of the navigation bar.
+ */
 @Composable
 private fun NavBar(
+    background: Color = FirefoxTheme.colors.layer1,
+    onVisibilityUpdated: (Boolean) -> Unit = {},
     content: @Composable RowScope.() -> Unit,
 ) {
-    Row(
-        modifier = Modifier
-            .background(FirefoxTheme.colors.layer1)
-            .height(dimensionResource(id = R.dimen.browser_navbar_height))
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        content = content,
-    )
+    val keyboardState by keyboardAsState()
+    if (keyboardState == KeyboardState.Closed) {
+        Row(
+            modifier = Modifier
+                .background(background)
+                .height(dimensionResource(id = R.dimen.browser_navbar_height))
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp)
+                .clickable(
+                    indication = null,
+                    interactionSource = remember { MutableInteractionSource() },
+                ) {},
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+            content = content,
+        )
+    }
+
+    onVisibilityUpdated(keyboardState == KeyboardState.Opened)
 }
 
 @Composable
@@ -269,16 +346,18 @@ private fun BackButton(
     onBackButtonClick: () -> Unit,
     onBackButtonLongPress: () -> Unit,
     enabled: Boolean,
+    buttonEnabledTint: Color = FirefoxTheme.colors.iconPrimary,
 ) {
     LongPressIconButton(
         onClick = onBackButtonClick,
         onLongClick = onBackButtonLongPress,
         enabled = enabled,
+        modifier = Modifier.size(48.dp),
     ) {
         Icon(
             painter = painterResource(R.drawable.mozac_ic_back_24),
             stringResource(id = R.string.browser_menu_back),
-            tint = if (enabled) FirefoxTheme.colors.iconPrimary else FirefoxTheme.colors.iconDisabled,
+            tint = if (enabled) buttonEnabledTint else FirefoxTheme.colors.iconDisabled,
         )
     }
 }
@@ -288,31 +367,18 @@ private fun ForwardButton(
     onForwardButtonClick: () -> Unit,
     onForwardButtonLongPress: () -> Unit,
     enabled: Boolean,
+    buttonEnabledTint: Color = FirefoxTheme.colors.iconPrimary,
 ) {
     LongPressIconButton(
         onClick = onForwardButtonClick,
         onLongClick = onForwardButtonLongPress,
         enabled = enabled,
+        modifier = Modifier.size(48.dp),
     ) {
         Icon(
             painter = painterResource(R.drawable.mozac_ic_forward_24),
             stringResource(id = R.string.browser_menu_forward),
-            tint = if (enabled) FirefoxTheme.colors.iconPrimary else FirefoxTheme.colors.iconDisabled,
-        )
-    }
-}
-
-@Composable
-private fun HomeButton(
-    onHomeButtonClick: () -> Unit,
-) {
-    IconButton(
-        onClick = onHomeButtonClick,
-    ) {
-        Icon(
-            painter = painterResource(R.drawable.mozac_ic_home_24),
-            stringResource(id = R.string.browser_toolbar_home),
-            tint = FirefoxTheme.colors.iconPrimary,
+            tint = if (enabled) buttonEnabledTint else FirefoxTheme.colors.iconDisabled,
         )
     }
 }
@@ -337,15 +403,17 @@ private fun MenuButton(
     menuButton: MenuButton,
     isMenuRedesignEnabled: Boolean,
     onMenuButtonClick: () -> Unit,
+    tint: Color = FirefoxTheme.colors.iconPrimary,
 ) {
     if (isMenuRedesignEnabled) {
         IconButton(
             onClick = onMenuButtonClick,
+            modifier = Modifier.size(48.dp),
         ) {
             Icon(
                 painter = painterResource(R.drawable.mozac_ic_ellipsis_vertical_24),
                 contentDescription = stringResource(id = R.string.mozac_browser_menu_button),
-                tint = FirefoxTheme.colors.iconPrimary,
+                tint = tint,
             )
         }
     } else {
@@ -357,19 +425,8 @@ private fun MenuButton(
 }
 
 @Composable
-private fun TabsButton(
-    onTabsButtonClick: () -> Unit,
-    tabCount: Int,
-) {
-    CompositionLocalProvider(LocalContentColor provides FirefoxTheme.colors.iconPrimary) {
-        IconButton(onClick = { onTabsButtonClick() }) {
-            TabCounter(tabCount = tabCount)
-        }
-    }
-}
-
-@Composable
 private fun OpenInBrowserButton(
+    tint: Color = FirefoxTheme.colors.iconPrimary,
     onOpenInBrowserButtonClick: () -> Unit,
 ) {
     IconButton(
@@ -378,13 +435,15 @@ private fun OpenInBrowserButton(
         Icon(
             painter = painterResource(R.drawable.mozac_ic_open_in),
             stringResource(R.string.browser_menu_open_in_fenix, R.string.app_name),
-            tint = FirefoxTheme.colors.iconPrimary,
+            tint = tint,
         )
     }
 }
 
 @Composable
-private fun HomeNavBarPreviewRoot(isPrivateMode: Boolean) {
+private fun HomeNavBarPreviewRoot(
+    isPrivateMode: Boolean,
+) {
     val context = LocalContext.current
     val colorId = if (isPrivateMode) {
         // private mode preview keeps using black colour as textPrimary
@@ -400,13 +459,16 @@ private fun HomeNavBarPreviewRoot(isPrivateMode: Boolean) {
             ),
         )
     }
+    val tabsCounterMenu = lazy { TabCounterMenu(context, onItemTapped = {}) }
 
     HomeNavBar(
-        isPrivateMode = false,
+        isPrivateMode = isPrivateMode,
         browserStore = BrowserStore(),
         menuButton = menuButton,
+        tabsCounterMenu = tabsCounterMenu,
         onSearchButtonClick = {},
         onTabsButtonClick = {},
+        onTabsButtonLongPress = {},
         onMenuButtonClick = {},
         isMenuRedesignEnabled = false,
     )
@@ -429,26 +491,33 @@ private fun OpenTabNavBarNavBarPreviewRoot(isPrivateMode: Boolean) {
             ),
         )
     }
+    val tabsCounterMenu = lazy { TabCounterMenu(context, onItemTapped = {}) }
+    val newTabMenu = NewTabMenu(context, onItemTapped = {})
 
     BrowserNavBar(
         isPrivateMode = false,
         browserStore = BrowserStore(),
         menuButton = menuButton,
+        newTabMenu = newTabMenu,
+        tabsCounterMenu = tabsCounterMenu,
         onBackButtonClick = {},
         onBackButtonLongPress = {},
         onForwardButtonClick = {},
         onForwardButtonLongPress = {},
-        onHomeButtonClick = {},
+        onNewTabButtonClick = {},
+        onNewTabButtonLongPress = {},
         onTabsButtonClick = {},
+        onTabsButtonLongPress = {},
         onMenuButtonClick = {},
         isMenuRedesignEnabled = false,
+        onVisibilityUpdated = {},
     )
 }
 
 @Composable
 private fun CustomTabNavBarPreviewRoot(isPrivateMode: Boolean) {
     val context = LocalContext.current
-    val colorId = if (isPrivateMode) {
+    val menuButtonTint = if (isPrivateMode) {
         // private mode preview keeps using black colour as textPrimary
         ThemeManager.resolveAttribute(R.attr.textOnColorPrimary, context)
     } else {
@@ -458,7 +527,7 @@ private fun CustomTabNavBarPreviewRoot(isPrivateMode: Boolean) {
         setColorFilter(
             ContextCompat.getColor(
                 context,
-                colorId,
+                menuButtonTint,
             ),
         )
     }
@@ -474,6 +543,9 @@ private fun CustomTabNavBarPreviewRoot(isPrivateMode: Boolean) {
         onOpenInBrowserButtonClick = {},
         onMenuButtonClick = {},
         isMenuRedesignEnabled = false,
+        backgroundColor = FirefoxTheme.colors.layer1.toArgb(),
+        buttonTint = FirefoxTheme.colors.iconPrimary.toArgb(),
+        onVisibilityUpdated = {},
     )
 }
 
@@ -485,9 +557,17 @@ private fun HomeNavBarPreview() {
     }
 }
 
-@Preview
+@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 private fun HomeNavBarPrivatePreview() {
+    FirefoxTheme(theme = Theme.Private) {
+        HomeNavBarPreviewRoot(isPrivateMode = true)
+    }
+}
+
+@Preview
+@Composable
+private fun HomeNavBarWithFeltPrivateBrowsingPreview() {
     FirefoxTheme(theme = Theme.Private) {
         HomeNavBarPreviewRoot(isPrivateMode = true)
     }
@@ -501,7 +581,7 @@ private fun OpenTabNavBarPreview() {
     }
 }
 
-@Preview
+@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 private fun OpenTabNavBarPrivatePreview() {
     FirefoxTheme(theme = Theme.Private) {
@@ -517,7 +597,7 @@ private fun CustomTabNavBarPreview() {
     }
 }
 
-@Preview
+@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 private fun CustomTabNavBarPrivatePreview() {
     FirefoxTheme(theme = Theme.Private) {

@@ -944,8 +944,7 @@ class TestRecursiveMakeBackend(BackendTester):
         ]
 
         expected = [
-            "RUST_LIBRARY_FILE := %s/x86_64-unknown-linux-gnu/release/libtest_library.a"
-            % env.topobjdir,  # noqa
+            "RUST_LIBRARY_FILE := x86_64-unknown-linux-gnu/release/libtest_library.a",
             "CARGO_FILE := $(srcdir)/Cargo.toml",
             "CARGO_TARGET_DIR := %s" % env.topobjdir,
         ]
@@ -965,8 +964,7 @@ class TestRecursiveMakeBackend(BackendTester):
         ]
 
         expected = [
-            "HOST_RUST_LIBRARY_FILE := %s/x86_64-unknown-linux-gnu/release/libhostrusttool.a"
-            % env.topobjdir,  # noqa
+            "HOST_RUST_LIBRARY_FILE := x86_64-unknown-linux-gnu/release/libhostrusttool.a",
             "CARGO_FILE := $(srcdir)/Cargo.toml",
             "CARGO_TARGET_DIR := %s" % env.topobjdir,
         ]
@@ -986,8 +984,7 @@ class TestRecursiveMakeBackend(BackendTester):
         ]
 
         expected = [
-            "HOST_RUST_LIBRARY_FILE := %s/x86_64-unknown-linux-gnu/release/libhostrusttool.a"
-            % env.topobjdir,  # noqa
+            "HOST_RUST_LIBRARY_FILE := x86_64-unknown-linux-gnu/release/libhostrusttool.a",
             "CARGO_FILE := $(srcdir)/Cargo.toml",
             "CARGO_TARGET_DIR := %s" % env.topobjdir,
             "HOST_RUST_LIBRARY_FEATURES := musthave cantlivewithout",
@@ -1008,8 +1005,7 @@ class TestRecursiveMakeBackend(BackendTester):
         ]
 
         expected = [
-            "RUST_LIBRARY_FILE := %s/x86_64-unknown-linux-gnu/release/libfeature_library.a"
-            % env.topobjdir,  # noqa
+            "RUST_LIBRARY_FILE := x86_64-unknown-linux-gnu/release/libfeature_library.a",
             "CARGO_FILE := $(srcdir)/Cargo.toml",
             "CARGO_TARGET_DIR := %s" % env.topobjdir,
             "RUST_LIBRARY_FEATURES := musthave cantlivewithout",
@@ -1203,23 +1199,23 @@ class TestRecursiveMakeBackend(BackendTester):
         env = self._consume("linkage", RecursiveMakeBackend)
         expected_linkage = {
             "prog": {
-                "SHARED_LIBS": ["qux/qux.so", "../shared/baz.so"],
-                "STATIC_LIBS": ["../real/foo.a"],
+                "SHARED_LIBS": ["$(DEPTH)/dist/bin/qux.so", "$(DEPTH)/dist/bin/baz.so"],
+                "STATIC_LIBS": ["$(DEPTH)/real/foo.a"],
                 "OS_LIBS": ["-lfoo", "-lbaz", "-lbar"],
             },
             "shared": {
                 "OS_LIBS": ["-lfoo"],
-                "SHARED_LIBS": ["../prog/qux/qux.so"],
+                "SHARED_LIBS": ["$(DEPTH)/dist/bin/qux.so"],
                 "STATIC_LIBS": [],
             },
             "static": {
-                "STATIC_LIBS": ["../real/foo.a"],
+                "STATIC_LIBS": ["$(DEPTH)/real/foo.a"],
                 "OS_LIBS": ["-lbar"],
-                "SHARED_LIBS": ["../prog/qux/qux.so"],
+                "SHARED_LIBS": ["$(DEPTH)/dist/bin/qux.so"],
             },
             "real": {
                 "STATIC_LIBS": [],
-                "SHARED_LIBS": ["../prog/qux/qux.so"],
+                "SHARED_LIBS": ["$(DEPTH)/dist/bin/qux.so"],
                 "OS_LIBS": ["-lbaz"],
             },
         }
@@ -1230,7 +1226,6 @@ class TestRecursiveMakeBackend(BackendTester):
         for name in expected_linkage:
             for var in expected_linkage[name]:
                 for val in expected_linkage[name][var]:
-                    val = os.path.normpath(val)
                     line = "%s += %s" % (var, val)
                     self.assertIn(line, actual_linkage[name])
                     actual_linkage[name].remove(line)
@@ -1325,6 +1320,28 @@ class TestRecursiveMakeBackend(BackendTester):
                     if line.startswith(prefix)
                 ][0]
                 self.assertEqual(program, expected_program)
+
+    def test_shared_lib_paths(self):
+        """SHARED_LIBRARYs with various moz.build settings that change the destination should
+        produce the expected paths in backend.mk."""
+        env = self._consume("shared-lib-paths", RecursiveMakeBackend)
+
+        expected = [
+            ("dist-bin", "$(DEPTH)/dist/bin/libdist-bin.so"),
+            ("dist-subdir", "$(DEPTH)/dist/bin/foo/libdist-subdir.so"),
+            ("final-target", "$(DEPTH)/final/target/libfinal-target.so"),
+            ("not-installed", "libnot-installed.so"),
+        ]
+        prefix = "SHARED_LIBRARY := "
+        for subdir, expected_shared_lib in expected:
+            with io.open(os.path.join(env.topobjdir, subdir, "backend.mk"), "r") as fh:
+                lines = fh.readlines()
+                shared_lib = [
+                    line.rstrip().split(prefix, 1)[1]
+                    for line in lines
+                    if line.startswith(prefix)
+                ][0]
+                self.assertEqual(shared_lib, expected_shared_lib)
 
 
 if __name__ == "__main__":

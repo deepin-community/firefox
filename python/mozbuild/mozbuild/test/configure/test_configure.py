@@ -14,6 +14,7 @@ from six import StringIO
 
 from mozbuild.configure import ConfigureError, ConfigureSandbox
 from mozbuild.configure.options import (
+    ConflictingOptionError,
     InvalidOptionError,
     NegativeOptionValue,
     PositiveOptionValue,
@@ -52,6 +53,7 @@ class TestConfigure(unittest.TestCase):
                 "CHOICES": NegativeOptionValue(),
                 "DEFAULTED": PositiveOptionValue(("not-simple",)),
                 "IS_GCC": NegativeOptionValue(),
+                "OTHER_CHOICES": NegativeOptionValue(),
                 "REMAINDER": (
                     PositiveOptionValue(),
                     NegativeOptionValue(),
@@ -62,6 +64,7 @@ class TestConfigure(unittest.TestCase):
                     PositiveOptionValue(),
                 ),
                 "SIMPLE": NegativeOptionValue(),
+                "TRIPLET": NegativeOptionValue(),
                 "VALUES": NegativeOptionValue(),
                 "VALUES2": NegativeOptionValue(),
                 "VALUES3": NegativeOptionValue(),
@@ -85,7 +88,9 @@ class TestConfigure(unittest.TestCase):
             "  Options from python/mozbuild/mozbuild/test/configure/data/moz.configure:\n"
             "    --enable-simple           Enable simple\n"
             "    --enable-with-env         Enable with env\n"
-            "    --enable-values           Enable values\n"
+            "    --enable-values[=V,...]   Enable values V\n"
+            "    --enable-others=V,...     Enable other values V\n"
+            "    --enable-triplet=V,V,V    Enable triplet V\n"
             "    --enable-choices={a,b,c}  Enable choices\n"
             "    --without-thing           Build without thing\n"
             "    --with-stuff              Build with stuff\n"
@@ -95,8 +100,8 @@ class TestConfigure(unittest.TestCase):
             "    --returned-choices        Choices\n"
             "    --enable-foo={x,y}        Enable Foo\n"
             "    --disable-foo             Disable Foo\n"
-            "    --enable-include          Include\n"
-            "    --with-imports            Imports\n"
+            "    --enable-include=I        Include I\n"
+            "    --with-imports[=I]        Imports I\n"
             "    --indirect-option         Indirectly defined option\n"
             "\n"
             "  Options from python/mozbuild/mozbuild/test/configure/data/included.configure:\n"
@@ -127,7 +132,9 @@ class TestConfigure(unittest.TestCase):
             "  Options from python/mozbuild/mozbuild/test/configure/data/moz.configure:\n"
             "    --enable-simple           Enable simple\n"
             "    --enable-with-env         Enable with env\n"
-            "    --enable-values           Enable values\n"
+            "    --enable-values[=V,...]   Enable values V\n"
+            "    --enable-others=V,...     Enable other values V\n"
+            "    --enable-triplet=V,V,V    Enable triplet V\n"
             "    --enable-choices={a,b,c}  Enable choices\n"
             "    --without-thing           Build without thing\n"
             "    --with-stuff              Build with stuff\n"
@@ -138,8 +145,8 @@ class TestConfigure(unittest.TestCase):
             "                              Choices\n"
             "    --enable-foo={x,y}        Enable Foo\n"
             "    --disable-foo             Disable Foo\n"
-            "    --enable-include          Include\n"
-            "    --with-imports            Imports\n"
+            "    --enable-include=I        Include I\n"
+            "    --with-imports[=I]        Imports I\n"
             "    --indirect-option         Indirectly defined option\n"
             "\n"
             "  Options from python/mozbuild/mozbuild/test/configure/data/included.configure:\n"
@@ -830,21 +837,21 @@ class TestConfigure(unittest.TestCase):
             mozpath.join(test_data_path, "imply_option", "imm.configure")
         )
 
-        with self.assertRaisesRegexp(
+        with self.assertRaisesRegex(
             InvalidOptionError,
             "--enable-foo' implied by 'imply_option at %s:7' conflicts "
             "with '--disable-foo' from the command-line" % config_path,
         ):
             get_config(["--disable-foo"])
 
-        with self.assertRaisesRegexp(
+        with self.assertRaisesRegex(
             InvalidOptionError,
             "--enable-bar=foo,bar' implied by 'imply_option at %s:18' "
             "conflicts with '--enable-bar=a,b,c' from the command-line" % config_path,
         ):
             get_config(["--enable-bar=a,b,c"])
 
-        with self.assertRaisesRegexp(
+        with self.assertRaisesRegex(
             InvalidOptionError,
             "--enable-baz=BAZ' implied by 'imply_option at %s:29' "
             "conflicts with '--enable-baz=QUUX' from the command-line" % config_path,
@@ -1132,6 +1139,49 @@ class TestConfigure(unittest.TestCase):
                 self.get_config(["--without-foo", "--with-qux"])
 
             self.assertEqual(str(e.exception), message)
+
+    def test_imply_option_conflict(self):
+        moz_configure = """
+            option('--with-foo', help='foo')
+            option('--with-env-foo', help='foo')
+            imply_option('--with-qux', True)
+            imply_option('QUX', "FOO", when='--with-env-foo')
+            imply_option('--with-qux', "FOO", when='--with-foo')
+            option('--with-qux', env="QUX", nargs='*', help='qux')
+            set_config('QUX', depends('--with-qux')(lambda x: x))
+        """
+        with self.assertRaises(ConflictingOptionError) as e:
+            with self.moz_configure(moz_configure):
+                self.get_config(["--with-foo"])
+
+        self.assertEqual(
+            str(e.exception),
+            "Cannot add '--with-qux=FOO' to the implied set because it conflicts"
+            " with '--with-qux' that was added earlier",
+        )
+
+        with self.assertRaises(InvalidOptionError) as e:
+            with self.moz_configure(moz_configure):
+                self.get_config(["--with-env-foo"])
+
+        config_path = mozpath.abspath(mozpath.join(test_data_path, "moz.configure"))
+
+        # TODO: the error message is weird.
+        self.assertEqual(
+            str(e.exception),
+            "'QUX=FOO' implied by 'imply_option at %s:5' conflicts "
+            "with '--with-qux' from the implied" % config_path,
+        )
+
+        with self.assertRaises(InvalidOptionError) as e:
+            with self.moz_configure(moz_configure):
+                self.get_config(["--with-foo", "--with-env-foo"])
+
+        self.assertEqual(
+            str(e.exception),
+            "Cannot add '--with-qux=FOO' to the implied set because it conflicts"
+            " with '--with-qux' that was added earlier",
+        )
 
     def test_option_failures(self):
         with self.assertRaises(ConfigureError) as e:

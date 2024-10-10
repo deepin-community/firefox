@@ -12,6 +12,8 @@ about-processes-column-action =
 
 about-processes-shutdown-process =
     .title = Розвантажити вкладки та вбити процес
+about-processes-kill-process =
+    .title = Завершити процес
 about-processes-shutdown-tab =
     .title = Закрити вкладку
 # Profiler icons
@@ -52,6 +54,7 @@ about-processes-remote-sandbox-broker-process = Віддалений броке�
 about-processes-fork-server-process = Сервер розгалуження ({ $pid })
 about-processes-preallocated-process = Попередньо розподілено ({ $pid })
 about-processes-utility-process = Утиліта ({ $pid })
+about-processes-inference-process = Вивід ({ $pid })
 # Unknown process names
 # Variables:
 #    $pid (String) The process id of this process, assigned by the OS.
@@ -186,7 +189,7 @@ duration-unit-d = д
 ## Memory units
 
 memory-unit-B = Б
-memory-unit-KB = КБ
+memory-unit-KB = кБ
 memory-unit-MB = МБ
 memory-unit-GB = ГБ
 memory-unit-TB = ТБ

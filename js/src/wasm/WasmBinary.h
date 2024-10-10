@@ -26,6 +26,7 @@
 
 #include "js/WasmFeatures.h"
 
+#include "wasm/WasmBinaryTypes.h"
 #include "wasm/WasmCompile.h"
 #include "wasm/WasmCompileArgs.h"
 #include "wasm/WasmConstants.h"
@@ -35,11 +36,6 @@
 
 namespace js {
 namespace wasm {
-
-using mozilla::DebugOnly;
-using mozilla::Maybe;
-
-struct ModuleEnvironment;
 
 // The Opcode compactly and safely represents the primary opcode plus any
 // extension, with convenient predicates and accessors.
@@ -115,21 +111,6 @@ class Opcode {
   bool operator==(const Opcode& that) const { return bits_ == that.bits_; }
   bool operator!=(const Opcode& that) const { return bits_ != that.bits_; }
 };
-
-// This struct captures the bytecode offset of a section's payload (so not
-// including the header) and the size of the payload.
-
-struct SectionRange {
-  uint32_t start;
-  uint32_t size;
-
-  uint32_t end() const { return start + size; }
-  bool operator==(const SectionRange& rhs) const {
-    return start == rhs.start && size == rhs.size;
-  }
-};
-
-using MaybeSectionRange = Maybe<SectionRange>;
 
 // The Encoder class appends bytes to the Bytes object it is given during
 // construction. The client is responsible for the Bytes's lifetime and must
@@ -356,7 +337,7 @@ class Decoder {
 
   template <typename UInt>
   [[nodiscard]] bool readVarU(UInt* out) {
-    DebugOnly<const uint8_t*> before = cur_;
+    mozilla::DebugOnly<const uint8_t*> before = cur_;
     const unsigned numBits = sizeof(UInt) * CHAR_BIT;
     const unsigned remainderBits = numBits % 7;
     const unsigned numBitsInSevens = numBits - remainderBits;
@@ -574,7 +555,7 @@ class Decoder {
 
   [[nodiscard]] bool readSectionHeader(uint8_t* id, SectionRange* range);
 
-  [[nodiscard]] bool startSection(SectionId id, ModuleEnvironment* env,
+  [[nodiscard]] bool startSection(SectionId id, CodeMetadata* codeMeta,
                                   MaybeSectionRange* range,
                                   const char* sectionName);
   [[nodiscard]] bool finishSection(const SectionRange& range,
@@ -585,26 +566,26 @@ class Decoder {
 
   [[nodiscard]] bool startCustomSection(const char* expected,
                                         size_t expectedLength,
-                                        ModuleEnvironment* env,
+                                        CodeMetadata* codeMeta,
                                         MaybeSectionRange* range);
 
   template <size_t NameSizeWith0>
   [[nodiscard]] bool startCustomSection(const char (&name)[NameSizeWith0],
-                                        ModuleEnvironment* env,
+                                        CodeMetadata* codeMeta,
                                         MaybeSectionRange* range) {
     MOZ_ASSERT(name[NameSizeWith0 - 1] == '\0');
-    return startCustomSection(name, NameSizeWith0 - 1, env, range);
+    return startCustomSection(name, NameSizeWith0 - 1, codeMeta, range);
   }
 
   void finishCustomSection(const char* name, const SectionRange& range);
   void skipAndFinishCustomSection(const SectionRange& range);
 
-  [[nodiscard]] bool skipCustomSection(ModuleEnvironment* env);
+  [[nodiscard]] bool skipCustomSection(CodeMetadata* codeMeta);
 
   // The Name section has its own optional subsections.
 
   [[nodiscard]] bool startNameSubsection(NameType nameType,
-                                         Maybe<uint32_t>* endOffset);
+                                         mozilla::Maybe<uint32_t>* endOffset);
   [[nodiscard]] bool finishNameSubsection(uint32_t endOffset);
   [[nodiscard]] bool skipNameSubsection();
 
@@ -709,7 +690,8 @@ inline bool Decoder::readPackedType(const TypeContext& types,
       *type = RefType::fromTypeCode(TypeCode(code), true);
       return true;
     }
-    case uint8_t(TypeCode::ExnRef): {
+    case uint8_t(TypeCode::ExnRef):
+    case uint8_t(TypeCode::NullExnRef): {
       if (!features.exnref) {
         return fail("exnref not enabled");
       }
@@ -792,7 +774,8 @@ inline bool Decoder::readHeapType(const TypeContext& types,
       case uint8_t(TypeCode::ExternRef):
         *type = RefType::fromTypeCode(TypeCode(code), nullable);
         return true;
-      case uint8_t(TypeCode::ExnRef): {
+      case uint8_t(TypeCode::ExnRef):
+      case uint8_t(TypeCode::NullExnRef): {
         if (!features.exnref) {
           return fail("exnref not enabled");
         }

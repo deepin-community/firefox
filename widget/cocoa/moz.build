@@ -23,7 +23,6 @@ EXPORTS += [
 ]
 
 UNIFIED_SOURCES += [
-    "AppearanceOverride.mm",
     "GfxInfo.mm",
     "MOZIconHelper.mm",
     "MOZMenuOpeningCoordinator.mm",
@@ -72,7 +71,6 @@ UNIFIED_SOURCES += [
     "TextRecognition.mm",
     "VibrancyManager.mm",
     "ViewRegion.mm",
-    "WidgetTraceEvent.mm",
 ]
 
 # These files cannot be built in unified mode because they cause symbol conflicts

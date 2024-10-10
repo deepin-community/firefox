@@ -84,6 +84,8 @@ policy-Handlers = 기본 애플리케이션 핸들러를 구성합니다.
 policy-HardwareAcceleration = False 값이면 하드웨어 가속 기능을 끕니다.
 # “lock” means that the user won’t be able to change this setting
 policy-Homepage = 홈페이지를 설정하고 선택적으로 잠급니다.
+policy-HttpAllowlist = HTTPS로 업그레이드되지 않는 출처입니다.
+policy-HttpsOnlyMode = HTTPS 전용 모드를 활성화하도록 허용합니다.
 policy-InstallAddonsPermission = 특정 웹 사이트가 부가 기능을 설치할 수 있게 허용합니다.
 policy-LegacyProfiles = 각 설치별로 다른 프로필 사용을 강제하는 기능을 사용 안 합니다.
 
@@ -108,12 +110,16 @@ policy-OverrideFirstRunPage = 첫 실행 페이지를 재정의합니다. 첫 �
 policy-OverridePostUpdatePage = 업데이트 후 "새 기능" 페이지를 재정의합니다. 업데이트 후 페이지를 사용 안 하려면 이 정책을 빈칸으로 설정하세요.
 policy-PasswordManagerEnabled = 비밀번호 관리자에 비밀번호 저장을 사용합니다.
 policy-PasswordManagerExceptions = { -brand-short-name }가 특정 사이트의 비밀번호를 저장하지 못하도록 합니다.
+# Post-quantum refers to cryptography that is safe from attacks by quantum
+# computers. See https://en.wikipedia.org/wiki/Post-quantum_cryptography
+policy-PostQuantumKeyAgreementEnabled = TLS에 대한 사후 양자 키 합의를 사용합니다.
 # PDF.js and PDF should not be translated
 policy-PDFjs = { -brand-short-name }에 내장된 PDF 뷰어인 PDF.js를 사용 안하거나 구성합니다.
 policy-Permissions2 = 카메라, 마이크, 위치, 알림 및 자동 재생에 대한 권한을 구성합니다.
 policy-PictureInPicture = 화면 속 화면을 사용하거나 사용하지 않게 합니다.
 policy-PopupBlocking = 기본으로 특정 웹 사이트가 팝업을 보여주도록 허용합니다.
 policy-Preferences = 설정의 하위 집합에 대한 값을 설정하고 잠급니다.
+policy-PrivateBrowsingModeAvailability = 사생활 보호 모드의 가용성을 설정합니다.
 policy-PromptForDownloadLocation = 다운로드시 파일 저장 위치를 물어봅니다.
 policy-Proxy = 프록시 설정을 구성합니다.
 policy-RequestedLocales = 애플리케이션의 요청된 로케일의 목록을 설정 순서로 설정합니다.

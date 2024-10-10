@@ -310,7 +310,9 @@ JS_PUBLIC_API JSObject* JS::CreateModuleRequest(
     return nullptr;
   }
 
-  return ModuleRequestObject::create(cx, specifierAtom, nullptr);
+  Rooted<ImportAttributeVector> attributes(cx);
+
+  return ModuleRequestObject::create(cx, specifierAtom, attributes);
 }
 
 JS_PUBLIC_API JSString* JS::GetModuleRequestSpecifier(
@@ -1312,6 +1314,20 @@ static bool InnerModuleLinking(JSContext* cx, Handle<ModuleObject*> module,
   for (const RequestedModule& request : module->requestedModules()) {
     moduleRequest = request.moduleRequest();
 
+    // According to the spec, this should be in InnerModuleLoading, but
+    // currently, our module code is not aligned with the spec text.
+    // https://bugzilla.mozilla.org/show_bug.cgi?id=1894729
+    if (moduleRequest->hasFirstUnsupportedAttributeKey()) {
+      UniqueChars printableKey = AtomToPrintableString(
+          cx, moduleRequest->getFirstUnsupportedAttributeKey());
+      JS_ReportErrorNumberASCII(
+          cx, GetErrorMessage, nullptr,
+          JSMSG_IMPORT_ATTRIBUTES_STATIC_IMPORT_UNSUPPORTED_ATTRIBUTE,
+          printableKey ? printableKey.get() : "");
+
+      return false;
+    }
+
     // Step 9.a. Let requiredModule be ? HostResolveImportedModule(module,
     //           required).
     requiredModule = HostResolveImportedModule(cx, module, moduleRequest,
@@ -1944,7 +1960,10 @@ void js::AsyncModuleExecutionFulfilled(JSContext* cx,
     } else if (m->hasTopLevelAwait()) {
       // Step 12.b. Else if m.[[HasTLA]] is true, then:
       // Step 12.b.i. Perform ExecuteAsyncModule(m).
-      MOZ_ALWAYS_TRUE(ExecuteAsyncModule(cx, m));
+      if (!ExecuteAsyncModule(cx, m)) {
+        MOZ_ASSERT(cx->isThrowingOutOfMemory() || cx->isThrowingOverRecursed());
+        cx->clearPendingException();
+      }
     } else {
       // Step 12.c. Else:
       // Step 12.c.i. Let result be m.ExecuteModule().

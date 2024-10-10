@@ -10,7 +10,6 @@
 
 #include "lib/jxl/alpha.h"
 #include "lib/jxl/base/byte_order.h"
-#include "lib/jxl/base/matrix_ops.h"
 #include "lib/jxl/cms/opsin_params.h"
 #include "lib/jxl/fields.h"
 #include "lib/jxl/frame_header.h"
@@ -355,13 +354,10 @@ Status OpsinInverseMatrix::VisitFields(Visitor* JXL_RESTRICT visitor) {
     visitor->SetDefault(this);
     return true;
   }
-  const Matrix3x3& default_inverse =
-      jxl::cms::DefaultInverseOpsinAbsorbanceMatrix();
-  for (int j = 0; j < 3; ++j) {
-    for (int i = 0; i < 3; ++i) {
-      JXL_QUIET_RETURN_IF_ERROR(
-          visitor->F16(default_inverse[j][i], &inverse_matrix[j][i]));
-    }
+  for (int i = 0; i < 9; ++i) {
+    JXL_QUIET_RETURN_IF_ERROR(
+        visitor->F16(jxl::cms::DefaultInverseOpsinAbsorbanceMatrix()[i],
+                     &inverse_matrix[i]));
   }
   for (int i = 0; i < 3; ++i) {
     JXL_QUIET_RETURN_IF_ERROR(visitor->F16(

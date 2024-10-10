@@ -585,7 +585,7 @@ MacOSWebAuthnService::MakeCredential(uint64_t aTransactionId,
         NSString* userNameNS = nsCocoaUtils::ToNSString(userName);
 
         nsAutoString userDisplayName;
-        Unused << aArgs->GetUserName(userDisplayName);
+        Unused << aArgs->GetUserDisplayName(userDisplayName);
         NSString* userDisplayNameNS = nsCocoaUtils::ToNSString(userDisplayName);
 
         nsTArray<int32_t> coseAlgs;
@@ -941,6 +941,17 @@ void MacOSWebAuthnService::DoGetAssertion(
           Unused << aArgs->GetAllowList(allowList);
           Unused << aArgs->GetAllowListTransports(allowListTransports);
         }
+        // Compute the union of the transport sets.
+        uint8_t transports = 0;
+        for (uint8_t credTransports : allowListTransports) {
+          if (credTransports == 0) {
+            // treat the empty transport set as "all transports".
+            transports = ~0;
+            break;
+          }
+          transports |= credTransports;
+        }
+
         NSMutableArray* platformAllowedCredentials =
             [[NSMutableArray alloc] init];
         for (const auto& allowedCredentialId : allowList) {
@@ -998,6 +1009,15 @@ void MacOSWebAuthnService::DoGetAssertion(
         if (userVerificationPreference.isSome()) {
           platformAssertionRequest.userVerificationPreference =
               *userVerificationPreference;
+        }
+        if (__builtin_available(macos 13.5, *)) {
+          // Show the hybrid transport option if (1) we have no transport hints
+          // or (2) at least one allow list entry lists the hybrid transport.
+          bool shouldShowHybridTransport =
+              !transports ||
+              (transports & MOZ_WEBAUTHN_AUTHENTICATOR_TRANSPORT_ID_HYBRID);
+          platformAssertionRequest.shouldShowHybridTransport =
+              shouldShowHybridTransport;
         }
 
         // Initialize the cross-platform provider with the rpId.

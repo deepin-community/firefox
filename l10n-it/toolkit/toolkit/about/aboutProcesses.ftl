@@ -13,6 +13,8 @@ about-processes-column-action =
 
 about-processes-shutdown-process =
     .title = Scarica le schede e termina il processo
+about-processes-kill-process =
+    .title = Termina il processo
 about-processes-shutdown-tab =
     .title = Chiudi scheda
 
@@ -59,6 +61,7 @@ about-processes-fork-server-process = Fork server ({ $pid })
 about-processes-preallocated-process = Preallocato ({ $pid })
 
 about-processes-utility-process = Utilità ({ $pid })
+about-processes-inference-process = Inferenza ({ $pid })
 
 about-processes-unknown-process = Altro: { $type } ({ $pid })
 

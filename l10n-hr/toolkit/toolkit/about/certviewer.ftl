@@ -14,7 +14,7 @@ certificate-viewer-error-title = Nešto je pošlo naopako.
 certificate-viewer-algorithm = Algoritam
 certificate-viewer-certificate-authority = Certifikacijsko tijelo
 certificate-viewer-cipher-suite = Skup šifratora
-certificate-viewer-common-name = Uobičajeni naziv
+certificate-viewer-common-name = Uobičajeno ime
 certificate-viewer-email-address = Adresa e-pošte
 # Variables:
 #   $firstCertName (String) - Common Name for the displayed certificate
@@ -24,7 +24,7 @@ certificate-viewer-inc-country = Država osnivanja
 certificate-viewer-country = Država
 certificate-viewer-curve = Krivulja
 certificate-viewer-distribution-point = Distribucijska točka
-certificate-viewer-dns-name = DNS naziv
+certificate-viewer-dns-name = DNS ime
 certificate-viewer-ip-address = IP adresa
 certificate-viewer-other-name = Drugo ime
 certificate-viewer-exponent = Potencija
@@ -35,11 +35,11 @@ certificate-viewer-key-size = Veličina ključa
 # Inc. means Incorporated, e.g GitHub is incorporated in Delaware
 certificate-viewer-inc-locality = Mjesto osnivanja
 certificate-viewer-locality = Područje
-certificate-viewer-location = Lokacija
-certificate-viewer-logid = ID dnevnika
+certificate-viewer-location = Mjesto
+certificate-viewer-logid = ID zapisnika
 certificate-viewer-method = Metoda
 certificate-viewer-modulus = Modul
-certificate-viewer-name = Naziv
+certificate-viewer-name = Ime
 certificate-viewer-not-after = Ne nakon
 certificate-viewer-not-before = Ne prije
 certificate-viewer-organization = Organizacija
@@ -62,12 +62,12 @@ certificate-viewer-signature-algorithm = Algoritam potpisa
 certificate-viewer-signature-scheme = Shema potpisa
 certificate-viewer-timestamp = Vremenska oznaka
 certificate-viewer-value = Vrijednost
-certificate-viewer-version = Verzija
+certificate-viewer-version = Inačica
 certificate-viewer-business-category = Kategorija poslovanja
-certificate-viewer-subject-name = Naziv predmeta
+certificate-viewer-subject-name = Ime predmeta
 certificate-viewer-issuer-name = Ime izdavača
 certificate-viewer-validity = Valjanost
-certificate-viewer-subject-alt-names = Alternativni nazivi predmeta
+certificate-viewer-subject-alt-names = Alternativno ime predmeta
 certificate-viewer-public-key-info = Informacije o javnom ključu
 certificate-viewer-miscellaneous = Razno
 certificate-viewer-fingerprints = Otisci prstiju
@@ -81,7 +81,6 @@ certificate-viewer-authority-info-aia = Podaci certifikacijskog tijela (AIA)
 certificate-viewer-certificate-policies = Pravila certifikata
 certificate-viewer-embedded-scts = Ugrađeni SCT-ovi
 certificate-viewer-crl-endpoints = Krajnje točke CRL-a
-
 # This message is used as a row header in the Miscellaneous section.
 # The associated data cell contains links to download the certificate.
 certificate-viewer-download = Preuzmi
@@ -101,7 +100,6 @@ certificate-viewer-download-pem = PEM (certifikat)
     .download = { $fileName }.pem
 certificate-viewer-download-pem-chain = PEM (lanac)
     .download = { $fileName }-chain.pem
-
 # The title attribute for Critical Extension icon
 certificate-viewer-critical-extension =
     .title = Ovaj dodatak je označen kao kritičan, što znači da klijenti moraju odbaciti certifikat ukoliko ga ne razumiju.
@@ -117,6 +115,6 @@ certificate-viewer-unknown-group-label = (nepoznato)
 
 certificate-viewer-tab-mine = Tvoji certifikati
 certificate-viewer-tab-people = Osobe
-certificate-viewer-tab-servers = Poslužitelji
+certificate-viewer-tab-servers = Serveri
 certificate-viewer-tab-ca = Certifikacijska tijela
 certificate-viewer-tab-unkonwn = Nepoznato

@@ -57,6 +57,10 @@ category-experimental =
 pane-experimental-subtitle = Avançar com cuidado
 pane-experimental-search-results-header = Experiências { -brand-short-name }: Prosseguir com cuidado
 pane-experimental-description2 = Alterar definições de configuração avançadas pode interferir com o desempenho ou segurança do { -brand-short-name }.
+settings-pane-labs-title = { -firefoxlabs-brand-name }
+settings-category-labs =
+    .tooltiptext = { -firefoxlabs-brand-name }
+pane-experimental-description3 = Experimente as nossas funcionalidades em fase experimental! Estão ainda em desenvolvimento e a evoluir, o que pode influenciar o funcionamento do { -brand-short-name }.
 pane-experimental-reset =
     .label = Repor predefinições
     .accesskey = R
@@ -493,7 +497,7 @@ browsing-search-on-start-typing =
     .label = Pesquisar texto quando começar a escrever
     .accesskey = x
 browsing-picture-in-picture-toggle-enabled =
-    .label = Ativar os controlos de vídeo em janela flutuante
+    .label = Ativar os controlos de janela flutuante
     .accesskey = f
 browsing-picture-in-picture-learn-more = Saber mais
 browsing-media-control =
@@ -599,6 +603,10 @@ home-prefs-recent-activity-description = Uma seleção de sites e conteúdos rec
 home-prefs-snippets-header =
     .label = Excertos
 home-prefs-snippets-description-new = Dicas e notícias da { -vendor-short-name } e { -brand-product-name }
+home-prefs-weather-header =
+    .label = Meteorologia
+home-prefs-weather-description = Um relance da previsão para hoje
+home-prefs-weather-learn-more-link = Saber mais
 # Variables:
 #   $num (number) - Number of rows displayed
 home-prefs-sections-rows-option =
@@ -912,6 +920,9 @@ forms-saved-passwords =
 forms-primary-pw-use =
     .label = Utilizar uma palavra-passe principal
     .accesskey = U
+# This operation requires the user to authenticate with the operating system (device sign-in)
+forms-os-reauth =
+    .label = Requerer início de sessão no dispositivo para preencher e gerir palavras-passe
 forms-primary-pw-learn-more-link = Saber mais
 # This string uses the former name of the Primary Password feature
 # ("Master Password" in English) so that the preferences can be found
@@ -944,6 +955,13 @@ primary-password-os-auth-dialog-message-win = Para criar uma palavra-passe princ
 # notes are only valid for English. Please test in your locale.
 primary-password-os-auth-dialog-message-macosx = criar uma palavra-passe principal
 master-password-os-auth-dialog-caption = { -brand-full-name }
+# The macOS string is preceded by the operating system with "Firefox is trying to ".
+autofill-creditcard-os-dialog-message =
+    { PLATFORM() ->
+        [macos] alterar as definições dos métodos de pagamento
+       *[other] O { -brand-short-name } está a tentar alterar as definições dos métodos de pagamento. Utilize o início de sessão do seu dispositivo para permitir isto.
+    }
+autofill-creditcard-os-auth-dialog-caption = { -brand-full-name }
 
 ## Privacy section - Autofill
 
@@ -958,13 +976,8 @@ autofill-payment-methods-checkbox-submessage = Inclui os cartões de débito e c
     .accesskey = I
 autofill-saved-payment-methods-button = Métodos de pagamento guardados
     .accesskey = t
-autofill-reauth-checkbox =
-    { PLATFORM() ->
-        [macos] Requer a autenticação do macOS para preencher e editar os métodos de pagamento.
-        [windows] Requer a autenticação do Windows para preencher e editar os métodos de pagamento.
-        [linux] Requer a autenticação do Linux para preencher e editar os métodos de pagamento.
-       *[other] Requer a autenticação para preencher e editar os métodos de pagamento.
-    }
+# This operation requires the user to authenticate with the operating system (device sign-in)
+autofill-reauth-payment-methods-checkbox = Requerer o início de sessão no dispositivo para preencher e gerir métodos de pagamento
     .accesskey = o
 
 ## Privacy Section - History
@@ -1102,6 +1115,9 @@ addressbar-suggestions-settings = Alterar preferências para as sugestões dos m
 addressbar-locbar-showrecentsearches-option =
     .label = Mostrar pesquisas recentes
     .accesskey = r
+addressbar-locbar-showtrendingsuggestions-option =
+    .label = Mostrar sugestões de pesquisa com uma popularidade crescente
+    .accesskey = p
 addressbar-quickactions-learn-more = Saber mais
 
 ## Privacy Section - Content Blocking
@@ -1293,6 +1309,14 @@ privacy-segmentation-radio-off =
 privacy-segmentation-radio-on =
     .label = Mostrar informações detalhadas
 
+## Privacy Section - Website Advertising Preferences
+
+website-advertising-header = Preferências de publicidade de sites
+website-advertising-private-attribution =
+    .label = Permitir que os sites façam medições de anúncios preservando a privacidade
+    .accesskey = p
+website-advertising-private-attribution-description = Isto ajuda os sites a compreender o desempenho dos seus anúncios sem recolher dados sobre si.
+
 ## Privacy Section - Security
 ##
 ## It is important that wording follows the guidelines outlined on this page:
@@ -1336,13 +1360,20 @@ space-alert-under-5gb-message2 = <strong>O { -brand-short-name } está a ficar s
 
 httpsonly-header = Modo apenas HTTPS
 httpsonly-description = O HTTPS fornece um ligação segura e encriptada entre o { -brand-short-name } e os sites que visita. A maioria dos sites suporta HTTPS e se o modo apenas HTTPS estiver ativo, então o { -brand-short-name } irá melhorar/atualizar todas as ligações para HTTPS.
+httpsonly-description2 = O { -brand-short-name } estabelece ligações seguras e encriptadas aos sites que visita. Irá alertar caso uma ligação não seja segura, quando o modo Apenas HTTPS estiver ativado.
 httpsonly-learn-more = Saber mais
 httpsonly-radio-enabled =
     .label = Ativar o modo apenas HTTPS em todas as janelas
+httpsonly-radio-enabled2 =
+    .label = Utilizar apenas HTTPS em todas as janelas
 httpsonly-radio-enabled-pbm =
     .label = Ativar o modo apenas HTTPS somente em janelas privadas
+httpsonly-radio-enabled-pbm2 =
+    .label = Utilizar HTTPS apenas nas janelas privadas
 httpsonly-radio-disabled =
     .label = Não ativar o modo apenas HTTPS
+httpsonly-radio-disabled2 =
+    .label = Tentar primeiro HTTPS, mas permitir as ligações que não são seguras
 
 ## DoH Section
 

@@ -32,6 +32,7 @@
 #include "vm/JSFunction.h"
 #include "vm/JSScript.h"
 #include "vm/Opcodes.h"
+#include "vm/TypeofEqOperand.h"  // TypeofEqOperand
 #ifdef MOZ_VTUNE
 #  include "vtune/VTuneWrapper.h"
 #endif
@@ -356,6 +357,8 @@ class MOZ_STATIC_CLASS OpToFallbackKindTable {
     setKind(JSOp::Typeof, BaselineICFallbackKind::TypeOf);
     setKind(JSOp::TypeofExpr, BaselineICFallbackKind::TypeOf);
 
+    setKind(JSOp::TypeofEq, BaselineICFallbackKind::TypeOfEq);
+
     setKind(JSOp::ToPropertyKey, BaselineICFallbackKind::ToPropertyKey);
 
     setKind(JSOp::Iter, BaselineICFallbackKind::GetIterator);
@@ -429,6 +432,7 @@ bool ICSupportsPolymorphicTypeData(JSOp op) {
   switch (kind) {
     case BaselineICFallbackKind::ToBool:
     case BaselineICFallbackKind::TypeOf:
+    case BaselineICFallbackKind::TypeOfEq:
       return true;
     default:
       return false;
@@ -879,6 +883,9 @@ bool DoSetElemFallback(JSContext* cx, BaselineFrame* frame,
         MOZ_ASSERT(deferType != DeferType::None);
         break;
     }
+    if (deferType == DeferType::None && !attached) {
+      stub->trackNotAttached();
+    }
   }
 
   if (op == JSOp::InitElem || op == JSOp::InitHiddenElem ||
@@ -941,10 +948,11 @@ bool DoSetElemFallback(JSContext* cx, BaselineFrame* frame,
         MOZ_ASSERT_UNREACHABLE("Invalid attach result");
         break;
     }
+    if (!attached) {
+      stub->trackNotAttached();
+    }
   }
-  if (!attached && canAttachStub) {
-    stub->trackNotAttached();
-  }
+
   return true;
 }
 
@@ -1143,7 +1151,7 @@ bool DoGetNameFallback(JSContext* cx, BaselineFrame* frame,
 
   static_assert(JSOpLength_GetGName == JSOpLength_GetName,
                 "Otherwise our check for JSOp::Typeof isn't ok");
-  if (JSOp(pc[JSOpLength_GetGName]) == JSOp::Typeof) {
+  if (IsTypeOfNameOp(JSOp(pc[JSOpLength_GetGName]))) {
     if (!GetEnvironmentName<GetNameMode::TypeOf>(cx, envChain, name, res)) {
       return false;
     }
@@ -1445,6 +1453,9 @@ bool DoSetPropFallback(JSContext* cx, BaselineFrame* frame,
         MOZ_ASSERT(deferType != DeferType::None);
         break;
     }
+    if (deferType == DeferType::None && !attached) {
+      stub->trackNotAttached();
+    }
   }
 
   if (op == JSOp::InitProp || op == JSOp::InitLockedProp ||
@@ -1519,9 +1530,9 @@ bool DoSetPropFallback(JSContext* cx, BaselineFrame* frame,
         MOZ_ASSERT_UNREACHABLE("Invalid attach result");
         break;
     }
-  }
-  if (!attached && canAttachStub) {
-    stub->trackNotAttached();
+    if (!attached) {
+      stub->trackNotAttached();
+    }
   }
 
   return true;
@@ -1608,7 +1619,7 @@ bool DoCallFallback(JSContext* cx, BaselineFrame* frame, ICFallbackStub* stub,
   // allowed to attach stubs.
   if (canAttachStub) {
     HandleValueArray args = HandleValueArray::fromMarkedLocation(argc, vp + 2);
-    CallIRGenerator gen(cx, script, pc, op, stub->state(), argc, callee,
+    CallIRGenerator gen(cx, script, pc, op, stub->state(), frame, argc, callee,
                         callArgs.thisv(), newTarget, args);
     switch (gen.tryAttachStub()) {
       case AttachDecision::NoAction:
@@ -1699,8 +1710,8 @@ bool DoSpreadCallFallback(JSContext* cx, BaselineFrame* frame,
 
     HandleValueArray args = HandleValueArray::fromMarkedLocation(
         aobj->length(), aobj->getDenseElements());
-    CallIRGenerator gen(cx, script, pc, op, stub->state(), 1, callee, thisv,
-                        newTarget, args);
+    CallIRGenerator gen(cx, script, pc, op, stub->state(), frame, 1, callee,
+                        thisv, newTarget, args);
     switch (gen.tryAttachStub()) {
       case AttachDecision::NoAction:
         break;
@@ -2053,6 +2064,45 @@ bool FallbackICCodeCompiler::emit_TypeOf() {
   using Fn = bool (*)(JSContext*, BaselineFrame*, ICFallbackStub*, HandleValue,
                       MutableHandleValue);
   return tailCallVM<Fn, DoTypeOfFallback>(masm);
+}
+
+//
+// TypeOfEq_Fallback
+//
+
+bool DoTypeOfEqFallback(JSContext* cx, BaselineFrame* frame,
+                        ICFallbackStub* stub, HandleValue val,
+                        MutableHandleValue res) {
+  stub->incrementEnteredCount();
+  MaybeNotifyWarp(frame->outerScript(), stub);
+  FallbackICSpew(cx, stub, "TypeOfEq");
+
+  jsbytecode* pc = StubOffsetToPc(stub, frame->script());
+  auto operand = TypeofEqOperand::fromRawValue(GET_UINT8(pc));
+  JSType type = operand.type();
+  JSOp compareOp = operand.compareOp();
+
+  TryAttachStub<TypeOfEqIRGenerator>("TypeOfEq", cx, frame, stub, val, type,
+                                     compareOp);
+
+  bool result = js::TypeOfValue(val) == type;
+  if (compareOp == JSOp::Ne) {
+    result = !result;
+  }
+  res.setBoolean(result);
+  return true;
+}
+
+bool FallbackICCodeCompiler::emit_TypeOfEq() {
+  EmitRestoreTailCallReg(masm);
+
+  masm.pushValue(R0);
+  masm.push(ICStubReg);
+  pushStubPayload(masm, R0.scratchReg());
+
+  using Fn = bool (*)(JSContext*, BaselineFrame*, ICFallbackStub*, HandleValue,
+                      MutableHandleValue);
+  return tailCallVM<Fn, DoTypeOfEqFallback>(masm);
 }
 
 //

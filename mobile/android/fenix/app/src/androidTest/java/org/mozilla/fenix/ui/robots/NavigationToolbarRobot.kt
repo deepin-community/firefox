@@ -18,6 +18,7 @@ import androidx.test.espresso.assertion.ViewAssertions
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.contrib.RecyclerViewActions
 import androidx.test.espresso.matcher.ViewMatchers
+import androidx.test.espresso.matcher.ViewMatchers.Visibility
 import androidx.test.espresso.matcher.ViewMatchers.hasDescendant
 import androidx.test.espresso.matcher.ViewMatchers.withContentDescription
 import androidx.test.espresso.matcher.ViewMatchers.withEffectiveVisibility
@@ -50,6 +51,7 @@ import org.mozilla.fenix.helpers.TestHelper.packageName
 import org.mozilla.fenix.helpers.TestHelper.waitForObjects
 import org.mozilla.fenix.helpers.click
 import org.mozilla.fenix.helpers.ext.waitNotNull
+import org.mozilla.fenix.helpers.matchers.hasItemsCount
 import org.mozilla.fenix.tabstray.TabsTrayTestTag
 
 /**
@@ -69,6 +71,24 @@ class NavigationToolbarRobot {
             .check(matches(hasDescendant(withText("New private tab"))))
             .check(matches(hasDescendant(withText("New tab"))))
         Log.i(TAG, "verifyTabButtonShortcutMenuItems: Verified tab counter shortcut options")
+    }
+
+    fun verifyTabButtonShortcutMenuItemsForNormalHomescreen() {
+        Log.i(TAG, "verifyTabButtonShortcutMenuItemsForNormalHomescreen: Trying to verify tab counter shortcut options")
+        onView(withId(R.id.mozac_browser_menu_recyclerView))
+            .check(matches(hasItemsCount(2)))
+            .check(matches(hasDescendant(withText("New tab"))))
+            .check(matches(hasDescendant(withText("New private tab"))))
+        Log.i(TAG, "verifyTabButtonShortcutMenuItemsForNormalHomescreen: Verified tab counter shortcut options")
+    }
+
+    fun verifyTabButtonShortcutMenuItemsForPrivateHomescreen() {
+        Log.i(TAG, "verifyTabButtonShortcutMenuItemsForPrivateHomescreen: Trying to verify tab counter shortcut options")
+        onView(withId(R.id.mozac_browser_menu_recyclerView))
+            .check(matches(hasItemsCount(2)))
+            .check(matches(hasDescendant(withText("New tab"))))
+            .check(matches(hasDescendant(withText("New private tab"))))
+        Log.i(TAG, "verifyTabButtonShortcutMenuItemsForPrivateHomescreen: Verified tab counter shortcut options")
     }
 
     fun verifyReaderViewDetected(visible: Boolean = false) {
@@ -248,26 +268,10 @@ class NavigationToolbarRobot {
             return ThreeDotMenuMainRobot.Transition()
         }
 
-        fun openTabTray(interact: TabDrawerRobot.() -> Unit): TabDrawerRobot.Transition {
-            Log.i(TAG, "openTabTray: Waiting for device to be idle for $waitingTime ms")
-            mDevice.waitForIdle(waitingTime)
-            Log.i(TAG, "openTabTray: Waited for device to be idle for $waitingTime ms")
-            Log.i(TAG, "openTabTray: Trying to click the tabs tray button")
-            tabTrayButton().click()
-            Log.i(TAG, "openTabTray: Clicked the tabs tray button")
-            mDevice.waitNotNull(
-                Until.findObject(By.res("$packageName:id/tab_layout")),
-                waitingTime,
-            )
-
-            TabDrawerRobot().interact()
-            return TabDrawerRobot.Transition()
-        }
-
-        fun openComposeTabDrawer(composeTestRule: HomeActivityComposeTestRule, interact: ComposeTabDrawerRobot.() -> Unit): ComposeTabDrawerRobot.Transition {
+        fun openTabDrawer(composeTestRule: HomeActivityComposeTestRule, interact: TabDrawerRobot.() -> Unit): TabDrawerRobot.Transition {
             for (i in 1..Constants.RETRY_COUNT) {
                 try {
-                    Log.i(TAG, "openComposeTabDrawer: Started try #$i")
+                    Log.i(TAG, "openTabDrawer: Started try #$i")
                     mDevice.waitForObjects(
                         mDevice.findObject(
                             UiSelector()
@@ -275,31 +279,31 @@ class NavigationToolbarRobot {
                         ),
                         waitingTime,
                     )
-                    Log.i(TAG, "openComposeTabDrawer: Trying to click the tabs tray button")
+                    Log.i(TAG, "openTabDrawer: Trying to click the tabs tray button")
                     tabTrayButton().click()
-                    Log.i(TAG, "openComposeTabDrawer: Clicked the tabs tray button")
-                    Log.i(TAG, "openComposeTabDrawer: Trying to verify that the tabs tray exists")
+                    Log.i(TAG, "openTabDrawer: Clicked the tabs tray button")
+                    Log.i(TAG, "openTabDrawer: Trying to verify that the tabs tray exists")
                     composeTestRule.onNodeWithTag(TabsTrayTestTag.tabsTray).assertExists()
-                    Log.i(TAG, "openComposeTabDrawer: Verified that the tabs tray exists")
+                    Log.i(TAG, "openTabDrawer: Verified that the tabs tray exists")
 
                     break
                 } catch (e: AssertionError) {
-                    Log.i(TAG, "openComposeTabDrawer: AssertionError caught, executing fallback methods")
+                    Log.i(TAG, "openTabDrawer: AssertionError caught, executing fallback methods")
                     if (i == Constants.RETRY_COUNT) {
                         throw e
                     } else {
-                        Log.i(TAG, "openComposeTabDrawer: Waiting for device to be idle")
+                        Log.i(TAG, "openTabDrawer: Waiting for device to be idle")
                         mDevice.waitForIdle()
-                        Log.i(TAG, "openComposeTabDrawer: Waited for device to be idle")
+                        Log.i(TAG, "openTabDrawer: Waited for device to be idle")
                     }
                 }
             }
-            Log.i(TAG, "openComposeTabDrawer: Trying to verify the tabs tray new tab FAB button exists")
+            Log.i(TAG, "openTabDrawer: Trying to verify the tabs tray new tab FAB button exists")
             composeTestRule.onNodeWithTag(TabsTrayTestTag.fab).assertExists()
-            Log.i(TAG, "openComposeTabDrawer: Verified the tabs tray new tab FAB button exists")
+            Log.i(TAG, "openTabDrawer: Verified the tabs tray new tab FAB button exists")
 
-            ComposeTabDrawerRobot(composeTestRule).interact()
-            return ComposeTabDrawerRobot.Transition(composeTestRule)
+            TabDrawerRobot(composeTestRule).interact()
+            return TabDrawerRobot.Transition(composeTestRule)
         }
 
         fun visitLinkFromClipboard(interact: BrowserRobot.() -> Unit): BrowserRobot.Transition {
@@ -476,7 +480,12 @@ private fun awesomeBar() =
     mDevice.findObject(UiSelector().resourceId("$packageName:id/mozac_browser_toolbar_edit_url_view"))
 private fun threeDotButton() = onView(withId(R.id.mozac_browser_toolbar_menu))
 private fun tabTrayButton() = onView(withId(R.id.tab_button))
-private fun tabsCounter() = onView(withId(R.id.mozac_browser_toolbar_browser_actions))
+private fun tabsCounter() = onView(
+    allOf(
+        withId(R.id.counter_root),
+        withEffectiveVisibility(Visibility.VISIBLE),
+    ),
+)
 private fun fillLinkButton() = onView(withId(R.id.fill_link_from_clipboard))
 private fun clearAddressBarButton() = itemWithResId("$packageName:id/mozac_browser_toolbar_clear_view")
 private fun readerViewToggle() =

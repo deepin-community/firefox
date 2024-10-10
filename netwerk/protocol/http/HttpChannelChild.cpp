@@ -493,6 +493,12 @@ void HttpChannelChild::OnStartRequest(
     SetCookie(aArgs.cookie());
   }
 
+  // Note: this is where we would notify "http-on-after-examine-response"
+  // observers.  We have deliberately disabled this for child processes (see bug
+  // 806753)
+  //
+  // gHttpHandler->OnAfterExamineResponse(this);
+
   if (aArgs.shouldWaitForOnStartRequestSent() &&
       !mRecvOnStartRequestSentCalled) {
     LOG(("  > pending DoOnStartRequest until RecvOnStartRequestSent\n"));
@@ -606,10 +612,7 @@ void HttpChannelChild::DoOnStartRequest(nsIRequest* aRequest) {
     // final listener might not support it
     if (nsCOMPtr<nsIStreamConverter> conv =
             do_QueryInterface((mCompressListener))) {
-      rv = conv->MaybeRetarget(this);
-      if (NS_SUCCEEDED(rv)) {
-        mOMTResult = LABELS_HTTP_CHILD_OMT_STATS_2::successOnlyDecomp;
-      }
+      conv->MaybeRetarget(this);
     }
   }
 }
@@ -903,6 +906,14 @@ void HttpChannelChild::ProcessOnStopRequest(
           TimeDuration delay = now - start;
           glean::networking::http_content_ondatafinished_delay
               .AccumulateRawDuration(delay);
+          // We can be on main thread or background thread at this point
+          // http_content_ondatafinished_delay_2 is used to track
+          // delay observed between dispatch the OnDataFinished on the socket
+          // thread and running OnDataFinished on the background thread
+          if (!NS_IsMainThread()) {
+            glean::networking::http_content_ondatafinished_delay_2
+                .AccumulateRawDuration(delay);
+          }
           timing->mOnDataFinishedTime = now;
           self->SendOnDataFinished(status);
         }));
@@ -960,41 +971,6 @@ void HttpChannelChild::DoOnConsoleReport(
   MaybeFlushConsoleReports();
 }
 
-void HttpChannelChild::RecordChannelCompletionDurationForEarlyHint() {
-  if (!mLoadGroup) {
-    return;
-  }
-
-  uint32_t earlyHintType = 0;
-  nsCOMPtr<nsIRequest> req;
-  Unused << mLoadGroup->GetDefaultLoadRequest(getter_AddRefs(req));
-  if (nsCOMPtr<nsIHttpChannelInternal> httpChannel = do_QueryInterface(req)) {
-    Unused << httpChannel->GetEarlyHintLinkType(&earlyHintType);
-  }
-
-  if (!earlyHintType) {
-    return;
-  }
-
-  nsAutoCString earlyHintKey;
-  if (mIsFromCache) {
-    earlyHintKey.Append("cache_"_ns);
-  } else {
-    earlyHintKey.Append("net_"_ns);
-  }
-  if (earlyHintType & LinkStyle::ePRECONNECT) {
-    earlyHintKey.Append("preconnect_"_ns);
-  }
-  if (earlyHintType & LinkStyle::ePRELOAD) {
-    earlyHintKey.Append("preload_"_ns);
-    earlyHintKey.Append(mEarlyHintPreloaderId ? "1"_ns : "0"_ns);
-  }
-
-  Telemetry::AccumulateTimeDelta(Telemetry::EH_PERF_CHANNEL_COMPLETION_TIME,
-                                 earlyHintKey, mAsyncOpenTime,
-                                 TimeStamp::Now());
-}
-
 void HttpChannelChild::OnStopRequest(
     const nsresult& aChannelStatus, const ResourceTimingStructArgs& aTiming,
     const nsHttpHeaderArray& aResponseTrailers) {
@@ -1048,12 +1024,10 @@ void HttpChannelChild::OnStopRequest(
         mURI, requestMethod, priority, mChannelId, NetworkLoadType::LOAD_STOP,
         mLastStatusReported, now, mTransferSize, kCacheUnknown,
         mLoadInfo->GetInnerWindowID(),
-        mLoadInfo->GetOriginAttributes().mPrivateBrowsingId > 0,
+        mLoadInfo->GetOriginAttributes().IsPrivateBrowsing(),
         &mTransactionTimings, std::move(mSource),
         Some(nsDependentCString(contentType.get())));
   }
-
-  RecordChannelCompletionDurationForEarlyHint();
 
   TimeDuration channelCompletionDuration = now - mAsyncOpenTime;
   if (mIsFromCache) {
@@ -1147,25 +1121,6 @@ void HttpChannelChild::DoPreOnStopRequest(nsresult aStatus) {
   if (!mCanceled && NS_SUCCEEDED(mStatus)) {
     mStatus = aStatus;
   }
-
-  CollectOMTTelemetry();
-}
-
-void HttpChannelChild::CollectOMTTelemetry() {
-  MOZ_ASSERT(NS_IsMainThread());
-
-  // Only collect telemetry for HTTP channel that is loaded successfully and
-  // completely.
-  if (mCanceled || NS_FAILED(mStatus)) {
-    return;
-  }
-
-  // Use content policy type to accumulate data by usage.
-  nsAutoCString key(
-      NS_CP_ContentTypeName(mLoadInfo->InternalContentPolicyType()));
-
-  Telemetry::AccumulateCategoricalKeyed(
-      key, static_cast<LABELS_HTTP_CHILD_OMT_STATS_2>(mOMTResult));
 }
 
 // We want to inspect all upgradable mixed content loads
@@ -1642,7 +1597,7 @@ void HttpChannelChild::Redirect1Begin(
         mURI, requestMethod, mPriority, mChannelId,
         NetworkLoadType::LOAD_REDIRECT, mLastStatusReported, TimeStamp::Now(),
         0, kCacheUnknown, mLoadInfo->GetInnerWindowID(),
-        mLoadInfo->GetOriginAttributes().mPrivateBrowsingId > 0,
+        mLoadInfo->GetOriginAttributes().IsPrivateBrowsing(),
         &mTransactionTimings, std::move(mSource),
         Some(nsDependentCString(contentType.get())), newOriginalURI,
         redirectFlags, channelId);
@@ -1965,7 +1920,7 @@ HttpChannelChild::CompleteRedirectSetup(nsIStreamListener* aListener) {
         mURI, requestMethod, mPriority, mChannelId, NetworkLoadType::LOAD_START,
         mChannelCreationTimestamp, mLastStatusReported, 0, kCacheUnknown,
         mLoadInfo->GetInnerWindowID(),
-        mLoadInfo->GetOriginAttributes().mPrivateBrowsingId > 0);
+        mLoadInfo->GetOriginAttributes().IsPrivateBrowsing());
   }
   StoreIsPending(true);
   StoreWasOpened(true);
@@ -2200,6 +2155,7 @@ HttpChannelChild::GetSecurityInfo(nsITransportSecurityInfo** aSecurityInfo) {
 
 NS_IMETHODIMP
 HttpChannelChild::AsyncOpen(nsIStreamListener* aListener) {
+  AUTO_PROFILER_LABEL("HttpChannelChild::AsyncOpen", NETWORK);
   LOG(("HttpChannelChild::AsyncOpen [this=%p uri=%s]\n", this, mSpec.get()));
 
   nsresult rv = AsyncOpenInternal(aListener);
@@ -2306,7 +2262,7 @@ nsresult HttpChannelChild::AsyncOpenInternal(nsIStreamListener* aListener) {
         mURI, requestMethod, mPriority, mChannelId, NetworkLoadType::LOAD_START,
         mChannelCreationTimestamp, mLastStatusReported, 0, kCacheUnknown,
         mLoadInfo->GetInnerWindowID(),
-        mLoadInfo->GetOriginAttributes().mPrivateBrowsingId > 0);
+        mLoadInfo->GetOriginAttributes().IsPrivateBrowsing());
   }
   StoreIsPending(true);
   StoreWasOpened(true);
@@ -3063,15 +3019,10 @@ HttpChannelChild::RetargetDeliveryTo(nsISerialEventTarget* aNewTarget) {
   NS_ENSURE_ARG(aNewTarget);
   if (aNewTarget->IsOnCurrentThread()) {
     NS_WARNING("Retargeting delivery to same thread");
-    mOMTResult = LABELS_HTTP_CHILD_OMT_STATS_2::successMainThread;
     return NS_OK;
   }
 
   if (mMultiPartID) {
-    // TODO: Maybe add a new label for this? Maybe it doesn't
-    // matter though, since we also blocked QI, so we shouldn't
-    // ever get here.
-    mOMTResult = LABELS_HTTP_CHILD_OMT_STATS_2::failListener;
     return NS_ERROR_NO_INTERFACE;
   }
 
@@ -3082,14 +3033,12 @@ HttpChannelChild::RetargetDeliveryTo(nsISerialEventTarget* aNewTarget) {
       do_QueryInterface(mListener, &rv);
   if (!retargetableListener || NS_FAILED(rv)) {
     NS_WARNING("Listener is not retargetable");
-    mOMTResult = LABELS_HTTP_CHILD_OMT_STATS_2::failListener;
     return NS_ERROR_NO_INTERFACE;
   }
 
   rv = retargetableListener->CheckListenerChain();
   if (NS_FAILED(rv)) {
     NS_WARNING("Subsequent listeners are not retargetable");
-    mOMTResult = LABELS_HTTP_CHILD_OMT_STATS_2::failListenerChain;
     return rv;
   }
 
@@ -3099,7 +3048,6 @@ HttpChannelChild::RetargetDeliveryTo(nsISerialEventTarget* aNewTarget) {
     RetargetDeliveryToImpl(aNewTarget, lock);
   }
 
-  mOMTResult = LABELS_HTTP_CHILD_OMT_STATS_2::success;
   return NS_OK;
 }
 
@@ -3300,7 +3248,7 @@ HttpChannelChild::LogBlockedCORSRequest(const nsAString& aMessage,
                                         const nsACString& aCategory,
                                         bool aIsWarning) {
   uint64_t innerWindowID = mLoadInfo->GetInnerWindowID();
-  bool privateBrowsing = !!mLoadInfo->GetOriginAttributes().mPrivateBrowsingId;
+  bool privateBrowsing = mLoadInfo->GetOriginAttributes().IsPrivateBrowsing();
   bool fromChromeContext =
       mLoadInfo->TriggeringPrincipal()->IsSystemPrincipal();
   nsCORSListenerProxy::LogBlockedCORSRequest(innerWindowID, privateBrowsing,
@@ -3416,6 +3364,14 @@ HttpChannelChild::SetEarlyHintObserver(nsIEarlyHintObserver* aObserver) {
 NS_IMETHODIMP HttpChannelChild::SetWebTransportSessionEventListener(
     WebTransportSessionEventListener* aListener) {
   return NS_OK;
+}
+
+void HttpChannelChild::ExplicitSetUploadStreamLength(
+    uint64_t aContentLength, bool aSetContentLengthHeader) {
+  // SetRequestHeader propagates headers to chrome if HttpChannelChild
+  MOZ_ASSERT(!LoadWasOpened());
+  HttpBaseChannel::ExplicitSetUploadStreamLength(aContentLength,
+                                                 aSetContentLengthHeader);
 }
 
 }  // namespace mozilla::net

@@ -93,12 +93,6 @@ CONFIGURE_DEFINE_FILES += [
     "js-confdefs.h",
 ]
 
-if not CONFIG["JS_STANDALONE"]:
-    CONFIGURE_SUBST_FILES += [
-        "../../config/autoconf-js.mk",
-        "../../config/emptyvars-js.mk",
-    ]
-
 CONFIGURE_DEFINE_FILES += [
     "js-config.h",
 ]
@@ -204,6 +198,7 @@ EXPORTS.js += [
     "../public/StreamConsumer.h",
     "../public/String.h",
     "../public/StructuredClone.h",
+    "../public/SweepingAPI.h",
     "../public/Symbol.h",
     "../public/TelemetryTimers.h",
     "../public/TraceKind.h",
@@ -249,6 +244,7 @@ EXPORTS.js.experimental += [
     "../public/experimental/Intl.h",
     "../public/experimental/JitInfo.h",
     "../public/experimental/JSStencil.h",
+    "../public/experimental/LoggingInterface.h",
     "../public/experimental/PCCountProfiling.h",
     "../public/experimental/SourceHook.h",
     "../public/experimental/TypedData.h",
@@ -393,6 +389,7 @@ UNIFIED_SOURCES += [
     "vm/JSONPrinter.cpp",
     "vm/JSScript.cpp",
     "vm/List.cpp",
+    "vm/Logging.cpp",
     "vm/MemoryMetrics.cpp",
     "vm/Modules.cpp",
     "vm/NativeObject.cpp",
@@ -471,6 +468,12 @@ if CONFIG["ENABLE_RECORD_TUPLE"]:
         "vm/TupleType.cpp",
     ]
 
+if CONFIG["ENABLE_EXPLICIT_RESOURCE_MANAGEMENT"]:
+    UNIFIED_SOURCES += [
+        "builtin/DisposableStackObject.cpp",
+        "vm/DisposableRecord.cpp",
+    ]
+
 if CONFIG["JS_HAS_INTL_API"]:
     UNIFIED_SOURCES += [
         "builtin/intl/Collator.cpp",
@@ -489,6 +492,7 @@ if CONFIG["JS_HAS_INTL_API"]:
     ]
 
 if CONFIG["MOZ_INSTRUMENTS"]:
+    OS_LIBS += ["-framework CoreFoundation"]
     SOURCES += [
         "devtools/Instruments.cpp",
     ]
@@ -515,7 +519,7 @@ else:
 
 if CONFIG["JS_HAS_INTL_API"] and CONFIG["MOZ_ICU4X"]:
     LOCAL_INCLUDES += [
-        "/intl/icu_capi/c/include",
+        "/intl/icu_capi/bindings/c",
     ]
 
 if CONFIG["JS_HAS_CTYPES"]:
@@ -594,7 +598,6 @@ selfhosted_inputs = [
     "builtin/RegExpLocalReplaceOpt.h.js",
     "builtin/String.js",
     "builtin/Set.js",
-    "builtin/Sorting.js",
     "builtin/TypedArray.js",
     "builtin/WeakMap.js",
     "builtin/WeakSet.js",

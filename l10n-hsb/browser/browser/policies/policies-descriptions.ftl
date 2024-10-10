@@ -84,6 +84,8 @@ policy-Handlers = Standardne nałoženske předźěłaki konfigurować
 policy-HardwareAcceleration = Jeli njewěrno, hardwarowe pospěšenje znjemóžnić.
 # “lock” means that the user won’t be able to change this setting
 policy-Homepage = Startowu stronu nastajić a na přeće zawrěć.
+policy-HttpAllowlist = Pochady, kotrež njebudu so na HTTPS aktualizować.
+policy-HttpsOnlyMode = Zmóžnjenje modusa Jenož-HTTPS dowolić.
 policy-InstallAddonsPermission = Wěstym websydłam dowolić, přidatki instalować.
 policy-LegacyProfiles = Funkciju znjemóžnić, kotraž separatny profil za kóždu instalaciju wunuzuje
 
@@ -108,12 +110,16 @@ policy-OverrideFirstRunPage = Stronu přepisać, kotraž so při prěnim starće
 policy-OverridePostUpdatePage = Stronu Nowe funkcije a změny po aktualizaciji přepisać. Stajće tute prawidło na prózdne, jeli chceće tutu stronu znjemóžnić.
 policy-PasswordManagerEnabled = Składowanje hesłow do zrjadowaka hesłow zmóžnić.
 policy-PasswordManagerExceptions = { -brand-short-name } zakazać, hesła za wěste sydła składować.
+# Post-quantum refers to cryptography that is safe from attacks by quantum
+# computers. See https://en.wikipedia.org/wiki/Post-quantum_cryptography
+policy-PostQuantumKeyAgreementEnabled = Dojednanje wo postkwantowym kluču za TLS zmóžnić.
 # PDF.js and PDF should not be translated
 policy-PDFjs = PDF.js znjemóžnić abo konfigurować, zatwarjeny PDF-wobhladowak w { -brand-short-name }.
 policy-Permissions2 = Prawa za kameru, mikrofon, adresu, zdźělenki a awtomatiske wothraće konfigurować.
 policy-PictureInPicture = Wobraz-we-wobrazu zmóžnić abo znjemóžnić.
 policy-PopupBlocking = Wěstym websydłam dowolić, wuskakowace wokna po standardźe pokazać.
 policy-Preferences = Hódnotu za podsadźbu nastajenjow stajić a zawrěć
+policy-PrivateBrowsingModeAvailability = Nastajće disponujomnosć priwatneho modusa.
 policy-PromptForDownloadLocation = Prašeć so, hdźež maja so dataje při sćehnjenju składować.
 policy-Proxy = Nastajenja proksy konfigurować.
 policy-RequestedLocales = Podajće lisćinu požadanych rěčow za nałoženje w preferowanym porjedźe.

@@ -15,6 +15,9 @@
  * they can manipulate the selection further, and check the results again.
  * We want to ensure the final selection is the expected one, even if in the
  * future we change our trimming strategy for the input field value.
+ *
+ * Note: there's a few +-1 adjustments to text lengths that are apparently
+ * necessary in --headless mode.
  */
 
 const tests = [
@@ -27,18 +30,55 @@ const tests = [
       return [0, gURLBar.value.length];
     },
     manipulate() {
-      // Cursor must move to the first visible character, regardless of any
-      // "untrimming" we could be doing.
-      this._visibleValue = gURLBar.value;
+      EventUtils.synthesizeKey("KEY_Home");
+    },
+    get modifiedSelection() {
+      // Cursor must move to zero, regardless of any untrimming.
+      return [0, 0];
+    },
+  },
+  {
+    description: "Test CTRL/META LEFT starting from full selection",
+    openPanel() {
+      EventUtils.synthesizeKey("l", { accelKey: true });
+    },
+    get selection() {
+      return [0, gURLBar.value.length];
+    },
+    manipulate() {
       if (AppConstants.platform == "macosx") {
-        EventUtils.synthesizeKey("KEY_ArrowLeft", { metaKey: true });
+        // Synthesized key events work differently from native ones, here
+        // we simulate the native behavior.
+        EventUtils.synthesizeKey("KEY_ArrowLeft", {
+          type: "keydown",
+          metaKey: true,
+        });
+        EventUtils.synthesizeKey("KEY_ArrowLeft", { type: "keyup" });
+        EventUtils.synthesizeKey("KEY_Meta", { type: "keyup" });
       } else {
-        EventUtils.synthesizeKey("KEY_Home");
+        EventUtils.synthesizeKey("KEY_ArrowLeft", { ctrlKey: true });
       }
     },
     get modifiedSelection() {
-      let start = gURLBar.value.indexOf(this._visibleValue);
-      return [start, start];
+      return [0, 0];
+    },
+  },
+  {
+    description: "Test CTRL A starting from full selection",
+    skipIf() {
+      return AppConstants.platform != "macosx";
+    },
+    openPanel() {
+      EventUtils.synthesizeKey("l", { accelKey: true });
+    },
+    get selection() {
+      return [0, gURLBar.value.length];
+    },
+    manipulate() {
+      EventUtils.synthesizeKey("A", { ctrlKey: true });
+    },
+    get modifiedSelection() {
+      return [0, 0];
     },
   },
   {
@@ -91,12 +131,37 @@ const tests = [
     },
   },
   {
-    description: "Test Drag Selection from the first character",
+    description: "Test Drag Selection from the first character - Partial host",
     async openPanel() {
+      // Select partial string that doesn't complete to a URL.
       this._expectedSelectedText = gURLBar.value.substring(0, 5);
       await selectWithMouseDrag(
         getTextWidth(gURLBar.value[0]) / 2 - 1,
-        getTextWidth(gURLBar.value.substring(0, 5))
+        getTextWidth(gURLBar.value.substring(0, 5)) + 1
+      );
+    },
+    get selection() {
+      // When untrimming is enabled, the behavior differs depending on whether
+      // the selected text can generate a valid URL, so there may be an offset.
+      let startOffset = UrlbarPrefs.getScotchBonnetPref(
+        "untrimOnUserInteraction.featureGate"
+      )
+        ? gURLBar.value.indexOf(this._expectedSelectedText)
+        : 0;
+      return [startOffset, startOffset + this._expectedSelectedText.length];
+    },
+  },
+  {
+    description: "Test Drag Selection from the first character - Full host",
+    async openPanel() {
+      // Select partial string that completes to a URL.
+      let uri = Services.io.newURI(gURLBar._untrimmedValue);
+      let endOfHost =
+        gURLBar.value.indexOf(uri.displayHost) + uri.displayHost.length;
+      this._expectedSelectedText = gURLBar.value.substring(0, endOfHost);
+      await selectWithMouseDrag(
+        getTextWidth(gURLBar.value[0]) / 2 - 1,
+        getTextWidth(this._expectedSelectedText)
       );
     },
     get selection() {
@@ -128,8 +193,8 @@ const tests = [
     async openPanel() {
       this._expectedSelectedText = gURLBar.value.substring(5, 10);
       await selectWithMouseDrag(
-        getTextWidth(gURLBar.value.substring(0, 5)),
-        getTextWidth(gURLBar.value.substring(0, 10))
+        getTextWidth(gURLBar.value.substring(0, 5)) + 1,
+        getTextWidth(gURLBar.value.substring(0, 10)) + 1
       );
     },
     get selection() {
@@ -193,6 +258,9 @@ add_task(async function http() {
 async function doTest(url) {
   await BrowserTestUtils.withNewTab(url, async () => {
     for (let test of tests) {
+      if (test.skipIf?.()) {
+        continue;
+      }
       gURLBar.blur();
       info(test.description);
       await UrlbarTestUtils.promisePopupOpen(window, async () => {
@@ -207,13 +275,13 @@ async function doTest(url) {
       Assert.deepEqual(
         test.selection,
         [gURLBar.selectionStart, gURLBar.selectionEnd],
-        "Check selection"
+        "Check initial selection"
       );
 
       if (test.manipulate) {
         await test.manipulate();
         info(
-          `Selected text is <${gURLBar.value.substring(
+          `Selected text after manipulation is <${gURLBar.value.substring(
             gURLBar.selectionStart,
             gURLBar.selectionEnd
           )}>`
@@ -236,53 +304,6 @@ function getTextWidth(inputText) {
   context.font = window
     .getComputedStyle(gURLBar.inputField)
     .getPropertyValue("font");
-  return context.measureText(inputText).width;
-}
-
-function selectWithMouseDrag(fromX, toX) {
-  let target = gURLBar.inputField;
-  let rect = target.getBoundingClientRect();
-  let promise = BrowserTestUtils.waitForEvent(target, "mouseup");
-  EventUtils.synthesizeMouse(
-    target,
-    fromX,
-    rect.height / 2,
-    { type: "mousemove" },
-    target.ownerGlobal
-  );
-  EventUtils.synthesizeMouse(
-    target,
-    fromX,
-    rect.height / 2,
-    { type: "mousedown" },
-    target.ownerGlobal
-  );
-  EventUtils.synthesizeMouse(
-    target,
-    toX,
-    rect.height / 2,
-    { type: "mousemove" },
-    target.ownerGlobal
-  );
-  EventUtils.synthesizeMouse(
-    target,
-    toX,
-    rect.height / 2,
-    { type: "mouseup" },
-    target.ownerGlobal
-  );
-  return promise;
-}
-
-function selectWithDoubleClick(offsetX) {
-  let target = gURLBar.inputField;
-  let rect = target.getBoundingClientRect();
-  let promise = BrowserTestUtils.waitForEvent(target, "dblclick");
-  EventUtils.synthesizeMouse(target, offsetX, rect.height / 2, {
-    clickCount: 1,
-  });
-  EventUtils.synthesizeMouse(target, offsetX, rect.height / 2, {
-    clickCount: 2,
-  });
-  return promise;
+  let measure = context.measureText(inputText);
+  return measure.actualBoundingBoxLeft + measure.actualBoundingBoxRight;
 }

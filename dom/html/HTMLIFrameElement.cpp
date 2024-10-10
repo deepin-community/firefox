@@ -255,8 +255,8 @@ void HTMLIFrameElement::MaybeStoreCrossOriginFeaturePolicy() {
   }
 
   if (ContentChild* cc = ContentChild::GetSingleton()) {
-    Unused << cc->SendSetContainerFeaturePolicy(browsingContext,
-                                                mFeaturePolicy);
+    Unused << cc->SendSetContainerFeaturePolicy(
+        browsingContext, Some(mFeaturePolicy->ToFeaturePolicyInfo()));
   }
 }
 
@@ -374,6 +374,9 @@ void HTMLIFrameElement::NodeInfoChanged(Document* aOldDoc) {
   if (mLazyLoading) {
     aOldDoc->GetLazyLoadObserver()->Unobserve(*this);
     mLazyLoading = false;
+  }
+
+  if (LoadingState() == Loading::Lazy) {
     SetLazyLoading();
   }
 }

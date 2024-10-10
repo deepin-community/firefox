@@ -86,7 +86,9 @@ shopping-settings-label =
     .label = Pengaturan
 shopping-settings-recommendations-toggle =
     .label = Tampilkan iklan di Pemeriksa Ulasan
+shopping-settings-recommendations-learn-more2 = Kadang Anda akan melihat iklan untuk produk yang relevan. Kami hanya mengiklankan produk dengan ulasan yang dapat diandalkan. <a data-l10n-name="review-quality-url">Pelajari lebih lanjut</a>
 shopping-settings-opt-out-button = Matikan Pemeriksa Ulasan
+powered-by-fakespot = Review Checker didukung oleh <a data-l10n-name="fakespot-link">{ -fakespot-brand-full-name }</a>.
 
 ## Strings for the adjusted rating component
 
@@ -94,12 +96,27 @@ shopping-settings-opt-out-button = Matikan Pemeriksa Ulasan
 # reliable reviews.
 shopping-adjusted-rating-label =
     .label = Peringkat yang disesuaikan
+shopping-adjusted-rating-unreliable-reviews = Ulasan yang tidak dapat diandalkan dihapus
 
 ## Strings for the review reliability component
 
+shopping-review-reliability-label =
+    .label = Seberapa andalkah ulasan ini?
 
 ## Strings for the analysis explainer component
 
+shopping-analysis-explainer-label =
+    .label = Bagaimana kami menentukan kualitas ulasan
+shopping-analysis-explainer-intro2 = Kami menggunakan teknologi kecerdasan buatan dari { -fakespot-brand-full-name } untuk memeriksa keandalan ulasan produk. Hal ini hanya akan membantu Anda menilai kualitas ulasan, bukan kualitas produk.
+shopping-analysis-explainer-grades-intro = Kami menetapkan <strong>nilai huruf</strong> untuk setiap ulasan produk dari A hingga F.
+shopping-analysis-explainer-adjusted-rating-description = <strong>Peringkat yang disesuaikan</strong> hanya didasarkan pada ulasan yang kami yakini dapat diandalkan.
+shopping-analysis-explainer-learn-more2 = Pelajari lebih lanjut tentang <a data-l10n-name="review-quality-url">bagaimana { -fakespot-brand-name } menentukan kualitas ulasan</a>.
+# This string includes the short brand name of one of the three supported
+# websites, which will be inserted without being translated.
+#  $retailer (String) - capitalized name of the shopping website, for example, "Amazon".
+shopping-analysis-explainer-highlights-description = <strong>Sorotan</strong> berasal dari ulasan { $retailer } dalam 80 hari terakhir yang kami yakini dapat diandalkan.
+shopping-analysis-explainer-review-grading-scale-reliable = Ulasan terpercaya. Kami yakin ulasan tersebut boleh jadi berasal dari pelanggan tulen yang meninggalkan ulasan yang jujur dan tidak bias.
+shopping-analysis-explainer-review-grading-scale-mixed = Kami percaya ada percampuran ulasan yang terpercaya dan yang tidak dapat diandalkan.
 shopping-analysis-explainer-review-grading-scale-unreliable = Ulasan yang tidak dapat diandalkan. Kami yakin ulasan tersebut kemungkinan palsu atau dari pengulas yang bias.
 
 ## Strings for UrlBar button
@@ -122,6 +139,8 @@ shopping-unanalyzed-product-analyze-button = Periksa kualitas ulasan
 
 ## Strings for the advertisement
 
+more-to-consider-ad-label =
+    .label = Lebih banyak untuk dipertimbangkan
 ad-by-fakespot = Iklan oleh { -fakespot-brand-name }
 
 ## Shopping survey strings.
@@ -149,11 +168,25 @@ shopping-survey-thanks =
 
 shopping-callout-closed-opted-in-subtitle = Kembali ke <strong>Review Checker</strong> kapan saja Anda melihat harga.
 shopping-callout-pdp-opted-in-title = Apakah ulasan ini dapat diandalkan? Temukan dengan cepat.
+shopping-callout-pdp-opted-in-subtitle = Buka Review Checker untuk melihat peringkat yang disesuaikan dengan ulasan yang tidak dapat diandalkan dihapus. Juga, lihat sorotan dari ulasan otentik terbaru.
 shopping-callout-closed-not-opted-in-title = Satu klik untuk ulasan yang andal
+shopping-callout-closed-not-opted-in-subtitle = Cobalah Review Checker setiap kali Anda melihat label harga. Dapatkan masukan dari pembeli nyata dengan cepat — sebelum Anda membeli.
 
 ## Onboarding message strings.
 
 shopping-onboarding-headline = Coba panduan tepercaya kami untuk ulasan produk
+# Dynamic subtitle. Sites are limited to Amazon, Walmart or Best Buy.
+# Variables:
+#   $currentSite (str) - The current shopping page name
+#   $secondSite (str) - A second shopping page name
+#   $thirdSite (str) - A third shopping page name
+shopping-onboarding-dynamic-subtitle-1 = Lihat seberapa andal ulasan produk di <b>{ $currentSite }</b> sebelum Anda membeli. Review Checker, sebuah fitur eksperimental dari { -brand-product-name }, sudah terpasang dalam peramban. Ini juga bekerja pada <b>{ $secondSite }</b> dan <b>{ $thirdSite }</b>.
+# Subtitle for countries where we only support one shopping website (e.g. currently used in FR/DE with Amazon)
+# Variables:
+#   $currentSite (str) - The current shopping page name
+shopping-onboarding-single-subtitle = Lihat seberapa andal ulasan produk di <b>{ $currentSite }</b> sebelum Anda membeli. Review Checker, fitur eksperimental dari { -brand-product-name }, dibangun langsung ke dalam peramban.
+shopping-onboarding-body = Menggunakan kekuatan { -fakespot-brand-full-name }, kami membantu Anda menghindari ulasan yang bias dan tidak otentik. Model AI kami selalu berkembang untuk melindungi Anda saat berbelanja. <a data-l10n-name="learn_more">Pelajari Lebih Lanjut</a>
+shopping-onboarding-opt-in-privacy-policy-and-terms-of-use3 = Dengan memilih “{ shopping-onboarding-opt-in-button }“ Anda menyetujui { -brand-product-name }’s <a data-l10n-name="privacy_policy">kebijakan privasi</a> dan { -fakespot-brand-name }’s <a data-l10n-name="terms_of_use">ketentuan penggunaan.</a>
 shopping-onboarding-opt-in-button = Ya, coba!
 shopping-onboarding-not-now-button = Jangan sekarang
 shopping-onboarding-dialog-close-button =

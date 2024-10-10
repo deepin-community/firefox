@@ -57,6 +57,10 @@ category-experimental =
 pane-experimental-subtitle = 注意して進んでください
 pane-experimental-search-results-header = { -brand-short-name } の実験的な機能: 注意して進んでください
 pane-experimental-description2 = 高度な設定を変更すると、{ -brand-short-name } の性能と安全性に影響を及ぼす可能性があります。
+pane-experimental-description3 = 実験的な機能を試してみてください！ 現在開発中ですが、{ -brand-short-name } の動作にインパクトを与えることでしょう。
+settings-pane-labs-title = { -firefoxlabs-brand-name }
+settings-category-labs =
+    .tooltiptext = { -firefoxlabs-brand-name }
 pane-experimental-reset =
     .label = 既定値に戻す
     .accesskey = R
@@ -531,7 +535,7 @@ home-homepage-custom-url =
 # be identical.
 use-current-pages =
     .label =
-        { $tabCount ->
+        { NUMBER($tabCount) ->
             [1] 現在のページを使用
            *[other] 現在のタブグループを使用
         }
@@ -587,6 +591,10 @@ home-prefs-recent-activity-description = 最近のサイトとコンテンツの
 home-prefs-snippets-header =
     .label = スニペット
 home-prefs-snippets-description-new = { -vendor-short-name } と { -brand-product-name } に関するヒントと最新情報
+home-prefs-weather-header =
+    .label = 天気予報
+home-prefs-weather-description = 一目でわかる今日の天気
+home-prefs-weather-learn-more-link = 詳細情報
 # Variables:
 #   $num (number) - Number of rows displayed
 home-prefs-sections-rows-option =
@@ -896,6 +904,9 @@ forms-saved-passwords =
 forms-primary-pw-use =
     .label = マスターパスワードを使用する
     .accesskey = U
+# This operation requires the user to authenticate with the operating system (device sign-in)
+forms-os-reauth =
+    .label = パスワードの入力と管理に端末のログイン情報を要求する
 forms-primary-pw-learn-more-link = 詳細情報
 # This string uses the former name of the Primary Password feature
 # ("Master Password" in English) so that the preferences can be found
@@ -928,6 +939,14 @@ primary-password-os-auth-dialog-message-win = マスターパスワードを作�
 # notes are only valid for English. Please test in your locale.
 primary-password-os-auth-dialog-message-macosx = マスターパスワードを作成
 master-password-os-auth-dialog-caption = { -brand-full-name }
+# The macOS string is preceded by the operating system with "Firefox is trying to ".
+# (^m^) [macos] Firefox が...しようとしています。
+autofill-creditcard-os-dialog-message =
+    { PLATFORM() ->
+        [macos] 支払い方法の設定を変更
+       *[other] { -brand-short-name } が支払い方法の設定を変更しようとしています。許可するには端末のログイン情報を使用してください。
+    }
+autofill-creditcard-os-auth-dialog-caption = { -brand-full-name }
 
 ## Privacy section - Autofill
 
@@ -942,13 +961,8 @@ autofill-payment-methods-checkbox-submessage = クレジットカードとデビ
     .accesskey = I
 autofill-saved-payment-methods-button = 保存された支払方法
     .accesskey = v
-autofill-reauth-checkbox =
-    { PLATFORM() ->
-        [macos] 支払い方法の入力と編集は macOS の認証が必要です。
-        [windows] 支払い方法の入力と編集は Windows の認証が必要です。
-        [linux] 支払い方法の入力と編集は Linux の認証が必要です。
-       *[other] 支払い方法の入力と編集は OS の認証が必要です。
-    }
+# This operation requires the user to authenticate with the operating system (device sign-in)
+autofill-reauth-payment-methods-checkbox = 支払い方法の入力と管理には端末のログイン情報が必要です
     .accesskey = o
 
 ## Privacy Section - History
@@ -1084,8 +1098,11 @@ addressbar-locbar-quickactions-option =
     .accesskey = Q
 addressbar-suggestions-settings = 検索エンジンの検索候補の設定を変更
 addressbar-locbar-showrecentsearches-option =
-    .label = 最近の検索を表示
+    .label = 最近の検索を表示する
     .accesskey = r
+addressbar-locbar-showtrendingsuggestions-option =
+    .label = トレンド検索の候補を表示する
+    .accesskey = t
 addressbar-quickactions-learn-more = 詳細情報
 
 ## Privacy Section - Content Blocking
@@ -1275,6 +1292,14 @@ privacy-segmentation-radio-off =
 privacy-segmentation-radio-on =
     .label = 詳細情報を表示する
 
+## Privacy Section - Website Advertising Preferences
+
+website-advertising-header = ウェブサイトの広告設定
+website-advertising-private-attribution =
+    .label = プライバシー保護された広告解析をウェブサイトに許可する
+    .accesskey = a
+website-advertising-private-attribution-description = これはウェブサイトがユーザーのデータを収集せずに広告の効果を解析するのを助けます。
+
 ## Privacy Section - Security
 ##
 ## It is important that wording follows the guidelines outlined on this page:
@@ -1318,13 +1343,20 @@ space-alert-under-5gb-message2 = <strong>{ -brand-short-name } を実行する�
 
 httpsonly-header = HTTPS-Only モード
 httpsonly-description = HTTPS は { -brand-short-name } とあなたが訪れるウェブサイトとの間に、暗号化された安全な接続を提供します。多くのウェブサイトは HTTPS に対応しており、HTTPS-Only モードを有効にすると { -brand-short-name } はすべての接続を HTTPS に切り替えます。
+httpsonly-description2 = あなたが訪れたサイトとの間で { -brand-short-name } が暗号化された安全な接続を確立します。HTTPS-Only モードが有効のときに接続が安全でない場合は { -brand-short-name } が警告します。
 httpsonly-learn-more = 詳細
 httpsonly-radio-enabled =
     .label = すべてのウィンドウで HTTPS-Only モードを有効にする
+httpsonly-radio-enabled2 =
+    .label = すべてのウィンドウで HTTPS のみを使用する
 httpsonly-radio-enabled-pbm =
     .label = プライベートウィンドウのみ HTTPS-Only モードを有効にする
+httpsonly-radio-enabled-pbm2 =
+    .label = プライベートウィンドウで HTTPS のみを使用する
 httpsonly-radio-disabled =
     .label = HTTPS-Only モードを有効にしない
+httpsonly-radio-disabled2 =
+    .label = HTTPS を優先するが安全でない接続も許可する
 
 ## DoH Section
 

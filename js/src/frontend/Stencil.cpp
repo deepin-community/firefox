@@ -862,6 +862,11 @@ bool ScopeContext::cacheEnclosingScopeBindingForEval(
             break;
           }
 
+#ifdef ENABLE_EXPLICIT_RESOURCE_MANAGEMENT
+          // TODO: Optimize cache population for `using` bindings. (Bug 1899502)
+          case BindingKind::Using:
+            break;
+#endif
           case BindingKind::Const: {
             InputName binding(scope_ref, bi.name());
             if (!addToEnclosingLexicalBindingCache(
@@ -2610,7 +2615,7 @@ void CompilationStencil::assertBorrowingFromExtensibleCompilationStencil(
 
 CompilationStencil::CompilationStencil(
     UniquePtr<ExtensibleCompilationStencil>&& extensibleStencil)
-    : alloc(LifoAllocChunkSize) {
+    : alloc(LifoAllocChunkSize, js::BackgroundMallocArena) {
   ownedBorrowStencil = std::move(extensibleStencil);
 
   storageType = StorageType::OwnedExtensible;
@@ -2783,6 +2788,8 @@ JSScript* CompilationStencil::instantiateSelfHostedTopLevelForRealm(
 JSFunction* CompilationStencil::instantiateSelfHostedLazyFunction(
     JSContext* cx, CompilationAtomCache& atomCache, ScriptIndex index,
     Handle<JSAtom*> name) {
+  MOZ_ASSERT(cx->zone()->suppressAllocationMetadataBuilder);
+
   GeneratorKind generatorKind = scriptExtra[index].immutableFlags.hasFlag(
                                     ImmutableScriptFlagsEnum::IsGenerator)
                                     ? GeneratorKind::Generator
@@ -3003,21 +3010,21 @@ bool CompilationStencil::deserializeStencils(
 }
 
 ExtensibleCompilationStencil::ExtensibleCompilationStencil(ScriptSource* source)
-    : alloc(CompilationStencil::LifoAllocChunkSize),
+    : alloc(CompilationStencil::LifoAllocChunkSize, js::BackgroundMallocArena),
       source(source),
       parserAtoms(alloc) {}
 
 ExtensibleCompilationStencil::ExtensibleCompilationStencil(
     CompilationInput& input)
     : canLazilyParse(CanLazilyParse(input.options)),
-      alloc(CompilationStencil::LifoAllocChunkSize),
+      alloc(CompilationStencil::LifoAllocChunkSize, js::BackgroundMallocArena),
       source(input.source),
       parserAtoms(alloc) {}
 
 ExtensibleCompilationStencil::ExtensibleCompilationStencil(
     const JS::ReadOnlyCompileOptions& options, RefPtr<ScriptSource> source)
     : canLazilyParse(CanLazilyParse(options)),
-      alloc(CompilationStencil::LifoAllocChunkSize),
+      alloc(CompilationStencil::LifoAllocChunkSize, js::BackgroundMallocArena),
       source(std::move(source)),
       parserAtoms(alloc) {}
 
@@ -5612,4 +5619,23 @@ JS::InstantiationStorage::~InstantiationStorage() {
     js_delete(gcOutput_);
     gcOutput_ = nullptr;
   }
+}
+
+JS_PUBLIC_API JS::Stencil* JS::DuplicateStencil(JSContext* cx,
+                                                JS::Stencil* stencil) {
+  UniquePtr<ExtensibleCompilationStencil> extensibleStencil(
+      cx->new_<ExtensibleCompilationStencil>(stencil->source));
+  if (!extensibleStencil) {
+    return nullptr;
+  }
+
+  {
+    AutoReportFrontendContext fc(cx);
+    if (!extensibleStencil->cloneFrom(&fc, *stencil)) {
+      return nullptr;
+    }
+  }
+
+  JS::Stencil* dup = cx->new_<CompilationStencil>(std::move(extensibleStencil));
+  return dup;
 }

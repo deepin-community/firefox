@@ -550,6 +550,10 @@ urlbar-go-button =
     .tooltiptext = Ir para o endereço da barra de localização
 urlbar-page-action-button =
     .tooltiptext = Ações da página
+urlbar-revert-button =
+    .tooltiptext = Mostrar o endereço na Barra de Localização
+urlbar-show-page-actions-button =
+    .tooltiptext = Mostrar todas as ações da página
 
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
@@ -605,6 +609,12 @@ urlbar-result-action-copy-to-clipboard = Copiar
 #  $result (String): the string representation for a formula result
 urlbar-result-action-calculator-result = = { $result }
 
+## Strings used for buttons in the urlbar
+
+# Label prompting user to search with a particular search engine.
+#  $engine (String): the name of a search engine that searches a specific site
+urlbar-result-search-with = Pesquisar com { $engine }
+
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
 ## In these actions "Search" is a verb, followed by where the search is performed.
@@ -634,6 +644,21 @@ urlbar-group-quickactions =
 #  $engine (String): the name of the search engine used to search.
 urlbar-group-recent-searches =
     .label = Pesquisas recentes
+# The header shown above trending results.
+# Variables:
+#  $engine (String): the name of the search engine providing the trending suggestions
+urlbar-group-trending =
+    .label = Tendência no { $engine }
+# The result menu labels shown next to trending results.
+urlbar-result-menu-trending-dont-show =
+    .label = Não mostrar pesquisas em tendência
+    .accesskey = d
+urlbar-result-menu-trending-why =
+    .label = Porque estou a ver isto?
+    .accesskey = e
+# A message that replaces a result when the user dismisses all suggestions of a
+# particular type.
+urlbar-trending-dismissal-acknowledgment = Obrigado pelo seu comentário. Não irá ver mais as pesquisas em destaque.
 
 ## Reader View toolbar buttons
 
@@ -649,14 +674,14 @@ reader-view-close-button =
 ##   $shortcut (String) - Keyboard shortcut to execute the command.
 
 picture-in-picture-urlbar-button-open =
-    .tooltiptext = Abrir Imagem na Imagem ({ $shortcut })
+    .tooltiptext = Abrir janela flutuante ({ $shortcut })
 picture-in-picture-urlbar-button-close =
-    .tooltiptext = Fechar Imagem na Imagem ({ $shortcut })
-picture-in-picture-panel-header = Imagem na Imagem
-picture-in-picture-panel-headline = Este site não recomenda Imagem na Imagem
-picture-in-picture-panel-body = Os vídeos podem não ser apresentados tal como o programador pretendia enquanto a Imagem na Imagem estiver ativada.
+    .tooltiptext = Fechar janela flutuante ({ $shortcut })
+picture-in-picture-panel-header = Janela Flutuante
+picture-in-picture-panel-headline = Este site não recomenda a Janela Flutuante
+picture-in-picture-panel-body = Os vídeos podem não ser apresentados tal como o programador pretendia enquanto estiver ativada a janela Flutuante.
 picture-in-picture-enable-toggle =
-    .label = Ativar mesmo assim
+    .label = Mesmo assim, ativar
 
 ## Full Screen and Pointer Lock UI
 
@@ -842,17 +867,17 @@ edit-popup-settings =
     .label = Gerir definições de popup
     .accesskey = G
 picture-in-picture-hide-toggle =
-    .label = Ocultar o comutador de vídeo em janela flutuante
+    .label = Ocultar o comutador de janela flutuante
     .accesskey = O
 
 ## Since the default position for PiP controls does not change for RTL layout,
 ## right-to-left languages should use "Left" and "Right" as in the English strings,
 
 picture-in-picture-move-toggle-right =
-    .label = Mover o comutador de vídeo em janela flutuante para o lado direito
+    .label = Mover o comutador de janela flutuante para o lado direito
     .accesskey = d
 picture-in-picture-move-toggle-left =
-    .label = Mover o comutador de vídeo em janela flutuante para o lado esquerdo
+    .label = Mover o comutador de janela flutuante para o lado esquerdo
     .accesskey = e
 
 ##
@@ -911,6 +936,15 @@ data-reporting-notification-button =
     .accesskey = E
 # Label for the indicator shown in the private browsing window titlebar.
 private-browsing-indicator-label = Navegação privada
+# Tooltip for the indicator shown in the window titlebar when content analysis is active.
+# Variables:
+#   $agentName (String): The name of the DLP agent that is connected
+content-analysis-indicator-tooltip =
+    .tooltiptext = Proteção contra a perda de dados (DLP) por { $agentName }. Clique para mais informação.
+content-analysis-panel-title = Proteção de dados
+# Variables:
+#   $agentName (String): The name of the DLP agent that is connected
+content-analysis-panel-text = A sua organização utiliza { $agentName } para se proteger contra a perda de dados. <a data-l10n-name="info">Saber mais</a>
 
 ## Unified extensions (toolbar) button
 
@@ -975,6 +1009,10 @@ firefox-relay-offer-legal-notice = Ao clicar em “Usar máscara de e-mail”, c
 popup-notification-addon-install-unsigned =
     .value = (Não verificado)
 popup-notification-xpinstall-prompt-learn-more = Saber mais acerca de instalar extras com segurança
+# Note: Access key is set to P to match "Private" in the corresponding localized label.
+popup-notification-addon-privatebrowsing-checkbox =
+    .label = Executar nas janelas privadas
+    .accesskey = j
 
 ## Pop-up warning
 
@@ -1008,3 +1046,24 @@ popup-warning-button =
 #   $popupURI (String): the URI for the pop-up window
 popup-show-popup-menuitem =
     .label = Mostrar “{ $popupURI }”
+
+## File-picker crash notification ("FilePickerCrashed.sys.mjs")
+
+file-picker-failed-open = Não foi possível abrir a janela de ficheiros do Windows. Não se conseguiu selecionar qualquer ficheiro ou pasta.
+#   $path (string): The full path to which the file will be saved (e.g., 'C:\Users\Default User\Downloads\readme.txt').
+file-picker-failed-save-somewhere = Não foi possível abrir a janela de ficheiros do Windows. O ficheiro será guardado em { $path }.
+file-picker-failed-save-nowhere = Não foi possível abrir a janela de ficheiros do Windows. Não se encontrou nenhuma pasta predefinida; consequentemente, o ficheiro não será guardado.
+file-picker-crashed-open = A janela de ficheiros do Windows falhou. Não se conseguiu selecionar qualquer ficheiro ou pasta.
+#   $path (string): The full path to which the file will be saved (e.g., 'C:\Users\Default User\Downloads\readme.txt').
+file-picker-crashed-save-somewhere = A janela de ficheiros do Windows falhou. O ficheiro será guardado em { $path }.
+file-picker-crashed-save-nowhere = A janela de ficheiros do Windows falhou. Não se encontrou nenhuma pasta predefinida; consequentemente, o ficheiro não será guardado.
+
+# Button used with file-picker-crashed-save-default. Opens the folder in Windows
+# Explorer, with the saved file selected and in focus.
+#
+# The wording here should be consistent with the Windows variant of
+# `downloads-cmd-show-menuitem-2` and similar messages.
+
+file-picker-crashed-show-in-folder =
+    .label = Mostrar na pasta
+    .accessKey = p

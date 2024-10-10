@@ -8,13 +8,13 @@
 appmenuitem-banner-update-downloading =
     .label = Preuzimanje nadogradnje za { -brand-shorter-name }
 appmenuitem-banner-update-available =
-    .label = Dostupna nadogradnja — preuzmi sada
+    .label = Dostupna nadogradnja – preuzmi sada
 appmenuitem-banner-update-manual =
-    .label = Dostupna nadogradnja — preuzmi sada
+    .label = Dostupna nadogradnja – preuzmi sada
 appmenuitem-banner-update-unsupported =
-    .label = Nije moguće nadograditi — sustav nije kompatibilan
+    .label = Nije moguće nadograditi – sustav nije kompatibilan
 appmenuitem-banner-update-restart =
-    .label = Dostupna nadogradnja — ponovno pokreni sada
+    .label = Dostupna nadogradnja – ponovo pokreni sada
 appmenuitem-new-tab =
     .label = Nova kartica
 appmenuitem-new-window =
@@ -77,6 +77,10 @@ appmenu-remote-tabs-turn-on-sync =
 appmenu-remote-tabs-showmore =
     .label = Prikaži više kartica
     .tooltiptext = Prikaz više kartica s ovoga uređaja
+# This is shown as the label for an element to show inactive tabs from this device.
+appmenu-remote-tabs-show-inactive-tabs =
+    .label = Neaktivne kartice
+    .tooltiptext = Pogledaj neaktivne kartice na ovom uređaju
 # This is shown beneath the name of a device when that device has no open tabs
 appmenu-remote-tabs-notabs = Nema otvorenih kartica
 # This is shown when Sync is configured but syncing tabs is disabled.
@@ -94,11 +98,12 @@ appmenuitem-fxa-toolbar-sync-now2 = Sinkroniziraj sada
 appmenuitem-fxa-sign-in = Prijavi se u { -brand-product-name }
 appmenuitem-fxa-manage-account = Upravljaj računom
 appmenu-fxa-header2 = { -fxaccount-brand-name }
+appmenu-account-header = Račun
 # Variables
 # $time (string) - Localized relative time since last sync (e.g. 1 second ago,
 # 3 hours ago, etc.)
-appmenu-fxa-last-sync = Posljednja sinkronizacija { $time }
-    .label = Posljednja sinkronizacija { $time }
+appmenu-fxa-last-sync = Zadnja sinkronizacija { $time }
+    .label = Zadnja sinkronizacija { $time }
 appmenu-fxa-sync-and-save-data2 = Sinkroniziraj i spremi podatke
 appmenu-fxa-signed-in-label = Prijavi se
 appmenu-fxa-setup-sync =
@@ -167,6 +172,12 @@ profiler-popup-capture-shortcut =
 # devtools/client/performance-new/shared/background.jsm.js
 # Please take care that the same values are also defined in devtools' perftools.ftl.
 
+
+# Presets and their l10n IDs are defined in the file
+# devtools/client/performance-new/shared/background.sys.mjs
+# Please take care that the same values are also defined in devtools' perftools.ftl.
+
+profiler-popup-presets-web-developer-description = Preporučene postavke za većinu otklanjanja pogrešaka u web aplikacijama s malim opterećenjem.
 profiler-popup-presets-web-developer-label =
     .label = Web programer
 profiler-popup-presets-firefox-description = Preporučena zadana postavka za profiliranje { -brand-shorter-name }a.
@@ -185,6 +196,9 @@ profiler-popup-presets-power-description = Zadana postavka za istraživanje gre�
 # "Power" is used in the sense of energy (electricity used by the computer).
 profiler-popup-presets-power-label =
     .label = Struja
+profiler-popup-presets-debug-description = Preporučene postavke za otklanjanje pogrešaka u { -brand-shorter-name }. Visoko opterećenje, nemojte koristiti za rad koji zahtjeva performanse, već za fokusiranje na razumijevanje ponašanja preglednika.
+profiler-popup-presets-debug-label =
+    .label = Otklanjanje grešaka
 profiler-popup-presets-custom-label =
     .label = Prilagođeno
 
@@ -193,7 +207,7 @@ profiler-popup-presets-custom-label =
 appmenu-manage-history =
     .label = Upravljanje poviješću
 appmenu-restore-session =
-    .label = Vrati prethodnu sesiju
+    .label = Obnovi prethodnu sesiju
 appmenu-clear-history =
     .label = Izbriši nedavnu povijest …
 appmenu-recent-history-subheader = Nedavna povijest
@@ -201,6 +215,9 @@ appmenu-recently-closed-tabs =
     .label = Nedavno zatvorene kartice
 appmenu-recently-closed-windows =
     .label = Nedavno zatvoreni prozori
+# This allows to search through the browser's history.
+appmenu-search-history =
+    .label = Pretraži povijest
 
 ## Help panel
 
@@ -210,8 +227,8 @@ appmenu-about =
     .label = O { -brand-shorter-name }u
     .accesskey = O
 appmenu-get-help =
-    .label = Potraži pomoć
-    .accesskey = p
+    .label = Dobij pomoć
+    .accesskey = D
 appmenu-help-more-troubleshooting-info =
     .label = Više informacija za rješavanje problema
     .accesskey = v
@@ -220,16 +237,18 @@ appmenu-help-report-site-issue =
 appmenu-help-share-ideas =
     .label = Dijeli ideje i povratne informacije …
     .accesskey = D
+appmenu-help-switch-device =
+    .label = Prelazak na novi uređaj
 
 ## appmenu-help-enter-troubleshoot-mode and appmenu-help-exit-troubleshoot-mode
 ## are mutually exclusive, so it's possible to use the same accesskey for both.
 
 appmenu-help-enter-troubleshoot-mode2 =
-    .label = Način rada za rješavanje problema
-    .accesskey = m
+    .label = Modus za rješavanje problema …
+    .accesskey = M
 appmenu-help-exit-troubleshoot-mode =
-    .label = Isključi način rada za rješavanje problema
-    .accesskey = N
+    .label = Isključi modus za rješavanje problema
+    .accesskey = I
 
 ## appmenu-help-report-deceptive-site and appmenu-help-not-deceptive
 ## are mutually exclusive, so it's possible to use the same accesskey for both.
@@ -247,4 +266,16 @@ appmenu-customizetoolbar =
     .label = Prilagodi alatnu traku…
 appmenu-developer-tools-subheader = Alati preglednika
 appmenu-developer-tools-extensions =
-    .label = Proširenja za razvijatelje
+    .label = Proširenja za programere
+appmenuitem-report-broken-site =
+    .label = Prijavi neispravnu stranicu
+
+## Panel for privacy and security products
+
+appmenuitem-sign-in-account = Prijavi se na tvoj račun
+appmenuitem-monitor-title = { -monitor-brand-short-name }
+appmenuitem-monitor-description = Primaj upozorenja o povredi podataka
+appmenuitem-relay-title = { -relay-brand-short-name }
+appmenuitem-relay-description = Maskiraj svoju pravu e-mail adresu i telefon
+appmenuitem-vpn-title = { -mozilla-vpn-brand-name }
+appmenuitem-vpn-description = Zaštiti svoju online aktivnost

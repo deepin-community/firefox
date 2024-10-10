@@ -193,9 +193,6 @@ using namespace mozilla;
 // track which pages have been MADV_FREE'd.  You can then call
 // jemalloc_purge_freed_pages(), which will force the OS to release those
 // MADV_FREE'd pages, making the process's RSS reflect its true memory usage.
-//
-// The jemalloc_purge_freed_pages definition in memory/build/mozmemory.h needs
-// to be adjusted if MALLOC_DOUBLE_PURGE is ever enabled on Linux.
 
 #ifdef XP_DARWIN
 #  define MALLOC_DOUBLE_PURGE
@@ -435,11 +432,6 @@ struct arena_chunk_t {
 // ***************************************************************************
 // Constants defining allocator size classes and behavior.
 
-// Maximum size of L1 cache line.  This is used to avoid cache line aliasing,
-// so over-estimates are okay (up to a point), but under-estimates will
-// negatively affect performance.
-static const size_t kCacheLineSize = 64;
-
 // Our size classes are inclusive ranges of memory sizes.  By describing the
 // minimums and how memory is allocated in each range the maximums can be
 // calculated.
@@ -678,7 +670,7 @@ struct arena_stats_t {
   // Number of bytes currently mapped.
   size_t mapped;
 
-  // Current number of committed pages.
+  // Current number of committed pages (non madvised/decommitted)
   size_t committed;
 
   // Per-size-category statistics.
@@ -1389,7 +1381,8 @@ class ArenaCollection {
 
   // We're running on the main thread which is set by a call to SetMainThread().
   bool IsOnMainThread() const {
-    return mMainThreadId.isSome() && mMainThreadId.value() == GetThreadId();
+    return mMainThreadId.isSome() &&
+           ThreadIdEqual(mMainThreadId.value(), GetThreadId());
   }
 
   // We're running on the main thread or SetMainThread() has never been called.
@@ -1398,11 +1391,10 @@ class ArenaCollection {
   }
 
   // After a fork set the new thread ID in the child.
-  void PostForkFixMainThread() {
-    if (mMainThreadId.isSome()) {
-      // Only if the main thread has been defined.
-      mMainThreadId = Some(GetThreadId());
-    }
+  void ResetMainThread() {
+    // The post fork handler in the child can run from a MacOS worker thread,
+    // so we can't set our main thread to it here.  Instead we have to clear it.
+    mMainThreadId = Nothing();
   }
 
   void SetMainThread() {
@@ -1518,7 +1510,12 @@ MALLOC_RUNTIME_VAR PoisonType opt_poison = ALL;
 MALLOC_RUNTIME_VAR PoisonType opt_poison = SOME;
 #endif
 
-MALLOC_RUNTIME_VAR size_t opt_poison_size = kCacheLineSize * 4;
+// Keep this larger than and ideally a multiple of kCacheLineSize;
+MALLOC_RUNTIME_VAR size_t opt_poison_size = 256;
+#ifndef MALLOC_RUNTIME_CONFIG
+static_assert(opt_poison_size >= kCacheLineSize);
+static_assert((opt_poison_size % kCacheLineSize) == 0);
+#endif
 
 static bool opt_randomize_small = true;
 
@@ -1542,6 +1539,9 @@ static bool malloc_init_hard();
 FORK_HOOK void _malloc_prefork(void);
 FORK_HOOK void _malloc_postfork_parent(void);
 FORK_HOOK void _malloc_postfork_child(void);
+#  ifdef XP_DARWIN
+FORK_HOOK void _malloc_postfork(void);
+#  endif
 #endif
 
 // End forward declarations.
@@ -2139,11 +2139,11 @@ bool AddressRadixTree<Bits>::Set(void* aKey, void* aValue) {
 
 // Return the offset between a and the nearest aligned address at or below a.
 #define ALIGNMENT_ADDR2OFFSET(a, alignment) \
-  ((size_t)((uintptr_t)(a) & ((alignment)-1)))
+  ((size_t)((uintptr_t)(a) & ((alignment) - 1)))
 
 // Return the smallest alignment multiple that is >= s.
 #define ALIGNMENT_CEILING(s, alignment) \
-  (((s) + ((alignment)-1)) & (~((alignment)-1)))
+  (((s) + ((alignment) - 1)) & (~((alignment) - 1)))
 
 static void* pages_trim(void* addr, size_t alloc_size, size_t leadsize,
                         size_t size) {
@@ -5170,13 +5170,23 @@ inline void MozJemalloc::moz_set_max_dirty_page_modifier(int32_t aModifier) {
 // state for the child is if fork is called from the main thread only.  Or the
 // child must not use them, eg it should call exec().  We attempt to prevent the
 // child for accessing these arenas by refusing to re-initialise them.
+//
+// This is only accessed in the fork handlers while gArenas.mLock is held.
 static pthread_t gForkingThread;
+
+#  ifdef XP_DARWIN
+// This is only accessed in the fork handlers while gArenas.mLock is held.
+static pid_t gForkingProcess;
+#  endif
 
 FORK_HOOK
 void _malloc_prefork(void) MOZ_NO_THREAD_SAFETY_ANALYSIS {
   // Acquire all mutexes in a safe order.
   gArenas.mLock.Lock();
   gForkingThread = pthread_self();
+#  ifdef XP_DARWIN
+  gForkingProcess = getpid();
+#  endif
 
   for (auto arena : gArenas.iter()) {
     if (arena->mLock.LockIsEnabled()) {
@@ -5207,6 +5217,9 @@ void _malloc_postfork_parent(void) MOZ_NO_THREAD_SAFETY_ANALYSIS {
 
 FORK_HOOK
 void _malloc_postfork_child(void) {
+  // Do this before iterating over the arenas.
+  gArenas.ResetMainThread();
+
   // Reinitialize all mutexes, now that fork() has completed.
   huge_mtx.Init();
 
@@ -5216,10 +5229,24 @@ void _malloc_postfork_child(void) {
     arena->mLock.Reinit(gForkingThread);
   }
 
-  gArenas.PostForkFixMainThread();
   gArenas.mLock.Init();
 }
-#endif  // XP_WIN
+
+#  ifdef XP_DARWIN
+FORK_HOOK
+void _malloc_postfork(void) {
+  // On MacOS we need to check if this is running in the parent or child
+  // process.
+  bool is_in_parent = getpid() == gForkingProcess;
+  gForkingProcess = 0;
+  if (is_in_parent) {
+    _malloc_postfork_parent();
+  } else {
+    _malloc_postfork_child();
+  }
+}
+#  endif  // XP_DARWIN
+#endif    // ! XP_WIN
 
 // End library-private functions.
 // ***************************************************************************
@@ -5513,7 +5540,7 @@ static void replace_malloc_init_funcs(malloc_table_t* table) {
 #include "malloc_decls.h"
 // ***************************************************************************
 
-#ifdef HAVE_DLOPEN
+#ifdef HAVE_DLFCN_H
 #  include <dlfcn.h>
 #endif
 

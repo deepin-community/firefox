@@ -8,7 +8,7 @@
 
 "no-feature-firefox-desktop":
   description: A dummy feature for experiments that target no feature.
-  owner: barret@mozilla.com
+  owner: beth@mozilla.com
   applications:
     - firefox-desktop
     - firefox-desktop-background-task
@@ -17,7 +17,7 @@
 
 testFeature:
   description: Test only feature
-  owner: barret@mozilla.com
+  owner: beth@mozilla.com
   applications:
     - firefox-desktop
     - firefox-desktop-background-task
@@ -40,7 +40,7 @@ testFeature:
 
 nimbus-qa-1:
   description: A feature for testing pref-setting on the default branch.
-  owner: barret@mozilla.com
+  owner: beth@mozilla.com
   hasExposure: false
   variables:
     value:
@@ -52,7 +52,7 @@ nimbus-qa-1:
 
 nimbus-qa-2:
   description: A feature for testing pref-setting on the user branch.
-  owner: barret@mozilla.com
+  owner: beth@mozilla.com
   hasExposure: false
   variables:
     value:
@@ -61,6 +61,22 @@ nimbus-qa-2:
         branch: user
         pref: nimbus.qa.pref-2
       description: The value to set for the pref.
+
+# Note: this feature is not for general use. If you want to run an experiment
+# that sets prefs, you *must* register your feature in this manifest and specify
+# the prefs you will control.
+prefFlips:
+  description: Flip arbitrary prefs. Controlled by release management.
+  owner: beth@mozilla.com
+  hasExposure: false
+  variables:
+    prefs:
+      type: json
+      description: "The prefs to set."
+  schema:
+    uri: resource://nimbus/schemas/PrefFlipsFeature.schema.json
+    path: toolkit/components/nimbus/schemas/PrefFlipsFeature.schema.json
+
 
 # `search` is for search engine experimentation features which do not require
 # isEarlyStartup to be set.
@@ -106,12 +122,6 @@ search:
         pref: browser.urlbar.richSuggestions.featureGate
       description: >-
         Feature gate that controls whether Rich Suggestions are enabled.
-    serpEventTelemetryEnabled:
-      type: boolean
-      setPref:
-        branch: default
-        pref: browser.search.serpEventTelemetry.enabled
-      description: Whether the Glean SERP event telemetry is enabled.
     serpEventTelemetryCategorizationEnabled:
       type: boolean
       setPref:
@@ -144,6 +154,13 @@ search:
       description: >-
         Whether search-config-v2 is enabled for the user. This will only take
         effect when the user restarts.
+        Obsolete. This is kept until all multi-feature roll-outs using it are
+        ended to prevent un-enrollment.
+    targetExperiment:
+      type: string
+      description: >-
+        The slug of the experiment someone is requesting enrollment and branch
+        information for. (Note that the featureId needs to be set to "search".)
 
 # `searchConfiguration` is for search experiment features for items that require
 # isEarlyStartup to be true. These items may require a reload of the search
@@ -207,6 +224,31 @@ urlbar:
       enum:
         - best-match
         - ""
+    fakespotFeatureGate:
+      type: boolean
+      fallbackPref: browser.urlbar.fakespot.featureGate
+      description: >-
+        Feature gate that controls whether all aspects of the Fakespot suggestion
+        feature are exposed to the user.
+    fakespotMinKeywordLength:
+      type: int
+      description: >-
+        The minimum prefix length of a Fakespot keyword the user must type to
+        trigger the suggestion.
+    fakespotShowLessFrequentlyCap:
+      type: int
+      fallbackPref: browser.urlbar.fakespot.showLessFrequentlyCap
+      description: >-
+        If defined and non-zero, this is the maximum number of times the user
+        will be able to click the "Show less frequently" command for Fakespot
+        suggestions. If undefined or zero, the user will be able to click the
+        command without any limit.
+    fakespotSuggestedIndex:
+      type: int
+      fallbackPref: browser.urlbar.fakespot.suggestedIndex
+      description: >-
+        The index of Fakespot results within the Firefox Suggest section. A
+        negative index is relative to the end of the section.
     mdnFeatureGate:
       type: boolean
       setPref:
@@ -264,6 +306,11 @@ urlbar:
         will be able to click the "Show less frequently" command for Pocket
         suggestions. If undefined or zero, the user will be able to click the
         command without any limit.
+    pocketSuggestIndex:
+      type: int
+      description: >-
+        The group-relative suggestedIndex of Pocket suggestions within the Firefox
+        Suggest section.
     potentialExposureKeywords:
       type: json
       fallbackPref: browser.urlbar.potentialExposureKeywords
@@ -275,6 +322,15 @@ urlbar:
       type: boolean
       fallbackPref: browser.urlbar.quicksuggest.allowPositionInSuggestions
       description: Whether quick suggest results can be shown in position specified in the suggestions.
+    quickSuggestAmpTopPickCharThreshold:
+      type: int
+      fallbackPref: browser.urlbar.quicksuggest.ampTopPickCharThreshold
+      description: >-
+        Character-count threshold (inclusive) for showing AMP suggestions as top
+        picks. If an AMP suggestion is triggered by a keyword at least this many
+        characters long, it will be shown as a top pick. When this variable is
+        set, full keywords will also show AMP suggestions as top picks even if
+        they have fewer characters than this threshold.
     quickSuggestContextualOptInEnabled:
       type: boolean
       setPref:
@@ -363,8 +419,10 @@ urlbar:
       type: int
       fallbackPref: browser.urlbar.quicksuggest.sponsoredIndex
       description: >-
-        The index of sponsored QuickSuggest results within the general group. A
-        negative index is relative to the end of the group
+        The index of sponsored Firefox Suggest results within the Firefox Suggest
+        section when "Show search suggestions ahead of browsing history in
+        address bar results" is checked. When not checked, the index is hardcoded
+        as -1. Negative indexes are relative to the end of the section.
     quickSuggestSponsoredPriority:
       type: boolean
       fallbackPref: browser.urlbar.quicksuggest.sponsoredPriority
@@ -463,7 +521,6 @@ urlbar:
         command without any limit.
     yelpSuggestNonPriorityIndex:
       type: int
-      fallbackPref: browser.urlbar.yelp.suggestedIndex
       description: >-
         The group-relative suggestedIndex of Yelp suggestions within the Firefox
         Suggest section. Ignored when `yelpSuggestPriority` is true.
@@ -582,11 +639,6 @@ aboutwelcome:
       fallbackPref: browser.aboutwelcome.backdrop
       description: >-
         Specify the color to be used to update the background color
-    newtabUrlBarFocus:
-      type: boolean
-      fallbackPref: browser.aboutwelcome.newtabUrlBarFocus
-      description: >-
-        Should the urlbar be focused when the new tab page loads after new user onboarding
     toolbarButtonEnabled:
       type: boolean
       setPref:
@@ -627,28 +679,31 @@ windowsLaunchOnLogin:
         pref: browser.startup.windowsLaunchOnLogin.enabled
       description: Should users see the Windows launch on login checkbox.
 
-windowsJumpList:
-  description: "Controls for the Windows Jump List integration."
-  owner: mconley@mozilla.com
+firefoxBridge:
+  description: "Controls for Firefox Bridge extension and extension registration"
+  owner: install-update@mozilla.com
   hasExposure: false
-  variables:
-    legacyBackend:
-      type: boolean
-      setPref:
-        branch: user
-        pref: browser.taskbar.lists.legacyBackend
-      description: True if users should use the legacy Windows Jump List backend.
-
-abouthomecache:
-  description: "The startup about:home cache."
-  owner: omc@mozilla.com
-  hasExposure: false
-  isEarlyStartup: true
   variables:
     enabled:
       type: boolean
-      fallbackPref: browser.startup.homepage.abouthome_cache.enabled
+      setPref:
+        branch: default
+        pref: browser.firefoxbridge.enabled
+      description: >-
+        Should Firefox Bridge be registered within firefoxBridgeNativeMessaging
+        startup idle task for use with native messaging proxy.
+
+abouthomecache:
+  description: "The startup about:home cache."
+  owner: omc@mozilla.com, mconley@mozilla.com
+  hasExposure: false
+  variables:
+    enabled:
+      type: boolean
       description: Is the feature enabled?
+      setPref:
+        branch: user
+        pref: browser.startup.homepage.abouthome_cache.enabled
 
 newtab:
   description: "The about:newtab page"
@@ -677,16 +732,118 @@ newtab:
       type: boolean
       description: Allow Contile to use additonal sponsored top sites
 
-pocketNewtab:
-  description: The Pocket section in newtab
-  owner: sdowne@getpocket.com
+newtabSpocsCache:
+  description: The about:newtab sponsored content cache.
+  owner: sdowne@mozilla.com
   hasExposure: false
-  isEarlyStartup: true
+  variables:
+    spocsCacheTimeout:
+      type: int
+      setPref:
+        branch: user
+        pref: browser.newtabpage.activity-stream.discoverystream.spocs.cacheTimeout
+      description: >-
+        Set sponsored content cache timeout in minutes.
+    spocsStartupCache:
+      type: boolean
+      setPref:
+        branch: user
+        pref: browser.newtabpage.activity-stream.discoverystream.spocs.startupCache.enabled
+      description: >-
+        Controls if spocs should be included in startup cache.
+
+newtabLayoutExperiment:
+  description: >-
+    Change the default layout of new tab by adjusting sizes and spacing of elements.
+  owner: achurchwell@mozilla.com, sdowne@mozilla.com
+  hasExposure: false
+  variables:
+    variantA:
+      type: boolean
+      setPref:
+        branch: user
+        pref: browser.newtabpage.activity-stream.newtabLayouts.variant-a
+      description: >-
+        Variant A in layouts experiment.
+    variantB:
+      type: boolean
+      setPref:
+        branch: user
+        pref: browser.newtabpage.activity-stream.newtabLayouts.variant-b
+      description: >-
+        Variant B in layouts experiment.
+
+newtabSponsoredContent:
+  description: >-
+    Change and control the sponsored content on newtab.
+  owner: sdowne@mozilla.com
+  hasExposure: false
   variables:
     spocPositions:
       type: string
-      fallbackPref: browser.newtabpage.activity-stream.discoverystream.spoc-positions
+      setPref:
+        branch: user
+        pref: browser.newtabpage.activity-stream.discoverystream.spoc-positions
       description: CSV string of spoc position indexes on newtab Pocket grid
+
+newtabTopicSelection:
+  description: the about:newtab topic selection experience.
+  owner: nbarrett@mozilla.com
+  hasExposure: false
+  variables:
+    availableTopics:
+      type: string
+      setPref:
+        branch: user
+        pref: browser.newtabpage.activity-stream.discoverystream.topicSelection.topics
+      description: >-
+        List of available topics to select for topic selection
+    suggestedTopics:
+      type: string
+      setPref:
+        branch: user
+        pref: browser.newtabpage.activity-stream.discoverystream.topicSelection.suggestedTopics
+      description: >-
+        List of pre-selected topics to display on first run of topic selection modal
+    topicSelectionOnboarding:
+      type: boolean
+      setPref:
+        branch: user
+        pref: browser.newtabpage.activity-stream.discoverystream.topicSelection.onboarding.enabled
+      description: >-
+        Turns on and off topic selection onbaording
+    regionTopicsConfig:
+      description: A comma-separated list of regions that get topics selection by default.
+      type: string
+      setPref:
+        branch: user
+        pref: browser.newtabpage.activity-stream.discoverystream.topicSelection.region-topics-config
+    localeTopicsConfig:
+      description: A comma-separated list of locales that get topics selection by default.
+      type: string
+      setPref:
+        branch: user
+        pref: browser.newtabpage.activity-stream.discoverystream.topicSelection.locale-topics-config
+    regionTopicLabelConfig:
+      description: A comma-separated list of regions that get topic labels by default.
+      type: string
+      setPref:
+        branch: user
+        pref:  browser.newtabpage.activity-stream.discoverystream.topicLabels.region-topic-label-config
+    localeTopicLabelConfig:
+      description: A comma-separated list of locales that get topic Labels by default.
+      type: string
+      setPref:
+        branch: user
+        pref: browser.newtabpage.activity-stream.discoverystream.topicLabels.locale-topic-label-config
+
+
+pocketNewtab:
+  description: The Pocket section in newtab
+  owner: sdowne@mozilla.com
+  hasExposure: false
+  isEarlyStartup: true
+  variables:
     spocTopsitesPositions:
       type: string
       fallbackPref: browser.newtabpage.activity-stream.discoverystream.spoc-topsites-positions
@@ -847,6 +1004,48 @@ pocketNewtab:
         pref: browser.newtabpage.activity-stream.newtabWallpapers.enabled
       description: >-
         Turns on and off wallpaper support.
+    wallpapersV2:
+      type: boolean
+      setPref:
+        branch: user
+        pref: browser.newtabpage.activity-stream.newtabWallpapers.v2.enabled
+      description: >-
+        Turns on and off updated wallpaper experience.
+    wallpapersHighlightEnabled:
+      type: boolean
+      setPref:
+        branch: user
+        pref: browser.newtabpage.activity-stream.newtabWallpapers.highlightEnabled
+      description: >-
+        Turns on and off wallpaper feature highlight.
+    wallpaperHighlightHeaderText:
+      type: string
+      setPref:
+        branch: user
+        pref: browser.newtabpage.activity-stream.newtabWallpapers.highlightHeaderText
+      description: >-
+        Changes the wallpaper feature highlight header
+    wallpaperHighlightContentText:
+      type: string
+      setPref:
+        branch: user
+        pref: browser.newtabpage.activity-stream.newtabWallpapers.highlightContentText
+      description: >-
+        Changes the wallpaper feature highlight content
+    wallpaperHighlightCtaText:
+      type: string
+      setPref:
+        branch: user
+        pref: browser.newtabpage.activity-stream.newtabWallpapers.highlightCtaText
+      description: >-
+        Changes the wallpaper feature highlight cta
+    weatherLocationSearch:
+      type: boolean
+      setPref:
+        branch: user
+        pref: browser.newtabpage.activity-stream.weather.locationSearchEnabled
+      description: >-
+        Turns on and off location search for newtab weather widget
     recsPersonalized:
       type: boolean
       fallbackPref: >-
@@ -859,12 +1058,6 @@ pocketNewtab:
         browser.newtabpage.activity-stream.discoverystream.spocs.personalized
       description: >-
         Enables Pocket sponsored content personalization.
-    spocsCacheTimeout:
-      type: int
-      fallbackPref: >-
-        browser.newtabpage.activity-stream.discoverystream.spocs.cacheTimeout
-      description: >-
-        Set sponsored content cache timeout in minutes.
     discoveryStreamConfig:
       description: A JSON blob of discovery stream configuration.
       type: string
@@ -914,6 +1107,16 @@ pocketNewtab:
       fallbackPref: >-
         browser.newtabpage.activity-stream.discoverystream.region-bff-config
       description: A comma-separated list of regions to get stories from the recommendations BFF. Also requires region-stories-config.
+    merinoProviderEnabled:
+      type: boolean
+      fallbackPref: >-
+        browser.newtabpage.activity-stream.discoverystream.merino-provider.enabled
+      description: Sets the recommendations provider service to Merino.
+    merinoProviderEndpoint:
+      type: string
+      fallbackPref: >-
+        browser.newtabpage.activity-stream.discoverystream.merino-provider.endpoint
+      description: Merino endpoint to use for recommendations.
     regionStoriesBlock:
       description: A comma-separated list of regions that do not get stories, regardless of locale-list-config.
       type: string
@@ -929,6 +1132,16 @@ pocketNewtab:
       type: string
       fallbackPref: >-
         browser.newtabpage.activity-stream.discoverystream.region-spocs-config
+    regionWeatherConfig:
+      description: A comma-separated list of regions that get weather by default.
+      type: string
+      fallbackPref: >-
+        browser.newtabpage.activity-stream.discoverystream.region-weather-config
+    localeWeatherConfig:
+      description: A comma-separated list of locales that weather widget supports.
+      type: string
+      fallbackPref: >-
+        browser.newtabpage.activity-stream.discoverystream.locale-weather-config
     topSitesMaxSponsored:
       # Defined under `pocketNewtab` as it needs to be used along with other variables
       type: int
@@ -943,10 +1156,49 @@ pocketNewtab:
       type: boolean
       fallbackPref: >-
         browser.topsites.contile.sov.enabled
+    pocketFeedParameters:
+      type: string
+      fallbackPref: >-
+        browser.newtabpage.activity-stream.discoverystream.pocket-feed-parameters
+      description: >-
+        Add parameters to Pocket feed URL.
+    merinoFeedExperiment:
+      type: boolean
+      setPref:
+        branch: user
+        pref: browser.newtabpage.activity-stream.discoverystream.merino-feed-experiment
+      description: >-
+        Should we pass the experiment branch and slug to the Merino feed request.
+    thumbsUpDown:
+      type: boolean
+      setPref:
+        branch: user
+        pref: browser.newtabpage.activity-stream.discoverystream.thumbsUpDown.enabled
+      description: Display thumbs up and down buttons on recommended stories
+    regionThumbsUpDownConfig:
+      description: A comma-separated list of regions that get thumbs up and down buttons by default.
+      type: string
+      setPref:
+        branch: user
+        pref: browser.newtabpage.activity-stream.discoverystream.thumbsUpDown.region-thumbs-config
+      description: Display thumbs up and down buttons on recommended stories
+    localeThumbsUpDownConfig:
+      description: A comma-separated list of locales that get thumbs up and down buttons by default.
+      type: string
+      setPref:
+        branch: user
+        pref: browser.newtabpage.activity-stream.discoverystream.thumbsUpDown.locale-thumbs-config
+    thumbsUpDownCompactLayout:
+      type: boolean
+      setPref:
+        branch: user
+        pref: browser.newtabpage.activity-stream.discoverystream.thumbsUpDown.searchTopsitesCompact
+      description: >-
+        Change the layout of the sections to be more compact to account for the added card height with the thumbs up/down enabled.
 
 saveToPocket:
   description: The save to Pocket feature
-  owner: sdowne@getpocket.com
+  owner: sdowne@mozilla.com
   hasExposure: false
   variables:
     emailButton:
@@ -1019,15 +1271,28 @@ shellService:
   description: "Interface with OS, e.g., pinning and set default"
   owner: desktop-integrations@mozilla.com
   hasExposure: false
-  isEarlyStartup: true
   variables:
     disablePin:
       type: boolean
       description: Disable pin to taskbar feature
+    disableStartMenuPin:
+      type: boolean
+      setPref:
+        branch: user
+        pref: browser.shell.disableStartMenuPin
+      description: Disable pin to start menu feature
     setDefaultBrowserUserChoice:
       type: boolean
-      fallbackPref: browser.shell.setDefaultBrowserUserChoice
+      setPref:
+        branch: user
+        pref: browser.shell.setDefaultBrowserUserChoice
       description: Should it set as default browser
+    setDefaultBrowserUserChoiceRegRename:
+      type: boolean
+      setPref:
+        branch: user
+        pref: browser.shell.setDefaultBrowserUserChoice.regRename
+      description: When setting default via UserChoice, rename the underlying registry key to prevent kennel driver registry locking.
     setDefaultPDFHandler:
       type: boolean
       fallbackPref: browser.shell.setDefaultPDFHandler
@@ -1039,7 +1304,10 @@ shellService:
         Should setting it as the default PDF handler only replace existing PDF
         handlers that are browsers, and not other PDF handlers such as Acrobat
         Reader or Nitro PDF.
-
+    setDefaultGuidanceNotifications:
+      type: boolean
+      fallbackPref: browser.shell.setDefaultGuidanceNotifications
+      description: Whether or not the user should see the guidance notifications when setting Firefox as their default browser.
 upgradeDialog:
   description: The dialog shown for major upgrades
   owner: omc@mozilla.com
@@ -1131,6 +1399,18 @@ fullPageTranslationAutomaticPopup:
         branch: user
         pref: browser.translations.automaticallyPopup
 
+selectTranslation:
+  description: This feature enables the option to translate selected text from the context menu.
+  owner: enordin@mozilla.com
+  hasExposure: false
+  variables:
+    enabled:
+      description: Set to true to enable the select-translations feature
+      type: boolean
+      setPref:
+        branch: user
+        pref: browser.translations.select.enable
+
 pdfjs:
   description: The Firefox pdf reader.
   owner: pdfjs-team@mozilla.com
@@ -1144,18 +1424,24 @@ pdfjs:
       setPref:
         branch: default
         pref: pdfjs.enableHighlightEditor
-
-addAnImageInPDF:
-  description: Add an image in an existing pdf.
-  owner: cdenizet@mozilla.com
-  hasExposure: false
-  variables:
-    boolean:
-      description: Set to true to enable the add-an-image feature
+    enableAltText:
+      description: Set to true to enable alt text generation.
       type: boolean
       setPref:
         branch: default
-        pref: pdfjs.enableStampEditor
+        pref: pdfjs.enableAltText
+    enableUpdatedAddImage:
+      description: Set to true to enable updated add image with alt text flow.
+      type: boolean
+      setPref:
+        branch: default
+        pref: pdfjs.enableUpdatedAddImage
+    browserMlEnable:
+      description: Set to true to enable local inference engine
+      type: boolean
+      setPref:
+        branch: default
+        pref: browser.ml.enable
 
 # fxms-message-* placeholder feature ids
 #
@@ -1310,6 +1596,20 @@ whatsNewPage:
       setPref:
         branch: user
         pref: startup.homepage_override_nimbus_maxVersion
+    minVersion:
+      description: Minimum Firefox update version
+      type: string
+      setPref:
+        branch: user
+        pref: startup.homepage_override_nimbus_minVersion
+    disableWNP:
+      description: >-
+        Block all What's New Pages. Used to compare no-WNP control branches to
+        WNP treatment branches.
+      type: boolean
+      setPref:
+        branch: user
+        pref: startup.homepage_override_nimbus_disable_wnp
 
 pbNewtab:
   description: "A Firefox Messaging System message for the pbNewtab message channel"
@@ -1392,13 +1692,13 @@ gleanInternalSdk:
   description: "The Glean internal SDK feature intended only for internal Glean Team use"
   owner: glean-team@mozilla.com
   hasExposure: false
-  # Some variables are used through the C++ API and thus require pref-storage.
-  # We rely on those values at Glean.init time, which happens at startup.
-  isEarlyStartup: true
   variables:
     finalInactive:
       type: "boolean"
       description: "Enables FOG early shutdown pings when true"
+      setPref:
+        branch: user
+        pref: telemetry.glean.internal.finalInactive
     gleanMetricConfiguration:
       type: json
       description: |
@@ -1409,33 +1709,9 @@ gleanInternalSdk:
       type: int
       description: >-
         Maximum number of pings that can be sent in a 60 second interval
-
-majorRelease2022:
-  description: Major Release 2022
-  owner: firefoxview@mozilla.com
-  hasExposure: false
-  isEarlyStartup: true
-  variables:
-    feltPrivacyPBMDarkTheme:
-      type: boolean
-      fallbackPref: "browser.theme.dark-private-windows"
-      description: "Use dark theme variant for PBM windows. This is only supported if the theme sets darkTheme data."
-    feltPrivacyShowPreferencesSection:
-      type: boolean
-      fallbackPref: "browser.privacySegmentation.preferences.show"
-      description: "Controls visibility of the privacy segmentation preferences section."
-    feltPrivacyWindowSeparation:
-      type: boolean
-      fallbackPref: "browser.privateWindowSeparation.enabled"
-      description: "Whether or not private browsing windows use a separate icon in the Windows taskbar"
-    colorwayCloset:
-      type: boolean
-      fallbackPref: "browser.theme.colorway-closet"
-      description: "Whether or not to show the colorway closet modal"
-    onboarding:
-      type: boolean
-      fallbackPref: "browser.majorrelease.onboarding"
-      description: "Whether or not to use the MR2022 onboarding settings."
+      setPref:
+        branch: user
+        pref: telemetry.glean.internal.maxPingsPerMinute
 
 browserLowMemoryPrefs:
   description: Prefs which control the browser's behaviour under low memory.
@@ -1679,6 +1955,342 @@ networking:
       setPref:
         branch: default
         pref: "network.send_OnDataFinished.cssLoader"
+    enableOffMainThreadStreamDecompression:
+      description: Whether to enable decompression of network streams off-main-thread
+      type: boolean
+      setPref:
+        branch: default
+        pref: "network.decompression_off_mainthread2"
+    offMainThreadStreamDecompressionThreshold:
+      description: Minimum content length for off-main-thread decompression
+      type: int
+      setPref:
+        branch: default
+        pref: "network.decompression_off_mainthread_min_size"
+    httpMaxConnections:
+      description: The maximum number of http connections.
+      type: int
+      setPref:
+        branch: default
+        pref: "network.http.max-connections"
+    httpMaxPersistentConnectionsPerServer:
+      description: The maximum number of persistent connections to a server
+      type: int
+      setPref:
+        branch: default
+        pref: "network.http.max-persistent-connections-per-server"
+    speculativeConnectionLimit:
+      description: The maximum number of half-open sockets allowed for speculative connections
+      type: int
+      setPref:
+        branch: default
+        pref: "network.http.speculative-parallel-limit"
+    chipsPartitionLimitEnabled:
+      description: Whether we enforce CHIPS partition limit
+      type: boolean
+      setPref:
+        branch: default
+        pref: "network.cookie.chips.partitionLimitEnabled"
+    chipsPartitionLimitDryRun:
+      description: Whether we actually perform purging/rejection, used to report telemetry without webcompat issues
+      type: boolean
+      setPref:
+        branch: default
+        pref: "network.cookie.chips.partitionLimitDryRun"
+    chipsPartitionLimitByteCapacity:
+      description: The actual value of the CHIPS partition limit in bytes
+      type: boolean
+      setPref:
+        branch: default
+        pref: "network.cookie.chips.partitionLimitByteCapacity"
+
+networkPrioritization:
+  description: "Network request prioritization"
+  owner: vgosu@mozilla.com
+  hasExposure: false
+  variables:
+    priorityHeader:
+      description: Whether to set the Priority header on each request.
+      type: boolean
+      setPref:
+        branch: default
+        pref: "network.http.priority_header.enabled"
+    fetchPriority:
+      description: Whether fetch priority is enabled
+      type: boolean
+      setPref:
+        branch: default
+        pref: "network.fetchpriority.enabled"
+    h3FetchPriority:
+      description: Whether to send HTTP3 priority frames
+      type: boolean
+      setPref:
+        branch: default
+        pref: "network.http.http3.priority"
+    h3BackgroundTabDeprioritization:
+      description: Lowers the priority when the tab is in the background. Potential privacy concerns.
+      type: boolean
+      setPref:
+        branch: default
+        pref: "network.http.http3.send_background_tabs_deprioritization"
+    documentPriorityIncremental:
+      description: Sets the incremental flag on the Priority header for document requests
+      type: boolean
+      setPref:
+        branch: default
+        pref: "dom.document_priority.incremental"
+    imagePriorityIncremental:
+      description: Sets the incremental flag on the Priority header for image requests
+      type: boolean
+      setPref:
+        branch: default
+        pref: "image.priority.incremental"
+    imageAdjustLayoutPriority:
+      description: Whether the network request priority should be adjusted according the layout and view frame position of each particular image.
+      type: boolean
+      setPref:
+        branch: default
+        pref: "image.layout_network_priority"
+    adjustLinkPreloadScriptLow:
+      description: Priority adjustment low for link-preload-script
+      type: int
+      setPref:
+        branch: default
+        pref: "network.fetchpriority.adjustments.link-preload-script.low"
+    adjustLinkPreloadScriptHigh:
+      description: Priority adjustment high for link-preload-script
+      type: int
+      setPref:
+        branch: default
+        pref: "network.fetchpriority.adjustments.link-preload-script.high"
+    adjustLinkPreloadScriptAuto:
+      description: Priority adjustment auto for link-preload-script
+      type: int
+      setPref:
+        branch: default
+        pref: "network.fetchpriority.adjustments.link-preload-script.auto"
+    adjustModuleScriptLow:
+      description: Priority adjustment low for module-script
+      type: int
+      setPref:
+        branch: default
+        pref: "network.fetchpriority.adjustments.module-script.low"
+    adjustModuleScriptHigh:
+      description: Priority adjustment high for module-script
+      type: int
+      setPref:
+        branch: default
+        pref: "network.fetchpriority.adjustments.module-script.high"
+    adjustModuleScriptAuto:
+      description: Priority adjustment auto for module-script
+      type: int
+      setPref:
+        branch: default
+        pref: "network.fetchpriority.adjustments.module-script.auto"
+    adjustAsyncOrDeferScriptLow:
+      description: Priority adjustment low for async-or-defer-script
+      type: int
+      setPref:
+        branch: default
+        pref: "network.fetchpriority.adjustments.async-or-defer-script.low"
+    adjustAsyncOrDeferScriptHigh:
+      description: Priority adjustment high for async-or-defer-script
+      type: int
+      setPref:
+        branch: default
+        pref: "network.fetchpriority.adjustments.async-or-defer-script.high"
+    adjustAsyncOrDeferScriptAuto:
+      description: Priority adjustment auto for async-or-defer-script
+      type: int
+      setPref:
+        branch: default
+        pref: "network.fetchpriority.adjustments.async-or-defer-script.auto"
+    adjustScriptInHeadLow:
+      description: Priority adjustment low for script-in-head
+      type: int
+      setPref:
+        branch: default
+        pref: "network.fetchpriority.adjustments.script-in-head.low"
+    adjustScriptInHeadHigh:
+      description: Priority adjustment high for script-in-head
+      type: int
+      setPref:
+        branch: default
+        pref: "network.fetchpriority.adjustments.script-in-head.high"
+    adjustScriptInHeadAuto:
+      description: Priority adjustment auto for script-in-head
+      type: int
+      setPref:
+        branch: default
+        pref: "network.fetchpriority.adjustments.script-in-head.auto"
+    adjustOtherScriptLow:
+      description: Priority adjustment low for other-script
+      type: int
+      setPref:
+        branch: default
+        pref: "network.fetchpriority.adjustments.other-script.low"
+    adjustOtherScriptHigh:
+      description: Priority adjustment high for other-script
+      type: int
+      setPref:
+        branch: default
+        pref: "network.fetchpriority.adjustments.other-script.high"
+    adjustOtherScriptAuto:
+      description: Priority adjustment auto for other-script
+      type: int
+      setPref:
+        branch: default
+        pref: "network.fetchpriority.adjustments.other-script.auto"
+    adjustLinkPreloadFontLow:
+      description: Priority adjustment low for link-preload-font
+      type: int
+      setPref:
+        branch: default
+        pref: "network.fetchpriority.adjustments.link-preload-font.low"
+    adjustLinkPreloadFontHigh:
+      description: Priority adjustment high for link-preload-font
+      type: int
+      setPref:
+        branch: default
+        pref: "network.fetchpriority.adjustments.link-preload-font.high"
+    adjustLinkPreloadFontAuto:
+      description: Priority adjustment auto for link-preload-font
+      type: int
+      setPref:
+        branch: default
+        pref: "network.fetchpriority.adjustments.link-preload-font.auto"
+    adjustLinkPreloadFetchLow:
+      description: Priority adjustment low for link-preload-fetch
+      type: int
+      setPref:
+        branch: default
+        pref: "network.fetchpriority.adjustments.link-preload-fetch.low"
+    adjustLinkPreloadFetchHigh:
+      description: Priority adjustment high for link-preload-fetch
+      type: int
+      setPref:
+        branch: default
+        pref: "network.fetchpriority.adjustments.link-preload-fetch.high"
+    adjustLinkPreloadFetchAuto:
+      description: Priority adjustment auto for link-preload-fetch
+      type: int
+      setPref:
+        branch: default
+        pref: "network.fetchpriority.adjustments.link-preload-fetch.auto"
+    adjustDeferredStyleLow:
+      description: Priority adjustment low for deferred-style
+      type: int
+      setPref:
+        branch: default
+        pref: "network.fetchpriority.adjustments.deferred-style.low"
+    adjustDeferredStyleHigh:
+      description: Priority adjustment high for deferred-style
+      type: int
+      setPref:
+        branch: default
+        pref: "network.fetchpriority.adjustments.deferred-style.high"
+    adjustDeferredStyleAuto:
+      description: Priority adjustment auto for deferred-style
+      type: int
+      setPref:
+        branch: default
+        pref: "network.fetchpriority.adjustments.deferred-style.auto"
+    adjustLinkPreloadStyleLow:
+      description: Priority adjustment low for link-preload-style
+      type: int
+      setPref:
+        branch: default
+        pref: "network.fetchpriority.adjustments.link-preload-style.low"
+    adjustLinkPreloadStyleHigh:
+      description: Priority adjustment high for link-preload-style
+      type: int
+      setPref:
+        branch: default
+        pref: "network.fetchpriority.adjustments.link-preload-style.high"
+    adjustLinkPreloadStyleAuto:
+      description: Priority adjustment auto for link-preload-style
+      type: int
+      setPref:
+        branch: default
+        pref: "network.fetchpriority.adjustments.link-preload-style.auto"
+    adjustNonDeferredStyleLow:
+      description: Priority adjustment low for non-deferred-style
+      type: int
+      setPref:
+        branch: default
+        pref: "network.fetchpriority.adjustments.non-deferred-style.low"
+    adjustNonDeferredStyleHigh:
+      description: Priority adjustment high for non-deferred-style
+      type: int
+      setPref:
+        branch: default
+        pref: "network.fetchpriority.adjustments.non-deferred-style.high"
+    adjustNonDeferredStyleAuto:
+      description: Priority adjustment auto for non-deferred-style
+      type: int
+      setPref:
+        branch: default
+        pref: "network.fetchpriority.adjustments.non-deferred-style.auto"
+    adjustGlobalFetchApiLow:
+      description: Priority adjustment low for global-fetch-api
+      type: int
+      setPref:
+        branch: default
+        pref: "network.fetchpriority.adjustments.global-fetch-api.low"
+    adjustGlobalFetchApiHigh:
+      description: Priority adjustment high for global-fetch-api
+      type: int
+      setPref:
+        branch: default
+        pref: "network.fetchpriority.adjustments.global-fetch-api.high"
+    adjustGlobalFetchApiAuto:
+      description: Priority adjustment auto for global-fetch-api
+      type: int
+      setPref:
+        branch: default
+        pref: "network.fetchpriority.adjustments.global-fetch-api.auto"
+    adjustImagesLow:
+      description: Priority adjustment low for images
+      type: int
+      setPref:
+        branch: default
+        pref: "network.fetchpriority.adjustments.images.low"
+    adjustImagesHigh:
+      description: Priority adjustment high for images
+      type: int
+      setPref:
+        branch: default
+        pref: "network.fetchpriority.adjustments.images.high"
+    adjustImagesAuto:
+      description: Priority adjustment auto for images
+      type: int
+      setPref:
+        branch: default
+        pref: "network.fetchpriority.adjustments.images.auto"
+
+networkingAuth:
+  description: "Firefox Networking (Necko) Authentication"
+  owner: vgosu@mozilla.com
+  hasExposure: false
+  variables:
+    redirectForAuthRetriesEnabled:
+      description: Whether to enable redirects for auth retries
+      type: boolean
+      setPref:
+        branch: default
+        pref: "network.auth.use_redirect_for_retries"
+
+networkingDenyIpAddrAny:
+  description: "Firefox Networking (Necko) Deny IP Address Any"
+  owner: vgosu@mozilla.com
+  hasExposure: false
+  variables:
+    denyIpAddrAny:
+      description: Whether to deny empty (0.0.0.0) IP addresses
+      type: boolean
+      setPref:
+        branch: default
+        pref: "network.socket.ip_addr_any.disabled"
 
 pingsender:
   description: "In-product usage of the pingsender telemetry reporter."
@@ -1694,28 +2306,52 @@ dapTelemetry:
   description: DAP Telemetry
   owner: simon@mozilla.com
   hasExposure: false
-  isEarlyStartup: true # Data is sent on startup with a trigger in BrowserGlue.sys.mjs
   variables:
     enabled:
       type: boolean
-      fallbackPref: toolkit.telemetry.dap_enabled
       description: Whether to automatically send DAP measurements.
     task1Enabled:
       type: boolean
-      fallbackPref: toolkit.telemetry.dap_task1_enabled
       description: Whether to send fake measurements for task 1.
     task1TaskId:
       type: string
-      fallbackPref: toolkit.telemetry.dap_task1_taskid
       description: The task ID to use for task 1 measurements.
     visitCountingEnabled:
       type: boolean
-      fallbackPref: toolkit.telemetry.dap_visit_counting_enabled
       description: Whether to count visits to the provided list of URLs.
     visitCountingExperimentList:
-      fallbackPref: toolkit.telemetry.dap_visit_counting_experiment_list
       type: json
       description: A list of experiments with URLs for which we want to count visits.
+
+dapAggregators:
+  description: Aggregator server configuration to use for submitting DAP reports.
+  owner: tcampbell@mozilla.com
+  hasExposure: false
+  variables:
+    leader_url:
+      description: The URL of the DAP Leader server where reports are submitted.
+      type: string
+      setPref:
+        branch: default
+        pref: "toolkit.telemetry.dap.leader.url"
+    leader_hpke:
+      description: The base64-encode HPKE key to encrypt leader shares with.
+      type: string
+      setPref:
+        branch: default
+        pref: "toolkit.telemetry.dap.leader.hpke"
+    helper_url:
+      description: The URL of the DAP Helper server.
+      type: string
+      setPref:
+        branch: default
+        pref: "toolkit.telemetry.dap.helper.url"
+    helper_hpke:
+      description: The base64-encode HPKE key to encrypt helper shares with.
+      type: string
+      setPref:
+        branch: default
+        pref: "toolkit.telemetry.dap.helper.hpke"
 
 etpLevel2PBMPref:
   description: The pref that controls the ETP level 2 list in the private browsing mode
@@ -1770,9 +2406,22 @@ fxaButtonVisibility:
         branch: user
         pref: identity.fxaccounts.toolbar.pxiToolbarEnabled.vpnEnabled
 
+fxaClientAssociation:
+  description: Prefs to control the client association ping.
+  owner: mconley@mozilla.com
+  hasExposure: false
+  variables:
+    pingEnabled:
+      description: >-
+        True if the client association ping should be sent.
+      type: boolean
+      setPref:
+        branch: user
+        pref: identity.fxaccounts.telemetry.clientAssociationPing.enabled
+
 legacyHeartbeat:
   description: Normandy Heartbeat exposed to Nimbus
-  owner: barret@mozilla.com
+  owner: beth@mozilla.com
   hasExposure: false
   schema:
     uri: "resource://normandy/schemas/LegacyHeartbeat.schema.json"
@@ -1865,6 +2514,25 @@ fingerprintingProtection:
       description: >-
         The protection overrides to add or remove fingerprinting protection
         targets. Please check RFPTargets.inc for all supported targets.
+    fdlibm_math:
+      type: boolean
+      setPref:
+        branch: default
+        pref: javascript.options.use_fdlibm_for_sin_cos_tan
+      description: >-
+        Uses a different math backend for Math.sin/cos/tan in JavaScript that exposes less entropy
+
+userCharacteristics:
+  description: Control user characteristic data collection
+  owner: tihuang@mozilla.com
+  hasExposure: false
+  variables:
+    currentVersion:
+      type: int
+      setPref:
+        branch: user
+        pref: toolkit.telemetry.user_characteristics_ping.current_version
+      description: The current collection version of the user characteristics.
 
 migrationWizard:
   description: Prefs to control the Migration Wizard UI.
@@ -1993,6 +2661,12 @@ gc:
       setPref:
         branch: user
         pref: "javascript.options.mem.gc_compacting"
+    gc_generational:
+      description: Whether generational GC is enabled.
+      type: boolean
+      setPref:
+        branch: user
+        pref: "javascript.options.mem.gc_generational"
     gc_heap_growth_factor:
       description: Heap growth parameter for balanced heap limit calculation.
       type: int
@@ -2098,6 +2772,12 @@ gc:
       setPref:
         branch: user
         pref: "javascript.options.mem.gc_parallel_marking_threshold_mb"
+    gc_max_parallel_marking_threads:
+      description: The maximum number of threads to use for parallel marking, if enabled.
+      type: int
+      setPref:
+        branch: user
+        pref: "javascript.options.mem.gc_max_parallel_marking_threads"
     gc_per_zone:
       description: Whether per-zone GC is enabled. If not, all zones are collected every time.
       type: boolean
@@ -2219,18 +2899,6 @@ raceCacheWithNetwork:
       setPref:
         branch: default
         pref: "network.http.rcwn.enabled"
-
-httpSpeculativeParallelLimit:
-  description: Prefs to control the http speculative parallel limit.
-  owner: dpalmeiro@mozilla.com, acreskey@mozilla.com
-  hasExposure: false
-  variables:
-    speculative_parallel_limit:
-      description: Maximum number of parallel speculative connections.
-      type: int
-      setPref:
-        branch: default
-        pref: "network.http.speculative-parallel-limit"
 
 shopping2023:
   description: Prefs to control the 2023 shopping experiment.
@@ -2396,20 +3064,6 @@ backgroundUpdate:
       setPref:
         branch: user
         pref: app.update.background.allowUpdatesForUnelevatedInstallations
-
-defaultAgent:
-  description: >-
-    Features that configure the Windows Default Browser Agent.
-  owner: install-update@mozilla.com
-  applications:
-    - firefox-desktop-background-task
-  hasExposure: false
-  variables:
-    cppFallback:
-      description: >-
-        Triggers the Default Agent to fall back to the C++ implementation of DoTask if true.
-      type: boolean
-      fallbackPref: "defaultAgent.cppFallback.enabled"
 
 bookmarks:
   description: Prefs to control aspects of the bookmarks system.
@@ -2611,13 +3265,24 @@ mailto:
       description: >-
         Can be used to toggle the entire feature on and off.
       fallbackPref: browser.mailto.dualPrompt
-    dualPrompt.os:
+    dualPrompt.onLocationChange:
       type: boolean
       description: >-
-        Make webmail sites display prompts to set Firefox as default OS mailto
-        application and another prompt to set the current site as default
-        webmail site in Firefox.
-      fallbackPref: browser.mailto.dualPrompt.os
+        Display a reminder prompt for known webmailers if the prompt was not
+        dismissed before the next visit of that webmailer.
+      fallbackPref: browser.mailto.dualPrompt.onLocationChange
+    dualPrompt.dismissXClickMinutes:
+      type: int
+      description: >-
+        This pref controls after how many minutes the mailto prompt can be shown
+        again, which has been dismissed by clicking the 'X' button before.
+      fallbackPref: browser.mailto.dualPrompt.dismissXClickMinutes
+    dualPrompt.dismissNotNowMinutes:
+      type: int
+      description: >-
+        This pref controls after how many minutes the mailto prompt can be shown
+        again, which has been dismissed by clicking a 'not now' button on it.
+      fallbackPref: browser.mailto.dualPrompt.dismissNotNowMinutes
 
 nimbusIsReady:
   description: A feature that provides the number of Nimbus is_ready events to send
@@ -2706,19 +3371,10 @@ contentRelevancy:
       setPref:
         branch: user
         pref: toolkit.contentRelevancy.timerInterval
-
-tabPreview:
-  description: Prefs to control Tab Previews
-  owner: dwalker@mozilla.com
-  hasExposure: false
-  variables:
-    tabPreviewsEnabled:
+    ingestEnabled:
+      description: Enable the ingestion through the Rust component
       type: boolean
-      setPref:
-        branch: default
-        pref: browser.tabs.cardPreview.enabled
-      description: >-
-        When true, users will see the new card preview when hovering a tab, instead of the standard tooltip
+      fallbackPref: toolkit.contentRelevancy.ingestEnabled
 
 backupService:
   description: Prefs to control the profile backup service
@@ -2733,6 +3389,45 @@ backupService:
       description: >-
         When true, the profile backup service will be initialized soon after
         startup.
+    prefsUIEnabled:
+      type: boolean
+      setPref:
+        branch: default
+        pref: browser.backup.preferences.ui.enabled
+      description: >-
+        When true, the section in about:preferences to control the backup
+        feature is visible.
+    sqlitePagesPerStep:
+      description: >-
+        The number of database pages to backup per step when backing up an
+        SQLite database.
+      type: int
+      setPref:
+        branch: user
+        pref: browser.backup.sqlite.pages_per_step
+    sqliteStepDelayMs:
+      description: >-
+        The delay between SQLite database backup steps in milliseconds.
+      type: int
+      setPref:
+        branch: user
+        pref: browser.backup.sqlite.step_delay_ms
+    idleThresholdSeconds:
+      description: >-
+        The number of seconds of user idle time to wait for before considering
+        to schedule a backup.
+      type: int
+      setPref:
+        branch: user
+        pref: browser.backup.scheduled.idle-threshold-seconds
+    minTimeBetweenBackupsSeconds:
+      description: >-
+        The minimum number of seconds since the last known backup that must
+        pass before we might schedule a backup.
+      type: int
+      setPref:
+        branch: user
+        pref: browser.backup.scheduled.minimum-time-between-backups-seconds
 
 pqcrypto:
   description: Prefs that control the use of post-quantum cryptography.
@@ -2746,3 +3441,134 @@ pqcrypto:
         pref: security.tls.enable_kyber
       description: >-
         Whether to enable Xyber768 for TLS.
+    h3EnableXyber:
+      type: boolean
+      setPref:
+        branch: default
+        pref: network.http.http3.enable_kyber
+      description: >-
+        Whether to enable Xyber768 for H3/QUIC.
+    sendP256:
+      type: boolean
+      setPref:
+        branch: default
+        pref: security.tls.client_hello.send_p256_keyshare
+      description: >-
+        Whether to send a P256 share in the client hello in QUIC and TLS.
+
+dtlsWebRTC:
+  description: Pref that controls the use of DTLS.
+  owner: nkulatova@mozilla.com
+  hasExposure: false
+  variables:
+    tlsVersionDTLS:
+      type: int
+      setPref:
+        branch: default
+        pref: media.peerconnection.dtls.version.max
+      description: >-
+        The maximum version of DTLS protocol used in WebRTC (770 = DTLS 1.0, 771 = DTLS 1.2, 772 = DTLS 1.3).
+
+certCompression:
+  description: Prefs that control the use of certificate compression decoders.
+  owner: anna.weine@mozilla.com
+  hasExposure: false
+  variables:
+    tlsEnableZlib:
+      type: boolean
+      setPref:
+        branch: default
+        pref: security.tls.enable_certificate_compression_zlib
+      description: >-
+        Whether to enable Zlib for TLS certificate compression.
+    tlsEnableBrotli:
+      type: boolean
+      setPref:
+        branch: default
+        pref: security.tls.enable_certificate_compression_brotli
+      description: >-
+        Whether to enable Brotli for TLS certificate compression.
+    tlsEnableZstd:
+      type: boolean
+      setPref:
+        branch: default
+        pref: security.tls.enable_certificate_compression_zstd
+      description: >-
+        Whether to enable Zstd for TLS certificate compression.
+
+bounceTrackingProtection:
+  description: Controls the Bounce Tracking Protection feature.
+  owner: pbz@mozilla.com
+  hasExposure: false
+  variables:
+    enabled:
+      type: int
+      setPref:
+        branch: default
+        pref: privacy.bounceTrackingProtection.mode
+      description: Mode to run the feature in. See nsIBounceTrackingProtection.idl for documentation.
+
+remoteTabManagement:
+  description: >
+    Features that let users manage tabs on other devices that are
+    connected to the same Mozilla account.
+  owner: skhamis@mozilla.com
+  hasExposure: false
+  variables:
+    closeTabsEnabled:
+      description: >-
+        When true, the user can close tabs on other devices connected to
+        the same Mozilla account from the synced tabs menu.
+      type: boolean
+      fallbackPref: identity.fxaccounts.commands.remoteTabManagement.enabled
+
+crlite:
+  description: Prefs that control the use of CRLite
+  owner: jschanck@mozilla.com
+  hasExposure: false
+  variables:
+    enabled:
+      type: boolean
+      setPref:
+        branch: default
+        pref: security.remote_settings.crlite_filters.enabled
+      description: >-
+        Whether CRLite artifacts will be downloaded.
+    channel:
+      type: string
+      setPref:
+        branch: default
+        pref: security.pki.crlite_channel
+      description: >-
+        The channel from which CRLite artifacts will be downloaded.
+    mode:
+      type: int
+      setPref:
+        branch: default
+        pref: security.pki.crlite_mode
+      description: >-
+        How CRLite results will be interpreted.
+
+chatbot:
+  description: AI chatbot feature configuration
+  owner: elee@mozilla.com
+  hasExposure: false
+  variables:
+    prefs:
+      type: json
+      description: >-
+        The prefs to set under browser.ml.chat.* with object keys as the
+        sub-pref and values objects indicating the desired branch and value
+        defaulting to clearing the user branch value.
+
+fxms_bmb_button:
+  description: A feature for the Firefox Messaging System Bookmarks Bar button surface
+  owner: omc@mozilla.com
+  hasExposure: true
+  exposureDescription: >-
+    Exposure is sent if the message is about to be shown after trigger and
+    targeting conditions on the message matched.
+  schema:
+    uri: chrome://browser/content/asrouter/schemas/MessagingExperiment.schema.json
+    path: browser/components/asrouter/content-src/schemas/MessagingExperiment.schema.json
+  variables: {}

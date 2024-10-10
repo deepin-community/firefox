@@ -12,6 +12,8 @@ about-processes-column-action =
 
 about-processes-shutdown-process =
     .title = 탭 언로드 및 프로세스 종료
+about-processes-kill-process =
+    .title = 프로세스 종료
 about-processes-shutdown-tab =
     .title = 탭 닫기
 # Profiler icons
@@ -50,6 +52,7 @@ about-processes-remote-sandbox-broker-process = 원격 샌드박스 브로커 ({
 about-processes-fork-server-process = 포크 서버 ({ $pid })
 about-processes-preallocated-process = 사전 할당 ({ $pid })
 about-processes-utility-process = 유틸리티 ({ $pid })
+about-processes-inference-process = 추론 ({ $pid })
 # Unknown process names
 # Variables:
 #    $pid (String) The process id of this process, assigned by the OS.

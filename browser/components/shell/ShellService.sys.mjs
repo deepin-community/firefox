@@ -40,6 +40,9 @@ ChromeUtils.defineLazyGetter(lazy, "log", () => {
   return new ConsoleAPI(consoleOptions);
 });
 
+const MSIX_PREVIOUSLY_PINNED_PREF =
+  "browser.startMenu.msixPinnedWhenLastChecked";
+
 /**
  * Internal functionality to save and restore the docShell.allow* properties.
  */
@@ -118,10 +121,13 @@ let ShellServiceInternal = {
    * is possible.
    */
   _userChoiceImpossibleTelemetryResult() {
-    if (!ShellService.checkAllProgIDsExist()) {
+    let winShellService = this.shellService.QueryInterface(
+      Ci.nsIWindowsShellService
+    );
+    if (!winShellService.checkAllProgIDsExist()) {
       return "ErrProgID";
     }
-    if (!ShellService.checkBrowserUserChoiceHashes()) {
+    if (!winShellService.checkBrowserUserChoiceHashes()) {
       return "ErrHash";
     }
     return null;
@@ -322,14 +328,29 @@ let ShellServiceInternal = {
     }
   },
 
+  async _maybeShowSetDefaultGuidanceNotification() {
+    if (
+      lazy.NimbusFeatures.shellService.getVariable(
+        "setDefaultGuidanceNotifications"
+      ) &&
+      // Disable showing toast notification from Firefox Background Tasks.
+      !lazy.BackgroundTasks?.isBackgroundTaskMode
+    ) {
+      await lazy.ASRouter.waitForInitialized;
+      const win = Services.wm.getMostRecentBrowserWindow() ?? null;
+      lazy.ASRouter.sendTriggerMessage({
+        browser: win,
+        id: "deeplinkedToWindowsSettingsUI",
+      });
+    }
+  },
+
   // override nsIShellService.setDefaultBrowser() on the ShellService proxy.
   async setDefaultBrowser(forAllUsers) {
     // On Windows, our best chance is to set UserChoice, so try that first.
     if (
       AppConstants.platform == "win" &&
-      lazy.NimbusFeatures.shellService.getVariable(
-        "setDefaultBrowserUserChoice"
-      )
+      Services.prefs.getBoolPref("browser.shell.setDefaultBrowserUserChoice")
     ) {
       try {
         await this.setAsDefaultUserChoice();
@@ -345,16 +366,7 @@ let ShellServiceInternal = {
     }
 
     this.shellService.setDefaultBrowser(forAllUsers);
-
-    // Disable showing toast notification from Firefox Background Tasks.
-    if (!lazy.BackgroundTasks?.isBackgroundTaskMode) {
-      await lazy.ASRouter.waitForInitialized;
-      const win = Services.wm.getMostRecentBrowserWindow() ?? null;
-      lazy.ASRouter.sendTriggerMessage({
-        browser: win,
-        id: "deeplinkedToWindowsSettingsUI",
-      });
-    }
+    this._maybeShowSetDefaultGuidanceNotification();
   },
 
   async setAsDefault() {
@@ -422,6 +434,16 @@ let ShellServiceInternal = {
       return false;
     }
 
+    // Bug 1758770: Pinning private browsing on MSIX is currently
+    // not possible.
+    if (
+      privateBrowsing &&
+      AppConstants.platform === "win" &&
+      Services.sysinfo.getProperty("hasWinPackageId")
+    ) {
+      return false;
+    }
+
     // Currently this only works on certain Windows versions.
     try {
       // First check if we can even pin the app where an exception means no.
@@ -465,6 +487,85 @@ let ShellServiceInternal = {
       } catch (ex) {
         console.error(ex);
       }
+    }
+  },
+
+  /**
+   * On MSIX builds, pins Firefox to the Windows Start Menu
+   *
+   * On non-MSIX builds, this function is a no-op and always returns false.
+   *
+   * @returns {boolean} true if we successfully pin and false otherwise.
+   */
+  async pinToStartMenu() {
+    if (await this.doesAppNeedStartMenuPin()) {
+      try {
+        let pinSuccess = await this.shellService.pinCurrentAppToStartMenuAsync(
+          false
+        );
+        Services.prefs.setBoolPref(MSIX_PREVIOUSLY_PINNED_PREF, pinSuccess);
+        return pinSuccess;
+      } catch (err) {
+        lazy.log.warn("Error thrown during pinCurrentAppToStartMenuAsync", err);
+        Services.prefs.setBoolPref(MSIX_PREVIOUSLY_PINNED_PREF, false);
+      }
+    }
+    return false;
+  },
+
+  /**
+   * On MSIX builds, checks if Firefox app can be and is not
+   * pinned to the Windows Start Menu.
+   *
+   * On non-MSIX builds, this function is a no-op and always returns false.
+   *
+   * @returns {boolean} true if this is an MSIX install and we are not yet
+   *                    pinned to the Start Menu.
+   *
+   * @throws if not called from main process.
+   */
+  async doesAppNeedStartMenuPin() {
+    if (
+      Services.appinfo.processType !== Services.appinfo.PROCESS_TYPE_DEFAULT
+    ) {
+      throw new Components.Exception(
+        "Can't determine pinned from child process",
+        Cr.NS_ERROR_NOT_AVAILABLE
+      );
+    }
+    if (
+      Services.prefs.getBoolPref("browser.shell.disableStartMenuPin", false)
+    ) {
+      return false;
+    }
+    try {
+      return (
+        AppConstants.platform === "win" &&
+        Services.sysinfo.getProperty("hasWinPackageId") &&
+        !(await this.shellService.isCurrentAppPinnedToStartMenuAsync())
+      );
+    } catch (ex) {}
+    return false;
+  },
+
+  /**
+   * On MSIX builds, checks if Firefox is no longer pinned to
+   * the Windows Start Menu when it previously was and records
+   * a Glean event if so.
+   *
+   * On non-MSIX builds, this function is a no-op.
+   */
+  async recordWasPreviouslyPinnedToStartMenu() {
+    if (!Services.sysinfo.getProperty("hasWinPackageId")) {
+      return;
+    }
+    let isPinned = await this.shellService.isCurrentAppPinnedToStartMenuAsync();
+    if (
+      !isPinned &&
+      Services.prefs.getBoolPref(MSIX_PREVIOUSLY_PINNED_PREF, false)
+    ) {
+      Services.prefs.setBoolPref(MSIX_PREVIOUSLY_PINNED_PREF, isPinned);
+      Glean.startMenu.manuallyUnpinnedSinceLastLaunch.record();
     }
   },
 

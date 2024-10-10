@@ -199,6 +199,8 @@ newtab-section-header-recent-activity = Nyleg aktivitet
 #   $provider (string) - Name of the corresponding content provider.
 newtab-section-header-pocket = Tilrådd av { $provider }
 newtab-section-header-stories = Tankevekkjande artiklar
+# "picks" refers to recommended articles
+newtab-section-header-todays-picks = Dagens utvalde artiklar for deg
 
 ## Empty Section States: These show when there are no more items in a section. Ex. When there are no more Pocket story recommendations, in the space where there would have been stories, this is shown instead.
 
@@ -232,6 +234,19 @@ newtab-pocket-pocket-firefox-family = { -pocket-brand-name } er ein del av { -br
 # A save to Pocket button that shows over the card thumbnail on hover.
 newtab-pocket-save = Lagre
 newtab-pocket-saved = Lagra
+
+## Thumbs up and down buttons that shows over a newtab stories card thumbnail on hover.
+
+# Clicking the thumbs up button for this story will result in more stories like this one being recommended
+newtab-pocket-thumbs-up-tooltip =
+    .title = Meir som dette
+# Clicking the thumbs down button for this story informs us that the user does not feel like the story is interesting for them
+newtab-pocket-thumbs-down-tooltip =
+    .title = Ikkje for meg
+newtab-toast-thumbs-up-or-down = Takk. Tilbakemeldinga di  vil hjelpe oss med å gjere kjelda di betre.
+newtab-toast-dismiss-button =
+    .title = Avvis
+    .aria-label = Avvis
 
 ## Pocket content onboarding experience dialog and modal for new users seeing the Pocket section for the first time, shown as the first item in the Pocket section.
 
@@ -271,6 +286,9 @@ newtab-custom-recent-subtitle = Eit utval av nylege nettstadar og innhald
 newtab-custom-recent-toggle =
     .label = Nyleg aktivitet
     .description = Eit utval av nylege nettstadar og innhald
+newtab-custom-weather-toggle =
+    .label = Vêr
+    .description = Dagens vêrmelding i korte trekk
 newtab-custom-close-button = Lat att
 newtab-custom-settings = Handsam fleire innstillingar
 
@@ -290,3 +308,125 @@ newtab-wallpaper-dark-panda = Raudpanda gøymt i skogen
 newtab-wallpaper-dark-sky = Bylandskap med nattehimmel
 newtab-wallpaper-dark-mountain = Fjellandskap
 newtab-wallpaper-dark-city = Lilla bylandskap
+
+## Solid Colors
+
+newtab-wallpaper-category-title-colors = Einsfarga
+newtab-wallpaper-blue = Blå
+newtab-wallpaper-light-blue = Lyseblå
+newtab-wallpaper-light-purple = Lyselilla
+newtab-wallpaper-light-green = Lysegrøn
+newtab-wallpaper-green = Grøn
+newtab-wallpaper-beige = Beige
+newtab-wallpaper-yellow = Gul
+newtab-wallpaper-orange = Oransje
+newtab-wallpaper-pink = Rosa
+newtab-wallpaper-light-pink = Lyserosa
+newtab-wallpaper-red = Raud
+newtab-wallpaper-dark-blue = Mørkeblå
+newtab-wallpaper-dark-purple = Mørkelilla
+newtab-wallpaper-dark-green = Mørkegrøn
+newtab-wallpaper-brown = Brun
+
+## Abstract
+
+newtab-wallpaper-category-title-abstract = Abstrakt
+newtab-wallpaper-abstract-green = Grøne former
+newtab-wallpaper-abstract-blue = Blåe former
+newtab-wallpaper-abstract-purple = Lilla former
+newtab-wallpaper-abstract-orange = Oransje former
+newtab-wallpaper-gradient-orange = Fargeovergang oransje og rosa
+newtab-wallpaper-abstract-blue-purple = Blå og lilla former
+
+## Photographs
+
+newtab-wallpaper-category-title-photographs = Fotografi
+newtab-wallpaper-beach-at-sunrise = Strand ved soloppgang
+newtab-wallpaper-beach-at-sunset = Strand ved solnedgang
+newtab-wallpaper-storm-sky = Stormhimmel
+newtab-wallpaper-sky-with-pink-clouds = Himmel med rosa skyer
+newtab-wallpaper-red-panda-yawns-in-a-tree = Raud panda som geispar i eit tre
+newtab-wallpaper-white-mountains = Kvite fjell
+# Variables
+#   $author_string (String) - The name of the creator of the photo.
+#   $webpage_string (String) - The name of the webpage where the photo is located.
+newtab-wallpaper-attribution = Bilde av <a data-l10n-name="name-link">{ $author_string }</a> på <a data-l10n-name="webpage-link">{ $webpage_string }</a>
+newtab-wallpaper-feature-highlight-header = Prøv ein fargeklatt
+newtab-wallpaper-feature-highlight-content = Gje ny fane-sida ein friskt utsjånad med bakgrunnsbilde.
+newtab-wallpaper-feature-highlight-button = Eg forstår
+# Tooltip for dismiss button
+feature-highlight-dismiss-button =
+    .title = Lat att
+    .aria-label = Lat att sprettoppvindauge
+feature-highlight-wallpaper =
+    .title = { -newtab-wallpaper-feature-highlight-header }
+    .aria-label = { -newtab-wallpaper-feature-highlight-content }
+
+## New Tab Weather
+
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-see-forecast =
+    .title = Sjå vêrmelding hos { $provider }.
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-sponsored = { $provider } ∙ Sponsa
+newtab-weather-menu-change-location = Endre plassering
+newtab-weather-change-location-search-input = Søk plassering
+newtab-weather-menu-weather-display = Vêrvising
+# Display options are:
+# - Simple: Displays a current weather condition icon and the current temperature
+# - Detailed: Include simple information plus a short text summary: e.g. "Mostly cloudy"
+newtab-weather-menu-weather-display-option-simple = Enkel
+newtab-weather-menu-change-weather-display-simple = Byt til enkel vising
+newtab-weather-menu-weather-display-option-detailed = Detaljert
+newtab-weather-menu-change-weather-display-detailed = Byt til detaljert vising
+newtab-weather-menu-temperature-units = Temperatureiningar
+newtab-weather-menu-temperature-option-fahrenheit = Fahrenheit
+newtab-weather-menu-temperature-option-celsius = Celsius
+newtab-weather-menu-change-temperature-units-fahrenheit = Byt til Fahrenheit
+newtab-weather-menu-change-temperature-units-celsius = Byt til Celsius
+newtab-weather-menu-hide-weather = Skjul vêret på ny fane
+newtab-weather-menu-learn-more = Les meir
+# This message is shown if user is working offline
+newtab-weather-error-not-available = Vêrdata er ikkje tilgjengeleg akkurat no.
+
+## Topic Labels
+
+newtab-topic-label-business = Business
+newtab-topic-label-career = Karriere
+newtab-topic-label-education = Utdanning
+newtab-topic-label-arts = Underhaldning
+newtab-topic-label-food = Mat
+newtab-topic-label-health = Helse
+newtab-topic-label-hobbies = Spel
+# ”Money” = “Personal Finance”, refers to articles and stories that help readers better manage
+# and understand their personal finances – from saving money to buying a home. See the
+# “Curated by our editors“ section at the top of https://getpocket.com/explore/personal-finance for more context
+newtab-topic-label-finance = Pengar
+newtab-topic-label-society-parenting = Foreldreskap
+newtab-topic-label-government = Politikk
+newtab-topic-label-education-science = Vitskap
+# ”Life Hacks” = “Self Improvement”, refers to articles and stories aimed at helping readers improve various
+# aspects of their lives – from mental health to  productivity. See the “Curated by our editors“ section
+# at the top of https://getpocket.com/explore/self-improvement for more context.
+newtab-topic-label-society = Kvardagsknep og småtriks
+newtab-topic-label-sports = Sport
+newtab-topic-label-tech = Teknologi
+newtab-topic-label-travel = Reise
+newtab-topic-label-home = Heim og hage
+
+## Topic Selection Modal
+
+# “fine-tune” refers to the process of making small adjustments to something to get
+# the best or desired experience or performance.
+newtab-topic-selection-title = Vel emne for å finjustere feed-en din
+# “tailored” refers to process of (a tailor) making (clothes) to fit individual customers.
+# In other words, “Our expert curators prioritize stories to fit your selected interests”
+newtab-topic-selection-subtitle = Vel to eller fleire emne. Ekspertkuratorane våre prioriterer artiklar tilpassa etter dine interesser. Oppdater når som helst.
+newtab-topic-selection-save-button = Lagre
+newtab-topic-selection-cancel-button = Avbryt
+newtab-topic-selection-button-maybe-later = Kanskje seinare
+newtab-topic-selection-privacy-link = FInn ut korleis vi vernar og handsamar data
+newtab-topic-selection-button-update-interests = Oppdater interessene dine
+newtab-topic-selection-button-pick-interests = Vel interessene dine

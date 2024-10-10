@@ -233,8 +233,6 @@ js::Nursery::Nursery(GCRuntime* gc)
       canAllocateStrings_(true),
       canAllocateBigInts_(true),
       reportDeduplications_(false),
-      reportPretenuring_(false),
-      reportPretenuringThreshold_(0),
       minorGCTriggerReason_(JS::GCReason::NO_REASON),
       prevPosition_(0),
       hasRecentGrowthData(false),
@@ -278,22 +276,15 @@ static bool GetBoolEnvVar(const char* name, const char* helpMessage) {
 }
 
 static void ReadReportPretenureEnv(const char* name, const char* helpMessage,
-                                   bool* enabled, size_t* threshold) {
-  *enabled = false;
-  *threshold = 0;
-
+                                   AllocSiteFilter* filter) {
   const char* env = GetEnvVar(name, helpMessage);
   if (!env) {
     return;
   }
 
-  char* end;
-  *threshold = strtol(env, &end, 10);
-  if (end == env || *end) {
+  if (!AllocSiteFilter::readFromString(env, filter)) {
     PrintAndExit(helpMessage);
   }
-
-  *enabled = true;
 }
 
 bool js::Nursery::init(AutoLockGCBgAlloc& lock) {
@@ -306,12 +297,36 @@ bool js::Nursery::init(AutoLockGCBgAlloc& lock) {
       "JS_GC_REPORT_STATS=1\n"
       "\tAfter a minor GC, report how many strings were deduplicated.\n");
 
+#ifdef JS_GC_ZEAL
+  reportPromotion_ = GetBoolEnvVar(
+      "JS_GC_REPORT_PROMOTE",
+      "JS_GC_REPORT_PROMOTE=1\n"
+      "\tAfter a minor GC, report what kinds of things were promoted.\n");
+#endif
+
   ReadReportPretenureEnv(
       "JS_GC_REPORT_PRETENURE",
-      "JS_GC_REPORT_PRETENURE=N\n"
+      "JS_GC_REPORT_PRETENURE=FILTER\n"
       "\tAfter a minor GC, report information about pretenuring, including\n"
-      "\tallocation sites with at least N allocations.\n",
-      &reportPretenuring_, &reportPretenuringThreshold_);
+      "\tallocation sites which match the filter specification. This is comma\n"
+      "\tseparated list of one or more elements which can include:\n"
+      "\t\tinteger N:    report sites with at least N allocations\n"
+      "\t\t'normal':     report normal sites used for pretenuring\n"
+      "\t\t'unknown':    report catch-all sites for allocations without a\n"
+      "\t\t              specific site associated with them\n"
+      "\t\t'optimized':  report catch-all sites for allocations from\n"
+      "\t\t              optimized JIT code\n"
+      "\t\t'missing':    report automatically generated missing sites\n"
+      "\t\t'object':     report sites associated with JS objects\n"
+      "\t\t'string':     report sites associated with JS strings\n"
+      "\t\t'bigint':     report sites associated with JS big ints\n"
+      "\t\t'longlived':  report sites in the LongLived state (ignored for\n"
+      "\t\t              catch-all sites)\n"
+      "\t\t'shortlived': report sites in the ShortLived state (ignored for\n"
+      "\t\t              catch-all sites)\n"
+      "\tFilters of the same kind are combined with OR and of different kinds\n"
+      "\twith AND. Prefixes of the keywords above are accepted.\n",
+      &pretenuringReportFilter_);
 
   decommitTask = MakeUnique<NurseryDecommitTask>(gc);
   if (!decommitTask) {
@@ -613,6 +628,9 @@ void js::Nursery::leaveZealMode() {
 
   MOZ_ASSERT(isEmpty());
 
+  // Reset the nursery size.
+  setCapacity(minSpaceSize());
+
   toSpace.moveToStartOfChunk(this, 0);
   toSpace.setStartToCurrentPosition();
 
@@ -714,6 +732,19 @@ std::tuple<void*, bool> js::Nursery::allocateBuffer(Zone* zone, size_t nbytes,
 
   void* buffer = zone->pod_arena_malloc<uint8_t>(arenaId, nbytes);
   return {buffer, bool(buffer)};
+}
+
+void* js::Nursery::tryAllocateNurseryBuffer(JS::Zone* zone, size_t nbytes,
+                                            arena_id_t arenaId) {
+  MOZ_ASSERT(nbytes > 0);
+  MOZ_ASSERT(nbytes <= SIZE_MAX - gc::CellAlignBytes);
+  nbytes = RoundUp(nbytes, gc::CellAlignBytes);
+
+  if (nbytes <= MaxNurseryBufferSize) {
+    return allocate(nbytes);
+  }
+
+  return nullptr;
 }
 
 void* js::Nursery::allocateBuffer(Zone* zone, Cell* owner, size_t nbytes,
@@ -1497,6 +1528,11 @@ js::Nursery::CollectionResult js::Nursery::doCollection(AutoGCSession& session,
   // Move objects pointed to by roots from the nursery to the major heap.
   tenuredEverything = shouldTenureEverything(reason);
   TenuringTracer mover(rt, this, tenuredEverything);
+#ifdef JS_GC_ZEAL
+  if (reportPromotion_) {
+    mover.initPromotionReport();
+  }
+#endif
 
   // Trace everything considered as a root by a minor GC.
   traceRoots(session, mover);
@@ -1517,6 +1553,14 @@ js::Nursery::CollectionResult js::Nursery::doCollection(AutoGCSession& session,
   mover.collectToStringFixedPoint();
   endProfile(ProfileKey::CollectToStrFP);
 
+#ifdef JS_GC_ZEAL
+  if (reportPromotion_ && options != JS::GCOptions::Shutdown) {
+    JSContext* cx = runtime()->mainContextFromOwnThread();
+    JS::AutoAssertNoGC nogc(cx);
+    mover.printPromotionReport(cx, reason, nogc);
+  }
+#endif
+
   // Sweep to update any pointers to nursery objects that have now been
   // tenured.
   startProfile(ProfileKey::Sweep);
@@ -1535,7 +1579,8 @@ js::Nursery::CollectionResult js::Nursery::doCollection(AutoGCSession& session,
 
   // Sweep.
   startProfile(ProfileKey::FreeMallocedBuffers);
-  gc->queueBuffersForFreeAfterMinorGC(fromSpace.mallocedBuffers);
+  gc->queueBuffersForFreeAfterMinorGC(fromSpace.mallocedBuffers,
+                                      stringBuffersToReleaseAfterMinorGC_);
   fromSpace.mallocedBufferBytes = 0;
   endProfile(ProfileKey::FreeMallocedBuffers);
 
@@ -1662,8 +1707,7 @@ size_t js::Nursery::doPretenuring(JSRuntime* rt, JS::GCReason reason,
                                   bool validPromotionRate,
                                   double promotionRate) {
   size_t sitesPretenured = pretenuringNursery.doPretenuring(
-      gc, reason, validPromotionRate, promotionRate, reportPretenuring_,
-      reportPretenuringThreshold_);
+      gc, reason, validPromotionRate, promotionRate, pretenuringReportFilter_);
 
   size_t zonesWhereStringsDisabled = 0;
   size_t zonesWhereBigIntsDisabled = 0;
@@ -1697,12 +1741,12 @@ size_t js::Nursery::doPretenuring(JSRuntime* rt, JS::GCReason reason,
   stats().setStat(gcstats::STAT_STRINGS_TENURED, numStringsTenured);
   stats().setStat(gcstats::STAT_BIGINTS_TENURED, numBigIntsTenured);
 
-  if (reportPretenuring_ && zonesWhereStringsDisabled) {
+  if (reportPretenuring() && zonesWhereStringsDisabled) {
     fprintf(stderr,
             "Pretenuring disabled nursery string allocation in %zu zones\n",
             zonesWhereStringsDisabled);
   }
-  if (reportPretenuring_ && zonesWhereBigIntsDisabled) {
+  if (reportPretenuring() && zonesWhereBigIntsDisabled) {
     fprintf(stderr,
             "Pretenuring disabled nursery big int allocation in %zu zones\n",
             zonesWhereBigIntsDisabled);
@@ -1810,7 +1854,7 @@ void Nursery::requestMinorGC(JS::GCReason reason) {
   } else if (heapState == JS::HeapState::MajorCollecting) {
     // The GC runs sweeping tasks that may access the storebuffer in parallel
     // and these require taking the store buffer lock.
-    MOZ_ASSERT(CurrentThreadIsGCSweeping());
+    MOZ_ASSERT(!CurrentThreadIsGCMarking());
     runtime()->gc.assertCurrentThreadHasLockedStoreBuffer();
   } else {
     MOZ_CRASH("Unexpected heap state");
@@ -1867,6 +1911,62 @@ size_t Nursery::sizeOfMallocedBuffers(
   return total;
 }
 
+void js::Nursery::sweepStringsWithBuffer() {
+  // Add StringBuffers to stringBuffersToReleaseAfterMinorGC_. Strings we
+  // tenured must have an additional refcount at this point.
+
+  MOZ_ASSERT(stringBuffersToReleaseAfterMinorGC_.empty());
+
+  auto sweep = [&](JSLinearString* str,
+                   mozilla::StringBuffer* buffer) -> JSLinearString* {
+    MOZ_ASSERT(inCollectedRegion(str));
+
+    if (!IsForwarded(str)) {
+      MOZ_ASSERT(str->hasStringBuffer() || str->isAtomRef());
+      MOZ_ASSERT_IF(str->hasStringBuffer(), str->stringBuffer() == buffer);
+      if (!stringBuffersToReleaseAfterMinorGC_.append(buffer)) {
+        // Release on the main thread on OOM.
+        buffer->Release();
+      }
+      return nullptr;
+    }
+
+    JSLinearString* dst = Forwarded(str);
+    if (!IsInsideNursery(dst)) {
+      MOZ_ASSERT_IF(dst->hasStringBuffer() && dst->stringBuffer() == buffer,
+                    buffer->RefCount() > 1);
+      if (!stringBuffersToReleaseAfterMinorGC_.append(buffer)) {
+        // Release on the main thread on OOM.
+        buffer->Release();
+      }
+      return nullptr;
+    }
+
+    return dst;
+  };
+
+  stringBuffers_.mutableEraseIf([&](StringAndBuffer& entry) {
+    if (JSLinearString* dst = sweep(entry.first, entry.second)) {
+      entry.first = dst;
+      return false;
+    }
+    return true;
+  });
+
+  AutoEnterOOMUnsafeRegion oomUnsafe;
+
+  ExtensibleStringBuffers buffers(std::move(extensibleStringBuffers_));
+  MOZ_ASSERT(extensibleStringBuffers_.empty());
+
+  for (ExtensibleStringBuffers::Enum e(buffers); !e.empty(); e.popFront()) {
+    if (JSLinearString* dst = sweep(e.front().key(), e.front().value())) {
+      if (!extensibleStringBuffers_.putNew(dst, e.front().value())) {
+        oomUnsafe.crash("sweepStringsWithBuffer");
+      }
+    }
+  }
+}
+
 void js::Nursery::sweep() {
   // It's important that the context's GCUse is not Finalizing at this point,
   // otherwise we will miscount memory attached to nursery objects with
@@ -1894,6 +1994,8 @@ void js::Nursery::sweep() {
     cell = dst;
     return false;
   });
+
+  sweepStringsWithBuffer();
 
   for (ZonesIter zone(runtime(), SkipAtoms); !zone.done(); zone.next()) {
     zone->sweepAfterMinorGC(&trc);

@@ -89,26 +89,26 @@
 namespace mozilla {
 namespace dom {
 
-// Forward declare GetConstructorObject methods.
-#define HTML_TAG(_tag, _classname, _interfacename)  \
-  namespace HTML##_interfacename##Element_Binding { \
-    JSObject* GetConstructorObject(JSContext*);     \
+// Forward declare GetConstructorObjectHandle methods.
+#define HTML_TAG(_tag, _classname, _interfacename)                \
+  namespace HTML##_interfacename##Element_Binding {               \
+    JS::Handle<JSObject*> GetConstructorObjectHandle(JSContext*); \
   }
 #define HTML_OTHER(_tag)
 #include "nsHTMLTagList.h"
 #undef HTML_TAG
 #undef HTML_OTHER
 
-using constructorGetterCallback = JSObject* (*)(JSContext*);
+using constructorGetterCallback = JS::Handle<JSObject*> (*)(JSContext*);
 
-// Mapping of html tag and GetConstructorObject methods.
+// Mapping of html tag and GetConstructorObjectHandle methods.
 #define HTML_TAG(_tag, _classname, _interfacename) \
-  HTML##_interfacename##Element_Binding::GetConstructorObject,
+  HTML##_interfacename##Element_Binding::GetConstructorObjectHandle,
 #define HTML_OTHER(_tag) nullptr,
 // We use eHTMLTag_foo (where foo is the tag) which is defined in nsHTMLTags.h
 // to index into this array.
 static const constructorGetterCallback sConstructorGetterCallback[] = {
-    HTMLUnknownElement_Binding::GetConstructorObject,
+    HTMLUnknownElement_Binding::GetConstructorObjectHandle,
 #include "nsHTMLTagList.h"
 #undef HTML_TAG
 #undef HTML_OTHER
@@ -770,19 +770,31 @@ bool LegacyFactoryFunctionJSNative(JSContext* cx, unsigned argc,
       ->mNative(cx, argc, vp);
 }
 
-static JSObject* CreateLegacyFactoryFunction(JSContext* cx, jsid name,
-                                             const JSNativeHolder* nativeHolder,
-                                             unsigned ctorNargs) {
-  JSFunction* fun = js::NewFunctionByIdWithReserved(
-      cx, LegacyFactoryFunctionJSNative, ctorNargs, JSFUN_CONSTRUCTOR, name);
+// This creates a JSFunction and sets its length and name properties in the
+// order that ECMAScript's CreateBuiltinFunction does.
+static JSObject* CreateBuiltinFunctionForConstructor(
+    JSContext* aCx, JSNative aNative, size_t aNativeReservedSlot,
+    void* aNativeReserved, unsigned int aNargs, jsid aName,
+    JS::Handle<JSObject*> aProto) {
+  JSFunction* fun = js::NewFunctionByIdWithReservedAndProto(
+      aCx, aNative, aProto, aNargs, JSFUN_CONSTRUCTOR, aName);
   if (!fun) {
     return nullptr;
   }
 
-  JSObject* constructor = JS_GetFunctionObject(fun);
-  js::SetFunctionNativeReserved(
-      constructor, LEGACY_FACTORY_FUNCTION_NATIVE_HOLDER_RESERVED_SLOT,
-      JS::PrivateValue(const_cast<JSNativeHolder*>(nativeHolder)));
+  JS::Rooted<JSObject*> constructor(aCx, JS_GetFunctionObject(fun));
+  js::SetFunctionNativeReserved(constructor, aNativeReservedSlot,
+                                JS::PrivateValue(aNativeReserved));
+
+  // Eagerly force creation of the .length and .name properties, because
+  // SpiderMonkey creates them lazily (see
+  // https://bugzilla.mozilla.org/show_bug.cgi?id=1629803).
+  bool unused;
+  if (!JS_HasProperty(aCx, constructor, "length", &unused) ||
+      !JS_HasProperty(aCx, constructor, "name", &unused)) {
+    return nullptr;
+  }
+
   return constructor;
 }
 
@@ -936,29 +948,12 @@ static JSObject* CreateInterfaceObject(
 
   JS::Rooted<jsid> nameId(cx, JS::PropertyKey::NonIntAtom(name));
 
-  JS::Rooted<JSObject*> constructor(cx);
-  {
-    JSFunction* fun = js::NewFunctionByIdWithReservedAndProto(
-        cx, InterfaceObjectJSNative, interfaceProto, ctorNargs,
-        JSFUN_CONSTRUCTOR, nameId);
-    if (!fun) {
-      return nullptr;
-    }
-
-    constructor = JS_GetFunctionObject(fun);
-  }
-
-  js::SetFunctionNativeReserved(
-      constructor, INTERFACE_OBJECT_INFO_RESERVED_SLOT,
-      JS::PrivateValue(const_cast<DOMInterfaceInfo*>(interfaceInfo)));
-
-  // Eagerly force creation of the .length and .name properties, because they
-  // need to be defined before the .prototype property (CreateBuiltinFunction
-  // called from the WebIDL spec sets them, and then the .prototype property is
-  // defined in the WebIDL spec itself).
-  bool unused;
-  if (!JS_HasProperty(cx, constructor, "length", &unused) ||
-      !JS_HasProperty(cx, constructor, "name", &unused)) {
+  JS::Rooted<JSObject*> constructor(
+      cx, CreateBuiltinFunctionForConstructor(
+              cx, InterfaceObjectJSNative, INTERFACE_OBJECT_INFO_RESERVED_SLOT,
+              const_cast<DOMInterfaceInfo*>(interfaceInfo), ctorNargs, nameId,
+              interfaceProto));
+  if (!constructor) {
     return nullptr;
   }
 
@@ -1001,7 +996,11 @@ static JSObject* CreateInterfaceObject(
     nameId = JS::PropertyKey::NonIntAtom(fname);
 
     JS::Rooted<JSObject*> legacyFactoryFunction(
-        cx, CreateLegacyFactoryFunction(cx, nameId, &lff.mHolder, lff.mNargs));
+        cx, CreateBuiltinFunctionForConstructor(
+                cx, LegacyFactoryFunctionJSNative,
+                LEGACY_FACTORY_FUNCTION_NATIVE_HOLDER_RESERVED_SLOT,
+                const_cast<JSNativeHolder*>(&lff.mHolder), lff.mNargs, nameId,
+                nullptr));
     if (!legacyFactoryFunction ||
         !JS_DefineProperty(cx, legacyFactoryFunction, "prototype", proto,
                            JSPROP_PERMANENT | JSPROP_READONLY) ||
@@ -3666,8 +3665,8 @@ bool GetDesiredProto(JSContext* aCx, const JS::CallArgs& aCallArgs,
     // JS::GetRealmGlobalOrNull should not be returning null here, because we
     // have live objects in the Realm.
     JSAutoRealm ar(aCx, JS::GetRealmGlobalOrNull(realm));
-    aDesiredProto.set(
-        GetPerInterfaceObjectHandle(aCx, aProtoId, aCreator, true));
+    aDesiredProto.set(GetPerInterfaceObjectHandle(
+        aCx, aProtoId, aCreator, DefineInterfaceProperty::CheckExposure));
     if (!aDesiredProto) {
       return false;
     }
@@ -3798,8 +3797,8 @@ bool HTMLConstructor(JSContext* aCx, unsigned aArgc, JS::Value* aVp,
   // makes sense to start with: https://github.com/whatwg/html/issues/3575
   {
     JSAutoRealm ar(aCx, newTarget);
-    JS::Handle<JSObject*> constructor =
-        GetPerInterfaceObjectHandle(aCx, aConstructorId, aCreator, true);
+    JS::Handle<JSObject*> constructor = GetPerInterfaceObjectHandle(
+        aCx, aConstructorId, aCreator, DefineInterfaceProperty::CheckExposure);
     if (!constructor) {
       return false;
     }
@@ -3827,24 +3826,24 @@ bool HTMLConstructor(JSContext* aCx, unsigned aArgc, JS::Value* aVp,
   if (ns == kNameSpaceID_XUL) {
     if (definition->mLocalName == nsGkAtoms::description ||
         definition->mLocalName == nsGkAtoms::label) {
-      cb = XULTextElement_Binding::GetConstructorObject;
+      cb = XULTextElement_Binding::GetConstructorObjectHandle;
     } else if (definition->mLocalName == nsGkAtoms::resizer) {
-      cb = XULResizerElement_Binding::GetConstructorObject;
+      cb = XULResizerElement_Binding::GetConstructorObjectHandle;
     } else if (definition->mLocalName == nsGkAtoms::menupopup ||
                definition->mLocalName == nsGkAtoms::panel ||
                definition->mLocalName == nsGkAtoms::tooltip) {
-      cb = XULPopupElement_Binding::GetConstructorObject;
+      cb = XULPopupElement_Binding::GetConstructorObjectHandle;
     } else if (definition->mLocalName == nsGkAtoms::iframe ||
                definition->mLocalName == nsGkAtoms::browser ||
                definition->mLocalName == nsGkAtoms::editor) {
-      cb = XULFrameElement_Binding::GetConstructorObject;
+      cb = XULFrameElement_Binding::GetConstructorObjectHandle;
     } else if (definition->mLocalName == nsGkAtoms::menu ||
                definition->mLocalName == nsGkAtoms::menulist) {
-      cb = XULMenuElement_Binding::GetConstructorObject;
+      cb = XULMenuElement_Binding::GetConstructorObjectHandle;
     } else if (definition->mLocalName == nsGkAtoms::tree) {
-      cb = XULTreeElement_Binding::GetConstructorObject;
+      cb = XULTreeElement_Binding::GetConstructorObjectHandle;
     } else {
-      cb = XULElement_Binding::GetConstructorObject;
+      cb = XULElement_Binding::GetConstructorObjectHandle;
     }
   }
 
@@ -3854,7 +3853,7 @@ bool HTMLConstructor(JSContext* aCx, unsigned aArgc, JS::Value* aVp,
     // If the definition is for an autonomous custom element, the active
     // function should be HTMLElement or extend from XULElement.
     if (!cb) {
-      cb = HTMLElement_Binding::GetConstructorObject;
+      cb = HTMLElement_Binding::GetConstructorObjectHandle;
     }
 
     // We want to get the constructor from our global's realm, not the
@@ -4049,7 +4048,7 @@ static const char* kDeprecatedOperations[] = {
 
 void ReportDeprecation(nsIGlobalObject* aGlobal, nsIURI* aURI,
                        DeprecatedOperations aOperation,
-                       const nsAString& aFileName,
+                       const nsACString& aFileName,
                        const Nullable<uint32_t>& aLineNumber,
                        const Nullable<uint32_t>& aColumnNumber) {
   MOZ_ASSERT(aURI);
@@ -4100,13 +4099,7 @@ class DeprecationWarningRunnable final
     MOZ_ASSERT(NS_IsMainThread());
     MOZ_ASSERT(aWorkerPrivate);
 
-    // Walk up to our containing page
-    WorkerPrivate* wp = aWorkerPrivate;
-    while (wp->GetParent()) {
-      wp = wp->GetParent();
-    }
-
-    nsPIDOMWindowInner* window = wp->GetWindow();
+    nsPIDOMWindowInner* window = aWorkerPrivate->GetAncestorWindow();
     if (window && window->GetExtantDoc()) {
       window->GetExtantDoc()->WarnOnceAbout(mOperation);
     }
@@ -4163,21 +4156,18 @@ void MaybeReportDeprecation(const GlobalObject& aGlobal,
     return;
   }
 
-  nsAutoString fileName;
+  auto location = JSCallingLocation::Get(aGlobal.Context());
   Nullable<uint32_t> lineNumber;
   Nullable<uint32_t> columnNumber;
-  uint32_t line = 0;
-  uint32_t column = 1;
-  if (nsJSUtils::GetCallingLocation(aGlobal.Context(), fileName, &line,
-                                    &column)) {
-    lineNumber.SetValue(line);
-    columnNumber.SetValue(column);
+  if (location) {
+    lineNumber.SetValue(location.mLine);
+    columnNumber.SetValue(location.mColumn);
   }
 
   nsCOMPtr<nsIGlobalObject> global = do_QueryInterface(aGlobal.GetAsSupports());
   MOZ_ASSERT(global);
 
-  ReportDeprecation(global, uri, aOperation, fileName, lineNumber,
+  ReportDeprecation(global, uri, aOperation, location.FileName(), lineNumber,
                     columnNumber);
 }
 
@@ -4212,7 +4202,7 @@ JSObject* UnprivilegedJunkScopeOrWorkerGlobal(const fallible_t&) {
 
 JS::Handle<JSObject*> GetPerInterfaceObjectHandle(
     JSContext* aCx, size_t aSlotId, CreateInterfaceObjectsMethod aCreator,
-    bool aDefineOnGlobal) {
+    DefineInterfaceProperty aDefineOnGlobal) {
   /* Make sure our global is sane.  Hopefully we can remove this sometime */
   JSObject* global = JS::CurrentGlobalOrNull(aCx);
   if (!(JS::GetClass(global)->flags & JSCLASS_DOM_GLOBAL)) {
@@ -4240,7 +4230,7 @@ JS::Handle<JSObject*> GetPerInterfaceObjectHandle(
   const JS::Heap<JSObject*>& entrySlot =
       protoAndIfaceCache.EntrySlotMustExist(aSlotId);
   JS::AssertObjectIsNotGray(entrySlot);
-  return JS::Handle<JSObject*>::fromMarkedLocation(entrySlot.address());
+  return JS::Handle<JSObject*>::fromMarkedLocation(entrySlot.unsafeAddress());
 }
 
 namespace binding_detail {

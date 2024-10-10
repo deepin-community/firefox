@@ -99,11 +99,15 @@ class ThreeDotMenuMainRobot {
     }
 
     fun verifyQuitButtonExists() {
-        // Need to double swipe the menu, to make this button visible.
+        expandMenuFully()
+        assertUIObjectExists(itemWithText("Quit"))
+    }
+
+    fun expandMenuFully() {
+        // Need to double swipe the menu, to make some buttons.
         // In case it reaches the end, the second swipe is no-op.
         expandMenu()
         expandMenu()
-        assertUIObjectExists(itemWithText("Quit"))
     }
 
     fun expandMenu() {
@@ -162,23 +166,25 @@ class ThreeDotMenuMainRobot {
         assertUIObjectExists(
             normalBrowsingNewTabButton(),
             bookmarksButton(),
+            addBookmarkButton(),
             historyButton(),
             downloadsButton(),
+            passwordsButton(),
             addOnsButton(),
             syncAndSaveDataButton(),
             findInPageButton(),
+            translateButton(),
             desktopSiteButton(),
             reportSiteIssueButton(),
-            addToHomeScreenButton(),
-            addToShortcutsButton(),
-            saveToCollectionButton(),
-            addBookmarkButton(),
             desktopSiteToggle(isRequestDesktopSiteEnabled),
-            translateButton(),
+
         )
         // Swipe to second part of menu
         expandMenu()
         assertUIObjectExists(
+            addToHomeScreenButton(),
+            addToShortcutsButton(),
+            saveToCollectionButton(),
             settingsButton(),
         )
         if (FxNimbus.features.print.value().browserPrintEnabled) {
@@ -197,6 +203,7 @@ class ThreeDotMenuMainRobot {
             bookmarksButton(),
             historyButton(),
             downloadsButton(),
+            passwordsButton(),
             addOnsButton(),
             // Disabled step due to https://github.com/mozilla-mobile/fenix/issues/26788
             // syncAndSaveDataButton,
@@ -717,6 +724,8 @@ private fun historyButton() =
     itemContainingText(getStringResource(R.string.library_history))
 private fun downloadsButton() =
     itemContainingText(getStringResource(R.string.library_downloads))
+private fun passwordsButton() =
+    itemContainingText(getStringResource(R.string.browser_menu_passwords))
 private fun addOnsButton() =
     itemContainingText(getStringResource(R.string.browser_menu_extensions))
 private fun desktopSiteButton() =

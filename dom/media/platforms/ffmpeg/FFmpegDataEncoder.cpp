@@ -17,27 +17,6 @@
 
 namespace mozilla {
 
-// TODO: Remove this function and simply use `avcodec_find_encoder` once
-// libopenh264 is supported.
-static AVCodec* FindEncoderWithPreference(const FFmpegLibWrapper* aLib,
-                                          AVCodecID aCodecId) {
-  MOZ_ASSERT(aLib);
-
-  AVCodec* codec = nullptr;
-
-  // Prioritize libx264 for now since it's the only h264 codec we tested.
-  if (aCodecId == AV_CODEC_ID_H264) {
-    codec = aLib->avcodec_find_encoder_by_name("libx264");
-    if (codec) {
-      FFMPEGV_LOG("Prefer libx264 for h264 codec");
-      return codec;
-    }
-    FFMPEGV_LOG("Fallback to other h264 library. Fingers crossed");
-  }
-
-  return aLib->avcodec_find_encoder(aCodecId);
-}
-
 template <>
 AVCodecID GetFFmpegEncoderCodecId<LIBAV_VER>(CodecType aCodec) {
 #if LIBAVCODEC_VERSION_MAJOR >= 58
@@ -49,11 +28,9 @@ AVCodecID GetFFmpegEncoderCodecId<LIBAV_VER>(CodecType aCodec) {
     return AV_CODEC_ID_VP9;
   }
 
-#  if !defined(USING_MOZFFVPX)
   if (aCodec == CodecType::H264) {
     return AV_CODEC_ID_H264;
   }
-#  endif
 
   if (aCodec == CodecType::AV1) {
     return AV_CODEC_ID_AV1;
@@ -68,6 +45,26 @@ AVCodecID GetFFmpegEncoderCodecId<LIBAV_VER>(CodecType aCodec) {
   }
 #endif
   return AV_CODEC_ID_NONE;
+}
+
+/* static */
+AVCodec* FFmpegDataEncoder<LIBAV_VER>::FindEncoderWithPreference(
+    const FFmpegLibWrapper* aLib, AVCodecID aCodecId) {
+  MOZ_ASSERT(aLib);
+
+  // Prioritize libx264 for now since it's the only h264 codec we tested. Once
+  // libopenh264 is supported, we can simply use `avcodec_find_encoder` and
+  // rename this function.
+  if (aCodecId == AV_CODEC_ID_H264) {
+    AVCodec* codec = aLib->avcodec_find_encoder_by_name("libx264");
+    if (codec) {
+      FFMPEGV_LOG("Prefer libx264 for h264 codec");
+      return codec;
+    }
+    FFMPEGV_LOG("Fallback to other h264 library. Fingers crossed");
+  }
+
+  return aLib->avcodec_find_encoder(aCodecId);
 }
 
 StaticMutex FFmpegDataEncoder<LIBAV_VER>::sMutex;
@@ -111,9 +108,9 @@ RefPtr<MediaDataEncoder::EncodePromise> FFmpegDataEncoder<LIBAV_VER>::Encode(
 RefPtr<MediaDataEncoder::ReconfigurationPromise>
 FFmpegDataEncoder<LIBAV_VER>::Reconfigure(
     const RefPtr<const EncoderConfigurationChangeList>& aConfigurationChanges) {
-  return InvokeAsync<const RefPtr<const EncoderConfigurationChangeList>>(
-      mTaskQueue, this, __func__,
-      &FFmpegDataEncoder<LIBAV_VER>::ProcessReconfigure, aConfigurationChanges);
+  return InvokeAsync(mTaskQueue, this, __func__,
+                     &FFmpegDataEncoder<LIBAV_VER>::ProcessReconfigure,
+                     aConfigurationChanges);
 }
 
 RefPtr<MediaDataEncoder::EncodePromise> FFmpegDataEncoder<LIBAV_VER>::Drain() {
@@ -172,10 +169,38 @@ FFmpegDataEncoder<LIBAV_VER>::ProcessReconfigure(
 
   FFMPEG_LOG("ProcessReconfigure");
 
-  // Tracked in bug 1869583 -- for now this encoder always reports it cannot be
-  // reconfigured on the fly
-  return MediaDataEncoder::ReconfigurationPromise::CreateAndReject(
-      NS_ERROR_NOT_IMPLEMENTED, __func__);
+  bool ok = false;
+  for (const auto& confChange : aConfigurationChanges->mChanges) {
+    // A reconfiguration on the fly succeeds if all changes can be applied
+    // successfuly. In case of failure, the encoder will be drained and
+    // recreated.
+    ok &= confChange.match(
+        // Not supported yet
+        [&](const DimensionsChange& aChange) -> bool { return false; },
+        [&](const DisplayDimensionsChange& aChange) -> bool { return false; },
+        [&](const BitrateModeChange& aChange) -> bool { return false; },
+        [&](const BitrateChange& aChange) -> bool {
+          // Verified on x264
+          if (!strcmp(mCodecContext->codec->name, "libx264")) {
+            MOZ_ASSERT(aChange.get().ref() != 0);
+            mConfig.mBitrate = aChange.get().ref();
+            mCodecContext->bit_rate =
+                static_cast<FFmpegBitRate>(mConfig.mBitrate);
+            return true;
+          }
+          return false;
+        },
+        [&](const FramerateChange& aChange) -> bool { return false; },
+        [&](const UsageChange& aChange) -> bool { return false; },
+        [&](const ContentHintChange& aChange) -> bool { return false; },
+        [&](const SampleRateChange& aChange) -> bool { return false; },
+        [&](const NumberOfChannelsChange& aChange) -> bool { return false; });
+  };
+  using P = MediaDataEncoder::ReconfigurationPromise;
+  if (ok) {
+    return P::CreateAndResolve(true, __func__);
+  }
+  return P::CreateAndReject(NS_ERROR_DOM_MEDIA_FATAL_ERR, __func__);
 }
 
 RefPtr<MediaDataEncoder::EncodePromise>
@@ -232,7 +257,18 @@ AVCodec* FFmpegDataEncoder<LIBAV_VER>::InitCommon() {
 }
 
 MediaResult FFmpegDataEncoder<LIBAV_VER>::FinishInitCommon(AVCodec* aCodec) {
-  mCodecContext->bit_rate = static_cast<FFmpegBitRate>(mConfig.mBitrate);
+  if (mConfig.mBitrateMode == BitrateMode::Constant) {
+    mCodecContext->rc_max_rate = static_cast<FFmpegBitRate>(mConfig.mBitrate);
+    mCodecContext->rc_min_rate = static_cast<FFmpegBitRate>(mConfig.mBitrate);
+    mCodecContext->bit_rate = static_cast<FFmpegBitRate>(mConfig.mBitrate);
+    FFMPEG_LOG("Encoding in CBR: %d", mConfig.mBitrate);
+  } else {
+    mCodecContext->rc_max_rate = static_cast<FFmpegBitRate>(mConfig.mBitrate);
+    mCodecContext->rc_min_rate = 0;
+    mCodecContext->bit_rate = static_cast<FFmpegBitRate>(mConfig.mBitrate);
+    FFMPEG_LOG("Encoding in VBR: [%d;%d]", (int)mCodecContext->rc_min_rate,
+               (int)mCodecContext->rc_max_rate);
+  }
 #if LIBAVCODEC_VERSION_MAJOR >= 60
   mCodecContext->flags |= AV_CODEC_FLAG_FRAME_DURATION;
 #endif

@@ -83,9 +83,9 @@ class AppLinksFeatureTest {
         `when`(mockUseCases.interceptedAppLinkRedirect).thenReturn(mockGetRedirect)
         `when`(mockUseCases.openAppLink).thenReturn(mockOpenRedirect)
 
-        val webRedirect = AppLinkRedirect(null, webUrl, null)
-        val appRedirect = AppLinkRedirect(Intent.parseUri(intentUrl, 0), null, null)
-        val appRedirectFromWebUrl = AppLinkRedirect(Intent.parseUri(webUrlWithAppLink, 0), null, null)
+        val webRedirect = AppLinkRedirect(null, "", webUrl, null)
+        val appRedirect = AppLinkRedirect(Intent.parseUri(intentUrl, 0), "", null, null)
+        val appRedirectFromWebUrl = AppLinkRedirect(Intent.parseUri(webUrlWithAppLink, 0), "", null, null)
 
         `when`(mockGetRedirect.invoke(webUrl)).thenReturn(webRedirect)
         `when`(mockGetRedirect.invoke(intentUrl)).thenReturn(appRedirect)
@@ -220,6 +220,42 @@ class AppLinksFeatureTest {
         feature.handleAppIntent(tab, intentUrl, appIntent)
 
         verify(mockDialog, never()).showNow(eq(mockFragmentManager), anyString())
+    }
+
+    @Test
+    fun `WHEN non-custom tab and caller is the same as external app THEN an external app dialog is shown`() {
+        feature = spy(
+            AppLinksFeature(
+                context = mockContext,
+                store = store,
+                fragmentManager = mockFragmentManager,
+                useCases = mockUseCases,
+                dialog = mockDialog,
+                loadUrlUseCase = mockLoadUrlUseCase,
+                shouldPrompt = { true },
+            ),
+        ).also {
+            it.start()
+        }
+
+        val tab =
+            createCustomTab(
+                id = "d",
+                url = webUrl,
+                source = SessionState.Source.External.ActionView(
+                    ExternalPackage("com.zxing.app", PackageCategory.PRODUCTIVITY),
+                ),
+            )
+
+        val appIntent: Intent = mock()
+        val componentName: ComponentName = mock()
+        doReturn(componentName).`when`(appIntent).component
+        doReturn("com.zxing.app").`when`(componentName).packageName
+
+        feature.handleAppIntent(tab, intentUrl, appIntent)
+
+        verify(mockDialog).showNow(eq(mockFragmentManager), anyString())
+        verify(mockOpenRedirect, never()).invoke(any(), anyBoolean(), any())
     }
 
     @Test

@@ -50,6 +50,10 @@ const isWorker =
   globalThis.isWorker ||
   globalThis.constructor.name == "WorkerDebuggerGlobalScope";
 
+// The following preference controls the depth limit which, when hit,
+// will automatically stop the tracer and declare the current stack as an infinite loop.
+const MAX_DEPTH_PREF = "devtools.debugger.javascript-tracing-max-depth";
+
 // This module can be loaded from the worker thread, where we can't use ChromeUtils.
 // So implement custom lazy getters (without XPCOMUtils ESM) from here.
 // Worker codepath in DevTools will pass a custom Debugger instance.
@@ -135,6 +139,8 @@ const customLazy = {
  * @param {Boolean} options.traceFunctionReturn
  *        Optional setting to enable when the tracing should notify about frame exit.
  *        i.e. when a function call returns or throws.
+ * @param {Boolean} options.useNativeTracing
+ *        Optional setting to enable the native tracing implementation.
  * @param {String} options.filterFrameSourceUrl
  *        Optional setting to restrict all traces to only a given source URL.
  *        This is a loose check, so any source whose URL includes the passed string will be traced.
@@ -214,7 +220,11 @@ class JavaScriptTracer {
     this.traceSteps = !!options.traceSteps;
     this.traceValues = !!options.traceValues;
     this.traceFunctionReturn = !!options.traceFunctionReturn;
+    this.useNativeTracing = !!options.useNativeTracing;
     this.maxDepth = options.maxDepth;
+    this.infiniteLoopDepthLimit = isWorker
+      ? 200
+      : Services.prefs.getIntPref(MAX_DEPTH_PREF, 200);
     this.maxRecords = options.maxRecords;
     this.records = 0;
     if ("pauseOnStep" in options) {
@@ -292,7 +302,11 @@ class JavaScriptTracer {
   #startTracing() {
     this.isTracing = true;
 
-    this.dbg.onEnterFrame = this.onEnterFrame;
+    if (this.useNativeTracing) {
+      this.dbg.nativeTracing = true;
+    } else {
+      this.dbg.onEnterFrame = this.onEnterFrame;
+    }
 
     if (this.traceDOMEvents) {
       this.startTracingDOMEvents();
@@ -311,6 +325,38 @@ class JavaScriptTracer {
     this.eventListener = this.eventListener.bind(this);
     this.debuggerNotificationObserver.addListener(this.eventListener);
     this.debuggerNotificationObserver.connect(this.tracedGlobal);
+
+    // When we are tracing a document, also ensure connecting to all its children iframe globals.
+    // If we don't, Debugger API would fire onEnterFrame for their JavaScript code,
+    // but DOM Events wouldn't be notified by DebuggerNotificationObserver.
+    if (!isWorker && this.tracedGlobal instanceof Ci.nsIDOMWindow) {
+      const { browserId } = this.tracedGlobal.browsingContext;
+      // Keep track of any future global
+      this.dbg.onNewGlobalObject = g => {
+        try {
+          const win = g.unsafeDereference();
+          // only process globals relating to documents, and which are within the debugged tab
+          if (
+            win instanceof Ci.nsIDOMWindow &&
+            win.browsingContext.browserId == browserId
+          ) {
+            this.dbg.addDebuggee(g);
+            this.dbg.nativeTracing = this.useNativeTracing;
+            this.debuggerNotificationObserver.connect(win);
+          }
+        } catch (e) {}
+      };
+      // Register all, already existing children
+      for (const browsingContext of this.tracedGlobal.browsingContext.getAllBrowsingContextsInSubtree()) {
+        try {
+          // Only consider children which run in the same process, and exposes their window object
+          if (browsingContext.window) {
+            this.dbg.addDebuggee(browsingContext.window);
+            this.debuggerNotificationObserver.connect(browsingContext.window);
+          }
+        } catch (e) {}
+      }
+    }
 
     this.currentDOMEvent = null;
   }
@@ -331,22 +377,25 @@ class JavaScriptTracer {
       signal: this.abortController.signal,
       capture: true,
     };
+    // When used for the parent process target, `tracedGlobal` is browser.xhtml's window, which doesn't have a chromeEventHandler.
+    const eventHandler =
+      this.tracedGlobal.docShell.chromeEventHandler || this.tracedGlobal;
     if (this.traceDOMMutations.includes(DOM_MUTATIONS.ADD)) {
-      this.tracedGlobal.docShell.chromeEventHandler.addEventListener(
+      eventHandler.addEventListener(
         "devtoolschildinserted",
         this.#onDOMMutation,
         eventOptions
       );
     }
     if (this.traceDOMMutations.includes(DOM_MUTATIONS.ATTRIBUTES)) {
-      this.tracedGlobal.docShell.chromeEventHandler.addEventListener(
+      eventHandler.addEventListener(
         "devtoolsattrmodified",
         this.#onDOMMutation,
         eventOptions
       );
     }
     if (this.traceDOMMutations.includes(DOM_MUTATIONS.REMOVE)) {
-      this.tracedGlobal.docShell.chromeEventHandler.addEventListener(
+      eventHandler.addEventListener(
         "devtoolschildremoved",
         this.#onDOMMutation,
         eventOptions
@@ -386,13 +435,17 @@ class JavaScriptTracer {
     }
 
     let shouldLogToStdout = true;
+
+    // The depth is the depth of the parent frame, consider the dom mutation as nested to it
+    const depth = this.depth + 1;
+
     if (listeners.size > 0) {
       shouldLogToStdout = false;
       for (const listener of listeners) {
         // If any listener return true, also log to stdout
         if (typeof listener.onTracingDOMMutation == "function") {
           shouldLogToStdout |= listener.onTracingDOMMutation({
-            depth: this.depth,
+            depth,
             prefix: this.prefix,
 
             type,
@@ -404,7 +457,7 @@ class JavaScriptTracer {
     }
 
     if (shouldLogToStdout) {
-      const padding = "—".repeat(this.depth + 1);
+      const padding = "—".repeat(depth + 1);
       this.loggingMethod(
         this.prefix +
           padding +
@@ -454,6 +507,17 @@ class JavaScriptTracer {
   }
 
   /**
+   * If native tracing is enabled, get the trace from the native tracer
+   */
+  maybeGetNativeTrace() {
+    if (this.useNativeTracing) {
+      return this.dbg.collectNativeTrace();
+    }
+
+    return null;
+  }
+
+  /**
    * Stop observing execution.
    *
    * @param {String} reason
@@ -465,7 +529,12 @@ class JavaScriptTracer {
       return;
     }
 
-    this.dbg.onEnterFrame = undefined;
+    if (!this.useNativeTracing) {
+      this.dbg.nativeTracing = false;
+    } else {
+      this.dbg.onEnterFrame = undefined;
+    }
+
     this.dbg.removeAllDebuggees();
     this.dbg.onNewGlobalObject = undefined;
     this.dbg = null;
@@ -578,7 +647,7 @@ class JavaScriptTracer {
     if (shouldLogToStdout) {
       this.loggingMethod(
         this.prefix +
-          "Looks like an infinite recursion? We stopped the JavaScript tracer, but code may still be running!\n"
+          `Looks like an infinite recursion? We stopped the JavaScript tracer, but code may still be running!\n(This is configurable via ${MAX_DEPTH_PREF} preference)\n`
       );
     }
   }
@@ -631,8 +700,8 @@ class JavaScriptTracer {
         this.records++;
       }
 
-      // Consider depth > 100 as an infinite recursive loop and stop the tracer.
-      if (depth == 100) {
+      // Consider that beyond some depth, we are running an infinite recursive loop and stop the tracer.
+      if (depth == this.infiniteLoopDepthLimit) {
         this.notifyInfiniteLoop();
         this.stopTracing("infinite-loop");
         return;
@@ -719,6 +788,8 @@ class JavaScriptTracer {
       }
 
       frame.onPop = completion => {
+        this.depth--;
+
         // Special case async frames. We are exiting the current frame because of waiting for an async task.
         // (this is typically a `await foo()` from an async function)
         // This frame should later be "entered" again.
@@ -982,6 +1053,17 @@ function stopTracing() {
 }
 
 /**
+ * If native tracing is enabled, get the trace from the native tracer
+ */
+function maybeGetNativeTrace() {
+  if (activeTracer) {
+    return activeTracer.maybeGetNativeTrace();
+  }
+  console.warn("Can't get a native trace as we were not tracing.");
+  return null;
+}
+
+/**
  * Listen for tracing updates.
  *
  * The listener object may expose the following methods:
@@ -1081,8 +1163,10 @@ function syncPause(duration) {
 export const JSTracer = {
   startTracing,
   stopTracing,
+  maybeGetNativeTrace,
   addTracingListener,
   removeTracingListener,
   NEXT_INTERACTION_MESSAGE,
   DOM_MUTATIONS,
+  MAX_DEPTH_PREF,
 };

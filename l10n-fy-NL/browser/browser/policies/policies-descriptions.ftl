@@ -84,6 +84,8 @@ policy-Handlers = Standert tapassinghandlers konfigurearje
 policy-HardwareAcceleration = Wannear false, hardwarefersnelling útskeakelje.
 # “lock” means that the user won’t be able to change this setting
 policy-Homepage = De startside ynstelle en opsjoneel beskoattelje.
+policy-HttpAllowlist = Oarspronklike boarnen dy’t net nei HTTPS upgrade wurde.
+policy-HttpsOnlyMode = Allinnich-HTTPS-modus tasean om yn te skeakeljen.
 policy-InstallAddonsPermission = Tastean dat bepaalde websites add-ons ynstallearje.
 policy-LegacyProfiles = Funksje om in ôfsûnderlik profyl foar elke ynstallaasje ôf te twingen útskeakelje
 
@@ -108,12 +110,16 @@ policy-OverrideFirstRunPage = De side dy’t foar it earst iepene wurdt ferfange
 policy-OverridePostUpdatePage = De side ‘Wat is der nij’ nei in fernijing ferfange. Stel dizze beliedsregel yn op leech as jo de oanbelangjende side útskeakelje wolle.
 policy-PasswordManagerEnabled = Bewarjen fan wachtwurden yn de wachtwurdbehearder ynskeakelje.
 policy-PasswordManagerExceptions = Foarkomme dat { -brand-short-name } wachtwurden foar spesifike websites bewarret.
+# Post-quantum refers to cryptography that is safe from attacks by quantum
+# computers. See https://en.wikipedia.org/wiki/Post-quantum_cryptography
+policy-PostQuantumKeyAgreementEnabled = Post-kwantumkaaioerienkomst foar TLS ynskeakelje.
 # PDF.js and PDF should not be translated
 policy-PDFjs = PDF.js, de yn { -brand-short-name } ynboude PDF-lêzer, útskeakelje of ynstelle.
 policy-Permissions2 = Tastimmingen foar kamera, mikrofoan, lokaasje, notifikaasjes en automatysk ôfspyljen konfigurearje.
 policy-PictureInPicture = Picture-in-Picture yn- of útskeakelje.
 policy-PopupBlocking = Tastean dat bepaalde websites standert pop-ups werjaan.
 policy-Preferences = De wearde foar in subset fan foarkarren ynstelle en beskoattelje.
+policy-PrivateBrowsingModeAvailability = Beskikberheid fan priveenavigaasjemodus ynstelle.
 policy-PromptForDownloadLocation = Freegje wêr’t downloade bestannen bewarre moatte wurde.
 policy-Proxy = Proxyynstellingen konfigurearje.
 policy-RequestedLocales = De list fan frege locales foar de tapassing ynstelle, op folchoarder fan foarkar.

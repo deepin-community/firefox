@@ -52,19 +52,22 @@ async function addTopSites(url) {
 }
 
 function assertAbandonmentTelemetry(expectedExtraList) {
-  _assertGleanTelemetry("abandonment", expectedExtraList);
+  assertGleanTelemetry("abandonment", expectedExtraList);
 }
 
 function assertEngagementTelemetry(expectedExtraList) {
-  _assertGleanTelemetry("engagement", expectedExtraList);
+  assertGleanTelemetry("engagement", expectedExtraList);
 }
 
 function assertExposureTelemetry(expectedExtraList) {
-  _assertGleanTelemetry("exposure", expectedExtraList);
+  assertGleanTelemetry("exposure", expectedExtraList);
 }
 
-function _assertGleanTelemetry(telemetryName, expectedExtraList) {
-  const telemetries = Glean.urlbar[telemetryName].testGetValue() ?? [];
+function assertGleanTelemetry(telemetryName, expectedExtraList) {
+  const camelName = telemetryName.replaceAll(/_(.)/g, (match, p1) =>
+    p1.toUpperCase()
+  );
+  const telemetries = Glean.urlbar[camelName].testGetValue() ?? [];
   info(
     "Asserting Glean telemetry is correct, actual events are: " +
       JSON.stringify(telemetries)
@@ -93,7 +96,6 @@ function _assertGleanTelemetry(telemetryName, expectedExtraList) {
 
 async function ensureQuickSuggestInit({ ...args } = {}) {
   return lazy.QuickSuggestTestUtils.ensureQuickSuggestInit({
-    ...args,
     remoteSettingsRecords: [
       {
         type: "data",
@@ -127,6 +129,7 @@ async function ensureQuickSuggestInit({ ...args } = {}) {
         weather: MerinoTestUtils.WEATHER_RS_DATA,
       },
     ],
+    ...args,
   });
 }
 
@@ -406,13 +409,11 @@ async function setup() {
     set: [
       ["browser.urlbar.searchEngagementTelemetry.enabled", true],
       ["browser.urlbar.quickactions.enabled", true],
-      ["browser.urlbar.quickactions.minimumSearchString", 0],
-      ["browser.urlbar.suggest.quickactions", true],
-      ["browser.urlbar.shortcuts.quickactions", true],
+      ["browser.urlbar.secondaryActions.featureGate", true],
     ],
   });
 
-  const engine = await SearchTestUtils.promiseNewSearchEngine({
+  const engine = await SearchTestUtils.installOpenSearchEngine({
     url: "chrome://mochitests/content/browser/browser/components/urlbar/tests/browser/searchSuggestionEngine.xml",
   });
   const originalDefaultEngine = await Services.search.getDefault();
@@ -442,4 +443,24 @@ async function showResultByArrowDown() {
     EventUtils.synthesizeKey("KEY_ArrowDown");
   });
   await UrlbarTestUtils.promiseSearchComplete(window);
+}
+
+async function expectNoConsoleErrors(task) {
+  let endConsoleListening = TestUtils.listenForConsoleMessages();
+  let msgs;
+  let taskResult;
+
+  try {
+    taskResult = await task();
+  } finally {
+    msgs = await endConsoleListening();
+  }
+
+  for (let msg of msgs) {
+    if (msg.level === "error") {
+      throw new Error(`Console error detected: ${msg.arguments[0]}`);
+    }
+  }
+
+  return taskResult;
 }

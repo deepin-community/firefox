@@ -604,7 +604,9 @@ class VendorManifest(MozbuildObject):
                 # Then copy over the directories
                 if self.should_perform_step("move-contents"):
                     self.logInfo({"d": vendor_dir}, "Copying to {d}.")
-                    mozfile.copy_contents(tmpextractdir.name, vendor_dir)
+                    mozfile.copy_contents(
+                        tmpextractdir.name, vendor_dir, ignore_dangling_symlinks=True
+                    )
                 else:
                     self.logInfo({}, "Skipping copying contents into tree.")
                     self._extract_directory = lambda: tmpextractdir.name
@@ -873,17 +875,31 @@ class VendorManifest(MozbuildObject):
 
     def import_local_patches(self, patches, yaml_dir, vendor_dir):
         self.logInfo({}, "Importing local patches...")
-        for patch in self.convert_patterns_to_paths(yaml_dir, patches):
-            script = [
-                "patch",
-                "-p1",
-                "--directory",
-                vendor_dir,
-                "--input",
-                os.path.abspath(patch),
-                "--no-backup-if-mismatch",
-            ]
-            self.run_process(
-                args=script,
-                log_name=script,
+        try:
+            for patch in self.convert_patterns_to_paths(yaml_dir, patches):
+                script = [
+                    "patch",
+                    "-p1",
+                    "-r",
+                    "/dev/stdout",
+                    "--directory",
+                    vendor_dir,
+                    "--input",
+                    os.path.abspath(patch),
+                    "--no-backup-if-mismatch",
+                ]
+                self.run_process(
+                    args=script,
+                    log_name=script,
+                )
+        except Exception as e:
+            msgs = [f"Could not apply {patch}, possible reasons:"]
+            msgs.append(" - You ran --patch-mode=only before running --patch-mode=none")
+            msgs.append(" - You tried to apply the patches twice")
+            msgs.append(
+                " - The library update has modified the files so the patch no longer applies cleanly"
             )
+            msgs.append("I am going to re-throw the exception now.")
+            for m in msgs:
+                self.log(logging.WARN, "vendor", {}, m)
+            raise e

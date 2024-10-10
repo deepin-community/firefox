@@ -8,7 +8,7 @@ async function run_test() {
   if (!setupTestCommon()) {
     return;
   }
-  const STATE_AFTER_STAGE = STATE_PENDING;
+  const STATE_AFTER_STAGE = STATE_PENDING_SVC;
   gTestFiles = gTestFilesCompleteSuccess;
   gTestDirs = gTestDirsCompleteSuccess;
   setTestFilesAndDirsForFailure();
@@ -22,13 +22,19 @@ async function run_test() {
   // Switch the application to the staged application that was updated.
   runUpdate(STATE_FAILED_WRITE_ERROR, false, 1, false);
   await waitForHelperExit();
-  standardInit();
+  await testPostUpdateProcessing();
   checkPostUpdateRunningFile(false);
   checkFilesAfterUpdateFailure(getApplyDirFile);
   checkUpdateLogContains(ERR_RENAME_FILE);
   checkUpdateLogContains(ERR_BACKUP_CREATE_7);
   checkUpdateLogContains(STATE_FAILED_WRITE_ERROR + "\n" + CALL_QUIT);
   await waitForUpdateXMLFiles(true, false);
-  checkUpdateManager(STATE_PENDING, true, STATE_PENDING, WRITE_ERROR, 0);
+  await checkUpdateManager(
+    STATE_PENDING_SVC,
+    true,
+    STATE_PENDING_SVC,
+    WRITE_ERROR,
+    0
+  );
   checkCallbackLog();
 }

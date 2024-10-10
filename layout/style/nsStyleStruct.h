@@ -141,17 +141,15 @@ struct MOZ_NEEDS_MEMMOVABLE_MEMBERS nsStyleFont {
   mozilla::Length mFontSizeOffset;
   mozilla::StyleFontSizeKeyword mFontSizeKeyword;
   mozilla::StyleFontPalette mFontPalette;
-
   // math-depth support (used for MathML scriptlevel)
   int8_t mMathDepth;
   mozilla::StyleLineHeight mLineHeight;
+  // allow different min font-size for certain cases
+  mozilla::StylePercentage mMinFontSizeRatio{1.0f};
   // MathML  mathvariant support
   mozilla::StyleMathVariant mMathVariant;
   // math-style support (used for MathML displaystyle)
   mozilla::StyleMathStyle mMathStyle;
-
-  // allow different min font-size for certain cases
-  uint8_t mMinFontSizeRatio = 100;  // percent * 100
 
   // Was mLanguage set based on a lang attribute in the document?
   bool mExplicitLanguage = false;
@@ -503,8 +501,7 @@ struct MOZ_NEEDS_MEMMOVABLE_MEMBERS nsStyleBorder {
   mozilla::StyleBorderImageWidth mBorderImageWidth;
   mozilla::StyleNonNegativeLengthOrNumberRect mBorderImageOutset;
   mozilla::StyleBorderImageSlice mBorderImageSlice;  // factor, percent
-  mozilla::StyleBorderImageRepeat mBorderImageRepeatH;
-  mozilla::StyleBorderImageRepeat mBorderImageRepeatV;
+  mozilla::StyleBorderImageRepeat mBorderImageRepeat;
   mozilla::StyleFloatEdge mFloatEdge;
   mozilla::StyleBoxDecorationBreak mBoxDecorationBreak;
 
@@ -642,7 +639,7 @@ struct MOZ_NEEDS_MEMMOVABLE_MEMBERS nsStyleList {
 
   mozilla::StyleListStylePosition mListStylePosition;
 
-  mozilla::CounterStylePtr mCounterStyle;
+  mozilla::StyleListStyleType mListStyleType;
   mozilla::StyleQuotes mQuotes;
   mozilla::StyleImage mListStyleImage;
 };
@@ -724,18 +721,6 @@ struct MOZ_NEEDS_MEMMOVABLE_MEMBERS nsStylePosition {
   inline mozilla::StyleContentDistribution UsedContentAlignment(
       LogicalAxis aAxis) const;
 
-  /**
-   * Return the used value for 'align-tracks'/'justify-tracks' for a track
-   * in the given axis.
-   * (defined in WritingModes.h since we need the full LogicalAxis type)
-   */
-  inline mozilla::StyleContentDistribution UsedTracksAlignment(
-      LogicalAxis aAxis, uint32_t aIndex) const;
-
-  // Each entry has the same encoding as *-content, see below.
-  mozilla::StyleAlignTracks mAlignTracks;
-  mozilla::StyleJustifyTracks mJustifyTracks;
-
   Position mObjectPosition;
   StyleRect<LengthPercentageOrAuto> mOffset;
   StyleSize mWidth;
@@ -744,6 +729,15 @@ struct MOZ_NEEDS_MEMMOVABLE_MEMBERS nsStylePosition {
   StyleSize mHeight;
   StyleSize mMinHeight;
   StyleMaxSize mMaxHeight;
+
+  // 'auto' or a `<dashed-ident>` referencing an anchor positioning anchor
+  // element.
+  mozilla::StylePositionAnchor mPositionAnchor;
+  mozilla::StylePositionArea mPositionArea;
+  mozilla::StylePositionVisibility mPositionVisibility;
+  mozilla::StylePositionTryFallbacks mPositionTryFallbacks;
+  mozilla::StylePositionTryOrder mPositionTryOrder;
+
   mozilla::StyleFlexBasis mFlexBasis;
   StyleImplicitGridTracks mGridAutoColumns;
   StyleImplicitGridTracks mGridAutoRows;
@@ -806,7 +800,7 @@ struct MOZ_NEEDS_MEMMOVABLE_MEMBERS nsStylePosition {
     if (aCoord.IsLengthPercentage()) {
       return aCoord.AsLengthPercentage().HasPercent();
     }
-    return aCoord.IsFitContent() || aCoord.IsMozAvailable();
+    return aCoord.IsFitContent() || aCoord.BehavesLikeStretchOnInlineAxis();
   }
 
   template <typename SizeOrMaxSize>
@@ -833,8 +827,7 @@ struct MOZ_NEEDS_MEMMOVABLE_MEMBERS nsStyleTextReset {
   mozilla::StyleTextDecorationLine mTextDecorationLine;
   mozilla::StyleTextDecorationStyle mTextDecorationStyle;
   mozilla::StyleUnicodeBidi mUnicodeBidi;
-  nscoord mInitialLetterSink;  // 0 means normal
-  float mInitialLetterSize;    // 0.0f means normal
+  mozilla::StyleInitialLetter mInitialLetter;
   mozilla::StyleColor mTextDecorationColor;
   mozilla::StyleTextDecorationLength mTextDecorationThickness;
 };
@@ -1085,13 +1078,6 @@ struct MOZ_NEEDS_MEMMOVABLE_MEMBERS nsStyleVisibility {
 
 namespace mozilla {
 
-inline StyleTextTransform StyleTextTransform::None() {
-  return StyleTextTransform{StyleTextTransformCase::None,
-                            StyleTextTransformOther()};
-}
-
-inline bool StyleTextTransform::IsNone() const { return *this == None(); }
-
 // Note that IsAuto() does not exclude the possibility that `left` or `right`
 // is set; it refers only to behavior in horizontal typographic mode.
 inline bool StyleTextUnderlinePosition::IsAuto() const {
@@ -1145,7 +1131,7 @@ struct StyleAnimation {
     return mTimingFunction;
   }
   const StyleTime& GetDelay() const { return mDelay; }
-  const StyleTime& GetDuration() const { return mDuration; }
+  const StyleAnimationDuration& GetDuration() const { return mDuration; }
   nsAtom* GetName() const { return mName._0.AsAtom(); }
   StyleAnimationDirection GetDirection() const { return mDirection; }
   StyleAnimationFillMode GetFillMode() const { return mFillMode; }
@@ -1162,7 +1148,7 @@ struct StyleAnimation {
  private:
   StyleComputedTimingFunction mTimingFunction{
       StyleComputedTimingFunction::Keyword(StyleTimingKeyword::Ease)};
-  StyleTime mDuration{0.0f};
+  StyleAnimationDuration mDuration = StyleAnimationDuration::Auto();
   StyleTime mDelay{0.0f};
   StyleAnimationName mName;
   StyleAnimationDirection mDirection = StyleAnimationDirection::Normal;
@@ -1170,14 +1156,14 @@ struct StyleAnimation {
   StyleAnimationPlayState mPlayState = StyleAnimationPlayState::Running;
   StyleAnimationIterationCount mIterationCount{1.0f};
   StyleAnimationComposition mComposition = StyleAnimationComposition::Replace;
-  StyleAnimationTimeline mTimeline{StyleAnimationTimeline::Auto()};
+  StyleAnimationTimeline mTimeline = StyleAnimationTimeline::Auto();
 };
 
 struct StyleScrollTimeline {
   StyleScrollTimeline() = default;
   explicit StyleScrollTimeline(const StyleScrollTimeline& aCopy) = default;
 
-  nsAtom* GetName() const { return mName._0.AsAtom(); }
+  nsAtom* GetName() const { return mName.AsAtom(); }
   StyleScrollAxis GetAxis() const { return mAxis; }
 
   bool operator==(const StyleScrollTimeline& aOther) const {
@@ -1188,7 +1174,7 @@ struct StyleScrollTimeline {
   }
 
  private:
-  StyleScrollTimelineName mName;
+  StyleTimelineName mName;
   StyleScrollAxis mAxis = StyleScrollAxis::Block;
 };
 
@@ -1196,7 +1182,7 @@ struct StyleViewTimeline {
   StyleViewTimeline() = default;
   explicit StyleViewTimeline(const StyleViewTimeline& aCopy) = default;
 
-  nsAtom* GetName() const { return mName._0.AsAtom(); }
+  nsAtom* GetName() const { return mName.AsAtom(); }
   StyleScrollAxis GetAxis() const { return mAxis; }
   const StyleViewTimelineInset& GetInset() const { return mInset; }
 
@@ -1209,7 +1195,7 @@ struct StyleViewTimeline {
   }
 
  private:
-  StyleScrollTimelineName mName;
+  StyleTimelineName mName;
   StyleScrollAxis mAxis = StyleScrollAxis::Block;
   StyleViewTimelineInset mInset;
 };
@@ -1316,6 +1302,14 @@ struct MOZ_NEEDS_MEMMOVABLE_MEMBERS nsStyleDisplay {
 
   mozilla::StyleShapeOutside mShapeOutside;
 
+  // 'none', 'all', or a list of one or more `<dashed-ident>` identifiers that
+  // anchor positioned elements may reference.
+  mozilla::StyleAnchorName mAnchorName;
+
+  // 'none', 'all', or a list of one or more `<dashed-ident>` identifiers that
+  // may identify anchor positioning anchor elements.
+  mozilla::StyleAnchorScope mAnchorScope;
+
   mozilla::Maybe<mozilla::WindowButtonType> GetWindowButtonType() const {
     if (MOZ_LIKELY(mDefaultAppearance == mozilla::StyleAppearance::None)) {
       return mozilla::Nothing();
@@ -1356,17 +1350,11 @@ struct MOZ_NEEDS_MEMMOVABLE_MEMBERS nsStyleDisplay {
         return mDefaultAppearance;
       case mozilla::StyleAppearance::Textfield:
         // `appearance: textfield` should behave like `auto` on all elements
-        // except <input type=search> elements, which we identify using the
-        // internal -moz-default-appearance property.  (In the browser chrome
-        // we have some other elements that set `-moz-default-appearance:
-        // searchfield`, but not in content documents.)
-        if (mDefaultAppearance == mozilla::StyleAppearance::Searchfield) {
-          return mAppearance;
-        }
-        // We also need to support `appearance: textfield` on <input
-        // type=number>, since that is the only way in Gecko to disable the
-        // spinners.
-        if (mDefaultAppearance == mozilla::StyleAppearance::NumberInput) {
+        // except <input type=search/number/password> elements, which we
+        // identify using the internal -moz-default-appearance property.
+        if (mDefaultAppearance == mozilla::StyleAppearance::Searchfield ||
+            mDefaultAppearance == mozilla::StyleAppearance::NumberInput ||
+            mDefaultAppearance == mozilla::StyleAppearance::PasswordInput) {
           return mAppearance;
         }
         return mDefaultAppearance;
@@ -1533,8 +1521,10 @@ struct MOZ_NEEDS_MEMMOVABLE_MEMBERS nsStyleDisplay {
     }
   }
 
+  // These two methods are deprecated since they do not differentiate paginated
+  // context and multi-column context. Use nsIFrame::ShouldBreakBefore() /
+  // nsIFrame::ShouldBreakAfter() instead.
   bool BreakBefore() const { return ShouldBreak(mBreakBefore); }
-
   bool BreakAfter() const { return ShouldBreak(mBreakAfter); }
 
   // These are defined in nsStyleStructInlines.h.
@@ -1593,8 +1583,7 @@ struct MOZ_NEEDS_MEMMOVABLE_MEMBERS nsStyleTableBorder {
   STYLE_STRUCT(nsStyleTableBorder)
   nsStyleTableBorder();
 
-  nscoord mBorderSpacingCol;
-  nscoord mBorderSpacingRow;
+  mozilla::StyleBorderSpacing mBorderSpacing;
   mozilla::StyleBorderCollapse mBorderCollapse;
   mozilla::StyleCaptionSide mCaptionSide;
   mozilla::StyleEmptyCells mEmptyCells;
@@ -1607,12 +1596,22 @@ struct MOZ_NEEDS_MEMMOVABLE_MEMBERS nsStyleContent {
 
   using CounterPair = mozilla::StyleGenericCounterPair<int32_t>;
 
-  size_t ContentCount() const {
-    return mContent.IsItems() ? mContent.AsItems().Length() : 0;
+  /// Returns the content items that aren't alternative content.
+  mozilla::Span<const mozilla::StyleContentItem> NonAltContentItems() const {
+    if (!mContent.IsItems()) {
+      return {};
+    }
+    const auto& items = mContent.AsItems();
+    return mozilla::Span(items.items).To(items.alt_start);
   }
 
-  const mozilla::StyleContentItem& ContentAt(size_t aIndex) const {
-    return mContent.AsItems().AsSpan()[aIndex];
+  /// Returns the content items that /are/ alternative content.
+  mozilla::Span<const mozilla::StyleContentItem> AltContentItems() const {
+    if (!mContent.IsItems()) {
+      return {};
+    }
+    const auto& items = mContent.AsItems();
+    return mozilla::Span(items.items).From(items.alt_start);
   }
 
   mozilla::StyleContent mContent;
@@ -1665,7 +1664,8 @@ struct MOZ_NEEDS_MEMMOVABLE_MEMBERS nsStyleUIReset {
   const mozilla::StyleTime& GetAnimationDelay(uint32_t aIndex) const {
     return mAnimations[aIndex % mAnimationDelayCount].GetDelay();
   }
-  const mozilla::StyleTime& GetAnimationDuration(uint32_t aIndex) const {
+  const mozilla::StyleAnimationDuration& GetAnimationDuration(
+      uint32_t aIndex) const {
     return mAnimations[aIndex % mAnimationDurationCount].GetDuration();
   }
   mozilla::StyleAnimationDirection GetAnimationDirection(
@@ -1737,6 +1737,10 @@ struct MOZ_NEEDS_MEMMOVABLE_MEMBERS nsStyleUIReset {
   uint32_t mViewTimelineNameCount;
   uint32_t mViewTimelineAxisCount;
   uint32_t mViewTimelineInsetCount;
+
+  mozilla::StyleFieldSizing mFieldSizing;
+
+  mozilla::StyleViewTransitionName mViewTransitionName;
 };
 
 struct MOZ_NEEDS_MEMMOVABLE_MEMBERS nsStyleUI {
@@ -1804,25 +1808,18 @@ struct MOZ_NEEDS_MEMMOVABLE_MEMBERS nsStyleColumn {
   STYLE_STRUCT(nsStyleColumn)
   nsStyleColumn();
 
-  // This is the maximum number of columns we can process. It's used in
-  // nsColumnSetFrame.
-  static const uint32_t kMaxColumnCount = 1000;
-
-  // This represents the value of column-count: auto.
-  static const uint32_t kColumnCountAuto = 0;
-
-  uint32_t mColumnCount = kColumnCountAuto;
+  mozilla::StyleColumnCount mColumnCount = mozilla::StyleColumnCount::Auto();
   mozilla::NonNegativeLengthOrAuto mColumnWidth;
 
   mozilla::StyleColor mColumnRuleColor;
-  mozilla::StyleBorderStyle mColumnRuleStyle;  // StyleborderStyle::*
+  mozilla::StyleBorderStyle mColumnRuleStyle;
   mozilla::StyleColumnFill mColumnFill = mozilla::StyleColumnFill::Balance;
   mozilla::StyleColumnSpan mColumnSpan = mozilla::StyleColumnSpan::None;
 
   nscoord GetColumnRuleWidth() const { return mActualColumnRuleWidth; }
 
   bool IsColumnContainerStyle() const {
-    return mColumnCount != kColumnCountAuto || !mColumnWidth.IsAuto();
+    return !mColumnCount.IsAuto() || !mColumnWidth.IsAuto();
   }
 
   bool IsColumnSpanStyle() const {
@@ -1917,7 +1914,7 @@ struct MOZ_NEEDS_MEMMOVABLE_MEMBERS nsStyleSVGReset {
   bool HasMask() const;
 
   bool HasNonScalingStroke() const {
-    return mVectorEffect == mozilla::StyleVectorEffect::NonScalingStroke;
+    return mVectorEffect.HasNonScalingStroke();
   }
 
   // geometry properties
@@ -2057,36 +2054,5 @@ struct UniquePtr_Simple {
 
 STATIC_ASSERT_TYPE_LAYOUTS_MATCH(mozilla::UniquePtr<int>,
                                  UniquePtr_Simple<int>);
-
-/**
- * <div rustbindgen replaces="nsTArray"></div>
- */
-template <typename T>
-class nsTArray_Simple {
- protected:
-  T* mBuffer;
-
- public:
-  ~nsTArray_Simple() {
-    // The existence of a user-provided, and therefore non-trivial, destructor
-    // here prevents bindgen from deriving the Clone trait via a simple memory
-    // copy.
-  }
-};
-
-/**
- * <div rustbindgen replaces="CopyableTArray"></div>
- */
-template <typename T>
-class CopyableTArray_Simple : public nsTArray_Simple<T> {};
-
-STATIC_ASSERT_TYPE_LAYOUTS_MATCH(nsTArray<nsStyleImageLayers::Layer>,
-                                 nsTArray_Simple<nsStyleImageLayers::Layer>);
-STATIC_ASSERT_TYPE_LAYOUTS_MATCH(nsTArray<mozilla::StyleTransition>,
-                                 nsTArray_Simple<mozilla::StyleTransition>);
-STATIC_ASSERT_TYPE_LAYOUTS_MATCH(nsTArray<mozilla::StyleAnimation>,
-                                 nsTArray_Simple<mozilla::StyleAnimation>);
-STATIC_ASSERT_TYPE_LAYOUTS_MATCH(nsTArray<mozilla::StyleViewTimeline>,
-                                 nsTArray_Simple<mozilla::StyleViewTimeline>);
 
 #endif /* nsStyleStruct_h___ */

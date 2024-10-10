@@ -13,19 +13,18 @@
 
 #include <iostream>
 #include <memory>
+#include <sstream>  // no-presubmit-check TODO(webrtc:8982):
 #include <string>
-#include <utility>
 #include <vector>
 
 #include "absl/flags/flag.h"
 #include "absl/flags/parse.h"
 #include "absl/flags/usage.h"
-#include "absl/memory/memory.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
 #include "api/array_view.h"
-#include "api/rtc_event_log/rtc_event_log.h"
 #include "api/rtp_headers.h"
+#include "logging/rtc_event_log/events/logged_rtp_rtcp.h"
 #include "logging/rtc_event_log/rtc_event_log_parser.h"
 #include "logging/rtc_event_log/rtc_event_processor.h"
 #include "modules/rtp_rtcp/include/rtp_header_extension_map.h"
@@ -135,10 +134,9 @@ void ConvertRtpPacket(
   if (incoming.rtp.header.extension.hasTransportSequenceNumber)
     reconstructed_packet.SetExtension<webrtc::TransportSequenceNumber>(
         incoming.rtp.header.extension.transportSequenceNumber);
-  if (incoming.rtp.header.extension.hasAudioLevel)
-    reconstructed_packet.SetExtension<webrtc::AudioLevel>(
-        incoming.rtp.header.extension.voiceActivity,
-        incoming.rtp.header.extension.audioLevel);
+  if (incoming.rtp.header.extension.audio_level())
+    reconstructed_packet.SetExtension<webrtc::AudioLevelExtension>(
+        *incoming.rtp.header.extension.audio_level());
   if (incoming.rtp.header.extension.hasVideoRotation)
     reconstructed_packet.SetExtension<webrtc::VideoOrientation>(
         incoming.rtp.header.extension.videoRotation);

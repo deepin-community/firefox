@@ -4,18 +4,26 @@
 
 tabbrowser-empty-tab-title = Nyt faneblad
 tabbrowser-empty-private-tab-title = Nyt privat faneblad
-
 tabbrowser-menuitem-close-tab =
     .label = Luk faneblad
 tabbrowser-menuitem-close =
     .label = Luk
-
 # Displayed as a tooltip on container tabs
 # Variables:
 #   $title (String): the title of the current tab.
 #   $containerName (String): the name of the current container.
 tabbrowser-container-tab-title = { $title } - { $containerName }
-
+# This text serves as an on-screen tooltip as well as an accessible name for
+# the "X" button that is shown on the active tab or, when multiple tabs are
+# selected, to all their "X" buttons.
+# Variables:
+#   $tabCount (Number): The number of tabs that will be closed.
+tabbrowser-close-tabs-button =
+    .tooltiptext =
+        { $tabCount ->
+            [one] Luk faneblad
+           *[other] Luk { $tabCount } faneblade
+        }
 # Variables:
 #   $tabCount (Number): The number of tabs that will be closed.
 tabbrowser-close-tabs-tooltip =
@@ -114,13 +122,22 @@ tabbrowser-confirm-caretbrowsing-title = Caret Browsing
 tabbrowser-confirm-caretbrowsing-message = Ved at trykke F7 kan du slå Caret Browsing til eller fra. Denne funktion placerer en bevægelig markør på websiden, hvilket giver dig mulighed for at markere tekst med tastaturet. Ønsker du at slå Caret Browsing til?
 tabbrowser-confirm-caretbrowsing-checkbox = Vis ikke denne dialogboks igen
 
+## Confirmation dialog for closing all duplicate tabs
+
+tabbrowser-confirm-close-duplicate-tabs-title = Vigtigt
+tabbrowser-confirm-close-duplicate-tabs-text = Vi lader det senest aktive faneblad være åbent
+tabbrowser-confirm-close-all-duplicate-tabs-title = Luk kopierede faneblade?
+tabbrowser-confirm-close-all-duplicate-tabs-text =
+    Vi lukker kopierede faneblade i dette vindue. Det sidste aktive
+    vil forblive åbent.
+tabbrowser-confirm-close-all-duplicate-tabs-button-closetabs = Luk faneblade
+
 ##
 
 # Variables:
 #   $domain (String): URL of the page that is trying to steal focus.
 tabbrowser-allow-dialogs-to-get-focus =
     .label = Tillad at beskeder som denne fra { $domain } tager dig til deres faneblad
-
 tabbrowser-customizemode-tab-title = Tilpas { -brand-short-name }
 
 ## Context menu buttons, of which only one will be visible at a time
@@ -139,7 +156,6 @@ tabbrowser-context-mute-selected-tabs =
 tabbrowser-context-unmute-selected-tabs =
     .label = Slå lyden til i fanebladene
     .accesskey = S
-
 # This string is used as an additional tooltip and accessibility description for tabs playing audio
 tabbrowser-tab-audio-playing-description = Afspiller lyd
 

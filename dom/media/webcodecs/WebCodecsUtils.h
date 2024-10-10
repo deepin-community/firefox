@@ -48,6 +48,9 @@ nsTArray<nsCString> GuessContainers(const nsAString& aCodec);
 
 Maybe<nsString> ParseCodecString(const nsAString& aCodec);
 
+bool IsSameColorSpace(const VideoColorSpaceInit& aLhs,
+                      const VideoColorSpaceInit& aRhs);
+
 /*
  * Below are helpers for conversion among Maybe, Optional, and Nullable.
  */
@@ -93,6 +96,13 @@ Result<Ok, nsresult> CloneBuffer(
 
 Result<RefPtr<MediaByteBuffer>, nsresult> GetExtraDataFromArrayBuffer(
     const OwningMaybeSharedArrayBufferViewOrMaybeSharedArrayBuffer& aBuffer);
+
+bool IsArrayBufferEmpty(
+    const OwningMaybeSharedArrayBufferViewOrMaybeSharedArrayBuffer& aBuffer);
+
+bool CopyExtradataToDescription(
+    JSContext* aCx, Span<const uint8_t>& aSrc,
+    OwningMaybeSharedArrayBufferViewOrMaybeSharedArrayBuffer& aDest);
 
 /*
  * The following are utilities to convert between VideoColorSpace values to

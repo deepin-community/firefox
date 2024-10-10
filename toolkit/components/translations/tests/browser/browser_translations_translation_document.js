@@ -12,7 +12,8 @@ const { TranslationsDocument, LRUCache } = ChromeUtils.importESModule(
 /**
  * @param {string} html
  * @param {{
- *  mockedTranslatorPort?: (message: string) => Promise<string>
+ *  mockedTranslatorPort?: (message: string) => Promise<string>,
+ *  mockedReportVisibleChange?: () => void
  * }} [options]
  */
 async function createDoc(html, options) {
@@ -42,6 +43,7 @@ async function createDoc(html, options) {
       () => {
         throw new Error("Cannot request a new port");
       },
+      options?.mockedReportVisibleChange ?? (() => {}),
       performance.now(),
       () => performance.now(),
       new LRUCache()
@@ -81,12 +83,21 @@ async function createDoc(html, options) {
   return { htmlMatches, cleanup, translate, document };
 }
 
-add_task(async function test_translated_div_element() {
-  const { translate, htmlMatches, cleanup } = await createDoc(/* html */ `
+add_task(async function test_translated_div_element_and_visible_change() {
+  let hasVisibleChangeOccurred = false;
+  const { translate, htmlMatches, cleanup } = await createDoc(
+    /* html */ `
     <div>
       This is a simple translation.
     </div>
-  `);
+  `,
+    {
+      mockedTranslatorPort: createMockedTranslatorPort(),
+      mockedReportVisibleChange: () => {
+        hasVisibleChangeOccurred = true;
+      },
+    }
+  );
 
   translate();
 
@@ -99,6 +110,7 @@ add_task(async function test_translated_div_element() {
     `
   );
 
+  Assert.ok(hasVisibleChangeOccurred, "A visible change was reported.");
   cleanup();
 });
 
@@ -197,18 +209,18 @@ add_task(async function test_translated_nested_elements() {
       <div class="menu-main-menu-container">
         <ul class="menu-list">
           <li class="menu-item menu-item-top-level">
-            <a href="/" data-moz-translations-id="0">
+            <a href="/">
               LATEST WORK
             </a>
           </li>
           <li class="menu-item menu-item-top-level">
-            <a href="/category/interactive/" data-moz-translations-id="0">
+            <a href="/category/interactive/">
               CREATIVE CODING
             </a>
           </li>
           <li id="menu-id-categories" class="menu-item menu-item-top-level">
-            <a href="#" data-moz-translations-id="0">
-              <span class="category-arrow" data-moz-translations-id="1">
+            <a href="#">
+              <span class="category-arrow">
                 CATEGORIES
               </span>
             </a>
@@ -434,11 +446,11 @@ add_task(async function test_translation_batching() {
       aaaa aa a aaaaaa aaaaaaa.
     </div>
     <div>
-      <span data-moz-translations-id="0">
+      <span>
         bbbb bbbbbb
       </span>
       bbbbbbb bbbbbbbbb bb b
-      <b data-moz-translations-id="1">
+      <b>
         bbbbb
       </b>
       .
@@ -479,7 +491,7 @@ add_task(async function test_translation_inline_styling() {
       aaaa aaaa aa aaaa aa a aaaaa.
       <span>
         bbbbbb bbbb bb bbbb bb b
-        <b data-moz-translations-id="0">
+        <b>
           bbbbb
         </b>
         .
@@ -529,22 +541,22 @@ add_task(async function test_many_inlines() {
     "Batching",
     /* html */ `
     <div>
-      <span data-moz-translations-id="0">
+      <span>
         aaaa aa a
       </span>
-      <span data-moz-translations-id="1">
+      <span>
         aaaa aaaaaa
       </span>
-      <span data-moz-translations-id="2">
+      <span>
         aaaaaaa aaaa aaaaaaaa
       </span>
-      <span data-moz-translations-id="3">
+      <span>
         aaaa aaaa aaaaaaaa
       </span>
-      <span data-moz-translations-id="4">
+      <span>
         aa aaaa aaaa aaaaaaa
       </span>
-      <span data-moz-translations-id="5">
+      <span>
         aa aaaaa aaaa aaaa.
       </span>
     </div>
@@ -746,10 +758,10 @@ add_task(async function test_display_none() {
     /* html */ `
     <p>
       aaaa aa aaaa aaaa.
-      <span data-moz-translations-id="0">
+      <span>
         aa aaa aaaaaa aaaaaaaa
       </span>
-      <style data-moz-translations-id="1">
+      <style>
       </style>
     </p>
     `
@@ -882,13 +894,13 @@ add_task(async function test_reordering() {
   await htmlMatches(
     "Nodes can be re-ordered by the translator",
     /* html */ `
-      <span data-moz-translations-id="1">
+      <span>
         A - THIS WAS SECOND.
       </span>
-      <span data-moz-translations-id="0">
+      <span>
         B - THIS WAS FIRST.
       </span>
-      <span data-moz-translations-id="2">
+      <span>
         C - THIS WAS THIRD.
       </span>
     `
@@ -916,7 +928,7 @@ add_task(async function test_reordering2() {
   await htmlMatches(
     "Text nodes can be re-ordered.",
     /* html */ `
-      <span data-moz-translations-id="0">
+      <span>
         A - THIS WAS SECOND.
       </span>
       B - THIS WAS FIRST.
@@ -1103,23 +1115,13 @@ add_task(async function test_tables() {
   cleanup();
 });
 
-// Attribute translation for title and placeholder
-add_task(async function test_attributes() {
+add_task(async function test_basic_attributes() {
   const { translate, htmlMatches, cleanup } = await createDoc(/* html */ `
     <label title="Titles are user visible">Enter information:</label>
     <input type="text" placeholder="This is a placeholder">
   `);
 
   translate();
-
-  // This is what this test should assert:
-  // eslint-disable-next-line no-unused-vars
-  const actualExpected = /* html */ `
-    <label title="TITLES ARE USER VISIBLE">
-      ENTER INFORMATION:
-    </label>
-    <input type="text" placeholder="THIS IS A PLACEHOLDER" >
-  `;
 
   await htmlMatches(
     "Placeholders support added",
@@ -1134,7 +1136,7 @@ add_task(async function test_attributes() {
   cleanup();
 });
 
-add_task(async function test_html_attributes() {
+add_task(async function test_html_lang_attribute() {
   const { translate, document, cleanup } = await createDoc(/* html */ `
     <!DOCTYPE html>
     <html lang="en" >
@@ -1156,28 +1158,7 @@ add_task(async function test_html_attributes() {
   cleanup();
 });
 
-// Attribute translation for title
-add_task(async function test_attributes() {
-  const { translate, htmlMatches, cleanup } = await createDoc(/* html */ `
-    <div title="Titles are user visible">
-    </div>
-  `);
-
-  translate();
-
-  await htmlMatches(
-    "Attribute translation for title",
-    /* html */ `
-      <div title="TITLES ARE USER VISIBLE">
-    </div>
-    `
-  );
-
-  cleanup();
-});
-
-//  Attribute translation for title with innerHTML
-add_task(async function test_attributes() {
+add_task(async function test_attributes_with_innerhtml() {
   const { translate, htmlMatches, cleanup } = await createDoc(/* html */ `
     <div title="Titles are user visible">
     Simple translation.
@@ -1198,10 +1179,9 @@ add_task(async function test_attributes() {
   cleanup();
 });
 
-// Attribute translation for title and placeholder in same element
-add_task(async function test_attributes() {
+add_task(async function test_multiple_attributes() {
   const { translate, htmlMatches, cleanup } = await createDoc(/* html */ `
-        <input type="text" placeholder="This is a placeholder" title="Titles are user visible">
+    <input type="text" placeholder="This is a placeholder" title="Titles are user visible">
   `);
 
   translate();
@@ -1209,24 +1189,7 @@ add_task(async function test_attributes() {
   await htmlMatches(
     "title and placeholder together",
     /* html */ `
-        <input type="text" placeholder="THIS IS A PLACEHOLDER" title="TITLES ARE USER VISIBLE">
-    `
-  );
-  cleanup();
-});
-
-// Attribute translation for placeholder
-add_task(async function test_attributes() {
-  const { translate, htmlMatches, cleanup } = await createDoc(/* html */ `
-        <input type="text" placeholder="This is a placeholder">
-  `);
-
-  translate();
-
-  await htmlMatches(
-    "Attribute translation for placeholder",
-    /* html */ `
-        <input type="text" placeholder="THIS IS A PLACEHOLDER">
+      <input type="text" placeholder="THIS IS A PLACEHOLDER" title="TITLES ARE USER VISIBLE">
     `
   );
   cleanup();
@@ -1253,6 +1216,27 @@ add_task(async function test_translated_title() {
   cleanup();
 });
 
+add_task(async function test_translated_aria_attributes() {
+  const { translate, htmlMatches, cleanup } = await createDoc(/* html */ `
+    <div aria-label="label" aria-description="description">
+      Content
+    </div>
+  `);
+
+  translate();
+
+  await htmlMatches(
+    "ARIA attributes are translated",
+    /* html */ `
+    <div aria-label="LABEL" aria-description="DESCRIPTION">
+      CONTENT
+    </div>
+    `
+  );
+
+  cleanup();
+});
+
 add_task(async function test_title_attribute_subnodes() {
   const { translate, htmlMatches, cleanup } = await createDoc(/* html */ `
     <div>
@@ -1271,11 +1255,11 @@ add_task(async function test_title_attribute_subnodes() {
     "Titles are translated",
     /* html */ `
       <div>
-        <span data-moz-translations-id="0">SPAN TEXT 1</span>
-        <span data-moz-translations-id="1">SPAN TEXT 2</span>
-        <span data-moz-translations-id="2">SPAN TEXT 3</span>
-        <span data-moz-translations-id="3">SPAN TEXT 4</span>
-        <span data-moz-translations-id="4">SPAN TEXT 5</span>
+        <span>SPAN TEXT 1</span>
+        <span>SPAN TEXT 2</span>
+        <span>SPAN TEXT 3</span>
+        <span>SPAN TEXT 4</span>
+        <span>SPAN TEXT 5</span>
         THIS IS TEXT.
       </div>
     `
@@ -1302,11 +1286,11 @@ add_task(async function test_title_attribute_subnodes() {
     "Titles are translated",
     /* html */ `
       <div title="TITLE IN DIV">
-        <span title="TITLE 1" data-moz-translations-id="0">SPAN TEXT 1</span>
-        <span title="TITLE 2" data-moz-translations-id="1">SPAN TEXT 2</span>
-        <span title="TITLE 3" data-moz-translations-id="2">SPAN TEXT 3</span>
-        <span title="TITLE 4" data-moz-translations-id="3">SPAN TEXT 4</span>
-        <span title="TITLE 5" data-moz-translations-id="4">SPAN TEXT 5</span>
+        <span title="TITLE 1">SPAN TEXT 1</span>
+        <span title="TITLE 2">SPAN TEXT 2</span>
+        <span title="TITLE 3">SPAN TEXT 3</span>
+        <span title="TITLE 4">SPAN TEXT 4</span>
+        <span title="TITLE 5">SPAN TEXT 5</span>
         THIS IS TEXT.
       </div>
     `
@@ -1315,8 +1299,7 @@ add_task(async function test_title_attribute_subnodes() {
   cleanup();
 });
 
-// Attribute translation for nested text
-add_task(async function test_attributes() {
+add_task(async function test_nested_text_in_attributes() {
   const { translate, htmlMatches, cleanup } = await createDoc(/* html */ `
     <div>
       This is the outer div
@@ -1334,9 +1317,9 @@ add_task(async function test_attributes() {
     /* html */ `
       <div>
       THIS IS THE OUTER DIV
-      <label data-moz-translations-id="0">
+      <label>
       ENTER INFORMATION:
-        <input type="text" data-moz-translations-id="1">
+        <input type="text">
       </label>
     </div>
     `
@@ -1345,8 +1328,7 @@ add_task(async function test_attributes() {
   cleanup();
 });
 
-// Attribute translation  Nested Attributes
-add_task(async function test_attributes() {
+add_task(async function test_attributes_with_nested_attributes() {
   const { translate, htmlMatches, cleanup } = await createDoc(/* html */ `
     <div title="Titles are user visible">
       This is the outer div
@@ -1364,9 +1346,9 @@ add_task(async function test_attributes() {
     /* html */ `
       <div title="TITLES ARE USER VISIBLE">
       THIS IS THE OUTER DIV
-      <label data-moz-translations-id="0">
+      <label>
       ENTER INFORMATION:
-        <input type="text" placeholder="THIS IS A PLACEHOLDER" data-moz-translations-id="1">
+        <input type="text" placeholder="THIS IS A PLACEHOLDER">
       </label>
     </div>
     `
@@ -1375,7 +1357,7 @@ add_task(async function test_attributes() {
   cleanup();
 });
 
-add_task(async function test_attributes() {
+add_task(async function test_nested_elements() {
   const { translate, htmlMatches, cleanup } = await createDoc(/* html */ `
     <div>
       This is the outer div
@@ -1395,13 +1377,33 @@ add_task(async function test_attributes() {
     /* html */ `
       <div>
         THIS IS THE OUTER DIV
-        <label data-moz-translations-id="0">
+        <label>
           ENTER INFORMATION 1:
-          <label data-moz-translations-id="1">
+          <label>
             ENTER INFORMATION 2:
           </label>
         </label>
     </div>
+    `
+  );
+
+  cleanup();
+});
+
+add_task(async function test_node_specific_attributes() {
+  const { translate, htmlMatches, cleanup } = await createDoc(/* html */ `
+    <div value="Do not translate div[value]"></div>
+    <input type="text" placeholder="This is a placeholder" value="This is a value">
+  `);
+
+  translate();
+
+  await htmlMatches(
+    "Placeholders support added",
+    /* html */ `
+      <div value="Do not translate div[value]">
+      </div>
+      <input type="text" placeholder="THIS IS A PLACEHOLDER" value="THIS IS A VALUE">
     `
   );
 
@@ -1539,6 +1541,44 @@ add_task(async function test_mutations_subtree_attributes() {
         THIS IS SOME INNER TEXT.
         <input placeholder="THIS IS A PLACEHOLDER">
       </div>
+    `
+  );
+
+  cleanup();
+});
+
+add_task(async function test_node_specific_attribute_mutation() {
+  const { translate, htmlMatches, cleanup, document } =
+    await createDoc(/* html */ `
+      <div value="Do not translate"></div>
+      <input type="text" value="Input value">
+    `);
+
+  translate();
+
+  await htmlMatches(
+    "The initial setup is translated",
+    /* html */ `
+      <div value="Do not translate">
+      </div>
+      <input type="text" value="INPUT VALUE">
+    `
+  );
+
+  info("Trigger attribute mutations");
+  document
+    .querySelector("div")
+    .setAttribute("value", "New div attribute value");
+  document
+    .querySelector("input")
+    .setAttribute("value", "New input attribute value");
+
+  await htmlMatches(
+    "The changed node gets translated",
+    /* html */ `
+      <div value="New div attribute value">
+      </div>
+      <input type="text" value="NEW INPUT ATTRIBUTE VALUE">
     `
   );
 

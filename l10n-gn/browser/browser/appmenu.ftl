@@ -77,16 +77,10 @@ appmenu-remote-tabs-turn-on-sync =
 appmenu-remote-tabs-showmore =
     .label = Ehechaukave tendayke
     .tooltiptext = Ehechaukave tendayke ko mba’e’oka pegua
-# This is shown when there are inactive tabs which are not being shown.
-# Variables
-# $count (Number) - The number of inactive tabs which are not being shown (at least 1)
-appmenu-remote-tabs-showinactive =
-    .label =
-        { $count ->
-            [one] Ehechauka tendayke oiko’ỹva
-           *[other] Ehechauka { $count } tendayke oiko’ỹva
-        }
-    .tooltiptext = Ehechauka tendayke oiko’ỹva ko mba’e’okápe
+# This is shown as the label for an element to show inactive tabs from this device.
+appmenu-remote-tabs-show-inactive-tabs =
+    .label = Tendayke ojeporu’ỹva
+    .tooltiptext = Ehecha tendayke ojeporu’ỹva ko mba’e’okápe
 # This is shown beneath the name of a device when that device has no open tabs
 appmenu-remote-tabs-notabs = Ndaipóri tendayke ijurujáva
 # This is shown when Sync is configured but syncing tabs is disabled.
@@ -144,7 +138,7 @@ profiler-popup-reveal-description-button =
     .aria-label = Eguenohẽve marandu
 profiler-popup-description-title =
     .value = Eñongatu, ehesa’ỹijo, emoherakuã
-profiler-popup-description = Eipytyvõ tembiapo apañuãi ehechaukávo mba’etekuéra omoherakuãvo ne mohendahápe g̃uarã.
+profiler-popup-description = Eipytyvõ tembiapo apañuái ehechaukávo mba’etekuéra omoherakuãvo ne mohendahápe g̃uarã.
 profiler-popup-learn-more-button =
     .label = Kuaave
 profiler-popup-settings =
@@ -195,13 +189,16 @@ profiler-popup-presets-graphics-label =
 profiler-popup-presets-media-description2 = Oñemoĩva ohapykuerereka hag̃ua mba’epu ha ta’ãngamýi { -brand-shorter-name }.
 profiler-popup-presets-media-label =
     .label = Momaranduha
-profiler-popup-presets-networking-description = Oñemoĩva ohapykuereka hag̃ua pyha apañuãi { -brand-shorter-name }-pe.
+profiler-popup-presets-networking-description = Oñemoĩva ohapykuereka hag̃ua pyha apañuái { -brand-shorter-name }-pe.
 profiler-popup-presets-networking-label =
     .label = Pyha
 profiler-popup-presets-power-description = Oñemoĩva ohapykuerereka hag̃ua tendyry ndoikóirõ eiporukuévo { -brand-shorter-name }.
 # "Power" is used in the sense of energy (electricity used by the computer).
 profiler-popup-presets-power-label =
     .label = Tendyry
+profiler-popup-presets-debug-description = Oĩva oñemopotĩ hag̃uáicha { -brand-shorter-name } ndive. Ojehechaiterei, ani eiporu oiko porãve hag̃ua katu eikumby hag̃ua mba’éichapa omba’apo kundahára.
+profiler-popup-presets-debug-label =
+    .label = Mopotĩ
 profiler-popup-presets-custom-label =
     .label = Mboavapyre
 
@@ -233,10 +230,10 @@ appmenu-get-help =
     .label = Eguereko ñepytyvõ
     .accesskey = h
 appmenu-help-more-troubleshooting-info =
-    .label = Maranduve apañuãi ñemyatyrõ rehegua
+    .label = Maranduve apañuái ñemyatyrõ rehegua
     .accesskey = T
 appmenu-help-report-site-issue =
-    .label = Eikuaauka iñapañuãiha ko Tenda…
+    .label = Eikuaauka iñapañuaiha ko Tenda…
 appmenu-help-share-ideas =
     .label = Emoherakuã ãroky ha ñe’ẽngue…
     .accesskey = S
@@ -247,10 +244,10 @@ appmenu-help-switch-device =
 ## are mutually exclusive, so it's possible to use the same accesskey for both.
 
 appmenu-help-enter-troubleshoot-mode2 =
-    .label = Mba’éicha emyatyrõta apañuãi…
+    .label = Mba’éicha emyatyrõta apañuai…
     .accesskey = M
 appmenu-help-exit-troubleshoot-mode =
-    .label = Eipe’a mba’éicha emyatyrõta apañuãi
+    .label = Eipe’a mba’éicha emyatyrõta apañuái
     .accesskey = M
 
 ## appmenu-help-report-deceptive-site and appmenu-help-not-deceptive

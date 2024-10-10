@@ -32,6 +32,7 @@ class SecretSettingsFragment : PreferenceFragmentCompat() {
         showToolbar(getString(R.string.preferences_debug_settings))
     }
 
+    @Suppress("LongMethod", "CyclomaticComplexMethod")
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         val debugSettingsRepository = DefaultDebugSettingsRepository(
             context = requireContext(),
@@ -58,9 +59,9 @@ class SecretSettingsFragment : PreferenceFragmentCompat() {
             onPreferenceChangeListener = SharedPreferenceUpdater()
         }
 
-        requirePreference<SwitchPreference>(R.string.pref_key_toolbar_use_redesign_incomplete).apply {
+        requirePreference<SwitchPreference>(R.string.pref_key_toolbar_show_navigation_toolbar).apply {
             isVisible = Config.channel.isNightlyOrDebug
-            isChecked = context.settings().enableIncompleteToolbarRedesign
+            isChecked = context.settings().navigationToolbarEnabled
             onPreferenceChangeListener = SharedPreferenceUpdater()
         }
 
@@ -76,9 +77,21 @@ class SecretSettingsFragment : PreferenceFragmentCompat() {
             onPreferenceChangeListener = SharedPreferenceUpdater()
         }
 
+        requirePreference<SwitchPreference>(R.string.pref_key_enable_compose_homepage).apply {
+            isVisible = Config.channel.isNightlyOrDebug
+            isChecked = context.settings().enableComposeHomepage
+            onPreferenceChangeListener = SharedPreferenceUpdater()
+        }
+
         requirePreference<SwitchPreference>(R.string.pref_key_enable_menu_redesign).apply {
             isVisible = Config.channel.isNightlyOrDebug
             isChecked = context.settings().enableMenuRedesign
+            onPreferenceChangeListener = SharedPreferenceUpdater()
+        }
+
+        requirePreference<SwitchPreference>(R.string.pref_key_enable_homepage_as_new_tab).apply {
+            isVisible = Config.channel.isNightlyOrDebug
+            isChecked = context.settings().enableHomepageAsNewTab
             onPreferenceChangeListener = SharedPreferenceUpdater()
         }
 
@@ -122,8 +135,6 @@ class SecretSettingsFragment : PreferenceFragmentCompat() {
             }
         }
 
-        setupTabStripPreference()
-
         // for performance reasons, this is only available in Nightly or Debug builds
         requirePreference<EditTextPreference>(R.string.pref_key_custom_glean_server_url).apply {
             isVisible = Config.channel.isNightlyOrDebug && BuildConfig.GLEAN_CUSTOM_URL.isNullOrEmpty()
@@ -138,12 +149,19 @@ class SecretSettingsFragment : PreferenceFragmentCompat() {
             isChecked = context.settings().useProductionRemoteSettingsServer
             onPreferenceChangeListener = SharedPreferenceUpdater()
         }
-    }
 
-    private fun setupTabStripPreference() {
-        requirePreference<SwitchPreference>(R.string.pref_key_enable_tab_strip).apply {
-            isVisible = Config.channel.isNightlyOrDebug && context.resources.getBoolean(R.bool.tablet)
-            isChecked = context.settings().isTabStripEnabled
+        requirePreference<SwitchPreference>(R.string.pref_key_microsurvey_feature_enabled).apply {
+            isVisible = true
+            isChecked = context.settings().microsurveyFeatureEnabled
+            onPreferenceChangeListener = SharedPreferenceUpdater()
+        }
+
+        // This is only available in Debug builds for verification.
+        requirePreference<SwitchPreference>(
+            R.string.pref_key_set_as_default_browser_prompt_enabled,
+        ).apply {
+            isVisible = true
+            isChecked = context.settings().setAsDefaultBrowserPromptForExistingUsersEnabled
             onPreferenceChangeListener = SharedPreferenceUpdater()
         }
     }

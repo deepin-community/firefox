@@ -147,6 +147,10 @@ policy-HardwareAcceleration = Se “false”, disattiva l’accelerazione hardwa
 # “lock” means that the user won’t be able to change this setting
 policy-Homepage = Imposta la pagina iniziale ed eventualmente impedisci modifiche all’opzione.
 
+policy-HttpAllowlist = Origini che non verranno aggiornate a HTTPS.
+
+policy-HttpsOnlyMode = Consenti l’attivazione della modalità solo HTTPS.
+
 policy-InstallAddonsPermission = Consenti a determinati siti web di installare componenti aggiuntivi.
 
 policy-LegacyProfiles = Disattiva la funzione che impone profili separati per ogni installazione
@@ -200,6 +204,8 @@ policy-PopupBlocking = Consenti ad alcuni siti web di visualizzare finestre pop-
 
 policy-Preferences = Imposta un gruppo di preferenze e bloccane il valore.
 
+policy-PrivateBrowsingModeAvailability = Imposta la disponibilità della modalità Navigazione anonima.
+
 policy-PromptForDownloadLocation = Chiedi dove salvare i file scaricati.
 
 policy-Proxy = Configura le impostazioni dei proxy.
@@ -237,3 +243,5 @@ policy-UseSystemPrintDialog = Stampa utilizzando la finestra di dialogo di siste
 policy-WebsiteFilter = Impedisci l’accesso a determinati siti web. Consulta la documentazione per ulteriori dettagli sul formato da utilizzare.
 
 policy-Windows10SSO = Permetti l’utilizzo di Windows single sign-on per account Microsoft, account aziendale o dell’istituto di istruzione.
+
+policy-MicrosoftEntraSSO = Permetti l’utilizzo di Windows single sign-on per account Microsoft Entra.

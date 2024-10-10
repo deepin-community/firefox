@@ -886,6 +886,16 @@ async function StartCurrentURI(aURLTargetType) {
     }
   }
 
+  if (g.windowUtils.isWindowFullyOccluded || g.windowUtils.isCompositorPaused) {
+    logger.warning(
+      "g.windowUtils.isWindowFullyOccluded " +
+        g.windowUtils.isWindowFullyOccluded
+    );
+    logger.warning(
+      "g.windowUtils.isCompositorPaused " + g.windowUtils.isCompositorPaused
+    );
+  }
+
   if (
     !prefSettings.length &&
     g.uriCanvases[g.currentURL] &&
@@ -912,6 +922,20 @@ async function StartCurrentURI(aURLTargetType) {
         "%)\n"
     );
     TestBuffer("START " + g.currentURL);
+
+    if (
+      g.windowUtils.isWindowFullyOccluded ||
+      g.windowUtils.isCompositorPaused
+    ) {
+      TestBuffer(
+        "g.windowUtils.isWindowFullyOccluded " +
+          g.windowUtils.isWindowFullyOccluded
+      );
+      TestBuffer(
+        "g.windowUtils.isCompositorPaused " + g.windowUtils.isCompositorPaused
+      );
+    }
+
     await updateBrowserRemotenessByURL(g.browser, g.currentURL);
 
     if (prefsRequireRefresh) {
@@ -1120,6 +1144,16 @@ async function UpdateWholeCurrentCanvasForInvalidation() {
 // eslint-disable-next-line complexity
 function RecordResult(testRunTime, errorMsg, typeSpecificResults) {
   TestBuffer("RecordResult fired");
+
+  if (g.windowUtils.isWindowFullyOccluded || g.windowUtils.isCompositorPaused) {
+    TestBuffer(
+      "g.windowUtils.isWindowFullyOccluded " +
+        g.windowUtils.isWindowFullyOccluded
+    );
+    TestBuffer(
+      "g.windowUtils.isCompositorPaused " + g.windowUtils.isCompositorPaused
+    );
+  }
 
   // Keep track of which test was slowest, and how long it took.
   if (testRunTime > g.slowestTestTime) {
@@ -1512,6 +1546,8 @@ function RecordResult(testRunTime, errorMsg, typeSpecificResults) {
             extra.image1 = image1;
           }
         }
+        extra.modifiers = g.urls[0].modifiers;
+
         logger.testStatus(
           g.urls[0].identifier,
           message,
@@ -1976,7 +2012,7 @@ function RecvStartPrint(isPrintSelection, printRange) {
   ps.toFileName = file.path;
   ps.outputFormat = Ci.nsIPrintSettings.kOutputFormatPDF;
   ps.printSelectionOnly = isPrintSelection;
-  if (printRange) {
+  if (printRange && !isPrintSelection) {
     ps.pageRanges = printRange
       .split(",")
       .map(function (r) {

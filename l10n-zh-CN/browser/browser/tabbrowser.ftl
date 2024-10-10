@@ -13,6 +13,13 @@ tabbrowser-menuitem-close =
 #   $title (String): the title of the current tab.
 #   $containerName (String): the name of the current container.
 tabbrowser-container-tab-title = { $title } — { $containerName }
+# This text serves as an on-screen tooltip as well as an accessible name for
+# the "X" button that is shown on the active tab or, when multiple tabs are
+# selected, to all their "X" buttons.
+# Variables:
+#   $tabCount (Number): The number of tabs that will be closed.
+tabbrowser-close-tabs-button =
+    .tooltiptext = 关闭 { $tabCount } 个标签页
 # Variables:
 #   $tabCount (Number): The number of tabs that will be closed.
 tabbrowser-close-tabs-tooltip =
@@ -86,6 +93,14 @@ tabbrowser-confirm-open-multiple-tabs-checkbox = 打开多个标签页可能致�
 tabbrowser-confirm-caretbrowsing-title = 光标浏览
 tabbrowser-confirm-caretbrowsing-message = 按 F7 来启用或禁用光标浏览。此功能将在网页中放置一个可移动的光标，以便您能使用键盘选择文本。您想要启用光标浏览吗？
 tabbrowser-confirm-caretbrowsing-checkbox = 不再显示此对话框。
+
+## Confirmation dialog for closing all duplicate tabs
+
+tabbrowser-confirm-close-duplicate-tabs-title = 注意
+tabbrowser-confirm-close-duplicate-tabs-text = 我们将保留最近一次活跃的标签页
+tabbrowser-confirm-close-all-duplicate-tabs-title = 确定要关闭重复标签页吗？
+tabbrowser-confirm-close-all-duplicate-tabs-text = 我们将关闭此窗口中的重复标签页，仅保留最近一次活跃的标签页。
+tabbrowser-confirm-close-all-duplicate-tabs-button-closetabs = 关闭标签页
 
 ##
 

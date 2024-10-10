@@ -60,6 +60,7 @@ class InactiveTabViewHolder(
                 inactiveTabs = inactiveTabs,
                 expanded = expanded,
                 showAutoCloseDialog = showAutoClosePrompt,
+                showCFR = false, // The CFR in XML is handled by [TabsTrayInactiveTabsOnboardingBinding]
                 onHeaderClick = { interactor.onInactiveTabsHeaderClicked(!expanded) },
                 onDeleteAllButtonClick = interactor::onDeleteAllInactiveTabsClicked,
                 onAutoCloseDismissClick = {
@@ -73,6 +74,9 @@ class InactiveTabViewHolder(
                 },
                 onTabClick = interactor::onInactiveTabClicked,
                 onTabCloseClick = interactor::onInactiveTabClosed,
+                onCFRShown = {},
+                onCFRClick = {},
+                onCFRDismiss = {},
             )
         }
     }
@@ -86,7 +90,6 @@ class InactiveTabViewHolder(
         val snackbar = FenixSnackbar.make(
             view = composeView,
             duration = FenixSnackbar.LENGTH_SHORT,
-            isDisplayedWithBrowserToolbar = true,
         ).setText(text)
         snackbar.view.elevation = TabsTrayFragment.ELEVATION
         snackbar.show()

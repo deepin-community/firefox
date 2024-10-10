@@ -26,6 +26,7 @@
 #include "nsIChannel.h"
 #include "nsIThreadRetargetableStreamListener.h"
 #include "imgIRequest.h"
+#include "mozilla/dom/CacheExpirationTime.h"
 
 class imgLoader;
 class imgRequestProxy;
@@ -38,7 +39,7 @@ namespace mozilla {
 namespace dom {
 class Document;
 enum class FetchPriority : uint8_t;
-}
+}  // namespace dom
 }  // namespace mozilla
 
 class imgCacheEntry {
@@ -65,10 +66,24 @@ class imgCacheEntry {
 
   void UpdateLoadTime();
 
-  uint32_t GetExpiryTime() const { return mExpiryTime; }
-  void SetExpiryTime(uint32_t aExpiryTime) {
-    mExpiryTime = aExpiryTime;
-    Touch();
+  const CacheExpirationTime& GetExpiryTime() const { return mExpiryTime; }
+
+  void AccumulateExpiryTime(const CacheExpirationTime& aExpiryTime,
+                            bool aForceTouch = false) {
+    if (aExpiryTime.IsNever()) {
+      if (aForceTouch) {
+        Touch();
+      }
+      return;
+    }
+    if (mExpiryTime.IsNever() || aExpiryTime.IsShorterThan(mExpiryTime)) {
+      mExpiryTime = aExpiryTime;
+      Touch();
+    } else {
+      if (aForceTouch) {
+        Touch();
+      }
+    }
   }
 
   bool GetMustValidate() const { return mMustValidate; }
@@ -116,7 +131,7 @@ class imgCacheEntry {
   uint32_t mDataSize;
   int32_t mTouchedTime;
   uint32_t mLoadTime;
-  uint32_t mExpiryTime;
+  CacheExpirationTime mExpiryTime;
   nsExpirationState mExpirationState;
   bool mMustValidate : 1;
   bool mEvicted : 1;

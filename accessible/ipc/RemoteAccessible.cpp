@@ -19,6 +19,7 @@
 #include "nsAccessibilityService.h"
 #include "mozilla/Unused.h"
 #include "nsAccUtils.h"
+#include "nsFocusManager.h"
 #include "nsTextEquivUtils.h"
 #include "Pivot.h"
 #include "Relation.h"
@@ -74,6 +75,7 @@ void RemoteAccessible::Shutdown() {
 
   mChildren.Clear();
   ProxyDestroyed(static_cast<RemoteAccessible*>(this));
+  // mDoc owns this RemoteAccessible, so RemoveAccessible deletes this.
   mDoc->RemoveAccessible(static_cast<RemoteAccessible*>(this));
 }
 
@@ -148,37 +150,23 @@ LocalAccessible* RemoteAccessible::OuterDocOfRemoteBrowser() const {
 }
 
 void RemoteAccessible::SetParent(RemoteAccessible* aParent) {
-  if (!aParent) {
-    mParent = kNoParent;
-  } else {
-    MOZ_ASSERT(!IsDoc() || !aParent->IsDoc());
-    mParent = aParent->ID();
-  }
+  MOZ_ASSERT(!IsDoc() || !AsDoc()->IsTopLevel(),
+             "Top level doc should not have remote parent");
+  MOZ_ASSERT(!IsDoc() || !aParent || !aParent->IsDoc(),
+             "Doc can't be direct parent of another doc");
+  MOZ_ASSERT(!IsDoc() || !aParent || aParent->IsOuterDoc(),
+             "Doc's parent must be OuterDoc");
+  mParent = aParent;
 }
 
 RemoteAccessible* RemoteAccessible::RemoteParent() const {
-  if (mParent == kNoParent) {
-    return nullptr;
-  }
-
-  // if we are not a document then are parent is another proxy in the same
-  // document.  That means we can just ask our document for the proxy with our
-  // parent id.
-  if (!IsDoc()) {
-    return Document()->GetAccessible(mParent);
-  }
-
-  // If we are a top level document then our parent is not a proxy.
-  if (AsDoc()->IsTopLevel()) {
-    return nullptr;
-  }
-
-  // Finally if we are a non top level document then our parent id is for a
-  // proxy in our parent document so get the proxy from there.
-  DocAccessibleParent* parentDoc = AsDoc()->ParentDoc();
-  MOZ_ASSERT(parentDoc);
-  MOZ_ASSERT(mParent);
-  return parentDoc->GetAccessible(mParent);
+  MOZ_ASSERT(!IsDoc() || !AsDoc()->IsTopLevel() || !mParent,
+             "Top level doc should not have RemoteParent");
+  MOZ_ASSERT(!IsDoc() || !mParent || mParent->mDoc != mDoc,
+             "Doc's parent should be in another doc");
+  MOZ_ASSERT(!IsDoc() || !mParent || mParent->IsOuterDoc(),
+             "Doc's parent should be in another doc");
+  return mParent;
 }
 
 void RemoteAccessible::ApplyCache(CacheUpdateType aUpdateType,
@@ -1329,6 +1317,13 @@ void RemoteAccessible::DOMNodeID(nsString& aID) const {
   }
 }
 
+void RemoteAccessible::DOMNodeClass(nsString& aClass) const {
+  if (mCachedFields) {
+    mCachedFields->GetAttribute(CacheKey::DOMNodeClass, aClass);
+    VERIFY_CACHE(CacheDomain::DOMNodeIDAndClass);
+  }
+}
+
 void RemoteAccessible::ScrollToPoint(uint32_t aScrollType, int32_t aX,
                                      int32_t aY) {
   Unused << mDoc->SendScrollToPoint(mID, aScrollType, aX, aY);
@@ -1340,6 +1335,19 @@ void RemoteAccessible::Announce(const nsString& aAnnouncement,
   Unused << mDoc->SendAnnounce(mID, aAnnouncement, aPriority);
 }
 #endif  // !defined(XP_WIN)
+
+int32_t RemoteAccessible::ValueRegion() const {
+  MOZ_ASSERT(TagName() == nsGkAtoms::meter,
+             "Accessing value region on non-meter element?");
+  if (mCachedFields) {
+    if (auto region =
+            mCachedFields->GetAttribute<int32_t>(CacheKey::ValueRegion)) {
+      return *region;
+    }
+  }
+  // Expose sub-optimal (but not critical) as the value region, as a fallback.
+  return 0;
+}
 
 void RemoteAccessible::ScrollSubstringToPoint(int32_t aStartOffset,
                                               int32_t aEndOffset,
@@ -1551,7 +1559,7 @@ already_AddRefed<AccAttributes> RemoteAccessible::Attributes() {
     }
 
     nsString className;
-    mCachedFields->GetAttribute(CacheKey::DOMNodeClass, className);
+    DOMNodeClass(className);
     if (!className.IsEmpty()) {
       attributes->SetAttribute(nsGkAtoms::_class, std::move(className));
     }
@@ -1718,7 +1726,7 @@ void RemoteAccessible::ActionNameAt(uint8_t aIndex, nsAString& aName) {
         if (action) {
           action->ToString(aName);
         } else if (hasActionAncestor) {
-          aName.AssignLiteral("click ancestor");
+          aName.AssignLiteral("clickAncestor");
         } else if (mCachedFields->HasAttribute(CacheKey::HasLongdesc)) {
           aName.AssignLiteral("showlongdesc");
         }
@@ -1854,7 +1862,44 @@ bool RemoteAccessible::HasPrimaryAction() const {
   return mCachedFields && mCachedFields->HasAttribute(CacheKey::PrimaryAction);
 }
 
-void RemoteAccessible::TakeFocus() const { Unused << mDoc->SendTakeFocus(mID); }
+void RemoteAccessible::TakeFocus() const {
+  Unused << mDoc->SendTakeFocus(mID);
+  auto* bp = static_cast<dom::BrowserParent*>(mDoc->Manager());
+  MOZ_ASSERT(bp);
+  if (nsFocusManager::GetFocusedElementStatic() == bp->GetOwnerElement()) {
+    // This remote document tree is already focused. We don't need to do
+    // anything else.
+    return;
+  }
+  // Otherwise, we need to focus the <browser> or <iframe> element embedding the
+  // remote document in the parent process. If `this` is in an OOP iframe, we
+  // first need to focus the embedder iframe (and any ancestor OOP iframes). If
+  // the parent process embedder element were already focused, that would happen
+  // automatically, but it isn't. We can't simply focus the parent process
+  // embedder element before calling mDoc->SendTakeFocus because that would
+  // cause the remote document to restore focus to the last focused element,
+  // which we don't want.
+  DocAccessibleParent* embeddedDoc = mDoc;
+  Accessible* embedder = mDoc->Parent();
+  while (embedder) {
+    MOZ_ASSERT(embedder->IsOuterDoc());
+    RemoteAccessible* embedderRemote = embedder->AsRemote();
+    if (!embedderRemote) {
+      // This is the element in the parent process which embeds the remote
+      // document.
+      embedder->TakeFocus();
+      break;
+    }
+    // This is a remote <iframe>.
+    if (embeddedDoc->IsTopLevelInContentProcess()) {
+      // We only need to focus OOP iframes because these are where we cross
+      // process boundaries.
+      Unused << embedderRemote->mDoc->SendTakeFocus(embedderRemote->mID);
+    }
+    embeddedDoc = embedderRemote->mDoc;
+    embedder = embeddedDoc->Parent();
+  }
+}
 
 void RemoteAccessible::ScrollTo(uint32_t aHow) const {
   Unused << mDoc->SendScrollTo(mID, aHow);
@@ -2037,11 +2082,21 @@ Maybe<int32_t> RemoteAccessible::GetIntARIAAttr(nsAtom* aAttrName) const {
 }
 
 void RemoteAccessible::Language(nsAString& aLocale) {
-  if (!IsHyperText()) {
-    return;
-  }
-  if (auto attrs = GetCachedTextAttributes()) {
-    attrs->GetAttribute(nsGkAtoms::language, aLocale);
+  if (IsHyperText() || IsText()) {
+    if (auto attrs = GetCachedTextAttributes()) {
+      attrs->GetAttribute(nsGkAtoms::language, aLocale);
+    }
+    if (IsText() && aLocale.IsEmpty()) {
+      // If a leaf has the same language as its parent HyperTextAccessible, it
+      // won't be cached in the leaf's text attributes. Check the parent.
+      if (RemoteAccessible* parent = RemoteParent()) {
+        if (auto attrs = parent->GetCachedTextAttributes()) {
+          attrs->GetAttribute(nsGkAtoms::language, aLocale);
+        }
+      }
+    }
+  } else if (mCachedFields) {
+    mCachedFields->GetAttribute(CacheKey::Language, aLocale);
   }
 }
 

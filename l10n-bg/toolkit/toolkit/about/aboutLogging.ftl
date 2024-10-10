@@ -11,6 +11,9 @@ about-logging-stop-logging = Спиране
 
 ## Logging presets
 
+about-logging-preset-webgpu-label = WebGPU
+about-logging-preset-webgpu-description = Модули за диагностика на проблеми с WebGPU
+
 ## Variables:
 ##   $k (String) - Variable name
 ##   $v (String) - Variable value

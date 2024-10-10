@@ -9,22 +9,11 @@
 "use strict";
 
 // A skeleton configuration that gets filled in from TESTS during `add_setup`.
-let CONFIG = [
-  {
-    recordType: "defaultEngines",
-    globalDefault: "engine_no_icon",
-    specificDefaults: [],
-  },
-  {
-    recordType: "engineOrders",
-    orders: [],
-  },
-];
-
 let TESTS = [
   {
     engineId: "engine_no_icon",
     expectedIcon: null,
+    expectedMimeType: null,
   },
   {
     engineId: "engine_exact_match",
@@ -36,6 +25,7 @@ let TESTS = [
       },
     ],
     expectedIcon: "remoteIcon.ico",
+    expectedMimeType: "image/x-icon",
   },
   {
     engineId: "engine_begins_with",
@@ -47,6 +37,7 @@ let TESTS = [
       },
     ],
     expectedIcon: "remoteIcon.ico",
+    expectedMimeType: "image/x-icon",
   },
   {
     engineId: "engine_non_default_sized_icon",
@@ -62,6 +53,7 @@ let TESTS = [
       },
     ],
     expectedIcon: "remoteIcon.ico",
+    expectedMimeType: "image/x-icon",
   },
   {
     engineId: "engine_multiple_icons",
@@ -78,6 +70,19 @@ let TESTS = [
       },
     ],
     expectedIcon: "bigIcon.ico",
+    expectedMimeType: "image/x-icon",
+  },
+  {
+    engineId: "engine_svg_icon",
+    icons: [
+      {
+        filename: "svgIcon.svg",
+        engineIdentifiers: ["engine_svg_icon"],
+        imageSize: 16,
+      },
+    ],
+    expectedIcon: "svgIcon.svg",
+    expectedMimeType: "image/svg+xml",
   },
 ];
 
@@ -87,12 +92,12 @@ add_setup(async function () {
 
   await db.clear();
 
+  let partialConfig = [];
+
   for (let test of TESTS) {
-    CONFIG.push({
+    partialConfig.push({
       identifier: test.engineId,
-      recordType: "engine",
       base: {
-        name: test.engineId + " name",
         urls: {
           search: {
             base: "https://example.com/" + test.engineId,
@@ -100,7 +105,6 @@ add_setup(async function () {
           },
         },
       },
-      variants: [{ environment: { allRegionsAndLocales: true } }],
     });
 
     if ("icons" in test) {
@@ -110,7 +114,7 @@ add_setup(async function () {
     }
   }
 
-  await SearchTestUtils.useTestEngines("simple-engines", null, CONFIG);
+  SearchTestUtils.setRemoteSettingsConfig(partialConfig);
   await Services.search.init();
 });
 
@@ -118,7 +122,7 @@ for (let test of TESTS) {
   add_task(async function () {
     info("Testing engine: " + test.engineId);
 
-    let engine = Services.search.getEngineByName(test.engineId + " name");
+    let engine = Services.search.getEngineById(test.engineId);
     if (test.expectedIcon) {
       let engineIconURL = await engine.getIconURL(16);
       Assert.notEqual(
@@ -142,6 +146,14 @@ for (let test of TESTS) {
       Assert.ok(
         buffer.every((value, index) => value === expectedBuffer[index]),
         "Should have received matching data for the expected icon"
+      );
+
+      let contentType = response.headers.get("content-type");
+
+      Assert.equal(
+        contentType,
+        test.expectedMimeType,
+        "Should have received matching MIME types for the expected icon"
       );
     } else {
       Assert.equal(

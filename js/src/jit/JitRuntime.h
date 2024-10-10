@@ -43,6 +43,7 @@ namespace js {
 
 class AutoLockHelperThreadState;
 class GCMarker;
+enum class ArraySortKind;
 
 namespace jit {
 
@@ -135,6 +136,7 @@ class JitRuntime {
 
   // Shared exception-handler tail.
   WriteOnceData<uint32_t> exceptionTailOffset_{0};
+  WriteOnceData<uint32_t> exceptionTailReturnValueCheckOffset_{0};
 
   // Shared profiler exit frame tail.
   WriteOnceData<uint32_t> profilerExitFrameTailOffset_{0};
@@ -226,8 +228,8 @@ class JitRuntime {
   // Number of Ion compilations which were finished off thread and are
   // waiting to be lazily linked. This is only set while holding the helper
   // thread state lock, but may be read from at other times.
-  typedef mozilla::Atomic<size_t, mozilla::SequentiallyConsistent>
-      NumFinishedOffThreadTasksType;
+  using NumFinishedOffThreadTasksType =
+      mozilla::Atomic<size_t, mozilla::SequentiallyConsistent>;
   NumFinishedOffThreadTasksType numFinishedOffThreadTasks_{0};
 
   // List of Ion compilation waiting to get linked.
@@ -307,7 +309,8 @@ class JitRuntime {
   void generateTrampolineNatives(MacroAssembler& masm,
                                  TrampolineNativeJitEntryOffsets& offsets,
                                  PerfSpewerRangeRecorder& rangeRecorder);
-  uint32_t generateArraySortTrampoline(MacroAssembler& masm);
+  uint32_t generateArraySortTrampoline(MacroAssembler& masm,
+                                       ArraySortKind kind);
 
   void bindLabelToOffset(Label* label, uint32_t offset) {
     MOZ_ASSERT(!trampolineCode_);
@@ -364,6 +367,9 @@ class JitRuntime {
 
   TrampolinePtr getExceptionTail() const {
     return trampolineCode(exceptionTailOffset_);
+  }
+  TrampolinePtr getExceptionTailReturnValueCheck() const {
+    return trampolineCode(exceptionTailReturnValueCheckOffset_);
   }
 
   TrampolinePtr getProfilerExitFrameTail() const {

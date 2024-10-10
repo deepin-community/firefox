@@ -55,6 +55,9 @@ category-experimental =
 pane-experimental-subtitle = Agissètz amb prudéncia
 pane-experimental-search-results-header = Experiéncias de { -brand-short-name } : siatz atentiu
 pane-experimental-description2 = Cambiar las configuracions avançadas pòt influenciar las performanças o la seguretat de { -brand-short-name }.
+settings-pane-labs-title = { -firefoxlabs-brand-name }
+settings-category-labs =
+    .tooltiptext = { -firefoxlabs-brand-name }
 pane-experimental-reset =
     .label = Restablir los paramètres per defaut
     .accesskey = R
@@ -474,7 +477,7 @@ browsing-gtk-use-non-overlay-scrollbars =
     .accesskey = o
 browsing-always-underline-links =
     .label = Totjorn soslinhar los ligams
-    .accesskey = u
+    .accesskey = T
 browsing-use-onscreen-keyboard =
     .label = Mostrar un clavièr tactil quand es necessari
     .accesskey = t
@@ -588,6 +591,8 @@ home-prefs-recent-activity-description = Una seleccion de sites e contenguts rec
 home-prefs-snippets-header =
     .label = Extraches
 home-prefs-snippets-description-new = Astúcias e novetats de { -vendor-short-name } e { -brand-product-name }
+home-prefs-weather-header =
+    .label = Metèo
 # Variables:
 #   $num (number) - Number of rows displayed
 home-prefs-sections-rows-option =
@@ -876,6 +881,9 @@ forms-breach-alerts =
 forms-breach-alerts-learn-more-link = Ne saber mai
 preferences-relay-integration-checkbox =
     .label = Suggerir los àlias de messatjariá { -relay-brand-name } per protegir vòstra adreça electronica.
+preferences-relay-integration-checkbox2 =
+    .label = Suggerir los àlias de messatjariá { -relay-brand-name } per protegir vòstra adreça electronica.
+    .accesskey = g
 relay-integration-learn-more-link = Ne saber mai
 # Checkbox which controls filling saved logins into fields automatically when they appear, in some cases without user interaction.
 forms-fill-logins-and-passwords =
@@ -884,12 +892,19 @@ forms-fill-logins-and-passwords =
 forms-saved-logins =
     .label = Identificants salvats…
     .accesskey = S
+# Checkbox which controls filling saved logins into fields automatically when they appear, in some cases without user interaction.
+forms-fill-usernames-and-passwords =
+    .label = Emplenar automaticament los noms d’utilizaire e senhals
+    .accesskey = E
 forms-saved-passwords =
     .label = Senhals salvats
     .accesskey = n
 forms-primary-pw-use =
     .label = Utilizar un senhal principal
     .accesskey = U
+# This operation requires the user to authenticate with the operating system (device sign-in)
+forms-os-reauth =
+    .label = Exigir la connexion a l’aparelh per entresenhar e gerir los senhals
 forms-primary-pw-learn-more-link = Ne saber mai
 # This string uses the former name of the Primary Password feature
 # ("Master Password" in English) so that the preferences can be found
@@ -910,6 +925,7 @@ forms-windows-sso =
     .label = Autorizar l’autentificacion unica de Windows per Microsoft, pel trabalh e los comptes escolars
 forms-windows-sso-learn-more-link = Ne saber mai
 forms-windows-sso-desc = Gerissètz los compte als paramètres de vòstre periferic
+windows-passkey-settings-label = Gerir las claus d’accès als paramètres sistèma
 
 ## OS Authentication dialog
 
@@ -921,6 +937,7 @@ primary-password-os-auth-dialog-message-win = Per crear un senhal principal, pic
 # notes are only valid for English. Please test in your locale.
 primary-password-os-auth-dialog-message-macosx = crear un senhal principal
 master-password-os-auth-dialog-caption = { -brand-full-name }
+autofill-creditcard-os-auth-dialog-caption = { -brand-full-name }
 
 ## Privacy section - Autofill
 
@@ -931,8 +948,13 @@ autofill-saved-addresses-button = Adreças salvadas
     .accesskey = A
 autofill-payment-methods-checkbox-message = Enregistrar e entresenhar los metòdes de pagament
     .accesskey = m
+autofill-payment-methods-checkbox-submessage = Inclutz las cartas de crèdit e de debit
+    .accesskey = I
 autofill-saved-payment-methods-button = Metòdes de pagament enregistrats
     .accesskey = e
+# This operation requires the user to authenticate with the operating system (device sign-in)
+autofill-reauth-payment-methods-checkbox = Exigir la connexion a l’aparelh per entresenhar e gerir los metòdes de pagament
+    .accesskey = o
 
 ## Privacy Section - History
 
@@ -1028,6 +1050,7 @@ cookie-banner-handling-description = Permetre a { -brand-short-name } de regetar
 ## Privacy Section - Cookie Banner Blocking
 
 cookie-banner-blocker-header = Blocador de bandièras de cookies
+cookie-banner-blocker-description = Quand un site demanda se pòt utilizar de cookies en navegacion privada, { -brand-short-name } refusa automaticament. S’aplica sonque als sites compatibles.
 cookie-banner-learn-more = Ne saber mai
 forms-handle-cookie-banners =
     .label = Reduire las bandièras de cookies
@@ -1067,6 +1090,9 @@ addressbar-suggestions-settings = Cambiar las preferéncias per las suggestions 
 addressbar-locbar-showrecentsearches-option =
     .label = Afichar las recèrcas recentas
     .accesskey = r
+addressbar-locbar-showtrendingsuggestions-option =
+    .label = Afichar las suggestions de recèrca popularas
+    .accesskey = f
 addressbar-quickactions-learn-more = Ne saber mai
 
 ## Privacy Section - Content Blocking
@@ -1253,6 +1279,14 @@ privacy-segmentation-radio-off =
     .label = Utilizar las recomandacions { -brand-product-name }
 privacy-segmentation-radio-on =
     .label = Mostrar las informacions detalhadas
+
+## Privacy Section - Website Advertising Preferences
+
+website-advertising-header = Preferéncias de publicitat dels sites web
+website-advertising-private-attribution =
+    .label = Permetre als sites Web de realizar de mesuras publicitàrias en respectant la vida privada
+    .accesskey = P
+website-advertising-private-attribution-description = Aquò ajuda los sites a comprendre las performanças de lors publicitats sens reculhir de donadas vos tocant.
 
 ## Privacy Section - Security
 ##

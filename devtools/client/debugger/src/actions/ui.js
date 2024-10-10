@@ -13,11 +13,7 @@ import {
   getBreakpointsForSource,
 } from "../selectors/index";
 import { selectSource } from "../actions/sources/select";
-import {
-  getEditor,
-  getLocationsInViewport,
-  updateEditorLineWrapping,
-} from "../utils/editor/index";
+import { getEditor, updateEditorLineWrapping } from "../utils/editor/index";
 import { blackboxSourceActorsForSource } from "./sources/blackbox";
 import { toggleBreakpoints } from "./breakpoints/index";
 import { copyToTheClipboard } from "../utils/clipboard";
@@ -198,9 +194,10 @@ export function closeConditionalPanel() {
 }
 
 export function updateViewport() {
+  const editor = getEditor();
   return {
     type: "SET_VIEWPORT",
-    viewport: getLocationsInViewport(getEditor()),
+    viewport: editor.getLocationsInViewport(),
   };
 }
 
@@ -222,37 +219,6 @@ export function copyToClipboard(location) {
     if (content && isFulfilled(content) && content.value.type === "text") {
       copyToTheClipboard(content.value.value);
     }
-  };
-}
-
-export function setJavascriptTracingLogMethod(value) {
-  return {
-    type: "SET_JAVASCRIPT_TRACING_LOG_METHOD",
-    value,
-  };
-}
-
-export function toggleJavascriptTracingValues() {
-  return {
-    type: "TOGGLE_JAVASCRIPT_TRACING_VALUES",
-  };
-}
-
-export function toggleJavascriptTracingOnNextInteraction() {
-  return {
-    type: "TOGGLE_JAVASCRIPT_TRACING_ON_NEXT_INTERACTION",
-  };
-}
-
-export function toggleJavascriptTracingFunctionReturn() {
-  return {
-    type: "TOGGLE_JAVASCRIPT_TRACING_FUNCTION_RETURN",
-  };
-}
-
-export function toggleJavascriptTracingOnNextLoad() {
-  return {
-    type: "TOGGLE_JAVASCRIPT_TRACING_ON_NEXT_LOAD",
   };
 }
 

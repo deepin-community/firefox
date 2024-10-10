@@ -84,6 +84,8 @@ policy-Handlers = Konfigurera standardprogramhanterare.
 policy-HardwareAcceleration = Om inaktiv, stäng av hårdvaruacceleration.
 # “lock” means that the user won’t be able to change this setting
 policy-Homepage = Ställ in och eventuellt lås startsidan.
+policy-HttpAllowlist = Ursprung som inte kommer att uppgraderas till HTTPS.
+policy-HttpsOnlyMode = Tillåt endast HTTPS-läge.
 policy-InstallAddonsPermission = Tillåt vissa webbplatser att installera tillägg.
 policy-LegacyProfiles = Inaktivera funktionen som framtvingar en separat profil för varje installation
 
@@ -108,12 +110,16 @@ policy-OverrideFirstRunPage = Åsidosätt sidan som visas första gången. Sätt
 policy-OverridePostUpdatePage = Åsidosätt sidan "Vad är nytt" efter uppdateringar. Sätt denna policy till blankt om du vill inaktivera sidan efter uppdateringar.
 policy-PasswordManagerEnabled = Aktivera att spara lösenord i lösenordshanteraren.
 policy-PasswordManagerExceptions = Förhindra { -brand-short-name } från att spara lösenord för specifika webbplatser.
+# Post-quantum refers to cryptography that is safe from attacks by quantum
+# computers. See https://en.wikipedia.org/wiki/Post-quantum_cryptography
+policy-PostQuantumKeyAgreementEnabled = Aktivera post-quantum nyckelöverenskommelse för TLS.
 # PDF.js and PDF should not be translated
 policy-PDFjs = Inaktivera eller konfigurera PDF.js, den inbyggda PDF-visaren i { -brand-short-name }
 policy-Permissions2 = Konfigurera behörigheter för kamera, mikrofon, plats, aviseringar och autoplay.
 policy-PictureInPicture = Aktivera eller inaktivera bild-i-bild.
 policy-PopupBlocking = Tillåt vissa webbplatser att visa popup-fönster som standard.
 policy-Preferences = Ställ in och lås värdet för en delmängd av inställningar.
+policy-PrivateBrowsingModeAvailability = Ange tillgänglighet för privat surfläge.
 policy-PromptForDownloadLocation = Fråga var du ska spara filer när du laddar ner.
 policy-Proxy = Ange inställningar för proxy.
 policy-RequestedLocales = Ange listan över begärda språk för programmet efter ordning i inställningar.

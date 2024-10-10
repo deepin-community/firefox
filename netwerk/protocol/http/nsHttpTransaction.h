@@ -196,6 +196,10 @@ class nsHttpTransaction final : public nsAHttpTransaction,
 
   bool IsForWebTransport() { return mIsForWebTransport; }
 
+  nsAutoCString GetUrl() { return mUrl; }
+
+  uint64_t ChannelId() { return mChannelId; }
+
  private:
   friend class DeleteHttpTransaction;
   virtual ~nsHttpTransaction();
@@ -556,7 +560,6 @@ class nsHttpTransaction final : public nsAHttpTransaction,
   } mEarlyDataDisposition{EARLY_NONE};
 
   HttpTrafficCategory mTrafficCategory{HttpTrafficCategory::eInvalid};
-  bool mThroughCaptivePortal;
   Atomic<int32_t> mProxyConnectResponseCode{0};
 
   OnPushCallback mOnPushCallback;
@@ -593,6 +596,8 @@ class nsHttpTransaction final : public nsAHttpTransaction,
   nsCString mHashKeyOfConnectionEntry;
 
   nsCOMPtr<WebTransportSessionEventListener> mWebTransportSessionEventListener;
+
+  nsAutoCString mUrl;
 };
 
 }  // namespace mozilla::net

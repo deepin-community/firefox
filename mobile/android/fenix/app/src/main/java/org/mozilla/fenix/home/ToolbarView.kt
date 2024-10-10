@@ -4,27 +4,30 @@
 
 package org.mozilla.fenix.home
 
-import android.content.Context
 import android.content.Intent
-import android.speech.RecognizerIntent
 import android.view.Gravity
-import android.view.View
 import android.view.ViewGroup
+import androidx.annotation.VisibleForTesting
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
-import mozilla.components.browser.state.search.SearchEngine
+import androidx.navigation.fragment.findNavController
+import mozilla.components.browser.state.state.BrowserState
 import mozilla.components.support.ktx.android.content.res.resolveAttribute
+import mozilla.components.support.utils.ext.isLandscape
+import org.mozilla.fenix.HomeActivity
 import org.mozilla.fenix.R
-import org.mozilla.fenix.components.toolbar.IncompleteRedesignToolbarFeature
+import org.mozilla.fenix.browser.tabstrip.isTabStripEnabled
 import org.mozilla.fenix.components.toolbar.ToolbarPosition
+import org.mozilla.fenix.components.toolbar.navbar.shouldAddNavigationBar
 import org.mozilla.fenix.databinding.FragmentHomeBinding
+import org.mozilla.fenix.ext.increaseTapAreaVertically
+import org.mozilla.fenix.ext.isTablet
 import org.mozilla.fenix.ext.settings
 import org.mozilla.fenix.home.toolbar.ToolbarInteractor
-import org.mozilla.fenix.search.ExtraAction
 import org.mozilla.fenix.utils.ToolbarPopupWindow
 import java.lang.ref.WeakReference
 
@@ -33,12 +36,24 @@ import java.lang.ref.WeakReference
  */
 class ToolbarView(
     private val binding: FragmentHomeBinding,
-    private val context: Context,
     private val interactor: ToolbarInteractor,
-    private val searchEngine: SearchEngine?,
+    private val homeFragment: HomeFragment,
+    private val homeActivity: HomeActivity,
+    private val onShowPinVerification: (Intent) -> Unit,
+    private val onBiometricAuthenticationSuccessful: () -> Unit,
 ) {
+
+    private var context = homeFragment.requireContext()
+
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    internal var tabCounterView: TabCounterView? = null
+
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    internal var homeMenuView: HomeMenuView? = null
+
     init {
-        updateLayout(binding.root)
+        initLayoutParameters()
+        updateMargins()
     }
 
     /**
@@ -52,51 +67,78 @@ class ToolbarView(
             interactor.onNavigateSearch()
         }
 
-        binding.qrActionImage.setOnClickListener {
-            interactor.onNavigateSearch(ExtraAction.QR_READER)
-        }
-
-        binding.microphoneActionImage.setOnClickListener {
-            interactor.onNavigateSearch(ExtraAction.VOICE_SEARCH)
-        }
-
         binding.toolbarWrapper.setOnLongClickListener {
             ToolbarPopupWindow.show(
                 WeakReference(it),
+                WeakReference(binding.dynamicSnackbarContainer),
                 handlePasteAndGo = interactor::onPasteAndGo,
                 handlePaste = interactor::onPaste,
                 copyVisible = false,
             )
             true
         }
+
+        binding.toolbarWrapper.increaseTapAreaVertically(TOOLBAR_WRAPPER_INCREASE_HEIGHT_DPS)
+
+        updateButtonVisibility()
     }
 
-    @Suppress("LongMethod")
-    private fun updateLayout(view: View) {
-        val speechIntent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH)
+    /**
+     * Updates the visibility of the tab counter and menu buttons.
+     */
+    fun updateButtonVisibility() {
+        val showTabCounterAndMenu = !context.shouldAddNavigationBar()
+        binding.menuButton.isVisible = showTabCounterAndMenu
+        binding.tabButton.isVisible = showTabCounterAndMenu
 
-        when (IncompleteRedesignToolbarFeature(context.settings()).isEnabled) {
-            true -> {
-                binding.menuButton.isVisible = false
-                binding.tabButton.isVisible = false
-                binding.qrActionImage.isVisible =
-                    searchEngine?.isGeneral == true || searchEngine?.type == SearchEngine.Type.CUSTOM
-                binding.microphoneActionImage.isVisible =
-                    speechIntent.resolveActivity(context.packageManager) != null &&
-                    context.settings().shouldShowVoiceSearch
-                binding.browserActionSeparator.isVisible =
-                    binding.qrActionImage.isVisible || binding.microphoneActionImage.isVisible
-            }
-
-            false -> {
-                binding.menuButton.isVisible = true
-                binding.tabButton.isVisible = true
-                binding.browserActionSeparator.isVisible = false
-                binding.qrActionImage.isVisible = false
-                binding.microphoneActionImage.isVisible = false
-            }
+        if (showTabCounterAndMenu) {
+            homeMenuView = buildHomeMenu()
+            tabCounterView = buildTabCounter()
+        } else {
+            homeMenuView = null
+            tabCounterView = null
         }
+    }
 
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    internal fun buildHomeMenu() = HomeMenuView(
+        view = homeFragment.requireView(),
+        context = context,
+        lifecycleOwner = homeFragment.viewLifecycleOwner,
+        homeActivity = homeActivity,
+        navController = homeFragment.findNavController(),
+        homeFragment = homeFragment,
+        menuButton = WeakReference(binding.menuButton),
+        onShowPinVerification = { intent -> onShowPinVerification(intent) },
+        onBiometricAuthenticationSuccessful = { onBiometricAuthenticationSuccessful() },
+    ).also { it.build() }
+
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    internal fun buildTabCounter() = TabCounterView(
+        context = context,
+        browsingModeManager = homeActivity.browsingModeManager,
+        navController = homeFragment.findNavController(),
+        tabCounter = binding.tabButton,
+        showLongPressMenu = !(context.settings().navigationToolbarEnabled && context.isTablet()),
+    )
+
+    /**
+     * Dismisses the home menu.
+     */
+    fun dismissMenu() {
+        homeMenuView?.dismissMenu()
+    }
+
+    /**
+     * Updates the tab counter view based on the current browser state.
+     *
+     * @param browserState [BrowserState] is passed down to tab counter view to calculate the view state.
+     */
+    fun updateTabCounter(browserState: BrowserState) {
+        tabCounterView?.update(browserState)
+    }
+
+    private fun initLayoutParameters() {
         when (context.settings().toolbarPosition) {
             ToolbarPosition.TOP -> {
                 binding.toolbarLayout.layoutParams = CoordinatorLayout.LayoutParams(
@@ -106,7 +148,7 @@ class ToolbarView(
                     gravity = Gravity.TOP
                 }
 
-                val isTabletAndTabStripEnabled = context.settings().isTabletAndTabStripEnabled
+                val isTabletAndTabStripEnabled = context.isTabStripEnabled()
                 ConstraintSet().apply {
                     clone(binding.toolbarLayout)
                     clear(binding.bottomBar.id, ConstraintSet.BOTTOM)
@@ -143,8 +185,8 @@ class ToolbarView(
                 }
 
                 binding.bottomBar.background = AppCompatResources.getDrawable(
-                    view.context,
-                    view.context.theme.resolveAttribute(R.attr.bottomBarBackgroundTop),
+                    context,
+                    context.theme.resolveAttribute(R.attr.bottomBarBackgroundTop),
                 )
 
                 binding.homeAppBar.updateLayoutParams<ViewGroup.MarginLayoutParams> {
@@ -160,13 +202,25 @@ class ToolbarView(
 
             ToolbarPosition.BOTTOM -> {}
         }
+    }
 
-        binding.toolbarWrapper.updateLayoutParams<ViewGroup.MarginLayoutParams> {
-            rightMargin = if (IncompleteRedesignToolbarFeature(context.settings()).isEnabled) {
-                context.resources.getDimensionPixelSize(R.dimen.home_fragment_toolbar_margin)
+    private fun updateMargins() {
+        if (context.settings().navigationToolbarEnabled) {
+            val marginStart = context.resources.getDimensionPixelSize(R.dimen.toolbar_horizontal_margin)
+            val marginEnd = if (context.isLandscape() || context.isTablet()) {
+                context.resources.getDimensionPixelSize(R.dimen.home_item_horizontal_short_margin)
             } else {
-                0
+                context.resources.getDimensionPixelSize(R.dimen.home_item_horizontal_margin)
+            }
+
+            (binding.toolbarWrapper.layoutParams as ConstraintLayout.LayoutParams).apply {
+                this.marginStart = marginStart
+                this.marginEnd = marginEnd
             }
         }
+    }
+
+    companion object {
+        const val TOOLBAR_WRAPPER_INCREASE_HEIGHT_DPS = 4
     }
 }

@@ -189,6 +189,8 @@ mr2022-onboarding-pin-primary-button-label =
         [macos] Mantener { -brand-short-name } en Dock
        *[other] Pegar { -brand-short-name } a la barra de tareas
     }
+# Primary button string used on welcome page for when Firefox is not pinned on MSIX
+mr2022-onboarding-pin-primary-button-label-msix = Pegar { -brand-short-name } a la barra de tareas y al menú de inicio
 # Subtitle will be used when user already has Firefox pinned, but
 # has not set it as their default browser.
 # When translating "zip", please feel free to pick a verb that signifies movement and/or exploration
@@ -335,6 +337,14 @@ onboarding-device-migration-title = ¡Bienvenido de vuelta!
 onboarding-device-migration-subtitle = Inicie la sesión en su { -fxaccount-brand-name(capitalization: "sentence") } para tener sus marcadores, contraseñas e historial en su nuevo dispositivo.
 onboarding-device-migration-subtitle2 = Inicie sesión en su cuenta para traer sus marcadores, contraseñas e historial a su nuevo dispositivo.
 onboarding-device-migration-primary-button-label = Iniciar la sesión
+
+## Add-ons Picker screen
+
+amo-picker-title = Personalizá tu { -brand-short-name }
+amo-picker-subtitle = Las extensiones son como aplicaciones para el navegador y permiten proteger contraseñas, descargar videos, encontrar ofertas, bloquear publicidades molestas, cambiar la apariencia del navegador y mucho más.
+amo-picker-install-button-label = Añadir a { -brand-short-name }
+amo-picker-install-complete-label = Instalado
+amo-picker-collection-link = Explorar más complementos
 
 ## The following screens have been updated to use security and privacy focused strings:
 

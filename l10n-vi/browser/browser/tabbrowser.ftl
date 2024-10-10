@@ -4,18 +4,22 @@
 
 tabbrowser-empty-tab-title = Thẻ mới
 tabbrowser-empty-private-tab-title = Thẻ riêng tư mới
-
 tabbrowser-menuitem-close-tab =
     .label = Đóng thẻ
 tabbrowser-menuitem-close =
     .label = Đóng
-
 # Displayed as a tooltip on container tabs
 # Variables:
 #   $title (String): the title of the current tab.
 #   $containerName (String): the name of the current container.
 tabbrowser-container-tab-title = { $title } - { $containerName }
-
+# This text serves as an on-screen tooltip as well as an accessible name for
+# the "X" button that is shown on the active tab or, when multiple tabs are
+# selected, to all their "X" buttons.
+# Variables:
+#   $tabCount (Number): The number of tabs that will be closed.
+tabbrowser-close-tabs-button =
+    .tooltiptext = Đóng { $tabCount } thẻ
 # Variables:
 #   $tabCount (Number): The number of tabs that will be closed.
 tabbrowser-close-tabs-tooltip =
@@ -90,13 +94,22 @@ tabbrowser-confirm-caretbrowsing-title = Duyệt với con trỏ
 tabbrowser-confirm-caretbrowsing-message = Nhấn F7 để bật hoặc tắt chế độ duyệt với con trỏ. Chức năng này đặt một con trỏ có thể di chuyển được trên trang web, cho phép bạn chọn văn bản bằng bàn phím. Bạn có muốn bật chế độ này không?
 tabbrowser-confirm-caretbrowsing-checkbox = Không hiện lại hộp thoại này.
 
+## Confirmation dialog for closing all duplicate tabs
+
+tabbrowser-confirm-close-duplicate-tabs-title = Hãy cân nhắc
+tabbrowser-confirm-close-duplicate-tabs-text = Chúng tôi sẽ giữ thẻ hoạt động lần cuối
+tabbrowser-confirm-close-all-duplicate-tabs-title = Đóng các thẻ trùng?
+tabbrowser-confirm-close-all-duplicate-tabs-text =
+    Chúng tôi sẽ đóng các thẻ trùng lặp trong cửa sổ này.Thẻ hoạt động
+    gần nhất sẽ vẫn mở.
+tabbrowser-confirm-close-all-duplicate-tabs-button-closetabs = Đóng thẻ
+
 ##
 
 # Variables:
 #   $domain (String): URL of the page that is trying to steal focus.
 tabbrowser-allow-dialogs-to-get-focus =
     .label = Cho phép các thông báo như thế này từ { $domain } đưa bạn đến thẻ của họ
-
 tabbrowser-customizemode-tab-title = Tùy biến { -brand-short-name }
 
 ## Context menu buttons, of which only one will be visible at a time
@@ -115,7 +128,6 @@ tabbrowser-context-mute-selected-tabs =
 tabbrowser-context-unmute-selected-tabs =
     .label = Bỏ tắt tiếng thẻ
     .accesskey = m
-
 # This string is used as an additional tooltip and accessibility description for tabs playing audio
 tabbrowser-tab-audio-playing-description = Đang phát âm thanh
 

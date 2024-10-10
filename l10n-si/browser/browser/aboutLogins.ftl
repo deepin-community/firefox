@@ -29,6 +29,8 @@ about-logins-menu-menuitem-import-from-another-browser = වෙනත් අත�
 about-logins-menu-menuitem-import-from-a-file = ගොනුවකින් ආයාත කරන්න…
 about-logins-menu-menuitem-export-logins = පිවිසුම් නිර්යාතය…
 about-logins-menu-menuitem-remove-all-logins = සියළු පිවිසුම් ඉවත් කරන්න…
+about-logins-menu-menuitem-export-logins2 = මුරපද නිර්යාතය…
+about-logins-menu-menuitem-remove-all-logins2 = සියලු මුරපද ඉවත් කරන්න…
 menu-menuitem-preferences =
     { PLATFORM() ->
         [windows] විකල්ප
@@ -73,8 +75,8 @@ login-list-filtered-count2 =
 login-list-sort-label-text = වර්ග කරන්න:
 login-list-name-option = නම (අ-ෆ)
 login-list-name-reverse-option = නම (ෆ-අ)
-login-list-username-option = පරිශීලක නාමය (අ-ෆ)
-login-list-username-reverse-option = පරිශීලක නාමය (ෆ-අ)
+login-list-username-option = පරිශ්‍රීලක නාමය (අ-ෆ)
+login-list-username-reverse-option = පරිශ්‍රීලක නාමය (ෆ-අ)
 about-logins-login-list-alerts-option = ඇඟවීම්
 login-list-last-changed-option = අවසන් සංශෝධනය
 login-list-last-used-option = අවසන් භාවිතය
@@ -87,7 +89,7 @@ about-logins-login-list-empty-search-description = ඔබගේ සෙවුම�
 login-list-item-title-new-login = නව පිවිසුම
 login-list-item-subtitle-new-login = ඔබගේ පිවිසුම් අක්තපත්‍ර යොදන්න
 login-list-item-title-new-login2 = මුරපදය එක් කරන්න
-login-list-item-subtitle-missing-username = (පරිශීලක නාමය නැත)
+login-list-item-subtitle-missing-username = (පරිශ්‍රීලක නාමය නැත)
 about-logins-list-item-breach-icon =
     .title = උල්ලංඝනය වූ අඩවියකි
 about-logins-list-section-breach = උල්ලංඝනය වූ අඩවි
@@ -102,23 +104,33 @@ about-logins-login-intro-heading-logged-out2 = සුරැකි පිවි�
 about-logins-login-intro-heading-logged-in = සමමුහූර්ත පිවිසුම් හමු නොවිණි.
 login-intro-description = වෙනත් උපාංගවල { -brand-product-name } හි සුරකින ලද ඔබගේ පිවිසුම් මෙහි ලබා ගන්නා අයුරු පහත දැක්වේ:
 login-intro-instructions-fxa = ඔබගේ පිවිසුම් සුරකින ලද උපාංගයෙන් { -fxaccount-brand-name } වෙත පිවිසෙන්න.
+about-logins-login-intro-heading-message = ඔබගේ මුරපද ආරක්ෂිත තැනක සුරකින්න
+login-intro-description2 = ඔබ { -brand-product-name } වෙත සුරකින සියලුම මුරපද සංකේතිතයි. තවද, අපි උල්ලංඝන ගැන විමසිල්ලෙන් සිටින අතර ඔබට බලපා ඇත්නම් අඟවන්නෙමු. <a data-l10n-name="breach-alert-link">තව දැනගන්න</a>
 login-intro-instructions-fxa2 = පිවිසුම් සුරැකි උපාංගයෙන් ඔබගේ ගිණුමට පිවිසෙන්න හෝ සාදන්න.
 login-intro-instructions-fxa-settings = සැකසුම් > සමමුහූර්තය > සමමුහූර්තය සක්‍රිය කරන්න... වෙත ගොස් පිවිසුම් හා මුරපද කොටුව තෝරන්න.
 login-intro-instructions-fxa-passwords-help = උපකාර සඳහා <a data-l10n-name="passwords-help-link">මුරපද සහාය</a> වෙත ගොඩවදින්න.
 about-logins-intro-browser-only-import = ඔබගේ පිවිසුම් වෙනත් අතිරික්සුවක සුරකින ලද්දේ නම්, ඒවා <a data-l10n-name="import-link">{ -brand-product-name } වෙත ආයාත</a> කිරීමට හැකිය.
+about-logins-intro-import3 = දැන් මුරපදයක් එක් කිරීමට ඉහත + බොත්තම තෝරන්න. ඔබට <a data-l10n-name="import-browser-link">වෙනත් අතිරික්සුවකින්</a> හෝ <a data-l10n-name="import-file-link">ගොනුවකින්</a> මුරපද ආයාත කිරීමට හැකිය.
 
 ## Login
 
 login-item-new-login-title = නව පිවිසුමක් සාදන්න
+# Header for adding a password
+about-logins-login-item-new-login-title = මුරපදය එක් කරන්න
 login-item-edit-button = සංස්කරණය
 about-logins-login-item-remove-button = ඉවත් කරන්න
 login-item-origin-label = අඩවියේ ලිපිනය
 login-item-tooltip-message = මෙය ඔබ පිවිසෙන අඩවියේ නිවැරදි ලිපිනයට ගැළපෙන බවට වග බලා ගන්න.
+about-logins-origin-tooltip2 = සම්පූර්ණ ලිපිනය ඇතුළත් කර එය ඔබ පිවිසෙන තැනට හරියටම ගැළපෙනවා දැයි බලන්න.
+# Variables
+#   $webTitle (String) - Website title of the password being changed.
+about-logins-edit-password-tooltip = ඔබ මෙම අඩවිය සඳහා ඔබගේ වත්මන් මුරපදය සුරකින බවට වග බලා ගන්න. මෙහි මුරපදය වෙනස් කිරීමෙන් එය { $webTitle } සමඟ වෙනස් නොවේ.
+about-logins-add-password-tooltip = ඔබ මෙම අඩවිය සඳහා ඔබගේ වත්මන් මුරපදය සුරකින බවට වග බලා ගන්න.
 login-item-origin =
     .placeholder = https://www.example.com
-login-item-username-label = පරිශීලක නාමය
+login-item-username-label = පරිශ්‍රීලක නාමය
 about-logins-login-item-username =
-    .placeholder = (පරිශීලක නාමය නැත)
+    .placeholder = (පරිශ්‍රීලක නාමය නැත)
 login-item-copy-username-button-text = පිටපතක්
 login-item-copied-username-button-text = පිටපත් විය!
 login-item-password-label = මුරපදය
@@ -127,6 +139,7 @@ login-item-password-reveal-checkbox =
 login-item-copy-password-button-text = පිටපතක්
 login-item-copied-password-button-text = පිටපත් විය!
 login-item-save-changes-button = වෙනස්කම් සුරකින්න
+about-logins-login-item-save-changes-button = සුරකින්න
 login-item-save-new-button = සුරකින්න
 login-item-cancel-button = අවලංගු
 
@@ -154,6 +167,9 @@ about-logins-edit-login-os-auth-dialog-message-win = ඔබගේ පිවි�
 # This message can be seen when attempting to edit a login in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-edit-login-os-auth-dialog-message-macosx = සුරැකි පිවිසුම සංස්කරණය
+# This message can be seen when attempting to edit a login in about:logins
+# On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
+about-logins-edit-login-os-auth-dialog-message2-macosx = සුරැකි මුරපදය සංස්කරණය
 # This message can be seen when attempting to reveal a password in about:logins on Windows.
 about-logins-reveal-password-os-auth-dialog-message-win = ඔබගේ මුරපදය දැකීමට, ඔබගේ වින්ඩෝස් පිවිසුම් අක්තපත්‍ර යොදන්න. මෙය ඔබගේ ගිණුම්වල සුරක්‍ෂිත බව රැක දීමට උපකාරී වේ.
 # This message can be seen when attempting to reveal a password in about:logins
@@ -169,6 +185,9 @@ about-logins-export-password-os-auth-dialog-message-win = ඔබගේ පිව
 # This message can be seen when attempting to export a password in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-export-password-os-auth-dialog-message-macosx = සුරැකි පිවිසුම් හා මුරපද නිර්යාත කරන්න
+# This message can be seen when attempting to export a password in about:logins
+# On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
+about-logins-export-password-os-auth-dialog-message2-macosx = සුරැකි මුරපද නිර්යාත කරන්න
 
 ## Primary Password notification
 
@@ -184,6 +203,10 @@ confirmation-dialog-dismiss-button =
     .title = අවලංගු
 about-logins-confirm-remove-dialog-title = මෙම පිවිසුම මකන්නද?
 confirm-delete-dialog-message = මෙම ක්‍රියාමාර්ගය අප්‍රතිවර්ත්‍යයි.
+# Title for modal to confirm the removal of one saved password
+about-logins-confirm-delete-dialog-title = මුරපදය ඉවත් කරන්නද?
+# Message for modal to confirm the removal of one saved password
+about-logins-confirm-delete-dialog-message = මෙම ක්‍රියාමාර්ගය අප්‍රතිවර්ත්‍යයි.
 about-logins-confirm-remove-dialog-confirm-button = ඉවත් කරන්න
 
 ## Variables
@@ -214,12 +237,19 @@ about-logins-confirm-remove-all-sync-dialog-title =
         [one] සියළුම උපාංග වලින් පිවිසුම් { $count } ඉවත් කරන්නද?
        *[other] සියළුම උපාංග වලින් පිවිසුම් { $count } ඉවත් කරන්නද?
     }
+# Checkbox for modal to confirm the removal of saved passwords
+about-logins-confirm-remove-all-dialog-checkbox-label2 =
+    { $count ->
+        [1] ඔව්, මුරපදය ඉවත් කරන්න
+       *[other] Yes, remove passwords
+    }
 
 ##
 
 about-logins-confirm-export-dialog-title = පිවිසුම් හා මුරපද නිර්යාත කරන්න
 about-logins-confirm-export-dialog-message = ඔබගේ මුරපද කියවීමට හැකි පෙළක් ලෙස සුරකිනු ඇත (උදා., BadP@ssw0rd) එබැවින් නිර්යාත කළ ගොනුව විවෘත කළ හැකි ඕනෑම අයෙකු ඒවා දකිනු ඇත.
 about-logins-confirm-export-dialog-confirm-button = නිර්යාතය…
+about-logins-confirm-export-dialog-title2 = මුරපද නිර්යාතය පිළිබඳ සටහනක්
 about-logins-alert-import-title = ආයාත වීම නිමයි
 about-logins-alert-import-message = සවිස්තරාත්මක ආයාත සාරාංශය බලන්න
 confirm-discard-changes-dialog-title = සුරැකි වෙනස්කම් ඉවත් කරන්නද?
@@ -249,7 +279,7 @@ about-logins-vulnerable-alert-learn-more-link = තව දැනගන්න
 # a new login that is identical to an existing saved login.
 # Variables:
 #   $loginTitle (String) - The title of the website associated with the login.
-about-logins-error-message-duplicate-login-with-link = එම පරිශීලක නාමය සහිත { $loginTitle } සඳහා නිවේශිතයක් දැනටමත් පවතී. <a data-l10n-name="duplicate-link">පවතින නිවේශිතයට යන්නද?</a>
+about-logins-error-message-duplicate-login-with-link = එම පරිශ්‍රීලක නාමය සහිත { $loginTitle } සඳහා නිවේශිතයක් දැනටමත් පවතී. <a data-l10n-name="duplicate-link">පවතින නිවේශිතයට යන්නද?</a>
 # This is a generic error message.
 about-logins-error-message-default = මෙම මුරපදය සුරැකීමේදී දෝෂයක් සිදු විය.
 
@@ -260,6 +290,11 @@ about-logins-export-file-picker-title = පිවිසුම් ගොනුව
 # The default file name shown in the file picker when exporting saved logins.
 # This must end in .csv
 about-logins-export-file-picker-default-filename = පිවිසුම්.csv
+# Title of the file picker dialog
+about-logins-export-file-picker-title2 = { -brand-short-name } වෙතින් මුරපද නිර්යාත කරන්න
+# The default file name shown in the file picker when exporting saved logins.
+# This must end in .csv
+about-logins-export-file-picker-default-filename2 = මුරපද.csv
 about-logins-export-file-picker-export-button = නිර්යාත
 # A description for the .csv file format that may be shown as the file type
 # filter by the operating system.
@@ -273,6 +308,8 @@ about-logins-export-file-picker-csv-filter-title =
 
 # Title of the file picker dialog
 about-logins-import-file-picker-title = පිවිසුම් ගොනුව ආයාතය
+# Title of the file picker dialog
+about-logins-import-file-picker-title2 = { -brand-short-name } වෙත මුරපද ආයාත කරන්න
 about-logins-import-file-picker-import-button = ආයාතය
 # A description for the .csv file format that may be shown as the file type
 # filter by the operating system.
@@ -322,6 +359,7 @@ about-logins-import-dialog-error-try-import-again = යළි ආයාත ක�
 about-logins-import-dialog-error-cancel = අවලංගු
 about-logins-import-report-title = ආයාත සාරාංශය
 about-logins-import-report-description = { -brand-short-name } වෙත පිවිසුම් හා මුරපද ආයාත කෙරිණි.
+about-logins-import-report-description2 = { -brand-short-name } වෙත මුරපද ආයාත කර ඇත.
 #
 # Variables:
 #  $number (number) - The number of the row

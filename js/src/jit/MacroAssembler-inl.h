@@ -191,7 +191,11 @@ ABIFunctionType MacroAssembler::signature() const {
     case Args_Double_None:
     case Args_Int_Double:
     case Args_Float32_Float32:
+    case Args_Float32_Float64:
+    case Args_Float32_General:
+    case Args_Float32_Int32:
     case Args_Int_Float32:
+    case Args_Int32_Float32:
     case Args_Double_Double:
     case Args_Double_Int:
     case Args_Double_DoubleInt:
@@ -409,8 +413,12 @@ void MacroAssembler::addPtr(ImmPtr imm, Register dest) {
 // ===============================================================
 // Branch functions
 
-template <class L>
-void MacroAssembler::branchIfFalseBool(Register reg, L label) {
+void MacroAssembler::branchTest64(Condition cond, Register64 lhs,
+                                  Register64 rhs, Label* success, Label* fail) {
+  branchTest64(cond, lhs, rhs, InvalidReg, success, fail);
+}
+
+void MacroAssembler::branchIfFalseBool(Register reg, Label* label) {
   // Note that C++ bool is only 1 byte, so ignore the higher-order bits.
   branchTest32(Assembler::Zero, reg, Imm32(0xFF), label);
 }
@@ -484,17 +492,13 @@ void MacroAssembler::branchIfNotFunctionIsNonBuiltinCtor(Register fun,
   branch32(Assembler::NotEqual, scratch, Imm32(expected), label);
 }
 
-void MacroAssembler::branchIfFunctionHasNoJitEntry(Register fun,
-                                                   bool isConstructing,
-                                                   Label* label) {
-  uint16_t flags = FunctionFlags::HasJitEntryFlags(isConstructing);
+void MacroAssembler::branchIfFunctionHasNoJitEntry(Register fun, Label* label) {
+  uint16_t flags = FunctionFlags::HasJitEntryFlags();
   branchTestFunctionFlags(fun, flags, Assembler::Zero, label);
 }
 
-void MacroAssembler::branchIfFunctionHasJitEntry(Register fun,
-                                                 bool isConstructing,
-                                                 Label* label) {
-  uint16_t flags = FunctionFlags::HasJitEntryFlags(isConstructing);
+void MacroAssembler::branchIfFunctionHasJitEntry(Register fun, Label* label) {
+  uint16_t flags = FunctionFlags::HasJitEntryFlags();
   branchTestFunctionFlags(fun, flags, Assembler::NonZero, label);
 }
 
@@ -544,12 +548,11 @@ void MacroAssembler::branchIfObjectEmulatesUndefined(Register objReg,
   MOZ_ASSERT(objReg != scratch);
 
   Label done;
-  if (JS::Prefs::use_emulates_undefined_fuse()) {
-    loadPtr(AbsoluteAddress(
-                runtime()->addressOfHasSeenObjectEmulateUndefinedFuse()),
-            scratch);
-    branchPtr(Assembler::Equal, scratch, ImmPtr(nullptr), &done);
-  }
+
+  loadPtr(
+      AbsoluteAddress(runtime()->addressOfHasSeenObjectEmulateUndefinedFuse()),
+      scratch);
+  branchPtr(Assembler::Equal, scratch, ImmPtr(nullptr), &done);
 
   // The branches to out-of-line code here implement a conservative version
   // of the JSObject::isWrapper test performed in EmulatesUndefined.
@@ -996,6 +999,26 @@ void MacroAssembler::fallibleUnboxBigInt(const T& src, Register dest,
 
 //}}} check_macroassembler_style
 // ===============================================================
+
+void MacroAssembler::ensureDouble(const ValueOperand& source,
+                                  FloatRegister dest, Label* failure) {
+  Label isDouble, done;
+
+  {
+    ScratchTagScope tag(*this, source);
+    splitTagForTest(source, tag);
+    branchTestDouble(Assembler::Equal, tag, &isDouble);
+    branchTestInt32(Assembler::NotEqual, tag, failure);
+  }
+
+  convertInt32ToDouble(source.payloadOrValueReg(), dest);
+  jump(&done);
+
+  bind(&isDouble);
+  unboxDouble(source, dest);
+
+  bind(&done);
+}
 
 #ifndef JS_CODEGEN_ARM64
 

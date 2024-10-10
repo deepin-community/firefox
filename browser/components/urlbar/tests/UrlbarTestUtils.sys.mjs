@@ -11,7 +11,6 @@ import {
 const lazy = {};
 
 ChromeUtils.defineESModuleGetters(lazy, {
-  AddonTestUtils: "resource://testing-common/AddonTestUtils.sys.mjs",
   BrowserTestUtils: "resource://testing-common/BrowserTestUtils.sys.mjs",
   BrowserUIUtils: "resource:///modules/BrowserUIUtils.sys.mjs",
   BrowserWindowTracker: "resource:///modules/BrowserWindowTracker.sys.mjs",
@@ -134,6 +133,8 @@ export var UrlbarTestUtils = {
    *        your test waits for the query to finish. However, this behavior
    *        isn't always desired, for example if your test intentionally blurs
    *        the input before the query finishes. In that case, pass false.
+   * @returns {Promise}
+   *   The promise for the last query context.
    */
   async promiseAutocompleteResultPopup({
     window,
@@ -339,6 +340,8 @@ export var UrlbarTestUtils = {
    *   array. If it's in a submenu, set this to an array where each element i is
    *   a selector that can be used to get the i'th menu item that opens a
    *   submenu.
+   * @returns {DOMElement}
+   *   Returns the menu item element.
    */
   async openResultMenuAndGetItem({
     window,
@@ -829,19 +832,20 @@ export var UrlbarTestUtils = {
       "gURLBar.searchMode should exist as expected"
     );
 
+    let results = window.gURLBar.querySelector(".urlbarView-results");
     if (
       window.gURLBar.searchMode?.source &&
       window.gURLBar.searchMode.source !== UrlbarUtils.RESULT_SOURCE.SEARCH
     ) {
       this.Assert.equal(
-        window.gURLBar.getAttribute("searchmodesource"),
+        results.getAttribute("searchmodesource"),
         UrlbarUtils.getResultSourceName(window.gURLBar.searchMode.source),
-        "gURLBar has proper searchmodesource attribute"
+        "Urlbar results have proper searchmodesource attribute"
       );
     } else {
       this.Assert.ok(
-        !window.gURLBar.hasAttribute("searchmodesource"),
-        "gURLBar does not have searchmodesource attribute"
+        !results.hasAttribute("searchmodesource"),
+        "Urlbar results does not have searchmodesource attribute"
       );
     }
 
@@ -881,7 +885,13 @@ export var UrlbarTestUtils = {
     // names that are not usually included in actual search mode objects.  For
     // convenience, ignore those properties if they aren't also present in the
     // urlbar's actual search mode object.
-    let ignoreProperties = ["icon", "pref", "restrict", "telemetryLabel"];
+    let ignoreProperties = [
+      "icon",
+      "pref",
+      "restrict",
+      "telemetryLabel",
+      "uiLabel",
+    ];
     for (let prop of ignoreProperties) {
       if (prop in expectedSearchMode && !(prop in window.gURLBar.searchMode)) {
         this.info(
@@ -1043,9 +1053,11 @@ export var UrlbarTestUtils = {
    * Removes the scheme from an url according to user prefs.
    *
    * @param {string} url
-   *  The url that is supposed to be sanitizied.
-   * @param {{removeSingleTrailingSlash: (boolean)}} options
-   *    removeSingleTrailingSlash: Remove trailing slash, when trimming enabled.
+   *  The url that is supposed to be trimmed.
+   * @param {object} [options]
+   *  Options for the trimming.
+   * @param {boolean} [options.removeSingleTrailingSlash]
+   *    Remove trailing slash, when trimming enabled.
    * @returns {string}
    *  The sanitized URL.
    */
@@ -1060,14 +1072,12 @@ export var UrlbarTestUtils = {
         lazy.BrowserUIUtils.removeSingleTrailingSlashFromURL(sanitizedURL);
     }
 
-    if (lazy.UrlbarPrefs.get("trimHttps")) {
-      sanitizedURL = sanitizedURL.replace("https://", "");
+    // Also remove emphasis markers if present.
+    if (lazy.UrlbarPrefs.getScotchBonnetPref("trimHttps")) {
+      sanitizedURL = sanitizedURL.replace(/^<?https:\/\/>?/, "");
     } else {
-      sanitizedURL = sanitizedURL.replace("http://", "");
+      sanitizedURL = sanitizedURL.replace(/^<?http:\/\/>?/, "");
     }
-
-    // Remove empty emphasis markers in case the protocol was trimmed.
-    sanitizedURL = sanitizedURL.replace("<>", "");
 
     return sanitizedURL;
   },
@@ -1080,7 +1090,7 @@ export var UrlbarTestUtils = {
    */
   getTrimmedProtocolWithSlashes() {
     if (Services.prefs.getBoolPref("browser.urlbar.trimURLs")) {
-      return Services.prefs.getBoolPref("browser.urlbar.trimHttps")
+      return lazy.UrlbarPrefs.getScotchBonnetPref("trimHttps")
         ? "https://"
         : "http://"; // eslint-disable-this-line @microsoft/sdl/no-insecure-url
     }
@@ -1235,16 +1245,6 @@ export var UrlbarTestUtils = {
     Cc["@mozilla.org/satchel/form-history-startup;1"]
       .getService(Ci.nsIObserver)
       .observe(null, "profile-after-change", null);
-
-    // This is necessary because UrlbarMuxerUnifiedComplete.sort calls
-    // Services.search.parseSubmissionURL, so we need engines.
-    try {
-      await lazy.AddonTestUtils.promiseStartupManager();
-    } catch (error) {
-      if (!error.message.includes("already started")) {
-        throw error;
-      }
-    }
   },
 
   /**
@@ -1273,15 +1273,18 @@ export var UrlbarTestUtils = {
     this.info("initNimbusFeature awaiting ExperimentAPI.ready");
     await lazy.ExperimentAPI.ready();
 
-    let method =
-      enrollmentType == "rollout"
-        ? "enrollWithRollout"
-        : "enrollWithFeatureConfig";
-    this.info(`initNimbusFeature awaiting ExperimentFakes.${method}`);
-    let doCleanup = await lazy.ExperimentFakes[method]({
-      featureId: lazy.NimbusFeatures[feature].featureId,
-      value: { enabled: true, ...value },
-    });
+    this.info(
+      `initNimbusFeature awaiting ExperimentFakes.enrollWithFeatureConfig`
+    );
+    const doCleanup = await lazy.ExperimentFakes.enrollWithFeatureConfig(
+      {
+        featureId: lazy.NimbusFeatures[feature].featureId,
+        value: { enabled: true, ...value },
+      },
+      {
+        isRollout: enrollmentType === "rollout",
+      }
+    );
 
     this.info("initNimbusFeature done");
 
@@ -1289,7 +1292,7 @@ export var UrlbarTestUtils = {
       // If `doCleanup()` has already been called (i.e., by the caller), it will
       // throw an error here.
       try {
-        await doCleanup();
+        doCleanup();
       } catch (error) {}
     });
 
@@ -1342,7 +1345,7 @@ export var UrlbarTestUtils = {
    * @param {int} [options.selectionType]
    *   The selectionType for which the input should be checked.
    */
-  checkFormatting(
+  async checkFormatting(
     win,
     urlFormatString,
     {
@@ -1351,6 +1354,7 @@ export var UrlbarTestUtils = {
       selectionType = Ci.nsISelectionController.SELECTION_URLSECONDARY,
     } = {}
   ) {
+    await new Promise(resolve => win.requestAnimationFrame(resolve));
     let selectionController = win.gURLBar.editor.selectionController;
     let selection = selectionController.getSelection(selectionType);
     let value = win.gURLBar.editor.rootElement.textContent;
@@ -1367,6 +1371,31 @@ export var UrlbarTestUtils = {
       clobberedURLString || urlFormatString,
       "Correct part of the URL is de-emphasized" +
         (additionalMsg ? ` (${additionalMsg})` : "")
+    );
+  },
+
+  searchModeSwitcherPopup(win) {
+    return win.document.getElementById("searchmode-switcher-popup");
+  },
+
+  async openSearchModeSwitcher(win) {
+    let popup = this.searchModeSwitcherPopup(win);
+    let promiseMenuOpen = lazy.BrowserTestUtils.waitForEvent(
+      popup,
+      "popupshown"
+    );
+    let button = win.document.getElementById("urlbar-searchmode-switcher");
+    this.Assert.ok(lazy.BrowserTestUtils.isVisible(button));
+    await this.EventUtils.promiseElementReadyForUserInput(button, win);
+    this.EventUtils.synthesizeMouseAtCenter(button, {}, win);
+    await promiseMenuOpen;
+    return popup;
+  },
+
+  searchModeSwitcherPopupClosed(win) {
+    return lazy.BrowserTestUtils.waitForEvent(
+      this.searchModeSwitcherPopup(win),
+      "popuphidden"
     );
   },
 };
@@ -1487,8 +1516,16 @@ class TestProvider extends UrlbarProvider {
    * @param {Function} [options.onSelection]
    *   If given, a function that will be called when
    *   {@link UrlbarView.#selectElement} method is called.
-   * @param {Function} [options.onLegacyEngagement]
+   * @param {Function} [options.onEngagement]
    *   If given, a function that will be called when engagement.
+   * @param {Function} [options.onAbandonment]
+   *   If given, a function that will be called when abandonment.
+   * @param {Function} [options.onImpression]
+   *   If given, a function that will be called when an engagement or
+   *   abandonment has occured.
+   * @param {Function} [options.onSearchSessionEnd]
+   *   If given, a function that will be called when a search session
+   *   concludes.
    * @param {Function} [options.delayResultsPromise]
    *   If given, we'll await on this before returning results.
    */
@@ -1500,7 +1537,10 @@ class TestProvider extends UrlbarProvider {
     addTimeout = 0,
     onCancel = null,
     onSelection = null,
-    onLegacyEngagement = null,
+    onEngagement = null,
+    onAbandonment = null,
+    onImpression = null,
+    onSearchSessionEnd = null,
     delayResultsPromise = null,
   } = {}) {
     if (delayResultsPromise && addTimeout) {
@@ -1517,12 +1557,27 @@ class TestProvider extends UrlbarProvider {
     this._type = type;
     this._onCancel = onCancel;
     this._onSelection = onSelection;
-    this._onLegacyEngagement = onLegacyEngagement;
 
     // As this has been a common source of mistakes, auto-upgrade the provider
     // type to heuristic if any result is heuristic.
     if (!type && this.results?.some(r => r.heuristic)) {
       this.type = UrlbarUtils.PROVIDER_TYPE.HEURISTIC;
+    }
+
+    if (onEngagement) {
+      this.onEngagement = onEngagement.bind(this);
+    }
+
+    if (onAbandonment) {
+      this.onAbandonment = onAbandonment.bind(this);
+    }
+
+    if (onImpression) {
+      this.onImpression = onAbandonment.bind(this);
+    }
+
+    if (onSearchSessionEnd) {
+      this.onSearchSessionEnd = onSearchSessionEnd.bind(this);
     }
   }
 
@@ -1569,10 +1624,6 @@ class TestProvider extends UrlbarProvider {
 
   onSelection(result, element) {
     this._onSelection?.(result, element);
-  }
-
-  onLegacyEngagement(state, queryContext, details, controller) {
-    this._onLegacyEngagement?.(state, queryContext, details, controller);
   }
 }
 

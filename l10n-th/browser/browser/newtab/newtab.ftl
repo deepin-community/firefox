@@ -200,6 +200,8 @@ newtab-section-header-recent-activity = กิจกรรมล่าสุด
 #   $provider (string) - Name of the corresponding content provider.
 newtab-section-header-pocket = แนะนำโดย { $provider }
 newtab-section-header-stories = เรื่องราวที่จุดประกายความคิด
+# "picks" refers to recommended articles
+newtab-section-header-todays-picks = บทความคัดสรรสำหรับคุณประจำวันนี้
 
 ## Empty Section States: These show when there are no more items in a section. Ex. When there are no more Pocket story recommendations, in the space where there would have been stories, this is shown instead.
 
@@ -233,6 +235,19 @@ newtab-pocket-pocket-firefox-family = { -pocket-brand-name } เป็นส่�
 # A save to Pocket button that shows over the card thumbnail on hover.
 newtab-pocket-save = บันทึก
 newtab-pocket-saved = บันทึกแล้ว
+
+## Thumbs up and down buttons that shows over a newtab stories card thumbnail on hover.
+
+# Clicking the thumbs up button for this story will result in more stories like this one being recommended
+newtab-pocket-thumbs-up-tooltip =
+    .title = เรื่องราวที่คล้ายกัน
+# Clicking the thumbs down button for this story informs us that the user does not feel like the story is interesting for them
+newtab-pocket-thumbs-down-tooltip =
+    .title = ฉันไม่สนใจ
+newtab-toast-thumbs-up-or-down = ขอบคุณ ความคิดเห็นของคุณจะช่วยเราปรับปรุงฟีดของคุณให้ดีขึ้น
+newtab-toast-dismiss-button =
+    .title = ปิด
+    .aria-label = ปิด
 
 ## Pocket content onboarding experience dialog and modal for new users seeing the Pocket section for the first time, shown as the first item in the Pocket section.
 
@@ -271,5 +286,147 @@ newtab-custom-recent-subtitle = ไซต์และเนื้อหาล่
 newtab-custom-recent-toggle =
     .label = กิจกรรมล่าสุด
     .description = ไซต์และเนื้อหาล่าสุดที่คัดสรรมา
+newtab-custom-weather-toggle =
+    .label = พยากรณ์อากาศ
+    .description = ดูพยากรณ์อากาศประจำวันนี้ได้อย่างรวดเร็ว
 newtab-custom-close-button = ปิด
 newtab-custom-settings = จัดการการตั้งค่าเพิ่มเติม
+
+## New Tab Wallpapers
+
+newtab-wallpaper-title = รูปพื้นหลัง
+newtab-wallpaper-reset = กลับเป็นค่าเริ่มต้น
+newtab-wallpaper-light-red-panda = แพนด้าแดง
+newtab-wallpaper-light-mountain = ภูเขาสีขาว
+newtab-wallpaper-light-sky = ท้องฟ้าที่มีเมฆสีม่วงและสีชมพู
+newtab-wallpaper-light-color = รูปทรงที่มีสีฟ้า สีชมพู และสีเหลือง
+newtab-wallpaper-light-landscape = วิวภูเขาที่มีหมอกสีฟ้า
+newtab-wallpaper-light-beach = ชายหาดที่มีต้นปาล์ม
+newtab-wallpaper-dark-aurora = แสงเหนือ
+newtab-wallpaper-dark-color = รูปทรงที่มีสีแดงและสีน้ำเงิน
+newtab-wallpaper-dark-panda = แพนด้าแดงที่ซ่อนตัวอยู่ในป่า
+newtab-wallpaper-dark-sky = วิวเมืองใต้ท้องฟ้ายามค่ำคืน
+newtab-wallpaper-dark-mountain = วิวภูเขา
+newtab-wallpaper-dark-city = วิวเมืองสีม่วง
+
+## Solid Colors
+
+newtab-wallpaper-category-title-colors = สีทึบ
+newtab-wallpaper-blue = น้ำเงิน
+newtab-wallpaper-light-blue = น้ำเงินอ่อน
+newtab-wallpaper-light-purple = ม่วงอ่อน
+newtab-wallpaper-light-green = เขียวอ่อน
+newtab-wallpaper-green = เขียว
+newtab-wallpaper-beige = เบจ
+newtab-wallpaper-yellow = เหลือง
+newtab-wallpaper-orange = ส้ม
+newtab-wallpaper-pink = ชมพู
+newtab-wallpaper-light-pink = ชมพูอ่อน
+newtab-wallpaper-red = แดง
+newtab-wallpaper-dark-blue = น้ำเงินเข้ม
+newtab-wallpaper-dark-purple = ม่วงเข้ม
+newtab-wallpaper-dark-green = เขียวเข้ม
+newtab-wallpaper-brown = น้ำตาล
+
+## Abstract
+
+newtab-wallpaper-category-title-abstract = นามธรรม
+newtab-wallpaper-abstract-green = รูปร่างสีเขียว
+newtab-wallpaper-abstract-blue = รูปร่างสีน้ำเงิน
+newtab-wallpaper-abstract-purple = รูปร่างสีม่วง
+newtab-wallpaper-abstract-orange = รูปร่างสีส้ม
+newtab-wallpaper-gradient-orange = ไล่ระดับสีส้มและชมพู
+newtab-wallpaper-abstract-blue-purple = รูปร่างสีน้ำเงินและสีม่วง
+
+## Photographs
+
+newtab-wallpaper-category-title-photographs = ภาพถ่าย
+newtab-wallpaper-beach-at-sunrise = ชายหาดตอนพระอาทิตย์ขึ้น
+newtab-wallpaper-beach-at-sunset = ชายหาดตอนพระอาทิตย์ตก
+newtab-wallpaper-storm-sky = ท้องฟ้ามีพายุ
+newtab-wallpaper-sky-with-pink-clouds = ท้องฟ้ามีเมฆสีชมพู
+newtab-wallpaper-red-panda-yawns-in-a-tree = แพนด้าแดงหาวอยู่บนต้นไม้
+newtab-wallpaper-white-mountains = ภูเขาสีขาว
+# Variables
+#   $author_string (String) - The name of the creator of the photo.
+#   $webpage_string (String) - The name of the webpage where the photo is located.
+newtab-wallpaper-attribution = ภาพถ่ายโดย <a data-l10n-name="name-link">{ $author_string }</a> จาก <a data-l10n-name="webpage-link">{ $webpage_string }</a>
+newtab-wallpaper-feature-highlight-header = ลองเลือกสีสันที่คุณชอบ
+newtab-wallpaper-feature-highlight-content = เปลี่ยนโฉมแท็บใหม่ของคุณด้วยภาพพื้นหลัง
+newtab-wallpaper-feature-highlight-button = เข้าใจแล้ว
+# Tooltip for dismiss button
+feature-highlight-dismiss-button =
+    .title = ปิด
+    .aria-label = ปิดป็อปอัป
+feature-highlight-wallpaper =
+    .title = { -newtab-wallpaper-feature-highlight-header }
+    .aria-label = { -newtab-wallpaper-feature-highlight-content }
+
+## New Tab Weather
+
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-see-forecast =
+    .title = ดูพยากรณ์ใน { $provider }
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-sponsored = สนับสนุนโดย { $provider }
+newtab-weather-menu-change-location = เปลี่ยนตำแหน่งที่ตั้ง
+newtab-weather-change-location-search-input = ค้นหาตำแหน่งที่ตั้ง
+newtab-weather-menu-weather-display = การแสดงผลพยากรณ์อากาศ
+# Display options are:
+# - Simple: Displays a current weather condition icon and the current temperature
+# - Detailed: Include simple information plus a short text summary: e.g. "Mostly cloudy"
+newtab-weather-menu-weather-display-option-simple = ธรรมดา
+newtab-weather-menu-change-weather-display-simple = สลับเป็นมุมมองธรรมดา
+newtab-weather-menu-weather-display-option-detailed = ละเอียด
+newtab-weather-menu-change-weather-display-detailed = สลับเป็นมุมมองละเอียด
+newtab-weather-menu-temperature-units = หน่วยอุณหภูมิ
+newtab-weather-menu-temperature-option-fahrenheit = ฟาเรนไฮต์
+newtab-weather-menu-temperature-option-celsius = เซลเซียส
+newtab-weather-menu-change-temperature-units-fahrenheit = เปลี่ยนเป็นฟาเรนไฮต์
+newtab-weather-menu-change-temperature-units-celsius = เปลี่ยนเป็นเซลเซียส
+newtab-weather-menu-hide-weather = ซ่อนพยากรณ์อากาศในแท็บใหม่
+newtab-weather-menu-learn-more = เรียนรู้เพิ่มเติม
+# This message is shown if user is working offline
+newtab-weather-error-not-available = ไม่มีข้อมูลพยากรณ์อากาศในขณะนี้
+
+## Topic Labels
+
+newtab-topic-label-business = ธุรกิจ
+newtab-topic-label-career = อาชีพ
+newtab-topic-label-education = การศึกษา
+newtab-topic-label-arts = ความบันเทิง
+newtab-topic-label-food = อาหาร
+newtab-topic-label-health = สุขภาพ
+newtab-topic-label-hobbies = เกมมิ่ง
+# ”Money” = “Personal Finance”, refers to articles and stories that help readers better manage
+# and understand their personal finances – from saving money to buying a home. See the
+# “Curated by our editors“ section at the top of https://getpocket.com/explore/personal-finance for more context
+newtab-topic-label-finance = เงิน
+newtab-topic-label-society-parenting = การเลี้ยงลูก
+newtab-topic-label-government = การเมือง
+newtab-topic-label-education-science = วิทยาศาสตร์
+# ”Life Hacks” = “Self Improvement”, refers to articles and stories aimed at helping readers improve various
+# aspects of their lives – from mental health to  productivity. See the “Curated by our editors“ section
+# at the top of https://getpocket.com/explore/self-improvement for more context.
+newtab-topic-label-society = เคล็ดลับการใช้ชีวิต
+newtab-topic-label-sports = กีฬา
+newtab-topic-label-tech = เทคโนโลยี
+newtab-topic-label-travel = การท่องเที่ยว
+newtab-topic-label-home = บ้านและสวน
+
+## Topic Selection Modal
+
+# “fine-tune” refers to the process of making small adjustments to something to get
+# the best or desired experience or performance.
+newtab-topic-selection-title = เลือกหัวข้อเพื่อปรับแต่งฟีดของคุณ
+# “tailored” refers to process of (a tailor) making (clothes) to fit individual customers.
+# In other words, “Our expert curators prioritize stories to fit your selected interests”
+newtab-topic-selection-subtitle = เลือกหัวข้อสองหัวข้อขึ้นไป ผู้เชี่ยวชาญของเราจะจัดลำดับความสำคัญของเรื่องราวที่ปรับให้เหมาะกับความสนใจของคุณ ซึ่งสามารถอัปเดตได้ตลอดเวลา
+newtab-topic-selection-save-button = บันทึก
+newtab-topic-selection-cancel-button = ยกเลิก
+newtab-topic-selection-button-maybe-later = ไว้ภายหลัง
+newtab-topic-selection-privacy-link = เรียนรู้ว่าเราปกป้องและจัดการข้อมูลอย่างไร
+newtab-topic-selection-button-update-interests = ปรับเปลี่ยนความสนใจของคุณ
+newtab-topic-selection-button-pick-interests = เลือกความสนใจของคุณ

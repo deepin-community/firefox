@@ -4,6 +4,7 @@
 
 package org.mozilla.fenix
 
+import android.annotation.SuppressLint
 import android.app.assist.AssistContent
 import android.content.Context
 import android.content.Intent
@@ -30,7 +31,9 @@ import androidx.annotation.RequiresApi
 import androidx.annotation.VisibleForTesting
 import androidx.appcompat.app.ActionBar
 import androidx.appcompat.widget.Toolbar
+import androidx.compose.runtime.mutableStateOf
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.core.view.doOnAttach
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
@@ -82,6 +85,7 @@ import org.mozilla.experiments.nimbus.initializeTooling
 import org.mozilla.fenix.GleanMetrics.AppIcon
 import org.mozilla.fenix.GleanMetrics.Events
 import org.mozilla.fenix.GleanMetrics.Metrics
+import org.mozilla.fenix.GleanMetrics.NavigationBar
 import org.mozilla.fenix.GleanMetrics.SplashScreen
 import org.mozilla.fenix.GleanMetrics.StartOnHome
 import org.mozilla.fenix.addons.ExtensionsProcessDisabledBackgroundController
@@ -90,6 +94,7 @@ import org.mozilla.fenix.browser.browsingmode.BrowsingMode
 import org.mozilla.fenix.browser.browsingmode.BrowsingModeManager
 import org.mozilla.fenix.browser.browsingmode.DefaultBrowsingModeManager
 import org.mozilla.fenix.components.appstate.AppAction
+import org.mozilla.fenix.components.appstate.OrientationMode
 import org.mozilla.fenix.components.metrics.BreadcrumbsRecorder
 import org.mozilla.fenix.components.metrics.GrowthDataWorker
 import org.mozilla.fenix.components.metrics.fonts.FontEnumerationWorker
@@ -107,14 +112,17 @@ import org.mozilla.fenix.ext.getIntentSource
 import org.mozilla.fenix.ext.getNavDirections
 import org.mozilla.fenix.ext.hasTopDestination
 import org.mozilla.fenix.ext.nav
+import org.mozilla.fenix.ext.recordEventInNimbus
 import org.mozilla.fenix.ext.setNavigationIcon
 import org.mozilla.fenix.ext.settings
+import org.mozilla.fenix.ext.systemGesturesInsets
 import org.mozilla.fenix.extension.WebExtensionPromptFeature
 import org.mozilla.fenix.home.intent.AssistIntentProcessor
 import org.mozilla.fenix.home.intent.CrashReporterIntentProcessor
 import org.mozilla.fenix.home.intent.HomeDeepLinkIntentProcessor
 import org.mozilla.fenix.home.intent.OpenBrowserIntentProcessor
 import org.mozilla.fenix.home.intent.OpenPasswordManagerIntentProcessor
+import org.mozilla.fenix.home.intent.OpenRecentlyClosedIntentProcessor
 import org.mozilla.fenix.home.intent.OpenSpecificTabIntentProcessor
 import org.mozilla.fenix.home.intent.ReEngagementIntentProcessor
 import org.mozilla.fenix.home.intent.SpeechProcessingIntentProcessor
@@ -150,11 +158,14 @@ import java.util.Locale
  */
 @SuppressWarnings("TooManyFunctions", "LargeClass", "LongMethod")
 open class HomeActivity : LocaleAwareAppCompatActivity(), NavHostActivity {
-    private lateinit var binding: ActivityHomeBinding
+    @VisibleForTesting
+    internal lateinit var binding: ActivityHomeBinding
     lateinit var themeManager: ThemeManager
     lateinit var browsingModeManager: BrowsingModeManager
 
     private var isVisuallyComplete = false
+
+    var isMicrosurveyPromptDismissed = mutableStateOf(false)
 
     private var privateNotificationObserver: PrivateNotificationFeature<PrivateNotificationService>? =
         null
@@ -203,6 +214,7 @@ open class HomeActivity : LocaleAwareAppCompatActivity(), NavHostActivity {
             OpenBrowserIntentProcessor(this, ::getIntentSessionId),
             OpenSpecificTabIntentProcessor(this),
             OpenPasswordManagerIntentProcessor(),
+            OpenRecentlyClosedIntentProcessor(),
             ReEngagementIntentProcessor(this, settings()),
         )
     }
@@ -354,7 +366,7 @@ open class HomeActivity : LocaleAwareAppCompatActivity(), NavHostActivity {
                 ?.also {
                     Events.appOpened.record(Events.AppOpenedExtra(it))
                     // This will record an event in Nimbus' internal event store. Used for behavioral targeting
-                    components.nimbus.events.recordEvent("app_opened")
+                    recordEventInNimbus("app_opened")
 
                     if (safeIntent.action.equals(ACTION_OPEN_PRIVATE_TAB) && it == APP_ICON) {
                         AppIcon.newPrivateTabTapped.record(NoExtras())
@@ -427,6 +439,14 @@ open class HomeActivity : LocaleAwareAppCompatActivity(), NavHostActivity {
         )
 
         components.notificationsDelegate.bindToActivity(this)
+
+        components.settings.coldStartsBetweenSetAsDefaultPrompts++
+
+        components.appStore.dispatch(
+            AppAction.OrientationChange(
+                orientation = OrientationMode.fromInteger(resources.configuration.orientation),
+            ),
+        )
 
         StartupTimeline.onActivityCreateEndHome(this) // DO NOT MOVE ANYTHING BELOW HERE.
     }
@@ -507,6 +527,7 @@ open class HomeActivity : LocaleAwareAppCompatActivity(), NavHostActivity {
                 Events.defaultBrowserChanged.record(NoExtras())
             }
 
+            collectOSNavigationTelemetry()
             GrowthDataWorker.sendActivatedSignalIfNeeded(applicationContext)
             FontEnumerationWorker.sendActivatedSignalIfNeeded(applicationContext)
             ReEngagementNotificationWorker.setReEngagementNotificationIfNeeded(applicationContext)
@@ -628,6 +649,12 @@ open class HomeActivity : LocaleAwareAppCompatActivity(), NavHostActivity {
         breadcrumb(
             message = "onConfigurationChanged()",
         )
+
+        components.appStore.dispatch(
+            AppAction.OrientationChange(
+                orientation = OrientationMode.fromInteger(newConfig.orientation),
+            ),
+        )
     }
 
     final override fun recreate() {
@@ -643,11 +670,9 @@ open class HomeActivity : LocaleAwareAppCompatActivity(), NavHostActivity {
     /**
      * Handles intents received when the activity is open.
      */
-    final override fun onNewIntent(intent: Intent?) {
+    final override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
-        intent?.let {
-            handleNewIntent(it)
-        }
+        handleNewIntent(intent)
         startupPathProvider.onIntentReceived(intent)
     }
 
@@ -749,6 +774,7 @@ open class HomeActivity : LocaleAwareAppCompatActivity(), NavHostActivity {
         }.toTypedArray()
     }
 
+    @Suppress("MissingSuperCall", "OVERRIDE_DEPRECATION")
     final override fun onBackPressed() {
         supportFragmentManager.primaryNavigationFragment?.childFragmentManager?.fragments?.forEach {
             if (it is UserInteractionHandler && it.onBackPressed()) {
@@ -780,7 +806,16 @@ open class HomeActivity : LocaleAwareAppCompatActivity(), NavHostActivity {
 
     private fun handleBackLongPress(): Boolean {
         supportFragmentManager.primaryNavigationFragment?.childFragmentManager?.fragments?.forEach {
-            if (it is OnBackLongPressedListener && it.onBackLongPressed()) {
+            if (it is OnLongPressedListener && it.onBackLongPressed()) {
+                return true
+            }
+        }
+        return false
+    }
+
+    private fun handleForwardLongPress(): Boolean {
+        supportFragmentManager.primaryNavigationFragment?.childFragmentManager?.fragments?.forEach {
+            if (it is OnLongPressedListener && it.onForwardLongPressed()) {
                 return true
             }
         }
@@ -805,9 +840,16 @@ open class HomeActivity : LocaleAwareAppCompatActivity(), NavHostActivity {
                 handleBackLongPress()
             }
         }
+
+        if (keyCode == KeyEvent.KEYCODE_FORWARD) {
+            event?.startTracking()
+            return true
+        }
+
         return super.onKeyDown(keyCode, event)
     }
 
+    @Suppress("ReturnCount")
     final override fun onKeyUp(keyCode: Int, event: KeyEvent): Boolean {
         if (shouldUseCustomBackLongPress() && keyCode == KeyEvent.KEYCODE_BACK) {
             backLongPressJob?.cancel()
@@ -821,6 +863,20 @@ open class HomeActivity : LocaleAwareAppCompatActivity(), NavHostActivity {
                 return true
             }
         }
+
+        if (keyCode == KeyEvent.KEYCODE_FORWARD) {
+            if (navHost.navController.hasTopDestination(TabHistoryDialogFragment.NAME)) {
+                // returning true avoids further processing of the KeyUp event
+                return true
+            }
+
+            supportFragmentManager.primaryNavigationFragment?.childFragmentManager?.fragments?.forEach {
+                if (it is UserInteractionHandler && it.onForwardPressed()) {
+                    return true
+                }
+            }
+        }
+
         return super.onKeyUp(keyCode, event)
     }
 
@@ -830,6 +886,11 @@ open class HomeActivity : LocaleAwareAppCompatActivity(), NavHostActivity {
         if (!shouldUseCustomBackLongPress() && keyCode == KeyEvent.KEYCODE_BACK) {
             return handleBackLongPress()
         }
+
+        if (keyCode == KeyEvent.KEYCODE_FORWARD) {
+            return handleForwardLongPress()
+        }
+
         return super.onKeyLongPress(keyCode, event)
     }
 
@@ -1253,6 +1314,18 @@ open class HomeActivity : LocaleAwareAppCompatActivity(), NavHostActivity {
         val currentBootUniqueIdentifier = BootUtils.getBootIdentifier(context)
 
         messaging.onMessageDisplayed(nextMessage, currentBootUniqueIdentifier)
+    }
+
+    @VisibleForTesting
+    @SuppressLint("NewApi") // The Android Q check is done in the systemGesturesInsets property getter
+    internal fun collectOSNavigationTelemetry() {
+        binding.root.doOnAttach {
+            val systemGestureInsets = binding.root.systemGesturesInsets
+
+            val isUsingGesturesNavigation =
+                (systemGestureInsets?.left ?: 0) > 0 && (systemGestureInsets?.right ?: 0) > 0
+            NavigationBar.osNavigationUsesGestures.set(isUsingGesturesNavigation)
+        }
     }
 
     companion object {

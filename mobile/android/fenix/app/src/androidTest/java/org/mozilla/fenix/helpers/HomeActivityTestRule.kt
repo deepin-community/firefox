@@ -13,6 +13,7 @@ import androidx.compose.ui.test.junit4.AndroidComposeTestRule
 import androidx.test.espresso.intent.rule.IntentsTestRule
 import androidx.test.rule.ActivityTestRule
 import androidx.test.uiautomator.UiSelector
+import mozilla.components.feature.sitepermissions.SitePermissionsRules
 import org.junit.rules.TestRule
 import org.mozilla.fenix.HomeActivity
 import org.mozilla.fenix.helpers.Constants.TAG
@@ -20,6 +21,7 @@ import org.mozilla.fenix.helpers.FeatureSettingsHelper.Companion.settings
 import org.mozilla.fenix.helpers.TestHelper.appContext
 import org.mozilla.fenix.helpers.TestHelper.mDevice
 import org.mozilla.fenix.onboarding.FenixOnboarding
+import org.mozilla.fenix.settings.PhoneFeature
 
 typealias HomeActivityComposeTestRule = AndroidComposeTestRule<out TestRule, HomeActivity>
 
@@ -48,6 +50,7 @@ class HomeActivityTestRule(
             FenixOnboarding(appContext).userHasBeenOnboarded(),
         isPocketEnabled: Boolean = settings.showPocketRecommendationsFeature,
         isJumpBackInCFREnabled: Boolean = settings.shouldShowJumpBackInCFR,
+        isNavigationBarCFREnabled: Boolean = settings.shouldShowNavigationBarCFR,
         isRecentTabsFeatureEnabled: Boolean = settings.showRecentTabsFeature,
         isRecentlyVisitedFeatureEnabled: Boolean = settings.historyMetadataUIFeature,
         isPWAsPromptEnabled: Boolean = !settings.userKnowsAboutPwas,
@@ -56,12 +59,15 @@ class HomeActivityTestRule(
         isDeleteSitePermissionsEnabled: Boolean = settings.deleteSitePermissions,
         isOpenInAppBannerEnabled: Boolean = settings.shouldShowOpenInAppBanner,
         etpPolicy: ETPPolicy = getETPPolicy(settings),
-        tabsTrayRewriteEnabled: Boolean = false,
         composeTopSitesEnabled: Boolean = false,
+        isLocationPermissionEnabled: SitePermissionsRules.Action = getFeaturePermission(PhoneFeature.LOCATION, settings),
+        isNavigationToolbarEnabled: Boolean = false,
+        isMicrosurveyEnabled: Boolean = settings.microsurveyFeatureEnabled,
     ) : this(initialTouchMode, launchActivity, skipOnboarding) {
         this.isHomeOnboardingDialogEnabled = isHomeOnboardingDialogEnabled
         this.isPocketEnabled = isPocketEnabled
         this.isJumpBackInCFREnabled = isJumpBackInCFREnabled
+        this.isNavigationBarCFREnabled = isNavigationBarCFREnabled
         this.isRecentTabsFeatureEnabled = isRecentTabsFeatureEnabled
         this.isRecentlyVisitedFeatureEnabled = isRecentlyVisitedFeatureEnabled
         this.isPWAsPromptEnabled = isPWAsPromptEnabled
@@ -70,8 +76,10 @@ class HomeActivityTestRule(
         this.isDeleteSitePermissionsEnabled = isDeleteSitePermissionsEnabled
         this.isOpenInAppBannerEnabled = isOpenInAppBannerEnabled
         this.etpPolicy = etpPolicy
-        this.tabsTrayRewriteEnabled = tabsTrayRewriteEnabled
         this.composeTopSitesEnabled = composeTopSitesEnabled
+        this.isLocationPermissionEnabled = isLocationPermissionEnabled
+        this.isNavigationToolbarEnabled = isNavigationToolbarEnabled
+        this.isMicrosurveyEnabled = isMicrosurveyEnabled
     }
 
     /**
@@ -121,19 +129,18 @@ class HomeActivityTestRule(
             initialTouchMode: Boolean = false,
             launchActivity: Boolean = true,
             skipOnboarding: Boolean = false,
-            tabsTrayRewriteEnabled: Boolean = false,
             composeTopSitesEnabled: Boolean = false,
         ) = HomeActivityTestRule(
             initialTouchMode = initialTouchMode,
             launchActivity = launchActivity,
             skipOnboarding = skipOnboarding,
-            tabsTrayRewriteEnabled = tabsTrayRewriteEnabled,
             isJumpBackInCFREnabled = false,
             isPWAsPromptEnabled = false,
             isTCPCFREnabled = false,
             isWallpaperOnboardingEnabled = false,
             isOpenInAppBannerEnabled = false,
             composeTopSitesEnabled = composeTopSitesEnabled,
+            isMicrosurveyEnabled = false,
         )
     }
 }
@@ -163,6 +170,7 @@ class HomeActivityIntentTestRule internal constructor(
             FenixOnboarding(appContext).userHasBeenOnboarded(),
         isPocketEnabled: Boolean = settings.showPocketRecommendationsFeature,
         isJumpBackInCFREnabled: Boolean = settings.shouldShowJumpBackInCFR,
+        isNavigationBarCFREnabled: Boolean = settings.shouldShowNavigationBarCFR,
         isRecentTabsFeatureEnabled: Boolean = settings.showRecentTabsFeature,
         isRecentlyVisitedFeatureEnabled: Boolean = settings.historyMetadataUIFeature,
         isPWAsPromptEnabled: Boolean = !settings.userKnowsAboutPwas,
@@ -171,12 +179,15 @@ class HomeActivityIntentTestRule internal constructor(
         isDeleteSitePermissionsEnabled: Boolean = settings.deleteSitePermissions,
         isOpenInAppBannerEnabled: Boolean = settings.shouldShowOpenInAppBanner,
         etpPolicy: ETPPolicy = getETPPolicy(settings),
-        tabsTrayRewriteEnabled: Boolean = false,
         composeTopSitesEnabled: Boolean = false,
+        isLocationPermissionEnabled: SitePermissionsRules.Action = getFeaturePermission(PhoneFeature.LOCATION, settings),
+        isNavigationToolbarEnabled: Boolean = false,
+        isMicrosurveyEnabled: Boolean = settings.microsurveyFeatureEnabled,
     ) : this(initialTouchMode, launchActivity, skipOnboarding) {
         this.isHomeOnboardingDialogEnabled = isHomeOnboardingDialogEnabled
         this.isPocketEnabled = isPocketEnabled
         this.isJumpBackInCFREnabled = isJumpBackInCFREnabled
+        this.isNavigationBarCFREnabled = isNavigationBarCFREnabled
         this.isRecentTabsFeatureEnabled = isRecentTabsFeatureEnabled
         this.isRecentlyVisitedFeatureEnabled = isRecentlyVisitedFeatureEnabled
         this.isPWAsPromptEnabled = isPWAsPromptEnabled
@@ -185,8 +196,10 @@ class HomeActivityIntentTestRule internal constructor(
         this.isDeleteSitePermissionsEnabled = isDeleteSitePermissionsEnabled
         this.isOpenInAppBannerEnabled = isOpenInAppBannerEnabled
         this.etpPolicy = etpPolicy
-        this.tabsTrayRewriteEnabled = tabsTrayRewriteEnabled
         this.composeTopSitesEnabled = composeTopSitesEnabled
+        this.isLocationPermissionEnabled = isLocationPermissionEnabled
+        this.isNavigationToolbarEnabled = isNavigationToolbarEnabled
+        this.isMicrosurveyEnabled = isMicrosurveyEnabled
     }
 
     private val longTapUserPreference = getLongPressTimeout()
@@ -247,6 +260,7 @@ class HomeActivityIntentTestRule internal constructor(
             settings.showHomeOnboardingDialog && FenixOnboarding(appContext).userHasBeenOnboarded()
         isPocketEnabled = settings.showPocketRecommendationsFeature
         isJumpBackInCFREnabled = settings.shouldShowJumpBackInCFR
+        isNavigationBarCFREnabled = settings.shouldShowNavigationBarCFR
         isRecentTabsFeatureEnabled = settings.showRecentTabsFeature
         isRecentlyVisitedFeatureEnabled = settings.historyMetadataUIFeature
         isPWAsPromptEnabled = !settings.userKnowsAboutPwas
@@ -255,6 +269,9 @@ class HomeActivityIntentTestRule internal constructor(
         isDeleteSitePermissionsEnabled = settings.deleteSitePermissions
         isOpenInAppBannerEnabled = settings.shouldShowOpenInAppBanner
         etpPolicy = getETPPolicy(settings)
+        isLocationPermissionEnabled = getFeaturePermission(PhoneFeature.LOCATION, settings)
+        isNavigationToolbarEnabled = settings.navigationToolbarEnabled
+        isMicrosurveyEnabled = settings.microsurveyFeatureEnabled
     }
 
     companion object {
@@ -272,19 +289,18 @@ class HomeActivityIntentTestRule internal constructor(
             initialTouchMode: Boolean = false,
             launchActivity: Boolean = true,
             skipOnboarding: Boolean = false,
-            tabsTrayRewriteEnabled: Boolean = false,
             composeTopSitesEnabled: Boolean = false,
         ) = HomeActivityIntentTestRule(
             initialTouchMode = initialTouchMode,
             launchActivity = launchActivity,
             skipOnboarding = skipOnboarding,
-            tabsTrayRewriteEnabled = tabsTrayRewriteEnabled,
             isJumpBackInCFREnabled = false,
             isPWAsPromptEnabled = false,
             isTCPCFREnabled = false,
             isWallpaperOnboardingEnabled = false,
             isOpenInAppBannerEnabled = false,
             composeTopSitesEnabled = composeTopSitesEnabled,
+            isMicrosurveyEnabled = false,
         )
     }
 }

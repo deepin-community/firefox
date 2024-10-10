@@ -4,18 +4,27 @@
 
 tabbrowser-empty-tab-title = Новая вкладка
 tabbrowser-empty-private-tab-title = Новая приватная вкладка
-
 tabbrowser-menuitem-close-tab =
     .label = Закрыть вкладку
 tabbrowser-menuitem-close =
     .label = Закрыть
-
 # Displayed as a tooltip on container tabs
 # Variables:
 #   $title (String): the title of the current tab.
 #   $containerName (String): the name of the current container.
 tabbrowser-container-tab-title = { $title } — { $containerName }
-
+# This text serves as an on-screen tooltip as well as an accessible name for
+# the "X" button that is shown on the active tab or, when multiple tabs are
+# selected, to all their "X" buttons.
+# Variables:
+#   $tabCount (Number): The number of tabs that will be closed.
+tabbrowser-close-tabs-button =
+    .tooltiptext =
+        { $tabCount ->
+            [one] Закрыть { $tabCount } вкладку
+            [few] Закрыть { $tabCount } вкладки
+           *[many] Закрыть { $tabCount } вкладок
+        }
 # Variables:
 #   $tabCount (Number): The number of tabs that will be closed.
 tabbrowser-close-tabs-tooltip =
@@ -127,8 +136,18 @@ tabbrowser-confirm-open-multiple-tabs-checkbox = Предупреждать ме
 ## Confirmation dialog for enabling caret browsing
 
 tabbrowser-confirm-caretbrowsing-title = Активный курсор
-tabbrowser-confirm-caretbrowsing-message = Нажатие клавиши F7 включает или выключает режим активного курсора. В этом режиме, поместив курсор на страницу, вы можете выделять текст с помощью клавиатуры. Включить этот режим?
+tabbrowser-confirm-caretbrowsing-message = Нажатие клавиши F7 включает или отключает режим активного курсора. В этом режиме, поместив курсор на страницу, вы можете выделять текст с помощью клавиатуры. Включить этот режим?
 tabbrowser-confirm-caretbrowsing-checkbox = Больше не показывать это окно.
+
+## Confirmation dialog for closing all duplicate tabs
+
+tabbrowser-confirm-close-duplicate-tabs-title = Внимание
+tabbrowser-confirm-close-duplicate-tabs-text = Мы будем держать открытой последнюю активную вкладку
+tabbrowser-confirm-close-all-duplicate-tabs-title = Закрыть дублирующиеся вкладки?
+tabbrowser-confirm-close-all-duplicate-tabs-text =
+    Мы закроем дублирующиеся вкладки в этом окне. Последняя активная
+    вкладка останется открытой.
+tabbrowser-confirm-close-all-duplicate-tabs-button-closetabs = Закрыть вкладки
 
 ##
 
@@ -136,7 +155,6 @@ tabbrowser-confirm-caretbrowsing-checkbox = Больше не показыват
 #   $domain (String): URL of the page that is trying to steal focus.
 tabbrowser-allow-dialogs-to-get-focus =
     .label = Разрешить таким уведомлениям от { $domain } переводить вас на их вкладку
-
 tabbrowser-customizemode-tab-title = Настройка { -brand-short-name }
 
 ## Context menu buttons, of which only one will be visible at a time
@@ -155,7 +173,6 @@ tabbrowser-context-mute-selected-tabs =
 tabbrowser-context-unmute-selected-tabs =
     .label = Включить звук вкладок
     .accesskey = в
-
 # This string is used as an additional tooltip and accessibility description for tabs playing audio
 tabbrowser-tab-audio-playing-description = Воспроизведение звука
 

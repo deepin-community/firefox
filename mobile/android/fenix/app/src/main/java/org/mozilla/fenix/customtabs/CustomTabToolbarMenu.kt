@@ -22,7 +22,6 @@ import mozilla.components.browser.state.selector.findCustomTab
 import mozilla.components.browser.state.state.CustomTabSessionState
 import mozilla.components.browser.state.store.BrowserStore
 import org.mozilla.fenix.R
-import org.mozilla.fenix.components.toolbar.IncompleteRedesignToolbarFeature
 import org.mozilla.fenix.components.toolbar.ToolbarMenu
 import org.mozilla.fenix.ext.components
 import org.mozilla.fenix.ext.getStringWithArgSafe
@@ -54,8 +53,10 @@ class CustomTabToolbarMenu(
     /** Gets the current custom tab session */
     @VisibleForTesting
     internal val session: CustomTabSessionState? get() = sessionId?.let { store.state.findCustomTab(it) }
+
     private val appName = context.getString(R.string.app_name)
-    private val shouldShowMenuToolbar = !IncompleteRedesignToolbarFeature(context.settings()).isEnabled
+    private val isNavBarEnabled = context.settings().navigationToolbarEnabled
+    private val shouldShowMenuToolbar = !isNavBarEnabled
 
     override val menuToolbar by lazy {
         val back = BrowserMenuItemToolbar.TwoStateButton(
@@ -124,10 +125,11 @@ class CustomTabToolbarMenu(
         val menuItems = listOfNotNull(
             poweredBy.apply { visible = { !isSandboxCustomTab } },
             BrowserMenuDivider().apply { visible = { !isSandboxCustomTab } },
+            sharePage.apply { visible = { isNavBarEnabled && !isSandboxCustomTab } },
             desktopMode,
             findInPage,
             openInApp.apply { visible = ::shouldShowOpenInApp },
-            openInFenix.apply { visible = { !isSandboxCustomTab } },
+            openInFenix.apply { visible = { !isSandboxCustomTab && !isNavBarEnabled } },
             BrowserMenuDivider(),
             if (shouldShowMenuToolbar) menuToolbar else null,
         )
@@ -144,6 +146,14 @@ class CustomTabToolbarMenu(
         initialState = { session?.content?.desktopMode ?: false },
     ) { checked ->
         onItemTapped.invoke(ToolbarMenu.Item.RequestDesktop(checked))
+    }
+
+    private val sharePage = BrowserMenuImageText(
+        label = context.getString(R.string.browser_menu_share),
+        imageResource = R.drawable.ic_share,
+        iconTintColorResource = primaryTextColor(),
+    ) {
+        onItemTapped.invoke(ToolbarMenu.Item.Share)
     }
 
     private val findInPage = BrowserMenuImageText(

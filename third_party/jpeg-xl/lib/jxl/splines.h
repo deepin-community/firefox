@@ -6,7 +6,6 @@
 #ifndef LIB_JXL_SPLINES_H_
 #define LIB_JXL_SPLINES_H_
 
-#include <array>
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
@@ -24,8 +23,6 @@ class ANSSymbolReader;
 class BitReader;
 
 static constexpr float kDesiredRenderingDistance = 1.f;
-
-typedef std::array<float, 32> Dct32;
 
 enum SplineEntropyContexts : size_t {
   kQuantizationAdjustmentContext = 0,
@@ -48,10 +45,10 @@ struct Spline {
   };
   std::vector<Point> control_points;
   // X, Y, B.
-  std::array<Dct32, 3> color_dct;
+  float color_dct[3][32];
   // Splines are draws by normalized Gaussian splatting. This controls the
   // Gaussian's parameter along the spline.
-  Dct32 sigma_dct;
+  float sigma_dct[32];
 };
 
 class QuantizedSplineEncoder;

@@ -189,6 +189,8 @@ mr2022-onboarding-pin-primary-button-label =
         [macos] Kiinnitä { -brand-short-name } Dockiin
        *[other] Kiinnitä { -brand-short-name } tehtäväpalkkiin
     }
+# Primary button string used on welcome page for when Firefox is not pinned on MSIX
+mr2022-onboarding-pin-primary-button-label-msix = Kiinnitä { -brand-short-name } tehtäväpalkkiin ja Käynnistä-valikkoon
 # Subtitle will be used when user already has Firefox pinned, but
 # has not set it as their default browser.
 # When translating "zip", please feel free to pick a verb that signifies movement and/or exploration
@@ -335,6 +337,14 @@ onboarding-device-migration-title = Tervetuloa takaisin!
 onboarding-device-migration-subtitle = Kirjaudu sisään { -fxaccount-brand-name(capitalization: "sentence") }llesi, niin voit tuoda kirjanmerkkisi, salasanasi ja historiasi uudelle laitteellesi.
 onboarding-device-migration-subtitle2 = Kirjaudu tilillesi tuodaksesi kirjanmerkkisi, salasanasi ja historiasi uudelle laitteellesi.
 onboarding-device-migration-primary-button-label = Kirjaudu sisään
+
+## Add-ons Picker screen
+
+amo-picker-title = Muokkaa { -brand-short-name }-selainta
+amo-picker-subtitle = Laajennukset ovat kuin selaimesi sovelluksia, ja niiden avulla voit suojata salasanoja, ladata videoita, löytää tarjouksia, estää ärsyttäviä mainoksia, muuttaa selaimen ulkoasua ja paljon muuta.
+amo-picker-install-button-label = Lisää { -brand-short-name }iin
+amo-picker-install-complete-label = Asennettu
+amo-picker-collection-link = Tutustu muihin lisäosiin
 
 ## The following screens have been updated to use security and privacy focused strings:
 

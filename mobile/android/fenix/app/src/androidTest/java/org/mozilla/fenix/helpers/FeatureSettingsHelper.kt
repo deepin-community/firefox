@@ -5,6 +5,7 @@
 package org.mozilla.fenix.helpers
 
 import androidx.test.platform.app.InstrumentationRegistry
+import mozilla.components.feature.sitepermissions.SitePermissionsRules
 import org.mozilla.fenix.ext.settings
 
 /**
@@ -27,6 +28,12 @@ interface FeatureSettingsHelper {
      * It should appear on the first visit to homescreen given that there is a tab opened.
      */
     var isJumpBackInCFREnabled: Boolean
+
+    /**
+     * Whether the "Navigation bar" CFR should be shown or not.
+     * It should appear on the first visit to homescreen given that there is a navigation bar.
+     */
+    var isNavigationBarCFREnabled: Boolean
 
     /**
      * Whether the onboarding dialog for choosing wallpapers should be shown or not.
@@ -73,14 +80,24 @@ interface FeatureSettingsHelper {
     var isOpenInAppBannerEnabled: Boolean
 
     /**
-     * Enable or disable the Tabs Tray to Compose rewrite.
-     */
-    var tabsTrayRewriteEnabled: Boolean
-
-    /**
      * Enable or disable the Top Sites to Compose rewrite.
      */
     var composeTopSitesEnabled: Boolean
+
+    /**
+     * Enable or disable all location permission requests.
+     */
+    var isLocationPermissionEnabled: SitePermissionsRules.Action
+
+    /**
+     * Enable or disable the new navigation toolbar.
+     */
+    var isNavigationToolbarEnabled: Boolean
+
+    /**
+     * Enable or disable the new microsurvey feature.
+     */
+    var isMicrosurveyEnabled: Boolean
 
     fun applyFlagUpdates()
 

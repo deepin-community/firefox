@@ -89,6 +89,9 @@ shopping-show-less-button = Shfaq më pak
 
 shopping-settings-label =
     .label = Rregullime
+shopping-settings-recommendations-toggle2 =
+    .label = Shfaq rekomandime dhe lëndë të sponsorizuar
+shopping-settings-recommendations-learn-more3 = { -brand-product-name }-i nuk i jep kujt të dhënat tuaja personale, ndaj këto rekomandime s’do t’ju ndjekin nëpër internet. <a data-l10n-name="review-quality-url">Mësoni më tepër</a>
 shopping-settings-recommendations-toggle =
     .label = Shfaq reklama te kontrollori i shqyrtimeve
 shopping-settings-recommendations-learn-more2 = Do të shihni reklama me raste, për produkte të afërt. Shfaqim reklama vetëm për produkte me shqyrtime të besueshme. <a data-l10n-name="review-quality-url">Mësoni më tepër</a>
@@ -115,6 +118,7 @@ shopping-settings-sidebar-enabled-state = Kontrollori i Shqyrtimeve është <str
 shopping-adjusted-rating-label =
     .label = Vlerësim i rregulluar
 shopping-adjusted-rating-unreliable-reviews = U hoqën shqyrtime jo të besueshme
+shopping-adjusted-rating-based-reliable-reviews = Bazuar në shqyrtime të besueshme
 
 ## Strings for the review reliability component
 
@@ -133,6 +137,8 @@ shopping-analysis-explainer-learn-more2 = Mësoni më tepër mbi <a data-l10n-na
 # websites, which will be inserted without being translated.
 #  $retailer (String) - capitalized name of the shopping website, for example, "Amazon".
 shopping-analysis-explainer-highlights-description = <strong>Gjërat në pah</strong> janë nga shqyrtime { $retailer } brenda 80 ditëve të fundit, të cilave besojmë se janë të vlefshme.
+# Fallback for analysis highlights explainer if the retailer is ever unknown
+shopping-analysis-explainer-highlights-description-unknown-retailer = <strong>Gjërat në pah</strong> janë nga shqyrtime brenda 80 ditëve të fundit, të cilave besojmë se mund t’u zihet besë.
 shopping-analysis-explainer-review-grading-scale-reliable = Shqyrtime të vlefshme. Besojmë se shqyrtimet janë, me gjasa, prej klientësh të njëmendtë, që lanë shqyrtime të ndershme, të paanshme.
 shopping-analysis-explainer-review-grading-scale-mixed = Besojmë se bëhet fjalë për një përzierje shqyrtimesh të besueshme dhe jo të besueshme.
 shopping-analysis-explainer-review-grading-scale-unreliable = Shqyrtime jo të besueshme. Besojmë se shqyrtimet ka gjasa të jenë të rreme, ose prej shqyrtuesish të anshëm.
@@ -159,6 +165,7 @@ shopping-unanalyzed-product-analyze-button = Kontrollo cilësi shqyrtimi
 
 more-to-consider-ad-label =
     .label = Më tepër për t’u marrë parasysh
+shopping-sponsored-label = E sponsorizuar
 ad-by-fakespot = Reklamë nga { -fakespot-brand-name }
 
 ## Shopping survey strings.

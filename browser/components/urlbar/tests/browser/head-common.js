@@ -3,6 +3,7 @@ ChromeUtils.defineESModuleGetters(this, {
   PlacesTestUtils: "resource://testing-common/PlacesTestUtils.sys.mjs",
   PlacesUtils: "resource://gre/modules/PlacesUtils.sys.mjs",
   Preferences: "resource://gre/modules/Preferences.sys.mjs",
+  TopSites: "resource:///modules/TopSites.sys.mjs",
   UrlbarProvider: "resource:///modules/UrlbarUtils.sys.mjs",
   UrlbarProvidersManager: "resource:///modules/UrlbarProvidersManager.sys.mjs",
   UrlbarResult: "resource:///modules/UrlbarResult.sys.mjs",
@@ -104,50 +105,21 @@ async function updateTopSites(condition, searchShortcuts = false) {
     ],
   });
 
+  if (Services.prefs.getBoolPref("browser.topsites.component.enabled")) {
+    // The previous way of updating Top Sites was to toggle the preference which
+    // removes the instance of the Top Sites Feed and re-creates it.
+    TopSites.uninit();
+    await TopSites.init();
+  }
+
   // Wait for the feed to be updated.
-  await TestUtils.waitForCondition(() => {
-    let sites = AboutNewTab.getTopSites();
+  await TestUtils.waitForCondition(async () => {
+    let sites;
+    if (Services.prefs.getBoolPref("browser.topsites.component.enabled")) {
+      sites = await TopSites.getSites();
+    } else {
+      sites = AboutNewTab.getTopSites();
+    }
     return condition(sites);
   }, "Waiting for top sites to be updated");
-}
-
-/**
- * Asserts a search term is in the url bar and state values are
- * what they should be.
- *
- * @param {string} searchString
- *   String that should be matched in the url bar.
- * @param {object | null} options
- *   Options for the assertions.
- * @param {Window | null} options.window
- *   Window to use for tests.
- * @param {string | null} options.pageProxyState
- *   The pageproxystate that should be expected. Defaults to "valid".
- * @param {string | null} options.userTypedValue
- *   The userTypedValue that should be expected. Defaults to null.
- */
-function assertSearchStringIsInUrlbar(
-  searchString,
-  { win = window, pageProxyState = "valid", userTypedValue = null } = {}
-) {
-  Assert.equal(
-    win.gURLBar.value,
-    searchString,
-    `Search string should be the urlbar value.`
-  );
-  Assert.equal(
-    win.gBrowser.selectedBrowser.searchTerms,
-    searchString,
-    `Search terms should match.`
-  );
-  Assert.equal(
-    win.gBrowser.userTypedValue,
-    userTypedValue,
-    "userTypedValue should match."
-  );
-  Assert.equal(
-    win.gURLBar.getAttribute("pageproxystate"),
-    pageProxyState,
-    "Pageproxystate should match."
-  );
 }

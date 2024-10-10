@@ -13,6 +13,7 @@ import android.os.Build.VERSION.SDK_INT
 import android.os.StrictMode
 import android.os.SystemClock
 import android.util.Log.INFO
+import androidx.annotation.OpenForTesting
 import androidx.annotation.VisibleForTesting
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.app.NotificationManagerCompat
@@ -46,12 +47,11 @@ import mozilla.components.feature.autofill.AutofillUseCases
 import mozilla.components.feature.fxsuggest.GlobalFxSuggestDependencyProvider
 import mozilla.components.feature.search.ext.buildSearchUrl
 import mozilla.components.feature.search.ext.waitForSelectedOrDefaultSearchEngine
+import mozilla.components.feature.syncedtabs.commands.GlobalSyncedTabsCommandsProvider
 import mozilla.components.feature.top.sites.TopSitesFrecencyConfig
 import mozilla.components.feature.top.sites.TopSitesProviderConfig
 import mozilla.components.lib.crash.CrashReporter
 import mozilla.components.service.fxa.manager.SyncEnginesStorage
-import mozilla.components.service.glean.Glean
-import mozilla.components.service.glean.config.Configuration
 import mozilla.components.service.glean.net.ConceptFetchHttpUploader
 import mozilla.components.service.sync.logins.LoginsApiException
 import mozilla.components.support.base.ext.areNotificationsEnabledSafe
@@ -70,6 +70,8 @@ import mozilla.components.support.rustlog.RustLog
 import mozilla.components.support.utils.BrowsersCache
 import mozilla.components.support.utils.logElapsedTime
 import mozilla.components.support.webextensions.WebExtensionSupport
+import mozilla.telemetry.glean.Glean
+import mozilla.telemetry.glean.config.Configuration
 import org.mozilla.fenix.GleanMetrics.Addons
 import org.mozilla.fenix.GleanMetrics.Addresses
 import org.mozilla.fenix.GleanMetrics.AndroidAutofill
@@ -83,7 +85,6 @@ import org.mozilla.fenix.GleanMetrics.PerfStartup
 import org.mozilla.fenix.GleanMetrics.Preferences
 import org.mozilla.fenix.GleanMetrics.SearchDefaultEngine
 import org.mozilla.fenix.GleanMetrics.ShoppingSettings
-import org.mozilla.fenix.GleanMetrics.TabStrip
 import org.mozilla.fenix.GleanMetrics.TopSites
 import org.mozilla.fenix.components.Components
 import org.mozilla.fenix.components.Core
@@ -101,6 +102,7 @@ import org.mozilla.fenix.ext.settings
 import org.mozilla.fenix.lifecycle.StoreLifecycleObserver
 import org.mozilla.fenix.nimbus.FxNimbus
 import org.mozilla.fenix.onboarding.MARKETING_CHANNEL_ID
+import org.mozilla.fenix.perf.ApplicationExitInfoMetrics
 import org.mozilla.fenix.perf.MarkersActivityLifecycleCallbacks
 import org.mozilla.fenix.perf.ProfilerMarkerFactProcessor
 import org.mozilla.fenix.perf.StartupTimeline
@@ -180,7 +182,7 @@ open class FenixApplication : LocaleAwareApplication(), Provider {
 
         // We avoid blocking the main thread on startup by calling into Glean on the background thread.
         @OptIn(DelicateCoroutinesApi::class)
-        GlobalScope.launch(Dispatchers.IO) {
+        GlobalScope.launch(IO) {
             PerfStartup.applicationOnCreate.accumulateSamples(listOf(durationMillis))
         }
     }
@@ -206,10 +208,13 @@ open class FenixApplication : LocaleAwareApplication(), Provider {
                 lazy(LazyThreadSafetyMode.NONE) { components.core.client },
             ),
             enableEventTimestamps = FxNimbus.features.glean.value().enableEventTimestamps,
+            delayPingLifetimeIo = FxNimbus.features.glean.value().delayPingLifetimeIo,
+            pingLifetimeThreshold = FxNimbus.features.glean.value().pingLifetimeThreshold,
+            pingLifetimeMaxTime = FxNimbus.features.glean.value().pingLifetimeMaxTime,
         )
 
         // Set the metric configuration from Nimbus.
-        Glean.setMetricsEnabledConfig(FxNimbus.features.glean.value().metricsEnabled)
+        Glean.applyServerKnobsConfig(FxNimbus.features.glean.value().metricsEnabled.toString())
 
         Glean.initialize(
             applicationContext = this,
@@ -220,7 +225,7 @@ open class FenixApplication : LocaleAwareApplication(), Provider {
 
         // We avoid blocking the main thread on startup by setting startup metrics on the background thread.
         val store = components.core.store
-        GlobalScope.launch(Dispatchers.IO) {
+        GlobalScope.launch(IO) {
             setStartupMetrics(store, settings())
         }
     }
@@ -269,6 +274,8 @@ open class FenixApplication : LocaleAwareApplication(), Provider {
             // it is needed while the app is not running and WorkManager wakes up the app
             // for the periodic task.
             GlobalPlacesDependencyProvider.initialize(components.core.historyStorage)
+
+            GlobalSyncedTabsCommandsProvider.initialize(lazy { components.backgroundServices.syncedTabsCommands })
 
             restoreBrowserState()
             restoreDownloads()
@@ -337,7 +344,7 @@ open class FenixApplication : LocaleAwareApplication(), Provider {
         @OptIn(DelicateCoroutinesApi::class) // GlobalScope usage
         fun queueInitStorageAndServices() {
             components.performance.visualCompletenessQueue.queue.runIfReadyOrQueue {
-                GlobalScope.launch(Dispatchers.IO) {
+                GlobalScope.launch(IO) {
                     logger.info("Running post-visual completeness tasks...")
                     logElapsedTime(logger, "Storage initialization") {
                         components.core.historyStorage.warmUp()
@@ -406,7 +413,7 @@ open class FenixApplication : LocaleAwareApplication(), Provider {
 
         @OptIn(DelicateCoroutinesApi::class) // GlobalScope usage
         fun queueReviewPrompt() {
-            GlobalScope.launch(Dispatchers.IO) {
+            GlobalScope.launch(IO) {
                 components.reviewPromptController.trackApplicationLaunch()
             }
         }
@@ -414,7 +421,7 @@ open class FenixApplication : LocaleAwareApplication(), Provider {
         @OptIn(DelicateCoroutinesApi::class) // GlobalScope usage
         fun queueRestoreLocale() {
             components.performance.visualCompletenessQueue.queue.runIfReadyOrQueue {
-                GlobalScope.launch(Dispatchers.IO) {
+                GlobalScope.launch(IO) {
                     components.useCases.localeUseCases.restore()
                 }
             }
@@ -433,10 +440,19 @@ open class FenixApplication : LocaleAwareApplication(), Provider {
         @OptIn(DelicateCoroutinesApi::class) // GlobalScope usage
         fun queueNimbusFetchInForeground() {
             queue.runIfReadyOrQueue {
-                GlobalScope.launch(Dispatchers.IO) {
+                GlobalScope.launch(IO) {
                     components.nimbus.sdk.maybeFetchExperiments(
                         context = this@FenixApplication,
                     )
+                }
+            }
+        }
+
+        @OptIn(DelicateCoroutinesApi::class) // GlobalScope usage
+        fun queueSuggestIngest() {
+            queue.runIfReadyOrQueue {
+                GlobalScope.launch(IO) {
+                    components.fxSuggest.storage.runStartupIngestion()
                 }
             }
         }
@@ -451,6 +467,19 @@ open class FenixApplication : LocaleAwareApplication(), Provider {
         queueRestoreLocale()
         queueStorageMaintenance()
         queueNimbusFetchInForeground()
+        if (settings().enableFxSuggest) {
+            queueSuggestIngest()
+        }
+        queueCollectProcessExitInfo()
+    }
+
+    @OptIn(DelicateCoroutinesApi::class) // GlobalScope usage
+    private fun queueCollectProcessExitInfo() {
+        if (SDK_INT >= Build.VERSION_CODES.R && settings().isTelemetryEnabled) {
+            GlobalScope.launch(IO) {
+                ApplicationExitInfoMetrics.recordProcessExits(applicationContext)
+            }
+        }
     }
 
     private fun startMetricsIfEnabled() {
@@ -515,8 +544,8 @@ open class FenixApplication : LocaleAwareApplication(), Provider {
      * megazord - it contains everything that fenix needs, and (currently) nothing more.
      *
      * Documentation on what megazords are, and why they're needed:
-     * - https://github.com/mozilla/application-services/blob/master/docs/design/megazords.md
-     * - https://mozilla.github.io/application-services/docs/applications/consuming-megazord-libraries.html
+     * - https://github.com/mozilla/application-services/blob/main/docs/design/megazords.md
+     * - https://mozilla.github.io/application-services/book/design/megazords.html
      *
      * This is the initialization of the megazord without setting up networking, i.e. needing the
      * engine for networking. This should do the minimum work necessary as it is done on the main
@@ -534,7 +563,7 @@ open class FenixApplication : LocaleAwareApplication(), Provider {
 
     @OptIn(DelicateCoroutinesApi::class) // GlobalScope usage
     private fun finishSetupMegazord(): Deferred<Unit> {
-        return GlobalScope.async(Dispatchers.IO) {
+        return GlobalScope.async(IO) {
             if (Config.channel.isDebug) {
                 RustHttpConfig.allowEmulatorLoopback()
             }
@@ -795,14 +824,6 @@ open class FenixApplication : LocaleAwareApplication(), Provider {
             tabViewSetting.set(settings.getTabViewPingString())
             closeTabSetting.set(settings.getTabTimeoutPingString())
 
-            val installSourcePackage = if (SDK_INT >= Build.VERSION_CODES.R) {
-                packageManager.getInstallSourceInfo(packageName).installingPackageName
-            } else {
-                @Suppress("DEPRECATION")
-                packageManager.getInstallerPackageName(packageName)
-            }
-            installSource.set(installSourcePackage.orEmpty())
-
             val isDefaultTheCurrentWallpaper =
                 Wallpaper.nameIsDefault(settings.currentWallpaperName)
 
@@ -845,23 +866,7 @@ open class FenixApplication : LocaleAwareApplication(), Provider {
             }
         }
 
-        @OptIn(DelicateCoroutinesApi::class)
-        GlobalScope.launch(IO) {
-            try {
-                val autoFillStorage = applicationContext.components.core.autofillStorage
-                Addresses.savedAll.set(autoFillStorage.getAllAddresses().size.toLong())
-                CreditCards.savedAll.set(autoFillStorage.getAllCreditCards().size.toLong())
-            } catch (e: AutofillApiException) {
-                logger.error("Failed to fetch autofill data", e)
-            }
-
-            try {
-                val passwordsStorage = applicationContext.components.core.passwordsStorage
-                Logins.savedAll.set(passwordsStorage.list().size.toLong())
-            } catch (e: LoginsApiException) {
-                logger.error("Failed to fetch list of logins", e)
-            }
-        }
+        setAutofillMetrics()
 
         with(ShoppingSettings) {
             componentOptedOut.set(!settings.isReviewQualityCheckEnabled)
@@ -869,8 +874,6 @@ open class FenixApplication : LocaleAwareApplication(), Provider {
             userHasOnboarded.set(settings.reviewQualityCheckOptInTimeInMillis != 0L)
             disabledAds.set(!settings.isReviewQualityCheckProductRecommendationsEnabled)
         }
-
-        TabStrip.enabled.set(settings.isTabletAndTabStripEnabled)
     }
 
     @VisibleForTesting
@@ -970,6 +973,28 @@ open class FenixApplication : LocaleAwareApplication(), Provider {
     }
 
     @VisibleForTesting
+    @OpenForTesting
+    internal open fun setAutofillMetrics() {
+        @OptIn(DelicateCoroutinesApi::class)
+        GlobalScope.launch(IO) {
+            try {
+                val autoFillStorage = applicationContext.components.core.autofillStorage
+                Addresses.savedAll.set(autoFillStorage.getAllAddresses().size.toLong())
+                CreditCards.savedAll.set(autoFillStorage.getAllCreditCards().size.toLong())
+            } catch (e: AutofillApiException) {
+                logger.error("Failed to fetch autofill data", e)
+            }
+
+            try {
+                val passwordsStorage = applicationContext.components.core.passwordsStorage
+                Logins.savedAll.set(passwordsStorage.list().size.toLong())
+            } catch (e: LoginsApiException) {
+                logger.error("Failed to fetch list of logins", e)
+            }
+        }
+    }
+
+    @VisibleForTesting
     internal fun reportHomeScreenMetrics(settings: Settings) {
         reportOpeningScreenMetrics(settings)
         reportHomeScreenSectionMetrics(settings)
@@ -991,7 +1016,7 @@ open class FenixApplication : LocaleAwareApplication(), Provider {
         // We break them out here so they can be recorded when
         // `nimbus.applyPendingExperiments()` is called.
         CustomizeHome.jumpBackIn.set(settings.showRecentTabsFeature)
-        CustomizeHome.recentlySaved.set(settings.showRecentBookmarksFeature)
+        CustomizeHome.bookmarks.set(settings.showBookmarksHomeFeature)
         CustomizeHome.mostVisitedSites.set(settings.showTopSitesFeature)
         CustomizeHome.recentlyVisited.set(settings.historyMetadataUIFeature)
         CustomizeHome.pocket.set(settings.showPocketRecommendationsFeature)

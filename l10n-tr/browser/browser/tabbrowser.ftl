@@ -4,18 +4,26 @@
 
 tabbrowser-empty-tab-title = Yeni Sekme
 tabbrowser-empty-private-tab-title = Yeni gizli sekme
-
 tabbrowser-menuitem-close-tab =
     .label = Sekmeyi kapat
 tabbrowser-menuitem-close =
     .label = Kapat
-
 # Displayed as a tooltip on container tabs
 # Variables:
 #   $title (String): the title of the current tab.
 #   $containerName (String): the name of the current container.
 tabbrowser-container-tab-title = { $title } — { $containerName }
-
+# This text serves as an on-screen tooltip as well as an accessible name for
+# the "X" button that is shown on the active tab or, when multiple tabs are
+# selected, to all their "X" buttons.
+# Variables:
+#   $tabCount (Number): The number of tabs that will be closed.
+tabbrowser-close-tabs-button =
+    .tooltiptext =
+        { $tabCount ->
+            [one] Sekmeyi kapat
+           *[other] { $tabCount } sekmeyi kapat
+        }
 # Variables:
 #   $tabCount (Number): The number of tabs that will be closed.
 tabbrowser-close-tabs-tooltip =
@@ -122,13 +130,22 @@ tabbrowser-confirm-caretbrowsing-title = Klavye ile Gezinti
 tabbrowser-confirm-caretbrowsing-message = F7 tuşu Klavye ile Gezinti özelliğini açar ve kapatır. Bu özellik, web sayfalarına, hareket edebilen bir işaretçi ekleyerek metinleri klavyeyle seçebilmenizi sağlar. Klavye ile Gezinti’yi açmak istiyor musunuz?
 tabbrowser-confirm-caretbrowsing-checkbox = Bu iletişim kutusunu bir daha gösterme.
 
+## Confirmation dialog for closing all duplicate tabs
+
+tabbrowser-confirm-close-duplicate-tabs-title = Dikkat
+tabbrowser-confirm-close-duplicate-tabs-text = Son aktif sekmeyi açık tutacağız
+tabbrowser-confirm-close-all-duplicate-tabs-title = Yinelenen sekmeler kapatılsın mı?
+tabbrowser-confirm-close-all-duplicate-tabs-text =
+    Bu penceredeki yinelenen sekmeleri kapatacağız.
+    Son etkin sekme açık kalacaktır.
+tabbrowser-confirm-close-all-duplicate-tabs-button-closetabs = Sekmeleri kapat
+
 ##
 
 # Variables:
 #   $domain (String): URL of the page that is trying to steal focus.
 tabbrowser-allow-dialogs-to-get-focus =
     .label = { $domain } sitesinden gelen bildirimlerin beni kendi sekmesine götürmesine izin ver
-
 tabbrowser-customizemode-tab-title = { -brand-short-name } tarayıcısını özelleştir
 
 ## Context menu buttons, of which only one will be visible at a time
@@ -147,7 +164,6 @@ tabbrowser-context-mute-selected-tabs =
 tabbrowser-context-unmute-selected-tabs =
     .label = Sekmelerin sesini aç
     .accesskey = m
-
 # This string is used as an additional tooltip and accessibility description for tabs playing audio
 tabbrowser-tab-audio-playing-description = Ses çalınıyor
 

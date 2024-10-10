@@ -186,9 +186,11 @@ mr2022-onboarding-welcome-pin-subtitle = Відкривайте { -brand-short-n
 # Primary button string used on welcome page for when Firefox is not pinned.
 mr2022-onboarding-pin-primary-button-label =
     { PLATFORM() ->
-        [macos] Закріпити { -brand-short-name } у док
+        [macos] Закріпити { -brand-short-name } у Dock
        *[other] Закріпити { -brand-short-name } на панелі завдань
     }
+# Primary button string used on welcome page for when Firefox is not pinned on MSIX
+mr2022-onboarding-pin-primary-button-label-msix = Закріпіть { -brand-short-name } на панелі завдань і в меню "Пуск".
 # Subtitle will be used when user already has Firefox pinned, but
 # has not set it as their default browser.
 # When translating "zip", please feel free to pick a verb that signifies movement and/or exploration
@@ -282,7 +284,7 @@ mr2022-upgrade-onboarding-pin-private-window-header = Отримайте сво�
 mr2022-upgrade-onboarding-pin-private-window-subtitle = Жодних збережених файлів cookie чи історії на комп'ютері. Переглядайте без думки, що за вами хтось спостерігає.
 mr2022-upgrade-onboarding-pin-private-window-primary-button-label =
     { PLATFORM() ->
-        [macos] Закріпити приватне вікно { -brand-short-name } у док
+        [macos] Закріпити приватне вікно { -brand-short-name } у Dock
        *[other] Закріпити приватне вікно { -brand-short-name } на панелі завдань
     }
 
@@ -335,6 +337,14 @@ onboarding-device-migration-title = З поверненням!
 onboarding-device-migration-subtitle = Увійдіть у свій { -fxaccount-brand-name(capitalization: "sentence") }, щоб перенести свої закладки, паролі та історію на новий пристрій.
 onboarding-device-migration-subtitle2 = Увійдіть в обліковий запис, щоб перенести свої закладки, паролі та історію на новий пристрій.
 onboarding-device-migration-primary-button-label = Увійти
+
+## Add-ons Picker screen
+
+amo-picker-title = Налаштуйте свій { -brand-short-name }
+amo-picker-subtitle = Розширення – це як програми для вашого браузера. За допомогою них можна захищати паролі, завантажувати відео, знаходити пропозиції, блокувати надокучливу рекламу, змінювати вигляд браузера, а також робити багато інших речей.
+amo-picker-install-button-label = Додати до { -brand-short-name }
+amo-picker-install-complete-label = Встановлено
+amo-picker-collection-link = Ознайомтеся з додатками
 
 ## The following screens have been updated to use security and privacy focused strings:
 

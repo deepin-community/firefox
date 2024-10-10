@@ -193,6 +193,10 @@ void ModuleLoader::OnModuleLoadComplete(ModuleLoadRequest* aRequest) {
 nsresult ModuleLoader::CompileFetchedModule(
     JSContext* aCx, JS::Handle<JSObject*> aGlobal, JS::CompileOptions& aOptions,
     ModuleLoadRequest* aRequest, JS::MutableHandle<JSObject*> aModuleOut) {
+  if (aRequest->IsTextSource()) {
+    ScriptLoader::CalculateBytecodeCacheFlag(aRequest);
+  }
+
   if (aRequest->GetScriptLoadContext()->mWasCompiledOMT) {
     JS::InstantiationStorage storage;
     RefPtr<JS::Stencil> stencil =
@@ -209,10 +213,13 @@ nsresult ModuleLoader::CompileFetchedModule(
     }
 
     if (aRequest->IsTextSource() &&
-        ScriptLoader::ShouldCacheBytecode(aRequest)) {
-      if (!JS::StartIncrementalEncoding(aCx, std::move(stencil))) {
+        aRequest->PassedConditionForBytecodeEncoding()) {
+      bool alreadyStarted;
+      if (!JS::StartIncrementalEncoding(aCx, std::move(stencil),
+                                        alreadyStarted)) {
         return NS_ERROR_FAILURE;
       }
+      MOZ_ASSERT(!alreadyStarted);
     }
 
     return NS_OK;
@@ -257,10 +264,14 @@ nsresult ModuleLoader::CompileFetchedModule(
     return NS_ERROR_FAILURE;
   }
 
-  if (aRequest->IsTextSource() && ScriptLoader::ShouldCacheBytecode(aRequest)) {
-    if (!JS::StartIncrementalEncoding(aCx, std::move(stencil))) {
+  if (aRequest->IsTextSource() &&
+      aRequest->PassedConditionForBytecodeEncoding()) {
+    bool alreadyStarted;
+    if (!JS::StartIncrementalEncoding(aCx, std::move(stencil),
+                                      alreadyStarted)) {
       return NS_ERROR_FAILURE;
     }
+    MOZ_ASSERT(!alreadyStarted);
   }
 
   return NS_OK;
@@ -341,7 +352,7 @@ already_AddRefed<ModuleLoadRequest> ModuleLoader::CreateDynamicImport(
     // "auto".
     options = new ScriptFetchOptions(
         mozilla::CORS_NONE, /* aNonce = */ u""_ns, RequestPriority::Auto,
-        ParserMetadata::NotParserInserted, principal, nullptr);
+        ParserMetadata::NotParserInserted, principal);
     referrerPolicy = document->GetReferrerPolicy();
     baseURL = document->GetDocBaseURI();
   }

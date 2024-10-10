@@ -215,16 +215,32 @@ const EXCLUDED_TAGS = new Set([
 ]);
 
 /**
- * Attributes to be translated
+ * Attributes to be translated, a tuple of the tag name and the element. If the attribute
+ * is not particular to an element, leave it as an empty string.
+ *
+ * @type {Array<[string, string]>}
  */
-const TRANSLATABLE_ATTRIBUTES = ["title", "placeholder"];
+const TRANSLATABLE_ATTRIBUTES = [
+  ["", "aria-brailledescription"],
+  ["", "aria-braillelabel"],
+  ["", "aria-description"],
+  ["", "aria-label"],
+  ["", "aria-placeholder"],
+  ["", "aria-roledescription"],
+  ["", "aria-valuetext"],
+  ["", "placeholder"],
+  ["", "title"],
+  ["IMG", "alt"],
+  ["INPUT", "value"],
+  ["TRACK", "label"],
+];
 
 /**
- * Selector to get all the attributes
- *  ["[attribute1]", "[attribute2]", ...];
+ * Selectors to get all the attributes.
+ * e.g. "[title]", "[placeholder]", "input[value]"
  */
 const TRANSLATABLE_ATTRIBUTES_SELECTOR = TRANSLATABLE_ATTRIBUTES.map(
-  attribute => "[" + attribute + "]"
+  ([tagName, attribute]) => `${tagName}[${attribute}]`
 );
 
 /**
@@ -235,7 +251,9 @@ const MUTATION_OBSERVER_OPTIONS = {
   childList: true,
   subtree: true,
   attributes: true,
-  attributeFilter: TRANSLATABLE_ATTRIBUTES,
+  attributeFilter: TRANSLATABLE_ATTRIBUTES.map(
+    ([_tagName, attribute]) => attribute
+  ),
 };
 
 /**
@@ -332,6 +350,13 @@ export class TranslationsDocument {
   isDestroyed = false;
 
   /**
+   * This boolean indicates whether the first visible DOM translation change is about to occur.
+   *
+   * @type {boolean}
+   */
+  hasFirstVisibleChange = false;
+
+  /**
    * Construct a new TranslationsDocument. It is tied to a specific Document and cannot
    * be re-used. The translation functions are injected since this class shouldn't
    * manage the life cycle of the translations engines.
@@ -343,6 +368,8 @@ export class TranslationsDocument {
    * @param {MessagePort} port - The port to the translations engine.
    * @param {() => void} requestNewPort - Used when an engine times out and a new
    *                                      translation request comes in.
+   * @param {() => void} reportVisibleChange - Used to report to the actor that the first visible change
+   *                                          for a translation is about to occur.
    * @param {number} translationsStart
    * @param {() => number} now
    * @param {LRUCache} translationsCache
@@ -354,6 +381,7 @@ export class TranslationsDocument {
     innerWindowId,
     port,
     requestNewPort,
+    reportVisibleChange,
     translationsStart,
     now,
     translationsCache
@@ -379,7 +407,11 @@ export class TranslationsDocument {
     }
 
     /** @type {QueuedTranslator} */
-    this.translator = new QueuedTranslator(port, requestNewPort);
+    this.translator = new QueuedTranslator(
+      port,
+      requestNewPort,
+      reportVisibleChange
+    );
 
     /** @type {number} */
     this.innerWindowId = innerWindowId;
@@ -392,6 +424,9 @@ export class TranslationsDocument {
 
     /** @type {LRUCache} */
     this.translationsCache = translationsCache;
+
+    /** @type {() => void} */
+    this.actorReportFirstVisibleChange = reportVisibleChange;
 
     /**
      * This selector runs to find child nodes that should be excluded. It should be
@@ -432,10 +467,14 @@ export class TranslationsDocument {
             this.subdivideNodeForTranslations(mutation.target);
             break;
           case "attributes":
-            this.queueAttributeNodeForTranslation(mutation.target, [
-              mutation.attributeName,
-            ]);
-            this.dispatchQueuedAttributeTranslations();
+            if (
+              isAttributeTranslatable(mutation.target, mutation.attributeName)
+            ) {
+              this.queueAttributeNodeForTranslation(mutation.target, [
+                mutation.attributeName,
+              ]);
+              this.dispatchQueuedAttributeTranslations();
+            }
             break;
           default:
             break;
@@ -448,8 +487,18 @@ export class TranslationsDocument {
       this.handleVisibilityChange
     );
 
-    this.addRootElement(document.querySelector("title"));
-    this.addRootElement(document.body, true /* reportWordsInViewport */);
+    const addRootElements = () => {
+      this.addRootElement(document.querySelector("title"));
+      this.addRootElement(document.body, true /* reportWordsInViewport */);
+    };
+
+    if (document.body) {
+      addRootElements();
+    } else {
+      // The TranslationsDocument was invoked before the DOM was ready, wait for
+      // it to be loaded.
+      document.addEventListener("DOMContentLoaded", addRootElements);
+    }
 
     this.viewportTranslated?.then(() => {
       ChromeUtils.addProfilerMarker(
@@ -661,7 +710,7 @@ export class TranslationsDocument {
 
       // SHADOW_HOST and READY_TO_TRANSLATE both map to FILTER_ACCEPT
       case NodeStatus.SHADOW_HOST:
-      case NodeStatus.READY_TO_TRANSLATE:
+      case NodeStatus.READY_TO_TRANSLATE: {
         const shadowRoot = node.openOrClosedShadowRoot;
         if (shadowRoot) {
           this.processSubdivide(shadowRoot);
@@ -672,6 +721,7 @@ export class TranslationsDocument {
           this.queueNodeForTranslation(node);
         }
         break;
+      }
 
       case NodeStatus.SUBDIVIDE_FURTHER:
         // This node may be translatable, but it needs to be subdivided into smaller
@@ -1143,8 +1193,10 @@ export class TranslationsDocument {
       if (translation === undefined) {
         translation = await this.translator.translate(node, text, isHTML);
         this.translationsCache.set(text, translation, isHTML);
+      } else if (!this.hasFirstVisibleChange) {
+        this.hasFirstVisibleChange = true;
+        this.actorReportFirstVisibleChange();
       }
-
       return translation;
     } catch (error) {
       lazy.console.log("Translation failed", error);
@@ -1301,9 +1353,17 @@ function getTranslatableAttributes(node) {
   if (node.nodeType !== Node.ELEMENT_NODE) {
     return [];
   }
-  return TRANSLATABLE_ATTRIBUTES.filter(attribute =>
-    node.hasAttribute(attribute)
-  );
+  const attributes = [];
+  for (const [tagName, attribute] of TRANSLATABLE_ATTRIBUTES) {
+    if (tagName && node.tagName !== tagName) {
+      // The tagName does not match.
+      continue;
+    }
+    if (node.hasAttribute(attribute)) {
+      attributes.push(attribute);
+    }
+  }
+  return attributes;
 }
 
 /**
@@ -1573,6 +1633,11 @@ function updateElement(translationsDocument, element) {
       ([, element]) => !element.parentNode
     );
 
+    for (node of liveTree.querySelectorAll("*")) {
+      // Clean-up the translation ids.
+      delete node.dataset.mozTranslationsId;
+    }
+
     if (unhandledElements.length) {
       lazy.console.warn(
         `${createNodePath(
@@ -1836,6 +1901,13 @@ class QueuedTranslator {
   #actorRequestNewPort;
 
   /**
+   * Send a message to the actor that the first visible DOM translation change is about to occur.
+   *
+   * @type {() => void}
+   */
+  #actorReportFirstVisibleChange;
+
+  /**
    * An id for each message sent. This is used to match up the request and response.
    */
   #nextMessageId = 0;
@@ -1863,9 +1935,11 @@ class QueuedTranslator {
   /**
    * @param {MessagePort} port
    * @param {() => void} actorRequestNewPort
+   * @param {() => void} actorReportFirstVisibleChange
    */
-  constructor(port, actorRequestNewPort) {
+  constructor(port, actorRequestNewPort, actorReportFirstVisibleChange) {
     this.#actorRequestNewPort = actorRequestNewPort;
+    this.#actorReportFirstVisibleChange = actorReportFirstVisibleChange;
 
     this.acquirePort(port);
   }
@@ -1886,33 +1960,59 @@ class QueuedTranslator {
   /**
    * Note when a new port is being requested so we don't re-request it.
    */
-  showPage() {
+  async showPage() {
     this.#isPageShown = true;
     if (this.#port) {
       throw new Error(
         "Attempting to show the page when there is already port available"
       );
     }
-    if (this.#queue.size) {
+
+    let portRequestPromise;
+    if (this.#portRequest) {
+      // It is possible that the page is being re-shown while a port request is still pending.
+      // If that is the case, then we should continue to wait for the pending port.
+      portRequestPromise = this.#portRequest.promise;
+    } else if (this.#queue.size) {
       // There are queued translations, request a new port. After the port is retrieved
       // the pending queue will be processed.
-      this.#requestNewPort();
+      portRequestPromise = this.#requestNewPort();
+    }
+
+    try {
+      await portRequestPromise;
+    } catch {
+      // Failed to retrieve the port after re-showing a page, which will be reported as an error in the panel UI.
+      // At this point it is up to the user to determine the next step from the UI.
     }
   }
 
   /**
    * Hide the page, and move any outstanding translation requests to a queue.
    */
-  hidePage() {
+  async hidePage() {
     this.#isPageShown = false;
-    this.discardPort();
+
+    if (this.#portRequest) {
+      // It is possible that the page is being hidden while a port request is still pending.
+      // If that is the case, then we should wait for the port to resolve so that any pending
+      // translations can be properly moved to the queue, ready to resume when the page is re-shown.
+      try {
+        await this.#portRequest.promise;
+      } catch {
+        // Failed to retrieve the port after hiding the page. At this point it is up to the user to
+        // determine the next step from the UI if they return to the page that was hidden.
+      }
+    }
 
     if (this.#requests.size) {
       lazy.console.log(
         "Pausing translations with pending translation requests."
       );
+      this.#moveRequestsToQueue();
     }
-    this.#moveRequestsToQueue();
+
+    this.discardPort();
   }
 
   /**
@@ -1942,7 +2042,9 @@ class QueuedTranslator {
     this.#portRequest.promise
       .then(
         () => {
-          this.#portRequest = null;
+          if (portRequest === this.#portRequest) {
+            this.#portRequest = null;
+          }
 
           // Resume the queued translations.
           if (this.#queue.size) {
@@ -1962,7 +2064,9 @@ class QueuedTranslator {
         }
       )
       .finally(() => {
-        this.#portRequest = null;
+        if (portRequest === this.#portRequest) {
+          this.#portRequest = null;
+        }
       });
 
     return portRequest.promise;
@@ -2045,6 +2149,7 @@ class QueuedTranslator {
       this.#port.postMessage({ type: "TranslationsPort:DiscardTranslations" });
       this.#port.close();
       this.#port = null;
+      this.#portRequest = null;
     }
     this.#moveRequestsToQueue();
     this.engineStatus = "uninitialized";
@@ -2087,6 +2192,10 @@ class QueuedTranslator {
     port.onmessage = ({ data }) => {
       switch (data.type) {
         case "TranslationsPort:TranslationResponse": {
+          if (!this.hasFirstVisibleChange) {
+            this.hasFirstVisibleChange = true;
+            this.#actorReportFirstVisibleChange();
+          }
           const { targetText, messageId } = data;
           // A request may not match match a messageId if there is a race during the pausing
           // and discarding of the queue.
@@ -2155,4 +2264,20 @@ class QueuedTranslator {
     this.#requests = new Map();
     this.#queue = new Map();
   }
+}
+
+/**
+ * @param {Element} element
+ * @param {string} attribute
+ */
+function isAttributeTranslatable(element, attribute) {
+  for (const [tagName, translatableAttribute] of TRANSLATABLE_ATTRIBUTES) {
+    if (
+      (!tagName || tagName === element.tagName) &&
+      attribute === translatableAttribute
+    ) {
+      return true;
+    }
+  }
+  return false;
 }

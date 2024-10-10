@@ -58,6 +58,10 @@ impl Path {
         unsafe { std::mem::transmute(path) }
     }
 
+    pub fn new<S: AsRef<OsStr> + ?Sized>(s: &S) -> &Self {
+        Self::from_path(std::path::Path::new(s))
+    }
+
     pub fn exists(&self) -> bool {
         super::fs::MockFS
             .try_get(|files| {
@@ -86,6 +90,21 @@ impl Path {
 
     pub fn parent(&self) -> Option<&Path> {
         self.0.parent().map(Path::from_path)
+    }
+
+    pub fn ancestors(&self) -> Ancestors {
+        Ancestors(self.0.ancestors())
+    }
+}
+
+#[repr(transparent)]
+pub struct Ancestors<'a>(std::path::Ancestors<'a>);
+
+impl<'a> Iterator for Ancestors<'a> {
+    type Item = &'a Path;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.0.next().map(Path::from_path)
     }
 }
 
@@ -153,5 +172,13 @@ impl From<PathBuf> for std::ffi::OsString {
 impl From<&str> for PathBuf {
     fn from(s: &str) -> Self {
         PathBuf(s.into())
+    }
+}
+
+impl super::mock::MockUnwrap for PathBuf {
+    type Inner = std::path::PathBuf;
+
+    fn unwrap(self) -> Self::Inner {
+        self.0
     }
 }

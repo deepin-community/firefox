@@ -39,8 +39,11 @@ policy-DisableAppUpdate = Prepreči posodabljanje brskalnika.
 policy-DisableBuiltinPDFViewer = Onemogoči PDF.js, pregledovalnik PDF brskalnika { -brand-short-name }.
 policy-DisableDefaultBrowserAgent = Prepreči privzetemu uporabniškemu agentu izvajanje kakršnihkoli ukrepov. To velja samo za Windows, druge platforme nimajo agenta.
 policy-DisableDeveloperTools = Zavrni dostop do razvojnih orodij.
+policy-DisableEncryptedClientHello = Onemogoči uporabo funkcije TLS Encrypted Client Hello (ECH).
 policy-DisableFeedbackCommands = Onemogoči ukaze v meniju Pomoč za pošiljanje povratnih informacij ("Povratne informacije" in "Prijavi zavajajočo stran").
 policy-DisableFirefoxAccounts = Onemogoči storitve na osnovi { -fxaccount-brand-name }ov, na primer sinhronizacijo.
+# This string is in the process of being deprecated in favor of policy-DisableAccounts.
+policy-DisableFirefoxAccounts1 = Onemogoči storitve na osnovi računov, na primer sinhronizacijo.
 # Firefox Screenshots is the name of the feature, and should not be translated.
 policy-DisableFirefoxScreenshots = Onemogoči možnost Firefox Screenshots.
 policy-DisableFirefoxStudies = { -brand-short-name(sklon: "dajalnik") } prepreči izvajanje raziskav.
@@ -57,7 +60,7 @@ policy-DisableSecurityBypass = Uporabniku prepreči, da zaobide določena varnos
 policy-DisableSetAsDesktopBackground = Onemogoči menijski ukaz Nastavi kot ozadje namizja za slike.
 policy-DisableSystemAddonUpdate = Prepreči brskalniku nameščanje in posodabljanje sistemskih dodatkov.
 policy-DisableTelemetry = Izključi telemetrijo.
-policy-DisableThirdPartyModuleBlocking = Uporabniku prepreči blokado modulov tretjih ponudnikov, ki se vstavljajo v proces { -brand-short-name(sklon: "rodilnik") }.
+policy-DisableThirdPartyModuleBlocking = Uporabniku prepreči zavračanje modulov tretjih ponudnikov, ki se vstavljajo v proces { -brand-short-name(sklon: "rodilnik") }.
 policy-DisplayBookmarksToolbar = Privzeto prikaži orodno vrstico zaznamkov.
 policy-DisplayMenuBar = Privzeto prikaži vrstico z menijem.
 policy-DNSOverHTTPS = Nastavi DNS preko HTTPS.
@@ -81,6 +84,8 @@ policy-Handlers = Nastavite privzete upravljalce aplikacij.
 policy-HardwareAcceleration = Če je "false", izklopi strojno pospeševanje.
 # “lock” means that the user won’t be able to change this setting
 policy-Homepage = Nastavi in po potrebi zakleni domačo stran.
+policy-HttpAllowlist = Izvori, ki ne bodo nadgrajeni na HTTPS.
+policy-HttpsOnlyMode = Dovoli omogočitev načina samo HTTPS.
 policy-InstallAddonsPermission = Določenim spletnim mestom dovoli nameščanje dodatkov.
 policy-LegacyProfiles = Onemogoči možnost ustvarjanja ločenega profila za vsako namestitev.
 
@@ -105,12 +110,16 @@ policy-OverrideFirstRunPage = Preglasi stran prvega zagona. Če želite onemogo�
 policy-OverridePostUpdatePage = Preglasi stran "Kaj je novega", ki se odpre po posodobitvi. Če želite onemogočiti prikaz strani po posodobitvi, nastavite pravilnik na prazno vrednost.
 policy-PasswordManagerEnabled = Omogoči shranjevanje gesel v upravitelja gesel.
 policy-PasswordManagerExceptions = { -brand-short-name(sklon: "dajalnik") } prepreči shranjevanje gesel za določena spletna mesta.
+# Post-quantum refers to cryptography that is safe from attacks by quantum
+# computers. See https://en.wikipedia.org/wiki/Post-quantum_cryptography
+policy-PostQuantumKeyAgreementEnabled = Omogoči post-kvanten dogovor o ključu za TLS.
 # PDF.js and PDF should not be translated
 policy-PDFjs = Onemogoči ali nastavi PDF.js, pregledovalnik PDF brskalnika { -brand-short-name }.
 policy-Permissions2 = Nastavi dovoljenja za kamero, mikrofon, lokacijo, obvestila in samodejno predvajanje.
 policy-PictureInPicture = Omogoči ali onemogoči sliko v sliki
 policy-PopupBlocking = Določenim spletnim mestom privzeto dovoli prikazovanje pojavnih oken.
 policy-Preferences = Nastavi in zakleni vrednost podnabora nastavitev.
+policy-PrivateBrowsingModeAvailability = Nastavi razpoložljivost zasebnega brskanja.
 policy-PromptForDownloadLocation = Pri prenosu vprašaj, kam shraniti datoteko.
 policy-Proxy = Nastavi posrednika.
 policy-RequestedLocales = Nastavi vrstni red zahtevanih jezikov za program.

@@ -7,13 +7,12 @@ const kExtensionID = "simple@tests.mozilla.org";
 
 add_setup(async function () {
   useHttpServer("opensearch");
-  await AddonTestUtils.promiseStartupManager();
-  await SearchTestUtils.useTestEngines("data1");
+  SearchTestUtils.setRemoteSettingsConfig([{ identifier: "unused" }]);
   await Services.search.init();
 });
 
 add_task(async function test_migrateLegacyEngine() {
-  let engine = await SearchTestUtils.promiseNewSearchEngine({
+  let engine = await SearchTestUtils.installOpenSearchEngine({
     url: gDataUrl + "simple.xml",
   });
 
@@ -50,7 +49,7 @@ add_task(async function test_migrateLegacyEngine() {
 });
 
 add_task(async function test_migrateLegacyEngineDifferentName() {
-  let engine = await SearchTestUtils.promiseNewSearchEngine({
+  let engine = await SearchTestUtils.installOpenSearchEngine({
     url: gDataUrl + "simple.xml",
   });
 

@@ -21,12 +21,12 @@ namespace mozilla {
 namespace layers {
 
 struct ShmemAndHandle {
-  RefPtr<ipc::SharedMemoryBasic> shmem;
+  RefPtr<ipc::SharedMemory> shmem;
   Handle handle;
 };
 
 static Maybe<ShmemAndHandle> CreateAndMapShmem(size_t aSize) {
-  auto shmem = MakeRefPtr<ipc::SharedMemoryBasic>();
+  auto shmem = MakeRefPtr<ipc::SharedMemory>();
   if (!shmem->Create(aSize) || !shmem->Map(aSize)) {
     return Nothing();
   }
@@ -66,7 +66,7 @@ bool CanvasDrawEventRecorder::Init(TextureType aTextureType,
     return false;
   }
 
-  mHeader = static_cast<Header*>(header->shmem->memory());
+  mHeader = static_cast<Header*>(header->shmem->Memory());
   mHeader->eventCount = 0;
   mHeader->writerWaitCount = 0;
   mHeader->writerState = State::Processing;
@@ -362,11 +362,11 @@ void CanvasDrawEventRecorder::QueueProcessPendingDeletionsLocked(
     return;
   }
 
-  class ProcessPendingRunnable final : public dom::WorkerRunnable {
+  class ProcessPendingRunnable final : public dom::WorkerThreadRunnable {
    public:
     ProcessPendingRunnable(dom::WorkerPrivate* aWorkerPrivate,
                            RefPtr<CanvasDrawEventRecorder>&& aRecorder)
-        : dom::WorkerRunnable(aWorkerPrivate),
+        : dom::WorkerThreadRunnable("ProcessPendingRunnable"),
           mRecorder(std::move(aRecorder)) {}
 
     bool WorkerRun(JSContext*, dom::WorkerPrivate*) override {
@@ -381,7 +381,7 @@ void CanvasDrawEventRecorder::QueueProcessPendingDeletionsLocked(
 
   auto task = MakeRefPtr<ProcessPendingRunnable>(mWorkerRef->Private(),
                                                  std::move(aRecorder));
-  if (NS_WARN_IF(!task->Dispatch())) {
+  if (NS_WARN_IF(!task->Dispatch(mWorkerRef->Private()))) {
     MOZ_CRASH("ProcessPendingRunnable leaked!");
   }
 }

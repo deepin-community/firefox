@@ -15,7 +15,6 @@
 #include "mozilla/net/NeckoChannelParams.h"
 
 class nsIChannel;
-class nsIConsoleReportCollector;
 class nsICookieJarSettings;
 class nsIEffectiveTLDService;
 class nsIPrincipal;
@@ -45,6 +44,7 @@ enum CookieStatus {
 };
 
 class Cookie;
+class CookieParser;
 
 // pref string constants
 static const char kPrefMaxNumberOfCookies[] = "network.cookie.maxNumber";
@@ -80,6 +80,10 @@ class CookieCommons final {
                                         const nsACString& aHost,
                                         nsCString& aBaseDomain);
 
+  // This method returns true if aBaseDomain contains any colons since only
+  // IPv6 baseDomains may contain colons.
+  static bool IsIPv6BaseDomain(const nsACString& aBaseDomain);
+
   static void NotifyRejected(nsIURI* aHostURI, nsIChannel* aChannel,
                              uint32_t aRejectedReason,
                              CookieOperation aOperation);
@@ -100,12 +104,10 @@ class CookieCommons final {
                                     CookieStruct& aCookieData);
 
   static already_AddRefed<Cookie> CreateCookieFromDocument(
-      dom::Document* aDocument, const nsACString& aCookieString,
-      int64_t aCurrentTimeInUsec, nsIEffectiveTLDService* aTLDService,
-      mozIThirdPartyUtil* aThirdPartyUtil,
-      std::function<bool(const nsACString&, const OriginAttributes&)>&&
-          aHasExistingCookiesLambda,
-      nsIURI** aDocumentURI, nsACString& aBaseDomain, OriginAttributes& aAttrs);
+      CookieParser& aCookieParser, dom::Document* aDocument,
+      const nsACString& aCookieString, int64_t aCurrentTimeInUsec,
+      nsIEffectiveTLDService* aTLDService, mozIThirdPartyUtil* aThirdPartyUtil,
+      nsACString& aBaseDomain, OriginAttributes& aAttrs);
 
   static already_AddRefed<nsICookieJarSettings> GetCookieJarSettings(
       nsIChannel* aChannel);
@@ -134,6 +136,12 @@ class CookieCommons final {
   // redirect before the final URI.
   static bool IsSameSiteForeign(nsIChannel* aChannel, nsIURI* aHostURI,
                                 bool* aHadCrossSiteRedirects);
+
+  static bool ChipsLimitEnabledAndChipsCookie(
+      const Cookie& cookie, dom::BrowsingContext* aBrowsingContext);
+
+  static void ComposeCookieString(nsTArray<RefPtr<Cookie>>& aCookieList,
+                                  nsACString& aCookieString);
 };
 
 }  // namespace net

@@ -41,9 +41,11 @@ categories:
         - writing-rust-code
         - tools/profiler
         - performance
+        - storage
         - xpcom
         - nspr
         - security/nss
+        - content-security
     build_doc:
         - mach
         - tools/try
@@ -67,6 +69,7 @@ categories:
         - testing/webrender
         - testing/mochitest-plain
         - testing/xpcshell
+        - testing/tps
         - web-platform
         - gtest
         - tools/fuzzing
@@ -123,4 +126,4 @@ fatal warnings:
     - "WARNING: '([^']*)' reference target not found:((?!.rst).)*$"
     - "WARNING: Include file '([^']*)' not found or reading it failed"
 
-max_num_warnings: 837
+max_num_warnings: 844

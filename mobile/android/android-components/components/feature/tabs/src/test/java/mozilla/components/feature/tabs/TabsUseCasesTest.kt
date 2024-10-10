@@ -5,6 +5,7 @@
 package mozilla.components.feature.tabs
 
 import kotlinx.coroutines.test.runTest
+import mozilla.components.browser.session.storage.RecoverableBrowserState
 import mozilla.components.browser.session.storage.SessionStorage
 import mozilla.components.browser.state.action.EngineAction
 import mozilla.components.browser.state.action.TabListAction
@@ -296,6 +297,35 @@ class TabsUseCasesTest {
     }
 
     @Test
+    fun `GIVEN a tab is added with a parent loadURL will include the parent`() {
+        val parentTabId = tabsUseCases.addTab(url = "https://www.firefox.com")
+        store.waitUntilIdle()
+        dispatcher.scheduler.advanceUntilIdle()
+
+        verify(engineSession, times(1)).loadUrl(
+            url = "https://www.firefox.com",
+            parent = null,
+            flags = LoadUrlFlags.none(),
+            additionalHeaders = null,
+        )
+
+        assertEquals(1, store.state.tabs.size)
+
+        tabsUseCases.addTab(url = "https://www.mozilla.org", parentId = parentTabId)
+
+        store.waitUntilIdle()
+        dispatcher.scheduler.advanceUntilIdle()
+
+        assertEquals(2, store.state.tabs.size)
+        verify(engineSession, times(1)).loadUrl(
+            url = "https://www.mozilla.org",
+            parent = engineSession,
+            flags = LoadUrlFlags.none(),
+            additionalHeaders = null,
+        )
+    }
+
+    @Test
     fun `RemoveAllTabsUseCase will remove all sessions`() {
         val tab = createTab("https://mozilla.org")
         store.dispatch(TabListAction.AddTabAction(tab)).joinBlocking()
@@ -353,6 +383,35 @@ class TabsUseCasesTest {
         val restoredTabs = tabs.filter(predicateCaptor.value)
         assertEquals(2, restoredTabs.size)
         assertEquals(tabs.first(), restoredTabs.first())
+    }
+
+    @Test
+    fun `GIVEN the previous browser session has not yet been restored WHEN the user opens a new tab THEN the restored tabs should be placed before the newly opened tab`() = runTest {
+        val newTab = createTab("https://www.example.org")
+        val restoredTabs = listOf(
+            createTab("https://mozilla.org"),
+            createTab("https://mozilla.org"),
+            createTab("https://firefox.com"),
+            createTab("https://getpocket.com"),
+        )
+        val recoverableBrowserState = RecoverableBrowserState(
+            tabs = restoredTabs.map { it.toRecoverableTab() },
+            selectedTabId = null,
+        )
+        val sessionStorage: SessionStorage = mock()
+        whenever(sessionStorage.restore(any())).thenReturn(recoverableBrowserState)
+
+        store.dispatch(TabListAction.AddTabAction(tab = newTab)).joinBlocking()
+
+        tabsUseCases.restore.invoke(
+            storage = sessionStorage,
+            tabTimeoutInMs = DAY_IN_MS,
+        )
+
+        store.waitUntilIdle()
+
+        assertEquals(restoredTabs.first().id, store.state.tabs.first().id)
+        assertEquals(newTab.id, store.state.tabs.last().id)
     }
 
     @Test

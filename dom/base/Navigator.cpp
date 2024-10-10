@@ -21,6 +21,7 @@
 #include "nsIClassOfService.h"
 #include "nsIHttpProtocolHandler.h"
 #include "nsIContentPolicy.h"
+#include "nsIPrivateAttributionService.h"
 #include "nsContentPolicyUtils.h"
 #include "nsISupportsPriority.h"
 #include "nsIWebProtocolHandlerRegistrar.h"
@@ -41,11 +42,13 @@
 #include "BatteryManager.h"
 #include "mozilla/dom/CredentialsContainer.h"
 #include "mozilla/dom/Clipboard.h"
+#include "mozilla/dom/ContentChild.h"
 #include "mozilla/dom/FeaturePolicyUtils.h"
 #include "mozilla/dom/GamepadServiceTest.h"
 #include "mozilla/dom/MediaCapabilities.h"
 #include "mozilla/dom/MediaSession.h"
 #include "mozilla/dom/power/PowerManagerService.h"
+#include "mozilla/dom/PrivateAttribution.h"
 #include "mozilla/dom/LockManager.h"
 #include "mozilla/dom/MIDIAccessManager.h"
 #include "mozilla/dom/MIDIOptionsBinding.h"
@@ -161,6 +164,7 @@ NS_IMPL_CYCLE_COLLECTION_TRAVERSE_BEGIN(Navigator)
   NS_IMPL_CYCLE_COLLECTION_TRAVERSE(mAddonManager)
   NS_IMPL_CYCLE_COLLECTION_TRAVERSE(mWebGpu)
   NS_IMPL_CYCLE_COLLECTION_TRAVERSE(mLocks)
+  NS_IMPL_CYCLE_COLLECTION_TRAVERSE(mPrivateAttribution)
   NS_IMPL_CYCLE_COLLECTION_TRAVERSE(mUserActivation)
   NS_IMPL_CYCLE_COLLECTION_TRAVERSE(mWakeLock)
 
@@ -249,6 +253,8 @@ void Navigator::Invalidate() {
     mLocks->Shutdown();
     mLocks = nullptr;
   }
+
+  mPrivateAttribution = nullptr;
 
   mUserActivation = nullptr;
 
@@ -821,12 +827,6 @@ bool Navigator::Vibrate(const nsTArray<uint32_t>& aPattern) {
   }
 
   nsTArray<uint32_t> pattern = SanitizeVibratePattern(aPattern);
-
-  // The spec says we check dom.vibrator.enabled after we've done the sanity
-  // checking on the pattern.
-  if (!StaticPrefs::dom_vibrator_enabled()) {
-    return true;
-  }
 
   mRequestedVibrationPattern = std::move(pattern);
 
@@ -1643,6 +1643,20 @@ GamepadServiceTest* Navigator::RequestGamepadServiceTest(ErrorResult& aRv) {
   return mGamepadServiceTest;
 }
 
+already_AddRefed<Promise> Navigator::RequestAllGamepads(ErrorResult& aRv) {
+  if (!mWindow || !mWindow->IsFullyActive()) {
+    aRv.Throw(NS_ERROR_UNEXPECTED);
+    return nullptr;
+  }
+
+  nsGlobalWindowInner* win = nsGlobalWindowInner::Cast(mWindow);
+
+  // We need to set the flag to trigger the parent process to start monitoring
+  // gamepads. Otherwise, we cannot get any gamepad information.
+  win->SetHasGamepadEventListener(true);
+  return win->RequestAllGamepads(aRv);
+}
+
 already_AddRefed<Promise> Navigator::GetVRDisplays(ErrorResult& aRv) {
   if (!mWindow || !mWindow->GetDocShell() || !mWindow->GetExtantDoc()) {
     aRv.Throw(NS_ERROR_UNEXPECTED);
@@ -2187,12 +2201,17 @@ already_AddRefed<Promise> Navigator::RequestMediaKeySystemAccess(
     return nullptr;
   }
 
+  GetOrCreateMediaKeySystemAccessManager()->Request(promise, aKeySystem,
+                                                    aConfigs);
+  return promise.forget();
+}
+
+MediaKeySystemAccessManager*
+Navigator::GetOrCreateMediaKeySystemAccessManager() {
   if (!mMediaKeySystemAccessManager) {
     mMediaKeySystemAccessManager = new MediaKeySystemAccessManager(mWindow);
   }
-
-  mMediaKeySystemAccessManager->Request(promise, aKeySystem, aConfigs);
-  return promise.forget();
+  return mMediaKeySystemAccessManager;
 }
 
 CredentialsContainer* Navigator::Credentials() {
@@ -2257,6 +2276,13 @@ dom::LockManager* Navigator::Locks() {
     mLocks = dom::LockManager::Create(*GetWindow()->AsGlobal());
   }
   return mLocks;
+}
+
+dom::PrivateAttribution* Navigator::PrivateAttribution() {
+  if (!mPrivateAttribution) {
+    mPrivateAttribution = new dom::PrivateAttribution(GetWindow()->AsGlobal());
+  }
+  return mPrivateAttribution;
 }
 
 /* static */

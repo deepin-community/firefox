@@ -15,6 +15,7 @@
 #include "js/TracingAPI.h"
 #include "vm/JSContext.h"
 #include "vm/NativeObject.h"
+#include "vm/StringType.h"
 
 namespace js {
 namespace gc {
@@ -29,6 +30,25 @@ bool js::Nursery::isInside(const SharedMem<T>& p) const {
   return isInside(p.unwrap(/*safe - used for value in comparison above*/));
 }
 
+inline bool js::Nursery::addStringBuffer(JSLinearString* s) {
+  MOZ_ASSERT(IsInsideNursery(s));
+  MOZ_ASSERT(isEnabled());
+  MOZ_ASSERT(s->hasStringBuffer());
+  return stringBuffers_.emplaceBack(s, s->stringBuffer());
+}
+
+inline bool js::Nursery::addExtensibleStringBuffer(
+    JSLinearString* s, mozilla::StringBuffer* buffer) {
+  MOZ_ASSERT(IsInsideNursery(s));
+  MOZ_ASSERT(isEnabled());
+  return extensibleStringBuffers_.putNew(s, buffer);
+}
+
+inline void js::Nursery::removeExtensibleStringBuffer(JSLinearString* s) {
+  MOZ_ASSERT(gc::IsInsideNursery(s));
+  extensibleStringBuffers_.remove(s);
+}
+
 inline bool js::Nursery::shouldTenure(gc::Cell* cell) {
   MOZ_ASSERT(semispaceEnabled());
   MOZ_ASSERT(inCollectedRegion(cell));
@@ -40,8 +60,7 @@ inline bool js::Nursery::shouldTenure(gc::Cell* cell) {
 }
 
 inline bool js::Nursery::inCollectedRegion(gc::Cell* cell) const {
-  gc::ChunkBase* chunk = gc::detail::GetCellChunkBase(cell);
-  return chunk->getKind() == gc::ChunkKind::NurseryFromSpace;
+  return gc::InCollectedNurseryRegion(cell);
 }
 
 inline bool js::Nursery::inCollectedRegion(void* ptr) const {
@@ -162,10 +181,12 @@ inline void* js::Nursery::tryAllocateCell(gc::AllocSite* site, size_t size,
   // Update the allocation site. This code is also inlined in
   // MacroAssembler::updateAllocSite.
   uint32_t allocCount = site->incAllocCount();
-  if (allocCount == 1) {
+  if (allocCount == gc::NormalSiteAttentionThreshold) {
     pretenuringNursery.insertIntoAllocatedList(site);
   }
-  MOZ_ASSERT_IF(site->isNormal(), site->isInAllocatedList());
+  MOZ_ASSERT_IF(
+      site->isNormal() && allocCount >= gc::NormalSiteAttentionThreshold,
+      site->isInAllocatedList());
 
   gc::gcprobes::NurseryAlloc(cell, kind);
   return cell;

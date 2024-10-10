@@ -4,18 +4,22 @@
 
 tabbrowser-empty-tab-title = แท็บใหม่
 tabbrowser-empty-private-tab-title = แท็บส่วนตัวใหม่
-
 tabbrowser-menuitem-close-tab =
     .label = ปิดแท็บ
 tabbrowser-menuitem-close =
     .label = ปิด
-
 # Displayed as a tooltip on container tabs
 # Variables:
 #   $title (String): the title of the current tab.
 #   $containerName (String): the name of the current container.
 tabbrowser-container-tab-title = { $title } - { $containerName }
-
+# This text serves as an on-screen tooltip as well as an accessible name for
+# the "X" button that is shown on the active tab or, when multiple tabs are
+# selected, to all their "X" buttons.
+# Variables:
+#   $tabCount (Number): The number of tabs that will be closed.
+tabbrowser-close-tabs-button =
+    .tooltiptext = ปิด { $tabCount } แท็บ
 # Variables:
 #   $tabCount (Number): The number of tabs that will be closed.
 tabbrowser-close-tabs-tooltip =
@@ -90,13 +94,22 @@ tabbrowser-confirm-caretbrowsing-title = การเลื่อนดูด้
 tabbrowser-confirm-caretbrowsing-message = กด F7 เพื่อเปิดปิดการเลื่อนดูโดยแป้นพิมพ์ ในการเลื่อนดูแบบนี้ จะมีเคอร์เซอร์ที่เคลื่อนที่ได้อยู่บนหน้าเว็บทำให้คุณเลือกข้อความด้วยแป้นพิมพ์ได้ คุณต้องการเปิดการเลื่อนดูโดยแป้นพิมพ์หรือไม่?
 tabbrowser-confirm-caretbrowsing-checkbox = ไม่ต้องแสดงกล่องโต้ตอบนี้ให้ฉันเห็นอีก
 
+## Confirmation dialog for closing all duplicate tabs
+
+tabbrowser-confirm-close-duplicate-tabs-title = ระวัง
+tabbrowser-confirm-close-duplicate-tabs-text = เราจะยังคงเปิดแท็บที่ใช้งานล่าสุดทิ้งไว้
+tabbrowser-confirm-close-all-duplicate-tabs-title = ปิดแท็บที่ซ้ำกันหรือไม่?
+tabbrowser-confirm-close-all-duplicate-tabs-text =
+    เราจะปิดแท็บที่ซ้ำกันในหน้าต่างนี้ แท็บที่ใช้งานล่าสุด
+    จะยังคงเปิดอยู่
+tabbrowser-confirm-close-all-duplicate-tabs-button-closetabs = ปิดแท็บ
+
 ##
 
 # Variables:
 #   $domain (String): URL of the page that is trying to steal focus.
 tabbrowser-allow-dialogs-to-get-focus =
     .label = อนุญาตให้การแจ้งเตือนเช่นนี้จาก { $domain } นำคุณไปที่แท็บของไซต์
-
 tabbrowser-customizemode-tab-title = ปรับแต่ง { -brand-short-name }
 
 ## Context menu buttons, of which only one will be visible at a time
@@ -115,7 +128,6 @@ tabbrowser-context-mute-selected-tabs =
 tabbrowser-context-unmute-selected-tabs =
     .label = เปิดเสียงแท็บ
     .accesskey = ส
-
 # This string is used as an additional tooltip and accessibility description for tabs playing audio
 tabbrowser-tab-audio-playing-description = กำลังเล่นเสียง
 

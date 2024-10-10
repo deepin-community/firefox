@@ -39,6 +39,8 @@ mr1-return-to-amo-add-extension-label = Добавяне на { $addon-name }
 #   $current (Int) - Number of the current page
 #   $total (Int) - Total number of pages
 
+onboarding-welcome-steps-indicator-label =
+    .aria-label = Напредък: стъпка { $current } от { $total }
 # This button will open system settings to turn on prefers-reduced-motion
 mr1-onboarding-reduce-motion-button-label = Изключване на анимации
 # String for the Firefox Accounts button
@@ -50,6 +52,7 @@ mr1-onboarding-import-primary-button-label-attribution = Внасяне от { $
 mr1-onboarding-theme-header = По свой вкус
 mr1-onboarding-theme-subtitle = Приспособете { -brand-short-name } с тема.
 mr1-onboarding-theme-secondary-button-label = Не сега
+newtab-wallpaper-onboarding-subtitle = Изберете тапет, за да придадете свеж вид на новия си раздел.
 # System theme uses operating system color settings
 mr1-onboarding-theme-label-system = Системна тема
 mr1-onboarding-theme-label-light = Светла
@@ -119,7 +122,7 @@ mr2-onboarding-start-browsing-button-label = Започнете да разгл�
 
 onboarding-live-language-header = Изберете език
 mr2022-onboarding-live-language-text = { -brand-short-name } говори твоя език
-mr2022-language-mismatch-subtitle = Благодарение на нашата общност { -brand-short-name } е преведен на над 90 езика. Изглежда, че вашата система използва { $systemLanguage }, а { -brand-short-name } използва { $appLanguage }.
+mr2022-language-mismatch-subtitle = Благодарение на нашата общност, { -brand-short-name } е преведен на над 90 езика. Изглежда, че вашата система използва { $systemLanguage }, а { -brand-short-name } използва { $appLanguage }.
 onboarding-live-language-button-label-downloading = Изтегляне на { $negotiatedLanguage } езиков пакет…
 onboarding-live-language-waiting-button = Зареждане на наличните езици…
 onboarding-live-language-installing = Инсталиране на { $negotiatedLanguage } езиков пакет…
@@ -158,6 +161,8 @@ mr2022-onboarding-secondary-skip-button-label = Пропускане
 
 # Primary button string used on new user onboarding first screen showing multiple actions such as Set Default, Import from previous browser.
 mr2022-onboarding-easy-setup-primary-button-label = Запазване и продължаване
+# Set Default action checkbox label used on new user onboarding first screen
+mr2022-onboarding-easy-setup-set-default-checkbox-label = Задаване на { -brand-short-name } като браузър по подразбиране
 # Import action checkbox label used on new user onboarding first screen
 mr2022-onboarding-easy-setup-import-checkbox-label = Внасяне от предишен браузър
 
@@ -182,6 +187,7 @@ mr2022-onboarding-existing-pin-header = Благодарим ви, че обич
 
 ## MR2022 New User Set Default screen strings
 
+mr2022-onboarding-set-default-primary-button-label = Задаване на { -brand-short-name } като браузър по подразбиране
 
 ## MR2022 Get Started screen strings.
 ## These strings will be used on the welcome page
@@ -224,6 +230,7 @@ mr2022-onboarding-colorway-tooltip-activist2 =
 mr2022-onboarding-colorway-label-dreamer = Мечтател
 mr2022-onboarding-colorway-tooltip-dreamer2 =
     .title = Мечтател (лилав)
+mr2022-onboarding-colorway-description-dreamer = <b>Вие мечтаете.</b> Вярвате, че късметът е благосклонен към смелите и вдъхновявате другите да бъдат смели.
 mr2022-onboarding-colorway-label-innovator = Изобретател
 mr2022-onboarding-colorway-tooltip-innovator2 =
     .title = Иноватор (оранжев)
@@ -264,5 +271,14 @@ onboarding-device-migration-title = Добре дошли отново!
 onboarding-device-migration-subtitle = Влезте в { -fxaccount-brand-name(capitalization: "sentence") }, за да пренесете своите отметки, пароли и история със себе си на новото ви устройство.
 onboarding-device-migration-primary-button-label = Вход
 
+## Add-ons Picker screen
+
+amo-picker-title = Персонализирайте вашия { -brand-short-name }
+amo-picker-install-complete-label = Инсталирано
+
 ## The following screens have been updated to use security and privacy focused strings:
 
+
+## New user time and familiarity survey strings
+
+onboarding-new-user-survey-legal-link-label = С избирането на „{ onboarding-new-user-survey-next-button-label }“ вие се съгласявате с <a data-l10n-name="privacy_notice">Политиката за поверителност на { -brand-product-name }.</a>

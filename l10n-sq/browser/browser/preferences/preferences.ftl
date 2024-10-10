@@ -57,6 +57,10 @@ category-experimental =
 pane-experimental-subtitle = Vazhdoni me Kujdes
 pane-experimental-search-results-header = Eksperimente { -brand-short-name }: Vazhdoni me Kujdes
 pane-experimental-description2 = Ndryshimi i rregullimeve të mëtejshme të formësimit mund të ketë ndikim në punimin ose sigurinë e { -brand-short-name }-it.
+settings-pane-labs-title = { -firefoxlabs-brand-name }
+settings-category-labs =
+    .tooltiptext = { -firefoxlabs-brand-name }
+pane-experimental-description3 = Provoni veçoritë tonë eksperimentale! Janë në zhvillim e sipër dhe evoluojnë, çka mund të prekë mënyrën se si funksionon { -brand-short-name }-i.
 pane-experimental-reset =
     .label = Rikthe Parazgjedhjet
     .accesskey = R
@@ -599,6 +603,10 @@ home-prefs-recent-activity-description = Një përzgjedhje sajtesh dhe lënde s�
 home-prefs-snippets-header =
     .label = Copëza
 home-prefs-snippets-description-new = Ndihmëza dhe lajme nga { -vendor-short-name } dhe { -brand-product-name }
+home-prefs-weather-header =
+    .label = Moti
+home-prefs-weather-description = Parashikimi për sot me një vështrim
+home-prefs-weather-learn-more-link = Mësoni më tepër
 # Variables:
 #   $num (number) - Number of rows displayed
 home-prefs-sections-rows-option =
@@ -912,6 +920,9 @@ forms-saved-passwords =
 forms-primary-pw-use =
     .label = Përdorni një Fjalëkalim të Përgjithshëm
     .accesskey = P
+# This operation requires the user to authenticate with the operating system (device sign-in)
+forms-os-reauth =
+    .label = Kërko bërje hyrjeje në pajisje, për të plotësuar dhe administruar fjalëkalime
 forms-primary-pw-learn-more-link = Mësoni më tepër
 # This string uses the former name of the Primary Password feature
 # ("Master Password" in English) so that the preferences can be found
@@ -944,6 +955,13 @@ primary-password-os-auth-dialog-message-win = Që të krijoni një Fjalëkalim t
 # notes are only valid for English. Please test in your locale.
 primary-password-os-auth-dialog-message-macosx = të krijojë një Fjalëkalim të Përgjithshëm
 master-password-os-auth-dialog-caption = { -brand-full-name }
+# The macOS string is preceded by the operating system with "Firefox is trying to ".
+autofill-creditcard-os-dialog-message =
+    { PLATFORM() ->
+        [macos] ndrysho rregullimet për metoda pagesash
+       *[other] { -brand-short-name }-i po provon të ndryshojë rregullimet për metoda pagesash. Për ta lejuar këtë, përdorni hyrjen në pajisjen tuaj.
+    }
+autofill-creditcard-os-auth-dialog-caption = { -brand-full-name }
 
 ## Privacy section - Autofill
 
@@ -958,14 +976,9 @@ autofill-payment-methods-checkbox-submessage = Përfshin karta krediti dhe debit
     .accesskey = P
 autofill-saved-payment-methods-button = Metoda pagesash të ruajtura
     .accesskey = u
-autofill-reauth-checkbox =
-    { PLATFORM() ->
-        [macos] Kërko mirëfilltësim macOS, për të plotësuar dhe përpunuar metoda pagimi.
-        [windows] Kërko mirëfilltësim Windows, për të plotësuar dhe përpunuar metoda pagimi.
-        [linux] Kërko mirëfilltësim Linux, për të plotësuar dhe përpunuar metoda pagimi.
-       *[other] Kërko mirëfilltësim, për të plotësuar dhe përpunuar metoda pagimi.
-    }
-    .accesskey = m
+# This operation requires the user to authenticate with the operating system (device sign-in)
+autofill-reauth-payment-methods-checkbox = Kërko bërje hyrjeje në pajisje, për të plotësuar dhe administruar metoda pagesash
+    .accesskey = o
 
 ## Privacy Section - History
 
@@ -1101,6 +1114,9 @@ addressbar-locbar-quickactions-option =
 addressbar-suggestions-settings = Ndryshoni parapëlqimet mbi sugjerime nga motorë kërkimi
 addressbar-locbar-showrecentsearches-option =
     .label = Shfaq kërkime së fundi
+    .accesskey = k
+addressbar-locbar-showtrendingsuggestions-option =
+    .label = Shfaq sugjerime prirjesh kërkimi
     .accesskey = k
 addressbar-quickactions-learn-more = Mësoni më tepër
 
@@ -1293,6 +1309,14 @@ privacy-segmentation-radio-off =
 privacy-segmentation-radio-on =
     .label = Shfaq të dhëna të hollësishme
 
+## Privacy Section - Website Advertising Preferences
+
+website-advertising-header = Parapëlqime Mbi Reklama Në Sajt
+website-advertising-private-attribution =
+    .label = Lejoji sajtet të kryejnë matje reklamash me ruajtje privatësie
+    .accesskey = a
+website-advertising-private-attribution-description = Kjo i ndihmon sajtet të kuptojnë se si shkon puna me reklamat e tyre, pa grumbulluar të dhëna nga ju.
+
 ## Privacy Section - Security
 ##
 ## It is important that wording follows the guidelines outlined on this page:
@@ -1336,13 +1360,20 @@ space-alert-under-5gb-message2 = <strong>{ -brand-short-name }-it po i mbarohet 
 
 httpsonly-header = Mënyra Vetëm-HTTPS
 httpsonly-description = HTTPS-ja furnizon një lidhje të sigurt, të fshehtëzuar, mes { -brand-short-name }-it dhe sajtit që vizitoni. Shumica e sajteve e mbulojnë përdorimin e HTTPS-së dhe, nëse është aktivizuar mënyrë Vetëm-HTTPS, atëherë { -brand-short-name }-i do t’i kalojë krejt lidhjet nën mënyrën HTTPS.
+httpsonly-description2 = { -brand-short-name }-i krijon lidhje të siguruara dhe të fshehtëzuara, me sajtet që vizitoni. { -brand-short-name }-i do t’ju sinjalizojë, nëse një lidhje s’është e siguruar, kur Vetëm-HTTPS është aktive.
 httpsonly-learn-more = Mësoni më tepër
 httpsonly-radio-enabled =
     .label = Aktivizoje Mënyrën Vetëm-HTTPS në krejt dritaret
+httpsonly-radio-enabled2 =
+    .label = HTTPS-në përdoreni vetëm në krejt dritaret
 httpsonly-radio-enabled-pbm =
     .label = Aktivizoje Mënyrën Vetëm-HTTPS vetëm në dritare private
+httpsonly-radio-enabled-pbm2 =
+    .label = HTTPS-në përdoreni vetëm në dritaret private
 httpsonly-radio-disabled =
     .label = Mos e aktivizo Mënyrën Vetëm-HTTPS
+httpsonly-radio-disabled2 =
+    .label = Provo njëherë HTTPS, por lejo lidhje që s’janë të siguruara
 
 ## DoH Section
 

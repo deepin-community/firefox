@@ -10,16 +10,18 @@
 
 origin-controls-no-access =
     .label = La extensión no puede leer ni cambiar datos
-
+origin-controls-quarantined =
+    .label = La extensión no tiene permiso de leer ni cambiar datos
+origin-controls-quarantined-status =
+    .label = Extensión no permitida en sitios restringidos
+origin-controls-quarantined-allow =
+    .label = Permitir en Sitios Restringidos
 origin-controls-options =
     .label = La extensión puede leer y cambiar datos:
-
 origin-controls-option-all-domains =
     .label = En todos los sitios
-
 origin-controls-option-when-clicked =
     .label = Solo cuando se hace clic
-
 # This string denotes an option that grants the extension access to
 # the current site whenever they visit it.
 # Variables:
@@ -31,17 +33,12 @@ origin-controls-option-always-on =
 ## messages. They currently appear in the unified extensions panel.
 
 origin-controls-state-no-access = No puede leer ni cambiar datos en este sitio
-
+origin-controls-state-quarantined = No permitido por { -vendor-short-name } en este sitio
 origin-controls-state-always-on = Siempre puede leer y cambiar datos en este sitio
-
 origin-controls-state-when-clicked = Permiso necesario para leer y cambiar datos
-
 origin-controls-state-hover-run-visit-only = Solo ejecutar en este sitio
-
 origin-controls-state-runnable-hover-open = Abrir extensión
-
 origin-controls-state-runnable-hover-run = Ejecutar extensión
-
 origin-controls-state-temporary-access = Puede leer y cambiar los datos de esta visita
 
 ## Extension's toolbar button.
@@ -51,7 +48,6 @@ origin-controls-state-temporary-access = Puede leer y cambiar los datos de esta 
 origin-controls-toolbar-button =
     .label = { $extensionTitle }
     .tooltiptext = { $extensionTitle }
-
 # Extension's toolbar button when permission is needed.
 # Note that the new line is intentionally part of the tooltip.
 origin-controls-toolbar-button-permission-needed =
@@ -59,4 +55,10 @@ origin-controls-toolbar-button-permission-needed =
     .tooltiptext =
         { $extensionTitle }
         Permisos necesarios
-
+# Extension's toolbar button when quarantined.
+# Note that the new line is intentionally part of the tooltip.
+origin-controls-toolbar-button-quarantined =
+    .label = { $extensionTitle }
+    .tooltiptext =
+        { $extensionTitle }
+        No permitido por { -vendor-short-name } en este sitio

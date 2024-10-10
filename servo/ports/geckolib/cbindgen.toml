@@ -7,26 +7,23 @@ header = """/* This Source Code Form is subject to the terms of the Mozilla Publ
 #ifdef __clang__
 #  pragma GCC diagnostic ignored "-Wreturn-type-c-linkage"
 #endif
-// Work-around silly windows.h define.
-#pragma push_macro("STRICT")
-#undef STRICT
-#pragma push_macro("TRANSPARENT")
-#undef TRANSPARENT
+
+#ifndef mozilla_ServoStyleConsts_h
+#define mozilla_ServoStyleConsts_h
 """
 trailer = """
 #pragma pop_macro("STRICT")
 #pragma pop_macro("TRANSPARENT")
+
+#endif // mozilla_ServoStyleConsts_h
+
 #pragma GCC diagnostic pop
 #include "mozilla/ServoStyleConstsInlines.h"
 """
-autogen_warning = """/* DO NOT MODIFY THIS MANUALLY! This file was generated using cbindgen.
- * To generate this file:
- *   1. Get the latest cbindgen using `cargo install --force cbindgen`
- *      a. Alternatively, you can clone `https://github.com/eqrion/cbindgen` and use a tagged release
- *   2. Run `rustup run nightly cbindgen toolkit/library/rust/ --lockfile Cargo.lock --crate style -o layout/style/ServoStyleConsts.h`
+autogen_warning = """/* DO NOT MODIFY THIS MANUALLY! This file was generated using cbindgen. See RunCbindgen.py
+ * To modify this file, edit servo/ports/geckolib/cbindgen.toml and build Firefox.
  */
 """
-include_guard = "mozilla_ServoStyleConsts_h"
 include_version = true
 braces = "SameLine"
 line_length = 80
@@ -34,6 +31,13 @@ tab_width = 2
 language = "C++"
 namespaces = ["mozilla"]
 includes = ["mozilla/ServoStyleConstsForwards.h", "mozilla/ServoStyleSet.h"]
+after_includes = """
+// Work-around silly windows.h define.
+#pragma push_macro("STRICT")
+#undef STRICT
+#pragma push_macro("TRANSPARENT")
+#undef TRANSPARENT
+"""
 
 [parse]
 parse_deps = true
@@ -82,22 +86,31 @@ exclude = [
   "AuthorStyles",
 ]
 include = [
+  "AnchorName",
+  "AnchorScope",
+  "AnimationName",
   "AnimationTimeline",
   "AnimationIterationCount",
   "AnimationDirection",
   "AnimationFillMode",
   "AnimationPlayState",
   "AnimationComposition",
+  "AnimationDuration",
   "Appearance",
   "Au",
   "BreakBetween",
   "BreakWithin",
   "BorderStyle",
+  "BorderSpacing",
   "BoolInteger",
   "OutlineStyle",
   "CaptionSide",
   "FontSizeAdjust",
   "FontPalette",
+  "FontLanguageOverride",
+  "FontVariantEastAsian",
+  "FontVariantLigatures",
+  "FontVariantNumeric",
   "ComputedFontStretchRange",
   "ComputedFontStyleDescriptor",
   "ComputedFontWeightRange",
@@ -109,6 +122,12 @@ include = [
   "DisplayInside",
   "DisplayMode",
   "Platform",
+  "PositionAnchor",
+  "PositionArea",
+  "PositionAreaKeyword",
+  "PositionTryFallbacks",
+  "PositionTryOrder",
+  "PositionVisibility",
   "GtkThemeFamily",
   "PrefersColorScheme",
   "PrefersContrast",
@@ -140,7 +159,7 @@ include = [
   "ScrollSnapStop",
   "ScrollSnapStrictness",
   "ScrollSnapType",
-  "ScrollTimelineName",
+  "TimelineName",
   "TransitionBehavior",
   "ViewTimelineInset",
   "OverflowAnchor",
@@ -160,6 +179,7 @@ include = [
   "TextDecorationLength",
   "Time",
   "Rect",
+  "InitialLetter",
   "IntersectionObserverRootMargin",
   "Size",
   "MaxSize",
@@ -169,9 +189,12 @@ include = [
   "BackgroundSize",
   "BaselineSource",
   "BorderImageSlice",
+  "BorderImageRepeat",
+  "BorderImageRepeatKeyword",
   "BorderSpacing",
   "BorderRadius",
   "ColorScheme",
+  "ColumnCount",
   "NonNegativeLengthOrNumberRect",
   "Perspective",
   "ZIndex",
@@ -259,8 +282,6 @@ include = [
   "ComputedJustifyItems",
   "AlignContent",
   "JustifyContent",
-  "AlignTracks",
-  "JustifyTracks",
   "TransformStyle",
   "Image",
   "ClipPath",
@@ -290,9 +311,11 @@ include = [
   "ComputedLinearStop",
   "PiecewiseLinearFunction",
   "BeforeFlag",
+  "VectorEffect",
   "XTextScale",
   "Zoom",
   "TransitionProperty",
+  "ViewTransitionName",
 ]
 item_types = ["enums", "structs", "unions", "typedefs", "functions", "constants"]
 renaming_overrides_prefixing = true
@@ -342,7 +365,6 @@ renaming_overrides_prefixing = true
 "Keyframe" = "Keyframe"
 "nsChangeHint" = "nsChangeHint"
 "ServoElementSnapshotTable" = "ServoElementSnapshotTable"
-"Keyframe" = "Keyframe"
 "ComputedKeyframeValues" = "ComputedKeyframeValues"
 "OriginFlags" = "OriginFlags"
 "ServoTraversalFlags" = "ServoTraversalFlags"
@@ -350,7 +372,7 @@ renaming_overrides_prefixing = true
 "BeforeFlag" = "StyleEasingBeforeFlag"
 "FontPaletteValueSet" = "gfx::FontPaletteValueSet"
 "PaletteValues" = "gfx::FontPaletteValueSet::PaletteValues"
-"ThinVec" = "nsTArray"
+"ThinVec" = "CopyableTArray"
 "RawPthread" = "pthread_t"
 "RawHandle" = "void*"
 
@@ -460,6 +482,7 @@ renaming_overrides_prefixing = true
   inline float ToPercentage() const;
   inline bool HasPercent() const;
   inline bool HasLengthAndPercentage() const;
+  inline bool BehavesLikeStretchOnInlineAxis() const;
   inline bool BehavesLikeInitialValueOnBlockAxis() const;
 """
 
@@ -474,6 +497,7 @@ renaming_overrides_prefixing = true
   inline float ToPercentage() const;
   inline bool HasPercent() const;
   inline bool HasLengthAndPercentage() const;
+  inline bool BehavesLikeStretchOnInlineAxis() const;
   inline bool BehavesLikeInitialValueOnBlockAxis() const;
 """
 
@@ -493,7 +517,7 @@ renaming_overrides_prefixing = true
 
   // Defined in WritingModes.h
   inline const T& Get(mozilla::Side) const;
-  inline const T& Get(WritingMode, LogicalSide) const;
+  inline const T& Get(LogicalSide, WritingMode) const;
   inline const T& GetIStart(WritingMode) const;
   inline const T& GetBStart(WritingMode) const;
   inline const T& Start(LogicalAxis, WritingMode) const;
@@ -502,7 +526,7 @@ renaming_overrides_prefixing = true
   inline const T& End(LogicalAxis, WritingMode) const;
 
   inline T& Get(mozilla::Side);
-  inline T& Get(WritingMode, LogicalSide);
+  inline T& Get(LogicalSide, WritingMode);
   inline T& GetIStart(WritingMode);
   inline T& GetBStart(WritingMode);
   inline T& GetIEnd(WritingMode);
@@ -527,8 +551,7 @@ renaming_overrides_prefixing = true
 """
 
 "TextTransform" = """
-  static inline StyleTextTransform None();
-  inline bool IsNone() const;
+  bool IsNone() const { return *this == NONE; }
 """
 
 "TextUnderlinePosition" = """
@@ -537,6 +560,10 @@ renaming_overrides_prefixing = true
   inline bool IsUnder() const;
   inline bool IsLeft() const;
   inline bool IsRight() const;
+"""
+
+"VectorEffect" = """
+  bool HasNonScalingStroke() const { return bool(*this & StyleVectorEffect::NON_SCALING_STROKE); }
 """
 
 # TODO(emilio): Add hooks to cbindgen to be able to generate [[nodiscard]]
@@ -951,11 +978,6 @@ renaming_overrides_prefixing = true
   bool IsNamedFamily(const nsAString&) const;
 """
 
-"TimelineOrKeyframesName" = """
- public:
-  inline nsAtom* AsAtom() const;
-"""
-
 "FontWeight" = """
  SERVO_FIXED_POINT_HELPERS(StyleFontWeight, uint16_t, StyleFONT_WEIGHT_FRACTION_BITS);
  bool IsNormal() const { return *this == NORMAL; }
@@ -997,9 +1019,20 @@ renaming_overrides_prefixing = true
   StyleAnimationName() : _0(nsGkAtoms::_empty) {}
 """
 
+"TimelineName" = """
+ public:
+  StyleTimelineName() : _0(nsGkAtoms::_empty) {}
+  nsAtom* AsAtom() const { return _0.AsAtom(); }
+"""
+
 "GenericViewTimelineInset" = """
  public:
   inline StyleGenericViewTimelineInset();
+"""
+
+"ViewTransitionName" = """
+ public:
+  StyleViewTransitionName() : _0(nsGkAtoms::_empty) {}
 """
 
 "Time" = """

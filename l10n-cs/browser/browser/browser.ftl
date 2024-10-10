@@ -608,6 +608,10 @@ urlbar-go-button =
     .tooltiptext = Přejde na adresu v adresním řádku
 urlbar-page-action-button =
     .tooltiptext = Akce stránky
+urlbar-revert-button =
+    .tooltiptext = Zobrazí adresu v adresním řádku
+urlbar-show-page-actions-button =
+    .tooltiptext = Zobrazí všechny akce stránky
 
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
@@ -698,6 +702,21 @@ urlbar-group-quickactions =
 #  $engine (String): the name of the search engine used to search.
 urlbar-group-recent-searches =
     .label = Nedávno vyhledávané
+# The header shown above trending results.
+# Variables:
+#  $engine (String): the name of the search engine providing the trending suggestions
+urlbar-group-trending =
+    .label = Populární na { $engine }
+# The result menu labels shown next to trending results.
+urlbar-result-menu-trending-dont-show =
+    .label = Nezobrazovat populární vyhledávání
+    .accesskey = N
+urlbar-result-menu-trending-why =
+    .label = Proč se mi to zobrazuje?
+    .accesskey = P
+# A message that replaces a result when the user dismisses all suggestions of a
+# particular type.
+urlbar-trending-dismissal-acknowledgment = Děkujeme za zpětnou vazbu. Už se vám populární vyhledávání nebudou zobrazovat.
 
 ## Reader View toolbar buttons
 
@@ -1076,6 +1095,10 @@ firefox-relay-offer-legal-notice = Klepnutím na „Použít e-mailovou masku“
 popup-notification-addon-install-unsigned =
     .value = (Neověřeno)
 popup-notification-xpinstall-prompt-learn-more = Zjistit více o bezpečné instalaci doplňků
+# Note: Access key is set to P to match "Private" in the corresponding localized label.
+popup-notification-addon-privatebrowsing-checkbox =
+    .label = Povolit v anonymních oknech
+    .accesskey = P
 
 ## Pop-up warning
 
@@ -1153,3 +1176,24 @@ popup-warning-button =
 #   $popupURI (String): the URI for the pop-up window
 popup-show-popup-menuitem =
     .label = Zobrazit „{ $popupURI }“
+
+## File-picker crash notification ("FilePickerCrashed.sys.mjs")
+
+file-picker-failed-open = Souborový dialog systému Windows nelze otevřít. Nepodařilo se vybrat žádný soubor nebo složku.
+#   $path (string): The full path to which the file will be saved (e.g., 'C:\Users\Default User\Downloads\readme.txt').
+file-picker-failed-save-somewhere = Souborový dialog systému Windows nelze otevřít. Soubor bude uložen do cesty { $path }.
+file-picker-failed-save-nowhere = Souborový dialog systému Windows nelze otevřít. Nebyla nalezena žádná výchozí složka; soubor nebude uložen.
+file-picker-crashed-open = Souborový dialog systému Windows spadl. Nepodařilo se vybrat žádný soubor nebo složku.
+#   $path (string): The full path to which the file will be saved (e.g., 'C:\Users\Default User\Downloads\readme.txt').
+file-picker-crashed-save-somewhere = Souborový dialog systému Windows spadl. Soubor bude uložen do cesty { $path }.
+file-picker-crashed-save-nowhere = Souborový dialog systému Windows spadl. Nebyla nalezena žádná výchozí složka; soubor nebude uložen.
+
+# Button used with file-picker-crashed-save-default. Opens the folder in Windows
+# Explorer, with the saved file selected and in focus.
+#
+# The wording here should be consistent with the Windows variant of
+# `downloads-cmd-show-menuitem-2` and similar messages.
+
+file-picker-crashed-show-in-folder =
+    .label = Zobrazit ve složce
+    .accessKey = Z

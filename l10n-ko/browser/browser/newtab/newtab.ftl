@@ -154,7 +154,7 @@ newtab-menu-open-file = 파일 열기
 newtab-label-visited = 방문한 사이트
 newtab-label-bookmarked = 북마크됨
 newtab-label-removed-bookmark = 북마크 삭제됨
-newtab-label-recommended = 트랜드
+newtab-label-recommended = 인기
 newtab-label-saved = { -pocket-brand-name }에 저장됨
 newtab-label-download = 다운로드됨
 # This string is used in the story cards to indicate sponsored content
@@ -183,7 +183,7 @@ newtab-section-menu-add-topsite = 상위 사이트 추가
 newtab-section-menu-add-search-engine = 검색 엔진 추가
 newtab-section-menu-move-up = 위로 이동
 newtab-section-menu-move-down = 아래로 이동
-newtab-section-menu-privacy-notice = 개인정보처리방침
+newtab-section-menu-privacy-notice = 개인정보 보호정책
 
 ## Section aria-labels
 
@@ -200,6 +200,8 @@ newtab-section-header-recent-activity = 최근 활동
 #   $provider (string) - Name of the corresponding content provider.
 newtab-section-header-pocket = { $provider } 추천
 newtab-section-header-stories = 생각하게 하는 이야기
+# "picks" refers to recommended articles
+newtab-section-header-todays-picks = 오늘의 추천
 
 ## Empty Section States: These show when there are no more items in a section. Ex. When there are no more Pocket story recommendations, in the space where there would have been stories, this is shown instead.
 
@@ -233,6 +235,19 @@ newtab-pocket-pocket-firefox-family = { -pocket-brand-name }은 { -brand-product
 # A save to Pocket button that shows over the card thumbnail on hover.
 newtab-pocket-save = 저장
 newtab-pocket-saved = 저장됨
+
+## Thumbs up and down buttons that shows over a newtab stories card thumbnail on hover.
+
+# Clicking the thumbs up button for this story will result in more stories like this one being recommended
+newtab-pocket-thumbs-up-tooltip =
+    .title = 좋아요
+# Clicking the thumbs down button for this story informs us that the user does not feel like the story is interesting for them
+newtab-pocket-thumbs-down-tooltip =
+    .title = 싫어요
+newtab-toast-thumbs-up-or-down = 감사합니다. 사용자의 의견은 제품 개선에 도움이 됩니다.
+newtab-toast-dismiss-button =
+    .title = 닫기
+    .aria-label = 닫기
 
 ## Pocket content onboarding experience dialog and modal for new users seeing the Pocket section for the first time, shown as the first item in the Pocket section.
 
@@ -271,8 +286,11 @@ newtab-custom-recent-subtitle = 최근 사이트 및 콘텐츠 모음
 newtab-custom-recent-toggle =
     .label = 최근 활동
     .description = 최근 사이트 및 콘텐츠 모음
+newtab-custom-weather-toggle =
+    .label = 날씨
+    .description = 오늘의 일기예보를 한눈에 보기
 newtab-custom-close-button = 닫기
-newtab-custom-settings = 더 많은 설정 관리
+newtab-custom-settings = 추가 설정
 
 ## New Tab Wallpapers
 
@@ -290,7 +308,125 @@ newtab-wallpaper-dark-panda = 숲속에 숨어있는 레서판다
 newtab-wallpaper-dark-sky = 밤하늘이 있는 도시 풍경
 newtab-wallpaper-dark-mountain = 산 풍경
 newtab-wallpaper-dark-city = 보라색 도시 풍경
+
+## Solid Colors
+
+newtab-wallpaper-category-title-colors = 단색
+newtab-wallpaper-blue = 파란색
+newtab-wallpaper-light-blue = 하늘색
+newtab-wallpaper-light-purple = 연보라색
+newtab-wallpaper-light-green = 연두색
+newtab-wallpaper-green = 녹색
+newtab-wallpaper-beige = 베이지색
+newtab-wallpaper-yellow = 노란색
+newtab-wallpaper-orange = 주황색
+newtab-wallpaper-pink = 분홍색
+newtab-wallpaper-light-pink = 연분홍색
+newtab-wallpaper-red = 빨간색
+newtab-wallpaper-dark-blue = 진청색
+newtab-wallpaper-dark-purple = 진보라
+newtab-wallpaper-dark-green = 진녹색
+newtab-wallpaper-brown = 갈색
+
+## Abstract
+
+newtab-wallpaper-category-title-abstract = 추상
+newtab-wallpaper-abstract-green = 녹색 모양
+newtab-wallpaper-abstract-blue = 파란색 모양
+newtab-wallpaper-abstract-purple = 보라색 모양
+newtab-wallpaper-abstract-orange = 주황색 모양
+newtab-wallpaper-gradient-orange = 주황색과 분홍색 그라데이션
+newtab-wallpaper-abstract-blue-purple = 파란색과 보라색 모양
+
+## Photographs
+
+newtab-wallpaper-category-title-photographs = 사진
+newtab-wallpaper-beach-at-sunrise = 일출의 해변
+newtab-wallpaper-beach-at-sunset = 석양의 해변
+newtab-wallpaper-storm-sky = 폭풍우 하늘
+newtab-wallpaper-sky-with-pink-clouds = 분홍색 구름의 하늘
+newtab-wallpaper-red-panda-yawns-in-a-tree = 나무 위에서 하품하는 레서판다
+newtab-wallpaper-white-mountains = 하얀 산
 # Variables
 #   $author_string (String) - The name of the creator of the photo.
 #   $webpage_string (String) - The name of the webpage where the photo is located.
 newtab-wallpaper-attribution = <a data-l10n-name="webpage-link">{ $webpage_string }</a>에 있는 <a data-l10n-name="name-link">{ $author_string }</a>의 사진
+newtab-wallpaper-feature-highlight-header = 다채로운 색상 사용해보기
+newtab-wallpaper-feature-highlight-content = 배경화면으로 새 탭을 산뜻하게 꾸며보세요.
+newtab-wallpaper-feature-highlight-button = 확인
+# Tooltip for dismiss button
+feature-highlight-dismiss-button =
+    .title = 닫기
+    .aria-label = 팝업 닫기
+feature-highlight-wallpaper =
+    .title = { -newtab-wallpaper-feature-highlight-header }
+    .aria-label = { -newtab-wallpaper-feature-highlight-content }
+
+## New Tab Weather
+
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-see-forecast =
+    .title = { $provider }의 일기예보 보기
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-sponsored = { $provider } ∙ 스폰서
+newtab-weather-menu-change-location = 위치 변경
+newtab-weather-change-location-search-input = 위치 검색
+newtab-weather-menu-weather-display = 날씨 표시
+# Display options are:
+# - Simple: Displays a current weather condition icon and the current temperature
+# - Detailed: Include simple information plus a short text summary: e.g. "Mostly cloudy"
+newtab-weather-menu-weather-display-option-simple = 단순
+newtab-weather-menu-change-weather-display-simple = 단순 보기로 전환
+newtab-weather-menu-weather-display-option-detailed = 상세
+newtab-weather-menu-change-weather-display-detailed = 상세 보기로 전환
+newtab-weather-menu-temperature-units = 온도 단위
+newtab-weather-menu-temperature-option-fahrenheit = 화씨
+newtab-weather-menu-temperature-option-celsius = 섭씨
+newtab-weather-menu-change-temperature-units-fahrenheit = 화씨로 전환
+newtab-weather-menu-change-temperature-units-celsius = 섭씨로 전환
+newtab-weather-menu-hide-weather = 새 탭에서 날씨 숨기기
+newtab-weather-menu-learn-more = 더 알아보기
+# This message is shown if user is working offline
+newtab-weather-error-not-available = 지금은 날씨 데이터를 사용할 수 없습니다.
+
+## Topic Labels
+
+newtab-topic-label-business = 사업
+newtab-topic-label-career = 직업
+newtab-topic-label-education = 교육
+newtab-topic-label-arts = 연예
+newtab-topic-label-food = 음식
+newtab-topic-label-health = 건강
+newtab-topic-label-hobbies = 게임
+# ”Money” = “Personal Finance”, refers to articles and stories that help readers better manage
+# and understand their personal finances – from saving money to buying a home. See the
+# “Curated by our editors“ section at the top of https://getpocket.com/explore/personal-finance for more context
+newtab-topic-label-finance = 금융
+newtab-topic-label-society-parenting = 육아
+newtab-topic-label-government = 정치
+newtab-topic-label-education-science = 과학
+# ”Life Hacks” = “Self Improvement”, refers to articles and stories aimed at helping readers improve various
+# aspects of their lives – from mental health to  productivity. See the “Curated by our editors“ section
+# at the top of https://getpocket.com/explore/self-improvement for more context.
+newtab-topic-label-society = 생활
+newtab-topic-label-sports = 스포츠
+newtab-topic-label-tech = 기술
+newtab-topic-label-travel = 여행
+newtab-topic-label-home = 홈 & 마당
+
+## Topic Selection Modal
+
+# “fine-tune” refers to the process of making small adjustments to something to get
+# the best or desired experience or performance.
+newtab-topic-selection-title = 피드를 세부 조정하려면 주제를 선택하세요
+# “tailored” refers to process of (a tailor) making (clothes) to fit individual customers.
+# In other words, “Our expert curators prioritize stories to fit your selected interests”
+newtab-topic-selection-subtitle = 두 개 이상의 주제를 선택하세요. 전문 큐레이터가 여러분의 관심사에 맞는 이야기를 우선적으로 선정합니다. 언제든지 업데이트하세요.
+newtab-topic-selection-save-button = 저장
+newtab-topic-selection-cancel-button = 취소
+newtab-topic-selection-button-maybe-later = 나중에요
+newtab-topic-selection-privacy-link = 데이터를 보호하고 관리하는 방법 알아보기
+newtab-topic-selection-button-update-interests = 관심 분야 업데이트
+newtab-topic-selection-button-pick-interests = 관심 분야를 선택하세요

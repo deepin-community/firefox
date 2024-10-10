@@ -534,7 +534,7 @@ class EngineViewScrollingBehaviorTest {
         }
         val behavior = spy(EngineViewScrollingBehavior(testContext, null, ViewPosition.BOTTOM))
 
-        behavior.onLayoutChild(container, view, ViewCompat.LAYOUT_DIRECTION_LTR)
+        behavior.onLayoutChild(container, view, View.LAYOUT_DIRECTION_LTR)
 
         assertEquals(view, behavior.dynamicScrollView)
         assertEquals(engineView, behavior.engineView)
@@ -571,5 +571,10 @@ class EngineViewScrollingBehaviorTest {
         override fun render(session: EngineSession) {}
         override fun release() {}
         override var selectionActionDelegate: SelectionActionDelegate? = null
+        override fun addWindowInsetsListener(
+            key: String,
+            listener: androidx.core.view.OnApplyWindowInsetsListener?,
+        ) {}
+        override fun removeWindowInsetsListener(key: String) {}
     }
 }

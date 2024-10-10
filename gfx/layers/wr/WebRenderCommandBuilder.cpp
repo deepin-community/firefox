@@ -310,7 +310,6 @@ struct DIGroup {
   LayerIntRect mLastVisibleRect;
 
   // This is the intersection of mVisibleRect and mLastVisibleRect
-  // we ensure that mInvalidRect is contained in mPreservedRect
   LayerIntRect mPreservedRect;
   // mHitTestBounds is the same as mActualBounds except for the bounds
   // of invisible items which are accounted for in the former but not
@@ -336,11 +335,7 @@ struct DIGroup {
         mHitInfo(CompositorHitTestInvisibleToHit) {}
 
   void InvalidateRect(const LayerIntRect& aRect) {
-    auto r = aRect.Intersect(mPreservedRect);
-    // Empty rects get dropped
-    if (!r.IsEmpty()) {
-      mInvalidRect = mInvalidRect.Union(r);
-    }
+    mInvalidRect = mInvalidRect.Union(aRect);
   }
 
   LayerIntRect ItemBounds(nsDisplayItem* aItem) {
@@ -2633,7 +2628,8 @@ WebRenderCommandBuilder::GenerateFallbackData(
 
       imageData->CreateImageClientIfNeeded();
       RefPtr<ImageClient> imageClient = imageData->GetImageClient();
-      RefPtr<ImageContainer> imageContainer = MakeAndAddRef<ImageContainer>();
+      RefPtr<ImageContainer> imageContainer = MakeAndAddRef<ImageContainer>(
+          ImageUsageType::WebRenderFallbackData, ImageContainer::SYNCHRONOUS);
 
       {
         UpdateImageHelper helper(imageContainer, imageClient,

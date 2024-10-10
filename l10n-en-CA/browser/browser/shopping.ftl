@@ -89,6 +89,9 @@ shopping-show-less-button = Show less
 
 shopping-settings-label =
     .label = Settings
+shopping-settings-recommendations-toggle2 =
+    .label = Show recommendations and sponsored content
+shopping-settings-recommendations-learn-more3 = { -brand-product-name } doesn’t share your personal data, so these recommendations won’t follow you around the internet. <a data-l10n-name="review-quality-url">Learn more</a>
 shopping-settings-recommendations-toggle =
     .label = Show ads in Review Checker
 shopping-settings-recommendations-learn-more2 = You’ll see occasional ads for relevant products. We only advertise products with reliable reviews. <a data-l10n-name="review-quality-url">Learn more</a>
@@ -115,6 +118,7 @@ shopping-settings-sidebar-enabled-state = Review Checker is <strong>On</strong>
 shopping-adjusted-rating-label =
     .label = Adjusted rating
 shopping-adjusted-rating-unreliable-reviews = Unreliable reviews removed
+shopping-adjusted-rating-based-reliable-reviews = Based on reliable reviews
 
 ## Strings for the review reliability component
 
@@ -133,6 +137,8 @@ shopping-analysis-explainer-learn-more2 = Learn more about <a data-l10n-name="re
 # websites, which will be inserted without being translated.
 #  $retailer (String) - capitalized name of the shopping website, for example, "Amazon".
 shopping-analysis-explainer-highlights-description = <strong>Highlights</strong> are from { $retailer } reviews within the last 80 days that we believe to be reliable.
+# Fallback for analysis highlights explainer if the retailer is ever unknown
+shopping-analysis-explainer-highlights-description-unknown-retailer = <strong>Highlights</strong> are from reviews within the last 80 days that we believe to be reliable.
 shopping-analysis-explainer-review-grading-scale-reliable = Reliable reviews. We believe the reviews are likely from real customers who left honest, unbiased reviews.
 shopping-analysis-explainer-review-grading-scale-mixed = We believe there’s a mix of reliable and unreliable reviews.
 shopping-analysis-explainer-review-grading-scale-unreliable = Unreliable reviews. We believe the reviews are likely fake or from biased reviewers.
@@ -159,6 +165,7 @@ shopping-unanalyzed-product-analyze-button = Check review quality
 
 more-to-consider-ad-label =
     .label = More to consider
+shopping-sponsored-label = Sponsored
 ad-by-fakespot = Ad by { -fakespot-brand-name }
 
 ## Shopping survey strings.

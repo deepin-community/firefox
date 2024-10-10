@@ -227,6 +227,12 @@ newtab-pocket-pocket-firefox-family = { -pocket-brand-name } fa part de la famil
 newtab-pocket-save = Enregistrar
 newtab-pocket-saved = Enregistrada
 
+## Thumbs up and down buttons that shows over a newtab stories card thumbnail on hover.
+
+newtab-toast-dismiss-button =
+    .title = Ignorar
+    .aria-label = Ignorar
+
 ## Pocket content onboarding experience dialog and modal for new users seeing the Pocket section for the first time, shown as the first item in the Pocket section.
 
 newtab-pocket-onboarding-discover = Descobrissètz çò melhor del web
@@ -262,5 +268,92 @@ newtab-custom-recent-subtitle = Una seleccion de sites e contenguts recents
 newtab-custom-recent-toggle =
     .label = Activitat recenta
     .description = Una seleccion de sites e contenguts recents
+newtab-custom-weather-toggle =
+    .label = Metèo
+    .description = Lo bulletin metèo d’uèi dins un ai
 newtab-custom-close-button = Tampar
 newtab-custom-settings = Gerir mai de paramètres
+
+## New Tab Wallpapers
+
+newtab-wallpaper-title = Fonzes
+newtab-wallpaper-reset = Reïnicializar
+newtab-wallpaper-light-red-panda = Panda ros
+newtab-wallpaper-light-mountain = Montanha blanca
+newtab-wallpaper-light-color = Fòrmas blavas, ròsas e jaunas
+
+## Solid Colors
+
+newtab-wallpaper-category-title-colors = Colors unidas
+newtab-wallpaper-blue = Blau
+newtab-wallpaper-light-blue = Blau clar
+newtab-wallpaper-light-purple = Violet clar
+newtab-wallpaper-light-green = Verd clar
+newtab-wallpaper-green = Verd
+newtab-wallpaper-beige = Burèl
+newtab-wallpaper-yellow = Jaune
+newtab-wallpaper-orange = Irange
+newtab-wallpaper-pink = Ròse
+newtab-wallpaper-light-pink = Ròse clar
+newtab-wallpaper-red = Roge
+newtab-wallpaper-dark-blue = Blau fosc
+newtab-wallpaper-dark-purple = Violet fosc
+newtab-wallpaper-dark-green = Verd fosc
+newtab-wallpaper-brown = Marron
+
+## Abstract
+
+newtab-wallpaper-category-title-abstract = Abstrach
+newtab-wallpaper-abstract-green = Fòrmas verdas
+newtab-wallpaper-abstract-blue = Fòrmas blavas
+newtab-wallpaper-abstract-purple = Fòrmas violetas
+newtab-wallpaper-abstract-orange = Fòrmas iranjas
+
+## Photographs
+
+newtab-wallpaper-category-title-photographs = Fotografias
+newtab-wallpaper-beach-at-sunrise = Plaja a l’alba
+newtab-wallpaper-storm-sky = Cèl auratjós
+newtab-wallpaper-white-mountains = Montanhas blancas
+
+## New Tab Weather
+
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-see-forecast =
+    .title = Mostrar la prevision metèo de { $provider }
+newtab-weather-menu-change-location = Modificar lo luòc
+newtab-weather-menu-temperature-units = Unitats de temperatura
+newtab-weather-menu-temperature-option-fahrenheit = Fahrenheit
+newtab-weather-menu-temperature-option-celsius = Celsius
+newtab-weather-menu-learn-more = Ne saber mai
+
+## Topic Labels
+
+newtab-topic-label-business = Afars
+newtab-topic-label-career = Carrièra
+newtab-topic-label-education = Educacion
+newtab-topic-label-arts = Léser
+newtab-topic-label-food = Manjar
+newtab-topic-label-health = Santat
+newtab-topic-label-hobbies = Jòc vidèo
+# ”Money” = “Personal Finance”, refers to articles and stories that help readers better manage
+# and understand their personal finances – from saving money to buying a home. See the
+# “Curated by our editors“ section at the top of https://getpocket.com/explore/personal-finance for more context
+newtab-topic-label-finance = Argent
+newtab-topic-label-society-parenting = Parents
+newtab-topic-label-government = Politica
+newtab-topic-label-education-science = Sciéncia
+# ”Life Hacks” = “Self Improvement”, refers to articles and stories aimed at helping readers improve various
+# aspects of their lives – from mental health to  productivity. See the “Curated by our editors“ section
+# at the top of https://getpocket.com/explore/self-improvement for more context.
+newtab-topic-label-society = Astúcias de vida
+newtab-topic-label-sports = Espòrts
+newtab-topic-label-tech = Tecnologia
+newtab-topic-label-travel = Viatge
+newtab-topic-label-home = Ostal e òrt
+
+## Topic Selection Modal
+
+newtab-topic-selection-save-button = Enregistrar
+newtab-topic-selection-cancel-button = Anullar

@@ -69,7 +69,7 @@ cfr-doorhanger-extension-total-users =
 ## Firefox Accounts Message
 
 cfr-doorhanger-bookmark-fxa-header = Sync your bookmarks everywhere.
-cfr-doorhanger-bookmark-fxa-body = Great find! Now don’t be left without this bookmark on your mobile devices. Get Started with a { -fxaccount-brand-name }.
+cfr-doorhanger-bookmark-fxa-body-2 = Great find! Now don’t be left without this bookmark on your mobile devices. Get started with an account.
 cfr-doorhanger-bookmark-fxa-link-text = Sync bookmarks now…
 cfr-doorhanger-bookmark-fxa-close-btn-tooltip =
   .aria-label = Close button
@@ -170,24 +170,6 @@ mr2022-background-update-toast-primary-button-label = Open { -brand-shorter-name
 # variable font like Arial): the button can only fit 1-2 additional characters,
 # exceeding characters will be truncated.
 mr2022-background-update-toast-secondary-button-label = Remind Me Later
-
-## Firefox View CFR
-
-firefoxview-cfr-primarybutton = Try it
-  .accesskey = T
-firefoxview-cfr-secondarybutton = Not now
-  .accesskey = N
-firefoxview-cfr-header-v2 = Quickly pick up where you left off
-firefoxview-cfr-body-v2 = Get recently closed tabs back, plus seamlessly hop between devices with { -firefoxview-brand-name }.
-
-## Firefox View Spotlight
-
-firefoxview-spotlight-promo-title = Say hello to { -firefoxview-brand-name }
-
-# “Poof” refers to the expression to convey when something or someone suddenly disappears, or in this case, reappears. For example, “Poof, it’s gone.”
-firefoxview-spotlight-promo-subtitle = Want that open tab on your phone? Grab it. Need that site you just visited? Poof, it’s back with { -firefoxview-brand-name }.
-firefoxview-spotlight-promo-primarybutton = See how it works
-firefoxview-spotlight-promo-secondarybutton = Skip
 
 ## Cookie Banner Handling CFR
 

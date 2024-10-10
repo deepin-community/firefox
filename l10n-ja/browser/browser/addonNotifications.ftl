@@ -83,7 +83,11 @@ addon-removal-button = 削除
 addon-removal-abuse-report-checkbox = この拡張機能を { -vendor-short-name } に報告する
 # Variables:
 #   $addonCount (Number): the number of add-ons being downloaded
-addon-downloading-and-verifying = { $addonCount } 個のアドオンをダウンロードして検証しています...
+addon-downloading-and-verifying =
+    { NUMBER($addonCount) ->
+        [1] アドオンをダウンロードして検証しています...
+       *[other] { $addonCount } 個のアドオンをダウンロードして検証しています...
+    }
 addon-download-verifying = 検証中
 addon-install-cancel-button =
     .label = キャンセル
@@ -95,11 +99,22 @@ addon-install-accept-button =
 ## Variables:
 ##   $addonCount (Number): the number of add-ons being installed
 
-addon-confirm-install-message = このサイトが { -brand-short-name } に { $addonCount } 個のアドオンのインストールを求めています:
-addon-confirm-install-unsigned-message = 注意: このサイトが { -brand-short-name } に { $addonCount } 個の未検証アドオンのインストールを求めています。ご自身の責任でインストールしてください。
+addon-confirm-install-message =
+    { NUMBER($addonCount) ->
+        [1] このサイトが { -brand-short-name } にアドオンのインストールを求めています:
+       *[other] このサイトが { -brand-short-name } に { $addonCount } 個のアドオンのインストールを求めています:
+    }
+addon-confirm-install-unsigned-message =
+    { NUMBER($addonCount) ->
+        [1] 注意: このサイトが { -brand-short-name } に未検証アドオンのインストールを求めています。ご自身の責任でインストールしてください。
+       *[other] 注意: このサイトが { -brand-short-name } に { $addonCount } 個の未検証アドオンのインストールを求めています。ご自身の責任でインストールしてください。
+    }
 # Variables:
 #   $addonCount (Number): the number of add-ons being installed (at least 2)
-addon-confirm-install-some-unsigned-message = 注意: このサイトが { -brand-short-name } に { $addonCount } 個のアドオンのインストールを求めていますが、一部のアドオンは未検証です。ご自身の責任でインストールしてください。
+addon-confirm-install-some-unsigned-message =
+    { NUMBER($addonCount) ->
+       *[other] 注意: このサイトが { -brand-short-name } に { $addonCount } 個のアドオンのインストールを求めていますが、一部のアドオンは未検証です。ご自身の責任でインストールしてください。
+    }
 
 ## Add-on install errors
 ## Variables:
@@ -120,3 +135,5 @@ addon-local-install-error-not-signed = このアドオンは検証されてい�
 #   $appVersion (String): the application version.
 addon-install-error-incompatible = { -brand-short-name } { $appVersion } と互換性がないため、{ $addonName } をインストールできませんでした。
 addon-install-error-blocklisted = 安定性を大きく損なうかセキュリティに問題があるため、{ $addonName } をインストールできませんでした。
+# Enterprise policies is a feature aimed at system administrators who want to deploy custom settings for Firefox.
+addon-install-error-admin-install-only = { $addonName } アドオンをエンドユーザー権限でインストールすることはできません。これはエンタープライズポリシーを使用する組織によりインストール可能です。

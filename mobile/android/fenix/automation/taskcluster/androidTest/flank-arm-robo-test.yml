@@ -17,8 +17,8 @@ gcloud:
     - model: java
       version: 30
       locale: en_US
-    - model: Pixel2.arm
-      version: 27
+    - model: MediumPhone.arm
+      version: 32
       locale: en_US
     - model: redfin
       version: 30
@@ -31,6 +31,7 @@ gcloud:
       locale: en_US
 
   type: robo
+  robo-script: ./automation/taskcluster/androidTest/robo-scripts/default-browser-dismissal.json
 
 flank:
   project: GOOGLE_PROJECT

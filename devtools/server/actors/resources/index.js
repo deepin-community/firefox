@@ -256,6 +256,8 @@ function getResourceTypeDictionaryForTargetType(targetType) {
       return WorkerTargetResources;
     case Targets.TYPES.SERVICE_WORKER:
       return WorkerTargetResources;
+    case Targets.TYPES.SHARED_WORKER:
+      return WorkerTargetResources;
     default:
       throw new Error(`Unsupported target actor typeName '${targetType}'`);
   }
@@ -340,21 +342,33 @@ async function watchResources(rootOrWatcherOrTargetActor, resourceTypes) {
       watcher.watch(rootOrWatcherOrTargetActor, {
         onAvailable: rootOrWatcherOrTargetActor.notifyResources.bind(
           rootOrWatcherOrTargetActor,
-          "available"
+          "available",
+          resourceType
         ),
         onUpdated: rootOrWatcherOrTargetActor.notifyResources.bind(
           rootOrWatcherOrTargetActor,
-          "updated"
+          "updated",
+          resourceType
         ),
         onDestroyed: rootOrWatcherOrTargetActor.notifyResources.bind(
           rootOrWatcherOrTargetActor,
-          "destroyed"
+          "destroyed",
+          resourceType
         ),
       })
     );
     watchers.set(rootOrWatcherOrTargetActor, watcher);
   }
   await Promise.all(promises);
+
+  // Force sending resources to the client before we resolve.
+  // So that resources are received by the client
+  // before WatcherActor.watchResources resolves.
+  // This is important when ResourceCommand.watchResources's `ignoreExistingResources` flag is set to false (default behavior).
+  // The client code expects all resources to be emitted when this server method resolves.
+  if (rootOrWatcherOrTargetActor.emitResources) {
+    rootOrWatcherOrTargetActor.emitResources();
+  }
 }
 exports.watchResources = watchResources;
 

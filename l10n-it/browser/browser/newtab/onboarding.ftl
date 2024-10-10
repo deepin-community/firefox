@@ -234,6 +234,10 @@ mr2022-onboarding-pin-primary-button-label =
         [macos] Mantieni { -brand-short-name } nel Dock
        *[other] Aggiungi { -brand-short-name } alla barra delle applicazioni
     }
+
+# Primary button string used on welcome page for when Firefox is not pinned on MSIX
+mr2022-onboarding-pin-primary-button-label-msix = Aggiungi { -brand-short-name } alla barra delle applicazioni e al menu Start
+
 # Subtitle will be used when user already has Firefox pinned, but
 # has not set it as their default browser.
 # When translating "zip", please feel free to pick a verb that signifies movement and/or exploration
@@ -377,7 +381,7 @@ mr2022-onboarding-privacy-segmentation-image-alt =
 mr2022-onboarding-gratitude-image-alt =
     .aria-label = Vista di un tramonto attraverso una finestra, con una volpe e una pianta sul davanzale
 mr2022-onboarding-colorways-image-alt =
-    .aria-label = Una mano disegna un graffito con un collage colorato che include un occhio verde, una scarpa arancio, un pallone rosso da basket, cuffie viola, un cuore blu e una corona gialla
+    .aria-label = Una mano disegna un graffito con un collage colorato che include un occhio verde, una scarpa arancione, un pallone rosso da basket, cuffie viola, un cuore blu e una corona gialla
 
 ## Device migration onboarding
 
@@ -387,6 +391,14 @@ onboarding-device-migration-title = Bentornato
 onboarding-device-migration-subtitle = Accedi al tuo { -fxaccount-brand-name } per portare con te segnalibri, password e cronologia di navigazione su un nuovo dispositivo.
 onboarding-device-migration-subtitle2 = Accedi al tuo account per portare con te segnalibri, password e cronologia di navigazione su un nuovo dispositivo.
 onboarding-device-migration-primary-button-label = Accedi
+
+## Add-ons Picker screen
+
+amo-picker-title = Personalizza { -brand-short-name }
+amo-picker-subtitle = Le estensioni sono come app per il tuo browser; permettono di proteggere password, scaricare video, risparmiare negli acquisti online, bloccare pubblicità fastidiose, cambiare l’aspetto del browser, e molto altro ancora.
+amo-picker-install-button-label = Aggiungi a { -brand-short-name }
+amo-picker-install-complete-label = Installato
+amo-picker-collection-link = Scopri altri componenti aggiuntivi
 
 ## The following screens have been updated to use security and privacy focused strings:
 

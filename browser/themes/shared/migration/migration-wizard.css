@@ -193,7 +193,7 @@ div[name="page-selection"][show-import-all] .resource-selection-preamble {
 }
 
 details[open] .expand-collapse-icon {
-  content: url("chrome://browser/skin/zoom-out.svg");
+  content: url("chrome://global/skin/icons/minus.svg");
 }
 
 .expand-collapse-icon {
@@ -294,7 +294,7 @@ summary {
 
 @media (prefers-reduced-motion: reduce) {
   .progress-icon[state="loading"] {
-    content: url("chrome://browser/skin/tabbrowser/hourglass.svg");
+    content: url("chrome://global/skin/icons/loading.svg");
     fill: var(--text-color-deemphasized);
   }
 }

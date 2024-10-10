@@ -189,6 +189,8 @@ mr2022-onboarding-pin-primary-button-label =
         [macos] Haltu { -brand-short-name } í dokkunni
        *[other] Festu { -brand-short-name } á verkefnastikuna
     }
+# Primary button string used on welcome page for when Firefox is not pinned on MSIX
+mr2022-onboarding-pin-primary-button-label-msix = Festu { -brand-short-name } við verkefnastikuna og upphafsvalmyndina
 # Subtitle will be used when user already has Firefox pinned, but
 # has not set it as their default browser.
 # When translating "zip", please feel free to pick a verb that signifies movement and/or exploration
@@ -335,6 +337,14 @@ onboarding-device-migration-title = Velkomin aftur!
 onboarding-device-migration-subtitle = Skráðu þig inn á { -fxaccount-brand-name(capitalization: "sentence") } til að taka bókamerkin þín, lykilorð og feril með þér á nýja tækið þitt.
 onboarding-device-migration-subtitle2 = Skráðu þig inn á reikninginn þinn til að hafa bókamerkin þín, lykilorð og feril með þér yfir á nýja tækið þitt.
 onboarding-device-migration-primary-button-label = Skrá inn
+
+## Add-ons Picker screen
+
+amo-picker-title = Sérsníddu { -brand-short-name }
+amo-picker-subtitle = Forritsaukar eru eins og aukaforrit fyrir vafrann þinn og gera þér kleift að vernda lykilorð, sækja myndskeið, finna tilboð, loka fyrir pirrandi auglýsingar, breyta útliti vafrans og margt fleira.
+amo-picker-install-button-label = Bæta við { -brand-short-name }
+amo-picker-install-complete-label = Uppsett
+amo-picker-collection-link = Skoðaðu fleiri viðbætur
 
 ## The following screens have been updated to use security and privacy focused strings:
 

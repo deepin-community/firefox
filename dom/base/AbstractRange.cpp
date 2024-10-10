@@ -6,6 +6,7 @@
 
 #include "mozilla/dom/AbstractRange.h"
 #include "mozilla/dom/AbstractRangeBinding.h"
+#include "mozilla/dom/ShadowIncludingTreeIterator.h"
 
 #include "mozilla/Assertions.h"
 #include "mozilla/Attributes.h"
@@ -14,6 +15,7 @@
 #include "mozilla/dom/Document.h"
 #include "mozilla/dom/StaticRange.h"
 #include "mozilla/dom/Selection.h"
+#include "mozilla/dom/CrossShadowBoundaryRange.h"
 #include "nsContentUtils.h"
 #include "nsCycleCollectionParticipant.h"
 #include "nsGkAtoms.h"
@@ -49,6 +51,8 @@ template nsresult AbstractRange::SetStartAndEndInternal(
     const RawRangeBoundary& aEndBoundary, StaticRange* aRange);
 template bool AbstractRange::MaybeCacheToReuse(nsRange& aInstance);
 template bool AbstractRange::MaybeCacheToReuse(StaticRange& aInstance);
+template bool AbstractRange::MaybeCacheToReuse(
+    CrossShadowBoundaryRange& aInstance);
 
 bool AbstractRange::sHasShutDown = false;
 
@@ -90,24 +94,26 @@ NS_IMPL_CYCLE_COLLECTION_TRAVERSE_END
 
 // When aMarkDesendants is true, Set
 // DescendantOfClosestCommonInclusiveAncestorForRangeInSelection flag for the
-// flattened children of aNode. When aMarkDesendants is false, unset that flag
-// for the flattened children of aNode.
-void UpdateDescendantsInFlattenedTree(const nsIContent& aNode,
-                                      bool aMarkDesendants) {
-  if (!aNode.IsElement() || aNode.IsHTMLElement(nsGkAtoms::slot)) {
-    return;
-  }
+// shadow including children of aNode. When aMarkDesendants is false, unset that
+// flag for the shadow including children of aNode.
+void UpdateDescendantsByShadowIncludingOrder(const nsIContent& aNode,
+                                             bool aMarkDesendants) {
+  ShadowIncludingTreeIterator iter(*const_cast<nsIContent*>(&aNode));
+  ++iter;  // We don't want to mark the root node
 
-  FlattenedChildIterator iter(&aNode);
-  for (nsIContent* child = iter.GetNextChild(); child;
-       child = iter.GetNextChild()) {
+  while (iter) {
+    nsINode* node = *iter;
     if (aMarkDesendants) {
-      child->SetDescendantOfClosestCommonInclusiveAncestorForRangeInSelection();
+      node->SetDescendantOfClosestCommonInclusiveAncestorForRangeInSelection();
     } else {
-      child
-          ->ClearDescendantOfClosestCommonInclusiveAncestorForRangeInSelection();
+      node->ClearDescendantOfClosestCommonInclusiveAncestorForRangeInSelection();
     }
-    UpdateDescendantsInFlattenedTree(*child, aMarkDesendants);
+
+    if (node->IsClosestCommonInclusiveAncestorForRangeInSelection()) {
+      iter.SkipChildren();
+      continue;
+    }
+    ++iter;
   }
 }
 
@@ -117,19 +123,19 @@ void AbstractRange::MarkDescendants(const nsINode& aNode) {
   // ancestor or a descendant of one, in which case all of our descendants have
   // the bit set already.
   if (!aNode.IsMaybeSelected()) {
-    // don't set the Descendant bit on |aNode| itself
-    nsINode* node = aNode.GetNextNode(&aNode);
-    if (!node) {
-      if (aNode.GetShadowRootForSelection()) {
-        UpdateDescendantsInFlattenedTree(*aNode.AsContent(), true);
-      }
+    // If aNode has a web-exposed shadow root, use this shadow tree and ignore
+    // the children of aNode.
+    if (aNode.GetShadowRootForSelection()) {
+      UpdateDescendantsByShadowIncludingOrder(*aNode.AsContent(), true);
       return;
     }
+    // don't set the Descendant bit on |aNode| itself
+    nsINode* node = aNode.GetNextNode(&aNode);
     while (node) {
       node->SetDescendantOfClosestCommonInclusiveAncestorForRangeInSelection();
       if (!node->IsClosestCommonInclusiveAncestorForRangeInSelection()) {
         if (StaticPrefs::dom_shadowdom_selection_across_boundary_enabled()) {
-          UpdateDescendantsInFlattenedTree(*node->AsContent(), true);
+          UpdateDescendantsByShadowIncludingOrder(*node->AsContent(), true);
           // sub-tree of node has been marked already
           node = node->GetNextNonChildNode(&aNode);
         } else {
@@ -150,19 +156,19 @@ void AbstractRange::UnmarkDescendants(const nsINode& aNode) {
   // common ancestor itself).
   if (!aNode
            .IsDescendantOfClosestCommonInclusiveAncestorForRangeInSelection()) {
-    // we know |aNode| doesn't have any bit set
-    nsINode* node = aNode.GetNextNode(&aNode);
-    if (!node) {
-      if (aNode.GetShadowRootForSelection()) {
-        UpdateDescendantsInFlattenedTree(*aNode.AsContent(), false);
-      }
+    // If aNode has a web-exposed shadow root, use this shadow tree and ignore
+    // the children of aNode.
+    if (aNode.GetShadowRootForSelection()) {
+      UpdateDescendantsByShadowIncludingOrder(*aNode.AsContent(), false);
       return;
     }
+    // we know |aNode| doesn't have any bit set
+    nsINode* node = aNode.GetNextNode(&aNode);
     while (node) {
       node->ClearDescendantOfClosestCommonInclusiveAncestorForRangeInSelection();
       if (!node->IsClosestCommonInclusiveAncestorForRangeInSelection()) {
         if (StaticPrefs::dom_shadowdom_selection_across_boundary_enabled()) {
-          UpdateDescendantsInFlattenedTree(*node->AsContent(), false);
+          UpdateDescendantsByShadowIncludingOrder(*node->AsContent(), false);
           // sub-tree has been marked already
           node = node->GetNextNonChildNode(&aNode);
         } else {
@@ -206,6 +212,12 @@ void AbstractRange::Shutdown() {
   if (nsTArray<RefPtr<StaticRange>>* cachedRanges =
           StaticRange::sCachedRanges) {
     StaticRange::sCachedRanges = nullptr;
+    cachedRanges->Clear();
+    delete cachedRanges;
+  }
+  if (nsTArray<RefPtr<CrossShadowBoundaryRange>>* cachedRanges =
+          CrossShadowBoundaryRange::sCachedRanges) {
+    CrossShadowBoundaryRange::sCachedRanges = nullptr;
     cachedRanges->Clear();
     delete cachedRanges;
   }
@@ -560,6 +572,24 @@ nsINode* AbstractRange::GetParentObject() const { return mOwner; }
 JSObject* AbstractRange::WrapObject(JSContext* aCx,
                                     JS::Handle<JSObject*> aGivenProto) {
   MOZ_CRASH("Must be overridden");
+}
+
+bool AbstractRange::AreNormalRangeAndCrossShadowBoundaryRangeCollapsed() const {
+  if (!Collapsed()) {
+    return false;
+  }
+
+  // We know normal range is collapsed at this point
+  if (IsStaticRange()) {
+    return true;
+  }
+
+  if (const CrossShadowBoundaryRange* crossShadowBoundaryRange =
+          AsDynamicRange()->GetCrossShadowBoundaryRange()) {
+    return crossShadowBoundaryRange->Collapsed();
+  }
+
+  return true;
 }
 
 void AbstractRange::ClearForReuse() {

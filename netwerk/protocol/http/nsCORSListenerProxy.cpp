@@ -7,6 +7,7 @@
 #include "nsIThreadRetargetableStreamListener.h"
 #include "nsString.h"
 #include "mozilla/Assertions.h"
+#include "mozilla/Components.h"
 #include "mozilla/LinkedList.h"
 #include "mozilla/StaticPrefs_content.h"
 #include "mozilla/StoragePrincipalHelper.h"
@@ -307,7 +308,7 @@ nsPreflightCache::CacheEntry* nsPreflightCache::GetEntry(
   // This is a new entry, allocate and insert into the table now so that any
   // failures don't cause items to be removed from a full cache.
   auto newEntry =
-      MakeUnique<CacheEntry>(key, aOriginAttributes.mPrivateBrowsingId != 0);
+      MakeUnique<CacheEntry>(key, aOriginAttributes.IsPrivateBrowsing());
 
   NS_ASSERTION(mTable.Count() <= PREFLIGHT_CACHE_SIZE,
                "Something is borked, too many entries in the cache!");
@@ -840,7 +841,6 @@ nsCORSListenerProxy::AsyncOnChannelRedirect(
     // cross-origin redirects.
     // See Bug 1874132
     bool stripAuthHeader =
-        StaticPrefs::network_fetch_redirect_stripAuthHeader() &&
         NS_ShouldRemoveAuthHeaderOnRedirect(aOldChannel, aNewChannel, aFlags);
 
     nsCOMPtr<nsIHttpChannel> oldHttpChannel = do_QueryInterface(aOldChannel);
@@ -1038,7 +1038,7 @@ nsresult nsCORSListenerProxy::UpdateChannel(nsIChannel* aChannel,
   // It's a cross site load
   mHasBeenCrossSite = true;
 
-  if (mIsRedirect || StaticPrefs::network_cors_preflight_block_userpass_uri()) {
+  if (mIsRedirect) {
     // https://fetch.spec.whatwg.org/#http-redirect-fetch
     // Step 9. If request’s mode is "cors", locationURL includes credentials,
     // and request’s origin is not same origin with locationURL’s origin,
@@ -1722,7 +1722,7 @@ void nsCORSListenerProxy::LogBlockedCORSRequest(
 
   // Build the error object and log it to the console
   nsCOMPtr<nsIConsoleService> console(
-      do_GetService(NS_CONSOLESERVICE_CONTRACTID, &rv));
+      mozilla::components::Console::Service(&rv));
   if (NS_FAILED(rv)) {
     NS_WARNING("Failed to log blocked cross-site request (no console)");
     return;
@@ -1742,18 +1742,16 @@ void nsCORSListenerProxy::LogBlockedCORSRequest(
   // the error to the browser console.
   if (aInnerWindowID > 0) {
     rv = scriptError->InitWithSanitizedSource(aMessage,
-                                              u""_ns,  // sourceName
-                                              u""_ns,  // sourceLine
-                                              0,       // lineNumber
-                                              0,       // columnNumber
+                                              ""_ns,  // sourceName
+                                              0,      // lineNumber
+                                              0,      // columnNumber
                                               errorFlag, aCategory,
                                               aInnerWindowID);
   } else {
     rv = scriptError->Init(aMessage,
-                           u""_ns,  // sourceName
-                           u""_ns,  // sourceLine
-                           0,       // lineNumber
-                           0,       // columnNumber
+                           ""_ns,  // sourceName
+                           0,      // lineNumber
+                           0,      // columnNumber
                            errorFlag, aCategory, aPrivateBrowsing,
                            aFromChromeContext);  // From chrome context
   }

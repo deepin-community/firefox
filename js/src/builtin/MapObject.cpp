@@ -198,11 +198,15 @@ const JSClass MapIteratorObject::class_ = {
     "Map Iterator",
     JSCLASS_HAS_RESERVED_SLOTS(MapIteratorObject::SlotCount) |
         JSCLASS_FOREGROUND_FINALIZE | JSCLASS_SKIP_NURSERY_FINALIZE,
-    &MapIteratorObjectClassOps, JS_NULL_CLASS_SPEC,
-    &MapIteratorObjectClassExtension};
+    &MapIteratorObjectClassOps,
+    JS_NULL_CLASS_SPEC,
+    &MapIteratorObjectClassExtension,
+};
 
 const JSFunctionSpec MapIteratorObject::methods[] = {
-    JS_SELF_HOSTED_FN("next", "MapIteratorNext", 0, 0), JS_FS_END};
+    JS_SELF_HOSTED_FN("next", "MapIteratorNext", 0, 0),
+    JS_FS_END,
+};
 
 static inline ValueMap::Range* MapIteratorObjectRange(NativeObject* obj) {
   MOZ_ASSERT(obj->is<MapIteratorObject>());
@@ -1126,11 +1130,15 @@ const JSClass SetIteratorObject::class_ = {
     "Set Iterator",
     JSCLASS_HAS_RESERVED_SLOTS(SetIteratorObject::SlotCount) |
         JSCLASS_FOREGROUND_FINALIZE | JSCLASS_SKIP_NURSERY_FINALIZE,
-    &SetIteratorObjectClassOps, JS_NULL_CLASS_SPEC,
-    &SetIteratorObjectClassExtension};
+    &SetIteratorObjectClassOps,
+    JS_NULL_CLASS_SPEC,
+    &SetIteratorObjectClassExtension,
+};
 
 const JSFunctionSpec SetIteratorObject::methods[] = {
-    JS_SELF_HOSTED_FN("next", "SetIteratorNext", 0, 0), JS_FS_END};
+    JS_SELF_HOSTED_FN("next", "SetIteratorNext", 0, 0),
+    JS_FS_END,
+};
 
 static inline ValueSet::Range* SetIteratorObjectRange(NativeObject* obj) {
   MOZ_ASSERT(obj->is<SetIteratorObject>());
@@ -1384,7 +1392,6 @@ const JSFunctionSpec SetObject::methods[] = {
     JS_FN("entries", entries, 0, 0),
     JS_FN("clear", clear, 0, 0),
     JS_SELF_HOSTED_FN("forEach", "SetForEach", 2, 0),
-#ifdef NIGHTLY_BUILD
     JS_SELF_HOSTED_FN("union", "SetUnion", 1, 0),
     JS_SELF_HOSTED_FN("difference", "SetDifference", 1, 0),
     JS_SELF_HOSTED_FN("intersection", "SetIntersection", 1, 0),
@@ -1392,7 +1399,6 @@ const JSFunctionSpec SetObject::methods[] = {
     JS_SELF_HOSTED_FN("isSubsetOf", "SetIsSubsetOf", 1, 0),
     JS_SELF_HOSTED_FN("isSupersetOf", "SetIsSupersetOf", 1, 0),
     JS_SELF_HOSTED_FN("isDisjointFrom", "SetIsDisjointFrom", 1, 0),
-#endif
     JS_FN("values", values, 0, 0),
     // @@iterator and |keys| re-defined in finishInit so that they have the
     // same identity as |values|.

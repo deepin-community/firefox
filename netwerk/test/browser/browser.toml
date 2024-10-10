@@ -1,7 +1,6 @@
 [DEFAULT]
 support-files = [
   "dummy.html",
-  "ioactivity.html",
   "redirect.sjs",
   "auth_post.sjs",
   "early_hint_main_html.sjs",
@@ -72,6 +71,11 @@ support-files = [
   "x_frame_options.html^headers^",
   "test_1629307.html",
   "file_link_header.sjs",
+  "file_link_dns_prefetch.sjs",
+  "bug968273_new.html",
+  "bug968273_redirect.html",
+  "bug968273_redirect.html^headers^",
+  "file_bug968273.html",
 ]
 
 prefs = [
@@ -95,6 +99,13 @@ support-files = ["early_hint_preload_test_helper.sys.mjs",]
 
 ["browser_103_error.js"]
 support-files = ["early_hint_preload_test_helper.sys.mjs",]
+
+["browser_103_http_v1_1_preload.js"]
+support-files = ["early_hint_preload_test_helper.sys.mjs",]
+skip-if = [
+  "http3",
+  "http2",
+]
 
 ["browser_103_no_cancel_on_error.js"]
 support-files = ["early_hint_preload_test_helper.sys.mjs",]
@@ -120,8 +131,6 @@ support-files = [
   "early_hint_preload_test_helper.sys.mjs",
 ]
 
-["browser_103_telemetry.js"]
-
 ["browser_103_user_load.js"]
 support-files = ["early_hint_preload_test_helper.sys.mjs",]
 
@@ -134,6 +143,8 @@ skip-if = [
   "os == 'android'", # MultiInstanceLock doesn't work on Android
   "os == 'mac'", # intermittent TV timeouts on Mac
 ]
+
+["browser_bug968273.js"]
 
 ["browser_bug1535877.js"]
 
@@ -156,6 +167,11 @@ skip-if = ["os == 'win'"] # Bug 1775761
 
 ["browser_cookie_sync_across_tabs.js"]
 
+["browser_display_plaintext_types.js"]
+support-files = ["res_hello_h1.sjs"]
+
+["browser_dns_prefetch_link_header.js"]
+
 ["browser_fetch_lnk.js"]
 run-if = ["os == 'win'"]
 support-files = ["file_lnk.lnk",]
@@ -174,6 +190,8 @@ skip-if = ["socketprocess_networking"] # Bug 1772209
 
 ["browser_resource_navigation.js"]
 
+["browser_set_response_override.js"]
+
 ["browser_speculative_connection_link_header.js"]
 
 ["browser_test_data_channel_observer.js"]
@@ -186,7 +204,11 @@ support-files = [
   "file_favicon.html",
 ]
 
-["browser_test_io_activity.js"]
-skip-if = ["socketprocess_networking"]
-
 ["browser_test_offline_tab.js"]
+
+["browser_mock_https_rr.js"]
+skip-if = [
+  "http3",
+  "http2",
+  "socketprocess_networking",
+]

@@ -17,8 +17,8 @@
 #include "p2p/base/mock_dns_resolving_packet_socket_factory.h"
 #include "p2p/base/test_stun_server.h"
 #include "rtc_base/async_packet_socket.h"
+#include "rtc_base/crypto_random.h"
 #include "rtc_base/gunit.h"
-#include "rtc_base/helpers.h"
 #include "rtc_base/network/received_packet.h"
 #include "rtc_base/socket_address.h"
 #include "rtc_base/ssl_adapter.h"
@@ -35,6 +35,7 @@ using ::testing::DoAll;
 using ::testing::Return;
 using ::testing::ReturnPointee;
 using ::testing::SetArgPointee;
+using webrtc::IceCandidateType;
 
 static const SocketAddress kLocalAddr("127.0.0.1", 0);
 static const SocketAddress kIPv6LocalAddr("::1", 0);
@@ -136,9 +137,13 @@ class StunPortTestBase : public ::testing::Test, public sigslot::has_slots<> {
   void CreateStunPort(const ServerAddresses& stun_servers,
                       const webrtc::FieldTrialsView* field_trials = nullptr) {
     stun_port_ = cricket::StunPort::Create(
-        rtc::Thread::Current(), socket_factory(), &network_, 0, 0,
-        rtc::CreateRandomString(16), rtc::CreateRandomString(22), stun_servers,
-        absl::nullopt, field_trials);
+        {.network_thread = rtc::Thread::Current(),
+         .socket_factory = socket_factory(),
+         .network = &network_,
+         .ice_username_fragment = rtc::CreateRandomString(16),
+         .ice_password = rtc::CreateRandomString(22),
+         .field_trials = field_trials},
+        0, 0, stun_servers, absl::nullopt);
     stun_port_->SetIceTiebreaker(kTiebreakerDefault);
     stun_port_->set_stun_keepalive_delay(stun_keepalive_delay_);
     // If `stun_keepalive_lifetime_` is negative, let the stun port
@@ -169,9 +174,13 @@ class StunPortTestBase : public ::testing::Test, public sigslot::has_slots<> {
           OnReadPacket(socket, packet);
         });
     stun_port_ = cricket::UDPPort::Create(
-        rtc::Thread::Current(), socket_factory(), &network_, socket_.get(),
-        rtc::CreateRandomString(16), rtc::CreateRandomString(22), false,
-        absl::nullopt, field_trials);
+        {.network_thread = rtc::Thread::Current(),
+         .socket_factory = socket_factory(),
+         .network = &network_,
+         .ice_username_fragment = rtc::CreateRandomString(16),
+         .ice_password = rtc::CreateRandomString(22),
+         .field_trials = field_trials},
+        socket_.get(), false, absl::nullopt);
     ASSERT_TRUE(stun_port_ != NULL);
     stun_port_->SetIceTiebreaker(kTiebreakerDefault);
     ServerAddresses stun_servers;
@@ -261,14 +270,14 @@ class StunPortTest : public FakeClockBase, public StunPortTestBase {};
 // Test that we can create a STUN port.
 TEST_F(StunPortTest, TestCreateStunPort) {
   CreateStunPort(kStunAddr1);
-  EXPECT_EQ("stun", port()->Type());
+  EXPECT_EQ(IceCandidateType::kSrflx, port()->Type());
   EXPECT_EQ(0U, port()->Candidates().size());
 }
 
 // Test that we can create a UDP port.
 TEST_F(StunPortTest, TestCreateUdpPort) {
   CreateSharedUdpPort(kStunAddr1, nullptr);
-  EXPECT_EQ("local", port()->Type());
+  EXPECT_EQ(IceCandidateType::kHost, port()->Type());
   EXPECT_EQ(0U, port()->Candidates().size());
 }
 
@@ -426,7 +435,7 @@ TEST_F(StunPortTest, TestStunCandidateDiscardedWithMdnsObfuscationNotEnabled) {
   EXPECT_TRUE_SIMULATED_WAIT(done(), kTimeoutMs, fake_clock);
   ASSERT_EQ(1U, port()->Candidates().size());
   EXPECT_TRUE(kLocalAddr.EqualIPs(port()->Candidates()[0].address()));
-  EXPECT_EQ(port()->Candidates()[0].type(), cricket::LOCAL_PORT_TYPE);
+  EXPECT_TRUE(port()->Candidates()[0].is_local());
 }
 
 // Test that a stun candidate (srflx candidate) is generated whose address is
@@ -460,7 +469,7 @@ TEST_F(StunPortTest, TestNoDuplicatedAddressWithTwoStunServers) {
   stun_servers.insert(kStunAddr1);
   stun_servers.insert(kStunAddr2);
   CreateStunPort(stun_servers);
-  EXPECT_EQ("stun", port()->Type());
+  EXPECT_EQ(IceCandidateType::kSrflx, port()->Type());
   PrepareAddress();
   EXPECT_TRUE_SIMULATED_WAIT(done(), kTimeoutMs, fake_clock);
   EXPECT_EQ(1U, port()->Candidates().size());
@@ -474,7 +483,7 @@ TEST_F(StunPortTest, TestMultipleStunServersWithBadServer) {
   stun_servers.insert(kStunAddr1);
   stun_servers.insert(kBadAddr);
   CreateStunPort(stun_servers);
-  EXPECT_EQ("stun", port()->Type());
+  EXPECT_EQ(IceCandidateType::kSrflx, port()->Type());
   PrepareAddress();
   EXPECT_TRUE_SIMULATED_WAIT(done(), kTimeoutMs, fake_clock);
   EXPECT_EQ(1U, port()->Candidates().size());
@@ -495,7 +504,7 @@ TEST_F(StunPortTest, TestTwoCandidatesWithTwoStunServersAcrossNat) {
   stun_servers.insert(kStunAddr1);
   stun_servers.insert(kStunAddr2);
   CreateStunPort(stun_servers);
-  EXPECT_EQ("stun", port()->Type());
+  EXPECT_EQ(IceCandidateType::kSrflx, port()->Type());
   PrepareAddress();
   EXPECT_TRUE_SIMULATED_WAIT(done(), kTimeoutMs, fake_clock);
   EXPECT_EQ(2U, port()->Candidates().size());

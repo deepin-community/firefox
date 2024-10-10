@@ -152,7 +152,7 @@ newtab-menu-open-file = Кушодани файл
 newtab-label-visited = Дидашуда
 newtab-label-bookmarked = Дар хатбаракҳо
 newtab-label-removed-bookmark = Хатбарак тоза карда шуд
-newtab-label-recommended = Маъмул
+newtab-label-recommended = Тамоюл
 newtab-label-saved = Ба { -pocket-brand-name } нигоҳ дошта шуд
 newtab-label-download = Боргиришуда
 # This string is used in the story cards to indicate sponsored content
@@ -232,6 +232,19 @@ newtab-pocket-pocket-firefox-family = { -pocket-brand-name } қисми оила
 newtab-pocket-save = Нигоҳ доштан
 newtab-pocket-saved = Нигоҳ дошта шуд
 
+## Thumbs up and down buttons that shows over a newtab stories card thumbnail on hover.
+
+# Clicking the thumbs up button for this story will result in more stories like this one being recommended
+newtab-pocket-thumbs-up-tooltip =
+    .title = Бештар ба ин монанд
+# Clicking the thumbs down button for this story informs us that the user does not feel like the story is interesting for them
+newtab-pocket-thumbs-down-tooltip =
+    .title = Ман ҳавасманд нестам
+newtab-toast-thumbs-up-or-down = Ташаккур. Фикру мулоҳизаҳои шумо ба мо барои беҳтар кардани навори хабарҳои шумо ёрӣ медиҳанд.
+newtab-toast-dismiss-button =
+    .title = Нодида гузарондан
+    .aria-label = Нодида гузарондан
+
 ## Pocket content onboarding experience dialog and modal for new users seeing the Pocket section for the first time, shown as the first item in the Pocket section.
 
 newtab-pocket-onboarding-discover = Маводи беҳтаринро дар Интернет пайдо намоед
@@ -270,6 +283,9 @@ newtab-custom-recent-subtitle = Интихоби сомонаҳо ва муҳт�
 newtab-custom-recent-toggle =
     .label = Фаъолияти охирин
     .description = Интихоби сомонаҳо ва муҳтавои охирин
+newtab-custom-weather-toggle =
+    .label = Обу ҳаво
+    .description = Ҳолати обу ҳаво барои имрӯз
 newtab-custom-close-button = Пӯшидан
 newtab-custom-settings = Идоракунии танзимоти бештар
 
@@ -289,7 +305,110 @@ newtab-wallpaper-dark-panda = Пандаи сурх дар ҷангал пинҳ
 newtab-wallpaper-dark-sky = Манзараи шаҳр бо осмони шабона
 newtab-wallpaper-dark-mountain = Манзараи кӯҳӣ
 newtab-wallpaper-dark-city = Манзараи шаҳри лоҷувард
+
+## Solid Colors
+
+newtab-wallpaper-category-title-colors = Рангҳои яклухт
+newtab-wallpaper-blue = Кабуд
+newtab-wallpaper-light-blue = Кабуди равшан
+newtab-wallpaper-light-purple = Лоҷуварди равшан
+newtab-wallpaper-light-green = Сабзи равшан
+newtab-wallpaper-green = Сабз
+newtab-wallpaper-beige = Қаҳваранг
+newtab-wallpaper-yellow = Зард
+newtab-wallpaper-orange = Норинҷӣ
+newtab-wallpaper-pink = Гулобӣ
+newtab-wallpaper-light-pink = Гулобии равшан
+newtab-wallpaper-red = Сурх
+newtab-wallpaper-dark-blue = Кабди торик
+newtab-wallpaper-dark-purple = Лоҷуварди торик
+newtab-wallpaper-dark-green = Сабзи торик
+newtab-wallpaper-brown = Қаҳвагӣ
+
+## Abstract
+
+newtab-wallpaper-category-title-abstract = Мавҳум
+newtab-wallpaper-abstract-green = Шаклҳои сабз
+newtab-wallpaper-abstract-blue = Шаклҳои кабуд
+newtab-wallpaper-abstract-purple = Шаклҳои лоҷувард
+newtab-wallpaper-abstract-orange = Шаклҳои норинҷӣ
+newtab-wallpaper-gradient-orange = Тағйирёбии норинҷӣ ва голубӣ
+newtab-wallpaper-abstract-blue-purple = Шаклҳои кабуд ва норинҷӣ
+
+## Photographs
+
+newtab-wallpaper-category-title-photographs = Суратҳо
+newtab-wallpaper-beach-at-sunrise = Соҳил дар тулӯи офтоб
+newtab-wallpaper-beach-at-sunset = Соҳил дар ғуруби офтоб
+newtab-wallpaper-white-mountains = Кӯҳҳои сафед
 # Variables
 #   $author_string (String) - The name of the creator of the photo.
 #   $webpage_string (String) - The name of the webpage where the photo is located.
 newtab-wallpaper-attribution = Акс аз ҷониби <a data-l10n-name="name-link">{ $author_string }</a> дар <a data-l10n-name="webpage-link">{ $webpage_string }</a>
+newtab-wallpaper-feature-highlight-header = Чакраҳои рангро кӯшиш намоед
+newtab-wallpaper-feature-highlight-button = Фаҳмидам
+# Tooltip for dismiss button
+feature-highlight-dismiss-button =
+    .title = Нодида гузарондан
+    .aria-label = Пӯшидани равзанаҳои зоҳиршаванда
+feature-highlight-wallpaper =
+    .title = { -newtab-wallpaper-feature-highlight-header }
+    .aria-label = { -newtab-wallpaper-feature-highlight-content }
+
+## New Tab Weather
+
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-see-forecast =
+    .title = Дидани обу ҳаво дар { $provider }
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-sponsored = { $provider } ∙ Реклама
+newtab-weather-menu-change-location = Иваз кардани макон
+newtab-weather-change-location-search-input = Ҷустуҷӯи макон
+newtab-weather-menu-weather-display = Намоиши обу ҳаво
+# Display options are:
+# - Simple: Displays a current weather condition icon and the current temperature
+# - Detailed: Include simple information plus a short text summary: e.g. "Mostly cloudy"
+newtab-weather-menu-weather-display-option-simple = Одӣ
+newtab-weather-menu-change-weather-display-simple = Гузариш ба намуди одӣ
+newtab-weather-menu-weather-display-option-detailed = Ботафсил
+newtab-weather-menu-change-weather-display-detailed = Гузариш ба намуди ботафсил
+newtab-weather-menu-temperature-units = Воҳидҳои ченаки ҳарорат
+newtab-weather-menu-temperature-option-fahrenheit = Фаренгейт
+newtab-weather-menu-temperature-option-celsius = Селсий
+newtab-weather-menu-change-temperature-units-fahrenheit = Гузариш ба Фаренгейт
+newtab-weather-menu-change-temperature-units-celsius = Гузариш ба Селсий
+newtab-weather-menu-hide-weather = Нинҳон кардани обу ҳаво дар варақаи нав
+newtab-weather-menu-learn-more = Маълумоти бештар
+# This message is shown if user is working offline
+newtab-weather-error-not-available = Айни ҳол маълумот дар бораи обу ҳаво дастнорас аст.
+
+## Topic Labels
+
+newtab-topic-label-business = Тиҷорат
+newtab-topic-label-career = Пешравӣ
+newtab-topic-label-education = Илму маърифат
+newtab-topic-label-arts = Вақтхушӣ
+newtab-topic-label-food = Ғизо
+newtab-topic-label-health = Тандурустӣ
+newtab-topic-label-hobbies = Бозиҳо
+# ”Money” = “Personal Finance”, refers to articles and stories that help readers better manage
+# and understand their personal finances – from saving money to buying a home. See the
+# “Curated by our editors“ section at the top of https://getpocket.com/explore/personal-finance for more context
+newtab-topic-label-finance = Молия
+newtab-topic-label-society-parenting = Тарбия
+newtab-topic-label-government = Сиёсат
+newtab-topic-label-education-science = Илм
+# ”Life Hacks” = “Self Improvement”, refers to articles and stories aimed at helping readers improve various
+# aspects of their lives – from mental health to  productivity. See the “Curated by our editors“ section
+# at the top of https://getpocket.com/explore/self-improvement for more context.
+newtab-topic-label-society = Таҷрибаи ҳаёт
+newtab-topic-label-sports = Варзишҳо
+newtab-topic-label-tech = Технологияҳо
+newtab-topic-label-travel = Сайёҳӣ
+
+## Topic Selection Modal
+
+newtab-topic-selection-save-button = Нигоҳ доштан
+newtab-topic-selection-cancel-button = Бекор кардан

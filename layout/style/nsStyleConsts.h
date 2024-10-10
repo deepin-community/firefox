@@ -130,6 +130,12 @@ enum class StyleScrollbarWidth : uint8_t {
   None,
 };
 
+// field-sizing
+enum class StyleFieldSizing : bool {
+  Fixed,
+  Content,
+};
+
 // Shape source type
 enum class StyleShapeSourceType : uint8_t {
   None,
@@ -199,9 +205,6 @@ enum class StyleMaskMode : uint8_t { Alpha = 0, Luminance, MatchSource };
 
 // See nsStyleTable
 enum class StyleBorderCollapse : uint8_t { Collapse, Separate };
-
-// border-image-repeat
-enum class StyleBorderImageRepeat : uint8_t { Stretch, Repeat, Round, Space };
 
 // See nsStyleVisibility
 enum class StyleDirection : uint8_t { Ltr, Rtl };
@@ -548,9 +551,6 @@ enum class StyleColorInterpolation : uint8_t {
   Srgb = 1,
   Linearrgb = 2,
 };
-
-// vector-effect
-enum class StyleVectorEffect : uint8_t { None = 0, NonScalingStroke = 1 };
 
 // 3d Transforms - Backface visibility
 enum class StyleBackfaceVisibility : uint8_t { Hidden = 0, Visible = 1 };

@@ -72,6 +72,7 @@ translations-panel-translate-cancel =
     .label = Sefsex
 translations-panel-learn-more-link = Issin ugar
 translations-panel-intro-header = Ɛreḍ tisuqqilin tusligin deg { -brand-shorter-name }
+translations-panel-intro-description = I uqader n tudert tabaḍnit, tisuqilin ur teffɣent ara akk seg yibenk-ik. Tutlayin timaynutin d yisnerniyen ur ttεeṭṭilen ara ad ilin!
 translations-panel-error-translating = Yella wugur deg usuqqel. Ttxil-k ɛreḍ tikkelt niḍen.
 translations-panel-error-load-languages = Ggumant ad d-alint tutlayin
 translations-panel-error-load-languages-hint = Senqed tuqqna ɣer internet sakin ɛreḍ tikkelt niḍen.
@@ -125,22 +126,19 @@ translations-manage-description = Sader tutlayin i usuqqel aruqqin.
 translations-manage-all-language = Meṛṛa tutlayin
 translations-manage-download-button = Sader
 translations-manage-delete-button = Kkes
+translations-manage-download-description = Sader tutlayin i usuqqel aruqqin
 translations-manage-language-download-button =
     .label = Sader
+translations-manage-language-download-all-button =
+    .label = Sader kullec
+    .accesskey = S
 translations-manage-language-remove-button =
     .label = Kkes
 translations-manage-language-remove-all-button =
     .label = Kkes kullec
     .accesskey = e
-translations-manage-error-install = Yella-d wugur deg usebded n yifuyla n tutlayt. Ttxil-k·m ɛreḍ tikkelt niḍen.
 translations-manage-error-download = Yella-d wugur deg usader n yifuyla n tutlayt. Ttxil-k·m ɛreḍ tikkelt niḍen.
 translations-manage-error-delete = Tella-d tuccḍa deg tukksa n yifuyla n tutlayt. ttxil-k·m ɛreḍ tikkelt niḍen.
-translations-manage-install-description = Sebded tutlayin i usuqqel aruqqin.
-translations-manage-language-install-button =
-    .label = Sebded
-translations-manage-language-install-all-button =
-    .label = Sebded kullec
-    .accesskey = S
 translations-manage-error-remove = Tella-d tuccḍa deg tukksa n yifuyla n tutlayt. ttxil-k·m ɛreḍ tikkelt niḍen.
 translations-settings-title =
     .title = Iɣewwaren n tsuqqilin
@@ -168,12 +166,62 @@ translations-settings-remove-all-sites-button =
 translations-settings-close-dialog =
     .buttonlabelaccept = Mdel
     .buttonaccesskeyaccept = M
+# Text displayed in the right-click context menu for translating
+# selected text to a yet-to-be-determined language.
+main-context-menu-translate-selection =
+    .label = Suqqel tafrant…
+    .accesskey = n
+# Text displayed in the right-click context menu for translating
+# selected text to a target language.
+#
+# Variables:
+#   $language (string) - The localized display name of the target language
+main-context-menu-translate-selection-to-language =
+    .label = Suqqel tafrant ɣer { $language }
+    .accesskey = n
+# Text displayed in the right-click context menu for translating
+# the text of a hyperlink to a yet-to-be-determined language.
+main-context-menu-translate-link-text =
+    .label = Suqqel aḍris n useɣwen…
+    .accesskey = n
+# Text displayed in the right-click context menu for translating
+# the text of a hyperlink to a target language.
+#
+# Variables:
+#   $language (string) - The localized display name of the target language
+main-context-menu-translate-link-text-to-language =
+    .label = Suqqel aḍris n useɣwen ɣer { $language }
+    .accesskey = n
+# Text displayed in the select translations panel header.
+select-translations-panel-header = Tasuqilt
+# Text displayed above the from-language dropdown menu.
+select-translations-panel-from-label = Si
+# Text displayed above the to-language dropdown menu.
+select-translations-panel-to-label = I
+# Text displayed above the try-another-source-language dropdown menu.
+select-translations-panel-try-another-language-label = Ɛreḍ tutlayt taɣbalut niḍen
 select-translations-panel-cancel-button =
     .label = Sefsex
+# Text displayed on the copy button before it is clicked.
+select-translations-panel-copy-button =
+    .label = Nɣel
+# Text displayed on the copy button after it is clicked.
+select-translations-panel-copy-button-copied =
+    .label = Yettwanɣel
+select-translations-panel-done-button =
+    .label = Immed
+select-translations-panel-translate-full-page-button =
+    .label = Suqel asebter ummid
 select-translations-panel-translate-button =
     .label = Suqel
 select-translations-panel-try-again-button =
     .label = Ɛreḍ tikelt nniḍen
+# Text displayed as a placeholder when the panel is idle.
+select-translations-panel-idle-placeholder-text = Aḍris i yettwasuqlen ad d-iban dagi.
+# Text displayed as a placeholder when the panel is actively translating.
+select-translations-panel-translating-placeholder-text = Asuqqel…
+select-translations-panel-init-failure-message =
+    .message = Ggumant ad d-alint tutlayin. Senqed tuqqna ɣer internet syen εreḍ tikkelt niḍen.
 # Text displayed when the translation fails to complete.
 select-translations-panel-translation-failure-message =
     .message = Yella wugur deg usuqqel. Ttxil-k ɛreḍ tikkelt niḍen.
@@ -187,3 +235,8 @@ select-translations-panel-unsupported-language-message-known =
     .message = Nesḥassef, ur nessefrak ara { $language } akka tura.
 select-translations-panel-unsupported-language-message-unknown =
     .message = Nesḥassef, ur nessefrak ara tutlayt-a akka tura.
+# Text displayed on the menuitem that opens the Translation Settings page.
+select-translations-panel-open-translations-settings-menuitem =
+    .label = Iɣewwaren n usuqqel
+# An announcement made to assistive technology when the translation is complete
+select-translations-panel-translation-complete-announcement = Tasuqilt temmed

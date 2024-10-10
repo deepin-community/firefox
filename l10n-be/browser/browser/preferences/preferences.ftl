@@ -57,6 +57,10 @@ category-experimental =
 pane-experimental-subtitle = Працягвайце з асцярожнасцю
 pane-experimental-search-results-header = Эксперыменты { -brand-short-name }: працягвайце з асцярожнасцю
 pane-experimental-description2 = Змена пашыраных налад канфігурацыі можа паўплываць на прадукцыйнасць і бяспеку { -brand-short-name }.
+settings-pane-labs-title = { -firefoxlabs-brand-name }
+settings-category-labs =
+    .tooltiptext = { -firefoxlabs-brand-name }
+pane-experimental-description3 = Паспрабуйце нашы эксперыментальныя функцыі! Яны знаходзяцца ў стадыі распрацоўкі і развіцця, што можа паўплываць на працу { -brand-short-name }.
 pane-experimental-reset =
     .label = Аднавіць прадвызначаныя
     .accesskey = А
@@ -602,6 +606,10 @@ home-prefs-recent-activity-description = Падборка нядаўніх са�
 home-prefs-snippets-header =
     .label = Урыўкі
 home-prefs-snippets-description-new = Парады і навіны ад { -vendor-short-name } і { -brand-product-name }
+home-prefs-weather-header =
+    .label = Надвор'е
+home-prefs-weather-description = Кароткі прагноз на сёння
+home-prefs-weather-learn-more-link = Падрабязней
 # Variables:
 #   $num (number) - Number of rows displayed
 home-prefs-sections-rows-option =
@@ -916,6 +924,9 @@ forms-saved-passwords =
 forms-primary-pw-use =
     .label = Ужываць галоўны пароль
     .accesskey = г
+# This operation requires the user to authenticate with the operating system (device sign-in)
+forms-os-reauth =
+    .label = Патрабаваць уваход на прыладзе для запаўнення пароляў і кіравання імі
 forms-primary-pw-learn-more-link = Даведацца больш
 # This string uses the former name of the Primary Password feature
 # ("Master Password" in English) so that the preferences can be found
@@ -948,6 +959,13 @@ primary-password-os-auth-dialog-message-win = Каб стварыць галоў
 # notes are only valid for English. Please test in your locale.
 primary-password-os-auth-dialog-message-macosx = стварыць галоўны пароль
 master-password-os-auth-dialog-caption = { -brand-full-name }
+# The macOS string is preceded by the operating system with "Firefox is trying to ".
+autofill-creditcard-os-dialog-message =
+    { PLATFORM() ->
+        [macos] змяніць налады спосабаў аплаты
+       *[other] { -brand-short-name } спрабуе змяніць налады спосабаў аплаты. Выкарыстоўвайце ўваход на прыладзе, каб дазволіць гэта.
+    }
+autofill-creditcard-os-auth-dialog-caption = { -brand-full-name }
 
 ## Privacy section - Autofill
 
@@ -962,13 +980,8 @@ autofill-payment-methods-checkbox-submessage = Уключаючы крэдытн
     .accesskey = д
 autofill-saved-payment-methods-button = Захаваныя спосабы аплаты
     .accesskey = с
-autofill-reauth-checkbox =
-    { PLATFORM() ->
-        [macos] Патрабаваць аўтэнтыфікацыю ў macOS для запаўнення і змянення спосабаў аплаты.
-        [windows] Патрабаваць аўтэнтыфікацыю Windows Linux для запаўнення і змянення спосабаў аплаты.
-        [linux] Патрабаваць аўтэнтыфікацыю ў Linux для запаўнення і змянення спосабаў аплаты.
-       *[other] Патрабаваць аўтэнтыфікацыю для запаўнення і змянення спосабаў аплаты.
-    }
+# This operation requires the user to authenticate with the operating system (device sign-in)
+autofill-reauth-payment-methods-checkbox = Патрабаваць уваход на прыладзе для запаўнення спосабаў аплаты і кіравання імі
     .accesskey = ў
 
 ## Privacy Section - History
@@ -1106,6 +1119,9 @@ addressbar-suggestions-settings = Змяніць налады для падка�
 addressbar-locbar-showrecentsearches-option =
     .label = Паказваць апошнія пошукі
     .accesskey = к
+addressbar-locbar-showtrendingsuggestions-option =
+    .label = Паказваць папулярныя пошукавыя прапановы
+    .accesskey = п
 addressbar-quickactions-learn-more = Падрабязней
 
 ## Privacy Section - Content Blocking
@@ -1297,6 +1313,14 @@ privacy-segmentation-radio-off =
 privacy-segmentation-radio-on =
     .label = Паказваць падрабязную інфармацыю
 
+## Privacy Section - Website Advertising Preferences
+
+website-advertising-header = Налады рэкламы для сайтаў
+website-advertising-private-attribution =
+    .label = Дазволіць вэб-сайтам выконваць вымярэнне рэкламы з захаваннем прыватнасці
+    .accesskey = р
+website-advertising-private-attribution-description = Гэта дапамагае сайтам зразумець, наколькі эфектыўная іх рэклама, не збіраючы дадзеных пра вас.
+
 ## Privacy Section - Security
 ##
 ## It is important that wording follows the guidelines outlined on this page:
@@ -1340,13 +1364,20 @@ space-alert-under-5gb-message2 = <strong>У { -brand-short-name } сканчае
 
 httpsonly-header = Рэжым толькі HTTPS
 httpsonly-description = HTTPS забяспечвае бяспечнае зашыфраванае злучэнне паміж { -brand-short-name } і вэб-сайтамі, якія вы наведваеце. Большасць сайтаў падтрымліваюць HTTPS, і калі ўключаны рэжым толькі HTTPS, { -brand-short-name } пераключа ўсе злучэнні на HTTPS.
+httpsonly-description2 = { -brand-short-name } стварае бяспечныя і зашыфраваныя злучэнні з сайтамі, якія вы наведваеце. { -brand-short-name } будзе папярэджваць, калі злучэнне не з'яўляецца бяспечным пры ўключаным «Толькі HTTPS».
 httpsonly-learn-more = Даведацца больш
 httpsonly-radio-enabled =
     .label = Уключыць рэжым толькі HTTPS ва ўсіх вокнах
+httpsonly-radio-enabled2 =
+    .label = Ва ўсіх вокнах выкарыстоўваць толькі HTTPS
 httpsonly-radio-enabled-pbm =
     .label = Уключыць рэжым толькі HTTPS толькі ў прыватных вокнах
+httpsonly-radio-enabled-pbm2 =
+    .label = У прыватных вокнах выкарыстоўваць толькі HTTPS
 httpsonly-radio-disabled =
     .label = Не ўключаць рэжым толькі HTTPS
+httpsonly-radio-disabled2 =
+    .label = Спрабаваць спачатку HTTPS, але дазваляць злучэнні, якія не з'яўляюцца бяспечнымі
 
 ## DoH Section
 

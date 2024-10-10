@@ -10,9 +10,11 @@ name = "crashreporter"
 anyhow = "1.0"
 cfg-if = "1.0"
 env_logger = { version = "0.10", default-features = false }
+flate2 = "1"
 fluent = "0.16.0"
+glean = { workspace = true }
 intl-memoizer = "0.5"
-libloading = "0.7"
+libloading = "0.8"
 log = "0.4.17"
 mozbuild = "0.1"
 mozilla-central-workspace-hack = { version = "0.1", features = ["crashreporter"], optional = true }
@@ -21,10 +23,13 @@ phf = "0.11"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 sha2 = "0.10"
-time = { version = "0.3", features = ["formatting", "serde"] }
+time = { version = "0.3", features = ["formatting", "macros", "serde"] }
 unic-langid = { version = "0.9.1" }
 uuid = { version = "1", features = ["v4", "serde"] }
-zip = { version = "0.6", default-features = false }
+zip = { version = "2.1.2", default-features = false }
+
+# Workarounds for https://github.com/rust-lang/rust/issues/58393
+lmdb-rkv-sys = "0.11"
 
 [target."cfg(target_os = \"macos\")".dependencies]
 block = "0.1"

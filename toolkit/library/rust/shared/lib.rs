@@ -14,6 +14,7 @@ extern crate authrs_bridge;
 extern crate bitsdownload;
 #[cfg(feature = "moz_places")]
 extern crate bookmark_sync;
+extern crate buildid_reader;
 extern crate cascade_bloom_filter;
 extern crate cert_storage;
 extern crate chardetng_c;
@@ -30,6 +31,7 @@ extern crate fog_control;
 extern crate gecko_profiler;
 extern crate gkrust_utils;
 extern crate http_sfv;
+extern crate idna_glue;
 extern crate jog;
 extern crate jsrust_shared;
 extern crate kvstore;

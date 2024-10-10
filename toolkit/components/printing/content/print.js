@@ -81,11 +81,16 @@ function cancelDeferredTasks() {
 document.addEventListener(
   "DOMContentLoaded",
   () => {
+    const dialogBox = ourBrowser.closest(".dialogBox");
+    if (!dialogBox) {
+      return;
+    }
+
     window._initialized = PrintEventHandler.init().catch(e => console.error(e));
     ourBrowser.setAttribute("flex", "0");
     ourBrowser.setAttribute("constrainpopups", "false");
     ourBrowser.classList.add("printSettingsBrowser");
-    ourBrowser.closest(".dialogBox")?.classList.add("printDialogBox");
+    dialogBox.classList.add("printDialogBox");
   },
   { once: true }
 );
@@ -827,19 +832,6 @@ var PrintEventHandler = {
   async _updatePrintPreview() {
     let { settings } = this;
 
-    const isFirstCall = !this.printInitiationTime;
-    if (isFirstCall) {
-      let params = new URLSearchParams(location.search);
-      this.printInitiationTime = parseInt(
-        params.get("printInitiationTime"),
-        10
-      );
-      const elapsed = Date.now() - this.printInitiationTime;
-      Services.telemetry
-        .getHistogramById("PRINT_INIT_TO_PLATFORM_SENT_SETTINGS_MS")
-        .add(elapsed);
-    }
-
     let totalPageCount, sheetCount, isEmpty, orientation, pageWidth, pageHeight;
     try {
       // This resolves with a PrintPreviewSuccessInfo dictionary.
@@ -917,13 +909,6 @@ var PrintEventHandler = {
         detail: { sheetCount, totalPages: totalPageCount },
       })
     );
-
-    if (isFirstCall) {
-      const elapsed = Date.now() - this.printInitiationTime;
-      Services.telemetry
-        .getHistogramById("PRINT_INIT_TO_PREVIEW_DOC_SHOWN_MS")
-        .add(elapsed);
-    }
   },
 
   async getPrintDestinations() {

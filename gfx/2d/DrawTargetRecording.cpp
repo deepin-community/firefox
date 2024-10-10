@@ -17,6 +17,7 @@
 #include "mozilla/layers/CanvasDrawEventRecorder.h"
 #include "mozilla/layers/RecordedCanvasEventImpl.h"
 #include "mozilla/layers/SourceSurfaceSharedData.h"
+#include "mozilla/layers/TextureRecorded.h"
 #include "mozilla/UniquePtr.h"
 #include "nsXULAppAPI.h"  // for XRE_IsContentProcess()
 #include "RecordingTypes.h"
@@ -235,10 +236,11 @@ DrawTargetRecording::~DrawTargetRecording() {
   mRecorder->ClearDrawTarget(this);
 }
 
-void DrawTargetRecording::Link(const char* aDestination, const Rect& aRect) {
+void DrawTargetRecording::Link(const char* aLocalDest, const char* aURI,
+                               const Rect& aRect) {
   MarkChanged();
 
-  RecordEventSelf(RecordedLink(aDestination, aRect));
+  RecordEventSelf(RecordedLink(aLocalDest, aURI, aRect));
 }
 
 void DrawTargetRecording::Destination(const char* aDestination,
@@ -469,7 +471,11 @@ void DrawTargetRecording::DrawShadow(const Path* aPath, const Pattern& aPattern,
                                      aStrokeOptions));
 }
 
-void DrawTargetRecording::MarkChanged() { mIsDirty = true; }
+void DrawTargetRecording::MarkChanged() {
+  if (mTextureData) {
+    mTextureData->DrawTargetWillChange();
+  }
+}
 
 already_AddRefed<SourceSurface> DrawTargetRecording::Snapshot() {
   RefPtr<SourceSurface> retSurf =

@@ -189,6 +189,8 @@ mr2022-onboarding-pin-primary-button-label =
         [macos] { -brand-short-name } w doku wobchowaś
        *[other] Pśipěśo { -brand-short-name } k nadawkowej rědce
     }
+# Primary button string used on welcome page for when Firefox is not pinned on MSIX
+mr2022-onboarding-pin-primary-button-label-msix = { -brand-short-name } k nadawkowej rědce a startowemu menijoju pśipěś
 # Subtitle will be used when user already has Firefox pinned, but
 # has not set it as their default browser.
 # When translating "zip", please feel free to pick a verb that signifies movement and/or exploration
@@ -335,6 +337,14 @@ onboarding-device-migration-title = Witajśo slědk!
 onboarding-device-migration-subtitle = Pśizjawśo se pla { -fxaccount-brand-name(capitalization: "sentence") }, aby swóje cytańske znamjenja, gronidła a historiju na swójom nowem rěźe sobu wzeł.
 onboarding-device-migration-subtitle2 = Pśizjawśo se pla swójogo konta, aby swóje cytańske znamjenja, gronidła a swóju historiju na swój nowy rěd pśenosował.
 onboarding-device-migration-primary-button-label = Pśizjawiś
+
+## Add-ons Picker screen
+
+amo-picker-title = Pśiměŕśo swój { -brand-short-name }
+amo-picker-subtitle = Rozšyrjenja su ako nałoženja za waš wobglědowak a móžośo z nimi gronidła šćitaś, wideo ześěgnuś, póbitowanja namakaś, wobuzne wabjenje blokěrowaś, naglěd wašogo wobglědowaka změniś a wjele wěcej.
+amo-picker-install-button-label = { -brand-short-name } pśidaś
+amo-picker-install-complete-label = Zainstalěrowany
+amo-picker-collection-link = Wuslěźćo dalšne dodanki
 
 ## The following screens have been updated to use security and privacy focused strings:
 

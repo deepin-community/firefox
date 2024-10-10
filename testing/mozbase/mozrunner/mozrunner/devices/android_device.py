@@ -13,7 +13,6 @@ import subprocess
 import sys
 import telnetlib
 import time
-from distutils.spawn import find_executable
 from enum import Enum
 
 import six
@@ -309,16 +308,16 @@ def verify_android_device(
         install = InstallIntent.NO
         _log_info(
             "Found MOZ_DISABLE_ADB_INSTALL in environment and/or the"
-            " --noinstall flag, skipping android app installation"
+            " --no-install flag, skipping android app installation"
         )
     else:
         _log_info(
             "*********************************************************************\n"
             "Neither the MOZ_DISABLE_ADB_INSTALL environment variable nor the\n"
-            "--noinstall flag was found. The code will now uninstall the current\n"
+            "--no-install flag was found. The code will now uninstall the current\n"
             "app then re-install the android app from a different source. If you\n"
             "don't want this set your local env so that\n"
-            "MOZ_DISABLE_ADB_INSTALL=True or pass the --noinstall flag\n"
+            "MOZ_DISABLE_ADB_INSTALL=True or pass the --no-install flag\n"
             "*********************************************************************"
         )
     device_verified = False
@@ -493,7 +492,7 @@ def _setup_or_run_lldb_server(app, substs, device_serial, setup=True):
 
     # Don't use enable_run_as here, as this will not give you what you
     # want if we have root access on the device.
-    pkg_dir = device.shell_output("run-as %s pwd" % app)
+    pkg_dir = device.shell_output("run-as %s pwd" % app, attempts=3)
     if not pkg_dir or pkg_dir == "/":
         pkg_dir = "/data/data/%s" % app
         _log_warning(
@@ -942,7 +941,7 @@ def _find_sdk_exe(substs, exe, tools):
 
     if not found:
         # Is exe on PATH?
-        exe_path = find_executable(exe)
+        exe_path = shutil.which(exe)
         if exe_path:
             found = True
         else:

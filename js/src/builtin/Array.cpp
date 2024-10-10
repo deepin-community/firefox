@@ -22,6 +22,7 @@
 #include "jsnum.h"
 #include "jstypes.h"
 
+#include "builtin/SelfHostingDefines.h"
 #include "ds/Sort.h"
 #include "jit/InlinableNatives.h"
 #include "jit/TrampolineNatives.h"
@@ -31,7 +32,7 @@
 #include "js/friend/ErrorMessages.h"  // js::GetErrorMessage, JSMSG_*
 #include "js/PropertySpec.h"
 #include "util/Poison.h"
-#include "util/StringBuffer.h"
+#include "util/StringBuilder.h"
 #include "util/Text.h"
 #include "vm/ArgumentsObject.h"
 #include "vm/EqualityOperations.h"
@@ -51,6 +52,7 @@
 #  include "vm/TupleType.h"
 #endif
 
+#include "builtin/Sorting-inl.h"
 #include "vm/ArgumentsObject-inl.h"
 #include "vm/ArrayObject-inl.h"
 #include "vm/GeckoProfiler-inl.h"
@@ -64,7 +66,6 @@ using mozilla::Abs;
 using mozilla::CeilingLog2;
 using mozilla::CheckedInt;
 using mozilla::DebugOnly;
-using mozilla::IsAsciiDigit;
 using mozilla::Maybe;
 using mozilla::SIMD;
 
@@ -237,7 +238,7 @@ static MOZ_ALWAYS_INLINE bool GetLengthPropertyInlined(JSContext* cx,
  * "08" or "4.0" as array indices, which they are not.
  *
  */
-JS_PUBLIC_API bool js::StringIsArrayIndex(JSLinearString* str,
+JS_PUBLIC_API bool js::StringIsArrayIndex(const JSLinearString* str,
                                           uint32_t* indexp) {
   if (!str->isIndex(indexp)) {
     return false;
@@ -439,7 +440,7 @@ bool js::GetElements(JSContext* cx, HandleObject aobj, uint32_t length,
   if (aobj->is<TypedArrayObject>()) {
     Handle<TypedArrayObject*> typedArray = aobj.as<TypedArrayObject>();
     if (typedArray->length().valueOr(0) == length) {
-      return TypedArrayObject::getElements(cx, typedArray, vp);
+      return TypedArrayObject::getElements(cx, typedArray, length, vp);
     }
   }
 
@@ -957,7 +958,7 @@ static SharedShape* AddLengthProperty(JSContext* cx,
                                       map, mapLength, objectFlags);
 }
 
-static bool IsArrayConstructor(const JSObject* obj) {
+bool js::IsArrayConstructor(const JSObject* obj) {
   // Note: this also returns true for cross-realm Array constructors in the
   // same compartment.
   return IsNativeFunction(obj, ArrayConstructor);
@@ -982,6 +983,11 @@ bool js::IsCrossRealmArrayConstructor(JSContext* cx, JSObject* obj,
   return true;
 }
 
+// Returns true iff we know for -sure- that it is definitely safe to use the
+// realm's array constructor.
+//
+// This function is conservative as it may return false for cases which
+// ultimately do use the array constructor.
 static MOZ_ALWAYS_INLINE bool IsArraySpecies(JSContext* cx,
                                              HandleObject origArray) {
   if (MOZ_UNLIKELY(origArray->is<ProxyObject>())) {
@@ -1145,7 +1151,7 @@ static bool array_toSource(JSContext* cx, unsigned argc, Value* vp) {
 template <typename SeparatorOp>
 static bool ArrayJoinDenseKernel(JSContext* cx, SeparatorOp sepOp,
                                  Handle<NativeObject*> obj, uint64_t length,
-                                 StringBuffer& sb, uint32_t* numProcessed) {
+                                 StringBuilder& sb, uint32_t* numProcessed) {
   // This loop handles all elements up to initializedLength. If
   // length > initLength we rely on the second loop to add the
   // other elements.
@@ -1169,11 +1175,11 @@ static bool ArrayJoinDenseKernel(JSContext* cx, SeparatorOp sepOp,
         return false;
       }
     } else if (elem.isNumber()) {
-      if (!NumberValueToStringBuffer(elem, sb)) {
+      if (!NumberValueToStringBuilder(elem, sb)) {
         return false;
       }
     } else if (elem.isBoolean()) {
-      if (!BooleanToStringBuffer(elem.toBoolean(), sb)) {
+      if (!BooleanToStringBuilder(elem.toBoolean(), sb)) {
         return false;
       }
     } else if (elem.isObject() || elem.isSymbol()) {
@@ -1207,7 +1213,7 @@ static bool ArrayJoinDenseKernel(JSContext* cx, SeparatorOp sepOp,
 
 template <typename SeparatorOp>
 static bool ArrayJoinKernel(JSContext* cx, SeparatorOp sepOp, HandleObject obj,
-                            uint64_t length, StringBuffer& sb) {
+                            uint64_t length, StringBuilder& sb) {
   // Step 6.
   uint32_t numProcessed = 0;
 
@@ -1233,7 +1239,7 @@ static bool ArrayJoinKernel(JSContext* cx, SeparatorOp sepOp, HandleObject obj,
 
       // Steps 7.c-d.
       if (!v.isNullOrUndefined()) {
-        if (!ValueToStringBuffer(cx, v, sb)) {
+        if (!ValueToStringBuilder(cx, v, sb)) {
           return false;
         }
       }
@@ -1339,7 +1345,7 @@ bool js::array_join(JSContext* cx, unsigned argc, Value* vp) {
 
   // Various optimized versions of steps 6-7.
   if (seplen == 0) {
-    auto sepOp = [](StringBuffer&) { return true; };
+    auto sepOp = [](StringBuilder&) { return true; };
     if (!ArrayJoinKernel(cx, sepOp, obj, length, sb)) {
       return false;
     }
@@ -1347,19 +1353,21 @@ bool js::array_join(JSContext* cx, unsigned argc, Value* vp) {
     char16_t c = sepstr->latin1OrTwoByteChar(0);
     if (c <= JSString::MAX_LATIN1_CHAR) {
       Latin1Char l1char = Latin1Char(c);
-      auto sepOp = [l1char](StringBuffer& sb) { return sb.append(l1char); };
+      auto sepOp = [l1char](StringBuilder& sb) { return sb.append(l1char); };
       if (!ArrayJoinKernel(cx, sepOp, obj, length, sb)) {
         return false;
       }
     } else {
-      auto sepOp = [c](StringBuffer& sb) { return sb.append(c); };
+      auto sepOp = [c](StringBuilder& sb) { return sb.append(c); };
       if (!ArrayJoinKernel(cx, sepOp, obj, length, sb)) {
         return false;
       }
     }
   } else {
     Handle<JSLinearString*> sepHandle = sepstr;
-    auto sepOp = [sepHandle](StringBuffer& sb) { return sb.append(sepHandle); };
+    auto sepOp = [sepHandle](StringBuilder& sb) {
+      return sb.append(sepHandle);
+    };
     if (!ArrayJoinKernel(cx, sepOp, obj, length, sb)) {
       return false;
     }
@@ -1724,9 +1732,9 @@ struct StringifiedElement {
 
 struct SortComparatorStringifiedElements {
   JSContext* const cx;
-  const StringBuffer& sb;
+  const StringBuilder& sb;
 
-  SortComparatorStringifiedElements(JSContext* cx, const StringBuffer& sb)
+  SortComparatorStringifiedElements(JSContext* cx, const StringBuilder& sb)
       : cx(cx), sb(sb) {}
 
   bool operator()(const StringifiedElement& a, const StringifiedElement& b,
@@ -1913,7 +1921,7 @@ static bool SortLexicographically(JSContext* cx,
                                   size_t len) {
   MOZ_ASSERT(vec.length() >= len);
 
-  StringBuffer sb(cx);
+  StringBuilder sb(cx);
   Vector<StringifiedElement, 0, TempAllocPolicy> strElements(cx);
 
   /* MergeSort uses the upper half as scratch space. */
@@ -1928,7 +1936,7 @@ static bool SortLexicographically(JSContext* cx,
       return false;
     }
 
-    if (!ValueToStringBuffer(cx, vec[i], sb)) {
+    if (!ValueToStringBuilder(cx, vec[i], sb)) {
       return false;
     }
 
@@ -2180,44 +2188,16 @@ static bool ArraySortWithoutComparator(JSContext* cx, Handle<JSObject*> obj,
   return true;
 }
 
-void ArraySortData::init(JSObject* obj, JSObject* comparator, ValueVector&& vec,
-                         uint32_t length, uint32_t denseLen) {
-  MOZ_ASSERT(!vec.empty(), "must have items to sort");
-  MOZ_ASSERT(denseLen <= length);
-
-  obj_ = obj;
-  comparator_ = comparator;
-
-  this->length = length;
-  this->denseLen = denseLen;
-  this->vec = std::move(vec);
-
-  auto getComparatorKind = [](JSContext* cx, JSObject* comparator) {
-    if (!comparator->is<JSFunction>()) {
-      return ComparatorKind::Unoptimized;
-    }
-    JSFunction* fun = &comparator->as<JSFunction>();
-    if (!fun->hasJitEntry() || fun->isClassConstructor()) {
-      return ComparatorKind::Unoptimized;
-    }
-    if (fun->realm() == cx->realm() && fun->nargs() <= ComparatorActualArgs) {
-      return ComparatorKind::JSSameRealmNoRectifier;
-    }
-    return ComparatorKind::JS;
-  };
-  comparatorKind_ = getComparatorKind(cx(), comparator);
-}
-
 // This function handles sorting without a comparator function (or with a
 // trivial comparator function that we can pattern match) by calling
 // ArraySortWithoutComparator.
 //
 // If there's a non-trivial comparator function, it initializes the
-// ArraySortData struct for ArraySortData::sortWithComparator. This function
-// must be called next to perform the sorting.
+// ArraySortData struct for ArraySortData::sortArrayWithComparator. This
+// function must be called next to perform the sorting.
 //
-// This is separate from ArraySortData::sortWithComparator because it lets the
-// compiler generate better code for ArraySortData::sortWithComparator.
+// This is separate from ArraySortData::sortArrayWithComparator because it lets
+// the compiler generate better code for ArraySortData::sortArrayWithComparator.
 //
 // https://tc39.es/ecma262/#sec-array.prototype.sort
 // 23.1.3.30 Array.prototype.sort ( comparefn )
@@ -2280,7 +2260,7 @@ static MOZ_ALWAYS_INLINE bool ArraySortPrologue(JSContext* cx,
   uint32_t len = uint32_t(length);
 
   // Merge sort requires extra scratch space.
-  bool needsScratchSpace = len >= ArraySortData::InsertionSortLimit;
+  bool needsScratchSpace = len > ArraySortData::InsertionSortMaxLength;
 
   Rooted<ArraySortData::ValueVector> vec(cx);
   if (MOZ_UNLIKELY(!vec.reserve(needsScratchSpace ? (2 * len) : len))) {
@@ -2323,13 +2303,13 @@ static MOZ_ALWAYS_INLINE bool ArraySortPrologue(JSContext* cx,
   }
   d->init(obj, &comparefn.toObject(), std::move(vec.get()), len, denseLen);
 
-  // Continue in ArraySortData::sortWithComparator.
+  // Continue in ArraySortData::sortArrayWithComparator.
   MOZ_ASSERT(!*done);
   return true;
 }
 
-static ArraySortResult CallComparatorSlow(ArraySortData* d, const Value& x,
-                                          const Value& y) {
+ArraySortResult js::CallComparatorSlow(ArraySortData* d, const Value& x,
+                                       const Value& y) {
   JSContext* cx = d->cx();
   FixedInvokeArgs<2> callArgs(cx);
   callArgs[0].set(x);
@@ -2343,230 +2323,15 @@ static ArraySortResult CallComparatorSlow(ArraySortData* d, const Value& x,
   return ArraySortResult::Done;
 }
 
-static MOZ_ALWAYS_INLINE ArraySortResult
-MaybeYieldToComparator(ArraySortData* d, const Value& x, const Value& y) {
-  // https://tc39.es/ecma262/#sec-comparearrayelements
-  // 23.1.3.30.2 CompareArrayElements ( x, y, comparefn )
-
-  // Steps 1-2.
-  if (x.isUndefined()) {
-    d->setComparatorReturnValue(Int32Value(y.isUndefined() ? 0 : 1));
-    return ArraySortResult::Done;
-  }
-
-  // Step 3.
-  if (y.isUndefined()) {
-    d->setComparatorReturnValue(Int32Value(-1));
-    return ArraySortResult::Done;
-  }
-
-  // Step 4. Yield to the JIT trampoline (or js::array_sort) if the comparator
-  // is a JS function we can call more efficiently from JIT code.
-  auto kind = d->comparatorKind();
-  if (MOZ_LIKELY(kind != ArraySortData::ComparatorKind::Unoptimized)) {
-    d->setComparatorArgs(x, y);
-    return (kind == ArraySortData::ComparatorKind::JSSameRealmNoRectifier)
-               ? ArraySortResult::CallJSSameRealmNoRectifier
-               : ArraySortResult::CallJS;
-  }
-  return CallComparatorSlow(d, x, y);
-}
-
-static MOZ_ALWAYS_INLINE bool RvalIsLessOrEqual(ArraySortData* data,
-                                                bool* lessOrEqual) {
-  // https://tc39.es/ecma262/#sec-comparearrayelements
-  // 23.1.3.30.2 CompareArrayElements ( x, y, comparefn )
-
-  // Fast path for int32 return values.
-  Value rval = data->comparatorReturnValue();
-  if (MOZ_LIKELY(rval.isInt32())) {
-    *lessOrEqual = rval.toInt32() <= 0;
-    return true;
-  }
-
-  // Step 4.a.
-  Rooted<Value> rvalRoot(data->cx(), rval);
-  double d;
-  if (MOZ_UNLIKELY(!ToNumber(data->cx(), rvalRoot, &d))) {
-    return false;
-  }
-
-  // Step 4.b-c.
-  *lessOrEqual = std::isnan(d) ? true : (d <= 0);
-  return true;
-}
-
-static void CopyValues(Value* out, const Value* list, uint32_t start,
-                       uint32_t end) {
-  for (uint32_t i = start; i <= end; i++) {
-    out[i] = list[i];
-  }
-}
-
 // static
-ArraySortResult ArraySortData::sortWithComparator(ArraySortData* d) {
-  JSContext* cx = d->cx();
-  auto& vec = d->vec;
-
-  // This function is like a generator that is called repeatedly from the JIT
-  // trampoline or js::array_sort. Resume the sorting algorithm where we left
-  // off before calling the comparator.
-  switch (d->state) {
-    case State::Initial:
-      break;
-    case State::InsertionSortCall1:
-      goto insertion_sort_call1;
-    case State::InsertionSortCall2:
-      goto insertion_sort_call2;
-    case State::MergeSortCall1:
-      goto merge_sort_call1;
-    case State::MergeSortCall2:
-      goto merge_sort_call2;
-  }
-
-  d->list = vec.begin();
-
-  // Use insertion sort for small arrays.
-  if (d->denseLen < InsertionSortLimit) {
-    for (d->i = 1; d->i < d->denseLen; d->i++) {
-      d->item = vec[d->i];
-      d->j = d->i - 1;
-      do {
-        {
-          ArraySortResult res = MaybeYieldToComparator(d, vec[d->j], d->item);
-          if (res != ArraySortResult::Done) {
-            d->state = State::InsertionSortCall1;
-            return res;
-          }
-        }
-      insertion_sort_call1:
-        bool lessOrEqual;
-        if (!RvalIsLessOrEqual(d, &lessOrEqual)) {
-          return ArraySortResult::Failure;
-        }
-        if (lessOrEqual) {
-          break;
-        }
-        vec[d->j + 1] = vec[d->j];
-      } while (d->j-- > 0);
-      vec[d->j + 1] = d->item;
-    }
-  } else {
-    static constexpr size_t InitialWindowSize = 4;
-
-    // Use insertion sort for initial ranges.
-    for (d->start = 0; d->start < d->denseLen - 1;
-         d->start += InitialWindowSize) {
-      d->end =
-          std::min<uint32_t>(d->start + InitialWindowSize - 1, d->denseLen - 1);
-      for (d->i = d->start + 1; d->i <= d->end; d->i++) {
-        d->item = vec[d->i];
-        d->j = d->i - 1;
-        do {
-          {
-            ArraySortResult res = MaybeYieldToComparator(d, vec[d->j], d->item);
-            if (res != ArraySortResult::Done) {
-              d->state = State::InsertionSortCall2;
-              return res;
-            }
-          }
-        insertion_sort_call2:
-          bool lessOrEqual;
-          if (!RvalIsLessOrEqual(d, &lessOrEqual)) {
-            return ArraySortResult::Failure;
-          }
-          if (lessOrEqual) {
-            break;
-          }
-          vec[d->j + 1] = vec[d->j];
-        } while (d->j-- > d->start);
-        vec[d->j + 1] = d->item;
-      }
-    }
-
-    // Merge sort. Set d->out to scratch space initially.
-    d->out = vec.begin() + d->denseLen;
-    for (d->windowSize = InitialWindowSize; d->windowSize < d->denseLen;
-         d->windowSize *= 2) {
-      for (d->start = 0; d->start < d->denseLen;
-           d->start += 2 * d->windowSize) {
-        // The midpoint between the two subarrays.
-        d->mid = d->start + d->windowSize - 1;
-
-        // To keep from going over the edge.
-        d->end = std::min<uint32_t>(d->start + 2 * d->windowSize - 1,
-                                    d->denseLen - 1);
-
-        // Merge comparator-sorted slices list[start..<=mid] and
-        // list[mid+1..<=end], storing the merged sequence in out[start..<=end].
-
-        // Skip lopsided runs to avoid doing useless work.
-        if (d->mid >= d->end) {
-          CopyValues(d->out, d->list, d->start, d->end);
-          continue;
-        }
-
-        // Skip calling the comparator if the sub-list is already sorted.
-        {
-          ArraySortResult res =
-              MaybeYieldToComparator(d, d->list[d->mid], d->list[d->mid + 1]);
-          if (res != ArraySortResult::Done) {
-            d->state = State::MergeSortCall1;
-            return res;
-          }
-        }
-      merge_sort_call1:
-        bool lessOrEqual;
-        if (!RvalIsLessOrEqual(d, &lessOrEqual)) {
-          return ArraySortResult::Failure;
-        }
-        if (lessOrEqual) {
-          CopyValues(d->out, d->list, d->start, d->end);
-          continue;
-        }
-
-        d->i = d->start;
-        d->j = d->mid + 1;
-        d->k = d->start;
-
-        while (d->i <= d->mid && d->j <= d->end) {
-          {
-            ArraySortResult res =
-                MaybeYieldToComparator(d, d->list[d->i], d->list[d->j]);
-            if (res != ArraySortResult::Done) {
-              d->state = State::MergeSortCall2;
-              return res;
-            }
-          }
-        merge_sort_call2:
-          bool lessOrEqual;
-          if (!RvalIsLessOrEqual(d, &lessOrEqual)) {
-            return ArraySortResult::Failure;
-          }
-          d->out[d->k++] = lessOrEqual ? d->list[d->i++] : d->list[d->j++];
-        }
-
-        // Empty out any remaining elements. Use local variables to let the
-        // compiler generate more efficient code.
-        Value* out = d->out;
-        Value* list = d->list;
-        uint32_t k = d->k;
-        uint32_t mid = d->mid;
-        uint32_t end = d->end;
-        for (uint32_t i = d->i; i <= mid; i++) {
-          out[k++] = list[i];
-        }
-        for (uint32_t j = d->j; j <= end; j++) {
-          out[k++] = list[j];
-        }
-      }
-
-      // Swap both lists.
-      std::swap(d->list, d->out);
-    }
+ArraySortResult ArraySortData::sortArrayWithComparator(ArraySortData* d) {
+  ArraySortResult result = sortWithComparatorShared<ArraySortKind::Array>(d);
+  if (result != ArraySortResult::Done) {
+    return result;
   }
 
   // Copy elements to the array.
+  JSContext* cx = d->cx();
   Rooted<JSObject*> obj(cx, d->obj_);
   if (!SetArrayElements(cx, obj, 0, d->denseLen, d->list)) {
     return ArraySortResult::Failure;
@@ -2600,9 +2365,9 @@ bool js::array_sort(JSContext* cx, unsigned argc, Value* vp) {
 
   Rooted<ArraySortData> data(cx, cx);
 
-  // On all return paths other than ArraySortWithComparatorLoop returning Done,
-  // we call freeMallocData to not fail debug assertions. This matches the JIT
-  // trampoline where we can't rely on C++ destructors.
+  // On all return paths other than ArraySortData::sortArrayWithComparator
+  // returning Done, we call freeMallocData to not fail debug assertions. This
+  // matches the JIT trampoline where we can't rely on C++ destructors.
   auto freeData =
       mozilla::MakeScopeExit([&]() { data.get().freeMallocData(); });
 
@@ -2620,7 +2385,8 @@ bool js::array_sort(JSContext* cx, unsigned argc, Value* vp) {
   Rooted<Value> rval(cx);
 
   while (true) {
-    ArraySortResult res = ArraySortData::sortWithComparator(data.address());
+    ArraySortResult res =
+        ArraySortData::sortArrayWithComparator(data.address());
     switch (res) {
       case ArraySortResult::Failure:
         return false;
@@ -2647,6 +2413,7 @@ bool js::array_sort(JSContext* cx, unsigned argc, Value* vp) {
 
 ArraySortResult js::ArraySortFromJit(JSContext* cx,
                                      jit::TrampolineNativeFrameLayout* frame) {
+  AutoJSMethodProfilerEntry pseudoFrame(cx, "Array.prototype", "sort");
   // Initialize the ArraySortData class stored in the trampoline frame.
   void* dataUninit = frame->getFrameData<ArraySortData>();
   auto* data = new (dataUninit) ArraySortData(cx);
@@ -2666,21 +2433,7 @@ ArraySortResult js::ArraySortFromJit(JSContext* cx,
     return ArraySortResult::Done;
   }
 
-  return ArraySortData::sortWithComparator(data);
-}
-
-ArraySortData::ArraySortData(JSContext* cx) : cx_(cx) {
-#ifdef DEBUG
-  cx_->liveArraySortDataInstances++;
-#endif
-}
-
-void ArraySortData::freeMallocData() {
-  vec.clearAndFree();
-#ifdef DEBUG
-  MOZ_ASSERT(cx_->liveArraySortDataInstances > 0);
-  cx_->liveArraySortDataInstances--;
-#endif
+  return ArraySortData::sortArrayWithComparator(data);
 }
 
 void ArraySortData::trace(JSTracer* trc) {
@@ -4499,6 +4252,11 @@ static bool array_of(JSContext* cx, unsigned argc, Value* vp) {
     return ArrayFromCallArgs(cx, args);
   }
 
+  if (!ReportUsageCounter(cx, nullptr, SUBCLASSING_ARRAY,
+                          SUBCLASSING_TYPE_II)) {
+    return false;
+  }
+
   // Step 4.
   RootedObject obj(cx);
   {
@@ -5361,9 +5119,11 @@ static const JSFunctionSpec array_methods[] = {
 
     JS_SELF_HOSTED_FN("toReversed", "ArrayToReversed", 0, 0),
     JS_SELF_HOSTED_FN("toSorted", "ArrayToSorted", 1, 0),
-    JS_FN("toSpliced", array_toSpliced, 2, 0), JS_FN("with", array_with, 2, 0),
+    JS_FN("toSpliced", array_toSpliced, 2, 0),
+    JS_FN("with", array_with, 2, 0),
 
-    JS_FS_END};
+    JS_FS_END,
+};
 
 static const JSFunctionSpec array_static_methods[] = {
     JS_INLINABLE_FN("isArray", array_isArray, 1, 0, ArrayIsArray),
@@ -5371,10 +5131,13 @@ static const JSFunctionSpec array_static_methods[] = {
     JS_SELF_HOSTED_FN("fromAsync", "ArrayFromAsync", 3, 0),
     JS_FN("of", array_of, 0, 0),
 
-    JS_FS_END};
+    JS_FS_END,
+};
 
 const JSPropertySpec array_static_props[] = {
-    JS_SELF_HOSTED_SYM_GET(species, "$ArraySpecies", 0), JS_PS_END};
+    JS_SELF_HOSTED_SYM_GET(species, "$ArraySpecies", 0),
+    JS_PS_END,
+};
 
 static inline bool ArrayConstructorImpl(JSContext* cx, CallArgs& args,
                                         bool isConstructor) {
@@ -5435,7 +5198,8 @@ bool js::array_construct(JSContext* cx, unsigned argc, Value* vp) {
 
 ArrayObject* js::ArrayConstructorOneArg(JSContext* cx,
                                         Handle<ArrayObject*> templateObject,
-                                        int32_t lengthInt) {
+                                        int32_t lengthInt,
+                                        gc::AllocSite* site) {
   // JIT code can call this with a template object from a different realm when
   // calling another realm's Array constructor.
   Maybe<AutoRealm> ar;
@@ -5451,7 +5215,8 @@ ArrayObject* js::ArrayConstructorOneArg(JSContext* cx,
   }
 
   uint32_t length = uint32_t(lengthInt);
-  ArrayObject* res = NewDensePartlyAllocatedArray(cx, length);
+  ArrayObject* res =
+      NewDensePartlyAllocatedArray(cx, length, GenericObject, site);
   MOZ_ASSERT_IF(res, res->realm() == templateObject->realm());
   return res;
 }
@@ -5495,7 +5260,7 @@ static MOZ_ALWAYS_INLINE ArrayObject* NewArrayWithShape(
   AutoSetNewObjectMetadata metadata(cx);
   ArrayObject* arr = ArrayObject::create(
       cx, allocKind, GetInitialHeap(newKind, &ArrayObject::class_, site), shape,
-      length, slotSpan, metadata);
+      length, slotSpan, metadata, site);
   if (!arr) {
     return nullptr;
   }
@@ -5650,12 +5415,15 @@ static const ClassSpec ArrayObjectClassSpec = {
     array_static_props,
     array_methods,
     nullptr,
-    array_proto_finish};
+    array_proto_finish,
+};
 
 const JSClass ArrayObject::class_ = {
     "Array",
     JSCLASS_HAS_CACHED_PROTO(JSProto_Array) | JSCLASS_DELAY_METADATA_BUILDER,
-    &ArrayObjectClassOps, &ArrayObjectClassSpec};
+    &ArrayObjectClassOps,
+    &ArrayObjectClassSpec,
+};
 
 ArrayObject* js::NewDenseEmptyArray(JSContext* cx) {
   return NewArray<0>(cx, 0, GenericObject);
@@ -5672,9 +5440,10 @@ ArrayObject* js::NewDenseFullyAllocatedArray(
 }
 
 ArrayObject* js::NewDensePartlyAllocatedArray(
-    JSContext* cx, uint32_t length,
-    NewObjectKind newKind /* = GenericObject */) {
-  return NewArray<ArrayObject::EagerAllocationMaxLength>(cx, length, newKind);
+    JSContext* cx, uint32_t length, NewObjectKind newKind /* = GenericObject */,
+    gc::AllocSite* site /* = nullptr */) {
+  return NewArray<ArrayObject::EagerAllocationMaxLength>(cx, length, newKind,
+                                                         site);
 }
 
 ArrayObject* js::NewDensePartlyAllocatedArrayWithProto(JSContext* cx,

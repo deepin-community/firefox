@@ -126,8 +126,7 @@ class IconHandler {
       this.#maybeQueueIdle();
     }
     return URL.createObjectURL(
-      new Blob([iconData.buffer]),
-      iconRecord.attachment.mimetype
+      new Blob([iconData.buffer], { type: iconRecord.attachment.mimetype })
     );
   }
 
@@ -175,8 +174,9 @@ class IconHandler {
         await engine.maybeUpdateIconURL(
           record.engineIdentifiers,
           URL.createObjectURL(
-            new Blob([iconData.buffer]),
-            record.attachment.mimetype
+            new Blob([iconData.buffer], {
+              type: record.attachment.mimetype,
+            })
           )
         );
       }
@@ -299,21 +299,11 @@ export class AppProvidedSearchEngine extends SearchEngine {
    *   The saved settings for the user.
    */
   constructor({ config, settings }) {
-    // TODO Bug 1875912 - Remove the webextension.id and webextension.locale when
-    // we're ready to remove old search-config and use search-config-v2 for all
-    // clients. The id in appProvidedSearchEngine should be changed to
-    // engine.identifier.
-    let extensionId = config.webExtension.id;
-    let id = config.webExtension.id + config.webExtension.locale;
-
     super({
-      loadPath: "[app]" + extensionId,
+      loadPath: "[app]" + config.identifier,
       isAppProvided: true,
-      id,
+      id: config.identifier,
     });
-
-    this._extensionID = extensionId;
-    this._locale = config.webExtension.locale;
 
     this.#configurationId = config.identifier;
     this.#init(config);
@@ -346,28 +336,6 @@ export class AppProvidedSearchEngine extends SearchEngine {
     this._urls = [];
     this.#init(configuration);
     lazy.SearchUtils.notifyAction(this, lazy.SearchUtils.MODIFIED_TYPE.CHANGED);
-  }
-
-  /**
-   * This will update the application provided search engine if there is no
-   * name change.
-   *
-   * @param {object} options
-   *   The options object.
-   * @param {object} [options.configuration]
-   *   The search engine configuration for application provided engines.
-   * @param {string} [options.locale]
-   *   The locale to use for getting details of the search engine.
-   * @returns {boolean}
-   *   Returns true if the engine was updated, false otherwise.
-   */
-  async updateIfNoNameChange({ configuration, locale }) {
-    if (this.name != configuration.name.trim()) {
-      return false;
-    }
-
-    this.update({ locale, configuration });
-    return true;
   }
 
   /**
@@ -453,7 +421,10 @@ export class AppProvidedSearchEngine extends SearchEngine {
       this.#blobURLPromise = null;
     }
     this.#blobURLPromise = Promise.resolve(blobURL);
-    lazy.SearchUtils.notifyAction(this, lazy.SearchUtils.MODIFIED_TYPE.CHANGED);
+    lazy.SearchUtils.notifyAction(
+      this,
+      lazy.SearchUtils.MODIFIED_TYPE.ICON_CHANGED
+    );
   }
 
   /**
@@ -491,6 +462,10 @@ export class AppProvidedSearchEngine extends SearchEngine {
 
     if (engineConfig.telemetrySuffix) {
       this._telemetryId += `-${engineConfig.telemetrySuffix}`;
+    }
+
+    if (engineConfig.clickUrl) {
+      this.clickUrl = engineConfig.clickUrl;
     }
 
     this._name = engineConfig.name.trim();

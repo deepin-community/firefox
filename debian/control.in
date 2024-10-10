@@ -17,14 +17,14 @@ Build-Depends: autotools-dev,
                zlib1g-dev,
 %endif
                libreadline-dev,
-               python3 (>= 3.6),
+               python3 (>= 3.8),
                dpkg-dev,
 %if USE_SYSTEM_NSPR
 %define NSPR_VERSION 4.32
                libnspr4-dev (>= 2:@NSPR_VERSION@~),
 %endif
 %if USE_SYSTEM_NSS
-%define NSS_VERSION 3.99
+%define NSS_VERSION 3.104
                libnss3-dev (>= 2:@NSS_VERSION@~),
 %endif
 %if USE_SYSTEM_VPX
@@ -41,25 +41,31 @@ Build-Depends: autotools-dev,
                libasound2-dev,
                yasm,
                nasm (>= 2.14) [amd64 i386],
-%if DIST == bookworm || DIST == bullseye || DIST == buster
-               rustc-mozilla (>= 1.70),
-%else
-               rustc (>= 1.70),
+%if DIST == bookworm
+               g++-11,
 %endif
-%if DIST == bullseye || DIST == buster
-               cargo-mozilla (>= 0.66),
+%define RUST_VERSION 1.76
+%if DIST == bookworm || DIST == bullseye
+               rustc-web (>= @RUST_VERSION@),
+               cargo-web (>= @RUST_VERSION@),
 %else
-               cargo (>= 0.66),
+               rustc (>= @RUST_VERSION@),
+               cargo (>= @RUST_VERSION@),
 %endif
                llvm-dev,
                libclang-dev,
                clang,
-%if DIST != bullseye && DIST != buster
+%if DIST != bullseye
                libc++-dev-wasm32,
                libclang-rt-dev-wasm32,
                lld,
 %endif
-               cbindgen (>= 0.26.0),
+%define CBINDGEN_VERSION 0.26.0
+%if DIST == bookworm || DIST == bullseye
+               cbindgen-web (>= @CBINDGEN_VERSION@),
+%else
+               cbindgen (>= @CBINDGEN_VERSION@),
+%endif
                nodejs (>= 12.22.1),
                zip,
                unzip,
@@ -98,9 +104,6 @@ Suggests: fonts-stix | otf-stix,
           libgssapi-krb5-2 | libkrb53,
           libcanberra0,
           pulseaudio
-%if TRANSITION
-Conflicts: iceweasel (<< 45)
-%endif
 Breaks: xul-ext-torbutton
 Provides: www-browser,
           gnome-www-browser
@@ -116,39 +119,14 @@ Provides: www-browser,
 Description: @DESCRIPTION@
  @LONGDESC1@
  @LONGDESC2@
-%if TRANSITION
-
-Package: iceweasel
-Architecture: all
-Priority: extra
-Section: oldlibs
-Depends: @browser@, ${misc:Depends}
-Description: Web browser based on Firefox - Transitional package
- This is a transitional package, it can be safely removed.
-%endif
 
 Package: @browser@-l10n-all
 Architecture: all
 Section: metapackages
 Depends: ${misc:Depends}, @L10N_PACKAGES_DEPS@
-%if TRANSITION
-Breaks: iceweasel-l10n-all (<< 45)
-Replaces: iceweasel-l10n-all (<< 45)
-Provides: iceweasel-l10n-all
-%endif
 Description: All language packages for @Browser@ (meta)
  @LONGDESC1@
  @LONGDESC2@
  .
  This is a metapackage depending on all available localizations of @Browser@.
-%if TRANSITION
-
-Package: iceweasel-l10n-all
-Architecture: all
-Priority: extra
-Section: oldlibs
-Depends: @browser@-l10n-all, ${misc:Depends}
-Description: All language packages for Iceweasel - Transitional package
- This is a transitional package, it can be safely removed.
-%endif
 %include l10n/browser-l10n.control

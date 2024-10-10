@@ -7,7 +7,7 @@ print-setup =
 custom-prompt-title = Prilagođeno …
 custom-prompt-prompt = Upiši tvoj standardni tekst zaglavlja/podnožja
 basic-tab =
-    .label = Format i opcije
+    .label = Oblikovanja i mogućnosti
 advanced-tab =
     .label = Margine i zaglavlje/podnožje
 format-group-label =
@@ -103,7 +103,6 @@ print-window =
     .title = Ispisivanje
 print-complete =
     .value = Ispisivanje je dovršeno.
-
 # Variables
 # $percent (integer) - Number of printed percentage
 print-percent =

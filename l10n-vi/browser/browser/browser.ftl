@@ -543,6 +543,10 @@ urlbar-go-button =
     .tooltiptext = Mở trang trong thanh địa chỉ
 urlbar-page-action-button =
     .tooltiptext = Hành động trên trang
+urlbar-revert-button =
+    .tooltiptext = Hiển thị địa chỉ trong thanh địa chỉ
+urlbar-show-page-actions-button =
+    .tooltiptext = Hiển thị tất cả các hành động trên trang
 
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
@@ -633,6 +637,21 @@ urlbar-group-quickactions =
 #  $engine (String): the name of the search engine used to search.
 urlbar-group-recent-searches =
     .label = Tìm kiếm gần đây
+# The header shown above trending results.
+# Variables:
+#  $engine (String): the name of the search engine providing the trending suggestions
+urlbar-group-trending =
+    .label = Đang thịnh hành trên { $engine }
+# The result menu labels shown next to trending results.
+urlbar-result-menu-trending-dont-show =
+    .label = Không hiển thị các tìm kiếm thịnh hành
+    .accesskey = K
+urlbar-result-menu-trending-why =
+    .label = Tại sao tôi thấy cái này?
+    .accesskey = T
+# A message that replaces a result when the user dismisses all suggestions of a
+# particular type.
+urlbar-trending-dismissal-acknowledgment = Cảm ơn phản hồi của bạn. Bạn sẽ không thấy các tìm kiếm thịnh hành nữa.
 
 ## Reader View toolbar buttons
 
@@ -983,6 +1002,10 @@ firefox-relay-offer-legal-notice = Bằng cách nhấp vào “Sử dụng mặt
 popup-notification-addon-install-unsigned =
     .value = (Chưa xác thực)
 popup-notification-xpinstall-prompt-learn-more = Tìm hiểu thêm về cách cài đặt tiện ích một cách an toàn
+# Note: Access key is set to P to match "Private" in the corresponding localized label.
+popup-notification-addon-privatebrowsing-checkbox =
+    .label = Chạy trong cửa sổ riêng tư
+    .accesskey = P
 
 ## Pop-up warning
 
@@ -1008,3 +1031,24 @@ popup-warning-button =
 #   $popupURI (String): the URI for the pop-up window
 popup-show-popup-menuitem =
     .label = Hiển thị '{ $popupURI }'
+
+## File-picker crash notification ("FilePickerCrashed.sys.mjs")
+
+file-picker-failed-open = Không thể mở hộp thoại tập tin Windows. Không thể chọn tập tin hoặc thư mục.
+#   $path (string): The full path to which the file will be saved (e.g., 'C:\Users\Default User\Downloads\readme.txt').
+file-picker-failed-save-somewhere = Không thể mở hộp thoại tập tin Windows. Tập tin sẽ được lưu vào { $path }.
+file-picker-failed-save-nowhere = Không thể mở hộp thoại tập tin Windows. Không tìm thấy thư mục mặc định; tập tin sẽ không được lưu.
+file-picker-crashed-open = Không thể mở hộp thoại tập tin Windows. Không thể chọn tập tin hoặc thư mục.
+#   $path (string): The full path to which the file will be saved (e.g., 'C:\Users\Default User\Downloads\readme.txt').
+file-picker-crashed-save-somewhere = Hộp thoại tập tin Windows đã bị lỗi. Tập tin sẽ được lưu vào { $path }.
+file-picker-crashed-save-nowhere = Hộp thoại tập tin Windows đã bị lỗi. Không tìm thấy thư mục mặc định; tập tin sẽ không được lưu.
+
+# Button used with file-picker-crashed-save-default. Opens the folder in Windows
+# Explorer, with the saved file selected and in focus.
+#
+# The wording here should be consistent with the Windows variant of
+# `downloads-cmd-show-menuitem-2` and similar messages.
+
+file-picker-crashed-show-in-folder =
+    .label = Hiển thị trong thư mục
+    .accessKey = F

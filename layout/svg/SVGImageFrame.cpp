@@ -170,9 +170,9 @@ void SVGImageFrame::DidSetComputedStyle(ComputedStyle* aOldStyle) {
   // TODO(heycam): We should handle aspect-ratio, like nsImageFrame does.
 }
 
-bool SVGImageFrame::IsSVGTransformed(gfx::Matrix* aOwnTransform,
-                                     gfx::Matrix* aFromParentTransform) const {
-  return SVGUtils::IsSVGTransformed(this, aOwnTransform, aFromParentTransform);
+bool SVGImageFrame::DoGetParentSVGTransforms(
+    gfx::Matrix* aFromParentTransform) const {
+  return SVGUtils::GetParentSVGTransforms(this, aFromParentTransform);
 }
 
 //----------------------------------------------------------------------
@@ -188,6 +188,17 @@ nsresult SVGImageFrame::AttributeChanged(int32_t aNameSpaceID,
       // recomposite.
       InvalidateFrame();
       return NS_OK;
+    }
+  }
+  if (aModType == dom::MutationEvent_Binding::REMOVAL &&
+      (aNameSpaceID == kNameSpaceID_None ||
+       aNameSpaceID == kNameSpaceID_XLink) &&
+      aAttribute == nsGkAtoms::href) {
+    auto* element = static_cast<SVGImageElement*>(GetContent());
+    if (aNameSpaceID == kNameSpaceID_None ||
+        !element->mStringAttributes[SVGImageElement::HREF].IsExplicitlySet()) {
+      mImageContainer = nullptr;
+      InvalidateFrame();
     }
   }
 
@@ -404,7 +415,7 @@ void SVGImageFrame::BuildDisplayList(nsDisplayListBuilder* aBuilder,
     if (!IsVisibleForPainting()) {
       return;
     }
-    if (StyleEffects()->IsTransparent()) {
+    if (StyleEffects()->IsTransparent() && SVGUtils::CanOptimizeOpacity(this)) {
       return;
     }
     aBuilder->BuildCompositorHitTestInfoIfNeeded(this,
@@ -423,7 +434,8 @@ bool SVGImageFrame::IsInvisible() const {
   // Anything below will round to zero later down the pipeline.
   constexpr float opacity_threshold = 1.0 / 128.0;
 
-  return StyleEffects()->mOpacity <= opacity_threshold;
+  return StyleEffects()->mOpacity <= opacity_threshold &&
+         SVGUtils::CanOptimizeOpacity(this);
 }
 
 bool SVGImageFrame::CreateWebRenderCommands(

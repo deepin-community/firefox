@@ -70,6 +70,19 @@ impl VisitedHandlingMode {
     }
 }
 
+/// The mode to use whether we should matching rules inside @starting-style.
+/// https://drafts.csswg.org/css-transitions-2/#starting-style
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum IncludeStartingStyle {
+    /// All without rules inside @starting-style. This is for the most common case because the
+    /// primary/pseudo styles doesn't use rules inside @starting-style.
+    No,
+    /// Get the starting style. The starting style for an element as the after-change style with
+    /// @starting-style rules applied in addition. In other words, this matches all rules,
+    /// including rules inside @starting-style.
+    Yes,
+}
+
 /// Whether we need to set selector invalidation flags on elements for this
 /// match request.
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -116,40 +129,6 @@ impl QuirksMode {
     }
 }
 
-/// Whether or not this matching considered relative selector.
-#[derive(Clone, Copy, Debug, PartialEq)]
-pub enum RelativeSelectorMatchingState {
-    /// Was not considered for any relative selector.
-    None,
-    /// Relative selector was considered for a match, but the element to be
-    /// under matching would not anchor the relative selector. i.e. The
-    /// relative selector was not part of the first compound selector (in match
-    /// order).
-    Considered,
-    /// Same as above, but the relative selector was part of the first compound
-    /// selector (in match order).
-    ConsideredAnchor,
-}
-
-impl RelativeSelectorMatchingState {
-    /// Update the matching state to indicate that the relative selector matching
-    /// happened in the subject position.
-    pub fn considered_anchor(&mut self) {
-        *self = Self::ConsideredAnchor;
-    }
-
-    /// Update the matching state to indicate that the relative selector matching
-    /// happened in a non-subject position.
-    pub fn considered(&mut self) {
-        // Being considered an anchor is stronger (e.g. `:has(.a):is(:has(.b) .c)`).
-        if *self == Self::ConsideredAnchor {
-            *self = Self::ConsideredAnchor;
-        } else {
-            *self = Self::Considered;
-        }
-    }
-}
-
 /// Set of caches (And cache-likes) that speed up expensive selector matches.
 #[derive(Default)]
 pub struct SelectorCaches {
@@ -191,6 +170,12 @@ where
     /// Controls how matching for links is handled.
     visited_handling: VisitedHandlingMode,
 
+    /// Controls if we should match rules in @starting-style.
+    pub include_starting_style: IncludeStartingStyle,
+
+    /// Whether there are any rules inside @starting-style.
+    pub has_starting_style: bool,
+
     /// The current nesting level of selectors that we're matching.
     nesting_level: usize,
 
@@ -206,7 +191,6 @@ where
 
     /// The current element we're anchoring on for evaluating the relative selector.
     current_relative_selector_anchor: Option<OpaqueElement>,
-    pub considered_relative_selector: RelativeSelectorMatchingState,
 
     quirks_mode: QuirksMode,
     needs_selector_flags: NeedsSelectorFlags,
@@ -239,6 +223,7 @@ where
             bloom_filter,
             selector_caches,
             VisitedHandlingMode::AllLinksUnvisited,
+            IncludeStartingStyle::No,
             quirks_mode,
             needs_selector_flags,
             matching_for_invalidation,
@@ -251,6 +236,7 @@ where
         bloom_filter: Option<&'a BloomFilter>,
         selector_caches: &'a mut SelectorCaches,
         visited_handling: VisitedHandlingMode,
+        include_starting_style: IncludeStartingStyle,
         quirks_mode: QuirksMode,
         needs_selector_flags: NeedsSelectorFlags,
         matching_for_invalidation: MatchingForInvalidation,
@@ -259,6 +245,8 @@ where
             matching_mode,
             bloom_filter,
             visited_handling,
+            include_starting_style,
+            has_starting_style: false,
             quirks_mode,
             classes_and_ids_case_sensitivity: quirks_mode.classes_and_ids_case_sensitivity(),
             needs_selector_flags,
@@ -270,7 +258,6 @@ where
             pseudo_element_matching_fn: None,
             extra_data: Default::default(),
             current_relative_selector_anchor: None,
-            considered_relative_selector: RelativeSelectorMatchingState::None,
             selector_caches,
             _impl: ::std::marker::PhantomData,
         }
@@ -439,6 +426,35 @@ where
         self.current_relative_selector_anchor = Some(anchor);
         let result = self.nest(f);
         self.current_relative_selector_anchor = None;
+        result
+    }
+
+    /// Runs F with a deeper nesting level, with the given element as the scope.
+    #[inline]
+    pub fn nest_for_scope<F, R>(&mut self, scope: Option<OpaqueElement>, f: F) -> R
+    where
+        F: FnOnce(&mut Self) -> R,
+    {
+        let original_scope_element = self.scope_element;
+        self.scope_element = scope;
+        let result = f(self);
+        self.scope_element = original_scope_element;
+        result
+    }
+
+    /// Runs F with a deeper nesting level, with the given element as the scope, for
+    /// matching `scope-start` and/or `scope-end` conditions.
+    #[inline]
+    pub fn nest_for_scope_condition<F, R>(&mut self, scope: Option<OpaqueElement>, f: F) -> R
+    where
+        F: FnOnce(&mut Self) -> R,
+    {
+        let original_matching_mode = self.matching_mode;
+        // We may as well be matching for a pseudo-element inside `@scope`, but
+        // the scope-defining selectors wouldn't be matching them.
+        self.matching_mode = MatchingMode::Normal;
+        let result = self.nest_for_scope(scope, f);
+        self.matching_mode = original_matching_mode;
         result
     }
 

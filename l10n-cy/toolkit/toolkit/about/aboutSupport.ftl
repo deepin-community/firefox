@@ -364,6 +364,9 @@ has-seccomp-bpf = Seccomp-BPF (Hidlo Galw System)
 has-seccomp-tsync = Cydweddiad Edafedd Seccomp
 has-user-namespaces = Bylchau Enwau Defnyddiwr
 has-privileged-user-namespaces = Bylchau Enw Defnyddiwr fel prosesau breintiedig
+# Variables
+# $status (string) - Boolean value of hasUserNamespaces (should only be false when support-user-namespaces-unavailable is used)
+support-user-namespaces-unavailable = { $status } — Nid yw eich system yn caniatáu'r nodwedd hon. Gall hyn gyfyngu ar nodweddion diogelwch { -brand-short-name }.
 can-sandbox-content = Blwch Tywod Proses Cynnwys
 can-sandbox-media = Blwch Tywod Ategyn Cyfrwng
 content-sandbox-level = Lefel Blwch Tywod Proses Cynnwys
@@ -431,6 +434,20 @@ support-printing-clear-settings-button = Clirio gosodiadau argraffu wedi'u cadw
 support-printing-modified-settings = Gosodiadau argraffu wedi'u haddasu
 support-printing-prefs-name = Enw
 support-printing-prefs-value = Gwerth
+
+## Remote Settings sections
+
+support-remote-settings-title = Gosodiadau Pell
+support-remote-settings-status = Statws
+support-remote-settings-status-ok = Iawn
+# Status when synchronization is not working.
+support-remote-settings-status-broken = Ddim yn gweithio
+support-remote-settings-last-check = Gwiriad olaf
+support-remote-settings-local-timestamp = Stamp amser lleol
+support-remote-settings-sync-history = Hanes
+support-remote-settings-sync-history-status = Statws
+support-remote-settings-sync-history-datetime = Dyddiad
+support-remote-settings-sync-history-infos = Gwybodaeth
 
 ## Normandy sections
 

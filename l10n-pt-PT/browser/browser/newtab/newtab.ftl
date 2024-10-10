@@ -200,6 +200,8 @@ newtab-section-header-recent-activity = Atividade recente
 #   $provider (string) - Name of the corresponding content provider.
 newtab-section-header-pocket = Recomendado por { $provider }
 newtab-section-header-stories = Histórias que fazem pensar
+# "picks" refers to recommended articles
+newtab-section-header-todays-picks = Escolhas de hoje para si
 
 ## Empty Section States: These show when there are no more items in a section. Ex. When there are no more Pocket story recommendations, in the space where there would have been stories, this is shown instead.
 
@@ -234,6 +236,19 @@ newtab-pocket-pocket-firefox-family = O { -pocket-brand-name } faz parte da fam�
 newtab-pocket-save = Guardar
 newtab-pocket-saved = Guardado
 
+## Thumbs up and down buttons that shows over a newtab stories card thumbnail on hover.
+
+# Clicking the thumbs up button for this story will result in more stories like this one being recommended
+newtab-pocket-thumbs-up-tooltip =
+    .title = Mais assim
+# Clicking the thumbs down button for this story informs us that the user does not feel like the story is interesting for them
+newtab-pocket-thumbs-down-tooltip =
+    .title = Não é para mim
+newtab-toast-thumbs-up-or-down = Obrigado. O seu comentário irá ajudar-nos a melhorar a sua fonte.
+newtab-toast-dismiss-button =
+    .title = Ignorar
+    .aria-label = Ignorar
+
 ## Pocket content onboarding experience dialog and modal for new users seeing the Pocket section for the first time, shown as the first item in the Pocket section.
 
 newtab-pocket-onboarding-discover = Conheça o melhor da Internet
@@ -262,9 +277,6 @@ newtab-custom-row-selector =
 newtab-custom-sponsored-sites = Atalhos patrocinados
 newtab-custom-pocket-title = Recomendado por { -pocket-brand-name }
 newtab-custom-pocket-subtitle = Conteúdo excecional com curadoria de { -pocket-brand-name }, parte da família { -brand-product-name }
-newtab-custom-pocket-toggle =
-    .label = Recomendado por { -pocket-brand-name }
-    .description = Conteúdo excecional com curadoria de { -pocket-brand-name }, parte da família { -brand-product-name }
 newtab-custom-stories-toggle =
     .label = Histórias recomendadas
     .description = Conteúdo excepcional com curadoria da família { -brand-product-name }
@@ -275,5 +287,147 @@ newtab-custom-recent-subtitle = Uma seleção de sites e conteúdos recentes
 newtab-custom-recent-toggle =
     .label = Atividade recente
     .description = Uma seleção de sites e conteúdos recentes
+newtab-custom-weather-toggle =
+    .label = Meteorologia
+    .description = Visão geral da meteorologia para hoje
 newtab-custom-close-button = Fechar
 newtab-custom-settings = Gerir mais definições
+
+## New Tab Wallpapers
+
+newtab-wallpaper-title = Fundos
+newtab-wallpaper-reset = Repor predefinições
+newtab-wallpaper-light-red-panda = Panda vermelho
+newtab-wallpaper-light-mountain = Montanha Branca
+newtab-wallpaper-light-sky = Céu com nuvens cor-de-rosa e roxas.
+newtab-wallpaper-light-color = Formas azuis, cor-de-rosa e amarelas.
+newtab-wallpaper-light-landscape = Paisagem montanhosa envolta em névoa azul.
+newtab-wallpaper-light-beach = Praia com uma palmeira
+newtab-wallpaper-dark-aurora = Aurora Boreal
+newtab-wallpaper-dark-color = Formas em vermelho e azul
+newtab-wallpaper-dark-panda = Panda-vermelho escondido na floresta
+newtab-wallpaper-dark-sky = Paisagem da cidade com um pôr do sol
+newtab-wallpaper-dark-mountain = Paisagem montanhosa
+newtab-wallpaper-dark-city = Paisagem urbana em tons de roxo
+
+## Solid Colors
+
+newtab-wallpaper-category-title-colors = Cores sólidas
+newtab-wallpaper-blue = Azul
+newtab-wallpaper-light-blue = Azul claro
+newtab-wallpaper-light-purple = Roxo claro
+newtab-wallpaper-light-green = Verde claro
+newtab-wallpaper-green = Verde
+newtab-wallpaper-beige = Bege
+newtab-wallpaper-yellow = Amarelo
+newtab-wallpaper-orange = Laranja
+newtab-wallpaper-pink = Rosa
+newtab-wallpaper-light-pink = Rosa claro
+newtab-wallpaper-red = Vermelho
+newtab-wallpaper-dark-blue = Azul escuro
+newtab-wallpaper-dark-purple = Roxo escuro
+newtab-wallpaper-dark-green = Verde escuro
+newtab-wallpaper-brown = Castanho
+
+## Abstract
+
+newtab-wallpaper-category-title-abstract = Abstrato
+newtab-wallpaper-abstract-green = Formas verdes
+newtab-wallpaper-abstract-blue = Formas azuis
+newtab-wallpaper-abstract-purple = Formas roxas
+newtab-wallpaper-abstract-orange = Formas alaranjadas
+newtab-wallpaper-gradient-orange = Gradiente laranja e rosa
+newtab-wallpaper-abstract-blue-purple = Formas azuis e roxas
+
+## Photographs
+
+newtab-wallpaper-category-title-photographs = Fotografias
+newtab-wallpaper-beach-at-sunrise = Praia ao nascer do sol
+newtab-wallpaper-beach-at-sunset = Praia ao pôr do sol
+newtab-wallpaper-storm-sky = Céu tempestuoso
+newtab-wallpaper-sky-with-pink-clouds = Céu com nuvens rosa.
+newtab-wallpaper-red-panda-yawns-in-a-tree = Panda vermelho boceja numa árvore
+newtab-wallpaper-white-mountains = Montanhas brancas
+# Variables
+#   $author_string (String) - The name of the creator of the photo.
+#   $webpage_string (String) - The name of the webpage where the photo is located.
+newtab-wallpaper-attribution = Fotografia de <a data-l10n-name="name-link">{ $author_string }</a> em <a data-l10n-name="webpage-link">{ $webpage_string }</a>
+newtab-wallpaper-feature-highlight-header = Experimente um toque de cor
+newtab-wallpaper-feature-highlight-content = Dê um novo visual ao seu novo separador com fundos.
+newtab-wallpaper-feature-highlight-button = Percebi
+# Tooltip for dismiss button
+feature-highlight-dismiss-button =
+    .title = Dispensar
+    .aria-label = Fechar popup
+feature-highlight-wallpaper =
+    .title = { -newtab-wallpaper-feature-highlight-header }
+    .aria-label = { -newtab-wallpaper-feature-highlight-content }
+
+## New Tab Weather
+
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-see-forecast =
+    .title = Ver a previsão em { $provider }
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-sponsored = { $provider } · Patrocinado
+newtab-weather-menu-change-location = Alterar localização
+newtab-weather-change-location-search-input = Pesquisar localização
+newtab-weather-menu-weather-display = Apresentação da meteorologia
+# Display options are:
+# - Simple: Displays a current weather condition icon and the current temperature
+# - Detailed: Include simple information plus a short text summary: e.g. "Mostly cloudy"
+newtab-weather-menu-weather-display-option-simple = Simples
+newtab-weather-menu-change-weather-display-simple = Alterar para a vista simples
+newtab-weather-menu-weather-display-option-detailed = Detalhada
+newtab-weather-menu-change-weather-display-detailed = Alterar para a vista detalhada
+newtab-weather-menu-temperature-units = Unidades de temperatura
+newtab-weather-menu-temperature-option-fahrenheit = Fahrenheit
+newtab-weather-menu-temperature-option-celsius = Celsius
+newtab-weather-menu-change-temperature-units-fahrenheit = Alterar para Fahrenheit
+newtab-weather-menu-change-temperature-units-celsius = Alterar para Celsius
+newtab-weather-menu-hide-weather = Ocultar a meteorologia no novo separador
+newtab-weather-menu-learn-more = Saber mais
+# This message is shown if user is working offline
+newtab-weather-error-not-available = Atualmente não estão disponíveis informações de meteorologia.
+
+## Topic Labels
+
+newtab-topic-label-business = Negócios
+newtab-topic-label-career = Carreiras
+newtab-topic-label-education = Educação
+newtab-topic-label-arts = Entretenimento
+newtab-topic-label-food = Comida
+newtab-topic-label-health = Saúde
+newtab-topic-label-hobbies = Jogos
+# ”Money” = “Personal Finance”, refers to articles and stories that help readers better manage
+# and understand their personal finances – from saving money to buying a home. See the
+# “Curated by our editors“ section at the top of https://getpocket.com/explore/personal-finance for more context
+newtab-topic-label-finance = Dinheiro
+newtab-topic-label-society-parenting = Parentalidade
+newtab-topic-label-government = Política
+newtab-topic-label-education-science = Ciência
+# ”Life Hacks” = “Self Improvement”, refers to articles and stories aimed at helping readers improve various
+# aspects of their lives – from mental health to  productivity. See the “Curated by our editors“ section
+# at the top of https://getpocket.com/explore/self-improvement for more context.
+newtab-topic-label-society = Dicas
+newtab-topic-label-sports = Desporto
+newtab-topic-label-tech = Tecnologia
+newtab-topic-label-travel = Viagens
+newtab-topic-label-home = Casa e jardim
+
+## Topic Selection Modal
+
+# “fine-tune” refers to the process of making small adjustments to something to get
+# the best or desired experience or performance.
+newtab-topic-selection-title = Escolha os temas para personalizar a seu feed.
+# “tailored” refers to process of (a tailor) making (clothes) to fit individual customers.
+# In other words, “Our expert curators prioritize stories to fit your selected interests”
+newtab-topic-selection-subtitle = Escolha dois ou mais temas. Os nossos curadores especializados priorizam histórias adaptadas aos seus interesses. Atualize a qualquer momento.
+newtab-topic-selection-save-button = Guardar
+newtab-topic-selection-cancel-button = Cancelar
+newtab-topic-selection-button-maybe-later = Talvez mais tarde
+newtab-topic-selection-privacy-link = Descubra como protegemos e gerimos os seus dados
+newtab-topic-selection-button-update-interests = Atualize os seus interesses
+newtab-topic-selection-button-pick-interests = Escolha os seus interesses

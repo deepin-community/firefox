@@ -57,6 +57,10 @@ category-experimental =
 pane-experimental-subtitle = Dikkatli olun
 pane-experimental-search-results-header = { -brand-short-name } deneyleri: dikkatli olun
 pane-experimental-description2 = Gelişmiş yapılandırma ayarlarını değiştirmek { -brand-short-name } performansını veya güvenliğini etkileyebilir.
+settings-pane-labs-title = { -firefoxlabs-brand-name }
+settings-category-labs =
+    .tooltiptext = { -firefoxlabs-brand-name }
+pane-experimental-description3 = Deneysel özelliklerimizi deneyin! Bu özellikler sürekli geliştikleri ve değiştikleri için { -brand-short-name } tarayıcınızın çalışma şeklini etkileyebilirler.
 pane-experimental-reset =
     .label = Varsayılanları geri yükle
     .accesskey = V
@@ -490,7 +494,7 @@ browsing-use-full-keyboard-navigation =
     .label = Form düğmeleri ile bağlantılar arasında geçiş yapmak için sekme tuşunu kullanabilirsiniz
     .accesskey = F
 browsing-search-on-start-typing =
-    .label = Yazmaya başlar başlamaz arama yap
+    .label = Yazmaya başladığımda metin araması yap
     .accesskey = z
 browsing-picture-in-picture-toggle-enabled =
     .label = Görüntü içinde görüntü video düğmelerini etkinleştir
@@ -599,6 +603,10 @@ home-prefs-recent-activity-description = Son kullanılan siteler ve içeriklerde
 home-prefs-snippets-header =
     .label = Duyurular
 home-prefs-snippets-description-new = { -vendor-short-name } ve { -brand-product-name }’tan ipuçları ve haberler
+home-prefs-weather-header =
+    .label = Hava durumu
+home-prefs-weather-description = Bugünkü hava durumu tahmini
+home-prefs-weather-learn-more-link = Daha fazla bilgi al
 # Variables:
 #   $num (number) - Number of rows displayed
 home-prefs-sections-rows-option =
@@ -912,6 +920,9 @@ forms-saved-passwords =
 forms-primary-pw-use =
     .label = Ana parola kullan
     .accesskey = n
+# This operation requires the user to authenticate with the operating system (device sign-in)
+forms-os-reauth =
+    .label = Parolaları doldurmak ve yönetmek için cihazdan giriş yapmayı zorunlu tut
 forms-primary-pw-learn-more-link = Daha fazla bilgi al
 # This string uses the former name of the Primary Password feature
 # ("Master Password" in English) so that the preferences can be found
@@ -944,6 +955,13 @@ primary-password-os-auth-dialog-message-win = Ana parola oluşturmak için Windo
 # notes are only valid for English. Please test in your locale.
 primary-password-os-auth-dialog-message-macosx = ana parola oluşturma
 master-password-os-auth-dialog-caption = { -brand-full-name }
+# The macOS string is preceded by the operating system with "Firefox is trying to ".
+autofill-creditcard-os-dialog-message =
+    { PLATFORM() ->
+        [macos] ödeme yöntemi ayarlarını değiştirme
+       *[other] { -brand-short-name }, ödeme yöntemi ayarlarını değiştirmeye çalışıyor. Buna izin vermek için cihazınızdan giriş yapın.
+    }
+autofill-creditcard-os-auth-dialog-caption = { -brand-full-name }
 
 ## Privacy section - Autofill
 
@@ -958,14 +976,9 @@ autofill-payment-methods-checkbox-submessage = Kredi ve banka kartları dahil
     .accesskey = K
 autofill-saved-payment-methods-button = Kayıtlı ödeme yöntemleri
     .accesskey = ö
-autofill-reauth-checkbox =
-    { PLATFORM() ->
-        [macos] Ödeme yöntemlerini doldurmak ve düzenlemek için macOS kimlik doğrulaması iste.
-        [windows] Ödeme yöntemlerini doldurmak ve düzenlemek için Windows kimlik doğrulaması iste.
-        [linux] Ödeme yöntemlerini doldurmak ve düzenlemek için Linux kimlik doğrulaması iste.
-       *[other] Ödeme yöntemlerini doldurmak ve düzenlemek için kimlik doğrulaması iste.
-    }
-    .accesskey = o
+# This operation requires the user to authenticate with the operating system (device sign-in)
+autofill-reauth-payment-methods-checkbox = Ödeme yöntemlerini doldurmak ve yönetmek için cihazdan giriş yapmayı zorunlu tut
+    .accesskey = Ö
 
 ## Privacy Section - History
 
@@ -1043,7 +1056,7 @@ sitedata-option-block-unvisited =
 sitedata-option-block-all-cross-site-cookies =
     .label = Tüm siteler arası çerezler (Bazı siteler düzgün çalışmayabilir)
 sitedata-option-block-all =
-    .label = Tüm çerezler (Bazı siteler bozulabilir.)
+    .label = Tüm çerezler (Birçok site düzgün çalışmayabilir)
 sitedata-clear =
     .label = Verileri temizle…
     .accesskey = l
@@ -1102,6 +1115,9 @@ addressbar-suggestions-settings = Arama motoru önerileri için tercihleri deği
 addressbar-locbar-showrecentsearches-option =
     .label = Son aramaları göster
     .accesskey = r
+addressbar-locbar-showtrendingsuggestions-option =
+    .label = Arama trendi önerilerini göster
+    .accesskey = t
 addressbar-quickactions-learn-more = Daha fazla bilgi al
 
 ## Privacy Section - Content Blocking
@@ -1293,6 +1309,14 @@ privacy-segmentation-radio-off =
 privacy-segmentation-radio-on =
     .label = Ayrıntılı bilgileri göster
 
+## Privacy Section - Website Advertising Preferences
+
+website-advertising-header = Web sitesi reklam tercihleri
+website-advertising-private-attribution =
+    .label = Web sitelerinin gizliliği koruyan reklam ölçümleri yapmasına izin ver
+    .accesskey = W
+website-advertising-private-attribution-description = Bu sayede siteler sizin hakkınızda veri toplamadan reklamlarının nasıl performans gösterdiğini daha iyi anlayabilir.
+
 ## Privacy Section - Security
 ##
 ## It is important that wording follows the guidelines outlined on this page:
@@ -1336,13 +1360,20 @@ space-alert-under-5gb-message2 = <strong>{ -brand-short-name } tarafından kulll
 
 httpsonly-header = Yalnızca HTTPS modu
 httpsonly-description = HTTPS, ziyaret ettiğiniz sitelerle { -brand-short-name } arasında güvenli ve şifrelenmiş bağlantı sağlar. Çoğu site HTTPS desteği sunar. “Yalnızca HTTPS” modunu açarsanız { -brand-short-name } tüm bağlantılarda HTTPS kullanmaya çalışır.
+httpsonly-description2 = { -brand-short-name }, ziyaret ettiğiniz sitelerle sizin aranızda güvenli ve şifrelenmiş bağlantılar kurar. Yalnızca HTTPS modu açıkken bir bağlantı güvenli değilse { -brand-short-name } sizi uyarır.
 httpsonly-learn-more = Daha fazla bilgi al
 httpsonly-radio-enabled =
     .label = Yalnızca HTTPS modunu tüm pencerelerde etkinleştir
+httpsonly-radio-enabled2 =
+    .label = Tüm pencerelerde yalnızca HTTPS kullan
 httpsonly-radio-enabled-pbm =
     .label = Yalnızca HTTPS modunu yalnızca gizli pencerelerde etkinleştir
+httpsonly-radio-enabled-pbm2 =
+    .label = Gizli pencerelerde yalnızca HTTPS kullan
 httpsonly-radio-disabled =
     .label = Yalnızca HTTPS modunu etkinleştirme
+httpsonly-radio-disabled2 =
+    .label = Önce HTTPS’i dene ama güvenli olmayan bağlantılara da izin ver
 
 ## DoH Section
 

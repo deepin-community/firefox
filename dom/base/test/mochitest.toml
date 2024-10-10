@@ -59,6 +59,7 @@ support-files = [
   "bug1576154.sjs",
   "chrome/bug418986-1.js",
   "copypaste.js",
+  "copypaste_shadow_dom.js",
   "delayedServerEvents.sjs",
   "eventsource_message.sjs",
   "eventsource_reconnect.sjs",
@@ -379,8 +380,6 @@ skip-if = [
   "http3",
   "http2",
 ]
-
-["test_bug338679.html"]
 
 ["test_bug339494.html"]
 
@@ -1184,6 +1183,12 @@ skip-if = [
   "headless", #bug 904183
 ]
 
+["test_copypaste_shadow_dom.html"]
+skip-if = [
+  "os == 'android'",
+  "headless", #bug 904183
+]
+
 ["test_copypaste.xhtml"]
 skip-if = ["headless"]  #bug 904183
 
@@ -1199,6 +1204,8 @@ skip-if = [
 ]
 
 ["test_custom_element.html"]
+
+["test_custom_element_invalid_name.html"]
 
 ["test_custom_element_reflector.html"]
 
@@ -1485,6 +1492,8 @@ scheme = "https"
 
 ["test_reentrant_flush.html"]
 
+["test_reportPatternFailure.html"]
+
 ["test_root_iframe.html"]
 
 ["test_sandbox_and_document_uri.html"]
@@ -1513,6 +1522,7 @@ support-files = [
 ]
 
 ["test_script_loader_js_cache_frames.html"]
+disabled = "https://bugzilla.mozilla.org/show_bug.cgi?id=1853173"
 skip-if = ["verify"]
 support-files = [
   "file_script_module_frames_relay.js",

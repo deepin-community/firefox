@@ -53,6 +53,9 @@ mr1-onboarding-import-primary-button-label-attribution = Importar de { $previous
 mr1-onboarding-theme-header = Personalize
 mr1-onboarding-theme-subtitle = Personalize o { -brand-short-name } com um tema.
 mr1-onboarding-theme-secondary-button-label = Agora não
+newtab-wallpaper-onboarding-title = Experimente um toque de cor
+newtab-wallpaper-onboarding-subtitle = Escolha um fundo para dar um novo visual ao seu novo separador.
+newtab-wallpaper-onboarding-primary-button-label = Definir fundo
 # System theme uses operating system color settings
 mr1-onboarding-theme-label-system = Tema do sistema
 mr1-onboarding-theme-label-light = Claro
@@ -183,6 +186,8 @@ mr2022-onboarding-pin-primary-button-label =
         [macos] Manter o { -brand-short-name } na Doca
        *[other] Fixar o { -brand-short-name } à barra de tarefas
     }
+# Primary button string used on welcome page for when Firefox is not pinned on MSIX
+mr2022-onboarding-pin-primary-button-label-msix = Fixar o { -brand-short-name } à barra de tarefas e ao menu iniciar
 # Subtitle will be used when user already has Firefox pinned, but
 # has not set it as their default browser.
 # When translating "zip", please feel free to pick a verb that signifies movement and/or exploration
@@ -319,7 +324,7 @@ mr2022-onboarding-privacy-segmentation-image-alt =
 mr2022-onboarding-gratitude-image-alt =
     .aria-label = Vista de um pôr do sol através de uma janela com uma raposa e uma planta doméstica no peitoril da janela
 mr2022-onboarding-colorways-image-alt =
-    .aria-label = Um spray de mão pinta uma montagem colorida de um olho verde, sapato laranja, bola de basquetebol vermelha, auscultadores roxos, coração azul e coroa amarela
+    .aria-label = Um spray manual pinta uma montagem colorida de um olho verde, sapato laranja, bola de basquetebol vermelha, auscultadores roxos, coração azul e coroa amarela
 
 ## Device migration onboarding
 
@@ -329,6 +334,14 @@ onboarding-device-migration-title = Olá novamente!
 onboarding-device-migration-subtitle = Entre na { -fxaccount-brand-name(capitalization: "sentence") } para levar os seus marcadores, palavras-passe e histórico consigo no seu novo dispositivo.
 onboarding-device-migration-subtitle2 = Inicie a sessão na sua conta para trazer os seus marcadores, palavras-passe e o histórico consigo no seu novo dispositivo.
 onboarding-device-migration-primary-button-label = Entrar
+
+## Add-ons Picker screen
+
+amo-picker-title = Personalize o seu { -brand-short-name }
+amo-picker-subtitle = As extensões funcionam como aplicações para o seu navegador, permitindo-lhe proteger as suas palavras-passe, descarregar vídeos, descobrir promoções, bloquear anúncios incómodos, modificar a aparência do seu navegador, entre outras funcionalidades.
+amo-picker-install-button-label = Adicionar ao { -brand-short-name }
+amo-picker-install-complete-label = Instalado
+amo-picker-collection-link = Explorar mais extras
 
 ## The following screens have been updated to use security and privacy focused strings:
 

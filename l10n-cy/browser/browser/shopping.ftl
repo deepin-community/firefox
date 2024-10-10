@@ -89,6 +89,9 @@ shopping-show-less-button = Dangos llai
 
 shopping-settings-label =
     .label = Gosodiadau
+shopping-settings-recommendations-toggle2 =
+    .label = Dangos argymhellion a chynnwys noddedig
+shopping-settings-recommendations-learn-more3 = Nid yw { -brand-product-name } yn rhannu eich data personol, felly ni fydd yr argymhellion hyn yn eich dilyn o gwmpas y rhyngrwyd. <a data-l10n-name="review-quality-url">Dysgu rhagor</a>
 shopping-settings-recommendations-toggle =
     .label = Dangos hysbysebion yn y Gwirydd Adolygiadau
 shopping-settings-recommendations-learn-more2 = Byddwch yn gweld hysbysebion achlysurol am gynnyrch perthnasol. Rhaid i bob hysbyseb fodloni ein safonau ansawdd adolygiadau. <a data-l10n-name="review-quality-url">Darllen rhagor</a>
@@ -115,6 +118,7 @@ shopping-settings-sidebar-enabled-state = Mae'r Gwirydd Adolygiadau <strong>Ymla
 shopping-adjusted-rating-label =
     .label = Gradd wedi'i haddasu
 shopping-adjusted-rating-unreliable-reviews = Wedi dileu adolygiadau annibynadwy
+shopping-adjusted-rating-based-reliable-reviews = Ar sail adolygiadau dibynadwy
 
 ## Strings for the review reliability component
 
@@ -135,6 +139,8 @@ shopping-analysis-explainer-learn-more2 = Darllen rhagor am <a data-l10n-name="r
 # websites, which will be inserted without being translated.
 #  $retailer (String) - capitalized name of the shopping website, for example, "Amazon".
 shopping-analysis-explainer-highlights-description = Daw <strong>Uchafbwyntiau</strong> o adolygiadau { $retailer } o fewn yr 80 diwrnod diwethaf rydym yn credu eu bod yn ddibynadwy.
+# Fallback for analysis highlights explainer if the retailer is ever unknown
+shopping-analysis-explainer-highlights-description-unknown-retailer = Mae <strong>Uchafbwyntiau</strong> yn dod o adolygiadau o fewn yr 80 diwrnod diwethaf y credwn eu bod yn ddibynadwy.
 shopping-analysis-explainer-review-grading-scale-reliable = Adolygiadau dibynadwy. Rydym yn credu fod yr adolygiadau'n debygol o fod gan gwsmeriaid go iawn sydd wedi gadael adolygiadau gonest, diduedd.
 shopping-analysis-explainer-review-grading-scale-mixed = Rydym yn credu fod yna gymysgedd o adolygiadau dibynadwy ac annibynadwy.
 shopping-analysis-explainer-review-grading-scale-unreliable = Adolygiadau annibynadwy. Rydym yn credu fod yr adolygiadau yn debygol o fod yn rhai ffug neu gan adolygwyr rhagfarnllyd.
@@ -161,6 +167,7 @@ shopping-unanalyzed-product-analyze-button = Gwirio ansawdd yr adolygiad
 
 more-to-consider-ad-label =
     .label = Rhagor i feddwl amdano
+shopping-sponsored-label = Noddwyd
 ad-by-fakespot = Hysbyseb gan { -fakespot-brand-name }
 
 ## Shopping survey strings.

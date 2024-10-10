@@ -4,18 +4,26 @@
 
 tabbrowser-empty-tab-title = Nov tab
 tabbrowser-empty-private-tab-title = Nov tab privat
-
 tabbrowser-menuitem-close-tab =
     .label = Serrar il tab
 tabbrowser-menuitem-close =
     .label = Serrar
-
 # Displayed as a tooltip on container tabs
 # Variables:
 #   $title (String): the title of the current tab.
 #   $containerName (String): the name of the current container.
 tabbrowser-container-tab-title = { $title } - { $containerName }
-
+# This text serves as an on-screen tooltip as well as an accessible name for
+# the "X" button that is shown on the active tab or, when multiple tabs are
+# selected, to all their "X" buttons.
+# Variables:
+#   $tabCount (Number): The number of tabs that will be closed.
+tabbrowser-close-tabs-button =
+    .tooltiptext =
+        { $tabCount ->
+            [one] Serrar il tab
+           *[other] Serrar { $tabCount } tabs
+        }
 # Variables:
 #   $tabCount (Number): The number of tabs that will be closed.
 tabbrowser-close-tabs-tooltip =
@@ -114,13 +122,22 @@ tabbrowser-confirm-caretbrowsing-title = Navigar cun il cursur da text
 tabbrowser-confirm-caretbrowsing-message = Cun smatgar F7 vegn Caret browsing activà u deactivà. Questa funcziun plazzescha in cursur movibel en las paginas d'internet che pussibilitescha da selecziunar text cun agid da la tastatura. Vuls ti activar Caret browsing?
 tabbrowser-confirm-caretbrowsing-checkbox = Betg pli ma mussar quest dialog.
 
+## Confirmation dialog for closing all duplicate tabs
+
+tabbrowser-confirm-close-duplicate-tabs-title = Attenziun
+tabbrowser-confirm-close-duplicate-tabs-text = Nus laschain avert l’ultim tab activ
+tabbrowser-confirm-close-all-duplicate-tabs-title = Serrar tabs duplitgads?
+tabbrowser-confirm-close-all-duplicate-tabs-text =
+    Nus vegnin a serrar ils tabs duplitgads en questa fanestra. L’ultim
+    tab activ vegn a restar avert.
+tabbrowser-confirm-close-all-duplicate-tabs-button-closetabs = Serrar ils tabs
+
 ##
 
 # Variables:
 #   $domain (String): URL of the page that is trying to steal focus.
 tabbrowser-allow-dialogs-to-get-focus =
     .label = Permetter communicaziuns da { $domain } sco questa per ta manar al tab correspundent
-
 tabbrowser-customizemode-tab-title = Persunalisar { -brand-short-name }
 
 ## Context menu buttons, of which only one will be visible at a time
@@ -139,7 +156,6 @@ tabbrowser-context-mute-selected-tabs =
 tabbrowser-context-unmute-selected-tabs =
     .label = Reactivar il tun dals tabs
     .accesskey = u
-
 # This string is used as an additional tooltip and accessibility description for tabs playing audio
 tabbrowser-tab-audio-playing-description = Reproducziun dad audio
 

@@ -286,6 +286,7 @@ try-newer-driver = Барои версияи драйвери корти гра�
 # there are no good translations, these are only used in about:support
 clear-type-parameters = Танзимоти «ClearType»
 compositing = Созандагӣ
+support-font-determination = Маълуоти ислоҳи хатоҳои намоиши шрифт
 hardware-h264 = Рамзёбии сахтафзории H264
 main-thread-no-omtc = ҷараёни асосӣ, бе «OMTC»
 yes = Ҳа
@@ -414,6 +415,20 @@ support-printing-clear-settings-button = Пок кардани танзимот�
 support-printing-modified-settings = Танзимоти тағйирёфтаи чоп
 support-printing-prefs-name = Ном
 support-printing-prefs-value = Қимат
+
+## Remote Settings sections
+
+support-remote-settings-title = Танзимоти дурдаст
+support-remote-settings-status = Вазъият
+support-remote-settings-status-ok = ХУБ
+# Status when synchronization is not working.
+support-remote-settings-status-broken = Кор намекунад
+support-remote-settings-last-check = Санҷиши охирин
+support-remote-settings-local-timestamp = Тамғаи вақти маҳаллӣ
+support-remote-settings-sync-history = Таърих
+support-remote-settings-sync-history-status = Вазъият
+support-remote-settings-sync-history-datetime = Сана
+support-remote-settings-sync-history-infos = Иттилоот
 
 ## Normandy sections
 

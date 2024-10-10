@@ -31,6 +31,7 @@
 #include "jstypes.h"
 
 #include "builtin/RegExp.h"  // js::RegExpSearcherLastLimitSentinel
+#include "debugger/ExecutionTracer.h"
 #include "frontend/FrontendContext.h"
 #include "gc/GC.h"
 #include "irregexp/RegExpAPI.h"
@@ -238,8 +239,7 @@ bool AutoResolving::alreadyStartedSlow() const {
   AutoResolving* cursor = link;
   do {
     MOZ_ASSERT(this != cursor);
-    if (object.get() == cursor->object && id.get() == cursor->id &&
-        kind == cursor->kind) {
+    if (object.get() == cursor->object && id.get() == cursor->id) {
       return true;
     }
   } while (!!(cursor = cursor->link));
@@ -875,14 +875,14 @@ void InternalJobQueue::runJobs(JSContext* cx) {
           if (!cx->isExceptionPending()) {
             continue;
           }
+
+          // Always clear the exception, because
+          // PrepareScriptEnvironmentAndInvoke will assert that we don't have
+          // one.
           RootedValue exn(cx);
-          if (cx->getPendingException(&exn)) {
-            /*
-             * Clear the exception, because
-             * PrepareScriptEnvironmentAndInvoke will assert that we don't
-             * have one.
-             */
-            cx->clearPendingException();
+          bool success = cx->getPendingException(&exn);
+          cx->clearPendingException();
+          if (success) {
             js::ReportExceptionClosure reportExn(exn);
             PrepareScriptEnvironmentAndInvoke(cx, cx->global(), reportExn);
           }
@@ -971,9 +971,11 @@ JSContext::JSContext(JSRuntime* runtime, const JS::ContextOptions& options)
       profilingActivation_(nullptr),
       entryMonitor(this, nullptr),
       noExecuteDebuggerTop(this, nullptr),
-#ifdef DEBUG
+#ifdef JS_CHECK_UNSAFE_CALL_WITH_ABI
       inUnsafeCallWithABI(this, false),
       hasAutoUnsafeCallWithABI(this, false),
+#endif
+#ifdef DEBUG
       liveArraySortDataInstances(this, 0),
 #endif
 #ifdef JS_SIMULATOR
@@ -1003,7 +1005,8 @@ JSContext::JSContext(JSRuntime* runtime, const JS::ContextOptions& options)
       isEvaluatingModule(this, 0),
       frontendCollectionPool_(this),
       suppressProfilerSampling(false),
-      tempLifoAlloc_(this, (size_t)TEMP_LIFO_ALLOC_PRIMARY_CHUNK_SIZE),
+      tempLifoAlloc_(this, (size_t)TEMP_LIFO_ALLOC_PRIMARY_CHUNK_SIZE,
+                     js::MallocArena),
       debuggerMutations(this, 0),
       status(this, JS::ExceptionStatus::None),
       unwrappedException_(this),
@@ -1037,6 +1040,16 @@ JSContext::JSContext(JSRuntime* runtime, const JS::ContextOptions& options)
   MOZ_ASSERT(static_cast<JS::RootingContext*>(this) ==
              JS::RootingContext::get(this));
 }
+
+#ifdef ENABLE_WASM_JSPI
+bool js::IsSuspendableStackActive(JSContext* cx) {
+  return cx->wasm().suspendableStackLimit != JS::NativeStackLimitMin;
+}
+
+JS::NativeStackLimit js::GetSuspendableStackLimit(JSContext* cx) {
+  return cx->wasm().suspendableStackLimit;
+}
+#endif
 
 JSContext::~JSContext() {
 #ifdef DEBUG
@@ -1256,6 +1269,9 @@ void JSContext::trace(JSTracer* trc) {
   if (isolate) {
     irregexp::TraceIsolate(trc, isolate.ref());
   }
+#ifdef ENABLE_WASM_JSPI
+  wasm().promiseIntegration.trace(trc);
+#endif
 }
 
 JS::NativeStackLimit JSContext::stackLimitForJitCode(JS::StackKind kind) {
@@ -1349,7 +1365,39 @@ void ExternalValueArray::trace(JSTracer* trc) {
   }
 }
 
-#ifdef DEBUG
+bool JSContext::addExecutionTracingConsumer(const js::Debugger* dbg) {
+  if (!executionTracer_) {
+    executionTracer_ = js::MakeUnique<ExecutionTracer>();
+    if (!executionTracer_) {
+      return false;
+    }
+
+    if (!executionTracer_->init()) {
+      executionTracer_ = nullptr;
+      return false;
+    }
+
+    if (!executionTracingConsumers_.put(dbg)) {
+      executionTracer_ = nullptr;
+      return false;
+    }
+
+    return true;
+  }
+
+  return executionTracingConsumers_.put(dbg);
+}
+
+void JSContext::removeExecutionTracingConsumer(const js::Debugger* dbg) {
+  executionTracingConsumers_.remove(dbg);
+  if (executionTracingConsumers_.empty()) {
+    caches().tracingCaches.clearAll();
+    executionTracer_ = nullptr;
+  }
+}
+
+#ifdef JS_CHECK_UNSAFE_CALL_WITH_ABI
+
 AutoUnsafeCallWithABI::AutoUnsafeCallWithABI(UnsafeABIStrictness strictness)
     : cx_(TlsContext.get()),
       nested_(cx_ ? cx_->hasAutoUnsafeCallWithABI : false),
@@ -1385,7 +1433,8 @@ AutoUnsafeCallWithABI::~AutoUnsafeCallWithABI() {
   }
   MOZ_ASSERT_IF(checkForPendingException_, !JS_IsExceptionPending(cx_));
 }
-#endif
+
+#endif  // JS_CHECK_UNSAFE_CALL_WITH_ABI
 
 #ifdef __wasi__
 JS_PUBLIC_API void js::IncWasiRecursionDepth(JSContext* cx) {

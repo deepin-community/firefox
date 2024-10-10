@@ -10,7 +10,6 @@
 
 #include "mozilla/Mutex.h"
 #include "mozilla/StaticPrefsBase.h"
-#include "mozilla/Telemetry.h"
 #include "mozilla/UniquePtr.h"
 #include "mozilla/extensions/StreamFilterParent.h"
 #include "mozilla/net/HttpBaseChannel.h"
@@ -32,8 +31,6 @@
 #include "nsIMultiPartChannel.h"
 #include "nsIThreadRetargetableRequest.h"
 #include "mozilla/net/DNS.h"
-
-using mozilla::Telemetry::LABELS_HTTP_CHILD_OMT_STATS_2;
 
 class nsIEventTarget;
 class nsIInterceptedBodyCallback;
@@ -105,6 +102,16 @@ class HttpChannelChild final : public PHttpChannelChild,
   NS_IMETHOD SetEarlyHintObserver(nsIEarlyHintObserver* aObserver) override;
   NS_IMETHOD SetWebTransportSessionEventListener(
       WebTransportSessionEventListener* aListener) override;
+
+  NS_IMETHOD SetResponseOverride(
+      nsIReplacedHttpResponse* aReplacedHttpResponse) override {
+    return NS_OK;
+  }
+
+  NS_IMETHOD SetResponseStatus(uint32_t aStatus,
+                               const nsACString& aStatusText) override {
+    return NS_OK;
+  }
   // nsISupportsPriority
   NS_IMETHOD SetPriority(int32_t value) override;
   // nsIClassOfService
@@ -186,6 +193,9 @@ class HttpChannelChild final : public PHttpChannelChild,
   NS_IMETHOD LogMimeTypeMismatch(const nsACString& aMessageName, bool aWarning,
                                  const nsAString& aURL,
                                  const nsAString& aContentType) override;
+
+  virtual void ExplicitSetUploadStreamLength(
+      uint64_t aContentLength, bool aSetContentLengthHeader) override;
 
  private:
   // We want to handle failure result of AsyncOpen, hence AsyncOpen calls the
@@ -312,11 +322,6 @@ class HttpChannelChild final : public PHttpChannelChild,
   TimeStamp mLastStatusReported;
 
   uint64_t mCacheEntryId{0};
-
-  // The result of RetargetDeliveryTo for this channel.
-  // |notRequested| represents OMT is not requested by the channel owner.
-  Atomic<LABELS_HTTP_CHILD_OMT_STATS_2, mozilla::Relaxed> mOMTResult{
-      LABELS_HTTP_CHILD_OMT_STATS_2::notRequested};
 
   uint32_t mCacheKey{0};
   int32_t mCacheFetchCount{0};
@@ -456,13 +461,8 @@ class HttpChannelChild final : public PHttpChannelChild,
                                        const uint32_t& redirectFlags,
                                        nsIChannel** outChannel);
 
-  // Collect telemetry for the successful rate of OMT.
-  void CollectOMTTelemetry();
-
   // Collect telemetry for mixed content.
   void CollectMixedContentTelemetry();
-
-  void RecordChannelCompletionDurationForEarlyHint();
 
   friend class HttpAsyncAborter<HttpChannelChild>;
   friend class InterceptStreamListener;

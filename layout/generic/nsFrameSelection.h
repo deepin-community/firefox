@@ -112,7 +112,19 @@ struct MOZ_STACK_CLASS PeekOffsetStruct {
                    // Passing by value here is intentional because EnumSet
                    // is optimized as uint*_t in opt builds.
                    const PeekOffsetOptions aOptions,
-                   EWordMovementType aWordMovementType = eDefaultBehavior);
+                   EWordMovementType aWordMovementType = eDefaultBehavior,
+                   const dom::Element* aAncestorLimiter = nullptr);
+
+  /**
+   * Return true if the ancestor limiter is not specified or if the content for
+   * aFrame is an inclusive descendant of mAncestorLimiter.
+   */
+  [[nodiscard]] bool FrameContentIsInAncestorLimiter(
+      const nsIFrame* aFrame) const {
+    return !mAncestorLimiter ||
+           (aFrame->GetContent() &&
+            aFrame->GetContent()->IsInclusiveDescendantOf(mAncestorLimiter));
+  }
 
   // Note: Most arguments (input and output) are only used with certain values
   // of mAmount. These values are indicated for each argument below.
@@ -155,6 +167,9 @@ struct MOZ_STACK_CLASS PeekOffsetStruct {
   EWordMovementType mWordMovementType;
 
   PeekOffsetOptions mOptions;
+
+  // The ancestor limiter element to peek offset.
+  const dom::Element* const mAncestorLimiter;
 
   /*** Output arguments ***/
 
@@ -217,7 +232,6 @@ enum class TableSelectionMode : uint32_t {
 };
 
 }  // namespace mozilla
-class nsIScrollableFrame;
 
 class nsFrameSelection final {
  public:
@@ -910,16 +924,14 @@ class nsFrameSelection final {
 
   bool IsBatching() const { return mBatching.mCounter > 0; }
 
-  void SetChangesDuringBatchingFlag() {
-    MOZ_ASSERT(mBatching.mCounter > 0);
-
-    mBatching.mChangesDuringBatching = true;
-  }
+  enum class IsBatchingEnd : bool { No, Yes };
 
   // nsFrameSelection may get deleted when calling this,
   // so remember to use nsCOMPtr when needed.
   MOZ_CAN_RUN_SCRIPT
-  nsresult NotifySelectionListeners(mozilla::SelectionType aSelectionType);
+  nsresult NotifySelectionListeners(
+      mozilla::SelectionType aSelectionType,
+      IsBatchingEnd aEndBatching = IsBatchingEnd::No);
 
   static nsresult GetCellIndexes(const nsIContent* aCell, int32_t& aRowIndex,
                                  int32_t& aColIndex);
@@ -1044,7 +1056,6 @@ class nsFrameSelection final {
 
   struct Batching {
     uint32_t mCounter = 0;
-    bool mChangesDuringBatching = false;
   };
 
   Batching mBatching;

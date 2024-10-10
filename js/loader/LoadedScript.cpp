@@ -105,6 +105,8 @@ size_t LoadedScript::SizeOfIncludingThis(
   }
 
   bytes += mScriptBytecode.sizeOfExcludingThis(aMallocSizeOf);
+
+  // NOTE: Stencil is reported by SpiderMonkey.
   return bytes;
 }
 
@@ -129,7 +131,7 @@ nsresult LoadedScript::GetScriptSource(JSContext* aCx,
   if (isWindowContext && aMaybeLoadContext->AsWindowContext()->mIsInline) {
     nsAutoString inlineData;
     auto* scriptLoadContext = aMaybeLoadContext->AsWindowContext();
-    scriptLoadContext->GetScriptElement()->GetScriptText(inlineData);
+    scriptLoadContext->GetInlineScriptText(inlineData);
 
     size_t nbytes = inlineData.Length() * sizeof(char16_t);
     JS::UniqueTwoByteChars chars(

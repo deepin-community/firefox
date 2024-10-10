@@ -390,6 +390,7 @@ impl FrameBuilder {
                             &visibility_context,
                             &mut visibility_state,
                             tile_cache,
+                            profile,
                         );
 
                         // Build the dirty region(s) for this tile cache.
@@ -453,6 +454,7 @@ impl FrameBuilder {
                     SubpixelMode::Allow,
                     &mut frame_state,
                     &frame_context,
+                    data_stores,
                     &mut scratch.primitive,
                     tile_caches,
                 )

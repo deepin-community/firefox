@@ -10,6 +10,7 @@
 #include "AlternateServices.h"
 #include "AutoClose.h"
 #include "HttpBaseChannel.h"
+#include "nsIReplacedHttpResponse.h"
 #include "TimingStruct.h"
 #include "mozilla/AtomicBitfields.h"
 #include "mozilla/Atomics.h"
@@ -159,6 +160,7 @@ class nsHttpChannel final : public HttpBaseChannel,
   NS_IMETHOD GetNavigationStartTimeStamp(TimeStamp* aTimeStamp) override;
   NS_IMETHOD SetNavigationStartTimeStamp(TimeStamp aTimeStamp) override;
   NS_IMETHOD CancelByURLClassifier(nsresult aErrorCode) override;
+  NS_IMETHOD GetLastTransportStatus(nsresult* aLastTransportStatus) override;
   // nsISupportsPriority
   NS_IMETHOD SetPriority(int32_t value) override;
   // nsIClassOfService
@@ -206,6 +208,10 @@ class nsHttpChannel final : public HttpBaseChannel,
   NS_IMETHOD SetEarlyHintObserver(nsIEarlyHintObserver* aObserver) override;
   NS_IMETHOD SetWebTransportSessionEventListener(
       WebTransportSessionEventListener* aListener) override;
+  NS_IMETHOD SetResponseOverride(
+      nsIReplacedHttpResponse* aReplacedHttpResponse) override;
+  NS_IMETHOD SetResponseStatus(uint32_t aStatus,
+                               const nsACString& aStatusText) override;
 
   void SetWarningReporter(HttpChannelSecurityWarningReporter* aReporter);
   HttpChannelSecurityWarningReporter* GetWarningReporter();
@@ -328,6 +334,7 @@ class nsHttpChannel final : public HttpBaseChannel,
   // will be called when callback. See Bug 1325054 for more information.
   nsresult BeginConnect();
   [[nodiscard]] nsresult PrepareToConnect();
+  [[nodiscard]] nsresult ContinuePrepareToConnect();
   [[nodiscard]] nsresult OnBeforeConnect();
   [[nodiscard]] nsresult ContinueOnBeforeConnect(
       bool aShouldUpgrade, nsresult aStatus, bool aUpgradeWithHTTPSRR = false);
@@ -335,12 +342,16 @@ class nsHttpChannel final : public HttpBaseChannel,
   void OnHTTPSRRAvailable(nsIDNSHTTPSSVCRecord* aRecord);
   [[nodiscard]] nsresult Connect();
   void SpeculativeConnect();
-  [[nodiscard]] nsresult SetupTransaction();
+  [[nodiscard]] nsresult SetupChannelForTransaction();
+  [[nodiscard]] nsresult InitTransaction();
+  [[nodiscard]] nsresult DispatchTransaction(
+      HttpTransactionShell* aTransWithStickyConn);
   [[nodiscard]] nsresult CallOnStartRequest();
   [[nodiscard]] nsresult ProcessResponse();
   void AsyncContinueProcessResponse();
   [[nodiscard]] nsresult ContinueProcessResponse1();
   [[nodiscard]] nsresult ContinueProcessResponse2(nsresult);
+  nsresult HandleOverrideResponse();
 
  public:
   void UpdateCacheDisposition(bool aSuccessfulReval, bool aPartialContentUsed);
@@ -398,7 +409,7 @@ class nsHttpChannel final : public HttpBaseChannel,
   [[nodiscard]] nsresult UpdateExpirationTime();
   [[nodiscard]] nsresult CheckPartial(nsICacheEntry* aEntry, int64_t* aSize,
                                       int64_t* aContentLength);
-  [[nodiscard]] nsresult ReadFromCache(bool alreadyMarkedValid);
+  [[nodiscard]] nsresult ReadFromCache(void);
   void CloseCacheEntry(bool doomOnFailure);
   [[nodiscard]] nsresult InitCacheEntry();
   void UpdateInhibitPersistentCachingFlag();
@@ -488,10 +499,8 @@ class nsHttpChannel final : public HttpBaseChannel,
            rv == NS_ERROR_PORT_ACCESS_NOT_ALLOWED;
   }
 
-  // Report net vs cache time telemetry
-  void ReportNetVSCacheTelemetry();
-  int64_t ComputeTelemetryBucketNumber(int64_t difftime_ms);
-
+  // Report telemetry for system principal request success rate
+  void ReportSystemChannelTelemetry(nsresult status);
   // Report telemetry and stats to about:networking
   void ReportRcwnStats(bool isFromNet);
 
@@ -596,6 +605,7 @@ class nsHttpChannel final : public HttpBaseChannel,
   nsCOMPtr<nsITransportSecurityInfo> mCachedSecurityInfo;
   uint32_t mPostID{0};
   uint32_t mRequestTime{0};
+  nsresult mLastTransportStatus{NS_OK};
 
   nsTArray<StreamFilterRequest> mStreamFilterRequests;
 
@@ -611,10 +621,12 @@ class nsHttpChannel final : public HttpBaseChannel,
   // This is true when one end marker is output, so that we never output more
   // than one.
   bool mEndMarkerAdded = false;
+  // Is set to true when the NEL report is queued.
+  bool mReportedNEL = false;
 
   // Total time the channel spent suspended. This value is reported to
   // telemetry in nsHttpChannel::OnStartRequest().
-  uint32_t mSuspendTotalTime{0};
+  TimeDuration mSuspendTotalTime{0};
 
   friend class AutoRedirectVetoNotifier;
   friend class HttpAsyncAborter<nsHttpChannel>;
@@ -858,6 +870,7 @@ class nsHttpChannel final : public HttpBaseChannel,
   RefPtr<nsIEarlyHintObserver> mEarlyHintObserver;
   Maybe<nsCString> mOpenerCallingScriptLocation;
   RefPtr<WebTransportSessionEventListener> mWebTransportSessionEventListener;
+  nsMainThreadPtrHandle<nsIReplacedHttpResponse> mOverrideResponse;
 };
 
 NS_DEFINE_STATIC_IID_ACCESSOR(nsHttpChannel, NS_HTTPCHANNEL_IID)

@@ -7,10 +7,8 @@
 
 #include "gfxUserFontSet.h"
 #include "gfxPlatform.h"
-#include "gfxFontConstants.h"
 #include "mozilla/Atomics.h"
 #include "mozilla/FontPropertyTypes.h"
-#include "mozilla/Preferences.h"
 #include "mozilla/ProfilerLabels.h"
 #include "mozilla/Services.h"
 #include "mozilla/StaticPrefs_gfx.h"
@@ -24,6 +22,8 @@
 #include "nsIFontLoadCompleteCallback.h"
 #include "nsProxyRelease.h"
 #include "nsContentUtils.h"
+#include "nsPresContext.h"
+#include "mozilla/dom/FontFaceSetImpl.h"
 #include "nsTHashSet.h"
 
 using namespace mozilla;
@@ -392,6 +392,20 @@ void gfxUserFontEntry::LoadNextSrc() {
   DoLoadNextSrc(false);
 }
 
+void gfxUserFontEntry::FontLoadComplete() {
+  AutoTArray<RefPtr<gfxUserFontSet>, 4> fontSets;
+  GetUserFontSets(fontSets);
+  for (gfxUserFontSet* fontSet : fontSets) {
+    fontSet->IncrementGeneration();
+    if (nsPresContext* ctx = dom::FontFaceSetImpl::GetPresContextFor(fontSet)) {
+      // Update layout for the presence of the new font.  Since this is
+      // asynchronous, reflows will coalesce.
+      ctx->UserFontSetUpdated(this);
+      LOG(("userfonts (%p) reflow for pres context %p\n", this, ctx));
+    }
+  }
+}
+
 void gfxUserFontEntry::ContinueLoad() {
   if (mUserFontLoadState == STATUS_NOT_LOADED) {
     // We must have been cancelled (possibly due to a font-list refresh) while
@@ -411,15 +425,7 @@ void gfxUserFontEntry::ContinueLoad() {
     // Loading is synchronously finished (loaded from cache or failed). We
     // need to increment the generation so that we flush the style data to
     // use the new loaded font face.
-    // Without parallel traversal, we would simply get the right font data
-    // after the first call to DoLoadNextSrc() in this case, so we don't need
-    // to touch the generation to trigger another restyle.
-    // XXX We may want to return synchronously in parallel traversal in those
-    // cases as well if possible, so that we don't have an additional restyle.
-    // That doesn't work currently because Document::GetDocShell (called from
-    // FontFaceSet::CheckFontLoad) dereferences a weak pointer, which is not
-    // allowed in parallel traversal.
-    IncrementGeneration();
+    FontLoadComplete();
   }
 }
 
@@ -469,7 +475,7 @@ void gfxUserFontEntry::DoLoadNextSrc(bool aIsContinue) {
       if (fe) {
         LOG(("userfonts (%p) [src %d] loaded local: (%s) for (%s) gen: %8.8x\n",
              fontSet.get(), mCurrentSrcIndex, currSrc.mLocalName.get(),
-             mFamilyName.get(), uint32_t(fontSet->mGeneration)));
+             mFamilyName.get(), uint32_t(fontSet->GetGeneration())));
         fe->mFeatureSettings.AppendElements(mFeatureSettings);
         fe->mVariationSettings.AppendElements(mVariationSettings);
         fe->mLanguageOverride = mLanguageOverride;
@@ -706,7 +712,6 @@ bool gfxUserFontEntry::LoadPlatformFont(uint32_t aSrcIndex,
                                         const uint8_t* aSanitizedFontData,
                                         uint32_t aSanitizedLength,
                                         nsTArray<OTSMessage>&& aMessages) {
-  MOZ_ASSERT(NS_IsMainThread());
   RefPtr<gfxUserFontSet> fontSet = GetUserFontSet();
   if (NS_WARN_IF(!fontSet)) {
     free((void*)aOriginalFontData);
@@ -817,10 +822,14 @@ bool gfxUserFontEntry::LoadPlatformFont(uint32_t aSrcIndex,
          "(%p) gen: %8.8x compress: %d%%\n",
          fontSet.get(), aSrcIndex,
          mSrcList[aSrcIndex].mURI->GetSpecOrDefault().get(), mFamilyName.get(),
-         this, uint32_t(fontSet->mGeneration), fontCompressionRatio));
+         this, uint32_t(fontSet->GetGeneration()), fontCompressionRatio));
     mPlatformFontEntry = fe;
     SetLoadState(STATUS_LOADED);
-    gfxUserFontSet::UserFontCache::CacheFont(fe);
+    if (NS_IsMainThread()) {
+      // UserFontCache::CacheFont is not currently safe to call off-main-thread,
+      // so we only cache the font if this is a main-thread load.
+      gfxUserFontSet::UserFontCache::CacheFont(fe);
+    }
   } else {
     LOG((
         "userfonts (%p) [src %d] failed uri: (%s) for (%s)"
@@ -841,14 +850,6 @@ void gfxUserFontEntry::Load() {
     return;
   }
   LoadNextSrc();
-}
-
-void gfxUserFontEntry::IncrementGeneration() {
-  nsTArray<RefPtr<gfxUserFontSet>> fontSets;
-  GetUserFontSets(fontSets);
-  for (gfxUserFontSet* fontSet : fontSets) {
-    fontSet->IncrementGeneration();
-  }
 }
 
 // This is called when a font download finishes.
@@ -934,7 +935,6 @@ void gfxUserFontEntry::ContinuePlatformFontLoadOnMainThread(
   aSanitizedFontData = nullptr;
 
   if (loaded) {
-    IncrementGeneration();
     aCallback->FontLoadComplete();
   } else {
     FontLoadFailed(aCallback);
@@ -959,10 +959,9 @@ void gfxUserFontEntry::FontLoadFailed(nsIFontLoadCompleteCallback* aCallback) {
   }
 
   // We ignore the status returned by LoadNext();
-  // even if loading failed, we need to bump the font-set generation
-  // and return true in order to trigger reflow, so that fallback
-  // will be used where the text was "masked" by the pending download
-  IncrementGeneration();
+  // even if loading failed, we need to bump the font-set generation and return
+  // true in order to trigger reflow, so that fallback will be used where the
+  // text was "masked" by the pending download.
   aCallback->FontLoadComplete();
 }
 
@@ -1215,7 +1214,7 @@ bool gfxUserFontSet::UserFontCache::Entry::KeyEquals(
   if (mFontEntry->SlantStyle() != fe->SlantStyle() ||
       mFontEntry->Weight() != fe->Weight() ||
       mFontEntry->Stretch() != fe->Stretch() ||
-      mFontEntry->mRangeFlags != fe->mRangeFlags ||
+      mFontEntry->AutoRangeFlags() != fe->AutoRangeFlags() ||
       mFontEntry->mFeatureSettings != fe->mFeatureSettings ||
       mFontEntry->mVariationSettings != fe->mVariationSettings ||
       mFontEntry->mLanguageOverride != fe->mLanguageOverride ||

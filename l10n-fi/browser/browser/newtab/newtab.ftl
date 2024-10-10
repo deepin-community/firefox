@@ -200,6 +200,8 @@ newtab-section-header-recent-activity = Viimeisin toiminta
 #   $provider (string) - Name of the corresponding content provider.
 newtab-section-header-pocket = Suositukset lähteestä { $provider }
 newtab-section-header-stories = Ajatuksia herättäviä tarinoita
+# "picks" refers to recommended articles
+newtab-section-header-todays-picks = Tämän päivän valinnat sinulle
 
 ## Empty Section States: These show when there are no more items in a section. Ex. When there are no more Pocket story recommendations, in the space where there would have been stories, this is shown instead.
 
@@ -233,6 +235,19 @@ newtab-pocket-pocket-firefox-family = { -pocket-brand-name } on osa { -brand-pro
 # A save to Pocket button that shows over the card thumbnail on hover.
 newtab-pocket-save = Tallenna
 newtab-pocket-saved = Tallennettu
+
+## Thumbs up and down buttons that shows over a newtab stories card thumbnail on hover.
+
+# Clicking the thumbs up button for this story will result in more stories like this one being recommended
+newtab-pocket-thumbs-up-tooltip =
+    .title = Lisää tällaista
+# Clicking the thumbs down button for this story informs us that the user does not feel like the story is interesting for them
+newtab-pocket-thumbs-down-tooltip =
+    .title = Ei minulle
+newtab-toast-thumbs-up-or-down = Kiitos. Palautteesi auttaa meitä parantamaan syötettäsi.
+newtab-toast-dismiss-button =
+    .title = Hylkää
+    .aria-label = Hylkää
 
 ## Pocket content onboarding experience dialog and modal for new users seeing the Pocket section for the first time, shown as the first item in the Pocket section.
 
@@ -272,6 +287,9 @@ newtab-custom-recent-subtitle = Valikoima viimeisimpiä sivustoja ja sisältöä
 newtab-custom-recent-toggle =
     .label = Viimeisin toiminta
     .description = Valikoima viimeisimpiä sivustoja ja sisältöä
+newtab-custom-weather-toggle =
+    .label = Sää
+    .description = Päivän sääennuste yhdellä vilkaisulla
 newtab-custom-close-button = Sulje
 newtab-custom-settings = Muokkaa lisää asetuksia
 
@@ -291,7 +309,125 @@ newtab-wallpaper-dark-panda = Kultapanda metsän piilossa
 newtab-wallpaper-dark-sky = Kaupunkimaisema ja yötaivas
 newtab-wallpaper-dark-mountain = Vuorimaisema
 newtab-wallpaper-dark-city = Purppura kaupunkimaisema
+
+## Solid Colors
+
+newtab-wallpaper-category-title-colors = Yhtenäiset värit
+newtab-wallpaper-blue = Sininen
+newtab-wallpaper-light-blue = Vaaleansininen
+newtab-wallpaper-light-purple = Vaaleanvioletti
+newtab-wallpaper-light-green = Vaaleanvihreä
+newtab-wallpaper-green = Vihreä
+newtab-wallpaper-beige = Beige
+newtab-wallpaper-yellow = Keltainen
+newtab-wallpaper-orange = Oranssi
+newtab-wallpaper-pink = Pinkki
+newtab-wallpaper-light-pink = Vaaleanpinkki
+newtab-wallpaper-red = Punainen
+newtab-wallpaper-dark-blue = Tummansininen
+newtab-wallpaper-dark-purple = Tummanvioletti
+newtab-wallpaper-dark-green = Tummanvihreä
+newtab-wallpaper-brown = Ruskea
+
+## Abstract
+
+newtab-wallpaper-category-title-abstract = Abstrakti
+newtab-wallpaper-abstract-green = Vihreät muodot
+newtab-wallpaper-abstract-blue = Siniset muodot
+newtab-wallpaper-abstract-purple = Violetit muodot
+newtab-wallpaper-abstract-orange = Oranssit muodot
+newtab-wallpaper-gradient-orange = Oranssi ja pinkki liukuväreissä
+newtab-wallpaper-abstract-blue-purple = Sinisiä ja violetteja muotoja
+
+## Photographs
+
+newtab-wallpaper-category-title-photographs = Valokuvat
+newtab-wallpaper-beach-at-sunrise = Ranta auringonnousun aikaan
+newtab-wallpaper-beach-at-sunset = Ranta auringonlaskun aikaan
+newtab-wallpaper-storm-sky = Myrskyinen taivas
+newtab-wallpaper-sky-with-pink-clouds = Taivas ja vaaleanpunaiset pilvet
+newtab-wallpaper-red-panda-yawns-in-a-tree = Kultapanda haukottelee puussa
+newtab-wallpaper-white-mountains = Valkoiset vuoret
 # Variables
 #   $author_string (String) - The name of the creator of the photo.
 #   $webpage_string (String) - The name of the webpage where the photo is located.
 newtab-wallpaper-attribution = Kuva: <a data-l10n-name="name-link">{ $author_string }</a> sivustolla <a data-l10n-name="webpage-link">{ $webpage_string }</a>
+newtab-wallpaper-feature-highlight-header = Lisää ripaus väriä
+newtab-wallpaper-feature-highlight-content = Anna uudelle välilehdelle uusi ilme taustakuvien avulla.
+newtab-wallpaper-feature-highlight-button = Selvä
+# Tooltip for dismiss button
+feature-highlight-dismiss-button =
+    .title = Hylkää
+    .aria-label = Sulje ilmoitus
+feature-highlight-wallpaper =
+    .title = { -newtab-wallpaper-feature-highlight-header }
+    .aria-label = { -newtab-wallpaper-feature-highlight-content }
+
+## New Tab Weather
+
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-see-forecast =
+    .title = Katso ennuste palvelussa { $provider }
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-sponsored = { $provider } ∙ Sponsoroitu
+newtab-weather-menu-change-location = Vaihda sijaintia
+newtab-weather-change-location-search-input = Hae sijaintia
+newtab-weather-menu-weather-display = Sään näkymä
+# Display options are:
+# - Simple: Displays a current weather condition icon and the current temperature
+# - Detailed: Include simple information plus a short text summary: e.g. "Mostly cloudy"
+newtab-weather-menu-weather-display-option-simple = Yksinkertainen
+newtab-weather-menu-change-weather-display-simple = Vaihda yksinkertaiseen näkymään
+newtab-weather-menu-weather-display-option-detailed = Yksityiskohtainen
+newtab-weather-menu-change-weather-display-detailed = Vaihda yksityiskohtaiseen näkymään
+newtab-weather-menu-temperature-units = Lämpötilayksiköt
+newtab-weather-menu-temperature-option-fahrenheit = Fahrenheit
+newtab-weather-menu-temperature-option-celsius = Celsius
+newtab-weather-menu-change-temperature-units-fahrenheit = Vaihda Fahrenheitiin
+newtab-weather-menu-change-temperature-units-celsius = Vaihda Celsiukseen
+newtab-weather-menu-hide-weather = Piilota sää uudessa välilehdessä
+newtab-weather-menu-learn-more = Lue lisää
+# This message is shown if user is working offline
+newtab-weather-error-not-available = Säätiedot eivät ole tällä hetkellä saatavilla.
+
+## Topic Labels
+
+newtab-topic-label-business = Liiketoiminta
+newtab-topic-label-career = Ura
+newtab-topic-label-education = Koulutus
+newtab-topic-label-arts = Viihde
+newtab-topic-label-food = Ruoka
+newtab-topic-label-health = Terveys
+newtab-topic-label-hobbies = Pelaaminen
+# ”Money” = “Personal Finance”, refers to articles and stories that help readers better manage
+# and understand their personal finances – from saving money to buying a home. See the
+# “Curated by our editors“ section at the top of https://getpocket.com/explore/personal-finance for more context
+newtab-topic-label-finance = Raha-asiat
+newtab-topic-label-society-parenting = Vanhemmuus
+newtab-topic-label-government = Politiikka
+newtab-topic-label-education-science = Tiede
+# ”Life Hacks” = “Self Improvement”, refers to articles and stories aimed at helping readers improve various
+# aspects of their lives – from mental health to  productivity. See the “Curated by our editors“ section
+# at the top of https://getpocket.com/explore/self-improvement for more context.
+newtab-topic-label-society = Niksit
+newtab-topic-label-sports = Urheilu
+newtab-topic-label-tech = Tekniikka
+newtab-topic-label-travel = Matkailu
+newtab-topic-label-home = Koti ja puutarha
+
+## Topic Selection Modal
+
+# “fine-tune” refers to the process of making small adjustments to something to get
+# the best or desired experience or performance.
+newtab-topic-selection-title = Hienosäädä syötettä valitsemalla aiheita
+# “tailored” refers to process of (a tailor) making (clothes) to fit individual customers.
+# In other words, “Our expert curators prioritize stories to fit your selected interests”
+newtab-topic-selection-subtitle = Valitse vähintään kaksi aihetta. Asiantuntevat kuraattorimme priorisoivat kiinnostuksen kohteidesi mukaan räätälöityjä tarinoita. Päivitä milloin tahansa.
+newtab-topic-selection-save-button = Tallenna
+newtab-topic-selection-cancel-button = Peruuta
+newtab-topic-selection-button-maybe-later = Ehkä myöhemmin
+newtab-topic-selection-privacy-link = Lue lisää, kuinka suojaamme ja hallitsemme tietoja
+newtab-topic-selection-button-update-interests = Päivitä kiinnostuksen kohteesi
+newtab-topic-selection-button-pick-interests = Valitse kiinnostuksen kohteesi

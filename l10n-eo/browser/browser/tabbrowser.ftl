@@ -4,18 +4,26 @@
 
 tabbrowser-empty-tab-title = Nova langeto
 tabbrowser-empty-private-tab-title = Nova privata langeto
-
 tabbrowser-menuitem-close-tab =
     .label = Fermi langeton
 tabbrowser-menuitem-close =
     .label = Fermi
-
 # Displayed as a tooltip on container tabs
 # Variables:
 #   $title (String): the title of the current tab.
 #   $containerName (String): the name of the current container.
 tabbrowser-container-tab-title = { $title } - { $containerName }
-
+# This text serves as an on-screen tooltip as well as an accessible name for
+# the "X" button that is shown on the active tab or, when multiple tabs are
+# selected, to all their "X" buttons.
+# Variables:
+#   $tabCount (Number): The number of tabs that will be closed.
+tabbrowser-close-tabs-button =
+    .tooltiptext =
+        { $tabCount ->
+            [one] Fermi langeton
+           *[other] Fermi { $tabCount } langetojn
+        }
 # Variables:
 #   $tabCount (Number): The number of tabs that will be closed.
 tabbrowser-close-tabs-tooltip =
@@ -114,13 +122,20 @@ tabbrowser-confirm-caretbrowsing-title = Esplorado per montrilo
 tabbrowser-confirm-caretbrowsing-message = Premo de F7 ŝaltas aŭ malŝaltas la esploradon per montrilo. Tiu trajto metas moveblan montrilon en retpaĝojn, kiu permesas al vi elekti tekston per la klavaro. Ĉu vi volas ŝalti la esploradon per montrilo?
 tabbrowser-confirm-caretbrowsing-checkbox = Ne montri ĉi tiun dialogon denove.
 
+## Confirmation dialog for closing all duplicate tabs
+
+tabbrowser-confirm-close-duplicate-tabs-title = Atento!
+tabbrowser-confirm-close-duplicate-tabs-text = Ni lasos la lastan aktivan langeton malfermita
+tabbrowser-confirm-close-all-duplicate-tabs-title = Ĉu fermi duobligitajn langetojn?
+tabbrowser-confirm-close-all-duplicate-tabs-text = Duobligitaj langetoj en tiu ĉi fenestro estos fermitaj. La laste aktiva langeto restos malfermita.
+tabbrowser-confirm-close-all-duplicate-tabs-button-closetabs = Fermi langetojn
+
 ##
 
 # Variables:
 #   $domain (String): URL of the page that is trying to steal focus.
 tabbrowser-allow-dialogs-to-get-focus =
     .label = Permesi ke sciigoj kiel tiu ĉi de { $domain } portu vin al sia langeto
-
 tabbrowser-customizemode-tab-title = Personecigi { -brand-short-name }
 
 ## Context menu buttons, of which only one will be visible at a time
@@ -139,7 +154,6 @@ tabbrowser-context-mute-selected-tabs =
 tabbrowser-context-unmute-selected-tabs =
     .label = Malsilentigi langetojn
     .accesskey = M
-
 # This string is used as an additional tooltip and accessibility description for tabs playing audio
 tabbrowser-tab-audio-playing-description = Sono ludata
 

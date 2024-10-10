@@ -76,25 +76,25 @@ urlbar-web-rtc-share-microphone-notification-anchor =
 urlbar-default-notification-anchor =
     .tooltiptext = Atvērt ziņojumu paneli
 urlbar-geolocation-notification-anchor =
-    .tooltiptext = Atvērt atrašanās vietu pieprasījumu paneli
+    .tooltiptext = Atvērt atrašanās vietas pieprasījumu paneli
 urlbar-xr-notification-anchor =
-    .tooltiptext = Atveriet virtuālās realitātes atļauju paneli
+    .tooltiptext = Atvērt virtuālās realitātes atļauju paneli
 urlbar-storage-access-anchor =
     .tooltiptext = Atvērt pārlūkošanas darbību atļauju paneli
 urlbar-web-rtc-share-screen-notification-anchor =
     .tooltiptext = Pārvaldīt sava loga vai visa ekrāna koplietošanu ar šo vietni
 urlbar-indexed-db-notification-anchor =
-    .tooltiptext = Atvērt nesaistes datu saglabāšanas ziņojumu paneli
+    .tooltiptext = Atvērt bezsaistes krātuves ziņojumu paneli
 urlbar-password-notification-anchor =
-    .tooltiptext = Atvērt paroles saglabāšanas ziņojumu paneli
+    .tooltiptext = Atvērt paroļu saglabāšanas ziņojumu paneli
 urlbar-plugins-notification-anchor =
-    .tooltiptext = Pārvaldīt papildinājumu izmantošanu
+    .tooltiptext = Pārvaldīt spraudņu izmantošanu
 urlbar-web-rtc-share-devices-notification-anchor =
     .tooltiptext = Pārvaldīt kameras un/vai mikrofona koplietošanu ar šo vietni
 # "Speakers" is used in a general sense that might include headphones or
 # another audio output connection.
 urlbar-web-rtc-share-speaker-notification-anchor =
-    .tooltiptext = Pārvaldiet citu skaļruņu kopīgošanu ar vietni
+    .tooltiptext = Pārvaldīt citu skaļruņu kopīgošanu ar šo vietni
 urlbar-autoplay-notification-anchor =
     .tooltiptext = Atvērt automātiskās atskaņošanas paneli
 urlbar-persistent-storage-notification-anchor =
@@ -122,7 +122,7 @@ urlbar-result-menu-remove-from-history =
     .accesskey = r
 urlbar-result-menu-tip-get-help =
     .label = Iegūt palīdzību
-    .accesskey = I
+    .accesskey = p
 
 ## Prompts users to use the Urlbar when they open a new tab or visit the
 ## homepage of their default search engine.
@@ -135,7 +135,7 @@ urlbar-search-tips-redirect-2 = Sāciet meklēšanu adreses joslā, lai redzētu
 urlbar-search-tips-persist = Meklēšana ir kļuvusi vienkāršāka. Mēģiniet precizēt meklēšanu adreses joslā. Lai tā vietā rādītu URL, iestatījumos atveriet Meklēšana.
 # Prompts users to use the Urlbar when they are typing in the domain of a
 # search engine, e.g. google.com or amazon.com.
-urlbar-tabtosearch-onboard = Atlasiet šo īsinājumtaustiņu, lai varētu ātrāk atrastu vajadzīgo.
+urlbar-tabtosearch-onboard = Atlasiet šo saīsni, lai ātrāk atrastu vajadzīgo.
 
 ## Local search mode indicator labels in the urlbar
 
@@ -159,17 +159,17 @@ urlbar-microphone-blocked =
 urlbar-screen-blocked =
     .tooltiptext = Jūs esat bloķējis ekrāna koplietošanu ar šo tīmekļa vietni.
 urlbar-persistent-storage-blocked =
-    .tooltiptext = Datu glabāšana ir bloķēta šajā lapā.
+    .tooltiptext = Jūs esat bloķējis šīs vietnes pastāvīgo krātuvi.
 urlbar-popup-blocked =
-    .tooltiptext = Uzlecošo logu rādīšana no šīs lapas ir bloķēta.
+    .tooltiptext = Jūs esat bloķējis uzlecošo logu rādīšanu šajā tīmekļa vietnē.
 urlbar-autoplay-media-blocked =
-    .tooltiptext = Automātiskā multimēdiju ar skaņu atskaņošana šajā lapā ir bloķēta.
+    .tooltiptext = Jūs šai tīmekļa vietnei esat bloķējis automātiskās atskaņošanas multividi ar skaņu.
 urlbar-canvas-blocked =
-    .tooltiptext = Šīs lapas pamatnes datu ieguve ir bloķēta.
+    .tooltiptext = Jūs esat bloķējis šīs lapas pamatnes datu ieguvi.
 urlbar-midi-blocked =
-    .tooltiptext = MIDI izmantošana šajā lapā ir bloķēta.
+    .tooltiptext = Jūs esat bloķējis MIDI piekļuvi šai tīmekļa vietnei.
 urlbar-install-blocked =
-    .tooltiptext = Jūs esat bloķējis papildinājumu instalēšanu šai vietnei.
+    .tooltiptext = Jūs esat bloķējis papildinājumu instalēšanu šai tīmekļa vietnei.
 # Variables
 #   $shortcut (String) - A keyboard shortcut for the edit bookmark command.
 urlbar-star-edit-bookmark =
@@ -201,7 +201,7 @@ full-screen-exit =
 
 # This string prompts the user to use the list of search shortcuts in
 # the Urlbar and searchbar.
-search-one-offs-with-title = Šoreiz meklējiet ar:
+search-one-offs-with-title = Šoreiz meklēt ar:
 search-one-offs-change-settings-compact-button =
     .tooltiptext = Mainīt meklēšanas iestatījumus
 search-one-offs-context-open-new-tab =
@@ -211,7 +211,7 @@ search-one-offs-context-set-as-default =
     .label = Iestatīt par noklusējuma meklētāju
     .accesskey = n
 search-one-offs-context-set-as-default-private =
-    .label = Iestatīt kā noklusējuma meklētājprogrammu privātajiem logiem
+    .label = Iestatīt kā noklusējuma meklētāju privātajiem logiem
     .accesskey = p
 # Search engine one-off buttons with an @alias shortcut/keyword.
 # Variables:
@@ -322,13 +322,13 @@ bookmark-panel-cancel =
 bookmark-panel-remove =
     .label =
         { $count ->
-            [zero] Aizvākt grāmatzīmi
-            [one] Aizvākt grāmatzīmes ({ $count })
-           *[other] Aizvākt grāmatzīmes ({ $count })
+            [zero] Noņemt grāmatzīmi
+            [one] Noņemt grāmatzīmes ({ $count })
+           *[other] Noņemt grāmatzīmes ({ $count })
         }
-    .accesskey = A
+    .accesskey = N
 bookmark-panel-show-editor-checkbox =
-    .label = Rādīt redaktoru, saglabājot
+    .label = Saglabājot rādīt redaktoru
     .accesskey = S
 bookmark-panel-save-button =
     .label = Saglabāt
@@ -348,7 +348,7 @@ identity-site-information = Informācija par { $host } vietni
 identity-header-security-with-host =
     .title = { $host } savienojuma drošība
 identity-connection-not-secure = Savienojums nav drošs
-identity-connection-secure = Savienojums doršs
+identity-connection-secure = Savienojums drošs
 identity-connection-failure = Savienojuma kļūme
 identity-connection-internal = Šī ir droša { -brand-short-name } lapa.
 identity-connection-file = Šī lapa ir saglabāta jūsu datorā.
@@ -356,11 +356,11 @@ identity-connection-associated = Šī lapa ir ielādēta no citas lapas.
 identity-extension-page = Šī lapa ir ielādēta no papildinājuma.
 identity-active-blocked = { -brand-short-name } bloķēja nedrošo saturu šajā lapā.
 identity-custom-root = Savienojumu ir pārbaudījis sertifikāta izdevējs, kuru Mozilla neatpazīst.
-identity-passive-loaded = Šīs lapas daļas (piemēram attēli) nav drošas.
-identity-active-loaded = Nedrošu elementu aizsardzība ir deaktivēta.
+identity-passive-loaded = Šīs lapas daļas (piemēram, attēli) nav drošas.
+identity-active-loaded = Jūs esat izslēdzis aizsardzību šajā lapā.
 identity-weak-encryption = Šī lapa izmanto vāju šifrēšanu.
-identity-insecure-login-forms = Dati, ko ievadīsiet šajā lapā nav aizsargāti un var tikt pārtverti.
-identity-https-only-connection-upgraded = (jaunintats uz HTTPS)
+identity-insecure-login-forms = Šajā lapā ievadītie lietotājvārdi nav aizsargāti un var tikt pārtverti.
+identity-https-only-connection-upgraded = (jaunināts uz HTTPS)
 identity-https-only-label = Tikai-HTTPS režīms
 identity-https-only-label2 = Automātiski jaunināt šo vietni uz drošu savienojumu
 identity-https-only-dropdown-on =
@@ -369,34 +369,34 @@ identity-https-only-dropdown-off =
     .label = Izslēgts
 identity-https-only-dropdown-off-temporarily =
     .label = Uz laiku izslēgts
-identity-https-only-info-turn-on2 = Ieslēdziet šai vietnei tikai-HTTPS režīmu, ja vēlaties, lai { -brand-short-name } jaunintāt savienojumu, kad iespējams.
-identity-https-only-info-turn-off2 = Ja lapa izskatās salauzta, iespējams, vēlēsities izslēgt tikai-HTTPS režīmu, lai šo vietni pārlādētu nedrošajā HTTP režīmā.
-identity-https-only-info-turn-on3 = Ieslēdziet šai vietnei HTTPS jauninājumus, ja vēlaties, lai { -brand-short-name } jaunintāt savienojumu, kad iespējams.
-identity-https-only-info-turn-off3 = Ja lapa izskatās salauzta, iespējams, vēlēsities izslēgt HTTPS jauninājumus, lai šo vietni pārlādētu nedrošajā HTTP režīmā.
+identity-https-only-info-turn-on2 = Ieslēdziet šai vietnei tikai-HTTPS režīmu, ja vēlaties, lai { -brand-short-name } jauninātu savienojumu, kad iespējams.
+identity-https-only-info-turn-off2 = Ja lapa izskatās salauzta, iespējams, vēlēsieties izslēgt tikai-HTTPS režīmu, lai šo vietni pārlādētu nedrošajā HTTP režīmā.
+identity-https-only-info-turn-on3 = Ieslēdziet šai vietnei HTTPS jauninājumus, ja vēlaties, lai { -brand-short-name } jauninātu savienojumu, kad iespējams.
+identity-https-only-info-turn-off3 = Ja lapa izskatās salauzta, iespējams, vēlēsieties izslēgt HTTPS jauninājumus, lai šo vietni pārlādētu nedrošajā HTTP režīmā.
 identity-https-only-info-no-upgrade = Nevar jaunināt savienojumu no HTTP.
 identity-permissions-storage-access-header = Starpvietņu sīkdatnes
 identity-permissions-storage-access-hint = Šīs puses var izmantot starpvietņu sīkdatnes un vietņu datus, kamēr jūs atrodaties šajā vietnē.
 identity-permissions-storage-access-learn-more = Uzzināt vairāk
-identity-permissions-reload-hint = Lai redzētu izmaiņas iespējams būs nepieciešama lapas pārlāde.
+identity-permissions-reload-hint = Lai izmaiņas stātos spēkā, iespējams, jums būs atkārtoti jāielādē lapa.
 identity-clear-site-data =
-    .label = Notīrīt sīkdatnes un lapu datus…
+    .label = Notīrīt sīkdatnes un vietnes datus…
 identity-connection-not-secure-security-view = Jūsu savienojums ar šo lapu nav drošs.
 identity-connection-verified = Jūsu savienojums ar šo lapu ir drošs.
 identity-ev-owner-label = Sertifikāts izsniegts:
 identity-description-custom-root2 = Mozilla neatpazīst šo sertifikāta izdevēju. Iespējams, to ir pievienojis jūsu operētājsistēma vai administrators.
 identity-remove-cert-exception =
-    .label = Attālinātā izpilde
-    .accesskey = A
-identity-description-insecure = Jūsu savienojums ar šo lapu nav drošs. Lapai nosūtītā informācija (piemēram paroles, ziņojumi vai kredītkartes dati) var būt pieejami citiem.
-identity-description-insecure-login-forms = Dati, ko ievadīsiet šajā lapā nav aizsargāti un var tikt pārtverti.
-identity-description-weak-cipher-intro = Jūsu savienojums ar šo lapu izmanto vāju šifrēšanu un nav privāts.
+    .label = Noņemt izņēmumu
+    .accesskey = R
+identity-description-insecure = Jūsu savienojums ar šo lapu nav drošs. Lapai nosūtītā informācija (piemēram, paroles, ziņojumi vai kredītkartes dati) var būt pieejami citiem.
+identity-description-insecure-login-forms = Pieteikšanās informācija, ko ievadāt šajā lapā, nav droša un var tikt apdraudēta.
+identity-description-weak-cipher-intro = Jūsu savienojumam ar šo vietni tiek izmantota vāja šifrēšana, un tas nav privāts.
 identity-description-weak-cipher-risk = Citi cilvēki var aplūkot jūsu informāciju vai modificēt lapas uzvedību.
 identity-description-active-blocked2 = { -brand-short-name } bloķēja nedrošo saturu šajā lapā.
-identity-description-passive-loaded = Jūsu savienojums ar šo lapu nav drošs, lapai nosūtītā informācija var būt pieejami citiem.
-identity-description-passive-loaded-insecure2 = Šīs lapas daļas (piemēram attēli) nav drošas.
-identity-description-passive-loaded-mixed2 = Lai arī { -brand-short-name } bloķēja nedrošo saturu, lapā joprojām ir saturs, kas nav drošs (piemēram attēli).
-identity-description-active-loaded = Šīs lapas daļas (piemēram attēli vai skripti) nav droši un jūsu savienojums nav privāts.
-identity-description-active-loaded-insecure = Lapai nosūtītā informācija (piemēram paroles, ziņojumi vai kredītkartes dati) var būt pieejami citiem.
+identity-description-passive-loaded = Jūsu savienojums nav privāts, un informācija, ko kopīgojat ar vietni, var būt pieejama citiem.
+identity-description-passive-loaded-insecure2 = Šajā vietnē ir saturs, kas nav drošs (piemēram, attēli).
+identity-description-passive-loaded-mixed2 = Lai arī { -brand-short-name } bloķēja daļu satura, lapā joprojām ir saturs, kas nav drošs (piemēram, attēli).
+identity-description-active-loaded = Šajā vietnē ir saturs, kas nav drošs (piemēram, skripti), un jūsu savienojums ar to nav privāts.
+identity-description-active-loaded-insecure = Lapai nosūtītā informācija (piemēram, paroles, ziņojumi vai kredītkartes dati) var būt pieejami citiem.
 identity-disable-mixed-content-blocking =
     .label = Pagaidām izslēgt aizsardzību
     .accesskey = d
@@ -404,7 +404,7 @@ identity-enable-mixed-content-blocking =
     .label = Ieslēgt aizsardzību
     .accesskey = e
 identity-more-info-link-text =
-    .label = Sīkāka informācija
+    .label = Vairāk informācijas
 
 ## Window controls
 
@@ -478,7 +478,7 @@ popup-select-speaker-icon =
 popup-select-window-or-screen =
     .label = Logs vai ekrāns:
     .accesskey = L
-popup-all-windows-shared = Visi uz ekrāna redzamie logi tiks koplietoti.
+popup-all-windows-shared = Visi uz ekrāna redzamie logi tiks kopīgoti.
 
 ## WebRTC window or screen share tab switch warning
 
@@ -491,7 +491,7 @@ sharing-warning-disable-for-session =
 
 ## DevTools F12 popup
 
-enable-devtools-popup-description2 = Lai izmantotu īsinājumtaustiņu F12, vispirms atveriet Izstrādātju Rīki, izmantojot izvēlni Pārlūka Rīki.
+enable-devtools-popup-description2 = Lai izmantotu īsinājumtaustiņu F12, izvēlnē Pārlūka Rīki atveriet sadaļu Izstrādātāju Rīki.
 
 ## URL Bar
 
@@ -551,7 +551,7 @@ urlbar-switch-to-tab =
 urlbar-extension =
     .value = Paplašinājums:
 urlbar-go-button =
-    .tooltiptext = Pāriet uz adresi, kas redzama vietas joslā
+    .tooltiptext = Iet uz adresi, kas ir atrašanās vietas joslā
 urlbar-page-action-button =
     .tooltiptext = Lapas darbības
 
@@ -609,6 +609,12 @@ urlbar-result-action-copy-to-clipboard = Kopēt
 #  $result (String): the string representation for a formula result
 urlbar-result-action-calculator-result = = { $result }
 
+## Strings used for buttons in the urlbar
+
+# Label prompting user to search with a particular search engine.
+#  $engine (String): the name of a search engine that searches a specific site
+urlbar-result-search-with = Meklēt ar { $engine }
+
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
 ## In these actions "Search" is a verb, followed by where the search is performed.
@@ -638,6 +644,21 @@ urlbar-group-quickactions =
 #  $engine (String): the name of the search engine used to search.
 urlbar-group-recent-searches =
     .label = Nesenie meklējumi
+# The header shown above trending results.
+# Variables:
+#  $engine (String): the name of the search engine providing the trending suggestions
+urlbar-group-trending =
+    .label = Tendences meklētājā { $engine }
+# The result menu labels shown next to trending results.
+urlbar-result-menu-trending-dont-show =
+    .label = Nerādīt tendences meklēšanas vaicājumos
+    .accesskey = N
+urlbar-result-menu-trending-why =
+    .label = Kāpēc es šo redzu?
+    .accesskey = K
+# A message that replaces a result when the user dismisses all suggestions of a
+# particular type.
+urlbar-trending-dismissal-acknowledgment = Paldies par atsauksmi. Jūs vairs neredzēsit meklēšanas vaicājumu tendences.
 
 ## Reader View toolbar buttons
 
@@ -719,7 +740,7 @@ bookmarks-tools-toolbar-visibility-panel =
 bookmarks-tools-menu-button-visibility =
     .label =
         { $isVisible ->
-            [true] Aizvākt grāmatzīmju izvēlni no rīkjoslas
+            [true] Noņemt grāmatzīmju izvēlni no rīkjoslas
            *[other] Pievienot grāmatzīmju izvēlni rīkjoslai
         }
 
@@ -831,17 +852,17 @@ ui-tour-info-panel-close =
 ##  $uriHost (String): URI host for which the popup was allowed or blocked.
 
 popups-infobar-allow =
-    .label = Pieņemt jaunos logus no { $uriHost }
-    .accesskey = p
+    .label = Atļaut uznirstošos logus vietnei { $uriHost }
+    .accesskey = u
 popups-infobar-block =
-    .label = Bloķēt jaunos logus no { $uriHost }
-    .accesskey = p
+    .label = Bloķēt uznirstošos logus vietnei { $uriHost }
+    .accesskey = u
 
 ##
 
 popups-infobar-dont-show-message =
-    .label = Nerādīt šo paziņojumu, bloķējot jaunos logus
-    .accesskey = D
+    .label = Nerādīt šo paziņojumu, ja uznirstošie logi ir bloķēti
+    .accesskey = N
 edit-popup-settings =
     .label = Pārvaldīt uznirstošo logu iestatījumus…
     .accesskey = m
@@ -872,7 +893,7 @@ navbar-accessible =
 navbar-downloads =
     .label = Lejupielādes
 navbar-overflow =
-    .tooltiptext = Citi rīki…
+    .tooltiptext = Vairāk rīku…
 # Variables:
 #   $shortcut (String): keyboard shortcut to print the page
 navbar-print =
@@ -988,6 +1009,10 @@ firefox-relay-offer-legal-notice = Noklikšķinot uz “Izmantot e-pasta masku�
 popup-notification-addon-install-unsigned =
     .value = (Nepārbaudīts)
 popup-notification-xpinstall-prompt-learn-more = Uzziniet vairāk par papildinājumu drošu instalēšanu
+# Note: Access key is set to P to match "Private" in the corresponding localized label.
+popup-notification-addon-privatebrowsing-checkbox =
+    .label = Palaist privātajā logā
+    .accesskey = P
 
 ## Pop-up warning
 
@@ -1022,4 +1047,25 @@ popup-warning-button =
 # Variables:
 #   $popupURI (String): the URI for the pop-up window
 popup-show-popup-menuitem =
-    .label = Rādīt '{ $popupURI }'
+    .label = Rādīt “{ $popupURI }”
+
+## File-picker crash notification ("FilePickerCrashed.sys.mjs")
+
+file-picker-failed-open = Nevarēja atvērt Windows datņu dialoglodziņu. Nevarēja atlasīt nevienu datni vai mapi.
+#   $path (string): The full path to which the file will be saved (e.g., 'C:\Users\Default User\Downloads\readme.txt').
+file-picker-failed-save-somewhere = Nevarēja atvērt Windows datņu dialoglodziņu. Datne tiks saglabāta mapē { $path }.
+file-picker-failed-save-nowhere = Nevarēja atvērt Windows datņu dialoglodziņu. Nevarēja atrast noklusējuma mapi; datne netiks saglabāta.
+file-picker-crashed-open = Nevarēja atvērt Windows datņu dialoglodziņu. Nevarēja atlasīt nevienu datni vai mapi.
+#   $path (string): The full path to which the file will be saved (e.g., 'C:\Users\Default User\Downloads\readme.txt').
+file-picker-crashed-save-somewhere = Windows datņu dialoglodziņš ir avarējis. Datne tiks saglabāta mapē { $path }.
+file-picker-crashed-save-nowhere = Nevarēja atvērt Windows datņu dialoglodziņu. Nevarēja atrast noklusējuma mapi; datne netiks saglabāta.
+
+# Button used with file-picker-crashed-save-default. Opens the folder in Windows
+# Explorer, with the saved file selected and in focus.
+#
+# The wording here should be consistent with the Windows variant of
+# `downloads-cmd-show-menuitem-2` and similar messages.
+
+file-picker-crashed-show-in-folder =
+    .label = Rādīt mapē
+    .accessKey = m

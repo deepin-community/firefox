@@ -6,7 +6,6 @@
 
 #include "frontend/FoldConstants.h"
 
-#include "mozilla/FloatingPoint.h"
 #include "mozilla/Maybe.h"  // mozilla::Maybe
 #include "mozilla/Try.h"    // MOZ_TRY*
 
@@ -19,18 +18,14 @@
 #include "frontend/Parser-macros.h"  // MOZ_TRY_VAR_OR_RETURN
 #include "frontend/ParserAtom.h"     // ParserAtomsTable, TaggedParserAtomIndex
 #include "js/Conversions.h"
-#include "js/Stack.h"           // JS::NativeStackLimit
-#include "util/StringBuffer.h"  // StringBuffer
+#include "js/Stack.h"            // JS::NativeStackLimit
+#include "util/StringBuilder.h"  // StringBuilder
 
 using namespace js;
 using namespace js::frontend;
 
-using JS::GenericNaN;
 using JS::ToInt32;
 using JS::ToUint32;
-using mozilla::IsNegative;
-using mozilla::NegativeInfinity;
-using mozilla::PositiveInfinity;
 
 struct FoldInfo {
   FrontendContext* fc;
@@ -105,6 +100,10 @@ restart:
     // Non-global lexical declarations are block-scoped (ergo not hoistable).
     case ParseNodeKind::LetDecl:
     case ParseNodeKind::ConstDecl:
+#ifdef ENABLE_EXPLICIT_RESOURCE_MANAGEMENT
+    case ParseNodeKind::UsingDecl:
+    case ParseNodeKind::AwaitUsingDecl:
+#endif
       MOZ_ASSERT(node->is<ListNode>());
       *result = false;
       return true;
@@ -1230,8 +1229,8 @@ static bool FoldAdd(FoldInfo info, ParseNode** nodePtr) {
       MOZ_ASSERT((*current)->isKind(ParseNodeKind::StringExpr));
 
       // To avoid unnecessarily copy when there's no strings after the
-      // first item, lazily construct StringBuffer and append the first item.
-      mozilla::Maybe<StringBuffer> accum;
+      // first item, lazily construct StringBuilder and append the first item.
+      mozilla::Maybe<StringBuilder> accum;
       TaggedParserAtomIndex firstAtom;
       firstAtom = (*current)->as<NameNode>().atom();
 

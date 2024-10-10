@@ -354,6 +354,9 @@ has-seccomp-bpf = Seccomp-BPF (Filtrowanje systemowych zawołanjow)
 has-seccomp-tsync = Nitkowa synchronizacija Seccomp
 has-user-namespaces = Wužiwarske mjenowe rumy
 has-privileged-user-namespaces = Wužiwarske mjenowe rumy za priwilegowane procesy
+# Variables
+# $status (string) - Boolean value of hasUserNamespaces (should only be false when support-user-namespaces-unavailable is used)
+support-user-namespaces-unavailable = { $status } – Waš system tutu funkciju njedowoluje. To móže wěstotne funkcije { -brand-short-name } wobmjezować.
 can-sandbox-content = Testowanje wobsahowych procesow w pěskowym kašćiku
 can-sandbox-media = Testowanje medijowych tykačow w pěskowym kašćiku
 content-sandbox-level = Runina wobsahowych procesow w pěskowym kašćiku
@@ -421,6 +424,20 @@ support-printing-clear-settings-button = Składowane ćišćerske nastajenja zha
 support-printing-modified-settings = Změnjene ćišćerske nastajenja
 support-printing-prefs-name = Mjeno
 support-printing-prefs-value = Hódnota
+
+## Remote Settings sections
+
+support-remote-settings-title = Zdalene nastajenja
+support-remote-settings-status = Status
+support-remote-settings-status-ok = W porjadku
+# Status when synchronization is not working.
+support-remote-settings-status-broken = Njefungowacy
+support-remote-settings-last-check = Poslednja kontrola
+support-remote-settings-local-timestamp = Lokalny časowy kołk
+support-remote-settings-sync-history = Historija
+support-remote-settings-sync-history-status = Status
+support-remote-settings-sync-history-datetime = Datum
+support-remote-settings-sync-history-infos = Informacije
 
 ## Normandy sections
 

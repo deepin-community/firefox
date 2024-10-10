@@ -38,8 +38,11 @@ path = "../support/error"
 [dependencies.interrupt-support]
 path = "../support/interrupt"
 
+[dependencies.payload-support]
+path = "../support/payload"
+
 [dependencies.rusqlite]
-version = "0.30.0"
+version = "0.31.0"
 features = [
     "bundled",
     "unlock_notify",
@@ -55,6 +58,9 @@ features = ["random"]
 [dependencies.sync15]
 path = "../sync15"
 features = ["sync-engine"]
+
+[dependencies.types]
+path = "../support/types"
 
 [dev-dependencies]
 tempfile = "3.1"

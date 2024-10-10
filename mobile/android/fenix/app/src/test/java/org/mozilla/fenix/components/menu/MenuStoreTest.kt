@@ -5,33 +5,262 @@
 package org.mozilla.fenix.components.menu
 
 import kotlinx.coroutines.test.runTest
+import mozilla.components.browser.state.state.ContentState
+import mozilla.components.browser.state.state.TabSessionState
+import mozilla.components.feature.addons.Addon
+import mozilla.components.lib.state.Middleware
+import mozilla.components.support.test.libstate.ext.waitUntilIdle
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
-import org.junit.Before
 import org.junit.Test
+import org.mozilla.fenix.components.menu.store.BookmarkState
+import org.mozilla.fenix.components.menu.store.BrowserMenuState
 import org.mozilla.fenix.components.menu.store.MenuAction
 import org.mozilla.fenix.components.menu.store.MenuState
 import org.mozilla.fenix.components.menu.store.MenuStore
+import org.mozilla.fenix.components.menu.store.copyWithBrowserMenuState
+import org.mozilla.fenix.components.menu.store.copyWithExtensionMenuState
 
 class MenuStoreTest {
 
-    private lateinit var state: MenuState
-    private lateinit var store: MenuStore
+    @Test
+    fun `WHEN store is created THEN init action is dispatched`() {
+        var initActionObserved = false
+        val testMiddleware: Middleware<MenuState, MenuAction> = { _, next, action ->
+            if (action == MenuAction.InitAction) {
+                initActionObserved = true
+            }
 
-    @Before
-    fun setup() {
-        state = MenuState()
-        store = MenuStore(initialState = state)
+            next(action)
+        }
+
+        val store = MenuStore(
+            initialState = MenuState(),
+            middleware = listOf(testMiddleware),
+        )
+
+        // Wait for InitAction and middleware
+        store.waitUntilIdle()
+
+        assertTrue(initActionObserved)
+        assertNull(store.state.browserMenuState)
     }
 
     @Test
-    fun `WHEN update bookmarked action is dispatched THEN bookmarked state is updated`() = runTest {
-        assertFalse(store.state.isBookmarked)
+    fun `GIVEN a browser menu state update WHEN copying the browser menu state THEN return the updated browser menu state`() {
+        val selectedTab = TabSessionState(
+            id = "tabId1",
+            content = ContentState(
+                url = "www.mozilla.com",
+            ),
+        )
+        val firefoxTab = TabSessionState(
+            id = "tabId2",
+            content = ContentState(
+                url = "www.firefox.com",
+            ),
+        )
+        val state = MenuState(
+            browserMenuState = BrowserMenuState(
+                selectedTab = selectedTab,
+                bookmarkState = BookmarkState(),
+                isPinned = false,
+            ),
+        )
 
-        store.dispatch(MenuAction.UpdateBookmarked(isBookmarked = true)).join()
-        assertTrue(store.state.isBookmarked)
+        assertEquals(selectedTab, state.browserMenuState!!.selectedTab)
+        assertNull(state.browserMenuState!!.bookmarkState.guid)
+        assertFalse(state.browserMenuState!!.bookmarkState.isBookmarked)
+        assertFalse(state.browserMenuState!!.isPinned)
 
-        store.dispatch(MenuAction.UpdateBookmarked(isBookmarked = false)).join()
-        assertFalse(store.state.isBookmarked)
+        var newState = state.copyWithBrowserMenuState {
+            it.copy(selectedTab = firefoxTab)
+        }
+
+        assertEquals(firefoxTab, newState.browserMenuState!!.selectedTab)
+        assertNull(state.browserMenuState!!.bookmarkState.guid)
+        assertFalse(state.browserMenuState!!.bookmarkState.isBookmarked)
+        assertFalse(state.browserMenuState!!.isPinned)
+
+        val bookmarkState = BookmarkState(guid = "id", isBookmarked = true)
+        val isPinned = true
+        newState = newState.copyWithBrowserMenuState {
+            it.copy(bookmarkState = bookmarkState, isPinned = isPinned)
+        }
+
+        assertEquals(firefoxTab, newState.browserMenuState!!.selectedTab)
+        assertEquals(bookmarkState, newState.browserMenuState!!.bookmarkState)
+        assertEquals(isPinned, newState.browserMenuState!!.isPinned)
+    }
+
+    @Test
+    fun `GIVEN an extension menu state update WHEN copying the extension menu state THEN return the updated extension menu state`() {
+        val addon = Addon(id = "ext1")
+        val state = MenuState()
+
+        assertEquals(0, state.extensionMenuState.recommendedAddons.size)
+
+        val newState = state.copyWithExtensionMenuState {
+            it.copy(recommendedAddons = listOf(addon))
+        }
+
+        assertEquals(1, newState.extensionMenuState.recommendedAddons.size)
+        assertEquals(addon, newState.extensionMenuState.recommendedAddons.first())
+    }
+
+    @Test
+    fun `WHEN add bookmark action is dispatched THEN state is not updated`() = runTest {
+        val initialState = MenuState(
+            browserMenuState = BrowserMenuState(
+                selectedTab = TabSessionState(
+                    id = "tabId",
+                    content = ContentState(
+                        url = "www.google.com",
+                    ),
+                ),
+                bookmarkState = BookmarkState(),
+            ),
+        )
+        val store = MenuStore(initialState = initialState)
+
+        store.dispatch(MenuAction.AddBookmark).join()
+
+        assertEquals(initialState, store.state)
+    }
+
+    @Test
+    fun `WHEN update bookmark state action is dispatched THEN bookmark state is updated`() = runTest {
+        val initialState = MenuState(
+            browserMenuState = BrowserMenuState(
+                selectedTab = TabSessionState(
+                    id = "tabId",
+                    content = ContentState(
+                        url = "www.google.com",
+                    ),
+                ),
+                bookmarkState = BookmarkState(),
+            ),
+        )
+        val store = MenuStore(initialState = initialState)
+
+        assertNotNull(store.state.browserMenuState)
+        assertNull(store.state.browserMenuState!!.bookmarkState.guid)
+        assertFalse(store.state.browserMenuState!!.bookmarkState.isBookmarked)
+
+        val newBookmarkState = BookmarkState(
+            guid = "id1",
+            isBookmarked = true,
+        )
+        store.dispatch(MenuAction.UpdateBookmarkState(bookmarkState = newBookmarkState)).join()
+
+        assertEquals(newBookmarkState, store.state.browserMenuState!!.bookmarkState)
+    }
+
+    @Test
+    fun `WHEN add shortcut action is dispatched THEN state is not updated`() = runTest {
+        val initialState = MenuState(
+            browserMenuState = BrowserMenuState(
+                selectedTab = TabSessionState(
+                    id = "tabId",
+                    content = ContentState(
+                        url = "www.google.com",
+                    ),
+                ),
+                isPinned = false,
+            ),
+        )
+        val store = MenuStore(initialState = initialState)
+
+        store.dispatch(MenuAction.AddShortcut).join()
+
+        assertEquals(initialState, store.state)
+    }
+
+    @Test
+    fun `WHEN remove shortcut action is dispatched THEN state is not updated`() = runTest {
+        val initialState = MenuState(
+            browserMenuState = BrowserMenuState(
+                selectedTab = TabSessionState(
+                    id = "tabId",
+                    content = ContentState(
+                        url = "www.google.com",
+                    ),
+                ),
+                isPinned = false,
+            ),
+        )
+        val store = MenuStore(initialState = initialState)
+
+        store.dispatch(MenuAction.RemoveShortcut).join()
+
+        assertEquals(initialState, store.state)
+    }
+
+    @Test
+    fun `WHEN update shortcut state action is dispatched THEN pinned state is updated`() = runTest {
+        val initialState = MenuState(
+            browserMenuState = BrowserMenuState(
+                selectedTab = TabSessionState(
+                    id = "tabId",
+                    content = ContentState(
+                        url = "www.google.com",
+                    ),
+                ),
+                isPinned = false,
+            ),
+        )
+        val store = MenuStore(initialState = initialState)
+
+        assertNotNull(store.state.browserMenuState)
+        assertFalse(store.state.browserMenuState!!.isPinned)
+
+        store.dispatch(MenuAction.UpdatePinnedState(isPinned = true)).join()
+        assertTrue(store.state.browserMenuState!!.isPinned)
+    }
+
+    @Test
+    fun `WHEN update extension state action is dispatched THEN extension state is updated`() = runTest {
+        val addon = Addon(id = "ext1")
+        val store = MenuStore(initialState = MenuState())
+
+        assertEquals(0, store.state.extensionMenuState.recommendedAddons.size)
+
+        store.dispatch(MenuAction.UpdateExtensionState(recommendedAddons = listOf(addon))).join()
+
+        assertEquals(1, store.state.extensionMenuState.recommendedAddons.size)
+        assertEquals(addon, store.state.extensionMenuState.recommendedAddons.first())
+    }
+
+    @Test
+    fun `WHEN find in page action is dispatched THEN state is not updated`() = runTest {
+        val initialState = MenuState()
+        val store = MenuStore(initialState = initialState)
+
+        store.dispatch(MenuAction.FindInPage).join()
+
+        assertEquals(initialState, store.state)
+    }
+
+    @Test
+    fun `WHEN request desktop site action is dispatched THEN desktop mode state is updated`() = runTest {
+        val initialState = MenuState()
+        val store = MenuStore(initialState = initialState)
+
+        store.dispatch(MenuAction.RequestDesktopSite).join()
+
+        assertTrue(store.state.isDesktopMode)
+    }
+
+    @Test
+    fun `WHEN request mobile site action is dispatched THEN desktop mode state is updated`() = runTest {
+        val initialState = MenuState(isDesktopMode = true)
+        val store = MenuStore(initialState = initialState)
+
+        store.dispatch(MenuAction.RequestMobileSite).join()
+
+        assertFalse(store.state.isDesktopMode)
     }
 }

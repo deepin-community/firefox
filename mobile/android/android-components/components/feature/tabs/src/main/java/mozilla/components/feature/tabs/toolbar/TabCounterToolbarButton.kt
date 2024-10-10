@@ -31,7 +31,9 @@ open class TabCounterToolbarButton(
     private val showTabs: () -> Unit,
     private val store: BrowserStore,
     private val menu: TabCounterMenu? = null,
-    private val showMaskInPrivateMode: Boolean = false,
+    private val showMaskInPrivateMode: Boolean = true,
+    override val visible: () -> Boolean = { true },
+    override val weight: () -> Int = { -1 },
 ) : Toolbar.Action {
 
     private var reference = WeakReference<TabCounter>(null)

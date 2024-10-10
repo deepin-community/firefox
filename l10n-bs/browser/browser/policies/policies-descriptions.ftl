@@ -39,8 +39,11 @@ policy-DisableAppUpdate = Spriječite ažuriranje pretraživača.
 policy-DisableBuiltinPDFViewer = Onemogućite PDF.js, ugrađeni PDF preglednik u { -brand-short-name }.
 policy-DisableDefaultBrowserAgent = Spriječite zadanog agenta pretraživača da poduzme bilo kakve radnje. Primjenjivo samo na Windows; druge platforme nemaju agenta.
 policy-DisableDeveloperTools = Blokirajte pristup alatima za programere.
+policy-DisableEncryptedClientHello = Onemogućite upotrebu TLS funkcije Encrypted Client Hello (ECH).
 policy-DisableFeedbackCommands = Onemogućite komande za slanje povratnih informacija iz menija Pomoć (Pošalji povratne informacije i Prijavi obmanjujuću lokaciju).
 policy-DisableFirefoxAccounts = Onemogućite usluge zasnovane na { -fxaccount-brand-name }, uključujući sinhronizaciju.
+# This string is in the process of being deprecated in favor of policy-DisableAccounts.
+policy-DisableFirefoxAccounts1 = Onemogućite usluge zasnovane na računu, uključujući sinhronizaciju.
 # Firefox Screenshots is the name of the feature, and should not be translated.
 policy-DisableFirefoxScreenshots = Onemogućite funkciju Firefox Screenshots.
 policy-DisableFirefoxStudies = Spriječite { -brand-short-name } da izvodi studije.
@@ -81,6 +84,8 @@ policy-Handlers = Konfigurišite zadane rukovaoce aplikacijama.
 policy-HardwareAcceleration = Ako je netačno, isključite hardversko ubrzanje.
 # “lock” means that the user won’t be able to change this setting
 policy-Homepage = Postavite i opciono zaključajte početnu stranicu.
+policy-HttpAllowlist = Izvori koji neće biti nadograđeni na HTTPS.
+policy-HttpsOnlyMode = Dozvolite da se omogući način rada samo za HTTPS.
 policy-InstallAddonsPermission = Dozvolite određenim web stranicama da instaliraju dodatke.
 policy-LegacyProfiles = Onemogućite funkciju koja nameće poseban profil za svaku instalaciju.
 
@@ -105,12 +110,16 @@ policy-OverrideFirstRunPage = Poništi prvu stranicu za pokretanje. Postavite ov
 policy-OverridePostUpdatePage = Poništite stranicu “Šta je novo” nakon ažuriranja. Postavite ovo pravilo na prazno ako želite da onemogućite stranicu nakon ažuriranja.
 policy-PasswordManagerEnabled = Omogućite čuvanje lozinki u upravitelju lozinki.
 policy-PasswordManagerExceptions = Spriječite { -brand-short-name } da čuva lozinke za određene web stranice.
+# Post-quantum refers to cryptography that is safe from attacks by quantum
+# computers. See https://en.wikipedia.org/wiki/Post-quantum_cryptography
+policy-PostQuantumKeyAgreementEnabled = Omogući sporazum post-kvantnog ključa za TLS.
 # PDF.js and PDF should not be translated
 policy-PDFjs = Onemogućite ili konfigurišite PDF.js, ugrađeni PDF preglednik u { -brand-short-name }.
 policy-Permissions2 = Konfigurirajte dozvole za kameru, mikrofon, lokaciju, obavještenja i automatsku reprodukciju.
 policy-PictureInPicture = Omogućite ili onemogućite Slika u slici.
 policy-PopupBlocking = Dozvolite određenim web stranicama da prikazuju iskačuće prozore prema zadanim postavkama.
 policy-Preferences = Postavite i zaključajte vrijednost za podskup preferencija.
+policy-PrivateBrowsingModeAvailability = Podesite dostupnost režima privatnog pretraživanja.
 policy-PromptForDownloadLocation = Pitajte gdje da sačuvate datoteke prilikom preuzimanja.
 policy-Proxy = Konfigurišite postavke proxyja.
 policy-RequestedLocales = Postavite listu traženih lokaliteta za aplikaciju prema željenom redoslijedu.

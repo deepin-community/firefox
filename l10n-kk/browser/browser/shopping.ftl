@@ -89,6 +89,9 @@ shopping-show-less-button = Азырақ көрсету
 
 shopping-settings-label =
     .label = Баптаулар
+shopping-settings-recommendations-toggle2 =
+    .label = Ұсыныстар мен демеушілік мазмұнды көрсету
+shopping-settings-recommendations-learn-more3 = { -brand-product-name } жеке деректеріңізді бөліспейді, сондықтан бұл ұсыныстар интернетте сіздің артыңыздан ермейді. <a data-l10n-name="review-quality-url">Көбірек білу</a>
 shopping-settings-recommendations-toggle =
     .label = Пікірлерді тексеру құралында жарнаманы көрсету
 shopping-settings-recommendations-learn-more2 = Сәйкес өнімдерге арналған кездейсоқ жарнамаларды көресіз. Біз тек сенімді пікірлері бар өнімдерді жарнамалаймыз. <a data-l10n-name="review-quality-url">Көбірек білу</a>
@@ -115,6 +118,7 @@ shopping-settings-sidebar-enabled-state = Пікірлерді тексеру қ
 shopping-adjusted-rating-label =
     .label = Түзетілген рейтинг
 shopping-adjusted-rating-unreliable-reviews = Сенімсіз пікірлер өшірілді
+shopping-adjusted-rating-based-reliable-reviews = Сенімді пікірлерге негізделген
 
 ## Strings for the review reliability component
 
@@ -133,6 +137,8 @@ shopping-analysis-explainer-learn-more2 = <a data-l10n-name="review-quality-url"
 # websites, which will be inserted without being translated.
 #  $retailer (String) - capitalized name of the shopping website, for example, "Amazon".
 shopping-analysis-explainer-highlights-description = <strong>Маңызды сәттер</strong> { $retailer } ішінен соңғы 80 күнде алынған, біз сенімді деп ойлайтын пікірлер негізінде алынды.
+# Fallback for analysis highlights explainer if the retailer is ever unknown
+shopping-analysis-explainer-highlights-description-unknown-retailer = <strong>Маңызды сәттер</strong> соңғы 80 күнде алынған, біз сенімді деп ойлайтын пікірлер негізінде алынды.
 shopping-analysis-explainer-review-grading-scale-reliable = Сенімді пікірлер. Бұл пікірлерді шын, бейтарап пікірлер қалдырған шынайы тұтынушылар жазған деп санаймыз.
 shopping-analysis-explainer-review-grading-scale-mixed = Осында сенімді және сенімсіз пікірлер араласқан деп санаймыз.
 shopping-analysis-explainer-review-grading-scale-unreliable = Сенімсіз пікірлер. Бұл пікірлер жалған немесе біржақты шолушылар қалдырды деп санаймыз.
@@ -159,6 +165,7 @@ shopping-unanalyzed-product-analyze-button = Пікір сапасын текс�
 
 more-to-consider-ad-label =
     .label = Көбірек қарастыру үшін
+shopping-sponsored-label = Демеуленген
 ad-by-fakespot = { -fakespot-brand-name } ұсынған жарнама
 
 ## Shopping survey strings.

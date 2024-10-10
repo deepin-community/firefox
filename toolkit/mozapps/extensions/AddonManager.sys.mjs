@@ -26,7 +26,6 @@ const MOZ_COMPATIBILITY_NIGHTLY = ![
 
 const INTL_LOCALES_CHANGED = "intl:app-locales-changed";
 
-const PREF_AMO_ABUSEREPORT = "extensions.abuseReport.amWebAPI.enabled";
 const PREF_BLOCKLIST_PINGCOUNTVERSION = "extensions.blocklist.pingCountVersion";
 const PREF_EM_UPDATE_ENABLED = "extensions.update.enabled";
 const PREF_EM_LAST_APP_VERSION = "extensions.lastAppVersion";
@@ -3280,7 +3279,7 @@ var AddonManagerInternal = {
             // the customConfirmationUI preference and responding to the
             // "addon-install-confirmation" notification.  If the application
             // does not implement its own prompt, use the built-in xul dialog.
-            if (info.addon.userPermissions) {
+            if (info.addon.installPermissions) {
               let subject = {
                 wrappedJSObject: {
                   target: browser,
@@ -3288,7 +3287,7 @@ var AddonManagerInternal = {
                 },
               };
               subject.wrappedJSObject.info.permissions =
-                info.addon.userPermissions;
+                info.addon.installPermissions;
               Services.obs.notifyObservers(
                 subject,
                 "webextension-permission-prompt"
@@ -3555,6 +3554,10 @@ var AddonManagerInternal = {
       });
     },
 
+    async sendAbuseReport(target, addonId, data, options) {
+      return lazy.AbuseReporter.sendAbuseReport(addonId, data, options);
+    },
+
     async addonUninstall(target, id) {
       let addon = await AddonManager.getAddonByID(id);
       if (!addon) {
@@ -3627,54 +3630,6 @@ var AddonManagerInternal = {
           this.forgetInstall(id);
         }
       }
-    },
-
-    async addonReportAbuse(target, id) {
-      if (!Services.prefs.getBoolPref(PREF_AMO_ABUSEREPORT, false)) {
-        return Promise.reject({
-          message: "amWebAPI reportAbuse not supported",
-        });
-      }
-
-      let existingDialog = lazy.AbuseReporter.getOpenDialog();
-      if (existingDialog) {
-        existingDialog.close();
-      }
-
-      const dialog = await lazy.AbuseReporter.openDialog(
-        id,
-        "amo",
-        target
-      ).catch(err => {
-        Cu.reportError(err);
-        return Promise.reject({
-          message: "Error creating abuse report",
-        });
-      });
-
-      return dialog.promiseReport.then(
-        async report => {
-          if (!report) {
-            return false;
-          }
-
-          await report.submit().catch(err => {
-            Cu.reportError(err);
-            return Promise.reject({
-              message: "Error submitting abuse report",
-            });
-          });
-
-          return true;
-        },
-        err => {
-          Cu.reportError(err);
-          dialog.close();
-          return Promise.reject({
-            message: "Error creating abuse report",
-          });
-        }
-      );
     },
   },
 };
@@ -4051,6 +4006,8 @@ export var AddonManager = {
     ["ERROR_INCOMPATIBLE", -11],
     // The add-on type is not supported by the platform.
     ["ERROR_UNSUPPORTED_ADDON_TYPE", -12],
+    // The add-on can only be installed via enterprise policy.
+    ["ERROR_ADMIN_INSTALL_ONLY", -13],
   ]),
   // The update check timed out
   ERROR_TIMEOUT: -1,
@@ -4940,6 +4897,8 @@ AMTelemetry = {
    *          The object for the given addon type.
    */
   getEventObjectFromAddonType(addonType) {
+    // NOTE: Telemetry events' object maximum length is 20 chars (See https://firefox-source-docs.mozilla.org/toolkit/components/telemetry/collection/events.html#limits)
+    // and the value needs to matching the "^[a-zA-Z][a-zA-Z0-9_.]*[a-zA-Z0-9]$" pattern.
     switch (addonType) {
       case undefined:
         return "unknown";
@@ -4949,11 +4908,6 @@ AMTelemetry = {
       case "dictionary":
       case "sitepermission":
         return addonType;
-      // TODO(Bug 1789718): Remove after the deprecated XPIProvider-based implementation is also removed.
-      case "sitepermission-deprecated":
-        // Telemetry events' object maximum length is 20 chars (See https://firefox-source-docs.mozilla.org/toolkit/components/telemetry/collection/events.html#limits)
-        // and the value needs to matching the "^[a-zA-Z][a-zA-Z0-9_.]*[a-zA-Z0-9]$" pattern.
-        return "siteperm_deprecated";
       default:
         // Currently this should only include gmp-plugins ("plugin").
         return "other";
@@ -5076,12 +5030,7 @@ AMTelemetry = {
    * @param {object} extraVars
    * @returns {object} The formatted extra vars.
    */
-  formatExtraVars({ addon, ...extraVars }) {
-    if (addon) {
-      extraVars.addonId = addon.id;
-      extraVars.type = addon.type;
-    }
-
+  formatExtraVars(extraVars) {
     // All the extra_vars in a telemetry event have to be strings.
     for (var [key, value] of Object.entries(extraVars)) {
       if (value == undefined) {
@@ -5089,10 +5038,6 @@ AMTelemetry = {
       } else {
         extraVars[key] = this.convertToString(value);
       }
-    }
-
-    if (extraVars.addonId) {
-      extraVars.addonId = this.getTrimmedString(extraVars.addonId);
     }
 
     return extraVars;
@@ -5251,40 +5196,6 @@ AMTelemetry = {
   },
 
   /**
-   * Record an event on abuse report submissions.
-   *
-   * @params {object} opts
-   * @params {string} opts.addonId
-   *         The id of the addon being reported.
-   * @params {string} [opts.addonType]
-   *         The type of the addon being reported  (only present for an existing
-   *         addonId).
-   * @params {string} [opts.errorType]
-   *         The AbuseReport errorType for a submission failure.
-   * @params {string} opts.reportEntryPoint
-   *         The entry point of the abuse report.
-   */
-  recordReportEvent({ addonId, addonType, errorType, reportEntryPoint }) {
-    this.recordEvent({
-      method: "report",
-      object: reportEntryPoint,
-      value: addonId,
-      extra: this.formatExtraVars({
-        addon_type: addonType,
-        error_type: errorType,
-      }),
-    });
-    Glean.addonsManager.report.record(
-      this.formatExtraVars({
-        addon_id: addonId,
-        addon_type: addonType,
-        entry_point: reportEntryPoint,
-        error_type: errorType,
-      })
-    );
-  },
-
-  /**
    * @params {object} opts
    * @params {nsIURI} opts.displayURI
    */
@@ -5297,7 +5208,7 @@ AMTelemetry = {
       extra: {},
     });
     Glean.addonsManager.reportSuspiciousSite.record(
-      this.formatExtraVars({ suspiciousSite: site })
+      this.formatExtraVars({ suspicious_site: site })
     );
   },
 

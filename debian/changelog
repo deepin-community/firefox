@@ -1,9 +1,157 @@
-firefox (126.0.1-1deepin1) unstable; urgency=medium
+firefox (131.0-1) unstable; urgency=medium
 
-  * Import LoongArch patches from https://github.com/AOSC-Tracking/firefox @ aosc/v126.0.1.
-  * Allow AMD GPUs to use VA-API for accelerated video decoding.
+  * New upstream release.
+  * Fixes for mfsa2024-39, also known as:
+    CVE-2024-9392, CVE-2024-9393, CVE-2024-9394, CVE-2024-9396,
+    CVE-2024-9397, CVE-2024-9398, CVE-2024-9399, CVE-2024-9400,
+    CVE-2024-9401, CVE-2024-9402, CVE-2024-9403.
 
- -- Mingcong Bai <baimingcong@uniontech.com>  Mon, 03 Jun 2024 08:30:52 +0200
+  * debian/control.*: Bump nss build dependency.
+
+ -- Mike Hommey <glandium@debian.org>  Wed, 02 Oct 2024 06:19:42 +0900
+
+firefox (130.0.1-1) unstable; urgency=medium
+
+  * New upstream release.
+
+ -- Mike Hommey <glandium@debian.org>  Wed, 18 Sep 2024 05:59:03 +0900
+
+firefox (130.0-2) unstable; urgency=medium
+
+  * debian/control.*: Bump nss build dependency. Closes: #1080470
+
+  * media/libyuv/libyuv/include/libyuv/macros_msa.h,
+    media/libyuv/libyuv/source/row_gcc.cc,
+    media/libyuv/libyuv/source/row_lsx.cc,
+    media/libyuv/libyuv/source/scale_gcc.cc: Add volatile for gcc inline to
+    avoid being removed. bz# 1916038. Closes: #1080518
+
+ -- Mike Hommey <glandium@debian.org>  Fri, 06 Sep 2024 07:55:20 +0900
+
+firefox (130.0-1) unstable; urgency=medium
+
+  * New upstream release.
+  * Fixes for mfsa2024-39, also known as:
+    CVE-2024-8385, CVE-2024-8381, CVE-2024-8382, CVE-2024-8383,
+    CVE-2024-8384, CVE-2024-8386, CVE-2024-8387, CVE-2024-8389.
+
+  * debian/control.in: Use rustc-web and cbindgen-web on bookworm and bullseye.
+  * debian/control.in, debian/rules: Use gcc-11 on bookworm, working around
+    #1056561.
+  * debian/browser.mozconfig.in, debian/browser.preinst.in, debian/control.in,
+    debian/l10n/browser-l10n.control, debian/l10n/browser-l10n.control.in,
+    debian/l10n/gen, debian/rules, debian/upstream.mk: Remove support for
+    buster.
+
+ -- Mike Hommey <glandium@debian.org>  Wed, 04 Sep 2024 06:29:13 +0900
+
+firefox (129.0.2-1) unstable; urgency=medium
+
+  * New upstream release.
+
+ -- Mike Hommey <glandium@debian.org>  Wed, 21 Aug 2024 13:06:19 +0900
+
+firefox (129.0.1-1) unstable; urgency=medium
+
+  * New upstream release.
+
+ -- Mike Hommey <glandium@debian.org>  Tue, 13 Aug 2024 23:04:27 +0900
+
+firefox (129.0-1) unstable; urgency=medium
+
+  * New upstream release.
+  * Fixes for mfsa2024-33, also known as:
+    CVE-2024-7518, CVE-2024-7519, CVE-2024-7520, CVE-2024-7521,
+    CVE-2024-7522, CVE-2024-7524, CVE-2024-7525, CVE-2024-7526,
+    CVE-2024-7527, CVE-2024-7528, CVE-2024-7529, CVE-2024-7530,
+    CVE-2024-7531.
+
+  * debian/control*: Bump nss build dependency.
+
+ -- Mike Hommey <glandium@debian.org>  Wed, 07 Aug 2024 07:35:48 +0900
+
+firefox (128.0.3-2) unstable; urgency=medium
+
+  * media/ffvpx/libavcodec/dovi_rpu.h: Fix FTBFS with GCC 14. bz#1905018.
+
+ -- Mike Hommey <glandium@debian.org>  Mon, 29 Jul 2024 09:41:11 +0900
+
+firefox (128.0.3-1) unstable; urgency=medium
+
+  * New upstream release.
+
+  * gfx/cairo/libpixman/src/pixman-arm-simd-asm.S: Adjust arm assembly for
+    binutils change.
+
+ -- Mike Hommey <glandium@debian.org>  Sat, 27 Jul 2024 04:55:38 +0900
+
+firefox (128.0.2-1) unstable; urgency=medium
+
+  * New upstream release.
+
+  * debian/extra-stuff/*:
+    - Remove plugin information from reportbug script output. NPAPI plugin
+      support was removed a while ago.
+    - Convert addonsInfo to an ES module. Closes: #1076240.
+
+ -- Mike Hommey <glandium@debian.org>  Wed, 24 Jul 2024 05:21:48 +0900
+
+firefox (128.0-1) unstable; urgency=medium
+
+  * New upstream release.
+  * Fixes for mfsa2024-29, also known as:
+    CVE-2024-6605, CVE-2024-6606, CVE-2024-6607, CVE-2024-6608,
+    CVE-2024-6609, CVE-2024-6610, CVE-2024-6600, CVE-2024-6601,
+    CVE-2024-6602, CVE-2024-6603, CVE-2024-6611, CVE-2024-6612,
+    CVE-2024-6613, CVE-2024-6614, CVE-2024-6604, CVE-2024-6615.
+
+  * debian/control*: Bump nss, rustc, cargo and python3 build dependencies.
+  * debian/control, debian/l10n/browser-l10n.control: Refreshed to include new
+    locale.
+
+ -- Mike Hommey <glandium@debian.org>  Wed, 10 Jul 2024 06:25:33 +0900
+
+firefox (127.0.2-1) unstable; urgency=medium
+
+  * New upstream release.
+
+  * debian/repack.py, debian/upstream.mk: Handle the upstream l10n migration
+    to github.
+
+ -- Mike Hommey <glandium@debian.org>  Wed, 26 Jun 2024 05:19:57 +0900
+
+firefox (127.0.1-1) unstable; urgency=medium
+
+  * New upstream release.
+
+ -- Mike Hommey <glandium@debian.org>  Thu, 20 Jun 2024 05:42:59 +0900
+
+firefox (127.0-1) unstable; urgency=medium
+
+  * New upstream release.
+  * Fixes for mfsa2024-25, also known as:
+    CVE-2024-5688, CVE-2024-5689, CVE-2024-5690, CVE-2024-5691,
+    CVE-2024-5693, CVE-2024-5694, CVE-2024-5695, CVE-2024-5696,
+    CVE-2024-5697, CVE-2024-5698, CVE-2024-5699, CVE-2024-5700,
+    CVE-2024-5701.
+
+  * debian/control*: Bump rustc, cargo and nss build dependencies.
+
+  * python/mozboot/mozboot/util.py,
+    third_party/rust/neqo-common/.cargo-checksum.json,
+    third_party/rust/neqo-common/Cargo.toml,
+    third_party/rust/neqo-crypto/.cargo-checksum.json,
+    third_party/rust/neqo-crypto/Cargo.toml,
+    third_party/rust/neqo-crypto/src/agentio.rs,
+    third_party/rust/neqo-http3/.cargo-checksum.json,
+    third_party/rust/neqo-http3/Cargo.toml,
+    third_party/rust/neqo-qpack/.cargo-checksum.json,
+    third_party/rust/neqo-qpack/Cargo.toml,
+    third_party/rust/neqo-transport/.cargo-checksum.json,
+    third_party/rust/neqo-transport/Cargo.toml: Relax minimum supported
+    rust version to 1.75
+
+ -- Mike Hommey <glandium@debian.org>  Wed, 12 Jun 2024 06:09:08 +0900
 
 firefox (126.0.1-1) unstable; urgency=medium
 

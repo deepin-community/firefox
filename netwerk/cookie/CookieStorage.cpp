@@ -6,13 +6,16 @@
 #include "Cookie.h"
 #include "CookieCommons.h"
 #include "CookieLogging.h"
+#include "CookieParser.h"
 #include "CookieNotification.h"
 #include "mozilla/net/MozURL_ffi.h"
+#include "CookieService.h"
 #include "nsCOMPtr.h"
 #include "nsICookieNotification.h"
 #include "CookieStorage.h"
 #include "mozilla/dom/nsMixedContentBlocker.h"
 #include "mozilla/glean/GleanMetrics.h"
+#include "mozilla/StaticPrefs_network.h"
 #include "nsIMutableArray.h"
 #include "nsTPriorityQueue.h"
 #include "nsIScriptError.h"
@@ -28,6 +31,10 @@
 #undef LIMIT
 #define LIMIT(x, low, high, default) \
   ((x) >= (low) && (x) <= (high) ? (x) : (default))
+
+// in order to keep our metrics consistent
+// we only send metrics when the pref hasn't been manipulated from the default
+static const uint32_t kChipsPartitionByteCapacityDefault = 10240;
 
 namespace mozilla {
 namespace net {
@@ -224,7 +231,7 @@ bool CookieStorage::FindSecureCookie(const nsACString& aBaseDomain,
       // aren't "/", then this situation needs to compare paths to
       // ensure only that a newly-created non-secure cookie does not
       // overlay an existing secure cookie.
-      if (CookieCommons::PathMatches(cookie, aCookie->GetFilePath())) {
+      if (CookieCommons::PathMatches(cookie, aCookie->Path())) {
         return true;
       }
     }
@@ -243,6 +250,25 @@ uint32_t CookieStorage::CountCookiesFromHost(const nsACString& aBaseDomain,
   return entry ? entry->GetCookies().Length() : 0;
 }
 
+uint32_t CookieStorage::CountCookieBytesNotMatchingCookie(
+    const Cookie& cookie, const nsACString& baseDomain) {
+  nsTArray<RefPtr<Cookie>> cookies;
+  GetCookiesFromHost(baseDomain, cookie.OriginAttributesRef(), cookies);
+
+  // count cookies with different name to the cookie being added
+  uint32_t cookieBytes = 0;
+  for (Cookie* c : cookies) {
+    nsAutoCString name;
+    nsAutoCString value;
+    c->GetName(name);
+    c->GetValue(value);
+    if (!cookie.Name().Equals(name)) {
+      cookieBytes += name.Length() + value.Length();
+    }
+  }
+  return cookieBytes;
+}
+
 void CookieStorage::GetAll(nsTArray<RefPtr<nsICookie>>& aResult) const {
   aResult.SetCapacity(mCookieCount);
 
@@ -254,11 +280,16 @@ void CookieStorage::GetAll(nsTArray<RefPtr<nsICookie>>& aResult) const {
   }
 }
 
-const nsTArray<RefPtr<Cookie>>* CookieStorage::GetCookiesFromHost(
-    const nsACString& aBaseDomain, const OriginAttributes& aOriginAttributes) {
+void CookieStorage::GetCookiesFromHost(
+    const nsACString& aBaseDomain, const OriginAttributes& aOriginAttributes,
+    nsTArray<RefPtr<Cookie>>& aCookies) {
   CookieEntry* entry =
       mHostTable.GetEntry(CookieKey(aBaseDomain, aOriginAttributes));
-  return entry ? &entry->GetCookies() : nullptr;
+  if (!entry) {
+    return;
+  }
+
+  aCookies = entry->GetCookies().Clone();
 }
 
 void CookieStorage::GetCookiesWithOriginAttributes(
@@ -335,11 +366,6 @@ void CookieStorage::RemoveCookiesWithOriginAttributes(
   }
 }
 
-/* static */ bool CookieStorage::isIPv6BaseDomain(
-    const nsACString& aBaseDomain) {
-  return aBaseDomain.Contains(':');
-}
-
 /* static */ bool CookieStorage::SerializeIPv6BaseDomain(
     nsACString& aBaseDomain) {
   bool hasStartBracket = aBaseDomain.First() == '[';
@@ -379,7 +405,7 @@ void CookieStorage::RemoveCookiesFromExactHost(
   // the normalized (ASCII) host for IP addresses
   // (it is equal to the CookieService::NormalizeHost() output).
   nsAutoCString removeBaseDomain;
-  bool isIPv6 = isIPv6BaseDomain(aBaseDomain);
+  bool isIPv6 = CookieCommons::IsIPv6BaseDomain(aBaseDomain);
   if (isIPv6) {
     MOZ_ASSERT(!aBaseDomain.IsEmpty());
     // Copy base domain since argument is immutable.
@@ -397,7 +423,7 @@ void CookieStorage::RemoveCookiesFromExactHost(
     // IPv6 host / base domain cookies
     if (isIPv6) {
       // If we look for a IPv6 cookie skip non-IPv6 cookie entries.
-      if (!isIPv6BaseDomain(entry->mBaseDomain)) {
+      if (!CookieCommons::IsIPv6BaseDomain(entry->mBaseDomain)) {
         continue;
       }
       // Serialize IPv6 base domains before comparison.
@@ -457,6 +483,7 @@ void CookieStorage::RemoveAll() {
 void CookieStorage::NotifyChanged(nsISupports* aSubject,
                                   nsICookieNotification::Action aAction,
                                   const nsACString& aBaseDomain,
+                                  bool aIsThirdParty,
                                   dom::BrowsingContext* aBrowsingContext,
                                   bool aOldCookieIsSession) {
   nsCOMPtr<nsIObserverService> os = services::GetObserverService();
@@ -478,12 +505,81 @@ void CookieStorage::NotifyChanged(nsISupports* aSubject,
     browsingContextId = aBrowsingContext->Id();
   }
 
-  nsCOMPtr<nsICookieNotification> notification = new CookieNotification(
-      aAction, cookie, aBaseDomain, batchDeletedCookies, browsingContextId);
+  nsCOMPtr<nsICookieNotification> notification =
+      new CookieNotification(aAction, cookie, aBaseDomain, aIsThirdParty,
+                             batchDeletedCookies, browsingContextId);
   // Notify for topic "private-cookie-changed" or "cookie-changed"
   os->NotifyObservers(notification, NotificationTopic(), u"");
 
   NotifyChangedInternal(notification, aOldCookieIsSession);
+}
+
+// return true if we finish within the partition byte limit
+bool CookieStorage::RemoveCookiesFromBackUntilUnderLimit(
+    nsTArray<CookieListIter>& aCookieListIter, Cookie* aCookie,
+    const nsACString& aBaseDomain, nsCOMPtr<nsIArray>& aPurgedList) {
+  MOZ_ASSERT(aCookie);
+  auto it = aCookieListIter.rbegin();
+  while (it != aCookieListIter.rend()) {
+    RefPtr<Cookie> evictedCookie = (*it).Cookie();
+    COOKIE_LOGEVICTED(evictedCookie,
+                      "Too many cookie bytes for this partition");
+    RemoveCookieFromList(*it);
+    CreateOrUpdatePurgeList(aPurgedList, evictedCookie);
+    MOZ_ASSERT((*it).entry);
+    if (PartitionLimitExceededBytes(aCookie, aBaseDomain, false) <= 0) {
+      return true;
+    }
+  }
+  return false;
+}
+
+void CookieStorage::RemoveOlderCookiesUntilUnderLimit(
+    CookieEntry* aEntry, Cookie* aCookie, const nsACString& aBaseDomain,
+    nsCOMPtr<nsIArray>& aPurgedList) {
+  MOZ_ASSERT(aEntry);
+  // remove insecure older cookies until we are within the byte limit
+  // so CHIPS-partitioned cookies will not be detected here since they must be
+  // secure
+  const CookieEntry::ArrayType& cookies = aEntry->GetCookies();
+  using MaybePurgeList = nsTArray<CookieListIter>;
+  MaybePurgeList maybePurgeListInsecure(aEntry->GetCookies().Length());
+  for (CookieEntry::IndexType i = 0; i < cookies.Length(); ++i) {
+    CookieListIter iter(aEntry, i);
+    if (!iter.Cookie()->IsSecure()) {
+      maybePurgeListInsecure.AppendElement(iter);
+    }
+  }
+  maybePurgeListInsecure.Sort(CompareCookiesByAge());
+  maybePurgeListInsecure.Reverse();
+  bool underLimit = RemoveCookiesFromBackUntilUnderLimit(
+      maybePurgeListInsecure, aCookie, aBaseDomain, aPurgedList);
+
+  // remove secure older cookies until we are within the byte limit
+  if (!underLimit) {
+    MOZ_LOG(gCookieLog, LogLevel::Debug,
+            ("Still too many cookies for partition, purging secure\n"));
+    MaybePurgeList maybePurgeList(aEntry->GetCookies().Length());
+    for (CookieEntry::IndexType i = 0; i < cookies.Length(); ++i) {
+      CookieListIter iter(aEntry, i);
+      maybePurgeList.AppendElement(iter);
+    }
+    maybePurgeList.Sort(CompareCookiesByAge());
+    maybePurgeList.Reverse();
+    Unused << RemoveCookiesFromBackUntilUnderLimit(maybePurgeList, aCookie,
+                                                   aBaseDomain, aPurgedList);
+  }
+}
+
+int32_t CookieStorage::PartitionLimitExceededBytes(
+    Cookie* aCookie, const nsACString& aBaseDomain, bool aHardMax) {
+  uint32_t newCount = CountCookieBytesNotMatchingCookie(*aCookie, aBaseDomain) +
+                      aCookie->NameAndValueBytes();
+  double factor = aHardMax ? 1.2 : 1;
+  // shouldn't expect more the 4000 cookies * 4000 bytes/cookie -> 16MB
+  return static_cast<int32_t>(
+      newCount -
+      StaticPrefs::network_cookie_chips_partitionLimitByteCapacity() * factor);
 }
 
 // this is a backend function for adding a cookie to the list, via SetCookie.
@@ -491,12 +587,12 @@ void CookieStorage::NotifyChanged(nsISupports* aSubject,
 // replaces an existing cookie; or adds the cookie to the hashtable, and
 // deletes a cookie (if maximum number of cookies has been reached). also
 // performs list maintenance by removing expired cookies.
-void CookieStorage::AddCookie(nsIConsoleReportCollector* aCRC,
+void CookieStorage::AddCookie(CookieParser* aCookieParser,
                               const nsACString& aBaseDomain,
                               const OriginAttributes& aOriginAttributes,
                               Cookie* aCookie, int64_t aCurrentTimeInUsec,
                               nsIURI* aHostURI, const nsACString& aCookieHeader,
-                              bool aFromHttp,
+                              bool aFromHttp, bool aIsThirdParty,
                               dom::BrowsingContext* aBrowsingContext) {
   int64_t currentTime = aCurrentTimeInUsec / PR_USEC_PER_SEC;
 
@@ -510,7 +606,6 @@ void CookieStorage::AddCookie(nsIConsoleReportCollector* aCRC,
     potentiallyTrustworthy =
         nsMixedContentBlocker::IsPotentiallyTrustworthyOrigin(aHostURI);
   }
-  constexpr auto CONSOLE_REJECTION_CATEGORY = "cookiesRejection"_ns;
   bool oldCookieIsSession = false;
   // Step1, call FindSecureCookie(). FindSecureCookie() would
   // find the existing cookie with the security flag and has
@@ -529,12 +624,9 @@ void CookieStorage::AddCookie(nsIConsoleReportCollector* aCRC,
     COOKIE_LOGFAILURE(SET_COOKIE, aHostURI, aCookieHeader,
                       "cookie can't save because older cookie is secure "
                       "cookie but newer cookie is non-secure cookie");
-    CookieLogging::LogMessageToConsole(
-        aCRC, aHostURI, nsIScriptError::warningFlag, CONSOLE_REJECTION_CATEGORY,
-        "CookieRejectedNonsecureOverSecure"_ns,
-        AutoTArray<nsString, 1>{
-            NS_ConvertUTF8toUTF16(aCookie->Name()),
-        });
+    if (aCookieParser) {
+      aCookieParser->RejectCookie(CookieParser::RejectedNonsecureOverSecure);
+    }
     return;
   }
 
@@ -574,13 +666,10 @@ void CookieStorage::AddCookie(nsIConsoleReportCollector* aCRC,
         COOKIE_LOGFAILURE(
             SET_COOKIE, aHostURI, aCookieHeader,
             "previously stored cookie is httponly; coming from script");
-        CookieLogging::LogMessageToConsole(
-            aCRC, aHostURI, nsIScriptError::warningFlag,
-            CONSOLE_REJECTION_CATEGORY,
-            "CookieRejectedHttpOnlyButFromScript"_ns,
-            AutoTArray<nsString, 1>{
-                NS_ConvertUTF8toUTF16(aCookie->Name()),
-            });
+        if (aCookieParser) {
+          aCookieParser->RejectCookie(
+              CookieParser::RejectedHttpOnlyButFromScript);
+        }
         return;
       }
 
@@ -618,7 +707,7 @@ void CookieStorage::AddCookie(nsIConsoleReportCollector* aCRC,
         COOKIE_LOGFAILURE(SET_COOKIE, aHostURI, aCookieHeader,
                           "previously stored cookie was deleted");
         NotifyChanged(oldCookie, nsICookieNotification::COOKIE_DELETED,
-                      aBaseDomain, aBrowsingContext, oldCookieIsSession);
+                      aBaseDomain, false, aBrowsingContext, oldCookieIsSession);
         return;
       }
 
@@ -626,6 +715,30 @@ void CookieStorage::AddCookie(nsIConsoleReportCollector* aCRC,
       aCookie->SetCreationTime(oldCookie->CreationTime());
     }
 
+    // check for CHIPS-partitioned exceeding byte limit
+    // when we overwrite a cookie with a cookie)
+    if (CookieCommons::ChipsLimitEnabledAndChipsCookie(*aCookie,
+                                                       aBrowsingContext)) {
+      CookieEntry* entry =
+          mHostTable.GetEntry(CookieKey(aBaseDomain, aOriginAttributes));
+      if (entry) {
+        int32_t exceededBytes =
+            PartitionLimitExceededBytes(aCookie, aBaseDomain, true);
+        if (exceededBytes > 0) {
+          MOZ_LOG(gCookieLog, LogLevel::Debug,
+                  ("Partition byte limit exceeded on cookie overwrite\n"));
+          if (!StaticPrefs::network_cookie_chips_partitionLimitDryRun()) {
+            RemoveOlderCookiesUntilUnderLimit(entry, aCookie, aBaseDomain,
+                                              purgedList);
+          }
+          if (StaticPrefs::network_cookie_chips_partitionLimitByteCapacity() ==
+              kChipsPartitionByteCapacityDefault) {
+            mozilla::glean::networking::cookie_chips_partition_limit_overflow
+                .AccumulateSingleSample(exceededBytes);
+          }
+        }
+      }
+    }
   } else {
     // check if cookie has already expired
     if (aCookie->Expiry() <= currentTime) {
@@ -637,6 +750,7 @@ void CookieStorage::AddCookie(nsIConsoleReportCollector* aCRC,
     // check if we have to delete an old cookie.
     CookieEntry* entry =
         mHostTable.GetEntry(CookieKey(aBaseDomain, aOriginAttributes));
+    int32_t partitionLimitExceededBytes = 0;
     if (entry && entry->GetCookies().Length() >= mMaxCookiesPerHost) {
       nsTArray<CookieListIter> removedIterList;
       // Prioritize evicting insecure cookies.
@@ -672,6 +786,22 @@ void CookieStorage::AddCookie(nsIConsoleReportCollector* aCRC,
       mozilla::glean::networking::cookie_purge_entry_max.AccumulateSingleSample(
           purgedLength);
 
+    } else if (CookieCommons::ChipsLimitEnabledAndChipsCookie(
+                   *aCookie, aBrowsingContext) &&
+               entry &&
+               (partitionLimitExceededBytes = PartitionLimitExceededBytes(
+                    aCookie, aBaseDomain, true)) > 0) {
+      MOZ_LOG(gCookieLog, LogLevel::Debug,
+              ("Partition byte limit exceeded on cookie add\n"));
+      if (!StaticPrefs::network_cookie_chips_partitionLimitDryRun()) {
+        RemoveOlderCookiesUntilUnderLimit(entry, aCookie, aBaseDomain,
+                                          purgedList);
+      }
+      if (StaticPrefs::network_cookie_chips_partitionLimitByteCapacity() ==
+          kChipsPartitionByteCapacityDefault) {
+        mozilla::glean::networking::cookie_chips_partition_limit_overflow
+            .AccumulateSingleSample(partitionLimitExceededBytes);
+      }
     } else if (mCookieCount >= ADD_TEN_PERCENT(mMaxNumberOfCookies)) {
       int64_t maxAge = aCurrentTimeInUsec - mCookieOldestTime;
       int64_t purgeAge = ADD_TEN_PERCENT(mCookiePurgeAge);
@@ -711,7 +841,8 @@ void CookieStorage::AddCookie(nsIConsoleReportCollector* aCRC,
   NotifyChanged(aCookie,
                 foundCookie ? nsICookieNotification::COOKIE_CHANGED
                             : nsICookieNotification::COOKIE_ADDED,
-                aBaseDomain, aBrowsingContext, oldCookieIsSession);
+                aBaseDomain, aIsThirdParty, aBrowsingContext,
+                oldCookieIsSession);
 }
 
 void CookieStorage::UpdateCookieOldestTime(Cookie* aCookie) {

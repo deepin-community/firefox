@@ -10,6 +10,7 @@
 
 ChromeUtils.defineESModuleGetters(this, {
   BackgroundUpdate: "resource://gre/modules/BackgroundUpdate.sys.mjs",
+  UpdateListener: "resource://gre/modules/UpdateListener.sys.mjs",
   MigrationUtils: "resource:///modules/MigrationUtils.sys.mjs",
   TranslationsParent: "resource://gre/actors/TranslationsParent.sys.mjs",
   WindowsLaunchOnLogin: "resource://gre/modules/WindowsLaunchOnLogin.sys.mjs",
@@ -86,8 +87,8 @@ Preferences.addAll([
   { id: "browser.warnOnQuitShortcut", type: "bool" },
   { id: "browser.tabs.warnOnOpen", type: "bool" },
   { id: "browser.ctrlTab.sortByRecentlyUsed", type: "bool" },
-  { id: "browser.tabs.cardPreview.enabled", type: "bool" },
-  { id: "browser.tabs.cardPreview.showThumbnails", type: "bool" },
+  { id: "browser.tabs.hoverPreview.enabled", type: "bool" },
+  { id: "browser.tabs.hoverPreview.showThumbnails", type: "bool" },
 
   // CFR
   {
@@ -357,7 +358,7 @@ var gMainPane = {
 
     let thumbsCheckbox = document.getElementById("tabPreviewShowThumbnails");
     let cardPreviewEnabledPref = Preferences.get(
-      "browser.tabs.cardPreview.enabled"
+      "browser.tabs.hoverPreview.enabled"
     );
     let maybeShowThumbsCheckbox = () =>
       (thumbsCheckbox.hidden = !cardPreviewEnabledPref.value);
@@ -430,19 +431,28 @@ var gMainPane = {
         "command",
         gMainPane.onWindowsLaunchOnLoginChange
       );
-      NimbusFeatures.windowsLaunchOnLogin.recordExposureEvent({
-        once: true,
-      });
       // We do a check here for startWithLastProfile as we could
       // have disabled the pref for the user before they're ever
       // exposed to the experiment on a new profile.
+      // If we're using MSIX, we don't show the checkbox as MSIX
+      // can't write to the registry.
       if (
-        NimbusFeatures.windowsLaunchOnLogin.getVariable("enabled") &&
         Cc["@mozilla.org/toolkit/profile-service;1"].getService(
           Ci.nsIToolkitProfileService
         ).startWithLastProfile
       ) {
-        document.getElementById("windowsLaunchOnLoginBox").hidden = false;
+        NimbusFeatures.windowsLaunchOnLogin.recordExposureEvent({
+          once: true,
+        });
+
+        if (
+          Services.prefs.getBoolPref(
+            "browser.startup.windowsLaunchOnLogin.enabled",
+            false
+          )
+        ) {
+          document.getElementById("windowsLaunchOnLoginBox").hidden = false;
+        }
       }
     }
     gMainPane.updateBrowserStartupUI =
@@ -519,6 +529,13 @@ var gMainPane = {
 
     if (Services.policies && !Services.policies.isAllowed("profileImport")) {
       document.getElementById("dataMigrationGroup").remove();
+    }
+
+    if (
+      Services.prefs.getBoolPref("browser.backup.preferences.ui.enabled", false)
+    ) {
+      let backupGroup = document.getElementById("dataBackupGroup");
+      backupGroup.removeAttribute("data-hidden-from-search");
     }
 
     // For media control toggle button, we support it on Windows, macOS and
@@ -674,12 +691,16 @@ var gMainPane = {
         let launchOnLoginCheckbox = document.getElementById(
           "windowsLaunchOnLogin"
         );
-        launchOnLoginCheckbox.checked =
-          WindowsLaunchOnLogin.getLaunchOnLoginEnabled();
-        let approvedByWindows = WindowsLaunchOnLogin.getLaunchOnLoginApproved();
-        launchOnLoginCheckbox.disabled = !approvedByWindows;
-        document.getElementById("windowsLaunchOnLoginDisabledBox").hidden =
-          approvedByWindows;
+        WindowsLaunchOnLogin.getLaunchOnLoginEnabled().then(enabled => {
+          launchOnLoginCheckbox.checked = enabled;
+        });
+        WindowsLaunchOnLogin.getLaunchOnLoginApproved().then(
+          approvedByWindows => {
+            launchOnLoginCheckbox.disabled = !approvedByWindows;
+            document.getElementById("windowsLaunchOnLoginDisabledBox").hidden =
+              approvedByWindows;
+          }
+        );
 
         // On Windows, the Application Update setting is an installation-
         // specific preference, not a profile-specific one. Show a warning to
@@ -1130,7 +1151,7 @@ var gMainPane = {
           this.markAllDownloadPhases("downloaded");
         } catch (error) {
           TranslationsView.showError(
-            "translations-manage-error-install",
+            "translations-manage-error-download",
             error
           );
           await this.reloadDownloadPhases();
@@ -1167,7 +1188,7 @@ var gMainPane = {
             this.updateDownloadPhase(langTag, "downloaded");
           } catch (error) {
             TranslationsView.showError(
-              "translations-manage-error-install",
+              "translations-manage-error-download",
               error
             );
             this.updateDownloadPhase(langTag, "uninstalled");
@@ -1221,7 +1242,7 @@ var gMainPane = {
 
           document.l10n.setAttributes(
             downloadButton,
-            "translations-manage-language-install-button"
+            "translations-manage-language-download-button"
           );
           document.l10n.setAttributes(
             deleteButton,
@@ -1628,16 +1649,19 @@ var gMainPane = {
       return;
     }
     if (event.target.checked) {
-      // windowsLaunchOnLogin has been checked: create registry key
-      WindowsLaunchOnLogin.createLaunchOnLoginRegistryKey();
+      // windowsLaunchOnLogin has been checked: create registry key or shortcut
+      // The shortcut is created with the same AUMID as Firefox itself. However,
+      // this is not set during browser tests and the fallback of checking the
+      // registry fails. As such we pass an arbitrary AUMID for the purpose
+      // of testing.
+      await WindowsLaunchOnLogin.createLaunchOnLogin();
       Services.prefs.setBoolPref(
         "browser.startup.windowsLaunchOnLogin.disableLaunchOnLoginPrompt",
         true
       );
     } else {
       // windowsLaunchOnLogin has been unchecked: delete registry key and shortcut
-      WindowsLaunchOnLogin.removeLaunchOnLoginRegistryKey();
-      await WindowsLaunchOnLogin.removeLaunchOnLoginShortcuts();
+      await WindowsLaunchOnLogin.removeLaunchOnLogin();
     }
   },
 
@@ -1851,6 +1875,18 @@ var gMainPane = {
     if (!selected) {
       // No locales were selected. Cancel the operation.
       return;
+    }
+
+    // Track how often locale fallback order is changed.
+    // Drop the first locale and filter to only include the overlapping set
+    const prevLocales = Services.locale.requestedLocales.filter(
+      lc => selected.indexOf(lc) > 0
+    );
+    const newLocales = selected.filter(
+      (lc, i) => i > 0 && prevLocales.includes(lc)
+    );
+    if (prevLocales.some((lc, i) => newLocales[i] != lc)) {
+      this.gBrowserLanguagesDialog.recordTelemetry("set_fallback");
     }
 
     switch (gMainPane.getLanguageSwitchTransitionType(selected)) {
@@ -2237,9 +2273,8 @@ var gMainPane = {
       // 1/2/4 values set via about:config should persist
       return this._storedFullKeyboardNavigation;
     }
-    // When the checkbox is unchecked, this pref shouldn't exist
-    // at all.
-    return undefined;
+    // When the checkbox is unchecked, default to just text controls.
+    return 1;
   },
 
   /**
@@ -2519,10 +2554,16 @@ var gMainPane = {
   },
 
   async checkUpdateInProgress() {
+    const aus = Cc["@mozilla.org/updates/update-service;1"].getService(
+      Ci.nsIApplicationUpdateService
+    );
     let um = Cc["@mozilla.org/updates/update-manager;1"].getService(
       Ci.nsIUpdateManager
     );
-    if (!um.readyUpdate && !um.downloadingUpdate) {
+    // We don't want to see an idle state just because the updater hasn't
+    // initialized yet.
+    await aus.init();
+    if (aus.currentState == Ci.nsIApplicationUpdateService.STATE_IDLE) {
       return;
     }
 
@@ -2554,12 +2595,9 @@ var gMainPane = {
       {}
     );
     if (rv != 1) {
-      let aus = Cc["@mozilla.org/updates/update-service;1"].getService(
-        Ci.nsIApplicationUpdateService
-      );
       await aus.stopDownload();
-      um.cleanupReadyUpdate();
-      um.cleanupDownloadingUpdate();
+      await um.cleanupActiveUpdates();
+      UpdateListener.clearPendingAndActiveNotifications();
     }
   },
 
@@ -3579,46 +3617,73 @@ var gMainPane = {
         ]);
       }
     }
-    if (firefoxLocalizedName) {
-      let folderDisplayName, leafName;
-      // Either/both of these can throw, so check for failures in both cases
-      // so we don't just break display of the download pref:
-      try {
-        folderDisplayName = file.displayName;
-      } catch (ex) {
-        /* ignored */
-      }
-      try {
-        leafName = file.leafName;
-      } catch (ex) {
-        /* ignored */
-      }
 
-      // If we found a localized name that's different from the leaf name,
-      // use that:
-      if (folderDisplayName && folderDisplayName != leafName) {
-        return { file, folderDisplayName };
-      }
+    if (file) {
+      let displayName = file.path;
 
-      // Otherwise, check if we've got a localized name ourselves.
-      if (firefoxLocalizedName) {
-        // You can't move the system download or desktop dir on macOS,
-        // so if those are in use just display them. On other platforms
-        // only do so if the folder matches the localized name.
-        if (
-          AppConstants.platform == "macosx" ||
-          leafName == firefoxLocalizedName
-        ) {
-          return { file, folderDisplayName: firefoxLocalizedName };
+      // Attempt to translate path to the path as exists on the host
+      // in case the provided path comes from the document portal
+      if (AppConstants.platform == "linux") {
+        try {
+          displayName = await file.hostPath();
+        } catch (error) {
+          /* ignored */
+        }
+
+        if (displayName) {
+          if (displayName == downloadsDir.path) {
+            firefoxLocalizedName = await document.l10n.formatValues([
+              { id: "downloads-folder-name" },
+            ]);
+          } else if (displayName == desktopDir.path) {
+            firefoxLocalizedName = await document.l10n.formatValues([
+              { id: "desktop-folder-name" },
+            ]);
+          }
         }
       }
-    }
-    // If we get here, attempts to use a "pretty" name failed. Just display
-    // the full path:
-    if (file) {
+
+      if (firefoxLocalizedName) {
+        let folderDisplayName, leafName;
+        // Either/both of these can throw, so check for failures in both cases
+        // so we don't just break display of the download pref:
+        try {
+          folderDisplayName = file.displayName;
+        } catch (ex) {
+          /* ignored */
+        }
+        try {
+          leafName = file.leafName;
+        } catch (ex) {
+          /* ignored */
+        }
+
+        // If we found a localized name that's different from the leaf name,
+        // use that:
+        if (folderDisplayName && folderDisplayName != leafName) {
+          return { file, folderDisplayName };
+        }
+
+        // Otherwise, check if we've got a localized name ourselves.
+        if (firefoxLocalizedName) {
+          // You can't move the system download or desktop dir on macOS,
+          // so if those are in use just display them. On other platforms
+          // only do so if the folder matches the localized name.
+          if (
+            AppConstants.platform == "macosx" ||
+            leafName == firefoxLocalizedName
+          ) {
+            return { file, folderDisplayName: firefoxLocalizedName };
+          }
+        }
+      }
+
+      // If we get here, attempts to use a "pretty" name failed. Just display
+      // the full path:
       // Force the left-to-right direction when displaying a custom path.
-      return { file, folderDisplayName: `\u2066${file.path}\u2069` };
+      return { file, folderDisplayName: `\u2066${displayName}\u2069` };
     }
+
     // Don't even have a file - fall back to desktop directory for the
     // use of the icon, and an empty label:
     file = desktopDir;
@@ -4202,7 +4267,7 @@ const AppearanceChooser = {
           e.preventDefault();
           break;
         case "web-appearance-manage-themes-link":
-          window.browsingContext.topChromeWindow.BrowserOpenAddonsMgr(
+          window.browsingContext.topChromeWindow.BrowserAddonUI.openAddonsMgr(
             "addons://list/theme"
           );
           e.preventDefault();

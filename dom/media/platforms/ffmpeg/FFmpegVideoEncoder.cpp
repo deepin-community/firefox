@@ -6,18 +6,26 @@
 
 #include "FFmpegVideoEncoder.h"
 
+#include <algorithm>
+
+#include <aom/aomcx.h>
+
 #include "BufferReader.h"
+#include "EncoderConfig.h"
 #include "FFmpegLog.h"
+#include "FFmpegRuntimeLinker.h"
 #include "FFmpegUtils.h"
 #include "H264.h"
 #include "ImageContainer.h"
+#include "ImageConversion.h"
 #include "libavutil/error.h"
 #include "libavutil/pixfmt.h"
-#include "mozilla/dom/ImageUtils.h"
-#include "nsPrintfCString.h"
-#include "ImageToI420.h"
 #include "libyuv.h"
-#include "FFmpegRuntimeLinker.h"
+#include "mozilla/StaticPrefs_media.h"
+#include "mozilla/dom/ImageBitmapBinding.h"
+#include "mozilla/dom/ImageUtils.h"
+#include "mozilla/dom/VideoFrameBinding.h"
+#include "nsPrintfCString.h"
 
 // The ffmpeg namespace is introduced to avoid the PixelFormat's name conflicts
 // with MediaDataEncoder::PixelFormat in MediaDataEncoder class scope.
@@ -131,47 +139,43 @@ static Maybe<H264Setting> GetH264Profile(const H264_PROFILE& aProfile) {
 
 static Maybe<H264Setting> GetH264Level(const H264_LEVEL& aLevel) {
   int val = static_cast<int>(aLevel);
-  // Make sure value is in [10, 13] or [20, 22] or [30, 32] or [40, 42] or [50,
-  // 52].
-  if (val < 10 || val > 52) {
-    return Nothing();
-  }
-  if ((val % 10) > 2) {
-    if (val != 13) {
-      return Nothing();
-    }
-  }
   nsPrintfCString str("%d", val);
   str.Insert('.', 1);
   return Some(H264Setting{val, str});
 }
 
-struct VPXSVCSetting {
+struct VPXSVCAppendix {
   uint8_t mLayeringMode;
-  size_t mNumberLayers;
-  uint8_t mPeriodicity;
-  nsTArray<uint8_t> mLayerIds;
-  nsTArray<uint8_t> mRateDecimators;
-  nsTArray<uint32_t> mTargetBitrates;
 };
 
-static Maybe<VPXSVCSetting> GetVPXSVCSetting(const ScalabilityMode& aMode,
-                                             uint32_t aBitPerSec) {
-  if (aMode == ScalabilityMode::None) {
-    return Nothing();
-  }
+struct SVCLayerSettings {
+  using CodecAppendix = Variant<VPXSVCAppendix, aom_svc_params_t>;
+  size_t mNumberSpatialLayers;
+  size_t mNumberTemporalLayers;
+  uint8_t mPeriodicity;
+  nsTArray<uint8_t> mLayerIds;
+  // libvpx: ts_rate_decimator, libaom: framerate_factor
+  nsTArray<uint8_t> mRateDecimators;
+  nsTArray<uint32_t> mTargetBitrates;
+  Maybe<CodecAppendix> mCodecAppendix;
+};
 
+static SVCLayerSettings GetSVCLayerSettings(CodecType aCodec,
+                                            const ScalabilityMode& aMode,
+                                            uint32_t aBitPerSec) {
   // TODO: Apply more sophisticated bitrate allocation, like SvcRateAllocator:
   // https://searchfox.org/mozilla-central/rev/3bd65516eb9b3a9568806d846ba8c81a9402a885/third_party/libwebrtc/modules/video_coding/svc/svc_rate_allocator.h#26
 
-  uint8_t mode = 0;
   size_t layers = 0;
-  uint32_t kbps = aBitPerSec / 1000;  // ts_target_bitrate requies kbps.
+  const uint32_t kbps = aBitPerSec / 1000;  // ts_target_bitrate requies kbps.
 
   uint8_t periodicity;
   nsTArray<uint8_t> layerIds;
   nsTArray<uint8_t> rateDecimators;
   nsTArray<uint32_t> bitrates;
+
+  Maybe<SVCLayerSettings::CodecAppendix> appendix;
+
   if (aMode == ScalabilityMode::L1T2) {
     // Two temporal layers. 0-1...
     //
@@ -179,7 +183,6 @@ static Maybe<VPXSVCSetting> GetVPXSVCSetting(const ScalabilityMode& aMode,
     // Layer 0: |0| |2| |4| |6| |8|
     // Layer 1: | |1| |3| |5| |7| |
 
-    mode = 2;  // VP9E_TEMPORAL_LAYERING_MODE_0101
     layers = 2;
 
     // 2 frames per period.
@@ -196,6 +199,12 @@ static Maybe<VPXSVCSetting> GetVPXSVCSetting(const ScalabilityMode& aMode,
     // Bitrate allocation: L0 - 60%, L1 - 40%.
     bitrates.AppendElement(kbps * 3 / 5);
     bitrates.AppendElement(kbps);
+
+    if (aCodec == CodecType::VP8 || aCodec == CodecType::VP9) {
+      appendix.emplace(VPXSVCAppendix{
+          .mLayeringMode = 2 /* VP9E_TEMPORAL_LAYERING_MODE_0101 */
+      });
+    }
   } else {
     MOZ_ASSERT(aMode == ScalabilityMode::L1T3);
     // Three temporal layers. 0-2-1-2...
@@ -205,7 +214,6 @@ static Maybe<VPXSVCSetting> GetVPXSVCSetting(const ScalabilityMode& aMode,
     // Layer 1: | | |2| | | |6| | | |10|  |  |
     // Layer 2: | |1| |3| |5| |7| |9|  |11|  |
 
-    mode = 3;  // VP9E_TEMPORAL_LAYERING_MODE_0212
     layers = 3;
 
     // 4 frames per period
@@ -226,20 +234,38 @@ static Maybe<VPXSVCSetting> GetVPXSVCSetting(const ScalabilityMode& aMode,
     bitrates.AppendElement(kbps / 2);
     bitrates.AppendElement(kbps * 7 / 10);
     bitrates.AppendElement(kbps);
+
+    if (aCodec == CodecType::VP8 || aCodec == CodecType::VP9) {
+      appendix.emplace(VPXSVCAppendix{
+          .mLayeringMode = 3 /* VP9E_TEMPORAL_LAYERING_MODE_0212 */
+      });
+    }
   }
 
   MOZ_ASSERT(layers == bitrates.Length(),
              "Bitrate must be assigned to each layer");
-  return Some(VPXSVCSetting{mode, layers, periodicity, std::move(layerIds),
-                            std::move(rateDecimators), std::move(bitrates)});
+  return SVCLayerSettings{1,
+                          layers,
+                          periodicity,
+                          std::move(layerIds),
+                          std::move(rateDecimators),
+                          std::move(bitrates),
+                          appendix};
 }
 
-uint8_t FFmpegVideoEncoder<LIBAV_VER>::SVCInfo::UpdateTemporalLayerId() {
+void FFmpegVideoEncoder<LIBAV_VER>::SVCInfo::UpdateTemporalLayerId() {
   MOZ_ASSERT(!mTemporalLayerIds.IsEmpty());
+  mCurrentIndex = (mCurrentIndex + 1) % mTemporalLayerIds.Length();
+}
 
-  size_t currentIndex = mNextIndex % mTemporalLayerIds.Length();
-  mNextIndex += 1;
-  return static_cast<uint8_t>(mTemporalLayerIds[currentIndex]);
+uint8_t FFmpegVideoEncoder<LIBAV_VER>::SVCInfo::CurrentTemporalLayerId() {
+  MOZ_ASSERT(!mTemporalLayerIds.IsEmpty());
+  return mTemporalLayerIds[mCurrentIndex];
+}
+
+void FFmpegVideoEncoder<LIBAV_VER>::SVCInfo::ResetTemporalLayerId() {
+  MOZ_ASSERT(!mTemporalLayerIds.IsEmpty());
+  mCurrentIndex = 0;
 }
 
 FFmpegVideoEncoder<LIBAV_VER>::FFmpegVideoEncoder(
@@ -261,6 +287,10 @@ nsCString FFmpegVideoEncoder<LIBAV_VER>::GetDescriptionName() const {
 #endif
 }
 
+bool FFmpegVideoEncoder<LIBAV_VER>::SvcEnabled() const {
+  return mConfig.mScalabilityMode != ScalabilityMode::None;
+}
+
 nsresult FFmpegVideoEncoder<LIBAV_VER>::InitSpecific() {
   MOZ_ASSERT(mTaskQueue->IsOnCurrentThread());
 
@@ -275,9 +305,47 @@ nsresult FFmpegVideoEncoder<LIBAV_VER>::InitSpecific() {
 
   // And now the video-specific part
   mCodecContext->pix_fmt = ffmpeg::FFMPEG_PIX_FMT_YUV420P;
+  // // TODO: do this properly, based on the colorspace of the frame. Setting
+  // this like that crashes encoders. if (mConfig.mCodec != CodecType::AV1) {
+  //     if (mConfig.mPixelFormat == dom::ImageBitmapFormat::RGBA32 ||
+  //         mConfig.mPixelFormat == dom::ImageBitmapFormat::BGRA32) {
+  //       mCodecContext->color_primaries = AVCOL_PRI_BT709;
+  //       mCodecContext->colorspace = AVCOL_SPC_RGB;
+  //   #ifdef FFVPX_VERSION
+  //       mCodecContext->color_trc = AVCOL_TRC_IEC61966_2_1;
+  //   #endif
+  //     } else {
+  //       mCodecContext->color_primaries = AVCOL_PRI_BT709;
+  //       mCodecContext->colorspace = AVCOL_SPC_BT709;
+  //       mCodecContext->color_trc = AVCOL_TRC_BT709;
+  //     }
+  // }
   mCodecContext->width = static_cast<int>(mConfig.mSize.width);
   mCodecContext->height = static_cast<int>(mConfig.mSize.height);
-  mCodecContext->gop_size = static_cast<int>(mConfig.mKeyframeInterval);
+  // Reasonnable default for the quantization range.
+  mCodecContext->qmin =
+      static_cast<int>(StaticPrefs::media_ffmpeg_encoder_quantizer_min());
+  mCodecContext->qmax =
+      static_cast<int>(StaticPrefs::media_ffmpeg_encoder_quantizer_max());
+  if (mConfig.mUsage == Usage::Realtime) {
+    mCodecContext->thread_count = 1;
+  } else {
+    int64_t pixels = mCodecContext->width * mCodecContext->height;
+    int threads = 1;
+    // Select a thread count that depends on the frame size, and cap to the
+    // number of available threads minus one
+    if (pixels >= 3840 * 2160) {
+      threads = 16;
+    } else if (pixels >= 1920 * 1080) {
+      threads = 8;
+    } else if (pixels >= 1280 * 720) {
+      threads = 4;
+    } else if (pixels >= 640 * 480) {
+      threads = 2;
+    }
+    mCodecContext->thread_count =
+        std::clamp<int>(threads, 1, GetNumberOfProcessors() - 1);
+  }
   // TODO(bug 1869560): The recommended time_base is the reciprocal of the frame
   // rate, but we set it to microsecond for now.
   mCodecContext->time_base =
@@ -291,27 +359,79 @@ nsresult FFmpegVideoEncoder<LIBAV_VER>::InitSpecific() {
 #if LIBAVCODEC_VERSION_MAJOR >= 60
   mCodecContext->flags |= AV_CODEC_FLAG_FRAME_DURATION;
 #endif
-  mCodecContext->gop_size = static_cast<int>(mConfig.mKeyframeInterval);
 
-  if (mConfig.mUsage == Usage::Realtime) {
+  // Setting 0 here disable inter-frames: all frames are keyframes
+  mCodecContext->gop_size = mConfig.mKeyframeInterval
+                                ? static_cast<int>(mConfig.mKeyframeInterval)
+                                : 10000;
+  mCodecContext->keyint_min = 0;
+
+  // When either real-time or SVC is enabled via config, the general settings of
+  // the encoder are set to be more appropriate for real-time usage
+  if (mConfig.mUsage == Usage::Realtime || SvcEnabled()) {
+    if (mConfig.mUsage != Usage::Realtime) {
+      FFMPEGV_LOG(
+          "SVC enabled but low latency encoding mode not enabled, forcing low "
+          "latency mode");
+    }
     mLib->av_opt_set(mCodecContext->priv_data, "deadline", "realtime", 0);
     // Explicitly ask encoder do not keep in flight at any one time for
     // lookahead purposes.
     mLib->av_opt_set(mCodecContext->priv_data, "lag-in-frames", "0", 0);
+
+    if (mConfig.mCodec == CodecType::VP8 || mConfig.mCodec == CodecType::VP9) {
+      mLib->av_opt_set(mCodecContext->priv_data, "error-resilient", "1", 0);
+    }
+    if (mConfig.mCodec == CodecType::AV1) {
+      mLib->av_opt_set(mCodecContext->priv_data, "error-resilience", "1", 0);
+      // This sets usage to AOM_USAGE_REALTIME
+      mLib->av_opt_set(mCodecContext->priv_data, "usage", "1", 0);
+      // Allow the bitrate to swing 50% up and down the target
+      mLib->av_opt_set(mCodecContext->priv_data, "rc_undershoot_percent", "50",
+                       0);
+      mLib->av_opt_set(mCodecContext->priv_data, "rc_overshoot_percent", "50",
+                       0);
+      // Row multithreading -- note that we do single threaded encoding for now,
+      // so this doesn't do much
+      mLib->av_opt_set(mCodecContext->priv_data, "row_mt", "1", 0);
+      // Cyclic refresh adaptive quantization
+      mLib->av_opt_set(mCodecContext->priv_data, "aq-mode", "3", 0);
+      // optimized for real-time, 7 for regular, lower: more cpu use -> higher
+      // compression ratio
+      mLib->av_opt_set(mCodecContext->priv_data, "cpu-used", "9", 0);
+      // disable, this is to handle camera motion, unlikely for our use case
+      mLib->av_opt_set(mCodecContext->priv_data, "enable-global-motion", "0",
+                       0);
+      mLib->av_opt_set(mCodecContext->priv_data, "enable-cfl-intra", "0", 0);
+      // TODO: Set a number of tiles appropriate for the number of threads used
+      // -- disable tiling if using a single thread.
+      mLib->av_opt_set(mCodecContext->priv_data, "tile-columns", "0", 0);
+      mLib->av_opt_set(mCodecContext->priv_data, "tile-rows", "0", 0);
+    }
   }
 
-  if (Maybe<SVCSettings> settings = GetSVCSettings()) {
-    SVCSettings s = settings.extract();
-    mLib->av_opt_set(mCodecContext->priv_data, s.mSettingKeyValue.first.get(),
-                     s.mSettingKeyValue.second.get(), 0);
+  if (SvcEnabled()) {
+    if (Maybe<SVCSettings> settings = GetSVCSettings()) {
+      if (mCodecName == "libaom-av1") {
+        if (mConfig.mBitrateMode != BitrateMode::Constant) {
+          return NS_ERROR_DOM_MEDIA_NOT_SUPPORTED_ERR;
+        }
+      }
 
-    // FFmpegVideoEncoder is reset after Drain(), so mSVCInfo should be reset()
-    // before emplace().
-    mSVCInfo.reset();
-    mSVCInfo.emplace(std::move(s.mTemporalLayerIds));
+      SVCSettings s = settings.extract();
+      FFMPEGV_LOG("SVC options string: %s=%s", s.mSettingKeyValue.first.get(),
+                  s.mSettingKeyValue.second.get());
+      mLib->av_opt_set(mCodecContext->priv_data, s.mSettingKeyValue.first.get(),
+                       s.mSettingKeyValue.second.get(), 0);
 
-    // TODO: layer settings should be changed dynamically when the frame's
-    // color space changed.
+      // FFmpegVideoEncoder is reset after Drain(), so mSVCInfo should be
+      // reset() before emplace().
+      mSVCInfo.reset();
+      mSVCInfo.emplace(std::move(s.mTemporalLayerIds));
+
+      // TODO: layer settings should be changed dynamically when the frame's
+      // color space changed.
+    }
   }
 
   nsAutoCString h264Log;
@@ -350,16 +470,11 @@ nsresult FFmpegVideoEncoder<LIBAV_VER>::InitSpecific() {
     }
   }
 
-  // TODO: keyint_min, max_b_frame?
   // - if mConfig.mDenoising is set: av_opt_set_int(mCodecContext->priv_data,
   // "noise_sensitivity", x, 0), where the x is from 0(disabled) to 6.
   // - if mConfig.mAdaptiveQp is set: av_opt_set_int(mCodecContext->priv_data,
   // "aq_mode", x, 0), where x is from 0 to 3: 0 - Disabled, 1 - Variance
   // AQ(default), 2 - Complexity AQ, 3 - Cycle AQ.
-  // - if min and max rates are known (VBR?),
-  // av_opt_set(mCodecContext->priv_data, "minrate", x, 0) and
-  // av_opt_set(mCodecContext->priv_data, "maxrate", y, 0)
-  // TODO: AV1 specific settings.
 
   // Our old version of libaom-av1 is considered experimental by the recent
   // ffmpeg we use. Allow experimental codecs for now until we decide on an AV1
@@ -372,13 +487,14 @@ nsresult FFmpegVideoEncoder<LIBAV_VER>::InitSpecific() {
     return rv;
   }
 
-  FFMPEGV_LOG("%s has been initialized with format: %s, bitrate: %" PRIi64
-              ", width: %d, height: %d, time_base: %d/%d%s",
-              codec->name, ffmpeg::GetPixelFormatString(mCodecContext->pix_fmt),
-              static_cast<int64_t>(mCodecContext->bit_rate),
-              mCodecContext->width, mCodecContext->height,
-              mCodecContext->time_base.num, mCodecContext->time_base.den,
-              h264Log.IsEmpty() ? "" : h264Log.get());
+  FFMPEGV_LOG(
+      "%s has been initialized with format: %s, bitrate: %" PRIi64
+      ", width: %d, height: %d, quantizer: [%d, %d], time_base: %d/%d%s",
+      codec->name, ffmpeg::GetPixelFormatString(mCodecContext->pix_fmt),
+      static_cast<int64_t>(mCodecContext->bit_rate), mCodecContext->width,
+      mCodecContext->height, mCodecContext->qmin, mCodecContext->qmax,
+      mCodecContext->time_base.num, mCodecContext->time_base.den,
+      h264Log.IsEmpty() ? "" : h264Log.get());
 
   return NS_OK;
 }
@@ -459,6 +575,8 @@ Result<MediaDataEncoder::EncodedData, nsresult> FFmpegVideoEncoder<
   mFrame->format = ffmpeg::FFMPEG_PIX_FMT_YUV420P;
   mFrame->width = static_cast<int>(sample->mImage->GetSize().width);
   mFrame->height = static_cast<int>(sample->mImage->GetSize().height);
+  mFrame->pict_type =
+      sample->mKeyframe ? AV_PICTURE_TYPE_I : AV_PICTURE_TYPE_NONE;
 
   // Allocate AVFrame data.
   if (int ret = mLib->av_frame_get_buffer(mFrame, 0); ret < 0) {
@@ -503,14 +621,38 @@ Result<MediaDataEncoder::EncodedData, nsresult> FFmpegVideoEncoder<
   mFrame->time_base =
       AVRational{.num = 1, .den = static_cast<int>(USECS_PER_S)};
 #  endif
-  mFrame->pts = aSample->mTime.ToMicroseconds();
+  // Provide fake pts, see header file.
+  if (mConfig.mCodec == CodecType::AV1) {
+    mFrame->pts = mFakePts;
+    mPtsMap.Insert(mFakePts, aSample->mTime.ToMicroseconds());
+    mFakePts += aSample->mDuration.ToMicroseconds();
+    mCurrentFramePts = aSample->mTime.ToMicroseconds();
+  } else {
+    mFrame->pts = aSample->mTime.ToMicroseconds();
+  }
 #  if LIBAVCODEC_VERSION_MAJOR >= 60
   mFrame->duration = aSample->mDuration.ToMicroseconds();
+
 #  else
   // Save duration in the time_base unit.
   mDurationMap.Insert(mFrame->pts, aSample->mDuration.ToMicroseconds());
 #  endif
-  mFrame->pkt_duration = aSample->mDuration.ToMicroseconds();
+  Duration(mFrame) = aSample->mDuration.ToMicroseconds();
+
+  AVDictionary* dict = nullptr;
+  // VP8/VP9 use a mode that handles the temporal layer id sequence internally,
+  // and don't require setting explicitly setting the metadata. Other codecs
+  // such as AV1 via libaom however requires manual frame tagging.
+  if (SvcEnabled() && mConfig.mCodec != CodecType::VP8 &&
+      mConfig.mCodec != CodecType::VP9) {
+    if (aSample->mKeyframe) {
+      FFMPEGV_LOG("Key frame requested, reseting temporal layer id");
+      mSVCInfo->ResetTemporalLayerId();
+    }
+    nsPrintfCString str("%d", mSVCInfo->CurrentTemporalLayerId());
+    mLib->av_dict_set(&dict, "temporal_id", str.get(), 0);
+    mFrame->metadata = dict;
+  }
 
   // Now send the AVFrame to ffmpeg for encoding, same code for audio and video.
   return FFmpegDataEncoder<LIBAV_VER>::EncodeWithModernAPIs();
@@ -524,11 +666,20 @@ RefPtr<MediaRawData> FFmpegVideoEncoder<LIBAV_VER>::ToMediaRawData(
 
   RefPtr<MediaRawData> data = ToMediaRawDataCommon(aPacket);
 
-  // TODO: Is it possible to retrieve temporal layer id from underlying codec
-  // instead?
+  if (mConfig.mCodec == CodecType::AV1) {
+    auto found = mPtsMap.Take(aPacket->pts);
+    data->mTime = media::TimeUnit::FromMicroseconds(found.value());
+  }
+
   if (mSVCInfo) {
-    uint8_t temporalLayerId = mSVCInfo->UpdateTemporalLayerId();
+    if (data->mKeyframe) {
+      FFMPEGV_LOG(
+          "Encoded packet is key frame, reseting temporal layer id sequence");
+      mSVCInfo->ResetTemporalLayerId();
+    }
+    uint8_t temporalLayerId = mSVCInfo->CurrentTemporalLayerId();
     data->mTemporalLayerId.emplace(temporalLayerId);
+    mSVCInfo->UpdateTemporalLayerId();
   }
 
   return data;
@@ -622,59 +773,85 @@ void FFmpegVideoEncoder<LIBAV_VER>::ForceEnablingFFmpegDebugLogs() {
 Maybe<FFmpegVideoEncoder<LIBAV_VER>::SVCSettings>
 FFmpegVideoEncoder<LIBAV_VER>::GetSVCSettings() {
   MOZ_ASSERT(!mCodecName.IsEmpty());
+  MOZ_ASSERT(SvcEnabled());
 
-  // TODO: Add support for AV1 and H264.
-  if (mCodecName != "libvpx" && mCodecName != "libvpx-vp9") {
+  CodecType codecType = CodecType::Unknown;
+  if (mCodecName == "libvpx") {
+    codecType = CodecType::VP8;
+  } else if (mCodecName == "libvpx-vp9") {
+    codecType = CodecType::VP9;
+  } else if (mCodecName == "libaom-av1") {
+    codecType = CodecType::AV1;
+  }
+
+  if (codecType == CodecType::Unknown) {
     FFMPEGV_LOG("SVC setting is not implemented for %s codec",
                 mCodecName.get());
     return Nothing();
   }
 
-  Maybe<VPXSVCSetting> svc =
-      GetVPXSVCSetting(mConfig.mScalabilityMode, mConfig.mBitrate);
-  if (!svc) {
-    FFMPEGV_LOG("No SVC settings obtained. Skip");
-    return Nothing();
-  }
+  SVCLayerSettings svc = GetSVCLayerSettings(
+      codecType, mConfig.mScalabilityMode, mConfig.mBitrate);
 
-  // Check if the number of temporal layers in codec specific settings matches
-  // the number of layers for the given scalability mode.
+  nsAutoCString name;
+  nsAutoCString parameters;
 
-  auto GetNumTemporalLayers = [&]() -> uint8_t {
-    uint8_t layers = 0;
+  if (codecType == CodecType::VP8 || codecType == CodecType::VP9) {
+    // Check if the number of temporal layers in codec specific settings
+    // matches
+    // the number of layers for the given scalability mode.
     if (mConfig.mCodecSpecific) {
       if (mConfig.mCodecSpecific->is<VP8Specific>()) {
-        layers = mConfig.mCodecSpecific->as<VP8Specific>().mNumTemporalLayers;
-        MOZ_ASSERT(layers > 0);
+        MOZ_ASSERT(
+            mConfig.mCodecSpecific->as<VP8Specific>().mNumTemporalLayers ==
+            svc.mNumberTemporalLayers);
       } else if (mConfig.mCodecSpecific->is<VP9Specific>()) {
-        layers = mConfig.mCodecSpecific->as<VP9Specific>().mNumTemporalLayers;
-        MOZ_ASSERT(layers > 0);
+        MOZ_ASSERT(
+            mConfig.mCodecSpecific->as<VP9Specific>().mNumTemporalLayers ==
+            svc.mNumberTemporalLayers);
       }
     }
-    return layers;
-  };
 
-  DebugOnly<uint8_t> numTemporalLayers = GetNumTemporalLayers();
-  MOZ_ASSERT_IF(numTemporalLayers > 0, numTemporalLayers == svc->mNumberLayers);
-
-  // Form an SVC setting string for libvpx.
-
-  nsPrintfCString parameters("ts_layering_mode=%u", svc->mLayeringMode);
-  parameters.Append(":ts_target_bitrate=");
-  for (size_t i = 0; i < svc->mTargetBitrates.Length(); ++i) {
-    if (i > 0) {
-      parameters.Append(",");
+    // Form an SVC setting string for libvpx.
+    name = "ts-parameters"_ns;
+    parameters.Append("ts_target_bitrate=");
+    for (size_t i = 0; i < svc.mTargetBitrates.Length(); ++i) {
+      if (i > 0) {
+        parameters.Append(",");
+      }
+      parameters.AppendPrintf("%d", svc.mTargetBitrates[i]);
     }
-    parameters.AppendPrintf("%d", svc->mTargetBitrates[i]);
+    parameters.AppendPrintf(
+        ":ts_layering_mode=%u",
+        svc.mCodecAppendix->as<VPXSVCAppendix>().mLayeringMode);
   }
 
-  // TODO: Set ts_number_layers, ts_periodicity, ts_layer_id and
-  // ts_rate_decimator if they are different from the preset values in
-  // ts_layering_mode.
+  if (codecType == CodecType::AV1) {
+    // Form an SVC setting string for libaom.
+    name = "svc-parameters"_ns;
+    parameters.AppendPrintf("number_spatial_layers=%zu",
+                            svc.mNumberSpatialLayers);
+    parameters.AppendPrintf(":number_temporal_layers=%zu",
+                            svc.mNumberTemporalLayers);
+    parameters.Append(":framerate_factor=");
+    for (size_t i = 0; i < svc.mRateDecimators.Length(); ++i) {
+      if (i > 0) {
+        parameters.Append(",");
+      }
+      parameters.AppendPrintf("%d", svc.mRateDecimators[i]);
+    }
+    parameters.Append(":layer_target_bitrate=");
+    for (size_t i = 0; i < svc.mTargetBitrates.Length(); ++i) {
+      if (i > 0) {
+        parameters.Append(",");
+      }
+      parameters.AppendPrintf("%d", svc.mTargetBitrates[i]);
+    }
+  }
 
   return Some(
-      SVCSettings{std::move(svc->mLayerIds),
-                  std::make_pair("ts-parameters"_ns, std::move(parameters))});
+      SVCSettings{std::move(svc.mLayerIds),
+                  std::make_pair(std::move(name), std::move(parameters))});
 }
 
 FFmpegVideoEncoder<LIBAV_VER>::H264Settings FFmpegVideoEncoder<

@@ -136,7 +136,7 @@ class ServoStyleSet {
   void RuleRemoved(StyleSheet&, css::Rule&);
   void RuleChanged(StyleSheet&, css::Rule*, StyleRuleChangeKind);
   void SheetCloned(StyleSheet&);
-  void ImportRuleLoaded(dom::CSSImportRule&, StyleSheet&);
+  void ImportRuleLoaded(StyleSheet&);
 
   // Runs style invalidation due to document state changes.
   void InvalidateStyleForDocumentStateChanges(
@@ -256,6 +256,10 @@ class ServoStyleSet {
   already_AddRefed<ComputedStyle> ResolveXULTreePseudoStyle(
       dom::Element* aParentElement, nsCSSAnonBoxPseudoStaticAtom* aPseudoTag,
       ComputedStyle* aParentStyle, const AtomArray& aInputWord);
+
+  // Try to resolve the staring style for a given element. Please call this
+  // function after checking if it may have rules inside @starting-style.
+  already_AddRefed<ComputedStyle> ResolveStartingStyle(dom::Element& aElement);
 
   size_t SheetCount(Origin) const;
   StyleSheet* SheetAt(Origin, size_t aIndex) const;
@@ -519,7 +523,7 @@ class ServoStyleSet {
    * relative selector it refers to.
    */
   void MaybeInvalidateRelativeSelectorForNthDependencyFromSibling(
-      const dom::Element*);
+      const dom::Element*, bool aForceRestyleSiblings);
 
   /**
    * Maybe invalidate if a DOM element insertion might require us to restyle

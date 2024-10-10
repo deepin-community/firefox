@@ -577,7 +577,8 @@ template <XDRMode mode>
 /* static */ XDRResult StencilXDR::codeModuleRequest(
     XDRState<mode>* xdr, StencilModuleRequest& stencil) {
   MOZ_TRY(xdr->codeUint32(stencil.specifier.rawDataRef()));
-  MOZ_TRY(XDRVectorContent(xdr, stencil.assertions));
+  MOZ_TRY(xdr->codeUint32(stencil.firstUnsupportedAttributeKey.rawDataRef()));
+  MOZ_TRY(XDRVectorContent(xdr, stencil.attributes));
 
   return Ok();
 }
@@ -1460,6 +1461,8 @@ void StencilIncrementalEncoderPtr::reset() {
 bool StencilIncrementalEncoderPtr::setInitial(
     JSContext* cx,
     UniquePtr<frontend::ExtensibleCompilationStencil>&& initial) {
+  MOZ_ASSERT(!merger_);
+
   AutoReportFrontendContext fc(cx);
   merger_ = fc.getAllocator()->new_<frontend::CompilationStencilMerger>();
   if (!merger_) {

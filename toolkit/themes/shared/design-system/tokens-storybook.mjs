@@ -190,6 +190,21 @@ export const storybookTables = {
     { value: { prefersContrast: "var(--text-color)" }, name: "--border-color" },
     {
       value: {
+        brand: {
+          light: "var(--color-gray-30)",
+          dark: "var(--color-gray-70)",
+          default: "light-dark(var(--color-gray-30), var(--color-gray-70))",
+        },
+        platform: {
+          default: "color-mix(in srgb, currentColor 24%, transparent)",
+        },
+        prefersContrast: "currentColor",
+        forcedColors: "ButtonText",
+      },
+      name: "--border-color-deemphasized",
+    },
+    {
+      value: {
         prefersContrast: "var(--text-color)",
         forcedColors: "ButtonText",
         brand: {
@@ -539,6 +554,7 @@ export const storybookTables = {
     { value: "#aaf2ff", name: "--color-cyan-20" },
     { value: "#80ebff", name: "--color-cyan-30" },
     { value: "#00ddff", name: "--color-cyan-50" },
+    { value: "#bac2ca", name: "--color-gray-30" },
     { value: "#bfbfc9", name: "--color-gray-50" },
     { value: "#8f8f9d", name: "--color-gray-60" },
     { value: "#5b5b66", name: "--color-gray-70" },
@@ -605,7 +621,13 @@ export const storybookTables = {
       value: "var(--focus-outline-width) solid var(--focus-outline-color)",
       name: "--focus-outline",
     },
-    { value: "var(--color-accent-primary)", name: "--focus-outline-color" },
+    {
+      value: {
+        default: "var(--color-accent-primary)",
+        forcedColors: "var(--text-color)",
+      },
+      name: "--focus-outline-color",
+    },
     {
       value: "calc(-1 * var(--focus-outline-width))",
       name: "--focus-outline-inset",
@@ -671,6 +693,9 @@ export const storybookTables = {
   ],
   "icon-size": [
     { value: "var(--size-item-small)", name: "--icon-size-default" },
+  ],
+  "input-space": [
+    { value: "var(--space-xsmall)", name: "--input-space-block" },
   ],
   link: [
     {
@@ -768,6 +793,16 @@ export const variableLookupTable = {
     default: "light-dark(var(--color-yellow-05), var(--color-yellow-80))",
   },
   "border-color": { prefersContrast: "var(--text-color)" },
+  "border-color-deemphasized": {
+    brand: {
+      light: "var(--color-gray-30)",
+      dark: "var(--color-gray-70)",
+      default: "light-dark(var(--color-gray-30), var(--color-gray-70))",
+    },
+    platform: { default: "color-mix(in srgb, currentColor 24%, transparent)" },
+    prefersContrast: "currentColor",
+    forcedColors: "ButtonText",
+  },
   "border-color-interactive": {
     prefersContrast: "var(--text-color)",
     forcedColors: "ButtonText",
@@ -1002,6 +1037,7 @@ export const variableLookupTable = {
   "color-cyan-20": "#aaf2ff",
   "color-cyan-30": "#80ebff",
   "color-cyan-50": "#00ddff",
+  "color-gray-30": "#bac2ca",
   "color-gray-50": "#bfbfc9",
   "color-gray-60": "#8f8f9d",
   "color-gray-70": "#5b5b66",
@@ -1055,7 +1091,10 @@ export const variableLookupTable = {
   },
   "focus-outline":
     "var(--focus-outline-width) solid var(--focus-outline-color)",
-  "focus-outline-color": "var(--color-accent-primary)",
+  "focus-outline-color": {
+    default: "var(--color-accent-primary)",
+    forcedColors: "var(--text-color)",
+  },
   "focus-outline-inset": "calc(-1 * var(--focus-outline-width))",
   "focus-outline-offset": "2px",
   "focus-outline-width": "2px",
@@ -1113,6 +1152,7 @@ export const variableLookupTable = {
   },
   "icon-size-default": "var(--size-item-small)",
   "input-text-min-height": "var(--button-min-height)",
+  "input-space-block": "var(--space-xsmall)",
   "link-color": {
     prefersContrast: "LinkText",
     brand: { default: "var(--color-accent-primary)" },

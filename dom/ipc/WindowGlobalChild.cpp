@@ -16,6 +16,7 @@
 #include "mozilla/dom/BrowserChild.h"
 #include "mozilla/dom/BrowserBridgeChild.h"
 #include "mozilla/dom/ContentParent.h"
+#include "mozilla/dom/IdentityCredential.h"
 #include "mozilla/dom/SecurityPolicyViolationEvent.h"
 #include "mozilla/dom/SessionStoreRestoreData.h"
 #include "mozilla/dom/WindowGlobalActorsBinding.h"
@@ -513,12 +514,6 @@ mozilla::ipc::IPCResult WindowGlobalChild::RecvResetScalingZoom() {
   return IPC_OK();
 }
 
-mozilla::ipc::IPCResult WindowGlobalChild::RecvSetContainerFeaturePolicy(
-    dom::FeaturePolicy* aContainerFeaturePolicy) {
-  mContainerFeaturePolicy = aContainerFeaturePolicy;
-  return IPC_OK();
-}
-
 mozilla::ipc::IPCResult WindowGlobalChild::RecvRestoreDocShellState(
     const dom::sessionstore::DocShellRestoreState& aState,
     RestoreDocShellStateResolver&& aResolve) {
@@ -570,6 +565,26 @@ IPCResult WindowGlobalChild::RecvNotifyPermissionChange(const nsCString& aType,
       aPermission != nsIPermissionManager::ALLOW_ACTION) {
     this->GetWindowGlobal()->SaveStorageAccessPermissionRevoked();
   }
+  return IPC_OK();
+}
+
+IPCResult WindowGlobalChild::RecvNavigateForIdentityCredentialDiscovery(
+    const nsCString& aURI, const IdentityLoginTargetType& aType) {
+  AutoJSAPI jsapi;
+  if (!jsapi.Init(GetWindowGlobal())) {
+    return IPC_OK();
+  }
+  MOZ_ASSERT(WindowContext()->TopWindowContext());
+  nsGlobalWindowOuter* outer = nsGlobalWindowOuter::GetOuterWindowWithId(
+      WindowContext()->TopWindowContext()->OuterWindowId());
+  bool popup = aType == IdentityLoginTargetType::Popup;
+  RefPtr<dom::BrowsingContext> newBC;
+  if (popup) {
+    Unused << outer->OpenJS(aURI, u"_blank"_ns, u"popup"_ns,
+                            getter_AddRefs(newBC));
+    return IPC_OK();
+  }
+  Unused << outer->OpenJS(aURI, u"_top"_ns, u""_ns, getter_AddRefs(newBC));
   return IPC_OK();
 }
 
@@ -867,9 +882,26 @@ nsISupports* WindowGlobalChild::GetParentObject() {
   return xpc::NativeGlobal(xpc::PrivilegedJunkScope());
 }
 
-NS_IMPL_CYCLE_COLLECTION_WRAPPERCACHE_WEAK_PTR(WindowGlobalChild, mWindowGlobal,
-                                               mContainerFeaturePolicy,
-                                               mWindowContext)
+NS_IMPL_CYCLE_COLLECTION_WRAPPERCACHE_CLASS(WindowGlobalChild)
+
+NS_IMPL_CYCLE_COLLECTION_UNLINK_BEGIN(WindowGlobalChild)
+  NS_IMPL_CYCLE_COLLECTION_UNLINK(mWindowGlobal)
+  NS_IMPL_CYCLE_COLLECTION_UNLINK(mContainerFeaturePolicy)
+  NS_IMPL_CYCLE_COLLECTION_UNLINK(mWindowContext)
+  tmp->UnlinkManager();
+  NS_IMPL_CYCLE_COLLECTION_UNLINK_PRESERVED_WRAPPER
+  NS_IMPL_CYCLE_COLLECTION_UNLINK_WEAK_PTR
+NS_IMPL_CYCLE_COLLECTION_UNLINK_END
+
+NS_IMPL_CYCLE_COLLECTION_TRAVERSE_BEGIN(WindowGlobalChild)
+  NS_IMPL_CYCLE_COLLECTION_TRAVERSE(mWindowGlobal)
+  NS_IMPL_CYCLE_COLLECTION_TRAVERSE(mContainerFeaturePolicy)
+  NS_IMPL_CYCLE_COLLECTION_TRAVERSE(mWindowContext)
+  if (!tmp->IsInProcess()) {
+    CycleCollectionNoteChild(cb, static_cast<BrowserChild*>(tmp->Manager()),
+                             "Manager()");
+  }
+NS_IMPL_CYCLE_COLLECTION_TRAVERSE_END
 
 NS_INTERFACE_MAP_BEGIN_CYCLE_COLLECTION(WindowGlobalChild)
   NS_WRAPPERCACHE_INTERFACE_MAP_ENTRY

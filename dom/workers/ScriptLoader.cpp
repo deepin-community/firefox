@@ -295,25 +295,28 @@ class ChannelGetterRunnable final : public WorkerMainThreadRunnable {
 
   virtual bool MainThreadRun() override {
     AssertIsOnMainThread();
+    MOZ_ASSERT(mWorkerRef);
+
+    WorkerPrivate* workerPrivate = mWorkerRef->Private();
 
     // Initialize the WorkerLoadInfo principal to our triggering principal
     // before doing anything else.  Normally we do this in the WorkerPrivate
     // Constructor, but we can't do so off the main thread when creating
     // a nested worker.  So do it here instead.
-    mLoadInfo.mLoadingPrincipal = mWorkerPrivate->GetPrincipal();
+    mLoadInfo.mLoadingPrincipal = workerPrivate->GetPrincipal();
     MOZ_DIAGNOSTIC_ASSERT(mLoadInfo.mLoadingPrincipal);
 
     mLoadInfo.mPrincipal = mLoadInfo.mLoadingPrincipal;
 
     // Figure out our base URI.
-    nsCOMPtr<nsIURI> baseURI = mWorkerPrivate->GetBaseURI();
+    nsCOMPtr<nsIURI> baseURI = workerPrivate->GetBaseURI();
     MOZ_ASSERT(baseURI);
 
     // May be null.
-    nsCOMPtr<Document> parentDoc = mWorkerPrivate->GetDocument();
+    nsCOMPtr<Document> parentDoc = workerPrivate->GetDocument();
 
-    mLoadInfo.mLoadGroup = mWorkerPrivate->GetLoadGroup();
-    mLoadInfo.mCookieJarSettings = mWorkerPrivate->CookieJarSettings();
+    mLoadInfo.mLoadGroup = workerPrivate->GetLoadGroup();
+    mLoadInfo.mCookieJarSettings = workerPrivate->CookieJarSettings();
 
     // Nested workers use default uri encoding.
     nsCOMPtr<nsIURI> url;
@@ -328,7 +331,7 @@ class ChannelGetterRunnable final : public WorkerMainThreadRunnable {
         ReferrerInfo::CreateForFetch(mLoadInfo.mLoadingPrincipal, nullptr);
     mLoadInfo.mReferrerInfo =
         static_cast<ReferrerInfo*>(referrerInfo.get())
-            ->CloneWithNewPolicy(mWorkerPrivate->GetReferrerPolicy());
+            ->CloneWithNewPolicy(workerPrivate->GetReferrerPolicy());
 
     mResult = workerinternals::ChannelFromScriptURLMainThread(
         mLoadInfo.mLoadingPrincipal, parentDoc, mLoadInfo.mLoadGroup, url,
@@ -1025,6 +1028,18 @@ nsresult WorkerScriptLoader::LoadScript(
     if (NS_WARN_IF(NS_FAILED(rv))) {
       return rv;
     }
+
+    // Set the IsInThirdPartyContext for the channel's loadInfo according to the
+    // partitionKey of the principal. The worker is foreign if it's using
+    // partitioned principal, i.e. the partitionKey is not empty. In this case,
+    // we need to set the bit to the channel's loadInfo.
+    if (!principal->OriginAttributesRef().mPartitionKey.IsEmpty()) {
+      nsCOMPtr<nsILoadInfo> loadInfo = channel->LoadInfo();
+      rv = loadInfo->SetIsInThirdPartyContext(true);
+      if (NS_WARN_IF(NS_FAILED(rv))) {
+        return rv;
+      }
+    }
   }
 
   // Associate any originating stack with the channel.
@@ -1043,8 +1058,7 @@ nsresult WorkerScriptLoader::LoadScript(
   // should have occured prior that processed the headers.
   if (!IsDebuggerScript()) {
     headerProcessor = MakeRefPtr<ScriptResponseHeaderProcessor>(
-        mWorkerRef->Private(),
-        loadContext->IsTopLevel() && !IsDynamicImport(request),
+        mWorkerRef, loadContext->IsTopLevel() && !IsDynamicImport(request),
         GetContentPolicyType(request) ==
             nsIContentPolicy::TYPE_INTERNAL_WORKER_IMPORT_SCRIPTS);
   }
@@ -1641,7 +1655,8 @@ void ScriptLoaderRunnable::DispatchProcessPendingRequests() {
         Span<RefPtr<ThreadSafeRequestHandle>>{maybeRangeToExecute->first,
                                               maybeRangeToExecute->second});
 
-    if (!runnable->Dispatch() && mScriptLoader->mSyncLoopTarget) {
+    if (!runnable->Dispatch(mWorkerRef->Private()) &&
+        mScriptLoader->mSyncLoopTarget) {
       MOZ_ASSERT(false, "This should never fail!");
     }
   }
@@ -1651,8 +1666,7 @@ ScriptExecutorRunnable::ScriptExecutorRunnable(
     WorkerScriptLoader* aScriptLoader, WorkerPrivate* aWorkerPrivate,
     nsISerialEventTarget* aSyncLoopTarget,
     Span<RefPtr<ThreadSafeRequestHandle>> aLoadedRequests)
-    : MainThreadWorkerSyncRunnable(aWorkerPrivate, aSyncLoopTarget,
-                                   "ScriptExecutorRunnable"),
+    : MainThreadWorkerSyncRunnable(aSyncLoopTarget, "ScriptExecutorRunnable"),
       mScriptLoader(aScriptLoader),
       mLoadedRequests(aLoadedRequests) {}
 
@@ -1837,7 +1851,7 @@ nsresult ChannelFromScriptURLWorkerThread(
       aParent, aScriptURL, aWorkerType, aCredentials, aLoadInfo);
 
   ErrorResult rv;
-  getter->Dispatch(Canceling, rv);
+  getter->Dispatch(aParent, Canceling, rv);
   if (rv.Failed()) {
     NS_ERROR("Failed to dispatch!");
     return rv.StealNSResult();

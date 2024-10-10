@@ -182,8 +182,7 @@ class SourceSurfaceCanvasRecording final : public gfx::SourceSurface {
 
 class CanvasDataShmemHolder {
  public:
-  CanvasDataShmemHolder(ipc::SharedMemoryBasic* aShmem,
-                        CanvasChild* aCanvasChild)
+  CanvasDataShmemHolder(ipc::SharedMemory* aShmem, CanvasChild* aCanvasChild)
       : mMutex("CanvasChild::DataShmemHolder::mMutex"),
         mShmem(aShmem),
         mCanvasChild(aCanvasChild) {}
@@ -206,13 +205,11 @@ class CanvasDataShmemHolder {
   }
 
   void Destroy() {
-    class DestroyRunnable final : public dom::WorkerRunnable {
+    class DestroyRunnable final : public dom::WorkerThreadRunnable {
      public:
       DestroyRunnable(dom::WorkerPrivate* aWorkerPrivate,
                       CanvasDataShmemHolder* aShmemHolder)
-          : dom::WorkerRunnable(aWorkerPrivate,
-                                "CanvasDataShmemHolder::Destroy",
-                                dom::WorkerRunnable::WorkerThread),
+          : dom::WorkerThreadRunnable("CanvasDataShmemHolder::Destroy"),
             mShmemHolder(aShmemHolder) {}
 
       bool WorkerRun(JSContext* aCx,
@@ -241,8 +238,9 @@ class CanvasDataShmemHolder {
       if (mWorkerRef) {
         if (!mWorkerRef->Private()->IsOnCurrentThread()) {
           auto task = MakeRefPtr<DestroyRunnable>(mWorkerRef->Private(), this);
+          dom::WorkerPrivate* worker = mWorkerRef->Private();
           mMutex.Unlock();
-          task->Dispatch();
+          task->Dispatch(worker);
           return;
         }
       } else if (!NS_IsMainThread()) {
@@ -269,7 +267,7 @@ class CanvasDataShmemHolder {
 
  private:
   Mutex mMutex;
-  RefPtr<ipc::SharedMemoryBasic> mShmem;
+  RefPtr<ipc::SharedMemory> mShmem;
   RefPtr<CanvasChild> mCanvasChild MOZ_GUARDED_BY(mMutex);
   RefPtr<dom::ThreadSafeWorkerRef> mWorkerRef MOZ_GUARDED_BY(mMutex);
 };
@@ -316,7 +314,7 @@ ipc::IPCResult CanvasChild::RecvBlockCanvas() {
   return IPC_OK();
 }
 
-void CanvasChild::EnsureRecorder(gfx::IntSize aSize, gfx::SurfaceFormat aFormat,
+bool CanvasChild::EnsureRecorder(gfx::IntSize aSize, gfx::SurfaceFormat aFormat,
                                  TextureType aTextureType,
                                  TextureType aWebglTextureType) {
   NS_ASSERT_OWNINGTHREAD(CanvasChild);
@@ -327,16 +325,23 @@ void CanvasChild::EnsureRecorder(gfx::IntSize aSize, gfx::SurfaceFormat aFormat,
     auto recorder = MakeRefPtr<CanvasDrawEventRecorder>(mWorkerRef);
     if (!recorder->Init(aTextureType, aWebglTextureType, backendType,
                         MakeUnique<RecorderHelpers>(this))) {
-      return;
+      return false;
     }
 
     mRecorder = recorder.forget();
   }
 
-  MOZ_RELEASE_ASSERT(mRecorder->GetTextureType() == aTextureType,
-                     "We only support one remote TextureType currently.");
+  if (NS_WARN_IF(mRecorder->GetTextureType() != aTextureType)) {
+    // The recorder has already been initialized with a different type. This can
+    // happen if there is a device reset or fallback that causes a switch to a
+    // different unaccelerated texture type (i.e. unknown). In that case, just
+    // fall back to non-remote rendering.
+    return false;
+  }
 
   EnsureDataSurfaceShmem(aSize, aFormat);
+
+  return true;
 }
 
 void CanvasChild::ActorDestroy(ActorDestroyReason aWhy) {
@@ -455,7 +460,7 @@ bool CanvasChild::EnsureDataSurfaceShmem(gfx::IntSize aSize,
 
   if (!mDataSurfaceShmemAvailable || mDataSurfaceShmem->Size() < sizeRequired) {
     RecordEvent(RecordedPauseTranslation());
-    auto dataSurfaceShmem = MakeRefPtr<ipc::SharedMemoryBasic>();
+    auto dataSurfaceShmem = MakeRefPtr<ipc::SharedMemory>();
     if (!dataSurfaceShmem->Create(sizeRequired) ||
         !dataSurfaceShmem->Map(sizeRequired)) {
       return false;
@@ -523,7 +528,7 @@ already_AddRefed<gfx::DataSourceSurface> CanvasChild::GetDataSurface(
     auto it = mTextureInfo.find(aTextureId);
     if (it != mTextureInfo.end() && it->second.mSnapshotShmem) {
       const auto shmemPtr =
-          reinterpret_cast<uint8_t*>(it->second.mSnapshotShmem->memory());
+          reinterpret_cast<uint8_t*>(it->second.mSnapshotShmem->Memory());
       MOZ_ASSERT(shmemPtr);
       mRecorder->RecordEvent(RecordedPrepareShmem(aTextureId));
       auto checkpoint = CreateCheckpoint();
@@ -565,7 +570,7 @@ already_AddRefed<gfx::DataSourceSurface> CanvasChild::GetDataSurface(
 
   mDataSurfaceShmemAvailable = false;
 
-  auto* data = static_cast<uint8_t*>(mDataSurfaceShmem->memory());
+  auto* data = static_cast<uint8_t*>(mDataSurfaceShmem->Memory());
 
   RefPtr<gfx::DataSourceSurface> dataSurface =
       gfx::Factory::CreateWrappingDataSourceSurface(
@@ -592,8 +597,8 @@ already_AddRefed<gfx::SourceSurface> CanvasChild::WrapSurface(
 }
 
 void CanvasChild::ReturnDataSurfaceShmem(
-    already_AddRefed<ipc::SharedMemoryBasic> aDataSurfaceShmem) {
-  RefPtr<ipc::SharedMemoryBasic> data = aDataSurfaceShmem;
+    already_AddRefed<ipc::SharedMemory> aDataSurfaceShmem) {
+  RefPtr<ipc::SharedMemory> data = aDataSurfaceShmem;
   // We can only reuse the latest data surface shmem.
   if (data == mDataSurfaceShmem) {
     MOZ_ASSERT(!mDataSurfaceShmemAvailable);
@@ -643,7 +648,7 @@ ipc::IPCResult CanvasChild::RecvSnapshotShmem(
     SnapshotShmemResolver&& aResolve) {
   auto it = mTextureInfo.find(aTextureId);
   if (it != mTextureInfo.end()) {
-    auto shmem = MakeRefPtr<ipc::SharedMemoryBasic>();
+    auto shmem = MakeRefPtr<ipc::SharedMemory>();
     if (NS_WARN_IF(!shmem->SetHandle(std::move(aShmemHandle),
                                      ipc::SharedMemory::RightsReadOnly)) ||
         NS_WARN_IF(!shmem->Map(aShmemSize))) {

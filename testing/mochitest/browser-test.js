@@ -380,7 +380,7 @@ Tester.prototype = {
 
   async promiseMainWindowReady() {
     if (window.gBrowserInit) {
-      await window.gBrowserInit.idleTasksFinishedPromise;
+      await window.gBrowserInit.idleTasksFinished.promise;
     }
   },
 
@@ -633,6 +633,12 @@ Tester.prototype = {
         AppConstants.platform == "linux" &&
         name == "nsAvailableMemoryWatcher"
       ) {
+        continue;
+      }
+
+      // Ignore ScrollFrameActivityTracker, it's a 4s timer which could begin
+      // shortly after the end of a test and cause failure. See bug 1878627.
+      if (name == "ScrollFrameActivityTracker") {
         continue;
       }
 
@@ -1261,7 +1267,6 @@ Tester.prototype = {
           err
             ? {
                 name: err.message,
-                ex: err.stack,
                 stack: err.stack,
                 allowFailure: currentTest.allowFailure,
               }

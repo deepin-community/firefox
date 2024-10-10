@@ -4,18 +4,26 @@
 
 tabbrowser-empty-tab-title = Nova aba
 tabbrowser-empty-private-tab-title = Nova aba privativa
-
 tabbrowser-menuitem-close-tab =
     .label = Fechar aba
 tabbrowser-menuitem-close =
     .label = Fechar
-
 # Displayed as a tooltip on container tabs
 # Variables:
 #   $title (String): the title of the current tab.
 #   $containerName (String): the name of the current container.
 tabbrowser-container-tab-title = { $title } - { $containerName }
-
+# This text serves as an on-screen tooltip as well as an accessible name for
+# the "X" button that is shown on the active tab or, when multiple tabs are
+# selected, to all their "X" buttons.
+# Variables:
+#   $tabCount (Number): The number of tabs that will be closed.
+tabbrowser-close-tabs-button =
+    .tooltiptext =
+        { $tabCount ->
+            [one] Fechar aba
+           *[other] Fechar { $tabCount } abas
+        }
 # Variables:
 #   $tabCount (Number): The number of tabs that will be closed.
 tabbrowser-close-tabs-tooltip =
@@ -117,13 +125,20 @@ tabbrowser-confirm-caretbrowsing-title = Navegação com cursor do teclado
 tabbrowser-confirm-caretbrowsing-message = A tecla F7 ativa ou desativa a navegação com cursor do teclado. Este recurso coloca um cursor móvel em páginas web, permitindo selecionar texto usando o teclado. Quer ativar a navegação com cursor do teclado?
 tabbrowser-confirm-caretbrowsing-checkbox = Não mostrar mais este aviso.
 
+## Confirmation dialog for closing all duplicate tabs
+
+tabbrowser-confirm-close-duplicate-tabs-title = Atenção
+tabbrowser-confirm-close-duplicate-tabs-text = A aba com atividade mais recente permanecerá aberta
+tabbrowser-confirm-close-all-duplicate-tabs-title = Fechar abas duplicadas?
+tabbrowser-confirm-close-all-duplicate-tabs-text = As abas duplicadas nesta janela serão fechadas. A aba com atividade mais recente permanecerá aberta.
+tabbrowser-confirm-close-all-duplicate-tabs-button-closetabs = Fechar abas
+
 ##
 
 # Variables:
 #   $domain (String): URL of the page that is trying to steal focus.
 tabbrowser-allow-dialogs-to-get-focus =
     .label = Permitir que notificações como esta de { $domain } levem você para a aba de origem
-
 tabbrowser-customizemode-tab-title = Personalizar o { -brand-short-name }
 
 ## Context menu buttons, of which only one will be visible at a time
@@ -142,7 +157,6 @@ tabbrowser-context-mute-selected-tabs =
 tabbrowser-context-unmute-selected-tabs =
     .label = Ativar som de abas
     .accesskey = s
-
 # This string is used as an additional tooltip and accessibility description for tabs playing audio
 tabbrowser-tab-audio-playing-description = Reproduzindo áudio
 

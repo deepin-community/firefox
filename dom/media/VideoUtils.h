@@ -9,6 +9,7 @@
 
 #include "AudioSampleFormat.h"
 #include "MediaInfo.h"
+#include "MediaCodecsSupport.h"
 #include "VideoLimits.h"
 #include "mozilla/AbstractThread.h"
 #include "mozilla/Attributes.h"
@@ -202,7 +203,7 @@ already_AddRefed<SharedThreadPool> GetMediaThreadPool(MediaThreadType aType);
 // for more details.
 // Returns false on failure.
 bool ExtractH264CodecDetails(const nsAString& aCodecs, uint8_t& aProfile,
-                             uint8_t& aConstraint, uint8_t& aLevel);
+                             uint8_t& aConstraint, H264_LEVEL& aLevel);
 
 struct VideoColorSpace {
   // Default values are set according to
@@ -552,6 +553,10 @@ bool IsWaveMimetype(const nsACString& aMimeType);
 
 void DetermineResolutionForTelemetry(const MediaInfo& aInfo,
                                      nsCString& aResolutionOut);
+
+// True if given MediaCodecsSupported contains any hardware decoding support.
+bool ContainHardwareCodecsSupported(
+    const media::MediaCodecsSupported& aSupport);
 
 }  // end namespace mozilla
 

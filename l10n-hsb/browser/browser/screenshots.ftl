@@ -58,16 +58,14 @@ screenshots-component-cancel-button =
     .aria-label = Přetorhnyć
 # Variables
 #   $shortcut (String) - A keyboard shortcut for copying the screenshot.
-screenshots-component-copy-button =
+screenshots-component-copy-button-2 = Kopěrować
     .title = Kopěrować ({ $shortcut })
     .aria-label = Kopěrować
-screenshots-component-copy-button-label = Kopěrować
 # Variables
 #   $shortcut (String) - A keyboard shortcut for saving/downloading the screenshot.
-screenshots-component-download-button =
+screenshots-component-download-button-2 = Sćahnyć
     .title = Sćahnyć ({ $shortcut })
     .aria-label = Sćahnyć
-screenshots-component-download-button-label = Sćahnyć
 
 ## The below strings are used to capture keydown events so the strings should
 ## not be changed unless the keyboard layout in the locale requires it.
@@ -78,14 +76,10 @@ screenshots-component-copy-key = C
 ##
 
 # This string represents the selection size area
-# "x" here represents "by" (i.e 123 by 456)
-# Variables:
-#   $width (Number) - The width of the selection region in pixels
-#   $height (Number) - The height of the selection region in pixels
-screenshots-overlay-selection-region-size-2 = { $width } x { $height }
-# This string represents the selection size area
 # "×" here represents "by" (i.e 123 by 456)
 # Variables:
 #   $width (Number) - The width of the selection region in pixels
 #   $height (Number) - The height of the selection region in pixels
 screenshots-overlay-selection-region-size-3 = { $width } × { $height }
+screenshots-overlay-preview-face-label =
+    .aria-label = Tutón region wubrać

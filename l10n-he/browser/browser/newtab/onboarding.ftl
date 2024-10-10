@@ -189,6 +189,8 @@ mr2022-onboarding-pin-primary-button-label =
         [macos] שמירת { -brand-short-name } ב־Dock
        *[other] הצמדת { -brand-short-name } לשורת המשימות
     }
+# Primary button string used on welcome page for when Firefox is not pinned on MSIX
+mr2022-onboarding-pin-primary-button-label-msix = הצמדת { -brand-short-name } לשורת המשימות ותפריט ההתחל
 
 ## MR2022 Existing User Pin Firefox Screen Strings
 
@@ -291,6 +293,14 @@ onboarding-device-migration-title = ברוכים השבים!
 onboarding-device-migration-subtitle = באפשרותך להיכנס אל { -fxaccount-brand-name(case: "the") } שלך כדי להביא איתך את הסימניות, הססמאות וההיסטוריה שלך במכשיר החדש שלך.
 onboarding-device-migration-subtitle2 = באפשרותך להיכנס לחשבון שלך כדי להביא איתך את הסימניות, הססמאות וההיסטוריה שלך במכשיר החדש שלך.
 onboarding-device-migration-primary-button-label = כניסה
+
+## Add-ons Picker screen
+
+amo-picker-title = התאמה אישית של ה־{ -brand-short-name } שלך
+amo-picker-subtitle = הרחבות הן כמו יישומים לדפדפן שלך, ומאפשרות לך להגן על ססמאות, להוריד סרטונים, למצוא מבצעים, לחסום פרסומות מציקות, לשנות את תצוגת הדפדפן שלך ועוד.
+amo-picker-install-button-label = הוספה ל־{ -brand-short-name }
+amo-picker-install-complete-label = הותקן
+amo-picker-collection-link = סיור בתוספות נוספות
 
 ## The following screens have been updated to use security and privacy focused strings:
 
