@@ -4,7 +4,7 @@ ifeq (,$(TESTDIR))
 include debian/make.mk
 # Use dpkg-buildflags to get build flags, but exclude -g, that is dealt with
 # via configure options.
-dpkg_buildflags = $(and $(1),$(shell DEB_CFLAGS_MAINT_STRIP="-g" dpkg-buildflags --get $(1)))
+dpkg_buildflags = $(and $(1),$(shell DEB_CFLAGS_MAINT_STRIP="-g -mlsx" dpkg-buildflags --get $(1)))
 $(call lazy,CFLAGS,$$(call dpkg_buildflags,CFLAGS))
 $(call lazy,CXXFLAGS,$$(call dpkg_buildflags,CXXFLAGS))
 $(call lazy,CPPFLAGS,$$(call dpkg_buildflags,CPPFLAGS))
@@ -125,10 +125,10 @@ ifneq (,$(filter mips%,$(DEB_HOST_ARCH)))
 endif
 
 ifeq (default,$(origin CC))
-CC := gcc
+CC := clang
 endif
 ifeq (default,$(origin CXX))
-CXX := g++
+CXX := clang++
 endif
 
 ifeq ($(DIST),bookworm)
