@@ -1,10 +1,21 @@
-firefox (131.0.2-1deepin1) unstable; urgency=medium
+firefox (131.0.3-1) unstable; urgency=medium
 
-  * Sync LoongArch patches from AOSC OS.
-  * Enable AMD GPU VA-API support.
-  * Enable GLES support for RISC-V (riscv64).
+  * New upstream release.
+  * Fixes for mfsa2024-53, also known as CVE-2024-9936.
 
- -- Mingcong Bai <baimingcong@uniontech.com>  Thu, 10 Oct 2024 21:17:33 +0800
+  * debian/browser.lintian-overrides.in: Adjusted to make the report on
+    udd.debian.org happy. For some reason local lintian doesn't agree.
+
+ -- Mike Hommey <glandium@debian.org>  Tue, 15 Oct 2024 05:40:52 +0900
+
+firefox (131.0.2-2) unstable; urgency=medium
+
+  * debian/rules: Exclude -g from CXXFLAGS too. It's handled by the upstream
+    build system, and leaving it there breaks the build on 32-bits platforms
+    because the debug info is just too large to handle for the address space.
+    That's how it was before the changes in 128.3.1esr-1 anyways.
+
+ -- Mike Hommey <glandium@debian.org>  Thu, 10 Oct 2024 15:50:40 +0900
 
 firefox (131.0.2-1) unstable; urgency=medium
 

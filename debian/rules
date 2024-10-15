@@ -4,7 +4,7 @@ ifeq (,$(TESTDIR))
 include debian/make.mk
 # Use dpkg-buildflags to get build flags, but exclude -g, that is dealt with
 # via configure options.
-dpkg_buildflags = $(and $(1),$(shell DEB_CFLAGS_MAINT_STRIP="-g -mlsx" dpkg-buildflags --get $(1)))
+dpkg_buildflags = $(and $(1),$(shell DEB_CFLAGS_MAINT_STRIP="-g" DEB_CXXFLAGS_MAINT_STRIP="-g" dpkg-buildflags --get $(1)))
 $(call lazy,CFLAGS,$$(call dpkg_buildflags,CFLAGS))
 $(call lazy,CXXFLAGS,$$(call dpkg_buildflags,CXXFLAGS))
 $(call lazy,CPPFLAGS,$$(call dpkg_buildflags,CPPFLAGS))
@@ -94,6 +94,17 @@ ifeq (riscv64,$(DEB_BUILD_ARCH))
 	CONFIGURE_FLAGS += --disable-debug-symbols
 endif
 
+# Reduce memory usage of the linker at the expense of processing time
+# This should help on lower-end architectures like arm and mips, which
+# spend an immense amount of time swapping.
+LDFLAGS += -Wl,--reduce-memory-overheads
+# Work around https://sourceware.org/bugzilla/show_bug.cgi?id=30566
+ifeq (,$(filter i386 amd64 ppc64%,$(DEB_HOST_ARCH)))
+LDFLAGS += -Wl,--no-keep-memory
+endif
+# Also add execution time and memory usage stats in the logs
+LDFLAGS += -Wl,--stats
+
 CONFIGURE_FLAGS += --enable-update-channel=$(CHANNEL)
 
 ifneq (,$(filter noopt,$(DEB_BUILD_OPTIONS)))
@@ -114,10 +125,10 @@ ifneq (,$(filter mips%,$(DEB_HOST_ARCH)))
 endif
 
 ifeq (default,$(origin CC))
-CC := clang
+CC := gcc
 endif
 ifeq (default,$(origin CXX))
-CXX := clang++
+CXX := g++
 endif
 
 ifeq ($(DIST),bookworm)
