@@ -51,6 +51,70 @@ browser-main-window-title = { -brand-full-name }
 # The non-variable portion of this MUST match the translation of
 # "PRIVATE_BROWSING_SHORTCUT_TITLE" in custom.properties
 private-browsing-shortcut-text-2 = { -brand-shortcut-name } – პირადი რეჟიმი
+# These are the default window titles everywhere except macOS.
+# .data-title-default and .data-title-private are used when the web content
+# opened has no title:
+#
+# default - "Mozilla Firefox"
+# private - "Mozilla Firefox (Private Browsing)"
+#
+# .data-content-title-default and .data-content-title-private are for use when
+# there *is* a content title.
+#
+# .data-title-default-with-profile, .data-title-private-with-profile,
+# .data-content-title-default-with-profile,
+# .data-content-title-private-with-profile are used when there a
+# SelectableProfileService.current profile exists.
+#
+# Variables:
+#  $content-title (String): the title of the web content.
+#  $profile-name (String): the name of the current profile.
+browser-main-window-titles =
+    .data-title-default = { -brand-full-name }
+    .data-title-private = { -brand-full-name } პირადი თვალიერება
+    .data-title-default-with-profile = { $profile-name } — { -brand-full-name }
+    .data-title-private-with-profile = { $profile-name } — { -brand-full-name } პირადი თვალიერება
+    .data-content-title-default = { $content-title } — { -brand-full-name }
+    .data-content-title-private = { $content-title } — { -brand-full-name } პირადი თვალიერება
+    .data-content-title-default-with-profile = { $content-title } — { $profile-name } — { -brand-full-name }
+    .data-content-title-private-with-profile = { $content-title } — { $profile-name } — { -brand-full-name } პირადი თვალიერება
+# These are the default window titles on macOS.
+# .data-title-default and .data-title-private are used when the web content
+# opened has no title:
+#
+#
+# "default" - "Mozilla Firefox"
+# "private" - "Mozilla Firefox — (Private Browsing)"
+#
+# .data-content-title-default and .data-content-title-private are for use when
+# there *is* a content title.
+# Do not use the brand name in these, as we do on non-macOS.
+#
+# .data-title-default-with-profile, .data-title-private-with-profile,
+# .data-content-title-default-with-profile,
+# .data-content-title-private-with-profile are used when there a
+# SelectableProfileService.current profile exists.
+#
+# Also note the other subtle difference here: we use a `-` to separate the
+# brand name from `(Private Browsing)`, which does not happen on other OSes.
+#
+# Variables:
+#  $content-title (String): the title of the web content.
+#  $profile-name (String): the name of the current profile.
+browser-main-window-titles-mac =
+    .data-title-default = { -brand-full-name }
+    .data-title-private = { -brand-full-name } — პირადი თვალიერება
+    .data-title-default-with-profile = { $profile-name } — { -brand-full-name }
+    .data-title-private-with-profile = { $profile-name } — { -brand-full-name } პირადი თვალიერება
+    .data-content-title-default = { $content-title }
+    .data-content-title-private = { $content-title } — პირადი თვალიერება
+    .data-content-title-default-with-profile = { $content-title } — { $profile-name }
+    .data-content-title-private-with-profile = { $content-title } — { $profile-name } — პირადი თვალიერება
+# This gets set as the initial title, and is overridden as soon as we start
+# updating the titlebar based on loaded tabs or private browsing state.
+# This should match the `data-title-default` attribute in both
+# `browser-main-window` and `browser-main-window-mac`.
+browser-main-window-default-title = { -brand-full-name }
 
 ##
 
@@ -280,7 +344,7 @@ quickactions-cmd-plugins = მოდულები
 quickactions-print2 = გვერდის ამობეჭდვა
 quickactions-cmd-print = ამობეჭდვა
 # Opens the print dialog at the save to PDF option
-quickactions-savepdf = გვერდის PDF-სახით შენახვა
+quickactions-savepdf = გვერდი შეინახოს, როგორც PDF
 quickactions-cmd-savepdf = pdf
 # Opens a new private browsing window
 quickactions-private2 = პირადი ფანჯრის გახსნა
@@ -309,6 +373,10 @@ quickactions-cmd-viewsource = წყაროს ნახვა, პირვ�
 # Tooltip text for the help button shown in the result.
 quickactions-learn-more =
     .title = ვრცლად სწრაფი მოქმედებების შესახებ
+# Will be shown to users the first configurable number of times
+# they experience actions giving them instructions on how to
+# select the action shown by pressing the tab key.
+press-tab-label = დააწექით ჩანართს ასარჩევად:
 
 ## Bookmark Panel
 
@@ -354,7 +422,7 @@ identity-connection-file = ეს გვერდი თქვენს კო�
 identity-connection-associated = ეს გვერდი გახსნილია სხვა გვერდიდან.
 identity-extension-page = ეს გვერდი გახსნილია გაფართოების მიერ.
 identity-active-blocked = { -brand-short-name } ზღუდავს გვერდის დაუცველ ნაწილებს.
-identity-custom-root = კავშირი დამოწმებულია სერტიფიკატის გამომშვების მიერ, რომელიც უცნობია Mozilla-სთვის.
+identity-custom-root = კავშირი დამოწმებული აქვს სერტიფიკატის გამომცემს, რომელსაც ვერ ცნობს Mozilla.
 identity-passive-loaded = ამ გვერდის გარკვეული ნაწილი დაუცველია (მაგალითად სურათები).
 identity-active-loaded = ამ გვერდზე დაცვა გამორთული გაქვთ.
 identity-weak-encryption = ეს გვერდი სუსტ დაშიფვრას იყენებს.
@@ -372,7 +440,7 @@ identity-https-only-info-turn-on2 = ჩართეთ მხოლოდ-HTTPS-
 identity-https-only-info-turn-off2 = თუ გვერდს ხარვეზები ექნება, დაგჭირდებათ მხოლოდ-HTTPS-რეჟიმის გამორთვა ამ საიტისთვის და გვერდის დაუცველი HTTP-ით ჩატვირთვა.
 identity-https-only-info-turn-on3 = ჩართეთ HTTPS-გადაყვანა ამ საიტისთვის, თუ გსურთ, რომ { -brand-short-name } შეეცადოს უსაფრთხო კავშირზე გადასვლას შესაძლო შემთხვევებში.
 identity-https-only-info-turn-off3 = თუ გვერდს ხარვეზები ექნება, დაგჭირდებათ HTTPS-გადასვლის გამორთვა ამ საიტისთვის და გვერდის დაუცველი HTTP-ით ჩატვირთვა.
-identity-https-only-info-no-upgrade = ვერ ხერხდება გადასვლა HTTP-დან.
+identity-https-only-info-no-upgrade = ვერ გადადის HTTP დაშიფრულ არხზე.
 identity-permissions-storage-access-header = საიტთაშორისი ფუნთუშები
 identity-permissions-storage-access-hint = ამ მხარეებს შეუძლია გამოიყენოს საიტთაშორისი ფუნთუშები და მონაცემები, სანამ ამ საიტზე ხართ.
 identity-permissions-storage-access-learn-more = ვრცლად
@@ -547,6 +615,8 @@ urlbar-go-button =
     .tooltiptext = მისამართზე გადასვლა
 urlbar-page-action-button =
     .tooltiptext = ვებგვერდზე მოქმედებები
+urlbar-revert-button =
+    .tooltiptext = მისამართის ჩვენება მდებარეობის ზოლში
 
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
@@ -564,9 +634,14 @@ urlbar-result-action-search-in-private = ძიება პირად ფა�
 # Variables
 #  $engine (String): the name of a search engine
 urlbar-result-action-search-w-engine = { $engine } ძიება
-urlbar-result-action-sponsored = დაფინანსებული
+urlbar-result-action-sponsored = დამკვეთისგან
 urlbar-result-action-switch-tab = ჩანართზე გადასვლა
 urlbar-result-action-visit = მონახულება
+# "Switch to tab with container" is used when the target tab is located in a
+# different container.
+# Variables
+# $container (String): the name of the target container
+urlbar-result-action-switch-tab-with-container = ჩანართზე გადასვლა · <span>{ $container }</span>
 # Allows the user to visit a URL that was previously copied to the clipboard.
 urlbar-result-action-visit-from-clipboard = აღებულ ბმულზე გადასვლა
 # Directs a user to press the Tab key to perform a search with the specified
@@ -597,6 +672,48 @@ urlbar-result-action-copy-to-clipboard = ასლი
 #  $result (String): the string representation for a formula result
 urlbar-result-action-calculator-result = = { $result }
 
+## Strings used for buttons in the urlbar
+
+# Label prompting user to search with a particular search engine.
+#  $engine (String): the name of a search engine that searches a specific site
+urlbar-result-search-with = { $engine } ძიება
+# Label for the urlbar result row, prompting the user to use a local keyword to enter search mode.
+#  $keywords (String): the restrict keyword to enter search mode.
+#  $localSearchMode (String): the local search mode (history, tabs, bookmarks,
+#  or actions) to search with.
+urlbar-result-search-with-local-search-mode = { $keywords } - ძიება { $localSearchMode }
+# Label for the urlbar result row, prompting the user to use engine keywords to enter search mode.
+#  $keywords (String): the default keyword and user's set keyword if available
+#  $engine (String): the name of a search engine
+urlbar-result-search-with-engine-keywords = { $keywords } - { $engine } ძიება
+urlbar-searchmode-dropmarker =
+    .tooltiptext = საძიებოს არჩევა
+urlbar-searchmode-bookmarks =
+    .label = სანიშნები
+urlbar-searchmode-tabs =
+    .label = ჩანართები
+urlbar-searchmode-history =
+    .label = ისტორია
+urlbar-searchmode-actions =
+    .label = მოქმედებები
+urlbar-searchmode-exit-button =
+    .tooltiptext = დახურვა
+# Label shown on the top of Searchmode Switcher popup. After this label, the
+# available search engines will be listed.
+urlbar-searchmode-popup-description = ძიებისთვის ამჯერად გამოიყენეთ:
+urlbar-searchmode-popup-search-settings-menuitem =
+    .label = ძიების პარამეტრები
+urlbar-searchmode-popup-search-settings = ძიების პარამეტრები
+# Searchmode Switcher button
+# Variables:
+#   $engine (String): the current default search engine.
+urlbar-searchmode-button2 =
+    .label = { $engine }, საძიებოს არჩევა
+    .tooltiptext = { $engine }, საძიებოს არჩევა
+urlbar-searchmode-button-no-engine =
+    .label = მალსახმობი არაა მითითებული, მალსახმობის არჩევა
+    .tooltiptext = მალსახმობი არაა მითითებული, მალსახმობის არჩევა
+
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
 ## In these actions "Search" is a verb, followed by where the search is performed.
@@ -605,6 +722,12 @@ urlbar-result-action-search-bookmarks = სანიშნების ძიე
 urlbar-result-action-search-history = ისტორიის ძიება
 urlbar-result-action-search-tabs = ჩანართების ძიება
 urlbar-result-action-search-actions = ძიების მოქმედებები
+# Label for a quickaction result used to switch to an open tab group.
+#  $group (String): the name of the tab group to switch to
+urlbar-result-action-switch-to-tabgroup = გადაირთოს { $group }
+# Label for a quickaction result used to re-opan a saved tab group.
+#  $group (String): the name of the tab group to re-open
+urlbar-result-action-open-saved-tabgroup = გაიხსნას { $group }
 
 ## Labels shown above groups of urlbar results
 
@@ -626,6 +749,21 @@ urlbar-group-quickactions =
 #  $engine (String): the name of the search engine used to search.
 urlbar-group-recent-searches =
     .label = ბოლოს მოძიებული
+# The header shown above trending results.
+# Variables:
+#  $engine (String): the name of the search engine providing the trending suggestions
+urlbar-group-trending =
+    .label = { $engine } გთავაზობთ ხშირად მოძიებულს
+# The result menu labels shown next to trending results.
+urlbar-result-menu-trending-dont-show =
+    .label = არ გამოჩნდეს ხშირად მოძიებული
+    .accesskey = გ
+urlbar-result-menu-trending-why =
+    .label = რატომ ვხედავ ამას?
+    .accesskey = რ
+# A message that replaces a result when the user dismisses all suggestions of a
+# particular type.
+urlbar-trending-dismissal-acknowledgment = გმადლობთ გამოხმაურებისთვის. ხშირად მოძიებულს აღარ იხილავთ მომავალში.
 
 ## Reader View toolbar buttons
 
@@ -891,6 +1029,10 @@ tabs-toolbar-list-all-tabs =
 restore-session-startup-suggestion-message = <strong>გაიხსნას წინა ჩანართები?</strong> თუ გსურთ, { -brand-short-name } აღდგეს წინა მდგომარეობით, გახსენით მენიუ <img data-l10n-name="icon"/> და მონახეთ ისტორია.
 restore-session-startup-suggestion-button = მაჩვენეთ, როგორ
 
+## Infobar shown when the user tries to open a file picker and file pickers are blocked by enterprise policy
+
+filepicker-blocked-infobar = დაწესებულების დებულებით შეზღუდულია ადგილობრივ ფაილებთან წვდომა ამ კომპიუტერზე.
+
 ## Mozilla data reporting notification (Telemetry, Firefox Health Report, etc)
 
 data-reporting-notification-message = { -brand-short-name } ავტომატურად აგზავნის გარკვეულ მონაცემებს { -vendor-short-name }-ში, პროდუქტის გასაუმჯობესებლად.
@@ -899,6 +1041,18 @@ data-reporting-notification-button =
     .accesskey = ზ
 # Label for the indicator shown in the private browsing window titlebar.
 private-browsing-indicator-label = პირადი ფანჯარა
+# Tooltip for the indicator shown in the private browsing window titlebar.
+private-browsing-indicator-tooltip =
+    .tooltiptext = პირადი თვალიერება
+# Tooltip for the indicator shown in the window titlebar when content analysis is active.
+# Variables:
+#   $agentName (String): The name of the DLP agent that is connected
+content-analysis-indicator-tooltip =
+    .tooltiptext = მონაცემთა დაკარგვის არიდებას (DLP) უზრუნველყოფს { $agentName }. დაწკაპეთ ვრცლად სანახავად.
+content-analysis-panel-title = მონაცემთა დაცვა
+# Variables:
+#   $agentName (String): The name of the DLP agent that is connected
+content-analysis-panel-text-styled = თქვენს დაწესებულებაში გამოიყენება <b>{ $agentName }</b> მონაცემთა დაკარგვის ასარიდებლად. <a data-l10n-name="info">ვრცლად</a>
 
 ## Unified extensions (toolbar) button
 
@@ -923,6 +1077,15 @@ unified-extensions-button-quarantined =
     .tooltiptext =
         გაფართოებები
         ზოგი გაფართოება არაა ნებადართული
+
+## Unified extensions button when some extensions are disabled (e.g. through add-ons blocklist).
+## Note that the new line is intentionally part of the tooltip.
+
+unified-extensions-button-blocklisted =
+    .label = გაფართოებები
+    .tooltiptext =
+        გაფართოებები
+        ზოგიერთი გაფართოება ამორთულია
 
 ## Private browsing reset button
 
@@ -963,6 +1126,11 @@ firefox-relay-offer-legal-notice = „ელფოსტის ნიღბი�
 popup-notification-addon-install-unsigned =
     .value = (შეუმოწმებელი)
 popup-notification-xpinstall-prompt-learn-more = იხილეთ ვრცლად დამატებების უსაფრთხოდ ჩადგმის შესახებ
+popup-notification-xpinstall-prompt-block-url = ვრცლად
+# Note: Access key is set to P to match "Private" in the corresponding localized label.
+popup-notification-addon-privatebrowsing-checkbox =
+    .label = პირად ფანჯრებში გაშვება
+    .accesskey = პ
 
 ## Pop-up warning
 
@@ -992,3 +1160,24 @@ popup-warning-button =
 #   $popupURI (String): the URI for the pop-up window
 popup-show-popup-menuitem =
     .label = გაიხსნას „{ $popupURI }“
+
+## File-picker crash notification ("FilePickerCrashed.sys.mjs")
+
+file-picker-failed-open = Windows-ის ფაილების მმართველი ვერ გაიხსნა. ფაილის ან საქაღალდის შერჩევა ვერ მოხერხდა.
+#   $path (string): The full path to which the file will be saved (e.g., 'C:\Users\Default User\Downloads\readme.txt').
+file-picker-failed-save-somewhere = Windows-ის ფაილების მმართველი ვერ გაიხსნა. ფაილის შენახვის ადგილი იქნება { $path }.
+file-picker-failed-save-nowhere = Windows-ის ფაილების მმართველი ვერ გაიხსნა. ნაგულისხმევი საქაღალდე ვერ მოინახა; ფაილის შენახვა ვერ მოხერხდა.
+file-picker-crashed-open = Windows-ის ფაილების მმართველი უეცრად გაითიშა. ფაილის ან საქაღალდის შერჩევა ვერ მოხერხდა.
+#   $path (string): The full path to which the file will be saved (e.g., 'C:\Users\Default User\Downloads\readme.txt').
+file-picker-crashed-save-somewhere = Windows-ის ფაილების მმართველი უეცრად გაითიშა. ფაილის შენახვის ადგილი იქნება { $path }.
+file-picker-crashed-save-nowhere = Windows-ის ფაილების მმართველი უეცრად გაითიშა. ნაგულისხმევი საქაღალდე ვერ მოინახა; ფაილის შენახვა ვერ მოხერხდა.
+
+# Button used with file-picker-crashed-save-default. Opens the folder in Windows
+# Explorer, with the saved file selected and in focus.
+#
+# The wording here should be consistent with the Windows variant of
+# `downloads-cmd-show-menuitem-2` and similar messages.
+
+file-picker-crashed-show-in-folder =
+    .label = ჩვენება საქაღალდეში
+    .accessKey = ქ

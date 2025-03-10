@@ -20,6 +20,7 @@ add_setup(async function () {
     { identifier: "engine1" },
     { identifier: "engine2" },
   ]);
+  await SearchTestUtils.initXPCShellAddonManager();
   await Services.search.init();
 });
 
@@ -91,12 +92,16 @@ async function checkLoadSettingProperties(
   Assert.equal(engines[1].id, "engine2");
 
   // The extra engine is the second in the list.
-  isSubObjectOf(EXPECTED_ENGINE.engine, engines[2]);
+  isSubObjectOf(EXPECTED_ENGINE.engine, engines[2], prop => {
+    return prop == "_iconURL";
+  });
   Assert.ok(engines[2].id, "test-addon-id@mozilla.orgdefault");
 
   let engineFromSS = ss.getEngineByName(EXPECTED_ENGINE.engine.name);
   Assert.ok(!!engineFromSS);
-  isSubObjectOf(EXPECTED_ENGINE.engine, engineFromSS);
+  isSubObjectOf(EXPECTED_ENGINE.engine, engineFromSS, prop => {
+    return prop == "_iconURL";
+  });
 
   Assert.equal(
     engineFromSS.getSubmission("foo").uri.spec,
@@ -121,7 +126,7 @@ add_task(async function test_legacy_setting_engine_properties() {
   Services.prefs.setBoolPref(legacyUseSavedOrderPrefName, true);
 
   let legacySettings = await readJSONFile(
-    do_get_file("data/search-legacy.json")
+    do_get_file("settings/v1-metadata-migration.json")
   );
 
   // Assert the engine ids have not been migrated yet
@@ -131,7 +136,11 @@ add_task(async function test_legacy_setting_engine_properties() {
   Assert.ok(!("defaultEngineId" in legacySettings.metaData));
   Assert.ok(!("privateDefaultEngineId" in legacySettings.metaData));
 
-  await checkLoadSettingProperties("data/search-legacy.json", false, true);
+  await checkLoadSettingProperties(
+    "settings/v1-metadata-migration.json",
+    false,
+    true
+  );
 
   Assert.ok(
     !Services.prefs.prefHasUserValue(legacyUseSavedOrderPrefName),
@@ -143,7 +152,7 @@ add_task(
   async function test_legacy_setting_migration_with_undefined_metaData_current_and_private() {
     let ss = Services.search.wrappedJSObject;
 
-    await loadSettingsFile("data/search-legacy.json", false);
+    await loadSettingsFile("settings/v1-metadata-migration.json", false);
     const settingsFileWritten = promiseAfterSettings();
 
     await ss.reset();
@@ -173,7 +182,7 @@ add_task(
     let ss = Services.search.wrappedJSObject;
 
     await loadSettingsFile(
-      "data/search-legacy-correct-default-engine-hashes.json",
+      "settings/v6-correct-default-engine-hashes.json",
       false,
       true
     );
@@ -215,7 +224,7 @@ add_task(
     // See SearchService._getEngineDefault for more details.
 
     await loadSettingsFile(
-      "data/search-legacy-wrong-default-engine-hashes.json",
+      "settings/v6-wrong-default-engine-hashes.json",
       false,
       false
     );
@@ -263,7 +272,7 @@ add_task(
     // the default engine setting.
 
     await loadSettingsFile(
-      "data/search-legacy-wrong-third-party-engine-hashes.json",
+      "settings/v6-wrong-third-party-engine-hashes.json",
       false,
       false
     );
@@ -303,13 +312,17 @@ add_task(
 );
 
 add_task(async function test_current_setting_engine_properties() {
-  await checkLoadSettingProperties("data/search.json", true, false);
+  await checkLoadSettingProperties(
+    "settings/settings-loading.json",
+    true,
+    false
+  );
 });
 
 add_task(async function test_settings_metadata_properties() {
   let ss = Services.search.wrappedJSObject;
 
-  await loadSettingsFile("data/search.json");
+  await loadSettingsFile("settings/settings-loading.json");
 
   const settingsFileWritten = promiseAfterSettings();
   await ss.reset();
@@ -338,7 +351,7 @@ add_task(async function test_settings_metadata_properties() {
 
 add_task(async function test_settings_write_when_settings_changed() {
   let ss = Services.search.wrappedJSObject;
-  await loadSettingsFile("data/search.json");
+  await loadSettingsFile("settings/settings-loading.json");
 
   const settingsFileWritten = promiseAfterSettings();
   await ss.reset();
@@ -371,7 +384,7 @@ add_task(async function test_settings_write_when_settings_changed() {
 
 add_task(async function test_set_and_get_engine_metadata_attribute() {
   let ss = Services.search.wrappedJSObject;
-  await loadSettingsFile("data/search.json");
+  await loadSettingsFile("settings/settings-loading.json");
 
   const settingsFileWritten = promiseAfterSettings();
   await ss.reset();
@@ -404,7 +417,7 @@ add_task(async function test_set_and_get_engine_metadata_attribute() {
 add_task(
   async function test_settings_write_prevented_when_settings_unchanged() {
     let ss = Services.search.wrappedJSObject;
-    await loadSettingsFile("data/search.json");
+    await loadSettingsFile("settings/settings-loading.json");
 
     const settingsFileWritten = promiseAfterSettings();
     await ss.reset();
@@ -450,7 +463,7 @@ add_task(async function test_settings_write() {
   let ss = Services.search.wrappedJSObject;
   info("test settings writing");
 
-  await loadSettingsFile("data/search.json");
+  await loadSettingsFile("settings/settings-loading.json");
 
   const settingsFileWritten = promiseAfterSettings();
   await ss.reset();

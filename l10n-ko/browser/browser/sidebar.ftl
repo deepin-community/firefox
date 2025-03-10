@@ -4,6 +4,12 @@
 
 menu-view-genai-chat =
     .label = AI 챗봇
+menu-view-review-checker =
+    .label = 리뷰 검사기
+menu-view-contextual-password-manager =
+    .label = 비밀번호
+sidebar-options-menu-button =
+    .title = 메뉴 열기
 
 ## Labels for sidebar history panel
 
@@ -46,16 +52,30 @@ sidebar-position-right =
     .label = 오른쪽에 표시
 sidebar-vertical-tabs =
     .label = 세로 탭
+sidebar-settings =
+    .label = 사이드바 설정
+sidebar-hide-tabs-and-sidebar =
+    .label = 탭과 사이드바 숨기기
+sidebar-show-on-the-right =
+    .label = 사이드바를 오른쪽으로 이동
+sidebar-show-on-the-left =
+    .label = 사이드바를 왼쪽으로 이동
+# Option to automatically expand the collapsed sidebar when the mouse pointer
+# hovers over it.
+expand-sidebar-on-hover =
+    .label = 마우스를 올려서 사이드바 펼치기
 sidebar-horizontal-tabs =
     .label = 가로 탭
 sidebar-customize-tabs-header =
     .label = 탭 설정
-sidebar-customize-settings-header =
-    .label = 사이드바 설정
-sidebar-visibility-always-show =
-    .label = 항상 표시
-sidebar-visibility-hide-sidebar =
-    .label = 사이드바 숨기기
+sidebar-customize-button-header =
+    .label = 사이드바 버튼
+sidebar-customize-position-header =
+    .label = 사이드바 위치
+sidebar-visibility-setting-always-show =
+    .label = 사이드바 펼치기 및 접기
+sidebar-visibility-setting-hide-sidebar =
+    .label = 사이드바 표시 및 숨기기
 
 ## Labels for sidebar context menu items
 
@@ -95,6 +115,41 @@ sidebar-menu-bookmarks-label =
     .label = 북마크
 sidebar-menu-customize-label =
     .label = 사이드바 사용자 지정
+sidebar-menu-review-checker-label =
+    .label = 리뷰 검사기
+sidebar-menu-contextual-password-manager-label =
+    .label = 비밀번호
+
+## Tooltips for sidebar menu items.
+
+# The tooltip to show over the history icon, when history is not currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-open-history-tooltip = 기록 열기 ({ $shortcut })
+# The tooltip to show over the history icon, when history is currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-close-history-tooltip = 기록 닫기 ({ $shortcut })
+# The tooltip to show over the bookmarks icon, when bookmarks is not currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-open-bookmarks-tooltip = 북마크 열기 ({ $shortcut })
+# The tooltip to show over the bookmarks icon, when bookmarks is currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-close-bookmarks-tooltip = 북마크 닫기 ({ $shortcut })
+sidebar-menu-open-ai-chatbot-tooltip = AI 챗봇 열기
+sidebar-menu-close-ai-chatbot-tooltip = AI 챗봇 닫기
+
+## Tooltips displayed over the AI chatbot icon.
+## Variables:
+##   $shortcut (String) - The OS specific keyboard shortcut.
+##   $provider (String) - The name of the AI chatbot provider (if available).
+
+sidebar-menu-open-ai-chatbot-tooltip-generic = AI 챗봇 열기 ({ $shortcut })
+sidebar-menu-open-ai-chatbot-provider-tooltip = { $provider } 열기 ({ $shortcut })
+sidebar-menu-close-ai-chatbot-tooltip-generic = AI 챗봇 닫기 ({ $shortcut })
+sidebar-menu-close-ai-chatbot-provider-tooltip = { $provider } 닫기 ({ $shortcut })
 
 ## Headings for sidebar menu panels.
 
@@ -104,6 +159,18 @@ sidebar-menu-history-header =
     .heading = 기록
 sidebar-menu-syncedtabs-header =
     .heading = 다른 기기의 탭
+sidebar-menu-bookmarks-header =
+    .heading = 북마크
+sidebar-menu-cpm-header =
+    .heading = 비밀번호
+sidebar-panel-header-close-button =
+    .tooltiptext = 닫기
+
+## Titles for sidebar menu panels.
+
+sidebar-customize-title = 사이드바 사용자 지정
+sidebar-history-title = 기록
+sidebar-syncedtabs-title = 다른 기기의 탭
 
 ## Context for closing synced tabs when hovering over the items
 
@@ -113,3 +180,29 @@ sidebar-menu-syncedtabs-header =
 #   $deviceName (String) - the name of the device the user is closing a tab for
 synced-tabs-context-close-tab-title =
     .title = { $deviceName }의 탭 닫기
+show-sidebars =
+    .tooltiptext = 사이드바 표시
+    .label = 사이드바
+
+## Tooltips for the sidebar toolbar widget.
+
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-expand-sidebar2 =
+    .tooltiptext = 사이드바 펼치기 ({ $shortcut })
+    .label = 사이드바
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-collapse-sidebar2 =
+    .tooltiptext = 사이드바 접기 ({ $shortcut })
+    .label = 사이드바
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-show-sidebar2 =
+    .tooltiptext = 사이드바 표시 ({ $shortcut })
+    .label = 사이드바
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-hide-sidebar2 =
+    .tooltiptext = 사이드바 숨기기 ({ $shortcut })
+    .label = 사이드바

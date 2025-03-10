@@ -4,6 +4,12 @@
 
 menu-view-genai-chat =
     .label = Chatbot IA
+menu-view-review-checker =
+    .label = Verificaziun da recensiuns
+menu-view-contextual-password-manager =
+    .label = Pleds-clav
+sidebar-options-menu-button =
+    .title = Avrir il menu
 
 ## Labels for sidebar history panel
 
@@ -46,16 +52,30 @@ sidebar-position-right =
     .label = Mussar a dretga
 sidebar-vertical-tabs =
     .label = Tabs verticals
+sidebar-settings =
+    .label = Parameters da la trav laterala
+sidebar-hide-tabs-and-sidebar =
+    .label = Zuppentar ils tabs e la trav laterala
+sidebar-show-on-the-right =
+    .label = Spustar la trav laterala a dretga
+sidebar-show-on-the-left =
+    .label = Spustar la trav laterala a sanestra
+# Option to automatically expand the collapsed sidebar when the mouse pointer
+# hovers over it.
+expand-sidebar-on-hover =
+    .label = Extender la trav laterala cun passar cun la mieur
 sidebar-horizontal-tabs =
     .label = Tabs orizontals
 sidebar-customize-tabs-header =
     .label = Parameters dals tabs
-sidebar-customize-settings-header =
-    .label = Parameters da la trav laterala
-sidebar-visibility-always-show =
-    .label = Adina mussar
-sidebar-visibility-hide-sidebar =
-    .label = Zuppentar la trav laterala
+sidebar-customize-button-header =
+    .label = Buttun trav laterala
+sidebar-customize-position-header =
+    .label = Posiziun trav laterala
+sidebar-visibility-setting-always-show =
+    .label = Expander e reducir la trav laterala
+sidebar-visibility-setting-hide-sidebar =
+    .label = Mussar e zuppentar la trav laterala
 
 ## Labels for sidebar context menu items
 
@@ -73,6 +93,10 @@ sidebar-context-menu-bookmark-tab =
     .label = Agiuntar in segnapagina per il tab…
 sidebar-context-menu-copy-link =
     .label = Copiar la colliaziun
+# Variables:
+#   $deviceName (String) - The name of the device the user is closing a tab for
+sidebar-context-menu-close-remote-tab =
+    .label = Serrar il tab sin { $deviceName }
 
 ## Labels for sidebar history context menu items
 
@@ -91,6 +115,41 @@ sidebar-menu-bookmarks-label =
     .label = Segnapaginas
 sidebar-menu-customize-label =
     .label = Persunalisar la trav laterala
+sidebar-menu-review-checker-label =
+    .label = Verificaziun da recensiuns
+sidebar-menu-contextual-password-manager-label =
+    .label = Pleds-clav
+
+## Tooltips for sidebar menu items.
+
+# The tooltip to show over the history icon, when history is not currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-open-history-tooltip = Avrir la cronologia ({ $shortcut })
+# The tooltip to show over the history icon, when history is currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-close-history-tooltip = Serrar la cronologia ({ $shortcut })
+# The tooltip to show over the bookmarks icon, when bookmarks is not currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-open-bookmarks-tooltip = Avrir ils segnapaginas ({ $shortcut })
+# The tooltip to show over the bookmarks icon, when bookmarks is currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-close-bookmarks-tooltip = Serrar ils segnapaginas ({ $shortcut })
+sidebar-menu-open-ai-chatbot-tooltip = Avrir il chatbot IA
+sidebar-menu-close-ai-chatbot-tooltip = Serrar il chatbot IA
+
+## Tooltips displayed over the AI chatbot icon.
+## Variables:
+##   $shortcut (String) - The OS specific keyboard shortcut.
+##   $provider (String) - The name of the AI chatbot provider (if available).
+
+sidebar-menu-open-ai-chatbot-tooltip-generic = Avrir il chatbot IA ({ $shortcut })
+sidebar-menu-open-ai-chatbot-provider-tooltip = Avrir { $provider } ({ $shortcut })
+sidebar-menu-close-ai-chatbot-tooltip-generic = Serrar il chatbot IA ({ $shortcut })
+sidebar-menu-close-ai-chatbot-provider-tooltip = Serrar { $provider } ({ $shortcut })
 
 ## Headings for sidebar menu panels.
 
@@ -100,3 +159,50 @@ sidebar-menu-history-header =
     .heading = Cronologia
 sidebar-menu-syncedtabs-header =
     .heading = Tabs dad auters apparats
+sidebar-menu-bookmarks-header =
+    .heading = Segnapaginas
+sidebar-menu-cpm-header =
+    .heading = Pleds-clav
+sidebar-panel-header-close-button =
+    .tooltiptext = Serrar
+
+## Titles for sidebar menu panels.
+
+sidebar-customize-title = Persunalisar la trav laterala
+sidebar-history-title = Cronologia
+sidebar-syncedtabs-title = Tabs dad auters apparats
+
+## Context for closing synced tabs when hovering over the items
+
+# Context for hovering over the close tab button that will
+# send a push to the device to close said tab
+# Variables:
+#   $deviceName (String) - the name of the device the user is closing a tab for
+synced-tabs-context-close-tab-title =
+    .title = Serrar il tab sin { $deviceName }
+show-sidebars =
+    .tooltiptext = Mussar ina trav laterala
+    .label = Travs lateralas
+
+## Tooltips for the sidebar toolbar widget.
+
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-expand-sidebar2 =
+    .tooltiptext = Expander la trav laterala ({ $shortcut })
+    .label = Travs lateralas
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-collapse-sidebar2 =
+    .tooltiptext = Reducir la trav laterala ({ $shortcut })
+    .label = Travs lateralas
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-show-sidebar2 =
+    .tooltiptext = Mussar la trav laterala ({ $shortcut })
+    .label = Travs lateralas
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-hide-sidebar2 =
+    .tooltiptext = Zuppentar la trav laterala ({ $shortcut })
+    .label = Travs lateralas

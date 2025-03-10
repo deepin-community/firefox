@@ -171,7 +171,7 @@ about-logins-os-auth-dialog-caption = { -brand-full-name }
 ## notes are only valid for English. Please test in your respected locale.
 
 # This message can be seen when attempting to edit a login in about:logins on Windows.
-about-logins-edit-login-os-auth-dialog-message-win = Lai rediģētu savu lietotājvārdu, ievadiet Windows ierkastīšanās akreditācijas datus. Tas palīdz sargāt jūsu kontu drošību.
+about-logins-edit-login-os-auth-dialog-message-win = Lai rediģētu savu lietotājvārdu, jāievada Windows ierkastīšanās informācija. Tas palīdz sargāt kontu drošību.
 # This message can be seen when attempting to edit a login in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-edit-login-os-auth-dialog-message-macosx = rediģēt saglabāto lietotājvārdu un paroli
@@ -183,7 +183,7 @@ about-logins-os-auth-dialog-message =
        *[other] { -brand-short-name } mēģina mainīt paroļu iestatījumus. Lai to atļautu, izmantojiet savas ierīces ierakstīšanos.
     }
 # This message can be seen when attempting to edit a login in about:logins on Windows.
-about-logins-edit-login-os-auth-dialog-message2-win = Lai rediģētu savu paroli, ievadiet Windows ierkastīšanās akreditācijas datus. Tas palīdz sargāt jūsu kontu drošību.
+about-logins-edit-login-os-auth-dialog-message2-win = Lai rediģētu savu paroli, jāievada Windows ierkastīšanās informācija. Tas palīdz aisargāt kontu drošību.
 # This message can be seen when attempting to edit a login in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-edit-login-os-auth-dialog-message2-macosx = rediģēt saglabāto paroli

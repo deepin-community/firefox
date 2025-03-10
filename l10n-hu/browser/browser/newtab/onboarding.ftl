@@ -225,7 +225,9 @@ mr2022-onboarding-set-default-subtitle = Használjon egy nonprofit szervezet ál
 mr2022-onboarding-get-started-primary-subtitle = A legfrissebb verziónk Ön köré épül fel, így minden eddiginél egyszerűbb a világhálón szörfölés. Tele van olyan funkciókkal, amelyekről úgy gondoljuk, hogy imádni fog.
 mr2022-onboarding-get-started-primary-button-label = Beállítás másodpercek alatt
 
-## MR2022 Import Settings screen strings
+## MR2022 Get Started screen strings.
+## These strings will be used on the welcome page
+## when Firefox is already set to default and pinned.
 
 mr2022-onboarding-import-header = Villámgyors beállítás
 mr2022-onboarding-import-subtitle = Állítsa be úgy a { -brand-short-name(case: "accusative") }, ahogy Önnek tetszik. Adja hozzá könyvjelzőit, jelszavait és egyebeket a régi böngészőjéből.
@@ -356,6 +358,11 @@ onboarding-mobile-download-security-and-privacy-subtitle = Ha befejeződik a szi
 # Gratitude screen
 onboarding-gratitude-security-and-privacy-title = Számíthat a { -brand-short-name }ra
 onboarding-gratitude-security-and-privacy-subtitle = Köszönjük, hogy a { -brand-short-name(case: "accusative") } használja, amelyet a Mozilla Alapítvány támogat. Az Ön támogatásával azon dolgozunk, hogy az internetet mindenki számára biztonságosabbá, és mindenki számára hozzáférhetőbbé tegyük.
+# Sign up or Sign in screen
+onboarding-sign-up-title = Adatok szinkronizálása az eszközök közt
+onboarding-sign-up-description = Regisztráljon egy fiókot, és minden fontos információja – jelszavak, könyvjelzők és egyeket – biztonságosan lesz tárolva, és elérhető lesz, ha bejelentkezik bármely eszközön.
+onboarding-sign-up-button = Regisztráljon vagy jelentkezzen be
+onboarding-sign-up-secondary-button = Böngészés megkezdése
 
 ## New user time and familiarity survey strings
 
@@ -375,3 +382,90 @@ onboarding-new-user-survey-familiarity-based-option-1 = Teljesen új vagyok
 onboarding-new-user-survey-familiarity-based-option-2 = Használtam valamennyit
 onboarding-new-user-survey-familiarity-based-option-3 = Jól ismerem
 onboarding-new-user-survey-familiarity-based-option-4 = Régebben használtam, de ennek már egy ideje
+
+## UI strings for the sidebar and vertical tabs
+
+# Setup screen for vertical tabs
+onboarding-new-tabs-title = Mondja el, hová szeretné tenni a lapjait
+# Setup screen for vertical tabs - "Switch it up" refers to switching between horizontal and vertical tabs.
+onboarding-new-tabs-subtitle = Állítsa be bármikor az oldalsáv beállításaiban.
+# Setup screen for vertical tabs - too many tabs variation
+onboarding-many-tabs-title = Az Ön lapjai, az Ön útja
+# Setup screen for vertical tabs - subtitle for too many tabs variation
+onboarding-many-tabs-subtitle = Sok lapot tart nyitva? Próbálja ki az oldalra helyezett lapokat a letisztultabb nézet érdekében. Vagy tartsa meg a klasszikust, a fent lévő lapokkal. Váltson bármikor.
+# Setup screen for vertical tabs - focused variation
+onboarding-focused-tabs-title = Válassza ki a lapelrendezést
+# Setup screen for vertical tabs - subtitle for focused variation
+onboarding-focused-tabs-subtitle = A letisztultabb nézetért, amely segít koncentrálni, próbálja ki az oldalra helyezett lapokat. Vagy tartsa meg a klasszikust, a fent lévő lapokkal. Váltson bármikor.
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-new-vertical-tabs-label = Lapok oldalt
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-new-horizontal-tabs-label = Lapok fent
+# Setup screen for vertical tabs for existing users
+onboarding-existing-tabs-title = Megérkeztek a függőleges lapok
+# Setup screen for vertical tabs for existing users
+onboarding-existing-tabs-title2 = A függőleges lapok bemutatása
+# Setup screen for vertical tabs for existing users - "Switch it up" refers to switching between horizontal and vertical tabs.
+onboarding-existing-tabs-subtitle = Próbálja ki, hogy oldalra teszi lapjait. Állítsa be bármikor az oldalsáv beállításaiban.
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-existing-vertical-tabs-label = Függőleges lapok kipróbálása
+onboarding-flair-text = Új!
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-existing-horizontal-tabs-label = Vízszintes lapok megtartása
+# Tooltip displayed on hover for vertical tabs image
+onboarding-vertical-tabs-tooltip =
+    .title = Egy böngészőablak, amely a lapokat a képernyő szélén jeleníti meg, a { -brand-shorter-name } oldalsávjának részeként.
+# Description for vertical tabs image
+onboarding-vertical-tabs-description =
+    .aria-description = Egy böngészőablak, amely a lapokat a képernyő szélén jeleníti meg, a { -brand-shorter-name } oldalsávjának részeként.
+# Tooltip displayed on hover for horizontal tabs image
+onboarding-horizontal-tabs-tooltip =
+    .title = Egy böngészőablak, amely a lapokat felül jeleníti meg.
+# Description for horizontal tabs image
+onboarding-horizontal-tabs-description =
+    .aria-description = Egy böngészőablak, amely a lapokat felül jeleníti meg.
+# Additional setup card for setting up aichatbot in the sidebar
+onboarding-genai-sidebar-title = Próbáljon ki egy MI csevegőbotot az oldalsávban
+# Setup card for setting up AI chatbot in the sidebar; "Providers" refers to AI chatbot providers (e.g. OpenAI, etc). "Switch anytime" refers to allowing the user to switch to a different chatbot.
+onboarding-genai-sidebar-subtitle = Foglalja össze a webes tartalmakat, ötleteljen, írjon összes piszkozatokat – mindezt böngészés közben. Válasszon több szolgáltató közül. Váltson bármikor. <a data-l10n-name="learn-more">További információk</a>
+onboarding-genai-sidebar-primary-button = Válasszon csevegőbotot
+onboarding-genai-sidebar-secondary-button = Böngészés megkezdése
+
+## New user onboarding checklist
+
+onboarding-checklist-title = A { -brand-short-name } beállításának befejezése
+onboarding-checklist-subtitle = Végezze el ezeket a lépéseket, hogy a legtöbbet hozza ki a böngészési élményéből.
+onboarding-checklist-set-default = A { -brand-short-name } beállítása alapértelmezett böngészőként
+onboarding-checklist-pin = A { -brand-short-name } rögzítése a tálcára
+onboarding-checklist-import = Importálás az előző böngészőből
+onboarding-checklist-extension = Egy kiegészítő hozzáadása
+onboarding-checklist-sign-up = Regisztráljon vagy jelentkezzen be a fiókjába
+
+## Tab Groups feature onboarding strings
+
+tab-groups-onboarding-feature-callout-title = Próbálja ki a lapcsoportokat a kisebb zsúfoltság és a nagyobb fókusz érdekében
+tab-groups-onboarding-feature-callout-subtitle = Rendszerezzen a lapok egymásra húzásával, hozzon létre így csoportokat.
+tab-groups-onboarding-create-group-title = Találja meg a nyitott csoportokat a lapsávban vagy úgy, hogy megkeresi őket a címsorban.
+tab-groups-onboarding-saved-groups-title = Ha bezár egy lapcsoportot, itt bármikor újra megnyithatja.
+tab-groups-onboarding-saved-groups-no-alltabs-button-title = Bármikor megtalálja a nyitott vagy bezárt lapcsoportokat a címsávban történő kereséssel.
+tab-groups-onboarding-dismiss = OK
+
+## Multi Profiles feature onboarding messages
+
+multi-profile-spotlight-title = Köszöntse a { -brand-product-name }-profilokat
+multi-profile-spotlight-body = Váltson könnyen a munka és a szórakozás között. A profilok teljesen elkülönítik a böngészési információit, beleértve a keresési előzményeket és a jelszavakat, így rendszerezett lehet.
+multi-profile-spotlight-cta = Profil létrehozása
+multi-profile-callout-title = Hozzon létre különböző profilokat a munkához és a szórakozáshoz
+multi-profile-callout-subtitle = A profilok segítségével teljesen külön tárolhatja a böngészési adatait, mint a keresési előzményeket és a jelszavakat.
+multi-profile-callout-cta = Profil létrehozása
+
+## Desktop to Mobile Adoption feature callout strings
+
+# If translating the headline is challenging, consider using a simplified alternative as a reference: 'Sync your browsing with Firefox for mobile.'
+desktop-to-mobile-headline = Töltse le, szinkronizáljon és hajrá!
+# The phrase, 'on the go', is used to describe when people are very busy and are traveling from place to place.
+desktop-to-mobile-subtitle = Olvassa le a QR-kódot a mobilos { -brand-product-name } letöltéséhez. A telepítés után válassza a „Szinkronizálás mobilra” lehetőséget, hogy útközben is elérje jelszavait, könyvjelzőit és egyebeit.
+dismiss-button-label = Eltüntetés
+sync-to-mobile-button-label = Szinkronizálás mobilra
+desktop-to-mobile-qr-code-alt =
+    .aria-label = QR-kód a mobilos { -brand-product-name } letöltéséhez

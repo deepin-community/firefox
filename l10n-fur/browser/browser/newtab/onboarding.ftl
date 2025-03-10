@@ -172,7 +172,7 @@ mr2022-onboarding-easy-setup-primary-button-label = Salve e continue
 # Set Default action checkbox label used on new user onboarding first screen
 mr2022-onboarding-easy-setup-set-default-checkbox-label = Met { -brand-short-name } come navigadôr predefinît
 # Import action checkbox label used on new user onboarding first screen
-mr2022-onboarding-easy-setup-import-checkbox-label = Impuarte dal navigadôr precedent
+mr2022-onboarding-easy-setup-import-checkbox-label = Impuarte dal navigadôr di prime
 
 ## MR2022 New User Pin Firefox screen strings
 
@@ -226,11 +226,13 @@ mr2022-onboarding-set-default-subtitle = Dopre un navigadôr sostignût di une o
 mr2022-onboarding-get-started-primary-subtitle = La nestre ultime version e je costruide su misure par te, rindint plui facil che mai lâ ator pal web. E inclût funzionalitâts che o crodìn che tu adorarâs.
 mr2022-onboarding-get-started-primary-button-label = Configure in pôcs seconts
 
-## MR2022 Import Settings screen strings
+## MR2022 Get Started screen strings.
+## These strings will be used on the welcome page
+## when Firefox is already set to default and pinned.
 
 mr2022-onboarding-import-header = Configurazion super-svelte
 mr2022-onboarding-import-subtitle = Configure { -brand-short-name } come che ti plâs. Zonte segnelibris, passwords e altri dal to vecjo navigadôr.
-mr2022-onboarding-import-primary-button-label-no-attribution = Impuarte dal navigadôr precedent
+mr2022-onboarding-import-primary-button-label-no-attribution = Impuarte dal navigadôr di prime
 
 ## If your language uses grammatical genders, in the description for the
 ## colorway feel free to switch from "You are a X. You…" (e.g. "You are a
@@ -357,6 +359,11 @@ onboarding-mobile-download-security-and-privacy-subtitle = Une volte completade 
 # Gratitude screen
 onboarding-gratitude-security-and-privacy-title = { -brand-short-name } ti pare simpri
 onboarding-gratitude-security-and-privacy-subtitle = Graciis par vê sielt di doprâ { -brand-short-name }, il navigadôr supuartât de Mozilla Foundation. Cul to supuart, o lavorìn par rindi internet plui sigûr e acessibil par ducj.
+# Sign up or Sign in screen
+onboarding-sign-up-title = Sincronize i tiei dâts su ducj i dispositîfs
+onboarding-sign-up-description = Regjistre un account e dutis lis tôs informazions plui impuartantis — passwords, segnelibris e altri — a vignaran memorizâts in mût sigûr e a saran disponibii su cualsisei dispositîf tal moment che tu jentrarâs tal account cu lis credenziâls.
+onboarding-sign-up-button = Regjistriti o jentre
+onboarding-sign-up-secondary-button = Scomence a navigâ
 
 ## New user time and familiarity survey strings
 
@@ -376,3 +383,88 @@ onboarding-new-user-survey-familiarity-based-option-1 = No lu cognòs
 onboarding-new-user-survey-familiarity-based-option-2 = Lu ai doprât ogni tant
 onboarding-new-user-survey-familiarity-based-option-3 = Lu cognòs une vore ben
 onboarding-new-user-survey-familiarity-based-option-4 = Une volte lu dopravi, ma al è passât un pôc di timp
+
+## UI strings for the sidebar and vertical tabs
+
+# Setup screen for vertical tabs
+onboarding-new-tabs-title = Continus dulà che tu preferissis tignî lis tôs schedis
+# Setup screen for vertical tabs - "Switch it up" refers to switching between horizontal and vertical tabs.
+onboarding-new-tabs-subtitle = Tu puedis cambiâ idee cuant che tu vûs tes impostazions de sbare laterâl.
+# Setup screen for vertical tabs - too many tabs variation
+onboarding-many-tabs-title = Lis tôs schedis, te tô maniere
+# Setup screen for vertical tabs - subtitle for too many tabs variation
+onboarding-many-tabs-subtitle = Tegnistu simpri viertis tantis schedis? Prove a spostâlis in bande par vê une visuâl plui snele. Opûr manten la version classiche cu lis schedis adalt. Tu puedis cambiâ idee cuant che tu vûs.
+# Setup screen for vertical tabs - focused variation
+onboarding-focused-tabs-title = Sielç la disposizion des schedis
+# Setup screen for vertical tabs - subtitle for focused variation
+onboarding-focused-tabs-subtitle = Par vê une vision plui snele, che e pues judâti a restâ concentrât, prove a spostâ lis schedis in bande. Opûr manten la version classiche cu lis schedis adalt. Tu puedis cambiâ idee cuant che tu vûs.
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-new-vertical-tabs-label = Schedis in bande
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-new-horizontal-tabs-label = Schedis parsore
+# Setup screen for vertical tabs for existing users
+onboarding-existing-tabs-title = A son rivadis lis schedis verticâls
+# Setup screen for vertical tabs for existing users
+onboarding-existing-tabs-title2 = Introduzion aes schedis verticâls
+# Setup screen for vertical tabs for existing users - "Switch it up" refers to switching between horizontal and vertical tabs.
+onboarding-existing-tabs-subtitle = Prove a meti lis tôs schedis in bande. Tu puedis cambiâ idee cuant che tu vûs tes impostazions de sbare laterâl.
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-existing-vertical-tabs-label = Prove lis schedis verticâls
+onboarding-flair-text = Gnovis!
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-existing-horizontal-tabs-label = Manten lis schedis orizontâls
+# Tooltip displayed on hover for vertical tabs image
+onboarding-vertical-tabs-tooltip =
+    .title = Un barcon dal navigadôr che al mostre lis schedis dilunc il flanc dal schermi te sbare laterâl di { -brand-shorter-name }.
+# Description for vertical tabs image
+onboarding-vertical-tabs-description =
+    .aria-description = Un barcon dal navigadôr che al mostre lis schedis dilunc il flanc dal schermi te sbare laterâl di { -brand-shorter-name }.
+# Tooltip displayed on hover for horizontal tabs image
+onboarding-horizontal-tabs-tooltip =
+    .title = Un barcon dal navigadôr cu lis schedis te part superiôr.
+# Description for horizontal tabs image
+onboarding-horizontal-tabs-description =
+    .aria-description = Un barcon dal navigadôr cu lis schedis te part superiôr.
+# Additional setup card for setting up aichatbot in the sidebar
+onboarding-genai-sidebar-title = Prove un chatbot IA te sbare laterâl
+# Setup card for setting up AI chatbot in the sidebar; "Providers" refers to AI chatbot providers (e.g. OpenAI, etc). "Switch anytime" refers to allowing the user to switch to a different chatbot.
+onboarding-genai-sidebar-subtitle = Met in struc i contignûts dal web, gjenere ideis, bute jù stampons di messaç — dut intant che tu navighis. Sielç tra varis furnidôrs, cambilu cuant che tu vûs. <a data-l10n-name="learn-more">Plui informazions</a>
+onboarding-genai-sidebar-primary-button = Sielç un chatbot
+onboarding-genai-sidebar-secondary-button = Scomence a navigâ
+
+## New user onboarding checklist
+
+onboarding-checklist-title = Finìs la configurazion di { -brand-short-name }
+onboarding-checklist-subtitle = Finìs chescj passaçs par otignî il massime de tô esperience di navigazion.
+onboarding-checklist-set-default = Met { -brand-short-name } come navigadôr predefinît
+onboarding-checklist-pin = Fisse { -brand-short-name } te sbare des aplicazions
+onboarding-checklist-import = Impuarte dal navigadôr di prime
+onboarding-checklist-extension = Zonte une estension
+onboarding-checklist-sign-up = Regjistriti o jentre tal to account
+
+## Tab Groups feature onboarding strings
+
+tab-groups-onboarding-feature-callout-title = Prove i grups di schedis par vê mancul disordin e aumentâ la concentrazion
+tab-groups-onboarding-feature-callout-subtitle = Organiziti strissinant une schede sore di chê altre par creâ il to prin grup.
+tab-groups-onboarding-create-group-title = Cjate i grups che a son vierts in chest moment te sbare des schedis opûr ciriju te sbare de direzion.
+tab-groups-onboarding-saved-groups-title = Se tu sieris un grup di schedis, tu puedis tornâ a vierzilu achì, in ogni moment.
+tab-groups-onboarding-saved-groups-no-alltabs-button-title = Tu puedis cjatâ i grups di schedis, viertis o sieradis, in ogni moment, fasint une ricercje te sbare de direzion.
+tab-groups-onboarding-dismiss = Va ben
+
+## Multi Profiles feature onboarding messages
+
+multi-profile-spotlight-title = Salude i profîi di { -brand-product-name }
+multi-profile-spotlight-body = Passe cun facilitât de navigazion par vore a chê par divertiment. I profîi a tegnin separadis lis tôs informazions relativis ae navigazion, includudis la cronologjie des ricercjis e lis passwords, cussì di judâti a mantignî organizade la tô vite in rêt.
+multi-profile-spotlight-cta = Cree un profîl
+multi-profile-callout-title = Cree profîi diviers pal lavôr e pal divertiment
+multi-profile-callout-subtitle = I profîi ti permetin di mantignî separadis dal dut lis informazions di navigazion, come la cronologjie des ricercjis e lis passwords.
+multi-profile-callout-cta = Cree un profîl
+
+## Desktop to Mobile Adoption feature callout strings
+
+# If translating the headline is challenging, consider using a simplified alternative as a reference: 'Sync your browsing with Firefox for mobile.'
+desktop-to-mobile-headline = Discjame, sincronize e va!
+# The phrase, 'on the go', is used to describe when people are very busy and are traveling from place to place.
+desktop-to-mobile-subtitle = Scansione il codiç QR par discjariâ { -brand-product-name } par dispositîfs mobii. Une volte che al è stât instalât, selezione “Sincronize cun dispositîfs mobii” par acedi aes tôs passwords, ai tiei segnelibris e tant altri dapardut là che tu ti cjatis.
+dismiss-button-label = Siere
+sync-to-mobile-button-label = Sincronize cun dispositîfs mobii

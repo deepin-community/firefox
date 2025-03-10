@@ -20,7 +20,7 @@ cfr-doorhanger-extension-manage-settings-button = Sýsla með ábendingastilling
     .accesskey = s
 cfr-doorhanger-extension-never-show-recommendation = Ekki sýna mér þessar tillögur
     .accesskey = E
-cfr-doorhanger-extension-learn-more-link = Fræðast meira
+cfr-doorhanger-extension-learn-more-link = Kanna nánar
 # This string is used on a new line below the add-on name
 # Variables:
 #   $name (String) - Add-on author name
@@ -207,7 +207,7 @@ cfr-cbh-dismiss-button = Ekki núna
     .accesskey = n
 cookie-banner-blocker-onboarding-header = { -brand-short-name } var að loka á vefkökuborða fyrir þig
 cookie-banner-blocker-onboarding-body = Minni truflanir, færri vefkökur sem rekja ferðir þínar á þessu vefsvæði.
-cookie-banner-blocker-onboarding-learn-more = Fræðast meira
+cookie-banner-blocker-onboarding-learn-more = Kanna nánar
 
 ## These strings are used in the Fox doodle Pin/set default spotlights
 
@@ -246,6 +246,9 @@ device-migration-fxa-spotlight-older-device-primary-button = Búa til reikning
 device-migration-fxa-spotlight-getting-new-device-header-2 = Nýtt tæki í framtíðinni?
 device-migration-fxa-spotlight-getting-new-device-body-2 = Fylgdu nokkrum einföldum skrefum til að hafa bókamerkin þín, feril og lykilorð með þér þegar þú byrjar á nýju tæki.
 device-migration-fxa-spotlight-getting-new-device-primary-button = Hvernig tek ég öryggisafrit af gögnunum mínum
+device-migration-fxa-spotlight-sync-header = Vafraðu án þess að missa úr takti
+device-migration-fxa-spotlight-sync-body = Samstilltu allar mikilvægar upplýsingar þínar með dulritun - til að mynda bókamerki og lykilorð. Þú getur dregið allt fram hvar svo sem þú notar { -brand-product-name }.
+device-migration-fxa-spotlight-sync-primary-button = Hefjast handa
 
 ## Set as Default PDF Reader Infobar
 
@@ -282,3 +285,61 @@ tail-fox-spotlight-title = Haltu leiðinlegum rekjurum frá slóðinni þinni
 tail-fox-spotlight-subtitle = Segðu bless við pirrandi auglýsingarekjara og fáðu öruggari, hraðvirkari internetupplifun.
 tail-fox-spotlight-primary-button = Opna tenglana mína með { -brand-short-name }
 tail-fox-spotlight-secondary-button = Ekki núna
+
+## Root Certificate Succession Infobar
+
+root-certificate-succession-infobar-january-message = <strong>Eldri útgáfur af { -brand-short-name } gætu byrjað að eiga í vandræðum þann 14. janúar 2025.</strong>
+root-certificate-succession-infobar-march-message = <strong>Uppfærðu til að halda áfram að nota { -brand-short-name } eftir 14. mars 2025.</strong>
+root-certificate-succession-infobar-link = Af hverju þarf ég að uppfæra?
+root-certificate-succession-infobar-primary-button =
+    .label = Uppfæra núna
+    .accesskey = U
+root-certificate-succession-infobar-secondary-button =
+    .label = Síðar
+    .accesskey = r
+
+## Root Certificate Succession Windows Background Notification
+
+root-certificate-windows-background-notification-title = Þú misstir af mikilvægri uppfærslu á { -brand-short-name }
+root-certificate-windows-background-notification-subtitle = Hlutar vafrans hætta fljótlega að virka ef þú uppfærir ekki. Núna er réttur tími til að fá bestu varnirnar okkar og nýjustu eiginleikana.
+root-certificate-windows-background-notification-learn-more-button = Kanna nánar
+root-certificate-windows-background-notification-update-button = Uppfæra { -brand-short-name }
+
+## FxA Menu Message variants
+
+fxa-menu-message-close-button =
+    .title = Loka
+    .aria-label = Loka
+fxa-menu-message-sign-up-button = Skráðu þig
+fxa-menu-message-sync-devices-primary-text = Samstilltu öll tækin þín
+fxa-menu-message-sync-devices-secondary-text = Náðu í upplýsingarnar þínar samstundis – eins og bókamerki og lykilorð – alls staðar sem þú notar { -brand-short-name }.
+fxa-menu-message-sync-devices-collapsed-text = Samstilltu öll tækin þín
+fxa-menu-message-backup-data-primary-text = Taktu öryggisafrit af vafurgögnunum þínum
+fxa-menu-message-backup-data-secondary-text = Verndaðu bókamerki, lykilorð og aðrar upplýsingar sjálfvirkt á öllum tækjunum þínum.
+fxa-menu-message-backup-data-collapsed-text = Taktu öryggisafrit af vafurgögnum
+fxa-menu-message-backup-sync-primary-text = Haltu gögnunum þínum öruggum og samstilltum
+fxa-menu-message-backup-sync-secondary-text = Sync tekur afrit af flestum gögnunum þínum svo þú getir nálgast þau alls staðar þar sem þú notar { -brand-short-name }.
+fxa-menu-message-backup-sync-collapsed-text = Samstilltu og afritaðu gögn
+fxa-menu-message-mobile-primary-text = Sendu flipa í símann þinn
+fxa-menu-message-mobile-secondary-text = Haltu áfram þar sem þú frá var horfið með því að þú samstillir flipana þína við farsíma.
+fxa-menu-message-mobile-collapsed-text = Samstilltu við símann þinn
+
+## Multi-CTA Fox Doodle Spotlight
+
+multi-cta-fox-doodle-title = Velkomin aftur
+multi-cta-fox-doodle-set-default-checkbox = Stilltu { -brand-short-name } á sjálfgefið
+multi-cta-fox-doodle-pin-startmenu-checkbox = Festu { -brand-short-name } á ræsivalmyndina
+multi-cta-fox-doodle-pin-checkbox =
+    { PLATFORM() ->
+        [macos] Festu { -brand-short-name } á verkefnastikuna
+       *[other] Festu { -brand-short-name } á verkefnastikuna
+    }
+multi-cta-fox-doodle-start-browsing-primary-button-label = Fara að vafra
+multi-cta-fox-doodle-main-browser-primary-button-label = Gera { -brand-short-name } að aðalvafranum mínum
+multi-cta-fox-doodle-quick-reminder-subtitle = Hér er vinsamleg áminning um að þú getur haldið áfram að nota eftirlætisvafrann þinn með einum smelli.
+multi-cta-fox-doodle-privacy-focused-subtitle =
+    { PLATFORM() ->
+        [macos] Hafðu eftirlætisvafrann þinn innan seilingar. Stilltu { -brand-short-name } sem sjálfgefinn vafra til að opna tengla og festu hann við verkefnastikuna þína og í ræsivalmyndina.
+       *[other] Hafðu eftirlætisvafrann þinn innan seilingar. Stilltu { -brand-short-name } sem sjálfgefinn vafra til að opna tengla og festu hann við verkefnastikuna þína og í ræsivalmyndina.
+    }
+multi-cta-fox-doodle-msix-privacy-focused-subtitle = Hafðu eftirlætisvafrann þinn innan seilingar. Stilltu { -brand-short-name } sem sjálfgefinn vafra til að opna tengla og festu hann við verkefnastikuna þína og í ræsivalmyndina.

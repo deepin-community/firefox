@@ -221,7 +221,7 @@ shortcuts-input =
     .placeholder = 단축키 입력
 # Accessible name for a trashcan icon button that removes an existent shortcut
 shortcuts-remove-button =
-    .aria-label = 바로가기 제거
+    .aria-label = 바로 가기 제거
 shortcuts-browserAction2 = 도구 모음 버튼 활성화
 shortcuts-pageAction = 페이지 작업 활성화
 shortcuts-sidebarAction = 사이드바 표시/숨기기
@@ -286,6 +286,14 @@ find-more-themes = 테마 더 찾기
 # used for screen readers.
 addon-options-button =
     .aria-label = 추가 옵션
+# Explanatory introduction to the list of recommended add-ons. The action word
+# ("recommends") in the final sentence is a link to external documentation.
+discopane-intro2 =
+    확장 기능과 테마를 사용하면 { -brand-product-name }를 사용자 지정할 수 있습니다.
+    개인정보 보호 강화, 생산성 향상, 미디어 개선, { -brand-product-name } 외관 변경 등 
+    다양한 작업을 수행할 수 있습니다. 이 작은 소프트웨어 프로그램은 종종 
+    제3자에 의해 개발됩니다. 여기에 뛰어난 보안, 성능 및 기능을 위해 { -brand-product-name }가 
+    <a data-l10n-name="learn-more-trigger">추천</a>하는 선정된 부가 기능들이 있습니다.
 
 ## Add-on actions
 
@@ -371,6 +379,10 @@ addon-detail-group-label-updates =
     .aria-label = { addon-detail-updates-label }
 # This is the tooltip text for the private browsing badge in about:addons. The
 # badge is the private browsing icon included next to the extension's name.
+addon-badge-private-browsing-allowed3 =
+    .title = 사생활 보호 창에서 허용됨
+# This is the tooltip text for the private browsing badge in about:addons. The
+# badge is the private browsing icon included next to the extension's name.
 addon-badge-private-browsing-allowed2 =
     .title = 사생활 보호 창에서 허용됨
     .aria-label = { addon-badge-private-browsing-allowed2.title }
@@ -410,6 +422,14 @@ addon-badge-line3 =
 addon-badge-verified2 =
     .title = 이 확장 기능은 보안 및 성능 표준을 충족하는 것으로 검토되었습니다
     .aria-label = { addon-badge-verified2.title }
+addon-badge-recommended3 =
+    .title = { -brand-product-name }는 보안 및 성능 표준을 충족하는 확장 기능만 추천함
+# We hard code "Mozilla" in the string below because the extensions are built
+# by Mozilla and we don't want forks to display "by Fork".
+addon-badge-line4 =
+    .title = Mozilla에서 만든 공식 확장 기능. 보안 및 성능 표준 충족
+addon-badge-verified3 =
+    .title = 이 확장 기능은 보안 및 성능 표준을 충족하는 것으로 검토되었습니다
 
 ##
 
@@ -417,6 +437,7 @@ available-updates-heading = 업데이트 있음
 recent-updates-heading = 최근 업데이트
 release-notes-loading = 로드 중…
 release-notes-error = 죄송합니다. 출시 정보를 로드하는 중에 오류가 발생했습니다.
+addon-permissions-empty2 = 이 확장 기능은 권한이 필요하지 않습니다.
 addon-permissions-empty = 이 확장 기능은 권한이 필요하지 않습니다.
 addon-permissions-required = 핵심 기능에 필요한 필수 권한:
 addon-permissions-optional = 추가 기능에 필요한 선택 권한:
@@ -466,10 +487,24 @@ details-notification-unsigned-and-disabled-link = 추가 정보
 details-notification-unsigned = { $name } 부가 기능이 { -brand-short-name }에서 사용할 수 있는지 확인할 수 없습니다. 주의해서 진행하세요.
 details-notification-unsigned2 =
     .message = { $name } 부가 기능이 { -brand-short-name }에서 사용할 수 있는지 확인할 수 없습니다. 주의해서 진행하세요.
+details-notification-hard-blocked-extension =
+    .message = 이 확장 기능은 Mozilla 정책 위반으로 차단되어 비활성화되었습니다.
+details-notification-hard-blocked-other =
+    .message = 이 부가 기능은 Mozilla 정책 위반으로 차단되어 비활성화되었습니다.
 details-notification-unsigned-link = 추가 정보
 details-notification-blocked = { $name }는 보안이나 안정성 문제로 인해 사용 중지됩니다.
 details-notification-blocked2 =
     .message = { $name }는 보안이나 안정성 문제로 인해 사용 중지됩니다.
+details-notification-blocked-link2 = 상세 보기
+details-notification-soft-blocked-extension-disabled =
+    .message = 이 확장 기능은 Mozilla 정책 위반으로 제한되어 비활성화되었습니다. 활성화할 수 있지만 위험할 수 있습니다.
+details-notification-soft-blocked-extension-enabled =
+    .message = 이 확장 기능은 Mozilla의 정책을 위반합니다. 사용하면 위험할 수 있습니다.
+details-notification-soft-blocked-other-disabled =
+    .message = 이 부가 기능은 Mozilla 정책 위반으로 제한되어 비활성화되었습니다. 활성화할 수 있지만 위험할 수 있습니다.
+details-notification-soft-blocked-other-enabled =
+    .message = 이 부가 기능은 Mozilla의 정책을 위반합니다. 사용하면 위험할 수 있습니다.
+details-notification-softblocked-link2 = 상세 보기
 details-notification-blocked-link = 추가 정보
 details-notification-softblocked = { $name }는 보안이나 안정성 문제를 일으킬 수 있습니다.
 details-notification-softblocked2 =

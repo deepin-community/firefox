@@ -148,6 +148,7 @@ shopping-unanalyzed-product-analyze-button = Senqed tɣara n yilɣa
 
 more-to-consider-ad-label =
     .label = Ugar n tamawt
+shopping-sponsored-label = S lmendad
 ad-by-fakespot = Adellel sɣur { -fakespot-brand-name }
 
 ## Shopping survey strings.
@@ -166,6 +167,10 @@ shopping-survey-submit-button-label = Azen
 shopping-survey-terms-link = Tiwtilin n useqdec
 shopping-survey-thanks =
     .heading = Tanemmirt ɣef tekti yinek!
+
+## Shopping opted-out survey strings
+## Opt-out survey options are displayed as checkboxes and the user can select one or many.
+
 
 ## Shopping Feature Callout strings.
 ## "price tag" refers to the price tag icon displayed in the address bar to

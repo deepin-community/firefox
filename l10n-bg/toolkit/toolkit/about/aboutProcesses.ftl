@@ -5,6 +5,8 @@
 
 ## Tooltips
 
+about-processes-shutdown-process =
+    .title = Освобождаване на памет и прекъсване на процеси
 about-processes-shutdown-tab =
     .title = Затваряне на раздела
 
@@ -22,6 +24,7 @@ about-processes-plugin-process = Приставки ({ $pid })
 about-processes-gmp-plugin-process = Приставки за медия на Gecko ({ $pid })
 about-processes-gpu-process = GPU ({ $pid })
 about-processes-socket-process = Мрежа ({ $pid })
+about-processes-remote-sandbox-broker-process = Посредник за отдалечена пясъчна среда ({ $pid })
 
 ## Isolated process names
 ## Variables:

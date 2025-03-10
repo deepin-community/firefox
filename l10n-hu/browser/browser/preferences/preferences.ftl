@@ -3,6 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 do-not-track-description = „Ne kövessenek” jelzés küldése a webhelyeknek, jelezve, hogy nem szeretné, hogy kövessék
+do-not-track-removal = Már nem támogatjuk a „Do Not Track” jelzést
 do-not-track-description2 =
     .label = „Ne kövessenek” kérés küldése a webhelyeknek
     .accesskey = N
@@ -137,6 +138,7 @@ windows-launch-on-login =
     .label = A { -brand-short-name } automatikus megnyitása a számítógép indításakor
     .accesskey = m
 windows-launch-on-login-disabled = Ez a beállítás le lett tiltva a Windowsban. A módosításhoz nyissa meg az <a data-l10n-name="startup-link">Indítási alkalmazások</a> oldalt a Rendszerbeállításokban.
+windows-launch-on-login-profile-disabled = Engedélyezze ezt a beállítást a „{ profile-manager-use-selected.label }” kiválasztásával a „Felhasználói profil kiválasztása” ablakban.
 startup-restore-warn-on-quit =
     .label = Figyelmeztetés, amikor kilép a böngészőből
 disable-extension =
@@ -146,6 +148,11 @@ preferences-data-migration-description = Importáljon könyvjelzőket, jelszavak
 preferences-data-migration-button =
     .label = Adatok importálása
     .accesskey = m
+preferences-profiles-header = Profilok
+preferences-manage-profiles-description = Minden profilnak külön böngészési adatai és beállításai vannak, beleértve az előzményeket, jelszavakat és egyebeket.
+preferences-manage-profiles-learn-more = További tudnivalók
+preferences-manage-profiles-button =
+    .label = Profilkezelő
 tabs-group-header = Lapok
 ctrl-tab-recently-used-order =
     .label = A Ctrl+Tab a legutóbbi használat sorrendjében lépked körbe a lapokon
@@ -153,6 +160,17 @@ ctrl-tab-recently-used-order =
 open-new-link-as-tabs =
     .label = Hivatkozások megnyitása új lapon, az új ablak helyett
     .accesskey = l
+ask-on-close-multiple-tabs =
+    .label = Rákérdezés több lap bezárása előtt
+    .accesskey = t
+# This string is used for the confirm before quitting preference.
+# Variables:
+#   $quitKey (string) - the quit keyboard shortcut, and formatted
+#                       in the same manner as it would appear,
+#                       for example, in the File menu.
+ask-on-quit-with-key =
+    .label = Rákérdezés a { $quitKey } billentyűvel történő kilépés előtt
+    .accesskey = e
 confirm-on-close-multiple-tabs =
     .label = Megerősítés több lap bezárása előtt
     .accesskey = M
@@ -212,6 +230,16 @@ containers-remove-cancel-button = Ne távolítsa el a konténert
 settings-tabs-show-image-in-preview =
     .label = Előnézeti kép megjelenítése, ha az egérmutatót egy lap fülé húzza
     .accessKey = E
+browser-layout-header = Böngésző elrendezése
+browser-layout-horizontal-tabs =
+    .label = Vízszintes lapok
+browser-layout-horizontal-tabs-desc = Megjelenítés a böngésző tetején
+browser-layout-vertical-tabs =
+    .label = Függőleges lapok
+browser-layout-vertical-tabs-desc = Megjelenítés oldalt, az oldalsávban
+browser-layout-show-sidebar =
+    .label = Oldalsáv megjelenítése
+browser-layout-show-sidebar-desc = Érje el gyorsan a könyvjelzőket és a lapokat a telefonjáról, használjon MI csevegőbotokat, anélkül hogy elhagyná a fő nézetet.
 
 ## General Section - Language & Appearance
 
@@ -568,8 +596,7 @@ home-prefs-shortcuts-description = Mentett vagy felkeresett webhelyek
 home-prefs-shortcuts-by-option-sponsored =
     .label = Szponzorált gyorskeresők
 
-## Variables:
-##  $provider (string) - Name of the corresponding content provider, e.g "Pocket".
+## Home Section - Firefox Home Content Customization
 
 home-prefs-recommended-by-header =
     .label = A(z) { $provider } ajánlásával
@@ -640,6 +667,10 @@ search-show-suggestions-option =
 search-show-suggestions-url-bar-option =
     .label = Keresési javaslatok megjelenítése a címsáv találataiban
     .accesskey = K
+# With this option enabled, on the search results page
+# the URL will be replaced by the search terms in the address bar.
+search-show-search-term-option-2 =
+    .label = Keresési kifejezések megjelenítése a találati oldalak címsorában
 # With this option enabled, on the search results page
 # the URL will be replaced by the search terms in the address bar
 # when using the current default search engine.
@@ -783,6 +814,9 @@ sync-currently-syncing-creditcards = Bankkártyák
 sync-currently-syncing-payment-methods = Fizetési módok
 sync-currently-syncing-addons = Kiegészítők
 sync-currently-syncing-settings = Beállítások
+sync-manage-options =
+    .label = Szinkronizálás kezelése…
+    .accesskey = S
 sync-change-options =
     .label = Módosítás…
     .accesskey = M
@@ -835,6 +869,13 @@ sync-engine-settings =
     .label = Beállítások
     .tooltiptext = Módosított általános, adatvédelmi és biztonsági beállítások
     .accesskey = k
+sync-choose-what-to-sync-dialog4 =
+    .title = Kezelje, hogy mit szinkronizál a csatlakoztatott eszközein
+    .style = min-width: 36em;
+    .buttonlabelaccept = Mentés
+    .buttonaccesskeyaccept = M
+    .buttonlabelextra2 = Kapcsolat bontása…
+    .buttonaccesskeyextra2 = b
 
 ## The device name controls.
 
@@ -1281,23 +1322,46 @@ permissions-addon-exceptions =
 collection-header = { -brand-short-name } adatgyűjtés és felhasználás
 collection-header2 = { -brand-short-name } adatgyűjtés és felhasználás
     .searchkeywords = telemetria
+preferences-collection-description = Arra törekszünk, hogy választási lehetőséget biztosítsunk, és csak a minimálisan szükséges adatokat gyűjtsük ahhoz, hogy mindenki számára jobb legyen a { -brand-product-name }.
+preferences-collection-privacy-notice = Adatvédelmi nyilatkozat megtekintése
 collection-description = Arra törekszünk, hogy választást biztosítsunk, és csak azt gyűjtsük, amire szükségünk van a { -brand-short-name } fejlesztéséhez, mindenki számára. Mindig engedélyt kérünk, mielőtt személyes információkat fogadunk.
 collection-privacy-notice = Adatvédelmi nyilatkozat
 collection-health-report-telemetry-disabled = Már nem engedélyezi, hogy a { -vendor-short-name } műszaki és interakciós adatokat rögzítsen. A múltbeli adatai 30 napon belül törölve lesznek.
 collection-health-report-telemetry-disabled-link = További tudnivalók
+collection-usage-ping =
+    .label = Napi használati ping küldése a { -vendor-short-name(ending: "accented") }nak
+    .accesskey = h
+collection-usage-ping-description = Ez segít a { -vendor-short-name(ending: "accented") }nak az aktív felhasználók megbecslésében.
+collection-health-report2 =
+    .label = Műszaki és interakciós adatok küldése a { -vendor-short-name(ending: "accented") }nak
+    .accesskey = r
 collection-health-report =
     .label = Engedélyezés, hogy a { -brand-short-name } műszaki és interakciós adatokat küldjön a { -vendor-short-name } számára
     .accesskey = E
 collection-health-report-link = További tudnivalók
+collection-health-report-description = Ez segít a { -brand-product-name } funkcióinak, teljesítményének és stabilitásának fejlesztésében.
+collection-studies2 =
+    .label = Tanulmányok telepítése és futtatása
+collection-studies-description = Próbálja ki a funkciókat és az ötleteket, mielőtt mindenki számára hozzáférhetővé válnak.
 collection-studies =
     .label = Engedélyezés, hogy a { -brand-short-name } tanulmányokat telepítsen és futtasson
 collection-studies-link = { -brand-short-name } tanulmányok megtekintése
+addon-recommendations2 =
+    .label = Személyre szabott kiegészítőjavaslatok engedélyezése
+addon-recommendations-description = Kapjon kiegészítőjavaslatokat a böngészési élmény javítása érdekében.
+# This message is displayed above disabled data sharing options in developer builds
+# or builds with no Telemetry support available.
+collection-health-report-disabled2 = Az adatjelentés le van tiltva ennél az összeállítási konfigurációnál.
+collection-backlogged-crash-reports2 =
+    .label = Összeomlás-jelentések automatikus elküldése
+    .accesskey = j
+collection-backlogged-crash-reports-description = Ez segít a { -vendor-short-name(ending: "accented") }nak diagnosztizálni és megoldani a böngésző problémáit. A jelentések személyes vagy bizalmas adatokat tartalmazhatnak.
 addon-recommendations =
     .label = Engedélyezés, hogy a { -brand-short-name } személyre szabott kiegészítő ajánlásokat tegyen
 addon-recommendations-link = További tudnivalók
 # This message is displayed above disabled data sharing options in developer builds
 # or builds with no Telemetry support available.
-collection-health-report-disabled = Az adatjelentést letiltották ehhez a binárishoz
+collection-health-report-disabled = Az adatjelentés le van tiltva ennél az összeállítási konfigurációnál
 collection-backlogged-crash-reports-with-link = Engedélyezés, hogy a { -brand-short-name } elküldje az elmaradt összeomlás-jelentéseket az Ön nevében <a data-l10n-name="crash-reports-link">További tudnivalók</a>
     .accesskey = o
 collection-backlogged-crash-reports = Engedélyezés, hogy a { -brand-short-name } elküldje az elmaradt összeomlás-jelentéseket az Ön nevében
@@ -1359,6 +1423,8 @@ space-alert-under-5gb-message2 = <strong>A { -brand-short-name } kezd kifogyni a
 ## Privacy Section - HTTPS-Only
 
 httpsonly-header = Csak HTTPS mód
+httpsonly-description3 = Csak a biztonságos kapcsolatokat engedélyezi. A { -brand-short-name } megkérdezi, mielőtt nem biztonságosan csatlakozna.
+httpsonly-learn-more2 = Hogyan működik a Csak HTTPS mód
 httpsonly-description = A HTTPS biztonságos, titkosított kapcsolatot biztosít a { -brand-short-name } és a meglátogatott webhelyek között. A legtöbb webhely támogatja a HTTPS-t, és ha a Csak HTTPS mód engedélyezve van, akkor a { -brand-short-name } HTTPS-re frissíti az összes kapcsolatot.
 httpsonly-description2 = A { -brand-short-name } biztonságos és titkosított kapcsolatokat hoz létre a felkeresett webhelyekkel. A „csak HTTPS” mód esetén a { -brand-short-name } figyelmeztet, ha a kapcsolat nem biztonságos.
 httpsonly-learn-more = További tudnivalók
@@ -1368,6 +1434,9 @@ httpsonly-radio-enabled2 =
     .label = Csak HTTPS mód használata az összes ablakban
 httpsonly-radio-enabled-pbm =
     .label = A Csak HTTPS mód engedélyezése csak privát ablakokban
+httpsonly-radio-disabled3 =
+    .label = Ne engedélyezze a Csak HTTPS módot
+    .description = A { -brand-short-name } továbbra is frissítheti az egyes kapcsolatokat
 httpsonly-radio-enabled-pbm2 =
     .label = Csak HTTPS mód használata a privát ablakokban
 httpsonly-radio-disabled =

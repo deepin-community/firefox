@@ -72,6 +72,9 @@ tabbrowser-unblock-tab-audio-tooltip =
            *[other] Spill av { $tabCount } faner
         }
 
+## Tooltips for tab audio control
+
+
 ## Confirmation dialog when closing a window with more than one tab open,
 ## or when quitting when only one window is open.
 
@@ -80,6 +83,7 @@ tabbrowser-unblock-tab-audio-tooltip =
 #   $tabCount (Number): The number of tabs that will be closed.
 tabbrowser-confirm-close-tabs-title = Lukk { $tabCount } faner?
 tabbrowser-confirm-close-tabs-button = Lukk faner
+tabbrowser-ask-close-tabs-checkbox = Spør før lukking av flere faner
 tabbrowser-confirm-close-tabs-checkbox = Bekreft før lukking av flere faner
 
 ## Confirmation dialog when quitting using the menu and multiple windows are open.
@@ -103,6 +107,10 @@ tabbrowser-confirm-close-tabs-with-key-button = Avslutt { -brand-short-name }
 # Variables:
 #   $quitKey (String): the text of the keyboard shortcut for quitting.
 tabbrowser-confirm-close-tabs-with-key-checkbox = Bekreft før du avslutter med { $quitKey }
+
+## Confirmation dialog when quitting using the keyboard shortcut (Ctrl/Cmd+Q)
+## and browser.warnOnQuitShortcut is true.
+
 
 ## Confirmation dialog when opening multiple tabs simultaneously
 
@@ -167,6 +175,9 @@ tabbrowser-ctrl-tab-list-all-tabs =
     .label = List alle { $tabCount } faner
 
 ## Tab manager menu buttons
+## Variables:
+##  $tabGroupName (String): The name of the tab group. See also tab-group-name-default, which will be
+##                          used when the group's name is empty.
 
 tabbrowser-manager-mute-tab =
     .tooltiptext = Skru av fanelyd
@@ -174,3 +185,24 @@ tabbrowser-manager-unmute-tab =
     .tooltiptext = Skru på fanelyd
 tabbrowser-manager-close-tab =
     .tooltiptext = Lukk fane
+
+## Tab Groups
+
+tab-group-editor-title-create = Opprett fanegruppe
+tab-group-editor-title-edit = Behandle fanegruppe
+tab-group-editor-name-label = Navn
+tab-group-editor-name-field =
+    .placeholder = Eksempel: Shopping
+tab-group-editor-cancel =
+    .label = Avbryt
+    .accesskey = A
+tab-context-unnamed-group =
+    .label = Navnløs gruppe
+tab-group-name-default = Navnløs gruppe
+
+## Variables:
+##  $tabCount (Number): the number of tabs that are affected by the action.
+
+
+## Open/saved tab group context menu
+

@@ -63,6 +63,7 @@ cfr-doorhanger-extension-total-users =
 
 cfr-doorhanger-bookmark-fxa-header = Sincroniza is sinnalibros tuos in ònnia logu.
 cfr-doorhanger-bookmark-fxa-body = Ite iscoberta! Immoe no abarres chenecustu sinnalibru in is dispositivos tuos. Est tempus de impreare { -fxaccount-brand-name }.
+cfr-doorhanger-bookmark-fxa-body-2 = Ite iscoberta! Immoe no abarres chene custu sinnalibru in is dispositivos tuos. Est tempus de creare unu contu.
 cfr-doorhanger-bookmark-fxa-link-text = Sincroniza is sinnalibros immoe…
 cfr-doorhanger-bookmark-fxa-close-btn-tooltip =
     .aria-label = Butone Serra
@@ -247,6 +248,9 @@ device-migration-fxa-spotlight-older-device-primary-button = Crea unu contu
 device-migration-fxa-spotlight-getting-new-device-header-2 = Ses acanta de tènnere unu dispositivu nou?
 device-migration-fxa-spotlight-getting-new-device-body-2 = Sighi una pariga de passos simpres pro ti nche portare a fatu sinnalibros, cronologia e craes cando incumentzas cun unu dispositivu nou.
 device-migration-fxa-spotlight-getting-new-device-primary-button = Comente potzo fàghere una còpia de is datos mios?
+device-migration-fxa-spotlight-sync-header = Nàviga chene de ti pèrdere nudda
+device-migration-fxa-spotlight-sync-body = Sincroniza e tzifra totu s’informatzione de importu, comente sinnalibros e craes. Podes atzèdere a totu is datos tuos in onni logu si impreas { -brand-product-name }.
+device-migration-fxa-spotlight-sync-primary-button = Cumintza
 
 ## Set as Default PDF Reader Infobar
 
@@ -283,3 +287,54 @@ tail-fox-spotlight-title = Lassa·nche is sighidores infadosos a tesu
 tail-fox-spotlight-subtitle = Nara adiosu a publitzidades infadosas chi ti sighint e gosa·ti un’esperièntzia de navigatzione segura e lestra.
 tail-fox-spotlight-primary-button = Aberi is ligòngios mios cun { -brand-short-name }
 tail-fox-spotlight-secondary-button = Immoe nono
+
+## Root Certificate Succession Infobar
+
+root-certificate-succession-infobar-january-message = Podet èssere chi <strong>is versiones betzas de { -brand-short-name } cumintzent a tènnere problemas su 14 de ghennàrgiu de su 2025.</strong>
+root-certificate-succession-infobar-march-message = <strong>Atualiza pro sighire a impreare { -brand-short-name } a pustis de su 14 de martzu de su 2025.</strong>
+root-certificate-succession-infobar-link = Pro ite depo atualizare?
+root-certificate-succession-infobar-primary-button =
+    .label = Atualiza immoe
+    .accesskey = A
+root-certificate-succession-infobar-secondary-button =
+    .label = A pustis
+    .accesskey = p
+
+## Root Certificate Succession Windows Background Notification
+
+root-certificate-windows-background-notification-title = As pèrdidu un’atualizatzione de importu de { -brand-short-name }
+root-certificate-windows-background-notification-subtitle = Partes de importu de su navigadore no ant a funtzionare prus in pagora si no installas is atualizatziones. Est unu momentu bonu pro otènnere is ùrtimas protetziones e funtziones.
+root-certificate-windows-background-notification-learn-more-button = Àteras informatziones
+root-certificate-windows-background-notification-update-button = Atualiza { -brand-short-name }
+
+## FxA Menu Message variants
+
+fxa-menu-message-close-button =
+    .title = Serra
+    .aria-label = Serra
+fxa-menu-message-sign-up-button = Registra·ti
+fxa-menu-message-sync-devices-primary-text = Sincroniza totu is dispositivos tuos
+fxa-menu-message-sync-devices-secondary-text = Atzede deretu a totu is datos tuos, comente sinnalibros e craes, in onni logu cun { -brand-short-name }.
+fxa-menu-message-sync-devices-collapsed-text = Sincroniza totu is dispositivos tuos
+fxa-menu-message-backup-data-primary-text = Faghe una còpia de seguresa de is datos de navigatzione tuos
+fxa-menu-message-backup-data-secondary-text = Ampara in automàticu is sinnalibros, is craes e àteras informatziones in totu is dispositivos tuos.
+fxa-menu-message-backup-data-collapsed-text = Faghe una còpia de seguresa de is datos de navigatzione
+fxa-menu-message-backup-sync-primary-text = Mantene is datos tuos seguros e sincronizados
+fxa-menu-message-backup-sync-secondary-text = Sync faghet una còpia de seguresa de su prus de is datos tuos in manera chi nche potzas atzèdere dae ònnia logu cun { -brand-short-name }.
+fxa-menu-message-backup-sync-collapsed-text = Sincroniza e faghe una còpia de seguresa de is datos tuos
+fxa-menu-message-mobile-primary-text = Imbia ischedas a su telèfonu
+fxa-menu-message-mobile-secondary-text = Torra a cumintzare dae ue aias lassadu cando sincronizas is ischedas cun unu dispositivu mòbile.
+fxa-menu-message-mobile-collapsed-text = Sincroniza cun su telèfonu
+
+## Multi-CTA Fox Doodle Spotlight
+
+multi-cta-fox-doodle-title = Ti donamus torra su benebènnidu!
+multi-cta-fox-doodle-set-default-checkbox = Faghe de { -brand-short-name } su navigadore predefinidu
+multi-cta-fox-doodle-pin-startmenu-checkbox = Apica { -brand-short-name } a su menù de aviu
+multi-cta-fox-doodle-pin-checkbox =
+    { PLATFORM() ->
+        [macos] Mantene { -brand-short-name } in su Dock
+       *[other] Apica { -brand-short-name } a sa barra de is tareas
+    }
+multi-cta-fox-doodle-start-browsing-primary-button-label = Cumintza a navigare
+multi-cta-fox-doodle-main-browser-primary-button-label = Faghe de { -brand-short-name } su navigadore predefinidu

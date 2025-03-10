@@ -115,6 +115,7 @@ spotlight-public-wifi-vpn-link = ఇప్పుడు కాదు
 
 ## Emotive Continuous Onboarding
 
+spotlight-better-internet-header = మెరుగైన అంతర్జాలం మీతో మొదలవుతుంది
 spotlight-pin-secondary-button = ఇప్పుడు కాదు
 
 ## MR2022 Background Update Windows native toast notification strings.
@@ -159,9 +160,12 @@ cookie-banner-blocker-onboarding-learn-more = ఇంకా తెలుసుక
 
 ## These strings are used in the Fox doodle Pin/set default spotlights
 
+fox-doodle-pin-headline = పునఃస్వాగతం
+fox-doodle-pin-secondary = ఇప్పుడు కాదు
 
 ## These strings are used in the Set Firefox as Default PDF Handler for Existing Users experiment
 
+set-default-pdf-handler-primary = అర్థమైంది
 
 ## FxA sync CFR
 
@@ -172,12 +176,21 @@ fxa-sync-cfr-secondary = నాకు తర్వాత గుర్తుచ�
 
 ## Device Migration FxA Spotlight
 
+device-migration-fxa-spotlight-heavy-user-primary-button = మొదలుపెట్టండి
+device-migration-fxa-spotlight-sync-primary-button = మొదలుపెట్టండి
 
 ## Set as Default PDF Reader Infobar
 
+pdf-default-notification-set-default-button =
+    .label = అప్రమేయంగా చేయి
+pdf-default-notification-decline-button =
+    .label = ఇప్పుడు కాదు
 
 ## Launch on login infobar notification
 
+launch-on-login-learnmore = ఇంకా తెలుసుకోండి
+launch-on-login-infobar-reject-button = ఇప్పుడు కాదు
+    .accesskey = N
 
 ## These string variants are used when the “launch on login” infobar
 ## notification is displayed for a second time.
@@ -185,3 +198,28 @@ fxa-sync-cfr-secondary = నాకు తర్వాత గుర్తుచ�
 
 ## Tail Fox Set Default Spotlight
 
+tail-fox-spotlight-secondary-button = ఇప్పుడు కాదు
+
+## Root Certificate Succession Infobar
+
+root-certificate-succession-infobar-link = నేను ఎందుకు తాజాపరచుకోవాలి?
+root-certificate-succession-infobar-primary-button =
+    .label = ఇప్పుడే తాజాపరచు
+    .accesskey = U
+root-certificate-succession-infobar-secondary-button =
+    .label = తర్వాత
+    .accesskey = L
+
+## Root Certificate Succession Windows Background Notification
+
+root-certificate-windows-background-notification-learn-more-button = ఇంకా తెలుసుకోండి
+
+## FxA Menu Message variants
+
+fxa-menu-message-close-button =
+    .title = మూసివేయి
+    .aria-label = మూసివేయి
+
+## Multi-CTA Fox Doodle Spotlight
+
+multi-cta-fox-doodle-title = పునఃస్వాగతం

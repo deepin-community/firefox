@@ -108,8 +108,11 @@ appmenu-fxa-sync-and-save-data2 = Cydweddu a chadw data
 appmenu-fxa-signed-in-label = Mewngofnodi
 appmenu-fxa-setup-sync =
     .label = Cychwyn Cydweddu…
+appmenu-fxa-setup-sync-new = Troi Ymlaen
 appmenuitem-save-page =
     .label = Cadw Tudalen Fel…
+appmenuitem-fxa-sync-off-title = Mae Sync i ffwrdd
+appmenuitem-fxa-sync-off-description = Diogelu a chael mynediad i'ch nodau tudalen, cyfrineiriau, a rhagor yn unrhyw le.
 
 ## What's New panel in App menu.
 
@@ -277,5 +280,21 @@ appmenuitem-monitor-title = { -monitor-brand-short-name }
 appmenuitem-monitor-description = Cael rhybuddion tor-data
 appmenuitem-relay-title = { -relay-brand-short-name }
 appmenuitem-relay-description = Cuddiwch eich e-bost a'ch ffôn go iawn
+appmenuitem-services-relay-description = Agor dangosfwrdd e-bost enwarall
 appmenuitem-vpn-title = { -mozilla-vpn-brand-name }
 appmenuitem-vpn-description = Diogelwch eich preifatrwydd ar-lein
+appmenu-services-header = Gwasanaethau
+appmenu-other-protection-header = Rhowch gynnig ar offer diogelu eraill gan { -vendor-short-name }:
+
+## Profiles panel
+
+appmenu-profiles = Proffiliau
+appmenu-other-profiles = Proffiliau eraill
+appmenu-manage-profiles =
+    .label = Rheoli proffiliau
+appmenu-create-profile =
+    .label = Proffil newydd
+appmenu-edit-profile =
+    .aria-label = Golygu proffil
+appmenu-profiles-2 =
+    .label = Proffiliau

@@ -381,6 +381,10 @@ addon-detail-group-label-updates =
     .aria-label = { addon-detail-updates-label }
 # This is the tooltip text for the private browsing badge in about:addons. The
 # badge is the private browsing icon included next to the extension's name.
+addon-badge-private-browsing-allowed3 =
+    .title = Aotreet er prenestroù prevez
+# This is the tooltip text for the private browsing badge in about:addons. The
+# badge is the private browsing icon included next to the extension's name.
 addon-badge-private-browsing-allowed2 =
     .title = Aotreet er prenestroù prevez
     .aria-label = { addon-badge-private-browsing-allowed2.title }
@@ -408,6 +412,8 @@ addon-detail-group-label-quarantined-domains =
 addon-badge-recommended2 =
     .title = { -brand-product-name } ne erbed nemet an askouezhioù a zouj d’hor reoladoù surentez hag efedusted
     .aria-label = { addon-badge-recommended2.title }
+addon-badge-recommended3 =
+    .title = { -brand-product-name } ne erbed nemet an askouezhioù a zouj d’hor reoladoù surentez hag efedusted
 
 ##
 
@@ -459,6 +465,8 @@ details-notification-unsigned-link = Muioc'h a ditouroù
 details-notification-blocked = Diweredekaet eo bet { $name } en abeg da gudennoù a-fet diogelroez pe stabilded.
 details-notification-blocked2 =
     .message = Diweredekaet eo bet { $name } en abeg da gudennoù a-fet diogelroez pe stabilded.
+details-notification-blocked-link2 = Gwelet ar munudoù
+details-notification-softblocked-link2 = Gwelet ar munudoù
 details-notification-blocked-link = Muioc'h a ditouroù
 details-notification-softblocked = Anavezet eo { $name } evit degas kudennoù e-keñver diogelroez pe stabilded.
 details-notification-softblocked2 =

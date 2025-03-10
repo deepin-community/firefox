@@ -28,6 +28,7 @@ only-for-build-platforms:
     - linux64-asan-reporter-shippable/opt
     - linux64/opt
     - linux64-aarch64-shippable/opt
+    - linux64-aarch64-devedition/opt
     - macosx64-shippable/opt
     - macosx64-devedition/opt
     - macosx64/opt
@@ -97,4 +98,5 @@ tasks:
         fetches:
             toolchain:
                 - linux64-mar-tools
+                - linux64-zucchini-bin
                 - linux64-upx

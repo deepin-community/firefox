@@ -16,3 +16,10 @@ all-tabs-menu-close-duplicate-tabs =
     .label = Clauder schedas duplicate
 all-tabs-menu-close-all-duplicate-tabs =
     .label = Clauder tote le schedas duplicate
+all-tabs-menu-synced-tabs =
+    .label = Schedas ab altere apparatos
+all-tabs-menu-current-window-header = Fenestra actual
+# "Show all" is for showing all open groups as well as saved groups. Initially,
+# we only show up to five of these groups.
+all-tabs-menu-tab-groups-show-all =
+    .label = Monstrar toto

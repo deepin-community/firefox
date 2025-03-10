@@ -16,24 +16,24 @@ graph-week-summary =
 # earliest date recorded in the database.
 graph-total-tracker-summary =
     { $count ->
-        [one] <b>{ $count }</b> pratitelj blokiran od { DATETIME($earliestDate, day: "numeric", month: "long", year: "numeric") }
-        [few] <b>{ $count }</b> pratitelja blokirana od { DATETIME($earliestDate, day: "numeric", month: "long", year: "numeric") }
-       *[other] <b>{ $count }</b> pratitelja blokirano od { DATETIME($earliestDate, day: "numeric", month: "long", year: "numeric") }
+        [one] <b>{ $count }</b> program za praćenje blokiran od { DATETIME($earliestDate, day: "numeric", month: "long", year: "numeric") }
+        [few] <b>{ $count }</b> programa za praćenje blokirana od { DATETIME($earliestDate, day: "numeric", month: "long", year: "numeric") }
+       *[other] <b>{ $count }</b> programa za praćenje blokirano od { DATETIME($earliestDate, day: "numeric", month: "long", year: "numeric") }
     }
 # Text displayed instead of the graph when in Private Mode
 graph-private-window = { -brand-short-name } nastavlja blokirati programe za praćenje u privatnim prozorima, ali ne vodi evidenciju o tome što je blokirano.
 # Weekly summary of the graph when the graph is empty in Private Mode
-graph-week-summary-private-window = Programi za praćenje, koje je { -brand-short-name } blokirao ovaj tjedan
+graph-week-summary-private-window = Programi za praćenje koje je { -brand-short-name } blokirao ovaj tjedan
 protection-report-webpage-title = Nadzorna ploča zaštite
 protection-report-page-content-title = Nadzorna ploča zaštite
 # This message shows when all privacy protections are turned off, which is why we use the word "can", Firefox is able to protect your privacy, but it is currently not.
-protection-report-page-summary = { -brand-short-name } može zaštititi tvoju privatnost iza scene dok surfaš. Ovo je personalizirani sažetak te zaštite, uključujući alate za preuzimanje kontrole nad vlastitom sigurnošću na webu.
+protection-report-page-summary = { -brand-short-name } može zaštititi tvoju privatnost u pozadini dok pregledavaš web. Ovo je personalizirani sažetak tih zaštita, uključujući alate za preuzimanje kontrole nad vlastitom sigurnošću na webu.
 # This message shows when at least some protections are turned on, we are more assertive compared to the message above, Firefox is actively protecting you.
-protection-report-page-summary-default = { -brand-short-name } štiti tvoju privatnost iza scene dok pregledavaš. Ovo je personalizirani sažetak tih zaštita, uključujući alate za preuzimanje kontrole nad vlastitom sigurnošću na webu.
-protection-report-settings-link = Upravljaj svojim postavkama za privatnost i sigurnost
+protection-report-page-summary-default = { -brand-short-name } štiti tvoju privatnost u pozadini dok pregledavaš web. Ovo je personalizirani sažetak tih zaštita, uključujući alate za preuzimanje kontrole nad vlastitom sigurnošću na webu.
+protection-report-settings-link = Upravljaj postavkama privatnosti i sigurnosti
 etp-card-title-always = Poboljšana zaštita od praćenja: uvijek uključeno
 etp-card-title-custom-not-blocking = Poboljšana zaštita od praćenja: ISKLJUČENO
-etp-card-content-description = { -brand-short-name } automatski sprječava tvrtke da te potajno prate širom weba.
+etp-card-content-description = { -brand-short-name } automatski sprečava tvrtke da te potajno prate širom weba.
 protection-report-etp-card-content-custom-not-blocking = Sve zaštite su trenutačno isključene. Upravljaj programima za praćenje koje želiš blokirati u { -brand-short-name } postavkama zaštite.
 protection-report-manage-protections = Upravljaj postavkama
 # This string is used to label the X axis of a graph. Other days of the week are generated via Intl.DateTimeFormat,
@@ -58,9 +58,9 @@ mobile-app-title = Blokiraj oglase koji te prate na više uređaja
 mobile-app-card-content = Koristi mobilni preglednik s ugrađenom zaštitom od praćenja.
 mobile-app-links = { -brand-product-name } preglednik za <a data-l10n-name="android-mobile-inline-link">Android</a> i <a data-l10n-name="ios-mobile-inline-link">iOS</a>
 lockwise-title = Nikada više nemoj zaboraviti lozinku
-passwords-title-logged-in = Upravljajte svojim lozinkama
+passwords-title-logged-in = Upravljaj lozinkama
 passwords-header-content = { -brand-product-name } sigurno pohranjuje vaše lozinke u vašem pregledniku.
-lockwise-header-content-logged-in = Spremaj i sinkroniziraj lozinke na svim svojim uređajima na siguran način.
+lockwise-header-content-logged-in = Spremaj i sinkroniziraj lozinke na svim tvojim uređajima na siguran način.
 protection-report-passwords-save-passwords-button = Spremi lozinke
     .title = Spremi lozinke
 protection-report-passwords-manage-passwords-button = Upravljaj lozinkama
@@ -79,9 +79,9 @@ lockwise-scanned-text-breached-logins =
 # $count (Number) - Number of passwords stored in Lockwise.
 lockwise-scanned-text-no-breached-logins =
     { $count ->
-        [one] Jedna lozinka sigurno je pohranjena.
-        [few] Tvoje lozinke sigurno su pohranjene.
-       *[other] Tvoje lozinke sigurno su pohranjene.
+        [one] Jedna lozinka je sigurno spremljena.
+        [few] Tvoje su lozinke sigurno spremljene.
+       *[other] Tvoje su lozinke sigurno spremljene.
     }
 lockwise-how-it-works-link = Kako ovo funkcionira
 monitor-title = Pazi na curenje podataka

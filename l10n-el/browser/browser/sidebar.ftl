@@ -3,7 +3,13 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 menu-view-genai-chat =
-    .label = AI Chatbot
+    .label = Chatbot ΤΝ
+menu-view-review-checker =
+    .label = Έλεγχος κριτικών
+menu-view-contextual-password-manager =
+    .label = Κωδικοί πρόσβασης
+sidebar-options-menu-button =
+    .title = Άνοιγμα μενού
 
 ## Labels for sidebar history panel
 
@@ -46,16 +52,30 @@ sidebar-position-right =
     .label = Εμφάνιση στα δεξιά
 sidebar-vertical-tabs =
     .label = Κάθετες καρτέλες
+sidebar-settings =
+    .label = Ρυθμίσεις πλαϊνής γραμμής
+sidebar-hide-tabs-and-sidebar =
+    .label = Απόκρυψη καρτελών και πλαϊνής γραμμής
+sidebar-show-on-the-right =
+    .label = Μετακίνηση πλαϊνής γραμμής στα δεξιά
+sidebar-show-on-the-left =
+    .label = Μετακίνηση πλαϊνής γραμμής στα αριστερά
+# Option to automatically expand the collapsed sidebar when the mouse pointer
+# hovers over it.
+expand-sidebar-on-hover =
+    .label = Ανάπτυξη πλαϊνής γραμμής με το πέρασμα του κέρσορα
 sidebar-horizontal-tabs =
     .label = Οριζόντιες καρτέλες
 sidebar-customize-tabs-header =
     .label = Ρυθμίσεις καρτελών
-sidebar-customize-settings-header =
-    .label = Ρυθμίσεις πλαϊνής γραμμής
-sidebar-visibility-always-show =
-    .label = Εμφάνιση πάντα
-sidebar-visibility-hide-sidebar =
-    .label = Απόκρυψη πλαϊνής γραμμής
+sidebar-customize-button-header =
+    .label = Κουμπί πλαϊνής γραμμής
+sidebar-customize-position-header =
+    .label = Θέση πλαϊνής γραμμής
+sidebar-visibility-setting-always-show =
+    .label = Ανάπτυξη και σύμπτυξη πλαϊνής γραμμής
+sidebar-visibility-setting-hide-sidebar =
+    .label = Εμφάνιση και απόκρυψη πλαϊνής γραμμής
 
 ## Labels for sidebar context menu items
 
@@ -86,7 +106,7 @@ sidebar-history-context-menu-delete-page =
 ## Labels for sidebar menu items.
 
 sidebar-menu-genai-chat-label =
-    .label = AI chatbot
+    .label = Chatbot ΤΝ
 sidebar-menu-history-label =
     .label = Ιστορικό
 sidebar-menu-synced-tabs-label =
@@ -95,6 +115,41 @@ sidebar-menu-bookmarks-label =
     .label = Σελιδοδείκτες
 sidebar-menu-customize-label =
     .label = Προσαρμογή πλαϊνής γραμμής
+sidebar-menu-review-checker-label =
+    .label = Έλεγχος κριτικών
+sidebar-menu-contextual-password-manager-label =
+    .label = Κωδικοί πρόσβασης
+
+## Tooltips for sidebar menu items.
+
+# The tooltip to show over the history icon, when history is not currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-open-history-tooltip = Άνοιγμα ιστορικού ({ $shortcut })
+# The tooltip to show over the history icon, when history is currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-close-history-tooltip = Κλείσιμο ιστορικού ({ $shortcut })
+# The tooltip to show over the bookmarks icon, when bookmarks is not currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-open-bookmarks-tooltip = Άνοιγμα σελιδοδεικτών ({ $shortcut })
+# The tooltip to show over the bookmarks icon, when bookmarks is currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-close-bookmarks-tooltip = Κλείσιμο σελιδοδεικτών ({ $shortcut })
+sidebar-menu-open-ai-chatbot-tooltip = Άνοιγμα chatbot ΤΝ
+sidebar-menu-close-ai-chatbot-tooltip = Κλείσιμο chatbot ΤΝ
+
+## Tooltips displayed over the AI chatbot icon.
+## Variables:
+##   $shortcut (String) - The OS specific keyboard shortcut.
+##   $provider (String) - The name of the AI chatbot provider (if available).
+
+sidebar-menu-open-ai-chatbot-tooltip-generic = Άνοιγμα chatbot ΤΝ ({ $shortcut })
+sidebar-menu-open-ai-chatbot-provider-tooltip = Άνοιγμα { $provider } ({ $shortcut })
+sidebar-menu-close-ai-chatbot-tooltip-generic = Κλείσιμο chatbot ΤΝ ({ $shortcut })
+sidebar-menu-close-ai-chatbot-provider-tooltip = Κλείσιμο { $provider } ({ $shortcut })
 
 ## Headings for sidebar menu panels.
 
@@ -104,6 +159,18 @@ sidebar-menu-history-header =
     .heading = Ιστορικό
 sidebar-menu-syncedtabs-header =
     .heading = Καρτέλες από άλλες συσκευές
+sidebar-menu-bookmarks-header =
+    .heading = Σελιδοδείκτες
+sidebar-menu-cpm-header =
+    .heading = Κωδικοί πρόσβασης
+sidebar-panel-header-close-button =
+    .tooltiptext = Κλείσιμο
+
+## Titles for sidebar menu panels.
+
+sidebar-customize-title = Προσαρμογή πλαϊνής γραμμής
+sidebar-history-title = Ιστορικό
+sidebar-syncedtabs-title = Καρτέλες από άλλες συσκευές
 
 ## Context for closing synced tabs when hovering over the items
 
@@ -113,3 +180,29 @@ sidebar-menu-syncedtabs-header =
 #   $deviceName (String) - the name of the device the user is closing a tab for
 synced-tabs-context-close-tab-title =
     .title = Κλείσιμο καρτέλας στο «{ $deviceName }»
+show-sidebars =
+    .tooltiptext = Εμφάνιση πλαϊνών γραμμών
+    .label = Πλαϊνές γραμμές
+
+## Tooltips for the sidebar toolbar widget.
+
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-expand-sidebar2 =
+    .tooltiptext = Ανάπτυξη πλαϊνής γραμμής ({ $shortcut })
+    .label = Πλαϊνές γραμμές
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-collapse-sidebar2 =
+    .tooltiptext = Σύμπτυξη πλαϊνής γραμμής ({ $shortcut })
+    .label = Πλαϊνές γραμμές
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-show-sidebar2 =
+    .tooltiptext = Εμφάνιση πλαϊνής γραμμής ({ $shortcut })
+    .label = Πλαϊνές γραμμές
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-hide-sidebar2 =
+    .tooltiptext = Απόκρυψη πλαϊνής γραμμής ({ $shortcut })
+    .label = Πλαϊνές γραμμές

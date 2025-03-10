@@ -29,12 +29,25 @@ import {
   actionCreators as ac,
 } from "resource://activity-stream/common/Actions.mjs";
 
+// `contextId` is a unique identifier used by Contextual Services
+const CONTEXT_ID_PREF = "browser.contextual-services.contextId";
+ChromeUtils.defineLazyGetter(lazy, "contextId", () => {
+  let _contextId = Services.prefs.getStringPref(CONTEXT_ID_PREF, null);
+  if (!_contextId) {
+    _contextId = String(Services.uuid.generateUUID());
+    Services.prefs.setStringPref(CONTEXT_ID_PREF, _contextId);
+  }
+  return _contextId;
+});
+
 const CACHE_KEY = "discovery_stream";
 const STARTUP_CACHE_EXPIRE_TIME = 7 * 24 * 60 * 60 * 1000; // 1 week
 const COMPONENT_FEEDS_UPDATE_TIME = 30 * 60 * 1000; // 30 minutes
 const SPOCS_FEEDS_UPDATE_TIME = 30 * 60 * 1000; // 30 minutes
-const DEFAULT_RECS_EXPIRE_TIME = 60 * 60 * 1000; // 1 hour
+const DEFAULT_RECS_ROTATION_TIME = 60 * 60 * 1000; // 1 hour
+const DEFAULT_RECS_IMPRESSION_EXPIRE_TIME = 7 * 24 * 60 * 60 * 1000; // 7 days
 const MAX_LIFETIME_CAP = 500; // Guard against misconfiguration on the server
+const SPOCS_CAP_DURATION = 24 * 60 * 60; // 1 day in seconds.
 const FETCH_TIMEOUT = 45 * 1000;
 const TOPIC_LOADING_TIMEOUT = 1 * 1000;
 const TOPIC_SELECTION_DISPLAY_COUNT =
@@ -52,6 +65,8 @@ const PREF_ENDPOINTS = "discoverystream.endpoints";
 const PREF_IMPRESSION_ID = "browser.newtabpage.activity-stream.impressionId";
 const PREF_LAYOUT_EXPERIMENT_A = "newtabLayouts.variant-a";
 const PREF_LAYOUT_EXPERIMENT_B = "newtabLayouts.variant-b";
+const PREF_SPOC_PLACEMENTS = "discoverystream.placements.spocs";
+const PREF_SPOC_COUNTS = "discoverystream.placements.spocs.counts";
 const PREF_SPOC_POSITIONS = "discoverystream.spoc-positions";
 const PREF_MERINO_FEED_EXPERIMENT =
   "browser.newtabpage.activity-stream.discoverystream.merino-feed-experiment";
@@ -62,8 +77,11 @@ const PREF_SPOCS_ENDPOINT_QUERY = "discoverystream.spocs-endpoint-query";
 const PREF_REGION_BASIC_LAYOUT = "discoverystream.region-basic-layout";
 const PREF_USER_TOPSTORIES = "feeds.section.topstories";
 const PREF_SYSTEM_TOPSTORIES = "feeds.system.topstories";
-const PREF_USER_TOPSITES = "feeds.topsites";
 const PREF_SYSTEM_TOPSITES = "feeds.system.topsites";
+const PREF_UNIFIED_ADS_BLOCKED_LIST = "unifiedAds.blockedAds";
+const PREF_UNIFIED_ADS_SPOCS_ENABLED = "unifiedAds.spocs.enabled";
+const PREF_UNIFIED_ADS_ENDPOINT = "unifiedAds.endpoint";
+const PREF_USER_TOPSITES = "feeds.topsites";
 const PREF_SPOCS_CLEAR_ENDPOINT = "discoverystream.endpointSpocsClear";
 const PREF_SHOW_SPONSORED = "showSponsored";
 const PREF_SYSTEM_SHOW_SPONSORED = "system.showSponsored";
@@ -72,7 +90,6 @@ const PREF_SHOW_SPONSORED_TOPSITES = "showSponsoredTopSites";
 const NIMBUS_VARIABLE_CONTILE_SOV_ENABLED = "topSitesContileSovEnabled";
 const PREF_SPOC_IMPRESSIONS = "discoverystream.spoc.impressions";
 const PREF_FLIGHT_BLOCKS = "discoverystream.flight.blocks";
-const PREF_REC_IMPRESSIONS = "discoverystream.rec.impressions";
 const PREF_COLLECTIONS_ENABLED =
   "discoverystream.sponsored-collections.enabled";
 const PREF_POCKET_BUTTON = "extensions.pocket.enabled";
@@ -84,6 +101,26 @@ const PREF_TOPIC_SELECTION_PREVIOUS_SELECTED =
 const PREF_SPOCS_CACHE_TIMEOUT = "discoverystream.spocs.cacheTimeout";
 const PREF_SPOCS_STARTUP_CACHE_ENABLED =
   "discoverystream.spocs.startupCache.enabled";
+const PREF_CONTEXTUAL_CONTENT_ENABLED =
+  "discoverystream.contextualContent.enabled";
+const PREF_FAKESPOT_ENABLED =
+  "discoverystream.contextualContent.fakespot.enabled";
+const PREF_CONTEXTUAL_CONTENT_SELECTED_FEED =
+  "discoverystream.contextualContent.selectedFeed";
+const PREF_CONTEXTUAL_CONTENT_LISTFEED_TITLE =
+  "discoverystream.contextualContent.listFeedTitle";
+const PREF_CONTEXTUAL_CONTENT_FAKESPOT_FOOTER =
+  "discoverystream.contextualContent.fakespot.footerCopy";
+const PREF_CONTEXTUAL_CONTENT_FAKESPOT_CATEGORY =
+  "discoverystream.contextualContent.fakespot.defaultCategoryTitle";
+const PREF_CONTEXTUAL_CONTENT_FAKESPOT_CTA_COPY =
+  "discoverystream.contextualContent.fakespot.ctaCopy";
+const PREF_CONTEXTUAL_CONTENT_FAKESPOT_CTA_URL =
+  "discoverystream.contextualContent.fakespot.ctaUrl";
+
+const PREF_SECTIONS_ENABLED = "discoverystream.sections.enabled";
+const PREF_SECTIONS_FOLLOWING = "discoverystream.sections.following";
+const PREF_SECTIONS_BLOCKED = "discoverystream.sections.blocked";
 
 let getHardcodedLayout;
 
@@ -237,6 +274,28 @@ export class DiscoveryStreamFeed {
         },
       })
     );
+  }
+
+  async setupDevtoolsState(isStartup = false) {
+    const cachedData = (await this.cache.get()) || {};
+    let impressions = cachedData.recsImpressions || {};
+    let blocks = cachedData.recsBlocks || {};
+
+    this.store.dispatch({
+      type: at.DISCOVERY_STREAM_DEV_IMPRESSIONS,
+      data: impressions,
+      meta: {
+        isStartup,
+      },
+    });
+
+    this.store.dispatch({
+      type: at.DISCOVERY_STREAM_DEV_BLOCKS,
+      data: blocks,
+      meta: {
+        isStartup,
+      },
+    });
   }
 
   setupPrefs(isStartup = false) {
@@ -630,7 +689,12 @@ export class DiscoveryStreamFeed {
     const pocketConfig = this.store.getState().Prefs.values?.pocketConfig || {};
     const onboardingExperience =
       this.isBff && pocketConfig.onboardingExperience;
-    const { spocTopsitesPlacementEnabled } = pocketConfig;
+
+    // The Unified Ads API does not support the spoc topsite placement.
+    const unifiedAdsEnabled =
+      this.store.getState().Prefs.values[PREF_UNIFIED_ADS_SPOCS_ENABLED];
+    const spocTopsitesPlacementEnabled =
+      pocketConfig.spocTopsitesPlacementEnabled && !unifiedAdsEnabled;
 
     const layoutExperiment =
       this.store.getState().Prefs.values[PREF_LAYOUT_EXPERIMENT_A] ||
@@ -825,9 +889,9 @@ export class DiscoveryStreamFeed {
 
         feedPromise
           .then(feed => {
-            // If we stored the result of filter in feed cache as it happened,
             // I think we could reduce doing this for cache fetches.
             // Bug https://bugzilla.mozilla.org/show_bug.cgi?id=1606277
+            // We can remove filterRecommendations once ESR catches up to bug 1932196
             newFeeds[url] = this.filterRecommendations(feed);
             sendUpdate({
               type: at.DISCOVERY_STREAM_FEED_UPDATE,
@@ -853,16 +917,18 @@ export class DiscoveryStreamFeed {
     };
   }
 
+  // This filters just recommendations using NewTabUtils.blockedLinks only.
+  // This is essentially a sync blocked links filter. filterBlocked is async.
+  // See bug 1606277.
   filterRecommendations(feed) {
-    if (
-      feed &&
-      feed.data &&
-      feed.data.recommendations &&
-      feed.data.recommendations.length
-    ) {
-      const { data: recommendations } = this.filterBlocked(
-        feed.data.recommendations
-      );
+    if (feed?.data?.recommendations?.length) {
+      const recommendations = feed.data.recommendations.filter(item => {
+        const blocked = lazy.NewTabUtils.blockedLinks.isBlocked({
+          url: item.url,
+        });
+        return !blocked;
+      });
+
       return {
         ...feed,
         data: {
@@ -926,10 +992,6 @@ export class DiscoveryStreamFeed {
 
     // Each promise has a catch already built in, so no need to catch here.
     await Promise.all(newFeedsPromises);
-
-    if (this.componentFeedFetched) {
-      this.cleanUpTopRecImpressionPref(newFeeds);
-    }
     await this.cache.set("feeds", newFeeds);
     sendUpdate({
       type: at.DISCOVERY_STREAM_FEEDS_UPDATE,
@@ -956,7 +1018,42 @@ export class DiscoveryStreamFeed {
   // For ths reason, we want to ensure if we don't find an items array,
   // we use the previous array placement, and then stub out title and context to empty strings.
   // We need to do this *after* both fresh fetches and cached data to reduce repetition.
+
+  // Bug 1916488 introduced a new data stricture from the unified ads API.
+  // We want to maintain both implementations until we're done rollout out,
+  // so for now we are going to normlaize the new data to match the old data props,
+  // so we can change as little as possible. Once we commit to one, we can remove all this.
   normalizeSpocsItems(spocs) {
+    const unifiedAdsEnabled =
+      this.store.getState().Prefs.values[PREF_UNIFIED_ADS_SPOCS_ENABLED];
+    if (unifiedAdsEnabled) {
+      return {
+        items: spocs.map(spoc => ({
+          format: spoc.format,
+          alt_text: spoc.alt_text,
+          id: spoc.caps?.cap_key,
+          flight_id: spoc.block_key,
+          block_key: spoc.block_key,
+          shim: spoc.callbacks,
+          caps: {
+            flight: {
+              count: spoc.caps?.day,
+              period: SPOCS_CAP_DURATION,
+            },
+          },
+          domain: spoc.domain,
+          excerpt: spoc.excerpt,
+          raw_image_src: spoc.image_url,
+          priority: spoc.ranking?.priority || 1,
+          personalization_models: spoc.ranking?.personalization_models,
+          item_score: spoc.ranking?.item_score,
+          sponsor: spoc.sponsor,
+          title: spoc.title,
+          url: spoc.url,
+        })),
+      };
+    }
+
     const items = spocs.items || spocs;
     const title = spocs.title || "";
     const context = spocs.context || "";
@@ -992,8 +1089,11 @@ export class DiscoveryStreamFeed {
 
   async loadSpocs(sendUpdate, isStartup) {
     const cachedData = (await this.cache.get()) || {};
+    const unifiedAdsEnabled =
+      this.store.getState().Prefs.values[PREF_UNIFIED_ADS_SPOCS_ENABLED];
     let spocsState = cachedData.spocs;
     let placements = this.getPlacements();
+    let unifiedAdsPlacements = [];
 
     if (
       this.showSpocs &&
@@ -1007,7 +1107,8 @@ export class DiscoveryStreamFeed {
       if (
         lazy.NimbusFeatures.pocketNewtab.getVariable(
           NIMBUS_VARIABLE_CONTILE_SOV_ENABLED
-        )
+        ) &&
+        !unifiedAdsEnabled
       ) {
         let { positions, ready } = this.store.getState().TopSites.sov;
         if (ready) {
@@ -1027,31 +1128,59 @@ export class DiscoveryStreamFeed {
       }
 
       // We can filter out the topsite placement from the fetch.
-      if (!useTopsitesPlacement) {
+      if (!useTopsitesPlacement || unifiedAdsEnabled) {
         placements = placements.filter(
           placement => placement.name !== "sponsored-topsites"
         );
       }
 
       if (placements?.length) {
-        const endpoint =
-          this.store.getState().DiscoveryStream.spocs.spocs_endpoint;
+        const apiKeyPref = this.config.api_key_pref;
+        const apiKey = Services.prefs.getCharPref(apiKeyPref, "");
+        const state = this.store.getState();
+        let endpoint = state.DiscoveryStream.spocs.spocs_endpoint;
+        let body = {
+          pocket_id: this._impressionId,
+          version: 2,
+          consumer_key: apiKey,
+          ...(placements.length ? { placements } : {}),
+        };
+
+        if (unifiedAdsEnabled) {
+          const endpointBaseUrl = state.Prefs.values[PREF_UNIFIED_ADS_ENDPOINT];
+          endpoint = `${endpointBaseUrl}v1/ads`;
+          const placementsArray = state.Prefs.values[
+            PREF_SPOC_PLACEMENTS
+          ]?.split(`,`)
+            .map(s => s.trim())
+            .filter(item => item);
+          const countsArray = state.Prefs.values[PREF_SPOC_COUNTS]?.split(`,`)
+            .map(s => s.trim())
+            .filter(item => item)
+            .map(item => parseInt(item, 10));
+
+          unifiedAdsPlacements = placementsArray.map((placement, index) => ({
+            placement,
+            count: countsArray[index],
+          }));
+
+          const blockedSponsors =
+            this.store.getState().Prefs.values[PREF_UNIFIED_ADS_BLOCKED_LIST];
+
+          body = {
+            context_id: lazy.contextId,
+            placements: unifiedAdsPlacements,
+            blocks: blockedSponsors.split(","),
+          };
+        }
 
         const headers = new Headers();
         headers.append("content-type", "application/json");
 
-        const apiKeyPref = this.config.api_key_pref;
-        const apiKey = Services.prefs.getCharPref(apiKeyPref, "");
-
         const spocsResponse = await this.fetchFromEndpoint(endpoint, {
           method: "POST",
           headers,
-          body: JSON.stringify({
-            pocket_id: this._impressionId,
-            version: 2,
-            consumer_key: apiKey,
-            ...(placements.length ? { placements } : {}),
-          }),
+          body: JSON.stringify(body),
         });
 
         if (spocsResponse) {
@@ -1079,7 +1208,18 @@ export class DiscoveryStreamFeed {
 
           const spocsResultPromises = this.getPlacements().map(
             async placement => {
-              const freshSpocs = spocsState.spocs[placement.name];
+              let freshSpocs = spocsState.spocs[placement.name];
+
+              if (unifiedAdsEnabled) {
+                freshSpocs = unifiedAdsPlacements.reduce(
+                  (accumulator, currentValue) => {
+                    return accumulator.concat(
+                      spocsState.spocs[currentValue.placement]
+                    );
+                  },
+                  []
+                );
+              }
 
               if (!freshSpocs) {
                 return;
@@ -1118,7 +1258,8 @@ export class DiscoveryStreamFeed {
 
               const { data: capResult } = this.frequencyCapSpocs(migratedSpocs);
 
-              const { data: blockedResults } = this.filterBlocked(capResult);
+              const { data: blockedResults } =
+                await this.filterBlocked(capResult);
 
               const { data: spocsWithFetchTimestamp } = this.addFetchTimestamp(
                 blockedResults,
@@ -1179,8 +1320,29 @@ export class DiscoveryStreamFeed {
   }
 
   async clearSpocs() {
-    const endpoint =
-      this.store.getState().Prefs.values[PREF_SPOCS_CLEAR_ENDPOINT];
+    const state = this.store.getState();
+    let endpoint = state.Prefs.values[PREF_SPOCS_CLEAR_ENDPOINT];
+
+    const unifiedAdsEnabled =
+      state.Prefs.values[PREF_UNIFIED_ADS_SPOCS_ENABLED];
+
+    let body = {
+      pocket_id: this._impressionId,
+    };
+
+    if (unifiedAdsEnabled) {
+      const endpointBaseUrl = state.Prefs.values[PREF_UNIFIED_ADS_ENDPOINT];
+
+      if (!endpointBaseUrl) {
+        return;
+      }
+
+      endpoint = `${endpointBaseUrl}v1/delete_user`;
+      body = {
+        context_id: lazy.contextId,
+      };
+    }
+
     if (!endpoint) {
       return;
     }
@@ -1190,9 +1352,7 @@ export class DiscoveryStreamFeed {
     await this.fetchFromEndpoint(endpoint, {
       method: "DELETE",
       headers,
-      body: JSON.stringify({
-        pocket_id: this._impressionId,
-      }),
+      body: JSON.stringify(body),
     });
   }
 
@@ -1270,13 +1430,18 @@ export class DiscoveryStreamFeed {
     return item;
   }
 
-  filterBlocked(data) {
-    if (data && data.length) {
+  async filterBlocked(data) {
+    if (data?.length) {
       let flights = this.readDataPref(PREF_FLIGHT_BLOCKS);
+
+      const cachedData = (await this.cache.get()) || {};
+      let blocks = cachedData.recsBlocks || {};
+
       const filteredItems = data.filter(item => {
         const blocked =
           lazy.NewTabUtils.blockedLinks.isBlocked({ url: item.url }) ||
-          flights[item.flight_id];
+          flights[item.flight_id] ||
+          blocks[item.id];
         return !blocked;
       });
       return { data: filteredItems };
@@ -1337,7 +1502,7 @@ export class DiscoveryStreamFeed {
   // @returns {Object} An object with a property `data` as the result, and a property
   //                   `filterItems` as the frequency capped items.
   frequencyCapSpocs(spocs) {
-    if (spocs && spocs.length) {
+    if (spocs?.length) {
       const impressions = this.readDataPref(PREF_SPOC_IMPRESSIONS);
       const caps = [];
       const result = spocs.filter(s => {
@@ -1403,8 +1568,7 @@ export class DiscoveryStreamFeed {
 
   async retryFeed(feed) {
     const { url } = feed;
-    const result = await this.getComponentFeed(url);
-    const newFeed = this.filterRecommendations(result);
+    const newFeed = await this.getComponentFeed(url);
     this.store.dispatch(
       ac.BroadcastToContent({
         type: at.DISCOVERY_STREAM_FEED_UPDATE,
@@ -1438,52 +1602,19 @@ export class DiscoveryStreamFeed {
     };
   }
 
+  // eslint-disable-next-line max-statements
   async getComponentFeed(feedUrl, isStartup) {
     const cachedData = (await this.cache.get()) || {};
+    const prefs = this.store.getState().Prefs.values;
+    const sectionsEnabled = prefs[PREF_SECTIONS_ENABLED];
+    let isFakespot;
+    const selectedFeedPref = prefs[PREF_CONTEXTUAL_CONTENT_SELECTED_FEED];
+    let sections = [];
     const { feeds } = cachedData;
 
     let feed = feeds ? feeds[feedUrl] : null;
     if (this.isExpired({ cachedData, key: "feed", url: feedUrl, isStartup })) {
-      let options = {};
-      const headers = new Headers();
-      if (this.isMerino) {
-        const topicSelectionEnabled =
-          this.store.getState().Prefs.values[PREF_TOPIC_SELECTION_ENABLED];
-        const topicsString =
-          this.store.getState().Prefs.values[PREF_SELECTED_TOPICS];
-        const topics = topicSelectionEnabled
-          ? topicsString
-              .split(",")
-              .map(s => s.trim())
-              .filter(item => item)
-          : [];
-
-        // Should we pass the experiment branch and slug to the Merino feed request.
-        const prefMerinoFeedExperiment = Services.prefs.getBoolPref(
-          PREF_MERINO_FEED_EXPERIMENT
-        );
-
-        headers.append("content-type", "application/json");
-        options = {
-          method: "POST",
-          headers,
-          body: JSON.stringify({
-            ...(prefMerinoFeedExperiment ? this.getExperimentInfo() : {}),
-            locale: this.locale,
-            region: this.region,
-            topics,
-          }),
-        };
-      } else if (this.isBff) {
-        const oAuthConsumerKey = Services.prefs.getStringPref(
-          "extensions.pocket.oAuthConsumerKeyBff"
-        );
-        headers.append("consumer_key", oAuthConsumerKey);
-        options = {
-          method: "GET",
-          headers,
-        };
-      }
+      const options = this.formatComponentFeedRequest();
 
       const feedResponse = await this.fetchFromEndpoint(feedUrl, options);
 
@@ -1492,8 +1623,9 @@ export class DiscoveryStreamFeed {
         let { recommendations } = feedResponse;
         if (this.isMerino) {
           recommendations = feedResponse.data.map(item => ({
-            id: item.tileId,
+            id: item.corpusItemId || item.scheduledCorpusItemId || item.tileId,
             scheduled_corpus_item_id: item.scheduledCorpusItemId,
+            corpus_item_id: item.corpusItemId,
             url: item.url,
             title: item.title,
             topic: item.topic,
@@ -1503,6 +1635,79 @@ export class DiscoveryStreamFeed {
             received_rank: item.receivedRank,
             recommended_at: feedResponse.recommendedAt,
           }));
+          if (feedResponse.feeds && selectedFeedPref && !sectionsEnabled) {
+            isFakespot = selectedFeedPref === "fakespot";
+            const keyName = isFakespot ? "products" : "recommendations";
+            const selectedFeedResponse = feedResponse.feeds[selectedFeedPref];
+            selectedFeedResponse?.[keyName]?.forEach(item =>
+              recommendations.push({
+                id: isFakespot
+                  ? item.id
+                  : item.corpusItemId ||
+                    item.scheduledCorpusItemId ||
+                    item.tileId,
+                scheduled_corpus_item_id: item.scheduledCorpusItemId,
+                corpus_item_id: item.corpusItemId,
+                url: item.url,
+                title: item.title,
+                topic: item.topic,
+                excerpt: item.excerpt,
+                publisher: item.publisher,
+                raw_image_src: item.imageUrl,
+                received_rank: item.receivedRank,
+                recommended_at: feedResponse.recommendedAt,
+                // property to determine if rec is used in ListFeed or not
+                feedName: selectedFeedPref,
+                category: item.category,
+              })
+            );
+
+            const prevTitle = prefs[PREF_CONTEXTUAL_CONTENT_LISTFEED_TITLE];
+
+            const feedTitle = isFakespot
+              ? selectedFeedResponse.headerCopy
+              : selectedFeedResponse.title;
+
+            if (feedTitle && feedTitle !== prevTitle) {
+              this.handleListfeedStrings(selectedFeedResponse, isFakespot);
+            }
+          }
+
+          if (sectionsEnabled) {
+            for (const [sectionKey, sectionData] of Object.entries(
+              feedResponse.feeds
+            )) {
+              if (sectionData) {
+                for (const item of sectionData.recommendations) {
+                  recommendations.push({
+                    id:
+                      item.corpusItemId ||
+                      item.scheduledCorpusItemId ||
+                      item.tileId,
+                    scheduled_corpus_item_id: item.scheduledCorpusItemId,
+                    corpus_item_id: item.corpusItemId,
+                    url: item.url,
+                    title: item.title,
+                    topic: item.topic,
+                    excerpt: item.excerpt,
+                    publisher: item.publisher,
+                    raw_image_src: item.imageUrl,
+                    received_rank: item.receivedRank,
+                    recommended_at: feedResponse.recommendedAt,
+                    // property to determine if rec is used in ListFeed or not
+                    section: sectionKey,
+                  });
+                }
+                sections.push({
+                  sectionKey,
+                  title: sectionData.title,
+                  subtitle: sectionData.subtitle || "",
+                  receivedRank: sectionData.receivedFeedRank,
+                  layout: sectionData.layout,
+                });
+              }
+            }
+          }
         } else if (this.isBff) {
           recommendations = feedResponse.data.map(item => ({
             id: item.tileId,
@@ -1519,15 +1724,23 @@ export class DiscoveryStreamFeed {
           recommendations,
           "feed"
         );
-        const { recsExpireTime } = settings;
-        const rotatedItems = this.rotate(scoredItems, recsExpireTime);
+
+        // We can cleanup any impressions we have that are old before we rotate.
+        // In theory we can do this anywhere, but doing it just before rotate is optimal.
+        // Rotate is also the only place that uses these impressions.
+        await this.cleanUpTopRecImpressions();
+        const rotatedItems = await this.rotate(scoredItems);
+
+        const { data: filteredResults } =
+          await this.filterBlocked(rotatedItems);
         this.componentFeedFetched = true;
         feed = {
           lastUpdated: Date.now(),
           personalized,
           data: {
             settings,
-            recommendations: rotatedItems,
+            sections,
+            recommendations: filteredResults,
             status: "success",
           },
         };
@@ -1544,6 +1757,138 @@ export class DiscoveryStreamFeed {
         },
       }
     );
+  }
+
+  handleListfeedStrings(feedResponse, isFakespot) {
+    if (isFakespot) {
+      this.store.dispatch(
+        ac.SetPref(
+          PREF_CONTEXTUAL_CONTENT_LISTFEED_TITLE,
+          feedResponse.headerCopy
+        )
+      );
+      this.store.dispatch(
+        ac.SetPref(
+          PREF_CONTEXTUAL_CONTENT_FAKESPOT_CATEGORY,
+          feedResponse.defaultCategoryName
+        )
+      );
+      this.store.dispatch(
+        ac.SetPref(
+          PREF_CONTEXTUAL_CONTENT_FAKESPOT_FOOTER,
+          feedResponse.footerCopy
+        )
+      );
+      this.store.dispatch(
+        ac.SetPref(
+          PREF_CONTEXTUAL_CONTENT_FAKESPOT_CTA_COPY,
+          feedResponse.cta.ctaCopy
+        )
+      );
+      this.store.dispatch(
+        ac.SetPref(
+          PREF_CONTEXTUAL_CONTENT_FAKESPOT_CTA_URL,
+          feedResponse.cta.url
+        )
+      );
+    } else {
+      this.store.dispatch(
+        ac.SetPref(PREF_CONTEXTUAL_CONTENT_LISTFEED_TITLE, feedResponse.title)
+      );
+    }
+  }
+
+  formatComponentFeedRequest() {
+    const prefs = this.store.getState().Prefs.values;
+    const headers = new Headers();
+    if (this.isMerino) {
+      const topicSelectionEnabled = prefs[PREF_TOPIC_SELECTION_ENABLED];
+      const topicsString = prefs[PREF_SELECTED_TOPICS];
+      const topics = topicSelectionEnabled
+        ? topicsString
+            .split(",")
+            .map(s => s.trim())
+            .filter(item => item)
+        : [];
+
+      // Should we pass the experiment branch and slug to the Merino feed request.
+      const prefMerinoFeedExperiment = Services.prefs.getBoolPref(
+        PREF_MERINO_FEED_EXPERIMENT
+      );
+
+      // Raw string of followed/blocked topics, ex: "entertainment, news"
+      const followedSectionsString = prefs[PREF_SECTIONS_FOLLOWING];
+      const blockedSectionsString = prefs[PREF_SECTIONS_BLOCKED];
+
+      // Format followed sections
+      const followedSections = followedSectionsString
+        ? followedSectionsString.split(",").map(s => s.trim())
+        : [];
+
+      // Format blocked sections
+      const blockedSections = blockedSectionsString
+        ? blockedSectionsString.split(",").map(s => s.trim())
+        : [];
+
+      // Combine followed and blocked sections and format into desired JSON shape for merino.
+      // Example:
+      // {
+      //   "sectionId": "business",
+      //   "isFollowed": true,
+      //   "isBlocked": false
+      // }
+      const sectionTopics = new Set([...followedSections, ...blockedSections]);
+      const sections = Array.from(sectionTopics).map(section => ({
+        sectionId: section,
+        isFollowed: followedSections.includes(section),
+        isBlocked: blockedSections.includes(section),
+      }));
+
+      headers.append("content-type", "application/json");
+      let body = {
+        ...(prefMerinoFeedExperiment ? this.getExperimentInfo() : {}),
+        locale: this.locale,
+        region: this.region,
+        topics,
+        sections,
+      };
+
+      const sectionsEnabled = prefs[PREF_SECTIONS_ENABLED];
+
+      // Should we pass the feed param to the merino request
+      const contextualContentEnabled = prefs[PREF_CONTEXTUAL_CONTENT_ENABLED];
+      const selectedFeed = prefs[PREF_CONTEXTUAL_CONTENT_SELECTED_FEED];
+      const isFakespot = selectedFeed === "fakespot";
+      const fakespotEnabled = prefs[PREF_FAKESPOT_ENABLED];
+
+      const shouldFetchTBRFeed =
+        (contextualContentEnabled && !isFakespot) ||
+        (contextualContentEnabled && isFakespot && fakespotEnabled);
+
+      if (shouldFetchTBRFeed) {
+        body.feeds = [selectedFeed];
+      }
+      if (sectionsEnabled) {
+        // if sections is enabled, it should override the TBR feed
+        body.feeds = ["sections"];
+      }
+
+      return {
+        method: "POST",
+        headers,
+        body: JSON.stringify(body),
+      };
+    } else if (this.isBff) {
+      const oAuthConsumerKey = Services.prefs.getStringPref(
+        "extensions.pocket.oAuthConsumerKeyBff"
+      );
+      headers.append("consumer_key", oAuthConsumerKey);
+      return {
+        method: "GET",
+        headers,
+      };
+    }
+    return {};
   }
 
   /**
@@ -1571,14 +1916,12 @@ export class DiscoveryStreamFeed {
         }
         const feedPromise = this.scoreItems(feed.data.recommendations, "feed");
         feedPromise.then(({ data: scoredItems, personalized }) => {
-          const { recsExpireTime } = feed.data.settings;
-          const recommendations = this.rotate(scoredItems, recsExpireTime);
           feed = {
             ...feed,
             personalized,
             data: {
               ...feed.data,
-              recommendations,
+              recommendations: scoredItems,
             },
           };
 
@@ -1670,7 +2013,7 @@ export class DiscoveryStreamFeed {
       // So for now we only care if we need to make this request at all.
       const spocsPromise = this.loadSpocs(
         dispatch,
-        spocsStartupCacheEnabled
+        isStartup && spocsStartupCacheEnabled
       ).catch(error =>
         console.error("Error trying to load spocs feeds:", error)
       );
@@ -1696,19 +2039,22 @@ export class DiscoveryStreamFeed {
 
   // We have to rotate stories on the client so that
   // active stories are at the front of the list, followed by stories that have expired
-  // impressions i.e. have been displayed for longer than recsExpireTime.
-  rotate(recommendations, recsExpireTime) {
-    const maxImpressionAge = Math.max(
-      recsExpireTime * 1000 || DEFAULT_RECS_EXPIRE_TIME,
-      DEFAULT_RECS_EXPIRE_TIME
-    );
-    const impressions = this.readDataPref(PREF_REC_IMPRESSIONS);
+  // impressions i.e. have been displayed for longer than DEFAULT_RECS_ROTATION_TIME.
+  async rotate(recommendations) {
+    const cachedData = (await this.cache.get()) || {};
+    const impressions = cachedData.recsImpressions;
+
+    // If we have no impressions, don't bother checking.
+    if (!impressions) {
+      return recommendations;
+    }
+
     const expired = [];
     const active = [];
     for (const item of recommendations) {
       if (
         impressions[item.id] &&
-        Date.now() - impressions[item.id] >= maxImpressionAge
+        Date.now() - impressions[item.id] >= DEFAULT_RECS_ROTATION_TIME
       ) {
         expired.push(item);
       } else {
@@ -1744,6 +2090,20 @@ export class DiscoveryStreamFeed {
     await this.cache.set("feeds", {});
     await this.cache.set("spocs", {});
     await this.cache.set("sov", {});
+    await this.cache.set("recsImpressions", {});
+  }
+
+  async resetBlocks() {
+    await this.cache.set("recsBlocks", {});
+    const cachedData = (await this.cache.get()) || {};
+    let blocks = cachedData.recsBlocks || {};
+
+    this.store.dispatch({
+      type: at.DISCOVERY_STREAM_DEV_BLOCKS,
+      data: blocks,
+    });
+    // Update newtab after clearing blocks.
+    await this.refreshAll({ updateOpenTabs: true });
   }
 
   async resetContentFeed() {
@@ -1760,7 +2120,6 @@ export class DiscoveryStreamFeed {
 
   resetDataPrefs() {
     this.writeDataPref(PREF_SPOC_IMPRESSIONS, {});
-    this.writeDataPref(PREF_REC_IMPRESSIONS, {});
     this.writeDataPref(PREF_FLIGHT_BLOCKS, {});
   }
 
@@ -1806,19 +2165,65 @@ export class DiscoveryStreamFeed {
     this.writeDataPref(PREF_SPOC_IMPRESSIONS, impressions);
   }
 
-  recordTopRecImpressions(recId) {
-    let impressions = this.readDataPref(PREF_REC_IMPRESSIONS);
+  async recordTopRecImpression(recId) {
+    const cachedData = (await this.cache.get()) || {};
+    let impressions = cachedData.recsImpressions || {};
+
     if (!impressions[recId]) {
       impressions = { ...impressions, [recId]: Date.now() };
-      this.writeDataPref(PREF_REC_IMPRESSIONS, impressions);
+      await this.cache.set("recsImpressions", impressions);
+
+      this.store.dispatch({
+        type: at.DISCOVERY_STREAM_DEV_IMPRESSIONS,
+        data: impressions,
+      });
+    }
+  }
+
+  async recordBlockRecId(recId) {
+    const cachedData = (await this.cache.get()) || {};
+    let blocks = cachedData.recsBlocks || {};
+
+    if (!blocks[recId]) {
+      blocks[recId] = 1;
+      await this.cache.set("recsBlocks", blocks);
+
+      this.store.dispatch({
+        type: at.DISCOVERY_STREAM_DEV_BLOCKS,
+        data: blocks,
+      });
     }
   }
 
   recordBlockFlightId(flightId) {
+    const unifiedAdsEnabled =
+      this.store.getState().Prefs.values[PREF_UNIFIED_ADS_SPOCS_ENABLED];
+
     const flights = this.readDataPref(PREF_FLIGHT_BLOCKS);
     if (!flights[flightId]) {
       flights[flightId] = 1;
       this.writeDataPref(PREF_FLIGHT_BLOCKS, flights);
+
+      if (unifiedAdsEnabled) {
+        let blockList =
+          this.store.getState().Prefs.values[PREF_UNIFIED_ADS_BLOCKED_LIST];
+
+        let blockedAdsArray = [];
+
+        // If prev ads have been blocked, convert CSV string to array
+        if (blockList !== "") {
+          blockedAdsArray = blockList
+            .split(",")
+            .map(s => s.trim())
+            .filter(item => item);
+        }
+
+        blockedAdsArray.push(flightId);
+
+        this.store.dispatch(
+          ac.SetPref(PREF_UNIFIED_ADS_BLOCKED_LIST, blockedAdsArray.join(","))
+        );
+      }
     }
   }
 
@@ -1841,19 +2246,12 @@ export class DiscoveryStreamFeed {
     }
   }
 
-  // Clean up rec impression pref by removing all stories that are no
-  // longer part of the response.
-  cleanUpTopRecImpressionPref(newFeeds) {
-    // Need to build a single list of stories.
-    const activeStories = Object.keys(newFeeds)
-      .filter(currentValue => newFeeds[currentValue].data)
-      .reduce((accumulator, currentValue) => {
-        const { recommendations } = newFeeds[currentValue].data;
-        return accumulator.concat(recommendations.map(i => `${i.id}`));
-      }, []);
-    this.cleanUpImpressionPref(
-      id => !activeStories.includes(id),
-      PREF_REC_IMPRESSIONS
+  // Clean up rec impressions that are old.
+  async cleanUpTopRecImpressions() {
+    await this.cleanUpImpressionCache(
+      impression =>
+        Date.now() - impression >= DEFAULT_RECS_IMPRESSION_EXPIRE_TIME,
+      "recsImpressions"
     );
   }
 
@@ -1864,6 +2262,30 @@ export class DiscoveryStreamFeed {
   readDataPref(pref) {
     const prefVal = this.store.getState().Prefs.values[pref];
     return prefVal ? JSON.parse(prefVal) : {};
+  }
+
+  async cleanUpImpressionCache(isExpired, cacheKey) {
+    const cachedData = (await this.cache.get()) || {};
+    let impressions = cachedData[cacheKey];
+    let changed = false;
+
+    if (impressions) {
+      Object.keys(impressions).forEach(id => {
+        if (isExpired(impressions[id])) {
+          changed = true;
+          delete impressions[id];
+        }
+      });
+
+      if (changed) {
+        await this.cache.set(cacheKey, impressions);
+
+        this.store.dispatch({
+          type: at.DISCOVERY_STREAM_DEV_IMPRESSIONS,
+          data: impressions,
+        });
+      }
+    }
   }
 
   cleanUpImpressionPref(isExpired, pref) {
@@ -1934,6 +2356,10 @@ export class DiscoveryStreamFeed {
       case PREF_LAYOUT_EXPERIMENT_A:
       case PREF_LAYOUT_EXPERIMENT_B:
       case PREF_SPOC_POSITIONS:
+      case PREF_UNIFIED_ADS_SPOCS_ENABLED:
+      case PREF_CONTEXTUAL_CONTENT_ENABLED:
+      case PREF_CONTEXTUAL_CONTENT_SELECTED_FEED:
+      case PREF_SECTIONS_ENABLED:
         // This is a config reset directly related to Discovery Stream pref.
         this.configReset();
         break;
@@ -1966,7 +2392,7 @@ export class DiscoveryStreamFeed {
         );
 
         // when topics have been updated, make a new request from merino and clear impression cap
-        this.writeDataPref(PREF_REC_IMPRESSIONS, {});
+        await this.cache.set("recsImpressions", {});
         await this.resetContentFeed();
         this.refreshAll({ updateOpenTabs: true });
         break;
@@ -2013,7 +2439,7 @@ export class DiscoveryStreamFeed {
         if (
           !(
             (this.showSponsoredStories ||
-              (this.showTopSites && this.showSponsoredTopSites)) &&
+              (this.showTopsites && this.showSponsoredTopsites)) &&
             (this.showSponsoredTopsites ||
               (this.showStories && this.showSponsoredStories))
           )
@@ -2041,9 +2467,15 @@ export class DiscoveryStreamFeed {
           await this.enable({ updateOpenTabs: true, isStartup: true });
         }
         Services.prefs.addObserver(PREF_POCKET_BUTTON, this);
+        // This function is async but just for devtools,
+        // so we don't need to wait for it.
+        this.setupDevtoolsState(true /* isStartup */);
         break;
       case at.TOPIC_SELECTION_MAYBE_LATER:
         this.topicSelectionMaybeLaterEvent();
+        break;
+      case at.DISCOVERY_STREAM_DEV_BLOCKS_RESET:
+        await this.resetBlocks();
         break;
       case at.DISCOVERY_STREAM_DEV_SYSTEM_TICK:
       case at.SYSTEM_TICK:
@@ -2126,7 +2558,7 @@ export class DiscoveryStreamFeed {
           action.data.tiles[0] &&
           action.data.tiles[0].id
         ) {
-          this.recordTopRecImpressions(action.data.tiles[0].id);
+          this.recordTopRecImpression(action.data.tiles[0].id);
         }
         break;
       case at.DISCOVERY_STREAM_SPOC_IMPRESSION:
@@ -2177,10 +2609,34 @@ export class DiscoveryStreamFeed {
           }
         }
         break;
-      // This is fired from the browser, it has no concept of spocs, flight or pocket.
-      // We match the blocked url with our available spoc urls to see if there is a match.
+
+      // This is fired from the browser, it has no concept of spocs, flights or pocket.
+      // We match the blocked url with our available story urls to see if there is a match.
       // I suspect we *could* instead do this in BLOCK_URL but I'm not sure.
-      case at.PLACES_LINK_BLOCKED:
+      case at.PLACES_LINK_BLOCKED: {
+        const feedsState = this.store.getState().DiscoveryStream.feeds;
+        const feeds = {};
+
+        for (const url of Object.keys(feedsState.data)) {
+          let feed = feedsState.data[url];
+
+          const { data: filteredResults } = await this.filterBlocked(
+            feed.data.recommendations
+          );
+
+          feed = {
+            ...feed,
+            data: {
+              ...feed.data,
+              recommendations: filteredResults,
+            },
+          };
+
+          feeds[url] = feed;
+        }
+
+        await this.cache.set("feeds", feeds);
+
         if (this.showSpocs) {
           let blockedItems = [];
           const spocsState = this.store.getState().DiscoveryStream.spocs;
@@ -2243,6 +2699,7 @@ export class DiscoveryStreamFeed {
           })
         );
         break;
+      }
       case at.UNINIT:
         // When this feed is shutting down:
         this.uninitPrefs();
@@ -2253,12 +2710,15 @@ export class DiscoveryStreamFeed {
         // If we block a story that also has a flight_id
         // we want to record that as blocked too.
         // This is because a single flight might have slightly different urls.
-        action.data.forEach(site => {
-          const { flight_id } = site;
+        for (const site of action.data) {
+          const { flight_id, tile_id } = site;
           if (flight_id) {
             this.recordBlockFlightId(flight_id);
           }
-        });
+          if (tile_id) {
+            await this.recordBlockRecId(tile_id);
+          }
+        }
         break;
       }
       case at.PREF_CHANGED:
@@ -2439,7 +2899,7 @@ getHardcodedLayout = ({
             title: "",
           },
           placement: {
-            name: "spocs",
+            name: "newtab_spocs",
             ad_types: spocPlacementData.ad_types,
             zone_ids: spocPlacementData.zone_ids,
           },
@@ -2459,32 +2919,6 @@ getHardcodedLayout = ({
           newFooterSection,
           properties: {
             alignment: "left-align",
-            links: [
-              {
-                name: "Self improvement",
-                url: "https://getpocket.com/explore/self-improvement?utm_source=pocket-newtab",
-              },
-              {
-                name: "Food",
-                url: "https://getpocket.com/explore/food?utm_source=pocket-newtab",
-              },
-              {
-                name: "Entertainment",
-                url: "https://getpocket.com/explore/entertainment?utm_source=pocket-newtab",
-              },
-              {
-                name: "Health & fitness",
-                url: "https://getpocket.com/explore/health?utm_source=pocket-newtab",
-              },
-              {
-                name: "Science",
-                url: "https://getpocket.com/explore/science?utm_source=pocket-newtab",
-              },
-              {
-                name: "More recommendations ›",
-                url: "https://getpocket.com/explore?utm_source=pocket-newtab",
-              },
-            ],
             extraLinks: [
               {
                 name: "Career",
@@ -2500,11 +2934,6 @@ getHardcodedLayout = ({
               title: {
                 id: "newtab-section-menu-privacy-notice",
               },
-            },
-          },
-          header: {
-            title: {
-              id: "newtab-pocket-read-more",
             },
           },
           styles: {

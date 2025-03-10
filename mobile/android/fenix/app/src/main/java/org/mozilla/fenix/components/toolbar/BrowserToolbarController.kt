@@ -35,6 +35,7 @@ import org.mozilla.fenix.components.AppStore
 import org.mozilla.fenix.components.appstate.AppAction.SnackbarAction
 import org.mozilla.fenix.components.menu.MenuAccessPoint
 import org.mozilla.fenix.components.toolbar.interactor.BrowserToolbarInteractor
+import org.mozilla.fenix.components.toolbar.navbar.shouldAddNavigationBar
 import org.mozilla.fenix.ext.components
 import org.mozilla.fenix.ext.nav
 import org.mozilla.fenix.ext.navigateSafe
@@ -66,16 +67,6 @@ interface BrowserToolbarController {
     fun handleEraseButtonClick()
 
     /**
-     * @see [BrowserToolbarInteractor.onShoppingCfrActionClicked]
-     */
-    fun handleShoppingCfrActionClick()
-
-    /**
-     * @see [BrowserToolbarInteractor.onShoppingCfrDisplayed]
-     */
-    fun handleShoppingCfrDisplayed()
-
-    /**
      * @see [BrowserToolbarInteractor.onTranslationsButtonClicked]
      */
     fun handleTranslationsButtonClick()
@@ -98,10 +89,12 @@ interface BrowserToolbarController {
     /**
      * @see [BrowserToolbarInteractor.onMenuButtonClicked]
      */
-    fun handleMenuButtonClicked(accessPoint: MenuAccessPoint, customTabSessionId: String? = null)
+    fun handleMenuButtonClicked(
+        accessPoint: MenuAccessPoint,
+        customTabSessionId: String? = null,
+        isSandboxCustomTab: Boolean = false,
+    )
 }
-
-private const val MAX_DISPLAY_NUMBER_SHOPPING_CFR = 3
 
 @Suppress("LongParameterList")
 class DefaultBrowserToolbarController(
@@ -137,7 +130,7 @@ class DefaultBrowserToolbarController(
     override fun handleToolbarPasteAndGo(text: String) {
         if (text.isUrl()) {
             store.updateSearchTermsOfSelectedSession("")
-            activity.components.useCases.sessionUseCases.loadUrl.invoke(text)
+            activity.components.useCases.sessionUseCases.loadUrl(text)
             return
         }
 
@@ -243,16 +236,6 @@ class DefaultBrowserToolbarController(
         navController.navigate(directions)
     }
 
-    override fun handleShoppingCfrActionClick() {
-        navController.navigate(
-            BrowserFragmentDirections.actionBrowserFragmentToReviewQualityCheckDialogFragment(),
-        )
-    }
-
-    override fun handleShoppingCfrDisplayed() {
-        updateShoppingCfrSettings()
-    }
-
     override fun handleTranslationsButtonClick() {
         Translations.action.record(Translations.ActionExtra("main_flow_toolbar"))
 
@@ -288,8 +271,11 @@ class DefaultBrowserToolbarController(
                 private = currentSession?.content?.private ?: false,
             )
         }
-
-        NavigationBar.browserNewTabTapped.record(NoExtras())
+        if (activity.shouldAddNavigationBar()) {
+            NavigationBar.browserNewTabTapped.record(NoExtras())
+        } else {
+            Events.browserToolbarAction.record(Events.BrowserToolbarActionExtra("new_tab"))
+        }
 
         browserAnimator.captureEngineViewAndDrawStatically {
             navController.navigate(
@@ -299,36 +285,29 @@ class DefaultBrowserToolbarController(
     }
 
     override fun handleNewTabButtonLongClick() {
-        NavigationBar.browserNewTabLongTapped.record(NoExtras())
+        if (activity.shouldAddNavigationBar()) {
+            NavigationBar.browserNewTabLongTapped.record(NoExtras())
+        } else {
+            Events.browserToolbarAction.record(Events.BrowserToolbarActionExtra("new_tab_long_press"))
+        }
     }
 
-    override fun handleMenuButtonClicked(accessPoint: MenuAccessPoint, customTabSessionId: String?) {
+    override fun handleMenuButtonClicked(
+        accessPoint: MenuAccessPoint,
+        customTabSessionId: String?,
+        isSandboxCustomTab: Boolean,
+    ) {
         navController.navigate(
             BrowserFragmentDirections.actionGlobalMenuDialogFragment(
                 accesspoint = accessPoint,
                 customTabSessionId = customTabSessionId,
+                isSandboxCustomTab = isSandboxCustomTab,
             ),
         )
     }
 
     companion object {
         internal const val TELEMETRY_BROWSER_IDENTIFIER = "browserMenu"
-    }
-
-    /**
-     * Stop showing the CFR after being displayed three times with
-     * with at least 12 hrs in-between.
-     * As described in: https://bugzilla.mozilla.org/show_bug.cgi?id=1861173#c0
-     */
-    private fun updateShoppingCfrSettings() = with(activity.settings()) {
-        reviewQualityCheckCFRClosedCounter++
-        if (reviewQualityCheckCfrDisplayTimeInMillis != 0L &&
-            reviewQualityCheckCFRClosedCounter >= MAX_DISPLAY_NUMBER_SHOPPING_CFR
-        ) {
-            shouldShowReviewQualityCheckCFR = false
-        } else {
-            reviewQualityCheckCfrDisplayTimeInMillis = System.currentTimeMillis()
-        }
     }
 }
 

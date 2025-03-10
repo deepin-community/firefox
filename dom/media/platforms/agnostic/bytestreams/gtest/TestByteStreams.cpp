@@ -118,7 +118,7 @@ static already_AddRefed<MediaRawData> GetHVCCSample(uint32_t aSampleSize) {
     EXPECT_FALSE(true) << "Samples should be requested with sane sizes";
   }
   auto extradata = MakeRefPtr<mozilla::MediaByteBuffer>();
-  extradata->AppendElements(sHvccBytesBuffer, ArrayLength(sHvccBytesBuffer));
+  extradata->AppendElements(sHvccBytesBuffer, std::size(sHvccBytesBuffer));
 
   // Write the NAL size.
   nsTArray<uint8_t> sampleData;
@@ -145,7 +145,7 @@ static already_AddRefed<MediaRawData> GetHVCCSample(
     EXPECT_FALSE(true) << "Samples should be requested with sane sizes";
   }
   auto extradata = MakeRefPtr<mozilla::MediaByteBuffer>();
-  extradata->AppendElements(sHvccBytesBuffer, ArrayLength(sHvccBytesBuffer));
+  extradata->AppendElements(sHvccBytesBuffer, std::size(sHvccBytesBuffer));
 
   // Write the NAL size.
   nsTArray<uint8_t> sampleData;
@@ -346,7 +346,7 @@ TEST(H264, AVCCParsingSuccess)
       0xe0 /* num SPS (0) */,
       0 /* num PPS (0) */
   };
-  extradata->AppendElements(avccBytesBuffer, ArrayLength(avccBytesBuffer));
+  extradata->AppendElements(avccBytesBuffer, std::size(avccBytesBuffer));
   auto rv = AVCCConfig::Parse(extradata);
   EXPECT_TRUE(rv.isOk());
   const auto avcc = rv.unwrap();
@@ -372,7 +372,7 @@ TEST(H264, AVCCParsingFailure)
         0xe0 /* num SPS (0) */,
         0 /* num PPS (0) */
     };
-    extradata->AppendElements(avccBytesBuffer, ArrayLength(avccBytesBuffer));
+    extradata->AppendElements(avccBytesBuffer, std::size(avccBytesBuffer));
     auto avcc = AVCCConfig::Parse(extradata);
     EXPECT_TRUE(avcc.isErr());
   }
@@ -387,7 +387,7 @@ TEST(H264, AVCCParsingFailure)
         0xfc | 3 /* nal size - 1 */,
         0xe0 /* num SPS (0) */,
     };
-    extradata->AppendElements(avccBytesBuffer, ArrayLength(avccBytesBuffer));
+    extradata->AppendElements(avccBytesBuffer, std::size(avccBytesBuffer));
     auto avcc = AVCCConfig::Parse(extradata);
     EXPECT_TRUE(avcc.isErr());
   }
@@ -424,7 +424,7 @@ TEST(H265, HVCCParsingSuccess)
         ,
         0 /* numOfArrays */,
     };
-    extradata->AppendElements(hvccBytesBuffer, ArrayLength(hvccBytesBuffer));
+    extradata->AppendElements(hvccBytesBuffer, std::size(hvccBytesBuffer));
     auto rv = HVCCConfig::Parse(extradata);
     EXPECT_TRUE(rv.isOk());
     auto hvcc = rv.unwrap();
@@ -513,7 +513,7 @@ TEST(H265, HVCCParsingSuccess)
         0 /* NALU header 2/2 */,
         0 /* rbsp */,
     };
-    extradata->AppendElements(hvccBytesBuffer, ArrayLength(hvccBytesBuffer));
+    extradata->AppendElements(hvccBytesBuffer, std::size(hvccBytesBuffer));
     auto rv = HVCCConfig::Parse(extradata);
     EXPECT_TRUE(rv.isOk());
     auto hvcc = rv.unwrap();
@@ -571,7 +571,7 @@ TEST(H265, HVCCParsingFailure)
         ,
         0 /* numOfArrays */,
     };
-    extradata->AppendElements(hvccBytesBuffer, ArrayLength(hvccBytesBuffer));
+    extradata->AppendElements(hvccBytesBuffer, std::size(hvccBytesBuffer));
     auto avcc = HVCCConfig::Parse(extradata);
     EXPECT_TRUE(avcc.isErr());
   }
@@ -593,7 +593,7 @@ TEST(H265, HVCCParsingFailure)
         0 /* general_constraint_indicator_flags 6/6 */,
         0x5A /* general_level_idc */
     };
-    extradata->AppendElements(hvccBytesBuffer, ArrayLength(hvccBytesBuffer));
+    extradata->AppendElements(hvccBytesBuffer, std::size(hvccBytesBuffer));
     auto avcc = HVCCConfig::Parse(extradata);
     EXPECT_TRUE(avcc.isErr());
   }
@@ -652,7 +652,7 @@ TEST(H265, HVCCToAnnexB)
       0 /* NALU header 2/2 */,
       0 /* rbsp */,
   };
-  extradata->AppendElements(hvccBytesBuffer, ArrayLength(hvccBytesBuffer));
+  extradata->AppendElements(hvccBytesBuffer, std::size(hvccBytesBuffer));
 
   // We convert hvcc extra-data to annexb format, then parse each nalu to see if
   // they are still correct or not.
@@ -709,7 +709,7 @@ static const uint8_t sSps[] = {
 
 TEST(H265, ExtractHVCCExtraData)
 {
-  RefPtr<MediaRawData> rawData{GetHVCCSample(sSps, ArrayLength(sSps))};
+  RefPtr<MediaRawData> rawData{GetHVCCSample(sSps, std::size(sSps))};
   RefPtr<MediaByteBuffer> extradata = H265::ExtractHVCCExtraData(rawData);
   EXPECT_TRUE(extradata);
   auto rv = HVCCConfig::Parse(extradata);
@@ -725,7 +725,7 @@ TEST(H265, ExtractHVCCExtraData)
 
 TEST(H265, DecodeSPSFromSPSNALU)
 {
-  H265NALU nalu{sSps, ArrayLength(sSps)};
+  H265NALU nalu{sSps, std::size(sSps)};
   auto rv = H265::DecodeSPSFromSPSNALU(nalu);
   EXPECT_TRUE(rv.isOk());
   auto sps = rv.unwrap();
@@ -782,6 +782,51 @@ TEST(H265, DecodeSPSFromSPSNALU)
   EXPECT_EQ(sps.IsFullColorRange(), false);
   EXPECT_EQ(sps.ColorPrimaries(), 2u);
   EXPECT_EQ(sps.TransferFunction(), 2u);
+}
+
+TEST(H265, SPSIteratorAndCreateNewExtraData)
+{
+  // The fake extradata has 3 NALUs (1 vps, 1 sps and 1 pps).
+  RefPtr<MediaByteBuffer> extradata = H265::CreateFakeExtraData();
+  EXPECT_TRUE(extradata);
+  auto rv = HVCCConfig::Parse(extradata);
+  EXPECT_TRUE(rv.isOk());
+  auto hvcc = rv.unwrap();
+  EXPECT_EQ(hvcc.mNALUs.Length(), 3u);
+  EXPECT_EQ(hvcc.NumSPS(), 1u);
+
+  // SPSIterator should be able to access the SPS
+  SPSIterator it(hvcc);
+  auto* sps = *it;
+  EXPECT_TRUE(sps);
+
+  // This SPS should match the one retrieved from the HVCC.
+  auto spsMaybe = hvcc.GetFirstAvaiableNALU(H265NALU::NAL_TYPES::SPS_NUT);
+  EXPECT_TRUE(spsMaybe);
+  auto rv1 = H265::DecodeSPSFromSPSNALU(*sps);
+  auto rv2 = H265::DecodeSPSFromSPSNALU(spsMaybe.ref());
+  EXPECT_TRUE(rv1.isOk());
+  EXPECT_TRUE(rv2.isOk());
+  EXPECT_EQ(rv1.unwrap(), rv2.unwrap());
+
+  // The iterator becomes invalid after advancing, as there is only one SPS.
+  EXPECT_FALSE(*(++it));
+
+  // Retrieve other NALUs to test the creation of new extradata.
+  auto ppsMaybe = hvcc.GetFirstAvaiableNALU(H265NALU::NAL_TYPES::PPS_NUT);
+  EXPECT_TRUE(ppsMaybe);
+  auto vpsMaybe = hvcc.GetFirstAvaiableNALU(H265NALU::NAL_TYPES::VPS_NUT);
+  EXPECT_TRUE(vpsMaybe);
+  RefPtr<MediaByteBuffer> newExtradata =
+      H265::CreateNewExtraData(hvcc, spsMaybe, ppsMaybe, vpsMaybe);
+  EXPECT_TRUE(newExtradata);
+
+  // The new extradata should match the original extradata.
+  auto rv3 = HVCCConfig::Parse(extradata);
+  EXPECT_TRUE(rv3.isOk());
+  auto hvcc2 = rv3.unwrap();
+  EXPECT_EQ(hvcc.mNALUs.Length(), hvcc2.mNALUs.Length());
+  EXPECT_EQ(hvcc.NumSPS(), hvcc2.NumSPS());
 }
 
 }  // namespace mozilla

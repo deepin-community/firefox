@@ -85,7 +85,6 @@
     <string name="share_dialog_title">Zdieľať cez</string>
 
     <string name="notification_erase_title_android_14">Vymazať históriu prehliadania?</string>
-    <string name="notification_erase_text_android_14" moz:RemovedIn="124" tools:ignore="UnusedResources">Ťuknutím alebo vymazaním tohto upozornenia bezpečne vymažete svoju históriu prehliadania.</string>
 
     <!-- Text shown in the notification description that pops up to remind the user that a browsing session is active
     for Android 14+. -->
@@ -353,6 +352,11 @@
     <!-- %1$s will be replaced with the name of the app (e.g. Firefox Focus) -->
     <string name="preference_mozilla_telemetry_summary2">Mozilla sa usiluje zbierať len údaje, ktoré potrebujeme na vylepšenie aplikácie %1$s pre všetkých.</string>
 
+    <!-- Preference switch for daily usage ping data collection -->
+    <string name="preference_daily_usage_ping_title">Ping denného používania</string>
+    <string name="preference_daily_usage_ping_description">Toto pomáha spoločnosti Mozilla odhadnúť počet aktívnych používateľov.</string>
+    <string name="preference_daily_usage_ping_learn_more">Ďalšie informácie</string>
+
     <!-- In-app link (in settings) to Focus privacy notice. -->
     <string name="preference_privacy_notice">Vyhlásenie o ochrane osobných údajov</string>
 
@@ -361,6 +365,9 @@
 
     <!-- Link to Focus licensing information from other libraries that we use. -->
     <string name="preference_libraries_we_use">Knižnice, ktoré používame</string>
+
+    <!-- Link to Focus Crash reports list. -->
+    <string name="preference_crashes">Zlyhania</string>
 
     <!-- Open Source Licenses page title. The first parameter is the app name -->
     <string name="open_source_licenses_title">%s | Knižnice OSS</string>
@@ -517,10 +524,7 @@
 
 
 
-  <!-- Content description (not visible, for screen readers etc.): This is the description for the close button from the new onboarding flow screen one and two -->
-    <string name="onboarding_close_button_content_description">Zavrieť</string>
-
-    <!-- New Onboarding flow first screen title -->
+  <!-- New Onboarding flow first screen title -->
     <!-- %1$s will be replaced by the app name and build variant(e.g. Firefox Focus, Firefox Klar Nightly) -->
     <string name="onboarding_first_screen_title">Víta vás %1$s</string>
 
@@ -841,7 +845,7 @@
     <string name="studies_learn_more">Ďalšie informácie</string>
 
     <!-- Dialog message shown when some changes are made on studies -->
-    <string name="studies_restart_app">Aplikácia sa ukončí, aby sa mohli prejaviť zmeny</string>
+    <string name="studies_restart_app" moz:removedIn="135">Aplikácia sa ukončí, aby sa mohli prejaviť zmeny</string>
 
     <!-- Title of the remove studies button -->
     <string name="studies_remove">Odstrániť</string>
@@ -929,9 +933,6 @@
 
     <!-- Label for the button in the snackbar that switches to the newly opened tab -->
     <string name="open_new_tab_snackbar">Prepnúť</string>
-
-    <!-- Text displayed in a notification when the user enters full screen mode -->
-    <string name="full_screen_notification" moz:removedIn="130" tools:ignore="UnusedResources">Bol spustený režim celej obrazovky</string>
 
     <!-- Preference for switching to a new tab immediately after opening -->
     <string name="preference_open_new_tab">Prepnúť na odkaz na novej karte okamžite</string>
@@ -1123,8 +1124,10 @@
     <string name="promote_search_widget_snackbar_message">Miniaplikácia bola pridaná na domovskú obrazovku</string>
 
     <!-- Messages explaining how to exit fullscreen mode -->
-    <!-- Message shown to explain how to exit fullscreen mode when gesture navigation is enabled -->
-    <string name="exit_fullscreen_with_gesture">Ak chcete ukončiť režim Na celú obrazovku, potiahnite zhora a použite gesto späť</string>
-    <!-- Message shown to explain how to exit fullscreen mode when using back button navigation -->
-    <string name="exit_fullscreen_with_back_button">Ak chcete ukončiť režim Na celú obrazovku, potiahnite zhora a stlačte tlačidlo späť</string>
+    <!-- Message shown to explain how to exit fullscreen mode when gesture navigation is enabled. -->
+    <!-- Localisation note: this text should be as short as possible, max 68 chars -->
+    <string name="exit_fullscreen_with_gesture_short">Režim ukončíte potiahnutím zhora a použitím gesta späť</string>
+    <!-- Message shown to explain how to exit fullscreen mode when using back button navigation. -->
+    <!-- Localisation note: this text should be as short as possible, max 68 chars -->
+    <string name="exit_fullscreen_with_back_button_short">Režim ukončíte potiahnutím zhora a použitím tlačidla Naspäť</string>
 </resources>

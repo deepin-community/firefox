@@ -16,6 +16,9 @@ about-glean-interface-description =
     er eit datainnsamlingsbibliotek som vert brukt i { -vendor-short-name }-prosjekt.
     Dette grensesnittet er designa for å brukast av utviklarar og testarar for å manuelt
     <a data-l10n-name="fog-link">teste instrumentering</a>.
+about-glean-category-about-glean = Om { -glean-brand-name }
+about-glean-category-manual-testing = Manuell testing
+about-glean-category-about-data = Om data
 about-glean-upload-enabled = Dataopplasting er aktivert.
 about-glean-upload-disabled = Dataopplasting er deaktivert.
 about-glean-upload-enabled-local = Dataopplasting er berre aktivert for sending til ein lokal server.
@@ -101,6 +104,10 @@ about-glean-adhoc-note =
     Dette betyr at analyseresultatkategoriar og namn vert formaterte
     med <code>camelCase</code> i motsetning til i Rust- og i C++-API-ane.
 controls-button-label-verbose = Bruk innstillingar og send inn ping
+about-glean-feedback-settings-only =
+    .message = Endringar lagt til!
+about-glean-feedback-settings-and-ping =
+    .message = Endringar lagt til og ping sendt!
 about-glean-about-data-header = Om data
 about-glean-about-data-explanation =
     For å sjå gjennom lista over innsamla data, sjå

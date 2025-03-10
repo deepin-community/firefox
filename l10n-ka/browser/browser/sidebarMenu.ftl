@@ -4,15 +4,14 @@
 
 sidebar-menu-bookmarks =
     .label = სანიშნები
-
+sidebar-menu-bookmarks-2 = სანიშნები
 sidebar-menu-history =
     .label = ისტორია
-
 sidebar-menu-synced-tabs =
-    .label = დასინქრონებული ჩანართები
-
+    .label = დასინქ. ჩანართები
+sidebar-menu-megalist =
+    .label = პაროლები
 sidebar-menu-close =
     .label = გვერდითი ზოლის დახურვა
-
 sidebar-close-button =
     .tooltiptext = გვერდითი ზოლის დახურვა

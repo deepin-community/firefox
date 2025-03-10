@@ -8,11 +8,15 @@
 newtab-page-title = Iccer amaynut
 newtab-settings-button =
     .title = Sagen asebter n yiccer-ik amaynut
+newtab-settings-dialog-label =
+    .aria-label = Iɣewwaṛen
 newtab-personalize-icon-label =
     .title = Sagen iccer amaynut
     .aria-label = Sagen iccer amaynut
 newtab-personalize-dialog-label =
     .aria-label = Sagen
+newtab-logo-and-wordmark =
+    .aria-label = { -brand-full-name }
 
 ## Search box component.
 
@@ -109,6 +113,7 @@ newtab-menu-save-to-pocket = Sekles ɣer { -pocket-brand-name }
 newtab-menu-delete-pocket = Kkes si { -pocket-brand-name }
 newtab-menu-archive-pocket = Ḥrez di { -pocket-brand-name }
 newtab-menu-show-privacy-info = Wid yettbeddan fell-aɣ akked tudert-ik tabaḍnit
+newtab-menu-about-fakespot = Γef { -fakespot-brand-name }
 
 ## Message displayed in a modal window to explain privacy and provide context for sponsored content.
 
@@ -196,6 +201,8 @@ newtab-section-header-recent-activity = Armud n melmi kan
 #   $provider (string) - Name of the corresponding content provider.
 newtab-section-header-pocket = Iwelleh-it-id { $provider }
 newtab-section-header-stories = Tiqsiḍin i ijebbden lwelha
+# "picks" refers to recommended articles
+newtab-section-header-todays-picks = Tafrant-nneɣ n wass
 
 ## Empty Section States: These show when there are no more items in a section. Ex. When there are no more Pocket story recommendations, in the space where there would have been stories, this is shown instead.
 
@@ -204,6 +211,8 @@ newtab-empty-section-highlights = Bdu tuniginn sakin nekkni ad k-n-sken imagrade
 # Variables:
 #   $provider (string) - Name of the content provider for this section, e.g "Pocket".
 newtab-empty-section-topstories = Ulac wiyaḍ. Uɣal-d ticki s wugar n imagraden seg { $provider }. Ur tebɣiḍ ara ad terǧuḍ? Fren asentel seg wid yettwasnen akken ad twaliḍ imagraden yelhan di Web.
+# Ex. When there are no more story recommendations, in the space where there would have been stories, this is shown instead.
+newtab-empty-section-topstories-generic = Ulac wiyaḍ. Uɣal-d ticki s wugar n imagraden. Ur tebɣiḍ ara ad terǧuḍ? Fren asentel seg wid yettwasnen  akken ad twaliḍ imagraden yelhan di Web.
 
 ## Empty Section (Content Discovery Experience). These show when there are no more stories or when some stories fail to load.
 
@@ -225,6 +234,8 @@ newtab-pocket-cta-button = Awi-d { -pocket-brand-name }
 newtab-pocket-cta-text = Sekles tiqṣiḍin i tḥemmleḍ deg { -pocket-brand-name }, sedhu allaɣ-ik s tɣuri ifazen.
 newtab-pocket-pocket-firefox-family = { -pocket-brand-name } d yiwen seg twacult n { -brand-product-name }
 # A save to Pocket button that shows over the card thumbnail on hover.
+newtab-pocket-image =
+    .aria-label = { -pocket-brand-name }
 newtab-pocket-save = Sekles
 newtab-pocket-saved = Yettwasekles
 
@@ -236,6 +247,10 @@ newtab-pocket-thumbs-up-tooltip =
 # Clicking the thumbs down button for this story informs us that the user does not feel like the story is interesting for them
 newtab-pocket-thumbs-down-tooltip =
     .title = Mačči i nekk
+# Used to show the user a message upon clicking the thumbs up or down buttons
+newtab-toast-thumbs-up-or-down2 =
+    .message = Tanemmirt. Tamawt-ik ad ak-tall ad tesnerniḍ asuddem-ik.
+newtab-toast-thumbs-up-or-down = Tanemmirt. Tamawt-ik ad ak-tall ad tesnerniḍ asuddem-ik.
 newtab-toast-dismiss-button =
     .title = Zgel
     .aria-label = Zgel
@@ -300,7 +315,7 @@ newtab-wallpaper-brown = Aqehwi
 
 newtab-wallpaper-category-title-abstract = Amadwan
 
-## Photographs
+## Celestial
 
 newtab-wallpaper-white-mountains = Idurar imellalen
 # Variables
@@ -309,9 +324,16 @@ newtab-wallpaper-white-mountains = Idurar imellalen
 newtab-wallpaper-attribution = Tawlaft s <a data-l10n-name="name-link">{ $author_string }</a> ɣef <a data-l10n-name="webpage-link">{ $webpage_string }</a>
 newtab-wallpaper-feature-highlight-header = Ɛreḍ aṛuccu n yini
 newtab-wallpaper-feature-highlight-button = Awi-t
+# Tooltip for dismiss button
+feature-highlight-dismiss-button =
+    .title = Zgel
+    .aria-label = Mdel asfaylu udhim
 feature-highlight-wallpaper =
     .title = { -newtab-wallpaper-feature-highlight-header }
     .aria-label = { -newtab-wallpaper-feature-highlight-content }
+
+## Celestial
+
 
 ## New Tab Weather
 
@@ -319,13 +341,18 @@ feature-highlight-wallpaper =
 #   $provider (string) - Service provider for weather data
 newtab-weather-sponsored = { $provider } ∙ S lmendad
 newtab-weather-menu-change-location = Ẓreg adig
+newtab-weather-change-location-search-input-placeholder =
+    .placeholder = Adig n unadi
+    .aria-label = Adig n unadi
 newtab-weather-change-location-search-input = Adig n unadi
 newtab-weather-menu-weather-display = Askan n tegnawt
 # Display options are:
 # - Simple: Displays a current weather condition icon and the current temperature
 # - Detailed: Include simple information plus a short text summary: e.g. "Mostly cloudy"
 newtab-weather-menu-weather-display-option-simple = Aḥerfi
+newtab-weather-menu-change-weather-display-simple = Uɣal ɣer uskan afessas
 newtab-weather-menu-weather-display-option-detailed = S telqayt
+newtab-weather-menu-change-weather-display-detailed = Uɣal ɣer uskan alqayan
 newtab-weather-menu-temperature-option-fahrenheit = Fahrenheit
 newtab-weather-menu-temperature-option-celsius = Celsius
 newtab-weather-menu-change-temperature-units-fahrenheit = Beddel ɣer Fahrenheit
@@ -335,6 +362,7 @@ newtab-weather-menu-learn-more = Issin ugar
 ## Topic Labels
 
 newtab-topic-label-business = Amahil
+newtab-topic-label-career = Axeddim
 newtab-topic-label-education = Aselmed
 newtab-topic-label-food = Tuččit
 newtab-topic-label-health = Tazmert
@@ -343,13 +371,34 @@ newtab-topic-label-hobbies = Uraren
 # and understand their personal finances – from saving money to buying a home. See the
 # “Curated by our editors“ section at the top of https://getpocket.com/explore/personal-finance for more context
 newtab-topic-label-finance = Tadrimt
+newtab-topic-label-society-parenting = Timarawt
+newtab-topic-label-government = Tasertit
 newtab-topic-label-education-science = Tussna
 newtab-topic-label-sports = Addal
 newtab-topic-label-tech = Tatiknulujit
 newtab-topic-label-travel = Tirza
+newtab-topic-label-home = Axxam & Tibḥirt
 
 ## Topic Selection Modal
 
 newtab-topic-selection-save-button = Sekles
 newtab-topic-selection-cancel-button = Sefsex
 newtab-topic-selection-button-maybe-later = Ahat ticki
+newtab-topic-selection-privacy-link = Ẓer amek i nemmestan akked wamek i nessefrak isefka
+newtab-topic-selection-button-update-interests = Leqqem ismenyaf-ik
+
+## Content Feed Sections
+## "Follow", "unfollow", and "following" are social media terms that refer to subscribing to or unsubscribing from a section of stories.
+## e.g. Following the travel section of stories.
+
+
+## Button to block/unblock listed topics
+## "Block", "unblocked", and "blocked" are social media terms that refer to hiding a section of stories.
+## e.g. Blocked the politics section of stories.
+
+
+## Confirmation modal for blocking a section
+
+
+## Panel in the Customize menu section to manage followed and blocked topics
+

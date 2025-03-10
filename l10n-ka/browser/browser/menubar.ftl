@@ -122,8 +122,8 @@ menu-edit-find-again =
     .label = კვლავძიება
     .accesskey = კ
 menu-edit-bidi-switch-text-direction =
-    .label = ტექსტის მიმართულების შეცვლა
-    .accesskey = ტ
+    .label = ნაწერის მიმართულების შეცვლა
+    .accesskey = წ
 
 ## View Menu
 
@@ -144,7 +144,9 @@ menu-view-bookmarks =
 menu-view-history-button =
     .label = ისტორია
 menu-view-synced-tabs-sidebar =
-    .label = დასინქრონებული ჩანართები
+    .label = დასინქ. ჩანართები
+menu-view-megalist-sidebar =
+    .label = პაროლები
 menu-view-full-zoom =
     .label = ზომის ცვლილება
     .accesskey = მ
@@ -158,7 +160,7 @@ menu-view-full-zoom-actual-size =
     .label = არსებული ზომა
     .accesskey = ა
 menu-view-full-zoom-toggle =
-    .label = მხოლოდ ტექსტის ზომის შეცვლა
+    .label = მხოლოდ ნაწერის ზომის შეცვლა
     .accesskey = ტ
 menu-view-page-style-menu =
     .label = გვერდის სტილი
@@ -216,7 +218,7 @@ menu-history-show-all-history =
 menu-history-clear-recent-history =
     .label = უახლესი ისტორიის გასუფთავება...
 menu-history-synced-tabs =
-    .label = დასინქრონებული ჩანართები
+    .label = დასინქ. ჩანართები
 menu-history-restore-last-session =
     .label = წინა სეანსის აღდგენა
 menu-history-hidden-tabs =
@@ -251,6 +253,15 @@ menu-bookmarks-other =
     .label = სხვა სანიშნები
 menu-bookmarks-mobile =
     .label = მობილურის სანიშნები
+
+## Profiles Menu
+
+menu-profiles =
+    .label = პროფილები
+menu-profiles-manage-profiles =
+    .label = პროფილების მართვა
+menu-profiles-new-profile =
+    .label = ახალი პროფილი
 
 ## Tools Menu
 
@@ -348,4 +359,4 @@ menu-help-not-deceptive =
     .label = ეს თაღლითური საიტი არაა…
     .accesskey = ე
 menu-report-broken-site =
-    .label = მოხსენება დაზიანებული საიტის შესახებ
+    .label = საიტზე გაუმართაობის მოხსენება

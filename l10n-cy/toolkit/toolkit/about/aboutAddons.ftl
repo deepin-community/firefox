@@ -65,7 +65,7 @@ detail-private-disallowed-label = Heb ei ganiatáu mewn Ffenestri Preifat
 detail-private-disallowed-description2 = Nid yw'r estyniad hwn yn rhedeg tra'n pori'n preifat. <a data-l10n-name="learn-more">Darllen rhagor</a>
 # Some special add-ons are privileged, run in private windows automatically, and this permission can't be revoked
 detail-private-required-label = Angen Mynediad at Ffenestri Preifat
-detail-private-required-description2 = Mae gan yr estyniad hwn fynediad i'ch gweithgareddau ar-lein wrth bori'n breifat. <a data-l10n-name="learn-more">Dysgu mwy</a>
+detail-private-required-description2 = Mae gan yr estyniad hwn fynediad i'ch gweithgareddau ar-lein wrth bori'n breifat. <a data-l10n-name="learn-more">Rhagor</a>
 detail-private-browsing-on =
     .label = Caniatáu
     .tooltiptext = Caniatáu wrth Bori Preifat
@@ -297,6 +297,14 @@ find-more-themes = Canfod themâu eraill
 # used for screen readers.
 addon-options-button =
     .aria-label = Rhagor o Ddewisiadau
+# Explanatory introduction to the list of recommended add-ons. The action word
+# ("recommends") in the final sentence is a link to external documentation.
+discopane-intro2 =
+    Mae estyniadau a themâu yn gadael i chi addasu { -brand-product-name }. Gallan nhw hybu preifatrwydd,
+    gwella cynhyrchiant, gwella cyfryngau, newid y ffordd y mae { -brand-product-name } yn edrych, a
+    cymaint mwy. Mae'r rhaglenni meddalwedd bach hyn yn aml yn cael eu datblygu gan drydydd parti. Dyma
+    mae detholiad { -brand-product-name } <a data-l10n-name="learn-more-trigger">yn eu hargymell</a>
+    ar gyfer diogelwch, perfformiad, ac ymarferoldeb eithriadol.
 
 ## Add-on actions
 
@@ -387,6 +395,10 @@ addon-detail-group-label-updates =
     .aria-label = { addon-detail-updates-label }
 # This is the tooltip text for the private browsing badge in about:addons. The
 # badge is the private browsing icon included next to the extension's name.
+addon-badge-private-browsing-allowed3 =
+    .title = Caniatáu mewn ffenestri preifat
+# This is the tooltip text for the private browsing badge in about:addons. The
+# badge is the private browsing icon included next to the extension's name.
 addon-badge-private-browsing-allowed2 =
     .title = Caniatáu mewn ffenestri preifat
     .aria-label = { addon-badge-private-browsing-allowed2.title }
@@ -426,6 +438,14 @@ addon-badge-line3 =
 addon-badge-verified2 =
     .title = Mae'r estyniad hwn wedi'i adolygu i fodloni ein safonau ar gyfer diogelwch a pherfformiad
     .aria-label = { addon-badge-verified2.title }
+addon-badge-recommended3 =
+    .title = Dim ond estyniadau sy'n cwrdd â'n safonau ar gyfer diogelwch a pherfformiad y mae { -brand-product-name } yn eu hargymell
+# We hard code "Mozilla" in the string below because the extensions are built
+# by Mozilla and we don't want forks to display "by Fork".
+addon-badge-line4 =
+    .title = Estyniad swyddogol wedi'i adeiladu gan Mozilla. Mae'n cydfynd â safonau diogelwch a pherfformiad
+addon-badge-verified3 =
+    .title = Mae'r estyniad hwn wedi'i adolygu i fodloni ein safonau ar gyfer diogelwch a pherfformiad
 
 ##
 
@@ -433,6 +453,7 @@ available-updates-heading = Diweddariadau ar Gael
 recent-updates-heading = Diweddariadau Diweddar
 release-notes-loading = Yn llwytho…
 release-notes-error = Ymddiheuriadau ond bu gwall llwytho'r nodiadau ryddhau.
+addon-permissions-empty2 = Nid oes angen unrhyw ganiatâd ar gyfer yr estyniad hwn.
 addon-permissions-empty = Nid oes angen unrhyw ganiatâd ar yr estyniad hwn
 addon-permissions-required = Caniatâd angenrheidiol y swyddogaethau craidd:
 addon-permissions-optional = Caniatâd dewisol ar gyfer y swyddogaethau ychwanegol:
@@ -482,10 +503,24 @@ details-notification-unsigned-and-disabled-link = Rhagor o Wybodaeth
 details-notification-unsigned = Nid oedd modd dilysu { $name } i'w defnyddio yn { -brand-short-name }. Cymerwch ofal.
 details-notification-unsigned2 =
     .message = Nid oedd modd dilysu { $name } i'w defnyddio yn { -brand-short-name }. Cymerwch ofal.
+details-notification-hard-blocked-extension =
+    .message = Mae'r estyniad hwn wedi'i rwystro am fynd yn groes i bolisïau Mozilla ac mae wedi'i analluogi.
+details-notification-hard-blocked-other =
+    .message = Mae'r ychwanegyn hwn wedi'i rwystro am fynd yn groes i bolisïau Mozilla ac mae wedi'i analluogi.
 details-notification-unsigned-link = Rhagor o Wybodaeth
 details-notification-blocked = Mae { $name } wedi ei analluogi o ganlyniad i faterion diogelwch a sefydlogrwydd.
 details-notification-blocked2 =
     .message = Mae { $name } wedi ei analluogi o ganlyniad i faterion diogelwch a sefydlogrwydd.
+details-notification-blocked-link2 = Gweld Manylion
+details-notification-soft-blocked-extension-disabled =
+    .message = Mae'r estyniad hwn wedi'i gyfyngu am fynd yn groes i bolisïau Mozilla ac mae wedi'i analluogi. Gallwch ei alluogi, ond gall hyn fod yn beryglus.
+details-notification-soft-blocked-extension-enabled =
+    .message = Mae'r estyniad hwn yn groes i bolisïau Mozilla. Gall fod yn beryglus ei ddefnyddio.
+details-notification-soft-blocked-other-disabled =
+    .message = Mae'r estyniad hwn yn groes i bolisïau Mozilla ac mae wedi'i analluogi. Gallwch ei alluogi, ond gall hyn fod yn beryglus.
+details-notification-soft-blocked-other-enabled =
+    .message = Mae'r estyniad hwn yn groes i bolisïau Mozilla. Gall fod yn beryglus ei ddefnyddio.
+details-notification-softblocked-link2 = Gweld Manylion
 details-notification-blocked-link = Rhagor o Wybodaeth
 details-notification-softblocked = Mae'n hysbys fod { $name } yn achosi anawsterau diogelwch a sefydlogrwydd.
 details-notification-softblocked2 =

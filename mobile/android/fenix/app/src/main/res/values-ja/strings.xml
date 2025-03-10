@@ -14,6 +14,8 @@
     <string name="content_description_private_browsing_button">プライベートブラウジングを有効にします</string>
     <!-- Content description (not visible, for screen readers etc.): "Private Browsing" menu button. -->
     <string name="content_description_disable_private_browsing_button">プライベートブラウジングを無効にします</string>
+    <!-- Content description (not visible, for screen readers etc.): "Private Browsing" menu button. -->
+    <string name="content_description_private_browsing">プライベートブラウジング</string>
     <!-- Placeholder text shown in the search bar before a user enters text for the default engine -->
     <string name="search_hint">検索語またはアドレスを入力</string>
 
@@ -47,7 +49,7 @@
     <string name="tab_tray_collection_button_multiselect_content_description">選択したタブをコレクションに保存</string>
 
     <!-- Content description on checkmark while tab is selected in multiselect mode in tab tray -->
-    <string name="tab_tray_multiselect_selected_content_description">選択</string>
+    <string name="tab_tray_multiselect_selected_content_description" moz:removedIn="136" tools:ignore="UnusedResources">選択</string>
 
     <!-- Home - Bookmarks -->
     <!-- Title for the home screen section with bookmarks. -->
@@ -97,12 +99,6 @@
     <!-- Text for the negative action button -->
     <string name="open_in_app_cfr_negative_button_text">閉じる</string>
 
-    <!-- Total cookie protection "contextual feature recommendation" (CFR) -->
-    <!-- Text for the message displayed in the contextual feature recommendation popup promoting the total cookie protection feature. -->
-    <string name="tcp_cfr_message">私たちの最も強力なプライバシー保護機能は、クロスサイトトラッカーをさらに分離します。</string>
-    <!-- Text displayed that links to website containing documentation about the "Total cookie protection" feature. -->
-    <string name="tcp_cfr_learn_more">包括的 Cookie 保護について学ぶ</string>
-
     <!-- Private browsing erase action "contextual feature recommendation" (CFR) -->
     <!-- Text for the message displayed in the contextual feature recommendation popup promoting the erase private browsing feature. -->
     <string name="erase_action_cfr_message">ここをタップして新しいプライベートセッションを開始します。履歴や Cookie がすべて削除されます。</string>
@@ -113,18 +109,16 @@
     <string name="navbar_cfr_title">新しいナビゲーションバーで高速ブラウジング</string>
 
     <!-- Text for the message displayed in the contextual feature recommendation popup promoting the navigation bar. -->
-    <string name="navbar_cfr_message" moz:removedIn="130" tools:ignore="UnusedResources">このバーは下にスクロールすると隠れて、閲覧スペースを広くします。</string>
-    <!-- Text for the message displayed in the contextual feature recommendation popup promoting the navigation bar. -->
     <string name="navbar_cfr_message_2">ウェブサイトで下にスクロールすると、このバーが隠れて閲覧スペースを広くします。</string>
 
     <!-- Text for the message displayed for the popup promoting the long press of navigation in the navigation bar. -->
     <string name="navbar_navigation_buttons_cfr_message">矢印を長押しすると、このタブの履歴内のページへ移動できます。</string>
 
-    <!-- Tablet navigation bar "contextual feature recommendation" (CFR) -->
-    <!-- Text for the title displayed in the contextual feature recommendation popup promoting the tablet navigation bar. -->
-    <string name="tablet_nav_bar_cfr_title" moz:removedIn="132" tools:ignore="UnusedResources">新機能: 矢印をワンタップで戻ったり進んだり</string>
-    <!-- Text for the message displayed in the contextual feature recommendation popup promoting the tablet navigation bar. -->
-    <string name="tablet_nav_bar_cfr_message" moz:removedIn="132" tools:ignore="UnusedResources">いつでも指先の操作で迅速なナビゲーションをお楽しみください。</string>
+    <!-- Address bar swipe "contextual feature recommendation" (CFR) -->
+    <!-- Text for the title displayed in the contextual feature recommendation popup promoting swipe of address bar. -->
+    <string name="address_bar_swipe_cfr_title">ツールバーをスワイプすると、タブを切り替えられます</string>
+    <!-- Text for the message displayed in the contextual feature recommendation popup promoting swipe of address bar. -->
+    <string name="address_bar_swipe_cfr_message">左右にスワイプするとタブが切り替わります。最後のタブを左にスワイプすると、新しいタブを開きます。</string>
 
     <!-- Text for the info dialog when camera permissions have been denied but user tries to access a camera feature. -->
     <string name="camera_permissions_needed_message">カメラへのアクセスが必要です。Android の設定から、権限をタップし、許可をタップしてください。</string>
@@ -211,21 +205,29 @@
     <!-- Browser menu banner header text for extensions onboarding.
         The first parameter is the name of the app defined in app_name (for example: Fenix). -->
     <string name="browser_menu_extensions_banner_onboarding_header">%s を自分だけのものに</string>
+    <!-- Browser menu banner header text for extensions onboarding when all installed extensions have been disabled. -->
+    <string name="browser_menu_disabled_extensions_banner_onboarding_header">インストールされたままで有効になっていない拡張機能があります</string>
     <!-- Browser menu banner body text for extensions onboarding.
         The first parameter is the name of the app defined in app_name (for example: Fenix). -->
     <string name="browser_menu_extensions_banner_onboarding_body">拡張機能は %s の外観と動作の変更からプライバシーや安全性の向上まで、あなたのブラウジングをレベルアップします。</string>
+    <!-- Browser menu banner body text for extensions onboarding when all installed extensions have been disabled.
+     The first parameter is the name of the button that opens extension manager (for example "Manage extensions"). -->
+    <string name="browser_menu_disabled_extensions_banner_onboarding_body">拡張機能を使用するには、設定で有効にするか、下の [%s] を選択してください。</string>
     <!-- Browser menu banner link text for learning more about extensions -->
     <string name="browser_menu_extensions_banner_learn_more">詳細情報</string>
     <!-- Browser menu button that opens the extensions manager -->
     <string name="browser_menu_manage_extensions">拡張機能を管理</string>
     <!-- Content description (not visible, for screen readers etc.): Section heading for recommended extensions.-->
     <string name="browser_menu_recommended_section_content_description">おすすめの拡張機能</string>
-    <!-- Content description (not visible, for screen readers etc.): Label for plus icon used to add extensions. -->
-    <string name="browser_menu_extension_plus_icon_content_description">拡張機能を追加</string>
+    <!-- Content description (not visible, for screen readers etc.): Label for plus icon used to add extension.
+      The first parameter is the name of the extension (for example: ClearURLs). -->
+    <string name="browser_menu_extension_plus_icon_content_description_2">%1$s を追加</string>
     <!-- Browser menu button that opens AMO in a tab -->
     <string name="browser_menu_discover_more_extensions">拡張機能を探す</string>
     <!-- Browser menu description that is shown when one or more extensions are disabled due to extension errors -->
     <string name="browser_menu_extensions_disabled_description">一時的に無効化</string>
+    <!-- The description of the browser menu appears when the user hasn't installed any extensions. -->
+    <string name="browser_menu_no_extensions_installed_description">有効な拡張機能がありません</string>
     <!-- Browser menu button that opens account settings -->
     <string name="browser_menu_account_settings">アカウント情報</string>
     <!-- Browser menu button that sends a user to help articles -->
@@ -237,13 +239,17 @@
     <!-- Browser menu button that opens a user's library -->
     <string name="browser_menu_library">ライブラリー</string>
     <!-- Browser menu toggle that requests a desktop site -->
-    <string name="browser_menu_desktop_site">デスクトップサイト</string>
+    <string name="browser_menu_desktop_site">PC 版サイト</string>
     <!-- Browser menu button that reopens a private tab as a regular tab -->
     <string name="browser_menu_open_in_regular_tab">通常タブで開く</string>
     <!-- Browser menu toggle that adds a shortcut to the site on the device home screen. -->
     <string name="browser_menu_add_to_homescreen">ホーム画面に追加</string>
+    <!-- Browser menu toggle that adds a PWA of the site on the device home screen. -->
+    <string name="browser_menu_add_app_to_homescreen">ホーム画面にアプリを追加</string>
     <!-- Browser menu toggle that adds a shortcut to the site on the device home screen. -->
     <string name="browser_menu_add_to_homescreen_2">ホーム画面に追加...</string>
+    <!-- Browser menu toggle that adds a PWA of the site on the device home screen. -->
+    <string name="browser_menu_add_app_to_homescreen_2">ホーム画面にアプリを追加...</string>
     <!-- Text for notifying users that Xiaomi devices require additional permissions to add to home screen -->
     <string name="browser_menu_add_to_homescreen_xiaomi">Xiaomi 端末では、ホーム画面にショートカットを追加するために追加の権限が必要になる場合があります。設定を確認してください。</string>
     <!-- Content description (not visible, for screen readers etc.) for the Resync tabs button -->
@@ -317,10 +323,34 @@
     <string name="browser_menu_tools">ツール</string>
     <!-- Content description (not visible, for screen readers etc.): Back button for all menu redesign sub-menu -->
     <string name="browser_menu_back_button_content_description">メインメニューに戻る</string>
+    <!-- Content description (not visible, for screen readers etc.) for bottom sheet handlebar main menu. -->
+    <string name="browser_main_menu_handlebar_content_description">メインメニューシートを閉じます</string>
+    <!-- Content description (not visible, for screen readers etc.) for main menu help button. -->
+    <string name="browser_main_menu_content_description_help_button">ヘルプ</string>
+    <!-- Content description (not visible, for screen readers etc.) for main menu settings button. -->
+    <string name="browser_main_menu_content_description_settings_button">設定</string>
+    <!-- Content description (not visible, for screen readers etc.) for bottom sheet handlebar extensions menu. -->
+    <string name="browser_extensions_menu_handlebar_content_description">拡張機能メニューシートを閉じます</string>
+    <!-- Content description (not visible, for screen readers etc.) for bottom sheet handlebar save menu. -->
+    <string name="browser_save_menu_handlebar_content_description">保存メニューシートを閉じます</string>
+    <!-- Content description (not visible, for screen readers etc.) for bottom sheet handlebar tools menu. -->
+    <string name="browser_tools_menu_handlebar_content_description">ツールメニューシートを閉じます</string>
+    <!-- Content description (not visible, for screen readers etc.) for bottom sheet handlebar custom tab menu. -->
+    <string name="browser_custom_tab_menu_handlebar_content_description">カスタムタブメニューシートを閉じます</string>
+    <!-- Browser menu description that describes the various tools related menu items inside of the tools sub-menu
+         The first parameter is the label of the report site issue (for example: Report Site issue) -->
+    <string name="browser_menu_tools_description_with_translate_with_report_site" moz:removedIn="135" tools:ignore="UnusedResources">リーダービュー、翻訳、%s、印刷、共有、アプリを開く</string>
+    <!-- Browser menu description that describes the various tools related menu items inside of the tools sub-menu when the "Report broken site" feature is available-->
+    <string name="browser_menu_tools_description_with_translate_with_report_site_2">リーダービュー、翻訳、動作しないサイトを報告、印刷、共有、アプリを開く</string>
     <!-- Browser menu description that describes the various tools related menu items inside of the tools sub-menu -->
-    <string name="browser_menu_tools_description_with_translate">リーダービュー、翻訳、印刷、共有、アプリを開く</string>
+    <string name="browser_menu_tools_description_with_translate_without_report_site">リーダービュー、翻訳、印刷、共有、アプリを開く</string>
+    <!-- Browser menu description that describes the various tools related menu items inside of the tools sub-menu
+         The first parameter is the label of the report site issue (for example: Report Site issue) -->
+    <string name="browser_menu_tools_description_with_report_site" moz:removedIn="135" tools:ignore="UnusedResources">リーダービュー、%s、印刷、共有、アプリを開く</string>
+    <!-- Browser menu description that describes the various tools related menu items inside of the tools sub-menu when the "Report broken site" feature is available-->
+    <string name="browser_menu_tools_description_with_report_site_2">リーダービュー、動作しないサイトを報告、印刷、共有、アプリを開く</string>
     <!-- Browser menu description that describes the various tools related menu items inside of the tools sub-menu -->
-    <string name="browser_menu_tools_description">リーダービュー、印刷、共有、アプリを開く</string>
+    <string name="browser_menu_tools_description_without_report_site">リーダービュー、印刷、共有、アプリを開く</string>
     <!-- Browser menu label that navigates to the save sub-menu, which contains various save related menu items such as
          bookmarking a page, saving to collection, shortcut or as a PDF, and adding to home screen -->
     <string name="browser_menu_save">保存</string>
@@ -337,8 +367,12 @@
     <string name="browser_menu_turn_on_reader_view">リーダービューで開く</string>
     <!-- Browser menu label for turning OFF reader view of the current visited page -->
     <string name="browser_menu_turn_off_reader_view">リーダービューを閉じる</string>
+    <!-- Browser menu button that reopens a private tab as a regular tab -->
+    <string name="browser_menu_open_in_normal_tab">非プライベートタブに移動</string>
     <!-- Browser menu label for navigating to the translation feature, which provides language translation options the current visited page -->
     <string name="browser_menu_translate_page">ページを翻訳...</string>
+    <!-- Browser menu label for navigating to the Web Compat Reporter feature, which provides users the ability to send bug reports for broken sites. -->
+    <string name="browser_menu_webcompat_reporter">動作しないサイトを報告...</string>
     <!-- Browser menu label that is displayed when the current page has been translated by the translation feature.
          The first parameter is the name of the language that page was translated to (e.g. English). -->
     <string name="browser_menu_translated_to">%1$s に翻訳しました</string>
@@ -384,7 +418,7 @@
 
     <!-- Search Fragment -->
     <!-- Button in the search view that lets a user search by scanning a QR code -->
-    <string name="search_scan_button">スキャン</string>
+    <string name="search_scan_button_2">QR コードをスキャン</string>
     <!-- Button in the search view when shortcuts are displayed that takes a user to the search engine settings -->
     <string name="search_shortcuts_engine_settings">検索エンジンの設定</string>
     <!-- Button in the search view that lets a user navigate to the site in their clipboard -->
@@ -410,13 +444,16 @@
     <!-- Header text for the search selector menu -->
     <string name="search_header_menu_item_2">今回だけ使う検索エンジン:</string>
 
-    <!-- Content description (not visible, for screen readers etc.): Search engine icon. The first parameter is the search engine name (for example: DuckDuckGo). -->
-    <string name="search_engine_icon_content_description" tools:ignore="UnusedResources">%s 検索エンジン</string>
+    <!-- Content description (not visible, for screen readers etc.): Search engine icon.
+    The parameter is the search engine name (for example: DuckDuckGo). -->
+    <string name="search_engine_icon_content_description_1">検索エンジン: %s</string>
+
+    <!-- Content description (not visible, for screen readers etc.) of the search engine selector from the search toolbar.
+    The parameter is the search engine name (for example: DuckDuckGo).
+    The colon character (in "%s:") is intended to have the screen reader make a small pause between the search engine name and the description of the button. -->
+    <string name="search_engine_selector_content_description">%s: 検索エンジンセレクター</string>
 
     <!-- Home onboarding -->
-    <!-- Onboarding home screen popup dialog, shown on top of the Jump back in section. -->
-    <string name="onboarding_home_screen_jump_back_contextual_hint_2" moz:removedIn="132">パーソナライズされたホームページをご覧ください。最近使ったタブ、ブックマーク、検索結果がここに表示されます。</string>
-
     <!-- Home onboarding dialog welcome screen title text. -->
     <string name="onboarding_home_welcome_title_2">あなただけのインターネットへようこそ</string>
     <!-- Home onboarding dialog welcome screen description text. -->
@@ -437,18 +474,6 @@
     <!-- Content description (not visible, for screen readers etc.): Close button for the home onboarding dialog -->
     <string name="onboarding_home_content_description_close_button">閉じる</string>
 
-    <!-- Notification pre-permission dialog -->
-    <!-- Enable notification pre permission dialog title
-        The first parameter is the name of the app defined in app_name (for example: Fenix) -->
-    <string name="onboarding_home_enable_notifications_title" moz:removedIn="124" tools:ignore="UnusedResources">通知は %s を活用するのに役立ちます</string>
-    <!-- Enable notification pre permission dialog description with rationale
-        The first parameter is the name of the app defined in app_name (for example: Fenix) -->
-    <string name="onboarding_home_enable_notifications_description" moz:removedIn="124" tools:ignore="UnusedResources">端末間でタブを共有したり、ダウンロードを管理したり、%s のプライバシー保護機能を最大限に活用するためのヒントを入手できます。</string>
-    <!-- Text for the button to request notification permission on the device -->
-    <string name="onboarding_home_enable_notifications_positive_button" moz:removedIn="124" tools:ignore="UnusedResources">続ける</string>
-    <!-- Text for the button to not request notification permission on the device and dismiss the dialog -->
-    <string name="onboarding_home_enable_notifications_negative_button" moz:removedIn="124" tools:ignore="UnusedResources">後で</string>
-
     <!-- Juno first user onboarding flow experiment, strings are marked unused as they are only referenced by Nimbus experiments. -->
     <!-- Description for learning more about our privacy notice. -->
     <string name="juno_onboarding_privacy_notice_text" tools:ignore="BrandUsage">Firefox のプライバシー通知</string>
@@ -465,11 +490,6 @@
     <string name="juno_onboarding_default_browser_description_nimbus_4" tools:ignore="UnusedResources">1 億人以上の人が、非営利団体が支援するブラウザーを選択してプライバシーを保護しています。</string>
     <!-- Description for set firefox as default browser screen used by Nimbus experiments. -->
     <string name="juno_onboarding_default_browser_description_nimbus_5" tools:ignore="UnusedResources">既知のトラッカーが自動的にブロックされます。700 個すべての拡張機能を試せます。PDF は内蔵のリーダーで管理が簡単になります。</string>
-    <!-- Description for set firefox as default browser screen used by Nimbus experiments. -->
-    <string name="juno_onboarding_default_browser_description_nimbus_2" moz:RemovedIn="124" tools:ignore="UnusedResources">非営利で作られた私たちのブラウザーは、企業によるウェブ上の密かな追跡を阻止するのに役立ちます。\n\n詳細はプライバシー通知をご覧ください。</string>
-    <!-- Text for the link to the privacy notice webpage for set as firefox default browser screen.
-    This is part of the string with the key "juno_onboarding_default_browser_description". -->
-    <string name="juno_onboarding_default_browser_description_link_text" moz:RemovedIn="124" tools:ignore="UnusedResources">プライバシー通知</string>
     <!-- Text for the button to set firefox as default browser on the device -->
     <string name="juno_onboarding_default_browser_positive_button" tools:ignore="UnusedResources">既定のブラウザーに設定</string>
     <!-- Text for the button dismiss the screen and move on with the flow -->
@@ -477,9 +497,6 @@
 
     <!-- Title for sign in to sync screen. -->
     <string name="juno_onboarding_sign_in_title_2">端末間の移動時に暗号化した状態を維持します</string>
-    <!-- Description for sign in to sync screen. Nimbus experiments do not support string placeholders.
-     Note: The word "Firefox" should NOT be translated -->
-    <string name="juno_onboarding_sign_in_description_2" moz:RemovedIn="130" tools:ignore="BrandUsage,UnusedResources">ログインして同期すると、Firefox がユーザーのパスワードやブックマークなどを暗号化して、より安全に使用できます。</string>
     <!-- Description for sign in to sync screen. Nimbus experiments do not support string placeholders.
      Note: The word "Firefox" should NOT be translated -->
     <string name="juno_onboarding_sign_in_description_3" tools:ignore="BrandUsage">Firefox は同期時にパスワードやブックマークなどを暗号化します。</string>
@@ -500,7 +517,7 @@
 
     <!-- Title for add search widget screen used by Nimbus experiments. Nimbus experiments do not support string placeholders.
         Note: The word "Firefox" should NOT be translated -->
-    <string name="juno_onboarding_add_search_widget_title" tools:ignore="BrandUsage,UnusedResources">Firefox 検索ウィジェットを試す</string>
+    <string name="juno_onboarding_add_search_widget_title" tools:ignore="BrandUsage,UnusedResources">Firefox 検索ウィジェットをお試しください</string>
 
     <!-- Description for add search widget screen used by Nimbus experiments. Nimbus experiments do not support string placeholders.
         Note: The word "Firefox" should NOT be translated -->
@@ -510,6 +527,149 @@
     <string name="juno_onboarding_add_search_widget_positive_button" tools:ignore="BrandUsage,UnusedResources">Firefox ウィジェットを追加</string>
     <!-- Text for the button to dismiss the screen and move on with the flow -->
     <string name="juno_onboarding_add_search_widget_negative_button" tools:ignore="UnusedResources">後で</string>
+
+    <!-- Onboarding header for the add-ons card used by Nimbus experiments. Nimbus experiments do not support string placeholders.
+    Note: The word "Firefox" should NOT be translated -->
+    <string name="onboarding_add_on_header" tools:ignore="BrandUsage,UnusedResources">拡張機能で Firefox をカスタマイズできます</string>
+    <!-- Onboarding sub header for the add-ons card, used by Nimbus experiments. -->
+    <string name="onboarding_add_on_sub_header" tools:ignore="UnusedResources">セキュリティや生産性を向上させる、サードパーティの拡張機能を追加してみませんか？</string>
+    <!-- Onboarding add-ons card, for checking more add-ons on, used by Nimbus experiments. -->
+    <string name="onboarding_add_on_explore_more_extensions_2">すべての拡張機能を見る</string>
+    <!-- Onboarding add-ons card, button for start browsing, used by Nimbus experiments. -->
+    <string name="onboarding_add_on_start_browsing_button_2">ブラウジングを開始</string>
+    <!-- Ublock name for the onboarding add-ons card, used by Nimbus experiments. Note: The word "Ublock Origin" is a brand name should NOT be translated -->
+    <string name="onboarding_add_on_ublock_name" tools:ignore="UnusedResources">uBlock Origin</string>
+    <!-- Ublock description for the onboarding add-ons card, used by Nimbus experiments. -->
+    <string name="onboarding_add_on_ublock_description" tools:ignore="UnusedResources">広告を効果的かつ効率的にブロックします。</string>
+    <!-- Privacy Badger name for the onboarding add-ons card, used by Nimbus experiments. Note: The word "Privacy Badger" is a brand name should NOT be translated -->
+    <string name="onboarding_add_on_privacy_badger_name" tools:ignore="UnusedResources">Privacy Badger</string>
+    <!-- Privacy Badger description for the onboarding add-ons card, used by Nimbus experiments. -->
+    <string name="onboarding_add_on_privacy_badger_description" tools:ignore="UnusedResources">珠玉の追跡防止ツール。目に見えないトラッカーとスパイ広告を抑止します。</string>
+    <!-- Search by Image name for the onboarding add-ons card, used by Nimbus experiments. Note: The word "Search by Image" is a brand name should NOT be translated -->
+    <string name="onboarding_add_on_search_by_image_name" tools:ignore="UnusedResources">Search by Image</string>
+    <!-- Search by Image description for the onboarding add-ons card, used by Nimbus experiments. -->
+    <string name="onboarding_add_on_search_by_image_description" tools:ignore="UnusedResources">興味深い写真を見つけたら、それを詳しく調べてみましょう。</string>
+    <!-- Dark Reader name for the onboarding add-ons card, used by Nimbus experiments. Note: The word "Dark Reader" is a brand name should NOT be translated -->
+    <string name="onboarding_add_on_dark_reader_name" tools:ignore="UnusedResources">Dark Reader</string>
+
+    <!-- Privacy Badger description for the onboarding add-ons card, used by Nimbus experiments. -->
+    <string name="onboarding_add_on_dark_reader_description" tools:ignore="UnusedResources">モバイルウェブのためのカスタムダークモード。</string>
+
+    <!-- Label for the number of reviews for an add-on. The parameter is for the formatted number of reviews e.g. "1,234", "12,345", "123,456". -->
+    <string name="onboarding_add_on_reviews_label">レビュー数: %1$s</string>
+    <!-- Content description for the add-on icon. -->
+    <string name="onboarding_add_on_icon_content_description">アドオンアイコン</string>
+    <!-- Content description for the an installed add-on icon. -->
+    <string name="onboarding_installed_add_on_icon_content_description">インストールされたアドオンのアイコン</string>
+    <!-- Content description for the an installing add-on icon. -->
+    <string name="onboarding_installing_add_on_icon_content_description">アドオンインストール中のアイコン</string>
+    <!-- Content description for the add add-on button. -->
+    <string name="onboarding_add_on_add_button_content_description">アドオン追加ボタン</string>
+    <!-- Content description for the star rating group. -->
+    <string name="onboarding_add_on_star_rating_content_description">評価 %1$s/5</string>
+
+    <!-- Title for the privacy preferences dialog shown during onboarding. Note: The word "Firefox" should NOT be translated. -->
+    <string name="onboarding_preferences_dialog_title" tools:ignore="BrandUsage">Firefox の改善にご協力ください</string>
+    <!-- Title for the crash reporting option in the privacy preferences dialog shown during onboarding. -->
+    <string name="onboarding_preferences_dialog_crash_reporting_title">クラッシュレポートを自動的に送信</string>
+    <!-- Description for the crash reporting option in the privacy preferences dialog shown during onboarding. -->
+    <string name="onboarding_preferences_dialog_crash_reporting_description">クラッシュレポートが送信されることにより、ブラウザーの問題の診断と修正に役立てられます。レポートには個人情報や機密性の高い情報が含まれる場合があります。</string>
+    <!-- Learn more link for the crash reporting option in the privacy preferences dialog shown during onboarding. -->
+    <string name="onboarding_preferences_dialog_crash_reporting_learn_more_2">詳細情報</string>
+    <!-- Title for the usage data option in the privacy preferences dialog shown during onboarding. Note: The word "Mozilla" should NOT be translated. -->
+    <string name="onboarding_preferences_dialog_usage_data_title">技術データと対話データを Mozilla に送信する</string>
+
+    <!-- Description for the usage data option in the privacy preferences dialog shown during onboarding. Note: The word "Firefox" should NOT be translated. -->
+    <string name="onboarding_preferences_dialog_usage_data_description" moz:removedIn="136" tools:ignore="BrandUsage,UnusedResources">端末、ハードウェア構成、Firefox の使用状況に関するデータは、世界中のユーザーのために、機能やパフォーマンス、安定性の向上に役立てられます。</string>
+    <string name="onboarding_preferences_dialog_usage_data_description_2" tools:ignore="BrandUsage">端末、ハードウェア構成、Firefox の使用状況に関するデータは、すべてのユーザーのために、機能やパフォーマンス、安定性の向上に役立てられます。</string>
+    <!-- Learn more link for the usage data option in the privacy preferences dialog shown during onboarding. -->
+    <string name="onboarding_preferences_dialog_usage_data_learn_more" moz:removedIn="136" tools:ignore="UnusedResources">使用状況データについての詳細</string>
+    <string name="onboarding_preferences_dialog_usage_data_learn_more_2">詳細情報</string>
+    <!-- Positive button label for the privacy preferences dialog shown during onboarding. -->
+    <string name="onboarding_preferences_dialog_positive_button">完了</string>
+    <!-- Negative button label for the privacy preferences dialog shown during onboarding. -->
+    <string name="onboarding_preferences_dialog_negative_button" tools:ignore="UnusedResources" moz:removedIn="136">キャンセル</string>
+    <!-- Terms of service onboarding title card label. 'Firefox' intentionally hardcoded here-->
+    <string name="onboarding_welcome_to_firefox" tools:ignore="BrandUsage">Firefox へようこそ</string>
+    <!-- Terms of service sub header label. -->
+    <string name="onboarding_terms_of_service_sub_header" tools:ignore="UnusedResources" moz:removedIn="136">高速で安全なウェブブラウジング。</string>
+    <!-- Terms of service sub header label. -->
+    <string name="onboarding_terms_of_service_sub_header_2">高速で安全なウェブブラウジング</string>
+    <!-- Terms of service onboarding page continue button label. -->
+    <string name="onboarding_term_of_service_agree_and_continue_button_label">同意して続ける</string>
+    <!-- Line one of the terms of service onboarding page. %1$s is replaced by an active link, using onboarding_term_of_service_line_one_link_text_2 as text (“Firefox Terms of Use”). -->
+    <string name="onboarding_term_of_service_line_one" moz:removedIn="136" tools:ignore="BrandUsage, UnusedResources">続行すると、Firefox の%1$sに同意したものとみなされます。</string>
+    <!-- Line one of the terms of service onboarding page. %1$s is replaced by an active link, using onboarding_term_of_service_line_one_link_text_2 as text (“Firefox Terms of Use”). -->
+    <string name="onboarding_term_of_service_line_one_2">続けると、%1$s に同意したものとみなされます。</string>
+    <!-- Used as text for the link in onboarding_term_of_service_line_one. -->
+    <string name="onboarding_term_of_service_line_one_link_text" moz:removedIn="136" tools:ignore="UnusedResources">利用規約</string>
+    <!-- Used as text for the link in onboarding_term_of_service_line_one_2. -->
+    <string name="onboarding_term_of_service_line_one_link_text_2" tools:ignore="BrandUsage">Firefox 利用規約</string>
+    <!-- Line two of the terms of service onboarding page. 'Firefox' is intentionally hardcoded. %1$s is replaced by an active link, using onboarding_term_of_service_line_two_link_text as text (“Privacy Notice”). -->
+    <string name="onboarding_term_of_service_line_two" moz:removedIn="136" tools:ignore="UnusedResources,BrandUsage">Firefox はあなたのプライバシーを重視します。詳細は %1$s をご確認ください。</string>
+    <!-- Line two of the terms of service onboarding page. 'Firefox' is intentionally hardcoded. %1$s is replaced by an active link, using onboarding_term_of_service_line_two_link_text as text (“Privacy Notice”). -->
+    <string name="onboarding_term_of_service_line_two_2" tools:ignore="BrandUsage">Firefox はあなたのプライバシーを重視します。詳細は %1$s をご覧ください。</string>
+    <!-- Used as text for the link in onboarding_term_of_service_line_two. -->
+    <string name="onboarding_term_of_service_line_two_link_text">プライバシー通知</string>
+    <!-- Line three of the terms of service onboarding page. 'Firefox' and 'Mozilla' are intentionally hardcoded. %1$S is replaced by an active link, using onboarding_term_of_service_line_three_link_text as text (“Manage”). -->
+    <string name="onboarding_term_of_service_line_three" tools:ignore="BrandUsage">ブラウザーの改善に役立てるため、Firefox は診断情報と対話データを Mozilla に送信します。%1$s</string>
+    <!-- Used as text for the link in onboarding_term_of_service_line_three. -->
+    <string name="onboarding_term_of_service_line_three_link_text">管理</string>
+    <!-- Marketing onboarding page title. 'Firefox' is intentionally hardcoded. -->
+    <string name="onboarding_marketing_title" tools:ignore="BrandUsage,UnusedResources">Firefox の成長に協力する</string>
+    <!-- Marketing onboarding page body. 'Firefox' is intentionally hardcoded. -->
+    <string name="onboarding_marketing_body" tools:ignore="BrandUsage,UnusedResources">Firefox を見つけた経緯や使用していることを共有していただくことで、より多くの人に私たちのブラウザーを紹介できます。</string>
+    <!-- Marketing onboarding page opt-in checkbox. 'Mozilla' is intentionally hardcoded. -->
+    <string name="onboarding_marketing_opt_in_checkbox" tools:ignore="UnusedResources">Mozilla のマーケティング技術パートナーと最小限のデータを共有します。このデータは販売されたり、広告の表示に利用されたりすることはありません。</string>
+    <!-- Marketing onboarding page clickable link text to "learn more" on how data is used. -->
+    <string name="onboarding_marketing_learn_more" tools:ignore="UnusedResources">データの使途</string>
+    <!-- Marketing onboarding page button label. Button to confirm choice and start browsing. -->
+    <string name="onboarding_marketing_positive_button" tools:ignore="UnusedResources">確認してブラウジングを開始</string>
+    <!-- Onboarding header for the toolbar selection card, used by Nimbus experiments. -->
+    <string name="onboarding_customize_toolbar_title" tools:ignore="UnusedResources">ツールバーの配置を選択</string>
+    <!-- Onboarding sub header for toolbar selection card, used by Nimbus experiments. -->
+    <string name="onboarding_customize_toolbar_description" tools:ignore="UnusedResources">手元で検索。</string>
+    <!-- Onboarding label for 'Save and continue' button, used by Nimbus experiments. -->
+    <string name="onboarding_save_and_continue_button">保存して続ける</string>
+    <!-- Onboarding toolbar selection card label for 'skip' button, used by Nimbus experiments. -->
+    <string name="onboarding_customize_toolbar_skip_button" moz:removedIn="135" tools:ignore="UnusedResources">スキップ</string>
+    <!-- Onboarding toolbar selection card label for 'top' option, used by Nimbus experiments. -->
+    <string name="onboarding_customize_toolbar_top_option">画面上部</string>
+    <!-- Onboarding toolbar selection card label for 'bottom' option, used by Nimbus experiments. -->
+    <string name="onboarding_customize_toolbar_bottom_option">画面下部</string>
+
+    <!-- Onboarding toolbar selection card content description for the main image. -->
+    <string name="onboarding_customize_toolbar_main_image_content_description">ツールバーが描かれたツールバー選択ビューの大きなヘッダー画像。</string>
+    <!-- Onboarding toolbar selection card content description for the toolbar placement image. %1$s is placeholder for either 'top' or 'bottom'. -->
+    <string name="onboarding_customize_toolbar_placement_content_description" moz:removedIn="135" tools:ignore="UnusedResources">%1$s ツールバーの画像</string>
+
+    <!-- Onboarding toolbar selection card content description for the toolbar placement image. -->
+    <string name="onboarding_customize_toolbar_placement_bottom_content_description">下部ツールバーの画像</string>
+    <string name="onboarding_customize_toolbar_placement_top_content_description">上部のツールバーの画像</string>
+    <!-- Onboarding toolbar selection card label for 'Not now' button, used by Nimbus experiments. -->
+    <string name="onboarding_customize_toolbar_not_now_button" moz:removedIn="136" tools:ignore="UnusedResources">後で</string>
+
+    <!-- Onboarding header for the theme selection card, used by Nimbus experiments. -->
+    <string name="onboarding_customize_theme_title" tools:ignore="UnusedResources">テーマの選択</string>
+    <!-- Onboarding sub header for theme selection card, used by Nimbus experiments. -->
+    <string name="onboarding_customize_theme_description" tools:ignore="UnusedResources">最適な明るさでウェブをご覧ください。</string>
+    <!-- Onboarding label for 'Save and start browsing' button, used by Nimbus experiments. -->
+    <string name="onboarding_save_and_start_button">保存してブラウジングを開始</string>
+    <!-- Onboarding theme selection card label for 'skip' button, used by Nimbus experiments. -->
+    <string name="onboarding_customize_theme_skip_button" moz:removedIn="135" tools:ignore="UnusedResources">スキップ</string>
+    <!-- Onboarding theme selection card label for 'dark' option, used by Nimbus experiments. -->
+    <string name="onboarding_customize_theme_dark_option">ダーク</string>
+    <!-- Onboarding theme selection card label for 'light' option, used by Nimbus experiments. -->
+    <string name="onboarding_customize_theme_light_option">ライト</string>
+    <!-- Onboarding theme selection card label for 'System auto' option, used by Nimbus experiments. -->
+    <string name="onboarding_customize_theme_system_option">システムテーマ</string>
+    <!-- Onboarding theme selection card content description for the main image. -->
+    <string name="onboarding_customize_theme_main_image_content_description">アーティストとビルダーツールが描かれたテーマ選択ビューの大きなヘッダー画像。</string>
+    <!-- Onboarding theme selection card content description for the theme selection image. %1$s is placeholder for either 'system', 'light' or 'dark'. -->
+    <string name="onboarding_customize_theme_content_description">%1$s テーマの画像</string>
+
+    <!-- Onboarding theme selection card label for 'Not now' button, used by Nimbus experiments. -->
+    <string name="onboarding_customize_theme_not_now_button" moz:removedIn="136" tools:ignore="UnusedResources">後で</string>
 
     <!-- Search Widget -->
     <!-- Content description for searching with a widget. The first parameter is the name of the application.-->
@@ -563,8 +723,8 @@
     <string name="preferences_category_advanced">詳細設定</string>
     <!-- Preference category for privacy and security settings -->
     <string name="preferences_category_privacy_security">プライバシーとセキュリティ</string>
-    <!-- Preference for advanced site permissions -->
-    <string name="preferences_site_permissions">サイトの許可設定</string>
+    <!-- Preference for advanced site settings -->
+    <string name="preferences_site_settings">サイト設定</string>
     <!-- Preference for private browsing options -->
     <string name="preferences_private_browsing_options">プライベートブラウジング</string>
     <!-- Preference for opening links in a private tab-->
@@ -679,6 +839,8 @@
     <string name="preferences_show_voice_search">音声検索を表示する</string>
     <!-- Preference title for switch preference to show search suggestions also in private mode -->
     <string name="preferences_show_search_suggestions_in_private">プライベートセッションで表示する</string>
+    <!-- Preference title for switch preference to show trending search suggestions -->
+    <string name="preferences_show_trending_search_suggestions">トレンドの候補を表示する</string>
     <!-- Preference title for switch preference to show a clipboard suggestion when searching -->
     <string name="preferences_show_clipboard_suggestions">クリップボードから検索候補を表示する</string>
     <!-- Preference title for switch preference to suggest browsing history when searching -->
@@ -908,17 +1070,42 @@
     <string name="exceptions_empty_message_learn_more_link">詳細情報</string>
 
     <!-- Preference switch for usage and technical data collection -->
-    <string name="preference_usage_data">使用状況と技術データ</string>
+    <string name="preference_usage_data_1">技術データと対話データ</string>
+    <!-- Preference switch for usage and technical data collection -->
+    <string name="preference_usage_data_2" tools:ignore="UnusedResources">技術データと対話データを送信する</string>
+    <!-- Preference switch for usage and technical learn more link -->
+    <string name="preference_usage_data_learn_more" tools:ignore="UnusedResources">詳細情報</string>
     <!-- Preference description for usage and technical data collection -->
-    <string name="preferences_usage_data_description">パフォーマンス情報、使用状況、ハードウェア情報、設定を Mozilla に送信して %1$s の改善に役立てます</string>
+    <string name="preferences_usage_data_description" tools:ignore="UnusedResources" moz:removedIn="136">パフォーマンス情報、使用状況、ハードウェア情報、設定を Mozilla に送信して %1$s の改善に役立てます</string>
+    <!-- Preference description for marketing data collection. Note: The words "Firefox" should NOT be translated -->
+    <string name="preferences_usage_data_description_1" tools:ignore="BrandUsage, UnusedResources">端末、ハードウェア構成、アプリの使用状況に関するデータは、Firefox の機能やパフォーマンス、安定性の向上に役立てられます。</string>
     <!-- Preference switch for marketing data collection -->
-    <string name="preferences_marketing_data">マーケティングデータ</string>
-    <!-- Preference description for marketing data collection -->
-    <string name="preferences_marketing_data_description2">基本的な使用状況データをモバイルマーケティングベンダーの Adjust と共有します</string>
+    <string name="preferences_marketing_data" tools:ignore="UnusedResources" moz:removedIn="136">マーケティングデータ</string>
+    <!-- Preference switch for campaign measurement data (marketing data) collection -->
+    <string name="preferences_marketing_data_2">キャンペーン測定データ</string>
+    <!-- Preference description for marketing data collection. Note: The words "Firefox" and "Mozilla" should NOT be translated -->
+    <string name="preferences_marketing_data_description_3" tools:ignore="BrandUsage, UnusedResources" moz:removedIn="136">Firefox との出会いについて、Mozilla のマーケティングパートナーと共有してください。これにより、Firefox の成長とインターネットのより良い発展に貢献できます。</string>
+    <!-- Preference description for marketing data collection.
+    Note: The words "Firefox" and "Mozilla" should NOT be translated. “That you use it” is to mean that the user is opting in to sharing that they are continuing to use Firefox after installing it; not that Firefox is tracking their “usage” or what they’re using it for. -->
+    <string name="preferences_marketing_data_description_4" tools:ignore="BrandUsage">Firefox を見つけた経緯や、Firefox を使用していることを Mozilla のマーケティング技術パートナーと共有してください。</string>
+    <!-- Learn more link for marketing data preference -->
+    <string name="preferences_marketing_data_learn_more">マーケティングデータについての詳細</string>
+
+    <!-- Preference switch for daily usage ping data collection -->
+    <string name="preferences_daily_usage_ping_title">毎日の使用頻度を送信する</string>
+    <string name="preferences_daily_usage_ping_description">これは Mozilla がアクティブユーザー数を推定するのに役立ちます。</string>
+    <string name="preferences_daily_usage_ping_learn_more">日ごとの使用状況データについての詳細</string>
     <!-- Preference switch title for automatically submitting crash reports -->
-    <string name="preferences_automatically_submit_crashes_title">クラッシュレポートを自動的に送信する</string>
+    <string name="preferences_automatically_send_crashes_title">クラッシュレポートを自動的に送信する</string>
+    <string name="preferences_automatically_submit_crashes_title" moz:removedIn="136" tools:ignore="UnusedResources">クラッシュレポートを自動的に送信する</string>
+
     <!-- Preference switch description for automatically submitting crash reports -->
-    <string name="preferences_automatically_submit_crashes_description">クラッシュ発生後、起動時にクラッシュデータを自動的に Mozilla と共有する</string>
+    <string name="preferences_automatically_send_crashes_description">これはブラウザーの問題の診断と修正に役立てられます。レポートには個人情報や機密性の高い情報が含まれる場合があります。</string>
+    <string name="preferences_automatically_submit_crashes_description" moz:removedIn="136" tools:ignore="UnusedResources">クラッシュ発生後、起動時にクラッシュデータを自動的に Mozilla と共有する</string>
+
+    <!-- Learn more link for crash reporting preference -->
+    <string name="onboarding_preferences_dialog_crash_reporting_learn_more">クラッシュレポートについて詳細</string>
+
     <!-- Title for studies preferences -->
     <string name="preference_experiments_2">調査</string>
     <!-- Summary for studies preferences -->
@@ -1079,26 +1266,36 @@
     <!-- Title of the active section on the studies list -->
     <string name="studies_active">有効</string>
     <!-- Description for studies, it indicates why Firefox use studies. The first parameter is the name of the application. -->
-    <string name="studies_description_2">%1$s が調査をインストールして実行することがあります。</string>
+    <string name="studies_description_2" tools:ignore="UnusedResources" moz:removedIn="136">%1$s が調査をインストールして実行することがあります。</string>
+    <!-- Description for studies -->
+    <string name="studies_description_3">機能やアイデアを一般公開される前に試してみましょう。</string>
+    <!-- Title of the Studies data preference -->
+    <string name="studies_title">調査のインストールと実行</string>
     <!-- Learn more link for studies, links to an article for more information about studies. -->
     <string name="studies_learn_more">詳細情報</string>
     <!-- Dialog message shown after removing a study -->
-    <string name="studies_restart_app">変更を適用するためアプリケーションを終了します</string>
+    <string name="studies_restart_app" moz:removedIn="135">変更を適用するためアプリケーションを終了します</string>
     <!-- Dialog button to confirm the removing a study. -->
-    <string name="studies_restart_dialog_ok">OK</string>
+    <string name="studies_restart_dialog_ok" moz:removedIn="135">OK</string>
     <!-- Dialog button text for canceling removing a study. -->
-    <string name="studies_restart_dialog_cancel">キャンセル</string>
+    <string name="studies_restart_dialog_cancel" moz:removedIn="135">キャンセル</string>
 
     <!-- Toast shown after turning on/off studies preferences -->
-    <string name="studies_toast_quit_application" tools:ignore="UnusedResources">変更を適用するためアプリケーションを終了します...</string>
+    <string name="studies_toast_quit_application" moz:removedIn="135" tools:ignore="UnusedResources">変更を適用するためアプリケーションを終了します...</string>
 
     <!-- Sessions -->
     <!-- Title for the list of tabs -->
-    <string name="tab_header_label">タブを開く</string>
+    <string name="tab_header_label" moz:removedIn="135" tools:ignore="UnusedResources">タブを開く</string>
     <!-- Title for the list of tabs in the current private session -->
-    <string name="tabs_header_private_tabs_title">プライベートタブ</string>
+    <string name="tabs_header_private_tabs_title" moz:removedIn="136" tools:ignore="UnusedResources">プライベートタブ</string>
+    <!-- Title for the list of tabs in the current private session used by a11y services
+    The %1$s will be replaced by the number of opened private tabs -->
+    <string name="tabs_header_private_tabs_counter_title">開いているプライベートタブ: %1$s 個。タップしてタブを切り替えます。</string>
     <!-- Title for the list of tabs in the synced tabs -->
-    <string name="tabs_header_synced_tabs_title">同期したタブ</string>
+    <string name="tabs_header_synced_tabs_title" moz:removedIn="136" tools:ignore="UnusedResources">同期したタブ</string>
+    <!-- Title for the list of tabs in the synced tabs used by a11y services
+    The %1$s will be replaced by the number of opened synced tabs -->
+    <string name="tabs_header_synced_tabs_counter_title">同期した開いているタブ: %1$s 個。タップしてタブを切り替えます。</string>
     <!-- Content description (not visible, for screen readers etc.): Add tab button. Adds a news tab when pressed -->
     <string name="add_tab">タブを追加</string>
     <!-- Content description (not visible, for screen readers etc.): Add tab button. Adds a news tab when pressed -->
@@ -1150,8 +1347,6 @@
 
     <!-- Hint for adding name of a collection -->
     <string name="collection_name_hint">コレクション名</string>
-    <!-- Text for the menu button to rename a top site -->
-    <string name="rename_top_site" moz:removedIn="130" tools:ignore="UnusedResources">タイトル変更</string>
     <!-- Text for the menu button to remove a top site -->
     <string name="remove_top_site">削除</string>
 
@@ -1204,6 +1399,55 @@
     <string name="download_delete_item_1">削除</string>
 
 
+    <!-- WebCompat Reporter -->
+
+
+    <!-- WebCompat Reporter -->
+    <!-- The title of the Web Compat Reporter feature. This is displayed in the top app bar. -->
+    <string name="webcompat_reporter_screen_title">動作しないサイトを報告</string>
+    <!-- The description of the Web Compat Reporter feature. This first parameter is the name of the application (For example: Fenix) -->
+    <string name="webcompat_reporter_description">%1$s をすべての人にとってより良いものにするためにご協力ください。Mozilla の担当者が、送信された情報を使用してウェブサイトの問題を解決します。</string>
+    <!-- The text field label of the URL text field. This is displayed above the user-inputted URL. -->
+    <string name="webcompat_reporter_label_url">URL</string>
+    <!-- The error message of the URL text field when an invalid URL has been entered. -->
+    <string name="webcompat_reporter_url_error_invalid">正しい URL を入力してください</string>
+    <!-- The label/title of an optional field in the Web Compat Reporter feature for explaining a high-level reason why the site is broken. -->
+    <string name="webcompat_reporter_label_whats_broken" moz:removedIn="136" tools:ignore="UnusedResources">不具合の詳細 (任意)</string>
+    <!-- The label/title of a field in the Web Compat Reporter feature for explaining a high-level reason why the site is broken. -->
+    <string name="webcompat_reporter_label_whats_broken_2">何が動作しませんか？</string>
+    <!-- The placeholder text for the dropdown where a user selects a high-level reason why the site is broken. -->
+    <string name="webcompat_reporter_choose_reason">不具合の対象を選んでください</string>
+    <!-- The error message of the dropdown, prompting the user to select a high-level reason why the site is broken. -->
+    <string name="webcompat_reporter_choose_reason_error">不具合の対象を選んでください</string>
+    <!-- The label/title of an optional field in the Web Compat Reporter feature for adding additional information. -->
+    <string name="webcompat_reporter_label_description">問題の詳細を記入してください (任意)</string>
+    <!-- The button text for navigating away from the feature to provide more information on the broken site's bug report. -->
+    <string name="webcompat_reporter_send_more_info">詳しい情報を送信</string>
+    <!-- The button text for the cancel button to leave the Web Compat Reporter feature. -->
+    <string name="webcompat_reporter_cancel">キャンセル</string>
+    <!-- The button text for the send button to submit the provided form data. -->
+    <string name="webcompat_reporter_send">送信</string>
+
+
+    <!-- Text for a snackbar to confirm the successful submission of a WebCompat report. -->
+    <string name="webcompat_reporter_success_snackbar_text">レポートが送信されました</string>
+    <!-- Button text for closing or dismissing the snackbar shown after successfully submitting a WebCompat report. -->
+    <string name="webcompat_reporter_dismiss_success_snackbar_text">閉じる</string>
+
+    <!-- These reason strings are dropdown options on a WebCompat reporter form, indicating what is broken on the site. -->
+    <!-- Broken site reason text for site slow or not working -->
+    <string name="webcompat_reporter_reason_slow">サイトの動作が遅いまたは動作しない</string>
+    <!-- Broken site reason text for images or videos -->
+    <string name="webcompat_reporter_reason_media">画像または動画</string>
+    <!-- Broken site reason text for buttons, links, and other content -->
+    <string name="webcompat_reporter_reason_content">ボタン、リンクおよび他のコンテンツ</string>
+    <!-- Broken site reason text for sign in or sign out -->
+    <string name="webcompat_reporter_reason_account">ログインまたはログアウト</string>
+    <!-- Broken site reason text for ad blocker -->
+    <string name="webcompat_reporter_reason_ad_blocker">広告ブロッカー</string>
+    <!-- Broken site reason text for something else -->
+    <string name="webcompat_reporter_reason_other">その他</string>
+
     <!-- Crashes -->
     <!-- Title text displayed on the tab crash page. This first parameter is the name of the application (For example: Fenix) -->
     <string name="tab_crash_title_2">申し訳ありません。%1$s はそのページを読み込めません。</string>
@@ -1226,19 +1470,21 @@
     <!-- Bookmarks -->
     <!-- Confirmation message for a dialog confirming if the user wants to delete the selected folder -->
     <string name="bookmark_delete_folder_confirmation_dialog">このフォルダーを削除してもよろしいですか？</string>
+    <!-- Confirmation message for a dialog confirming if the user wants to delete multiple items. -->
+    <string name="bookmark_delete_folders_confirmation_dialog">本当に選択したアイテムを削除してもよろしいですか？</string>
     <!-- Confirmation message for a dialog confirming if the user wants to delete multiple items including folders. Parameter will be replaced by app name. -->
     <string name="bookmark_delete_multiple_folders_confirmation_dialog">選択したアイテムを %s から削除します</string>
     <!-- Text for the cancel button on delete bookmark dialog -->
     <string name="bookmark_delete_negative">キャンセル</string>
     <!-- Screen title for adding a bookmarks folder -->
     <string name="bookmark_add_folder">フォルダー追加</string>
-    <!-- Snackbar title shown after a bookmark has been created. -->
-    <string name="bookmark_saved_snackbar">ブックマークを保存しました!</string>
     <!-- Snackbar title that confirms a bookmark was saved into a folder. Parameter will be replaced by the name of the folder the bookmark was saved into. -->
     <string name="bookmark_saved_in_folder_snackbar">“%s” に保存しました</string>
     <!-- Snackbar edit button shown after a bookmark has been created. -->
     <string name="edit_bookmark_snackbar_action">編集</string>
 
+    <!-- Bookmark menu move button -->
+    <string name="bookmark_menu_move_button">移動</string>
     <!-- Bookmark overflow menu edit button -->
     <string name="bookmark_menu_edit_button">編集</string>
     <!-- Bookmark overflow menu copy button -->
@@ -1298,6 +1544,10 @@
     <!-- Bookmark undo button for deletion snackbar action -->
     <string name="bookmark_undo_deletion">元に戻す</string>
 
+    <!-- Bookmark snackbar message for deleting a single item. Parameter is the title of the item being deleted -->
+    <string name="bookmark_delete_single_item">%s を削除しました</string>
+    <!-- Bookmark snackbar message for deleting multiple items. Parameter is the number of items being deleted -->
+    <string name="bookmark_delete_multiple_items">削除されたアイテム: %s</string>
     <!-- Text for the button to search all bookmarks -->
     <string name="bookmark_search">検索語を入力</string>
 
@@ -1306,8 +1556,10 @@
 
     <!-- Content description for the bookmark list new folder navigation bar button -->
     <string name="bookmark_add_new_folder_button_content_description">新しいフォルダーを追加します</string>
-    <!-- Content description for the bookmark navigation bar close button -->
-    <string name="bookmark_close_button_content_description" tools:ignore="UnusedResources" moz:removedIn="130">ブックマークを閉じます</string>
+    <!-- Content description for the bookmark screen delete bookmark navigation bar button -->
+    <string name="bookmark_delete_bookmark_content_description">ブックマークを削除</string>
+    <!-- Content description for the bookmark screen delete bookmark folder navigation bar button -->
+    <string name="bookmark_delete_folder_content_description">フォルダーを削除</string>
     <!-- Content description for bookmark search floating action button -->
     <string name="bookmark_search_button_content_description">ブックマークを検索します</string>
 
@@ -1325,6 +1577,9 @@
 
     <!-- Description for the bookmark list empty state when you're in an empty folder. -->
     <string name="bookmark_empty_list_folder_description">後でお気に入りのサイトを見つけられるように、閲覧したサイトをブックマークに追加しましょう。</string>
+
+    <!-- Description for the add new folder button when selecting a folder. -->
+    <string name="bookmark_select_folder_new_folder_button_title">新しいフォルダー</string>
 
     <!-- Site Permissions -->
     <!-- Button label that take the user to the Android App setting -->
@@ -1410,6 +1665,13 @@
     <string name="studies_on">オン</string>
     <!-- Summary of studies data on quit preference if it is set to off -->
     <string name="studies_off">オフ</string>
+
+    <!-- Category header of a preference that allows a user to alter settings related to web permissions. -->
+    <string name="preferences_category_permissions">許可設定</string>
+    <!-- Category header of a preference that allows a user to alter settings related to web content. -->
+    <string name="preferences_category_content">コンテンツ</string>
+    <!-- Preference for altering the default browsing mode. When enabled, the desktop site will always be requested. -->
+    <string name="preference_feature_desktop_mode_default">常に PC 版サイトを要求する</string>
 
     <!-- Collections -->
     <!-- Collections header on home fragment -->
@@ -1520,17 +1782,6 @@
     <!-- Text shown in the notification that pops up to remind the user that a private browsing session is active. -->
     <string name="notification_pbm_delete_text_2">プライベートタブを閉じる</string>
 
-    <!-- Text for option one, shown in microsurvey.-->
-    <string name="microsurvey_survey_5_point_option_0" tools:ignore="UnusedResources" moz:removedIn="130">どちらでもない</string>
-    <!-- Text for option two, shown in microsurvey.-->
-    <string name="microsurvey_survey_5_point_option_1" tools:ignore="UnusedResources" moz:removedIn="130">非常に不満</string>
-    <!-- Text for option three, shown in microsurvey.-->
-    <string name="microsurvey_survey_5_point_option_2" tools:ignore="UnusedResources" moz:removedIn="130">不満</string>
-    <!-- Text for option four, shown in microsurvey.-->
-    <string name="microsurvey_survey_5_point_option_3" tools:ignore="UnusedResources" moz:removedIn="130">満足</string>
-    <!-- Text for option five, shown in microsurvey.-->
-    <string name="microsurvey_survey_5_point_option_4" tools:ignore="UnusedResources" moz:removedIn="130">とても満足</string>
-
     <!-- Text shown in the notification that pops up to remind the user that a private browsing session is active for Android 14+ -->
     <string name="notification_erase_title_android_14">プライベートタブを閉じますか？</string>
     <string name="notification_erase_text_android_14">プライベートタブを閉じるには、この通知をタップまたはスワイプしてください。</string>
@@ -1581,8 +1832,8 @@
     <string name="snackbar_tabs_closed">すべてのタブを閉じました</string>
     <!-- Text shown in snackbar when user closes multiple inactive tabs. %1$s will be replaced with the number of tabs closed. -->
     <string name="snackbar_num_tabs_closed">閉じたタブの数: %1$s</string>
-    <!-- Text shown in snackbar when user bookmarks a list of tabs -->
-    <string name="snackbar_message_bookmarks_saved">ブックマークを保存しました</string>
+    <!-- Text shown in snackbar when user bookmarks a list of tabs. Parameter will be replaced by the name of the folder the bookmark was saved into.-->
+    <string name="snackbar_message_bookmarks_saved_in">ブックマークを “%s” に保存しました。</string>
     <!-- Text shown in snackbar when user adds a site to shortcuts -->
     <string name="snackbar_added_to_shortcuts">ショートカットに追加しました</string>
     <!-- Text shown in snackbar when user closes a private tab -->
@@ -1610,8 +1861,6 @@
     <string name="tab_collection_dialog_message">本当に %1$s を削除してもよろしいですか？</string>
     <!-- Tab collection deletion prompt dialog option to delete the collection -->
     <string name="tab_collection_dialog_positive">削除</string>
-    <!-- Text displayed in a notification when the user enters full screen mode -->
-    <string name="full_screen_notification" moz:removedIn="130" tools:ignore="UnusedResources">全画面表示モードです</string>
 
     <!-- Message for copying the URL via long press on the toolbar -->
     <string name="url_copied">URL をコピーしました</string>
@@ -1665,8 +1914,6 @@
 
     <!-- Title text of a delete browsing data dialog. -->
     <string name="delete_history_prompt_title">削除する期間</string>
-    <!-- Body text of a delete browsing data dialog. -->
-    <string name="delete_history_prompt_body" moz:RemovedIn="130" tools:ignore="UnusedResources">履歴 (他の端末から同期されたものを含む)、Cookie および他の閲覧データを削除します。</string>
     <!-- Body text of a delete browsing data dialog. -->
     <string name="delete_history_prompt_body_2">履歴を削除します (他の端末から同期した履歴を含む)</string>
     <!-- Radio button in the delete browsing data dialog to delete history items for the last hour. -->
@@ -1784,8 +2031,6 @@
     <!-- Preference for enhanced tracking protection for the custom protection settings -->
     <string name="preference_enhanced_tracking_protection_custom_cryptominers">暗号通貨マイニング</string>
     <!-- Preference for enhanced tracking protection for the custom protection settings -->
-    <string name="preference_enhanced_tracking_protection_custom_fingerprinters" moz:RemovedIn="130" tools:ignore="UnusedResources">フィンガープリント採取</string>
-    <!-- Preference for enhanced tracking protection for the custom protection settings -->
     <string name="preference_enhanced_tracking_protection_custom_known_fingerprinters">既知のフィンガープリント採取</string>
     <!-- Button label for navigating to the Enhanced Tracking Protection details -->
     <string name="enhanced_tracking_protection_details">詳細</string>
@@ -1809,10 +2054,6 @@
     <string name="etp_cryptominers_title">暗号通貨マイニング</string>
     <!-- Description of cryptominers that can be blocked by Enhanced Tracking Protection -->
     <string name="etp_cryptominers_description">悪意のあるスクリプトによる暗号通貨マイニングを防止します。</string>
-    <!-- Category of trackers (fingerprinters) that can be blocked by Enhanced Tracking Protection -->
-    <string name="etp_fingerprinters_title" moz:RemovedIn="130" tools:ignore="UnusedResources">フィンガープリント採取</string>
-    <!-- Description of fingerprinters that can be blocked by Enhanced Tracking Protection -->
-    <string name="etp_fingerprinters_description" moz:RemovedIn="130" tools:ignore="UnusedResources">端末を一意に識別できるデータがユーザーを追跡する目的で収集されるのを防止します。</string>
     <!-- Description of fingerprinters that can be blocked by Enhanced Tracking Protection -->
     <string name="etp_known_fingerprinters_description">端末を一意に識別できるデータがユーザーを追跡する目的で収集されるのを防止します。</string>
     <!-- Category of trackers (tracking content) that can be blocked by Enhanced Tracking Protection -->
@@ -1863,6 +2104,8 @@
     <string name="about_privacy_notice">個人情報保護方針</string>
     <!-- About page link text to open know your rights link -->
     <string name="about_know_your_rights">あなたの権利について</string>
+    <!-- About page link text to open terms of use link -->
+    <string name="about_terms_of_use" tools:ignore="UnusedResources">利用規約</string>
     <!-- About page link text to open licensing information link -->
     <string name="about_licensing_information">ライセンス情報</string>
     <!-- About page link text to open a screen with libraries that are used -->
@@ -1872,7 +2115,7 @@
         The first parameter is number of long clicks left to enable the menu -->
     <string name="about_debug_menu_toast_progress">デバッグメニュー: 有効にするには %1$d 回クリックしてください</string>
     <string name="about_debug_menu_toast_done">デバッグメニューが有効です</string>
-  
+
     <!-- Browser long press popup menu -->
     <!-- Copy the current url -->
     <string name="browser_toolbar_long_press_popup_copy">コピー</string>
@@ -1880,10 +2123,10 @@
     <string name="browser_toolbar_long_press_popup_paste_and_go">貼り付けて移動</string>
     <!-- Paste the text in the clipboard -->
     <string name="browser_toolbar_long_press_popup_paste">貼り付け</string>
-  
+
     <!-- Snackbar message shown after an URL has been copied to clipboard. -->
     <string name="browser_toolbar_url_copied_to_clipboard_snackbar">URL をクリップボードにコピーしました</string>
-  
+
     <!-- Title text for the Add To Homescreen dialog -->
     <string name="add_to_homescreen_title">ホーム画面に追加</string>
 
@@ -2288,8 +2531,6 @@
     <string name="shortcut_name_hint">ショートカット名</string>
     <!-- Hint for editing URL of a shortcut. -->
     <string name="shortcut_url_hint">ショートカット URL</string>
-    <!-- Button caption to confirm the renaming of the top site. -->
-    <string name="top_sites_rename_dialog_ok" moz:removedIn="130" tools:ignore="UnusedResources">OK</string>
     <!-- Dialog button text for canceling the rename top site prompt. -->
     <string name="top_sites_rename_dialog_cancel">キャンセル</string>
 
@@ -2337,6 +2578,8 @@
     <!-- Search suggestions title for Firefox Suggest. -->
     <string name="firefox_suggest_header" tools:ignore="BrandUsage">Firefox Suggest</string>
 
+    <!-- Search suggestions title for trending searches. -->
+    <string name="trending_searches_header">トレンド検索</string>
     <!-- Title for search suggestions when Google is the default search suggestion engine. -->
     <string name="google_search_engine_suggestion_header">Google 検索</string>
     <!-- Title for search suggestions when the default search suggestion engine is anything other than Google. The first parameter is default search engine name. -->
@@ -2355,7 +2598,7 @@
     <string name="radio_preference_info_content_description">詳細はこちら</string>
 
     <!-- Content description for the action bar "up" button -->
-    <string name="action_bar_up_description" moz:removedIn="124" tools:ignore="UnusedResources">上へ移動します</string>
+    <string name="action_bar_up_description">上へ移動します</string>
 
     <!-- Content description for privacy content close button -->
     <string name="privacy_content_close_button_content_description">閉じる</string>
@@ -2384,167 +2627,155 @@
 
     <!-- Review quality check feature-->
     <!-- Name for the review quality check feature used as title for the panel. -->
-    <string name="review_quality_check_feature_name_2">レビューチェッカー</string>
+    <string name="review_quality_check_feature_name_2" moz:removedIn="136" tools:ignore="UnusedResources">レビューチェッカー</string>
     <!-- Summary for grades A and B for review quality check adjusted grading. -->
-    <string name="review_quality_check_grade_a_b_description">信頼できるレビュー</string>
+    <string name="review_quality_check_grade_a_b_description" moz:removedIn="136" tools:ignore="UnusedResources">信頼できるレビュー</string>
     <!-- Summary for grade C for review quality check adjusted grading. -->
-    <string name="review_quality_check_grade_c_description">信頼できるレビューとできないものが混在</string>
+    <string name="review_quality_check_grade_c_description" moz:removedIn="136" tools:ignore="UnusedResources">信頼できるレビューとできないものが混在</string>
     <!-- Summary for grades D and F for review quality check adjusted grading. -->
-    <string name="review_quality_check_grade_d_f_description">信頼できないレビュー</string>
+    <string name="review_quality_check_grade_d_f_description" moz:removedIn="136" tools:ignore="UnusedResources">信頼できないレビュー</string>
     <!-- Text for title presenting the reliability of a product's reviews. -->
-    <string name="review_quality_check_grade_title">これらのレビューはどのくらい信頼できますか？</string>
+    <string name="review_quality_check_grade_title" moz:removedIn="136" tools:ignore="UnusedResources">これらのレビューはどのくらい信頼できますか？</string>
 
     <!-- Title for when the rating has been updated by the review checker -->
-    <string name="review_quality_check_adjusted_rating_title">レートが調整されています</string>
+    <string name="review_quality_check_adjusted_rating_title" moz:removedIn="136" tools:ignore="UnusedResources">レートが調整されています</string>
     <!-- Description for a product's adjusted star rating. The text presents that the product's reviews which were evaluated as unreliable were removed from the adjusted rating. -->
-    <string name="review_quality_check_adjusted_rating_description_2">信頼できないレビューに基づきます</string>
+    <string name="review_quality_check_adjusted_rating_description_2" moz:removedIn="136" tools:ignore="UnusedResources">信頼できないレビューに基づきます</string>
     <!-- Title for list of highlights from a product's review emphasizing a product's important traits. -->
-    <string name="review_quality_check_highlights_title">最近の注目レビュー</string>
+    <string name="review_quality_check_highlights_title" moz:removedIn="136" tools:ignore="UnusedResources">最近の注目レビュー</string>
     <!-- Title for section explaining how we analyze the reliability of a product's reviews. -->
-    <string name="review_quality_check_explanation_title">レビュー品質の決定方法について</string>
+    <string name="review_quality_check_explanation_title" moz:removedIn="136" tools:ignore="UnusedResources">レビュー品質の決定方法について</string>
     <!-- Paragraph explaining how we analyze the reliability of a product's reviews. First parameter is the Fakespot product name. In the phrase "Fakespot by Mozilla", "by" can be localized. Does not need to stay by. -->
-    <string name="review_quality_check_explanation_body_reliability">私たちは、%s by Mozilla の AI 技術を用いて製品レビューの信頼性を解析します。これは製品そのものの品質ではなく、製品の信頼できるレビューへのアクセスを助けるものです。</string>
+    <string name="review_quality_check_explanation_body_reliability" moz:removedIn="136" tools:ignore="UnusedResources">私たちは、%s by Mozilla の AI 技術を用いて製品レビューの信頼性を解析します。これは製品そのものの品質ではなく、製品の信頼できるレビューへのアクセスを助けるものです。</string>
     <!-- Paragraph explaining the grading system we use to classify the reliability of a product's reviews. -->
-    <string name="review_quality_check_info_review_grade_header"><![CDATA[私たちは、各製品のレビューを A から F までの <b>レターグレード</b> で評価します。]]></string>
+    <string name="review_quality_check_info_review_grade_header" moz:removedIn="136" tools:ignore="UnusedResources"><![CDATA[私たちは、各製品のレビューを A から F までの <b>レターグレード</b> で評価します。]]></string>
     <!-- Description explaining grades A and B for review quality check adjusted grading. -->
-    <string name="review_quality_check_info_grade_info_AB">信頼できるレビューです。これは正直で偏見を持たない本物の顧客によるレビューであると思われます。</string>
+    <string name="review_quality_check_info_grade_info_AB" moz:removedIn="136" tools:ignore="UnusedResources">信頼できるレビューです。これは正直で偏見を持たない本物の顧客によるレビューであると思われます。</string>
     <!-- Description explaining grade C for review quality check adjusted grading. -->
-    <string name="review_quality_check_info_grade_info_C">信頼できるレビューと信頼できないレビューが混在していると思われます。</string>
+    <string name="review_quality_check_info_grade_info_C" moz:removedIn="136" tools:ignore="UnusedResources">信頼できるレビューと信頼できないレビューが混在していると思われます。</string>
     <!-- Description explaining grades D and F for review quality check adjusted grading. -->
-    <string name="review_quality_check_info_grade_info_DF">信頼できないレビューです。これは偽物または偏見を持ったレビュアーによるレビューであると思われます。</string>
+    <string name="review_quality_check_info_grade_info_DF" moz:removedIn="136" tools:ignore="UnusedResources">信頼できないレビューです。これは偽物または偏見を持ったレビュアーによるレビューであると思われます。</string>
     <!-- Paragraph explaining how a product's adjusted grading is calculated. -->
-    <string name="review_quality_check_explanation_body_adjusted_grading"><![CDATA[<b>調整されたレート</b> は私たちが信頼するに足ると評価したレビューのみを基にしています。]]></string>
+    <string name="review_quality_check_explanation_body_adjusted_grading" moz:removedIn="136" tools:ignore="UnusedResources"><![CDATA[<b>調整されたレート</b> は私たちが信頼するに足ると評価したレビューのみを基にしています。]]></string>
     <!-- Paragraph explaining product review highlights. First parameter is the name of the retailer (e.g. Amazon). -->
-    <string name="review_quality_check_explanation_body_highlights"><![CDATA[<b>注目レビュー</b> は最近 80 日以内の %s からのレビューで私たちが信頼するに足ると評価したものです。]]></string>
+    <string name="review_quality_check_explanation_body_highlights" moz:removedIn="136" tools:ignore="UnusedResources"><![CDATA[<b>注目レビュー</b> は最近 80 日以内の %s からのレビューで私たちが信頼するに足ると評価したものです。]]></string>
     <!-- Text for learn more caption presenting a link with information about review quality. First parameter is for clickable text defined in review_quality_check_info_learn_more_link. -->
-    <string name="review_quality_check_info_learn_more">%s についての詳細。</string>
+    <string name="review_quality_check_info_learn_more" moz:removedIn="136" tools:ignore="UnusedResources">%s についての詳細。</string>
     <!-- Clickable text that links to review quality check SuMo page. First parameter is the Fakespot product name. -->
-    <string name="review_quality_check_info_learn_more_link_2">%s がレビュー品質を決定する方法について</string>
+    <string name="review_quality_check_info_learn_more_link_2" moz:removedIn="136" tools:ignore="UnusedResources">%s がレビュー品質を決定する方法について</string>
     <!-- Text for title of settings section. -->
-    <string name="review_quality_check_settings_title">設定</string>
+    <string name="review_quality_check_settings_title" moz:removedIn="136" tools:ignore="UnusedResources">設定</string>
     <!-- Text for label for switch preference to show recommended products from review quality check settings section. -->
-    <string name="review_quality_check_settings_recommended_products">レビューチェッカーに広告を表示する</string>
+    <string name="review_quality_check_settings_recommended_products" moz:removedIn="136" tools:ignore="UnusedResources">レビューチェッカーに広告を表示する</string>
     <!-- Description for switch preference to show recommended products from review quality check settings section. First parameter is for clickable text defined in review_quality_check_settings_recommended_products_learn_more.-->
-    <string name="review_quality_check_settings_recommended_products_description_2" tools:ignore="UnusedResources">時々、関連製品の広告が表示されます。私たちはレビュー品質基準を満たした信頼できる製品のみを広告しています。%s</string>
+    <string name="review_quality_check_settings_recommended_products_description_2" moz:removedIn="136" tools:ignore="UnusedResources">時々、関連製品の広告が表示されます。私たちはレビュー品質基準を満たした信頼できる製品のみを広告しています。%s</string>
     <!-- Clickable text that links to review quality check recommended products support article. -->
-    <string name="review_quality_check_settings_recommended_products_learn_more" tools:ignore="UnusedResources">詳細情報</string>
+    <string name="review_quality_check_settings_recommended_products_learn_more" moz:removedIn="136" tools:ignore="UnusedResources">詳細情報</string>
     <!-- Text for turning sidebar off button from review quality check settings section. -->
-    <string name="review_quality_check_settings_turn_off">レビューチェッカーをオフにする</string>
+    <string name="review_quality_check_settings_turn_off" moz:removedIn="136" tools:ignore="UnusedResources">レビューチェッカーをオフにする</string>
     <!-- Text for title of recommended product section. This is displayed above a product image, suggested as an alternative to the product reviewed. -->
-    <string name="review_quality_check_ad_title" tools:ignore="UnusedResources">さらに検討する</string>
+    <string name="review_quality_check_ad_title" moz:removedIn="136" tools:ignore="UnusedResources">さらに検討する</string>
     <!-- Caption for recommended product section indicating this is an ad by Fakespot. First parameter is the Fakespot product name. -->
-    <string name="review_quality_check_ad_caption" tools:ignore="UnusedResources">%s による広告</string>
+    <string name="review_quality_check_ad_caption" moz:removedIn="136" tools:ignore="UnusedResources">%s による広告</string>
     <!-- Caption for review quality check panel. First parameter is for clickable text defined in review_quality_check_powered_by_link. -->
-    <string name="review_quality_check_powered_by_2">レビュー チェッカーは %s の提供です</string>
+    <string name="review_quality_check_powered_by_2" moz:removedIn="136" tools:ignore="UnusedResources">レビュー チェッカーは %s の提供です</string>
     <!-- Clickable text that links to Fakespot.com. First parameter is the Fakespot product name. In the phrase "Fakespot by Mozilla", "by" can be localized. Does not need to stay by. -->
-    <string name="review_quality_check_powered_by_link" tools:ignore="UnusedResources">%s by Mozilla</string>
+    <string name="review_quality_check_powered_by_link" moz:removedIn="136" tools:ignore="UnusedResources">%s by Mozilla</string>
     <!-- Text for title of warning card informing the user that the current analysis is outdated. -->
-    <string name="review_quality_check_outdated_analysis_warning_title" tools:ignore="UnusedResources">新し情報の確認</string>
+    <string name="review_quality_check_outdated_analysis_warning_title" moz:removedIn="136" tools:ignore="UnusedResources">新し情報の確認</string>
     <!-- Text for button from warning card informing the user that the current analysis is outdated. Clicking this should trigger the product's re-analysis. -->
-    <string name="review_quality_check_outdated_analysis_warning_action" tools:ignore="UnusedResources">今すぐ確認</string>
+    <string name="review_quality_check_outdated_analysis_warning_action" moz:removedIn="136" tools:ignore="UnusedResources">今すぐ確認</string>
     <!-- Title for warning card informing the user that the current product does not have enough reviews for a review analysis. -->
-    <string name="review_quality_check_no_reviews_warning_title">まだ十分な数のレビューがありません</string>
+    <string name="review_quality_check_no_reviews_warning_title" moz:removedIn="136" tools:ignore="UnusedResources">まだ十分な数のレビューがありません</string>
     <!-- Text for body of warning card informing the user that the current product does not have enough reviews for a review analysis. -->
-    <string name="review_quality_check_no_reviews_warning_body">この製品の品質を確認可能な数のレビューが掲載されるまでお待ちください。</string>
+    <string name="review_quality_check_no_reviews_warning_body" moz:removedIn="136" tools:ignore="UnusedResources">この製品の品質を確認可能な数のレビューが掲載されるまでお待ちください。</string>
     <!-- Title for warning card informing the user that the current product is currently not available. -->
-    <string name="review_quality_check_product_availability_warning_title">製品が利用できません</string>
+    <string name="review_quality_check_product_availability_warning_title" moz:removedIn="136" tools:ignore="UnusedResources">製品が利用できません</string>
     <!-- Text for the body of warning card informing the user that the current product is currently not available. -->
-    <string name="review_quality_check_product_availability_warning_body">この製品が再入荷されている場合はご報告ください。その製品レビューを確認します。</string>
+    <string name="review_quality_check_product_availability_warning_body" moz:removedIn="136" tools:ignore="UnusedResources">この製品が再入荷されている場合はご報告ください。その製品レビューを確認します。</string>
     <!-- Clickable text for warning card informing the user that the current product is currently not available. Clicking this should inform the server that the product is available. -->
-    <string name="review_quality_check_product_availability_warning_action_2">製品の在庫があることを報告する</string>
+    <string name="review_quality_check_product_availability_warning_action_2" moz:removedIn="136" tools:ignore="UnusedResources">製品の在庫があることを報告する</string>
 
     <!-- Title for warning card informing the user that the current product's analysis is still processing. The parameter is the percentage progress (0-100%) of the analysis process (e.g. 56%). -->
-    <string name="review_quality_check_analysis_in_progress_warning_title_2">レビューの品質の確認 (%s)</string>
+    <string name="review_quality_check_analysis_in_progress_warning_title_2" moz:removedIn="136" tools:ignore="UnusedResources">レビューの品質の確認 (%s)</string>
     <!-- Text for body of warning card informing the user that the current product's analysis is still processing. -->
-    <string name="review_quality_check_analysis_in_progress_warning_body">これには約 60 秒かかります。</string>
+    <string name="review_quality_check_analysis_in_progress_warning_body" moz:removedIn="136" tools:ignore="UnusedResources">これには約 60 秒かかります。</string>
     <!-- Title for info card displayed after the user reports a product is back in stock. -->
-    <string name="review_quality_check_analysis_requested_info_title">ご報告ありがとうございます。</string>
+    <string name="review_quality_check_analysis_requested_info_title" moz:removedIn="136" tools:ignore="UnusedResources">ご報告ありがとうございます。</string>
     <!-- Text for body of info card displayed after the user reports a product is back in stock. -->
-    <string name="review_quality_check_analysis_requested_info_body">この製品のレビュー情報は 24 時間以内に更新されます。後でもう一度確認してください。</string>
+    <string name="review_quality_check_analysis_requested_info_body" moz:removedIn="136" tools:ignore="UnusedResources">この製品のレビュー情報は 24 時間以内に更新されます。後でもう一度確認してください。</string>
     <!-- Title for info card displayed when the user review checker while on a product that Fakespot does not analyze (e.g. gift cards, music). -->
-    <string name="review_quality_check_not_analyzable_info_title">これらのレビューは確認できません</string>
+    <string name="review_quality_check_not_analyzable_info_title" moz:removedIn="136" tools:ignore="UnusedResources">これらのレビューは確認できません</string>
     <!-- Text for body of info card displayed when the user review checker while on a product that Fakespot does not analyze (e.g. gift cards, music). -->
-    <string name="review_quality_check_not_analyzable_info_body">残念ながら、特定の種類の商品のレビュー品質は確認できません。たとえば、ギフトカードやストリーミングビデオ、音楽、ゲームなどです。</string>
+    <string name="review_quality_check_not_analyzable_info_body" moz:removedIn="136" tools:ignore="UnusedResources">残念ながら、特定の種類の商品のレビュー品質は確認できません。たとえば、ギフトカードやストリーミングビデオ、音楽、ゲームなどです。</string>
     <!-- Title for info card displayed when another user reported the displayed product is back in stock. -->
-    <string name="review_quality_check_analysis_requested_other_user_info_title" tools:ignore="UnusedResources">情報は間もなく更新</string>
+    <string name="review_quality_check_analysis_requested_other_user_info_title" moz:removedIn="136" tools:ignore="UnusedResources">情報は間もなく更新</string>
     <!-- Text for body of info card displayed when another user reported the displayed product is back in stock. -->
-    <string name="review_quality_check_analysis_requested_other_user_info_body" tools:ignore="UnusedResources">この製品のレビュー情報は 24 時間以内に更新されます。後でもう一度確認してください。</string>
+    <string name="review_quality_check_analysis_requested_other_user_info_body" moz:removedIn="136" tools:ignore="UnusedResources">この製品のレビュー情報は 24 時間以内に更新されます。後でもう一度確認してください。</string>
     <!-- Title for info card displayed to the user when analysis finished updating. -->
-    <string name="review_quality_check_analysis_updated_confirmation_title" tools:ignore="UnusedResources">解析は最新です</string>
+    <string name="review_quality_check_analysis_updated_confirmation_title" moz:removedIn="136" tools:ignore="UnusedResources">解析は最新です</string>
     <!-- Text for the action button from info card displayed to the user when analysis finished updating. -->
-    <string name="review_quality_check_analysis_updated_confirmation_action" tools:ignore="UnusedResources">OK</string>
+    <string name="review_quality_check_analysis_updated_confirmation_action" moz:removedIn="136" tools:ignore="UnusedResources">OK</string>
     <!-- Title for error card displayed to the user when an error occurred. -->
-    <string name="review_quality_check_generic_error_title">現在入手可能な情報はありません</string>
+    <string name="review_quality_check_generic_error_title" moz:removedIn="136" tools:ignore="UnusedResources">現在入手可能な情報はありません</string>
     <!-- Text for body of error card displayed to the user when an error occurred. -->
-    <string name="review_quality_check_generic_error_body">現在、問題の解決に取り組んでいます。後でもう一度確認してください。</string>
+    <string name="review_quality_check_generic_error_body" moz:removedIn="136" tools:ignore="UnusedResources">現在、問題の解決に取り組んでいます。後でもう一度確認してください。</string>
     <!-- Title for error card displayed to the user when the device is disconnected from the network. -->
-    <string name="review_quality_check_no_connection_title">ネットワーク接続がありません</string>
+    <string name="review_quality_check_no_connection_title" moz:removedIn="136" tools:ignore="UnusedResources">ネットワーク接続がありません</string>
     <!-- Text for body of error card displayed to the user when the device is disconnected from the network. -->
-    <string name="review_quality_check_no_connection_body">ネットワーク接続を確認し、ページを再度読み込んでみてください。</string>
+    <string name="review_quality_check_no_connection_body" moz:removedIn="136" tools:ignore="UnusedResources">ネットワーク接続を確認し、ページを再度読み込んでみてください。</string>
     <!-- Title for card displayed to the user for products whose reviews were not analyzed yet. -->
-    <string name="review_quality_check_no_analysis_title">これらのレビューに関する情報はまだありません</string>
+    <string name="review_quality_check_no_analysis_title" moz:removedIn="136" tools:ignore="UnusedResources">これらのレビューに関する情報はまだありません</string>
 
     <!-- Text for the body of card displayed to the user for products whose reviews were not analyzed yet. -->
-    <string name="review_quality_check_no_analysis_body">この製品のレビューが信頼できるかどうかを確認するには、レビュー品質を確認してください。所要時間はわずか 60 秒ほどです。</string>
+    <string name="review_quality_check_no_analysis_body" moz:removedIn="136" tools:ignore="UnusedResources">この製品のレビューが信頼できるかどうかを確認するには、レビュー品質を確認してください。所要時間はわずか 60 秒ほどです。</string>
     <!-- Text for button from body of card displayed to the user for products whose reviews were not analyzed yet. Clicking this should trigger a product analysis. -->
-    <string name="review_quality_check_no_analysis_link">レビューの品質を確認</string>
+    <string name="review_quality_check_no_analysis_link" moz:removedIn="136" tools:ignore="UnusedResources">レビューの品質を確認</string>
     <!-- Headline for review quality check contextual onboarding card. -->
-    <string name="review_quality_check_contextual_onboarding_title">製品レビューの信頼できるガイドをお試しください</string>
+    <string name="review_quality_check_contextual_onboarding_title" moz:removedIn="136" tools:ignore="UnusedResources">製品レビューの信頼できるガイドをお試しください</string>
 
     <!-- Description for review quality check contextual onboarding card. The first and last two parameters are for retailer names (e.g. Amazon, Walmart). The second parameter is for the name of the application (e.g. Firefox). -->
-    <string name="review_quality_check_contextual_onboarding_description">購入する前に、%1$s で製品レビューの信頼性を確認してください。 %2$s の実験的な機能であるレビュー チェッカーはブラウザーに直接組み込まれています。 %3$s と %4$s でも動作します。</string>
+    <string name="review_quality_check_contextual_onboarding_description" moz:removedIn="136" tools:ignore="UnusedResources">購入する前に、%1$s で製品レビューの信頼性を確認してください。 %2$s の実験的な機能であるレビュー チェッカーはブラウザーに直接組み込まれています。 %3$s と %4$s でも動作します。</string>
     <!-- Description for review quality check contextual onboarding card. The first parameters is for retailer name (e.g. Amazon). The second parameter is for the name of the application (e.g. Firefox). -->
-    <string name="review_quality_check_contextual_onboarding_description_one_vendor">購入する前に、%1$s で製品レビューの信頼性を確認してください。 %2$s の実験的な機能であるレビュー チェッカーはブラウザーに直接組み込まれています。</string>
+    <string name="review_quality_check_contextual_onboarding_description_one_vendor" moz:removedIn="136" tools:ignore="UnusedResources">購入する前に、%1$s で製品レビューの信頼性を確認してください。 %2$s の実験的な機能であるレビュー チェッカーはブラウザーに直接組み込まれています。</string>
     <!-- Paragraph presenting review quality check feature. First parameter is the Fakespot product name. Second parameter is for clickable text defined in review_quality_check_contextual_onboarding_learn_more_link. In the phrase "Fakespot by Mozilla", "by" can be localized. Does not need to stay by. -->
-    <string name="review_quality_check_contextual_onboarding_learn_more">%1$s by Mozilla の機能を利用して偏ったレビューや偽物のレビューを回避できるように支援します。私たち AI モデルは、買い物中のお客様を保護するために常に改善されています。%2$s</string>
+    <string name="review_quality_check_contextual_onboarding_learn_more" moz:removedIn="136" tools:ignore="UnusedResources">%1$s by Mozilla の機能を利用して偏ったレビューや偽物のレビューを回避できるように支援します。私たち AI モデルは、買い物中のお客様を保護するために常に改善されています。%2$s</string>
     <!-- Clickable text from the contextual onboarding card that links to review quality check support article. -->
-    <string name="review_quality_check_contextual_onboarding_learn_more_link">詳細情報</string>
+    <string name="review_quality_check_contextual_onboarding_learn_more_link" moz:removedIn="136" tools:ignore="UnusedResources">詳細情報</string>
     <!-- Caption text to be displayed in review quality check contextual onboarding card above the opt-in button. First parameter is Firefox app name, third parameter is the Fakespot product name. Second & fourth are for clickable texts defined in review_quality_check_contextual_onboarding_privacy_policy_3 and review_quality_check_contextual_onboarding_terms_use. -->
-    <string name="review_quality_check_contextual_onboarding_caption_3" moz:RemovedIn="124" tools:ignore="UnusedResources">「はい、試します」を選択すると、%1$s の%2$sおよび  %3$s の%4$sに同意したものとみなされます。</string>
-    <!-- Caption text to be displayed in review quality check contextual onboarding card above the opt-in button. First parameter is Firefox app name, third parameter is the Fakespot product name. Second & fourth are for clickable texts defined in review_quality_check_contextual_onboarding_privacy_policy_3 and review_quality_check_contextual_onboarding_terms_use. -->
-    <string name="review_quality_check_contextual_onboarding_caption_4">「はい、試します」を選択すると、%1$s の%2$sおよび  %3$s の%4$sに同意したものとみなされます。</string>
+    <string name="review_quality_check_contextual_onboarding_caption_4" moz:removedIn="136" tools:ignore="UnusedResources">[はい、試します] を選択すると、%1$s の%2$sおよび  %3$s の%4$sに同意したものとみなされます。</string>
     <!-- Clickable text from the review quality check contextual onboarding card that links to Fakespot privacy notice. -->
-    <string name="review_quality_check_contextual_onboarding_privacy_policy_3">プライバシー通知</string>
+    <string name="review_quality_check_contextual_onboarding_privacy_policy_3" moz:removedIn="136" tools:ignore="UnusedResources">プライバシー通知</string>
     <!-- Clickable text from the review quality check contextual onboarding card that links to Fakespot terms of use. -->
-    <string name="review_quality_check_contextual_onboarding_terms_use">利用規約</string>
+    <string name="review_quality_check_contextual_onboarding_terms_use" moz:removedIn="136" tools:ignore="UnusedResources">利用規約</string>
     <!-- Text for opt-in button from the review quality check contextual onboarding card. -->
-    <string name="review_quality_check_contextual_onboarding_primary_button_text">はい、試します</string>
+    <string name="review_quality_check_contextual_onboarding_primary_button_text" moz:removedIn="136" tools:ignore="UnusedResources">はい、試します</string>
     <!-- Text for opt-out button from the review quality check contextual onboarding card. -->
-    <string name="review_quality_check_contextual_onboarding_secondary_button_text">後で</string>
-    <!-- Text for the first CFR presenting the review quality check feature. -->
-    <string name="review_quality_check_first_cfr_message">購入する前に、この製品のレビューが信頼できるかどうか確認してください。</string>
-    <!-- Text displayed in the first CFR presenting the review quality check feature that opens the review checker when clicked. -->
-    <string name="review_quality_check_first_cfr_action" tools:ignore="UnusedResources">レビューチェッカーを試す</string>
-    <!-- Text for the second CFR presenting the review quality check feature. -->
-    <string name="review_quality_check_second_cfr_message">これらのレビューは信頼できますか？ 評価が調整されていないか今すぐ確認してください。</string>
-    <!-- Text displayed in the second CFR presenting the review quality check feature that opens the review checker when clicked. -->
-    <string name="review_quality_check_second_cfr_action" tools:ignore="UnusedResources">レビューチェッカーを開く</string>
+    <string name="review_quality_check_contextual_onboarding_secondary_button_text" moz:removedIn="136" tools:ignore="UnusedResources">後で</string>
 
-    <!-- Flag showing that the review quality check feature is work in progress. -->
-    <string name="review_quality_check_beta_flag" moz:removedIn="130" tools:ignore="UnusedResources">Beta</string>
     <!-- Content description (not visible, for screen readers etc.) for opening browser menu button to open review quality check bottom sheet. -->
-    <string name="review_quality_check_open_handle_content_description">レビューチェッカーを開く</string>
+    <string name="review_quality_check_open_handle_content_description" moz:removedIn="136" tools:ignore="UnusedResources">レビューチェッカーを開く</string>
     <!-- Content description (not visible, for screen readers etc.) for closing browser menu button to open review quality check bottom sheet. -->
-    <string name="review_quality_check_close_handle_content_description">レビューチェッカーを閉じる</string>
+    <string name="review_quality_check_close_handle_content_description" moz:removedIn="136" tools:ignore="UnusedResources">レビューチェッカーを閉じる</string>
     <!-- Content description (not visible, for screen readers etc.) for review quality check star rating. First parameter is the number of stars (1-5) representing the rating. -->
-    <string name="review_quality_check_star_rating_content_description">スター 5 個中 %1$s 個</string>
+    <string name="review_quality_check_star_rating_content_description" moz:removedIn="136" tools:ignore="UnusedResources">スター 5 個中 %1$s 個</string>
     <!-- Text for minimize button from highlights card. When clicked the highlights card should reduce its size. -->
-    <string name="review_quality_check_highlights_show_less">折りたたむ</string>
+    <string name="review_quality_check_highlights_show_less" moz:removedIn="136" tools:ignore="UnusedResources">折りたたむ</string>
     <!-- Text for maximize button from highlights card. When clicked the highlights card should expand to its full size. -->
-    <string name="review_quality_check_highlights_show_more">さらに表示</string>
+    <string name="review_quality_check_highlights_show_more" moz:removedIn="136" tools:ignore="UnusedResources">さらに表示</string>
     <!-- Text for highlights card quality category header. Reviews shown under this header should refer the product's quality. -->
-    <string name="review_quality_check_highlights_type_quality">品質</string>
+    <string name="review_quality_check_highlights_type_quality" moz:removedIn="136" tools:ignore="UnusedResources">品質</string>
     <!-- Text for highlights card price category header. Reviews shown under this header should refer the product's price. -->
-    <string name="review_quality_check_highlights_type_price">価格</string>
+    <string name="review_quality_check_highlights_type_price" moz:removedIn="136" tools:ignore="UnusedResources">価格</string>
     <!-- Text for highlights card shipping category header. Reviews shown under this header should refer the product's shipping. -->
-    <string name="review_quality_check_highlights_type_shipping">出荷</string>
+    <string name="review_quality_check_highlights_type_shipping" moz:removedIn="136" tools:ignore="UnusedResources">出荷</string>
     <!-- Text for highlights card packaging and appearance category header. Reviews shown under this header should refer the product's packaging and appearance. -->
-    <string name="review_quality_check_highlights_type_packaging_appearance">梱包と外観</string>
+    <string name="review_quality_check_highlights_type_packaging_appearance" moz:removedIn="136" tools:ignore="UnusedResources">梱包と外観</string>
     <!-- Text for highlights card competitiveness category header. Reviews shown under this header should refer the product's competitiveness. -->
-    <string name="review_quality_check_highlights_type_competitiveness">競争力</string>
+    <string name="review_quality_check_highlights_type_competitiveness" moz:removedIn="136" tools:ignore="UnusedResources">競争力</string>
 
     <!-- Text that is surrounded by quotes. The parameter is the actual text that is in quotes. An example of that text could be: Excellent craftsmanship, and that is displayed as “Excellent craftsmanship”. The text comes from a buyer's review that the feature is highlighting"   -->
-    <string name="surrounded_with_quotes">“%s”</string>
+    <string name="surrounded_with_quotes" moz:removedIn="136" tools:ignore="UnusedResources">“%s”</string>
 
     <!-- Accessibility services actions labels. These will be appended to accessibility actions like "Double tap to.." but not by or applications but by services like Talkback. -->
     <!-- Action label for elements that can be collapsed if interacting with them. Talkback will append this to say "Double tap to collapse". -->
@@ -2672,7 +2903,7 @@
     <!-- Title of the automatic translation preference screen that will appear on the toolbar.-->
     <string name="automatic_translation_toolbar_title_preference">自動翻訳</string>
     <!-- Screen header presenting the automatic translation preference feature. It will appear under the toolbar. -->
-    <string name="automatic_translation_header_preference">設定で「常に翻訳する」言語と「翻訳しない」言語を選択します。</string>
+    <string name="automatic_translation_header_preference">設定で [常に翻訳する] 言語と [翻訳しない] 言語を選択します。</string>
 
     <!-- The title of the warning card informs the user that the system could not load languages for translation settings. -->
     <string name="automatic_translation_error_warning_text">言語を読み込めませんでした。後でもう一度ご確認ください。</string>
@@ -2695,7 +2926,7 @@
     <!-- Title of the never translate site preference screen that will appear on the toolbar.-->
     <string name="never_translate_site_toolbar_title_preference">これらのサイトは翻訳しない</string>
     <!-- Screen header presenting the never translate site preference feature. It will appear under the toolbar. -->
-    <string name="never_translate_site_header_preference">新しいサイトを追加するには: そのサイトにアクセスし、翻訳メニューから「このサイトを翻訳しない」を選択します。</string>
+    <string name="never_translate_site_header_preference">新しいサイトを追加するには: そのサイトにアクセスし、翻訳メニューから [このサイトを翻訳しない] を選択します。</string>
     <!-- Content description (not visible, for screen readers etc.): For a never-translated site list item that is selected.
              The first parameter is web site url (for example:"wikipedia.com") -->
     <string name="never_translate_site_item_list_content_description_preference">%1$s を削除します</string>
@@ -2710,9 +2941,6 @@
     <string name="never_translate_site_dialog_cancel_preference">キャンセル</string>
 
     <!-- Download languages preference screen -->
-    <!-- Title of the download languages preference screen toolbar.-->
-    <string name="download_languages_toolbar_title_preference" moz:removedIn="130" tools:ignore="UnusedResources">言語をダウンロード</string>
-
     <!-- Title of the toolbar for the translation feature screen where users may download different languages for translation. -->
     <string name="download_languages_translations_toolbar_title_preference">言語をダウンロード</string>
     <!-- Screen header presenting the download language preference feature. It will appear under the toolbar.The first parameter is "Learn More," a clickable text with a link. Talkback will append this to say "Double tap to open link to learn more". -->
@@ -2770,14 +2998,6 @@
     <!-- Button text on the dialog used by the translations feature to cancel deleting a language. -->
     <string name="delete_language_file_dialog_negative_button_text">キャンセル</string>
 
-    <!-- Title for the dialog used by the translations feature to confirm canceling a download in progress for a language file.
-    The first parameter is the name of the language, for example, "Spanish". -->
-    <string name="cancel_download_language_file_dialog_title" moz:removedIn="130" tools:ignore="UnusedResources">%1$s のダウンロードをキャンセルしますか？</string>
-    <!-- Button text on the dialog used by the translations feature confirms canceling a download in progress for a language file. -->
-    <string name="cancel_download_language_file_dialog_positive_button_text" moz:removedIn="130" tools:ignore="UnusedResources">はい</string>
-    <!-- Button text on the dialog used by the translations feature to dismiss the dialog. -->
-    <string name="cancel_download_language_file_negative_button_text" moz:removedIn="130" tools:ignore="UnusedResources">いいえ</string>
-
     <!-- Title for the data saving mode warning dialog used by the translations feature.
     This dialog will be presented when the user attempts to download a language or perform
     a translation without the necessary language files downloaded first when Android's data saver mode is enabled and the user is not using WiFi.
@@ -2793,6 +3013,63 @@
     <string name="download_language_file_dialog_positive_button_text_all_languages">ダウンロードして翻訳</string>
     <!-- Button text on the data saving mode warning dialog used by the translations feature to allow users to cancel the action and not perform a download of the language file. -->
     <string name="download_language_file_dialog_negative_button_text">キャンセル</string>
+
+    <!-- Unified Trust Panel -->
+    <!-- Text for the protection panel header when the site is secure. -->
+    <string name="protection_panel_header_secure">安全です</string>
+    <!-- Text for the protection panel header when the site is not secure. -->
+    <string name="protection_panel_header_not_secure">安全でない</string>
+    <!-- Title text for the protection panel banner when the site is not secure. -->
+    <string name="protection_panel_banner_not_secure_title">このサイトでは注意してください</string>
+    <!-- Description text for the protection panel banner when the site is not secure. -->
+    <string name="protection_panel_banner_not_secure_description">接続が安全ではありません。</string>
+    <!-- Title text for the protection panel banner when tracking protection is disabled. -->
+    <string name="protection_panel_banner_not_protected_title">保護をオフにしました</string>
+    <!-- Description text for the protection panel banner when tracking protection is disabled.
+        The first parameter is the name of the app defined in app_name (for example: Fenix) -->
+    <string name="protection_panel_banner_not_protected_description">%s の保護機能がオフです。保護を再度オンにすることをおすすめします。</string>
+    <!-- Title text for the protection panel banner when tracking protection is enabled.
+        The first parameter is the name of the app defined in app_name (for example: Fenix) -->
+    <string name="protection_panel_banner_protected_title">%s の保護機能がオンです</string>
+    <!-- Description text for the protection panel banner when tracking protection is enabled. -->
+    <string name="protection_panel_banner_protected_description">現在保護されています。何か問題があればお知らせします。</string>
+    <!-- Label text for the Enhanced Tracking Protection toggle. -->
+    <string name="protection_panel_etp_toggle_label">強化型トラッキング防止</string>
+    <!-- Description text for the Enhanced Tracking Protection toggle when tracking protection is enabled. -->
+    <string name="protection_panel_etp_toggle_enabled_description">このサイトでの動作がおかしい場合は、保護機能をオフにしてみてください。</string>
+    <!-- Description text for the Enhanced Tracking Protection toggle when tracking protection is disabled. -->
+    <string name="protection_panel_etp_toggle_disabled_description">保護機能がオフになっています。再度オンにすることをおすすめします。</string>
+
+    <!-- Text for displaying the total number of trackers blocked in the protection panel.
+        %d is a placeholder for the number of trackers blocked. -->
+    <string name="protection_panel_num_trackers_blocked">ブロックされた追跡: %d</string>
+    <!-- Text for when no trackers have been blocked. -->
+    <string name="protection_panel_no_trackers_blocked">トラッカーが見つかりませんでした</string>
+    <!-- Link text to navigate to privacy and security settings from the protection panel. -->
+    <string name="protection_panel_privacy_and_security_settings">プライバシーとセキュリティの設定</string>
+    <!-- Text for displaying the total number of trackers blocked in the trackers blocked panel.
+        %d is a placeholder for the number of trackers blocked. -->
+    <string name="trackers_blocked_panel_total_num_trackers_blocked">ブロックされた追跡: %d</string>
+    <!-- Text for displaying the number of trackers blocked for a specific tracker category in the trackers blocked panel.
+        %s is a placeholder for the name of the tracker category.
+        %d is a placeholder for the number of trackers blocked. -->
+    <string name="trackers_blocked_panel_categorical_num_trackers_blocked">%s: %d</string>
+    <!-- Description text for a dialog confirming whether the user wants to delete all data for current site.
+        %s is a placeholder for the base domain of website. -->
+    <string name="clear_site_data_dialog_description"><![CDATA[<b>%s</b> の Cookie とサイトデータを削除すると、ウェブサイトからログアウトされ、ショッピングカートの内容が空になる可能性があります。]]></string>
+    <!-- Button text on the clear site data dialog to allow users to confirm they wish to clear the site data. -->
+    <string name="clear_site_data_dialog_positive_button_text">消去</string>
+    <!-- Button text on the clear site data dialog to allow users to cancel the action and not clear the site data. -->
+    <string name="clear_site_data_dialog_negative_button_text">キャンセル</string>
+    <!-- Snackbar title shown when the site data has been cleared. -->
+    <string name="clear_site_data_snackbar">Cookie とサイトデータを削除しました</string>
+    <!-- Text for the connection security panel when the site is secure. -->
+    <string name="connection_security_panel_secure">安全な接続</string>
+    <!-- Text for the connection security panel when the site is not secure. -->
+    <string name="connection_security_panel_not_secure">安全でない接続</string>
+    <!-- Text for the connection security panel to indicate who the certificate was verified by.
+    %s is a placeholder for the name of the certificate authority that verified the ticket -->
+    <string name="connection_security_panel_verified_by">認証局: %s</string>
 
     <!-- Debug drawer -->
     <!-- The user-facing title of the Debug Drawer feature. -->
@@ -2873,8 +3150,6 @@
     <string name="likert_scale_option_7" tools:ignore="BrandUsage,UnusedResources">Firefox では検索しない</string>
     <!-- Option for likert scale -->
     <string name="likert_scale_option_8" tools:ignore="UnusedResources">同期を使用しない</string>
-    <!-- Text shown in prompt for homepage microsurvey. Note: The word "Firefox" should NOT be translated. -->
-    <string name="microsurvey_prompt_homepage_title" tools:ignore="BrandUsage,UnusedResources" moz:removedIn="130">Firefox ホームページにどの程度満足していますか？</string>
     <!-- Text shown in prompt for printing microsurvey. "sec" It's an abbreviation for "second". Note: The word "Firefox" should NOT be translated. -->
     <string name="microsurvey_prompt_printing_title" tools:ignore="BrandUsage,UnusedResources">Firefox の印刷機能の改善にご協力ください。時間はかかりません。</string>
     <!-- Text shown in prompt for search microsurvey. Note: The word "Firefox" should NOT be translated. -->
@@ -2894,8 +3169,6 @@
     <string name="microsurvey_app_icon_content_description" tools:ignore="BrandUsage">Firefox ロゴ</string>
     <!-- Content description for the survey feature icon. -->
     <string name="microsurvey_feature_icon_content_description">アンケート機能アイコン</string>
-    <!-- Content description (not visible, for screen readers etc.) for opening microsurvey bottom sheet. -->
-    <string name="microsurvey_open_handle_content_description" tools:ignore="UnusedResources" moz:removedIn="130">アンケートを開く</string>
     <!-- Content description (not visible, for screen readers etc.) for closing microsurvey bottom sheet. -->
     <string name="microsurvey_close_handle_content_description">アンケートを閉じる</string>
     <!-- Content description for "X" button that is closing microsurvey. -->
@@ -2911,18 +3184,30 @@
     <!-- Content description for delete button where parameter will be the username of the login -->
     <string name="debug_drawer_logins_delete_login_button_content_description">ユーザー名 %s のログイン情報を削除します</string>
 
+    <!-- Debug drawer addresses -->
+    <!-- The title of the Addresses feature in the Debug Drawer. -->
+    <string name="debug_drawer_addresses_title">アドレス</string>
+    <!-- The title of the section header for the list of debug locales that can be enabled and disabled. -->
+    <string name="debug_drawer_addresses_debug_locales_header">デバッグロケールを有効化</string>
+
+    <!-- The title of the header for the section for managing addresses. -->
+    <string name="debug_drawer_addresses_management_header">住所の管理</string>
+    <!-- The title of the button in the debug drawer for adding a new address. -->
+    <string name="debug_drawer_add_new_address">選択したロケールに新しい住所を追加</string>
+    <!-- The title of the button for deleting in the debug drawer all addresses. -->
+    <string name="debug_drawer_delete_all_addresses">すべての住所を削除</string>
+
     <!-- Debug drawer "contextual feature recommendation" (CFR) tools -->
     <!-- The title of the CFR Tools feature in the Debug Drawer -->
     <string name="debug_drawer_cfr_tools_title">CFR ツール</string>
     <!-- The title of the reset CFR section in CFR Tools -->
     <string name="debug_drawer_cfr_tools_reset_cfr_title">CFR をリセット</string>
 
-    <!-- Messages explaining how to exit fullscreen mode -->
-    <!-- Message shown to explain how to exit fullscreen mode when gesture navigation is enabled -->
-    <string name="exit_fullscreen_with_gesture" moz:removedIn="132" tools:ignore="UnusedResources">全画面表示を終了するには、上からドラッグし、戻るジェスチャーをしてください</string>
-    <!-- Message shown to explain how to exit fullscreen mode when using back button navigation -->
-    <string name="exit_fullscreen_with_back_button" moz:removedIn="132" tools:ignore="UnusedResources">全画面表示を終了するには、上からドラッグし、[戻る] を押してください</string>
+    <!-- Glean debug tools -->
+    <!-- The title of the glean debugging feature -->
+    <string name="glean_debug_tools_title">Glean デバッグツール</string>
 
+    <!-- Messages explaining how to exit fullscreen mode -->
     <!-- Message shown to explain how to exit fullscreen mode when gesture navigation is enabled. -->
     <!-- Localisation note: this text should be as short as possible, max 68 chars -->
     <string name="exit_fullscreen_with_gesture_short">上からドラッグして戻るジェスチャーで終了します</string>
@@ -2933,4 +3218,41 @@
     <!-- Beta Label Component !-->
     <!-- Text shown as a label or tag to indicate a feature or area is still undergoing active development. Note that here "Beta" should not be translated, as it is used as an icon styled element. -->
     <string name="beta_feature">BETA</string>
+
+    <!-- Root certificate expiration warnings -->
+    <!-- These strings for homepage cards and push notifications to be pushed to users running outdated versions of Firefox. We want to encourage these users to update to the latest version so their extensions and other features don't stop working when Firefox's old root certificate expires on 2025-03-14. For more information, see this SUMO article: https://support.mozilla.org/kb/root-certificate-expiration !-->
+    <!-- Homepage card button to open Google Play Store. "Update" is a verb. -->
+    <string name="certificate_warning_homepage_card_update_now_button" tools:ignore="UnusedResources">今すぐ更新</string>
+    <!-- Homepage card title about old Firefox version. "Update" is a verb. Note: The word "Firefox" should NOT be translated. -->
+    <string name="certificate_warning_homepage_card_hca1_title" tools:ignore="BrandUsage,UnusedResources">Firefox ブラウザーを更新しましょう</string>
+    <!-- Homepage card message about old Firefox version -->
+    <string name="certificate_warning_homepage_card_hca1_message" tools:ignore="UnusedResources">ルート証明書の有効期限が切れるため、3 月 14 日に一部の機能が動作しなくなります。</string>
+    <!-- Homepage card title about old Firefox version. "Update" is a verb. -->
+    <string name="certificate_warning_homepage_card_hcr1_title" tools:ignore="UnusedResources">3 月 14 日までに更新してください</string>
+    <!-- Homepage card message about old Firefox version. Note: The word "Firefox" should NOT be translated. -->
+    <string name="certificate_warning_homepage_card_hcr1_message" tools:ignore="BrandUsage,UnusedResources">ルート証明書の有効期限が切れると、ご使用のバージョンの Firefox が正しく動作しなくなります。</string>
+    <!-- Homepage card title about old Firefox version -->
+    <string name="certificate_warning_homepage_card_hcw2_title" tools:ignore="UnusedResources">残り 7 日以内に更新してください</string>
+    <!-- Homepage card message about old Firefox version. Note: The word "Firefox" should NOT be translated. -->
+    <string name="certificate_warning_homepage_card_hcw2_message" tools:ignore="BrandUsage,UnusedResources">3 月 14 日にルート証明書の有効期限が切れるため、アドオンやその他の Firefox の機能が動作しなくなります。</string>
+    <!-- Homepage card title about old Firefox version. Note: The word "Firefox" should NOT be translated. -->
+    <string name="certificate_warning_homepage_card_hcw3_title" tools:ignore="BrandUsage,UnusedResources">Firefox を維持する最後のチャンスです</string>
+    <!-- Homepage card message about old Firefox version. Note: The word "Firefox" should NOT be translated. -->
+    <string name="certificate_warning_homepage_card_hcw3_message" tools:ignore="BrandUsage,UnusedResources">3 月 14 日にルート証明書の有効期限が切れるため、ご使用のバージョンの Firefox が正しく動作しなくなります。</string>
+    <!-- Push notification title about old Firefox version. "Update" is a noun. -->
+    <string name="certificate_warning_push_notification_update_recommended_title" tools:ignore="UnusedResources">更新してください</string>
+    <!-- Push notification message about old Firefox version -->
+    <string name="certificate_warning_push_notification_pnr1_message" tools:ignore="UnusedResources">アドオンと一部の機能が 3 月 14 日以降に動作しなくなります。</string>
+    <!-- Push notification title about old Firefox version. Note: The word "Firefox" should NOT be translated. -->
+    <string name="certificate_warning_push_notification_pnw2_title" tools:ignore="BrandUsage,UnusedResources">古いバージョンの Firefox を使用しています</string>
+    <!-- Push notification message about old Firefox version. "Update" is a verb. -->
+    <string name="certificate_warning_push_notification_pnw2_message" tools:ignore="UnusedResources">アドオンやその他の機能を引き続き使用するには、3 月 14 日までに更新してください。</string>
+    <!-- Push notification message about old Firefox version -->
+    <string name="certificate_warning_push_notification_pnw3_message" tools:ignore="UnusedResources">明日以降、一部の機能が動作しなくなります。</string>
+
+    <!-- TextField Design System Component -->
+    <!-- The default content description for the eye trailing icon button in TextField -->
+    <string name="text_field_eye_trailing_icon_default_content_description">隠しテキストを表示</string>
+    <!-- The default content description for the cross trailing icon button in TextField -->
+    <string name="text_field_cross_trailing_icon_default_content_description">テキストを消去</string>
 </resources>

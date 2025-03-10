@@ -4,6 +4,7 @@
 
 sidebar-menu-bookmarks =
     .label = Bókamerki
+sidebar-menu-bookmarks-2 = Bókamerki
 sidebar-menu-history =
     .label = Ferill
 sidebar-menu-synced-tabs =
@@ -11,6 +12,6 @@ sidebar-menu-synced-tabs =
 sidebar-menu-megalist =
     .label = Lykilorð
 sidebar-menu-close =
-    .label = Loka hliðarspjaldi
+    .label = Loka hliðarstiku
 sidebar-close-button =
-    .tooltiptext = Loka hliðarspjaldi
+    .tooltiptext = Loka hliðarstiku

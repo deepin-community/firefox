@@ -128,7 +128,7 @@ full-screen-exit =
 
 ## Search Engine selection buttons (one-offs)
 
-# This string prompts the user to use the list of one-click search engines in
+# This string prompts the user to use the list of search shortcuts in
 # the Urlbar and searchbar.
 search-one-offs-with-title = Esta vegada, mira con:
 search-one-offs-change-settings-compact-button =
@@ -354,6 +354,15 @@ urlbar-result-action-search-w-engine = Mirar con { $engine }
 urlbar-result-action-switch-tab = Cambiar t'a pestanya
 urlbar-result-action-visit = Vesitar
 
+## Strings used for buttons in the urlbar
+
+urlbar-searchmode-bookmarks =
+    .label = Marcapachinas
+urlbar-searchmode-tabs =
+    .label = Pestanyas
+urlbar-searchmode-history =
+    .label = Historial
+
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
 ## In these actions "Search" is a verb, followed by where the search is performed.
@@ -565,6 +574,9 @@ tabs-toolbar-list-all-tabs =
 ## Infobar shown at startup to suggest session-restore
 
 
+## Infobar shown when the user tries to open a file picker and file pickers are blocked by enterprise policy
+
+
 ## Mozilla data reporting notification (Telemetry, Firefox Health Report, etc)
 
 data-reporting-notification-message = { -brand-short-name } ninvia automaticament bells datos ta { -vendor-short-name } pa que podamos amillorar a suya experiencia.
@@ -580,6 +592,10 @@ data-reporting-notification-button =
 
 
 ## Unified extensions button when some extensions are quarantined.
+## Note that the new line is intentionally part of the tooltip.
+
+
+## Unified extensions button when some extensions are disabled (e.g. through add-ons blocklist).
 ## Note that the new line is intentionally part of the tooltip.
 
 
@@ -631,3 +647,13 @@ popup-warning-button =
 #   $popupURI (String): the URI for the pop-up window
 popup-show-popup-menuitem =
     .label = Amostrar '{ $popupURI }'
+
+## File-picker crash notification ("FilePickerCrashed.sys.mjs")
+
+
+# Button used with file-picker-crashed-save-default. Opens the folder in Windows
+# Explorer, with the saved file selected and in focus.
+#
+# The wording here should be consistent with the Windows variant of
+# `downloads-cmd-show-menuitem-2` and similar messages.
+

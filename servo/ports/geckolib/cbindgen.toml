@@ -105,6 +105,7 @@ include = [
   "BoolInteger",
   "OutlineStyle",
   "CaptionSide",
+  "ColorGamut",
   "FontSizeAdjust",
   "FontPalette",
   "FontLanguageOverride",
@@ -150,7 +151,11 @@ include = [
   "OffsetRotate",
   "RayFunction",
   "UnicodeRange",
+  "UserInput",
+  "UserFocus",
   "UserSelect",
+  "PointerEvents",
+  "Inert",
   "Float",
   "Clear",
   "OverscrollBehavior",
@@ -252,7 +257,6 @@ include = [
   "Translate",
   "BorderImageWidth",
   "ComputedUrl",
-  "ComputedImageUrl",
   "UrlOrNone",
   "Filter",
   "Gradient",
@@ -305,9 +309,12 @@ include = [
   "ImageRendering",
   "PrintColorAdjust",
   "ForcedColorAdjust",
+  "ForcedColors",
   "ScrollbarGutter",
   "ScrollDirection",
   "HyphenateCharacter",
+  "HyphenateLimitChars",
+  "NumberOrAuto",
   "ComputedLinearStop",
   "PiecewiseLinearFunction",
   "BeforeFlag",
@@ -316,8 +323,21 @@ include = [
   "Zoom",
   "TransitionProperty",
   "ViewTransitionName",
+  "Inset",
+  "AnchorFunction",
+  "AnchorSizeFunction",
+  "Margin",
+  "PositionProperty",
+  "PhysicalSide",
 ]
-item_types = ["enums", "structs", "unions", "typedefs", "functions", "constants"]
+item_types = [
+  "enums",
+  "structs",
+  "unions",
+  "typedefs",
+  "functions",
+  "constants",
+]
 renaming_overrides_prefixing = true
 
 # Prevent some renaming for Gecko types that cbindgen doesn't otherwise understand.
@@ -483,7 +503,9 @@ renaming_overrides_prefixing = true
   inline bool HasPercent() const;
   inline bool HasLengthAndPercentage() const;
   inline bool BehavesLikeStretchOnInlineAxis() const;
+  inline bool BehavesLikeStretchOnBlockAxis() const;
   inline bool BehavesLikeInitialValueOnBlockAxis() const;
+  inline bool BehavesLikeInitialValue(LogicalAxis) const;
 """
 
 "GenericFlexBasis" = """
@@ -498,7 +520,9 @@ renaming_overrides_prefixing = true
   inline bool HasPercent() const;
   inline bool HasLengthAndPercentage() const;
   inline bool BehavesLikeStretchOnInlineAxis() const;
+  inline bool BehavesLikeStretchOnBlockAxis() const;
   inline bool BehavesLikeInitialValueOnBlockAxis() const;
+  inline bool BehavesLikeInitialValue(LogicalAxis) const;
 """
 
 "GenericPosition" = """
@@ -742,6 +766,16 @@ renaming_overrides_prefixing = true
   inline nsAtom* AsAtom() const;
 """
 
+"GenericHyphenateLimitChars" = """
+  static StyleGenericHyphenateLimitChars Auto() {
+    return StyleGenericHyphenateLimitChars{
+      StyleNumberOrAuto<Integer>::Auto(),
+      StyleNumberOrAuto<Integer>::Auto(),
+      StyleNumberOrAuto<Integer>::Auto(),
+    };
+  };
+"""
+
 "Atom" = """
   StyleAtom(size_t) = delete;
   StyleAtom() = delete;
@@ -836,7 +870,8 @@ renaming_overrides_prefixing = true
 "CssUrl" = """
   inline nsDependentCSubstring SpecifiedSerialization() const;
   inline const URLExtraData& ExtraData() const;
-  inline StyleLoadData& LoadData() const;
+  inline const StyleLoadData& LoadData() const;
+  inline StyleLoadData& MutLoadData() const;
   inline nsIURI* GetURI() const;
 """
 
@@ -845,7 +880,8 @@ renaming_overrides_prefixing = true
   inline nsDependentCSubstring SpecifiedSerialization() const;
   inline const URLExtraData& ExtraData() const;
   inline nsIURI* GetURI() const;
-  inline StyleLoadData& LoadData() const;
+  inline const StyleLoadData& LoadData() const;
+  inline StyleLoadData& MutLoadData() const;
 
   inline bool IsLocalRef() const;
   inline bool HasRef() const;
@@ -925,7 +961,7 @@ renaming_overrides_prefixing = true
   bool IsImageRequestType() const;
 
   // Gets the image request URL.
-  const StyleComputedImageUrl* GetImageRequestURLValue() const;
+  const StyleComputedUrl* GetImageRequestURLValue() const;
 
   // Gets the image data of this image if it has any image request.
   imgRequestProxy* GetImageRequest() const;
@@ -1122,4 +1158,25 @@ renaming_overrides_prefixing = true
     return IsNonCustom() &&
            nsCSSPropertyID(AsNonCustom()._0) == eCSSProperty_all;
   }
+"""
+
+"GenericInset" = """
+  inline bool HasPercent() const;
+  inline bool ConvertsToLength() const;
+  inline bool HasLengthAndPercentage() const;
+  inline bool IsAnchorPositioningFunction() const;
+  inline nscoord ToLength() const;
+  inline bool ConvertsToPercentage() const;
+  inline float ToPercentage() const;
+  inline bool MaybeAuto() const;
+  inline bool MaybePercentageAware() const;
+"""
+
+"GenericMargin" = """
+  inline bool HasPercent() const;
+  inline bool ConvertsToLength() const;
+  inline bool HasLengthAndPercentage() const;
+  inline nscoord ToLength() const;
+  inline bool ConvertsToPercentage() const;
+  inline float ToPercentage() const;
 """

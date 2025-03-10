@@ -9,11 +9,11 @@
 
 webext-perms-description-bookmarks = Хондан ва тағйир додани хатбаракҳо
 webext-perms-description-browserSettings = Хондан ва тағйир додани танзимоти браузер
-webext-perms-description-browsingData = Пок кардани таърихи тамошокунии охирин, кукиҳо ва маълумоти марбут
+webext-perms-description-browsingData = Пок кардани таърихи тамошобинии охирин, кукиҳо ва маълумоти марбут
 webext-perms-description-clipboardRead = Гирифтани маълумот аз ҳофизаи муваққатӣ
 webext-perms-description-clipboardWrite = Гузоштани маълумот ба ҳофизаи муваққатӣ
 webext-perms-description-declarativeNetRequest = Муҳтаво дар ҳамаи саҳифаҳо манъ карда мешавад
-webext-perms-description-declarativeNetRequestFeedback = Таърихи тамошокунии худро аз назар гузаронед
+webext-perms-description-declarativeNetRequestFeedback = Таърихи тамошобинии худро аз назар гузаронед
 webext-perms-description-devtools = Васеъкунии абзорҳои барномасозӣ барои дастрас кардани маълумоти шумо дар варақаҳои кушодашуда
 webext-perms-description-downloads = Боргирӣ кардани файлҳо, хондан ва тағйир додани таърихи боргириҳои браузер
 webext-perms-description-downloads-open = Кушодани файлҳое, ки ба компютери шумо боргирӣ карда шудаанд
@@ -30,4 +30,13 @@ webext-perms-description-sessions = Дастрас кардани варақаҳ
 webext-perms-description-tabs = Дастрас кардани варақаҳои браузер
 webext-perms-description-tabHide = Намоиш ва пинҳон кардани варақаҳои браузер
 webext-perms-description-topSites = Дастрас кардани таърихи тамошо
+webext-perms-description-trialML = Моделҳои зеҳни сунъӣ «AI»-ро боргирӣ кунед ва дар дастгоҳи худ иҷро намоед
+webext-perms-description-userScripts = Ба скриптҳои тасдиқнашудаи тарафи сеюм иҷозат диҳед, ки ба маълумоти шумо дастрасӣ пайдо намоянд
 webext-perms-description-webNavigation = Дастрас кардани фаъолияти браузер ҳангоми паймоиш
+
+## The userScripts permission includes an additional explanation that is
+## displayed prominently near the usual permission description.
+
+webext-perms-extra-warning-userScripts-long = Скриптҳои тасдиқнашуда метавонанд ба амният ва махфияти шумо ҳар гуна хатарҳоро, ба монанди иҷро кардани рамзи зараровар ё пайгирии фаъолияти шумо дар сомона, ба вуҷуд оранд. Танҳо скриптҳоро аз васеъшавиҳо ё манбаъҳое, ки шумо ба он эътимод доред, иҷро кунед.
+# A shorter warning is displayed in UI surfaces with little room, such as a permission prompt.
+webext-perms-extra-warning-userScripts-short = Скриптҳои тасдиқнашуда метавонанд ба амният ва махфияти шумо ҳар гуна хатарҳоро ба вуҷуд оранд. Танҳо скриптҳоро аз васеъшавиҳо ё манбаъҳое, ки шумо ба он эътимод доред, иҷро кунед.

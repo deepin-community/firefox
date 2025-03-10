@@ -78,6 +78,12 @@ toolbar-button-fxaccount =
     .label = { -fxaccount-brand-name }
     .tooltiptext = { -fxaccount-brand-name }
 
+## Account toolbar Button
+
+toolbar-button-account =
+    .label = Налог
+    .tooltiptext = Налог
+
 ## Save Page
 
 main-context-menu-page-save =
@@ -284,13 +290,12 @@ main-context-menu-send-to-device =
     .label = Пошаљи страницу на уређај
     .accesskey = ш
 
-## The access keys for "Use Saved Login" and "Use Saved Password"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
+##
 
 main-context-menu-use-saved-login =
     .label = Користи сачувано корисничко име
     .accesskey = К
+# Displayed when there are saved passwords and the user clicks inside a username or password field
 main-context-menu-use-saved-password =
     .label = Користи сачувану лозинку
     .accesskey = К
@@ -304,6 +309,9 @@ main-context-menu-suggest-strong-password =
     .label = Предложи јаку лозинку…
     .accesskey = ж
 main-context-menu-manage-logins2 =
+    .label = Управљај лозинкама
+    .accesskey = У
+main-context-menu-manage-passwords =
     .label = Управљај лозинкама
     .accesskey = У
 main-context-menu-keyword =

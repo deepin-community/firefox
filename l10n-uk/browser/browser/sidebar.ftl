@@ -4,6 +4,10 @@
 
 menu-view-genai-chat =
     .label = Чат-бот з ШІ
+menu-view-review-checker =
+    .label = Засіб перевірки відгуків
+sidebar-options-menu-button =
+    .title = Відкрити меню
 
 ## Labels for sidebar history panel
 
@@ -50,12 +54,14 @@ sidebar-horizontal-tabs =
     .label = Горизонтальні вкладки
 sidebar-customize-tabs-header =
     .label = Налаштування вкладок
-sidebar-customize-settings-header =
-    .label = Налаштування бічної панелі
-sidebar-visibility-always-show =
-    .label = Завжди показувати
-sidebar-visibility-hide-sidebar =
-    .label = Приховати бічну панель
+sidebar-customize-button-header =
+    .label = Кнопка бічної панелі
+sidebar-customize-position-header =
+    .label = Розташування бічної панелі
+sidebar-visibility-setting-always-show =
+    .label = Розгорнути та згорнути бічну панель
+sidebar-visibility-setting-hide-sidebar =
+    .label = Показати та приховати бічну панель
 
 ## Labels for sidebar context menu items
 
@@ -95,6 +101,35 @@ sidebar-menu-bookmarks-label =
     .label = Закладки
 sidebar-menu-customize-label =
     .label = Налаштувати бічну панель
+sidebar-menu-review-checker-label =
+    .label = Засіб перевірки відгуків
+
+## Tooltips for sidebar menu items.
+
+# The tooltip to show over the history icon, when history is not currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-open-history-tooltip = Відкрити історію ({ $shortcut })
+# The tooltip to show over the history icon, when history is currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-close-history-tooltip = Закрити історію ({ $shortcut })
+# The tooltip to show over the bookmarks icon, when bookmarks is not currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-open-bookmarks-tooltip = Відкрити закладки ({ $shortcut })
+# The tooltip to show over the bookmarks icon, when bookmarks is currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-close-bookmarks-tooltip = Закрити закладки ({ $shortcut })
+sidebar-menu-open-ai-chatbot-tooltip = Відкрити чат-бот з ШІ
+sidebar-menu-close-ai-chatbot-tooltip = Закрити чат-бот з ШІ
+
+## Tooltips displayed over the AI chatbot icon.
+## Variables:
+##   $shortcut (String) - The OS specific keyboard shortcut.
+##   $provider (String) - The name of the AI chatbot provider (if available).
+
 
 ## Headings for sidebar menu panels.
 
@@ -104,6 +139,16 @@ sidebar-menu-history-header =
     .heading = Історія
 sidebar-menu-syncedtabs-header =
     .heading = Вкладки з інших пристроїв
+sidebar-menu-bookmarks-header =
+    .heading = Закладки
+sidebar-panel-header-close-button =
+    .tooltiptext = Закрити
+
+## Titles for sidebar menu panels.
+
+sidebar-customize-title = Налаштувати бічну панель
+sidebar-history-title = Історія
+sidebar-syncedtabs-title = Вкладки з інших пристроїв
 
 ## Context for closing synced tabs when hovering over the items
 
@@ -113,3 +158,29 @@ sidebar-menu-syncedtabs-header =
 #   $deviceName (String) - the name of the device the user is closing a tab for
 synced-tabs-context-close-tab-title =
     .title = Закрити вкладку на { $deviceName }
+show-sidebars =
+    .tooltiptext = Показати бічні панелі
+    .label = Бічні панелі
+
+## Tooltips for the sidebar toolbar widget.
+
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-expand-sidebar2 =
+    .tooltiptext = Розгорнути бічну панель ({ $shortcut })
+    .label = Бічні панелі
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-collapse-sidebar2 =
+    .tooltiptext = Згорнути бічну панель ({ $shortcut })
+    .label = Бічні панелі
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-show-sidebar2 =
+    .tooltiptext = Показати бічну панель ({ $shortcut })
+    .label = Бічні панелі
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-hide-sidebar2 =
+    .tooltiptext = Сховати бічну панель ({ $shortcut })
+    .label = Бічні панелі

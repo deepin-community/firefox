@@ -302,6 +302,9 @@ find-more-themes = Cjate plui temis
 # used for screen readers.
 addon-options-button =
     .aria-label = Plui opzions
+# Explanatory introduction to the list of recommended add-ons. The action word
+# ("recommends") in the final sentence is a link to external documentation.
+discopane-intro2 = Estensions e temis ti permetin di personalizâ { -brand-product-name }. A puedin judâti a potenziâ la tô riservatece, incressi la produtivitât, miorâ la esperience cui contignûts multimediâi, cambiâ l’aspiet di { -brand-product-name } e tant altri. Chestis piçulis aplicazions software a son dispès svilupadis di tiercis parts. Chi tu cjatis une selezion di elements <a data-l10n-name="learn-more-trigger">conseâts</a> di { -brand-product-name } pe sigurece, prestazions e funzionalitâts ecezionâls.
 
 ## Add-on actions
 
@@ -388,6 +391,10 @@ addon-detail-group-label-updates =
     .aria-label = { addon-detail-updates-label }
 # This is the tooltip text for the private browsing badge in about:addons. The
 # badge is the private browsing icon included next to the extension's name.
+addon-badge-private-browsing-allowed3 =
+    .title = Permetût tai barcons privâts
+# This is the tooltip text for the private browsing badge in about:addons. The
+# badge is the private browsing icon included next to the extension's name.
 addon-badge-private-browsing-allowed2 =
     .title = Permetût tai barcons privâts
     .aria-label = { addon-badge-private-browsing-allowed2.title }
@@ -427,6 +434,14 @@ addon-badge-line3 =
 addon-badge-verified2 =
     .title = Cheste estension e je stade verificade pal rispiet dai standards di sigurece e prestazions
     .aria-label = { addon-badge-verified2.title }
+addon-badge-recommended3 =
+    .title = { -brand-product-name } al permet dome lis estensions che a sodisfin i nestris standards di sigurece e prestazions
+# We hard code "Mozilla" in the string below because the extensions are built
+# by Mozilla and we don't want forks to display "by Fork".
+addon-badge-line4 =
+    .title = Estension uficiâl realizade di Mozilla. E rispiete i standards di sigurece e prestazions
+addon-badge-verified3 =
+    .title = Cheste estension e je stade verificade pal rispiet dai standards di sigurece e prestazions
 
 ##
 
@@ -434,6 +449,7 @@ available-updates-heading = Inzornaments disponibii
 recent-updates-heading = Inzornaments resints
 release-notes-loading = Daûr a cjamâ…
 release-notes-error = Nus displâs, ma al è sucedût un erôr intant che lis notis di publicazion a vignivin cjamadis.
+addon-permissions-empty2 = Cheste estension no domande nissun permès.
 addon-permissions-empty = Cheste estension no domande nissun permès
 addon-permissions-required = Permès necessaris pes funzionalitâts fondamentâls:
 addon-permissions-optional = Permès facoltatîfs pes funzionalitâts adizionâls:
@@ -483,10 +499,24 @@ details-notification-unsigned-and-disabled-link = Altris informazions
 details-notification-unsigned = Nol è stât pussibil verificâ { $name } pe utilizazion in { -brand-short-name }. Continue cun cautele.
 details-notification-unsigned2 =
     .message = Nol è stât pussibil verificâ { $name } pe utilizazion in { -brand-short-name }. Continue cun cautele.
+details-notification-hard-blocked-extension =
+    .message = Cheste estension e je blocade parcè che e viole lis politichis di Mozilla e e je stade disativade.
+details-notification-hard-blocked-other =
+    .message = Chest component adizionâl al è blocât parcè che al viole lis politichis di Mozilla e al è stât disativât.
 details-notification-unsigned-link = Altris informazions
 details-notification-blocked = { $name } al è stât disativât par vie di problemis di sigurece o stabilitât.
 details-notification-blocked2 =
     .message = { $name } al è stât disativât par vie di problemis di sigurece o stabilitât.
+details-notification-blocked-link2 = Viôt i detais
+details-notification-soft-blocked-extension-disabled =
+    .message = Cheste estension e je limitade parcè che e viole lis politichis di Mozilla e e je stade disativade. Tu puedis tornâ a ativâle, ma al è pussibil che al compuarti cualchi risi.
+details-notification-soft-blocked-extension-enabled =
+    .message = Cheste estension e viole lis politichis di Mozilla. La sô utilizazion e podarès compuartâ cualchi risi.
+details-notification-soft-blocked-other-disabled =
+    .message = Chest component adizionâl al è limitât parcè che al viole lis politichis di Mozilla e al è stât disativât. Tu puedis tornâ a ativâlu, ma al è pussibil che al compuarti cualchi risi.
+details-notification-soft-blocked-other-enabled =
+    .message = Chest component adizionâ al viole lis politichis di Mozilla. La sô utilizazion e podarès compuartâ cualchi risi.
+details-notification-softblocked-link2 = Viôt i detais
 details-notification-blocked-link = Altris informazions
 details-notification-softblocked = Si sa che { $name } al cause problemis di sigurece o stabilitât.
 details-notification-softblocked2 =

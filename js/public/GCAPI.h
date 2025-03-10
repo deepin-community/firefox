@@ -263,14 +263,6 @@ typedef enum JSGCParamKey {
   JSGC_MIN_EMPTY_CHUNK_COUNT = 21,
 
   /**
-   * We never keep more than this many unused chunks in the free chunk pool.
-   *
-   * Pref: javascript.options.mem.gc_max_empty_chunk_count
-   * Default: MaxEmptyChunkCount
-   */
-  JSGC_MAX_EMPTY_CHUNK_COUNT = 22,
-
-  /**
    * Whether compacting GC is enabled.
    *
    * Pref: javascript.options.mem.gc_compacting
@@ -665,7 +657,7 @@ namespace JS {
   D(DOCSHELL, 54)                                                      \
   D(HTML_PARSER, 55)                                                   \
   D(DOM_TESTUTILS, 56)                                                 \
-  D(PREPARE_FOR_PAGELOAD, 57)                                          \
+  D(PREPARE_FOR_PAGELOAD, LAST_FIREFOX_REASON)                         \
                                                                        \
   /* Reasons reserved for embeddings. */                               \
   D(RESERVED1, FIRST_RESERVED_REASON)                                  \
@@ -680,6 +672,7 @@ namespace JS {
 
 enum class GCReason {
   FIRST_FIREFOX_REASON = 33,
+  LAST_FIREFOX_REASON = 57,
   FIRST_RESERVED_REASON = 90,
 
 #define MAKE_REASON(name, val) name = val,
@@ -705,6 +698,12 @@ extern JS_PUBLIC_API const char* ExplainGCReason(JS::GCReason reason);
  * Return true if the GC reason is internal to the JS engine.
  */
 extern JS_PUBLIC_API bool InternalGCReason(JS::GCReason reason);
+
+/**
+ * Get a statically allocated C string explaining the given Abort reason.
+ * Input is the integral value of the enum.
+ */
+extern JS_PUBLIC_API const char* ExplainGCAbortReason(uint32_t reason);
 
 /*
  * Zone GC:

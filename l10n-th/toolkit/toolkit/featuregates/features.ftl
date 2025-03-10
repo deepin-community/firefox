@@ -46,18 +46,23 @@ experimental-features-js-warp-description = เปิดใช้งาน Warp 
 experimental-features-ime-search =
     .label = แถบที่อยู่: แสดงผลลัพธ์ระหว่างการแปลงตัวอักษรของ IME
 experimental-features-ime-search-description = IME (Input Method Editor) เป็นเครื่องมือที่ให้คุณสามารถป้อนสัญลักษณ์ที่ซับซ้อน เช่น สัญลักษณ์ที่ใช้ในภาษาเขียนในแถบเอเชียตะวันออกหรือภาษาเขียนในอินเดีย โดยใช้แป้นพิมพ์มาตรฐานได้ การเปิดใช้งานคุณลักษณะทดลองนี้จะทำให้แผงแถบที่อยู่เปิดเสมอ โดยจะแสดงผลลัพธ์การค้นหาและข้อเสนอแนะการค้นหา ในขณะที่ใช้ IME ในการป้อนข้อความ โปรดทราบว่า IME อาจแสดงผลแผงที่อาจปิดบังผลลัพธ์ในแถบที่อยู่ได้ จึงแนะนำให้ใช้ค่าปรับแต่งนี้สำหรับ IME ที่ไม่ได้ใช้แผงชนิดนี้เท่านั้น
+# Auto Picture-in-Picture
+experimental-features-auto-pip =
+    .label = ภาพที่เล่นควบคู่: เปิดอัตโนมัติเมื่อสลับแท็บ
+experimental-features-auto-pip-description = เปิดใช้งานภาพที่เล่นควบคู่ในวิดีโอที่เล่นอยู่เมื่อสลับแท็บ
 genai-settings-chat-title =
     .label = บอตสนทนา AI
 # Updated sidebar settings
 sidebar-title =
     .label = แถบข้าง
+sidebar-description = เข้าถึงประวัติ แท็บจากอุปกรณ์อื่น ส่วนขยายแถบข้าง และอื่นๆ ได้อย่างง่ายดายขณะที่คุณท่องเว็บ <a data-l10n-name="connect">แบ่งปันความคิดเห็น</a>
 vertical-tabs-title =
     .label = แท็บแนวตั้ง
-experimental-features-group-browsing =
-    .label = การท่องเว็บ
+vertical-tabs-description = ย้ายแท็บของคุณจากด้านบนของเบราว์เซอร์ไปด้านข้าง ซึ่งคุณจำเป็นต้องลองใช้แถบข้างด้วย <a data-l10n-name="connect">แบ่งปันความคิดเห็น</a>
 experimental-features-group-developer-tools =
     .label = เครื่องมือนักพัฒนา
 experimental-features-group-webpage-display =
     .label = Webpage Display
 experimental-features-group-customize-browsing =
     .label = ปรับแต่งการการท่องเว็บของคุณ
+experimental-features-group-customize-browsing-description = ถ้าคุณลองใช้คุณลักษณะเหล่านี้ ลอง<a data-l10n-name="connect">แบ่งปันความคิดเห็นของคุณทาง Connect</a>

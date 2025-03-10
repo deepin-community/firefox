@@ -64,6 +64,11 @@ shopping-message-bar-analysis-in-progress-with-amount = მოწმდება
 shopping-message-bar-page-not-supported =
     .heading = ვერ მოწმდება ეს მიმოხილვები
     .message = სამწუხაროდ, გარკვეული სახის ნაწარმზე მიმოხილვის ხარისხი ვერ შემოწმდება. ასეთებია მაგალითად სასაჩუქრე ბარათები, ეთერით გადასაცემი ვიდეო, მუსიკა და თამაშები.
+shopping-message-bar-keep-closed-header =
+    .heading = დარჩეს დახურული?
+    .message = შეგიძლიათ პარამეტრებიდან მიუთითოთ, რომ მიმოხილვების შემმოწმებელი დახურული იყოს ნაგულისხმევად. ამჟამად თავისით იხსნება.
+shopping-message-bar-keep-closed-dismiss-button = არა, გმადლობთ
+shopping-message-bar-keep-closed-accept-button = დიახ, დარჩეს დახურული
 
 ## Strings for the product review snippets card
 
@@ -84,11 +89,27 @@ shopping-show-less-button = მოკლედ
 
 shopping-settings-label =
     .label = პარამეტრები
+shopping-settings-recommendations-toggle2 =
+    .label = დამკვეთების შეთავაზებებისა და მასალის ჩვენება
+shopping-settings-recommendations-learn-more3 = { -brand-product-name } არ აზიარებს თქვენს პირად მონაცემებს, ასე რომ ეს შემოთავაზებები არ გამოგყვებათ სხვა გვერდებზეც. <a data-l10n-name="review-quality-url">ვრცლად</a>
 shopping-settings-recommendations-toggle =
     .label = რეკლამების ჩვენება მიმოხილვის შემმოწმებელში
 shopping-settings-recommendations-learn-more2 = დროდადრო იხილავთ რეკლამებს გასაყიდი ნაწარმის შესაბამისად. მხოლოდ საიმედო მიმოხილვების მქონეს შემოგთავაზებთ. <a data-l10n-name="review-quality-url">ვრცლად</a>
 shopping-settings-opt-out-button = მიმოხილვის შემმოწმებლის გამორთვა
 powered-by-fakespot = მიმოხილვის შემმოწმებლის უზრუნველმყოფია <a data-l10n-name="fakespot-link">{ -fakespot-brand-full-name }</a>
+shopping-settings-auto-open-toggle =
+    .label = მიმოხილვების შემმოწმებლის თავისთავად გახსნა
+# Description text for regions where we support three sites. Sites are limited to Amazon, Walmart and Best Buy.
+# Variables:
+#   $firstSite (String) - The first shopping page name
+#   $secondSite (String) - The second shopping page name
+#   $thirdSite (String) - The third shopping page name
+shopping-settings-auto-open-description-three-sites = როცა საყიდლებისთვის გამოიყენება { $firstSite }, { $secondSite } და { $thirdSite }
+# Description text for regions where we support only one site (e.g. currently used in FR/DE with Amazon).
+# Variables:
+#   $currentSite (String) - The current shopping page name
+shopping-settings-auto-open-description-single-site = როცა საყიდლებისთვის გამოიყენება { $currentSite }
+shopping-settings-sidebar-enabled-state = მიმოხილვის შემმოწმებელი <strong>ჩართულია</strong>
 
 ## Strings for the adjusted rating component
 
@@ -97,6 +118,7 @@ powered-by-fakespot = მიმოხილვის შემმოწმებ
 shopping-adjusted-rating-label =
     .label = შესწორებული შეფასება
 shopping-adjusted-rating-unreliable-reviews = არასანდო მიმოხილვების გამოკლებით
+shopping-adjusted-rating-based-reliable-reviews = სანდო მიმოხილვების მიხედვით
 
 ## Strings for the review reliability component
 
@@ -115,6 +137,8 @@ shopping-analysis-explainer-learn-more2 = იხილეთ ვრცლად,
 # websites, which will be inserted without being translated.
 #  $retailer (String) - capitalized name of the shopping website, for example, "Amazon".
 shopping-analysis-explainer-highlights-description = <strong>გამოსარჩევი</strong> ბოლო 80 დღეში { $retailer }-ის სანდოდ მიჩნეული მიმოხილვებიდან.
+# Fallback for analysis highlights explainer if the retailer is ever unknown
+shopping-analysis-explainer-highlights-description-unknown-retailer = <strong>გამოსარჩევი</strong> ბოლო 80 დღეში სანდოდ მიჩნეული მიმოხილვებიდან.
 shopping-analysis-explainer-review-grading-scale-reliable = სანდოა მიმოხილვები. მიგვაჩნია, რომ ეს მიმოხილვები მეტწილად ნამდვილი მომხმარებლების დატოვებულია პატიოსნად და მიუკერძოებლად.
 shopping-analysis-explainer-review-grading-scale-mixed = მიგვაჩნია, რომ შერეულადაა სანდო და არასანდო მიმოხილვები.
 shopping-analysis-explainer-review-grading-scale-unreliable = არასანდოა მიმოხილვები. მიგვაჩნია, რომ ეს მიმოხილვები მეტწილად ყალბი ან მიკერძოებული მიმომხილველებისგანაა.
@@ -134,13 +158,14 @@ shopping-sidebar-close-button2 =
 ## possible - if these terms are not meaningfully different - that is OK.
 
 shopping-unanalyzed-product-header-2 = ამ მიმოხილვების შესახებ მონაცემები ჯერ არაა
-shopping-unanalyzed-product-message-2 = იმის გასაგებად, სანდოა თუ არა ამ ნაწარმის მიმოხილვები, შეამოწმეთ მიმოხილვის ხარისხი. მიახლოებით 60 წამს გასტანს მხოლოდ.
+shopping-unanalyzed-product-message-2 = იმის გასაგებად, სანდოა თუ არა ამ ნაწარმის მიმოხილვები, გაუშვით ხარისხის შემოწმება. მიახლოებით 60 წამს შეიძლება გასტანოს მხოლოდ.
 shopping-unanalyzed-product-analyze-button = მიმოხილვის ხარისხის შემოწმება
 
 ## Strings for the advertisement
 
 more-to-consider-ad-label =
     .label = სხვა მსგავსი
+shopping-sponsored-label = დამკვეთისგან
 ad-by-fakespot = რეკლამა – { -fakespot-brand-name }
 
 ## Shopping survey strings.
@@ -162,15 +187,43 @@ shopping-survey-terms-link = გამოყენების პირობ�
 shopping-survey-thanks =
     .heading = გმადლობთ გამოხმაურებისთვის!
 
+## Shopping opted-out survey strings
+## Opt-out survey options are displayed as checkboxes and the user can select one or many.
+
+shopping-survey-opted-out-multiselect-label = გთხოვთ, გვაცნობოთ, რატომ გათიშეთ მიმოხილვის შემმოწმებელი. თუ საჭიროა, რამდენიმე პასუხი მიუთითეთ.
+shopping-survey-thanks-title = გმადლობთ გამოხმაურებისთვის!
+shopping-survey-opted-out-hard-to-understand = ძნელად გასაგებია
+shopping-survey-opted-out-too-slow = ზედმეტად ნელია
+shopping-survey-opted-out-not-accurate = არაზუსტია
+shopping-survey-opted-out-not-helpful = არ გამომადგა
+shopping-survey-opted-out-check-myself = მირჩევნია თავად გადავამოწმო მიმოხივლები
+shopping-survey-opted-out-other = სხვა
+
 ## Shopping Feature Callout strings.
 ## "price tag" refers to the price tag icon displayed in the address bar to
 ## access the feature.
 
-shopping-callout-closed-opted-in-subtitle = დაუბრუნდით <strong>მიმოხილვის შემმოწმებელს</strong>, როგორც კი რამე ფასიანს მოჰკრავთ თვალს.
+shopping-callout-closed-opted-in-subtitle = დაუბრუნდით <strong>მიმოხილვის შემმოწმებელს</strong>, როგორც კი ფასის ნიშანს მოჰკრავთ თვალს.
 shopping-callout-pdp-opted-in-title = სანდოა ეს მიმოხილვები? სწრაფად გაარკვიეთ.
 shopping-callout-pdp-opted-in-subtitle = გახსენით მიმოხილვის შემმოწმებელი და იხილეთ შესწორებული შეფასება არასანდო მიმოხილვების გამოკლებით. გარდა ამისა, იხილეთ ბოლოდროინდელი გამორჩეული სანდო მიმოხილვები.
 shopping-callout-closed-not-opted-in-title = ერთი წკაპი სანდო მიმოხილვებამდე
-shopping-callout-closed-not-opted-in-subtitle = გამოცადეთ მიმოხილვის შემმოწმებელი, როგორც კი რამე ფასიანს მოჰკრავთ თვალს. გაეცანით მოსაზრებებს ნამდვილი მყიდველებისგან სწრაფადვე — შეძენამდე.
+shopping-callout-closed-not-opted-in-subtitle = გამოცადეთ მიმოხილვის შემმოწმებელი, როგორც კი ფასის ნიშანს მოჰკრავთ თვალს. გაეცანით მოსაზრებებს ნამდვილი მყიდველებისგან სწრაფადვე — შეძენამდე.
+shopping-callout-closed-not-opted-in-revised-title = ერთი წკაპი სანდო მიმოხილვებამდე
+shopping-callout-closed-not-opted-in-revised-subtitle = მხოლოდ დაწკაპეთ ფასის ნიშნის ხატულას მისამართების ველში მიმოხილვების შემმოწმებელზე დასაბრუნებლად.
+shopping-callout-closed-not-opted-in-revised-button = გასაგებია
+shopping-callout-not-opted-in-reminder-title = შეიძინეთ თავდაჯერებულად
+shopping-callout-not-opted-in-reminder-subtitle = ზუსტად არ იცით, შესაძენი ნივთის მიმოხილვები ნამდვილია თუ ყალბი? მიმოხილვის შემმოწმებელი დაგეხმარებათ, რომელსაც გთავაზობთ { -brand-product-name }.
+shopping-callout-not-opted-in-reminder-open-button = მიმოხილვის შემმოწმებლის გახსნა
+shopping-callout-not-opted-in-reminder-close-button = დახურვა
+shopping-callout-not-opted-in-reminder-ignore-checkbox = მომავალში ჩვენების გარეშე
+shopping-callout-not-opted-in-reminder-img-alt =
+    .aria-label = შესაძენი ნივთის სამი მიმოხილვის წარმოსახვითი გამოსახულება. ერთს აქვს გამაფრთხილებელი ნიშანი, რომელიც მიუთითებს, რომ შეიძლება არ იყოს სანდო.
+shopping-callout-disabled-auto-open-title = მიმოხილვის შემმოწმებელი ამჟამად დახურულია ნაგულისხმევად
+shopping-callout-disabled-auto-open-subtitle = დაწკაპეთ ფასის ნიშანზე მისამართების ველში, როცა მოგესურვებათ ნახოთ, სანდოა თუ არა შესაძენი ნივთის მიმოხილვები.
+shopping-callout-disabled-auto-open-button = გასაგებია
+shopping-callout-opted-out-title = მიმოხილვის შემმოწმებელი გამორთულია
+shopping-callout-opted-out-subtitle = ხელახლა ჩასართავად დაწკაპეთ ფასის ხატულას მისამართების ველში და მიჰყევით მითითებებს.
+shopping-callout-opted-out-button = გასაგებია
 
 ## Onboarding message strings.
 
@@ -186,7 +239,6 @@ shopping-onboarding-dynamic-subtitle-1 = გადაამოწმეთ შ�
 #   $currentSite (str) - The current shopping page name
 shopping-onboarding-single-subtitle = გადაამოწმეთ შეძენამდე, თუ რამდენად სანდო მიმოხილვებს გიჩვენებთ გასაყიდი ნაწარმის შესახებ <b>{ $currentSite }</b>. მიმოხილვის შემმოწმებელი, საცდელი შესაძლებლობა, რომელსაც გთავაზობთ { -brand-product-name }, პირდაპირ ბრაუზერშივეა ჩაშენებული.
 shopping-onboarding-body = ყოველისშემძლე { -fakespot-brand-full-name } დაგეხმარებათ აირიდოთ მიკერძოებული და ყალბი მიმოხილვები. ჩვენი AI-მოდელი მუდმივად თქვენს დასაცავად საყიდლების შეძენისას. <a data-l10n-name="learn_more">ვრცლად</a>
-shopping-onboarding-opt-in-privacy-policy-and-terms-of-use2 = „{ shopping-onboarding-opt-in-button }“ ღილაკზე დაჭერით ეთანხმებით { -fakespot-brand-name }-ის <a data-l10n-name="privacy_policy">პირადულობის დებულებასა</a> და <a data-l10n-name="terms_of_use">მომსახურების პირობებს.</a>
 shopping-onboarding-opt-in-privacy-policy-and-terms-of-use3 = „{ shopping-onboarding-opt-in-button }“ ღილაკზე დაჭერით ეთანხმებით { -brand-product-name }-ის <a data-l10n-name="privacy_policy">პირადულობის დებულებასა</a> და { -fakespot-brand-name }-ის <a data-l10n-name="terms_of_use">მომსახურების პირობებს.</a>
 shopping-onboarding-opt-in-button = დიახ, მოისინჯოს
 shopping-onboarding-not-now-button = ახლა არა

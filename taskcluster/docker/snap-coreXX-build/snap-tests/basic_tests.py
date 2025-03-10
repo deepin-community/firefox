@@ -8,7 +8,9 @@ import base64
 import io
 import json
 import os
+import subprocess
 import sys
+import tempfile
 import time
 import traceback
 
@@ -26,9 +28,26 @@ from selenium.webdriver.support.ui import WebDriverWait
 
 
 class SnapTestsBase:
+    _INSTANCE = None
+
     def __init__(self, exp):
+        self._INSTANCE = os.environ.get("TEST_SNAP_INSTANCE", "firefox")
+
+        self._PROFILE_PATH = "~/snap/{}/common/.mozilla/firefox/".format(self._INSTANCE)
+        self._EXE_PATH = r"/snap/{}/current/usr/lib/firefox/geckodriver".format(
+            self._INSTANCE
+        )
+        self._LIB_PATH = r"/snap/{}/current/usr/lib/firefox/libxul.so".format(
+            self._INSTANCE
+        )
+        self._BIN_PATH = r"/snap/bin/{}".format(self._INSTANCE)
+
+        snap_profile_path = tempfile.mkdtemp(
+            prefix="snap-tests",
+            dir=os.path.expanduser(self._PROFILE_PATH),
+        )
         driver_service = Service(
-            executable_path=r"/snap/firefox/current/usr/lib/firefox/geckodriver",
+            executable_path=self._EXE_PATH,
             log_output=os.path.join(
                 os.environ.get("ARTIFACT_DIR", ""), "geckodriver.log"
             ),
@@ -36,14 +55,18 @@ class SnapTestsBase:
         options = Options()
         if "TEST_GECKODRIVER_TRACE" in os.environ.keys():
             options.log.level = "trace"
-        options.binary_location = r"/snap/firefox/current/usr/lib/firefox/firefox"
+        options.binary_location = self._BIN_PATH
         if not "TEST_NO_HEADLESS" in os.environ.keys():
             options.add_argument("--headless")
         if "MOZ_AUTOMATION" in os.environ.keys():
             os.environ["MOZ_LOG_FILE"] = os.path.join(
                 os.environ.get("ARTIFACT_DIR"), "gecko.log"
             )
+        options.add_argument("-profile")
+        options.add_argument(snap_profile_path)
         self._driver = webdriver.Firefox(service=driver_service, options=options)
+        self._driver.set_window_position(0, 0)
+        self._driver.set_window_size(1280, 1024)
 
         self._logger = structuredlog.StructuredLogger(self.__class__.__name__)
         self._logger.add_handler(
@@ -65,6 +88,12 @@ class SnapTestsBase:
         self._update_channel = None
         self._version_major = None
 
+        self._is_debug_build = None
+        if self.is_debug_build():
+            self._logger.info("Running against a DEBUG build")
+        else:
+            self._logger.info("Running against a OPT build")
+
         self._wait = WebDriverWait(self._driver, self.get_timeout())
         self._longwait = WebDriverWait(self._driver, 60)
 
@@ -76,6 +105,8 @@ class SnapTestsBase:
         channel = self.update_channel()
         if self.is_esr_115():
             channel = "esr-115"
+        if self.is_esr_128():
+            channel = "esr-128"
         for m in object_methods:
             self._logger.test_start(m)
             expectations = (
@@ -105,10 +136,12 @@ class SnapTestsBase:
                     test_status = "TIMEOUT"
 
                 test_message = repr(ex)
-                self.save_screenshot("screenshot_{}.png".format(test_status.lower()))
+                self.save_screenshot(
+                    "screenshot_{}_{}.png".format(m.lower(), test_status.lower())
+                )
                 self._driver.switch_to.parent_frame()
                 self.save_screenshot(
-                    "screenshot_{}_parent.png".format(test_status.lower())
+                    "screenshot_{}_{}_parent.png".format(m.lower(), test_status.lower())
                 )
                 self._logger.test_end(m, status=test_status, message=test_message)
                 traceback.print_exc()
@@ -162,9 +195,6 @@ class SnapTestsBase:
         else:
             return 5
 
-    def is_debug_build(self):
-        return "BUILD_IS_DEBUG" in os.environ.keys()
-
     def maybe_collect_reference(self):
         return "TEST_COLLECT_REFERENCE" in os.environ.keys()
 
@@ -176,6 +206,14 @@ class SnapTestsBase:
         self._driver.get(url)
 
         return self._driver.current_window_handle
+
+    def is_debug_build(self):
+        if self._is_debug_build is None:
+            self._is_debug_build = (
+                "with debug_info"
+                in subprocess.check_output(["file", self._LIB_PATH]).decode()
+            )
+        return self._is_debug_build
 
     def update_channel(self):
         if self._update_channel is None:
@@ -200,6 +238,9 @@ class SnapTestsBase:
     def is_esr_115(self):
         return self.update_channel() == "esr" and self.version_major() == "115"
 
+    def is_esr_128(self):
+        return self.update_channel() == "esr" and self.version_major() == "128"
+
     def assert_rendering(self, exp, element_or_driver):
         # wait a bit for things to settle down
         time.sleep(0.5)
@@ -208,9 +249,11 @@ class SnapTestsBase:
         png_bytes = (
             element_or_driver.screenshot_as_png
             if isinstance(element_or_driver, WebElement)
-            else element_or_driver.get_screenshot_as_png()
-            if isinstance(element_or_driver, WebDriver)
-            else base64.b64decode(element_or_driver)
+            else (
+                element_or_driver.get_screenshot_as_png()
+                if isinstance(element_or_driver, WebDriver)
+                else base64.b64decode(element_or_driver)
+            )
         )
         svg_png = Image.open(io.BytesIO(png_bytes)).convert("RGB")
         svg_png_cropped = svg_png.crop((0, 35, svg_png.width - 20, svg_png.height - 10))
@@ -382,7 +425,7 @@ class SnapTests(SnapTestsBase):
         video = self._wait.until(
             EC.visibility_of_element_located((By.CLASS_NAME, "html5-main-video"))
         )
-        self._wait.until(lambda d: type(video.get_property("duration")) == float)
+        self._wait.until(lambda d: type(video.get_property("duration")) is float)
         self._logger.info("video duration: {}".format(video.get_property("duration")))
         assert (
             video.get_property("duration") > exp["duration"]
@@ -452,7 +495,7 @@ class SnapTests(SnapTestsBase):
                 (By.CSS_SELECTOR, "video.html5-main-video")
             )
         )
-        self._wait.until(lambda d: type(video.get_property("duration")) == float)
+        self._wait.until(lambda d: type(video.get_property("duration")) is float)
         self._logger.info("video duration: {}".format(video.get_property("duration")))
         assert (
             video.get_property("duration") > exp["duration"]

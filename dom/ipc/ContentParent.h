@@ -22,9 +22,11 @@
 #include "mozilla/ipc/BackgroundUtils.h"
 #include "mozilla/ipc/GeckoChildProcessHost.h"
 #include "mozilla/ipc/InputStreamUtils.h"
+#include "mozilla/ipc/SharedMemory.h"
 #include "mozilla/Attributes.h"
 #include "mozilla/DataMutex.h"
 #include "mozilla/HalTypes.h"
+#include "mozilla/IdleTaskRunner.h"
 #include "mozilla/LinkedList.h"
 #include "mozilla/Maybe.h"
 #include "mozilla/MemoryReportingProcess.h"
@@ -101,12 +103,8 @@ class RemoteWorkerServiceParent;
 class ThreadsafeContentParentHandle;
 struct CancelContentJSOptions;
 
-#define NS_CONTENTPARENT_IID                         \
-  {                                                  \
-    0xeeec9ebf, 0x8ecf, 0x4e38, {                    \
-      0x81, 0xda, 0xb7, 0x34, 0x13, 0x7e, 0xac, 0xf3 \
-    }                                                \
-  }
+#define NS_CONTENTPARENT_IID \
+  {0xeeec9ebf, 0x8ecf, 0x4e38, {0x81, 0xda, 0xb7, 0x34, 0x13, 0x7e, 0xac, 0xf3}}
 
 class ContentParent final : public PContentParent,
                             public nsIDOMProcessParent,
@@ -282,7 +280,6 @@ class ContentParent final : public PContentParent,
 
   static void BroadcastStringBundle(const StringBundleDescriptor&);
 
-  static void BroadcastFontListChanged();
   static void BroadcastShmBlockAdded(uint32_t aGeneration, uint32_t aIndex);
 
   static void BroadcastThemeUpdate(widget::ThemeChangeKind);
@@ -398,14 +395,17 @@ class ContentParent final : public PContentParent,
    * shutdown process.  Automatically called whenever a KeepAlive is removed, or
    * a BrowserParent is removed.
    *
-   * Returns `true` if shutdown for the process has been started, and `false`
-   * otherwise.
+   * By default when a process becomes unused, it will be kept alive for a short
+   * time, potentially allowing the process to be re-used.
    *
+   * @param aImmediate If true, immediately begins shutdown if the process is
+   *                   eligible, without any grace period for process re-use.
    * @param aIgnoreKeepAlivePref If true, the dom.ipc.keepProcessesAlive.*
    *                             preferences will be ignored, for clean-up of
-   *                             cached processes.
+   *                             cached processes. Requires aImmediate.
    */
-  bool MaybeBeginShutDown(bool aIgnoreKeepAlivePref = false);
+  void MaybeBeginShutDown(bool aImmediate = false,
+                          bool aIgnoreKeepAlivePref = false);
 
   TestShellParent* CreateTestShell();
 
@@ -629,6 +629,12 @@ class ContentParent final : public PContentParent,
   // to this content process forever.
   void TransmitBlobURLsForPrincipal(nsIPrincipal* aPrincipal);
 
+  // Update a cache list of allowed domains to store cookies for the current
+  // process. This method is called when PCookieServiceParent actor is not
+  // available yet.
+  void AddPrincipalToCookieInProcessCache(nsIPrincipal* aPrincipal);
+  void TakeCookieInProcessCache(nsTArray<nsCOMPtr<nsIPrincipal>>& aList);
+
   nsresult TransmitPermissionsForPrincipal(nsIPrincipal* aPrincipal);
 
   // Whenever receiving a Principal we need to validate that Principal case
@@ -660,8 +666,6 @@ class ContentParent final : public PContentParent,
   // Control the priority of the IPC messages for input events.
   void SetInputPriorityEventEnabled(bool aEnabled);
   bool IsInputPriorityEventEnabled() { return mIsInputPriorityEventEnabled; }
-
-  static bool IsInputEventQueueSupported();
 
   mozilla::ipc::IPCResult RecvCreateBrowsingContext(
       uint64_t aGroupId, BrowsingContext::IPCInitializer&& aInit);
@@ -870,6 +874,7 @@ class ContentParent final : public PContentParent,
 
   bool DeallocPRemoteSpellcheckEngineParent(PRemoteSpellcheckEngineParent*);
 
+  MOZ_CAN_RUN_SCRIPT_BOUNDARY
   mozilla::ipc::IPCResult RecvCloneDocumentTreeInto(
       const MaybeDiscarded<BrowsingContext>& aSource,
       const MaybeDiscarded<BrowsingContext>& aTarget, PrintData&& aPrintData);
@@ -992,19 +997,6 @@ class ContentParent final : public PContentParent,
 
   mozilla::ipc::IPCResult RecvSetURITitle(nsIURI* uri, const nsAString& title);
 
-  mozilla::ipc::IPCResult RecvShowAlert(nsIAlertNotification* aAlert);
-
-  mozilla::ipc::IPCResult RecvCloseAlert(const nsAString& aName,
-                                         bool aContextClosed);
-
-  mozilla::ipc::IPCResult RecvDisableNotifications(nsIPrincipal* aPrincipal);
-
-  mozilla::ipc::IPCResult RecvOpenNotificationSettings(
-      nsIPrincipal* aPrincipal);
-
-  mozilla::ipc::IPCResult RecvNotificationEvent(
-      const nsAString& aType, const NotificationEventData& aData);
-
   mozilla::ipc::IPCResult RecvLoadURIExternal(
       nsIURI* uri, nsIPrincipal* triggeringPrincipal,
       nsIPrincipal* redirectPrincipal,
@@ -1119,7 +1111,7 @@ class ContentParent final : public PContentParent,
 
   mozilla::ipc::IPCResult RecvGetFontListShmBlock(
       const uint32_t& aGeneration, const uint32_t& aIndex,
-      base::SharedMemoryHandle* aOut);
+      mozilla::ipc::SharedMemory::Handle* aOut);
 
   mozilla::ipc::IPCResult RecvInitializeFamily(const uint32_t& aGeneration,
                                                const uint32_t& aFamilyIndex,
@@ -1142,9 +1134,9 @@ class ContentParent final : public PContentParent,
   mozilla::ipc::IPCResult RecvStartCmapLoading(const uint32_t& aGeneration,
                                                const uint32_t& aStartIndex);
 
-  mozilla::ipc::IPCResult RecvGetHyphDict(nsIURI* aURIParams,
-                                          base::SharedMemoryHandle* aOutHandle,
-                                          uint32_t* aOutSize);
+  mozilla::ipc::IPCResult RecvGetHyphDict(
+      nsIURI* aURIParams, mozilla::ipc::SharedMemory::Handle* aOutHandle,
+      uint32_t* aOutSize);
 
   mozilla::ipc::IPCResult RecvNotifyBenchmarkResult(const nsAString& aCodecName,
                                                     const uint32_t& aDecodeFPS);
@@ -1310,6 +1302,7 @@ class ContentParent final : public PContentParent,
       const bool& aCloneEntryChildren, const bool& aChannelExpired,
       const uint32_t& aCacheKey);
 
+  MOZ_CAN_RUN_SCRIPT_BOUNDARY
   mozilla::ipc::IPCResult RecvHistoryGo(
       const MaybeDiscarded<BrowsingContext>& aContext, int32_t aOffset,
       uint64_t aHistoryEpoch, bool aRequireUserInteraction,
@@ -1363,6 +1356,7 @@ class ContentParent final : public PContentParent,
   mozilla::ipc::IPCResult RecvRemoveFromSessionHistory(
       const MaybeDiscarded<BrowsingContext>& aContext, const nsID& aChangeID);
 
+  MOZ_CAN_RUN_SCRIPT_BOUNDARY
   mozilla::ipc::IPCResult RecvHistoryReload(
       const MaybeDiscarded<BrowsingContext>& aContext,
       const uint32_t aReloadFlags);
@@ -1569,6 +1563,8 @@ class ContentParent final : public PContentParent,
 
   nsTArray<nsCString> mBlobURLs;
 
+  nsTArray<nsCOMPtr<nsIPrincipal>> mCookieInContentListCache;
+
   // This is intended to be a memory and time efficient means of determining
   // whether an origin has ever existed in a process so that Blob URL broadcast
   // doesn't need to transmit every Blob URL to every content process. False
@@ -1608,6 +1604,8 @@ class ContentParent final : public PContentParent,
   // A preference serializer used to share preferences with the process.
   // Cleared once startup is complete.
   UniquePtr<mozilla::ipc::SharedPreferenceSerializer> mPrefSerializer;
+
+  RefPtr<IdleTaskRunner> mMaybeBeginShutdownRunner;
 
   static uint32_t sMaxContentProcesses;
   static uint32_t sPageLoadEventCounter;

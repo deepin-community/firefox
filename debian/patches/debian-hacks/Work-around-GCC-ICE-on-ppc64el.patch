@@ -7,10 +7,10 @@ Subject: Work around GCC ICE on ppc64el
  1 file changed, 9 insertions(+), 1 deletion(-)
 
 diff --git a/gfx/skia/moz.build b/gfx/skia/moz.build
-index 7fee545..d0d5c4f 100644
+index cd3fcc9..9d31946 100644
 --- a/gfx/skia/moz.build
 +++ b/gfx/skia/moz.build
-@@ -368,7 +368,15 @@ UNIFIED_SOURCES += [
+@@ -372,7 +372,15 @@ UNIFIED_SOURCES += [
      'skia/src/sksl/SkSLConstantFolder.cpp',
      'skia/src/sksl/SkSLContext.cpp',
      'skia/src/sksl/SkSLErrorReporter.cpp',
@@ -26,4 +26,4 @@ index 7fee545..d0d5c4f 100644
 +UNIFIED_SOURCES += [
      'skia/src/sksl/SkSLIntrinsicList.cpp',
      'skia/src/sksl/SkSLMangler.cpp',
-     'skia/src/sksl/SkSLModuleLoader.cpp',
+     'skia/src/sksl/SkSLModule.cpp',

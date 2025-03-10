@@ -51,6 +51,70 @@ browser-main-window-title = { -brand-full-name }
 # The non-variable portion of this MUST match the translation of
 # "PRIVATE_BROWSING_SHORTCUT_TITLE" in custom.properties
 private-browsing-shortcut-text-2 = Brabhsadh prìobhaideach { -brand-shortcut-name }
+# These are the default window titles everywhere except macOS.
+# .data-title-default and .data-title-private are used when the web content
+# opened has no title:
+#
+# default - "Mozilla Firefox"
+# private - "Mozilla Firefox (Private Browsing)"
+#
+# .data-content-title-default and .data-content-title-private are for use when
+# there *is* a content title.
+#
+# .data-title-default-with-profile, .data-title-private-with-profile,
+# .data-content-title-default-with-profile,
+# .data-content-title-private-with-profile are used when there a
+# SelectableProfileService.current profile exists.
+#
+# Variables:
+#  $content-title (String): the title of the web content.
+#  $profile-name (String): the name of the current profile.
+browser-main-window-titles =
+    .data-title-default = { -brand-full-name }
+    .data-title-private = Brabhsadh prìobhaideach { -brand-full-name }
+    .data-title-default-with-profile = { $profile-name } ‑ { -brand-full-name }
+    .data-title-private-with-profile = { $profile-name } ‑ Brabhsadh prìobhaideach { -brand-full-name }
+    .data-content-title-default = { $content-title } – { -brand-full-name }
+    .data-content-title-private = Brabhsadh prìobhaideach { $content-title } – { -brand-full-name }
+    .data-content-title-default-with-profile = { $content-title } – { $profile-name } – { -brand-full-name }
+    .data-content-title-private-with-profile = { $content-title } – { $profile-name } – Brabhsadh prìobhaideach { -brand-full-name }
+# These are the default window titles on macOS.
+# .data-title-default and .data-title-private are used when the web content
+# opened has no title:
+#
+#
+# "default" - "Mozilla Firefox"
+# "private" - "Mozilla Firefox — (Private Browsing)"
+#
+# .data-content-title-default and .data-content-title-private are for use when
+# there *is* a content title.
+# Do not use the brand name in these, as we do on non-macOS.
+#
+# .data-title-default-with-profile, .data-title-private-with-profile,
+# .data-content-title-default-with-profile,
+# .data-content-title-private-with-profile are used when there a
+# SelectableProfileService.current profile exists.
+#
+# Also note the other subtle difference here: we use a `-` to separate the
+# brand name from `(Private Browsing)`, which does not happen on other OSes.
+#
+# Variables:
+#  $content-title (String): the title of the web content.
+#  $profile-name (String): the name of the current profile.
+browser-main-window-titles-mac =
+    .data-title-default = { -brand-full-name }
+    .data-title-private = Brabhsadh prìobhaideach – { -brand-full-name }
+    .data-title-default-with-profile = { $profile-name } – { -brand-full-name }
+    .data-title-private-with-profile = { $profile-name } – Brabhsadh prìobhaideach – { -brand-full-name }
+    .data-content-title-default = { $content-title }
+    .data-content-title-private = { $content-title } – Brabhsadh prìobhaideach
+    .data-content-title-default-with-profile = { $content-title } – { $profile-name }
+    .data-content-title-private-with-profile = { $content-title } – { $profile-name } – Brabhsadh prìobhaideach
+# This gets set as the initial title, and is overridden as soon as we start
+# updating the titlebar based on loaded tabs or private browsing state.
+# This should match the `data-title-default` attribute in both
+# `browser-main-window` and `browser-main-window-mac`.
+browser-main-window-default-title = { -brand-full-name }
 
 ##
 
@@ -279,6 +343,9 @@ quickactions-cmd-plugins = plugain
 # Opens the print dialog
 quickactions-print2 = Clò-bhuail an duilleag
 quickactions-cmd-print = clò-bhuail
+# Opens the print dialog at the save to PDF option
+quickactions-savepdf = Sàbhail an duilleag mar PDF
+quickactions-cmd-savepdf = pdf
 # Opens a new private browsing window
 quickactions-private2 = Fosgail uinneag phrìobhaideach
 quickactions-cmd-private = brabhsadh prìobhaideach
@@ -306,6 +373,10 @@ quickactions-cmd-viewsource = seall am bun-tùs
 # Tooltip text for the help button shown in the result.
 quickactions-learn-more =
     .title = Barrachd fiosrachaidh mu na grad-ghnìomhan
+# Will be shown to users the first configurable number of times
+# they experience actions giving them instructions on how to
+# select the action shown by pressing the tab key.
+press-tab-label = Brùth Tab airson taghadh a dhèanamh:
 
 ## Bookmark Panel
 
@@ -350,6 +421,7 @@ identity-connection-secure = Tha an ceangal tèarainte
 identity-connection-failure = Dh’fhàillig leis a’ cheangal
 identity-connection-internal = Seo duilleag { -brand-short-name } tèarainte.
 identity-connection-file = Tha an duilleag seo ’ga stòradh air a’ choimpiutair agad.
+identity-connection-associated = Chaidh an duilleag seo a luchdadh o dhuilleag eile.
 identity-extension-page = Chaidh an duilleag seo ’ga luchdadh o leudachan.
 identity-active-blocked = Bhac { -brand-short-name } na pìosan dhen duilleag seo nach eil tèarainte.
 identity-custom-root = Chaidh an ceangal a dhearbhadh le teisteanas nach aithnich Mozilla.
@@ -359,6 +431,7 @@ identity-weak-encryption = Tha an duilleag seo a’ cleachdadh crioptachadh lag.
 identity-insecure-login-forms = Dh’fhaoidte gu bheil cothrom air daoine air fiosrachadh clàraidh air an duilleag seo.
 identity-https-only-connection-upgraded = (chaidh àrdachadh gu HTTPS)
 identity-https-only-label = Modh HTTPS a-mhàin
+identity-https-only-label2 = Àrdaich an làrach seo gu ceangal tèarainte gu fèin-obrachail
 identity-https-only-dropdown-on =
     .label = Air
 identity-https-only-dropdown-off =
@@ -367,6 +440,8 @@ identity-https-only-dropdown-off-temporarily =
     .label = Dheth rè seal
 identity-https-only-info-turn-on2 = Cuir am modh HTTPS air dhan làrach seo ma thogras tu gun àrdaich { -brand-short-name } an ceangal nuair a ghabhas seo a dhèanamh.
 identity-https-only-info-turn-off2 = Ma tha coltas briste air an duilleag seo, dh’fhaoidte gu bheil thu airson am modh HTTPS a-mhàin a chur dheth dhan làrach seo agus a h-ath-luchdadh le HTTP neo-thèarainte.
+identity-https-only-info-turn-on3 = Cuir àrdachadh HTTPS an comas dhan làrach seo ma tha thu airson ’s gun àrdaich { -brand-short-name } an ceangal nuair a ghabhas seo a dhèanamh.
+identity-https-only-info-turn-off3 = Ma tha coltas briste air an duilleag seo, dh’fhaoidte gum b’ fheàirrde dhut àrdachadh HTTPS a chur dheth dhan làrach seo agus ath-luchdadh air HTTP neo-thèarainte.
 identity-https-only-info-no-upgrade = Cha b’ urrainn dhuinn an ceangal àrdachadh o HTTP.
 identity-permissions-storage-access-header = Briosgaidean thar làraichean
 identity-permissions-storage-access-hint = ’S urrainn dha na pàrtaidhean seo briosgaidean agus dàta thar làraichean a chleachdadh fhad ’s a bhios tu air an làrach seo.
@@ -551,6 +626,8 @@ urlbar-go-button =
     .tooltiptext = Rach dhan t-seòladh a tha ann am bàr an t-seòlaidh
 urlbar-page-action-button =
     .tooltiptext = Gnìomhan na duilleige
+urlbar-revert-button =
+    .tooltiptext = Seall an seòladh ann am bàr an t-seòlaidh
 
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
@@ -571,6 +648,13 @@ urlbar-result-action-search-w-engine = Lorg le { $engine }
 urlbar-result-action-sponsored = Sponsairichte
 urlbar-result-action-switch-tab = Gearr leum gun taba
 urlbar-result-action-visit = Tadhail air
+# "Switch to tab with container" is used when the target tab is located in a
+# different container.
+# Variables
+# $container (String): the name of the target container
+urlbar-result-action-switch-tab-with-container = Leum gun taba · <span>{ $container }</span>
+# Allows the user to visit a URL that was previously copied to the clipboard.
+urlbar-result-action-visit-from-clipboard = Tadhail air on stòr-bhòrd
 # Directs a user to press the Tab key to perform a search with the specified
 # engine.
 # Variables
@@ -601,6 +685,45 @@ urlbar-result-action-calculator-result = = { $result }
 
 ## Strings used for buttons in the urlbar
 
+# Label prompting user to search with a particular search engine.
+#  $engine (String): the name of a search engine that searches a specific site
+urlbar-result-search-with = Lorg le { $engine }
+# Label for the urlbar result row, prompting the user to use a local keyword to enter search mode.
+#  $keywords (String): the restrict keyword to enter search mode.
+#  $localSearchMode (String): the local search mode (history, tabs, bookmarks,
+#  or actions) to search with.
+urlbar-result-search-with-local-search-mode = { $keywords } – Lorg an-seo: { $localSearchMode }
+# Label for the urlbar result row, prompting the user to use engine keywords to enter search mode.
+#  $keywords (String): the default keyword and user's set keyword if available
+#  $engine (String): the name of a search engine
+urlbar-result-search-with-engine-keywords = { $keywords } – Lorg le: { $engine }
+urlbar-searchmode-dropmarker =
+    .tooltiptext = Tagh einnsean-luirg
+urlbar-searchmode-bookmarks =
+    .label = Comharran-lìn
+urlbar-searchmode-tabs =
+    .label = Tabaichean
+urlbar-searchmode-history =
+    .label = An eachdraidh
+urlbar-searchmode-actions =
+    .label = Gnìomhan
+urlbar-searchmode-exit-button =
+    .tooltiptext = Dùin
+# Label shown on the top of Searchmode Switcher popup. After this label, the
+# available search engines will be listed.
+urlbar-searchmode-popup-description = Dèan lorg leis na leanas an turas seo:
+urlbar-searchmode-popup-search-settings-menuitem =
+    .label = Roghainnean luirg
+urlbar-searchmode-popup-search-settings = Roghainnean luirg
+# Searchmode Switcher button
+# Variables:
+#   $engine (String): the current default search engine.
+urlbar-searchmode-button2 =
+    .label = { $engine }, tagh einnsean-luirg
+    .tooltiptext = { $engine }, tagh einnsean-luirg
+urlbar-searchmode-button-no-engine =
+    .label = Cha deach ath-ghoirid a thaghadh; tagh ath-ghoirid
+    .tooltiptext = Cha deach ath-ghoirid a thaghadh; tagh ath-ghoirid
 
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
@@ -610,6 +733,12 @@ urlbar-result-action-search-bookmarks = Lorg sna comharran-lìn
 urlbar-result-action-search-history = Lorg san eachdraidh
 urlbar-result-action-search-tabs = Lorg sna tabaichean
 urlbar-result-action-search-actions = Gnìomhan luirg
+# Label for a quickaction result used to switch to an open tab group.
+#  $group (String): the name of the tab group to switch to
+urlbar-result-action-switch-to-tabgroup = Leum gu { $group }
+# Label for a quickaction result used to re-opan a saved tab group.
+#  $group (String): the name of the tab group to re-open
+urlbar-result-action-open-saved-tabgroup = Fosgail { $group }
 
 ## Labels shown above groups of urlbar results
 
@@ -626,6 +755,26 @@ urlbar-group-search-suggestions =
 # A label shown above Quick Actions in the urlbar results.
 urlbar-group-quickactions =
     .label = Grad-ghnìomhan
+# A label shown above the recent searches group in the urlbar results.
+# Variables
+#  $engine (String): the name of the search engine used to search.
+urlbar-group-recent-searches =
+    .label = Luirg o chionn goirid
+# The header shown above trending results.
+# Variables:
+#  $engine (String): the name of the search engine providing the trending suggestions
+urlbar-group-trending =
+    .label = A’ treandadh air { $engine }
+# The result menu labels shown next to trending results.
+urlbar-result-menu-trending-dont-show =
+    .label = Na seall luirg a tha a’ treandadh
+    .accesskey = N
+urlbar-result-menu-trending-why =
+    .label = Carson a tha mi a’ faicinn seo?
+    .accesskey = C
+# A message that replaces a result when the user dismisses all suggestions of a
+# particular type.
+urlbar-trending-dismissal-acknowledgment = Mòran taing airson do bheachdan. Chan fhaic thu luirg a tha a’ treandadh tuilleadh.
 
 ## Reader View toolbar buttons
 
@@ -644,6 +793,11 @@ picture-in-picture-urlbar-button-open =
     .tooltiptext = Fosgail an dealbh ann an dealbh ({ $shortcut })
 picture-in-picture-urlbar-button-close =
     .tooltiptext = Fùin an dealbh ann an dealbh ({ $shortcut })
+picture-in-picture-panel-header = Dealbh am broinn deilbh
+picture-in-picture-panel-headline = Cha mhol an làrach-lìn seo dhut dealbh am broinn deilbh
+picture-in-picture-panel-body = Dh’fhaoidte nach tèid videothan a thaisbeanadh mar a bhiodh dùil aig an luchd-leasachaidh fhad ’s a bhios gleus dealbh am broinn deilbh an comas.
+picture-in-picture-enable-toggle =
+    .label = Cuir an comas co-dhiù
 
 ## Full Screen and Pointer Lock UI
 
@@ -888,6 +1042,7 @@ restore-session-startup-suggestion-button = Seall dhomh mar a nì mi seo
 
 ## Infobar shown when the user tries to open a file picker and file pickers are blocked by enterprise policy
 
+filepicker-blocked-infobar = Bhac am buidheann agad cothrom air faidhlichean ionadail air a’ choimpiutair seo
 
 ## Mozilla data reporting notification (Telemetry, Firefox Health Report, etc)
 
@@ -897,6 +1052,18 @@ data-reporting-notification-button =
     .accesskey = C
 # Label for the indicator shown in the private browsing window titlebar.
 private-browsing-indicator-label = Brabhsadh prìobhaideach
+# Tooltip for the indicator shown in the private browsing window titlebar.
+private-browsing-indicator-tooltip =
+    .tooltiptext = Brabhsadh prìobhaideach
+# Tooltip for the indicator shown in the window titlebar when content analysis is active.
+# Variables:
+#   $agentName (String): The name of the DLP agent that is connected
+content-analysis-indicator-tooltip =
+    .tooltiptext = Ro-chasg call dàta (DLP) le { $agentName }. Dèan briogadh airson barrachd fiosrachaidh.
+content-analysis-panel-title = Dìon dàta
+# Variables:
+#   $agentName (String): The name of the DLP agent that is connected
+content-analysis-panel-text-styled = Tha am buidheann agad a’ cleachdadh <b>{ $agentName }</b> mar ghleus dìon an aghaidh call dàta. <a data-l10n-name="info">Barrachd fiosrachaidh</a>
 
 ## Unified extensions (toolbar) button
 
@@ -916,9 +1083,31 @@ unified-extensions-button-permissions-needed =
 ## Unified extensions button when some extensions are quarantined.
 ## Note that the new line is intentionally part of the tooltip.
 
+unified-extensions-button-quarantined =
+    .label = Leudachain
+    .tooltiptext =
+        Leudachain
+        Tha cuid a leudachain ann nach eil ceadaichte
+
+## Unified extensions button when some extensions are disabled (e.g. through add-ons blocklist).
+## Note that the new line is intentionally part of the tooltip.
+
+unified-extensions-button-blocklisted =
+    .label = Leudachain
+    .tooltiptext =
+        Leudachain
+        Tha cuid a leudachain à comas
 
 ## Private browsing reset button
 
+reset-pbm-toolbar-button =
+    .label = Cuir crìoch air an t-seisean phrìobhaideach
+    .tooltiptext = Cuir crìoch air an t-seisean phrìobhaideach
+reset-pbm-panel-heading = A bheil thu airson crìoch a chur air an t-seisean phrìobhaideach agad?
+reset-pbm-panel-description = Dùin gach taba prìobhaideach is sguab às an eachdraidh, na briosgaidean is dàta nan làraichean air fad.
+reset-pbm-panel-always-ask-checkbox =
+    .label = Faighnich dhìom an-còmhnaidh
+    .accesskey = F
 reset-pbm-panel-cancel-button =
     .label = Sguir dheth
     .accesskey = S
@@ -948,6 +1137,11 @@ firefox-relay-offer-legal-notice = Le bith a’ briogadh air “Cleachd masg pui
 popup-notification-addon-install-unsigned =
     .value = (Gun dearbhadh)
 popup-notification-xpinstall-prompt-learn-more = Barrachd fiosrachaidh mu stàladh tèarainte de thuilleadain
+popup-notification-xpinstall-prompt-block-url = Faic am mion-fhiosrachadh
+# Note: Access key is set to P to match "Private" in the corresponding localized label.
+popup-notification-addon-privatebrowsing-checkbox =
+    .label = Ruith ann an uinneagan prìobhaideach
+    .accesskey = R
 
 ## Pop-up warning
 
@@ -985,3 +1179,24 @@ popup-warning-button =
 #   $popupURI (String): the URI for the pop-up window
 popup-show-popup-menuitem =
     .label = Seall “{ $popupURI }”
+
+## File-picker crash notification ("FilePickerCrashed.sys.mjs")
+
+file-picker-failed-open = Cha b’ urrainn dhuinn còmhradh faidhle Windows fhosgladh. Cha b’ urrainn dhuinn faidhle no pasgan a thaghadh.
+#   $path (string): The full path to which the file will be saved (e.g., 'C:\Users\Default User\Downloads\readme.txt').
+file-picker-failed-save-somewhere = Cha b’ urrainn dhuinn còmhradh faidhle Windows fhosgladh. Thèid am faidhle a shàbhaladh an-seo: { $path }.
+file-picker-failed-save-nowhere = Cha b’ urrainn dhuinn còmhradh faidhle Windows fhosgladh. Cha d’fhuair sinn lorg air pasgan bunaiteach; cha tèid am faidhle a shàbhaladh.
+file-picker-crashed-open = Thuislich  còmhradh faidhle Windows. Cha b’ urrainn dhuinn faidhle no pasgan a thaghadh.
+#   $path (string): The full path to which the file will be saved (e.g., 'C:\Users\Default User\Downloads\readme.txt').
+file-picker-crashed-save-somewhere = Thuislich còmhradh faidhle Windows. Thèid am faidhle a shàbhaladh an-seo: { $path }.
+file-picker-crashed-save-nowhere = Thuislich còmhradh faidhle Windows. Cha d’fhuair sinn lorg air pasgan bunaiteach; cha tèid am faidhle a shàbhaladh.
+
+# Button used with file-picker-crashed-save-default. Opens the folder in Windows
+# Explorer, with the saved file selected and in focus.
+#
+# The wording here should be consistent with the Windows variant of
+# `downloads-cmd-show-menuitem-2` and similar messages.
+
+file-picker-crashed-show-in-folder =
+    .label = Seall sa phasgan
+    .accessKey = S

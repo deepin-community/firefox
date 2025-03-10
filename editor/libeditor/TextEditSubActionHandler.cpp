@@ -6,7 +6,7 @@
 #include "ErrorList.h"
 #include "TextEditor.h"
 
-#include "AutoRangeArray.h"
+#include "AutoClonedRangeArray.h"
 #include "EditAction.h"
 #include "EditorDOMPoint.h"
 #include "EditorUtils.h"
@@ -226,11 +226,10 @@ TextEditor::InsertLineFeedCharacterAtSelection() {
     return insertTextResult.propagateErr();
   }
   insertTextResult.inspect().IgnoreCaretPointSuggestion();
-  EditorDOMPoint pointToPutCaret = insertTextResult.inspect().Handled()
-                                       ? insertTextResult.inspect()
-                                             .EndOfInsertedTextRef()
-                                             .To<EditorDOMPoint>()
-                                       : pointToInsert;
+  EditorDOMPoint pointToPutCaret =
+      insertTextResult.inspect().Handled()
+          ? insertTextResult.inspect().EndOfInsertedTextRef()
+          : pointToInsert;
   if (NS_WARN_IF(!pointToPutCaret.IsSetAndValid())) {
     return Err(NS_ERROR_FAILURE);
   }
@@ -498,9 +497,8 @@ Result<EditActionResult, nsresult> TextEditor::HandleInsertText(
       // a LF, in which case make the caret attach to the next line.
       const bool endsWithLF =
           !insertionString.IsEmpty() && insertionString.Last() == nsCRT::LF;
-      EditorDOMPoint pointToPutCaret = insertTextResult.inspect()
-                                           .EndOfInsertedTextRef()
-                                           .To<EditorDOMPoint>();
+      EditorDOMPoint pointToPutCaret =
+          insertTextResult.inspect().EndOfInsertedTextRef();
       pointToPutCaret.SetInterlinePosition(
           endsWithLF ? InterlinePosition::StartOfNextLine
                      : InterlinePosition::EndOfLine);
@@ -659,11 +657,12 @@ Result<EditActionResult, nsresult> TextEditor::HandleDeleteSelectionInternal(
     }
   }
 
-  AutoRangeArray rangesToDelete(SelectionRef());
+  AutoClonedSelectionRangeArray rangesToDelete(SelectionRef());
   Result<nsIEditor::EDirection, nsresult> result =
       rangesToDelete.ExtendAnchorFocusRangeFor(*this, aDirectionAndAmount);
   if (result.isErr()) {
-    NS_WARNING("AutoRangeArray::ExtendAnchorFocusRangeFor() failed");
+    NS_WARNING(
+        "AutoClonedSelectionRangeArray::ExtendAnchorFocusRangeFor() failed");
     return result.propagateErr();
   }
   if (const Text* theTextNode = GetTextNode()) {

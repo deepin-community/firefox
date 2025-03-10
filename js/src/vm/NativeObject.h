@@ -17,6 +17,7 @@
 #include "NamespaceImports.h"
 
 #include "gc/Barrier.h"
+#include "gc/BufferAllocator.h"
 #include "gc/MaybeRooted.h"
 #include "gc/ZoneAllocator.h"
 #include "js/shadow/Object.h"  // JS::shadow::Object
@@ -289,9 +290,6 @@ class ObjectElements {
   /* 'length' property of array objects, unused for other objects. */
   uint32_t length;
 
-  bool hasNonwritableArrayLength() const {
-    return flags & NONWRITABLE_ARRAY_LENGTH;
-  }
   void setNonwritableArrayLength() {
     // See ArrayObject::setNonWritableLength.
     MOZ_ASSERT(capacity == initializedLength);
@@ -335,13 +333,11 @@ class ObjectElements {
   void markNonPacked() { flags |= NON_PACKED; }
 
   void markMaybeInIteration() { flags |= MAYBE_IN_ITERATION; }
-  bool maybeInIteration() { return flags & MAYBE_IN_ITERATION; }
 
   void setNotExtensible() {
     MOZ_ASSERT(!isNotExtensible());
     flags |= NOT_EXTENSIBLE;
   }
-  bool isNotExtensible() { return flags & NOT_EXTENSIBLE; }
 
   void seal() {
     MOZ_ASSERT(isNotExtensible());
@@ -435,6 +431,14 @@ class ObjectElements {
     return VALUES_PER_HEADER + capacity + numShiftedElements();
   }
 
+  bool hasNonwritableArrayLength() const {
+    return flags & NONWRITABLE_ARRAY_LENGTH;
+  }
+
+  bool maybeInIteration() { return flags & MAYBE_IN_ITERATION; }
+
+  bool isNotExtensible() { return flags & NOT_EXTENSIBLE; }
+
   // This is enough slots to store an object of this class. See the static
   // assertion below.
   static const size_t VALUES_PER_HEADER = 2;
@@ -499,8 +503,8 @@ class alignas(HeapSlot) ObjectSlots {
   }
   static constexpr size_t offsetOfSlots() { return sizeof(ObjectSlots); }
 
-  constexpr explicit ObjectSlots(uint32_t capacity, uint32_t dictionarySlotSpan,
-                                 uint64_t maybeUniqueId);
+  constexpr ObjectSlots(uint32_t capacity, uint32_t dictionarySlotSpan,
+                        uint64_t maybeUniqueId);
 
   constexpr uint32_t capacity() const { return capacity_; }
 
@@ -848,7 +852,7 @@ class NativeObject : public JSObject {
   }
 
 #ifdef DEBUG
-  enum SentinelAllowed{SENTINEL_NOT_ALLOWED, SENTINEL_ALLOWED};
+  enum SentinelAllowed { SENTINEL_NOT_ALLOWED, SENTINEL_ALLOWED };
 
   /*
    * Check that slot is in range for the object's allocated slots.
@@ -873,13 +877,12 @@ class NativeObject : public JSObject {
    * ArrayObjects don't use this limit and can have a lower slot capacity,
    * since they normally don't have a lot of slots.
    */
-  static const uint32_t SLOT_CAPACITY_MIN = 8 - ObjectSlots::VALUES_PER_HEADER;
+  static const uint32_t SLOT_CAPACITY_MIN = 5;
 
   /*
    * Minimum size for dynamically allocated elements in normal Objects.
    */
-  static const uint32_t ELEMENT_CAPACITY_MIN =
-      8 - ObjectElements::VALUES_PER_HEADER;
+  static const uint32_t ELEMENT_CAPACITY_MIN = 5;
 
   HeapSlot* fixedSlots() const {
     return reinterpret_cast<HeapSlot*>(uintptr_t(this) + sizeof(NativeObject));
@@ -1116,7 +1119,7 @@ class NativeObject : public JSObject {
                                            uint32_t nfixed);
 
   // For use from JSObject::swap.
-  [[nodiscard]] bool prepareForSwap(JSContext* cx,
+  [[nodiscard]] bool prepareForSwap(JSContext* cx, JSObject* other,
                                     MutableHandleValueVector slotValuesOut);
   [[nodiscard]] static bool fixupAfterSwap(JSContext* cx,
                                            Handle<NativeObject*> obj,
@@ -1380,6 +1383,18 @@ class NativeObject : public JSObject {
     return v.isUndefined() ? nullptr : static_cast<T*>(v.toPrivate());
   }
 
+  // Returns the address of a reserved fixed slot that stores a T* as
+  // PrivateValue. Be very careful when using this because the object might be
+  // moved in memory!
+  template <typename T>
+  T** addressOfFixedSlotPrivatePtr(size_t slot) {
+    MOZ_ASSERT(slot < JSCLASS_RESERVED_SLOTS(getClass()));
+    MOZ_ASSERT(slotIsFixed(slot));
+    MOZ_ASSERT(getReservedSlot(slot).isDouble());
+    void* addr = &getFixedSlotRef(slot);
+    return reinterpret_cast<T**>(addr);
+  }
+
   /*
    * Calculate the number of dynamic slots to allocate to cover the properties
    * in an object with the given number of fixed slots and slot span.
@@ -1402,7 +1417,8 @@ class NativeObject : public JSObject {
 
   // The maximum number of usable dense elements in an object.
   static const uint32_t MAX_DENSE_ELEMENTS_COUNT =
-      MAX_DENSE_ELEMENTS_ALLOCATION - ObjectElements::VALUES_PER_HEADER;
+      MAX_DENSE_ELEMENTS_ALLOCATION - ObjectElements::VALUES_PER_HEADER -
+      gc::LargeBufferHeaderSize / sizeof(Value);
 
   static void elementsSizeMustNotOverflow() {
     static_assert(
@@ -1648,13 +1664,6 @@ class NativeObject : public JSObject {
   }
 
   inline bool hasDynamicElements() const {
-    /*
-     * Note: for objects with zero fixed slots this could potentially give
-     * a spurious 'true' result, if the end of this object is exactly
-     * aligned with the end of its arena and dynamic slots are allocated
-     * immediately afterwards. Such cases cannot occur for dense arrays
-     * (which have at least two fixed slots) and can only result in a leak.
-     */
     return !hasEmptyElements() && !hasFixedElements();
   }
 
@@ -1712,6 +1721,24 @@ class NativeObject : public JSObject {
       privatePreWriteBarrier(pslot);
       pslot->unbarrieredSet(UndefinedValue());
     }
+  }
+
+  // This is equivalent to |setReservedSlot(slot, PrivateValue(v))| but it
+  // avoids GC barriers. Use this only when storing a private value in a
+  // reserved slot that never holds a GC thing.
+  void setReservedSlotPrivateUnbarriered(uint32_t slot, void* v) {
+    MOZ_ASSERT(slot < JSCLASS_RESERVED_SLOTS(getClass()));
+    MOZ_ASSERT(getReservedSlot(slot).isUndefined() ||
+               getReservedSlot(slot).isDouble());
+    getReservedSlotRef(slot).unbarrieredSet(PrivateValue(v));
+  }
+
+  // Like setReservedSlotPrivateUnbarriered but for PrivateUint32Value.
+  void setReservedSlotPrivateUint32Unbarriered(uint32_t slot, uint32_t u) {
+    MOZ_ASSERT(slot < JSCLASS_RESERVED_SLOTS(getClass()));
+    MOZ_ASSERT(getReservedSlot(slot).isUndefined() ||
+               getReservedSlot(slot).isInt32());
+    getReservedSlotRef(slot).unbarrieredSet(PrivateUint32Value(u));
   }
 
   /* Return the allocKind we would use if we were to tenure this object. */

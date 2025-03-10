@@ -188,6 +188,8 @@ mr2022-onboarding-pin-primary-button-label =
         [macos] Fixa el { -brand-short-name } al Dock
        *[other] Fixa el { -brand-short-name } a la barra de tasques
     }
+# Primary button string used on welcome page for when Firefox is not pinned on MSIX
+mr2022-onboarding-pin-primary-button-label-msix = Fixa el { -brand-short-name } a la barra de tasques i al menú d'inici
 # Subtitle will be used when user already has Firefox pinned, but
 # has not set it as their default browser.
 # When translating "zip", please feel free to pick a verb that signifies movement and/or exploration
@@ -223,7 +225,9 @@ mr2022-onboarding-set-default-subtitle = Utilitzeu un navegador creat per una or
 mr2022-onboarding-get-started-primary-subtitle = Hem creat l'última versió tenint en compte el vostre punt de vista, i és més fàcil que mai navegar pel web. Ve farcida de funcions que us fascinaran.
 mr2022-onboarding-get-started-primary-button-label = Configura-la en un tres i no res
 
-## MR2022 Import Settings screen strings
+## MR2022 Get Started screen strings.
+## These strings will be used on the welcome page
+## when Firefox is already set to default and pinned.
 
 mr2022-onboarding-import-header = Configuració ultraràpida
 mr2022-onboarding-import-subtitle = Configureu el { -brand-short-name } com més us agradi. Afegiu-hi les adreces d'interès, contrasenyes i molt més del vostre navegador antic.
@@ -296,7 +300,7 @@ mr2022-onboarding-privacy-segmentation-button-secondary-label = Mostra informaci
 ## MR2022 Multistage Gratitude screen strings
 
 mr2022-onboarding-gratitude-title = Ens esteu ajudant a crear un web millor
-mr2022-onboarding-gratitude-subtitle = Gràcies per utilitzar el { -brand-short-name }, amb el suport de la Fundació Mozilla. Amb el vostre suport, estem treballant per fer que Internet sigui més oberta, accessible i millor per a tothom.
+mr2022-onboarding-gratitude-subtitle = Gràcies per utilitzar el { -brand-short-name }, amb el suport de la Fundació Mozilla. Amb el vostre suport, treballem per fer que Internet sigui més oberta, accessible i millor per a tothom.
 mr2022-onboarding-gratitude-primary-button-label = Descobriu les novetats
 mr2022-onboarding-gratitude-secondary-button-label = Comença a navegar
 
@@ -335,6 +339,14 @@ onboarding-device-migration-subtitle = Inicieu la sessió al vostre { -fxaccount
 onboarding-device-migration-subtitle2 = Inicieu la sessió al vostre compte per accedir a les vostres adreces d'interès, les contrasenyes i l'historial en el dispositiu nou.
 onboarding-device-migration-primary-button-label = Inicia la sessió
 
+## Add-ons Picker screen
+
+amo-picker-title = Personalitzeu el { -brand-short-name }
+amo-picker-subtitle = Les extensions són com aplicacions per al navegador i us permeten protegir contrasenyes, baixar vídeos, trobar ofertes, blocar la publicitat molesta, canviar l'aspecte del navegador i molt més.
+amo-picker-install-button-label = Afegeix al { -brand-short-name }
+amo-picker-install-complete-label = Instal·lat
+amo-picker-collection-link = Exploreu més complements
+
 ## The following screens have been updated to use security and privacy focused strings:
 
 # Easy setup screen
@@ -342,10 +354,108 @@ onboarding-easy-setup-security-and-privacy-title = Ens encanta mantenir-vos segu
 onboarding-easy-setup-security-and-privacy-subtitle = El nostre navegador sense ànim de lucre ajuda a blocar automàticament les empreses que, en secret, us fan el seguiment mentre navegueu.
 # Mobile download screen
 onboarding-mobile-download-security-and-privacy-title = Manteniu-vos protegit amb el xifratge quan passeu d'un dispositiu a un altre
-onboarding-gratitude-security-and-privacy-subtitle = Gràcies per utilitzar el { -brand-short-name }, amb el suport de la Fundació Mozilla. Amb el vostre suport, estem treballant per fer que Internet sigui més segura i accessible per a tothom.
+onboarding-mobile-download-security-and-privacy-subtitle = Quan activeu la sincronització, el { -brand-short-name } xifra les vostres contrasenyes i les adreces d'interès, entre d'altres. A més, podeu recuperar les pestanyes obertes en altres dispositius.
+# Gratitude screen
+onboarding-gratitude-security-and-privacy-title = El { -brand-short-name } està de part vostra
+onboarding-gratitude-security-and-privacy-subtitle = Gràcies per utilitzar el { -brand-short-name }, amb el suport de la Fundació Mozilla. Amb el vostre suport, treballem per fer que Internet sigui més segura i accessible per a tothom.
+# Sign up or Sign in screen
+onboarding-sign-up-title = Sincronitzeu les vostres dades entre dispositius
+onboarding-sign-up-description = Creeu un compte i tota la vostra informació important (contrasenyes, adreces d’interès i altres) s’emmagatzemarà de manera segura i estarà disponible quan inicieu la sessió en qualsevol dispositiu.
+onboarding-sign-up-button = Inici de sessió o registre
+onboarding-sign-up-secondary-button = Comença a navegar
 
 ## New user time and familiarity survey strings
 
 onboarding-new-user-time-based-survey-title = Quant temps fa que feu servir el { -brand-short-name }?
+onboarding-new-user-familiarity-based-survey-title = Quin grau de familiaritat teniu amb el { -brand-short-name }?
+onboarding-new-user-survey-subtitle = Els vostres comentaris ajuden a millorar el { -brand-short-name }.
 # When translating "next" it means the next screen in onboarding.
 onboarding-new-user-survey-next-button-label = Següent
+onboarding-new-user-survey-legal-link-label = En seleccionar «{ onboarding-new-user-survey-next-button-label }», accepteu l’<a data-l10n-name="privacy_notice">avís de privadesa</a> del { -brand-product-name }.
+# When translating "brand new" it means completely new.
+onboarding-new-user-survey-time-based-option-1 = Tot just l’acabo de conèixer
+onboarding-new-user-survey-time-based-option-2 = Menys d’un mes
+onboarding-new-user-survey-time-based-option-3 = Més d’un mes i l’utilitzo habitualment
+onboarding-new-user-survey-time-based-option-4 = Més d’un mes i l’utilitzo de tant en tant
+# When translating "brand new" it means completely new.
+onboarding-new-user-survey-familiarity-based-option-1 = Tot just l’acabo de conèixer
+onboarding-new-user-survey-familiarity-based-option-2 = L’he utilitzat una mica
+onboarding-new-user-survey-familiarity-based-option-3 = El conec molt bé
+onboarding-new-user-survey-familiarity-based-option-4 = L’he utilitzat abans, però ja fa temps
+
+## UI strings for the sidebar and vertical tabs
+
+# Setup screen for vertical tabs
+onboarding-new-tabs-title = On voleu que es mostrin les pestanyes?
+# Setup screen for vertical tabs - "Switch it up" refers to switching between horizontal and vertical tabs.
+onboarding-new-tabs-subtitle = Podeu canviar-ho quan vulgueu en els paràmetres de la barra lateral.
+# Setup screen for vertical tabs - too many tabs variation
+onboarding-many-tabs-title = Trieu on voleu veure les pestanyes
+# Setup screen for vertical tabs - subtitle for too many tabs variation
+onboarding-many-tabs-subtitle = Teniu moltes pestanyes obertes? Simplifiqueu-ne la visualització col·locant-les al lateral. O manteniu l’estil clàssic amb les pestanyes a la part superior. Podeu canviar-ho en qualsevol moment.
+# Setup screen for vertical tabs - focused variation
+onboarding-focused-tabs-title = Trieu la disposició de les pestanyes
+# Setup screen for vertical tabs - subtitle for focused variation
+onboarding-focused-tabs-subtitle = Proveu les pestanyes laterals per simplificar la visualització i ajudar a concentrar-vos. O manteniu l’estil clàssic amb les pestanyes a la part superior. Podeu canviar-ho en qualsevol moment.
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-new-vertical-tabs-label = Pestanyes laterals
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-new-horizontal-tabs-label = Pestanyes al capdamunt
+# Setup screen for vertical tabs for existing users
+onboarding-existing-tabs-title = Les pestanyes verticals ja són aquí
+# Setup screen for vertical tabs for existing users
+onboarding-existing-tabs-title2 = Us presentem les pestanyes verticals
+# Setup screen for vertical tabs for existing users - "Switch it up" refers to switching between horizontal and vertical tabs.
+onboarding-existing-tabs-subtitle = Proveu les pestanyes laterals. Podeu canviar-ho quan vulgueu en els paràmetres de la barra lateral.
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-existing-vertical-tabs-label = Proveu les pestanyes verticals
+onboarding-flair-text = Novetat
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-existing-horizontal-tabs-label = Mantingueu les pestanyes horitzontals
+# Tooltip displayed on hover for vertical tabs image
+onboarding-vertical-tabs-tooltip =
+    .title = Una finestra del navegador que mostra les pestanyes al costat de la pantalla com a part de la barra lateral del { -brand-shorter-name }.
+# Description for vertical tabs image
+onboarding-vertical-tabs-description =
+    .aria-description = Una finestra del navegador que mostra les pestanyes al costat de la pantalla com a part de la barra lateral del { -brand-shorter-name }.
+# Tooltip displayed on hover for horizontal tabs image
+onboarding-horizontal-tabs-tooltip =
+    .title = Una finestra del navegador que mostra les pestanyes a la part superior.
+# Description for horizontal tabs image
+onboarding-horizontal-tabs-description =
+    .aria-description = Una finestra del navegador que mostra les pestanyes a la part superior.
+# Additional setup card for setting up aichatbot in the sidebar
+onboarding-genai-sidebar-title = Proveu un bot de conversa d’IA a la barra lateral
+# Setup card for setting up AI chatbot in the sidebar; "Providers" refers to AI chatbot providers (e.g. OpenAI, etc). "Switch anytime" refers to allowing the user to switch to a different chatbot.
+onboarding-genai-sidebar-subtitle = Resumiu el contingut web, feu una pluja d'idees, redacteu esborranys de missatges... tot mentre navegueu. Podeu triar entre diversos proveïdors. Podeu canviar-ho en qualsevol moment. <a data-l10n-name="learn-more">Més informació</a>
+onboarding-genai-sidebar-primary-button = Trieu un bot de conversa
+onboarding-genai-sidebar-secondary-button = Comença a navegar
+
+## New user onboarding checklist
+
+onboarding-checklist-title = Acabeu de configurar el { -brand-short-name }
+onboarding-checklist-subtitle = Seguiu aquests passos per treure el màxim profit de la vostra experiència de navegació.
+onboarding-checklist-set-default = Defineix el { -brand-short-name } com a navegador per defecte
+onboarding-checklist-pin = Fixa el { -brand-short-name } a la barra de tasques
+onboarding-checklist-import = Importa del navegador anterior
+onboarding-checklist-extension = Afegeix una extensió
+onboarding-checklist-sign-up = Creeu un compte o inicieu la sessió
+
+## Tab Groups feature onboarding strings
+
+tab-groups-onboarding-feature-callout-title = Els grups de pestanyes milloren l’organització i la concentració
+tab-groups-onboarding-feature-callout-subtitle = Arrossegueu una pestanya sobre una altra per crear el vostre primer grup.
+tab-groups-onboarding-saved-groups-title = Si tanqueu un grup de pestanyes, podeu tornar a obrir-lo des d’aquí en qualsevol moment.
+tab-groups-onboarding-dismiss = D'acord
+
+## Multi Profiles feature onboarding messages
+
+multi-profile-spotlight-title = Doneu la benvinguda als perfils del { -brand-product-name }
+multi-profile-spotlight-body = Canvieu fàcilment entre la navegació per feina i per diversió. Els perfils mantenen totalment separada la vostra informació de navegació (inclosos l’historial de cerca i les contrasenyes), perquè pugueu tenir-ho tot organitzat.
+multi-profile-spotlight-cta = Crea un perfil
+multi-profile-callout-title = Creeu perfils diferents per a la feina i per a la diversió
+multi-profile-callout-subtitle = Els perfils us permeten mantenir totalment separada la vostra informació de navegació, com ara l’historial de cerca i les contrasenyes.
+multi-profile-callout-cta = Crea un perfil
+
+## Desktop to Mobile Adoption feature callout strings
+

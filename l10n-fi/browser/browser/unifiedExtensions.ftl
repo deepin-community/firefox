@@ -21,6 +21,9 @@ unified-extensions-manage-extensions =
 unified-extensions-item-open-menu =
     .aria-label = Avaa laajennuksen { $extensionName } valikko
 unified-extensions-item-message-manage = Hallitse laajennusta
+# Variables:
+#   $extensionName (String) - Name of the user-enabled soft-blocked extension.
+unified-extensions-item-messagebar-softblocked = { $extensionName } rikkoo Mozillan käytäntöjä. Sen käyttö voi olla riskialtista.
 
 ## Extension's context menu
 
@@ -41,10 +44,38 @@ unified-extensions-context-menu-move-widget-down =
 
 unified-extensions-mb-quarantined-domain-title = Jotkin laajennukset eivät ole sallittuja
 unified-extensions-mb-quarantined-domain-message = Vain jotkin laajennukset, joita { -vendor-short-name } valvoo, ovat sallittuja tällä sivustolla tietojesi suojaamiseksi.
-unified-extensions-mb-quarantined-domain-message-2 = Tietojesi suojaamiseksi jotkin laajennukset eivät voi lukea tai muuttaa tämän sivuston tietoja. Käytä laajennuksen asetuksia salliaksesi sivustot, joita { -vendor-short-name } rajoittaa.
 # .heading is processed by moz-message-bar to be used as a heading attribute
 unified-extensions-mb-quarantined-domain-message-3 =
     .heading = Jotkin laajennukset eivät ole sallittuja
     .message = Tietojesi suojaamiseksi jotkin laajennukset eivät voi lukea tai muuttaa tämän sivuston tietoja. Käytä laajennuksen asetuksia salliaksesi sivustot, joita { -vendor-short-name } rajoittaa.
 unified-extensions-mb-quarantined-domain-learn-more = Lue lisää
     .aria-label = Lue lisää: Jotkin laajennukset eivät ole sallittuja
+unified-extensions-mb-about-addons-link = Siirry laajennuksen asetuksiin
+# Variables:
+#   $extensionName (String) - Name of the extension disabled through a soft-block.
+unified-extensions-mb-blocklist-warning-single =
+    .heading = { $extensionName } poistettu käytöstä
+    .message =
+        Tämä laajennus rikkoo Mozillan käytäntöjä ja on sen vuoksi poistettu käytöstä.
+        Voit ottaa sen käyttöön asetusten kautta, mutta se voi olla riskialtista.
+# Variables:
+#   $extensionName (String) - Name of the extension disabled through a hard-block.
+unified-extensions-mb-blocklist-error-single =
+    .heading = { $extensionName } poistettu käytöstä
+    .message = Tämä laajennus rikkoo Mozillan käytäntöjä ja on sen vuoksi poistettu käytöstä.
+# Variables:
+#   $extensionsCount (Number) - Number of extensions disabled through both soft and hard-blocks (always going to be greater than 1)
+unified-extensions-mb-blocklist-warning-multiple =
+    .heading =
+        { $extensionsCount ->
+           *[other] { $extensionsCount } extensions disabled
+        }
+    .message = { $extensionsCount } laajennusta poistettu käytöstä
+# Variables:
+#   $extensionsCount (Number) - Number of extensions disabled through hard-blocks.
+unified-extensions-mb-blocklist-error-multiple =
+    .heading =
+        { $extensionsCount ->
+           *[other] { $extensionsCount } extensions disabled
+        }
+    .message = { $extensionsCount } laajennusta poistettu käytöstä

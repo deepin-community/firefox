@@ -162,6 +162,12 @@ main-context-menu-copy-phone =
 main-context-menu-copy-link-simple =
     .label = ბმულის ასლი
     .accesskey = ბ
+# "Copy Clean Link" means that Firefox will remove things from the link you
+# copied, like items that identify you for advertising purposes, and other items
+# sites add into URLs to help them deliver a certain browsing experience.
+main-context-menu-copy-clean-link =
+    .label = ბმულის სუფთა ასლი
+    .accesskey = ფ
 # This command copies the link, removing additional
 # query parameters used to track users across sites.
 main-context-menu-strip-on-share-link =
@@ -260,8 +266,8 @@ main-context-menu-image-set-image-as-background =
     .label = სამუშაო ეკრანის ფონად გამოყენება…
     .accesskey = ე
 main-context-menu-image-copy-text =
-    .label = ტექსტის ამოღება სურათიდან
-    .accesskey = ტ
+    .label = ნაწერის ამოღება სურათიდან
+    .accesskey = წ
 main-context-menu-image-info =
     .label = სურათის მონაცემები
     .accesskey = მ
@@ -290,9 +296,7 @@ main-context-menu-send-to-device =
     .label = გვერდის გაგზავნა მოწყობილობაზე
     .accesskey = გ
 
-## The access keys for "Use Saved Login" and "Use Saved Password"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
+##
 
 main-context-menu-use-saved-login =
     .label = შენახული ანგარიშის გამოყენება
@@ -368,8 +372,8 @@ main-context-menu-view-page-source =
     .label = გვერდის წყაროს ჩვენება
     .accesskey = წ
 main-context-menu-bidi-switch-text =
-    .label = ტექსტის მიმართულების შეცვლა
-    .accesskey = ტ
+    .label = ნაწერის მიმართულების შეცვლა
+    .accesskey = წ
 main-context-menu-bidi-switch-page =
     .label = გვერდის მიმართულების შეცვლა
     .accesskey = მ

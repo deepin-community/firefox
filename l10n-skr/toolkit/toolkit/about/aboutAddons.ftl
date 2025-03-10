@@ -387,6 +387,10 @@ addon-detail-group-label-updates =
     .aria-label = { addon-detail-updates-label }
 # This is the tooltip text for the private browsing badge in about:addons. The
 # badge is the private browsing icon included next to the extension's name.
+addon-badge-private-browsing-allowed3 =
+    .title = نجی ونڈوز وِچ اجازت ہے
+# This is the tooltip text for the private browsing badge in about:addons. The
+# badge is the private browsing icon included next to the extension's name.
 addon-badge-private-browsing-allowed2 =
     .title = نجی ونڈوز وِچ اجازت ہے
     .aria-label = { addon-badge-private-browsing-allowed2.title }
@@ -426,6 +430,14 @@ addon-badge-line3 =
 addon-badge-verified2 =
     .title = سیکیورٹی تے کارکردگی کیتے اساݙے معیاراں تے پورا لہݨ کیتے ایں ایکسٹنش دا جائزہ گھدا ڳیا ہے
     .aria-label = { addon-badge-verified2.title }
+addon-badge-recommended3 =
+    .title = { -brand-product-name } صرف ایکسٹینشنز دی تجویز کریندا ہے جیڑھا سیکیورٹی تے کارکردگی کیتے اساݙے کیتے معیاراں تے پورا لہندے ہن۔
+# We hard code "Mozilla" in the string below because the extensions are built
+# by Mozilla and we don't want forks to display "by Fork".
+addon-badge-line4 =
+    .title = موزیلا دی طرفوں بݨایا ڳیا آفیشل ایکسٹینشن۔ سیکیورٹی تے کارکردگی دے معیار تے پورا لہندا ہے۔
+addon-badge-verified3 =
+    .title = سیکیورٹی تے کارکردگی کیتے اساݙے معیاراں تے پورا لہݨ کیتے ایں ایکسٹنش دا جائزہ گھدا ڳیا ہے
 
 ##
 
@@ -452,7 +464,7 @@ extension-heading = آپݨے ایکسٹینشن منظم کرو
 theme-heading = آپݨے تھیمز دا بندوبست کرو
 plugin-heading = آپݨے پلگ انز دا بندوبست کرو
 dictionary-heading = آپݨیاں ڈکشنریاں دا بندوبست کرو
-locale-heading = آپݨیاں زناناں دا بندوبست کرو
+locale-heading = آپݨیاں زباناں دا بندوبست کرو
 updates-heading = آپݨے اپ ڈیٹاں دا بندوبست کرو
 sitepermission-heading = آپݨی سائٹ اجازتاں دا بندوبست کرو
 discover-heading = اپݨے { -brand-short-name } کوں ذاتی بݨاؤ
@@ -486,6 +498,8 @@ details-notification-unsigned-link = ودھیک معلومات
 details-notification-blocked = سیکیورٹی یا استحکام دے مسائل دی وجہ توں { $name } کوں غیر فعال کر ݙتا ڳیا ہے۔
 details-notification-blocked2 =
     .message = سیکیورٹی یا استحکام دے مسائل دی وجہ توں { $name } کوں غیر فعال کر ݙتا ڳیا ہے۔
+details-notification-blocked-link2 = تفصیلاں ݙیکھو
+details-notification-softblocked-link2 = تفصیلاں ݙیکھو
 details-notification-blocked-link = ودھیک معلومات
 details-notification-softblocked = { $name } سیکورٹی یا استحکام دے مسائل کیتے ڄاتا ویندا ہے۔
 details-notification-softblocked2 =

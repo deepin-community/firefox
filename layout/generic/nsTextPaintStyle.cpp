@@ -96,14 +96,15 @@ nscolor nsTextPaintStyle::GetTextColor() {
       case StyleSVGPaintKind::Tag::None:
         return NS_RGBA(0, 0, 0, 0);
       case StyleSVGPaintKind::Tag::Color:
-        return nsLayoutUtils::GetColor(mFrame, &nsStyleSVG::mFill);
+        return nsLayoutUtils::GetTextColor(mFrame, &nsStyleSVG::mFill);
       default:
         NS_ERROR("cannot resolve SVG paint to nscolor");
         return NS_RGBA(0, 0, 0, 255);
     }
   }
 
-  return nsLayoutUtils::GetColor(mFrame, &nsStyleText::mWebkitTextFillColor);
+  return nsLayoutUtils::GetTextColor(mFrame,
+                                     &nsStyleText::mWebkitTextFillColor);
 }
 
 bool nsTextPaintStyle::GetSelectionColors(nscolor* aForeColor,
@@ -309,8 +310,9 @@ bool nsTextPaintStyle::GetSelectionUnderlineForPaint(
   nsSelectionStyle* selectionStyle = SelectionStyle(aIndex);
   if (selectionStyle->mUnderlineStyle == StyleTextDecorationStyle::None ||
       selectionStyle->mUnderlineColor == NS_TRANSPARENT ||
-      selectionStyle->mUnderlineRelativeSize <= 0.0f)
+      selectionStyle->mUnderlineRelativeSize <= 0.0f) {
     return false;
+  }
 
   *aLineColor = selectionStyle->mUnderlineColor;
   *aRelativeSize = selectionStyle->mUnderlineRelativeSize;

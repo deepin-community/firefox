@@ -3,6 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 do-not-track-description = Send web sites a “Do Not Track” signal that you don’t want to be tracked
+do-not-track-removal = We no longer support the “Do Not Track” signal
 do-not-track-description2 =
     .label = Send web sites a “Do Not Track” request
     .accesskey = d
@@ -137,6 +138,7 @@ windows-launch-on-login =
     .label = Open { -brand-short-name } automatically when your computer starts up
     .accesskey = O
 windows-launch-on-login-disabled = This preference has been disabled in Windows. To change, visit <a data-l10n-name="startup-link">Startup Apps</a> in System settings.
+windows-launch-on-login-profile-disabled = Enable this preference by checking “{ profile-manager-use-selected.label }” in the “Choose User Profile” window.
 startup-restore-warn-on-quit =
     .label = Warn you when quitting the browser
 disable-extension =
@@ -146,6 +148,11 @@ preferences-data-migration-description = Import bookmarks, passwords, history an
 preferences-data-migration-button =
     .label = Import Data
     .accesskey = m
+preferences-profiles-header = Profiles
+preferences-manage-profiles-description = Each profile has separate browsing data and settings, including history, passwords, and more.
+preferences-manage-profiles-learn-more = Learn more
+preferences-manage-profiles-button =
+    .label = Manage Profiles
 tabs-group-header = Tabs
 ctrl-tab-recently-used-order =
     .label = Ctrl+Tab cycles through tabs in recently used order
@@ -153,6 +160,17 @@ ctrl-tab-recently-used-order =
 open-new-link-as-tabs =
     .label = Open links in tabs instead of new windows
     .accesskey = w
+ask-on-close-multiple-tabs =
+    .label = Ask before closing multiple tabs
+    .accesskey = m
+# This string is used for the confirm before quitting preference.
+# Variables:
+#   $quitKey (string) - the quit keyboard shortcut, and formatted
+#                       in the same manner as it would appear,
+#                       for example, in the File menu.
+ask-on-quit-with-key =
+    .label = Ask before quitting with { $quitKey }
+    .accesskey = b
 confirm-on-close-multiple-tabs =
     .label = Confirm before closing multiple tabs
     .accesskey = m
@@ -212,6 +230,16 @@ containers-remove-cancel-button = Don’t remove this Container
 settings-tabs-show-image-in-preview =
     .label = Show an image preview when you hover on a tab
     .accessKey = h
+browser-layout-header = Browser Layout
+browser-layout-horizontal-tabs =
+    .label = Horizontal tabs
+browser-layout-horizontal-tabs-desc = Display at top of browser
+browser-layout-vertical-tabs =
+    .label = Vertical tabs
+browser-layout-vertical-tabs-desc = Display on the side, in the sidebar
+browser-layout-show-sidebar =
+    .label = Show sidebar
+browser-layout-show-sidebar-desc = Quickly access bookmarks, tabs from your phone, AI chatbots, and more without leaving your main view.
 
 ## General Section - Language & Appearance
 
@@ -568,8 +596,7 @@ home-prefs-shortcuts-description = Sites you save or visit
 home-prefs-shortcuts-by-option-sponsored =
     .label = Sponsored shortcuts
 
-## Variables:
-##  $provider (string) - Name of the corresponding content provider, e.g "Pocket".
+## Home Section - Firefox Home Content Customization
 
 home-prefs-recommended-by-header =
     .label = Recommended by { $provider }
@@ -640,6 +667,10 @@ search-show-suggestions-option =
 search-show-suggestions-url-bar-option =
     .label = Show search suggestions in address bar results
     .accesskey = l
+# With this option enabled, on the search results page
+# the URL will be replaced by the search terms in the address bar.
+search-show-search-term-option-2 =
+    .label = Show search terms in the address bar on results pages
 # With this option enabled, on the search results page
 # the URL will be replaced by the search terms in the address bar
 # when using the current default search engine.
@@ -783,6 +814,9 @@ sync-currently-syncing-creditcards = Credit cards
 sync-currently-syncing-payment-methods = Payment methods
 sync-currently-syncing-addons = Add-ons
 sync-currently-syncing-settings = Settings
+sync-manage-options =
+    .label = Manage synchronisation…
+    .accesskey = M
 sync-change-options =
     .label = Change…
     .accesskey = C
@@ -835,6 +869,13 @@ sync-engine-settings =
     .label = Settings
     .tooltiptext = General, Privacy, and Security settings you’ve changed
     .accesskey = s
+sync-choose-what-to-sync-dialog4 =
+    .title = Manage what synchronises on all your connected devices
+    .style = min-width: 36em;
+    .buttonlabelaccept = Save
+    .buttonaccesskeyaccept = S
+    .buttonlabelextra2 = Disconnect…
+    .buttonaccesskeyextra2 = D
 
 ## The device name controls.
 
@@ -1281,17 +1322,40 @@ permissions-addon-exceptions =
 collection-header = { -brand-short-name } Data Collection and Use
 collection-header2 = { -brand-short-name } Data Collection and Use
     .searchkeywords = telemetry
+preferences-collection-description = We strive to provide you with choices and collect only the minimal data necessary to improve { -brand-product-name } for everyone.
+preferences-collection-privacy-notice = View Privacy Notice
 collection-description = We strive to provide you with choices and collect only what we need to provide and improve { -brand-short-name } for everyone. We always ask permission before receiving personal information.
 collection-privacy-notice = Privacy Notice
 collection-health-report-telemetry-disabled = You’re no longer allowing { -vendor-short-name } to capture technical and interaction data. All past data will be deleted within 30 days.
 collection-health-report-telemetry-disabled-link = Learn more
+collection-usage-ping =
+    .label = Send daily usage ping to { -vendor-short-name }
+    .accesskey = u
+collection-usage-ping-description = This helps { -vendor-short-name } to estimate active users.
+collection-health-report2 =
+    .label = Send technical and interaction data to { -vendor-short-name }
+    .accesskey = r
 collection-health-report =
     .label = Allow { -brand-short-name } to send technical and interaction data to { -vendor-short-name }
     .accesskey = r
 collection-health-report-link = Learn more
+collection-health-report-description = This helps us improve { -brand-product-name } features, performance, and stability.
+collection-studies2 =
+    .label = Install and run studies
+collection-studies-description = Try out features and ideas before they’re released to everyone.
 collection-studies =
     .label = Allow { -brand-short-name } to install and run studies
 collection-studies-link = View { -brand-short-name } studies
+addon-recommendations2 =
+    .label = Allow personalised extension recommendations
+addon-recommendations-description = Get extension recommendations to improve your browsing experience.
+# This message is displayed above disabled data sharing options in developer builds
+# or builds with no Telemetry support available.
+collection-health-report-disabled2 = Data reporting is disabled for this build configuration.
+collection-backlogged-crash-reports2 =
+    .label = Automatically send crash reports
+    .accesskey = c
+collection-backlogged-crash-reports-description = This helps { -vendor-short-name } diagnose and fix issues with the browser. Reports may include personal or sensitive data.
 addon-recommendations =
     .label = Allow { -brand-short-name } to make personalised extension recommendations
 addon-recommendations-link = Learn more
@@ -1359,6 +1423,8 @@ space-alert-under-5gb-message2 = <strong>{ -brand-short-name } is running out of
 ## Privacy Section - HTTPS-Only
 
 httpsonly-header = HTTPS-Only Mode
+httpsonly-description3 = Only allows secure connections to web sites. { -brand-short-name } will ask before connecting insecurely.
+httpsonly-learn-more2 = How HTTPS-Only works
 httpsonly-description = HTTPS provides a secure, encrypted connection between { -brand-short-name } and the web sites you visit. Most web sites support HTTPS, and if HTTPS-Only Mode is enabled, then { -brand-short-name } will upgrade all connections to HTTPS.
 httpsonly-description2 = { -brand-short-name } creates secure and encrypted connections to sites you visit. { -brand-short-name } will warn you if a connection isn’t secure when HTTPS-Only is on.
 httpsonly-learn-more = Learn more
@@ -1368,6 +1434,9 @@ httpsonly-radio-enabled2 =
     .label = Only use HTTPS in all windows
 httpsonly-radio-enabled-pbm =
     .label = Enable HTTPS-Only Mode in private windows only
+httpsonly-radio-disabled3 =
+    .label = Don’t enable HTTPS-Only Mode
+    .description = { -brand-short-name } may still upgrade some connections
 httpsonly-radio-enabled-pbm2 =
     .label = Only use HTTPS in private windows
 httpsonly-radio-disabled =

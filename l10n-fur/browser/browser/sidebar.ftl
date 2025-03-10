@@ -4,6 +4,10 @@
 
 menu-view-genai-chat =
     .label = Chatbot IA
+menu-view-review-checker =
+    .label = Verifiche recensions
+sidebar-options-menu-button =
+    .title = Vierç menù
 
 ## Labels for sidebar history panel
 
@@ -46,16 +50,30 @@ sidebar-position-right =
     .label = Mostre a diestre
 sidebar-vertical-tabs =
     .label = Schedis verticâls
+sidebar-settings =
+    .label = Impostazions sbare laterâl
+sidebar-hide-tabs-and-sidebar =
+    .label = Plate schedis e sbare laterâl
+sidebar-show-on-the-right =
+    .label = Sposte sbare laterâl a diestre
+sidebar-show-on-the-left =
+    .label = Sposte sbare laterâl a çampe
+# Option to automatically expand the collapsed sidebar when the mouse pointer
+# hovers over it.
+expand-sidebar-on-hover =
+    .label = Slargje la sbare laterâl passant sore cul mouse
 sidebar-horizontal-tabs =
     .label = Schedis orizontâls
 sidebar-customize-tabs-header =
     .label = Impostazions schedis
-sidebar-customize-settings-header =
-    .label = Impostazions sbare laterâl
-sidebar-visibility-always-show =
-    .label = Mostre simpri
-sidebar-visibility-hide-sidebar =
-    .label = Plate sbare laterâl
+sidebar-customize-button-header =
+    .label = Boton sbare laterâl
+sidebar-customize-position-header =
+    .label = Posizion sbare laterâl
+sidebar-visibility-setting-always-show =
+    .label = Slargje e strenç la sbare laterâl
+sidebar-visibility-setting-hide-sidebar =
+    .label = Mostre e plate la sbare laterâl
 
 ## Labels for sidebar context menu items
 
@@ -73,6 +91,10 @@ sidebar-context-menu-bookmark-tab =
     .label = Zonte schede tai segnelibris…
 sidebar-context-menu-copy-link =
     .label = Copie colegament
+# Variables:
+#   $deviceName (String) - The name of the device the user is closing a tab for
+sidebar-context-menu-close-remote-tab =
+    .label = Siere schede su { $deviceName }
 
 ## Labels for sidebar history context menu items
 
@@ -91,6 +113,39 @@ sidebar-menu-bookmarks-label =
     .label = Segnelibris
 sidebar-menu-customize-label =
     .label = Personalize sbare laterâl
+sidebar-menu-review-checker-label =
+    .label = Verifiche recensions
+
+## Tooltips for sidebar menu items.
+
+# The tooltip to show over the history icon, when history is not currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-open-history-tooltip = Vierç cronologjie ({ $shortcut })
+# The tooltip to show over the history icon, when history is currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-close-history-tooltip = Siere cronologjie ({ $shortcut })
+# The tooltip to show over the bookmarks icon, when bookmarks is not currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-open-bookmarks-tooltip = Vierç segnelibris ({ $shortcut })
+# The tooltip to show over the bookmarks icon, when bookmarks is currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-close-bookmarks-tooltip = Siere segnelibris ({ $shortcut })
+sidebar-menu-open-ai-chatbot-tooltip = Vierç chatbot IA
+sidebar-menu-close-ai-chatbot-tooltip = Siere chatbot IA
+
+## Tooltips displayed over the AI chatbot icon.
+## Variables:
+##   $shortcut (String) - The OS specific keyboard shortcut.
+##   $provider (String) - The name of the AI chatbot provider (if available).
+
+sidebar-menu-open-ai-chatbot-tooltip-generic = Vierç chatbot IA ({ $shortcut })
+sidebar-menu-open-ai-chatbot-provider-tooltip = Vierç { $provider } ({ $shortcut })
+sidebar-menu-close-ai-chatbot-tooltip-generic = Siere chatbot IA ({ $shortcut })
+sidebar-menu-close-ai-chatbot-provider-tooltip = Siere { $provider } ({ $shortcut })
 
 ## Headings for sidebar menu panels.
 
@@ -100,3 +155,48 @@ sidebar-menu-history-header =
     .heading = Cronologjie
 sidebar-menu-syncedtabs-header =
     .heading = Schedis di altris dispositîfs
+sidebar-menu-bookmarks-header =
+    .heading = Segnelibris
+sidebar-panel-header-close-button =
+    .tooltiptext = Siere
+
+## Titles for sidebar menu panels.
+
+sidebar-customize-title = Personalize sbare laterâl
+sidebar-history-title = Cronologjie
+sidebar-syncedtabs-title = Schedis di altris dispositîfs
+
+## Context for closing synced tabs when hovering over the items
+
+# Context for hovering over the close tab button that will
+# send a push to the device to close said tab
+# Variables:
+#   $deviceName (String) - the name of the device the user is closing a tab for
+synced-tabs-context-close-tab-title =
+    .title = Siere schede su { $deviceName }
+show-sidebars =
+    .tooltiptext = Mostre i panei laterai
+    .label = Panei laterai
+
+## Tooltips for the sidebar toolbar widget.
+
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-expand-sidebar2 =
+    .tooltiptext = Slargje la sbare laterâl ({ $shortcut })
+    .label = Panei laterai
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-collapse-sidebar2 =
+    .tooltiptext = Strenç la sbare laterâl ({ $shortcut })
+    .label = Panei laterai
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-show-sidebar2 =
+    .tooltiptext = Mostre la sbare laterâl ({ $shortcut })
+    .label = Panei laterai
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-hide-sidebar2 =
+    .tooltiptext = Plate la sbare laterâl ({ $shortcut })
+    .label = Panei laterai

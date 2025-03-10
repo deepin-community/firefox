@@ -5,6 +5,7 @@
 import { ContentSection } from "content-src/components/CustomizeMenu/ContentSection/ContentSection";
 import { connect } from "react-redux";
 import React from "react";
+// eslint-disable-next-line no-shadow
 import { CSSTransition } from "react-transition-group";
 
 export class _CustomizeMenu extends React.PureComponent {
@@ -12,15 +13,20 @@ export class _CustomizeMenu extends React.PureComponent {
     super(props);
     this.onEntered = this.onEntered.bind(this);
     this.onExited = this.onExited.bind(this);
+    this.state = {
+      exitEventFired: false,
+    };
   }
 
   onEntered() {
+    this.setState({ exitEventFired: false });
     if (this.closeButton) {
       this.closeButton.focus();
     }
   }
 
   onExited() {
+    this.setState({ exitEventFired: true });
     if (this.openButton) {
       this.openButton.focus();
     }
@@ -38,7 +44,12 @@ export class _CustomizeMenu extends React.PureComponent {
           <button
             className="icon icon-settings personalize-button"
             onClick={() => this.props.onOpen()}
-            data-l10n-id="newtab-personalize-icon-label"
+            onKeyDown={e => {
+              if (e.key === "Enter") {
+                this.props.onOpen();
+              }
+            }}
+            data-l10n-id="newtab-personalize-settings-icon-label"
             ref={c => (this.openButton = c)}
           />
         </CSSTransition>
@@ -53,7 +64,7 @@ export class _CustomizeMenu extends React.PureComponent {
           <div
             className="customize-menu"
             role="dialog"
-            data-l10n-id="newtab-personalize-dialog-label"
+            data-l10n-id="newtab-settings-dialog-label"
           >
             <div className="close-button-wrapper">
               <button
@@ -71,12 +82,14 @@ export class _CustomizeMenu extends React.PureComponent {
               wallpapersV2Enabled={this.props.wallpapersV2Enabled}
               activeWallpaper={this.props.activeWallpaper}
               pocketRegion={this.props.pocketRegion}
+              mayHaveTopicSections={this.props.mayHaveTopicSections}
               mayHaveSponsoredTopSites={this.props.mayHaveSponsoredTopSites}
               mayHaveSponsoredStories={this.props.mayHaveSponsoredStories}
               mayHaveRecentSaves={this.props.DiscoveryStream.recentSavesEnabled}
               mayHaveWeather={this.props.mayHaveWeather}
               spocMessageVariant={this.props.spocMessageVariant}
               dispatch={this.props.dispatch}
+              exitEventFired={this.state.exitEventFired}
             />
           </div>
         </CSSTransition>

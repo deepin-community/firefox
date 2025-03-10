@@ -28,6 +28,10 @@ about-webrtc-aec-logging-toggled-off-state-msg = Журналните файло
 
 ##
 
+# The autorefresh checkbox causes a stats section to autorefresh its content when checked
+about-webrtc-auto-refresh-label = Автоматично опресняване
+# A button which forces a refresh of displayed statistics
+about-webrtc-force-refresh-button = Опресняване
 # "PeerConnection" is a proper noun associated with the WebRTC module. "ID" is
 # an abbreviation for Identifier. This string should not normally be translated
 # and is used as a data label.
@@ -140,6 +144,8 @@ about-webrtc-encoder-label = Кодер
 
 ## SSRCs are identifiers that represent endpoints in an RTP stream
 
+# This is an SSRC on the remote side of the connection that is sending RTP
+about-webrtc-remote-send-ssrc = Отдалечено изпращане на SSRC
 
 ## These are displayed on the button that shows or hides the
 ## PeerConnection configuration disclosure
@@ -155,10 +161,7 @@ about-webrtc-encoder-label = Кодер
 ##
 
 
-## These are paths used for saving the about:webrtc page or log files so
-## they can be attached to bug reports.
-## Variables:
-##  $path (String) - The path to which the file is saved.
+##
 
 about-webrtc-save-page-msg = страницата е запазена в: { $path }
 about-webrtc-debug-mode-off-state-msg = журналът на дебъгването може да бъде намерен в: { $path }
@@ -173,7 +176,7 @@ about-webrtc-save-page-complete-msg = Страницата е запазена �
 # Variables:
 #  $packets (Number) - The number of packets received.
 about-webrtc-received-label =
-    { NUMBER($packets) ->
+    { $packets ->
         [one] Получен { $packets } пакет
        *[other] Получени { $packets } пакета
     }
@@ -181,7 +184,7 @@ about-webrtc-received-label =
 # Variables:
 #  $packets (Number) - The number of packets lost.
 about-webrtc-lost-label =
-    { NUMBER($packets) ->
+    { $packets ->
         [one] Загубен { $packets } пакет
        *[other] Загубени { $packets } пакета
     }
@@ -189,7 +192,7 @@ about-webrtc-lost-label =
 # Variables:
 #  $packets (Number) - The number of packets sent.
 about-webrtc-sent-label =
-    { NUMBER($packets) ->
+    { $packets ->
         [one] Изпратен { $packets } пакет
        *[other] Изпратени { $packets } пакета
     }

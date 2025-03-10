@@ -226,7 +226,9 @@ mr2022-onboarding-set-default-subtitle = Користуйтеся некомер
 mr2022-onboarding-get-started-primary-subtitle = Наша найновіша версія створена для вас, пропонуючи ще простіше користування інтернетом та функції, які вам сподобаються.
 mr2022-onboarding-get-started-primary-button-label = Налаштуйте за лічені секунди
 
-## MR2022 Import Settings screen strings
+## MR2022 Get Started screen strings.
+## These strings will be used on the welcome page
+## when Firefox is already set to default and pinned.
 
 mr2022-onboarding-import-header = Блискавично швидке налаштування
 mr2022-onboarding-import-subtitle = Налаштуйте { -brand-short-name } на свій смак. Додайте закладки, паролі та інші дані зі свого іншого браузера.
@@ -357,6 +359,11 @@ onboarding-mobile-download-security-and-privacy-subtitle = Під час син�
 # Gratitude screen
 onboarding-gratitude-security-and-privacy-title = { -brand-short-name } працює для вас
 onboarding-gratitude-security-and-privacy-subtitle = Дякуємо вам за користування { -brand-short-name } від Mozilla Foundation. Завдяки вашій підтримці ми докладаємо зусиль для розвитку безпечнішого інтернету, доступного для всіх.
+# Sign up or Sign in screen
+onboarding-sign-up-title = Синхронізуйте дані між пристроями
+onboarding-sign-up-description = Зареєструйте обліковий запис, і вся ваша важлива інформація, як-от паролі, закладки та інші дані, буде надійно збережена й доступна після входу на будь-якому пристрої.
+onboarding-sign-up-button = Зареєструватися або увійти
+onboarding-sign-up-secondary-button = Почати перегляд
 
 ## New user time and familiarity survey strings
 
@@ -376,3 +383,78 @@ onboarding-new-user-survey-familiarity-based-option-1 = Новий корист�
 onboarding-new-user-survey-familiarity-based-option-2 = Користуюся певний час
 onboarding-new-user-survey-familiarity-based-option-3 = Досвідчений користувач
 onboarding-new-user-survey-familiarity-based-option-4 = Користувався в минулому
+
+## UI strings for the sidebar and vertical tabs
+
+# Setup screen for vertical tabs
+onboarding-new-tabs-title = Скажіть нам, де ви хочете розмістити вкладки
+# Setup screen for vertical tabs - "Switch it up" refers to switching between horizontal and vertical tabs.
+onboarding-new-tabs-subtitle = Перемикайте за потреби в налаштуваннях бічної панелі.
+# Setup screen for vertical tabs - too many tabs variation
+onboarding-many-tabs-title = Усі ваші вкладки поруч
+# Setup screen for vertical tabs - subtitle for too many tabs variation
+onboarding-many-tabs-subtitle = Маєте багато відкритих вкладок? Спробуйте розмістити їх збоку для ефективнішого перегляду. Або ж залиште класичне подання вгорі. Перемикайте будь-коли.
+# Setup screen for vertical tabs - focused variation
+onboarding-focused-tabs-title = Оберіть подання вкладок
+# Setup screen for vertical tabs - subtitle for focused variation
+onboarding-focused-tabs-subtitle = Для ефективнішого перегляду й зосередження спробуйте розмістити свої вкладки збоку. Або ж залиште класичне подання вгорі. Перемикайте будь-коли.
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-new-vertical-tabs-label = Вкладки збоку
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-new-horizontal-tabs-label = Вкладки вгорі
+# Setup screen for vertical tabs for existing users
+onboarding-existing-tabs-title = Вертикальні вкладки вже доступні
+# Setup screen for vertical tabs for existing users
+onboarding-existing-tabs-title2 = Знайомство з вертикальними вкладками
+# Setup screen for vertical tabs for existing users - "Switch it up" refers to switching between horizontal and vertical tabs.
+onboarding-existing-tabs-subtitle = Спробуйте вкладки збоку. Увімкніть їх будь-коли в налаштуваннях бічної панелі.
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-existing-vertical-tabs-label = Спробуйте вертикальні вкладки
+onboarding-flair-text = Новинка!
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-existing-horizontal-tabs-label = Тримайте вкладки горизонтально
+# Tooltip displayed on hover for vertical tabs image
+onboarding-vertical-tabs-tooltip =
+    .title = Вікно браузера з вкладками вздовж екрана як частина бічної панелі { -brand-shorter-name }.
+# Description for vertical tabs image
+onboarding-vertical-tabs-description =
+    .aria-description = Вікно браузера з вкладками вздовж екрана як частина бічної панелі { -brand-shorter-name }.
+# Tooltip displayed on hover for horizontal tabs image
+onboarding-horizontal-tabs-tooltip =
+    .title = Вікно браузера з вкладками вгорі.
+# Description for horizontal tabs image
+onboarding-horizontal-tabs-description =
+    .aria-description = Вікно браузера з вкладками вгорі.
+# Additional setup card for setting up aichatbot in the sidebar
+onboarding-genai-sidebar-title = Спробуйте чат-бота ШІ на бічній панелі
+# Setup card for setting up AI chatbot in the sidebar; "Providers" refers to AI chatbot providers (e.g. OpenAI, etc). "Switch anytime" refers to allowing the user to switch to a different chatbot.
+onboarding-genai-sidebar-subtitle = Узагальнюйте вебвміст, обмірковуйте ідеї, чернетки повідомлень — і все це під час перегляду. Виберіть з кількох постачальників та перемикайтеся будь-коли. <a data-l10n-name="learn-more">Докладніше</a>
+onboarding-genai-sidebar-primary-button = Виберіть чат-бота
+onboarding-genai-sidebar-secondary-button = Почати перегляд
+
+## New user onboarding checklist
+
+onboarding-checklist-title = Завершити налаштування { -brand-short-name }
+onboarding-checklist-subtitle = Виконайте ці кроки, щоб отримати максимальну віддачу від перегляду.
+onboarding-checklist-set-default = Зробіть { -brand-short-name } типовим браузером
+onboarding-checklist-pin = Закріпіть { -brand-short-name } на панелі завдань
+onboarding-checklist-import = Імпортуйте дані з іншого браузера
+onboarding-checklist-extension = Додайте розширення
+onboarding-checklist-sign-up = Зареєструйте обліковий запис або увійдіть в нього
+
+## Tab Groups feature onboarding strings
+
+tab-groups-onboarding-feature-callout-title = Спробуйте групи вкладок – менше безладу й більше уваги
+tab-groups-onboarding-feature-callout-subtitle = Впорядкуйте свою роботу, перетягнувши одну вкладку на іншу, щоб створити групу.
+
+## Multi Profiles feature onboarding messages
+
+multi-profile-spotlight-title = Зустрічайте профілі { -brand-product-name }
+multi-profile-spotlight-body = Легко розділяйте роботу й розваги. У профілях зберігається інформація вашого перегляду, як-от історія та паролі, цілком окремо.
+multi-profile-spotlight-cta = Створити профіль
+multi-profile-callout-title = Створюйте різні профілі для роботи й розваг
+multi-profile-callout-subtitle = У профілях зберігається інформація вашого перегляду, як-от історія та паролі, цілком окремо.
+multi-profile-callout-cta = Створити профіль
+
+## Desktop to Mobile Adoption feature callout strings
+

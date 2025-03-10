@@ -37,7 +37,7 @@ cert-error-code-prefix-link = දෝෂයේ කේතය: <a data-l10n-name="e
 # Variables:
 #   $hostname (string) - Hostname of the website with SSL error.
 #   $errorMessage (string) - Error message corresponding to the type of error we are experiencing.
-cert-error-ssl-connection-error = { $hostname } වෙත සම්බන්ධතාවයක් අතරතුර දෝෂයක් සිදු විය. { $errorMessage }
+cert-error-ssl-connection-error = { $hostname } වෙත සම්බන්ධතාවක් අතරතුර දෝෂයක් සිදු විය. { $errorMessage }
 cert-error-symantec-distrust-admin = මෙම ගැටලුව පිළිබඳව අඩවියේ පරිපාලක වෙත දැනුම් දීමට හැකිය
 cert-error-old-tls-version = මෙම වියමන අඩවිය { -brand-short-name } මගින් සහය දක්වන අවම අනුවාදය වන TLS 1.2 කෙටුම්පත සඳහා සහාය නොදක්වයි.
 # Variables:
@@ -45,6 +45,7 @@ cert-error-old-tls-version = මෙම වියමන අඩවිය { -brand-
 cert-error-details-hsts-label = HTTP දැඩි පරිවහන ආරක්‍ෂාව: { $hasHSTS }
 cert-error-details-cert-chain-label = සහතික දාමය:
 open-in-new-window-for-csp-or-xfo-error = නව කවුළුවකින් අඩවිය අරින්න
+fp-learn-more-about-secure-connection-failures = අසාර්ථක ආරක්‍ෂිත සම්බන්‍ධතා ගැන තව දැනගන්න
 
 ## Messages used for certificate error titles
 
@@ -53,33 +54,40 @@ deniedPortAccess-title = මෙම ලිපිනය සීමා කර ඇත
 # "Hmm" is a sound made when considering or puzzling over something.
 # You don't have to include it in your translation if your language does not have a written word like this.
 dnsNotFound-title = හ්ම්. අපට එම අඩවිය සොයා ගැනීමේ ගැටලුවක් තිබේ.
-fileNotFound-title = ගොනුව හමු නොවිණි
+fileNotFound-title = ගොනුව හමු නොවුණි
 fileAccessDenied-title = ගොනුවට ප්‍රවේශය ප්‍රතික්‍ෂේප විය
 generic-title = අපොයි!
 captivePortal-title = ජාලයට පිවිසෙන්න
 # "Hmm" is a sound made when considering or puzzling over something.
 # You don't have to include it in your translation if your language does not have a written word like this.
 malformedURI-title = හ්ම්. එම ලිපිනය නිවැරදි බව පෙනෙන්නේ නැත.
-netInterrupt-title = සම්බන්ධතාවයට බාධා විය
+netInterrupt-title = සම්බන්ධතාවට බාධා විය
 notCached-title = ලේඛනය කල් ඉකුත්වී ඇත
 netOffline-title = මාර්ගඅපගත ප්‍රකාරය
 contentEncodingError-title = අන්තර්ගත සංකේතන දෝෂයකි
 unsafeContentType-title = අනාරක්‍ෂිත ගොනු වර්ගයකි
-netReset-title = සම්බන්ධතාවය යළි සැකසිණි
-netTimeout-title = සම්බන්ධතාවය ඉකුත් වී ඇත
+netReset-title = සම්බන්ධතාව යළි සැකසිණි
+netTimeout-title = සම්බන්ධතාව ඉකුත් වී ඇත
 unknownProtocolFound-title = ලිපිනය වටහා ගෙන නැත
 proxyConnectFailure-title = ප්‍රතියුක්ත සේවාදායකය සම්බන්ධතා ඉවත දමයි
 proxyResolveFailure-title = ප්‍රතියුක්ත සේවාදායකය සොයා ගැනීමට නොහැකිය
 redirectLoop-title = පිටුව නිසි අයුරින් හරවා යවන්නේ නැත
 unknownSocketType-title = සේවාදායකයෙන් අනපේක්‍ෂිත ප්‍රතිචාරයකි
-nssFailure2-title = ආරක්‍ෂිත සම්බන්‍ධතාවය බිඳ වැටුණි
+nssFailure2-title = ආරක්‍ෂිත සම්බන්‍ධතාව බිඳ වැටුණි
 csp-xfo-error-title = { -brand-short-name } සඳහා පිටුව විවෘත කළ නොහැකිය
 corruptedContentError-title = හානි වූ අන්තර්ගත දෝෂයකි
 sslv3Used-title = ආරක්‍ෂිතව සම්බන්ධ වීමට නොහැකිය
-inadequateSecurityError-title = ඔබගේ සම්බන්ධතාවය අනාරක්‍ෂිතයි
+inadequateSecurityError-title = ඔබගේ සම්බන්‍ධතාව අනාරක්‍ෂිතයි
 blockedByPolicy-title = අවහිර කළ පිටුවකි
 clockSkewError-title = පරිගණකයේ ඔරලෝසුව වැරදිය
 networkProtocolError-title = ජාල කෙටුම්පතෙහි දෝෂයකි
 nssBadCert-title = අවවාදයයි: ආරක්‍ෂණ අවදානමක් ඉදිරියෙන්
-nssBadCert-sts-title = සම්බන්‍ධ නොවිණි: ආරක්‍ෂණ ගැටලුවක් විය හැකිය.
+nssBadCert-sts-title = සම්බන්‍ධ නොවුණි: ආරක්‍ෂණ ගැටලුවක් විය හැකිය.
 certerror-mitm-title = { -brand-short-name } ආරක්‍ෂිතව මෙම අඩවියට සම්බන්ධ වීම මෘදුකාංගය මගින් වළක්වයි
+
+## Felt Privacy V1 Strings
+
+
+## Variables:
+##   $hostname (String) - Hostname of the website to which the user was trying to connect.
+

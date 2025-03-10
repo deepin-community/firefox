@@ -8,11 +8,18 @@
 newtab-page-title = Skedë e Re
 newtab-settings-button =
     .title = Personalizoni faqen tuaj Skedë e Re
+newtab-personalize-settings-icon-label =
+    .title = Personalizoni Skedën e Re
+    .aria-label = Rregullime
+newtab-settings-dialog-label =
+    .aria-label = Rregullime
 newtab-personalize-icon-label =
     .title = Personalizoni skedën e re
     .aria-label = Personalizoni skedën e re
 newtab-personalize-dialog-label =
     .aria-label = Personalizojeni
+newtab-logo-and-wordmark =
+    .aria-label = { -brand-full-name }
 
 ## Search box component.
 
@@ -109,6 +116,13 @@ newtab-menu-save-to-pocket = Ruaje te { -pocket-brand-name }
 newtab-menu-delete-pocket = Fshije nga { -pocket-brand-name }
 newtab-menu-archive-pocket = Arkivoje në { -pocket-brand-name }
 newtab-menu-show-privacy-info = Sponsorët tanë & privatësia jonë
+newtab-menu-about-fakespot = Mvi { -fakespot-brand-name }
+# Context menu option to personalize New Tab recommended stories by blocking a section of stories,
+# e.g. "Sports". "Block" is a verb here.
+newtab-menu-section-block = Bllokoje
+# "Follow", "unfollow", and "following" are social media terms that refer to subscribing to or unsubscribing from a section of stories.
+# e.g. Following the travel section of stories.
+newtab-menu-section-unfollow = Hiqe Ndjekjen e Subjektit
 
 ## Message displayed in a modal window to explain privacy and provide context for sponsored content.
 
@@ -229,6 +243,8 @@ newtab-pocket-cta-button = Merreni { -pocket-brand-name }-in
 newtab-pocket-cta-text = Ruajini në { -pocket-brand-name } shkrimet që doni dhe ushqejeni mendjen me lexime të mahnitshme.
 newtab-pocket-pocket-firefox-family = { -pocket-brand-name } është pjesë e familjes { -brand-product-name }
 # A save to Pocket button that shows over the card thumbnail on hover.
+newtab-pocket-image =
+    .aria-label = { -pocket-brand-name }
 newtab-pocket-save = Ruaje
 newtab-pocket-saved = U ruajt
 
@@ -240,6 +256,9 @@ newtab-pocket-thumbs-up-tooltip =
 # Clicking the thumbs down button for this story informs us that the user does not feel like the story is interesting for them
 newtab-pocket-thumbs-down-tooltip =
     .title = Jo për mua
+# Used to show the user a message upon clicking the thumbs up or down buttons
+newtab-toast-thumbs-up-or-down2 =
+    .message = Faleminderit. Përshtypjet tuaja do të na ndihmojnë të përmirësojmë prurjen për ju.
 newtab-toast-thumbs-up-or-down = Faleminderit. Përshtypjet tuaja do të na ndihmojnë të përmirësojmë prurjen për ju.
 newtab-toast-dismiss-button =
     .title = Hidhe tej
@@ -293,6 +312,12 @@ newtab-custom-settings = Administroni më tepër rregullime
 
 newtab-wallpaper-title = Sfonde
 newtab-wallpaper-reset = Riktheje te parazgjedhjet
+newtab-wallpaper-upload-image = Ngarkoni një figurë
+newtab-wallpaper-custom-color = Zgjidhni një ngjyrë
+# Variables
+#   $file_size (number) - The number of the maximum image file size (in MB) that may be uploaded
+newtab-wallpaper-error-max-file-size = Figura tejkalonte kufirin { $file_size }MB e madhësive të kartelave. Ju lutemi, provoni të ngarkoni një kartelë më të vogël.
+newtab-wallpaper-error-file-type = S’e ngarkuam dot kartelën tuaj. Ju lutemi, riprovoni me një lloj tjetër kartele.
 newtab-wallpaper-light-red-panda = Panda e kuqe
 newtab-wallpaper-light-mountain = Mal i bardhë
 newtab-wallpaper-light-sky = Qiell me re të purpurta dhe të trëndafilta
@@ -305,6 +330,8 @@ newtab-wallpaper-dark-panda = Panda e kuqe e fshehur në pyll
 newtab-wallpaper-dark-sky = Reliev qyteti me qiell nate
 newtab-wallpaper-dark-mountain = Peizazh malor
 newtab-wallpaper-dark-city = Peizazh qyteti i purpurt
+newtab-wallpaper-dark-fox-anniversary = Një dhelpër në shesh pranë një pylli
+newtab-wallpaper-light-fox-anniversary = Një dhelpër në një lëndinë, në një peizazh malor të mjegullt
 
 ## Solid Colors
 
@@ -334,8 +361,12 @@ newtab-wallpaper-abstract-purple = Forma të purpurta
 newtab-wallpaper-abstract-orange = Forma portokalli
 newtab-wallpaper-gradient-orange = Gradient portokalli dhe rozë
 newtab-wallpaper-abstract-blue-purple = Forma blu dhe të purpurta
+newtab-wallpaper-abstract-white-curves = E bardhë me lakore të hijezuara
+newtab-wallpaper-abstract-purple-green = Gradient ndriçimi të purpur dhe të gjelbër
+newtab-wallpaper-abstract-blue-purple-waves = Forma të valëzuara blu dhe të purpurta
+newtab-wallpaper-abstract-black-waves = Forma të valëzuara të zeza
 
-## Photographs
+## Celestial
 
 newtab-wallpaper-category-title-photographs = Fotografi
 newtab-wallpaper-beach-at-sunrise = Plazh në agim
@@ -344,6 +375,12 @@ newtab-wallpaper-storm-sky = Qiell me furtunë
 newtab-wallpaper-sky-with-pink-clouds = Qiell me re rozë
 newtab-wallpaper-red-panda-yawns-in-a-tree = Pandë e kuqe në majë të pemës
 newtab-wallpaper-white-mountains = Male të bardhë
+newtab-wallpaper-hot-air-balloons = Aerostate me ngjyra të ndryshme të parë gjatë ditës
+newtab-wallpaper-starry-canyon = Natë blu me yje
+newtab-wallpaper-suspension-bridge = Fotografi e një ure të varur gri gjatë ditës
+newtab-wallpaper-sand-dunes = Duna ranore të bardha
+newtab-wallpaper-palm-trees = Siluetë pemësh arrash kokosi gjatë orës së artë
+newtab-wallpaper-forest-trees = Pemë të mbuluara nga mjegull
 # Variables
 #   $author_string (String) - The name of the creator of the photo.
 #   $webpage_string (String) - The name of the webpage where the photo is located.
@@ -359,6 +396,19 @@ feature-highlight-wallpaper =
     .title = { -newtab-wallpaper-feature-highlight-header }
     .aria-label = { -newtab-wallpaper-feature-highlight-content }
 
+## Celestial
+
+# “Celestial” referring to astronomy; positioned in or relating to the sky,
+# or outer space as observed in astronomy.
+# Not to be confused with religious definition of the word.
+newtab-wallpaper-category-title-celestial = Qiellor
+newtab-wallpaper-celestial-lunar-eclipse = Eklips hënor
+newtab-wallpaper-celestial-earth-night = Foto nate nga orbitë e ulët e Tokës
+newtab-wallpaper-celestial-starry-sky = Qiell me yje
+newtab-wallpaper-celestial-eclipse-time-lapse = Rrjedhë kohore eklipsi hënor
+newtab-wallpaper-celestial-black-hole = Ilustrim galaktike vrimë e zezë
+newtab-wallpaper-celestial-river = Pamje satelitore e një lumi
+
 ## New Tab Weather
 
 # Variables:
@@ -369,6 +419,9 @@ newtab-weather-see-forecast =
 #   $provider (string) - Service provider for weather data
 newtab-weather-sponsored = { $provider } ∙ E sponsorizuar
 newtab-weather-menu-change-location = Ndryshoni vendndodhje
+newtab-weather-change-location-search-input-placeholder =
+    .placeholder = Kërkoni për vendndodhje
+    .aria-label = Kërkoni për vendndodhje
 newtab-weather-change-location-search-input = Kërkoni për vendndodhje
 newtab-weather-menu-weather-display = Shfaqje moti
 # Display options are:
@@ -403,6 +456,10 @@ newtab-topic-label-hobbies = Lojëra
 newtab-topic-label-finance = Para
 newtab-topic-label-government = Politikë
 newtab-topic-label-education-science = Shkencë
+# ”Life Hacks” = “Self Improvement”, refers to articles and stories aimed at helping readers improve various
+# aspects of their lives – from mental health to  productivity. See the “Curated by our editors“ section
+# at the top of https://getpocket.com/explore/self-improvement for more context.
+newtab-topic-label-society = Vetëpërmirësim
 newtab-topic-label-sports = Sporte
 newtab-topic-label-tech = Teknologji
 newtab-topic-label-travel = Udhëtime
@@ -422,3 +479,45 @@ newtab-topic-selection-button-maybe-later = Ndoshta më vonë
 newtab-topic-selection-privacy-link = Mësoni se si i mbrojmë dhe administrojmë të dhënat
 newtab-topic-selection-button-update-interests = Përditësoni interesat tuaja
 newtab-topic-selection-button-pick-interests = Zgjidhni interesat tuaja
+
+## Content Feed Sections
+## "Follow", "unfollow", and "following" are social media terms that refer to subscribing to or unsubscribing from a section of stories.
+## e.g. Following the travel section of stories.
+
+newtab-section-follow-button = Ndiqe
+newtab-section-following-button = Po e Ndiqni
+newtab-section-unfollow-button = Hiqi Ndjekjen
+
+## Button to block/unblock listed topics
+## "Block", "unblocked", and "blocked" are social media terms that refer to hiding a section of stories.
+## e.g. Blocked the politics section of stories.
+
+newtab-section-block-button = Bllokoje
+newtab-section-blocked-button = E bllokuar
+newtab-section-unblock-button = Zhbllokoje
+
+## Confirmation modal for blocking a section
+
+newtab-section-confirm-block-section-p1 = Jeni i sigurt se doni të bllokohet kjo ndarje?
+newtab-section-confirm-block-section-p2 = Pjesa e bllokuar s’do të shfaqet më në prurjen tuaj.
+newtab-section-block-section-button = Bllokoje këtë pjesë
+newtab-section-cancel-button = Jo tani
+newtab-section-confirm-block-topic-p1 = Jeni i sigurt se doni të bllokohet ky subjekt?
+newtab-section-confirm-block-topic-p2 = Subjektet e bllokuar s’do të shfaqen më në prurjen tuaj.
+# Variables:
+#   $topic (string) - Name of topic that user is blocking
+newtab-section-block-topic-button = Bllokoje { $topic }
+
+## Panel in the Customize menu section to manage followed and blocked topics
+
+newtab-section-mangage-topics-title = Tema
+newtab-section-manage-topics-button-v2 =
+    .label = Administroni subjekte
+newtab-section-mangage-topics-followed-topics = Të ndjekur
+newtab-section-mangage-topics-button =
+    .label = Tema të ndjekura dhe të bllokuara
+newtab-section-mangage-topics-followed-topics-subtitle = Tema të Ndjekura
+newtab-section-mangage-topics-followed-topics-empty-state = S’keni ende ndonjë temë të ndjekur.
+newtab-section-mangage-topics-blocked-topics = Të bllokuar
+newtab-section-mangage-topics-blocked-topics-subtitle = Tema të Bllokuara
+newtab-section-mangage-topics-blocked-topics-empty-state = S’’keni ende ndonjë temë të bllokuar.

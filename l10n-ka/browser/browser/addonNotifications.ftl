@@ -7,7 +7,7 @@ xpinstall-prompt = { -brand-short-name } უკრძალავს საი�
 ## Variables:
 ##   $host (String): The hostname of the site the add-on is being installed from.
 
-xpinstall-prompt-header = ნებას რთავთ { $host }-ს ჩადგას დამატება?
+xpinstall-prompt-header = ნებას რთავთ, რომ { $host } შეძლებს ჩადგას დამატება?
 xpinstall-prompt-message = თქვენ ცდილობთ დამატების ჩადგმას საიტიდან { $host }. დარწმუნდით, რომ სანდო საიტია, სანამ განაგრძობთ.
 
 ##
@@ -40,6 +40,7 @@ site-permission-install-first-prompt-midi-message = წვდომის მი
 ##
 
 xpinstall-disabled-locked = პროგრამების ჩადგმა ამჟამად გამორთულია თქვენი სისტემის ზედამხედველის მიერ.
+xpinstall-disabled-by-policy = პროგრამების ჩადგმა გამორთულია დაწესებულების დებულებით.
 xpinstall-disabled = პროგრამების ჩადგმა შეჩერებულია. დააწკაპეთ ჩართვაზე და ხელახლა სცადეთ.
 xpinstall-disabled-button =
     .label = ჩართვა
@@ -51,6 +52,13 @@ xpinstall-disabled-button =
 addon-install-blocked-by-policy = { $addonName } ({ $addonId }) შეზღუდულია თქვენი სისტემის ზედამხედველის მიერ.
 # This message is shown when the installation of add-ons from a domain is blocked by enterprise policy.
 addon-domain-blocked-by-policy = თქვენი სისტემის ზედამხედველი უკრძალავს ამ საიტს თქვენს კომპიუტერში პროგრამის დაყენების მოთხოვნას.
+# This message is shown when the installation of an add-on is blocked by enterprise policy.
+# Variables:
+#   $addonName (String): the name of the add-on.
+#   $addonId (String): the ID of add-on.
+addon-installation-blocked-by-policy = { $addonName } ({ $addonId }) შეზღუდულია დაწესებულების დებულებით.
+# This message is shown when the installation of add-ons from a domain is blocked by enterprise policy.
+addon-install-domain-blocked-by-policy = დაწესებულების დებულება უკრძალავს საიტს თქვენს კომპიუტერში პროგრამის დაყენების მოთხოვნას.
 addon-install-full-screen-blocked = დამატების ჩადგმა დაუშვებელია სრული ეკრანის რეჟიმში ყოფნის ან შესვლის დროს.
 # Variables:
 #   $addonName (String): the localized name of the sideloaded add-on.
@@ -72,7 +80,7 @@ addon-removal-title = მოცილდეს { $name }?
 #   $name (String): the name of the extension which is about to be removed.
 addon-removal-message = { $name } გაფართოებას ამოშლის { -brand-shorter-name }, გნებავთ?
 addon-removal-button = ამოშლა
-addon-removal-abuse-report-checkbox = გაფართოებაზე საჩივარი { -vendor-short-name }-სთვის
+addon-removal-abuse-report-checkbox = გაფართოების შესახებ საჩივარი { -vendor-short-name }-ს
 # Variables:
 #   $addonCount (Number): the number of add-ons being downloaded
 addon-downloading-and-verifying =
@@ -123,4 +131,8 @@ addon-local-install-error-not-signed = ამ დამატების და
 # Variables:
 #   $appVersion (String): the application version.
 addon-install-error-incompatible = { $addonName } ვერ ჩაიდგმება, რადგან არათავსებადია { -brand-short-name } { $appVersion } ვერსიასთან.
+addon-install-error-hard-blocked = { $addonName } არღვევს Mozilla-ს დებულებებს და { -brand-short-name } ვერ დააყენებს.
 addon-install-error-blocklisted = { $addonName } ვერ ჩაიდგმება, რადგან დიდი ალბათობით საფრთხეს შეუქმნის მდგრადობას და უსაფრთხოებას.
+addon-install-error-soft-blocked = { $addonName } არღვევს Mozilla-ს დებულებებს და { -brand-short-name } ვერ დააყენებს.
+# Enterprise policies is a feature aimed at system administrators who want to deploy custom settings for Firefox.
+addon-install-error-admin-install-only = თქვენ არ შეგიძლიათ { $addonName } დააყენოთ, როგორც მომხმარებელმა, მისი დაყენება შეუძლია მხოლოდ დაწესებულებას შესაბამისი დებულებებით.

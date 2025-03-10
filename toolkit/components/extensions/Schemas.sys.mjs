@@ -291,16 +291,30 @@ const POSTPROCESSORS = {
 
     return string;
   },
-  requireBackgroundServiceWorkerEnabled(value, context) {
-    if (WebExtensionPolicy.backgroundServiceWorkerEnabled) {
-      return value;
+  checkRequiredManifestBackgroundKeys(value, context) {
+    const serviceWorkerEnabled =
+      WebExtensionPolicy.backgroundServiceWorkerEnabled;
+
+    // At least one environment is required
+    if (!value.page && !value.scripts?.length) {
+      if (!value.service_worker) {
+        // Add an error to the manifest validations and throw the
+        // same error.
+        const msg = `background requires at least one of ${
+          serviceWorkerEnabled ? '"service_worker", ' : ""
+        }"scripts" or "page".`;
+        context.logError(context.makeError(msg));
+        throw new Error(msg);
+      } else if (!serviceWorkerEnabled) {
+        // throw if only service_worker is specified and not enabled
+        const msg =
+          "background.service_worker is currently disabled. Add background.scripts.";
+        context.logError(context.makeError(msg));
+        throw new Error(msg);
+      }
     }
 
-    // Add an error to the manifest validations and throw the
-    // same error.
-    const msg = "background.service_worker is currently disabled";
-    context.logError(context.makeError(msg));
-    throw new Error(msg);
+    return value;
   },
 
   manifestVersionCheck(value, context) {
@@ -1262,21 +1276,41 @@ const FORMATS = {
     return string;
   },
 
-  manifestShortcutKey(string) {
-    if (lazy.ShortcutUtils.validate(string) == lazy.ShortcutUtils.IS_VALID) {
+  manifestShortcutKey(string, { extensionManifest = true } = {}) {
+    const result = lazy.ShortcutUtils.validate(string, { extensionManifest });
+    if (result == lazy.ShortcutUtils.IS_VALID) {
       return string;
     }
-    let errorMessage =
-      `Value "${string}" must consist of ` +
-      `either a combination of one or two modifiers, including ` +
-      `a mandatory primary modifier and a key, separated by '+', ` +
-      `or a media key. For details see: ` +
+
+    const SEE_DETAILS =
+      `For details see: ` +
       `https://developer.mozilla.org/en-US/Add-ons/WebExtensions/manifest.json/commands#Key_combinations`;
+    let errorMessage;
+
+    switch (result) {
+      case lazy.ShortcutUtils.INVALID_KEY_IN_EXTENSION_MANIFEST:
+        errorMessage =
+          `Value "${string}" must not include extended F13-F19 keys. ` +
+          `F13-F19 keys can only be used for user-defined keyboard shortcuts in about:addons ` +
+          `"Manage Extension Shortcuts". ${SEE_DETAILS}`;
+        break;
+      default:
+        errorMessage =
+          `Value "${string}" must consist of ` +
+          `either a combination of one or two modifiers, including ` +
+          `a mandatory primary modifier and a key, separated by '+', ` +
+          `or a media key. ${SEE_DETAILS}`;
+    }
     throw new Error(errorMessage);
   },
 
   manifestShortcutKeyOrEmpty(string) {
-    return string === "" ? "" : FORMATS.manifestShortcutKey(string);
+    // manifestShortcutKey is the formatter applied to the manifest keys assigned
+    // through the manifest, while manifestShortcutKeyOrEmpty is the formatter
+    // used by the commands.update API method JSONSchema.
+    return string === ""
+      ? ""
+      : FORMATS.manifestShortcutKey(string, { extensionManifest: false });
   },
 
   versionString(string, context) {
@@ -3965,6 +3999,7 @@ export var Schemas = {
   getPermissionNames(
     types = [
       "Permission",
+      "OptionalOnlyPermission",
       "OptionalPermission",
       "PermissionNoPrompt",
       "OptionalPermissionNoPrompt",

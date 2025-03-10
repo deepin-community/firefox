@@ -9,7 +9,7 @@ import android.content.Intent
 import android.net.Uri
 import androidx.annotation.VisibleForTesting
 import androidx.annotation.VisibleForTesting.Companion.PRIVATE
-import androidx.core.view.isVisible
+import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import kotlinx.coroutines.CoroutineScope
@@ -70,6 +70,7 @@ import mozilla.components.feature.prompts.dialog.Prompter
 import mozilla.components.feature.prompts.dialog.SaveLoginDialogFragment
 import mozilla.components.feature.prompts.dialog.TextPromptDialogFragment
 import mozilla.components.feature.prompts.dialog.TimePickerDialogFragment
+import mozilla.components.feature.prompts.dialog.emitGeneratedPasswordShownFact
 import mozilla.components.feature.prompts.ext.executeIfWindowedPrompt
 import mozilla.components.feature.prompts.facts.emitCreditCardSaveShownFact
 import mozilla.components.feature.prompts.facts.emitPromptConfirmedFact
@@ -171,7 +172,7 @@ internal const val FRAGMENT_TAG = "mozac_feature_prompt_dialog"
  * need to be requested before a prompt (e.g. a file picker) can be displayed.
  * Once the request is completed, [onPermissionsResult] needs to be invoked.
  */
-@Suppress("LargeClass", "LongParameterList", "MaxLineLength")
+@Suppress("LargeClass", "LongParameterList")
 class PromptFeature private constructor(
     private val container: PromptContainer,
     private val store: BrowserStore,
@@ -197,9 +198,8 @@ class PromptFeature private constructor(
     private val onFirstTimeEngagedWithSignup: () -> Unit = {},
     private val onSaveLoginWithStrongPassword: (String, String) -> Unit = { _, _ -> },
     private val onSaveLogin: (Boolean) -> Unit = { _ -> },
-    private val passwordGeneratorColorsProvider: PasswordGeneratorDialogColorsProvider = PasswordGeneratorDialogColorsProvider {
-        PasswordGeneratorDialogColors.default()
-    },
+    private val passwordGeneratorColorsProvider: PasswordGeneratorDialogColorsProvider =
+        PasswordGeneratorDialogColorsProvider { PasswordGeneratorDialogColors.default() },
     private val hideUpdateFragmentAfterSavingGeneratedPassword: (String, String) -> Boolean = { _, _ -> true },
     private val removeLastSavedGeneratedPassword: () -> Unit = {},
     private val creditCardDelegate: CreditCardDelegate = object : CreditCardDelegate {},
@@ -254,9 +254,8 @@ class PromptFeature private constructor(
         onFirstTimeEngagedWithSignup: () -> Unit = {},
         onSaveLoginWithStrongPassword: (String, String) -> Unit = { _, _ -> },
         onSaveLogin: (Boolean) -> Unit = { _ -> },
-        passwordGeneratorColorsProvider: PasswordGeneratorDialogColorsProvider = PasswordGeneratorDialogColorsProvider {
-            PasswordGeneratorDialogColors.default()
-        },
+        passwordGeneratorColorsProvider: PasswordGeneratorDialogColorsProvider =
+            PasswordGeneratorDialogColorsProvider { PasswordGeneratorDialogColors.default() },
         hideUpdateFragmentAfterSavingGeneratedPassword: (String, String) -> Boolean = { _, _ -> true },
         removeLastSavedGeneratedPassword: () -> Unit = {},
         creditCardDelegate: CreditCardDelegate = object : CreditCardDelegate {},
@@ -844,6 +843,8 @@ class PromptFeature private constructor(
                     return
                 }
 
+                emitGeneratedPasswordShownFact()
+
                 PasswordGeneratorDialogFragment.newInstance(
                     sessionId = session.id,
                     promptRequestUID = promptRequest.uid,
@@ -1186,7 +1187,15 @@ class PromptFeature private constructor(
         emitPromptDismissedFact(promptName = promptRequest::class.simpleName.ifNullOrEmpty { "" })
     }
 
+    @VisibleForTesting
+    internal fun redirectDialogFragmentIsActive() =
+        (fragmentManager.findFragmentByTag("SHOULD_OPEN_APP_LINK_PROMPT_DIALOG") as? DialogFragment) != null
+
     private fun canShowThisPrompt(promptRequest: PromptRequest): Boolean {
+        if (redirectDialogFragmentIsActive()) {
+            return false
+        }
+
         return when (promptRequest) {
             is SingleChoice,
             is MultipleChoice,
@@ -1222,14 +1231,14 @@ class PromptFeature private constructor(
 
         (activePromptRequest as? SelectLoginPrompt)?.let { selectLoginPrompt ->
             loginPicker?.let { loginPicker ->
-                if (loginDelegate.loginPickerView?.asView()?.isVisible == true) {
+                if (loginDelegate.loginPickerView?.isPromptDisplayed == true) {
                     loginPicker.dismissCurrentLoginSelect(selectLoginPrompt)
                     result = true
                 }
             }
 
             strongPasswordPromptViewListener?.let { strongPasswordPromptViewListener ->
-                if (suggestStrongPasswordDelegate.strongPasswordPromptViewListenerView?.isVisible() == true) {
+                if (suggestStrongPasswordDelegate.strongPasswordPromptViewListenerView?.isPromptDisplayed == true) {
                     strongPasswordPromptViewListener.dismissCurrentSuggestStrongPassword(
                         selectLoginPrompt,
                     )
@@ -1240,7 +1249,7 @@ class PromptFeature private constructor(
 
         (activePromptRequest as? SelectCreditCard)?.let { selectCreditCardPrompt ->
             creditCardPicker?.let { creditCardPicker ->
-                if (creditCardDelegate.creditCardPickerView?.asView()?.isVisible == true) {
+                if (creditCardDelegate.creditCardPickerView?.isPromptDisplayed == true) {
                     creditCardPicker.dismissSelectCreditCardRequest(selectCreditCardPrompt)
                     result = true
                 }
@@ -1249,7 +1258,7 @@ class PromptFeature private constructor(
 
         (activePromptRequest as? SelectAddress)?.let { selectAddressPrompt ->
             addressPicker?.let { addressPicker ->
-                if (addressDelegate.addressPickerView?.asView()?.isVisible == true) {
+                if (addressDelegate.addressPickerView?.isPromptDisplayed == true) {
                     addressPicker.dismissSelectAddressRequest(selectAddressPrompt)
                     result = true
                 }

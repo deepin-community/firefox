@@ -108,8 +108,11 @@ appmenu-fxa-sync-and-save-data2 = Syngronisearje en gegevens bewarje
 appmenu-fxa-signed-in-label = Oanmelde
 appmenu-fxa-setup-sync =
     .label = Syngronisaasje ynskeakelje…
+appmenu-fxa-setup-sync-new = Ynskeakelje
 appmenuitem-save-page =
     .label = Side bewarje as…
+appmenuitem-fxa-sync-off-title = Syngronisaasje is útskeakele
+appmenuitem-fxa-sync-off-description = Beskermje en benaderje jo blêdwizers, wachtwurden en mear, wêr’t jo ek binne.
 
 ## What's New panel in App menu.
 
@@ -277,5 +280,21 @@ appmenuitem-monitor-title = { -monitor-brand-short-name }
 appmenuitem-monitor-description = Untfang warskôgingen oer datalekken
 appmenuitem-relay-title = { -relay-brand-short-name }
 appmenuitem-relay-description = Maskearje jo wiere e-mailadres en telefoannûmer
+appmenuitem-services-relay-description = E-mailmaskersdashboard iepenje
 appmenuitem-vpn-title = { -mozilla-vpn-brand-name }
 appmenuitem-vpn-description = Beskermje jo online aktiviteit
+appmenu-services-header = Myn tsjinsten
+appmenu-other-protection-header = Probearje oar beskermingsark fan { -vendor-short-name }:
+
+## Profiles panel
+
+appmenu-profiles = Profilen
+appmenu-other-profiles = Oare profilen
+appmenu-manage-profiles =
+    .label = Profilen beheare
+appmenu-create-profile =
+    .label = Nij profyl
+appmenu-edit-profile =
+    .aria-label = Profyl bewurkje
+appmenu-profiles-2 =
+    .label = Profilen

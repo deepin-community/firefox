@@ -276,6 +276,10 @@ addon-detail-updates-radio-off = बंद
 install-update-button = अपडेट
 # This is the tooltip text for the private browsing badge in about:addons. The
 # badge is the private browsing icon included next to the extension's name.
+addon-badge-private-browsing-allowed3 =
+    .title = निजी विंडो में अनुमति है
+# This is the tooltip text for the private browsing badge in about:addons. The
+# badge is the private browsing icon included next to the extension's name.
 addon-badge-private-browsing-allowed2 =
     .title = निजी विंडो में अनुमति है
     .aria-label = { addon-badge-private-browsing-allowed2.title }
@@ -314,7 +318,7 @@ addon-page-options-button =
 ##   $name (string) - Name of the add-on.
 
 # Variables:
-#   $version (String): application version.
+#   $version (string) - Application version.
 details-notification-incompatible = { $name } असंगत है { -brand-short-name } { $version } के साथ.
 # Variables:
 #   $version (string) - Application version.

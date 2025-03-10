@@ -39,7 +39,7 @@ export let RemotePageAccessManager = {
         "Browser:ResetEnterpriseRootsPref",
         "DisplayOfflineSupportPage",
       ],
-      RPMRecordTelemetryEvent: ["*"],
+      RPMRecordGleanEvent: ["*"],
       RPMAddMessageListener: ["*"],
       RPMRemoveMessageListener: ["*"],
       RPMGetFormatURLPref: ["app.support.baseURL"],
@@ -49,6 +49,7 @@ export let RemotePageAccessManager = {
         "security.enterprise_roots.auto-enabled",
         "security.certerror.hideAddException",
         "network.trr.display_fallback_warning",
+        "security.certerrors.felt-privacy-v1",
       ],
       RPMGetIntPref: [
         "security.dialog_enable_delay",
@@ -84,15 +85,11 @@ export let RemotePageAccessManager = {
         "Browser:SSLErrorGoBack",
         "Browser:PrimeMitm",
         "Browser:ResetEnterpriseRootsPref",
-        "ReportBlockingError",
         "DisplayOfflineSupportPage",
         "OpenTRRPreferences",
       ],
       RPMCheckAlternateHostAvailable: ["*"],
-      RPMRecordTelemetryEvent: [
-        "security.doh.neterror",
-        "security.ui.tlserror",
-      ],
+      RPMRecordGleanEvent: ["securityDohNeterror", "securityUiTlserror"],
       RPMAddMessageListener: ["*"],
       RPMRemoveMessageListener: ["*"],
       RPMGetFormatURLPref: [
@@ -101,15 +98,10 @@ export let RemotePageAccessManager = {
       ],
       RPMGetBoolPref: [
         "security.certerror.hideAddException",
-        "security.xfocsp.errorReporting.automatic",
-        "security.xfocsp.errorReporting.enabled",
-        "security.xfocsp.hideOpenInNewWindow",
         "network.trr.display_fallback_warning",
+        "security.certerrors.felt-privacy-v1",
       ],
-      RPMSetPref: [
-        "security.xfocsp.errorReporting.automatic",
-        "network.trr.display_fallback_warning",
-      ],
+      RPMSetPref: ["network.trr.display_fallback_warning"],
       RPMAddToHistogram: ["*"],
       RPMGetInnerMostURI: ["*"],
       RPMGetHttpResponseHeader: ["*"],
@@ -120,6 +112,7 @@ export let RemotePageAccessManager = {
       RPMGetTRRDomain: ["*"],
       RPMIsSiteSpecificTRRError: ["*"],
       RPMSetTRRDisabledLoadFlags: ["*"],
+      RPMShowOSXLocalNetworkPermissionWarning: ["*"],
       RPMSendQuery: ["Browser:AddTRRExcludedDomain"],
       RPMGetIntPref: ["network.trr.mode"],
     },
@@ -171,6 +164,40 @@ export let RemotePageAccessManager = {
       ],
       RPMIsWindowPrivate: ["*"],
       RPMGetBoolPref: ["browser.privatebrowsing.felt-privacy-v1"],
+    },
+    "about:deleteprofile": {
+      RPMSendQuery: ["Profiles:GetDeleteProfileContent"],
+      RPMSendAsyncMessage: ["Profiles:CancelDelete", "Profiles:DeleteProfile"],
+    },
+    "about:editprofile": {
+      RPMSendQuery: [
+        "Profiles:GetEditProfileContent",
+        "Profiles:UpdateProfileTheme",
+      ],
+      RPMSendAsyncMessage: [
+        "Profiles:UpdateProfileName",
+        "Profiles:UpdateProfileAvatar",
+        "Profiles:OpenDeletePage",
+        "Profiles:CloseProfileTab",
+        "Profiles:MoreThemes",
+        "Profiles:PageHide",
+      ],
+    },
+    "about:newprofile": {
+      RPMSendQuery: [
+        "Profiles:GetNewProfileContent",
+        "Profiles:UpdateProfileTheme",
+      ],
+      RPMSendAsyncMessage: [
+        "Profiles:UpdateProfileName",
+        "Profiles:UpdateProfileAvatar",
+        "Profiles:DeleteProfile",
+        "Profiles:CloseProfileTab",
+        "Profiles:MoreThemes",
+        "Profiles:PageHide",
+      ],
+      RPMGetBoolPref: ["browser.profiles.profile-name.updated"],
+      RPMGetFormatURLPref: ["app.support.baseURL"],
     },
     "about:protections": {
       RPMSendAsyncMessage: [
@@ -237,7 +264,7 @@ export let RemotePageAccessManager = {
         "browser.contentblocking.report.fingerprinter.url",
         "browser.contentblocking.report.cryptominer.url",
       ],
-      RPMRecordTelemetryEvent: ["*"],
+      RPMRecordGleanEvent: ["securityUiProtections"],
     },
     "about:shoppingsidebar": {
       RPMSetPref: [
@@ -252,6 +279,8 @@ export let RemotePageAccessManager = {
       RPMGetIntPref: ["browser.shopping.experience2023.sidebarClosedCount"],
       RPMGetBoolPref: [
         "browser.shopping.experience2023.showKeepSidebarClosedMessage",
+        "sidebar.revamp",
+        "browser.shopping.experience2023.integratedSidebar",
       ],
     },
     "about:tabcrashed": {

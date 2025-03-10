@@ -255,6 +255,15 @@ menu-bookmarks-other =
 menu-bookmarks-mobile =
     .label = Mobilos könyvjelzők
 
+## Profiles Menu
+
+menu-profiles =
+    .label = Profilok
+menu-profiles-manage-profiles =
+    .label = Profilok kezelése
+menu-profiles-new-profile =
+    .label = Új profil
+
 ## Tools Menu
 
 menu-tools =
@@ -276,7 +285,7 @@ menu-tools-sync-now =
     .label = Szinkronizálás
     .accesskey = S
 menu-tools-fxa-re-auth =
-    .label = Újrakapcsolódás a { -brand-product-name }hoz…
+    .label = Újrakapcsolódás a { -brand-product-name(case: "allative") }…
     .accesskey = j
 menu-tools-browser-tools =
     .label = Böngészőeszközök

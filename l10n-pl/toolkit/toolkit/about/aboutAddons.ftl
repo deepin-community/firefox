@@ -295,6 +295,9 @@ find-more-themes = Znajdź więcej motywów
 # used for screen readers.
 addon-options-button =
     .aria-label = Więcej opcji
+# Explanatory introduction to the list of recommended add-ons. The action word
+# ("recommends") in the final sentence is a link to external documentation.
+discopane-intro2 = Rozszerzenia i motywy pozwalają dostosować { -brand-product-name(case: "acc") }. Mogą polepszać prywatność, zwiększać produktywność, ulepszać multimedia, zmieniać wygląd { -brand-product-name(case: "gen") } i wiele więcej. Te małe programy są często tworzone przez osoby trzecie. Poniżej znajduje się wybór wyjątkowo bezpiecznych, wydajnych i funkcjonalnych dodatków <a data-l10n-name="learn-more-trigger">polecanych</a> przez { -brand-product-name(case: "acc") }.
 
 ## Add-on actions
 
@@ -382,6 +385,10 @@ addon-detail-group-label-updates =
     .aria-label = { addon-detail-updates-label }
 # This is the tooltip text for the private browsing badge in about:addons. The
 # badge is the private browsing icon included next to the extension's name.
+addon-badge-private-browsing-allowed3 =
+    .title = Dozwolone w oknach prywatnych
+# This is the tooltip text for the private browsing badge in about:addons. The
+# badge is the private browsing icon included next to the extension's name.
 addon-badge-private-browsing-allowed2 =
     .title = Dozwolone w oknach prywatnych
     .aria-label = { addon-badge-private-browsing-allowed2.title }
@@ -421,6 +428,14 @@ addon-badge-line3 =
 addon-badge-verified2 =
     .title = To rozszerzenie zostało sprawdzone pod kątem zgodności z naszymi standardami bezpieczeństwa i wydajności
     .aria-label = { addon-badge-verified2.title }
+addon-badge-recommended3 =
+    .title = { -brand-product-name } poleca wyłącznie rozszerzenia spełniające nasze standardy bezpieczeństwa i wydajności
+# We hard code "Mozilla" in the string below because the extensions are built
+# by Mozilla and we don't want forks to display "by Fork".
+addon-badge-line4 =
+    .title = Oficjalne rozszerzenie zbudowane przez Mozillę. Spełnia standardy bezpieczeństwa i wydajności.
+addon-badge-verified3 =
+    .title = To rozszerzenie zostało sprawdzone pod kątem zgodności z naszymi standardami bezpieczeństwa i wydajności
 
 ##
 
@@ -428,6 +443,7 @@ available-updates-heading = Dostępne aktualizacje
 recent-updates-heading = Ostatnie aktualizacje
 release-notes-loading = Wczytywanie…
 release-notes-error = Przepraszamy, podczas pobierania informacji o wydaniu wystąpił błąd.
+addon-permissions-empty2 = To rozszerzenie nie wymaga żadnych uprawnień.
 addon-permissions-empty = To rozszerzenie nie wymaga żadnych uprawnień
 addon-permissions-required = Uprawnienia wymagane do działania podstawowych funkcji:
 addon-permissions-optional = Opcjonalne uprawnienia do działania dodatkowych funkcji:
@@ -477,10 +493,24 @@ details-notification-unsigned-and-disabled-link = Więcej informacji
 details-notification-unsigned = Dodatek „{ $name }” nie mógł zostać zweryfikowany do użytku w { -brand-short-name(case: "loc") }. Ostrożnie.
 details-notification-unsigned2 =
     .message = Dodatek „{ $name }” nie mógł zostać zweryfikowany do użytku w { -brand-short-name(case: "loc") }. Ostrożnie.
+details-notification-hard-blocked-extension =
+    .message = To rozszerzenie jest zablokowane z powodu naruszenia zasad Mozilli i zostało wyłączone.
+details-notification-hard-blocked-other =
+    .message = Ten dodatek jest zablokowany z powodu naruszenia zasad Mozilli i został wyłączony.
 details-notification-unsigned-link = Więcej informacji
 details-notification-blocked = Dodatek „{ $name }” został wyłączony z powodu problemów z bezpieczeństwem lub stabilnością.
 details-notification-blocked2 =
     .message = Dodatek „{ $name }” został wyłączony z powodu problemów z bezpieczeństwem lub stabilnością.
+details-notification-blocked-link2 = Szczegóły
+details-notification-soft-blocked-extension-disabled =
+    .message = To rozszerzenie jest ograniczone z powodu naruszania zasad Mozilli i zostało wyłączone. Można je włączyć, ale może to być ryzykowne.
+details-notification-soft-blocked-extension-enabled =
+    .message = To rozszerzenie narusza zasady Mozilli. Korzystanie z niego może być ryzykowne.
+details-notification-soft-blocked-other-disabled =
+    .message = Ten dodatek jest ograniczony z powodu naruszania zasad Mozilli i został wyłączony. Można go włączyć, ale może to być ryzykowne.
+details-notification-soft-blocked-other-enabled =
+    .message = Ten dodatek narusza zasady Mozilli. Korzystanie z niego może być ryzykowne.
+details-notification-softblocked-link2 = Szczegóły
 details-notification-blocked-link = Więcej informacji
 details-notification-softblocked = Dodatek „{ $name }” został zgłoszony jako powodujący problemy z bezpieczeństwem lub stabilnością.
 details-notification-softblocked2 =

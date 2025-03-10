@@ -301,6 +301,14 @@ find-more-themes = Meer thema’s zoeken
 # used for screen readers.
 addon-options-button =
     .aria-label = Meer opties
+# Explanatory introduction to the list of recommended add-ons. The action word
+# ("recommends") in the final sentence is a link to external documentation.
+discopane-intro2 =
+    Met extensies en thema’s kunt u { -brand-product-name } aanpassen. Ze kunnen privacy,
+    productiviteit en media verbeteren, het uiterlijk van { -brand-product-name } wijzigen, en
+    zo veel meer. Deze kleine softwareprogramma’s worden vaak door een derde partij ontwikkeld. Dit is
+    een selectie die { -brand-product-name } <a data-l10n-name="learn-more-trigger">aanbeveelt</a>
+    voor uitzonderlijke beveiliging, prestaties en functionaliteit.
 
 ## Add-on actions
 
@@ -387,6 +395,10 @@ addon-detail-group-label-updates =
     .aria-label = { addon-detail-updates-label }
 # This is the tooltip text for the private browsing badge in about:addons. The
 # badge is the private browsing icon included next to the extension's name.
+addon-badge-private-browsing-allowed3 =
+    .title = Toegestaan in privévensters
+# This is the tooltip text for the private browsing badge in about:addons. The
+# badge is the private browsing icon included next to the extension's name.
 addon-badge-private-browsing-allowed2 =
     .title = Toegestaan in privévensters
     .aria-label = { addon-badge-private-browsing-allowed2.title }
@@ -426,6 +438,14 @@ addon-badge-line3 =
 addon-badge-verified2 =
     .title = Deze extensie is beoordeeld en voldoet aan onze normen voor beveiliging en prestaties
     .aria-label = { addon-badge-verified2.title }
+addon-badge-recommended3 =
+    .title = { -brand-product-name } beveelt alleen extensies aan die voldoen aan onze normen voor beveiliging en prestaties
+# We hard code "Mozilla" in the string below because the extensions are built
+# by Mozilla and we don't want forks to display "by Fork".
+addon-badge-line4 =
+    .title = Officiële door Mozilla Firefox gebouwde extensie. Voldoet aan beveiligings- en prestatienormen.
+addon-badge-verified3 =
+    .title = Deze extensie is beoordeeld en voldoet aan onze normen voor beveiliging en prestaties
 
 ##
 
@@ -433,6 +453,7 @@ available-updates-heading = Beschikbare updates
 recent-updates-heading = Recente updates
 release-notes-loading = Laden…
 release-notes-error = Sorry, maar er is een fout opgetreden bij het laden van de uitgaveopmerkingen.
+addon-permissions-empty2 = Voor deze extensie zijn geen toestemmingen vereist.
 addon-permissions-empty = Voor deze extensie zijn geen toestemmingen vereist
 addon-permissions-required = Vereiste toestemmingen voor kernfunctionaliteit:
 addon-permissions-optional = Optionele toestemmingen voor extra functionaliteit:
@@ -482,10 +503,24 @@ details-notification-unsigned-and-disabled-link = Meer informatie
 details-notification-unsigned = { $name } kon niet worden geverifieerd voor gebruik in { -brand-short-name }. Wees voorzichtig als u verdergaat.
 details-notification-unsigned2 =
     .message = { $name } kon niet worden geverifieerd voor gebruik in { -brand-short-name }. Wees voorzichtig als u verdergaat.
+details-notification-hard-blocked-extension =
+    .message = Deze extensie is geblokkeerd vanwege schending van het beleid van Mozilla en is uitgeschakeld.
+details-notification-hard-blocked-other =
+    .message = Deze add-on is geblokkeerd wegens schending van het beleid van Mozilla en is uitgeschakeld.
 details-notification-unsigned-link = Meer informatie
 details-notification-blocked = { $name } is uitgeschakeld vanwege beveiligings- of stabiliteitsproblemen.
 details-notification-blocked2 =
     .message = { $name } is uitgeschakeld vanwege beveiligings- of stabiliteitsproblemen.
+details-notification-blocked-link2 = Details bekijken
+details-notification-soft-blocked-extension-disabled =
+    .message = Deze extensie beperkt wegens schending van het beleid van Mozilla en is uitgeschakeld. U kunt hem inschakelen, maar dit kan riskant zijn.
+details-notification-soft-blocked-extension-enabled =
+    .message = Deze extensie schendt het beleid van Mozilla. Het gebruik ervan kan riskant zijn.
+details-notification-soft-blocked-other-disabled =
+    .message = Deze add-on is beperkt wegens schending van het beleid van Mozilla en is uitgeschakeld. U kunt hem inschakelen, maar dit kan riskant zijn.
+details-notification-soft-blocked-other-enabled =
+    .message = Deze add-on schendt het beleid van Mozilla. Het gebruik ervan kan riskant zijn.
+details-notification-softblocked-link2 = Details bekijken
 details-notification-blocked-link = Meer informatie
 details-notification-softblocked = { $name } staat bekend als veroorzaker van beveiligings- of stabiliteitsproblemen.
 details-notification-softblocked2 =

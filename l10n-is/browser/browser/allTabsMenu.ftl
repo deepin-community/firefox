@@ -16,3 +16,10 @@ all-tabs-menu-close-duplicate-tabs =
     .label = Loka tvíteknum flipum
 all-tabs-menu-close-all-duplicate-tabs =
     .label = Loka öllum tvíteknum flipum
+all-tabs-menu-synced-tabs =
+    .label = Flipar frá öðrum tækjum
+all-tabs-menu-current-window-header = Núverandi gluggi
+# "Show all" is for showing all open groups as well as saved groups. Initially,
+# we only show up to five of these groups.
+all-tabs-menu-tab-groups-show-all =
+    .label = Birta allt

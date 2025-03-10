@@ -30,4 +30,13 @@ webext-perms-description-sessions = ბოლოს დახურულ ჩა
 webext-perms-description-tabs = ბრაუზერის ჩანართებთან წვდომა
 webext-perms-description-tabHide = ბრაუზერის ჩანართების დამალვა და გამოჩენა
 webext-perms-description-topSites = მონახულებული გვერდების ისტორიასთან წვდომა
+webext-perms-description-trialML = ხელოვნური ინტელექტის მოდელების მოწყობილობაზე ჩამოტვირთვა და გაშვება
+webext-perms-description-userScripts = დაუმოწმებელი გარეშე მხარის სკრიპტებისთვის თქვენს მონაცემებთან წვდომის ნებართვა
 webext-perms-description-webNavigation = გვერდებზე გადაადგილებისას ბრაუზერის მოქმედებებთან წვდომა
+
+## The userScripts permission includes an additional explanation that is
+## displayed prominently near the usual permission description.
+
+webext-perms-extra-warning-userScripts-long = გადაუმოწმებელ სკრიპტებს შეუძლია საფრთხე შეუქმნას უსაფრთხოებასა და პირადულობას, სახიფათო კოდის გაშვებით ან ვებსაიტზე მოქმედებების თვალის დევნებით. სკრიპტების გაშვების ნება დართეთ მხოლოდ იმ გაფართოებებსა თუ წყაროებს, რომელთაც ენდობით.
+# A shorter warning is displayed in UI surfaces with little room, such as a permission prompt.
+webext-perms-extra-warning-userScripts-short = გადაუმოწმებელ სკრიპტებს შეუძლია საფრთხე შეუქმნას უსაფრთხოებასა და პირადულობას. სკრიპტების გაშვების ნება დართეთ მხოლოდ იმ გაფართოებებსა თუ წყაროებს, რომელთაც ენდობით.

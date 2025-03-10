@@ -243,6 +243,9 @@ device-migration-fxa-spotlight-older-device-primary-button = Тіркелгі ж
 device-migration-fxa-spotlight-getting-new-device-header-2 = Болашақта жаңа құрылғыңыз бола ма?
 device-migration-fxa-spotlight-getting-new-device-body-2 = Жаңа құрылғыны пайдалануды бастаған кезде бетбелгілер, тарих және парольдерді өзіңізбен бірге алып келу үшін бірнеше қарапайым қадамдарды орындаңыз.
 device-migration-fxa-spotlight-getting-new-device-primary-button = Деректерімнің сақтық көшірмесін қалай жасауға болады
+device-migration-fxa-spotlight-sync-header = Бір қадамды жіберіп алмай шолыңыз
+device-migration-fxa-spotlight-sync-body = Бетбелгілер мен парольдер сияқты барлық маңызды ақпаратты шифрлеумен синхрондаңыз. Сіз { -brand-product-name } қолданатын кез келген жерде оның бәріне де қол жеткізе аласыз.
+device-migration-fxa-spotlight-sync-primary-button = Бастау
 
 ## Set as Default PDF Reader Infobar
 
@@ -279,3 +282,60 @@ tail-fox-spotlight-title = Тітіркендіргіш трекерлерді �
 tail-fox-spotlight-subtitle = Тітіркендіргіш жарнама трекерлерімен қоштасып, қауіпсіз, жылдам интернет тәжірибесіне ие болыңыз.
 tail-fox-spotlight-primary-button = Менің сілтемелерімді { -brand-short-name } арқылы ашу
 tail-fox-spotlight-secondary-button = Қазір емес
+
+## Root Certificate Succession Infobar
+
+root-certificate-succession-infobar-january-message = <strong>2025 жылдың 14 қаңтарында { -brand-short-name } ескі нұсқаларында мәселелер пайда болуы мүмкін.</strong>
+root-certificate-succession-infobar-march-message = <strong>2025 жылдың 14 наурызынан кейін { -brand-short-name } пайдалануды жалғастыру үшін жаңартыңыз.</strong>
+root-certificate-succession-infobar-link = Жаңарту не үшін керек?
+root-certificate-succession-infobar-primary-button =
+    .label = Қазір жаңарту
+    .accesskey = ж
+root-certificate-succession-infobar-secondary-button =
+    .label = Кейінірек
+    .accesskey = й
+
+## Root Certificate Succession Windows Background Notification
+
+root-certificate-windows-background-notification-title = { -brand-short-name } өнімінің маңызды жаңартуын өткізіп алдыңыз
+root-certificate-windows-background-notification-learn-more-button = Көбірек білу
+root-certificate-windows-background-notification-update-button = { -brand-short-name } жаңарту
+
+## FxA Menu Message variants
+
+fxa-menu-message-close-button =
+    .title = Жабу
+    .aria-label = Жабу
+fxa-menu-message-sign-up-button = Тіркелу
+fxa-menu-message-sync-devices-primary-text = Барлық құрылғыларыңызды синхрондау
+fxa-menu-message-sync-devices-secondary-text = { -brand-short-name } қолданатын барлық жерде бетбелгілер мен парольдер сияқты ақпаратыңызды дереу алыңыз.
+fxa-menu-message-sync-devices-collapsed-text = Барлық құрылғыларыңызды синхрондау
+fxa-menu-message-backup-data-primary-text = Браузер деректерінің сақтық көшірмесін жасау
+fxa-menu-message-backup-data-secondary-text = Барлық құрылғыларыңыздағы бетбелгілерді, парольдер және басқа ақпаратты автоматты түрде қорғау.
+fxa-menu-message-backup-data-collapsed-text = Браузер деректерінің сақтық көшірмесін жасау
+fxa-menu-message-backup-sync-primary-text = Деректеріңізді қауіпсіз және синхрондалған түрде сақтаңыз
+fxa-menu-message-backup-sync-secondary-text = Синхрондау деректеріңіздің көпшілігінің сақтық көшірмесін жасайды, осылайша оған { -brand-short-name } қолданатын кез келген жерден қол жеткізе аласыз.
+fxa-menu-message-backup-sync-collapsed-text = Синхрондау және деректердің қор көшірмесін жасау
+fxa-menu-message-mobile-primary-text = Беттерді телефоныңызға жіберу
+fxa-menu-message-mobile-secondary-text = Беттерді мобильді құрылғымен синхрондағанда, тоқтаған жеріңізден бірден жалғастырыңыз.
+fxa-menu-message-mobile-collapsed-text = Телефоныңызбен синхрондау
+
+## Multi-CTA Fox Doodle Spotlight
+
+multi-cta-fox-doodle-title = Қайта қош келдіңіз
+multi-cta-fox-doodle-set-default-checkbox = { -brand-short-name } негізгі браузер қылу
+multi-cta-fox-doodle-pin-startmenu-checkbox = { -brand-short-name } Бастау мәзіріне бекіту
+multi-cta-fox-doodle-pin-checkbox =
+    { PLATFORM() ->
+        [macos] { -brand-short-name } Докта ұстау
+       *[other] { -brand-short-name } тапсырмалар панеліне бекіту
+    }
+multi-cta-fox-doodle-start-browsing-primary-button-label = Шолуды бастау
+multi-cta-fox-doodle-main-browser-primary-button-label = { -brand-short-name } менің негізгі браузерім қылу
+multi-cta-fox-doodle-quick-reminder-subtitle = Жекелікке бағытталған таңдаулы браузеріңізді қасыңызда ұстауға болатынын еске саламыз.
+multi-cta-fox-doodle-privacy-focused-subtitle =
+    { PLATFORM() ->
+        [macos] Жекелікке бағытталған таңдаулы браузеріңізді қасыңызда ұстауға болатынын еске саламыз. { -brand-short-name } сілтемелерді ашатын негізгі браузер қылыңыз және Докта ұстаңыз.
+       *[other] Жекелікке бағытталған таңдаулы браузеріңізді қасыңызда ұстауға болатынын еске саламыз. { -brand-short-name } сілтемелерді ашатын негізгі браузер қылыңыз және тапсырмалар панеліне бекітіңіз.
+    }
+multi-cta-fox-doodle-msix-privacy-focused-subtitle = Жекелікке бағытталған таңдаулы браузеріңізді қасыңызда ұстауға болатынын еске саламыз. { -brand-short-name } сілтемелерді ашатын негізгі браузер қылыңыз және тапсырмалар панелі мен Бастау мәзіріне бекітіңіз.

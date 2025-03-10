@@ -68,6 +68,7 @@ impl crate::TypeInner {
                 let count = match size {
                     crate::ArraySize::Constant(size) => size.get(),
                     // A dynamically-sized array has to have at least one element
+                    crate::ArraySize::Pending(_) => unreachable!(),
                     crate::ArraySize::Dynamic => 1,
                 };
                 let last_el_size = gctx.types[base].inner.size_hlsl(gctx);
@@ -132,7 +133,7 @@ impl crate::StorageFormat {
             Self::Rg8Sint | Self::Rg16Sint | Self::Rg32Uint => "int2",
             Self::Rg8Uint | Self::Rg16Uint | Self::Rg32Sint => "uint2",
 
-            Self::Rg11b10UFloat => "float3",
+            Self::Rg11b10Ufloat => "float3",
 
             Self::Rgba16Float | Self::Rgba32Float => "float4",
             Self::Rgba8Unorm | Self::Bgra8Unorm | Self::Rgba16Unorm | Self::Rgb10a2Unorm => {
@@ -178,7 +179,7 @@ impl crate::BuiltIn {
             Self::BaseInstance | Self::BaseVertex | Self::WorkGroupSize => {
                 return Err(Error::Unimplemented(format!("builtin {self:?}")))
             }
-            Self::PointSize | Self::ViewIndex | Self::PointCoord => {
+            Self::PointSize | Self::ViewIndex | Self::PointCoord | Self::DrawID => {
                 return Err(Error::Custom(format!("Unsupported builtin {self:?}")))
             }
         })
@@ -202,7 +203,7 @@ impl crate::Sampling {
     /// Return the HLSL auxiliary qualifier for the given sampling value.
     pub(super) const fn to_hlsl_str(self) -> Option<&'static str> {
         match self {
-            Self::Center => None,
+            Self::Center | Self::First | Self::Either => None,
             Self::Centroid => Some("centroid"),
             Self::Sample => Some("sample"),
         }

@@ -43,3 +43,56 @@ callout-pdfjs-draw-body-a = Ehai PDFs marandurendápe ha eñongatu moambuepyre.
 # “Mark up” refers to the process of “annotating” or adding free hand text or diagramming to the document.
 callout-pdfjs-draw-body-b = Anive embokuatia ha emoha’ãnga. Ehai PDFs marandurendápe ha eñongatu moambuepyre.
 callout-pdfjs-draw-button = ¡Aikũmby!
+
+## Firefox View Discoverability Strings
+
+fx-view-discoverability-title = ¿Embotysépako pe tendayke?
+fx-view-discoverability-subtitle = Ejuhu ha embojuruja jey ko’a guive. Rorekomeme tembiasakue oñemboty ramóva rehegua.
+fx-view-discoverability-primary-button-label = Embojuruja { -firefoxview-brand-name }
+fx-view-discoverability-secondary-button-label = Mboyke
+
+## Split Dismiss Button Labels
+
+# Blocks the message from showing again
+split-dismiss-button-dont-show-option-label = Anive ehechauka ko ñemoñe’ẽ
+# Dismisses message and reduces frequency of message
+split-dismiss-button-show-fewer-option-label = Ehechauka’ive ñemoñe’ẽ
+# Opens about:preferences#general-cfrfeatures
+split-dismiss-button-manage-settings-option-label = Eñangareko ñemoĩporãre
+
+## Sidebar Strings
+
+sidebar-button-callout-title = Ehechauka tendayke reratee tenda yképe
+sidebar-button-callout-subtitle = Eiporu tenda yke votõ emyasãi hag̃ua mba’erupa ha ehecha umi tendayke reratee.
+sidebar-button-callout-vertical-tabs = Ehechauka hag̃ua ne rendayke, eiporavo votõ tenda ykegua tembiporu rendápe.
+
+## Sidebar Callout Survey Strings
+
+sidebar-callout-survey-title = Eipytyvõ { -brand-short-name } iporãve hag̃ua
+sidebar-callout-survey-satisfaction-question = Evy’ápa añetehápe tenda yke jeporúpe { -brand-short-name } ndive
+sidebar-callout-survey-privacy-notice-link = Marandu’i ñemiguáva
+sidebar-callout-survey-very-satisfied = Avy’aiterei
+sidebar-callout-survey-satisfied = Chembovy’a
+sidebar-callout-survey-neutral = Mbytegua
+sidebar-callout-survey-dissatisfied-2 = Nachembovy’ái
+sidebar-callout-survey-very-dissatisfied-2 = Nachembovy’aiete
+sidebar-callout-survey-dont-use-it = Ndaiporúi
+sidebar-callout-survey-strongly-agree = Amoneĩmbaite
+sidebar-callout-survey-agree = Amoneĩ
+sidebar-callout-survey-disagree = Namoneĩri
+sidebar-callout-survey-strongly-disagree = Namoneĩriete
+sidebar-callout-survey-features-question = Ko’ãva ha’e tuicha mba’evéva tenda yképe g̃uarã. ¿Mba’e pe omoporãvétava ne rembiapo { -brand-short-name }-pe?
+sidebar-callout-survey-split-view = Ahecha mokõi tenda peteĩcha, jehechaha mboja’opy ojoykére rupive
+sidebar-callout-survey-keep-website-open = Ereko ñanduti renda, taha’e ñanduti veve térã arapapaha, tenda yképe jurujápe eikundaha aja
+sidebar-callout-survey-saved-websites-2 = Jeike pya’erã techaukahápe
+sidebar-callout-survey-none-of-above = Mba’evete ymavegua
+sidebar-callout-survey-submit = Mondo
+sidebar-callout-survey-thank-you = ¡Aguyje ne remiandu rehe!
+sidebar-genai-survey-satisfaction-question = ¿Mba'éicha ehecharamo eguerekóvo peteĩ chatbot IA reheguáva tenda yképe?
+unified-search-callout-title = Emoambue jehekaha pa’ũme
+unified-search-callout-subtitle = Eiporavo oiko porãve hag̃ua pe jehekaha ha’etéva.
+unified-search-callout-primary-label = Tenonde
+unified-search-callout-secondary-label = Mboyke
+unified-search-engines-callout-title = Eheka jeike pya’eha ndive
+unified-search-engines-callout-primary-label = Aikũmby
+actions-callout-title = Ejapopa tembiapokuéra térã eike ñemboheko ñepyrũguápe

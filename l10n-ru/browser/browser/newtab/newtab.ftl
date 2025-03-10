@@ -8,11 +8,18 @@
 newtab-page-title = Новая вкладка
 newtab-settings-button =
     .title = Настроить свою страницу новой вкладки
+newtab-personalize-settings-icon-label =
+    .title = Персонализировать Новую вкладку
+    .aria-label = Настройки
+newtab-settings-dialog-label =
+    .aria-label = Настройки
 newtab-personalize-icon-label =
     .title = Настроить новую вкладку
     .aria-label = Настроить новую вкладку
 newtab-personalize-dialog-label =
     .aria-label = Настроить
+newtab-logo-and-wordmark =
+    .aria-label = { -brand-full-name }
 
 ## Search box component.
 
@@ -109,6 +116,13 @@ newtab-menu-save-to-pocket = Сохранить в { -pocket-brand-name }
 newtab-menu-delete-pocket = Удалить из { -pocket-brand-name }
 newtab-menu-archive-pocket = Архивировать в { -pocket-brand-name }
 newtab-menu-show-privacy-info = Наши спонсоры и ваша приватность
+newtab-menu-about-fakespot = О { -fakespot-brand-name }
+# Context menu option to personalize New Tab recommended stories by blocking a section of stories,
+# e.g. "Sports". "Block" is a verb here.
+newtab-menu-section-block = Блокировать
+# "Follow", "unfollow", and "following" are social media terms that refer to subscribing to or unsubscribing from a section of stories.
+# e.g. Following the travel section of stories.
+newtab-menu-section-unfollow = Отписаться от темы
 
 ## Message displayed in a modal window to explain privacy and provide context for sponsored content.
 
@@ -233,6 +247,8 @@ newtab-pocket-cta-button = Загрузить { -pocket-brand-name }
 newtab-pocket-cta-text = Сохраняйте интересные статьи в { -pocket-brand-name } и подпитывайте свой ум увлекательным чтением.
 newtab-pocket-pocket-firefox-family = { -pocket-brand-name } является частью семейства { -brand-product-name }
 # A save to Pocket button that shows over the card thumbnail on hover.
+newtab-pocket-image =
+    .aria-label = { -pocket-brand-name }
 newtab-pocket-save = Сохранить
 newtab-pocket-saved = Сохранено
 
@@ -244,6 +260,9 @@ newtab-pocket-thumbs-up-tooltip =
 # Clicking the thumbs down button for this story informs us that the user does not feel like the story is interesting for them
 newtab-pocket-thumbs-down-tooltip =
     .title = Не для меня
+# Used to show the user a message upon clicking the thumbs up or down buttons
+newtab-toast-thumbs-up-or-down2 =
+    .message = Спасибо. Ваш отзыв поможет нам улучшить вашу ленту.
 newtab-toast-thumbs-up-or-down = Спасибо. Ваш отзыв поможет нам улучшить вашу ленту.
 newtab-toast-dismiss-button =
     .title = Убрать
@@ -298,6 +317,12 @@ newtab-custom-settings = Управление дополнительными н�
 
 newtab-wallpaper-title = Обои
 newtab-wallpaper-reset = Восстановить по умолчанию
+newtab-wallpaper-upload-image = Загрузить изображение
+newtab-wallpaper-custom-color = Выберите цвет
+# Variables
+#   $file_size (number) - The number of the maximum image file size (in MB) that may be uploaded
+newtab-wallpaper-error-max-file-size = Размер файла изображения превысил лимит в { $file_size }МБ. Пожалуйста, попробуйте загрузить файл меньшего размера.
+newtab-wallpaper-error-file-type = Мы не смогли загрузить ваш файл. Пожалуйста, попробуйте ещё раз с другим типом файла.
 newtab-wallpaper-light-red-panda = Красная панда
 newtab-wallpaper-light-mountain = Белая гора
 newtab-wallpaper-light-sky = Небо с фиолетовыми и розовыми облаками
@@ -310,6 +335,8 @@ newtab-wallpaper-dark-panda = Красная панда, прячущаяся в
 newtab-wallpaper-dark-sky = Городской пейзаж с ночным небом
 newtab-wallpaper-dark-mountain = Горный пейзаж
 newtab-wallpaper-dark-city = Фиолетовый городской пейзаж
+newtab-wallpaper-dark-fox-anniversary = Лиса на дороге рядом с лесом
+newtab-wallpaper-light-fox-anniversary = Лиса на травяном поле с туманным горным ландшафтом
 
 ## Solid Colors
 
@@ -339,8 +366,12 @@ newtab-wallpaper-abstract-purple = Фиолетовые формы
 newtab-wallpaper-abstract-orange = Оранжевые формы
 newtab-wallpaper-gradient-orange = Градиент оранжевого и розового
 newtab-wallpaper-abstract-blue-purple = Синие и фиолетовые формы
+newtab-wallpaper-abstract-white-curves = Белый с заштрихованными кривыми
+newtab-wallpaper-abstract-purple-green = Фиолетово-зеленый световой градиент
+newtab-wallpaper-abstract-blue-purple-waves = Синие и фиолетовые волнистые формы
+newtab-wallpaper-abstract-black-waves = Чёрные волнообразные формы
 
-## Photographs
+## Celestial
 
 newtab-wallpaper-category-title-photographs = Фотографии
 newtab-wallpaper-beach-at-sunrise = Пляж на восходе
@@ -349,6 +380,12 @@ newtab-wallpaper-storm-sky = Грозовое небо
 newtab-wallpaper-sky-with-pink-clouds = Небо с розовыми облаками
 newtab-wallpaper-red-panda-yawns-in-a-tree = Красная панда зевает на дереве
 newtab-wallpaper-white-mountains = Белые горы
+newtab-wallpaper-hot-air-balloons = Различные цвета воздушных шаров в дневное время
+newtab-wallpaper-starry-canyon = Синяя звёздная ночь
+newtab-wallpaper-suspension-bridge = Фотография серого подвесного моста в дневное время
+newtab-wallpaper-sand-dunes = Белые песчаные дюны
+newtab-wallpaper-palm-trees = Силуэт кокосовых пальм в золотой час
+newtab-wallpaper-forest-trees = Деревья, окутанные туманом
 # Variables
 #   $author_string (String) - The name of the creator of the photo.
 #   $webpage_string (String) - The name of the webpage where the photo is located.
@@ -364,6 +401,19 @@ feature-highlight-wallpaper =
     .title = { -newtab-wallpaper-feature-highlight-header }
     .aria-label = { -newtab-wallpaper-feature-highlight-content }
 
+## Celestial
+
+# “Celestial” referring to astronomy; positioned in or relating to the sky,
+# or outer space as observed in astronomy.
+# Not to be confused with religious definition of the word.
+newtab-wallpaper-category-title-celestial = Небесный
+newtab-wallpaper-celestial-lunar-eclipse = Лунное затмение
+newtab-wallpaper-celestial-earth-night = Ночное фото с низкой околоземной орбиты
+newtab-wallpaper-celestial-starry-sky = Звёздное небо
+newtab-wallpaper-celestial-eclipse-time-lapse = Хронометраж лунного затмения
+newtab-wallpaper-celestial-black-hole = Иллюстрация галактики с черной дырой
+newtab-wallpaper-celestial-river = Космический снимок реки
+
 ## New Tab Weather
 
 # Variables:
@@ -374,6 +424,9 @@ newtab-weather-see-forecast =
 #   $provider (string) - Service provider for weather data
 newtab-weather-sponsored = { $provider } ∙ На правах рекламы
 newtab-weather-menu-change-location = Изменить местоположение
+newtab-weather-change-location-search-input-placeholder =
+    .placeholder = Поиск местоположения
+    .aria-label = Поиск местоположения
 newtab-weather-change-location-search-input = Поиск местоположения
 newtab-weather-menu-weather-display = Отображение погоды
 # Display options are:
@@ -432,3 +485,45 @@ newtab-topic-selection-button-maybe-later = Возможно, позже
 newtab-topic-selection-privacy-link = Узнайте, как мы защищаем данные и управляем ими
 newtab-topic-selection-button-update-interests = Обновите свои интересы
 newtab-topic-selection-button-pick-interests = Выберите ваши интересы
+
+## Content Feed Sections
+## "Follow", "unfollow", and "following" are social media terms that refer to subscribing to or unsubscribing from a section of stories.
+## e.g. Following the travel section of stories.
+
+newtab-section-follow-button = Подписаться
+newtab-section-following-button = Подписан
+newtab-section-unfollow-button = Отписаться
+
+## Button to block/unblock listed topics
+## "Block", "unblocked", and "blocked" are social media terms that refer to hiding a section of stories.
+## e.g. Blocked the politics section of stories.
+
+newtab-section-block-button = Блокировать
+newtab-section-blocked-button = Заблокировано
+newtab-section-unblock-button = Разблокировать
+
+## Confirmation modal for blocking a section
+
+newtab-section-confirm-block-section-p1 = Вы уверены, что хотите заблокировать этот раздел?
+newtab-section-confirm-block-section-p2 = Заблокированный раздел больше не будет отображаться в вашей ленте.
+newtab-section-block-section-button = Заблокировать этот раздел
+newtab-section-cancel-button = Не сейчас
+newtab-section-confirm-block-topic-p1 = Вы уверены, что хотите заблокировать эту тему?
+newtab-section-confirm-block-topic-p2 = Заблокированные темы больше не будут появляться в вашей ленте.
+# Variables:
+#   $topic (string) - Name of topic that user is blocking
+newtab-section-block-topic-button = Заблокировать { $topic }
+
+## Panel in the Customize menu section to manage followed and blocked topics
+
+newtab-section-mangage-topics-title = Темы
+newtab-section-manage-topics-button-v2 =
+    .label = Управление темами
+newtab-section-mangage-topics-followed-topics = Подписки
+newtab-section-mangage-topics-button =
+    .label = Отслеживаемые и заблокированные темы
+newtab-section-mangage-topics-followed-topics-subtitle = Отслеживаемые темы
+newtab-section-mangage-topics-followed-topics-empty-state = Вы пока не отслеживаете ни одну тему.
+newtab-section-mangage-topics-blocked-topics = Заблокированы
+newtab-section-mangage-topics-blocked-topics-subtitle = Заблокированные темы
+newtab-section-mangage-topics-blocked-topics-empty-state = Вы пока не заблокировали ни одной темы.

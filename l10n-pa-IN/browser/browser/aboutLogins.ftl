@@ -11,10 +11,10 @@ create-new-login-button =
     .title = ਨਵਾਂ ਲਾਗਇਨ ਬਣਾਓ
 about-logins-page-title-name = ਪਾਸਵਰਡ
 about-logins-login-filter2 =
-    .placeholder = ਪਾਸਵਰਡ ਲੱਭੋ
+    .placeholder = ਪਾਸਵਰਡਾਂ ਨੂੰ ਲੱਭੋ
     .key = F
 create-login-button =
-    .title = ਪਾਸਵਰਡ ਜੋੜੋ
+    .title = ਪਾਸਵਰਡ ਨੂੰ ਜੋੜੋ
 fxaccounts-sign-in-text = ਆਪਣੇ ਹੋਰ ਡਿਵਾਈਸਾਂ ਉੱਤੇ ਆਪਣੇ ਪਾਸਵਰਡ ਲਵੋ
 fxaccounts-sign-in-sync-button = ਸਿੰਕ ਕਰਨ ਲਈ ਸਾਈਨ ਇਨ ਕਰੋ
 fxaccounts-avatar-button =
@@ -23,13 +23,13 @@ fxaccounts-avatar-button =
 ## The ⋯ menu that is in the top corner of the page
 
 menu =
-    .title = ਮੇਨੂ ਖੋਲ੍ਹੋ
+    .title = ਮੇਨੂ ਨੂੰ ਖੋਲ੍ਹੋ
 # This menuitem is only visible on Windows and macOS
 about-logins-menu-menuitem-import-from-another-browser = …ਹੋਰ ਬਰਾਊਜ਼ਰ ਤੋਂ ਬਰਾਮਦ ਕਰੋ
-about-logins-menu-menuitem-import-from-a-file = …ਤੋਂ ਫ਼ਾਈਲ ਇੰਪੋਰਟ ਕਰੋ
-about-logins-menu-menuitem-export-logins = …ਲਾਗਇਨ ਐਕਸਪੋਰਟ ਕਰੋ
-about-logins-menu-menuitem-remove-all-logins = …ਸਾਰੇ ਲਾਗਇਨ ਹਟਾਓ
-about-logins-menu-menuitem-export-logins2 = …ਪਾਸਵਰਡ ਐਕਸਪੋਰਟ
+about-logins-menu-menuitem-import-from-a-file = …ਤੋਂ ਫ਼ਾਇਲ ਇੰਪੋਰਟ ਕਰੋ
+about-logins-menu-menuitem-export-logins = …ਲਾਗਇਨ ਨੂੰ ਐਕਸਪੋਰਟ ਕਰੋ
+about-logins-menu-menuitem-remove-all-logins = …ਸਾਰੇ ਲਾਗਇਨਾਂ ਨੂੰ ਹਟਾਓ
+about-logins-menu-menuitem-export-logins2 = …ਪਾਸਵਰਡਾਂ ਨੂੰ ਐਕਸਪੋਰਟ ਕਰੋ
 about-logins-menu-menuitem-remove-all-logins2 = …ਸਾਰੇ ਪਾਸਵਰਡਾਂ ਨੂੰ ਹਟਾਓ
 menu-menuitem-preferences =
     { PLATFORM() ->
@@ -55,7 +55,7 @@ login-list-count =
 login-list-filtered-count =
     { $total ->
         [one] { $total } ਲਾਗਇਨ ਵਿੱਚੋਂ { $count }
-       *[other] { $total } ਲਾਗਇਨ ਵਿੱਚੋਂ { $count }
+       *[other] { $total } ਲਾਗਇਨਾਂ ਵਿੱਚੋਂ { $count }
     }
 # Variables
 #   $count (number) - Number of logins
@@ -91,10 +91,10 @@ login-list-item-subtitle-new-login = ਆਪਣੀ ਲਾਗਇਨ ਸਨਦ ਦ�
 login-list-item-title-new-login2 = ਪਾਸਵਰਡ ਜੋੜੋ
 login-list-item-subtitle-missing-username = (ਕੋਈ ਵਰਤੋਂਕਾਰ ਨਾਂ ਨਹੀਂ)
 about-logins-list-item-breach-icon =
-    .title = ਉਲੰਘਣ ਕਰਨ ਵਾਲੀ ਵੈੱਬਸਾਈਟ
+    .title = ਸੰਨ੍ਹ ਲੱਗਣ ਵਾਲੀ ਵੈੱਬਸਾਈਟ
 about-logins-list-item-vulnerable-password-icon =
     .title = ਕਮਜ਼ੋਰ ਪਾਸਵਰਡ
-about-logins-list-section-breach = ਉਲੰਘਣ ਕੀਤੀਆਂ ਵੈੱਬਸਾਈਟ
+about-logins-list-section-breach = ਸੰਨ੍ਹ ਲੱਗਣ ਵਾਲੀਆਂ ਵੈੱਬਸਾਈਟਾਂ
 about-logins-list-section-vulnerable = ਕਮਜ਼ੋਰ ਪਾਸਵਰਡ
 about-logins-list-section-nothing = ਕੋਈ ਚੌਕਸੀ ਨਹੀਂ
 about-logins-list-section-today = ਅੱਜ
@@ -110,7 +110,7 @@ login-intro-instructions-fxa = ਡਿਵਾਈਸ, ਜਿੱਥੇ ਤੁਹਾ�
 about-logins-login-intro-heading-message = ਆਪਣੇ ਪਾਸਵਰਡਾਂ ਨੂੰ ਸੁਰੱਖਿਅਤ ਥਾਂ ਉੱਤੇ ਸੰਭਾਲੋ
 login-intro-description2 = ਤੁਹਾਡੇ ਵਲੋਂ { -brand-product-name } ਵਿੱਚ ਸੰਭਾਲੇ ਸਾਰੇ ਪਾਸਵਰਡ ਇੰਕ੍ਰਿਪਟ ਕੀਤੇ ਜਾਂਦੇ ਹਨ। ਇਸ ਦੇ ਨਾਲ ਹੀ ਅਸੀਂ ਸੰਨ੍ਹਮਾਰੀ ਦਾ ਧਿਆਨ ਵੀ ਰੱਖਦੇ ਹਾਂ ਅਤੇ ਤੁਹਾਡੇ ਪ੍ਰਭਾਵਿਤ ਹੋਣ ਉੱਤੇ ਸਾਵਧਾਨ ਕਰਦੇ ਹਾਂ। <a data-l10n-name="breach-alert-link">ਹੋਰ ਜਾਣੋ</a>
 login-intro-instructions-fxa2 = ਡਿਵਾਈਸ, ਜਿੱਥੇ ਤੁਹਾਡੇ ਲਾਗਇਨ ਸੰਭਾਲੇ ਹੋਏ ਹਨ, ਉੱਤੇ ਆਪਣਾ ਖਾਤਾ ਬਣਾਓ ਜਾਂ ਸਾਈਨ ਇਨ ਕਰੋ।
-login-intro-instructions-fxa-settings = ਸੈਟਿੰਗਾਂ > ਸਿੰਕ > …ਸਿੰਕ ਕਰਨਾ ਚਾਲੂ ਲਕਰੋ, ਵਿੱਚ ਲਾਗਇਨ ਅਤੇ ਪਾਸਵਰਡ ਚੋਣ ਬਾਕਸੇ ਨੂੰ ਚੁਣੋ।
+login-intro-instructions-fxa-settings = ਸੈਟਿੰਗਾਂ > ਸਿੰਕ > …ਸਿੰਕ ਕਰਨਾ ਚਾਲੂ ਕਰੋ, ਵਿੱਚ ਲਾਗਇਨ ਅਤੇ ਪਾਸਵਰਡ ਚੋਣ-ਬਕਸੇ ਨੂੰ ਚੁਣੋ।
 login-intro-instructions-fxa-passwords-help = ਹੋਰ ਮਦਦ ਲਈ <a data-l10n-name="passwords-help-link">ਪਾਸਵਰਡ ਮਦਦ</a> ਨੂੰ ਵੇਖੋ।
 about-logins-intro-browser-only-import = ਜੇ ਤੁਹਾਡੇ ਲਾਗਇਨ ਹੋਰ ਬਰਾਊਜ਼ਰ ਵਿੱਚ ਸੰਭਾਲੇ ਹਨ ਤਾਂ ਤੁਸੀਂ <a data-l10n-name="import-link">ਉਹਨਾਂ ਨੂੰ { -brand-product-name } ਵਿੱਚ ਲਿਆ</a> ਸਕਦੇ ਹੋ।
 about-logins-intro-import2 = ਜੇ ਤੁਹਾਡੇ ਲਾਗ-ਇਨ { -brand-product-name } ਤੋਂ ਅਲੱਗ ਸੰਭਾਲੇ ਗਏ ਹਨ ਤਾਂ ਤੁਸੀਂ <a data-l10n-name="import-browser-link">ਹੋਰ ਬਰਾਊਜ਼ਰ</a> ਜਾਂ <a data-l10n-name="import-file-link">ਫ਼ਾਈਲ</a> ਤੋਂ ਇੰਪੋਰਟ ਕਰ ਸਕਦੇ ਹੋ।
@@ -120,7 +120,7 @@ about-logins-intro-import3 = ਹੁਣੇ ਨਵਾਂ ਪਾਸਵਰਡ ਜੋ
 
 login-item-new-login-title = ਨਵਾਂ ਲਾਗਇਨ ਬਣਾਓ
 # Header for adding a password
-about-logins-login-item-new-login-title = ਪਾਸਵਰਡ ਜੋੜੋ
+about-logins-login-item-new-login-title = ਪਾਸਵਰਡ ਨੂੰ ਜੋੜੋ
 login-item-edit-button = ਸੋਧੋ
 about-logins-login-item-remove-button = ਹਟਾਓ
 login-item-origin-label = ਵੈੱਬਸਾਈਟ ਸਿਰਨਾਵਾਂ
@@ -139,12 +139,12 @@ login-item-copy-username-button-text = ਕਾਪੀ ਕਰੋ
 login-item-copied-username-button-text = ਕਾਪੀ ਕੀਤਾ!
 login-item-password-label = ਪਾਸਵਰਡ
 login-item-password-reveal-checkbox =
-    .aria-label = ਪਾਸਵਰਡ ਵੇਖਾਓ
+    .aria-label = ਪਾਸਵਰਡ ਨੂੰ ਵੇਖਾਓ
 login-item-password-conceal-checkbox =
-    .aria-label = ਪਾਸਵਰਡ ਓਹਲੇ
+    .aria-label = ਪਾਸਵਰਡ ਨੂੰ ਓਹਲੇ
 login-item-copy-password-button-text = ਕਾਪੀ ਕਰੋ
 login-item-copied-password-button-text = ਕਾਪੀ ਕੀਤਾ!
-login-item-save-changes-button = ਤਬਦੀਲੀਆਂ ਸੰਭਾਲੋ
+login-item-save-changes-button = ਤਬਦੀਲੀਆਂ ਨੂੰ ਸੰਭਾਲੋ
 about-logins-login-item-save-changes-button = ਸੰਭਾਲੋ
 login-item-save-new-button = ਸੰਭਾਲੋ
 login-item-cancel-button = ਰੱਦ ਕਰੋ
@@ -157,7 +157,7 @@ login-item-cancel-button = ਰੱਦ ਕਰੋ
 #   $datetime (date) - Event date
 login-item-timeline-point-date = { DATETIME($datetime, day: "numeric", month: "short", year: "numeric") }
 login-item-timeline-action-created = ਬਣਾਇਆ
-login-item-timeline-action-updated = ਅੱਪਡੇਟ ਕੀਤੀ
+login-item-timeline-action-updated = ਅੱਪਡੇਟ ਕੀਤਾ
 login-item-timeline-action-used = ਵਰਤਿਆ
 
 ## OS Authentication dialog
@@ -184,27 +184,27 @@ about-logins-os-auth-dialog-message =
 about-logins-edit-login-os-auth-dialog-message2-win = ਆਪਣੇ ਪਾਸਵਰਡ ਨੂੰ ਸੰਭਾਲਣ ਲਈ, ਆਪਣੀਆਂ Windows ਲਾਗਇਨ ਸਨਦਾਂ ਦਿਓ। ਇਹ ਤੁਹਾਡੇ ਖਾਤਿਆਂ ਦੀ ਸੁਰੱਖਿਆ ਨੂੰ ਸੁਰੱਖਿਅਤ ਰੱਖਣ ਲਈ ਮਦਦ ਕਰਦਾ ਹੈ।
 # This message can be seen when attempting to edit a login in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
-about-logins-edit-login-os-auth-dialog-message2-macosx = ਸੰਭਾਲੇ ਹੋਏ ਪਾਸਵਰਡ ਨੂੰ ਸੰਭਾਲੋ
+about-logins-edit-login-os-auth-dialog-message2-macosx = ਸੰਭਾਲੇ ਹੋਏ ਪਾਸਵਰਡ ਨੂੰ ਸੋਧੋ
 # This message can be seen when attempting to reveal a password in about:logins on Windows.
-about-logins-reveal-password-os-auth-dialog-message-win = ਆਪਣੇ ਪਾਸਵਰਡ ਵੇਖਣ ਲਈ ਆਪਣੇ ਵਿੰਡੋਜ਼ ਸਨਦ ਦਿਓ। ਇਹ ਤੁਹਾਡੇ ਖਾਤਿਆਂ ਦੀ ਸੁਰੱਖਿਆ ਨੂੰ ਬਚਾਉਣ ਲਈ ਮਦਦ ਕਰਦਾ ਹੈ।
+about-logins-reveal-password-os-auth-dialog-message-win = ਆਪਣੇ ਪਾਸਵਰਡ ਵੇਖਣ ਲਈ ਆਪਣੀ Windows ਸਨਦ ਦਿਓ। ਇਹ ਤੁਹਾਡੇ ਖਾਤਿਆਂ ਦੀ ਸੁਰੱਖਿਆ ਨੂੰ ਬਚਾਉਣ ਲਈ ਮਦਦ ਕਰਦਾ ਹੈ।
 # This message can be seen when attempting to reveal a password in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
-about-logins-reveal-password-os-auth-dialog-message-macosx = ਸੰਭਾਲੇ ਪਾਸਵਰਡ ਉਘਾੜੋ
+about-logins-reveal-password-os-auth-dialog-message-macosx = ਸੰਭਾਲੇ ਪਾਸਵਰਡ ਨੂੰ ਵੇਖਾਓ
 # This message can be seen when attempting to copy a password in about:logins on Windows.
-about-logins-copy-password-os-auth-dialog-message-win = ਆਪਣੇ ਪਾਸਵਰਡ ਕਾਪੀ ਕਰਨ ਲਈ ਆਪਣੇ ਵਿੰਡੋਜ਼ ਸਨਦ ਦਿਓ। ਇਹ ਤੁਹਾਡੇ ਖਾਤਿਆਂ ਦੀ ਸੁਰੱਖਿਆ ਨੂੰ ਬਚਾਉਣ ਲਈ ਮਦਦ ਕਰਦਾ ਹੈ।
+about-logins-copy-password-os-auth-dialog-message-win = ਆਪਣੇ ਪਾਸਵਰਡ ਕਾਪੀ ਕਰਨ ਲਈ ਆਪਣੀ Windows ਸਨਦ ਦਿਓ। ਇਹ ਤੁਹਾਡੇ ਖਾਤਿਆਂ ਦੀ ਸੁਰੱਖਿਆ ਨੂੰ ਬਚਾਉਣ ਲਈ ਮਦਦ ਕਰਦਾ ਹੈ।
 # This message can be seen when attempting to copy a password in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-copy-password-os-auth-dialog-message-macosx = ਸੰਭਾਲੇ ਪਾਸਵਰਡ ਨੂੰ ਕਾਪੀ ਕਰੋ
 # This message can be seen when attempting to export a password in about:logins on Windows.
-about-logins-export-password-os-auth-dialog-message-win = ਆਪਣੇ ਲਾਗਇਨ ਨੂੰ ਐਕਸਪੋਰਟ ਕਰਨ ਲਈ ਆਪਣੇ ਵਿੰਡੋਜ਼ ਸਨਦ ਦਿਓ। ਇਹ ਤੁਹਾਡੇ ਖਾਤਿਆਂ ਦੀ ਸੁਰੱਖਿਆ ਨੂੰ ਬਚਾਉਣ ਲਈ ਮਦਦ ਕਰਦਾ ਹੈ।
+about-logins-export-password-os-auth-dialog-message-win = ਆਪਣੇ ਲਾਗਇਨ ਨੂੰ ਐਕਸਪੋਰਟ ਕਰਨ ਲਈ ਆਪਣੀ Windows ਸਨਦ ਦਿਓ। ਇਹ ਤੁਹਾਡੇ ਖਾਤਿਆਂ ਦੀ ਸੁਰੱਖਿਆ ਨੂੰ ਬਚਾਉਣ ਲਈ ਮਦਦ ਕਰਦਾ ਹੈ।
 # This message can be seen when attempting to export a password in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
-about-logins-export-password-os-auth-dialog-message-macosx = ਸੰਭਾਲੇ ਲਾਗਇਨ ਅਤੇ ਪਾਸਵਰਡ ਨੂੰ ਐਕਸਪੋਰਟ ਕਰੋ
+about-logins-export-password-os-auth-dialog-message-macosx = ਸੰਭਾਲੇ ਲਾਗਇਨਾਂ ਅਤੇ ਪਾਸਵਰਡਾਂ ਨੂੰ ਐਕਸਪੋਰਟ ਕਰੋ
 # This message can be seen when attempting to export a password in about:logins on Windows.
 about-logins-export-password-os-auth-dialog-message2-win = ਆਪਣੇ ਪਾਸਵਰਡ ਐਕਸਪੋਰਟ ਕਰਨ ਲਈ ਆਪਣੀਆਂ Windows ਸਨਦਾਂ ਦਿਓ। ਇਹ ਤੁਹਾਡੇ ਖਾਤਿਆਂ ਦੀ ਸੁਰੱਖਿਆ ਨੂੰ ਸੁਰੱਖਿਅਤ ਰੱਖਣ ਲਈ ਮਦਦ ਕਰਦਾ ਹੈ।
 # This message can be seen when attempting to export a password in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
-about-logins-export-password-os-auth-dialog-message2-macosx = ਸੰਭਾਲੇ ਹੋਏ ਪਾਸਵਰਡ ਐਕਸਪੋਰਟ ਕਰੋ
+about-logins-export-password-os-auth-dialog-message2-macosx = ਸੰਭਾਲੇ ਹੋਏ ਪਾਸਵਰਡਾਂ ਨੂੰ ਐਕਸਪੋਰਟ ਕਰੋ
 
 ## Primary Password notification
 
@@ -218,10 +218,10 @@ master-password-reload-button =
 confirmation-dialog-cancel-button = ਰੱਦ ਕਰੋ
 confirmation-dialog-dismiss-button =
     .title = ਰੱਦ ਕਰੋ
-about-logins-confirm-remove-dialog-title = ਇਹ ਲਾਗਇਨ ਹਟਾਉਣਾ ਹੈ?
+about-logins-confirm-remove-dialog-title = ਇਸ ਲਾਗਇਨ ਨੂੰ ਹਟਾਉਣਾ ਹੈ?
 confirm-delete-dialog-message = ਇਹ ਕਾਰਵਾਈ ਵਾਪਸ ਨਹੀਂ ਲਈ ਜਾ ਸਕਦੀ ਹੈ।
 # Title for modal to confirm the removal of one saved password
-about-logins-confirm-delete-dialog-title = ਪਾਸਵਰਡ ਹਟਾਉਣਾ ਹੈ?
+about-logins-confirm-delete-dialog-title = ਪਾਸਵਰਡ ਨੂੰ ਹਟਾਉਣਾ ਹੈ?
 # Message for modal to confirm the removal of one saved password
 about-logins-confirm-delete-dialog-message = ਇਹ ਕਾਰਵਾਈ ਨੂੰ ਤੁਸੀਂ ਵਾਪਸ ਨਹੀਂ ਲੈ ਸਕਦੇ ਹੋ।
 about-logins-confirm-remove-dialog-confirm-button = ਹਟਾਓ
@@ -233,17 +233,17 @@ about-logins-confirm-remove-all-dialog-confirm-button-label =
     { $count ->
         [1] ਹਟਾਓ
         [one] ਹਟਾਓ
-       *[other] ਸਾਰੇ ਹਟਾਓ
+       *[other] ਸਭ ਨੂੰ ਹਟਾਓ
     }
 about-logins-confirm-remove-all-dialog-checkbox-label =
     { $count ->
-        [1] ਹਾਂ, ਇਹ ਲਾਗਇਨ ਹਟਾਓ
-       *[other] ਹਾਂ, ਇਹ ਲਾਗਇਨ ਹਟਾਓ
+        [1] ਹਾਂ, ਇਸ ਲਾਗਇਨ ਨੂੰ ਹਟਾਓ
+       *[other] ਹਾਂ, ਇਹਨਾਂ ਲਾਗਇਨਾਂ ਨੂੰ ਹਟਾਓ
     }
 about-logins-confirm-remove-all-dialog-title =
     { $count ->
-        [one] { $count } ਲਾਗਇਨ ਹਟਾਉਣਾ ਹੈ?
-       *[other] ਸਾਰੇ { $count } ਲਾਗਇਨ ਹਟਾਉਣੇ ਹਨ?
+        [one] { $count } ਲਾਗਇਨ ਨੂੰ ਹਟਾਉਣਾ ਹੈ?
+       *[other] ਸਭ { $count } ਲਾਗਇਨਾਂ ਨੂੰ ਹਟਾਉਣਾ ਹੈ?
     }
 about-logins-confirm-remove-all-dialog-message =
     { $count ->
@@ -253,8 +253,8 @@ about-logins-confirm-remove-all-dialog-message =
     }
 about-logins-confirm-remove-all-sync-dialog-title =
     { $count ->
-        [one] ਸਾਰੇ ਡਿਵਾਈਸ ਤੋਂ { $count } ਲਾਗਇਨ ਹਟਾਉਣਾ ਹੈ?
-       *[other] ਸਾਰੇ ਡਿਵਾਈਸ ਤੋਂ { $count } ਲਾਗਇਨ ਹਟਾਉਣੇ ਹਨ?
+        [one] ਸਾਰੇ ਡਿਵਾਈਸ ਤੋਂ { $count } ਲਾਗਇਨ ਨੂੰ ਹਟਾਉਣਾ ਹੈ?
+       *[other] ਸਾਰੇ ਡਿਵਾਈਸ ਤੋਂ ਸਾਰੇ { $count } ਲਾਗਇਨਾਂ ਨੂੰ ਹਟਾਉਣਾ ਹੈ?
     }
 about-logins-confirm-remove-all-sync-dialog-message =
     { $count ->
@@ -266,13 +266,13 @@ about-logins-confirm-remove-all-sync-dialog-message =
 about-logins-confirm-remove-all-dialog-checkbox-label2 =
     { $count ->
         [1] ਹਾਂ, ਪਾਸਵਰਡ ਨੂੰ ਹਟਾਓ
-       *[other] Yes, remove passwords
+       *[other] ਹਾਂ, ਪਾਸਵਰਡਾਂ ਨੂੰ ਹਟਾਓ
     }
 # Title for modal to confirm the removal of all saved passwords when user is NOT synced
 about-logins-confirm-remove-all-dialog-title2 =
     { $count ->
-        [one] { $count } ਪਾਸਵਰਡ ਹਟਾਉਣਾ ਹੈ?
-       *[other] ਸਾਰੇ { $count } ਪਾਸਵਰਡ ਹਟਾਉਣੇ ਹਨ?
+        [one] { $count } ਪਾਸਵਰਡ ਨੂੰ ਹਟਾਉਣਾ ਹੈ?
+       *[other] ਸਾਰੇ { $count } ਪਾਸਵਰਡਾਂ ਨੂੰ ਹਟਾਉਣਾ ਹੈ?
     }
 # Message for modal to confirm the removal of saved passwords when user is NOT synced
 about-logins-confirm-remove-all-dialog-message2 =
@@ -297,7 +297,7 @@ about-logins-confirm-remove-all-sync-dialog-message3 =
 
 ##
 
-about-logins-confirm-export-dialog-title = ਲਾਗਇਨ ਅਤੇ ਪਾਸਵਰਡ ਐਕਸਪੋਰਟ ਕਰੋ
+about-logins-confirm-export-dialog-title = ਲਾਗਇਨ ਅਤੇ ਪਾਸਵਰਡਾਂ ਨੂੰ ਐਕਸਪੋਰਟ ਕਰੋ
 about-logins-confirm-export-dialog-message = ਤੁਹਾਡੇ ਪਾਸਵਰਡਾਂ ਨੂੰ ਪੜ੍ਹਨਯੋਗ ਲਿਖਤ ਵਜੋਂ ਸੰਭਾਲਿਆ ਜਾਵੇਗਾ (ਜਿਵੇਂ, BadP@ssw0rd), ਤਾਂ ਕਰਕੇ ਐਕਸਪੋਰਟ ਕੀਤੀ ਫਾਇਲ ਖੋਲ੍ਹ ਸਕਣ ਵਾਲਾ ਕੋਈ ਵੀ ਉਨ੍ਹਾਂ ਨੂੰ ਵੇਖ ਸਕਦਾ ਹੈ।
 about-logins-confirm-export-dialog-confirm-button = …ਐਕਸਪੋਰਟ ਕਰੋ
 about-logins-confirm-export-dialog-title2 = ਪਾਸਵਰਡ ਐਕਸਪੋਰਟ ਕਰਨ ਬਾਰੇ ਸੂਚਨਾ
@@ -313,12 +313,12 @@ confirm-discard-changes-dialog-confirm-button = ਖ਼ਾਰਜ ਕਰੋ
 
 ## Breach Alert notification
 
-about-logins-breach-alert-title = ਵੈੱਬਸਾਈਟ ਦੀ ਉਲੰਘਣਾ
+about-logins-breach-alert-title = ਵੈੱਬਸਾਈਟ ਸੰਨ੍ਹਮਾਰੀ
 breach-alert-text = ਤੁਹਾਡੇ ਵਲੋਂ ਆਪਣੇ ਲਾਗਇਨ ਵੇਰਵਿਆਂ ਨੂੰ ਆਖਰੀ ਵਾਰ ਅੱਪਡੇਟ ਕਰਨ ਦੇ ਬਾਅਦ ਇਸ ਵੈੱਬਸਾਈਟ ਤੋਂ ਪਾਸਵਰਡ ਲੀਕ ਹੋ ਗਏ ਜਾਂ ਚੋਰੀ ਕੀਤੇ ਗਏ ਸਨ। ਆਪਣੇ ਖਾਤੇ ਨੂੰ ਸੁਰੱਖਿਅਤ ਕਰਨ ਲਈ ਆਪਣੇ ਪਾਸਵਰਡ ਨੂੰ ਬਦਲੋ।
 about-logins-breach-alert-date = ਇਹ ਸੰਨ੍ਹ { DATETIME($date, day: "numeric", month: "long", year: "numeric") } ਨੂੰ ਲੱਗੀ ਸੀ
 # Variables:
 #   $hostname (String) - The hostname of the website associated with the login, e.g. "example.com"
-about-logins-breach-alert-link = { $hostname } ਤੇ ਜਾਓ
+about-logins-breach-alert-link = { $hostname } ‘ਤੇ ਜਾਓ
 
 ## Vulnerable Password notification
 
@@ -347,7 +347,7 @@ about-logins-export-file-picker-title = ਲਾਗਇਨ ਵਾਲੀ ਫਾਇ�
 # This must end in .csv
 about-logins-export-file-picker-default-filename = logins.csv
 # Title of the file picker dialog
-about-logins-export-file-picker-title2 = { -brand-short-name } ਤੋਂ ਪਾਸਵਰਡ ਐਕਸਪੋਰਟ ਕਰੋ
+about-logins-export-file-picker-title2 = { -brand-short-name } ਤੋਂ ਪਾਸਵਰਡਾਂ ਨੂੰ ਐਕਸਪੋਰਟ ਕਰੋ
 # The default file name shown in the file picker when exporting saved logins.
 # This must end in .csv
 about-logins-export-file-picker-default-filename2 = passwords.csv
@@ -363,9 +363,9 @@ about-logins-export-file-picker-csv-filter-title =
 ## Login Import Dialog
 
 # Title of the file picker dialog
-about-logins-import-file-picker-title = ਲਾਗਇਨਾਂ ਵਾਲੀ ਫਾਇਲ ਇੰਪੋਰਟ ਕਰੋ
+about-logins-import-file-picker-title = ਲਾਗਇਨਾਂ ਵਾਲੀ ਫਾਇਲ ਨੂੰ ਇੰਪੋਰਟ ਕਰੋ
 # Title of the file picker dialog
-about-logins-import-file-picker-title2 = ਪਾਸਵਰਡ { -brand-short-name } ਵਿੱਚ ਇੰਪੋਰਟ ਕਰੋ
+about-logins-import-file-picker-title2 = ਪਾਸਵਰਡਾਂ ਨੂੰ { -brand-short-name } ਵਿੱਚ ਇੰਪੋਰਟ ਕਰੋ
 about-logins-import-file-picker-import-button = ਇੰਪੋਰਟ ਕਰੋ
 # A description for the .csv file format that may be shown as the file type
 # filter by the operating system.
@@ -389,11 +389,11 @@ about-logins-import-file-picker-tsv-filter-title =
 about-logins-import-dialog-title = ਇੰਪੋਰਟ ਮੁਕੰਮਲ ਹੋਇਆ
 about-logins-import-dialog-items-added =
     { $count ->
-       *[other] <span>ਨਵੇਂ ਲਾਗਇਨ ਜੋੜੇ ਗਏ:</span> <span data-l10n-name="count">{ $count }</span>
+       *[other] <span>ਜੋੜੇ ਗਏ ਨਵੇਂ ਲਾਗਇਨ:</span> <span data-l10n-name="count">{ $count }</span>
     }
 about-logins-import-dialog-items-modified =
     { $count ->
-       *[other] <span>ਮੌਜੂਦਾ ਲਾਗਇਨ ਅੱਪਡੇਟ ਕੀਤੇ:</span> <span data-l10n-name="count">{ $count }</span>
+       *[other] <span>ਅੱਪਡੇਟ ਕੀਤੇ ਗਏ ਮੌਜੂਦਾ ਲਾਗਇਨ:</span> <span data-l10n-name="count">{ $count }</span>
     }
 about-logins-import-dialog-items-no-change =
     { $count ->
@@ -401,7 +401,7 @@ about-logins-import-dialog-items-no-change =
     }
 about-logins-import-dialog-items-added2 =
     { $count ->
-       *[other] <span>ਨਵੇਂ ਪਾਸਵਰਡ ਜੋੜੇ ਗਏ</span> <span data-l10n-name="count">{ $count }</span>
+       *[other] <span>ਜੋੜੇ ਗਏ ਨਵੇਂ ਪਾਸਵਰਡ:</span> <span data-l10n-name="count">{ $count }</span>
     }
 about-logins-import-dialog-items-modified2 =
     { $count ->
@@ -415,12 +415,12 @@ about-logins-import-dialog-items-no-change2 =
     }
 about-logins-import-dialog-items-error =
     { $count ->
-       *[other] <span>ਗ਼ਲਤੀ:</span> <span data-l10n-name="count">{ $count }</span> <span data-l10n-name="meta">(ਇੰਪੋਰਟ ਨਹੀਂ ਕੀਤੇ)</span>
+       *[other] <span>ਗ਼ਲਤੀਆਂ:</span> <span data-l10n-name="count">{ $count }</span> <span data-l10n-name="meta">(ਇੰਪੋਰਟ ਨਹੀਂ ਕੀਤੇ)</span>
     }
 about-logins-import-dialog-done = ਮੁਕੰਮਲ
-about-logins-import-dialog-error-title = ਦਰਾਮਦ ਗ਼ਲਤੀ
+about-logins-import-dialog-error-title = ਇੰਪੋਰਟ ਗ਼ਲਤੀ
 about-logins-import-dialog-error-conflicting-values-title = ਇੱਕ ਲਾਗਇਨ ਲਈ ਕਈ ਆਪਾਂ-ਵਿਰੋਧੀ ਮੁੱਲ ਹਨ
-about-logins-import-dialog-error-conflicting-values-description = ਮਿਸਾਲ ਵਜੋਂ: ਇੱਕ ਲਾਗਇਨ ਲਈ ਕਈ ਵਰਤੋਂਕਾਰ-ਨਾਂ, ਵਰਤੋਂਕਾਰ, URL ਆਦਿ।
+about-logins-import-dialog-error-conflicting-values-description = ਮਿਸਾਲ ਵਜੋਂ: ਇੱਕ ਲਾਗਇਨ ਲਈ ਕਈ ਵਰਤੋਂਕਾਰ-ਨਾਂ, URL ਆਦਿ।
 about-logins-import-dialog-error-file-format-title = ਫਾਇਲ ਫਾਰਮੈਟ ਦਾ ਮਸਲਾ
 about-logins-import-dialog-error-file-format-description = ਕਾਲਮ ਹੈੱਡਰ ਗ਼ਲਤ ਜਾਂ ਗੁੰਮ ਹਨ। ਪੱਕਾ ਕਰੋ ਕਿ ਫਾਇਲ ਵਿੱਚੋਂ ਵਰਤੋਂਕਾਰ-ਨਾਂ, ਪਾਸਵਰਡ ਅਤੇ URL ਲਈ ਕਾਲਮ ਹਨ।
 about-logins-import-dialog-error-file-permission-title = ਫਾਇਲ ਪੜ੍ਹਨ ਲਈ ਅਸਮਰੱਥ
@@ -491,4 +491,4 @@ about-logins-import-report-error =
 
 ## Logins import report page
 
-about-logins-import-report-page-title = ਸਾਰ ਰਿਪੋਰਟ ਦਰਾਮਦ ਕਰੋ
+about-logins-import-report-page-title = ਸਾਰ ਰਿਪੋਰਟ ਇੰਪੋਰਟ ਕਰੋ

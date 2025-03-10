@@ -8,11 +8,18 @@
 newtab-page-title = 新分頁
 newtab-settings-button =
     .title = 自訂您的新分頁頁面
+newtab-personalize-settings-icon-label =
+    .title = 個人化新分頁
+    .aria-label = 設定
+newtab-settings-dialog-label =
+    .aria-label = 設定
 newtab-personalize-icon-label =
     .title = 個人化新分頁
     .aria-label = 個人化新分頁
 newtab-personalize-dialog-label =
     .aria-label = 個人化
+newtab-logo-and-wordmark =
+    .aria-label = { -brand-full-name }
 
 ## Search box component.
 
@@ -109,6 +116,13 @@ newtab-menu-save-to-pocket = 儲存至 { -pocket-brand-name }
 newtab-menu-delete-pocket = 從 { -pocket-brand-name } 刪除
 newtab-menu-archive-pocket = 在 { -pocket-brand-name } 裡封存
 newtab-menu-show-privacy-info = 我們的贊助商與您的隱私權
+newtab-menu-about-fakespot = 關於 { -fakespot-brand-name }
+# Context menu option to personalize New Tab recommended stories by blocking a section of stories,
+# e.g. "Sports". "Block" is a verb here.
+newtab-menu-section-block = 封鎖
+# "Follow", "unfollow", and "following" are social media terms that refer to subscribing to or unsubscribing from a section of stories.
+# e.g. Following the travel section of stories.
+newtab-menu-section-unfollow = 取消追蹤主題
 
 ## Message displayed in a modal window to explain privacy and provide context for sponsored content.
 
@@ -229,6 +243,8 @@ newtab-pocket-cta-button = 取得 { -pocket-brand-name }
 newtab-pocket-cta-text = 將您喜愛的故事儲存到 { -pocket-brand-name }，閱讀一篇篇好文章。
 newtab-pocket-pocket-firefox-family = { -pocket-brand-name } 是 { -brand-product-name } 產品家族的一部份
 # A save to Pocket button that shows over the card thumbnail on hover.
+newtab-pocket-image =
+    .aria-label = { -pocket-brand-name }
 newtab-pocket-save = 儲存
 newtab-pocket-saved = 已儲存
 
@@ -240,6 +256,9 @@ newtab-pocket-thumbs-up-tooltip =
 # Clicking the thumbs down button for this story informs us that the user does not feel like the story is interesting for them
 newtab-pocket-thumbs-down-tooltip =
     .title = 我沒興趣
+# Used to show the user a message upon clicking the thumbs up or down buttons
+newtab-toast-thumbs-up-or-down2 =
+    .message = 感謝您。您的意見可幫助我們改善顯示的內容。
 newtab-toast-thumbs-up-or-down = 感謝您。您的意見可幫助我們改善顯示的內容。
 newtab-toast-dismiss-button =
     .title = 知道了！
@@ -293,6 +312,12 @@ newtab-custom-settings = 管理更多設定
 
 newtab-wallpaper-title = 背景圖
 newtab-wallpaper-reset = 還原為預設值
+newtab-wallpaper-upload-image = 上傳圖片
+newtab-wallpaper-custom-color = 選擇一種色彩
+# Variables
+#   $file_size (number) - The number of the maximum image file size (in MB) that may be uploaded
+newtab-wallpaper-error-max-file-size = 圖片超過 { $file_size }MB 的檔案大小限制。請嘗試上傳小一點的檔案。
+newtab-wallpaper-error-file-type = 無法上傳您的檔案，請稍後再以不同格式檔案上傳。
 newtab-wallpaper-light-red-panda = 小貓熊
 newtab-wallpaper-light-mountain = 白色山脈
 newtab-wallpaper-light-sky = 紫色與粉紅色的天空
@@ -305,6 +330,8 @@ newtab-wallpaper-dark-panda = 隱藏在森林中的小貓熊
 newtab-wallpaper-dark-sky = 城市的夜空景觀
 newtab-wallpaper-dark-mountain = 山景
 newtab-wallpaper-dark-city = 紫色城市風景
+newtab-wallpaper-dark-fox-anniversary = 一隻在森林附近人行道上的狐狸
+newtab-wallpaper-light-fox-anniversary = 一隻在迷霧山景中的草原上的狐狸
 
 ## Solid Colors
 
@@ -334,8 +361,12 @@ newtab-wallpaper-abstract-purple = 紫色造型
 newtab-wallpaper-abstract-orange = 橘色造型
 newtab-wallpaper-gradient-orange = 橘色粉紅色漸層
 newtab-wallpaper-abstract-blue-purple = 藍色紫色造型
+newtab-wallpaper-abstract-white-curves = 白色的曲線圖案
+newtab-wallpaper-abstract-purple-green = 紫色與綠色漸層
+newtab-wallpaper-abstract-blue-purple-waves = 藍色與紫色波浪圖
+newtab-wallpaper-abstract-black-waves = 黑色波浪圖
 
-## Photographs
+## Celestial
 
 newtab-wallpaper-category-title-photographs = 相片
 newtab-wallpaper-beach-at-sunrise = 海邊日出
@@ -344,6 +375,12 @@ newtab-wallpaper-storm-sky = 暴風雨的天空
 newtab-wallpaper-sky-with-pink-clouds = 有粉紅色雲朵的天空
 newtab-wallpaper-red-panda-yawns-in-a-tree = 在樹上打呵欠的小貓熊
 newtab-wallpaper-white-mountains = 白色山脈
+newtab-wallpaper-hot-air-balloons = 於白天有各種色彩的熱氣球
+newtab-wallpaper-starry-canyon = 藍色星空
+newtab-wallpaper-suspension-bridge = 白天的灰色吊橋照片
+newtab-wallpaper-sand-dunes = 白色沙丘
+newtab-wallpaper-palm-trees = 在魔術光下的椰子樹剪影
+newtab-wallpaper-forest-trees = 被濃霧遮蓋住的樹
 # Variables
 #   $author_string (String) - The name of the creator of the photo.
 #   $webpage_string (String) - The name of the webpage where the photo is located.
@@ -359,6 +396,19 @@ feature-highlight-wallpaper =
     .title = { -newtab-wallpaper-feature-highlight-header }
     .aria-label = { -newtab-wallpaper-feature-highlight-content }
 
+## Celestial
+
+# “Celestial” referring to astronomy; positioned in or relating to the sky,
+# or outer space as observed in astronomy.
+# Not to be confused with religious definition of the word.
+newtab-wallpaper-category-title-celestial = 天空
+newtab-wallpaper-celestial-lunar-eclipse = 月食
+newtab-wallpaper-celestial-earth-night = 從低地球軌道拍攝的夜晚照片
+newtab-wallpaper-celestial-starry-sky = 星空
+newtab-wallpaper-celestial-eclipse-time-lapse = 月食縮時攝影
+newtab-wallpaper-celestial-black-hole = 黑洞銀河插圖
+newtab-wallpaper-celestial-river = 河流的衛星照片
+
 ## New Tab Weather
 
 # Variables:
@@ -369,6 +419,9 @@ newtab-weather-see-forecast =
 #   $provider (string) - Service provider for weather data
 newtab-weather-sponsored = { $provider } ∙ 贊助資訊
 newtab-weather-menu-change-location = 更改位置
+newtab-weather-change-location-search-input-placeholder =
+    .placeholder = 搜尋位置
+    .aria-label = 搜尋位置
 newtab-weather-change-location-search-input = 搜尋位置
 newtab-weather-menu-weather-display = 顯示天氣
 # Display options are:
@@ -427,3 +480,45 @@ newtab-topic-selection-button-maybe-later = 之後再說
 newtab-topic-selection-privacy-link = 了解我們如何保護與管理資料
 newtab-topic-selection-button-update-interests = 更新您有興趣的項目
 newtab-topic-selection-button-pick-interests = 挑選您有興趣的項目
+
+## Content Feed Sections
+## "Follow", "unfollow", and "following" are social media terms that refer to subscribing to or unsubscribing from a section of stories.
+## e.g. Following the travel section of stories.
+
+newtab-section-follow-button = 追蹤
+newtab-section-following-button = 追蹤中
+newtab-section-unfollow-button = 取消追蹤
+
+## Button to block/unblock listed topics
+## "Block", "unblocked", and "blocked" are social media terms that refer to hiding a section of stories.
+## e.g. Blocked the politics section of stories.
+
+newtab-section-block-button = 封鎖
+newtab-section-blocked-button = 已封鎖
+newtab-section-unblock-button = 解除封鎖
+
+## Confirmation modal for blocking a section
+
+newtab-section-confirm-block-section-p1 = 您確定要封鎖這個段落嗎？
+newtab-section-confirm-block-section-p2 = 將從資訊來源隱藏封鎖的段落。
+newtab-section-block-section-button = 封鎖此段落
+newtab-section-cancel-button = 現在不要
+newtab-section-confirm-block-topic-p1 = 您確定要封鎖這個主題的內容嗎？
+newtab-section-confirm-block-topic-p2 = 將主題封鎖後就不會再顯示於資訊來源中。
+# Variables:
+#   $topic (string) - Name of topic that user is blocking
+newtab-section-block-topic-button = 封鎖 { $topic }
+
+## Panel in the Customize menu section to manage followed and blocked topics
+
+newtab-section-mangage-topics-title = 主題
+newtab-section-manage-topics-button-v2 =
+    .label = 管理主題
+newtab-section-mangage-topics-followed-topics = 已追蹤
+newtab-section-mangage-topics-button =
+    .label = 已關注並封鎖的主題
+newtab-section-mangage-topics-followed-topics-subtitle = 關注的主題
+newtab-section-mangage-topics-followed-topics-empty-state = 您並未關注任何主題。
+newtab-section-mangage-topics-blocked-topics = 已封鎖
+newtab-section-mangage-topics-blocked-topics-subtitle = 封鎖的主題
+newtab-section-mangage-topics-blocked-topics-empty-state = 您並未封鎖任何主題。

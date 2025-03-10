@@ -8,11 +8,18 @@
 newtab-page-title = Thẻ mới
 newtab-settings-button =
     .title = Tùy biến trang thẻ mới
+newtab-personalize-settings-icon-label =
+    .title = Cá nhân hóa thẻ mới
+    .aria-label = Cài đặt
+newtab-settings-dialog-label =
+    .aria-label = Cài đặt
 newtab-personalize-icon-label =
     .title = Cá nhân hóa thẻ mới
     .aria-label = Cá nhân hóa thẻ mới
 newtab-personalize-dialog-label =
     .aria-label = Cá nhân hóa
+newtab-logo-and-wordmark =
+    .aria-label = { -brand-full-name }
 
 ## Search box component.
 
@@ -109,6 +116,13 @@ newtab-menu-save-to-pocket = Lưu vào { -pocket-brand-name }
 newtab-menu-delete-pocket = Xóa khỏi { -pocket-brand-name }
 newtab-menu-archive-pocket = Lưu trữ trong { -pocket-brand-name }
 newtab-menu-show-privacy-info = Nhà tài trợ của chúng tôi và sự riêng tư của bạn
+newtab-menu-about-fakespot = Về { -fakespot-brand-name }
+# Context menu option to personalize New Tab recommended stories by blocking a section of stories,
+# e.g. "Sports". "Block" is a verb here.
+newtab-menu-section-block = Chặn
+# "Follow", "unfollow", and "following" are social media terms that refer to subscribing to or unsubscribing from a section of stories.
+# e.g. Following the travel section of stories.
+newtab-menu-section-unfollow = Bỏ theo dõi chủ đề
 
 ## Message displayed in a modal window to explain privacy and provide context for sponsored content.
 
@@ -233,6 +247,8 @@ newtab-pocket-cta-button = Sử dụng { -pocket-brand-name }
 newtab-pocket-cta-text = Lưu những câu chuyện bạn yêu thích trong { -pocket-brand-name } và vui vẻ khi đọc chúng.
 newtab-pocket-pocket-firefox-family = { -pocket-brand-name } là một phần của gia đình { -brand-product-name }
 # A save to Pocket button that shows over the card thumbnail on hover.
+newtab-pocket-image =
+    .aria-label = { -pocket-brand-name }
 newtab-pocket-save = Lưu
 newtab-pocket-saved = Đã lưu
 
@@ -244,6 +260,9 @@ newtab-pocket-thumbs-up-tooltip =
 # Clicking the thumbs down button for this story informs us that the user does not feel like the story is interesting for them
 newtab-pocket-thumbs-down-tooltip =
     .title = Không hợp với tôi
+# Used to show the user a message upon clicking the thumbs up or down buttons
+newtab-toast-thumbs-up-or-down2 =
+    .message = Cảm ơn. Những phản hồi của bạn sẽ giúp chúng tôi cải thiện bản tin của bạn.
 newtab-toast-thumbs-up-or-down = Cảm ơn. Những phản hồi của bạn sẽ giúp chúng tôi cải thiện bản tin của bạn.
 newtab-toast-dismiss-button =
     .title = Bỏ qua
@@ -296,6 +315,12 @@ newtab-custom-settings = Quản lý các cài đặt khác
 
 newtab-wallpaper-title = Hình nền
 newtab-wallpaper-reset = Đặt lại về mặc định
+newtab-wallpaper-upload-image = Tải lên một ảnh
+newtab-wallpaper-custom-color = Chọn màu
+# Variables
+#   $file_size (number) - The number of the maximum image file size (in MB) that may be uploaded
+newtab-wallpaper-error-max-file-size = Hình ảnh vượt quá giới hạn kích thước tập tin { $file_size }MB. Vui lòng thử tải lên một tập tin nhỏ hơn.
+newtab-wallpaper-error-file-type = Chúng tôi không thể tải lên tập tin của bạn. Vui lòng thử lại với loại tập tin khác.
 newtab-wallpaper-light-red-panda = Gấu trúc đỏ
 newtab-wallpaper-light-mountain = Núi trắng
 newtab-wallpaper-light-sky = Bầu trời với những đám mây màu tím và hồng
@@ -308,6 +333,8 @@ newtab-wallpaper-dark-panda = Gấu trúc đỏ ẩn trong rừng
 newtab-wallpaper-dark-sky = Cảnh quan thành phố với bầu trời đêm
 newtab-wallpaper-dark-mountain = Phong cảnh núi
 newtab-wallpaper-dark-city = Phong cảnh thành phố màu tím
+newtab-wallpaper-dark-fox-anniversary = Một chú cáo đứng trên vỉa hè gần khu rừng
+newtab-wallpaper-light-fox-anniversary = Một chú cáo trong cánh đồng xanh cỏ với phong cảnh núi non mờ sương
 
 ## Solid Colors
 
@@ -337,8 +364,12 @@ newtab-wallpaper-abstract-purple = Hình dạng màu tím
 newtab-wallpaper-abstract-orange = Hình dạng màu cam
 newtab-wallpaper-gradient-orange = Gradient màu cam và màu hồng
 newtab-wallpaper-abstract-blue-purple = Hình dạng màu xanh dương và màu tím
+newtab-wallpaper-abstract-white-curves = Màu trắng với các đường cong bóng mờ
+newtab-wallpaper-abstract-purple-green = Độ dốc (gradient) ánh sáng tím và xanh lá cây
+newtab-wallpaper-abstract-blue-purple-waves = Hình dạng gợn sóng màu xanh dương và tím
+newtab-wallpaper-abstract-black-waves = Hình dạng gợn sóng màu đen
 
-## Photographs
+## Celestial
 
 newtab-wallpaper-category-title-photographs = Hình ảnh
 newtab-wallpaper-beach-at-sunrise = Bãi biển lúc bình minh
@@ -347,6 +378,12 @@ newtab-wallpaper-storm-sky = Trời giông bão
 newtab-wallpaper-sky-with-pink-clouds = Bầu trời với đám mây màu hồng
 newtab-wallpaper-red-panda-yawns-in-a-tree = Gấu trúc đỏ ngáp trên cây
 newtab-wallpaper-white-mountains = Núi trắng
+newtab-wallpaper-hot-air-balloons = Các loại màu của bóng bay không khí nóng vào ban ngày
+newtab-wallpaper-starry-canyon = Đêm sao màu xanh
+newtab-wallpaper-suspension-bridge = Ảnh cầu treo màu xám chụp vào ban ngày
+newtab-wallpaper-sand-dunes = Đồi cát trắng
+newtab-wallpaper-palm-trees = Hình bóng của cây cọ dừa trong giờ vàng
+newtab-wallpaper-forest-trees = Cây phủ đầy sương mù
 # Variables
 #   $author_string (String) - The name of the creator of the photo.
 #   $webpage_string (String) - The name of the webpage where the photo is located.
@@ -362,6 +399,19 @@ feature-highlight-wallpaper =
     .title = { -newtab-wallpaper-feature-highlight-header }
     .aria-label = { -newtab-wallpaper-feature-highlight-content }
 
+## Celestial
+
+# “Celestial” referring to astronomy; positioned in or relating to the sky,
+# or outer space as observed in astronomy.
+# Not to be confused with religious definition of the word.
+newtab-wallpaper-category-title-celestial = Thiên thể
+newtab-wallpaper-celestial-lunar-eclipse = Nguyệt thực
+newtab-wallpaper-celestial-earth-night = Ảnh ban đêm từ quỹ đạo thấp của Trái Đất
+newtab-wallpaper-celestial-starry-sky = Bầu trời đầy sao
+newtab-wallpaper-celestial-eclipse-time-lapse = Thời gian trôi nhanh của nguyệt thực
+newtab-wallpaper-celestial-black-hole = Minh họa lỗ đen trong thiên hà
+newtab-wallpaper-celestial-river = Hình ảnh vệ tinh của sông
+
 ## New Tab Weather
 
 # Variables:
@@ -372,6 +422,9 @@ newtab-weather-see-forecast =
 #   $provider (string) - Service provider for weather data
 newtab-weather-sponsored = { $provider } ∙ Được tài trợ
 newtab-weather-menu-change-location = Thay đổi khu vực
+newtab-weather-change-location-search-input-placeholder =
+    .placeholder = Tìm kiếm khu vực
+    .aria-label = Tìm kiếm khu vực
 newtab-weather-change-location-search-input = Tìm kiếm khu vực
 newtab-weather-menu-weather-display = Cách hiển thị thời tiết
 # Display options are:
@@ -430,3 +483,45 @@ newtab-topic-selection-button-maybe-later = Có lẽ để sau
 newtab-topic-selection-privacy-link = Tìm hiểu cách chúng tôi bảo vệ và quản lý dữ liệu
 newtab-topic-selection-button-update-interests = Cập nhật sở thích của bạn
 newtab-topic-selection-button-pick-interests = Chọn sở thích của bạn
+
+## Content Feed Sections
+## "Follow", "unfollow", and "following" are social media terms that refer to subscribing to or unsubscribing from a section of stories.
+## e.g. Following the travel section of stories.
+
+newtab-section-follow-button = Theo dõi
+newtab-section-following-button = Đang theo dõi
+newtab-section-unfollow-button = Huỷ theo dõi
+
+## Button to block/unblock listed topics
+## "Block", "unblocked", and "blocked" are social media terms that refer to hiding a section of stories.
+## e.g. Blocked the politics section of stories.
+
+newtab-section-block-button = Chặn
+newtab-section-blocked-button = Đã chặn
+newtab-section-unblock-button = Bỏ chặn
+
+## Confirmation modal for blocking a section
+
+newtab-section-confirm-block-section-p1 = Bạn có chắc chắn muốn chặn phần này không?
+newtab-section-confirm-block-section-p2 = Phần bị chặn sẽ không còn xuất hiện trong nguồn cấp dữ liệu của bạn nữa.
+newtab-section-block-section-button = Chặn phần này
+newtab-section-cancel-button = Không phải bây giờ
+newtab-section-confirm-block-topic-p1 = Bạn có chắc là bạn muốn chặn chủ đề này?
+newtab-section-confirm-block-topic-p2 = Chủ đề bị chặn sẽ không còn xuất hiện trong nguồn cấp dữ liệu của bạn.
+# Variables:
+#   $topic (string) - Name of topic that user is blocking
+newtab-section-block-topic-button = Chặn { $topic }
+
+## Panel in the Customize menu section to manage followed and blocked topics
+
+newtab-section-mangage-topics-title = Các chủ đề
+newtab-section-manage-topics-button-v2 =
+    .label = Quản lý chủ đề
+newtab-section-mangage-topics-followed-topics = Đã theo dõi
+newtab-section-mangage-topics-button =
+    .label = Chủ đề đã theo dõi và đã chặn
+newtab-section-mangage-topics-followed-topics-subtitle = Chủ đề đã theo dõi
+newtab-section-mangage-topics-followed-topics-empty-state = Bạn chưa theo dõi bất kỳ chủ đề nào.
+newtab-section-mangage-topics-blocked-topics = Đã chặn
+newtab-section-mangage-topics-blocked-topics-subtitle = Chủ đề đã chặn
+newtab-section-mangage-topics-blocked-topics-empty-state = Bạn chưa chặn bất kỳ chủ đề nào.

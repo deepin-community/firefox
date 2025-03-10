@@ -65,8 +65,9 @@
 #include "nsContentUtils.h"
 #include "mozilla/StaticPrefs_network.h"
 #include "mozilla/StaticPrefs_security.h"
-#include "mozilla/glean/GleanMetrics.h"
+#include "mozilla/glean/NetwerkMetrics.h"
 #include "nsNSSComponent.h"
+#include "IPv4Parser.h"
 #include "ssl.h"
 #include "StaticComponents.h"
 
@@ -97,7 +98,6 @@ using mozilla::dom::ServiceWorkerDescriptor;
 #define WEBRTC_PREF_PREFIX "media.peerconnection."
 #define NETWORK_DNS_PREF "network.dns."
 #define FORCE_EXTERNAL_PREF_PREFIX "network.protocol-handler.external."
-#define SIMPLE_URI_SCHEMES_PREF "network.url.simple_uri_schemes"
 
 nsIOService* gIOService;
 static bool gHasWarnedUploadChannel2;
@@ -182,7 +182,7 @@ int16_t gBadPortList[] = {
     2049,   // nfs
     3659,   // apple-sasl
     4045,   // lockd
-    4160,   // sieve
+    4190,   // sieve
     5060,   // sip
     5061,   // sips
     6000,   // x11
@@ -242,6 +242,7 @@ static const char* gCallbackPrefsForSocketProcess[] = {
     "network.connectivity-service.",
     "network.captive-portal-service.testMode",
     "network.socket.ip_addr_any.disabled",
+    "network.socket.attach_mock_network_layer",
     nullptr,
 };
 
@@ -990,6 +991,29 @@ nsIOService::HostnameIsLocalIPAddress(nsIURI* aURI, bool* aResult) {
 }
 
 NS_IMETHODIMP
+nsIOService::HostnameIsIPAddressAny(nsIURI* aURI, bool* aResult) {
+  NS_ENSURE_ARG_POINTER(aURI);
+
+  nsCOMPtr<nsIURI> innerURI = NS_GetInnermostURI(aURI);
+  NS_ENSURE_ARG_POINTER(innerURI);
+
+  nsAutoCString host;
+  nsresult rv = innerURI->GetAsciiHost(host);
+  if (NS_FAILED(rv)) {
+    return rv;
+  }
+
+  *aResult = false;
+
+  NetAddr addr;
+  if (NS_SUCCEEDED(addr.InitFromString(host)) && addr.IsIPAddrAny()) {
+    *aResult = true;
+  }
+
+  return NS_OK;
+}
+
+NS_IMETHODIMP
 nsIOService::HostnameIsSharedIPAddress(nsIURI* aURI, bool* aResult) {
   NS_ENSURE_ARG_POINTER(aURI);
 
@@ -1014,8 +1038,29 @@ nsIOService::HostnameIsSharedIPAddress(nsIURI* aURI, bool* aResult) {
 
 NS_IMETHODIMP
 nsIOService::IsValidHostname(const nsACString& inHostname, bool* aResult) {
-  *aResult = net_IsValidHostName(inHostname);
+  if (!net_IsValidDNSHost(inHostname)) {
+    *aResult = false;
+    return NS_OK;
+  }
 
+  // hostname ending with a "." delimited octet that is a number
+  // must be IPv4 or IPv6 dual address
+  nsAutoCString host(inHostname);
+  if (IPv4Parser::EndsInANumber(host)) {
+    // ipv6 dual address; for example "::1.2.3.4"
+    if (net_IsValidIPv6Addr(host)) {
+      *aResult = true;
+      return NS_OK;
+    }
+
+    nsAutoCString normalized;
+    nsresult rv = IPv4Parser::NormalizeIPv4(host, normalized);
+    if (NS_FAILED(rv)) {
+      *aResult = false;
+      return NS_OK;
+    }
+  }
+  *aResult = true;
   return NS_OK;
 }
 
@@ -1111,14 +1156,13 @@ nsresult nsIOService::NewChannelFromURIWithClientAndController(
     const Maybe<ClientInfo>& aLoadingClientInfo,
     const Maybe<ServiceWorkerDescriptor>& aController, uint32_t aSecurityFlags,
     nsContentPolicyType aContentPolicyType, uint32_t aSandboxFlags,
-    bool aSkipCheckForBrokenURLOrZeroSized, nsIChannel** aResult) {
+    nsIChannel** aResult) {
   return NewChannelFromURIWithProxyFlagsInternal(
       aURI,
       nullptr,  // aProxyURI
       0,        // aProxyFlags
       aLoadingNode, aLoadingPrincipal, aTriggeringPrincipal, aLoadingClientInfo,
-      aController, aSecurityFlags, aContentPolicyType, aSandboxFlags,
-      aSkipCheckForBrokenURLOrZeroSized, aResult);
+      aController, aSecurityFlags, aContentPolicyType, aSandboxFlags, aResult);
 }
 
 NS_IMETHODIMP
@@ -1137,11 +1181,10 @@ nsresult nsIOService::NewChannelFromURIWithProxyFlagsInternal(
     const Maybe<ClientInfo>& aLoadingClientInfo,
     const Maybe<ServiceWorkerDescriptor>& aController, uint32_t aSecurityFlags,
     nsContentPolicyType aContentPolicyType, uint32_t aSandboxFlags,
-    bool aSkipCheckForBrokenURLOrZeroSized, nsIChannel** result) {
+    nsIChannel** result) {
   nsCOMPtr<nsILoadInfo> loadInfo = new LoadInfo(
       aLoadingPrincipal, aTriggeringPrincipal, aLoadingNode, aSecurityFlags,
-      aContentPolicyType, aLoadingClientInfo, aController, aSandboxFlags,
-      aSkipCheckForBrokenURLOrZeroSized);
+      aContentPolicyType, aLoadingClientInfo, aController, aSandboxFlags);
   return NewChannelFromURIWithProxyFlagsInternal(aURI, aProxyURI, aProxyFlags,
                                                  loadInfo, result);
 }
@@ -1223,7 +1266,7 @@ nsIOService::NewChannelFromURIWithProxyFlags(
       aURI, aProxyURI, aProxyFlags, aLoadingNode, aLoadingPrincipal,
       aTriggeringPrincipal, Maybe<ClientInfo>(),
       Maybe<ServiceWorkerDescriptor>(), aSecurityFlags, aContentPolicyType, 0,
-      /* aSkipCheckForBrokenURLOrZeroSized = */ false, result);
+      result);
 }
 
 NS_IMETHODIMP
@@ -1597,11 +1640,9 @@ void nsIOService::PrefsChanged(const char* pref) {
 
   if (!pref || strncmp(pref, SIMPLE_URI_SCHEMES_PREF,
                        strlen(SIMPLE_URI_SCHEMES_PREF)) == 0) {
-    LOG((
-        "simple_uri_schemes pref change observed, updating the scheme list\n"));
-    nsAutoCString schemeList;
-    Preferences::GetCString(SIMPLE_URI_SCHEMES_PREF, schemeList);
-    mozilla::net::ParseSimpleURISchemes(schemeList);
+    LOG(("simple_uri_unknown_schemes pref changed, updating the scheme list"));
+    mSimpleURIUnknownSchemes.ParseAndMergePrefSchemes();
+    // runs on parent and child, no need to broadcast
   }
 }
 
@@ -2266,6 +2307,41 @@ nsIOService::UnregisterProtocolHandler(const nsACString& aScheme) {
   return mRuntimeProtocolHandlers.Remove(scheme)
              ? NS_OK
              : NS_ERROR_FACTORY_NOT_REGISTERED;
+}
+
+NS_IMETHODIMP
+nsIOService::SetSimpleURIUnknownRemoteSchemes(
+    const nsTArray<nsCString>& aRemoteSchemes) {
+  LOG(("nsIOService::SetSimpleUriUnknownRemoteSchemes"));
+  mSimpleURIUnknownSchemes.SetAndMergeRemoteSchemes(aRemoteSchemes);
+
+  if (XRE_IsParentProcess()) {
+    // since we only expect socket, parent and content processes to create URLs
+    // that need to check the bypass list
+    // we only broadcast the list to content processes
+    // (and leave socket process broadcast as todo if necessary)
+    //
+    // sending only the remote-settings schemes to the content,
+    // which already has the pref list
+    for (auto* cp : mozilla::dom::ContentParent::AllProcesses(
+             mozilla::dom::ContentParent::eLive)) {
+      Unused << cp->SendSimpleURIUnknownRemoteSchemes(aRemoteSchemes);
+    }
+  }
+  return NS_OK;
+}
+
+NS_IMETHODIMP
+nsIOService::IsSimpleURIUnknownScheme(const nsACString& aScheme,
+                                      bool* _retval) {
+  *_retval = mSimpleURIUnknownSchemes.IsSimpleURIUnknownScheme(aScheme);
+  return NS_OK;
+}
+
+NS_IMETHODIMP
+nsIOService::GetSimpleURIUnknownRemoteSchemes(nsTArray<nsCString>& _retval) {
+  mSimpleURIUnknownSchemes.GetRemoteSchemes(_retval);
+  return NS_OK;
 }
 
 }  // namespace net

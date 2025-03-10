@@ -4,6 +4,12 @@
 
 menu-view-genai-chat =
     .label = AI-chatbotti
+menu-view-review-checker =
+    .label = Arvostelujen tarkistin
+menu-view-contextual-password-manager =
+    .label = Salasanat
+sidebar-options-menu-button =
+    .title = Avaa valikko
 
 ## Labels for sidebar history panel
 
@@ -46,16 +52,30 @@ sidebar-position-right =
     .label = Näytä oikealla
 sidebar-vertical-tabs =
     .label = Pystysuuntaiset välilehdet
+sidebar-settings =
+    .label = Sivupalkin asetukset
+sidebar-hide-tabs-and-sidebar =
+    .label = Piilota välilehdet ja sivupalkki
+sidebar-show-on-the-right =
+    .label = Siirrä sivupalkki oikealle
+sidebar-show-on-the-left =
+    .label = Siirrä sivupalkki vasemmalle
+# Option to automatically expand the collapsed sidebar when the mouse pointer
+# hovers over it.
+expand-sidebar-on-hover =
+    .label = Laajenna sivupalkki hiiren päällä
 sidebar-horizontal-tabs =
     .label = Vaakasuuntaiset välilehdet
 sidebar-customize-tabs-header =
     .label = Välilehtiasetukset
-sidebar-customize-settings-header =
-    .label = Sivupalkin asetukset
-sidebar-visibility-always-show =
-    .label = Näytä aina
-sidebar-visibility-hide-sidebar =
-    .label = Piilota sivupalkki
+sidebar-customize-button-header =
+    .label = Sivupalkin painike
+sidebar-customize-position-header =
+    .label = Sivupalkin sijainti
+sidebar-visibility-setting-always-show =
+    .label = Laajenna ja supista sivupalkki
+sidebar-visibility-setting-hide-sidebar =
+    .label = Näytä ja piilota sivupalkki
 
 ## Labels for sidebar context menu items
 
@@ -95,6 +115,41 @@ sidebar-menu-bookmarks-label =
     .label = Kirjanmerkit
 sidebar-menu-customize-label =
     .label = Muokkaa sivupalkkia
+sidebar-menu-review-checker-label =
+    .label = Arvostelujen tarkistin
+sidebar-menu-contextual-password-manager-label =
+    .label = Salasanat
+
+## Tooltips for sidebar menu items.
+
+# The tooltip to show over the history icon, when history is not currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-open-history-tooltip = Avaa historia ({ $shortcut })
+# The tooltip to show over the history icon, when history is currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-close-history-tooltip = Sulje historia ({ $shortcut })
+# The tooltip to show over the bookmarks icon, when bookmarks is not currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-open-bookmarks-tooltip = Avaa kirjanmerkit ({ $shortcut })
+# The tooltip to show over the bookmarks icon, when bookmarks is currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-close-bookmarks-tooltip = Sulje kirjanmerkit ({ $shortcut })
+sidebar-menu-open-ai-chatbot-tooltip = Avaa AI-chatbotti
+sidebar-menu-close-ai-chatbot-tooltip = Sulje AI-chatbotti
+
+## Tooltips displayed over the AI chatbot icon.
+## Variables:
+##   $shortcut (String) - The OS specific keyboard shortcut.
+##   $provider (String) - The name of the AI chatbot provider (if available).
+
+sidebar-menu-open-ai-chatbot-tooltip-generic = Avaa AI-chatbotti ({ $shortcut })
+sidebar-menu-open-ai-chatbot-provider-tooltip = Avaa { $provider } ({ $shortcut })
+sidebar-menu-close-ai-chatbot-tooltip-generic = Sulje AI-chatbotti ({ $shortcut })
+sidebar-menu-close-ai-chatbot-provider-tooltip = Sulje { $provider } ({ $shortcut })
 
 ## Headings for sidebar menu panels.
 
@@ -104,6 +159,18 @@ sidebar-menu-history-header =
     .heading = Historia
 sidebar-menu-syncedtabs-header =
     .heading = Välilehdet muista laitteista
+sidebar-menu-bookmarks-header =
+    .heading = Kirjanmerkit
+sidebar-menu-cpm-header =
+    .heading = Salasanat
+sidebar-panel-header-close-button =
+    .tooltiptext = Sulje
+
+## Titles for sidebar menu panels.
+
+sidebar-customize-title = Muokkaa sivupalkkia
+sidebar-history-title = Sivuhistoria
+sidebar-syncedtabs-title = Välilehdet muista laitteista
 
 ## Context for closing synced tabs when hovering over the items
 
@@ -113,3 +180,29 @@ sidebar-menu-syncedtabs-header =
 #   $deviceName (String) - the name of the device the user is closing a tab for
 synced-tabs-context-close-tab-title =
     .title = Sulje välilehti laitteella { $deviceName }
+show-sidebars =
+    .tooltiptext = Näytä sivupaneelit
+    .label = Sivupaneelit
+
+## Tooltips for the sidebar toolbar widget.
+
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-expand-sidebar2 =
+    .tooltiptext = Laajenna sivupalkki ({ $shortcut })
+    .label = Sivupaneelit
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-collapse-sidebar2 =
+    .tooltiptext = Supista sivupalkki ({ $shortcut })
+    .label = Sivupaneelit
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-show-sidebar2 =
+    .tooltiptext = Näytä sivupalkki ({ $shortcut })
+    .label = Sivupaneelit
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-hide-sidebar2 =
+    .tooltiptext = Piilota sivupalkki ({ $shortcut })
+    .label = Sivupaneelit

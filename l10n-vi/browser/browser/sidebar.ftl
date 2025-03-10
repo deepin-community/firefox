@@ -4,6 +4,12 @@
 
 menu-view-genai-chat =
     .label = Chatbot AI
+menu-view-review-checker =
+    .label = Trình kiểm tra đánh giá
+menu-view-contextual-password-manager =
+    .label = Mật khẩu
+sidebar-options-menu-button =
+    .title = Mở menu
 
 ## Labels for sidebar history panel
 
@@ -46,16 +52,30 @@ sidebar-position-right =
     .label = Hiển thị bên phải
 sidebar-vertical-tabs =
     .label = Thẻ dọc
+sidebar-settings =
+    .label = Cài đặt thanh lề
+sidebar-hide-tabs-and-sidebar =
+    .label = Ẩn thẻ và thanh lề
+sidebar-show-on-the-right =
+    .label = Di chuyển thanh lề sang phải
+sidebar-show-on-the-left =
+    .label = Di chuyển thanh lề sang trái
+# Option to automatically expand the collapsed sidebar when the mouse pointer
+# hovers over it.
+expand-sidebar-on-hover =
+    .label = Mở rộng thanh lề khi di chuột tới nó
 sidebar-horizontal-tabs =
     .label = Thẻ ngang
 sidebar-customize-tabs-header =
     .label = Cài đặt thẻ
-sidebar-customize-settings-header =
-    .label = Cài đặt thanh lề
-sidebar-visibility-always-show =
-    .label = Luôn hiện
-sidebar-visibility-hide-sidebar =
-    .label = Ẩn thanh lề
+sidebar-customize-button-header =
+    .label = Nút thanh lề
+sidebar-customize-position-header =
+    .label = Vị trí thanh lề
+sidebar-visibility-setting-always-show =
+    .label = Mở rộng và thu gọn thanh lề
+sidebar-visibility-setting-hide-sidebar =
+    .label = Hiện và ẩn thanh lề
 
 ## Labels for sidebar context menu items
 
@@ -95,6 +115,41 @@ sidebar-menu-bookmarks-label =
     .label = Dấu trang
 sidebar-menu-customize-label =
     .label = Tùy biến thanh lề
+sidebar-menu-review-checker-label =
+    .label = Trình kiểm tra đánh giá
+sidebar-menu-contextual-password-manager-label =
+    .label = Mật khẩu
+
+## Tooltips for sidebar menu items.
+
+# The tooltip to show over the history icon, when history is not currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-open-history-tooltip = Mở lịch sử ({ $shortcut })
+# The tooltip to show over the history icon, when history is currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-close-history-tooltip = Đóng lịch sử ({ $shortcut })
+# The tooltip to show over the bookmarks icon, when bookmarks is not currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-open-bookmarks-tooltip = Mở dấu trang ({ $shortcut })
+# The tooltip to show over the bookmarks icon, when bookmarks is currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-close-bookmarks-tooltip = Đóng dấu trang ({ $shortcut })
+sidebar-menu-open-ai-chatbot-tooltip = Mở chatbot AI
+sidebar-menu-close-ai-chatbot-tooltip = Đóng chatbot AI
+
+## Tooltips displayed over the AI chatbot icon.
+## Variables:
+##   $shortcut (String) - The OS specific keyboard shortcut.
+##   $provider (String) - The name of the AI chatbot provider (if available).
+
+sidebar-menu-open-ai-chatbot-tooltip-generic = Mở chatbot AI ({ $shortcut })
+sidebar-menu-open-ai-chatbot-provider-tooltip = Mở { $provider } ({ $shortcut })
+sidebar-menu-close-ai-chatbot-tooltip-generic = Đóng chatbot AI ({ $shortcut })
+sidebar-menu-close-ai-chatbot-provider-tooltip = Đóng { $provider } ({ $shortcut })
 
 ## Headings for sidebar menu panels.
 
@@ -104,6 +159,18 @@ sidebar-menu-history-header =
     .heading = Lịch sử
 sidebar-menu-syncedtabs-header =
     .heading = Thẻ từ thiết bị khác
+sidebar-menu-bookmarks-header =
+    .heading = Dấu trang
+sidebar-menu-cpm-header =
+    .heading = Mật khẩu
+sidebar-panel-header-close-button =
+    .tooltiptext = Đóng
+
+## Titles for sidebar menu panels.
+
+sidebar-customize-title = Tùy biến thanh lề
+sidebar-history-title = Lịch sử
+sidebar-syncedtabs-title = Thẻ từ thiết bị khác
 
 ## Context for closing synced tabs when hovering over the items
 
@@ -113,3 +180,29 @@ sidebar-menu-syncedtabs-header =
 #   $deviceName (String) - the name of the device the user is closing a tab for
 synced-tabs-context-close-tab-title =
     .title = Đóng thẻ trên { $deviceName }
+show-sidebars =
+    .tooltiptext = Hiển thị thanh lề
+    .label = Thanh lề
+
+## Tooltips for the sidebar toolbar widget.
+
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-expand-sidebar2 =
+    .tooltiptext = Mở rộng thanh lề ({ $shortcut })
+    .label = Thanh lề
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-collapse-sidebar2 =
+    .tooltiptext = Thu gọn thanh lề ({ $shortcut })
+    .label = Thanh lề
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-show-sidebar2 =
+    .tooltiptext = Hiện thanh lề ({ $shortcut })
+    .label = Thanh lề
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-hide-sidebar2 =
+    .tooltiptext = Ẩn thanh lề ({ $shortcut })
+    .label = Thanh lề

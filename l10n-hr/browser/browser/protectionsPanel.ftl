@@ -56,7 +56,7 @@ protections-panel-not-blocking-why-etp-off-tooltip-label =
 
 ##
 
-protections-panel-no-trackers-found = Programi za praćenje koji su poznati { -brand-short-name }u nisu otkriveni na ovoj stranici.
+protections-panel-no-trackers-found = Programi za praćenje koje { -brand-short-name } pozna nisu otkriveni na ovoj stranici.
 protections-panel-content-blocking-tracking-protection = Praćenje sadržaja
 protections-panel-content-blocking-socialblock = Programi za praćenje s društvenih mreža
 protections-panel-content-blocking-cryptominers-label = Kripto-rudari
@@ -71,6 +71,19 @@ protections-panel-content-blocking-fingerprinters-label = Prikupljači digitalni
 protections-panel-blocking-label = Blokirano
 protections-panel-not-blocking-label = Dozvoljeno
 protections-panel-not-found-label = Ništa otkriveno
+
+## Smartblock strings
+
+protections-panel-smartblock-desc-label = { -brand-short-name } blokira praćenje sadržaja dok si na ovoj stranici osim ako to dozvoliš.
+# Variables
+#  $trackername (String): the name of the tracker that is currently being blocked.
+protections-panel-smartblock-blocking-toggle =
+    .label = Dozvoli { $trackername }
+#  $trackername (String): the name of the tracker that is currently being blocked.
+smartblock-placeholder-title = { $trackername } alati za praćenje i sadržaj su blokirani
+smartblock-placeholder-desc = Tvoje { -brand-short-name } postavke su blokirale ovaj sadržaj da te prati ili da se koristi za oglase.
+#  $websitehost (String): host of website with blocked content.
+smartblock-placeholder-button-text = Dozvoli na { $websitehost }
 
 ##
 

@@ -16,3 +16,10 @@ all-tabs-menu-close-duplicate-tabs =
     .label = Fermi duobligitajn langetojn
 all-tabs-menu-close-all-duplicate-tabs =
     .label = Fermi ĉiujn duobligitajn langetojn
+all-tabs-menu-synced-tabs =
+    .label = Langetoj el aliaj aparatoj
+all-tabs-menu-current-window-header = Nuna fenestro
+# "Show all" is for showing all open groups as well as saved groups. Initially,
+# we only show up to five of these groups.
+all-tabs-menu-tab-groups-show-all =
+    .label = Montri ĉiujn

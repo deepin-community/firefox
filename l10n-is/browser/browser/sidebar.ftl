@@ -3,7 +3,13 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 menu-view-genai-chat =
-    .label = AI-gervigreindarspjall
+    .label = Gervigreindarspjallkerfi
+menu-view-review-checker =
+    .label = Umsagnaskoðun
+menu-view-contextual-password-manager =
+    .label = Lykilorð
+sidebar-options-menu-button =
+    .title = Opna valmynd
 
 ## Labels for sidebar history panel
 
@@ -46,16 +52,30 @@ sidebar-position-right =
     .label = Birta hægra megin
 sidebar-vertical-tabs =
     .label = Lóðréttir flipar
+sidebar-settings =
+    .label = Stillingar hliðarstiku
+sidebar-hide-tabs-and-sidebar =
+    .label = Fela flipa og hliðarstiku
+sidebar-show-on-the-right =
+    .label = Færa hliðarstiku til hægri
+sidebar-show-on-the-left =
+    .label = Færa hliðarstiku til vinstri
+# Option to automatically expand the collapsed sidebar when the mouse pointer
+# hovers over it.
+expand-sidebar-on-hover =
+    .label = Fella út hliðarstikuna við yfirsvif
 sidebar-horizontal-tabs =
     .label = Láréttir flipar
 sidebar-customize-tabs-header =
     .label = Stillingar flipa
-sidebar-customize-settings-header =
-    .label = Stillingar hliðarstiku
-sidebar-visibility-always-show =
-    .label = Sýna alltaf
-sidebar-visibility-hide-sidebar =
-    .label = Fela hliðarstiku
+sidebar-customize-button-header =
+    .label = Hnappur á hliðarstiku
+sidebar-customize-position-header =
+    .label = Staða hliðarstiku
+sidebar-visibility-setting-always-show =
+    .label = Fella út og draga saman hliðarstikuna
+sidebar-visibility-setting-hide-sidebar =
+    .label = Birta og fela hliðarstiku
 
 ## Labels for sidebar context menu items
 
@@ -73,6 +93,10 @@ sidebar-context-menu-bookmark-tab =
     .label = Bókamerkja flipa…
 sidebar-context-menu-copy-link =
     .label = Afrita tengil
+# Variables:
+#   $deviceName (String) - The name of the device the user is closing a tab for
+sidebar-context-menu-close-remote-tab =
+    .label = Loka flipa á { $deviceName }
 
 ## Labels for sidebar history context menu items
 
@@ -82,7 +106,7 @@ sidebar-history-context-menu-delete-page =
 ## Labels for sidebar menu items.
 
 sidebar-menu-genai-chat-label =
-    .label = AI-gervigreindarspjall
+    .label = Gervigreindarspjallkerfi
 sidebar-menu-history-label =
     .label = Ferill
 sidebar-menu-synced-tabs-label =
@@ -91,6 +115,41 @@ sidebar-menu-bookmarks-label =
     .label = Bókamerki
 sidebar-menu-customize-label =
     .label = Sérsníða hliðarstiku
+sidebar-menu-review-checker-label =
+    .label = Umsagnaskoðun
+sidebar-menu-contextual-password-manager-label =
+    .label = Lykilorð
+
+## Tooltips for sidebar menu items.
+
+# The tooltip to show over the history icon, when history is not currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-open-history-tooltip = Opna vafurferil ({ $shortcut })
+# The tooltip to show over the history icon, when history is currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-close-history-tooltip = Loka vafurferli ({ $shortcut })
+# The tooltip to show over the bookmarks icon, when bookmarks is not currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-open-bookmarks-tooltip = Opna bókamerki ({ $shortcut })
+# The tooltip to show over the bookmarks icon, when bookmarks is currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-close-bookmarks-tooltip = Loka bókamerkjum ({ $shortcut })
+sidebar-menu-open-ai-chatbot-tooltip = Opna gervigreindarspjallkerfi
+sidebar-menu-close-ai-chatbot-tooltip = Loka gervigreindarspjallkerfi
+
+## Tooltips displayed over the AI chatbot icon.
+## Variables:
+##   $shortcut (String) - The OS specific keyboard shortcut.
+##   $provider (String) - The name of the AI chatbot provider (if available).
+
+sidebar-menu-open-ai-chatbot-tooltip-generic = Opna gervigreindarspjallkerfi ({ $shortcut })
+sidebar-menu-open-ai-chatbot-provider-tooltip = Opna { $provider } ({ $shortcut })
+sidebar-menu-close-ai-chatbot-tooltip-generic = Loka gervigreindarspjallkerfi ({ $shortcut })
+sidebar-menu-close-ai-chatbot-provider-tooltip = Loka { $provider } ({ $shortcut })
 
 ## Headings for sidebar menu panels.
 
@@ -100,3 +159,50 @@ sidebar-menu-history-header =
     .heading = Ferill
 sidebar-menu-syncedtabs-header =
     .heading = Flipar frá öðrum tækjum
+sidebar-menu-bookmarks-header =
+    .heading = Bókamerki
+sidebar-menu-cpm-header =
+    .heading = Lykilorð
+sidebar-panel-header-close-button =
+    .tooltiptext = Loka
+
+## Titles for sidebar menu panels.
+
+sidebar-customize-title = Sérsníða hliðarstiku
+sidebar-history-title = Ferill
+sidebar-syncedtabs-title = Flipar frá öðrum tækjum
+
+## Context for closing synced tabs when hovering over the items
+
+# Context for hovering over the close tab button that will
+# send a push to the device to close said tab
+# Variables:
+#   $deviceName (String) - the name of the device the user is closing a tab for
+synced-tabs-context-close-tab-title =
+    .title = Loka flipa á { $deviceName }
+show-sidebars =
+    .tooltiptext = Sýna hliðarstikur
+    .label = Hliðarstika
+
+## Tooltips for the sidebar toolbar widget.
+
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-expand-sidebar2 =
+    .tooltiptext = Fella út hliðarstikuna ({ $shortcut })
+    .label = Hliðarslá
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-collapse-sidebar2 =
+    .tooltiptext = Fella saman hliðarstikuna ({ $shortcut })
+    .label = Hliðarslá
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-show-sidebar2 =
+    .tooltiptext = Sýna hliðarstiku ({ $shortcut })
+    .label = Hliðarslá
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-hide-sidebar2 =
+    .tooltiptext = Fela hliðarstiku ({ $shortcut })
+    .label = Hliðarslá

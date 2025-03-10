@@ -517,13 +517,6 @@ export var TabCrashHandler = {
 
     browser.docShell.displayLoadError(Cr.NS_ERROR_BUILDID_MISMATCH, uri, null);
     tab.setAttribute("crashed", true);
-    gBrowser.tabContainer.updateTabIndicatorAttr(tab);
-
-    // Make sure to only count once even if there are multiple windows
-    // that will all show about:restartrequired.
-    if (this._crashedTabCount == 1) {
-      Services.telemetry.scalarAdd("dom.contentprocess.buildID_mismatch", 1);
-    }
   },
 
   /**
@@ -548,7 +541,6 @@ export var TabCrashHandler = {
     browser.docShell.displayLoadError(Cr.NS_ERROR_CONTENT_CRASHED, uri, null);
     browser.removeAttribute("crashedPageTitle");
     tab.setAttribute("crashed", true);
-    gBrowser.tabContainer.updateTabIndicatorAttr(tab);
   },
 
   /**
@@ -602,6 +594,7 @@ export var TabCrashHandler = {
       return;
     }
 
+    // eslint-disable-next-line no-shadow
     let { includeURL, comments, URL } = message.data;
 
     let extraExtraKeyVals = {

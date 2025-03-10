@@ -32,7 +32,7 @@
 #include "mozilla/Preferences.h"
 #include "mozilla/ScopeExit.h"
 #include "mozilla/TimeStamp.h"
-#include "mozilla/Telemetry.h"
+#include "mozilla/glean/UrlClassifierMetrics.h"
 #include "mozilla/Unused.h"
 #include "mozilla/Logging.h"
 #include "prnetdb.h"
@@ -160,9 +160,7 @@ class nsUrlClassifierDBService::FeatureHolder final {
     MOZ_ASSERT(!NS_IsMainThread());
     MOZ_ASSERT(aWorker);
 
-    mozilla::Telemetry::AutoTimer<
-        mozilla::Telemetry::URLCLASSIFIER_CL_CHECK_TIME>
-        timer;
+    auto timer = mozilla::glean::urlclassifier::cl_check_time.Measure();
 
     // Get the set of fragments based on the url. This is necessary because we
     // only look up at most 5 URLs per aSpec, even if aSpec has more than 5
@@ -477,9 +475,8 @@ nsresult nsUrlClassifierDBServiceWorker::HandlePendingLookups() {
       MutexAutoUnlock unlock(mPendingLookupLock);
       DoLookup(lookup.mKey, lookup.mFeatureHolder, lookup.mCallback);
     }
-    double lookupTime = (TimeStamp::Now() - lookup.mStartTime).ToMilliseconds();
-    Telemetry::Accumulate(Telemetry::URLCLASSIFIER_LOOKUP_TIME_2,
-                          static_cast<uint32_t>(lookupTime));
+    glean::urlclassifier::lookup_time_2.AccumulateRawDuration(
+        TimeStamp::Now() - lookup.mStartTime);
   }
 
   return NS_OK;
@@ -734,11 +731,6 @@ nsUrlClassifierDBServiceWorker::FinishStream() {
     mTableUpdates.AppendElements(mProtocolParser->GetTableUpdates());
     mProtocolParser->ForgetTableUpdates();
 
-#ifdef MOZ_SAFEBROWSING_DUMP_FAILED_UPDATES
-    // The assignment involves no string copy since the source string is
-    // sharable.
-    mRawTableUpdates = mProtocolParser->GetRawTableUpdates();
-#endif
   } else {
     LOG(
         ("nsUrlClassifierDBService::FinishStream Failed to parse the stream "
@@ -795,18 +787,8 @@ nsUrlClassifierDBServiceWorker::FinishUpdate() {
 
   RefPtr<nsUrlClassifierDBServiceWorker> self = this;
   nsresult rv = mClassifier->AsyncApplyUpdates(
-      mTableUpdates, [self](nsresult aRv) -> void {
-#ifdef MOZ_SAFEBROWSING_DUMP_FAILED_UPDATES
-        if (NS_FAILED(aRv) && NS_ERROR_OUT_OF_MEMORY != aRv &&
-            NS_ERROR_UC_UPDATE_SHUTDOWNING != aRv) {
-          self->mClassifier->DumpRawTableUpdates(self->mRawTableUpdates);
-        }
-        // Invalidate the raw table updates.
-        self->mRawTableUpdates.Truncate();
-#endif
-
-        self->NotifyUpdateObserver(aRv);
-      });
+      mTableUpdates,
+      [self](nsresult aRv) -> void { self->NotifyUpdateObserver(aRv); });
   mTableUpdates.Clear();  // Classifier is working on its copy.
 
   if (NS_FAILED(rv)) {
@@ -856,8 +838,8 @@ nsresult nsUrlClassifierDBServiceWorker::NotifyUpdateObserver(
 
   // Do not record telemetry for testing tables.
   if (!provider.EqualsLiteral(TESTING_TABLE_PROVIDER_NAME)) {
-    Telemetry::Accumulate(Telemetry::URLCLASSIFIER_UPDATE_ERROR, provider,
-                          NS_ERROR_GET_CODE(updateStatus));
+    glean::urlclassifier::update_error.Get(provider).AccumulateSingleSample(
+        NS_ERROR_GET_CODE(updateStatus));
   }
 
   MutexAutoLock lock(mUpdateObserverLock);
@@ -1517,6 +1499,11 @@ nsresult nsUrlClassifierLookupCallback::CacheMisses() {
   return NS_OK;
 }
 
+struct LiteralProvider {
+  nsLiteralCString name;
+  uint8_t priority;
+};
+
 struct Provider {
   nsCString name;
   uint8_t priority;
@@ -1524,7 +1511,7 @@ struct Provider {
 
 // Order matters
 // Provider which is not included in this table has the lowest priority 0
-static const Provider kBuiltInProviders[] = {
+static constexpr LiteralProvider kBuiltInProviders[] = {
     {"mozilla"_ns, 1},
     {"google4"_ns, 2},
     {"google"_ns, 3},
@@ -1615,9 +1602,9 @@ nsUrlClassifierClassifyCallback::HandleResult(const nsACString& aTable,
 
   matchedInfo->provider.name = NS_SUCCEEDED(rv) ? provider : ""_ns;
   matchedInfo->provider.priority = 0;
-  for (uint8_t i = 0; i < ArrayLength(kBuiltInProviders); i++) {
-    if (kBuiltInProviders[i].name.Equals(matchedInfo->provider.name)) {
-      matchedInfo->provider.priority = kBuiltInProviders[i].priority;
+  for (auto const& BuiltInProvider : kBuiltInProviders) {
+    if (BuiltInProvider.name.Equals(matchedInfo->provider.name)) {
+      matchedInfo->provider.priority = BuiltInProvider.priority;
     }
   }
   matchedInfo->errorCode = TablesToResponse(aTable);
@@ -1919,14 +1906,13 @@ ThreatHitReportListener::OnStopRequest(nsIRequest* aRequest, nsresult aStatus) {
   uint8_t netErrCode =
       NS_FAILED(aStatus) ? mozilla::safebrowsing::NetworkErrorToBucket(aStatus)
                          : 0;
-  mozilla::Telemetry::Accumulate(
-      mozilla::Telemetry::URLCLASSIFIER_THREATHIT_NETWORK_ERROR, netErrCode);
+  mozilla::glean::urlclassifier::threathit_network_error.AccumulateSingleSample(
+      netErrCode);
 
   uint32_t requestStatus;
   nsresult rv = httpChannel->GetResponseStatus(&requestStatus);
   NS_ENSURE_SUCCESS(rv, aStatus);
-  mozilla::Telemetry::Accumulate(
-      mozilla::Telemetry::URLCLASSIFIER_THREATHIT_REMOTE_STATUS,
+  mozilla::glean::urlclassifier::threathit_remote_status.AccumulateSingleSample(
       mozilla::safebrowsing::HTTPStatusToBucket(requestStatus));
 
   if (LOG_ENABLED()) {
@@ -2007,7 +1993,7 @@ nsUrlClassifierDBService::SendThreatHitReport(nsIChannel* aChannel,
   NS_ENSURE_SUCCESS(rv, rv);
   nsCOMPtr<nsIStringInputStream> sis(
       do_CreateInstance(NS_STRINGINPUTSTREAM_CONTRACTID));
-  rv = sis->SetData(reportBody.get(), reportBody.Length());
+  rv = sis->SetByteStringData(reportBody);
   NS_ENSURE_SUCCESS(rv, rv);
 
   LOG(("Sending the following ThreatHit report to %s about %s: %s",
@@ -2369,7 +2355,7 @@ nsresult nsUrlClassifierDBService::Shutdown() {
     return NS_OK;
   }
 
-  Telemetry::AutoTimer<Telemetry::URLCLASSIFIER_SHUTDOWN_TIME> timer;
+  auto timer = glean::urlclassifier::shutdown_time.Measure();
 
   mCompleters.Clear();
 
@@ -2549,8 +2535,8 @@ nsUrlClassifierDBService::AsyncClassifyLocalWithFeatures(
             "nsUrlClassifierDBService::AsyncClassifyLocalWithFeatures",
             [callback, holder, startTime]() -> void {
               // Measure the time diff between calling and callback.
-              AccumulateTimeDelta(
-                  Telemetry::URLCLASSIFIER_ASYNC_CLASSIFYLOCAL_TIME, startTime);
+              glean::urlclassifier::async_classifylocal_time
+                  .AccumulateRawDuration(TimeStamp::Now() - startTime);
 
               nsTArray<RefPtr<nsIUrlClassifierFeatureResult>> results;
               holder->GetResults(results);

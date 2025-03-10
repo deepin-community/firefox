@@ -51,6 +51,70 @@ browser-main-window-title = { -brand-full-name }
 # The non-variable portion of this MUST match the translation of
 # "PRIVATE_BROWSING_SHORTCUT_TITLE" in custom.properties
 private-browsing-shortcut-text-2 = { -brand-shortcut-name }-priveenavigaasje
+# These are the default window titles everywhere except macOS.
+# .data-title-default and .data-title-private are used when the web content
+# opened has no title:
+#
+# default - "Mozilla Firefox"
+# private - "Mozilla Firefox (Private Browsing)"
+#
+# .data-content-title-default and .data-content-title-private are for use when
+# there *is* a content title.
+#
+# .data-title-default-with-profile, .data-title-private-with-profile,
+# .data-content-title-default-with-profile,
+# .data-content-title-private-with-profile are used when there a
+# SelectableProfileService.current profile exists.
+#
+# Variables:
+#  $content-title (String): the title of the web content.
+#  $profile-name (String): the name of the current profile.
+browser-main-window-titles =
+    .data-title-default = { -brand-full-name }
+    .data-title-private = { -brand-full-name }-priveenavigaasje
+    .data-title-default-with-profile = { $profile-name } — { -brand-full-name }
+    .data-title-private-with-profile = { $profile-name } — { -brand-full-name }-priveenavigaasje
+    .data-content-title-default = { $content-title } — { -brand-full-name }
+    .data-content-title-private = { $content-title } — { -brand-full-name }-priveenavigaasje
+    .data-content-title-default-with-profile = { $content-title } — { $profile-name } — { -brand-full-name }
+    .data-content-title-private-with-profile = { $content-title } — { $profile-name } — { -brand-full-name }-priveenavigaasje
+# These are the default window titles on macOS.
+# .data-title-default and .data-title-private are used when the web content
+# opened has no title:
+#
+#
+# "default" - "Mozilla Firefox"
+# "private" - "Mozilla Firefox — (Private Browsing)"
+#
+# .data-content-title-default and .data-content-title-private are for use when
+# there *is* a content title.
+# Do not use the brand name in these, as we do on non-macOS.
+#
+# .data-title-default-with-profile, .data-title-private-with-profile,
+# .data-content-title-default-with-profile,
+# .data-content-title-private-with-profile are used when there a
+# SelectableProfileService.current profile exists.
+#
+# Also note the other subtle difference here: we use a `-` to separate the
+# brand name from `(Private Browsing)`, which does not happen on other OSes.
+#
+# Variables:
+#  $content-title (String): the title of the web content.
+#  $profile-name (String): the name of the current profile.
+browser-main-window-titles-mac =
+    .data-title-default = { -brand-full-name }
+    .data-title-private = { -brand-full-name } — Priveenavigaasje
+    .data-title-default-with-profile = { $profile-name } — { -brand-full-name }
+    .data-title-private-with-profile = { $profile-name } — { -brand-full-name } Priveenavigaasje
+    .data-content-title-default = { $content-title }
+    .data-content-title-private = { $content-title } — Priveenavigaasje
+    .data-content-title-default-with-profile = { $content-title } — { $profile-name }
+    .data-content-title-private-with-profile = { $content-title } — { $profile-name } — Priveenavigaasje
+# This gets set as the initial title, and is overridden as soon as we start
+# updating the titlebar based on loaded tabs or private browsing state.
+# This should match the `data-title-default` attribute in both
+# `browser-main-window` and `browser-main-window-mac`.
+browser-main-window-default-title = { -brand-full-name }
 
 ##
 
@@ -309,6 +373,10 @@ quickactions-cmd-viewsource = boarne besjen, boarne
 # Tooltip text for the help button shown in the result.
 quickactions-learn-more =
     .title = Mear ynfo oer Flugge aksjes
+# Will be shown to users the first configurable number of times
+# they experience actions giving them instructions on how to
+# select the action shown by pressing the tab key.
+press-tab-label = Druk op Tab om te selektearjen:
 
 ## Bookmark Panel
 
@@ -552,8 +620,6 @@ urlbar-page-action-button =
     .tooltiptext = Side-aksjes
 urlbar-revert-button =
     .tooltiptext = Adres yn de lokaasjebalke toane
-urlbar-show-page-actions-button =
-    .tooltiptext = Alle side-aksjes toane
 
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
@@ -614,6 +680,42 @@ urlbar-result-action-calculator-result = = { $result }
 # Label prompting user to search with a particular search engine.
 #  $engine (String): the name of a search engine that searches a specific site
 urlbar-result-search-with = Sykje mei { $engine }
+# Label for the urlbar result row, prompting the user to use a local keyword to enter search mode.
+#  $keywords (String): the restrict keyword to enter search mode.
+#  $localSearchMode (String): the local search mode (history, tabs, bookmarks,
+#  or actions) to search with.
+urlbar-result-search-with-local-search-mode = { $keywords } – Sykje yn { $localSearchMode }
+# Label for the urlbar result row, prompting the user to use engine keywords to enter search mode.
+#  $keywords (String): the default keyword and user's set keyword if available
+#  $engine (String): the name of a search engine
+urlbar-result-search-with-engine-keywords = { $keywords } – Sykje mei { $engine }
+urlbar-searchmode-dropmarker =
+    .tooltiptext = Kies in sykmasine
+urlbar-searchmode-bookmarks =
+    .label = Blêdwizers
+urlbar-searchmode-tabs =
+    .label = Ljepblêden
+urlbar-searchmode-history =
+    .label = Skiednis
+urlbar-searchmode-actions =
+    .label = Aksjes
+urlbar-searchmode-exit-button =
+    .tooltiptext = Slute
+# Label shown on the top of Searchmode Switcher popup. After this label, the
+# available search engines will be listed.
+urlbar-searchmode-popup-description = Diskear sykje mei:
+urlbar-searchmode-popup-search-settings-menuitem =
+    .label = Sykynstellingen
+urlbar-searchmode-popup-search-settings = Sykynstellingen
+# Searchmode Switcher button
+# Variables:
+#   $engine (String): the current default search engine.
+urlbar-searchmode-button2 =
+    .label = { $engine }, kies in sykmasine
+    .tooltiptext = { $engine }, kies in sykmasine
+urlbar-searchmode-button-no-engine =
+    .label = Gjin fluchkeppeling selektearre, kies in fluchkeppeling
+    .tooltiptext = Gjin fluchkeppeling selektearre, kies in fluchkeppeling
 
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
@@ -623,6 +725,12 @@ urlbar-result-action-search-bookmarks = Blêdwizers trochsykje
 urlbar-result-action-search-history = Skiednis trochsykje
 urlbar-result-action-search-tabs = Ljepblêden trochsykje
 urlbar-result-action-search-actions = Sykaksjes
+# Label for a quickaction result used to switch to an open tab group.
+#  $group (String): the name of the tab group to switch to
+urlbar-result-action-switch-to-tabgroup = Wikselje nei { $group }
+# Label for a quickaction result used to re-opan a saved tab group.
+#  $group (String): the name of the tab group to re-open
+urlbar-result-action-open-saved-tabgroup = { $group } iepenje
 
 ## Labels shown above groups of urlbar results
 
@@ -722,8 +830,8 @@ bookmarks-mobile-bookmarks-menu =
 bookmarks-tools-sidebar-visibility =
     .label =
         { $isVisible ->
-            [true] Blêdwizersydbalke ferstopje
-           *[other] Blêdwizersydbalke werjaan
+            [true] Blêdwizersidebalke ferstopje
+           *[other] Blêdwizersidebalke werjaan
         }
 bookmarks-tools-toolbar-visibility-menuitem =
     .label =
@@ -936,6 +1044,9 @@ data-reporting-notification-button =
     .accesskey = K
 # Label for the indicator shown in the private browsing window titlebar.
 private-browsing-indicator-label = Priveenavigaasje
+# Tooltip for the indicator shown in the private browsing window titlebar.
+private-browsing-indicator-tooltip =
+    .tooltiptext = Priveenavigaasje
 # Tooltip for the indicator shown in the window titlebar when content analysis is active.
 # Variables:
 #   $agentName (String): The name of the DLP agent that is connected
@@ -944,7 +1055,7 @@ content-analysis-indicator-tooltip =
 content-analysis-panel-title = Gegevensbeskerming
 # Variables:
 #   $agentName (String): The name of the DLP agent that is connected
-content-analysis-panel-text = Jo organisaasje brûkt { $agentName } om jo te beskermjen tsjin gegevensferlies. <a data-l10n-name="info">Mear ynfo</a>
+content-analysis-panel-text-styled = Jo organisaasje brûkt <b>{ $agentName }</b> om jo te beskermjen tsjin gegevensferlies. <a data-l10n-name="info">Mear ynfo</a>
 
 ## Unified extensions (toolbar) button
 
@@ -969,6 +1080,15 @@ unified-extensions-button-quarantined =
     .tooltiptext =
         Utwreidingen
         Guon útwreidingen binne net tastien
+
+## Unified extensions button when some extensions are disabled (e.g. through add-ons blocklist).
+## Note that the new line is intentionally part of the tooltip.
+
+unified-extensions-button-blocklisted =
+    .label = Extensies
+    .tooltiptext =
+        Utwreidingen
+        Guon útwreidingen binne útskeakele
 
 ## Private browsing reset button
 
@@ -1009,6 +1129,7 @@ firefox-relay-offer-legal-notice = Troch op ‘E-mailmasker brûke’ te klikken
 popup-notification-addon-install-unsigned =
     .value = (Net ferifiearre)
 popup-notification-xpinstall-prompt-learn-more = Mear ynfo oer it feilich ynstallearjen fan add-ons
+popup-notification-xpinstall-prompt-block-url = Details besjen
 # Note: Access key is set to P to match "Private" in the corresponding localized label.
 popup-notification-addon-privatebrowsing-checkbox =
     .label = Utfiere yn priveefinsters

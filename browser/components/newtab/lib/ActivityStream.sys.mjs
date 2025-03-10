@@ -17,6 +17,7 @@ const lazy = {};
 
 ChromeUtils.defineESModuleGetters(lazy, {
   AboutPreferences: "resource://activity-stream/lib/AboutPreferences.sys.mjs",
+  AdsFeed: "resource://activity-stream/lib/AdsFeed.sys.mjs",
   DEFAULT_SITES: "resource://activity-stream/lib/DefaultSites.sys.mjs",
   DefaultPrefs: "resource://activity-stream/lib/ActivityStreamPrefs.sys.mjs",
   DiscoveryStreamFeed:
@@ -47,6 +48,11 @@ import {
   actionTypes as at,
 } from "resource://activity-stream/common/Actions.mjs";
 
+const REGION_WEATHER_CONFIG =
+  "browser.newtabpage.activity-stream.discoverystream.region-weather-config";
+const LOCALE_WEATHER_CONFIG =
+  "browser.newtabpage.activity-stream.discoverystream.locale-weather-config";
+
 const REGION_TOPICS_CONFIG =
   "browser.newtabpage.activity-stream.discoverystream.topicSelection.region-topics-config";
 const LOCALE_TOPICS_CONFIG =
@@ -64,6 +70,30 @@ const REGION_THUMBS_CONFIG =
 const LOCALE_THUMBS_CONFIG =
   "browser.newtabpage.activity-stream.discoverystream.thumbsUpDown.locale-thumbs-config";
 
+const REGION_CONTEXTUAL_CONTENT_CONFIG =
+  "browser.newtabpage.activity-stream.discoverystream.contextualContent.region-content-config";
+const LOCALE_CONTEXTUAL_CONTENT_CONFIG =
+  "browser.newtabpage.activity-stream.discoverystream.contextualContent.locale-content-config";
+
+const REGION_SECTIONS_CONFIG =
+  "browser.newtabpage.activity-stream.discoverystream.sections.region-content-config";
+const LOCALE_SECTIONS_CONFIG =
+  "browser.newtabpage.activity-stream.discoverystream.sections.locale-content-config";
+
+export function csvPrefHasValue(stringPrefName, value) {
+  if (typeof stringPrefName !== "string") {
+    throw new Error(`The stringPrefName argument is not a string`);
+  }
+
+  const pref = Services.prefs.getStringPref(stringPrefName) || "";
+  const prefValues = pref
+    .split(",")
+    .map(s => s.trim())
+    .filter(item => item);
+
+  return prefValues.includes(value);
+}
+
 // Determine if spocs should be shown for a geo/locale
 function showSpocs({ geo }) {
   const spocsGeoString =
@@ -73,67 +103,45 @@ function showSpocs({ geo }) {
 }
 
 function showWeather({ geo, locale }) {
-  const weatherGeoString =
-    lazy.NimbusFeatures.pocketNewtab.getVariable("regionWeatherConfig") || "";
-  const weatherLocaleString =
-    lazy.NimbusFeatures.pocketNewtab.getVariable("localeWeatherConfig") || "";
-  const weatherGeo = weatherGeoString
-    .split(",")
-    .map(s => s.trim())
-    .filter(item => item);
-  const weatherLocale = weatherLocaleString
-    .split(",")
-    .map(s => s.trim())
-    .filter(item => item);
-  return weatherGeo.includes(geo) && weatherLocale.includes(locale);
+  return (
+    csvPrefHasValue(REGION_WEATHER_CONFIG, geo) &&
+    csvPrefHasValue(LOCALE_WEATHER_CONFIG, locale)
+  );
 }
 
 function showTopicsSelection({ geo, locale }) {
-  const topicsGeoString =
-    Services.prefs.getStringPref(REGION_TOPICS_CONFIG) || "";
-  const topicsLocaleString =
-    Services.prefs.getStringPref(LOCALE_TOPICS_CONFIG) || "";
-  const topicsGeo = topicsGeoString
-    .split(",")
-    .map(s => s.trim())
-    .filter(item => item);
-  const topicsLocale = topicsLocaleString
-    .split(",")
-    .map(s => s.trim())
-    .filter(item => item);
-  return topicsGeo.includes(geo) && topicsLocale.includes(locale);
+  return (
+    csvPrefHasValue(REGION_TOPICS_CONFIG, geo) &&
+    csvPrefHasValue(LOCALE_TOPICS_CONFIG, locale)
+  );
 }
 
 function showTopicLabels({ geo, locale }) {
-  const geoString =
-    Services.prefs.getStringPref(REGION_TOPIC_LABEL_CONFIG) || "";
-  const localeString =
-    Services.prefs.getStringPref(LOCALE_TOPIC_LABEL_CONFIG) || "";
-  const topicLabelGeo = geoString
-    .split(",")
-    .map(s => s.trim())
-    .filter(item => item);
-  const topicLabelLocale = localeString
-    .split(",")
-    .map(s => s.trim())
-    .filter(item => item);
-  return topicLabelGeo.includes(geo) && topicLabelLocale.includes(locale);
+  return (
+    csvPrefHasValue(REGION_TOPIC_LABEL_CONFIG, geo) &&
+    csvPrefHasValue(LOCALE_TOPIC_LABEL_CONFIG, locale)
+  );
 }
 
 function showThumbsUpDown({ geo, locale }) {
-  const thumbsUpDownGeoString =
-    Services.prefs.getStringPref(REGION_THUMBS_CONFIG) || "";
-  const thumbsUpDownLocaleString =
-    Services.prefs.getStringPref(LOCALE_THUMBS_CONFIG) || "";
-  const thumbsUpDownGeo = thumbsUpDownGeoString
-    .split(",")
-    .map(s => s.trim())
-    .filter(item => item);
-  const thumbsUpDownLocale = thumbsUpDownLocaleString
-    .split(",")
-    .map(s => s.trim())
-    .filter(item => item);
-  return thumbsUpDownGeo.includes(geo) && thumbsUpDownLocale.includes(locale);
+  return (
+    csvPrefHasValue(REGION_THUMBS_CONFIG, geo) &&
+    csvPrefHasValue(LOCALE_THUMBS_CONFIG, locale)
+  );
+}
+
+function showContextualContent({ geo, locale }) {
+  return (
+    csvPrefHasValue(REGION_CONTEXTUAL_CONTENT_CONFIG, geo) &&
+    csvPrefHasValue(LOCALE_CONTEXTUAL_CONTENT_CONFIG, locale)
+  );
+}
+
+function showSectionLayout({ geo, locale }) {
+  return (
+    csvPrefHasValue(REGION_SECTIONS_CONFIG, geo) &&
+    csvPrefHasValue(LOCALE_SECTIONS_CONFIG, locale)
+  );
 }
 
 // Configure default Activity Stream prefs with a plain `value` or a `getValue`
@@ -211,6 +219,61 @@ export const PREFS_CONFIG = new Map([
     },
   ],
   [
+    "unifiedAds.adsFeed.enabled",
+    {
+      title:
+        "Use AdsFeed.sys.mjs to fetch/cache/serve Mozilla Ad Routing Service (MARS) unified ads ",
+      value: false,
+    },
+  ],
+  [
+    "unifiedAds.adsFeed.tiles.enabled",
+    {
+      title:
+        "Use AdsFeed.sys.mjs to fetch/cache/serve sponsored top sites tiles",
+      value: false,
+    },
+  ],
+  [
+    "unifiedAds.adsFeed.spocs.enabled",
+    {
+      title:
+        "Use AdsFeed.sys.mjs to fetch/cache/serve sponsored content in recommended stories",
+      value: false,
+    },
+  ],
+  [
+    "unifiedAds.tiles.enabled",
+    {
+      title:
+        "Use Mozilla Ad Routing Service (MARS) unified ads API for sponsored top sites tiles",
+      value: false,
+    },
+  ],
+  [
+    "unifiedAds.spocs.enabled",
+    {
+      title:
+        "Use Mozilla Ad Routing Service (MARS) unified ads API for sponsored content in recommended stories",
+      value: false,
+    },
+  ],
+  [
+    "unifiedAds.endpoint",
+    {
+      title: "Mozilla Ad Routing Service (MARS) unified ads API endpoint URL",
+      value: "https://ads.mozilla.org/",
+    },
+  ],
+  [
+    "unifiedAds.blockedAds",
+    {
+      title:
+        "CSV list of blocked (dismissed) MARS ads. This payload is sent back every time new ads are fetched.",
+      value: "",
+    },
+  ],
+  [
     "system.showWeather",
     {
       title: "system.showWeather",
@@ -271,6 +334,20 @@ export const PREFS_CONFIG = new Map([
     {
       title: "Show the Search bar",
       value: true,
+    },
+  ],
+  [
+    "logowordmark.alwaysVisible",
+    {
+      title: "Show the logo and wordmark",
+      value: true,
+    },
+  ],
+  [
+    "newtabLogo.aprilfools",
+    {
+      title: "Show an April Fools version of the logo",
+      value: false,
     },
   ],
   [
@@ -371,6 +448,57 @@ export const PREFS_CONFIG = new Map([
     },
   ],
   [
+    "newtabWallpapers.customColor.enabled",
+    {
+      title: "Boolean flag to turn show custom color select box",
+      value: false,
+    },
+  ],
+  [
+    "newtabAdSize.variant-a",
+    {
+      title: "Boolean flag to turn ad size variant A on and off",
+      value: false,
+    },
+  ],
+  [
+    "newtabAdSize.variant-b",
+    {
+      title: "Boolean flag to turn ad size variant B on and off",
+      value: false,
+    },
+  ],
+  [
+    "newtabAdSize.leaderboard",
+    {
+      title: "Boolean flag to turn the leaderboard ad size on and off",
+      value: false,
+    },
+  ],
+  [
+    "newtabAdSize.leaderboard.position",
+    {
+      title:
+        "position for leaderboard spoc - should corralate to a row in DS grid",
+      value: "3",
+    },
+  ],
+  [
+    "newtabAdSize.billboard",
+    {
+      title: "Boolean flag to turn the billboard ad size on and off",
+      value: false,
+    },
+  ],
+  [
+    "newtabAdSize.billboard.position",
+    {
+      title:
+        "position for billboard spoc - should corralate to a row in DS grid",
+      value: "3",
+    },
+  ],
+  [
     "newtabLayouts.variant-a",
     {
       title: "Boolean flag to turn layout variant A on and off",
@@ -385,10 +513,105 @@ export const PREFS_CONFIG = new Map([
     },
   ],
   [
+    "newtabShortcuts.refresh",
+    {
+      title: "Boolean flag to change sizes and spacing of new tab shortcuts",
+      value: false,
+    },
+  ],
+  [
+    "discoverystream.sections.enabled",
+    {
+      title: "Boolean flag to enable section layout UI in recommended stories",
+      getValue: showSectionLayout,
+    },
+  ],
+  [
+    "discoverystream.sections.personalization.enabled",
+    {
+      title:
+        "Boolean flag to enable personalized sections layout. Allows users to follow/unfollow topic sections.",
+      value: false,
+    },
+  ],
+  [
+    "discoverystream.sections.customizeMenuPanel.enabled",
+    {
+      title:
+        "Boolean flag to enable the setions management panel in Customize menu",
+      value: false,
+    },
+  ],
+  [
+    "discoverystream.sections.cards.enabled",
+    {
+      title:
+        "Boolean flag to enable revised pocket story card UI in recommended stories",
+      value: false,
+    },
+  ],
+  [
+    "discoverystream.sections.cards.thumbsUpDown.enabled",
+    {
+      title:
+        "Boolean flag to enable thumbs up/down buttons in the new card UI in recommended stories",
+      value: true,
+    },
+  ],
+  [
+    "discoverystream.sections.following",
+    {
+      title: "A comma-separated list of strings of followed section topics",
+      value: "",
+    },
+  ],
+  [
+    "discoverystream.sections.blocked",
+    {
+      title: "A comma-separated list of strings of blocked section topics",
+      value: "",
+    },
+  ],
+  [
+    "discoverystream.sections.topicSelection.enabled",
+    {
+      title: "Boolean flag to enable inline topic selection",
+      value: false,
+    },
+  ],
+  [
     "discoverystream.spoc-positions",
     {
       title: "CSV string of spoc position indexes on newtab Pocket grid",
       value: "1,5,7,11,18,20",
+    },
+  ],
+  [
+    "discoverystream.placements.spocs",
+    {
+      title:
+        "CSV string of spoc placement ids on newtab Pocket grid. A placement id tells our ad server where the ads are intended to be displayed.",
+    },
+  ],
+  [
+    "discoverystream.placements.spocs.counts",
+    {
+      title:
+        "CSV string of spoc placement counts on newtab Pocket grid. The count tells the ad server how many ads to return for this position and placement.",
+    },
+  ],
+  [
+    "discoverystream.placements.tiles",
+    {
+      title:
+        "CSV string of tiles placement ids on newtab tiles section. A placement id tells our ad server where the ads are intended to be displayed.",
+    },
+  ],
+  [
+    "discoverystream.placements.tiles.counts",
+    {
+      title:
+        "CSV string of tiles placement counts on newtab tiles section. The count tells the ad server how many ads to return for this position and placement.",
     },
   ],
   [
@@ -529,7 +752,7 @@ export const PREFS_CONFIG = new Map([
       title:
         "Endpoint prefixes (comma-separated) that are allowed to be requested",
       value:
-        "https://getpocket.cdn.mozilla.net/,https://firefox-api-proxy.cdn.mozilla.net/,https://spocs.getpocket.com/,https://merino.services.mozilla.com/",
+        "https://getpocket.cdn.mozilla.net/,https://firefox-api-proxy.cdn.mozilla.net/,https://spocs.getpocket.com/,https://merino.services.mozilla.com/,https://ads.mozilla.org/",
     },
   ],
   [
@@ -709,7 +932,71 @@ export const PREFS_CONFIG = new Map([
     "discoverystream.spocs.startupCache.enabled",
     {
       title: "Controls if spocs should be included in startup cache.",
+      value: false,
+    },
+  ],
+  [
+    "discoverystream.contextualContent.enabled",
+    {
+      title: "Controls if contextual content (List feed) is displayed",
+      getValue: showContextualContent,
+    },
+  ],
+  [
+    "discoverystream.contextualContent.feeds",
+    {
+      title: "CSV list of possible topics for the contextual content feed",
+      value: "need_to_know, fakespot",
+    },
+  ],
+  [
+    "discoverystream.contextualContent.selectedFeed",
+    {
+      title:
+        "currently selected feed (one of discoverystream.contextualContent.feeds) to display in listfeed",
+      value: "need_to_know",
+    },
+  ],
+  [
+    "discoverystream.contextualContent.listFeedTitle",
+    {
+      title: "Title for currently selected feed",
+      value: "",
+    },
+  ],
+  [
+    "discoverystream.contextualContent.fakespot.defaultCategoryTitle",
+    {
+      title: "Title default category from fakespot endpoint",
+      value: "",
+    },
+  ],
+  [
+    "discoverystream.contextualContent.fakespot.footerCopy",
+    {
+      title: "footer copy for fakespot feed",
+      value: "",
+    },
+  ],
+  [
+    "discoverystream.contextualContent.fakespot.enabled",
+    {
+      title: "User controlled pref that displays fakespot feed",
       value: true,
+    },
+  ],
+  [
+    "discoverystream.contextualContent.fakespot.ctaCopy",
+    {
+      title: "cta copy for fakespot feed",
+      value: "",
+    },
+  ],
+  [
+    "discoverystream.contextualContent.fakespot.ctaUrl",
+    {
+      title: "cta link for fakespot feed",
+      value: "",
     },
   ],
   [
@@ -869,6 +1156,12 @@ const FEEDS_DATA = [
     title: "Handles fetching and caching weather data",
     value: true,
   },
+  {
+    name: "adsfeed",
+    factory: () => new lazy.AdsFeed(),
+    title: "Handles fetching and caching ads data",
+    value: true,
+  },
 ];
 
 const FEEDS_CONFIG = new Map();
@@ -890,57 +1183,45 @@ export class ActivityStream {
   }
 
   init() {
-    try {
-      this._updateDynamicPrefs();
-      this._defaultPrefs.init();
-      Services.obs.addObserver(this, "intl:app-locales-changed");
+    this._updateDynamicPrefs();
+    this._defaultPrefs.init();
+    Services.obs.addObserver(this, "intl:app-locales-changed");
 
-      // Look for outdated user pref values that might have been accidentally
-      // persisted when restoring the original pref value at the end of an
-      // experiment across versions with a different default value.
-      const DS_CONFIG =
-        "browser.newtabpage.activity-stream.discoverystream.config";
-      if (
-        Services.prefs.prefHasUserValue(DS_CONFIG) &&
-        [
-          // Firefox 66
-          `{"api_key_pref":"extensions.pocket.oAuthConsumerKey","enabled":false,"show_spocs":true,"layout_endpoint":"https://getpocket.com/v3/newtab/layout?version=1&consumer_key=$apiKey&layout_variant=basic"}`,
-          // Firefox 67
-          `{"api_key_pref":"extensions.pocket.oAuthConsumerKey","enabled":false,"show_spocs":true,"layout_endpoint":"https://getpocket.cdn.mozilla.net/v3/newtab/layout?version=1&consumer_key=$apiKey&layout_variant=basic"}`,
-          // Firefox 68
-          `{"api_key_pref":"extensions.pocket.oAuthConsumerKey","collapsible":true,"enabled":false,"show_spocs":true,"hardcoded_layout":true,"personalized":false,"layout_endpoint":"https://getpocket.cdn.mozilla.net/v3/newtab/layout?version=1&consumer_key=$apiKey&layout_variant=basic"}`,
-        ].includes(Services.prefs.getStringPref(DS_CONFIG))
-      ) {
-        Services.prefs.clearUserPref(DS_CONFIG);
-      }
-
-      // Hook up the store and let all feeds and pages initialize
-      this.store.init(
-        this.feeds,
-        ac.BroadcastToContent({
-          type: at.INIT,
-          data: {
-            locale: this.locale,
-          },
-          meta: {
-            isStartup: true,
-          },
-        }),
-        { type: at.UNINIT }
-      );
-
-      this.initialized = true;
-    } catch (e) {
-      // TelemetryFeed could be unavailable if the telemetry is disabled, or
-      // the telemetry feed is not yet initialized.
-      const telemetryFeed = this.store.feeds.get("feeds.telemetry");
-      if (telemetryFeed) {
-        telemetryFeed.handleUndesiredEvent({
-          data: { event: "ADDON_INIT_FAILED" },
-        });
-      }
-      throw e;
+    // Look for outdated user pref values that might have been accidentally
+    // persisted when restoring the original pref value at the end of an
+    // experiment across versions with a different default value.
+    const DS_CONFIG =
+      "browser.newtabpage.activity-stream.discoverystream.config";
+    if (
+      Services.prefs.prefHasUserValue(DS_CONFIG) &&
+      [
+        // Firefox 66
+        `{"api_key_pref":"extensions.pocket.oAuthConsumerKey","enabled":false,"show_spocs":true,"layout_endpoint":"https://getpocket.com/v3/newtab/layout?version=1&consumer_key=$apiKey&layout_variant=basic"}`,
+        // Firefox 67
+        `{"api_key_pref":"extensions.pocket.oAuthConsumerKey","enabled":false,"show_spocs":true,"layout_endpoint":"https://getpocket.cdn.mozilla.net/v3/newtab/layout?version=1&consumer_key=$apiKey&layout_variant=basic"}`,
+        // Firefox 68
+        `{"api_key_pref":"extensions.pocket.oAuthConsumerKey","collapsible":true,"enabled":false,"show_spocs":true,"hardcoded_layout":true,"personalized":false,"layout_endpoint":"https://getpocket.cdn.mozilla.net/v3/newtab/layout?version=1&consumer_key=$apiKey&layout_variant=basic"}`,
+      ].includes(Services.prefs.getStringPref(DS_CONFIG))
+    ) {
+      Services.prefs.clearUserPref(DS_CONFIG);
     }
+
+    // Hook up the store and let all feeds and pages initialize
+    this.store.init(
+      this.feeds,
+      ac.BroadcastToContent({
+        type: at.INIT,
+        data: {
+          locale: this.locale,
+        },
+        meta: {
+          isStartup: true,
+        },
+      }),
+      { type: at.UNINIT }
+    );
+
+    this.initialized = true;
   }
 
   /**

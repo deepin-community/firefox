@@ -206,7 +206,7 @@ export var TelemetryEnvironment = {
    * Intended for use in tests only.
    */
   testCleanRestart() {
-    getGlobal().shutdown();
+    getGlobal().shutdownForTestCleanRestart();
     gGlobalEnvironment = null;
     gActiveExperimentStartupBuffer = new Map();
     return getGlobal();
@@ -337,6 +337,10 @@ const DEFAULT_ENVIRONMENT_PREFS = new Map([
   ["media.gmp-widevinecdm.visible", { what: RECORD_PREF_VALUE }],
   ["media.gmp-manager.lastCheck", { what: RECORD_PREF_VALUE }],
   ["media.gmp-manager.lastEmptyCheck", { what: RECORD_PREF_VALUE }],
+  [
+    "network.http.microsoft-entra-sso.enabled",
+    { what: RECORD_DEFAULTPREF_VALUE },
+  ],
   ["network.http.windows-sso.enabled", { what: RECORD_PREF_VALUE }],
   ["network.proxy.autoconfig_url", { what: RECORD_PREF_STATE }],
   ["network.proxy.http", { what: RECORD_PREF_STATE }],
@@ -362,7 +366,6 @@ const DEFAULT_ENVIRONMENT_PREFS = new Map([
   ["signon.generation.enabled", { what: RECORD_PREF_VALUE }],
   ["signon.rememberSignons", { what: RECORD_PREF_VALUE }],
   ["signon.firefoxRelay.feature", { what: RECORD_PREF_VALUE }],
-  ["toolkit.telemetry.pioneerId", { what: RECORD_PREF_STATE }],
   [
     "widget.content.gtk-high-contrast.enabled",
     { what: RECORD_DEFAULTPREF_VALUE },
@@ -1233,6 +1236,13 @@ EnvironmentCache.prototype = {
     this._shutdown = true;
   },
 
+  shutdownForTestCleanRestart() {
+    // The testcase will re-create a new EnvironmentCache instance.
+    // The observer should be removed for the old instance.
+    this._stopWatchingPrefs();
+    this.shutdown();
+  },
+
   /**
    * Only used in tests, set the preferences to watch.
    * @param aPreferences A map of preferences names and their recording policy.
@@ -1308,7 +1318,7 @@ EnvironmentCache.prototype = {
     );
   },
 
-  QueryInterface: ChromeUtils.generateQI(["nsISupportsWeakReference"]),
+  QueryInterface: ChromeUtils.generateQI(["nsIObserver"]),
 
   /**
    * Start watching the preferences.
@@ -1316,7 +1326,7 @@ EnvironmentCache.prototype = {
   _startWatchingPrefs() {
     this._log.trace("_startWatchingPrefs - " + this._watchedPrefs);
 
-    Services.prefs.addObserver("", this, true);
+    Services.prefs.addObserver("", this);
   },
 
   _onPrefChanged(aData) {
@@ -2128,6 +2138,11 @@ EnvironmentCache.prototype = {
   },
 
   _onEnvironmentChange(what, oldEnvironment) {
+    ChromeUtils.addProfilerMarker(
+      "EnvironmentChange",
+      { category: "Telemetry" },
+      what
+    );
     this._log.trace("_onEnvironmentChange for " + what);
 
     // We are already skipping change events in _checkChanges if there is a pending change task running.

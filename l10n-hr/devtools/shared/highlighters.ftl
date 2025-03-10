@@ -31,6 +31,13 @@ flextype-item = Flex element
 # The layout type of an element shown in the infobar when hovering over a DOM element and
 # it is both a flex container and a flex item.
 flextype-dual = Flex-kontejner/-element
+# The message displayed in the content page when the user clicks on the
+# "Pick an element from the page" in about:devtools-toolbox inspector panel, when
+# debugging a remote page.
+# Variables
+# $action (string) - Will either be remote-node-picker-notice-action-desktop or
+#                    remote-node-picker-notice-action-touch
+remote-node-picker-notice = Programerski alat za biranje čvorova je aktiviran. { $action }
 # Text displayed in `remote-node-picker-notice`, when the remote page is on desktop
 remote-node-picker-notice-action-desktop = Pritisni jedan element za biranje u Inspektoru
 # Text displayed in `remote-node-picker-notice`, when the remote page is on Android
@@ -39,6 +46,10 @@ remote-node-picker-notice-action-touch = Dodirni jedan element za biranje u Insp
 # clicks on the "Pick an element from the page" in about:devtools-toolbox inspector panel,
 # when debugging a remote page.
 remote-node-picker-notice-hide-button = Sakrij
+# The text displayed in a toolbox notification message which is only displayed
+# if prefers-reduced-motion is enabled (via OS-level settings or by using the
+# ui.prefersReducedMotion=1 preference).
+simple-highlighters-message = Kada je funkcija prefers-reduced-motion aktivirana, na ploči s postavkama je moguće aktivirati jednostavnija isticanja kako bi se izbjeglo treperanja boja.
 # Text displayed in a button inside the "simple-highlighters-message" toolbox
 # notification. "Settings" here refers to the DevTools settings panel.
 simple-highlighters-settings-button = Otvori postavke

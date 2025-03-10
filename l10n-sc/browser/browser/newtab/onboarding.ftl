@@ -188,6 +188,8 @@ mr2022-onboarding-pin-primary-button-label =
         [macos] Mantene { -brand-short-name } in Dock
        *[other] Apica { -brand-short-name } a sa barra de is tareas
     }
+# Primary button string used on welcome page for when Firefox is not pinned on MSIX
+mr2022-onboarding-pin-primary-button-label-msix = Apica { -brand-short-name } a sa barra de is tareas e a su menù prinzipale
 # Subtitle will be used when user already has Firefox pinned, but
 # has not set it as their default browser.
 # When translating "zip", please feel free to pick a verb that signifies movement and/or exploration
@@ -223,7 +225,9 @@ mr2022-onboarding-set-default-subtitle = Imprea unu navigadore realizadu dae un'
 mr2022-onboarding-get-started-primary-subtitle = S'ùrtima versione nostra est istantargiada a s'inghìriu de tue, e faghet s'arròlliu in su web fàtzile comente mai. Tenimus un'isciacu mannu de novidades chi as a adorare.
 mr2022-onboarding-get-started-primary-button-label = Cunfigura in pagu segundos
 
-## MR2022 Import Settings screen strings
+## MR2022 Get Started screen strings.
+## These strings will be used on the welcome page
+## when Firefox is already set to default and pinned.
 
 mr2022-onboarding-import-header = Cunfiguratzione ultra-lestra
 mr2022-onboarding-import-subtitle = Cunfigura { -brand-short-name } comente ti pàrgiat. Agiunghe is sinnalibros, is craes e àteru dae su navigadore betzu tuo.
@@ -335,6 +339,13 @@ onboarding-device-migration-subtitle = Identìfica·ti in { -fxaccount-brand-nam
 onboarding-device-migration-subtitle2 = Identìfica·ti pro ti nche portare a fatu sinnalibros, cronologia e craes in su dispositivu nou.
 onboarding-device-migration-primary-button-label = Identìfica·ti
 
+## Add-ons Picker screen
+
+amo-picker-title = Personaliza su { -brand-short-name } tuo
+amo-picker-install-button-label = Agiunghe a { -brand-short-name }
+amo-picker-install-complete-label = Installadu
+amo-picker-collection-link = Iscoberi àteros cumplementos
+
 ## The following screens have been updated to use security and privacy focused strings:
 
 # Easy setup screen
@@ -346,6 +357,8 @@ onboarding-mobile-download-security-and-privacy-subtitle = Cando cumpletas sa si
 # Gratitude screen
 onboarding-gratitude-security-and-privacy-title = { -brand-short-name } est acanta a tie
 onboarding-gratitude-security-and-privacy-subtitle = Gràtzias de impreare { -brand-short-name }, isvilupadu dae Mozilla Foundation. Cun su suportu tuo, traballamus pro fàghere Internet prus seguru e prus atzessìbile a totus.
+onboarding-sign-up-button = Registra·ti o identìfica·ti
+onboarding-sign-up-secondary-button = Cumintza a navigare
 
 ## New user time and familiarity survey strings
 
@@ -365,3 +378,74 @@ onboarding-new-user-survey-familiarity-based-option-1 = Apo cumintzadu dae pagu
 onboarding-new-user-survey-familiarity-based-option-2 = Dd’apo impreadu unas pariga de bortas
 onboarding-new-user-survey-familiarity-based-option-3 = Ddu connosco bene
 onboarding-new-user-survey-familiarity-based-option-4 = Dd’apo impreadu, ma dae ora
+
+## UI strings for the sidebar and vertical tabs
+
+# Setup screen for vertical tabs
+onboarding-new-tabs-title = Nara·nos in ue boles is ischedas tuas
+# Setup screen for vertical tabs - "Switch it up" refers to switching between horizontal and vertical tabs.
+onboarding-new-tabs-subtitle = Podes cambiare cando boles dae sa cunfiguratzione de sa barra laterale.
+# Setup screen for vertical tabs - too many tabs variation
+onboarding-many-tabs-title = Is ischedas tuas, sa manera tua
+# Setup screen for vertical tabs - focused variation
+onboarding-focused-tabs-title = Sèbera sa dispositziones de is ischedas
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-new-vertical-tabs-label = Ischedas a su costadu
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-new-horizontal-tabs-label = Ischedas in artu
+# Setup screen for vertical tabs for existing users
+onboarding-existing-tabs-title = Is ischedas verticales sunt inoghe
+# Setup screen for vertical tabs for existing users
+onboarding-existing-tabs-title2 = Ti presentamus is ischedas verticales
+# Setup screen for vertical tabs for existing users - "Switch it up" refers to switching between horizontal and vertical tabs.
+onboarding-existing-tabs-subtitle = Proa is ischedas a su costadu. Càmbia cando boles dae sa cunfiguratzione de sa barra laterale.
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-existing-vertical-tabs-label = Proa is ischedas verticales
+onboarding-flair-text = Nou!
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-existing-horizontal-tabs-label = Mantene is ischedas orizontales
+# Tooltip displayed on hover for vertical tabs image
+onboarding-vertical-tabs-tooltip =
+    .title = Una ventana de su navigadore ammustrende is ischedas a su costadu de s’ischermu comente parte de sa barra laterale de { -brand-shorter-name }.
+# Description for vertical tabs image
+onboarding-vertical-tabs-description =
+    .aria-description = Una ventana de su navigadore ammustrende is ischedas a su costadu de s’ischermu comente parte de sa barra laterale de { -brand-shorter-name }.
+# Tooltip displayed on hover for horizontal tabs image
+onboarding-horizontal-tabs-tooltip =
+    .title = Una ventana de su navigadore ammustrende is ischedas in artu.
+# Description for horizontal tabs image
+onboarding-horizontal-tabs-description =
+    .aria-description = Una ventana de su navigadore ammustrende is ischedas in artu.
+# Additional setup card for setting up aichatbot in the sidebar
+onboarding-genai-sidebar-title = Proa unu chatbot in sa barra laterale
+onboarding-genai-sidebar-primary-button = Sèbera unu chatbot
+onboarding-genai-sidebar-secondary-button = Cumintza a navigare
+
+## New user onboarding checklist
+
+onboarding-checklist-set-default = Cunfigura { -brand-short-name } comente navigadore predefinidu
+onboarding-checklist-pin = Apica { -brand-short-name } a sa barra de is tareas
+onboarding-checklist-import = Importa dae unu navigadore anteriore
+onboarding-checklist-extension = Agiunghe un’estensione
+onboarding-checklist-sign-up = Registra·ti o identìfica·ti cun su profilu tuo
+
+## Tab Groups feature onboarding strings
+
+tab-groups-onboarding-saved-groups-title = Si serras unu grupu de ischedas, ddu podes torrare a abèrrere inoghe in cale si siat momentu.
+tab-groups-onboarding-dismiss = Andat bene
+
+## Multi Profiles feature onboarding messages
+
+multi-profile-spotlight-title = Dona su benebènnidu a is profilos de { -brand-product-name }
+multi-profile-spotlight-body = Cola in manera fàtzile intre sa navigatzione de traballu e cussa de ispàssiu. Is profilos mantenent separadas is informatziones de navigatzione, includende sa cronologia de chircas e is craes, pro chi potzas tènnere totu organizadu.
+multi-profile-spotlight-cta = Crea unu profilu
+multi-profile-callout-title = Crea profilos diferentes pro traballu e ispàssiu
+multi-profile-callout-subtitle = Is profilos ti permitint de mantènnere separadas is informatziones de navigatzione, includende sa cronologia de chircas e is craes.
+multi-profile-callout-cta = Crea unu profilu
+
+## Desktop to Mobile Adoption feature callout strings
+
+# If translating the headline is challenging, consider using a simplified alternative as a reference: 'Sync your browsing with Firefox for mobile.'
+desktop-to-mobile-headline = Iscàrriga, sincroniza e bae!
+dismiss-button-label = Iscarta
+sync-to-mobile-button-label = Sincroniza cun dispositivos mòbiles

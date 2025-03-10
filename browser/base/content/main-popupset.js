@@ -16,6 +16,12 @@ document.addEventListener(
         case "context_openANewTab":
           gBrowser.addAdjacentNewTab(TabContextMenu.contextTab);
           break;
+        case "context_moveTabToNewGroup":
+          TabContextMenu.moveTabsToNewGroup();
+          break;
+        case "context_ungroupTab":
+          TabContextMenu.ungroupTabs();
+          break;
         case "context_reloadTab":
           gBrowser.reloadTab(TabContextMenu.contextTab);
           break;
@@ -89,6 +95,9 @@ document.addEventListener(
         case "context_closeOtherTabs":
           gBrowser.removeAllTabsBut(TabContextMenu.contextTab);
           break;
+        case "context_unloadTab":
+          TabContextMenu.explicitUnloadTabs();
+          break;
         case "context_fullscreenAutohide":
           FullScreen.setAutohide();
           break;
@@ -96,6 +105,52 @@ document.addEventListener(
           BrowserCommands.fullScreen();
           break;
 
+        // == open-tab-group-context-menu ==
+        case "open-tab-group-context-menu_moveToNewWindow":
+          {
+            let { tabGroupId } = event.target.parentElement.triggerNode.dataset;
+            let tabGroup = gBrowser.getTabGroupById(tabGroupId);
+            gBrowser.replaceGroupWithWindow(tabGroup);
+          }
+          break;
+        case "open-tab-group-context-menu_moveToThisWindow":
+          {
+            let { tabGroupId } = event.target.parentElement.triggerNode.dataset;
+            let tabGroup = gBrowser.getTabGroupById(tabGroupId);
+            gBrowser.adoptTabGroup(tabGroup, gBrowser.tabs.length);
+          }
+          break;
+        case "open-tab-group-context-menu_delete":
+          {
+            let { tabGroupId } = event.target.parentElement.triggerNode.dataset;
+            let tabGroup = gBrowser.getTabGroupById(tabGroupId);
+            // Tabs need to be removed by their owning `Tabbrowser` or else
+            // there are errors.
+            tabGroup.ownerGlobal.gBrowser.removeTabGroup(tabGroup);
+          }
+          break;
+
+        // == saved-tab-group-context-menu ==
+        case "saved-tab-group-context-menu_openInThisWindow":
+          {
+            let { tabGroupId } = event.target.parentElement.triggerNode.dataset;
+            SessionStore.openSavedTabGroup(tabGroupId, window);
+          }
+          break;
+        case "saved-tab-group-context-menu_openInNewWindow":
+          {
+            // TODO Bug 1940112: "Open Group in New Window" should directly restore saved tab groups into a new window
+            let { tabGroupId } = event.target.parentElement.triggerNode.dataset;
+            let tabGroup = SessionStore.openSavedTabGroup(tabGroupId, window);
+            gBrowser.replaceGroupWithWindow(tabGroup);
+          }
+          break;
+        case "saved-tab-group-context-menu_delete":
+          {
+            let { tabGroupId } = event.target.parentElement.triggerNode.dataset;
+            SessionStore.forgetSavedTabGroup(tabGroupId);
+          }
+          break;
         // == editBookmarkPanel ==
         case "editBookmarkPanel_showForNewBookmarks":
           StarUI.onShowForNewBookmarksCheckboxCommand();
@@ -176,6 +231,15 @@ document.addEventListener(
         case "toolbar-context-selectAllTabs":
           gBrowser.selectAllTabs();
           break;
+        case "toolbar-context-customize":
+          gCustomizeMode.enter();
+          break;
+        case "toolbar-context-toggle-vertical-tabs":
+          SidebarController.toggleVerticalTabs();
+          break;
+        case "toolbar-context-customize-sidebar":
+          SidebarController.show("viewCustomizeSidebar");
+          break;
         case "toolbar-context-full-screen-autohide":
           FullScreen.setAutohide();
           break;
@@ -254,6 +318,52 @@ document.addEventListener(
         case "select-translations-panel-about-translations-menuitem":
           SelectTranslationsPanel.onAboutTranslations();
           break;
+
+        // == customizationPanelItemContextMenu ==
+        case "customizationPanelItemContextMenuManageExtension":
+          ToolbarContextMenu.openAboutAddonsForContextAction(
+            event.target.parentElement
+          );
+          break;
+
+        case "customizationPanelItemContextMenuRemoveExtension":
+          ToolbarContextMenu.removeExtensionForContextAction(
+            event.target.parentElement
+          );
+          break;
+
+        case "customizationPanelItemContextMenuReportExtension":
+          ToolbarContextMenu.reportExtensionForContextAction(
+            event.target.parentElement,
+            "toolbar_context_menu"
+          );
+          break;
+
+        case "customizationPanelItemContextMenuPin":
+          gCustomizeMode.addToPanel(
+            event.target.parentNode.triggerNode,
+            "panelitem-context"
+          );
+          break;
+
+        case "customizationPanelItemContextMenuUnpin":
+          gCustomizeMode.addToToolbar(
+            event.target.parentNode.triggerNode,
+            "panelitem-context"
+          );
+          break;
+
+        case "customizationPanelItemContextMenuRemove":
+          gCustomizeMode.removeFromArea(
+            event.target.parentNode.triggerNode,
+            "panelitem-context"
+          );
+          break;
+
+        // == sharing-tabs-warning-panel ==
+        case "sharing-warning-proceed-to-tab":
+          gSharedTabWarning.allowSharedTabSwitch();
+          break;
       }
     });
 
@@ -262,6 +372,23 @@ document.addEventListener(
       .addEventListener("command", event => {
         // Handle commands on the descendant <menuitem>s with different containers.
         TabContextMenu.reopenInContainer(event);
+      });
+
+    document
+      .getElementById("context_moveTabToGroupPopupMenu")
+      .addEventListener("command", event => {
+        if (event.target.id == "context_moveTabToGroupNewGroup") {
+          TabContextMenu.moveTabsToNewGroup();
+          return;
+        }
+
+        const tabGroupId = event.target.getAttribute("tab-group-id");
+        const group = gBrowser.getTabGroupById(tabGroupId);
+        if (!group) {
+          return;
+        }
+
+        TabContextMenu.moveTabsToGroup(group);
       });
 
     document
@@ -278,6 +405,12 @@ document.addEventListener(
       .getElementById("unified-extensions-context-menu")
       .addEventListener("command", event => {
         gUnifiedExtensions.onContextMenuCommand(event.currentTarget, event);
+      });
+
+    document
+      .getElementById("webRTC-selectWindow-menulist")
+      .addEventListener("command", event => {
+        webrtcUI.updateWarningLabel(event.currentTarget);
       });
 
     mainPopupSet.addEventListener("popupshowing", event => {
@@ -323,6 +456,13 @@ document.addEventListener(
         case "unified-extensions-context-menu":
           gUnifiedExtensions.updateContextMenu(event.target, event);
           break;
+        case "customizationPanelItemContextMenu":
+          gCustomizeMode.onPanelContextMenuShowing(event);
+          ToolbarContextMenu.updateExtension(event.target);
+          break;
+        case "bhTooltip":
+          BookmarksEventHandler.fillInBHTooltip(event.target, event);
+          break;
       }
     });
 
@@ -331,6 +471,23 @@ document.addEventListener(
       .addEventListener("popupshowing", event => {
         if (event.target.id == "tabContextMenu") {
           TabContextMenu.updateContextMenu(event.target);
+        }
+      });
+
+    // Enable/disable some `open-tab-group-context-menu` options based on the
+    // specific tab group context.
+    document
+      .getElementById("open-tab-group-context-menu")
+      .addEventListener("popupshowing", event => {
+        if (event.target.id == "open-tab-group-context-menu") {
+          // Disable "Move Group to This Window" menu option for tab groups
+          // that are open in the current window.
+          let { tabGroupId } = event.target.triggerNode.dataset;
+          let tabGroup = gBrowser.getTabGroupById(tabGroupId);
+          let tabGroupIsInThisWindow = tabGroup.ownerDocument == document;
+          event.target.querySelector(
+            "#open-tab-group-context-menu_moveToThisWindow"
+          ).disabled = tabGroupIsInThisWindow;
         }
       });
 
@@ -348,6 +505,7 @@ document.addEventListener(
     mainPopupSet.addEventListener("popuphiding", event => {
       switch (event.target.id) {
         case "tabbrowser-tab-tooltip":
+        case "bhTooltip":
           event.target.removeAttribute("position");
           break;
       }

@@ -64,7 +64,6 @@ usr/lib/@browser@/gmp-clearkey/0.1/libclearkey.so
 
 %if CRASH_REPORTER
 usr/lib/@browser@/crashreporter
-usr/lib/@browser@/minidump-analyzer
 %endif
 
 usr/lib/@browser@/fonts/TwemojiMozilla.ttf

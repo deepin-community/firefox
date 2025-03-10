@@ -59,7 +59,7 @@ app-basics-profile-dir =
     }
 app-basics-enabled-plugins = Ενεργά αρθρώματα
 app-basics-build-config = Ρύθμιση δομής
-app-basics-user-agent = Παράγοντας χρήστη
+app-basics-user-agent = Πράκτορας χρήστη
 app-basics-os = ΛΣ
 app-basics-os-theme = Θέμα ΛΣ
 # Rosetta is Apple's translation process to run apps containing x86_64
@@ -88,7 +88,7 @@ app-basics-pointing-devices = Συσκευές κατάδειξης
 app-basics-data-size = { $value } { $unit }
 show-dir-label =
     { PLATFORM() ->
-        [macos] Προβολή στο Finder
+        [macos] Εμφάνιση στο Finder
         [windows] Άνοιγμα φακέλου
        *[other] Άνοιγμα καταλόγου
     }
@@ -384,8 +384,8 @@ fission-status-enabled-by-env = Ενεργοποιήθηκε από το περ�
 fission-status-disabled-by-env = Ανενεργό λόγω περιβάλλοντος
 fission-status-enabled-by-default = Ενεργό από προεπιλογή
 fission-status-disabled-by-default = Απενεργοποιήθηκε από προεπιλογή
-fission-status-enabled-by-user-pref = Ενεργοποιήθηκε από το χρήστη
-fission-status-disabled-by-user-pref = Απενεργοποιήθηκε από το χρήστη
+fission-status-enabled-by-user-pref = Ενεργοποιήθηκε από τον χρήστη
+fission-status-disabled-by-user-pref = Απενεργοποιήθηκε από τον χρήστη
 fission-status-disabled-by-e10s-other = Ανενεργό E10s
 fission-status-enabled-by-rollout = Ενεργό με σταδιακή διάθεση
 async-pan-zoom = Ασύγχρονο pan/zoom

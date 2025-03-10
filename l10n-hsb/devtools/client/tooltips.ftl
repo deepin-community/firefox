@@ -47,6 +47,7 @@ inactive-css-property-is-impossible-to-override-in-visited = Wobmjezowanja <stro
 inactive-css-position-property-on-unpositioned-box = <strong>{ $property }</strong> na tutón element efekt nima, dokelž pozicionowany element njeje.
 inactive-css-only-replaced-elements = <strong>{ $property }</strong> na tutón element wuskutk nima, dokelž da so jenož na wuměnjene elementy nałožić.
 inactive-text-overflow-when-no-overflow = <strong>{ $property }</strong> na tutón element efekt nima, dokelž hódnota <strong>overflow:hidden</strong> nastajena njeje.
+inactive-css-no-size-containment = <strong>{ $property }</strong> na tutón element efekt nima, dokelž wobmjezowanje wulkosće nima.
 inactive-css-not-for-internal-table-elements = <strong>{ $property }</strong> žadyn efekt na interne tabelowe elementy nima.
 inactive-css-not-for-internal-table-elements-except-table-cells = <strong>{ $property }</strong> žadyn efekt na interne tabelowe elementy mimo tabelowych celow nima.
 inactive-css-not-table = <strong>{ $property }</strong> na tutón element efekt nima, dokelž tabela njeje.
@@ -58,8 +59,13 @@ inactive-css-resize = <strong>{ $property }</strong> na tutón element wuskutk n
 inactive-css-ruby-element = <strong>{ $property }</strong> wuskutk na tutón element nima, dokelž je element ruby. Jeje wulkosć so přez wulkosć pisma teksta ruby postaja.
 
 ## In the Rule View when a CSS property cannot be successfully applied we display
-## an icon. When this icon is hovered this message is displayed to explain how
-## the problem can be solved.
+## an icon. When this icon is hovered this message is displayed to explain why
+## the property is not applied.
+## The variables are all passed from the same place, in `InactiveCssTooltipHelper#getTemplate`
+## (devtools/client/shared/widgets/tooltip/inactive-css-tooltip-helper.js#95)
+## Variables:
+##   $property (string) - A CSS property name e.g. "color".
+##   $display (string) - A CSS display value e.g. "inline-block".
 
 inactive-css-highlight-pseudo-elements-not-supported = <strong>{ $property }</strong> so za pseudoelementy wuzběhnjenja njepodpěruje.
 inactive-css-cue-pseudo-element-not-supported = <strong>{ $property }</strong> so za pseudo-elementy ::cue njepodpěruje.
@@ -100,6 +106,7 @@ inactive-css-not-floated-fix = Spytajće kajkosć <strong>float</strong> z druhe
 inactive-css-position-property-on-unpositioned-box-fix = Spytajće jeho kajkosć <strong>position</strong> na něšto druhe hač <strong>static</strong> nastajić. { learn-more }
 inactive-css-only-replaced-elements-fix = Zawěsćće, zo kajkosć wuměnjenemu elementej přidawaće. { learn-more }
 inactive-text-overflow-when-no-overflow-fix = Spytajće <strong>overflow:hidden</strong> přidać. { learn-more }
+inactive-css-no-size-containment-fix = Spytajće kajkosć <strong>display</strong> na něšto druhe hač <strong>none</strong>, <strong>contents</strong>, <strong>table</strong> abo <strong>inline-table</strong> stajić a zawěsćće, zo w tabeli abo segmenće ruby njeje. { learn-more }
 inactive-css-not-for-internal-table-elements-fix = Spytajće kajkosć <strong>display</strong> na něsto druhe hač <strong>table-cell</strong>, <strong>table-column</strong>, <strong>table-row</strong>, <strong>table-column-group</strong>, <strong>table-row.group</strong> abo <strong>table-footer-group</strong> stajić. { learn-more }
 inactive-css-not-for-internal-table-elements-except-table-cells-fix = Spytajće kajkosć <strong>display</strong> na něsto druhe hač <strong>table-column</strong>, <strong>table-row</strong>, <strong>table-column-group</strong>, <strong>table-row.group</strong> abo <strong>table-footer-group</strong> stajić. { learn-more }
 inactive-css-not-table-fix = Spytajće <strong>display:table</strong> abo <strong>display:inline-tabel</strong> přidać. { learn-more }

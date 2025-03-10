@@ -226,7 +226,7 @@ fox-doodle-pin-secondary = Teraz nie
 
 ## These strings are used in the Set Firefox as Default PDF Handler for Existing Users experiment
 
-set-default-pdf-handler-headline = <strong>Vaše súbory PDF sa teraz otvárajú vo { -brand-short-name(case: "loc") }.</strong> Upravujte formuláre alebo podpisujte priamo vo svojom prehliadači. Ak to chcete zmeniť, vyhľadajte v nastaveniach „PDF“.
+set-default-pdf-handler-headline = <strong>Vaše súbory PDF sa teraz otvárajú vo { -brand-short-name(case: "loc") }.</strong> Upravujte formuláre alebo podpisujte priamo vo svojom prehliadači. Ak to chcete zmeniť, vyhľadajte v nastaveniach “PDF”.
 set-default-pdf-handler-primary = Rozumiem
 
 ## FxA sync CFR
@@ -249,6 +249,9 @@ device-migration-fxa-spotlight-older-device-primary-button = Vytvoriť účet
 device-migration-fxa-spotlight-getting-new-device-header-2 = Plánujete v blízkej budúcnosti nové zariadenie?
 device-migration-fxa-spotlight-getting-new-device-body-2 = Pomocou niekoľkých jednoduchých krokov si môžete preniesť svoje záložky, históriu a heslá na svoje nové zariadenie.
 device-migration-fxa-spotlight-getting-new-device-primary-button = Ako zálohovať moje údaje
+device-migration-fxa-spotlight-sync-header = Prehliadajte bez toho, aby ste čokoľvek zmeškali
+device-migration-fxa-spotlight-sync-body = Synchronizujte všetky dôležité informácie pomocou šifrovania, ako sú záložky a heslá. Všetko máte na dosah všade, kde použijete { -brand-product-name }.
+device-migration-fxa-spotlight-sync-primary-button = Poďme na to
 
 ## Set as Default PDF Reader Infobar
 
@@ -271,7 +274,7 @@ launch-on-login-infobar-reject-button = Teraz nie
 ## These string variants are used when the “launch on login” infobar
 ## notification is displayed for a second time.
 
-launch-on-login-infobar-final-message = <strong>Otvoriť { -brand-short-name } pri každom reštartovaní počítača?</strong> Ak chcete spravovať predvoľby spustenia, vyhľadajte v nastaveniach výraz „spustenie“.
+launch-on-login-infobar-final-message = <strong>Otvoriť { -brand-short-name } pri každom reštartovaní počítača?</strong> Ak chcete spravovať predvoľby spustenia, vyhľadajte v nastaveniach výraz “spustenie”.
 launch-on-login-infobar-final-reject-button = Nie, ďakujem
     .accesskey = N
 
@@ -285,3 +288,61 @@ tail-fox-spotlight-title = Zbavte sa dotieravých sledovacích prvkov
 tail-fox-spotlight-subtitle = Rozlúčte sa s otravnými reklamnými sledovacími prvkami a zažite bezpečnejší a rýchlejší internet.
 tail-fox-spotlight-primary-button = Otvárať moje odkazy pomocou { -brand-short-name(case: "gen") }
 tail-fox-spotlight-secondary-button = Teraz nie
+
+## Root Certificate Succession Infobar
+
+root-certificate-succession-infobar-january-message = <strong>Staršie verzie { -brand-short-name(case: "gen") } môžu začať mať problémy 14. januára 2025.</strong>
+root-certificate-succession-infobar-march-message = <strong>Aktualizujte, aby ste { -brand-short-name } mohli používať aj po 14. marci 2025.</strong>
+root-certificate-succession-infobar-link = Prečo by som mal aktualizovať?
+root-certificate-succession-infobar-primary-button =
+    .label = Aktualizovať teraz
+    .accesskey = A
+root-certificate-succession-infobar-secondary-button =
+    .label = Neskôr
+    .accesskey = N
+
+## Root Certificate Succession Windows Background Notification
+
+root-certificate-windows-background-notification-title = Zmeškali ste dôležitú aktualizáciu { -brand-short-name(case: "gen") }
+root-certificate-windows-background-notification-subtitle = Ak neaktualizujete, časti prehliadača čoskoro prestanú fungovať. Teraz je skvelý čas získať naše najnovšiu ochranu a funkcie.
+root-certificate-windows-background-notification-learn-more-button = Ďalšie informácie
+root-certificate-windows-background-notification-update-button = Aktualizovať { -brand-short-name }
+
+## FxA Menu Message variants
+
+fxa-menu-message-close-button =
+    .title = Zavrieť
+    .aria-label = Zavrieť
+fxa-menu-message-sign-up-button = Zaregistrujte sa
+fxa-menu-message-sync-devices-primary-text = Synchronizujte všetky svoje zariadenia
+fxa-menu-message-sync-devices-secondary-text = Okamžite získajte svoje informácie – ako sú záložky a heslá – všade, kde používate { -brand-short-name }.
+fxa-menu-message-sync-devices-collapsed-text = Synchronizujte všetky svoje zariadenia
+fxa-menu-message-backup-data-primary-text = Zálohujte si údaje prehliadača
+fxa-menu-message-backup-data-secondary-text = Automaticky chráňte záložky, heslá a ďalšie informácie na všetkých svojich zariadeniach.
+fxa-menu-message-backup-data-collapsed-text = Zálohujte údaje prehliadača
+fxa-menu-message-backup-sync-primary-text = Udržujte svoje údaje v bezpečí a synchronizované
+fxa-menu-message-backup-sync-secondary-text = Synchronizácia zálohuje väčšinu vašich údajov, takže k nim máte prístup všade, kde používate { -brand-short-name }.
+fxa-menu-message-backup-sync-collapsed-text = Synchronizujte a zálohujte dáta
+fxa-menu-message-mobile-primary-text = Odošlite karty do telefónu
+fxa-menu-message-mobile-secondary-text = Vďaka synchronizácii kariet s mobilným zariadením okamžite pokračujte tam, kde ste prestali.
+fxa-menu-message-mobile-collapsed-text = Synchronizujte s telefónom
+
+## Multi-CTA Fox Doodle Spotlight
+
+multi-cta-fox-doodle-title = Vitajte späť
+multi-cta-fox-doodle-set-default-checkbox = Nastaviť { -brand-short-name } ako predvolený prehliadač
+multi-cta-fox-doodle-pin-startmenu-checkbox = Pripnúť { -brand-short-name } do ponuky Štart
+multi-cta-fox-doodle-pin-checkbox =
+    { PLATFORM() ->
+        [macos] Ponechať { -brand-short-name } v Docku
+       *[other] Pripnúť { -brand-short-name } na hlavný panel úloh
+    }
+multi-cta-fox-doodle-start-browsing-primary-button-label = Poďme prehliadať
+multi-cta-fox-doodle-main-browser-primary-button-label = Nastaviť { -brand-short-name } ako môj hlavný prehliadač
+multi-cta-fox-doodle-quick-reminder-subtitle = Tu je rýchle pripomenutie, že svoj obľúbený prehliadač zameraný na ochranu súkromia si môžete ponechať jediným kliknutím.
+multi-cta-fox-doodle-privacy-focused-subtitle =
+    { PLATFORM() ->
+        [macos] Ponechajte si svoj obľúbený prehliadač zameraný na ochranu osobných údajov jediným kliknutím. Nastavte { -brand-short-name } ako predvolený prehliadač na otváranie odkazov a ponechajte si ho v Docku.
+       *[other] Ponechajte si svoj obľúbený prehliadač zameraný na ochranu osobných údajov jediným kliknutím. Nastavte { -brand-short-name } ako predvolený prehliadač na otváranie odkazov a pripnite ho na panel úloh.
+    }
+multi-cta-fox-doodle-msix-privacy-focused-subtitle = Ponechajte si svoj obľúbený prehliadač zameraný na ochranu súkromia jediným kliknutím. Nastavte { -brand-short-name } ako predvolený prehliadač na otváranie odkazov a pripnite ho na panel úloh a ponuku Štart.

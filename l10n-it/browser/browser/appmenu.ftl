@@ -75,8 +75,8 @@ appmenu-remote-tabs-showmore =
     .tooltiptext = Visualizza altre schede da questo dispositivo
 # This is shown as the label for an element to show inactive tabs from this device.
 appmenu-remote-tabs-show-inactive-tabs =
-  .label = Schede inattive
-  .tooltiptext = Visualizza le schede inattive su questo dispositivo
+    .label = Schede inattive
+    .tooltiptext = Visualizza le schede inattive su questo dispositivo
 # This is shown beneath the name of a device when that device has no open tabs
 appmenu-remote-tabs-notabs = Nessuna scheda aperta
 # This is shown when Sync is configured but syncing tabs is disabled.
@@ -104,8 +104,11 @@ appmenu-fxa-sync-and-save-data2 = Sincronizza e salva i dati
 appmenu-fxa-signed-in-label = Accedi
 appmenu-fxa-setup-sync =
     .label = Attiva sincronizzazione…
+appmenu-fxa-setup-sync-new = Attiva
 appmenuitem-save-page =
     .label = Salva pagina con nome…
+appmenuitem-fxa-sync-off-title = La sincronizzazione è disattivata
+appmenuitem-fxa-sync-off-description = Proteggi e accedi ai tuoi segnalibri, password e altri dati ovunque ti trovi.
 
 ## What's New panel in App menu.
 
@@ -192,11 +195,9 @@ profiler-popup-presets-power-description = Preset per la diagnosi di problemi re
 # "Power" is used in the sense of energy (electricity used by the computer).
 profiler-popup-presets-power-label =
     .label = Energia
-
 profiler-popup-presets-debug-description = Preset per il debug di { -brand-shorter-name }. Overhead elevato, non utilizzare per analisi delle prestazioni ma solo per comprendere il comportamento del browser.
 profiler-popup-presets-debug-label =
-  .label = Debug
-
+    .label = Debug
 profiler-popup-presets-custom-label =
     .label = Personalizzato
 
@@ -275,6 +276,22 @@ appmenuitem-monitor-title = { -monitor-brand-short-name }
 appmenuitem-monitor-description = Ottieni informazioni sulle violazioni di dati
 appmenuitem-relay-title = { -relay-brand-short-name }
 appmenuitem-relay-description = Mantieni al sicuro il tuo indirizzo email e telefono
+appmenuitem-services-relay-description = Apri la dashboard per gli alias di posta elettronica
 appmenuitem-vpn-title = { -mozilla-vpn-brand-name }
 appmenuitem-vpn-description = Proteggi la tua attività online
+appmenu-services-header = I miei servizi
+appmenu-other-protection-header = Prova altri strumenti di protezione di { -vendor-short-name }:
+
+## Profiles panel
+
+appmenu-profiles = Profili
+appmenu-other-profiles = Altri profili
+appmenu-manage-profiles =
+    .label = Gestisci profili
+appmenu-create-profile =
+    .label = Nuovo profilo
+appmenu-edit-profile =
+    .aria-label = Modifica profilo
+appmenu-profiles-2 =
+    .label = Profili
 

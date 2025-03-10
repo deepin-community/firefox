@@ -28,11 +28,17 @@ duplicate-tabs =
 close-tabs-to-the-start =
     .label = Stäng flikar till vänster
     .accesskey = v
+close-tabs-to-the-start-vertical =
+    .label = Stäng flikar ovan
+    .accesskey = o
 # The following string is displayed on a menuitem that will close the tabs from the end of the tabstrip to the currently targeted tab (excluding the currently targeted and any other selected tabs).
 # In left-to-right languages this should use "Right" and in right-to-left languages this should use "Left".
 close-tabs-to-the-end =
     .label = Stäng flikar till höger
     .accesskey = h
+close-tabs-to-the-end-vertical =
+    .label = Stäng flikar nedan
+    .accesskey = n
 close-other-tabs =
     .label = Stäng alla andra flikar
     .accesskey = ä
@@ -78,6 +84,16 @@ tab-context-close-duplicate-tabs =
 tab-context-share-url =
     .label = Dela
     .accesskey = D
+# In left-to-right languages this should use "Right" and in right-to-left languages this should use "Left" to indicate the direction a new tab will open.
+tab-context-new-tab-open =
+    .label = Ny flik till höger
+    .accesskey = h
+tab-context-new-tab-open-vertical =
+    .label = Ny flik nedan
+    .accesskey = n
+tab-context-new-group =
+    .label = Ny grupp
+    .accesskey = N
 
 ## Variables:
 ##  $tabCount (Number): the number of tabs that are affected by the action.

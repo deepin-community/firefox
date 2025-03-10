@@ -30,6 +30,9 @@ appmenu-update-restart2 =
     .secondarybuttonlabel = Nie teraz
     .secondarybuttonaccesskey = N
 appmenu-update-restart-message2 = Pobierz najnowszą wersję przeglądarki { -brand-shorter-name }. Otwarte karty i okna zostaną przywrócone.
+appmenu-theme-installed =
+    .secondarybuttonlabel = Cofnij
+    .secondarybuttonaccesskey = C
 appmenu-update-other-instance =
     .label = { -brand-shorter-name } nie może zostać automatycznie uaktualniony do najnowszej wersji.
     .buttonlabel = Uaktualnij przeglądarkę { -brand-shorter-name } mimo to
@@ -37,7 +40,6 @@ appmenu-update-other-instance =
     .secondarybuttonlabel = Nie teraz
     .secondarybuttonaccesskey = N
 appmenu-update-other-instance-message = Dostępna jest nowa aktualizacja przeglądarki { -brand-shorter-name }, ale nie można jej zainstalować, ponieważ uruchomiona jest inna kopia programu. Zamknij ją, aby kontynuować aktualizację lub zdecyduj się uaktualnić mimo to (druga kopia programu może nie działać poprawnie do czasu uruchomienia jej ponownie).
-
 appmenu-addon-private-browsing-installed2 =
     .buttonlabel = OK
     .buttonaccesskey = O
@@ -45,7 +47,6 @@ appmenu-addon-post-install-message3 = Zarządzaj dodatkami i motywami w menu a
 appmenu-addon-post-install-incognito-checkbox =
     .label = To rozszerzenie może działać w oknach prywatnych
     .accesskey = T
-    
 appmenu-new-tab-controlled-changes =
     .label = Strona nowej karty została zmieniona.
     .buttonlabel = Używaj nowej

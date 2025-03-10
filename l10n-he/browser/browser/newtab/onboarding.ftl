@@ -210,7 +210,9 @@ mr2022-onboarding-set-default-primary-button-label = הגדרת { -brand-short-n
 
 mr2022-onboarding-get-started-primary-button-label = התקנה תוך שניות
 
-## MR2022 Import Settings screen strings
+## MR2022 Get Started screen strings.
+## These strings will be used on the welcome page
+## when Firefox is already set to default and pinned.
 
 mr2022-onboarding-import-header = התקנה במהירות הבזק
 mr2022-onboarding-import-subtitle = ניתן להגדיר את { -brand-short-name } איך שמתחשק לך. אפשר להוסיף את הסימניות, הססמאות ועוד מהדפדפן הישן שלך.ת
@@ -312,6 +314,11 @@ onboarding-mobile-download-security-and-privacy-title = להישאר מוצפן 
 # Gratitude screen
 onboarding-gratitude-security-and-privacy-title = { -brand-short-name } מאחוריך
 onboarding-gratitude-security-and-privacy-subtitle = תודה לך על השימוש ב־{ -brand-short-name }ֿ, שפועל בגיבוי קרן Mozilla. עם התמיכה שלך, אנו פועלים כדי להפוך את האינטרנט לבטוח ונגיש יותר למען הכלל.
+# Sign up or Sign in screen
+onboarding-sign-up-title = סנכרון הנתונים שלך בין מכשירים
+onboarding-sign-up-description = כדאי להירשם לחשבון וכל המידע החשוב שלך, לרבות ססמאות, סימניות ועוד, יאוחסן בצורה מאובטחת ויהיה זמין לשימוש בעת התחברות לכל מכשיר.
+onboarding-sign-up-button = הרשמה או התחברות
+onboarding-sign-up-secondary-button = התחלת גלישה
 
 ## New user time and familiarity survey strings
 
@@ -331,3 +338,88 @@ onboarding-new-user-survey-familiarity-based-option-1 = אני חדש לגמרי
 onboarding-new-user-survey-familiarity-based-option-2 = השתמשתי בו קצת
 onboarding-new-user-survey-familiarity-based-option-3 = אני מאוד מכיר את זה
 onboarding-new-user-survey-familiarity-based-option-4 = השתמשתי בו בעבר, אבל עבר זמן מה
+
+## UI strings for the sidebar and vertical tabs
+
+# Setup screen for vertical tabs
+onboarding-new-tabs-title = איפה בא לך שנשים את הלשוניות?
+# Setup screen for vertical tabs - "Switch it up" refers to switching between horizontal and vertical tabs.
+onboarding-new-tabs-subtitle = ניתן להחליף בינהם בכל עת בהגדרות סרגל הצד.
+# Setup screen for vertical tabs - too many tabs variation
+onboarding-many-tabs-title = הלשוניות שלך, בדרך שלך
+# Setup screen for vertical tabs - subtitle for too many tabs variation
+onboarding-many-tabs-subtitle = יש אצלך הרבה לשוניות פתוחות? ניתן לנסות את הלשוניות שלך בצד לקבלת תצוגה יעילה יותר. או לשמור על המצב הנוכחי עם כרטיסיות בחלק העליון. אפשר להחליף בין המצבים בכל עת.
+# Setup screen for vertical tabs - focused variation
+onboarding-focused-tabs-title = בחירת פריסת הלשוניות שלך
+# Setup screen for vertical tabs - subtitle for focused variation
+onboarding-focused-tabs-subtitle = לקבלת תצוגה יעילה יותר שתוכל לסייע לך להישאר בפוקוס, ניתן לנסות את להעביר הלשוניות שלך לצד. או לשמור על המצב הנוכחי עם כרטיסיות בחלק העליון. אפשר להחליף בין המצבים בכל עת.
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-new-vertical-tabs-label = לשוניות בצד
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-new-horizontal-tabs-label = לשוניות למעלה
+# Setup screen for vertical tabs for existing users
+onboarding-existing-tabs-title = לשוניות אנוכיות נמצאות כאן
+# Setup screen for vertical tabs for existing users
+onboarding-existing-tabs-title2 = היכרות עם לשוניות אנוכיות
+# Setup screen for vertical tabs for existing users - "Switch it up" refers to switching between horizontal and vertical tabs.
+onboarding-existing-tabs-subtitle = נסו את הלשוניות שלכם בצד. החליפו בין המצבים בכל עת בהגדרות סרגל הצד.
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-existing-vertical-tabs-label = נסו לשוניות אנוכיות
+onboarding-flair-text = חדש!
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-existing-horizontal-tabs-label = להישאר עם לשוניות אופקיות
+# Tooltip displayed on hover for vertical tabs image
+onboarding-vertical-tabs-tooltip =
+    .title = חלון דפדפן המציג לשוניות בצד המסך כחלק מסרגל הצד של { -brand-shorter-name }.
+# Description for vertical tabs image
+onboarding-vertical-tabs-description =
+    .aria-description = חלון דפדפן המציג לשוניות בצד המסך כחלק מסרגל הצד של { -brand-shorter-name }.
+# Tooltip displayed on hover for horizontal tabs image
+onboarding-horizontal-tabs-tooltip =
+    .title = חלון דפדפן המציג לשוניות בחלק העליון.
+# Description for horizontal tabs image
+onboarding-horizontal-tabs-description =
+    .aria-description = חלון דפדפן המציג לשוניות בחלק העליון.
+# Additional setup card for setting up aichatbot in the sidebar
+onboarding-genai-sidebar-title = נסו צ’אט בוט AI בסרגל הצד
+# Setup card for setting up AI chatbot in the sidebar; "Providers" refers to AI chatbot providers (e.g. OpenAI, etc). "Switch anytime" refers to allowing the user to switch to a different chatbot.
+onboarding-genai-sidebar-subtitle = סיכום תוכן אינטרנט, סיעור מוחות, טיוטת הודעות - הכל תוך כדי גלישה. בחירה מתוך מספר ספקים. ניתן להחליף בינהם בכל עת. <a data-l10n-name="learn-more">מידע נוסף</a>
+onboarding-genai-sidebar-primary-button = בחירת צ’אט בוט
+onboarding-genai-sidebar-secondary-button = התחלת גלישה
+
+## New user onboarding checklist
+
+onboarding-checklist-title = סיום הגדרת { -brand-short-name }
+onboarding-checklist-subtitle = כדאי להשלים את השלבים האלה כדי להפיק את המרב מחווית הגלישה שלך.
+onboarding-checklist-set-default = הגדרת { -brand-short-name } כדפדפן ברירת המחדל
+onboarding-checklist-pin = הצמדת { -brand-short-name } לשורת המשימות
+onboarding-checklist-import = ייבוא מהדפדפן הקודם
+onboarding-checklist-extension = הוספת הרחבה
+onboarding-checklist-sign-up = הרשמה או התחברות לחשבון שלך
+
+## Tab Groups feature onboarding strings
+
+tab-groups-onboarding-feature-callout-title = ניתן לנסות קבוצות לשוניות עבור עומס מופחת וקבלת מיקוד טוב יותר
+tab-groups-onboarding-feature-callout-subtitle = ניתן לעשות סדר בבלאגן על־ידי גרירת לשונית אחת על גבי לשונית אחרת כדי ליצור את הקבוצה הראשונה שלך.
+tab-groups-onboarding-create-group-title = ניתן למצוא את הקבוצות הפתוחות שלך בסרגל הלשוניות או על־ידי חיפושן בשורת הכתובת.
+tab-groups-onboarding-saved-groups-title = לאחר סגירת קבוצת לשוניות, באפשרותך לפתוח אותה מחדש כאן בכל עת.
+tab-groups-onboarding-saved-groups-no-alltabs-button-title = ניתן למצוא את קבוצות הלשוניות הפתוחות או הסגורות שלך בכל עת על־ידי חיפושן בשורת הכתובת.
+tab-groups-onboarding-dismiss = אישור
+
+## Multi Profiles feature onboarding messages
+
+multi-profile-spotlight-title = תגידו שלום לפרופילים של { -brand-product-name }
+multi-profile-spotlight-body = מעבר קל בין גלישה לעבודה לבין גלישה בשביל הכיף. פרופילים שומרים על נתוני הגלישה שלך, לרבות היסטוריית חיפוש וססמאות, מופרדים לחלוטין אחד מהשני כדי שניתן להישאר מסודר ומאורגן.
+multi-profile-spotlight-cta = יצירת פרופיל
+multi-profile-callout-title = יצירת פרופילים שונים לעבודה ולהנאה
+multi-profile-callout-subtitle = פרופילים מאפשרים לך לשמור על נתוני הגלישה שלך, לרבות היסטוריית חיפוש וססמאות, מופרדים לחלוטין אחד מהשני.
+multi-profile-callout-cta = יצירת פרופיל
+
+## Desktop to Mobile Adoption feature callout strings
+
+# If translating the headline is challenging, consider using a simplified alternative as a reference: 'Sync your browsing with Firefox for mobile.'
+desktop-to-mobile-headline = מורידים, מסנכרנים ויוצאים לדרך!
+# The phrase, 'on the go', is used to describe when people are very busy and are traveling from place to place.
+desktop-to-mobile-subtitle = יש לסרוק את קוד ה־QR כדי להוריד את { -brand-product-name } לנייד. לאחר ההתקנה, יש לבחור ב״סנכרון לנייד״ כדי לגשת לססמאות והלשוניות שלך ועוד בדרכים.
+dismiss-button-label = סגירה
+sync-to-mobile-button-label = סנכרון לנייד

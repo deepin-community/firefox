@@ -16,6 +16,11 @@ about-glean-interface-description =
     është një bibliotekë grumbullimi të dhënash e përdorur në projekte { -vendor-short-name }.
     Kjo ndërfaqe është hartuar për t’u përdorur nga zhvillues dhe testues për
     <a data-l10n-name="fog-link">të testuar dorazi  instrumentim</a>.
+about-glean-category-about-glean = Mbi { -glean-brand-name }-in
+about-glean-category-manual-testing = Testim Dorazi
+about-glean-category-adhoc-testing = Testim “Ad Hoc”
+about-glean-category-profiler = Përdorim Profilizuesi
+about-glean-category-about-data = Mbi të Dhënat
 about-glean-upload-enabled = Ngarkimi i të dhënave është aktivizuar.
 about-glean-upload-disabled = Ngarkimi i të dhënave është çaktivizuar.
 about-glean-upload-enabled-local = Ngarkimi i të dhënave është aktivizuar vetëm për dërgim te një shërbyes vendor.
@@ -43,6 +48,9 @@ about-glean-glean-android = <code>MOZ_GLEAN_ANDROID</code>: { $glean-android-def
 #   $moz-official-define-value (Boolean): the value of the MOZILLA_OFFICIAL define.
 # Do not translate strings between <code> </code> tags.
 about-glean-moz-official = <code>MOZILLA_OFFICIAL</code>: { $moz-official-define-value }
+about-glean-additional-links =
+    Për një shpjegim të rrugëve të ndryshme për të regjistruar dhe gjetur të dhëna, ju lutemi, shihni te
+    skeda <strong>Mbi të Dhënat</strong>.
 about-glean-about-testing-header = Mbi Testimin
 # This message is followed by a numbered list.
 about-glean-manual-testing =
@@ -97,8 +105,39 @@ about-glean-adhoc-note =
     Ju lutemi, kini parasysh se po përdorni API JS Glean duke përdorur konsolën e mjeteve të zhvilluesit.
     Kjo do të thotë se kategoria metrike dhe emri metrik formatohen në
     <code>camelCase</code>, ndryshe nga ç’ndodh në API Rust dhe C++.
+about-glean-profiler-explanation =
+    Që të shihni një pamje të plotë të matjeve të regjistruara, mund të përdorni { -profiler-brand-name }.
+    Së pari duhet të <a data-l10n-name="firefox-profiler-link">prodhoni një profil funksionimi</a>.
+    Pasi ta keni prodhuar profilin, përzgjidhni <q>Grafik Piketash</q> dhe shihni te piketat nën <q>Telemetri</q>.
+about-glean-profiler-explanation-profiler =
+    Te profili i funksionimit mund të shihni krejt matjet e grumbulluara, kur qenë
+    grumbulluar dhe se ç’vlera janë grumbulluar saktësisht. Duke kaluar kursorin sipër piketash,
+    mund të verifikoni se qe grumbulluar vlera e saktë dhe se grumbullimi ndodhi në kohën e duhur.
 controls-button-label-verbose = Apliko rregullimet dhe parashtro një ping
+about-glean-feedback-settings-only =
+    .message = Rregullimet u aplikuan!
+about-glean-feedback-settings-and-ping =
+    .message = Rregullimet u zbatuan dhe pingu u dërgua!
 about-glean-about-data-header = Mbi të Dhënat
+about-glean-about-data-description =
+    Ka ndoca mjete të ndryshme që mund të përdorni për të parë të dhënat tuaja, në varësi se
+    për çfarë po kërkoni.
+about-glean-about-data-description-list-intro =
+    Ju lutemi, për raste përdorimi specifike për çdo
+    mjet shihni listën më poshtë:
+about-glean-about-data-list-item-dictionary =
+    Që të shfletoni listën e të dhënave të grumbulluara nga { -glean-brand-name } për aplikacion, ju lutemi, shihni
+    <a data-l10n-name="glean-dictionary-link">{ -glean-brand-name } Fjalorthin</a>.
+about-glean-about-data-list-item-about-telemetry =
+    Që të shfletoni të dhënat që po grumbullohen nga telemetria e dikurshme, ju lutemi, shihni
+    <a data-l10n-name="about-telemetry-link">about:telemetry</a>.
+about-glean-about-data-list-item-debug-ping-viewer =
+    Që të shfletoni etiketa diagnostikimi, të shihni pingje të plotë, të shihni 
+    një akt drejtpërsëdrejti, ose të shihni vizualizime matjesh, ju lutemi,
+    shihni <a data-l10n-name="glean-debug-ping-viewer">{ glean-debug-ping-viewer-brand-name }</a>.
+about-glean-about-data-list-item-firefox-profiler =
+    Që të regjistroni një profil funksionimi dhe të shihni krejt matjet e
+    regjistruara, ju lutemi, përdorni <a data-l10n-name="about-glean-firefox-profiler">{ -profiler-brand-name }</a>.
 about-glean-about-data-explanation =
     Që të shfletoni listën e të dhënave të grumbulluara, ju lutemi, shihni
     <a data-l10n-name="glean-dictionary-link">{ -glean-brand-name } Fjalorthin</a>.

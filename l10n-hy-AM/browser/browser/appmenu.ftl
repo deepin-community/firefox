@@ -20,7 +20,7 @@ appmenuitem-new-tab =
 appmenuitem-new-window =
     .label = Նոր պատուհան
 appmenuitem-new-private-window =
-    .label = Սկսել գաղտնի դիտարկում
+    .label = Նոր գաղտնի պատուհան
 appmenuitem-history =
     .label = Պատմություն
 appmenuitem-downloads =
@@ -77,16 +77,6 @@ appmenu-remote-tabs-turn-on-sync =
 appmenu-remote-tabs-showmore =
     .label = Ցուցադրել ավելի շատ ներդիրներ
     .tooltiptext = Ցուցադրել ավելի շատ ներդիրներ այս սարքի համար
-# This is shown when there are inactive tabs which are not being shown.
-# Variables
-# $count (Number) - The number of inactive tabs which are not being shown (at least 1)
-appmenu-remote-tabs-showinactive =
-    .label =
-        { $count ->
-            [one] Ցուցադրել մեկ ոչ ակտիվ ներդիր
-           *[other] Ցուցադրել { $count } ոչ ակտիվ ներդիրներ
-        }
-    .tooltiptext = Ցուցադրել ոչ ակտիվ ներդիրներն այս սարքում
 # This is shown as the label for an element to show inactive tabs from this device.
 appmenu-remote-tabs-show-inactive-tabs =
     .label = Չգործող ներդիրներ
@@ -118,8 +108,11 @@ appmenu-fxa-sync-and-save-data2 = Համաժամեցնել և պահել տվյ�
 appmenu-fxa-signed-in-label = Մուտք գործել
 appmenu-fxa-setup-sync =
     .label = Միացնել համաժամացումը…
+appmenu-fxa-setup-sync-new = Միացնել
 appmenuitem-save-page =
     .label = Պահպանել Էջը որպես…
+appmenuitem-fxa-sync-off-title = Համաժամեցումն անջատված է
+appmenuitem-fxa-sync-off-description = Պաշտպանեք և մատչեք ձեր էջանիշները, գաղտնաբառերը և ավելին ամենուր:
 
 ## What's New panel in App menu.
 
@@ -140,6 +133,9 @@ profiler-popup-button-idle =
 profiler-popup-button-recording =
     .label = Հատկագրիչ
     .tooltiptext = Հատկագրիչը գրանցում է պրոֆիլը
+profiler-popup-button-capturing =
+    .label = Հատկագրիչ
+    .tooltiptext = Հատկագրիչը լրացնում է հատկագիրը
 profiler-popup-header-text = { -profiler-brand-name }
 profiler-popup-reveal-description-button =
     .aria-label = Ցուցադրել առավել շատ տեղեկություն
@@ -196,6 +192,8 @@ profiler-popup-presets-networking-label =
 # "Power" is used in the sense of energy (electricity used by the computer).
 profiler-popup-presets-power-label =
     .label = Հոսանք
+profiler-popup-presets-debug-label =
+    .label = Վրիպազերծել
 profiler-popup-presets-custom-label =
     .label = Հարմարեցված
 
@@ -235,7 +233,7 @@ appmenu-help-share-ideas =
     .label = Կիսվեք գաղափարներով և կարծիքներով…
     .accesskey = S
 appmenu-help-switch-device =
-    .label = Անցում նոր սարքի
+    .label = Փոխարկվում է նոր սարքին
 
 ## appmenu-help-enter-troubleshoot-mode and appmenu-help-exit-troubleshoot-mode
 ## are mutually exclusive, so it's possible to use the same accesskey for both.
@@ -274,5 +272,19 @@ appmenuitem-monitor-title = { -monitor-brand-short-name }
 appmenuitem-monitor-description = Ստացեք ծանուցումներ տվյալների արտահոսման մասին
 appmenuitem-relay-title = { -relay-brand-short-name }
 appmenuitem-relay-description = Քողարկեք ձեր իրական էլ. փոստը և հեռախոսը
-appmenuitem-vpn-title = { -mozilla-vpn-brand-name }
+appmenuitem-vpn-title = { -mozilla-vpn-brand-name }-ով
 appmenuitem-vpn-description = Պաշտպանեք ձեր առցանց գործունեությունը
+appmenu-services-header = Իմ ծառայությունները
+
+## Profiles panel
+
+appmenu-profiles = Հատկագրեր
+appmenu-other-profiles = Այլ հատկագրեր
+appmenu-manage-profiles =
+    .label = Կառավարել հատկագրերը
+appmenu-create-profile =
+    .label = Նոր հատկագիր
+appmenu-edit-profile =
+    .aria-label = Խմբագրել հատկագիրը
+appmenu-profiles-2 =
+    .label = Հատկագրեր

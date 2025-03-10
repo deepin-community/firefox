@@ -11,6 +11,7 @@ more-from-moz-category =
 more-from-moz-subtitle = עיינו במוצרים אחרים של { -vendor-short-name } שפועלים לתמיכה באינטרנט בריא.
 more-from-moz-firefox-mobile-title = ‏{ -brand-product-name } לניידים
 more-from-moz-firefox-mobile-description = הדפדפן לטלפונים ניידים ששם את הפרטיות שלך בחזית.
+more-from-moz-firefox-mobile-title-1 = ‏{ -brand-product-name } לניידים
 more-from-moz-mozilla-vpn-title = { -mozilla-vpn-brand-name }
 more-from-moz-mozilla-vpn-description = לגלות שכבה נוספת של גלישה אנונימית והגנה.
 more-from-moz-qr-code-box-firefox-mobile-title = ניתן להוריד באמצעות המכשיר הנייד שלך. פשוט מכוונים את המצלמה לקוד ה־QR, וכשיופיע קישור יש ללחוץ עליו.
@@ -32,3 +33,9 @@ more-from-moz-mozilla-monitor-title = { -mozmonitor-brand-name }
 more-from-moz-mozilla-monitor-us-description = לקבל בחזרה באופן אוטומטי את המידע האישי החשוף שלך.
 more-from-moz-mozilla-monitor-global-description = קבלת התרעות כאשר הנתונים שלך היו חלק מדליפה.
 more-from-moz-mozilla-monitor-button = קבלת { -monitor-brand-short-name }
+
+## These strings are for the Solo card in about:preferences moreFromMozilla page
+
+more-from-moz-solo-title = { -solo-ai-brand-name } AI
+more-from-moz-solo-description = יצירת אתר משלך באופן מיידי וחיבור המתחם המותאם אישית שלך בחינם.
+more-from-moz-solo-button = לנסות את { -solo-ai-brand-name }

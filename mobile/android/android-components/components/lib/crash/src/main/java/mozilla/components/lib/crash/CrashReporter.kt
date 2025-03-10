@@ -23,6 +23,7 @@ import mozilla.components.concept.base.crash.CrashReporting
 import mozilla.components.lib.crash.db.CrashDatabase
 import mozilla.components.lib.crash.db.insertCrashSafely
 import mozilla.components.lib.crash.db.insertReportSafely
+import mozilla.components.lib.crash.db.toCrash
 import mozilla.components.lib.crash.db.toEntity
 import mozilla.components.lib.crash.db.toReportEntity
 import mozilla.components.lib.crash.handler.ExceptionHandler
@@ -32,7 +33,6 @@ import mozilla.components.lib.crash.service.CrashReporterService
 import mozilla.components.lib.crash.service.CrashTelemetryService
 import mozilla.components.lib.crash.service.SendCrashReportService
 import mozilla.components.lib.crash.service.SendCrashTelemetryService
-import mozilla.components.support.base.android.NotificationsDelegate
 import mozilla.components.support.base.log.logger.Logger
 
 /**
@@ -56,6 +56,15 @@ private class BreadcrumbList(val maxBreadCrumbs: Int) {
         breadcrumbs.add(breadcrumb)
     }
 }
+
+/**
+ * When we turned on the new crash reporting dialog flow, the number of old unsent crashes being sent
+ * in on nightly was unexpectedly high. In order to avoid an unmanageable volume when we turned the
+ * feature on in the Release channel, we decided to only send crashes that were as new as the feature
+ * itself.
+ * This timestamp is equivalent to October 28th, 2024 00:00:00 GMT
+ */
+private const val START_OF_134_NIGHTLY_TIMESTAMP = 1730073600000L
 
 /**
  *
@@ -84,21 +93,51 @@ private class BreadcrumbList(val maxBreadCrumbs: Int) {
  * @param nonFatalCrashIntent A [PendingIntent] that will be launched if a non fatal crash (main process not affected)
  *                            happened. This gives the app the opportunity to show an in-app confirmation UI before
  *                            sending a crash report. See component README for details.
+ * @param useLegacyReporting Enable/Disable handling crash reporting through a notification or system dialog.
  */
-class CrashReporter(
-    context: Context,
+class CrashReporter internal constructor(
     private val services: List<CrashReporterService> = emptyList(),
     private val telemetryServices: List<CrashTelemetryService> = emptyList(),
     private val shouldPrompt: Prompt = Prompt.NEVER,
-    var enabled: Boolean = true,
+    enabled: Boolean = true,
     internal val promptConfiguration: PromptConfiguration = PromptConfiguration(),
     private val nonFatalCrashIntent: PendingIntent? = null,
     private val scope: CoroutineScope = CoroutineScope(Dispatchers.IO),
     private val maxBreadCrumbs: Int = 30,
-    private val notificationsDelegate: NotificationsDelegate,
     private val runtimeTagProviders: List<RuntimeTagProvider> = emptyList(),
+    databaseProvider: () -> CrashDatabase,
+    private val useLegacyReporting: Boolean = true,
 ) : CrashReporting {
-    private val database: CrashDatabase by lazy { CrashDatabase.get(context) }
+
+    constructor(
+        context: Context,
+        services: List<CrashReporterService> = emptyList(),
+        telemetryServices: List<CrashTelemetryService> = emptyList(),
+        shouldPrompt: Prompt = Prompt.NEVER,
+        enabled: Boolean = true,
+        promptConfiguration: PromptConfiguration = PromptConfiguration(),
+        nonFatalCrashIntent: PendingIntent? = null,
+        scope: CoroutineScope = CoroutineScope(Dispatchers.IO),
+        maxBreadCrumbs: Int = 30,
+        runtimeTagProviders: List<RuntimeTagProvider> = emptyList(),
+        useLegacyReporting: Boolean = true,
+    ) : this(
+        services = services,
+        telemetryServices = telemetryServices,
+        shouldPrompt = shouldPrompt,
+        enabled = enabled,
+        promptConfiguration = promptConfiguration,
+        nonFatalCrashIntent = nonFatalCrashIntent,
+        scope = scope,
+        maxBreadCrumbs = maxBreadCrumbs,
+        runtimeTagProviders = runtimeTagProviders,
+        databaseProvider = { CrashDatabase.get(context) },
+        useLegacyReporting = useLegacyReporting,
+    )
+
+    var enabled: Boolean = enabled
+
+    private val database: CrashDatabase by lazy { databaseProvider() }
 
     internal val logger = Logger("mozac/CrashReporter")
 
@@ -109,8 +148,8 @@ class CrashReporter(
         get() = runtimeTagProviders.fold(emptyMap()) { acc, provider -> acc + provider() }
 
     init {
-        if (services.isEmpty() and telemetryServices.isEmpty()) {
-            throw IllegalArgumentException("No crash reporter services defined")
+        require(services.isNotEmpty() || telemetryServices.isNotEmpty()) {
+            "No crash reporter services defined"
         }
     }
 
@@ -129,6 +168,28 @@ class CrashReporter(
         Thread.setDefaultUncaughtExceptionHandler(handler)
 
         return this
+    }
+
+    /**
+     * Checks to see if there are any unsent crash reports since the provided [timestampMillis].
+     *
+     * @param timestampMillis Timestamp in milliseconds to retrieve reports after. Defaults to the start
+     * of the Fenix 134 cycle when this feature went live.
+     */
+    suspend fun hasUnsentCrashReportsSince(timestampMillis: Long = START_OF_134_NIGHTLY_TIMESTAMP): Boolean {
+        return database.crashDao().numberOfUnsentCrashesSince(timestampMillis) > 0
+    }
+
+    /**
+     * Fetches crash reports that were created after [timestampMillis] from the crash reporter that
+     * have not been sent.
+     *
+     * @param timestampMillis Timestamp in milliseconds to retrieve reports after. Defaults to the start
+     * of the Fenix 134 cycle when this feature went live.
+     */
+    suspend fun unsentCrashReportsSince(timestampMillis: Long = START_OF_134_NIGHTLY_TIMESTAMP): List<Crash> {
+        return database.crashDao().getCrashesWithoutReportsSince(timestampMillis)
+            .map { it.toCrash() }
     }
 
     /**
@@ -245,6 +306,12 @@ class CrashReporter(
             return
         }
 
+        // If an application chooses to handle crash reporting themselves they will want to opt-out
+        // of showing a prompt or notification.
+        if (!useLegacyReporting) {
+            return
+        }
+
         if (services.isNotEmpty()) {
             if (CrashPrompt.shouldPromptForCrash(shouldPrompt, crashWithTags)) {
                 showPromptOrNotification(context, crashWithTags)
@@ -282,7 +349,7 @@ class CrashReporter(
         }
     }
 
-    private fun showPromptOrNotification(context: Context, crash: Crash) {
+    internal fun showPromptOrNotification(context: Context, crash: Crash) {
         if (services.isEmpty()) {
             return
         }
@@ -302,7 +369,7 @@ class CrashReporter(
 
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     internal fun showNotification(context: Context, crash: Crash) {
-        val notification = CrashNotification(context, crash, promptConfiguration, notificationsDelegate)
+        val notification = CrashNotification(context, crash, promptConfiguration)
         notification.show()
     }
 
@@ -367,6 +434,8 @@ class CrashReporter(
     )
 
     companion object {
+        const val RELEASE_RUNTIME_TAG = "release"
+
         @Volatile
         private var instance: CrashReporter? = null
 

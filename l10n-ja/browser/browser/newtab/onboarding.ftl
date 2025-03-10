@@ -208,7 +208,9 @@ mr2022-onboarding-set-default-subtitle = 非営利のブラウザーを使いま
 mr2022-onboarding-get-started-primary-subtitle = この最新版はユーザー中心で設計されており、これまで以上に簡単にウェブを巡ることができます。 きっと気に入っていただける新機能が満載です。
 mr2022-onboarding-get-started-primary-button-label = 今すぐ設定する
 
-## MR2022 Import Settings screen strings
+## MR2022 Get Started screen strings.
+## These strings will be used on the welcome page
+## when Firefox is already set to default and pinned.
 
 mr2022-onboarding-import-header = 高速セットアップ
 mr2022-onboarding-import-subtitle = { -brand-short-name } をあなたの好みの設定にしましょう。ブックマーク、パスワード、その他を以前の古いブラウザーから追加します。
@@ -336,11 +338,16 @@ onboarding-easy-setup-security-and-privacy-subtitle = 私たちの非営利組�
 
 # Mobile download screen
 onboarding-mobile-download-security-and-privacy-title = 端末を切り替える時も暗号化されます
-onboarding-mobile-download-security-and-privacy-subtitle = 同期した端末でも { -brand-short-name } があなたのパスワードやブックマークを暗号化して保護します。さらに開いているタブを他の端末から持ち出すことができます。
+onboarding-mobile-download-security-and-privacy-subtitle = 同期した端末でも { -brand-short-name } があなたのパスワードやブックマークを暗号化して保護します。さらに開いているタブを他の端末で持ち歩くことができます。
 
 # Gratitude screen
 onboarding-gratitude-security-and-privacy-title = { -brand-short-name } はあなたの味方です
 onboarding-gratitude-security-and-privacy-subtitle = Mozilla Foundation による { -brand-short-name } をご使用くださりありがとうございます。あなたのご支援によって、私たちはインターネットをすべての人々のために安全でアクセシブルなものにすることができます。
+# Sign up or Sign in screen
+onboarding-sign-up-title = 端末間でデータを同期する
+onboarding-sign-up-description = アカウント登録すると、パスワードやブックマークなど、すべての重要な情報を安全に保管し、ログインしたどの端末でも利用できるようになります。
+onboarding-sign-up-button = 登録またはログイン
+onboarding-sign-up-secondary-button = ブラウジングを開始
 
 ## New user time and familiarity survey strings
 
@@ -360,3 +367,90 @@ onboarding-new-user-survey-familiarity-based-option-1 = 初めて使う
 onboarding-new-user-survey-familiarity-based-option-2 = 何度か使っている
 onboarding-new-user-survey-familiarity-based-option-3 = よく使っている
 onboarding-new-user-survey-familiarity-based-option-4 = 以前使ったことがあり、久しぶりに使う
+
+## UI strings for the sidebar and vertical tabs
+
+# Setup screen for vertical tabs
+onboarding-new-tabs-title = タブを配置したい場所を教えてください
+# Setup screen for vertical tabs - "Switch it up" refers to switching between horizontal and vertical tabs.
+onboarding-new-tabs-subtitle = サイドバー設定でいつでも垂直タブに切り替えられます。
+# Setup screen for vertical tabs - too many tabs variation
+onboarding-many-tabs-title = あなたのタブをお好みの場所に
+# Setup screen for vertical tabs - subtitle for too many tabs variation
+onboarding-many-tabs-subtitle = 多くのタブを開いておきたいときは、サイドバーに配置して能率的に表示しましょう。または、いつでも従来のように最上部の配置に切り替えられます。
+# Setup screen for vertical tabs - focused variation
+onboarding-focused-tabs-title = タブのレイアウトを選んでください
+# Setup screen for vertical tabs - subtitle for focused variation
+onboarding-focused-tabs-subtitle = タブをサイドバーに配置して能率的な表示にすることで作業に集中できます。または、いつでも従来のように最上部の配置に切り替えられます。
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-new-vertical-tabs-label = タブをサイドに配置
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-new-horizontal-tabs-label = タブを最上部に配置
+# Setup screen for vertical tabs for existing users
+onboarding-existing-tabs-title = 垂直タブがここに表示されます
+# Setup screen for vertical tabs for existing users
+onboarding-existing-tabs-title2 = 垂直タブの導入
+# Setup screen for vertical tabs for existing users - "Switch it up" refers to switching between horizontal and vertical tabs.
+onboarding-existing-tabs-subtitle = タブをサイドバーに配置してみましょう。サイドバー設定でいつでも切り替えられます。
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-existing-vertical-tabs-label = 垂直タブを試す
+onboarding-flair-text = 新機能！
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-existing-horizontal-tabs-label = 水平タブのままにする
+# Tooltip displayed on hover for vertical tabs image
+onboarding-vertical-tabs-tooltip =
+    .title = ブラウザーウィンドウのタブが画面の側面に { -brand-shorter-name } サイドバーの一部として表示されます。
+# Description for vertical tabs image
+onboarding-vertical-tabs-description =
+    .aria-description = ブラウザーウィンドウのタブが画面の側面に { -brand-shorter-name } サイドバーの一部として表示されます。
+# Tooltip displayed on hover for horizontal tabs image
+onboarding-horizontal-tabs-tooltip =
+    .title = ブラウザーウィンドウのタブが最上部に表示されます。
+# Description for horizontal tabs image
+onboarding-horizontal-tabs-description =
+    .aria-description = ブラウザーウィンドウのタブが最上部に表示されます。
+# Additional setup card for setting up aichatbot in the sidebar
+onboarding-genai-sidebar-title = サイドバーで AI チャットボットを試してみよう
+# Setup card for setting up AI chatbot in the sidebar; "Providers" refers to AI chatbot providers (e.g. OpenAI, etc). "Switch anytime" refers to allowing the user to switch to a different chatbot.
+onboarding-genai-sidebar-subtitle = AI によるウェブコンテンツの要約、アイデアのブレーンストーミング、メッセージの下書きなどをブラウジングしながら。複数の AI プロバイダーから選んでください。いつでも切り替えられます。<a data-l10n-name="learn-more">詳細情報</a>
+onboarding-genai-sidebar-primary-button = チャットボットを選ぶ
+onboarding-genai-sidebar-secondary-button = ブラウジングを始める
+
+## New user onboarding checklist
+
+onboarding-checklist-title = { -brand-short-name } のセットアップを完了してください
+onboarding-checklist-subtitle = これらのステップを完了して、ブラウジングを最大限快適にしましょう。
+onboarding-checklist-set-default = { -brand-short-name } を 既定のブラウザーに設定する
+onboarding-checklist-pin = { -brand-short-name } をタスクバーにピン留めする
+onboarding-checklist-import = 以前のブラウザーからインポートする
+onboarding-checklist-extension = 拡張機能を追加する
+onboarding-checklist-sign-up = アカウント登録またはログインする
+
+## Tab Groups feature onboarding strings
+
+tab-groups-onboarding-feature-callout-title = タブをグループ化して整理しましょう
+tab-groups-onboarding-feature-callout-subtitle = タブを別のタブの上にドラッグすると最初のグループが作成できます。
+tab-groups-onboarding-create-group-title = タブバー上の開いているグループを見つけるかアドレスバーで検索してください
+tab-groups-onboarding-saved-groups-title = タブグループを閉じても、ここで開き直すことができます。
+tab-groups-onboarding-saved-groups-no-alltabs-button-title = 開いたタブグループも閉じたタブグループもアドレスバーからいつでも検索できます。
+tab-groups-onboarding-dismiss = OK
+
+## Multi Profiles feature onboarding messages
+
+multi-profile-spotlight-title = { -brand-product-name } プロファイルにご挨拶
+multi-profile-spotlight-body = 仕事用と趣味用のブラウジングを簡単に切り替えられます。検索履歴やパスワードなど、プロファイルごとにユーザーのブラウジング情報が保存され、完全に別のデータとして整理できます。
+multi-profile-spotlight-cta = プロファイルを作成
+multi-profile-callout-title = 仕事用と趣味用で別のプロファイルを作成
+multi-profile-callout-subtitle = プロファイルには検索履歴やパスワードなどのブラウジング情報が保存され、完全に分かれています。
+multi-profile-callout-cta = プロファイルを作成
+
+## Desktop to Mobile Adoption feature callout strings
+
+# If translating the headline is challenging, consider using a simplified alternative as a reference: 'Sync your browsing with Firefox for mobile.'
+desktop-to-mobile-headline = ダウンロード、同期、モバイル GO!
+# The phrase, 'on the go', is used to describe when people are very busy and are traveling from place to place.
+desktop-to-mobile-subtitle = QR コードをスキャンしてモバイル版 { -brand-product-name } をダウンロードしてください。インストールが完了したら [モバイル端末と同期] するだけで、パスワードやブックマークなどのデータを持ち歩けます。
+dismiss-button-label = 閉じる
+sync-to-mobile-button-label = モバイル端末と同期
+desktop-to-mobile-qr-code-alt =
+    .aria-label = モバイル版 { -brand-product-name } のダウンロード用 QR コード

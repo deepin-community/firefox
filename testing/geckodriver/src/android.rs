@@ -1,9 +1,11 @@
 use crate::capabilities::AndroidOptions;
-use mozdevice::{AndroidStorage, Device, Host, UnixPathBuf};
+use mozdevice::{AndroidStorage, Device, Host, RemoteMetadata, UnixPathBuf};
 use mozprofile::profile::Profile;
 use serde::Serialize;
 use serde_yaml::{Mapping, Value};
+use std::fs::File;
 use std::io;
+use std::path::PathBuf;
 use std::time;
 use thiserror::Error;
 use webdriver::error::{ErrorStatus, WebDriverError};
@@ -259,11 +261,54 @@ impl AndroidHandler {
         })
     }
 
+    pub fn copy_minidumps_files(&self, save_path: &str) -> Result<()> {
+        let minidumps_path = self.profile.join("minidumps");
+
+        match self.process.device.list_dir(&minidumps_path) {
+            Ok(entries) => {
+                for entry in entries {
+                    if let RemoteMetadata::RemoteFile(_) = entry.metadata {
+                        let file_path = minidumps_path.join(&entry.name);
+
+                        let extension = file_path
+                            .extension()
+                            .and_then(|ext| ext.to_str())
+                            .map(|ext| ext.to_lowercase())
+                            .unwrap_or(String::from(""));
+
+                        if extension == "dmp" || extension == "extra" {
+                            let mut dest_path = PathBuf::from(save_path);
+                            dest_path.push(&entry.name);
+
+                            self.process
+                                .device
+                                .pull(&file_path, &mut File::create(dest_path.as_path())?)?;
+
+                            debug!(
+                                "Copied minidump file {:?} from the device to the local path {:?}.",
+                                entry.name, save_path
+                            );
+                        }
+                    }
+                }
+            }
+            Err(_) => {
+                warn!(
+                    "Couldn't read files from minidumps folder '{}'",
+                    minidumps_path.display(),
+                );
+
+                return Ok(());
+            }
+        }
+
+        Ok(())
+    }
+
     pub fn generate_config_file<I, K, V>(
         &self,
         args: Option<Vec<String>>,
         envs: I,
-        enable_crash_reporter: bool,
     ) -> Result<String>
     where
         I: IntoIterator<Item = (K, V)>,
@@ -296,20 +341,18 @@ impl AndroidHandler {
             );
         }
 
-        if !enable_crash_reporter {
-            config.env.insert(
-                Value::String("MOZ_CRASHREPORTER".to_owned()),
-                Value::String("1".to_owned()),
-            );
-            config.env.insert(
-                Value::String("MOZ_CRASHREPORTER_NO_REPORT".to_owned()),
-                Value::String("1".to_owned()),
-            );
-            config.env.insert(
-                Value::String("MOZ_CRASHREPORTER_SHUTDOWN".to_owned()),
-                Value::String("1".to_owned()),
-            );
-        }
+        config.env.insert(
+            Value::String("MOZ_CRASHREPORTER".to_owned()),
+            Value::String("1".to_owned()),
+        );
+        config.env.insert(
+            Value::String("MOZ_CRASHREPORTER_NO_REPORT".to_owned()),
+            Value::String("1".to_owned()),
+        );
+        config.env.insert(
+            Value::String("MOZ_CRASHREPORTER_SHUTDOWN".to_owned()),
+            Value::String("1".to_owned()),
+        );
 
         let mut contents: Vec<String> = vec![CONFIG_FILE_HEADING.to_owned()];
         contents.push(serde_yaml::to_string(&config)?);
@@ -322,7 +365,6 @@ impl AndroidHandler {
         profile: &Profile,
         args: Option<Vec<String>>,
         env: I,
-        enable_crash_reporter: bool,
     ) -> Result<()>
     where
         I: IntoIterator<Item = (K, V)>,
@@ -349,7 +391,7 @@ impl AndroidHandler {
             .device
             .push_dir(&profile.path, &self.profile, 0o777)?;
 
-        let contents = self.generate_config_file(args, env, enable_crash_reporter)?;
+        let contents = self.generate_config_file(args, env)?;
         debug!("Content of generated GeckoView config file:\n{}", contents);
         let reader = &mut io::BufReader::new(contents.as_bytes());
 
@@ -401,6 +443,16 @@ impl AndroidHandler {
             })?;
 
         Ok(())
+    }
+
+    pub fn push_as_file(&self, content: &[u8], path: &str) -> Result<String> {
+        let mut dest = self.test_root.clone();
+        dest.push(path);
+
+        let buffer = &mut io::Cursor::new(content);
+        self.process.device.push(buffer, &dest, 0o777)?;
+
+        Ok(dest.display().to_string())
     }
 
     pub fn force_stop(&self) -> Result<()> {

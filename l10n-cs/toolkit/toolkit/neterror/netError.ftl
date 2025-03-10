@@ -12,6 +12,7 @@ neterror-blocked-by-policy-page-title = Zablokovaná stránka
 neterror-captive-portal-page-title = Přihlásit se do sítě
 neterror-dns-not-found-title = Server nenalezen
 neterror-malformed-uri-page-title = Neplatná URL adresa
+general-body-title = Buďte opatrní. Něco není v pořádku.
 
 ## Error page actions
 
@@ -45,6 +46,13 @@ neterror-generic-error = { -brand-short-name } nemůže tuto stránku načíst.
 neterror-load-error-try-again = Server je dočasně nedostupný. Zkuste to prosím znovu za chvíli.
 neterror-load-error-connection = Pokud se vám nezobrazují ani ostatní stránky, zkontrolujte síťové připojení svého počítače.
 neterror-load-error-firewall = Pokud je váš počítač chráněn firewallem nebo proxy serverem, zkontrolujte, že má { -brand-short-name } přístup na internet.
+# This warning is only shown on macOS Sequoia and later (see bug 1929377)
+neterror-load-osx-permission =
+    { -brand-short-name.case-status ->
+        [with-cases] Pokud se pokoušíte načíst stránku místní sítě, zkontrolujte, zda máte v nastavení Soukromí a zabezpečení systému macOS přidělena oprávnění { -brand-short-name(case: "dat") } pro místní síť.
+       *[no-cases] Pokud se pokoušíte načíst stránku místní sítě, zkontrolujte, zda máte v nastavení Soukromí a zabezpečení systému macOS přidělena oprávnění aplikace { -brand-short-name } pro místní síť.
+    }
+neterror-http-error-page = Zkontrolujte, zda jste správně zadali adresu webové stránky.
 neterror-captive-portal = Pro přístup k internetu se musíte nejdříve přihlásit k této síti.
 # Variables:
 # $hostAndPath (String) - a suggested site (e.g. "www.example.com") that the user may have meant instead.
@@ -112,6 +120,9 @@ neterror-proxy-connect-failure-settings = Zkontrolujte nastavení proxy serveru.
 neterror-proxy-connect-failure-contact-admin = Kontaktujte správce vaší sítě, jestli je proxy server v provozu.
 neterror-content-encoding-error = Kontaktujte prosím vlastníky webového serveru a informujte je o tomto problému.
 neterror-unsafe-content-type = Kontaktujte prosím vlastníky webového serveru a informujte je o tomto problému.
+# Variables:
+# $hostname (String) - Hostname of the website to which the user was trying to connect.
+neterror-basic-http-auth = { -brand-short-name } nedůvěřuje { $hostname }, protože připojení není zabezpečené. Zkuste změnit adresu URL na HTTPS.
 neterror-nss-failure-not-verified = Požadovanou stránku nelze zobrazit, protože nelze ověřit autenticitu přijatých dat.
 neterror-nss-failure-contact-website = Kontaktujte prosím vlastníky webového serveru a informujte je o tomto problému.
 # Variables:
@@ -194,3 +205,11 @@ certerror-mitm-what-can-you-do-about-it-attack-sts = Pokud <b>{ $mitm }</b> nezn
 # Variables:
 # $hostname (String) - Hostname of the website to which the user was trying to connect.
 certerror-what-should-i-do-bad-sts-cert-explanation = Server <b>{ $hostname }</b> má nastaveno bezpečnostní pravidlo HTTP Strict Transport Security (HSTS), které vynucuje používání pouze zabezpečeného spojení. Pro připojení k této stránce nelze udělit výjimku.
+cert-error-trust-certificate-transparency-what-can-you-do-about-it = Pravděpodobně nic, protože je pravděpodobné, že problém je se samotným webem.
+certerror-blocked-by-corp-headers-description = Někdy webové stránky nastaví ochranu pro sebe a pro lidi, jako jste vy, před nežádoucími interakcemi s jinými stránkami.
+certerror-coop-learn-more = Zjistit více o Cross Origin Opener Policy (COOP)
+certerror-coep-learn-more = Zjistit více o Cross Origin Embedder Policies (COEP)
+# Variables:
+#   $responsestatus (string) - HTTP response status code (e.g., 500).
+#   $responsestatustext (string) - HTTP response status text (e.g., "Internal Server Error").
+neterror-response-status-code = Kód chyby: { $responsestatus } { $responsestatustext }

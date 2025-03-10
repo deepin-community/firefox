@@ -3,6 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 do-not-track-description = 웹 사이트에 “추적 안 함” 신호를 보내서 추적을 원하지 않는다고 알림
+do-not-track-removal = "추적 안 함" 신호를 더 이상 지원하지 않음
 do-not-track-description2 =
     .label = 웹 사이트에 “추적 안 함” 요청 보내기
     .accesskey = d
@@ -137,6 +138,7 @@ windows-launch-on-login =
     .label = 컴퓨터가 시작될 때 자동으로 { -brand-short-name } 열기
     .accesskey = O
 windows-launch-on-login-disabled = 이 설정은 Windows에서 비활성화되었습니다. 변경하려면, 시스템 설정에서 <a data-l10n-name="startup-link">시작 프로그램</a>을 방문하세요.
+windows-launch-on-login-profile-disabled = “사용자 프로필 선택” 창에서 “{ profile-manager-use-selected.label }”에 체크하여 이 설정을 활성화하세요.
 startup-restore-warn-on-quit =
     .label = 브라우저 종료시 경고
 disable-extension =
@@ -146,6 +148,11 @@ preferences-data-migration-description = 북마크, 비밀번호, 기록 및 자
 preferences-data-migration-button =
     .label = 데이터 가져오기
     .accesskey = m
+preferences-profiles-header = 프로필
+preferences-manage-profiles-description = 각 프로필에는 기록, 비밀번호 등을 포함한 별도의 탐색 데이터와 설정이 있습니다.
+preferences-manage-profiles-learn-more = 더 알아보기
+preferences-manage-profiles-button =
+    .label = 프로필 관리
 tabs-group-header = 탭
 ctrl-tab-recently-used-order =
     .label = Ctrl+Tab 단축키로 최근 사용한 순서대로 탭 순환
@@ -153,6 +160,17 @@ ctrl-tab-recently-used-order =
 open-new-link-as-tabs =
     .label = 링크를 새 창 대신 새 탭에서 열기
     .accesskey = w
+ask-on-close-multiple-tabs =
+    .label = 여러 탭을 닫기 전에 묻기
+    .accesskey = m
+# This string is used for the confirm before quitting preference.
+# Variables:
+#   $quitKey (string) - the quit keyboard shortcut, and formatted
+#                       in the same manner as it would appear,
+#                       for example, in the File menu.
+ask-on-quit-with-key =
+    .label = { $quitKey } 단축키로 종료하기 전에 묻기
+    .accesskey = b
 confirm-on-close-multiple-tabs =
     .label = 여러 탭을 닫기 전에 확인
     .accesskey = m
@@ -198,8 +216,18 @@ containers-remove-alert-msg = 이 컨테이너를 삭제하면 { $count } 컨테
 containers-remove-ok-button = 이 컨테이너 삭제
 containers-remove-cancel-button = 이 컨테이너 삭제하지 않음
 settings-tabs-show-image-in-preview =
-    .label = 탭 위로 마우스를 가져가면 이미지 미리 보기 표시
+    .label = 탭 위로 마우스를 올리면 이미지 미리 보기 표시
     .accessKey = h
+browser-layout-header = 브라우저 레이아웃
+browser-layout-horizontal-tabs =
+    .label = 가로 탭
+browser-layout-horizontal-tabs-desc = 브라우저 상단에 표시
+browser-layout-vertical-tabs =
+    .label = 세로 탭
+browser-layout-vertical-tabs-desc = 사이드바의 측면에 표시
+browser-layout-show-sidebar =
+    .label = 사이드바 표시
+browser-layout-show-sidebar-desc = 주 화면을 떠나지 않고 북마크, 휴대폰의 탭, AI 챗봇 등에 빠르게 접근하세요.
 
 ## General Section - Language & Appearance
 
@@ -281,7 +309,7 @@ translate-exceptions =
 # Variables:
 #    $localeName (string) - Localized name of the locale to be used.
 use-system-locale =
-    .label = 날짜, 시간, 숫자 및 측정 단위에 운영 체제의 “{ $localeName }” 형식을 사용
+    .label = 날짜, 시간, 숫자 및 측정 단위에 운영 체제의 “{ $localeName }” 형식 사용
 check-user-spelling =
     .label = 입력할 때 맞춤법 검사
     .accesskey = t
@@ -556,8 +584,7 @@ home-prefs-shortcuts-description = 저장하거나 방문한 사이트
 home-prefs-shortcuts-by-option-sponsored =
     .label = 스폰서 바로 가기
 
-## Variables:
-##  $provider (string) - Name of the corresponding content provider, e.g "Pocket".
+## Home Section - Firefox Home Content Customization
 
 home-prefs-recommended-by-header =
     .label = { $provider } 추천
@@ -624,6 +651,10 @@ search-show-suggestions-option =
 search-show-suggestions-url-bar-option =
     .label = 주소 표시줄 결과에 검색 제안 표시
     .accesskey = l
+# With this option enabled, on the search results page
+# the URL will be replaced by the search terms in the address bar.
+search-show-search-term-option-2 =
+    .label = 결과 페이지의 주소 표시줄에 검색어 표시
 # With this option enabled, on the search results page
 # the URL will be replaced by the search terms in the address bar
 # when using the current default search engine.
@@ -767,6 +798,9 @@ sync-currently-syncing-creditcards = 신용카드
 sync-currently-syncing-payment-methods = 결제 방법
 sync-currently-syncing-addons = 부가 기능
 sync-currently-syncing-settings = 설정
+sync-manage-options =
+    .label = 동기화 관리…
+    .accesskey = M
 sync-change-options =
     .label = 변경…
     .accesskey = C
@@ -819,6 +853,13 @@ sync-engine-settings =
     .label = 설정
     .tooltiptext = 변경한 일반, 개인 정보 및 보안 설정
     .accesskey = s
+sync-choose-what-to-sync-dialog4 =
+    .title = 연결된 모든 기기에서 동기화 할 항목 관리
+    .style = min-width: 36em;
+    .buttonlabelaccept = 저장
+    .buttonaccesskeyaccept = S
+    .buttonlabelextra2 = 연결끊기…
+    .buttonaccesskeyextra2 = D
 
 ## The device name controls.
 
@@ -924,10 +965,10 @@ forms-primary-pw-former-name = { "" }
 forms-primary-pw-fips-title = 현재 FIPS 모드입니다. FIPS는 기본 비밀번호가 설정되어야 합니다.
 forms-master-pw-fips-desc = 비밀번호 변경 실패
 forms-windows-sso =
-    .label = Microsoft, 회사 및 학교 계정에 Windows Single Sign-On을 허용
+    .label = Microsoft, 회사 및 학교 계정에 Windows Single Sign-On 허용
 forms-windows-sso-learn-more-link = 더 알아보기
 forms-windows-sso-desc = 기기 설정에서 계정 관리
-windows-passkey-settings-label = 시스템 설정에서 암호 키 관리
+windows-passkey-settings-label = 시스템 설정에서 패스키 관리
 
 ## OS Authentication dialog
 
@@ -1265,17 +1306,40 @@ permissions-addon-exceptions =
 collection-header = { -brand-short-name } 데이터 수집과 사용
 collection-header2 = { -brand-short-name } 데이터 수집과 사용
     .searchkeywords = 원격 분석
+preferences-collection-description = 우리는 사용자에게 선택권을 제공하고 모두를 위해 { -brand-product-name }를 개선하는 데 필요한 최소한의 데이터만 수집하기 위해 노력합니다.
+preferences-collection-privacy-notice = 개인정보처리방침 보기
 collection-description = 저희는 사용자에게 선택권을 제공하고 모두를 위해 { -brand-short-name }를 제공하고 개선하는 데 필요한 정보만 수집하기 위해 노력합니다. 개인정보를 전송하기 전에 항상 사용자의 동의를 구합니다.
 collection-privacy-notice = 개인정보 보호정책
 collection-health-report-telemetry-disabled = { -vendor-short-name }에서 더 이상 기술 및 상호 작용 데이터를 캡처할 수 없습니다. 모든 과거 데이터는 30일 이내에 삭제됩니다.
 collection-health-report-telemetry-disabled-link = 더 알아보기
+collection-usage-ping =
+    .label = { -vendor-short-name }에 일일 사용량 핑 보내기
+    .accesskey = U
+collection-usage-ping-description = { -vendor-short-name }가 활성 사용자를 예측하는 데 도움이 됩니다.
+collection-health-report2 =
+    .label = { -vendor-short-name }로 기술 및 상호 작용 데이터 보내기
+    .accesskey = r
 collection-health-report =
     .label = { -brand-short-name }가 기술 및 상호 작용 데이터를 { -vendor-short-name }에 전송하도록 허용
     .accesskey = r
 collection-health-report-link = 더 알아보기
+collection-health-report-description = { -brand-product-name }의 기능, 성능, 안정성을 개선하는 데 도움이 됩니다.
+collection-studies2 =
+    .label = 연구 설치 및 실행
+collection-studies-description = 기능과 아이디어가 공개되기 전에 미리 사용해 보세요.
 collection-studies =
     .label = { -brand-short-name }가 연구를 설치하고 실행하도록 허용
 collection-studies-link = { -brand-short-name } 연구 보기
+addon-recommendations2 =
+    .label = 개인화된 확장 기능 추천 허용
+addon-recommendations-description = 탐색 경험을 향상시키기 위한 확장 기능 추천을 받으세요.
+# This message is displayed above disabled data sharing options in developer builds
+# or builds with no Telemetry support available.
+collection-health-report-disabled2 = 이 빌드 구성에서는 데이터 보고를 하지 않습니다.
+collection-backlogged-crash-reports2 =
+    .label = 자동으로 충돌 보고서 제출
+    .accesskey = c
+collection-backlogged-crash-reports-description = { -vendor-short-name }가 브라우저의 문제를 진단하고 해결하는데 도움이 됩니다. 보고서에는 개인 정보나 민감한 정보가 포함되어 있을 수 있습니다.
 addon-recommendations =
     .label = { -brand-short-name }가 개인화된 확장 기능 추천을 할 수 있도록 허용
 addon-recommendations-link = 더 알아보기
@@ -1343,6 +1407,8 @@ space-alert-under-5gb-message2 = <strong>{ -brand-short-name } 디스크 용량�
 ## Privacy Section - HTTPS-Only
 
 httpsonly-header = HTTPS 전용 모드
+httpsonly-description3 = 웹 사이트에 보안 연결만 허용합니다. { -brand-short-name }는 안전하지 않은 연결을 하기 전에 묻습니다.
+httpsonly-learn-more2 = HTTPS 전용 모드 작동 방식
 httpsonly-description = HTTPS는 { -brand-short-name }와 사용자가 방문한 웹 사이트 간에 안전한 암호화된 연결을 제공합니다. 대부분의 웹 사이트는 HTTPS를 지원하며, HTTPS 전용 모드를 사용하도록 설정한 경우 { -brand-short-name }는 모든 연결을 HTTPS로 업그레이드합니다.
 httpsonly-description2 = { -brand-short-name }는 사용자가 방문하는 사이트에 대해 안전하고 암호화된 연결을 생성합니다. { -brand-short-name }는 HTTPS 전용이 켜져 있을 때 연결이 안전하지 않으면 경고합니다.
 httpsonly-learn-more = 더 알아보기
@@ -1352,6 +1418,9 @@ httpsonly-radio-enabled2 =
     .label = 모든 창에서 HTTPS만 사용
 httpsonly-radio-enabled-pbm =
     .label = 사생활 보호 창에서만 HTTPS 전용 모드 사용
+httpsonly-radio-disabled3 =
+    .label = HTTPS 전용 모드 사용 안 함
+    .description = { -brand-short-name }는 여전히 ​​일부 연결을 업그레이드 할 수 있음
 httpsonly-radio-enabled-pbm2 =
     .label = 사생활 보호 창에서 HTTPS만 사용
 httpsonly-radio-disabled =
@@ -1388,7 +1457,7 @@ preferences-doh-setting-default =
     .accesskey = D
 preferences-doh-default-desc = { -brand-short-name }가 보안 DNS를 사용하여 개인 정보를 보호할 때를 결정합니다.
 preferences-doh-default-detailed-desc-1 = 사용 가능한 지역에서 보안 DNS 사용
-preferences-doh-default-detailed-desc-2 = 보안 DNS 공급자에 문제가 있는 경우 기본 DNS 확인자를 사용
+preferences-doh-default-detailed-desc-2 = 보안 DNS 공급자에 문제가 있는 경우 기본 DNS 확인자 사용
 preferences-doh-default-detailed-desc-3 = 가능하면 로컬 공급자를 사용
 preferences-doh-default-detailed-desc-4 = VPN, 자녀 보호 또는 엔터프라이즈 정책이 활성화되면 끄기
 preferences-doh-default-detailed-desc-5 = 네트워크에서 { -brand-short-name }에 보안 DNS를 사용하지 말라고 하면 끄기
@@ -1397,7 +1466,7 @@ preferences-doh-setting-enabled =
     .accesskey = I
 preferences-doh-enabled-desc = 보안 DNS를 사용할 때를 제어하고 공급자를 선택합니다.
 preferences-doh-enabled-detailed-desc-1 = 선택한 공급자 사용
-preferences-doh-enabled-detailed-desc-2 = 보안 DNS에 문제가 있는 경우에만 기본 DNS 확인자를 사용
+preferences-doh-enabled-detailed-desc-2 = 보안 DNS에 문제가 있는 경우에만 기본 DNS 확인자 사용
 preferences-doh-setting-strict =
     .label = 최대 보호
     .accesskey = M

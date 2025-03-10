@@ -3,6 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 do-not-track-description = Websites een ‘Niet volgen’-signaal sturen om te laten weten dat u niet gevolgd wilt worden
+do-not-track-removal = We ondersteunen het ‘Niet volgen’-signaal niet meer
 do-not-track-description2 =
     .label = Stuur websites een ‘Niet-volgen’-verzoek
     .accesskey = v
@@ -137,6 +138,7 @@ windows-launch-on-login =
     .label = { -brand-short-name } automatisch openen bij het opstarten van uw computer
     .accesskey = a
 windows-launch-on-login-disabled = Deze voorkeur is uitgeschakeld in Windows. Ga naar <a data-l10n-name="startup-link">Apps > Opstarten</a> in Systeeminstellingen om dit te wijzigen.
+windows-launch-on-login-profile-disabled = Schakel deze voorkeur in door ‘{ profile-manager-use-selected.label }’ in het venster ‘Gebruikersprofiel kiezen’ aan te vinken.
 startup-restore-warn-on-quit =
     .label = Waarschuwen bij het afsluiten van de browser
 disable-extension =
@@ -152,6 +154,17 @@ ctrl-tab-recently-used-order =
     .accesskey = T
 open-new-link-as-tabs =
     .label = Koppelingen openen in tabbladen in plaats van nieuwe vensters
+    .accesskey = v
+ask-on-close-multiple-tabs =
+    .label = Vragen voor het sluiten van meerdere tabbladen
+    .accesskey = m
+# This string is used for the confirm before quitting preference.
+# Variables:
+#   $quitKey (string) - the quit keyboard shortcut, and formatted
+#                       in the same manner as it would appear,
+#                       for example, in the File menu.
+ask-on-quit-with-key =
+    .label = Vragen voor afsluiten met { $quitKey }
     .accesskey = v
 confirm-on-close-multiple-tabs =
     .label = Bevestigen voor het sluiten van meerdere tabbladen
@@ -212,6 +225,16 @@ containers-remove-cancel-button = Deze container niet verwijderen
 settings-tabs-show-image-in-preview =
     .label = Een afbeeldingsvoorbeeld tonen als u een tabblad aanwijst
     .accessKey = w
+browser-layout-header = Browserindeling
+browser-layout-horizontal-tabs =
+    .label = Horizontale tabbladen
+browser-layout-horizontal-tabs-desc = Bovenaan in browser tonen
+browser-layout-vertical-tabs =
+    .label = Verticale tabbladen
+browser-layout-vertical-tabs-desc = Aan de zijkant, in de zijbalk tonen
+browser-layout-show-sidebar =
+    .label = Zijbalk tonen
+browser-layout-show-sidebar-desc = Benader snel bladwijzers, tabbladen van uw telefoon, AI-chatbots en meer zonder uw hoofdvenster te verlaten.
 
 ## General Section - Language & Appearance
 
@@ -568,8 +591,7 @@ home-prefs-shortcuts-description = Opgeslagen of bezochte websites
 home-prefs-shortcuts-by-option-sponsored =
     .label = Gesponsorde snelkoppelingen
 
-## Variables:
-##  $provider (string) - Name of the corresponding content provider, e.g "Pocket".
+## Home Section - Firefox Home Content Customization
 
 home-prefs-recommended-by-header =
     .label = Aanbevolen door { $provider }
@@ -640,6 +662,10 @@ search-show-suggestions-option =
 search-show-suggestions-url-bar-option =
     .label = Zoeksuggesties in adresbalkresultaten tonen
     .accesskey = l
+# With this option enabled, on the search results page
+# the URL will be replaced by the search terms in the address bar.
+search-show-search-term-option-2 =
+    .label = Zoektermen in de adresbalk op resultaatpagina’s tonen
 # With this option enabled, on the search results page
 # the URL will be replaced by the search terms in the address bar
 # when using the current default search engine.
@@ -783,6 +809,9 @@ sync-currently-syncing-creditcards = Creditcards
 sync-currently-syncing-payment-methods = Betalingsmethoden
 sync-currently-syncing-addons = Add-ons
 sync-currently-syncing-settings = Instellingen
+sync-manage-options =
+    .label = Synchronisatie beheren…
+    .accesskey = b
 sync-change-options =
     .label = Wijzigen…
     .accesskey = W
@@ -835,6 +864,13 @@ sync-engine-settings =
     .label = Instellingen
     .tooltiptext = Door u gewijzigde algemene, privacy- en beveiligingsinstellingen
     .accesskey = s
+sync-choose-what-to-sync-dialog4 =
+    .title = Beheren wat wordt gesynchroniseerd op al uw verbonden apparaten
+    .style = min-width: 36em;
+    .buttonlabelaccept = Opslaan
+    .buttonaccesskeyaccept = s
+    .buttonlabelextra2 = Verbinding verbreken…
+    .buttonaccesskeyextra2 = v
 
 ## The device name controls.
 
@@ -1281,17 +1317,40 @@ permissions-addon-exceptions =
 collection-header = { -brand-short-name }-gegevensverzameling en -gebruik
 collection-header2 = { -brand-short-name }-gegevensverzameling en -gebruik
     .searchkeywords = telemetrie
+preferences-collection-description = We streven ernaar om u keuzes te bieden en verzamelen alleen de gegevens die minimaal nodig zijn om { -brand-product-name } voor iedereen te verbeteren.
+preferences-collection-privacy-notice = Privacyverklaring bekijken
 collection-description = We streven ernaar u keuzes te bieden en alleen te verzamelen wat we nodig hebben om { -brand-short-name } voor iedereen beschikbaar te maken en te verbeteren. We vragen altijd toestemming voordat we persoonlijke gegevens ontvangen.
 collection-privacy-notice = Privacyverklaring
 collection-health-report-telemetry-disabled = U staat { -vendor-short-name } niet langer toe technische en interactiegegevens vast te leggen. Alle eerdere gegevens worden binnen 30 dagen verwijderd.
 collection-health-report-telemetry-disabled-link = Meer info
+collection-usage-ping =
+    .label = Ping voor dagelijks gebruik naar { -vendor-short-name } verzenden
+    .accesskey = u
+collection-usage-ping-description = Dit helpt { -vendor-short-name } bij het schatten van actieve gebruikers.
+collection-health-report2 =
+    .label = Technische en interactiegegevens naar { -vendor-short-name } verzenden
+    .accesskey = r
 collection-health-report =
     .label = { -brand-short-name } toestaan om technische en interactiegegevens naar { -vendor-short-name } te verzenden
     .accesskey = r
 collection-health-report-link = Meer info
+collection-health-report-description = Dit helpt ons de functies, prestaties en stabiliteit van { -brand-product-name } te verbeteren.
+collection-studies2 =
+    .label = Onderzoeken installeren en uitvoeren
+collection-studies-description = Probeer functies en ideeën uit voordat ze voor iedereen beschikbaar zijn.
 collection-studies =
     .label = { -brand-short-name } toestaan om onderzoeken te installeren en uit te voeren
 collection-studies-link = { -brand-short-name }-onderzoeken weergeven
+addon-recommendations2 =
+    .label = Gepersonaliseerde extensieaanbevelingen toestaan
+addon-recommendations-description = Ontvang extensieaanbevelingen om uw surfervaring te verbeteren.
+# This message is displayed above disabled data sharing options in developer builds
+# or builds with no Telemetry support available.
+collection-health-report-disabled2 = Gegevensrapportage is uitgeschakeld voor deze buildconfiguratie.
+collection-backlogged-crash-reports2 =
+    .label = Automatisch crashrapporten verzenden
+    .accesskey = r
+collection-backlogged-crash-reports-description = Dit helpt { -vendor-short-name } problemen met de browser te analyseren en op te lossen. Rapporten kunnen persoonlijke of gevoelige gegevens bevatten.
 addon-recommendations =
     .label = { -brand-short-name } toestaan om gepersonaliseerde extensieaanbevelingen te doen
 addon-recommendations-link = Meer info
@@ -1359,6 +1418,8 @@ space-alert-under-5gb-message2 = <strong>{ -brand-short-name } heeft bijna geen 
 ## Privacy Section - HTTPS-Only
 
 httpsonly-header = Alleen-HTTPS-modus
+httpsonly-description3 = Staat alleen beveiligde verbindingen met websites toe. { -brand-short-name } zal vragen voordat een onveilige verbinding wordt gemaakt.
+httpsonly-learn-more2 = Hoe Alleen-HTTPS werkt
 httpsonly-description = HTTPS biedt een veilige, versleutelde verbinding tussen { -brand-short-name } en de door u bezochte websites. De meeste websites ondersteunen HTTPS en als de Alleen-HTTPS-modus is ingeschakeld, zal { -brand-short-name } alle verbindingen upgraden naar HTTPS.
 httpsonly-description2 = { -brand-short-name } maakt veilige en versleutelde verbindingen met websites die u bezoekt. { -brand-short-name } waarschuwt u als een verbinding niet veilig is wanneer Alleen-HTTPS is ingeschakeld.
 httpsonly-learn-more = Meer info
@@ -1368,6 +1429,9 @@ httpsonly-radio-enabled2 =
     .label = Alleen HTTPS gebruiken in alle vensters
 httpsonly-radio-enabled-pbm =
     .label = Alleen-HTTPS-modus uitsluitend in privévensters inschakelen
+httpsonly-radio-disabled3 =
+    .label = Alleen-HTTPS-modus niet inschakelen
+    .description = { -brand-short-name } kan nog steeds sommige verbindingen upgraden
 httpsonly-radio-enabled-pbm2 =
     .label = Alleen HTTPS gebruiken in privévensters
 httpsonly-radio-disabled =

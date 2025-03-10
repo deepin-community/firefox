@@ -8,7 +8,7 @@ xpinstall-prompt = { -brand-short-name }-i e pengoi këtë sajt t’ju kërkojë
 ##   $host (String): The hostname of the site the add-on is being installed from.
 
 xpinstall-prompt-header = Të lejohet { $host } të instalojë një shtesë?
-xpinstall-prompt-message = Po përpiqeni të instaloni një shtesë nga { $host }. Përpara se të vazhdoni, sigurohuni se i zini besë këtij sajt.
+xpinstall-prompt-message = Po përpiqeni të instaloni një shtesë nga { $host }. Përpara se të vazhdoni, sigurohuni se i zini besë këtij sajti.
 
 ##
 
@@ -131,6 +131,8 @@ addon-local-install-error-not-signed = Kjo shtesë s’u instalua dot, ngaqë s�
 # Variables:
 #   $appVersion (String): the application version.
 addon-install-error-incompatible = { $addonName } s’u instalua dot, ngaqë s’është e përputhshme me { -brand-short-name } { $appVersion }.
+addon-install-error-hard-blocked = { $addonName } cenon rregullat e Mozilla-s dhe s’mund të instalohet në { -brand-short-name }.
 addon-install-error-blocklisted = { $addonName } s’u instalua dot, ngaqë paraqet rrezik të madh për krijim problemesh qëndrueshmërie ose sigurie.
+addon-install-error-soft-blocked = { $addonName } cenon rregullat e Mozilla-s dhe s’mund të instalohet në { -brand-short-name }.
 # Enterprise policies is a feature aimed at system administrators who want to deploy custom settings for Firefox.
 addon-install-error-admin-install-only = S’mund të instaloni { $addonName }-in si përdorues i thjeshtë, mund të instalohet vetëm nga një ent që përdor rregulla ndërmarrjeje.

@@ -284,6 +284,9 @@ find-more-themes = 寻找更多主题
 # used for screen readers.
 addon-options-button =
     .aria-label = 更多选项
+# Explanatory introduction to the list of recommended add-ons. The action word
+# ("recommends") in the final sentence is a link to external documentation.
+discopane-intro2 = 您可通过安装扩展和主题来定制 { -brand-product-name }，强化隐私保护、提升浏览效率、改进媒体体验、更改 { -brand-product-name } 外观，还有更多妙用。这些小型软件程序大多由第三方开发。以下是一些 { -brand-product-name } <a data-l10n-name="learn-more-trigger">推荐</a>的附加组件，它们在安全、性能、功能等方面表现优秀。
 
 ## Add-on actions
 
@@ -369,6 +372,10 @@ addon-detail-group-label-updates =
     .aria-label = { addon-detail-updates-label }
 # This is the tooltip text for the private browsing badge in about:addons. The
 # badge is the private browsing icon included next to the extension's name.
+addon-badge-private-browsing-allowed3 =
+    .title = 允许运行于隐私窗口
+# This is the tooltip text for the private browsing badge in about:addons. The
+# badge is the private browsing icon included next to the extension's name.
 addon-badge-private-browsing-allowed2 =
     .title = 允许运行于隐私窗口
     .aria-label = { addon-badge-private-browsing-allowed2.title }
@@ -408,6 +415,14 @@ addon-badge-line3 =
 addon-badge-verified2 =
     .title = 此扩展已通过审核，符合我们的安全和性能标准
     .aria-label = { addon-badge-verified2.title }
+addon-badge-recommended3 =
+    .title = { -brand-product-name } 只推荐符合我们的安全和性能标准的扩展。
+# We hard code "Mozilla" in the string below because the extensions are built
+# by Mozilla and we don't want forks to display "by Fork".
+addon-badge-line4 =
+    .title = 由 Mozilla 构建的官方扩展，符合安全和性能标准
+addon-badge-verified3 =
+    .title = 此扩展已通过审核，符合我们的安全和性能标准
 
 ##
 
@@ -415,6 +430,7 @@ available-updates-heading = 可用更新
 recent-updates-heading = 最近更新
 release-notes-loading = 正在加载…
 release-notes-error = 抱歉，加载发行说明时出错。
+addon-permissions-empty2 = 此扩展未要求任何权限。
 addon-permissions-empty = 此扩展未要求任何权限
 addon-permissions-required = 核心功能所需的权限：
 addon-permissions-optional = 附加功能的可选权限：
@@ -464,24 +480,38 @@ details-notification-unsigned-and-disabled-link = 了解详情
 details-notification-unsigned = { $name } 未通过针对是否适用于 { -brand-short-name } 的验证。请谨慎。
 details-notification-unsigned2 =
     .message = { $name } 未通过针对是否适用于 { -brand-short-name } 的验证。请谨慎。
+details-notification-hard-blocked-extension =
+    .message = 此扩展因违反 Mozilla 的政策而被阻止，并且已被禁用。
+details-notification-hard-blocked-other =
+    .message = 此附加组件因违反 Mozilla 的政策而被阻止，并且已被禁用。
 details-notification-unsigned-link = 了解详情
 details-notification-blocked = { $name } 由于安全或稳定性问题已被禁用。
 details-notification-blocked2 =
     .message = { $name } 由于安全或稳定性问题已被禁用。
+details-notification-blocked-link2 = 查阅详情
+details-notification-soft-blocked-extension-disabled =
+    .message = 此扩展因违反 Mozilla 的政策而受限，并且已经被禁用。您可以重新启用，但可能存在风险。
+details-notification-soft-blocked-extension-enabled =
+    .message = 此扩展违反了 Mozilla 的政策，使用时可能存在风险。
+details-notification-soft-blocked-other-disabled =
+    .message = 此附加组件因违反 Mozilla 的政策而受限，并且已经被禁用。您可以重新启用，但可能存在风险。
+details-notification-soft-blocked-other-enabled =
+    .message = 此附加组件违反了 Mozilla 的政策，使用时可能存在风险。
+details-notification-softblocked-link2 = 查阅详情
 details-notification-blocked-link = 了解详情
 details-notification-softblocked = { $name } 已知会导致安全性或稳定性问题。
 details-notification-softblocked2 =
     .message = { $name } 已知会导致安全性或稳定性问题。
 details-notification-softblocked-link = 了解详情
-details-notification-gmp-pending = { $name } 即将安装。
+details-notification-gmp-pending = “{ $name }”即将安装。
 details-notification-gmp-pending2 =
-    .message = { $name } 即将安装。
+    .message = “{ $name }”即将安装。
 
 ## Gecko Media Plugins (GMPs)
 
 plugins-gmp-license-info = 许可协议信息
 plugins-gmp-privacy-info = 隐私信息
-plugins-openh264-name = OpenH264 视频编码器，由思科系统公司提供
-plugins-openh264-description = 此插件由 Mozilla 自动安装，以遵从 WebRTC 技术标准，满足设备进行 WebRTC 通话所需要的 H.264 视频编码器。访问 http://www.openh264.org/ 可查看编码器的源代码和详细了解其实现。
+plugins-openh264-name = OpenH264 视频编解码器，由思科系统公司提供
+plugins-openh264-description = 此插件由 Mozilla 自动安装，以遵从 WebRTC 技术标准，满足设备进行 WebRTC 通话所需要的 H.264 视频编解码器。访问 http://www.openh264.org/ 可查看编解码器的源代码和详细了解其实现。
 plugins-widevine-name = Widevine 内容解密模块，由 Google 公司提供
 plugins-widevine-description = 此插件让您可播放符合加密媒体扩展（EME）规范的加密媒体内容。网站通常使用加密媒体内容来防止高质量媒体内容的非法复制。访问 https://www.w3.org/TR/encrypted-media/ 可获取加密媒体扩展（EME）的更多信息。

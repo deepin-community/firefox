@@ -89,6 +89,9 @@ shopping-show-less-button = Камтар нишон диҳед
 
 shopping-settings-label =
     .label = Танзимот
+shopping-settings-recommendations-toggle2 =
+    .label = Намоиш додани тавсияҳо ва муҳтавои сарпарастӣ
+shopping-settings-recommendations-learn-more3 = «{ -brand-product-name }» маълумоти шахсии шуморо мубодила намекунад, аз ин рӯ ин тавсияҳо шуморо дар саросари Интернет пайгирӣ намекунанд. <a data-l10n-name="review-quality-url">Маълумоти бештар</a>
 shopping-settings-recommendations-toggle =
     .label = Намоиш додани реклама дар абзори тафтиши тақризҳо
 shopping-settings-recommendations-learn-more2 = Баъзе вақт шумо рекламаи тасодуфиро барои маҳсулоти дахлдор мебинед. Мо танҳо он маҳсулотеро таблиғ мекунем, ки дорои тақризҳои боэътимод мебошад. <a data-l10n-name="review-quality-url">Маълумоти бештар</a>
@@ -162,6 +165,7 @@ shopping-unanalyzed-product-analyze-button = Ҷанҷиши сифати тақ�
 
 more-to-consider-ad-label =
     .label = Боз чӣ бояд ба назар гирифта шавад
+shopping-sponsored-label = Сарпарастӣ
 ad-by-fakespot = Реклама аз ҷониби «{ -fakespot-brand-name }»
 
 ## Shopping survey strings.
@@ -182,6 +186,18 @@ shopping-survey-submit-button-label = Пешниҳод кардан
 shopping-survey-terms-link = Шартҳои истифода
 shopping-survey-thanks =
     .heading = Ташаккур барои изҳори назари шумо!
+
+## Shopping opted-out survey strings
+## Opt-out survey options are displayed as checkboxes and the user can select one or many.
+
+shopping-survey-opted-out-multiselect-label = Лутфан, ба мо маълумот диҳед, ки чаро шумо «Абзори тафтиши тақризҳо»-ро хомӯш кардед. Агар лозим бошад, якҷанд ҷавобро интихоб намоед.
+shopping-survey-thanks-title = Ташаккур барои изҳори назари шумо!
+shopping-survey-opted-out-hard-to-understand = Ин душворфаҳм аст
+shopping-survey-opted-out-too-slow = Ин хеле суст аст
+shopping-survey-opted-out-not-accurate = Ин дақиқ нест
+shopping-survey-opted-out-not-helpful = Ин ба ман муфид нест
+shopping-survey-opted-out-check-myself = Беҳтар, агар ман тақризҳоро худам тафтиш кунам
+shopping-survey-opted-out-other = Дигар
 
 ## Shopping Feature Callout strings.
 ## "price tag" refers to the price tag icon displayed in the address bar to

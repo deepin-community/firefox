@@ -17,7 +17,6 @@ what should run where. this is the wrong place for special-casing platforms,
 for example - use `all_tests.py` instead.
 """
 
-
 import logging
 from importlib import import_module
 
@@ -174,7 +173,9 @@ test_description_schema = Schema(
             Optional("actions"): [str],
             # additional command-line options for mozharness, beyond those
             # automatically added
-            Required("extra-options"): optionally_keyed_by("test-platform", [str]),
+            Required("extra-options"): optionally_keyed_by(
+                "test-platform", "variant", [str]
+            ),
             # the artifact name (including path) to test on the build task; this is
             # generally set in a per-kind transformation
             Optional("build-artifact-name"): str,
@@ -258,7 +259,7 @@ test_description_schema = Schema(
         ): optionally_keyed_by("release-type", "test-platform", bool),
         # The target name, specifying the build artifact to be tested.
         # If None or not specified, a transform sets the target based on OS:
-        # target.dmg (Mac), target.apk (Android), target.tar.bz2 (Linux),
+        # target.dmg (Mac), target.apk (Android), target.tar.xz (Linux),
         # or target.zip (Windows).
         Optional("target"): optionally_keyed_by(
             "app",
@@ -298,7 +299,6 @@ def handle_keyed_by_mozharness(config, tasks):
         "mozharness",
         "mozharness.chunked",
         "mozharness.config",
-        "mozharness.extra-options",
         "mozharness.script",
     ]
     for task in tasks:
@@ -407,9 +407,10 @@ def run_remaining_transforms(config, tasks):
         ("worker", None),
         ("confirm_failure", None),
         ("pernosco", lambda t: t["build-platform"].startswith("linux64")),
-        # These transforms should always run last as there is never any
-        # difference in configuration from one chunk to another (other than
-        # chunk number).
+        # These transforms should run last as there is never any difference in
+        # configuration from one chunk to another (other than chunk number).
+        # Although the os-integration transforms setup an index route that
+        # depends on the chunk number.
         ("chunk", None),
     )
 

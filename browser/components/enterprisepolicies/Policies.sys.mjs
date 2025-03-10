@@ -577,6 +577,28 @@ export var Policies = {
           );
         }
       }
+      let interceptionPointPrefs = [
+        ["Clipboard", "clipboard"],
+        ["DragAndDrop", "drag_and_drop"],
+        ["FileUpload", "file_upload"],
+        ["Print", "print"],
+      ];
+      if ("InterceptionPoints" in param) {
+        for (let pref of interceptionPointPrefs) {
+          // Need to set and lock this value even if the enterprise
+          // policy isn't set so users can't change it
+          let value = true;
+          if (pref[0] in param.InterceptionPoints) {
+            if ("Enabled" in param.InterceptionPoints[pref[0]]) {
+              value = !!param.InterceptionPoints[pref[0]].Enabled;
+            }
+          }
+          setAndLockPref(
+            `browser.contentanalysis.interception_point.${pref[1]}.enabled`,
+            value
+          );
+        }
+      }
       if ("Enabled" in param) {
         let enabled = !!param.Enabled;
         setAndLockPref("browser.contentanalysis.enabled", enabled);
@@ -1638,6 +1660,12 @@ export var Policies = {
     },
   },
 
+  MicrosoftEntraSSO: {
+    onBeforeAddons(manager, param) {
+      setAndLockPref("network.http.microsoft-entra-sso.enabled", param);
+    },
+  },
+
   NetworkPrediction: {
     onBeforeAddons(manager, param) {
       setAndLockPref("network.dns.disablePrefetch", !param);
@@ -1840,6 +1868,7 @@ export var Policies = {
     onBeforeAddons(manager, param) {
       setAndLockPref("network.http.http3.enable_kyber", param);
       setAndLockPref("security.tls.enable_kyber", param);
+      setAndLockPref("media.webrtc.enable_pq_dtls", param);
     },
   },
 
@@ -1857,6 +1886,7 @@ export var Policies = {
         "general.smoothScroll",
         "geo.",
         "gfx.",
+        "identity.fxaccounts.toolbar.",
         "intl.",
         "keyword.enabled",
         "layers.",
@@ -1894,6 +1924,9 @@ export var Policies = {
         "security.osclientcerts.autoload",
         "security.OCSP.enabled",
         "security.OCSP.require",
+        "security.pki.certificate_transparency.disable_for_hosts",
+        "security.pki.certificate_transparency.disable_for_spki_hashes",
+        "security.pki.certificate_transparency.mode",
         "security.ssl.enable_ocsp_stapling",
         "security.ssl.errorReporting.enabled",
         "security.ssl.require_safe_negotiation",
@@ -2092,12 +2125,13 @@ export var Policies = {
         setAndLockPref("privacy.clearOnShutdown.siteSettings", param);
         setAndLockPref("privacy.clearOnShutdown.offlineApps", param);
         setAndLockPref(
-          "privacy.clearOnShutdown_v2.historyFormDataAndDownloads",
+          "privacy.clearOnShutdown_v2.browsingHistoryAndDownloads",
           param
         );
         setAndLockPref("privacy.clearOnShutdown_v2.cookiesAndStorage", param);
         setAndLockPref("privacy.clearOnShutdown_v2.cache", param);
         setAndLockPref("privacy.clearOnShutdown_v2.siteSettings", param);
+        setAndLockPref("privacy.clearOnShutdown_v2.formdata", param);
       } else {
         let locked = true;
         // Needed to preserve original behavior in perpetuity.
@@ -2180,9 +2214,21 @@ export var Policies = {
             param.FormData,
             locked
           );
+
+          PoliciesUtils.setDefaultPref(
+            "privacy.clearOnShutdown_v2.formdata",
+            param.FormData,
+            locked
+          );
         } else {
           PoliciesUtils.setDefaultPref(
             "privacy.clearOnShutdown.formdata",
+            false,
+            lockDefaultPrefs
+          );
+
+          PoliciesUtils.setDefaultPref(
+            "privacy.clearOnShutdown_v2.formdata",
             false,
             lockDefaultPrefs
           );
@@ -2194,11 +2240,11 @@ export var Policies = {
             locked
           );
 
-          // We set historyFormDataAndDownloads to follow lock and pref
-          // settings for history, and deprecate formdata and downloads
+          // We set browsingHistoryAndDownloads to follow lock and pref
+          // settings for history, and deprecate downloads
           // in the new clear on shutdown dialog - Bug 1853996
           PoliciesUtils.setDefaultPref(
-            "privacy.clearOnShutdown_v2.historyFormDataAndDownloads",
+            "privacy.clearOnShutdown_v2.browsingHistoryAndDownloads",
             param.History,
             locked
           );
@@ -2209,7 +2255,7 @@ export var Policies = {
             lockDefaultPrefs
           );
           PoliciesUtils.setDefaultPref(
-            "privacy.clearOnShutdown_v2.historyFormDataAndDownloads",
+            "privacy.clearOnShutdown_v2.browsingHistoryAndDownloads",
             false,
             lockDefaultPrefs
           );

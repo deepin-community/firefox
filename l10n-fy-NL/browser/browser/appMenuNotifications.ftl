@@ -30,6 +30,9 @@ appmenu-update-restart2 =
     .secondarybuttonlabel = Ofwize
     .secondarybuttonaccesskey = O
 appmenu-update-restart-message2 = Download de nijste ferzje fan { -brand-shorter-name }. Iepen ljepblêden en finsters wurde wersteld.
+appmenu-theme-installed =
+    .secondarybuttonlabel = Ungedien meitsje
+    .secondarybuttonaccesskey = U
 appmenu-update-other-instance =
     .label = { -brand-shorter-name } kin net automatysk nei de nijste ferzje bywurkje.
     .buttonlabel = { -brand-shorter-name } dochs bywurkje
@@ -37,7 +40,6 @@ appmenu-update-other-instance =
     .secondarybuttonlabel = j
     .secondarybuttonaccesskey = w
 appmenu-update-other-instance-message = Der is in nije fernijing foar { -brand-shorter-name } beskikber, mar dizze kin net ynstallearre wurde omdat der in oar eksimplaar fan { -brand-shorter-name } útfierd wurdt. Slút dizze om de fernijing troch te fieren, of kies derfoar om dochs by te wurkjen (it oare eksimplaar wurket mooglik net goed oant jo dit opnij starte).
-
 appmenu-addon-private-browsing-installed2 =
     .buttonlabel = Oké
     .buttonaccesskey = O
@@ -45,7 +47,6 @@ appmenu-addon-post-install-message3 = Behear jo add-ons en tema’s fia it tapas
 appmenu-addon-post-install-incognito-checkbox =
     .label = Dizze útwreiding yn priveefinsters útfiere litte
     .accesskey = D
-    
 appmenu-new-tab-controlled-changes =
     .label = Jo nije ljepblêd is wizige.
     .buttonlabel = Wizigingen behâlde

@@ -35,3 +35,8 @@ fxa-menu-sign-out =
     .label = Ffeɣ…
 fxa-menu-sync-title = Mtawi
 fxa-menu-sync-description = Kcem ɣer web anda ma telliḍ
+sync-setup-verify-continue = Kemmel
+sync-setup-verify-title = Alɣu n usmezdi
+
+## Sync warning strings that support the browser profiles feature, these will be shown when the user might be merging data
+

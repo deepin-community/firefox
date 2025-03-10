@@ -37,7 +37,7 @@ show-unsigned-extensions-button =
 show-all-extensions-button =
     .label = Prikaži sva proširenja
 detail-version =
-    .label = Inačica
+    .label = Verzija
 detail-last-updated =
     .label = Zadnje aktualiziranje
 addon-detail-description-expand = Prikaži više
@@ -81,9 +81,9 @@ detail-repository =
 detail-repository-value =
     .value = { detail-repository.label }
 detail-check-for-updates =
-    .label = Provjeri dostupnost dopuna
-    .accesskey = u
-    .tooltiptext = Traži nove inačice za ovaj dodatak
+    .label = Traži nove verzije
+    .accesskey = T
+    .tooltiptext = Traži nove verzije za ovaj dodatak
 detail-show-preferences =
     .label =
         { PLATFORM() ->
@@ -294,6 +294,14 @@ find-more-themes = Pronađi više tema
 # used for screen readers.
 addon-options-button =
     .aria-label = Više mogućnosti
+# Explanatory introduction to the list of recommended add-ons. The action word
+# ("recommends") in the final sentence is a link to external documentation.
+discopane-intro2 =
+    Proširenja i teme omogućuju da prilagodiš { -brand-product-name }. Mogu poboljšati privatnost,
+    povećati produktivnost, poboljšati medije, promijeniti način { -brand-product-name } izgleda i
+    još više. Ove male softverske programe često razvija treća strana. Ovo je
+    odabir koji { -brand-product-name } <a data-l10n-name="learn-more-trigger">preporučuje</a>
+    za iznimnu sigurnost, performansu i funkcionalnost.
 
 ## Add-on actions
 
@@ -330,7 +338,7 @@ sitepermission-disabled-heading = Onemogućeno
 always-activate-button = Uvijek aktiviraj
 never-activate-button = Nikada ne aktiviraj
 addon-detail-author-label = Autor
-addon-detail-version-label = Inačica
+addon-detail-version-label = Verzija
 addon-detail-last-updated-label = Zadnje aktualiziranje
 addon-detail-homepage-label = Početna stranica
 addon-detail-rating-label = Ocjena
@@ -381,6 +389,10 @@ addon-detail-group-label-updates =
     .aria-label = { addon-detail-updates-label }
 # This is the tooltip text for the private browsing badge in about:addons. The
 # badge is the private browsing icon included next to the extension's name.
+addon-badge-private-browsing-allowed3 =
+    .title = Dopušteno u privatnim prozorima
+# This is the tooltip text for the private browsing badge in about:addons. The
+# badge is the private browsing icon included next to the extension's name.
 addon-badge-private-browsing-allowed2 =
     .title = Dopušteno u privatnim prozorima
     .aria-label = { addon-badge-private-browsing-allowed2.title }
@@ -420,6 +432,14 @@ addon-badge-line3 =
 addon-badge-verified2 =
     .title = Na ovom proširenju izvršen je pregled udovoljava li našim standardima za sigurnost i performanse
     .aria-label = { addon-badge-verified2.title }
+addon-badge-recommended3 =
+    .title = { -brand-product-name } preporučuje samo proširenja koja udovoljavaju našim standardima za sigurnost i performanse
+# We hard code "Mozilla" in the string below because the extensions are built
+# by Mozilla and we don't want forks to display "by Fork".
+addon-badge-line4 =
+    .title = Službeno proširenje koje je izradila Mozilla. Udovoljava standardima sigurnosti i performansi
+addon-badge-verified3 =
+    .title = Na ovom proširenju izvršen je pregled udovoljava li našim standardima za sigurnost i performanse
 
 ##
 
@@ -427,6 +447,7 @@ available-updates-heading = Dostupne dopune
 recent-updates-heading = Nedavna aktualiziranja
 release-notes-loading = Učitavanje…
 release-notes-error = Došlo je do greške pri učitavanju napomena o izdanju.
+addon-permissions-empty2 = Ovaj proširenje ne zahtjeva dozvole.
 addon-permissions-empty = Ovaj dodatak ne zahtjeva nikakve dozvole.
 addon-permissions-required = Dozvole potrebne za osnovnu funkcionalnost:
 addon-permissions-optional = Opcionalne dozvole za dodatnu funkcionalnost:
@@ -476,10 +497,24 @@ details-notification-unsigned-and-disabled-link = Više informacija
 details-notification-unsigned = { $name } nije mogao biti verificiran za upotrebu u { -brand-short-name }. Nastavi s oprezom.
 details-notification-unsigned2 =
     .message = { $name } nije mogao biti verificiran za upotrebu u { -brand-short-name }. Nastavi s oprezom.
+details-notification-hard-blocked-extension =
+    .message = Ovo proširenje je blokirano jer krši Mozillina pravila te je deaktivirano.
+details-notification-hard-blocked-other =
+    .message = Ovaj dodatak je blokiran jer krši Mozillina pravila te je deaktiviran.
 details-notification-unsigned-link = Više informacija
 details-notification-blocked = Dodatak { $name } je blokiran zbog problema sa sigurnosti ili stabilnosti.
 details-notification-blocked2 =
     .message = Dodatak { $name } je blokiran zbog problema sa sigurnosti ili stabilnosti.
+details-notification-blocked-link2 = Pogledaj detalje
+details-notification-soft-blocked-extension-disabled =
+    .message = Ovo proširenje je ograničeno jer krši Mozillina pravila te je deaktivirano. Možeš ga aktivirati, ali to može biti riskantno.
+details-notification-soft-blocked-extension-enabled =
+    .message = Ovo proširenje krši Mozillina pravila. Korištenje može biti riskantno.
+details-notification-soft-blocked-other-disabled =
+    .message = Ovaj dodatak je ograničen jer krši Mozillina pravila te je deaktiviran. Možeš ga aktivirati, ali to može biti riskantno.
+details-notification-soft-blocked-other-enabled =
+    .message = Ovaj dodatak krši Mozillina pravila. Korištenje može biti riskantno.
+details-notification-softblocked-link2 = Pogledaj detalje
 details-notification-blocked-link = Više informacija
 details-notification-softblocked = Dodatak { $name } je poznat po problemima sa sigurnosti ili stabilnosti.
 details-notification-softblocked2 =

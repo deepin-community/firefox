@@ -84,7 +84,6 @@
     <string name="share_dialog_title">共有方法を選択</string>
 
     <string name="notification_erase_title_android_14">閲覧履歴を消去しますか？</string>
-    <string name="notification_erase_text_android_14" moz:RemovedIn="124" tools:ignore="UnusedResources">この通知をタップして閲覧履歴を安全に消去してください。</string>
 
     <!-- Text shown in the notification description that pops up to remind the user that a browsing session is active
     for Android 14+. -->
@@ -352,6 +351,11 @@
     <!-- %1$s will be replaced with the name of the app (e.g. Firefox Focus) -->
     <string name="preference_mozilla_telemetry_summary2">Mozilla は %1$s を皆さんに提供し改善するために必要な情報だけを収集するよう努めています。</string>
 
+    <!-- Preference switch for daily usage ping data collection -->
+    <string name="preference_daily_usage_ping_title">毎日の使用頻度を送信する</string>
+    <string name="preference_daily_usage_ping_description">これは Mozilla がアクティブユーザー数を推定するのに役立ちます。</string>
+    <string name="preference_daily_usage_ping_learn_more">詳細情報</string>
+
     <!-- In-app link (in settings) to Focus privacy notice. -->
     <string name="preference_privacy_notice">プライバシー通知</string>
 
@@ -360,6 +364,9 @@
 
     <!-- Link to Focus licensing information from other libraries that we use. -->
     <string name="preference_libraries_we_use">利用しているライブラリー</string>
+
+    <!-- Link to Focus Crash reports list. -->
+    <string name="preference_crashes">クラッシュ</string>
 
     <!-- Open Source Licenses page title. The first parameter is the app name -->
     <string name="open_source_licenses_title">%s | OSS ライブラリー</string>
@@ -516,10 +523,7 @@
 
 
 
-  <!-- Content description (not visible, for screen readers etc.): This is the description for the close button from the new onboarding flow screen one and two -->
-    <string name="onboarding_close_button_content_description">閉じる</string>
-
-    <!-- New Onboarding flow first screen title -->
+  <!-- New Onboarding flow first screen title -->
     <!-- %1$s will be replaced by the app name and build variant(e.g. Firefox Focus, Firefox Klar Nightly) -->
     <string name="onboarding_first_screen_title">%1$s へようこそ</string>
 
@@ -840,7 +844,7 @@
     <string name="studies_learn_more">詳細情報</string>
 
     <!-- Dialog message shown when some changes are made on studies -->
-    <string name="studies_restart_app">変更を適用するためアプリケーションを終了します</string>
+    <string name="studies_restart_app" moz:removedIn="135">変更を適用するためアプリケーションを終了します</string>
 
     <!-- Title of the remove studies button -->
     <string name="studies_remove">削除</string>
@@ -928,9 +932,6 @@
 
     <!-- Label for the button in the snackbar that switches to the newly opened tab -->
     <string name="open_new_tab_snackbar">切り替え</string>
-
-    <!-- Text displayed in a notification when the user enters full screen mode -->
-    <string name="full_screen_notification" moz:removedIn="130" tools:ignore="UnusedResources">全画面表示モードです</string>
 
     <!-- Preference for switching to a new tab immediately after opening -->
     <string name="preference_open_new_tab">新しいタブ内のリンクへすぐに切り替えます</string>
@@ -1122,8 +1123,10 @@
     <string name="promote_search_widget_snackbar_message">ホーム画面にウィジェットを追加しました</string>
 
     <!-- Messages explaining how to exit fullscreen mode -->
-    <!-- Message shown to explain how to exit fullscreen mode when gesture navigation is enabled -->
-    <string name="exit_fullscreen_with_gesture">全画面表示を終了するには、上からドラッグし、戻るジェスチャーをしてください</string>
-    <!-- Message shown to explain how to exit fullscreen mode when using back button navigation -->
-    <string name="exit_fullscreen_with_back_button">全画面表示を終了するには、上からドラッグし、[戻る] を押してください</string>
+    <!-- Message shown to explain how to exit fullscreen mode when gesture navigation is enabled. -->
+    <!-- Localisation note: this text should be as short as possible, max 68 chars -->
+    <string name="exit_fullscreen_with_gesture_short">上からドラッグして、戻るジェスチャーで終了します</string>
+    <!-- Message shown to explain how to exit fullscreen mode when using back button navigation. -->
+    <!-- Localisation note: this text should be as short as possible, max 68 chars -->
+    <string name="exit_fullscreen_with_back_button_short">上からドラッグして戻るボタンを押すと終了します</string>
 </resources>

@@ -226,7 +226,9 @@ mr2022-onboarding-set-default-subtitle = Use a browser backed by a non-profit. W
 mr2022-onboarding-get-started-primary-subtitle = Our latest version is built around you, making it easier than ever to zip around the web. It’s packed with features we think you’ll adore.
 mr2022-onboarding-get-started-primary-button-label = Set up in seconds
 
-## MR2022 Import Settings screen strings
+## MR2022 Get Started screen strings.
+## These strings will be used on the welcome page
+## when Firefox is already set to default and pinned.
 
 mr2022-onboarding-import-header = Lightning-fast setup
 mr2022-onboarding-import-subtitle = Set up { -brand-short-name } how you like it. Add your bookmarks, passwords, and more from your old browser.
@@ -357,6 +359,11 @@ onboarding-mobile-download-security-and-privacy-subtitle = When you’re synced 
 # Gratitude screen
 onboarding-gratitude-security-and-privacy-title = { -brand-short-name } has your back
 onboarding-gratitude-security-and-privacy-subtitle = Thank you for using { -brand-short-name }, backed by the Mozilla Foundation. With your support, we’re working to make the internet safer and more accessible for everyone.
+# Sign up or Sign in screen
+onboarding-sign-up-title = Sync your data across devices
+onboarding-sign-up-description = Sign up for an account and all of your important info — passwords, bookmarks, and more — will be securely stored and available when you sign in to any device.
+onboarding-sign-up-button = Sign up or sign in
+onboarding-sign-up-secondary-button = Start browsing
 
 ## New user time and familiarity survey strings
 
@@ -376,3 +383,90 @@ onboarding-new-user-survey-familiarity-based-option-1 = I’m brand new
 onboarding-new-user-survey-familiarity-based-option-2 = I’ve used it some
 onboarding-new-user-survey-familiarity-based-option-3 = I’m very familiar with it
 onboarding-new-user-survey-familiarity-based-option-4 = I used it in the past, but it’s been a while
+
+## UI strings for the sidebar and vertical tabs
+
+# Setup screen for vertical tabs
+onboarding-new-tabs-title = Tell us where you’d like your tabs
+# Setup screen for vertical tabs - "Switch it up" refers to switching between horizontal and vertical tabs.
+onboarding-new-tabs-subtitle = Switch it up whenever you want in the sidebar settings.
+# Setup screen for vertical tabs - too many tabs variation
+onboarding-many-tabs-title = Your tabs, your way
+# Setup screen for vertical tabs - subtitle for too many tabs variation
+onboarding-many-tabs-subtitle = Keep a lot of tabs open? Try your tabs on the side for a more streamlined view. Or keep it classic with tabs on the top. Switch anytime.
+# Setup screen for vertical tabs - focused variation
+onboarding-focused-tabs-title = Choose your tab layout
+# Setup screen for vertical tabs - subtitle for focused variation
+onboarding-focused-tabs-subtitle = For a streamlined view that can help you stay focused, try your tabs on the side. Or keep it classic with tabs on the top. Switch anytime.
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-new-vertical-tabs-label = Tabs on the side
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-new-horizontal-tabs-label = Tabs on the top
+# Setup screen for vertical tabs for existing users
+onboarding-existing-tabs-title = Vertical tabs are here
+# Setup screen for vertical tabs for existing users
+onboarding-existing-tabs-title2 = Introducing vertical tabs
+# Setup screen for vertical tabs for existing users - "Switch it up" refers to switching between horizontal and vertical tabs.
+onboarding-existing-tabs-subtitle = Try your tabs on the side. Switch it up whenever you want in the sidebar settings.
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-existing-vertical-tabs-label = Try vertical tabs
+onboarding-flair-text = New!
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-existing-horizontal-tabs-label = Keep horizontal tabs
+# Tooltip displayed on hover for vertical tabs image
+onboarding-vertical-tabs-tooltip =
+    .title = A browser window displaying tabs along the side of the screen as a part of the { -brand-shorter-name } sidebar.
+# Description for vertical tabs image
+onboarding-vertical-tabs-description =
+    .aria-description = A browser window displaying tabs along the side of the screen as a part of the { -brand-shorter-name } sidebar.
+# Tooltip displayed on hover for horizontal tabs image
+onboarding-horizontal-tabs-tooltip =
+    .title = A browser window displaying tabs along the top.
+# Description for horizontal tabs image
+onboarding-horizontal-tabs-description =
+    .aria-description = A browser window displaying tabs along the top.
+# Additional setup card for setting up aichatbot in the sidebar
+onboarding-genai-sidebar-title = Try an AI chatbot in the sidebar
+# Setup card for setting up AI chatbot in the sidebar; "Providers" refers to AI chatbot providers (e.g. OpenAI, etc). "Switch anytime" refers to allowing the user to switch to a different chatbot.
+onboarding-genai-sidebar-subtitle = Summarize web content, brainstorm ideas, draft messages — all as you browse. Choose from multiple providers. Switch anytime. <a data-l10n-name="learn-more">Learn more</a>
+onboarding-genai-sidebar-primary-button = Choose a chatbot
+onboarding-genai-sidebar-secondary-button = Start browsing
+
+## New user onboarding checklist
+
+onboarding-checklist-title = Finish setting up { -brand-short-name }
+onboarding-checklist-subtitle = Complete these steps to get the most out of your browsing experience.
+onboarding-checklist-set-default = Set { -brand-short-name } as default browser
+onboarding-checklist-pin = Pin { -brand-short-name } to taskbar
+onboarding-checklist-import = Import from previous browser
+onboarding-checklist-extension = Add an extension
+onboarding-checklist-sign-up = Sign up or sign in to your account
+
+## Tab Groups feature onboarding strings
+
+tab-groups-onboarding-feature-callout-title = Try tab groups for less clutter, more focus
+tab-groups-onboarding-feature-callout-subtitle = Get organized by dragging one tab on top of another to create your first group.
+tab-groups-onboarding-create-group-title = Find your open groups on the tab bar or by searching for them in the address bar.
+tab-groups-onboarding-saved-groups-title = If you close a tab group, you can reopen it here anytime.
+tab-groups-onboarding-saved-groups-no-alltabs-button-title = Find your open or closed tab groups anytime by searching in the address bar.
+tab-groups-onboarding-dismiss = OK
+
+## Multi Profiles feature onboarding messages
+
+multi-profile-spotlight-title = Say hello to { -brand-product-name } profiles
+multi-profile-spotlight-body = Easily switch between browsing for work and fun. Profiles keep your browsing info, including search history and passwords, totally separate so you can stay organized.
+multi-profile-spotlight-cta = Create a profile
+multi-profile-callout-title = Create different profiles for work and fun
+multi-profile-callout-subtitle = Profiles let you keep your browsing info, like search history and passwords, totally separate.
+multi-profile-callout-cta = Create a profile
+
+## Desktop to Mobile Adoption feature callout strings
+
+# If translating the headline is challenging, consider using a simplified alternative as a reference: 'Sync your browsing with Firefox for mobile.'
+desktop-to-mobile-headline = Download, sync, and go!
+# The phrase, 'on the go', is used to describe when people are very busy and are traveling from place to place.
+desktop-to-mobile-subtitle = Scan the QR code to download { -brand-product-name } for mobile. Once installed, select “Sync to mobile” to access your passwords, bookmarks, and more on the go.
+dismiss-button-label = Dismiss
+sync-to-mobile-button-label = Sync to mobile
+desktop-to-mobile-qr-code-alt =
+    .aria-label = QR code to download { -brand-product-name } for mobile

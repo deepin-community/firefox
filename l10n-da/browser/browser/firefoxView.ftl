@@ -32,6 +32,9 @@ firefoxview-tabpickup-progress-label = { $percentValue }% færdig
 firefoxview-tabpickup-step-signin-header = Skift nemt mellem enheder
 firefoxview-tabpickup-step-signin-description = For at hente faneblade fra din telefon skal du først logge ind eller oprette en konto.
 firefoxview-tabpickup-step-signin-primarybutton = Fortsæt
+firefoxview-syncedtabs-signin-header-2 = Din { -brand-product-name } på alle dine enheder
+firefoxview-syncedtabs-signin-description-2 = For at se åbne faneblade fra din telefon og andre enheder, skal du logge ind eller oprette en konto. Med en konto kan du også synkronisere dine adgangskoder, din historik og mere.
+firefoxview-syncedtabs-signin-primarybutton-2 = Log ind
 firefoxview-syncedtabs-signin-header = Hent faneblade uanset hvor du er
 firefoxview-syncedtabs-signin-description = Log ind på din konto for at se faneblade fra dine andre enheder med { -brand-product-name }. Hvis du ikke har en konto, så kan vi føre dig gennem trinene for at tilmelde dig.
 firefoxview-syncedtabs-signin-primarybutton = Log ind eller tilmeld dig
@@ -39,6 +42,8 @@ firefoxview-tabpickup-adddevice-header = Synkroniser { -brand-product-name } på
 firefoxview-tabpickup-adddevice-description = Hent { -brand-product-name } til mobil og login på din telefon.
 firefoxview-tabpickup-adddevice-learn-how = Læs hvordan
 firefoxview-tabpickup-adddevice-primarybutton = Hent { -brand-product-name } til mobilen
+firefoxview-syncedtabs-adddevice-header-2 = Hent faneblade uanset hvor du er
+firefoxview-syncedtabs-adddevice-description-2 = Log ind på { -brand-product-name } på din telefon eller en anden computer for at se faneblade her. Læs mere om, hvordan du <a data-l10n-name="url">opretter forbindelse til flere enheder</a>.
 firefoxview-syncedtabs-adddevice-header = Log ind på { -brand-product-name } på dine andre enheder
 firefoxview-syncedtabs-adddevice-description = Log ind på alle dine enheder for at se dine faneblade fra alle de steder, du bruger { -brand-product-name }. <a data-l10n-name="url">Sådan tilføjer du nye enheder</a>.
 firefoxview-syncedtabs-adddevice-primarybutton = Prøv { -brand-product-name } på din mobil
@@ -165,6 +170,9 @@ firefoxview-search-text-box-history =
 firefoxview-search-text-box-recentlyclosed =
     .placeholder = Søg i senest lukkede faneblade
 # Placeholder for the input field to search in tabs from other devices ("search" is a verb).
+firefoxview-search-text-box-tabs =
+    .placeholder = Søg i faneblade
+# Placeholder for the input field to search in tabs from other devices ("search" is a verb).
 firefoxview-search-text-box-syncedtabs =
     .placeholder = Søg i synkroniserede faneblade
 # Placeholder for the input field to search in open tabs ("search" is a verb).
@@ -228,6 +236,8 @@ firefoxview-choose-browser-button = Vælg browser
 firefoxview-dont-remember-history-empty-header = Intet at vise
 firefoxview-dont-remember-history-empty-description = At beskytte dit privatliv er en del af vores mission. Derfor er det dig, der bestemmer hvilke aktiviteter { -brand-short-name } husker.
 firefoxview-dont-remember-history-empty-description-two = I overensstemmelse med dine aktuelle indstillinger husker { -brand-short-name } ikke dine aktiviteter på nettet. For at ændre dette skal du <a data-l10n-name="history-settings-url-two">ændre dine indstillinger for historik til at huske din historik</a>.
+firefoxview-dont-remember-history-empty-header-2 = Du har kontrollen over, hvilke data { -brand-short-name } gemmer
+firefoxview-dont-remember-history-empty-description-one = I øjeblikket husker { -brand-short-name } ikke dine aktiviteter på nettet. Hvis du vil ændre dette, skal du <a data-l10n-name="history-settings-url-two">opdatere dine indstillinger for historik</a>.
 
 ##
 

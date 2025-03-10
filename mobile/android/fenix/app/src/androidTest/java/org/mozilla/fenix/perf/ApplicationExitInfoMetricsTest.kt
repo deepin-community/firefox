@@ -39,7 +39,7 @@ class ApplicationExitInfoMetricsTest {
     private val server = MockWebServerHelper.createAlwaysOkMockWebServer()
 
     @get:Rule
-    val activityRule: ActivityTestRule<HomeActivity> = HomeActivityTestRule()
+    val activityRule: ActivityTestRule<HomeActivity> = HomeActivityTestRule(skipOnboarding = true)
 
     @get:Rule
     val gleanRule = GleanTestLocalServer(ApplicationProvider.getApplicationContext(), server.port)
@@ -94,7 +94,6 @@ class ApplicationExitInfoMetricsTest {
         assertNotNull(AppExitInfo.processExited.testGetValue())
         val recordedEvents = AppExitInfo.processExited.testGetValue()!!
         assertThat(recordedEvents[0].extra!!["process_type"], anyOf(`is`("content"), `is`("gpu")))
-        assertThat(recordedEvents[1].extra!!["process_type"], anyOf(`is`("content"), `is`("gpu")))
         assertEquals(getLastHandledTime(appContext).toSimpleDateFormat(), recordedEvents[0].extra!!["date"])
     }
 

@@ -209,7 +209,9 @@ mr2022-onboarding-set-default-subtitle = 选用由非营利组织支持的浏览
 mr2022-onboarding-get-started-primary-subtitle = 我们的最新版本贴合您的需求，满载您喜欢的内容，让您轻松浏览互联网。
 mr2022-onboarding-get-started-primary-button-label = 几秒钟就能完成设置
 
-## MR2022 Import Settings screen strings
+## MR2022 Get Started screen strings.
+## These strings will be used on the welcome page
+## when Firefox is already set to default and pinned.
 
 mr2022-onboarding-import-header = 快速设置
 mr2022-onboarding-import-subtitle = 按自己的喜好设置 { -brand-short-name }。可从您的旧浏览器导入书签、密码等数据。
@@ -340,6 +342,11 @@ onboarding-mobile-download-security-and-privacy-subtitle = { -brand-short-name }
 # Gratitude screen
 onboarding-gratitude-security-and-privacy-title = { -brand-short-name } 为您护航
 onboarding-gratitude-security-and-privacy-subtitle = 感谢使用由 Mozilla 基金会支持的 { -brand-short-name }。您的支持激励着我们为更开放、更美好且人人可用的互联网继续奋斗。
+# Sign up or Sign in screen
+onboarding-sign-up-title = 跨设备同步数据
+onboarding-sign-up-description = 注册账户，将您的密码、书签等所有重要信息安全存储，并可在登录账户后的各设备上随手取用。
+onboarding-sign-up-button = 注册或登录
+onboarding-sign-up-secondary-button = 开始浏览
 
 ## New user time and familiarity survey strings
 
@@ -359,3 +366,90 @@ onboarding-new-user-survey-familiarity-based-option-1 = 我是新用户
 onboarding-new-user-survey-familiarity-based-option-2 = 我已有一些了解
 onboarding-new-user-survey-familiarity-based-option-3 = 我已非常熟悉
 onboarding-new-user-survey-familiarity-based-option-4 = 我已有一段时间没使用了
+
+## UI strings for the sidebar and vertical tabs
+
+# Setup screen for vertical tabs
+onboarding-new-tabs-title = 您希望将标签页放在哪里
+# Setup screen for vertical tabs - "Switch it up" refers to switching between horizontal and vertical tabs.
+onboarding-new-tabs-subtitle = 可随时在侧栏设置中切换。
+# Setup screen for vertical tabs - too many tabs variation
+onboarding-many-tabs-title = 你的标签，由你而定
+# Setup screen for vertical tabs - subtitle for too many tabs variation
+onboarding-many-tabs-subtitle = 标签页开得多？试试置于侧边，更加明晰直观。也可保持置于顶部，之后随时可以切换。
+# Setup screen for vertical tabs - focused variation
+onboarding-focused-tabs-title = 选择标签页布局
+# Setup screen for vertical tabs - subtitle for focused variation
+onboarding-focused-tabs-subtitle = 将标签页置于侧边，更加明晰直观，助您保持专注。也可保持置于顶部，之后随时可以切换。
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-new-vertical-tabs-label = 侧边
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-new-horizontal-tabs-label = 顶部
+# Setup screen for vertical tabs for existing users
+onboarding-existing-tabs-title = 垂直标签页在这里
+# Setup screen for vertical tabs for existing users
+onboarding-existing-tabs-title2 = 垂直标签页新亮相
+# Setup screen for vertical tabs for existing users - "Switch it up" refers to switching between horizontal and vertical tabs.
+onboarding-existing-tabs-subtitle = 试试位于侧边的标签页。您可以随时在侧栏设置中切换位置。
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-existing-vertical-tabs-label = 试试垂直标签页
+onboarding-flair-text = 新功能！
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-existing-horizontal-tabs-label = 保留水平标签页
+# Tooltip displayed on hover for vertical tabs image
+onboarding-vertical-tabs-tooltip =
+    .title = 浏览器窗口的标签页放在 { -brand-shorter-name } 侧栏中，沿屏幕侧边排列。
+# Description for vertical tabs image
+onboarding-vertical-tabs-description =
+    .aria-description = 一个浏览器窗口，标签页放在 { -brand-shorter-name } 侧栏中，沿屏幕侧边排列。
+# Tooltip displayed on hover for horizontal tabs image
+onboarding-horizontal-tabs-tooltip =
+    .title = 浏览器窗口的标签页沿顶部排列。
+# Description for horizontal tabs image
+onboarding-horizontal-tabs-description =
+    .aria-description = 一个浏览器窗口，标签页沿其顶部排列。
+# Additional setup card for setting up aichatbot in the sidebar
+onboarding-genai-sidebar-title = 试试侧栏中的 AI 聊天机器人
+# Setup card for setting up AI chatbot in the sidebar; "Providers" refers to AI chatbot providers (e.g. OpenAI, etc). "Switch anytime" refers to allowing the user to switch to a different chatbot.
+onboarding-genai-sidebar-subtitle = 摘要总结、集思广益、起草邮件，在浏览时顺手就能搞定。有多个提供方可供选择，以后也可随时切换。<a data-l10n-name="learn-more">详细了解</a>
+onboarding-genai-sidebar-primary-button = 选择聊天机器人
+onboarding-genai-sidebar-secondary-button = 开始上网冲浪
+
+## New user onboarding checklist
+
+onboarding-checklist-title = 完成 { -brand-short-name } 设置
+onboarding-checklist-subtitle = 完成以下步骤，解锁完整浏览体验。
+onboarding-checklist-set-default = 将 { -brand-short-name } 设为默认浏览器
+onboarding-checklist-pin = 将 { -brand-short-name } 固定到任务栏
+onboarding-checklist-import = 从先前所用浏览器导入
+onboarding-checklist-extension = 添加扩展
+onboarding-checklist-sign-up = 注册或登录账户
+
+## Tab Groups feature onboarding strings
+
+tab-groups-onboarding-feature-callout-title = 标签页群组助您摆脱繁乱，专注浏览
+tab-groups-onboarding-feature-callout-subtitle = 将标签页拖放到另一个标签页之上，即可创建首个群组，让标签页井井有条。
+tab-groups-onboarding-create-group-title = 在标签页栏中寻找打开的群组，也可通过地址栏搜索。
+tab-groups-onboarding-saved-groups-title = 关闭的标签页群组可随时在此处重新打开。
+tab-groups-onboarding-saved-groups-no-alltabs-button-title = 可随时通过地址栏搜索标签页群组，包括打开的群组和已关闭的群组。
+tab-groups-onboarding-dismiss = 确定
+
+## Multi Profiles feature onboarding messages
+
+multi-profile-spotlight-title = 欢迎使用 { -brand-product-name } 配置文件
+multi-profile-spotlight-body = 在工作和娱乐间切换自如。配置文件可全面分隔浏览信息（包括搜索记录和密码），让浏览体验井然有序。
+multi-profile-spotlight-cta = 创建配置文件
+multi-profile-callout-title = 为工作和娱乐各自创建配置文件
+multi-profile-callout-subtitle = 配置文件可全面分隔浏览信息，例如搜索记录和密码。
+multi-profile-callout-cta = 创建配置文件
+
+## Desktop to Mobile Adoption feature callout strings
+
+# If translating the headline is challenging, consider using a simplified alternative as a reference: 'Sync your browsing with Firefox for mobile.'
+desktop-to-mobile-headline = 下载，同步——走起！
+# The phrase, 'on the go', is used to describe when people are very busy and are traveling from place to place.
+desktop-to-mobile-subtitle = 扫码下载移动版 { -brand-product-name }。安装后选择“同步到移动设备”，即可将密码、书签等数据随身带着走。
+dismiss-button-label = 知道了
+sync-to-mobile-button-label = 同步到移动设备
+desktop-to-mobile-qr-code-alt =
+    .aria-label = 用于下载移动版 { -brand-product-name } 的二维码

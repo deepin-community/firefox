@@ -129,19 +129,23 @@ export class DiscoveryStreamAdminUI extends React.PureComponent {
     this.onStoryToggle = this.onStoryToggle.bind(this);
     this.handleWeatherSubmit = this.handleWeatherSubmit.bind(this);
     this.handleWeatherUpdate = this.handleWeatherUpdate.bind(this);
+    this.resetBlocks = this.resetBlocks.bind(this);
     this.refreshTopicSelectionCache =
       this.refreshTopicSelectionCache.bind(this);
+    this.toggleTBRFeed = this.toggleTBRFeed.bind(this);
+    this.handleSectionsToggle = this.handleSectionsToggle.bind(this);
+    this.toggleIABBanners = this.toggleIABBanners.bind(this);
     this.state = {
       toggledStories: {},
       weatherQuery: "",
     };
   }
 
-  setConfigValue(name, value) {
+  setConfigValue(configName, configValue) {
     this.props.dispatch(
       ac.OnlyToMain({
         type: at.DISCOVERY_STREAM_CONFIG_SET_VALUE,
-        data: { name, value },
+        data: { name: configName, value: configValue },
       })
     );
   }
@@ -181,6 +185,14 @@ export class DiscoveryStreamAdminUI extends React.PureComponent {
     );
   }
 
+  resetBlocks() {
+    this.props.dispatch(
+      ac.OnlyToMain({
+        type: at.DISCOVERY_STREAM_DEV_BLOCKS_RESET,
+      })
+    );
+  }
+
   systemTick() {
     this.dispatchSimpleAction(at.DISCOVERY_STREAM_DEV_SYSTEM_TICK);
   }
@@ -191,6 +203,12 @@ export class DiscoveryStreamAdminUI extends React.PureComponent {
 
   showPlaceholder() {
     this.dispatchSimpleAction(at.DISCOVERY_STREAM_DEV_SHOW_PLACEHOLDER);
+  }
+
+  toggleTBRFeed(e) {
+    const feed = e.target.value;
+    const selectedFeed = "discoverystream.contextualContent.selectedFeed";
+    this.props.dispatch(ac.SetPref(selectedFeed, feed));
   }
 
   idleDaily() {
@@ -209,6 +227,54 @@ export class DiscoveryStreamAdminUI extends React.PureComponent {
     e.preventDefault();
     const { weatherQuery } = this.state;
     this.props.dispatch(ac.SetPref("weather.query", weatherQuery));
+  }
+
+  toggleIABBanners(e) {
+    const { pressed, id } = e.target;
+    const billboardEnabled = this.props.otherPrefs["newtabAdSize.billboard"];
+    const leaderboardEnabled =
+      this.props.otherPrefs["newtabAdSize.leaderboard"];
+    let spocValue;
+    let spocCount;
+
+    if (id === "billboard") {
+      this.props.dispatch(ac.SetPref("newtabAdSize.billboard", pressed));
+      if (pressed) {
+        spocValue = `newtab_spocs, newtab_billboard${leaderboardEnabled ? ", newtab_leaderboard" : ""}`;
+        spocCount = `6,1${leaderboardEnabled ? ",1" : ""}`;
+      } else {
+        spocValue = `newtab_spocs${leaderboardEnabled ? ", newtab_leaderboard" : ""}`;
+        spocCount = `6${leaderboardEnabled ? ",1" : ""}`;
+      }
+    } else if (id === "leaderboard") {
+      this.props.dispatch(ac.SetPref("newtabAdSize.leaderboard", pressed));
+      if (pressed) {
+        spocValue = `newtab_spocs, newtab_leaderboard${billboardEnabled ? ", newtab_billboard" : ""}`;
+        spocCount = `6,1${billboardEnabled ? ",1" : ""}`;
+      } else {
+        spocValue = `newtab_spocs${billboardEnabled ? ", newtab_billboard" : ""}`;
+        spocCount = `6${billboardEnabled ? ",1" : ""}`;
+      }
+    }
+    this.props.dispatch(
+      ac.SetPref("discoverystream.placements.spocs", spocValue)
+    );
+    this.props.dispatch(
+      ac.SetPref("discoverystream.placements.spocs.counts", spocCount)
+    );
+  }
+
+  handleSectionsToggle(e) {
+    const { pressed } = e.target;
+    this.props.dispatch(
+      ac.SetPref("discoverystream.sections.enabled", pressed)
+    );
+    this.props.dispatch(
+      ac.SetPref("discoverystream.sections.cards.enabled", pressed)
+    );
+    this.props.dispatch(
+      ac.SetPref("discoverystream.sections.cards.thumbsUpDown.enabled", pressed)
+    );
   }
 
   renderComponent(width, component) {
@@ -293,11 +359,66 @@ export class DiscoveryStreamAdminUI extends React.PureComponent {
     );
   }
 
+  renderImpressionsData() {
+    const { impressions } = this.props.state.DiscoveryStream;
+    return (
+      <>
+        <h4>Feed Impressions</h4>
+        <table>
+          <tbody>
+            {Object.keys(impressions.feed).map(key => {
+              return (
+                <Row key={key}>
+                  <td className="min">{key}</td>
+                  <td>{relativeTime(impressions.feed[key]) || "(no data)"}</td>
+                </Row>
+              );
+            })}
+          </tbody>
+        </table>
+      </>
+    );
+  }
+
+  renderBlocksData() {
+    const { blocks } = this.props.state.DiscoveryStream;
+    return (
+      <>
+        <h4>Blocks</h4>
+        <button className="button" onClick={this.resetBlocks}>
+          Reset Blocks
+        </button>{" "}
+        <table>
+          <tbody>
+            {Object.keys(blocks).map(key => {
+              return (
+                <Row key={key}>
+                  <td className="min">{key}</td>
+                </Row>
+              );
+            })}
+          </tbody>
+        </table>
+      </>
+    );
+  }
+
   renderSpocs() {
     const { spocs } = this.props.state.DiscoveryStream;
+
+    const unifiedAdsSpocsEnabled =
+      this.props.otherPrefs["unifiedAds.spocs.enabled"];
+
+    const unifiedAdsEndpoint = this.props.otherPrefs["unifiedAds.endpoint"];
+
     let spocsData = [];
-    if (spocs.data && spocs.data.spocs && spocs.data.spocs.items) {
-      spocsData = spocs.data.spocs.items || [];
+
+    if (
+      spocs.data &&
+      spocs.data.newtab_spocs &&
+      spocs.data.newtab_spocs.items
+    ) {
+      spocsData = spocs.data.newtab_spocs.items || [];
     }
 
     return (
@@ -306,7 +427,11 @@ export class DiscoveryStreamAdminUI extends React.PureComponent {
           <tbody>
             <Row>
               <td className="min">spocs_endpoint</td>
-              <td>{spocs.spocs_endpoint}</td>
+              <td>
+                {unifiedAdsSpocsEnabled
+                  ? unifiedAdsEndpoint
+                  : spocs.spocs_endpoint}
+              </td>
             </Row>
             <Row>
               <td className="min">Data last fetched</td>
@@ -386,6 +511,27 @@ export class DiscoveryStreamAdminUI extends React.PureComponent {
     const { config, layout } = this.props.state.DiscoveryStream;
     const personalized =
       this.props.otherPrefs["discoverystream.personalization.enabled"];
+    const selectedFeed =
+      this.props.otherPrefs["discoverystream.contextualContent.selectedFeed"];
+    const sectionsEnabled =
+      this.props.otherPrefs["discoverystream.sections.enabled"];
+    const TBRFeeds = this.props.otherPrefs[
+      "discoverystream.contextualContent.feeds"
+    ]
+      .split(",")
+      .map(s => s.trim())
+      .filter(item => item);
+
+    // Prefs for IAB Banners
+    const billboardsEnabled = this.props.otherPrefs["newtabAdSize.billboard"];
+    const leaderboardEnabled =
+      this.props.otherPrefs["newtabAdSize.leaderboard"];
+    const spocPlacements =
+      this.props.otherPrefs["discoverystream.placements.spocs"];
+    const billboardPressed =
+      billboardsEnabled && spocPlacements.includes("newtab_billboard");
+    const leaderboardPressed =
+      leaderboardEnabled && spocPlacements.includes("newtab_leaderboard");
     return (
       <div>
         <button className="button" onClick={this.restorePrefDefaults}>
@@ -414,7 +560,46 @@ export class DiscoveryStreamAdminUI extends React.PureComponent {
         <br />
         <button className="button" onClick={this.showPlaceholder}>
           Show Placeholder Cards
-        </button>
+        </button>{" "}
+        <select
+          className="button"
+          onChange={this.toggleTBRFeed}
+          value={selectedFeed}
+        >
+          {TBRFeeds.map(feed => (
+            <option key={feed} value={feed}>
+              {feed}
+            </option>
+          ))}
+        </select>
+        <div className="toggle-wrapper">
+          <moz-toggle
+            id="sections-toggle"
+            pressed={sectionsEnabled || null}
+            onToggle={this.handleSectionsToggle}
+            label="Toggle DS Sections"
+          />
+        </div>
+        {/* Collapsible Sections for experiments for easy on/off */}
+        <details className="details-section">
+          <summary>IAB Banner Ad Sizes</summary>
+          <div className="toggle-wrapper">
+            <moz-toggle
+              id="leaderboard"
+              pressed={leaderboardPressed || null}
+              onToggle={this.toggleIABBanners}
+              label="Enable IAB Leaderboard"
+            />
+          </div>
+          <div className="toggle-wrapper">
+            <moz-toggle
+              id="billboard"
+              pressed={billboardPressed || null}
+              onToggle={this.toggleIABBanners}
+              label="Enable IAB Billboard"
+            />
+          </div>
+        </details>
         <table>
           <tbody>
             {prefToggles.map(pref => (
@@ -451,7 +636,13 @@ export class DiscoveryStreamAdminUI extends React.PureComponent {
         <h3>Spocs</h3>
         {this.renderSpocs()}
         <h3>Feeds Data</h3>
-        {this.renderFeedsData()}
+        <div className="large-data-container">{this.renderFeedsData()}</div>
+        <h3>Impressions Data</h3>
+        <div className="large-data-container">
+          {this.renderImpressionsData()}
+        </div>
+        <h3>Blocked Data</h3>
+        <div className="large-data-container">{this.renderBlocksData()}</div>
         <h3>Weather Data</h3>
         {this.renderWeatherData()}
       </div>

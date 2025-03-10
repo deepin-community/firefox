@@ -7,9 +7,13 @@
  * helper functions that are useful to all components of the urlbar.
  */
 
+import { XPCOMUtils } from "resource://gre/modules/XPCOMUtils.sys.mjs";
+
 const lazy = {};
 
 ChromeUtils.defineESModuleGetters(lazy, {
+  ContextualIdentityService:
+    "resource://gre/modules/ContextualIdentityService.sys.mjs",
   FormHistory: "resource://gre/modules/FormHistory.sys.mjs",
   KeywordUtils: "resource://gre/modules/KeywordUtils.sys.mjs",
   PlacesUIUtils: "resource:///modules/PlacesUIUtils.sys.mjs",
@@ -28,6 +32,13 @@ ChromeUtils.defineESModuleGetters(lazy, {
   UrlbarTokenizer: "resource:///modules/UrlbarTokenizer.sys.mjs",
   BrowserUIUtils: "resource:///modules/BrowserUIUtils.sys.mjs",
 });
+
+XPCOMUtils.defineLazyServiceGetter(
+  lazy,
+  "parserUtils",
+  "@mozilla.org/parserutils;1",
+  "nsIParserUtils"
+);
 
 export var UrlbarUtils = {
   // Results are categorized into groups to help the muxer compose them.  See
@@ -186,6 +197,7 @@ export var UrlbarUtils = {
     "oneoff",
     "historymenu",
     "other",
+    "searchbutton",
     "shortcut",
     "tabmenu",
     "tabtosearch",
@@ -197,14 +209,7 @@ export var UrlbarUtils = {
   ]),
 
   // The favicon service stores icons for URLs with the following protocols.
-  PROTOCOLS_WITH_ICONS: [
-    "chrome:",
-    "moz-extension:",
-    "about:",
-    "http:",
-    "https:",
-    "ftp:",
-  ],
+  PROTOCOLS_WITH_ICONS: ["about:", "http:", "https:", "file:"],
 
   // Valid URI schemes that are considered safe but don't contain
   // an authority component (e.g host:port). There are many URI schemes
@@ -234,7 +239,7 @@ export var UrlbarUtils = {
       {
         source: UrlbarUtils.RESULT_SOURCE.TABS,
         restrict: lazy.UrlbarTokenizer.RESTRICT.OPENPAGE,
-        icon: "chrome://browser/skin/tab.svg",
+        icon: "chrome://browser/skin/tabs.svg",
         pref: "shortcuts.tabs",
         telemetryLabel: "tabs",
         uiLabel: "urlbar-searchmode-tabs",
@@ -365,7 +370,7 @@ export var UrlbarUtils = {
     let dataStream = Cc["@mozilla.org/io/string-input-stream;1"].createInstance(
       Ci.nsIStringInputStream
     );
-    dataStream.data = postDataString;
+    dataStream.setByteStringData(postDataString);
 
     let mimeStream = Cc[
       "@mozilla.org/network/mime-input-stream;1"
@@ -779,6 +784,25 @@ export var UrlbarUtils = {
       );
     } catch (ex) {
       // Can't setup speculative connection for this url, just ignore it.
+    }
+  },
+
+  /**
+   * Splits a url into base and ref strings, according to nsIURI.idl.
+   * Base refers to the part of the url before the ref, excluding the #.
+   *
+   * @param {string} url
+   *   The url to split.
+   * @returns {object} { base, ref }
+   *   Base and ref parts of the given url. Ref is an empty string
+   *   if there is no ref and undefined if url is not well-formed.
+   */
+  extractRefFromUrl(url) {
+    try {
+      let nsUri = Services.io.newURI(url);
+      return { base: nsUri.specIgnoringRef, ref: nsUri.ref };
+    } catch {
+      return { base: url };
     }
   },
 
@@ -1218,9 +1242,12 @@ export var UrlbarUtils = {
    *       is always necessary.
    *
    * @param {UrlbarResult} result The result to analyze.
+   * @param {boolean} camelCase Whether the returned telemetry type should be the
+                                camelCase version.
+                                Eventually this should be the default (bug 1928946).
    * @returns {string} A string type for telemetry.
    */
-  telemetryTypeFromResult(result) {
+  telemetryTypeFromResult(result, camelCase = false) {
     if (!result) {
       return "unknown";
     }
@@ -1229,7 +1256,7 @@ export var UrlbarUtils = {
         return "switchtab";
       case UrlbarUtils.RESULT_TYPE.SEARCH:
         if (result.providerName == "RecentSearches") {
-          return "recent_search";
+          return camelCase ? "recentSearch" : "recent_search";
         }
         if (result.source == UrlbarUtils.RESULT_SOURCE.HISTORY) {
           return "formhistory";
@@ -1240,7 +1267,7 @@ export var UrlbarUtils = {
         if (result.payload.suggestion) {
           let type = result.payload.trending ? "trending" : "searchsuggestion";
           if (result.isRichSuggestion) {
-            type += "_rich";
+            type += camelCase ? "Rich" : "_rich";
           }
           return type;
         }
@@ -1255,6 +1282,9 @@ export var UrlbarUtils = {
                 "`result.autofill.type` not set, falling back to 'other'"
               )
             );
+          }
+          if (camelCase) {
+            return `autofill${type[0].toUpperCase()}${type.slice(1)}`;
           }
           return `autofill_${type}`;
         }
@@ -1271,21 +1301,23 @@ export var UrlbarUtils = {
             case "top_picks":
               return "navigational";
             case "wikipedia":
-              return "dynamic_wikipedia";
+              return camelCase ? "dynamicWikipedia" : "dynamic_wikipedia";
           }
           return "quicksuggest";
         }
         if (result.providerName == "UrlbarProviderClipboard") {
           return "clipboard";
         }
-        if (result.providerName == "InputHistory") {
-          return result.source == UrlbarUtils.RESULT_SOURCE.BOOKMARKS
-            ? "bookmark_adaptive"
-            : "history_adaptive";
+        {
+          let type =
+            result.source == UrlbarUtils.RESULT_SOURCE.BOOKMARKS
+              ? "bookmark"
+              : "history";
+          if (result.providerName == "InputHistory") {
+            return type + (camelCase ? "Adaptive" : "adaptive");
+          }
+          return type;
         }
-        return result.source == UrlbarUtils.RESULT_SOURCE.BOOKMARKS
-          ? "bookmark"
-          : "history";
       case UrlbarUtils.RESULT_TYPE.KEYWORD:
         return "keyword";
       case UrlbarUtils.RESULT_TYPE.OMNIBOX:
@@ -1298,10 +1330,27 @@ export var UrlbarUtils = {
         if (result.providerName == "TabToSearch") {
           // This is the onboarding result.
           return "tabtosearch";
-        } else if (result.providerName == "Weather") {
-          return "weather";
         }
         return "dynamic";
+      case UrlbarUtils.RESULT_TYPE.RESTRICT:
+        if (result.payload.keyword === lazy.UrlbarTokenizer.RESTRICT.BOOKMARK) {
+          return camelCase
+            ? "restrictKeywordBookmarks"
+            : "restrict_keyword_bookmarks";
+        }
+        if (result.payload.keyword === lazy.UrlbarTokenizer.RESTRICT.OPENPAGE) {
+          return camelCase ? "restrictKeywordTabs" : "restrict_keyword_tabs";
+        }
+        if (result.payload.keyword === lazy.UrlbarTokenizer.RESTRICT.HISTORY) {
+          return camelCase
+            ? "restrictKeywordHistory"
+            : "restrict_keyword_history";
+        }
+        if (result.payload.keyword === lazy.UrlbarTokenizer.RESTRICT.ACTION) {
+          return camelCase
+            ? "restrictKeywordActions"
+            : "restrict_keyword_actions";
+        }
     }
     return "unknown";
   },
@@ -1429,6 +1478,9 @@ export var UrlbarUtils = {
       case UrlbarUtils.RESULT_GROUP.SUGGESTED_INDEX: {
         return "suggested_index";
       }
+      case UrlbarUtils.RESULT_GROUP.RESTRICT_SEARCH_KEYWORD: {
+        return "restrict_keyword";
+      }
     }
 
     return result.heuristic ? "heuristic" : "unknown";
@@ -1468,8 +1520,9 @@ export var UrlbarUtils = {
             return this._getQuickSuggestTelemetryType(result);
           case "UrlbarProviderQuickSuggestContextualOptIn":
             return "fxsuggest_data_sharing_opt_in";
-          case "Weather":
-            return "weather";
+          case "UrlbarProviderGlobalActions":
+          case "UrlbarProviderActionsSearchMode":
+            return "action";
         }
         break;
       case UrlbarUtils.RESULT_TYPE.KEYWORD:
@@ -1549,31 +1602,38 @@ export var UrlbarUtils = {
         return result.source === UrlbarUtils.RESULT_SOURCE.BOOKMARKS
           ? "bookmark"
           : "history";
+      case UrlbarUtils.RESULT_TYPE.RESTRICT:
+        if (result.payload.keyword === lazy.UrlbarTokenizer.RESTRICT.BOOKMARK) {
+          return "restrict_keyword_bookmarks";
+        }
+        if (result.payload.keyword === lazy.UrlbarTokenizer.RESTRICT.OPENPAGE) {
+          return "restrict_keyword_tabs";
+        }
+        if (result.payload.keyword === lazy.UrlbarTokenizer.RESTRICT.HISTORY) {
+          return "restrict_keyword_history";
+        }
+        if (result.payload.keyword === lazy.UrlbarTokenizer.RESTRICT.ACTION) {
+          return "restrict_keyword_actions";
+        }
     }
 
     return "unknown";
   },
 
-  searchEngagementTelemetryAction(result, index) {
-    let action =
-      index == 0
-        ? lazy.UrlbarProvidersManager.getGlobalAction()
-        : result.payload.action;
-
-    return action?.key ?? "none";
+  searchEngagementTelemetryAction(result) {
+    if (result.providerName != "UrlbarProviderGlobalActions") {
+      return result.payload.action?.key ?? "none";
+    }
+    return result.payload.results.map(({ key }) => key).join(",");
   },
 
   _getQuickSuggestTelemetryType(result) {
     if (result.payload.telemetryType == "weather") {
       // Return "weather" without the usual source prefix for consistency with
-      // the weather result returned by UrlbarProviderWeather.
+      // past reporting of weather suggestions.
       return "weather";
     }
-    let source = result.payload.source;
-    if (source == "remote-settings") {
-      source = "rs";
-    }
-    return `${source}_${result.payload.telemetryType}`;
+    return result.payload.source + "_" + result.payload.telemetryType;
   },
 
   /**
@@ -1626,6 +1686,38 @@ export var UrlbarUtils = {
     }
     return obj;
   },
+
+  /**
+   * Create secondary action button data for tab switch.
+   *
+   * @param {number} userContextId
+   *   The container id for the tab.
+   * @returns {object} data to create secondary action button.
+   */
+  createTabSwitchSecondaryAction(userContextId) {
+    let action = { key: "tabswitch" };
+    let identity =
+      lazy.ContextualIdentityService.getPublicIdentityFromId(userContextId);
+
+    if (identity) {
+      let label =
+        lazy.ContextualIdentityService.getUserContextLabel(
+          userContextId
+        ).toLowerCase();
+      action.l10nId = "urlbar-result-action-switch-tab-with-container";
+      action.l10nArgs = {
+        container: label,
+      };
+      action.classList = [
+        "urlbarView-userContext",
+        `identity-color-${identity.color}`,
+      ];
+    } else {
+      action.l10nId = "urlbar-result-action-switch-tab";
+    }
+
+    return action;
+  },
 };
 
 ChromeUtils.defineLazyGetter(UrlbarUtils.ICON, "DEFAULT", () => {
@@ -1637,6 +1729,31 @@ ChromeUtils.defineLazyGetter(UrlbarUtils, "strings", () => {
     "chrome://global/locale/autocomplete.properties"
   );
 });
+
+const L10N_SCHEMA = {
+  type: "object",
+  required: ["id"],
+  properties: {
+    id: {
+      type: "string",
+    },
+    args: {
+      type: "object",
+      additionalProperties: true,
+    },
+    // The remaining properties are related to l10n string caching. See
+    // `L10nCache`. All are optional and are false by default.
+    parseMarkup: {
+      type: "boolean",
+    },
+    cacheable: {
+      type: "boolean",
+    },
+    excludeArgsFromCacheKey: {
+      type: "boolean",
+    },
+  },
+};
 
 /**
  * Payload JSON schemas for each result type.  Payloads are validated against
@@ -1650,6 +1767,16 @@ UrlbarUtils.RESULT_PAYLOAD_SCHEMA = {
       action: {
         type: "object",
         properties: {
+          classList: {
+            type: "array",
+            items: {
+              type: "string",
+            },
+          },
+          l10nArgs: {
+            type: "object",
+            additionalProperties: true,
+          },
           l10nId: {
             type: "string",
           },
@@ -1670,6 +1797,9 @@ UrlbarUtils.RESULT_PAYLOAD_SCHEMA = {
       isSponsored: {
         type: "boolean",
       },
+      lastVisit: {
+        type: "number",
+      },
       title: {
         type: "string",
       },
@@ -1684,18 +1814,7 @@ UrlbarUtils.RESULT_PAYLOAD_SCHEMA = {
   [UrlbarUtils.RESULT_TYPE.SEARCH]: {
     type: "object",
     properties: {
-      blockL10n: {
-        type: "object",
-        required: ["id"],
-        properties: {
-          id: {
-            type: "string",
-          },
-          args: {
-            type: "array",
-          },
-        },
-      },
+      blockL10n: L10N_SCHEMA,
       description: {
         type: "string",
       },
@@ -1727,6 +1846,9 @@ UrlbarUtils.RESULT_PAYLOAD_SCHEMA = {
         type: "boolean",
       },
       keyword: {
+        type: "string",
+      },
+      keywords: {
         type: "string",
       },
       lowerCaseSuggestion: {
@@ -1771,51 +1893,12 @@ UrlbarUtils.RESULT_PAYLOAD_SCHEMA = {
     type: "object",
     required: ["url"],
     properties: {
-      // l10n { id, args }
-      blockL10n: {
-        type: "object",
-        required: ["id"],
-        properties: {
-          id: {
-            type: "string",
-          },
-          args: {
-            type: "object",
-            additionalProperties: true,
-          },
-        },
-      },
-      // l10n { id, args }
-      bottomTextL10n: {
-        type: "object",
-        required: ["id"],
-        properties: {
-          id: {
-            type: "string",
-          },
-          args: {
-            type: "object",
-            additionalProperties: true,
-          },
-        },
-      },
+      blockL10n: L10N_SCHEMA,
+      bottomTextL10n: L10N_SCHEMA,
       description: {
         type: "string",
       },
-      // l10n { id, args }
-      descriptionL10n: {
-        type: "object",
-        required: ["id"],
-        properties: {
-          id: {
-            type: "string",
-          },
-          args: {
-            type: "object",
-            additionalProperties: true,
-          },
-        },
-      },
+      descriptionL10n: L10N_SCHEMA,
       displayUrl: {
         type: "string",
       },
@@ -1825,20 +1908,7 @@ UrlbarUtils.RESULT_PAYLOAD_SCHEMA = {
       fallbackTitle: {
         type: "string",
       },
-      // l10n { id, args }
-      helpL10n: {
-        type: "object",
-        required: ["id"],
-        properties: {
-          id: {
-            type: "string",
-          },
-          args: {
-            type: "object",
-            additionalProperties: true,
-          },
-        },
-      },
+      helpL10n: L10N_SCHEMA,
       helpUrl: {
         type: "string",
       },
@@ -1859,6 +1929,9 @@ UrlbarUtils.RESULT_PAYLOAD_SCHEMA = {
       },
       isSponsored: {
         type: "boolean",
+      },
+      lastVisit: {
+        type: "number",
       },
       originalUrl: {
         type: "string",
@@ -1914,6 +1987,7 @@ UrlbarUtils.RESULT_PAYLOAD_SCHEMA = {
       title: {
         type: "string",
       },
+      titleL10n: L10N_SCHEMA,
       url: {
         type: "string",
       },
@@ -1953,18 +2027,7 @@ UrlbarUtils.RESULT_PAYLOAD_SCHEMA = {
     type: "object",
     required: ["keyword"],
     properties: {
-      blockL10n: {
-        type: "object",
-        required: ["id"],
-        properties: {
-          id: {
-            type: "string",
-          },
-          args: {
-            type: "array",
-          },
-        },
-      },
+      blockL10n: L10N_SCHEMA,
       content: {
         type: "string",
       },
@@ -2016,18 +2079,7 @@ UrlbarUtils.RESULT_PAYLOAD_SCHEMA = {
           type: "object",
           required: ["l10n"],
           properties: {
-            l10n: {
-              type: "object",
-              required: ["id"],
-              properties: {
-                id: {
-                  type: "string",
-                },
-                args: {
-                  type: "array",
-                },
-              },
-            },
+            l10n: L10N_SCHEMA,
             url: {
               type: "string",
             },
@@ -2044,20 +2096,7 @@ UrlbarUtils.RESULT_PAYLOAD_SCHEMA = {
       buttonUrl: {
         type: "string",
       },
-      // l10n { id, args }
-      helpL10n: {
-        type: "object",
-        required: ["id"],
-        properties: {
-          id: {
-            type: "string",
-          },
-          args: {
-            type: "object",
-            additionalProperties: true,
-          },
-        },
-      },
+      helpL10n: L10N_SCHEMA,
       helpUrl: {
         type: "string",
       },
@@ -2069,20 +2108,7 @@ UrlbarUtils.RESULT_PAYLOAD_SCHEMA = {
       text: {
         type: "string",
       },
-      // l10n { id, args }
-      titleL10n: {
-        type: "object",
-        required: ["id"],
-        properties: {
-          id: {
-            type: "string",
-          },
-          args: {
-            type: "object",
-            additionalProperties: true,
-          },
-        },
-      },
+      titleL10n: L10N_SCHEMA,
       // `type` is used in the names of keys in the `urlbar.tips` keyed scalar
       // telemetry (see telemetry.rst).  If you add a new type, then you are
       // also adding new `urlbar.tips` keys and therefore need an expanded data
@@ -2123,8 +2149,11 @@ UrlbarUtils.RESULT_PAYLOAD_SCHEMA = {
       keyword: {
         type: "string",
       },
-      l10nRestrictKeyword: {
-        type: "string",
+      l10nRestrictKeywords: {
+        type: "array",
+        items: {
+          type: "string",
+        },
       },
       autofillKeyword: {
         type: "string",
@@ -2549,8 +2578,12 @@ export class UrlbarProvider {
    *    - `index`: The position of the visible result within the original list
    *               visible results.
    *    - `result`: The visible result itself
+   * @param {object|null} _details
+   *    If the impression is due to an engagement, this will be the `details`
+   *    object that's also passed to `onEngagement()`. Otherwise it will be
+   *    null. See `onEngagement()` documentation for info.
    *
-   * onImpression(_state, _queryContext, _controller, _providerVisibleResults)
+   * onImpression(_state, _queryContext, _controller, _providerVisibleResults, _details)
    * {}
    */
 
@@ -3001,6 +3034,147 @@ export class L10nCache {
    */
   size() {
     return this._messagesByKey.size;
+  }
+
+  /**
+   * Sets an element's content or attribute to a cached l10n string. If the
+   * string isn't cached, then this falls back to the usual
+   * `document.l10n.setAttributes()` using the given l10n ID and args, which
+   * means the string will pop in on a later animation frame.
+   *
+   * This also optionally caches the string so that it will be ready the next
+   * time this is called for it. The function returns a promise that will be
+   * resolved when the string has been cached. Typically there's no need to
+   * await it unless you want to be sure the string is cached before continuing.
+   *
+   * @param {Element} element
+   *   The l10n string will be applied to this element.
+   * @param {object} options
+   *   Options object.
+   * @param {string} options.id
+   *   The l10n string ID.
+   * @param {object} options.args
+   *   The l10n string arguments.
+   * @param {string} options.attribute
+   *   If the string applies to an attribute on the element, pass the name of
+   *   the attribute. The string in the Fluent file should define a value for
+   *   the attribute, like ".foo = My value". If the string applies to the
+   *   element's content, leave this undefined.
+   * @param {boolean} options.parseMarkup
+   *   This controls whether the cached string is applied to the element's
+   *   `textContent` or its `innerHTML`. It's not relevant if the string is
+   *   applied to an attribute. Typically it should be set to true when the
+   *   string is expected to contain markup. When true, the cached string is
+   *   essentially assigned to the element's `innerHTML`. When false, it's
+   *   assigned to the element's `textContent`.
+   * @param {boolean} options.cacheable
+   *   Whether the string should be cached in addition to applying it to the
+   *   given element.
+   * @param {boolean} options.excludeArgsFromCacheKey
+   *   This affects how the string is stored in and fetched from the cache and
+   *   is only relevant if the string has arguments. When true, all formatted
+   *   values of the string share the same cache entry regardless of the
+   *   arguments they were formatted with. In other words, only the ID matters.
+   *   When false, formatted values with different arguments have separate cache
+   *   entries. Typically it should be true when the number of possible argument
+   *   values is unbounded and false otherwise. For example, it should be true
+   *   if the argument is a user search string since that could be anything. It
+   *   should be false if the argument is the name of an installed search engine
+   *   since there's a relatively small number of those.
+   *
+   *   If `cacheable` is false but you previously cached the string using
+   *   another function, you should pass the same value you passed for
+   *   `excludeArgsFromCacheKey` when you cached it.
+   * @returns {Promise|null}
+   *   If `cacheable` is true, this returns a promise that's resolved when the
+   *   string has been cached. Otherwise it returns null.
+   */
+  setElementL10n(
+    element,
+    {
+      id,
+      args = undefined,
+      attribute = undefined,
+      parseMarkup = false,
+      cacheable = false,
+      excludeArgsFromCacheKey = false,
+    }
+  ) {
+    let message = this.get({ id, args, excludeArgsFromCacheKey });
+    if (message) {
+      element.removeAttribute("data-l10n-id");
+      element.removeAttribute("data-l10n-attrs");
+      element.removeAttribute("data-l10n-args");
+      if (attribute) {
+        element.setAttribute(attribute, message.attributes[attribute]);
+      } else if (!parseMarkup) {
+        element.textContent = message.value;
+      } else {
+        element.innerHTML = "";
+        element.append(
+          lazy.parserUtils.parseFragment(
+            message.value,
+            Ci.nsIParserUtils.SanitizerDropNonCSSPresentation |
+              Ci.nsIParserUtils.SanitizerDropForms |
+              Ci.nsIParserUtils.SanitizerDropMedia,
+            false,
+            Services.io.newURI(element.ownerDocument.documentURI),
+            element
+          )
+        );
+      }
+    }
+
+    // If the message wasn't cached, set the element's l10n attributes and let
+    // `DOMLocalization` do its asynchronous translation. The element's content
+    // will pop in when translation finishes.
+    //
+    // Also do this if the message was cached but its args aren't part of the
+    // cache key because in that case the cached message may contain outdated
+    // arg values. We just set the element's content to the old message above,
+    // and when `DOMLocalization` finishes translating the new message, it will
+    // set the element's content again. If the old and new args are different,
+    // the new content will pop in. If they're the same, nothing will appear to
+    // change.
+    if (!message || (cacheable && excludeArgsFromCacheKey)) {
+      if (attribute) {
+        element.setAttribute("data-l10n-attrs", attribute);
+      } else {
+        element.removeAttribute("data-l10n-attrs");
+      }
+      element.ownerDocument.l10n.setAttributes(element, id, args);
+    }
+
+    if (cacheable) {
+      // Cache the string. We specifically do not do this first and await it
+      // because the whole point of the l10n cache is to synchronously update
+      // the element's content when possible. Here, we return a promise rather
+      // than making this function async and awaiting so it's clearer to callers
+      // that they probably don't need to wait for caching to finish.
+      return this.ensure({ id, args, excludeArgsFromCacheKey });
+    }
+    return null;
+  }
+
+  /**
+   * Removes content and attributes set by `setElementL10n()`.
+   *
+   * @param {Element} element
+   *   The content and attributes will be removed from this element.
+   * @param {object} options
+   *   Options object.
+   * @param {string} options.attribute
+   *   If you passed an attribute to `setElementL10n()`, pass it here too.
+   */
+  removeElementL10n(element, { attribute = undefined } = {}) {
+    if (attribute) {
+      element.removeAttribute(attribute);
+      element.removeAttribute("data-l10n-attrs");
+    } else {
+      element.textContent = "";
+    }
+    element.removeAttribute("data-l10n-id");
+    element.removeAttribute("data-l10n-args");
   }
 
   /**

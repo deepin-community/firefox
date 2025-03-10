@@ -572,7 +572,7 @@ urlbar-result-action-search-in-private = Meklēt privātajā logā
 #  $engine (String): the name of a search engine
 urlbar-result-action-search-w-engine = Meklēt ar { $engine }
 urlbar-result-action-sponsored = Sponsorēts
-urlbar-result-action-switch-tab = Pāriet uz cilni
+urlbar-result-action-switch-tab = Pārslēgties uz cilni
 urlbar-result-action-visit = Apmeklēt
 # "Switch to tab with container" is used when the target tab is located in a
 # different container.
@@ -614,6 +614,14 @@ urlbar-result-action-calculator-result = = { $result }
 # Label prompting user to search with a particular search engine.
 #  $engine (String): the name of a search engine that searches a specific site
 urlbar-result-search-with = Meklēt ar { $engine }
+urlbar-searchmode-bookmarks =
+    .label = Grāmatzīmes
+urlbar-searchmode-tabs =
+    .label = Cilnes
+urlbar-searchmode-history =
+    .label = Vēsture
+urlbar-searchmode-actions =
+    .label = Darbības
 
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
@@ -942,9 +950,6 @@ private-browsing-indicator-label = Privātā pārlūkošana
 content-analysis-indicator-tooltip =
     .tooltiptext = Datu zuduma novēršana (DLP), ko nodrošina { $agentName }. Spiediet, lai uzzinātu vairāk.
 content-analysis-panel-title = Datu aizsardzība
-# Variables:
-#   $agentName (String): The name of the DLP agent that is connected
-content-analysis-panel-text = Jūsu organizācija izmanto { $agentName }, lai aizsargātu pret datu zudumu. <a data-l10n-name="info">Uzzināt vairāk</a>
 
 ## Unified extensions (toolbar) button
 
@@ -969,6 +974,10 @@ unified-extensions-button-quarantined =
     .tooltiptext =
         Paplašinājumi
         Daži paplašinājumi nav atļauti
+
+## Unified extensions button when some extensions are disabled (e.g. through add-ons blocklist).
+## Note that the new line is intentionally part of the tooltip.
+
 
 ## Private browsing reset button
 

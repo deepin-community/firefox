@@ -34,6 +34,7 @@
 #  include "builtin/intl/FormatBuffer.h"
 #endif
 #include "builtin/RegExp.h"
+#include "gc/GC.h"
 #include "jit/InlinableNatives.h"
 #include "js/Conversions.h"
 #include "js/friend/ErrorMessages.h"  // js::GetErrorMessage, JSMSG_*
@@ -57,7 +58,6 @@
 #include "vm/ToSource.h"  // js::ValueToSource
 
 #include "vm/GeckoProfiler-inl.h"
-#include "vm/InlineCharBuffer-inl.h"
 #include "vm/NativeObject-inl.h"
 #include "vm/StringObject-inl.h"
 #include "vm/StringType-inl.h"
@@ -109,8 +109,7 @@ static bool str_encodeURI_Component(JSContext* cx, unsigned argc, Value* vp);
 /* ES5 B.2.1 */
 template <typename CharT>
 static bool Escape(JSContext* cx, const CharT* chars, uint32_t length,
-                   InlineCharBuffer<Latin1Char>& newChars,
-                   uint32_t* newLengthOut) {
+                   StringChars<Latin1Char>& newChars, uint32_t* newLengthOut) {
   // clang-format off
     static const uint8_t shouldPassThrough[128] = {
          0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -161,7 +160,8 @@ static bool Escape(JSContext* cx, const CharT* chars, uint32_t length,
 
   static const char digits[] = "0123456789ABCDEF";
 
-  Latin1Char* rawNewChars = newChars.get();
+  JS::AutoCheckCannotGC nogc;
+  Latin1Char* rawNewChars = newChars.data(nogc);
   size_t i, ni;
   for (i = 0, ni = 0; i < length; i++) {
     char16_t ch = chars[i];
@@ -195,7 +195,7 @@ static bool str_escape(JSContext* cx, unsigned argc, Value* vp) {
     return false;
   }
 
-  InlineCharBuffer<Latin1Char> newChars;
+  StringChars<Latin1Char> newChars(cx);
   uint32_t newLength = 0;  // initialize to silence GCC warning
   if (str->hasLatin1Chars()) {
     AutoCheckCannotGC nogc;
@@ -217,7 +217,7 @@ static bool str_escape(JSContext* cx, unsigned argc, Value* vp) {
     return true;
   }
 
-  JSString* res = newChars.toString(cx, newLength);
+  JSString* res = newChars.toStringDontDeflateNonStatic<CanGC>(cx, newLength);
   if (!res) {
     return false;
   }
@@ -619,70 +619,51 @@ JSString* js::SubstringKernel(JSContext* cx, HandleString str, int32_t beginInt,
   if (str->isRope()) {
     JSRope* rope = &str->asRope();
 
-    /* Substring is totally in leftChild of rope. */
+    if (rope->length() == len) {
+      // Substring is the full rope.
+      MOZ_ASSERT(begin == 0);
+      return rope;
+    }
+
     if (begin + len <= rope->leftChild()->length()) {
+      // Substring is fully contained within the rope's left child.
       return NewDependentString(cx, rope->leftChild(), begin, len);
     }
 
-    /* Substring is totally in rightChild of rope. */
     if (begin >= rope->leftChild()->length()) {
+      // Substring is fully contained within the rope's right child.
       begin -= rope->leftChild()->length();
       return NewDependentString(cx, rope->rightChild(), begin, len);
     }
 
-    /*
-     * Requested substring is partly in the left and partly in right child.
-     * Create a rope of substrings for both childs.
-     */
+    // The substring spans both children. Avoid flattening the rope if the
+    // children are both linear and the substring fits in an inline string.
+    //
+    // Note: we could handle longer substrings by allocating a new rope here,
+    // but this can result in a lot more rope flattening later on. It's safer to
+    // flatten the rope in this case. See bug 1922926.
+
     MOZ_ASSERT(begin < rope->leftChild()->length() &&
                begin + len > rope->leftChild()->length());
 
-    size_t lhsLength = rope->leftChild()->length() - begin;
-    size_t rhsLength = begin + len - rope->leftChild()->length();
+    bool fitsInline = rope->hasLatin1Chars()
+                          ? JSInlineString::lengthFits<Latin1Char>(len)
+                          : JSInlineString::lengthFits<char16_t>(len);
+    if (fitsInline && rope->leftChild()->isLinear() &&
+        rope->rightChild()->isLinear()) {
+      Rooted<JSLinearString*> left(cx, &rope->leftChild()->asLinear());
+      Rooted<JSLinearString*> right(cx, &rope->rightChild()->asLinear());
 
-    Rooted<JSLinearString*> left(cx, rope->leftChild()->ensureLinear(cx));
-    if (!left) {
-      return nullptr;
-    }
+      size_t lhsLength = left->length() - begin;
+      size_t rhsLength = len - lhsLength;
 
-    Rooted<JSLinearString*> right(cx, rope->rightChild()->ensureLinear(cx));
-    if (!right) {
-      return nullptr;
-    }
-
-    if (rope->hasLatin1Chars()) {
-      if (JSInlineString::lengthFits<Latin1Char>(len)) {
+      if (rope->hasLatin1Chars()) {
         return SubstringInlineString<Latin1Char>(cx, left, right, begin,
                                                  lhsLength, rhsLength);
       }
-    } else {
-      if (JSInlineString::lengthFits<char16_t>(len)) {
-        return SubstringInlineString<char16_t>(cx, left, right, begin,
-                                               lhsLength, rhsLength);
-      }
+      return SubstringInlineString<char16_t>(cx, left, right, begin, lhsLength,
+                                             rhsLength);
     }
-
-    left = NewDependentString(cx, left, begin, lhsLength);
-    if (!left) {
-      return nullptr;
-    }
-
-    right = NewDependentString(cx, right, 0, rhsLength);
-    if (!right) {
-      return nullptr;
-    }
-
-    // The dependent string of a two-byte string can be a Latin-1 string, so
-    // check again if the result fits into an inline string.
-    if (left->hasLatin1Chars() && right->hasLatin1Chars()) {
-      if (JSInlineString::lengthFits<Latin1Char>(len)) {
-        MOZ_ASSERT(str->hasTwoByteChars(), "Latin-1 ropes are handled above");
-        return SubstringInlineString<Latin1Char>(cx, left, right, 0, lhsLength,
-                                                 rhsLength);
-      }
-    }
-
-    return JSRope::new_<CanGC>(cx, left, right, len);
   }
 
   return NewDependentString(cx, str, begin, len);
@@ -841,11 +822,11 @@ static size_t ToLowerCaseLength(const char16_t* chars, size_t startIndex,
 }
 
 template <typename CharT>
-static JSString* ToLowerCase(JSContext* cx, JSLinearString* str) {
+static JSLinearString* ToLowerCase(JSContext* cx, JSLinearString* str) {
   // Unlike toUpperCase, toLowerCase has the nice invariant that if the
   // input is a Latin-1 string, the output is also a Latin-1 string.
 
-  InlineCharBuffer<CharT> newChars;
+  StringChars<CharT> newChars(cx);
 
   const size_t length = str->length();
   size_t resultLength;
@@ -906,10 +887,10 @@ static JSString* ToLowerCase(JSContext* cx, JSLinearString* str) {
       return nullptr;
     }
 
-    PodCopy(newChars.get(), chars, i);
+    PodCopy(newChars.data(nogc), chars, i);
 
     size_t readChars =
-        ToLowerCaseImpl(newChars.get(), chars, i, length, resultLength);
+        ToLowerCaseImpl(newChars.data(nogc), chars, i, length, resultLength);
     if constexpr (!std::is_same_v<CharT, Latin1Char>) {
       if (readChars < length) {
         resultLength = ToLowerCaseLength(chars, readChars, length);
@@ -918,7 +899,7 @@ static JSString* ToLowerCase(JSContext* cx, JSLinearString* str) {
           return nullptr;
         }
 
-        MOZ_ALWAYS_TRUE(length == ToLowerCaseImpl(newChars.get(), chars,
+        MOZ_ALWAYS_TRUE(length == ToLowerCaseImpl(newChars.data(nogc), chars,
                                                   readChars, length,
                                                   resultLength));
       }
@@ -928,10 +909,10 @@ static JSString* ToLowerCase(JSContext* cx, JSLinearString* str) {
     }
   }
 
-  return newChars.toStringDontDeflate(cx, resultLength);
+  return newChars.template toStringDontDeflate<CanGC>(cx, resultLength);
 }
 
-JSString* js::StringToLowerCase(JSContext* cx, HandleString string) {
+JSLinearString* js::StringToLowerCase(JSContext* cx, JSString* string) {
   JSLinearString* linear = string->ensureLinear(cx);
   if (!linear) {
     return nullptr;
@@ -947,8 +928,7 @@ static bool str_toLowerCase(JSContext* cx, unsigned argc, Value* vp) {
   AutoJSMethodProfilerEntry pseudoFrame(cx, "String.prototype", "toLowerCase");
   CallArgs args = CallArgsFromVp(argc, vp);
 
-  RootedString str(cx,
-                   ToStringForStringFunction(cx, "toLowerCase", args.thisv()));
+  JSString* str = ToStringForStringFunction(cx, "toLowerCase", args.thisv());
   if (!str) {
     return false;
   }
@@ -1203,21 +1183,22 @@ static size_t ToUpperCaseLength(const CharT* chars, size_t startIndex,
 }
 
 template <typename DestChar, typename SrcChar>
-static inline bool ToUpperCase(JSContext* cx,
-                               InlineCharBuffer<DestChar>& newChars,
+static inline bool ToUpperCase(JSContext* cx, StringChars<DestChar>& newChars,
                                const SrcChar* chars, size_t startIndex,
                                size_t length, size_t* resultLength) {
   MOZ_ASSERT(startIndex < length);
+
+  AutoCheckCannotGC nogc;
 
   *resultLength = length;
   if (!newChars.maybeAlloc(cx, length)) {
     return false;
   }
 
-  CopyChars(newChars.get(), chars, startIndex);
+  CopyChars(newChars.data(nogc), chars, startIndex);
 
   size_t readChars =
-      ToUpperCaseImpl(newChars.get(), chars, startIndex, length, length);
+      ToUpperCaseImpl(newChars.data(nogc), chars, startIndex, length, length);
   if (readChars < length) {
     size_t actualLength = ToUpperCaseLength(chars, readChars, length);
 
@@ -1226,19 +1207,19 @@ static inline bool ToUpperCase(JSContext* cx,
       return false;
     }
 
-    MOZ_ALWAYS_TRUE(length == ToUpperCaseImpl(newChars.get(), chars, readChars,
-                                              length, actualLength));
+    MOZ_ALWAYS_TRUE(length == ToUpperCaseImpl(newChars.data(nogc), chars,
+                                              readChars, length, actualLength));
   }
 
   return true;
 }
 
 template <typename CharT>
-static JSString* ToUpperCase(JSContext* cx, JSLinearString* str) {
-  using Latin1Buffer = InlineCharBuffer<Latin1Char>;
-  using TwoByteBuffer = InlineCharBuffer<char16_t>;
+static JSLinearString* ToUpperCase(JSContext* cx, JSLinearString* str) {
+  using Latin1StringChars = StringChars<Latin1Char>;
+  using TwoByteStringChars = StringChars<char16_t>;
 
-  mozilla::MaybeOneOf<Latin1Buffer, TwoByteBuffer> newChars;
+  mozilla::MaybeOneOf<Latin1StringChars, TwoByteStringChars> newChars;
   const size_t length = str->length();
   size_t resultLength;
   {
@@ -1317,24 +1298,24 @@ static JSString* ToUpperCase(JSContext* cx, JSLinearString* str) {
       });
 
       if (resultIsLatin1) {
-        newChars.construct<Latin1Buffer>();
+        newChars.construct<Latin1StringChars>(cx);
 
-        if (!ToUpperCase(cx, newChars.ref<Latin1Buffer>(), chars, i, length,
-                         &resultLength)) {
+        if (!ToUpperCase(cx, newChars.ref<Latin1StringChars>(), chars, i,
+                         length, &resultLength)) {
           return nullptr;
         }
       } else {
-        newChars.construct<TwoByteBuffer>();
+        newChars.construct<TwoByteStringChars>(cx);
 
-        if (!ToUpperCase(cx, newChars.ref<TwoByteBuffer>(), chars, i, length,
-                         &resultLength)) {
+        if (!ToUpperCase(cx, newChars.ref<TwoByteStringChars>(), chars, i,
+                         length, &resultLength)) {
           return nullptr;
         }
       }
     } else {
-      newChars.construct<TwoByteBuffer>();
+      newChars.construct<TwoByteStringChars>(cx);
 
-      if (!ToUpperCase(cx, newChars.ref<TwoByteBuffer>(), chars, i, length,
+      if (!ToUpperCase(cx, newChars.ref<TwoByteStringChars>(), chars, i, length,
                        &resultLength)) {
         return nullptr;
       }
@@ -1342,13 +1323,13 @@ static JSString* ToUpperCase(JSContext* cx, JSLinearString* str) {
   }
 
   auto toString = [&](auto& chars) {
-    return chars.toStringDontDeflate(cx, resultLength);
+    return chars.template toStringDontDeflate<CanGC>(cx, resultLength);
   };
 
   return newChars.mapNonEmpty(toString);
 }
 
-JSString* js::StringToUpperCase(JSContext* cx, HandleString string) {
+JSLinearString* js::StringToUpperCase(JSContext* cx, JSString* string) {
   JSLinearString* linear = string->ensureLinear(cx);
   if (!linear) {
     return nullptr;
@@ -1364,8 +1345,7 @@ static bool str_toUpperCase(JSContext* cx, unsigned argc, Value* vp) {
   AutoJSMethodProfilerEntry pseudoFrame(cx, "String.prototype", "toUpperCase");
   CallArgs args = CallArgsFromVp(argc, vp);
 
-  RootedString str(cx,
-                   ToStringForStringFunction(cx, "toUpperCase", args.thisv()));
+  JSString* str = ToStringForStringFunction(cx, "toUpperCase", args.thisv());
   if (!str) {
     return false;
   }
@@ -1717,8 +1697,8 @@ static bool str_toWellFormed(JSContext* cx, unsigned argc, Value* vp) {
   MOZ_ASSERT(isWellFormedUpTo < len);
 
   // Step 4-6
-  InlineCharBuffer<char16_t> buffer;
-  if (!buffer.maybeAlloc(cx, len)) {
+  StringChars<char16_t> newChars(cx);
+  if (!newChars.maybeAlloc(cx, len)) {
     return false;
   }
 
@@ -1728,9 +1708,9 @@ static bool str_toWellFormed(JSContext* cx, unsigned argc, Value* vp) {
     JSLinearString* linear = str->ensureLinear(cx);
     MOZ_ASSERT(linear, "IsStringWellFormedUnicode linearized the string");
 
-    PodCopy(buffer.get(), linear->twoByteChars(nogc), len);
+    PodCopy(newChars.data(nogc), linear->twoByteChars(nogc), len);
 
-    auto span = mozilla::Span{buffer.get(), len};
+    auto span = mozilla::Span{newChars.data(nogc), len};
 
     // Replace the character.
     span[isWellFormedUpTo] = unicode::REPLACEMENT_CHARACTER;
@@ -1742,7 +1722,7 @@ static bool str_toWellFormed(JSContext* cx, unsigned argc, Value* vp) {
     }
   }
 
-  JSString* result = buffer.toStringDontDeflate(cx, len);
+  JSString* result = newChars.toStringDontDeflateNonStatic<CanGC>(cx, len);
   if (!result) {
     return false;
   }
@@ -2387,7 +2367,7 @@ bool js::str_includes(JSContext* cx, unsigned argc, Value* vp) {
       if (!ToInteger(cx, args[1], &d)) {
         return false;
       }
-      pos = uint32_t(std::min(std::max(d, 0.0), double(UINT32_MAX)));
+      pos = uint32_t(std::clamp(d, 0.0, double(UINT32_MAX)));
     }
   }
 
@@ -2451,7 +2431,7 @@ bool js::str_indexOf(JSContext* cx, unsigned argc, Value* vp) {
       if (!ToInteger(cx, args[1], &d)) {
         return false;
       }
-      pos = uint32_t(std::min(std::max(d, 0.0), double(UINT32_MAX)));
+      pos = uint32_t(std::clamp(d, 0.0, double(UINT32_MAX)));
     }
   }
 
@@ -2704,7 +2684,7 @@ bool js::str_startsWith(JSContext* cx, unsigned argc, Value* vp) {
       if (!ToInteger(cx, args[1], &d)) {
         return false;
       }
-      pos = uint32_t(std::min(std::max(d, 0.0), double(UINT32_MAX)));
+      pos = uint32_t(std::clamp(d, 0.0, double(UINT32_MAX)));
     }
   }
 
@@ -2791,7 +2771,7 @@ bool js::str_endsWith(JSContext* cx, unsigned argc, Value* vp) {
       if (!ToInteger(cx, args[1], &d)) {
         return false;
       }
-      pos = uint32_t(std::min(std::max(d, 0.0), double(UINT32_MAX)));
+      pos = uint32_t(std::clamp(d, 0.0, double(UINT32_MAX)));
     }
   }
 
@@ -3676,7 +3656,13 @@ static ArrayObject* SplitHelper(JSContext* cx, Handle<JSLinearString*> str,
   }
 
   // Step 3 (reordered).
-  RootedValueVector splits(cx);
+  Rooted<ArrayObject*> substrings(cx, NewDenseEmptyArray(cx));
+  if (!substrings) {
+    return nullptr;
+  }
+
+  // Switch to allocating in the tenured heap if we fill the nursery.
+  AutoSelectGCHeap gcHeap(cx);
 
   // Step 8 (reordered).
   size_t lastEndIndex = 0;
@@ -3722,16 +3708,17 @@ static ArrayObject* SplitHelper(JSContext* cx, Handle<JSLinearString*> str,
 
     // Step 14.c.ii.1.
     size_t subLength = size_t(endIndex - sepLength - lastEndIndex);
-    JSString* sub = NewDependentString(cx, str, lastEndIndex, subLength);
+    JSString* sub =
+        NewDependentString(cx, str, lastEndIndex, subLength, gcHeap);
 
     // Steps 14.c.ii.2-4.
-    if (!sub || !splits.append(StringValue(sub))) {
+    if (!sub || !NewbornArrayPush(cx, substrings, StringValue(sub))) {
       return nullptr;
     }
 
     // Step 14.c.ii.5.
-    if (splits.length() == limit) {
-      return NewDenseCopiedArray(cx, splits.length(), splits.begin());
+    if (substrings->length() == limit) {
+      return substrings;
     }
 
     // Step 14.c.ii.6.
@@ -3742,16 +3729,16 @@ static ArrayObject* SplitHelper(JSContext* cx, Handle<JSLinearString*> str,
   }
 
   // Step 15.
-  JSString* sub =
-      NewDependentString(cx, str, lastEndIndex, strLength - lastEndIndex);
+  size_t subLength = strLength - lastEndIndex;
+  JSString* sub = NewDependentString(cx, str, lastEndIndex, subLength, gcHeap);
 
   // Steps 16-17.
-  if (!sub || !splits.append(StringValue(sub))) {
+  if (!sub || !NewbornArrayPush(cx, substrings, StringValue(sub))) {
     return nullptr;
   }
 
   // Step 18.
-  return NewDenseCopiedArray(cx, splits.length(), splits.begin());
+  return substrings;
 }
 
 // Fast-path for splitting a string into a character array via split("").
@@ -4024,6 +4011,20 @@ JSLinearString* js::StringFromCodePoint(JSContext* cx, char32_t codePoint) {
   return NewInlineString<CanGC>(cx, chars, 2);
 }
 
+// Inspect arguments to guess the output string type.
+static bool GuessFromCharCodeIsLatin1(const CallArgs& args) {
+  // Arbitrarily chosen number of samples to inspect.
+  constexpr unsigned SampleSize = 8;
+
+  for (unsigned i = 0; i < std::min(args.length(), SampleSize); i++) {
+    auto v = args[i];
+    if (v.isInt32() && uint16_t(v.toInt32()) > JSString::MAX_LATIN1_CHAR) {
+      return false;
+    }
+  }
+  return true;
+}
+
 /**
  * 22.1.2.1 String.fromCharCode ( ...codeUnits )
  *
@@ -4050,27 +4051,72 @@ bool js::str_fromCharCode(JSContext* cx, unsigned argc, Value* vp) {
     return true;
   }
 
-  // Optimize the case where the result will definitely fit in an inline
-  // string (thin or fat) and so we don't need to malloc the chars. (We could
-  // cover some cases where args.length() goes up to
-  // JSFatInlineString::MAX_LENGTH_LATIN1 if we also checked if the chars are
-  // all Latin-1, but it doesn't seem worth the effort.)
-  InlineCharBuffer<char16_t> chars;
-  if (!chars.maybeAlloc(cx, args.length())) {
+  // Optimize the case where the result will be a Latin-1 string.
+  StringChars<Latin1Char> latin1Chars(cx);
+
+  unsigned i = 0;
+  uint16_t firstTwoByteChar = 0;
+  if (GuessFromCharCodeIsLatin1(args)) {
+    if (!latin1Chars.maybeAlloc(cx, args.length())) {
+      return false;
+    }
+
+    for (; i < args.length(); i++) {
+      uint16_t code;
+      if (!ToUint16(cx, args[i], &code)) {
+        return false;
+      }
+
+      if (code > JSString::MAX_LATIN1_CHAR) {
+        firstTwoByteChar = code;
+        break;
+      }
+
+      AutoCheckCannotGC nogc;
+      latin1Chars.data(nogc)[i] = code;
+    }
+
+    if (i == args.length()) {
+      JSString* str = latin1Chars.toStringDontDeflate<CanGC>(cx, args.length());
+      if (!str) {
+        return false;
+      }
+
+      args.rval().setString(str);
+      return true;
+    }
+  }
+
+  StringChars<char16_t> twoByteChars(cx);
+  if (!twoByteChars.maybeAlloc(cx, args.length())) {
     return false;
   }
 
-  char16_t* rawChars = chars.get();
-  for (unsigned i = 0; i < args.length(); i++) {
+  // Copy the already processed characters.
+  if (i > 0) {
+    AutoCheckCannotGC nogc;
+    std::copy_n(latin1Chars.data(nogc), i, twoByteChars.data(nogc));
+  }
+
+  // Copy the first two-byte character, if present.
+  if (firstTwoByteChar > 0) {
+    MOZ_ASSERT(firstTwoByteChar > JSString::MAX_LATIN1_CHAR);
+
+    AutoCheckCannotGC nogc;
+    twoByteChars.data(nogc)[i++] = char16_t(firstTwoByteChar);
+  }
+
+  for (; i < args.length(); i++) {
     uint16_t code;
     if (!ToUint16(cx, args[i], &code)) {
       return false;
     }
 
-    rawChars[i] = char16_t(code);
+    AutoCheckCannotGC nogc;
+    twoByteChars.data(nogc)[i] = code;
   }
 
-  JSString* str = chars.toString(cx, args.length());
+  JSString* str = twoByteChars.toStringDontDeflate<CanGC>(cx, args.length());
   if (!str) {
     return false;
   }

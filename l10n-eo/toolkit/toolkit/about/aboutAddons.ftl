@@ -283,6 +283,9 @@ find-more-themes = Serĉi pli da etosoj
 # used for screen readers.
 addon-options-button =
     .aria-label = Pli da ebloj
+# Explanatory introduction to the list of recommended add-ons. The action word
+# ("recommends") in the final sentence is a link to external documentation.
+discopane-intro2 = Etendaĵoj kaj etosoj permesas al vi personcecigi { -brand-product-name }. Ili povas pliigi privatecon, plialtigi produktadon, plibonigi aŭvidaĵojn, ŝanĝi la aspekton de { -brand-product-name }, kaj multe, multe pli. Tiuj etaj programoj estas ofte disvolvitaj de aliaj. Jen kelkaj <a data-l10n-name="learn-more-trigger">rekomendoj</a> de { -brand-product-name } por havi eksterordinaran sekurecon, efikecon kaj aldonajn funkciojn.
 
 ## Add-on actions
 
@@ -369,6 +372,10 @@ addon-detail-group-label-updates =
     .aria-label = { addon-detail-updates-label }
 # This is the tooltip text for the private browsing badge in about:addons. The
 # badge is the private browsing icon included next to the extension's name.
+addon-badge-private-browsing-allowed3 =
+    .title = Permesita en privataj fenestroj
+# This is the tooltip text for the private browsing badge in about:addons. The
+# badge is the private browsing icon included next to the extension's name.
 addon-badge-private-browsing-allowed2 =
     .title = Permesita en privataj fenestroj
     .aria-label = { addon-badge-private-browsing-allowed2.title }
@@ -408,6 +415,14 @@ addon-badge-line3 =
 addon-badge-verified2 =
     .title = Tiu ĉi etendaĵo estis reviziita por kontroli ke ĝi kongruas kun niaj sekurecaj kaj efikecaj normoj.
     .aria-label = { addon-badge-verified2.title }
+addon-badge-recommended3 =
+    .title = { -brand-product-name } nur rekomendas etendaĵojn, kiuj konformas al niaj normoj pri sekureco kaj efikeco
+# We hard code "Mozilla" in the string below because the extensions are built
+# by Mozilla and we don't want forks to display "by Fork".
+addon-badge-line4 =
+    .title = Oficiala etendaĵo verkita de Mozilla. Ĝi observas sekurecajn kaj efikecajn normojn
+addon-badge-verified3 =
+    .title = Tiu ĉi etendaĵo estis reviziita por kontroli ke ĝi kongruas kun niaj sekurecaj kaj efikecaj normoj.
 
 ##
 
@@ -415,6 +430,7 @@ available-updates-heading = Haveblaj ĝisdatigoj
 recent-updates-heading = Ĵusaj ĝisdatigoj
 release-notes-loading = Ŝargado…
 release-notes-error = Bedaŭrinde okazis eraro dum la ŝargado de la notoj pri liverado.
+addon-permissions-empty2 = Tiu ĉi etendaĵo ne postulas iun ajn permeson.
 addon-permissions-empty = Tiu ĉi etendaĵo postulas neniun permeson
 addon-permissions-required = Postulataj permesoj por kernaj funkcioj:
 addon-permissions-optional = Elekteblaj permesoj por aldonaj funkcioj:
@@ -464,10 +480,24 @@ details-notification-unsigned-and-disabled-link = Pli da informo
 details-notification-unsigned = { $name } ne povis esti kontrolita por uzo en { -brand-short-name }. Daŭrigu singarde.
 details-notification-unsigned2 =
     .message = { $name } ne povis esti kontrolita por uzo en { -brand-short-name }. Daŭrigu singarde.
+details-notification-hard-blocked-extension =
+    .message = Tiu ĉi etendaĵo estis blokita pro malobservo de la politikoj de Mozilla kaj ĝi estis do malaktivigita.
+details-notification-hard-blocked-other =
+    .message = Tiu ĉi aldonaĵo estis blokita pro malobservo de la politikoj de Mozilla kaj ĝi estis do malaktivigita.
 details-notification-unsigned-link = Pli da informo
 details-notification-blocked = { $name } estis blokita pro sekurecaj kaj stabilecaj problemoj.
 details-notification-blocked2 =
     .message = { $name } estis blokita pro sekurecaj kaj stabilecaj problemoj.
+details-notification-blocked-link2 = Montri detalojn
+details-notification-soft-blocked-extension-disabled =
+    .message = Tiu ĉi etendaĵo estis blokita pro malobservo de la politikoj de Mozilla kaj ĝi estis do malaktivigita. Vi povas reaktivigi ĝin, sed tio povus esti riska.
+details-notification-soft-blocked-extension-enabled =
+    .message = Tiu ĉi etendaĵo malobservas la politikojn de Mozilla. Uzi ĝin povas esti riske.
+details-notification-soft-blocked-other-disabled =
+    .message = Tiu ĉi aldonaĵo estis blokita pro malobservo de la politikoj de Mozilla kaj ĝi estis do malaktivigita. Vi povas reaktivigi ĝin, sed tio povus esti riska.
+details-notification-soft-blocked-other-enabled =
+    .message = Tiu ĉi aldonaĵo malobservas la politikojn de Mozilla. Uzi ĝin povas esti riske.
+details-notification-softblocked-link2 = Montri detalojn
 details-notification-blocked-link = Plia informo
 details-notification-softblocked = Estas konata fakto ke { $name } povas okazigi sekurecajn kaj stabilecajn problemojn.
 details-notification-softblocked2 =

@@ -18,6 +18,9 @@ cert-error-trust-signature-algorithm-disabled = Ndojejeroviái pe mboajepyréva 
 cert-error-trust-expired-issuer = Ndojejeroviái pe mboajepyre rehe pe ime’ẽhare ndoikovéima rupi.
 cert-error-trust-self-signed = Ndojejeroviái pe mboajepyre rehe oñemboheraguapyjehegui rupi.
 cert-error-trust-symantec = Umi mboajepyre oguenohẽva GeoTrust, RapidSSL, Symantec, Thawte y VeriSign nahekorosãvéima mboajepyre moakãharakuéra ndoguatái tekorosã rapére ymave.
+# Variables:
+#   $hostname (string) - Hostname of the website with cert error.
+cert-error-trust-certificate-transparency = { -brand-short-name } ndojeroviái { $hostname } rehe ndaikatúire ohechauka ojapoha he’íva pe mboajepyre opavaveguáva rekosakã.
 cert-error-untrusted-default = Pe mboajepyre ndoúi peteĩ teñoiha ijeroviahávagui.
 # Variables:
 #   $hostname (string) - Hostname of the website with cert error.
@@ -68,6 +71,19 @@ open-in-new-window-for-csp-or-xfo-error = Embojuruja tenda ovetã pyahúpe
 # Variables:
 #   $hostname (string) - Hostname of the website blocked by csp or xfo error.
 csp-xfo-blocked-long-desc = Emo’ã hag̃ua ne rekorosã, { $hostname } nomoneĩmo’ãi { -brand-short-name } ohechaukávo kuatiarogue ambue tenda omoingéramo. Ehecha hag̃ua ko kuatiarogue, embojurujava’erã ovetã pyahúpe.
+fp-certerror-view-certificate-link = Ehecha tenda kuatia’atã
+fp-certerror-return-to-previous-page-recommended-button = Eguevi (ñemoñe’ẽmbyre)
+# This string appears after the following string: "What can you do about it?" (fp-certerror-what-can-you-do)
+fp-certerror-self-signed-what-can-you-do-body = Ndahetái. Ikatuhína iñapañuái upe tendaite ndivevoi.
+# Variables:
+#   $error (string) - NSS error code string that specifies type of cert error. e.g. unknown issuer, invalid cert, etc.
+fp-cert-error-code = Ayvu jejavy: { $error }
+# Variables:
+#   $datetime (Date) - Current datetime.
+fp-datetime = { DATETIME($datetime, month: "short", year: "numeric", day: "numeric") } { DATETIME($datetime, timeStyle: "long") }
+fp-learn-more-about-secure-connection-failures = Eikuaave jeike katu jejavy rehegua
+fp-learn-more-about-cert-issues = Eikuaave ko apañuái kuatia’atã ndive rehegua
+fp-learn-more-about-time-related-errors = Eikuaave mba’éichapa emoĩporãta jejavy arange rehegua
 
 ## Messages used for certificate error titles
 
@@ -92,6 +108,7 @@ contentEncodingError-title = Tetepy mbopapapy jejavy
 unsafeContentType-title = Peteĩchagua marandurenda hekorosã’ỹva
 netReset-title = Jeike oñepyrũjeýma
 netTimeout-title = Pe jeike ndoikovéima
+httpErrorPage-title = Ha’eténte ku oĩva apañuái ko tenda ndive.
 serverError-title = Ha’eténte ku oĩva apañuái ko tenda ndive.
 unknownProtocolFound-title = Pe kundaharape nahesakãi
 proxyConnectFailure-title = Mohendahavusu proxy ombotove jeike
@@ -109,3 +126,18 @@ networkProtocolError-title = Jejavy guasu ñandutípe
 nssBadCert-title = Jesarekorã: Imarãkuaáva tenondeve
 nssBadCert-sts-title = Ndoikéi: Ikatu hína iñapañuái tekorosãrã
 certerror-mitm-title = Ko software ojokohína { -brand-short-name } ani oike ko tendápe tekorasãme
+
+## Felt Privacy V1 Strings
+
+fp-certerror-page-title = Kyhyjerã: Tekorosã ñembyaikuaa
+fp-certerror-body-title = Ema’ẽke. Oĩvaicha iporãmba’ỹva.
+fp-certerror-why-site-dangerous = ¿Mba’érevaicha upe tenda ivaikuaa?
+fp-certerror-what-can-you-do = ¿Mba’e ikatu rejapo upéicharõ?
+fp-certerror-advanced-title = Opapotáva
+fp-certerror-advanced-button = Opapotáva
+fp-certerror-hide-advanced-button = Eñomi opapotáva
+
+## Variables:
+##   $hostname (String) - Hostname of the website to which the user was trying to connect.
+
+fp-certerror-override-exception-button = Ejapo { $hostname } ndive (ivaikuaa)

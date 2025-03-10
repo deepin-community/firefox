@@ -38,6 +38,8 @@ pub struct Config {
     pub events_dir: Option<PathBuf>,
     /// The ping directory.
     pub ping_dir: Option<PathBuf>,
+    /// The profile directory in use when the crash occurred.
+    pub profile_dir: Option<PathBuf>,
     /// The dump file.
     ///
     /// If missing, an error dialog is displayed.
@@ -66,10 +68,7 @@ impl<'a> ConfigStringBuilder<'a> {
 
     /// Get the localized string.
     pub fn get(self) -> String {
-        self.0
-            .get()
-            .context("failed to get localized string")
-            .unwrap()
+        self.0.get()
     }
 }
 
@@ -81,7 +80,7 @@ impl Config {
 
     /// Load a configuration from the application environment.
     #[cfg_attr(mock, allow(unused))]
-    pub fn read_from_environment(&mut self) -> anyhow::Result<()> {
+    pub fn read_from_environment(&mut self) {
         self.auto_submit = env_bool(ekey!("AUTO_SUBMIT"));
         self.dump_all_threads = env_bool(ekey!("DUMP_ALL_THREADS"));
         self.delete_dump = !env_bool(ekey!("NO_DELETE_DUMP"));
@@ -90,6 +89,8 @@ impl Config {
         self.ping_dir = env_path(ekey!("PING_DIRECTORY"));
         self.app_file = std::env::var_os(ekey!("RESTART_XUL_APP_FILE"));
 
+        self.update_log_file();
+
         // Only support `MOZ_APP_LAUNCHER` on linux and macos.
         if cfg!(not(target_os = "windows")) {
             self.restart_command = std::env::var_os("MOZ_APP_LAUNCHER");
@@ -97,12 +98,12 @@ impl Config {
 
         if self.restart_command.is_none() {
             self.restart_command = Some(
-                self.sibling_program_path(mozbuild::config::MOZ_APP_NAME)
+                self.installation_program_path(mozbuild::config::MOZ_APP_NAME)
                     .into(),
             )
         }
 
-        // We no longer use don't use `MOZ_CRASHREPORTER_RESTART_ARG_0`, see bug 1872920.
+        // We no longer use `MOZ_CRASHREPORTER_RESTART_ARG_0`, see bug 1872920.
         self.restart_args = (1..)
             .into_iter()
             .map_while(|arg_num| std::env::var_os(format!("{}_{}", ekey!("RESTART_ARG"), arg_num)))
@@ -120,9 +121,7 @@ impl Config {
             log::warn!("ignoring extraneous argument: {}", arg.to_string_lossy());
         }
 
-        self.strings = Some(lang::load().context("failed to load localized strings")?);
-
-        Ok(())
+        self.strings = Some(lang::load());
     }
 
     /// Get the localized string for the given index.
@@ -180,6 +179,7 @@ impl Config {
             let vendor = extra[VENDOR_KEY].as_str().unwrap_or(DEFAULT_VENDOR);
             let product = extra[PRODUCT_KEY].as_str().unwrap_or(DEFAULT_PRODUCT);
             self.data_dir = Some(self.get_data_dir(vendor, product)?);
+            self.update_log_file();
         }
 
         // Clear the restart command if WER handled the crash. This prevents restarting the
@@ -188,7 +188,38 @@ impl Config {
             self.restart_command = None;
         }
 
+        self.load_profile_directory_from_extra(&extra);
+
         Ok(extra)
+    }
+
+    /// Load the profile directory from the extra file information.
+    ///
+    /// This also loads the following information that relies on the profile directory:
+    /// * localization strings from langpacks
+    fn load_profile_directory_from_extra(&mut self, extra: &serde_json::Value) {
+        let Some(profile_dir) = extra
+            .get("ProfileDirectory")
+            .and_then(|v| v.as_str())
+            .map(PathBuf::from)
+        else {
+            return;
+        };
+        if !profile_dir.exists() {
+            return;
+        }
+
+        self.profile_dir = Some(profile_dir);
+
+        // Update the localization information.
+        if let Some(strings) = self.strings.as_mut() {
+            if let Err(e) = strings.add_langpack(
+                self.profile_dir.as_deref().unwrap(),
+                extra.get("useragent_locale").and_then(|v| v.as_str()),
+            ) {
+                log::warn!("failed to read localization information from profile: {e:#}")
+            }
+        }
     }
 
     /// Get the path to the extra file.
@@ -366,26 +397,27 @@ impl Config {
         Ok(())
     }
 
-    /// Get the path of a program that is a sibling of the crashreporter.
-    ///
-    /// On MacOS, this assumes that the crashreporter is its own application bundle within the main
-    /// program bundle. On other platforms this assumes siblings reside in the same directory as
-    /// the crashreporter.
+    /// Get the path of a program in the installation.
     ///
     /// The returned path isn't guaranteed to exist.
     // This method could be standalone rather than living in `Config`; it's here because it makes
     // sense that if it were to rely on anything, it would be the `Config` (and that may change in
     // the future).
-    pub fn sibling_program_path<N: AsRef<OsStr>>(&self, program: N) -> PathBuf {
+    pub fn installation_program_path<N: AsRef<OsStr>>(&self, program: N) -> PathBuf {
         let self_path = self_path();
         let exe_extension = self_path.extension().unwrap_or_default();
+        let mut p = program.as_ref().to_os_string();
         if !exe_extension.is_empty() {
-            let mut p = program.as_ref().to_os_string();
             p.push(".");
             p.push(exe_extension);
-            sibling_path(p)
-        } else {
-            sibling_path(program)
+        }
+        installation_path().join(p)
+    }
+
+    /// Update the log file based on the current configured data_dir.
+    fn update_log_file(&self) {
+        if let (Some(log_target), Some(data_dir)) = (&self.log_target, &self.data_dir) {
+            log_target.set_file(&data_dir.join("submit.log"));
         }
     }
 
@@ -491,36 +523,43 @@ impl Config {
     }
 }
 
-/// Get the path of a file that is a sibling of the crashreporter.
+/// Get the path of resources for the Firefox installation containing the crashreporter.
+pub fn installation_resource_path() -> &'static Path {
+    static PATH: Lazy<PathBuf> = Lazy::new(|| {
+        if cfg!(all(not(mock), target_os = "macos")) {
+            installation_path().parent().unwrap().join("Resources")
+        } else {
+            installation_path().to_owned()
+        }
+    });
+    &*PATH
+}
+
+/// Get the path of the Firefox installation containing the crashreporter.
 ///
 /// On MacOS, this assumes that the crashreporter is its own application bundle within the main
-/// program bundle. On other platforms this assumes siblings reside in the same directory as
-/// the crashreporter.
-///
-/// The returned path isn't guaranteed to exist.
-pub fn sibling_path<N: AsRef<OsStr>>(file: N) -> PathBuf {
-    // Expect shouldn't panic as we don't invoke the program without a parent directory.
-    let dir_path = self_path().parent().expect("program invoked based on PATH");
+/// program bundle. It returns the MacOS directory of the Firefox application bundle.
+pub fn installation_path() -> &'static Path {
+    static PATH: Lazy<&'static Path> = Lazy::new(|| {
+        // Expect shouldn't panic as we don't invoke the program without a parent directory.
+        let dir_path = self_path().parent().expect("program invoked based on PATH");
 
-    let mut path = dir_path.join(file.as_ref());
+        if cfg!(all(not(mock), target_os = "macos")) {
+            // On macOS the crash reporter client is shipped as an application bundle contained
+            // within Firefox's main application bundle. So when it's invoked its current working
+            // directory looks like:
+            // Firefox.app/Contents/MacOS/crashreporter.app/Contents/MacOS/
 
-    if !path.exists() && cfg!(all(not(mock), target_os = "macos")) {
-        // On macOS the crash reporter client is shipped as an application bundle contained
-        // within Firefox's main application bundle. So when it's invoked its current working
-        // directory looks like:
-        // Firefox.app/Contents/MacOS/crashreporter.app/Contents/MacOS/
-        // The other applications we ship with Firefox are stored in the main bundle
-        // (Firefox.app/Contents/MacOS/) so we we need to go back three directories
-        // to reach them.
-
-        // 3rd ancestor (the 0th element of ancestors has no paths removed) to remove
-        // `crashreporter.app/Contents/MacOS`.
-        if let Some(ancestor) = dir_path.ancestors().nth(3) {
-            path = ancestor.join(file.as_ref());
+            // 3rd ancestor (the 0th element of ancestors has no paths removed) to remove
+            // `crashreporter.app/Contents/MacOS`.
+            if let Some(ancestor) = dir_path.ancestors().nth(3) {
+                return ancestor;
+            }
         }
-    }
 
-    path
+        dir_path
+    });
+    &*PATH
 }
 
 fn self_path() -> &'static Path {

@@ -85,7 +85,6 @@
     <string name="share_dialog_title">Dividi per</string>
 
     <string name="notification_erase_title_android_14">Ĉu viŝi retuman historion?</string>
-    <string name="notification_erase_text_android_14" moz:RemovedIn="124" tools:ignore="UnusedResources">Tuŝetu aŭ viŝu tiun ĉi sciigon por sekure viŝi vian retuman historion.</string>
 
     <!-- Text shown in the notification description that pops up to remind the user that a browsing session is active
     for Android 14+. -->
@@ -353,6 +352,11 @@
     <!-- %1$s will be replaced with the name of the app (e.g. Firefox Focus) -->
     <string name="preference_mozilla_telemetry_summary2">Mozilla penas kolekti nur la datumojn nepre bezonatajn por provizi kaj plibonigi %1$s por ĉiuj.</string>
 
+    <!-- Preference switch for daily usage ping data collection -->
+    <string name="preference_daily_usage_ping_title">Ping de taga uzo</string>
+    <string name="preference_daily_usage_ping_description">Tio ĉi helpas Mozillan taksi la nombron de aktivaj uzantoj.</string>
+    <string name="preference_daily_usage_ping_learn_more">Pli da informo</string>
+
     <!-- In-app link (in settings) to Focus privacy notice. -->
     <string name="preference_privacy_notice">Rimarko pri privateco</string>
 
@@ -361,6 +365,9 @@
 
     <!-- Link to Focus licensing information from other libraries that we use. -->
     <string name="preference_libraries_we_use">Bibliotekoj uzataj de ni</string>
+
+    <!-- Link to Focus Crash reports list. -->
+    <string name="preference_crashes">Paneoj</string>
 
     <!-- Open Source Licenses page title. The first parameter is the app name -->
     <string name="open_source_licenses_title">%s | Malfermitkodaj bibliotekoj</string>
@@ -517,10 +524,7 @@
 
 
 
-  <!-- Content description (not visible, for screen readers etc.): This is the description for the close button from the new onboarding flow screen one and two -->
-    <string name="onboarding_close_button_content_description">Fermi</string>
-
-    <!-- New Onboarding flow first screen title -->
+  <!-- New Onboarding flow first screen title -->
     <!-- %1$s will be replaced by the app name and build variant(e.g. Firefox Focus, Firefox Klar Nightly) -->
     <string name="onboarding_first_screen_title">Bonvenon al %1$s</string>
 
@@ -839,7 +843,7 @@
     <string name="studies_learn_more">Pli da informo</string>
 
     <!-- Dialog message shown when some changes are made on studies -->
-    <string name="studies_restart_app">Tiu ĉi programo finiĝos por apliki ŝanĝojn</string>
+    <string name="studies_restart_app" moz:removedIn="135">Tiu ĉi programo finiĝos por apliki ŝanĝojn</string>
 
     <!-- Title of the remove studies button -->
     <string name="studies_remove">Forigi</string>
@@ -927,9 +931,6 @@
 
     <!-- Label for the button in the snackbar that switches to the newly opened tab -->
     <string name="open_new_tab_snackbar">Ŝanĝi</string>
-
-    <!-- Text displayed in a notification when the user enters full screen mode -->
-    <string name="full_screen_notification" moz:removedIn="130" tools:ignore="UnusedResources">Plenekrana reĝimo aktiva</string>
 
     <!-- Preference for switching to a new tab immediately after opening -->
     <string name="preference_open_new_tab">Iri tuj al la ligilo en nova langeto</string>
@@ -1120,8 +1121,10 @@
     <string name="promote_search_widget_snackbar_message">Komponanto aldonita al hejmekrano</string>
 
     <!-- Messages explaining how to exit fullscreen mode -->
-    <!-- Message shown to explain how to exit fullscreen mode when gesture navigation is enabled -->
-    <string name="exit_fullscreen_with_gesture">Por eliri el la plenekrana reĝimo, trenu el supre kaj uzu la geston por ili malantaŭen</string>
-    <!-- Message shown to explain how to exit fullscreen mode when using back button navigation -->
-    <string name="exit_fullscreen_with_back_button">Por eliri el la plenekrana reiĝmon, trenu el supre kaj premu la butonon &quot;reen&quot;</string>
+    <!-- Message shown to explain how to exit fullscreen mode when gesture navigation is enabled. -->
+    <!-- Localisation note: this text should be as short as possible, max 68 chars -->
+    <string name="exit_fullscreen_with_gesture_short">Trenu el supre kaj uzu la geston malantaŭen por eliri</string>
+    <!-- Message shown to explain how to exit fullscreen mode when using back button navigation. -->
+    <!-- Localisation note: this text should be as short as possible, max 68 chars -->
+    <string name="exit_fullscreen_with_back_button_short">Trenu el supre kaj premu la butonon malantaŭen por eliri</string>
 </resources>

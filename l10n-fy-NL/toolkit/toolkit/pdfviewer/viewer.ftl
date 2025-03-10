@@ -327,6 +327,8 @@ pdfjs-editor-remove-stamp-button =
     .title = Ofbylding fuortsmite
 pdfjs-editor-remove-highlight-button =
     .title = Markearring fuortsmite
+pdfjs-editor-remove-signature-button =
+    .title = Hantekening fuortsmite
 
 ##
 
@@ -343,6 +345,10 @@ pdfjs-editor-stamp-add-image-button-label = Ofbylding tafoegje
 pdfjs-editor-free-highlight-thickness-input = Tsjokte
 pdfjs-editor-free-highlight-thickness-title =
     .title = Tsjokte wizigje by aksintuearring fan oare items as tekst
+# .default-content is used as a placeholder in an empty text editor.
+pdfjs-free-text2 =
+    .aria-label = Tekstbewurker
+    .default-content = Start mei typen…
 pdfjs-free-text =
     .aria-label = Tekstbewurker
 pdfjs-free-text-default-content = Begjin mei typen…
@@ -353,8 +359,9 @@ pdfjs-ink-canvas =
 
 ## Alt-text dialog
 
-# Alternative text (alt text) helps when people can't see the image.
 pdfjs-editor-alt-text-button-label = Alternative tekst
+pdfjs-editor-alt-text-edit-button =
+    .aria-label = Alternative tekst bewurkje
 pdfjs-editor-alt-text-edit-button-label = Alternative tekst bewurkje
 pdfjs-editor-alt-text-dialog-label = Kies in opsje
 pdfjs-editor-alt-text-dialog-description = Alternative tekst helpt wannear’t minsken de ôfbylding net sjen kinne of wannear’t dizze net laden wurdt.
@@ -368,6 +375,9 @@ pdfjs-editor-alt-text-decorative-tooltip = As dekoratyf markearre
 # .placeholder: This is a placeholder for the alt text input area
 pdfjs-editor-alt-text-textarea =
     .placeholder = Bygelyks, ‘In jonge man sit oan in tafel om te iten’
+# Alternative text (alt text) helps when people can't see the image.
+pdfjs-editor-alt-text-button =
+    .aria-label = Alternative tekst
 
 ## Editor resizers
 ## This is used in an aria label to help to understand the role of the resizer.
@@ -431,7 +441,7 @@ pdfjs-editor-new-alt-text-dialog-edit-label = Alternative tekst (ôfbyldingsbesk
 # Modal header positioned above a text box where users can add the alt text.
 pdfjs-editor-new-alt-text-dialog-add-label = Alternative tekst (ôfbyldingsbeskriuwing) tafoegje
 pdfjs-editor-new-alt-text-textarea =
-    .placeholder = Skriuw hjir jo beskriuwing...
+    .placeholder = Skriuw hjir jo beskriuwing…
 # This text refers to the alt text box above this description. It offers a definition of alt text.
 pdfjs-editor-new-alt-text-description = Koarte beskriuwing foar minsken dy’t de ôfbylding net sjen kinne of wannear’t de ôfbylding net laden wurdt.
 # This is a required legal disclaimer that refers to the automatically created text inside the alt text box above this text. It disappears if the text is edited by a human.
@@ -449,10 +459,16 @@ pdfjs-editor-new-alt-text-error-close-button = Slute
 pdfjs-editor-new-alt-text-ai-model-downloading-progress = AI-model foar alternative tekst downloade ({ $downloadedSize } fan { $totalSize } MB)
     .aria-valuetext = AI-model foar alternative tekst downloade ({ $downloadedSize } fan { $totalSize } MB)
 # This is a button that users can click to edit the alt text they have already added.
+pdfjs-editor-new-alt-text-added-button =
+    .aria-label = Alternative tekst tafoege
 pdfjs-editor-new-alt-text-added-button-label = Alternative tekst tafoege
 # This is a button that users can click to open the alt text editor and add alt text when it is not present.
+pdfjs-editor-new-alt-text-missing-button =
+    .aria-label = Alternative tekst ûntbrekt
 pdfjs-editor-new-alt-text-missing-button-label = Alternative tekst ûntbrekt
 # This is a button that opens up the alt text modal where users should review the alt text that was automatically generated.
+pdfjs-editor-new-alt-text-to-review-button =
+    .aria-label = Alternative tekst beoardiele
 pdfjs-editor-new-alt-text-to-review-button-label = Alternative tekst beoardiele
 # "Created automatically" is a prefix that will be added to the beginning of any alt text that has been automatically generated. After the colon, the user will see/hear the actual alt text description. If the alt text has been edited by a human, this prefix will not appear.
 # Variables:
@@ -479,3 +495,87 @@ pdfjs-editor-alt-text-settings-editor-title = Alternative-tekstbewurker
 pdfjs-editor-alt-text-settings-show-dialog-button-label = Alternative-tekstbewurker daliks toane by tafoegjen fan in ôfbylding
 pdfjs-editor-alt-text-settings-show-dialog-description = Helpt jo derfoar te soargjen dat al jo ôfbyldingen alternative tekst hawwe.
 pdfjs-editor-alt-text-settings-close-button = Slute
+
+## "Annotations removed" bar
+
+pdfjs-editor-undo-bar-message-highlight = Markearring fuortsmiten
+pdfjs-editor-undo-bar-message-freetext = Tekst fuortsmiten
+pdfjs-editor-undo-bar-message-ink = Tekening fuortsmiten
+pdfjs-editor-undo-bar-message-stamp = Ofbylding fuortsmiten
+pdfjs-editor-undo-bar-message-signature = Hantekening fuortsmiten
+# Variables:
+#   $count (Number) - the number of removed annotations.
+pdfjs-editor-undo-bar-message-multiple =
+    { $count ->
+        [one] { $count } annotaasje fuortsmiten
+       *[other] { $count } annotaasjes fuortsmiten
+    }
+pdfjs-editor-undo-bar-undo-button =
+    .title = Ungedien meitsje
+pdfjs-editor-undo-bar-undo-button-label = Ungedien meitsje
+pdfjs-editor-undo-bar-close-button =
+    .title = Slute
+pdfjs-editor-undo-bar-close-button-label = Slute
+
+## Add a signature dialog
+
+pdfjs-editor-add-signature-dialog-label = Mei dizze modal kin de brûker in hantekening meitsje om oan in PDF-dokumint ta te foegjen. De brûker kin de namme bewurkje (dy't ek tsjinnet as alternative tekst), en opsjoneel de ûndertekening bewarje foar werhelle gebrûk.
+pdfjs-editor-add-signature-dialog-title = In hantekening tafoegje
+
+## Tab names
+
+# Type is a verb (you can type your name as signature)
+pdfjs-editor-add-signature-type-button = Type
+    .title = Type
+# Draw is a verb (you can draw your signature)
+pdfjs-editor-add-signature-draw-button = Tekenje
+    .title = Tekenje
+pdfjs-editor-add-signature-image-button = Ofbylding
+    .title = Ofbylding
+
+## Tab panels
+
+pdfjs-editor-add-signature-type-input =
+    .aria-label = Jo hantekening type
+    .placeholder = Jo hantekening type
+pdfjs-editor-add-signature-draw-placeholder = Jo hantekening tekenje
+pdfjs-editor-add-signature-draw-thickness-range-label = Tsjokte
+# Variables:
+#   $thickness (Number) - the thickness (in pixels) of the line used to draw a signature.
+pdfjs-editor-add-signature-draw-thickness-range =
+    .title = Tekentsjokte: { $thickness }
+pdfjs-editor-add-signature-image-placeholder = Sleep bestân hjirhinne om op te laden
+pdfjs-editor-add-signature-image-browse-link =
+    { PLATFORM() ->
+        [macos] Of kies ôfbyldingsbestannen
+       *[other] Of kies ôfbyldingsbestannen
+    }
+
+## Controls
+
+pdfjs-editor-add-signature-description-label = Beskriuwing (alternative tekst)
+pdfjs-editor-add-signature-description-input =
+    .title = Beskriuwing (alternative tekst)
+pdfjs-editor-add-signature-description-default-when-drawing = Hantekening
+pdfjs-editor-add-signature-clear-button-label = Hantekening wiskje
+pdfjs-editor-add-signature-clear-button =
+    .title = Hantekening wiskje
+pdfjs-editor-add-signature-save-checkbox = Hantekening bewarje
+pdfjs-editor-add-signature-save-warning-message = Jo hawwe de limyt fan 5 bewarre hantekeningen berikt. Ferwiderje ien om in oar te bewarjen.
+pdfjs-editor-add-signature-image-upload-error-title = Kin de ôfbylding net oplade
+pdfjs-editor-add-signature-image-upload-error-description = Kontrolearje jo netwurkferbining of probearje in oare ôfbylding.
+pdfjs-editor-add-signature-error-close-button = Slute
+
+## Dialog buttons
+
+pdfjs-editor-add-signature-cancel-button = Annulearje
+pdfjs-editor-add-signature-add-button = Tafoegje
+
+## Main menu for adding/removing signatures
+
+
+## Editor toolbar
+
+
+## Edit signature description dialog
+

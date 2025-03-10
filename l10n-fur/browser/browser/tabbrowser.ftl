@@ -72,6 +72,16 @@ tabbrowser-unblock-tab-audio-tooltip =
            *[other] Riprodûs { $tabCount } schedis
         }
 
+## Tooltips for tab audio control
+
+tabbrowser-unmute-tab-audio-aria-label =
+    .aria-label = Ative audio te schede
+tabbrowser-mute-tab-audio-aria-label =
+    .aria-label = Cidine la schede
+# Used to unblock a tab with audio from autoplaying
+tabbrowser-unblock-tab-audio-aria-label =
+    .aria-label = Riprodûs audio te schede
+
 ## Confirmation dialog when closing a window with more than one tab open,
 ## or when quitting when only one window is open.
 
@@ -80,6 +90,7 @@ tabbrowser-unblock-tab-audio-tooltip =
 #   $tabCount (Number): The number of tabs that will be closed.
 tabbrowser-confirm-close-tabs-title = Sierâ { $tabCount } schedis?
 tabbrowser-confirm-close-tabs-button = Siere schedis
+tabbrowser-ask-close-tabs-checkbox = Domande prime di sierâ plui schedis
 tabbrowser-confirm-close-tabs-checkbox = Conferme prime di sierâ plui schedis
 
 ## Confirmation dialog when quitting using the menu and multiple windows are open.
@@ -102,7 +113,21 @@ tabbrowser-confirm-close-tabs-with-key-title = Sierâ il barcon e jessî di { -b
 tabbrowser-confirm-close-tabs-with-key-button = Jes di { -brand-short-name }
 # Variables:
 #   $quitKey (String): the text of the keyboard shortcut for quitting.
+tabbrowser-ask-close-tabs-with-key-checkbox = Domande prime di jessî cun { $quitKey }
+# Variables:
+#   $quitKey (String): the text of the keyboard shortcut for quitting.
 tabbrowser-confirm-close-tabs-with-key-checkbox = Conferme prime di jessî cun { $quitKey }
+
+## Confirmation dialog when quitting using the keyboard shortcut (Ctrl/Cmd+Q)
+## and browser.warnOnQuitShortcut is true.
+
+tabbrowser-confirm-close-warn-shortcut-title = Lâ fûr di { -brand-short-name } o sierâ la schede corinte?
+tabbrowser-confirm-close-windows-warn-shortcut-button =
+    { PLATFORM() ->
+        [windows] Jes di { -brand-short-name }
+       *[other] Siere { -brand-short-name }
+    }
+tabbrowser-confirm-close-tab-only-button = Siere la schede corinte
 
 ## Confirmation dialog when opening multiple tabs simultaneously
 
@@ -165,6 +190,9 @@ tabbrowser-ctrl-tab-list-all-tabs =
     .label = Liste dutis lis { $tabCount } schedis
 
 ## Tab manager menu buttons
+## Variables:
+##  $tabGroupName (String): The name of the tab group. See also tab-group-name-default, which will be
+##                          used when the group's name is empty.
 
 tabbrowser-manager-mute-tab =
     .tooltiptext = Cidine la schede
@@ -172,3 +200,124 @@ tabbrowser-manager-unmute-tab =
     .tooltiptext = Ative audio te schede
 tabbrowser-manager-close-tab =
     .tooltiptext = Siere schede
+# This is for tab groups that have been "saved and closed" (see tab-group-editor-action-save). It does
+# not include "deleted" tab groups (see tab-group-editor-action-delete).
+tabbrowser-manager-closed-tab-group =
+    .label = { $tabGroupName }
+    .tooltiptext = { $tabGroupName } — Sierât
+tabbrowser-manager-current-window-tab-group =
+    .label = { $tabGroupName }
+    .tooltiptext = { $tabGroupName } — Barcon corint
+# "Show more" is for showing all open groups from other windows, as well as saved groups. Initially,
+# we only show up to six of these groups.
+tabbrowser-manager-tab-groups-show-more =
+    .label = Mostre di plui
+
+## Tab Groups
+
+tab-group-editor-title-create = Cree grup di schedis
+tab-group-editor-title-edit = Gjestìs grup di schedis
+tab-group-editor-name-label = Non
+tab-group-editor-name-field =
+    .placeholder = Esepli: Compris
+tab-group-editor-cancel =
+    .label = Anule
+    .accesskey = A
+tab-group-editor-color-selector =
+    .aria-label = Colôr dal grup di schedis
+tab-group-editor-color-selector2-blue = Blu
+    .title = Blu
+tab-group-editor-color-selector2-purple = Viole
+    .title = Viole
+tab-group-editor-color-selector2-cyan = Ciano
+    .title = Ciano
+tab-group-editor-color-selector2-orange = Naranç
+    .title = Naranç
+tab-group-editor-color-selector2-yellow = Zâl
+    .title = Zâl
+tab-group-editor-color-selector2-pink = Rose
+    .title = Rose
+tab-group-editor-color-selector2-green = Vert
+    .title = Vert
+tab-group-editor-color-selector2-gray = Grîs
+    .title = Grîs
+tab-group-editor-color-selector2-red = Ros
+    .title = Ros
+# Variables:
+#  $tabGroupName (String): The name of the tab group. Defaults to the value
+#                          of tab-group-name-default.
+tab-group-description = { $tabGroupName } — Grup di schedis
+tab-group-menu-header = Grups di schedis
+tab-context-unnamed-group =
+    .label = Grup cence non
+tab-group-name-default = Grup cence non
+
+## Variables:
+##  $tabCount (Number): the number of tabs that are affected by the action.
+
+tab-context-move-tab-to-new-group =
+    .label =
+        { $tabCount ->
+            [1] Zonte schede a un gnûf grup
+            [one] Zonte schede a un gnûf grup
+           *[other] Zonte schedis a un gnûf grup
+        }
+    .accesskey = G
+tab-context-move-tab-to-group =
+    .label =
+        { $tabCount ->
+            [1] Zonte schede a un grup
+            [one] Zonte schede a un grup
+           *[other] Zonte schedis a un grup
+        }
+    .accesskey = G
+tab-group-editor-action-new-tab =
+    .label = Gnove schede tal grup
+tab-group-editor-action-new-window =
+    .label = Sposte grup intun gnûf barcon
+tab-group-editor-action-save =
+    .label = Salve e siere grup
+tab-group-editor-action-ungroup =
+    .label = Divît schedis
+tab-group-editor-action-delete =
+    .label = Elimine grup
+tab-group-editor-done =
+    .label = Fat
+    .accessKey = F
+tab-context-reopen-tab-group =
+    .label = Torne vierç grup di schedis
+# Variables:
+#  $groupCount (Number): the number of tab groups that are affected by the action.
+tab-context-ungroup-tab =
+    .label =
+        { $groupCount ->
+            [1] Gjave dal grup
+            [one] Gjave dal grup
+           *[other] Gjave dai grups
+        }
+    .accesskey = G
+
+## Open/saved tab group context menu
+
+# For a tab group open in any window, clicking this will create a new
+# window and move this tab group to that new window.
+tab-group-context-move-to-new-window =
+    .label = Sposte grup intun gnûf barcon
+# For a tab group open in a different window from the one that the
+# user is using to access the tab group menu, move that tab group into the
+# user's current window.
+tab-group-context-move-to-this-window =
+    .label = Sposte grup in chest barcon
+# For a tab group that is open in any window, close the tab group and
+# do not save it. For a tab group that is closed but saved by the user, clicking
+# this will forget the saved tab group.
+tab-group-context-delete =
+    .label = Elimine grup
+# For a saved tab group that is not open in any window, open the tab group
+# in the user's current window.
+tab-group-context-open-saved-group-in-this-window =
+    .label = Vierç grup in chest barcon
+# For a saved tab group that is not open in any window, create a new window and
+# open the tab group in that window.
+tab-group-context-open-saved-group-in-new-window =
+    .label = Vierç grup intun gnûf barcon

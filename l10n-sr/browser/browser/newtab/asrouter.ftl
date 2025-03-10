@@ -28,11 +28,13 @@ cfr-doorhanger-extension-author = Аутор: { $name }
 # This is a notification displayed in the address bar.
 # When clicked it opens a panel with a message for the user.
 cfr-doorhanger-extension-notification = Препорука
+# .a11y-announcement is extracted in JS and announced via A11y.announce.
 cfr-doorhanger-extension-notification2 = Препорука
     .tooltiptext = Препорука додатка
     .a11y-announcement = Доступна је препорука додатка
 # This is a notification displayed in the address bar.
 # When clicked it opens a panel with a message for the user.
+# .a11y-announcement is extracted in JS and announced via A11y.announce.
 cfr-doorhanger-feature-notification = Препорука
     .tooltiptext = Препорука функције
     .a11y-announcement = Доступна је препорука функције
@@ -145,7 +147,7 @@ spotlight-peace-mind-body = Сваког месеца, { -brand-short-name } б�
 spotlight-pin-primary-button =
     { PLATFORM() ->
         [macos] Остави у доку
-       *[other] Закачи на траку
+       *[other] Закачи на траку задатака
     }
 spotlight-pin-secondary-button = Не сада
 
@@ -211,6 +213,9 @@ cfr-cbh-confirm-button = Одбаци банере колачића
     .accesskey = О
 cfr-cbh-dismiss-button = Не сада
     .accesskey = Н
+cookie-banner-blocker-onboarding-header = { -brand-short-name } је управо одбио банер колачића за вас
+cookie-banner-blocker-onboarding-body = Мање ометања, мање колачића који вас прате на овом сајту.
+cookie-banner-blocker-onboarding-learn-more = Сазнајте више
 
 ## These strings are used in the Fox doodle Pin/set default spotlights
 
@@ -240,18 +245,94 @@ fxa-sync-cfr-secondary = Подсети ме касније
 
 ## Device Migration FxA Spotlight
 
-device-migration-fxa-spotlight-header = Користите старији уређај?
-device-migration-fxa-spotlight-body = Направите резервну копију података да не изгубите важне податке као што су обележивачи и лозинке — посебно када их преносите на нови уређај.
-device-migration-fxa-spotlight-primary-button = Како да направим резервну копију
-device-migration-fxa-spotlight-link = Подсети ме касније
+device-migration-fxa-spotlight-heavy-user-header = Не заборавите да направите резервну копију
+device-migration-fxa-spotlight-heavy-user-body = Уверите се да су важни подаци — обележивачи и лозинке — ажурирани и обезбеђени на свим вашим уређајима.
+device-migration-fxa-spotlight-heavy-user-primary-button = Започните
+device-migration-fxa-spotlight-older-device-header = Опуштено уз { -brand-product-name }
+device-migration-fxa-spotlight-older-device-body = Налог вам омогућава да ажурирате и заштитите важне податке на било ком повезаном уређају.
+device-migration-fxa-spotlight-older-device-primary-button = Направи налог
 device-migration-fxa-spotlight-getting-new-device-header-2 = Планирате да набавите нови уређај?
+device-migration-fxa-spotlight-getting-new-device-body-2 = Пратите неколико једноставних корака да пренесете обележиваче, историју и лозинке са собом када пређете на нови уређај.
+device-migration-fxa-spotlight-getting-new-device-primary-button = Како да направим резервну копију
+device-migration-fxa-spotlight-sync-primary-button = Започните
 
 ## Set as Default PDF Reader Infobar
 
+# The question portion of the following message should have the <strong> and </strong> tags surrounding it.
+pdf-default-notification-message = <strong>Поставити { -brand-short-name } за подразумевани PDF читач?</strong> Користите { -brand-short-name } за читање и уређивање PDF датотека.
+pdf-default-notification-set-default-button =
+    .label = Постави као подразумевано
+pdf-default-notification-decline-button =
+    .label = Не сада
 
 ## Launch on login infobar notification
 
+launch-on-login-infobar-message = <strong>Отворити { -brand-short-name } сваки пут када поново покренете ваш рачунар?</strong> Сада можете подесити { -brand-short-name } да се аутоматски отвара када поново покрећете ваш рачунар.
+launch-on-login-learnmore = Сазнајте више
+launch-on-login-infobar-confirm-button = Да, отвори { -brand-short-name }
+    .accesskey = Д
+launch-on-login-infobar-reject-button = Не сада
+    .accesskey = Н
 
 ## These string variants are used when the “launch on login” infobar
 ## notification is displayed for a second time.
 
+launch-on-login-infobar-final-message = <strong>Отворити { -brand-short-name } сваки пут када поново покренете ваш рачунар?</strong> Да управљате подешавањима покретања, потражите „покретање“ у подешавањима.
+launch-on-login-infobar-final-reject-button = Не, хвала
+    .accesskey = Н
+
+## Tail Fox Set Default Spotlight
+
+# This title is displayed together with the picture of a running fox with a long tail.
+# In English, this is a figure of speech meaning 'stop something from following you'.
+# If the localization of this message is challenging, consider using a simplified
+# alternative as a reference for translation: 'Keep unwanted trackers away'.
+tail-fox-spotlight-title = Ослободите се елемената за праћење
+tail-fox-spotlight-subtitle = Реците збогом досадним елементима за праћење и уживајте у бржем и безбеднијем искуством на мрежи.
+tail-fox-spotlight-primary-button = Отвори моје везе са { -brand-short-name }-ом
+tail-fox-spotlight-secondary-button = Не сада
+
+## Root Certificate Succession Infobar
+
+root-certificate-succession-infobar-january-message = <strong>Старије { -brand-short-name } верзије би од 14. јануара 2025. могле да имају проблеме.</strong>
+root-certificate-succession-infobar-march-message = <strong>Ажурирајте да би могли користити { -brand-short-name } после 14. марта 2025.</strong>
+root-certificate-succession-infobar-link = Зашто морам да ажурирам?
+root-certificate-succession-infobar-primary-button =
+    .label = Aжурирај сада
+    .accesskey = A
+root-certificate-succession-infobar-secondary-button =
+    .label = Касније
+    .accesskey = К
+
+## Root Certificate Succession Windows Background Notification
+
+
+## FxA Menu Message variants
+
+fxa-menu-message-close-button =
+    .title = Затвори
+    .aria-label = Затвори
+fxa-menu-message-sign-up-button = Регистрација
+fxa-menu-message-sync-devices-primary-text = Синхронизујте све ваше уређаје
+fxa-menu-message-sync-devices-secondary-text = Одмах добијте ваше податке — обележиваче и лозинке — свуда где користите { -brand-short-name }.
+fxa-menu-message-sync-devices-collapsed-text = Синхронизујте све ваше уређаје
+fxa-menu-message-backup-data-primary-text = Направите резервну копију података прегледача
+fxa-menu-message-backup-data-secondary-text = Аутоматски обезбедите обележиваче, лозинке и друге податке на свим вашим уређајима.
+fxa-menu-message-backup-data-collapsed-text = Направите резервну копију података
+fxa-menu-message-backup-sync-primary-text = Да ваши подаци буду безбедни и синхронизовани
+fxa-menu-message-mobile-primary-text = Пошаљите картице на ваш телефон
+fxa-menu-message-mobile-secondary-text = Наставите тамо где сте стали када синхронизујете ваше картице са мобилним уређајем.
+fxa-menu-message-mobile-collapsed-text = Синхронизујте са вашим телефоном
+
+## Multi-CTA Fox Doodle Spotlight
+
+multi-cta-fox-doodle-title = Добродошли назад
+multi-cta-fox-doodle-set-default-checkbox = Поставите { -brand-short-name } на подразумевано
+multi-cta-fox-doodle-pin-startmenu-checkbox = Закачите { -brand-short-name } на почетни мени
+multi-cta-fox-doodle-pin-checkbox =
+    { PLATFORM() ->
+        [macos] Остави { -brand-short-name } у доку
+       *[other] Закачи { -brand-short-name } на траку задатака
+    }
+multi-cta-fox-doodle-start-browsing-primary-button-label = Започните прегледање
+multi-cta-fox-doodle-main-browser-primary-button-label = Постави { -brand-short-name } за мој главни прегледач

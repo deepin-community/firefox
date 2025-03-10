@@ -16,6 +16,7 @@
 #include <algorithm>
 #include <type_traits>
 
+#include "gc/BufferAllocator.h"
 #include "gc/GCInternals.h"
 #include "gc/ParallelMarking.h"
 #include "gc/TraceKind.h"
@@ -25,6 +26,7 @@
 #include "util/Poison.h"
 #include "vm/GeneratorObject.h"
 
+#include "gc/BufferAllocator-inl.h"
 #include "gc/GC-inl.h"
 #include "gc/PrivateIterators-inl.h"
 #include "gc/TraceMethods-inl.h"
@@ -747,7 +749,7 @@ void GCMarker::markEphemeronEdges(EphemeronEdgeVector& edges,
     }
   }
 
-  // The above marking always goes through markAndPush, which will not cause
+  // The above marking always goes through pushThing, which will not cause
   // 'edges' to be appended to while iterating.
   MOZ_ASSERT(edges.length() == initialLength);
 
@@ -785,12 +787,12 @@ void GCMarker::markImplicitEdges(T* markedThing) {
   MOZ_ASSERT(!zone->isGCSweeping());
 
   auto& ephemeronTable = zone->gcEphemeronEdges();
-  auto* p = ephemeronTable.get(markedThing);
+  auto p = ephemeronTable.lookup(markedThing);
   if (!p) {
     return;
   }
 
-  EphemeronEdgeVector& edges = p->value;
+  EphemeronEdgeVector& edges = p->value();
 
   // markedThing might be a key in a debugger weakmap, which can end up marking
   // values that are in a different compartment.
@@ -1034,7 +1036,8 @@ template <uint32_t opts>
 void GCMarker::traverse(JS::Symbol* thing) {
 #ifdef NIGHTLY_BUILD
   if constexpr (bool(opts & MarkingOptions::MarkImplicitEdges)) {
-    markImplicitEdges(thing);
+    pushThing<opts>(thing);
+    return;
   }
 #endif
   traceChildren<opts>(thing);
@@ -1074,6 +1077,10 @@ void GCMarker::traverse(jit::JitCode* thing) {
 template <uint32_t opts>
 void GCMarker::traverse(BaseScript* thing) {
   pushThing<opts>(thing);
+}
+template <uint32_t opts>
+void GCMarker::traverse(SmallBuffer* thing) {
+  // Buffer contents are traced by their owning GC thing.
 }
 
 template <uint32_t opts, typename T>
@@ -1174,6 +1181,19 @@ MOZ_NEVER_INLINE bool js::GCMarker::markAndTraversePrivateGCThing(
   ApplyGCThingTyped(target, kind, [this, source](auto t) {
     this->markAndTraverseEdge<opts>(source, t);
   });
+
+  // Ensure stack headroom in case we pushed.
+  if (MOZ_UNLIKELY(!stack.ensureSpace(ValueRangeWords))) {
+    delayMarkingChildrenOnOOM(source);
+    return false;
+  }
+
+  return true;
+}
+
+template <uint32_t opts>
+bool js::GCMarker::markAndTraverseSymbol(JSObject* source, JS::Symbol* target) {
+  this->markAndTraverseEdge<opts>(source, target);
 
   // Ensure stack headroom in case we pushed.
   if (MOZ_UNLIKELY(!stack.ensureSpace(ValueRangeWords))) {
@@ -1523,6 +1543,20 @@ inline bool GCMarker::processMarkStackTop(SliceBudget& budget) {
         goto scan_obj;
       }
 
+      case MarkStack::SymbolTag: {
+#ifdef NIGHTLY_BUILD
+        auto* symbol = ptr.as<JS::Symbol>();
+        if constexpr (bool(opts & MarkingOptions::MarkImplicitEdges)) {
+          markImplicitEdges(symbol);
+        }
+        AutoSetTracingSource asts(tracer(), symbol);
+        symbol->traceChildren(tracer());
+        return true;
+#else
+        MOZ_CRASH("symbols-as-weakmap-keys is enabled only on Nightly");
+#endif
+      }
+
       case MarkStack::JitCodeTag: {
         auto* code = ptr.as<jit::JitCode>();
         AutoSetTracingSource asts(tracer(), code);
@@ -1586,7 +1620,9 @@ scan_value_range:
         goto scan_obj;
       }
     } else if (v.isSymbol()) {
-      markAndTraverseEdge<opts>(obj, v.toSymbol());
+      if (!markAndTraverseSymbol<opts>(obj, v.toSymbol())) {
+        return true;
+      }
     } else if (v.isBigInt()) {
       markAndTraverseEdge<opts>(obj, v.toBigInt());
     } else {
@@ -1624,6 +1660,16 @@ scan_obj: {
   }
 
   unsigned nslots = nobj->slotSpan();
+
+  if (nobj->hasDynamicSlots()) {
+    ObjectSlots* slots = nobj->getSlotsHeader();
+    BufferAllocator::MarkTenuredAlloc(slots);
+  }
+
+  if (nobj->hasDynamicElements()) {
+    void* elements = nobj->getUnshiftedElementsHeader();
+    BufferAllocator::MarkTenuredAlloc(elements);
+  }
 
   if (!nobj->hasEmptyElements()) {
     base = nobj->getDenseElements();
@@ -1671,6 +1717,10 @@ struct MapTypeToMarkStackTag {};
 template <>
 struct MapTypeToMarkStackTag<JSObject*> {
   static const auto value = MarkStack::ObjectTag;
+};
+template <>
+struct MapTypeToMarkStackTag<JS::Symbol*> {
+  static const auto value = MarkStack::SymbolTag;
 };
 template <>
 struct MapTypeToMarkStackTag<jit::JitCode*> {
@@ -2131,14 +2181,9 @@ void GCMarker::start() {
 }
 
 static void ClearEphemeronEdges(JSRuntime* rt) {
-  AutoEnterOOMUnsafeRegion oomUnsafe;
   for (GCZonesIter zone(rt); !zone.done(); zone.next()) {
-    if (!zone->gcEphemeronEdges().clear()) {
-      oomUnsafe.crash("clearing weak keys in GCMarker::stop()");
-    }
-    if (!zone->gcNurseryEphemeronEdges().clear()) {
-      oomUnsafe.crash("clearing (nursery) weak keys in GCMarker::stop()");
-    }
+    zone->gcEphemeronEdges().clearAndCompact();
+    zone->gcNurseryEphemeronEdges().clearAndCompact();
   }
 }
 
@@ -2312,15 +2357,10 @@ IncrementalProgress JS::Zone::enterWeakMarkingMode(GCMarker* marker,
 
   MOZ_ASSERT(gcNurseryEphemeronEdges().count() == 0);
 
-  // An OrderedHashMap::MutableRange stays valid even when the underlying table
-  // (zone->gcEphemeronEdges) is mutated, which is useful here since we may add
-  // additional entries while iterating over the Range.
-  EphemeronEdgeTable::MutableRange r = gcEphemeronEdges().mutableAll();
-  while (!r.empty()) {
-    Cell* src = r.front().key;
+  for (auto r = gcEphemeronEdges().all(); !r.empty(); r.popFront()) {
+    Cell* src = r.front().key();
     CellColor srcColor = gc::detail::GetEffectiveColor(marker, src);
-    auto& edges = r.front().value;
-    r.popFront();  // Pop before any mutations happen.
+    auto& edges = r.front().value();
 
     if (IsMarked(srcColor) && edges.length() > 0) {
       uint32_t steps = edges.length();
@@ -2903,6 +2943,10 @@ MarkInfo GetMarkInfo(void* vp) {
                : MarkInfo::NURSERY_TOSPACE;
   }
 
+  if (gc.isPointerWithinBufferAlloc(vp)) {
+    return MarkInfo::BUFFER;
+  }
+
   if (!gc.isPointerWithinTenuredCell(vp)) {
     return MarkInfo::UNKNOWN;
   }
@@ -2928,7 +2972,7 @@ uintptr_t* GetMarkWordAddress(Cell* cell) {
 
   MarkBitmapWord* wordp;
   uintptr_t mask;
-  TenuredChunkBase* chunk = gc::detail::GetCellChunkBase(&cell->asTenured());
+  ArenaChunkBase* chunk = gc::detail::GetCellChunkBase(&cell->asTenured());
   chunk->markBits.getMarkWordAndMask(&cell->asTenured(), ColorBit::BlackBit,
                                      &wordp, &mask);
   return reinterpret_cast<uintptr_t*>(wordp);
@@ -2944,7 +2988,7 @@ uintptr_t GetMarkMask(Cell* cell, uint32_t colorBit) {
   ColorBit bit = colorBit == 0 ? ColorBit::BlackBit : ColorBit::GrayOrBlackBit;
   MarkBitmapWord* wordp;
   uintptr_t mask;
-  TenuredChunkBase* chunk = gc::detail::GetCellChunkBase(&cell->asTenured());
+  ArenaChunkBase* chunk = gc::detail::GetCellChunkBase(&cell->asTenured());
   chunk->markBits.getMarkWordAndMask(&cell->asTenured(), bit, &wordp, &mask);
   return mask;
 }

@@ -32,6 +32,9 @@ firefoxview-tabpickup-progress-label = { $percentValue } % dokóńcone
 firefoxview-tabpickup-step-signin-header = Pśejźćo njepósrědnje mjazy rědami
 firefoxview-tabpickup-step-signin-description = Aby how rejtariki swójogo telefona dostał, pśizjawśo se nejpjerwjej abo załožćo konto.
 firefoxview-tabpickup-step-signin-primarybutton = Dalej
+firefoxview-syncedtabs-signin-header-2 = Waš { -brand-product-name } na wšych wašych rědach
+firefoxview-syncedtabs-signin-description-2 = Aby swóje wócynjone rejtariki na swójom telefonje a drugich rědach wiźeł, pśizjawśo se abo registrěrujśo se za konto. Z kontom móžośo teke swóje gronidła, swóju historiju a wěcej synchronizěrowaś.
+firefoxview-syncedtabs-signin-primarybutton-2 = Pśizjawiś
 firefoxview-syncedtabs-signin-header = Wobstarajśo se rejtariki wóte wšuźi
 firefoxview-syncedtabs-signin-description = Aby swóje rejtariki wšuźi wiźeł, źož { -brand-product-name } wužywaśo, pśizjawśo se pla swójogo konta. Jolic konto njamaśo, pśewóźijomy was pśez kšace registracije.
 firefoxview-syncedtabs-signin-primarybutton = Pśizjawiś abo registrěrowaś
@@ -39,6 +42,8 @@ firefoxview-tabpickup-adddevice-header = Synchronizěrujśo { -brand-product-nam
 firefoxview-tabpickup-adddevice-description = Ześěgniśo { -brand-product-name } za mobilne rědy a pśizjawśo se tam.
 firefoxview-tabpickup-adddevice-learn-how = Zgóńśo kak
 firefoxview-tabpickup-adddevice-primarybutton = { -brand-product-name } za mobilny rěd wobstaraś
+firefoxview-syncedtabs-adddevice-header-2 = Wobstarajśo se rejtariki wóte wšuźi
+firefoxview-syncedtabs-adddevice-description-2 = Pśizjawśo pla { -brand-product-name } na swójom telefonje abo drugem licadle, aby rejtariki how wiźeł. Zgóńśo, kak móžośo <a data-l10n-name="url">pśidatne rědy zwězaś</a>.
 firefoxview-syncedtabs-adddevice-header = Pśizjawśo se pla { -brand-product-name } na swójich drugich rědach
 firefoxview-syncedtabs-adddevice-description = Aby swóje rejtariki wšuźi wiźeł, źož { -brand-product-name } wužywaśo, pśizjawśo se na wšych swójich rědach. Zgóńśo, kak móžośo z <a data-l10n-name="url">pśidatnymi rědami zwězaś</a>.
 firefoxview-syncedtabs-adddevice-primarybutton = Wopytajśo { -brand-product-name } za mobilny rěd
@@ -165,6 +170,9 @@ firefoxview-search-text-box-history =
 firefoxview-search-text-box-recentlyclosed =
     .placeholder = Njedawno zacynjone rejtariki pytaś
 # Placeholder for the input field to search in tabs from other devices ("search" is a verb).
+firefoxview-search-text-box-tabs =
+    .placeholder = Rejtariki pśepytaś
+# Placeholder for the input field to search in tabs from other devices ("search" is a verb).
 firefoxview-search-text-box-syncedtabs =
     .placeholder = Synchronizěrowane rejtariki pytaś
 # Placeholder for the input field to search in open tabs ("search" is a verb).
@@ -230,6 +238,8 @@ firefoxview-choose-browser-button = Wubjeŕśo wobglědowak
 firefoxview-dont-remember-history-empty-header = Njedajo nic, až dajo se pokazaś
 firefoxview-dont-remember-history-empty-description = Šćit wašeje priwatnosći jo naša wutšobina pótrjebnosć. Togodla móžośo aktiwitu wóźiś,  na kótaruž se { -brand-short-name } dopomina.
 firefoxview-dont-remember-history-empty-description-two = Na zakłaźe wašych aktualnych nastajenjow se { -brand-short-name } na wašu aktiwitu njedopomina, gaž pśeglědujośo. Aby to změnił, <a data-l10n-name="history-settings-url-two">změńśo swóje nastajenja historije, aby se waša historija spomnjeła</a>.
+firefoxview-dont-remember-history-empty-header-2 = Maśo kontrolu wó tom, což se { -brand-short-name } markujo
+firefoxview-dont-remember-history-empty-description-one = Tuchylu se { -brand-short-name } wašu pśeglědowańsku aktiwitu njemarkujo. Aby to změnił, <a data-l10n-name="history-settings-url-two">aktualizěrujśo nastajenja swójeje historije</a>.
 
 ##
 

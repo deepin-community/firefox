@@ -5,11 +5,13 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "TaskController.h"
+#include "IdleTaskRunner.h"
 #include "nsIIdleRunnable.h"
 #include "nsIRunnable.h"
 #include "nsThreadUtils.h"
 #include <algorithm>
 #include "GeckoProfiler.h"
+#include "mozilla/AppShutdown.h"
 #include "mozilla/BackgroundHangMonitor.h"
 #include "mozilla/EventQueue.h"
 #include "mozilla/Hal.h"
@@ -20,6 +22,8 @@
 #include "mozilla/StaticPtr.h"
 #include "mozilla/SchedulerGroup.h"
 #include "mozilla/ScopeExit.h"
+#include "mozilla/FlowMarkers.h"
+#include "mozilla/StaticPrefs_memory.h"
 #include "nsIThreadInternal.h"
 #include "nsThread.h"
 #include "prenv.h"
@@ -94,6 +98,12 @@ int32_t TaskController::GetPoolThreadCount() {
 
 #if defined(MOZ_COLLECTING_RUNNABLE_TELEMETRY)
 
+// This struct is duplicated below as 'IncompleteTaskMarker'.
+// Make sure you keep the two in sync.
+// The only difference between the two schemas is the type of the "task" field:
+// TaskMarker uses TerminatingFlow and IncompleteTaskMarker uses Flow.
+// We have two schemas so that we don't need to emit a separate marker for the
+// TerminatingFlow in the common case.
 struct TaskMarker : BaseMarkerType<TaskMarker> {
   static constexpr const char* Name = "Task";
   static constexpr const char* Description =
@@ -105,6 +115,8 @@ struct TaskMarker : BaseMarkerType<TaskMarker> {
        MS::PayloadFlags::Searchable},
       {"priority", MS::InputType::Uint32, "Priority level",
        MS::Format::Integer},
+      {"task", MS::InputType::Uint64, "Task", MS::Format::TerminatingFlow,
+       MS::PayloadFlags::Searchable},
       {"priorityName", MS::InputType::CString, "Priority Name"}};
 
   static constexpr MS::Location Locations[] = {MS::Location::MarkerChart,
@@ -112,19 +124,23 @@ struct TaskMarker : BaseMarkerType<TaskMarker> {
   static constexpr const char* ChartLabel = "{marker.data.name}";
   static constexpr const char* TableLabel =
       "{marker.name} - {marker.data.name} - priority: "
-      "{marker.data.priorityName} ({marker.data.priority})";
+      "{marker.data.priorityName} ({marker.data.priority})"
+      " task: {marker.data.task}";
+
+  static constexpr bool IsStackBased = true;
 
   static constexpr MS::ETWMarkerGroup Group = MS::ETWMarkerGroup::Scheduling;
 
   static void TranslateMarkerInputToSchema(void* aContext,
                                            const nsCString& aName,
-                                           uint32_t aPriority) {
-    ETW::OutputMarkerSchema(aContext, TaskMarker{}, aName, aPriority,
+                                           uint32_t aPriority, Flow aFlow) {
+    ETW::OutputMarkerSchema(aContext, TaskMarker{}, aName, aPriority, aFlow,
                             ProfilerStringView(""));
   }
 
   static void StreamJSONMarkerData(baseprofiler::SpliceableJSONWriter& aWriter,
-                                   const nsCString& aName, uint32_t aPriority) {
+                                   const nsCString& aName, uint32_t aPriority,
+                                   Flow aFlow) {
     aWriter.StringProperty("name", aName);
     aWriter.IntProperty("priority", aPriority);
 
@@ -137,46 +153,101 @@ struct TaskMarker : BaseMarkerType<TaskMarker> {
     {
       aWriter.StringProperty("priorityName", "Invalid Value");
     }
+    aWriter.FlowProperty("task", aFlow);
   }
 };
 
-class MOZ_RAII AutoProfileTask {
- public:
-  explicit AutoProfileTask(nsACString& aName, uint64_t aPriority)
-      : mName(aName), mPriority(aPriority) {
-    if (profiler_is_collecting_markers()) {
-      mStartTime = TimeStamp::Now();
-    }
+// This is a duplicate of the code above with the format of the 'task'
+// field changed from `TerminatingFlow` to Flow`
+struct IncompleteTaskMarker : BaseMarkerType<IncompleteTaskMarker> {
+  static constexpr const char* Name = "Task";
+  static constexpr const char* Description =
+      "Marker representing a task being executed in TaskController.";
+
+  using MS = MarkerSchema;
+  static constexpr MS::PayloadField PayloadFields[] = {
+      {"name", MS::InputType::CString, "Task Name", MS::Format::String,
+       MS::PayloadFlags::Searchable},
+      {"priority", MS::InputType::Uint32, "Priority level",
+       MS::Format::Integer},
+      {"task", MS::InputType::Uint64, "Task", MS::Format::Flow,
+       MS::PayloadFlags::Searchable},
+      {"priorityName", MS::InputType::CString, "Priority Name"}};
+
+  static constexpr MS::Location Locations[] = {MS::Location::MarkerChart,
+                                               MS::Location::MarkerTable};
+  static constexpr const char* ChartLabel = "{marker.data.name}";
+  static constexpr const char* TableLabel =
+      "{marker.name} - {marker.data.name} - priority: "
+      "{marker.data.priorityName} ({marker.data.priority})"
+      " task: {marker.data.task}";
+
+  static constexpr bool IsStackBased = true;
+
+  static constexpr MS::ETWMarkerGroup Group = MS::ETWMarkerGroup::Scheduling;
+
+  static void TranslateMarkerInputToSchema(void* aContext,
+                                           const nsCString& aName,
+                                           uint32_t aPriority, Flow aFlow) {
+    ETW::OutputMarkerSchema(aContext, IncompleteTaskMarker{}, aName, aPriority,
+                            aFlow, ProfilerStringView(""));
   }
 
-  ~AutoProfileTask() {
-    if (!profiler_thread_is_being_profiled_for_markers()) {
-      return;
-    }
+  static void StreamJSONMarkerData(baseprofiler::SpliceableJSONWriter& aWriter,
+                                   const nsCString& aName, uint32_t aPriority,
+                                   Flow aFlow) {
+    aWriter.StringProperty("name", aName);
+    aWriter.IntProperty("priority", aPriority);
 
+#  define EVENT_PRIORITY(NAME, VALUE)                \
+    if (aPriority == (VALUE)) {                      \
+      aWriter.StringProperty("priorityName", #NAME); \
+    } else
+    EVENT_QUEUE_PRIORITY_LIST(EVENT_PRIORITY)
+#  undef EVENT_PRIORITY
+    {
+      aWriter.StringProperty("priorityName", "Invalid Value");
+    }
+    aWriter.FlowProperty("task", aFlow);
+  }
+};
+
+// Wrap task->Run() so that we can add markers for it
+Task::TaskResult TaskController::RunTask(Task* aTask) {
+  if (!profiler_is_collecting_markers()) {
+    return aTask->Run();
+  }
+
+  TimeStamp startTime = TimeStamp::Now();
+
+  nsAutoCString name;
+  aTask->GetName(name);
+
+  PERFETTO_TRACE_EVENT("task", perfetto::DynamicString{name.get()});
+  AUTO_PROFILER_LABEL_DYNAMIC_NSCSTRING_NONSENSITIVE("Task", OTHER, name);
+
+  auto result = aTask->Run();
+
+  if (profiler_thread_is_being_profiled_for_markers()) {
     AUTO_PROFILER_LABEL("AutoProfileTask", PROFILER);
     AUTO_PROFILER_STATS(AUTO_PROFILE_TASK);
-    profiler_add_marker("Runnable", ::mozilla::baseprofiler::category::OTHER,
-                        mStartTime.IsNull()
-                            ? MarkerTiming::IntervalEnd()
-                            : MarkerTiming::IntervalUntilNowFrom(mStartTime),
-                        TaskMarker{}, mName, mPriority);
+    auto priority = aTask->GetPriority();
+    auto flow = Flow::FromPointer(aTask);
+    if (result == Task::TaskResult::Complete) {
+      profiler_add_marker("Runnable", baseprofiler::category::OTHER,
+                          MarkerTiming::IntervalUntilNowFrom(startTime),
+                          TaskMarker{}, name, priority, flow);
+    } else {
+      profiler_add_marker("Runnable", baseprofiler::category::OTHER,
+                          MarkerTiming::IntervalUntilNowFrom(startTime),
+                          IncompleteTaskMarker{}, name, priority, flow);
+    }
   }
 
- private:
-  TimeStamp mStartTime;
-  nsAutoCString mName;
-  uint32_t mPriority;
-};
-
-#  define AUTO_PROFILE_FOLLOWING_TASK(task)                                  \
-    nsAutoCString name;                                                      \
-    (task)->GetName(name);                                                   \
-    PERFETTO_TRACE_EVENT("task", perfetto::DynamicString{name.get()});       \
-    AUTO_PROFILER_LABEL_DYNAMIC_NSCSTRING_NONSENSITIVE("Task", OTHER, name); \
-    mozilla::AutoProfileTask PROFILER_RAII(name, (task)->GetPriority());
+  return result;
+}
 #else
-#  define AUTO_PROFILE_FOLLOWING_TASK(task)
+Task::TaskResult TaskController::RunTask(Task* aTask) { return aTask->Run(); }
 #endif
 
 bool TaskManager::
@@ -247,6 +318,15 @@ Task* Task::GetHighestPriorityDependency() {
   return currentTask == this ? nullptr : currentTask;
 }
 
+#ifdef MOZ_MEMORY
+static StaticRefPtr<IdleTaskRunner> sIdleMemoryCleanupRunner;
+
+static const char kEnableLazyPurgePref[] = "memory.lazypurge.enable";
+static const char kMaxPurgeDelayPref[] = "memory.lazypurge.maximum_delay";
+static const char kMinPurgeBudgetPref[] =
+    "memory.lazypurge.minimum_idle_budget";
+#endif
+
 void TaskController::Initialize() {
   MOZ_ASSERT(!sSingleton);
   sSingleton = new TaskController();
@@ -260,6 +340,9 @@ void ThreadFuncPoolThread(void* aData) {
 TaskController::TaskController()
     : mGraphMutex("TaskController::mGraphMutex"),
       mMainThreadCV(mGraphMutex, "TaskController::mMainThreadCV"),
+#ifdef MOZ_MEMORY
+      mIsLazyPurgeEnabled(false),
+#endif
       mRunOutOfMTTasksCounter(0) {
   InputTaskManager::Init();
   VsyncTaskManager::Init();
@@ -307,6 +390,17 @@ void TaskController::Shutdown() {
     sSingleton = nullptr;
   }
   MOZ_ASSERT(!sSingleton);
+
+#ifdef MOZ_MEMORY
+  // We choose to not disable lazy purge on our shutdown as this might do a
+  // useless sync purge of all arenas during process shutdown.
+  // Note that we already stopped scheduling new idle purges after
+  // ShutdownPhase::AppShutdownConfirmed, so most likely it's already gone.
+  if (sIdleMemoryCleanupRunner) {
+    sIdleMemoryCleanupRunner->Cancel();
+    sIdleMemoryCleanupRunner = nullptr;
+  }
+#endif
 }
 
 void TaskController::ShutdownThreadPoolInternal() {
@@ -346,8 +440,7 @@ void TaskController::RunPoolThread(PoolThread* aThread) {
 
     {
       MutexAutoUnlock unlock(mGraphMutex);
-      AUTO_PROFILE_FOLLOWING_TASK(task);
-      taskCompleted = task->Run() == Task::TaskResult::Complete;
+      taskCompleted = RunTask(task) == Task::TaskResult::Complete;
     }
 
     task->mInProgress = false;
@@ -434,6 +527,9 @@ void TaskController::AddTask(already_AddRefed<Task>&& aTask) {
 #endif
 
   LogTask::LogDispatch(task);
+  profiler_add_marker("TaskController::AddTask", baseprofiler::category::OTHER,
+                      MarkerTiming::InstantNow(), FlowMarker{},
+                      Flow::FromPointer(task.get()));
 
   std::pair<std::set<RefPtr<Task>, Task::PriorityCompare>::iterator, bool>
       insertion;
@@ -758,8 +854,110 @@ uint64_t TaskController::PendingMainthreadTaskCountIncludingSuspended() {
   return mMainThreadTasks.size();
 }
 
+#ifdef MOZ_MEMORY
+void TaskController::UpdateIdleMemoryCleanupPrefs() {
+  mIsLazyPurgeEnabled = StaticPrefs::memory_lazypurge_enable();
+  moz_enable_deferred_purge(mIsLazyPurgeEnabled);
+}
+
+static void PrefChangeCallback(const char* aPrefName, void* aNull) {
+  MOZ_ASSERT((0 == strcmp(aPrefName, kEnableLazyPurgePref)) ||
+             (0 == strcmp(aPrefName, kMaxPurgeDelayPref)) ||
+             (0 == strcmp(aPrefName, kMinPurgeBudgetPref)));
+
+  TaskController::Get()->UpdateIdleMemoryCleanupPrefs();
+}
+
+// static
+void TaskController::SetupIdleMemoryCleanup() {
+  Preferences::RegisterCallback(PrefChangeCallback, kEnableLazyPurgePref);
+  Preferences::RegisterCallback(PrefChangeCallback, kMaxPurgeDelayPref);
+  Preferences::RegisterCallback(PrefChangeCallback, kMinPurgeBudgetPref);
+  TaskController::Get()->UpdateIdleMemoryCleanupPrefs();
+}
+
+void TaskController::MayScheduleIdleMemoryCleanup() {
+  // We want to schedule an idle task only if we:
+  // - know to be about to become idle
+  // - are not shutting down
+  // - have not yet an active IdleTaskRunner
+  // - have something to cleanup
+  if (PendingMainthreadTaskCountIncludingSuspended() > 0) {
+    // This is a hot code path for the main thread, so please do not add
+    // logic here or before.
+    return;
+  }
+  if (!mIsLazyPurgeEnabled) {
+    return;
+  }
+  if (AppShutdown::IsInOrBeyond(ShutdownPhase::AppShutdownConfirmed)) {
+    if (sIdleMemoryCleanupRunner) {
+      sIdleMemoryCleanupRunner->Cancel();
+      sIdleMemoryCleanupRunner = nullptr;
+    }
+    return;
+  }
+
+  if (!moz_may_purge_one_now(/* aPeekOnly */ true)) {
+    // Currently we unqueue purge requests only if we run moz_may_purge_one_now
+    // with aPeekOnly==false and that happens in the below IdleTaskRunner which
+    // cancels itself when done (and all of this happens on the main thread
+    // without possible races) OR if something else causes a MayPurgeAll (like
+    // jemalloc_free_(excess)_dirty_pages or moz_set_max_dirty_page_modifier)
+    // which can happen anytime (and even from other threads).
+    if (sIdleMemoryCleanupRunner) {
+      sIdleMemoryCleanupRunner->Cancel();
+      sIdleMemoryCleanupRunner = nullptr;
+    }
+    return;
+  }
+  if (sIdleMemoryCleanupRunner) {
+    return;
+  }
+
+  // Only create a marker if we really do something.
+  PROFILER_MARKER_TEXT("MayScheduleIdleMemoryCleanup", OTHER, {},
+                       "Schedule for immediate run."_ns);
+
+  TimeDuration maxPurgeDelay = TimeDuration::FromMilliseconds(
+      StaticPrefs::memory_lazypurge_maximum_delay());
+  TimeDuration minPurgeBudget = TimeDuration::FromMilliseconds(
+      StaticPrefs::memory_lazypurge_minimum_idle_budget());
+
+  sIdleMemoryCleanupRunner = IdleTaskRunner::Create(
+      [](TimeStamp aDeadline) {
+        bool pending = moz_may_purge_one_now(true);
+        if (pending) {
+          AUTO_PROFILER_MARKER_TEXT(
+              "DoIdleMemoryCleanup", OTHER, {},
+              "moz_may_purge_one_now until there is budget."_ns);
+          while (pending) {
+            pending = moz_may_purge_one_now(false);
+            if (!aDeadline.IsNull() && TimeStamp::Now() > aDeadline) {
+              break;
+            }
+          }
+        }
+        if (!pending && sIdleMemoryCleanupRunner) {
+          PROFILER_MARKER_TEXT("DoIdleMemoryCleanup", OTHER, {},
+                               "Finished all cleanup."_ns);
+          sIdleMemoryCleanupRunner->Cancel();
+          sIdleMemoryCleanupRunner = nullptr;
+        }
+
+        // We never get here without attempting at least one purge call.
+        return true;
+      },
+      "TaskController::IdlePurgeRunner", TimeDuration::FromMilliseconds(0),
+      maxPurgeDelay, minPurgeBudget, true, nullptr, nullptr);
+  // We do not pass aMayStopProcessing, which would be the only legitimate
+  // reason to return nullptr (OOM would crash), so no fallback needed.
+  MOZ_ASSERT(sIdleMemoryCleanupRunner);
+}
+#endif
+
 bool TaskController::ExecuteNextTaskOnlyMainThreadInternal(
-    const MutexAutoLock& aProofOfLock) {
+    const MutexAutoLock& aProofOfLock) MOZ_REQUIRES(mGraphMutex) {
   MOZ_ASSERT(NS_IsMainThread());
   mGraphMutex.AssertCurrentThreadOwns();
   // Block to make it easier to jump to our cleanup.
@@ -832,7 +1030,7 @@ bool TaskController::ExecuteNextTaskOnlyMainThreadInternal(
 }
 
 bool TaskController::DoExecuteNextTaskOnlyMainThreadInternal(
-    const MutexAutoLock& aProofOfLock) {
+    const MutexAutoLock& aProofOfLock) MOZ_REQUIRES(mGraphMutex) {
   mGraphMutex.AssertCurrentThreadOwns();
 
   nsCOMPtr<nsIThread> mainIThread;
@@ -941,8 +1139,8 @@ bool TaskController::DoExecuteNextTaskOnlyMainThreadInternal(
 #ifdef MOZ_COLLECTING_RUNNABLE_TELEMETRY
           AutoSetMainThreadRunnableName nameGuard(name);
 #endif
-          AUTO_PROFILE_FOLLOWING_TASK(task);
-          result = task->Run() == Task::TaskResult::Complete;
+
+          result = RunTask(task) == Task::TaskResult::Complete;
         }
 
         // Task itself should keep manager alive.

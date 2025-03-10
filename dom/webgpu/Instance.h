@@ -23,7 +23,29 @@ struct GPURequestAdapterOptions;
 namespace webgpu {
 class Adapter;
 class GPUAdapter;
+class Instance;
 class WebGPUChild;
+
+class WGSLLanguageFeatures final : public nsWrapperCache,
+                                   public ChildOf<Instance> {
+ public:
+  GPU_DECL_CYCLE_COLLECTION(WGSLLanguageFeatures)
+
+ public:
+  explicit WGSLLanguageFeatures(Instance* const aParent) : ChildOf(aParent) {}
+
+ private:
+  void Cleanup() {}
+
+ protected:
+  ~WGSLLanguageFeatures() { Cleanup(); };
+
+ public:
+  JSObject* WrapObject(JSContext* aCx,
+                       JS::Handle<JSObject*> aGivenProto) override {
+    return dom::WGSLLanguageFeatures_Binding::Wrap(aCx, this, aGivenProto);
+  }
+};
 
 class Instance final : public nsWrapperCache {
  public:
@@ -40,6 +62,9 @@ class Instance final : public nsWrapperCache {
       const dom::GPURequestAdapterOptions& aOptions, ErrorResult& aRv);
 
   dom::GPUTextureFormat GetPreferredCanvasFormat() const {
+    // Changing implementation in a way that increases fingerprinting surface?
+    // Please create a bug in [Core::Privacy: Anti
+    // Tracking](https://bugzilla.mozilla.org/enter_bug.cgi?product=Core&component=Privacy%3A%20Anti-Tracking)
     if (kIsAndroid) {
       return dom::GPUTextureFormat::Rgba8unorm;
     }
@@ -52,8 +77,13 @@ class Instance final : public nsWrapperCache {
   void Cleanup();
 
   nsCOMPtr<nsIGlobalObject> mOwner;
+  RefPtr<WGSLLanguageFeatures> mWgslLanguageFeatures;
 
  public:
+  already_AddRefed<WGSLLanguageFeatures> WgslLanguageFeatures() const {
+    RefPtr<WGSLLanguageFeatures> features = mWgslLanguageFeatures;
+    return features.forget();
+  }
 };
 
 }  // namespace webgpu

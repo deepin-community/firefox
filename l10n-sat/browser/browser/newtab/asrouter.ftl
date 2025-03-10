@@ -65,6 +65,7 @@ cfr-doorhanger-extension-total-users =
 
 cfr-doorhanger-bookmark-fxa-header = ᱟᱢᱟᱜ ᱵᱩᱠᱢᱟᱨᱠ ᱠᱚ ᱡᱦᱚᱛᱚ ᱥᱮᱱ ᱟᱹᱭᱩᱨ ᱢᱤᱫ ᱢᱮ ᱾
 cfr-doorhanger-bookmark-fxa-body = ᱥᱟᱨᱦᱟᱣ ᱯᱟᱱᱛᱮ! ᱱᱤᱛᱟᱜ ᱫᱚ ᱟᱢᱟᱜ ᱢᱚᱵᱟᱭᱤᱞ ᱥᱟᱫᱷᱟᱱ ᱛᱮ ᱵᱟᱝ ᱯᱚᱪᱚᱡᱚᱜᱼᱟᱢ ᱾ { -fxaccount-brand-name } ᱛᱮ ᱮᱛᱦᱟᱵ ᱢᱮ ᱾
+cfr-doorhanger-bookmark-fxa-body-2 = ᱥᱟᱨᱦᱟᱣ ᱯᱟᱱᱛᱮ! ᱱᱤᱛᱟᱜ ᱫᱚ ᱟᱢᱟᱜ ᱢᱚᱵᱟᱭᱤᱞ ᱥᱟᱫᱷᱟᱱ ᱛᱮ ᱵᱟᱝ ᱯᱚᱪᱚᱡᱚᱜᱼᱟᱢ ᱾ ᱢᱤᱫᱴᱟᱹᱝ ᱠᱷᱟᱛᱟ ᱮᱛᱦᱚᱵ ᱢᱮ ᱾
 cfr-doorhanger-bookmark-fxa-link-text = ᱵᱩᱠᱢᱟᱨᱠ ᱠᱚ ᱱᱤᱛᱚᱜ ᱟᱹᱭᱩᱨ ᱢᱤᱫ ᱢᱮ …
 cfr-doorhanger-bookmark-fxa-close-btn-tooltip =
     .aria-label = ᱵᱚᱸᱫ ᱵᱩᱛᱟᱹᱢ
@@ -207,6 +208,9 @@ cfr-cbh-confirm-button = ᱠᱩᱠᱤ ᱵᱮᱱᱚᱨ ᱵᱟᱫ ᱜᱤᱰᱤ
     .accesskey = R
 cfr-cbh-dismiss-button = ᱱᱤᱛᱚᱜ ᱫᱚ ᱵᱟᱝᱟ
     .accesskey = N
+cookie-banner-blocker-onboarding-header = { -brand-short-name } ᱟᱢ ᱞᱟᱹᱜᱤᱫ ᱠᱩᱠᱤ ᱵᱮᱱᱟᱨ ᱵᱟᱭ ᱟᱝᱜᱚᱪ ᱞᱮᱫᱟ
+cookie-banner-blocker-onboarding-body = ᱱᱤᱭᱟᱹ ᱥᱟᱭᱤᱴ ᱨᱮ ᱟᱢᱟᱜ ᱴᱨᱮᱠᱤᱝ ᱠᱚᱢ ᱜᱮ ᱦᱩᱭᱩᱜᱼᱟ, ᱠᱚᱢ ᱩᱞᱢᱟᱹᱞ ᱦᱩᱭᱩᱜᱼᱟ ᱾
+cookie-banner-blocker-onboarding-learn-more = ᱰᱷᱮᱨ ᱥᱮᱬᱟᱭ ᱢᱮ
 
 ## These strings are used in the Fox doodle Pin/set default spotlights
 
@@ -236,20 +240,105 @@ fxa-sync-cfr-secondary = ᱛᱟᱭᱚᱢ ᱛᱮ ᱵᱟᱛᱟᱣ ᱤᱧ ᱢᱮ
 
 ## Device Migration FxA Spotlight
 
-device-migration-fxa-spotlight-header = ᱢᱟᱨᱮ ᱥᱟᱫᱷᱚᱱ ᱵᱮᱵᱷᱟᱨ ᱠᱟᱛᱮ ?
-device-migration-fxa-spotlight-body = ᱵᱩᱠᱢᱟᱨᱠ ᱟᱨ ᱫᱟᱱᱟᱝ ᱥᱟᱵᱟᱫ ᱞᱮᱠᱷᱟ ᱟᱹᱰᱤ ᱡᱟᱹᱨᱩᱲ ᱡᱤᱱᱤᱥ ᱟᱞᱚ ᱟᱫᱚᱜ ᱞᱟᱹᱜᱤᱫ ᱟᱢᱟᱜ ᱰᱟᱴᱟ ᱵᱮᱠᱚᱯ ᱢᱮ — ᱵᱤᱥᱮᱥ ᱛᱮ ᱚᱠᱚ ᱡᱷᱚᱜ ᱟᱢ ᱱᱟᱶᱟ ᱥᱟᱫᱷᱚᱱ ᱛᱮ ᱵᱚᱫᱚᱞ ᱡᱷᱚᱜ ᱾
-device-migration-fxa-spotlight-primary-button = ᱤᱧᱟᱜ ᱰᱟᱴᱟ ᱪᱮᱫ ᱞᱮᱠᱷᱟ ᱵᱮᱠᱚᱯᱟᱹᱧ
-device-migration-fxa-spotlight-link = ᱛᱟᱭᱚᱢ ᱛᱮ ᱵᱟᱛᱟᱣ ᱤᱧ ᱢᱮ
+device-migration-fxa-spotlight-heavy-user-header = ᱟᱢᱟᱜ ᱰᱟᱴᱟ ᱵᱮᱠ ᱟᱯ ᱟᱞᱚᱢ ᱦᱤᱲᱤᱧᱟ
+device-migration-fxa-spotlight-heavy-user-body = ᱥᱟᱹᱨᱤ ᱠᱟᱛᱷᱟ ᱞᱟᱹᱭ ᱢᱮ ᱡᱮ ᱞᱟᱹᱠᱛᱤᱭᱟᱱ ᱵᱟᱯᱟᱰᱟᱭ — ᱡᱮᱞᱠᱟ ᱵᱩᱠᱢᱟᱨᱠ ᱟᱨ ᱫᱟᱱᱟᱝ ᱥᱟᱵᱟᱫᱽ — ᱟᱢᱟᱜ ᱡᱚᱛᱚ ᱥᱟᱫᱷᱚᱱ ᱨᱮ ᱦᱟᱹᱞᱤᱭᱟᱹᱠ ᱟᱨ ᱨᱩᱠᱷᱤᱭᱟᱹ ᱢᱮᱱᱟᱜᱼᱟ ᱾
+device-migration-fxa-spotlight-heavy-user-primary-button = ᱫᱮᱞᱟ ᱮᱛᱦᱚᱵ ᱞᱮᱜᱮ ᱵᱚᱱ
+device-migration-fxa-spotlight-older-device-header = ᱢᱚᱱᱮ ᱨᱮᱭᱟᱜ ᱱᱤᱨᱟᱹᱭ, { -brand-product-name } ᱠᱷᱚᱱ
+device-migration-fxa-spotlight-older-device-body = ᱢᱤᱫ ᱠᱷᱟᱛᱟ ᱟᱢᱟᱜ ᱞᱟᱹᱠᱛᱤᱭᱟᱱ ᱵᱟᱯᱟᱰᱟᱭ ᱦᱟᱹᱞᱤᱭᱟᱹᱠ ᱟᱨ ᱨᱩᱠᱷᱤᱭᱟᱹ ᱫᱚᱦᱚᱭᱟ ᱡᱟᱦᱟᱸ ᱥᱟᱫᱷᱚᱱ ᱟᱢ ᱡᱚᱯᱲᱟᱣ ᱟ ᱾
+device-migration-fxa-spotlight-older-device-primary-button = ᱢᱤᱫᱴᱟᱝ ᱠᱷᱟᱛᱟ ᱛᱮᱭᱟᱨ ᱢᱮ
 device-migration-fxa-spotlight-getting-new-device-header-2 = ᱟᱢᱟᱜ ᱵᱷᱚᱵᱤᱥᱚᱛ ᱨᱮᱭᱟᱜ ᱱᱟᱶᱟ ᱥᱟᱫᱷᱚᱱ ?
+device-migration-fxa-spotlight-getting-new-device-body-2 = ᱱᱟᱶᱟ ᱥᱟᱫᱷᱚᱱ ᱨᱮ ᱮᱛᱚᱦᱚᱵ ᱠᱟᱛᱮ ᱟᱢᱟᱜ ᱵᱩᱠᱢᱟᱨᱠ, ᱱᱟᱜᱟᱢ ᱟᱨ ᱫᱟᱱᱟᱝ ᱥᱟᱵᱟᱫᱽ ᱟᱢ ᱥᱟᱶ ᱟᱹᱜᱩ ᱞᱟᱹᱜᱤᱫ ᱢᱤᱫ ᱵᱟᱨ ᱥᱚᱨᱚᱥ ᱫᱷᱟᱯ ᱯᱟᱱᱛᱮ ᱢᱮ ᱾
+device-migration-fxa-spotlight-getting-new-device-primary-button = ᱤᱧᱟᱜ ᱰᱟᱴᱟ ᱪᱮᱫ ᱞᱮᱠᱷᱟ ᱵᱮᱠᱚᱯᱟᱹᱧ
+device-migration-fxa-spotlight-sync-header = ᱢᱤᱫ ᱵᱤᱴ ᱦᱚᱸ ᱵᱤᱱ ᱦᱤᱲᱤᱡ ᱠᱟᱛᱮ ᱵᱽᱨᱟᱣᱩᱡᱽ ᱢᱮ
+device-migration-fxa-spotlight-sync-body = ᱮᱱᱠᱨᱤᱯᱥᱚᱱ ᱥᱟᱶ ᱟᱢᱟᱜ ᱡᱚᱛᱚ ᱞᱟᱹᱠᱛᱤᱭᱟᱱ ᱵᱟᱯᱟᱰᱟᱭ ᱥᱤᱝᱠ ᱢᱮ — ᱡᱮᱞᱠᱟ ᱵᱩᱠᱢᱟᱨᱠ ᱟᱨ ᱫᱟᱱᱟᱝ ᱥᱟᱵᱟᱫᱽ ᱾ ᱟᱢ ᱡᱟᱦᱟᱸᱨᱮᱢ ᱵᱮᱵᱷᱟᱨ ᱮᱫᱟ { -brand-product-name } ᱥᱟᱱᱟᱢᱟᱜ ᱪᱮᱛᱟᱱ ᱥᱮᱫ ᱚᱨ ᱫᱟᱲᱮᱭᱟᱜᱼᱟᱢ ᱾
+device-migration-fxa-spotlight-sync-primary-button = ᱫᱮᱞᱟ ᱮᱛᱦᱚᱵ ᱞᱮᱜᱮ ᱵᱚᱱ
 
 ## Set as Default PDF Reader Infobar
 
+# The question portion of the following message should have the <strong> and </strong> tags surrounding it.
+pdf-default-notification-message = <strong>{ -brand-short-name } ᱟᱢᱟᱜ ᱢᱩᱞ PDF  ᱯᱟᱲᱦᱟᱣᱤᱡ ᱵᱮᱱᱟᱣ ᱟᱭᱟ?</strong>ᱟᱢᱟᱜ ᱠᱚᱢᱯᱭᱩᱴᱟᱨ ᱨᱮ ᱥᱟᱧᱪᱟᱣ ᱟᱠᱟᱱ PDF ᱯᱟᱲᱦᱟᱣ ᱟᱨ ᱥᱟᱥᱟᱯᱲᱟᱣ ᱞᱟᱹᱜᱤᱫ { -brand-short-name } ᱵᱮᱱᱟᱣ ᱢᱮ ᱾
+pdf-default-notification-set-default-button =
+    .label = ᱢᱩᱞ ᱞᱮᱠᱷᱟ ᱛᱮ ᱥᱮᱴ ᱢᱮ
+pdf-default-notification-decline-button =
+    .label = ᱱᱤᱛᱚᱜ ᱫᱚ ᱵᱟᱝᱟ
 
 ## Launch on login infobar notification
 
+launch-on-login-infobar-message = <strong>ᱟᱢᱟᱜ ᱠᱚᱢᱯᱭᱩᱴᱟᱨ ᱫᱚᱦᱲᱟ ᱪᱟᱹᱞᱩ ᱡᱷᱚᱜ { -brand-short-name } ᱡᱷᱤᱡᱽ ᱟ ᱥᱮ?</strong> ᱱᱤᱛ ᱟᱢ ᱟᱢᱟᱜ ᱥᱟᱫᱷᱚᱱ ᱪᱟᱹᱞᱩ ᱡᱷᱚᱜ ᱟᱡ ᱛᱮ ᱡᱷᱤᱡᱽ ᱞᱟᱹᱜᱤᱫ { -brand-short-name } ᱥᱮᱴ ᱫᱟᱲᱮᱭᱟᱜᱼᱟᱢ ᱾
+launch-on-login-learnmore = ᱰᱷᱮᱨ ᱥᱮᱬᱟᱭ ᱢᱮ
+launch-on-login-infobar-confirm-button = ᱦᱟᱭ, { -brand-short-name } ᱡᱷᱤᱡᱽ ᱢᱮ
+    .accesskey = Y
+launch-on-login-infobar-reject-button = ᱱᱤᱛᱚᱜ ᱫᱚ ᱵᱟᱝᱟ
+    .accesskey = N
 
 ## These string variants are used when the “launch on login” infobar
 ## notification is displayed for a second time.
 
+launch-on-login-infobar-final-message = <strong>ᱟᱢᱟᱜ ᱠᱚᱢᱯᱭᱩᱴᱟᱨ ᱫᱚᱦᱲᱟ ᱪᱟᱹᱞᱩ ᱠᱟᱛᱮ { -brand-short-name } ᱡᱷᱤᱡᱽ ᱢᱮ?</strong> ᱟᱢᱟᱜ ᱥᱴᱟᱨᱴᱟᱯ ᱠᱩᱥᱤ ᱠᱚ ᱪᱟᱞᱟᱣ ᱞᱟᱹᱜᱤᱫ, ᱥᱮᱴᱤᱝ ᱨᱮ “ᱥᱴᱟᱨᱴᱟᱯ” ᱥᱮᱸᱫᱽᱨᱟ ᱢᱮ ᱾
 launch-on-login-infobar-final-reject-button = ᱵᱟᱝᱟ ᱥᱟᱨᱦᱟᱣ
     .accesskey = N
+
+## Tail Fox Set Default Spotlight
+
+# This title is displayed together with the picture of a running fox with a long tail.
+# In English, this is a figure of speech meaning 'stop something from following you'.
+# If the localization of this message is challenging, consider using a simplified
+# alternative as a reference for translation: 'Keep unwanted trackers away'.
+tail-fox-spotlight-title = ᱵᱟᱹᱲᱤᱡ ᱴᱨᱮᱠᱟᱨ ᱠᱚ ᱟᱢ ᱯᱟᱧᱡᱟ ᱥᱟᱦᱟᱨᱮ ᱫᱚᱦᱚ ᱠᱚᱢ
+tail-fox-spotlight-subtitle = ᱦᱟᱨᱠᱮᱛ ᱮᱰ ᱴᱨᱮᱠᱟᱨ ᱠᱚ ᱵᱤᱫᱟᱹ ᱢᱮᱱ ᱢᱮ ᱟᱨ ᱨᱩᱠᱷᱤᱭᱟᱹ, ᱩᱥᱟᱹᱨᱟ ᱤᱱᱴᱟᱨᱱᱮᱴ ᱟᱹᱱᱟᱹᱭᱠᱟᱹᱣ ᱨᱮ ᱛᱟᱦᱮᱱ ᱢᱮ᱾
+tail-fox-spotlight-primary-button = { -brand-short-name } ᱥᱟᱶ ᱞᱤᱝᱠ ᱠᱷᱩᱞᱟᱹᱭ ᱢᱮ
+tail-fox-spotlight-secondary-button = ᱱᱤᱛᱚᱜ ᱫᱚ ᱵᱟᱝᱟ
+
+## Root Certificate Succession Infobar
+
+root-certificate-succession-infobar-january-message = <strong>{ -brand-short-name } ᱨᱮᱭᱟᱜ ᱢᱟᱨᱮ ᱵᱷᱟᱨᱥᱚᱱ ᱨᱮ 14 ᱡᱟᱱᱩᱣᱟᱨᱤ, 2025 ᱨᱮ ᱮᱴᱠᱮᱴᱚᱬᱮ ᱮᱦᱚᱵ ᱫᱟᱲᱮᱭᱟᱜᱼᱟ ᱾</strong>
+root-certificate-succession-infobar-march-message = <strong>14 ᱢᱟᱨᱪ, 2025 ᱛᱟᱭᱚᱢ { -brand-short-name } ᱵᱮᱵᱷᱟᱨ ᱞᱟᱹᱜᱤᱫ ᱦᱟᱹᱞᱤᱭᱟᱹᱠ ᱢᱮ ᱾</strong>
+root-certificate-succession-infobar-link = ᱤᱧ ᱪᱮᱫᱟᱜ ᱦᱟᱹᱞᱤᱭᱟᱹᱠ ᱞᱟᱹᱠᱛᱤᱭᱟᱹᱧ ᱠᱟᱱᱟ?
+root-certificate-succession-infobar-primary-button =
+    .label = ᱱᱤᱛᱚᱜ ᱦᱟᱹᱞᱤᱭᱟᱹᱠ ᱢᱮ
+    .accesskey = U
+root-certificate-succession-infobar-secondary-button =
+    .label = ᱛᱟᱭᱚᱢ ᱛᱮ
+    .accesskey = L
+
+## Root Certificate Succession Windows Background Notification
+
+
+## FxA Menu Message variants
+
+fxa-menu-message-close-button =
+    .title = ᱵᱚᱸᱫᱚᱭ ᱢᱮ
+    .aria-label = ᱵᱚᱸᱫᱚᱭ ᱢᱮ
+fxa-menu-message-sign-up-button = ᱥᱩᱦᱤ ᱮᱡ ᱦᱚᱪᱚ
+fxa-menu-message-sync-devices-primary-text = ᱟᱢᱟᱜ ᱡᱷᱚᱛᱚ ᱥᱟᱫᱷᱚᱱ ᱨᱮ ᱥᱤᱝᱠ ᱢᱮ
+fxa-menu-message-sync-devices-secondary-text = ᱨᱚᱠᱟ ᱜᱮ ᱟᱢᱟᱜ ᱵᱟᱯᱟᱰᱟᱭ ᱧᱟᱢ ᱢᱮ — ᱡᱮᱞᱠᱟ ᱵᱩᱠᱢᱟᱨᱠ ᱟᱨ ᱫᱟᱱᱟᱝ ᱥᱟᱵᱟᱫᱽ — ᱡᱟᱦᱟᱸ ᱨᱮ ᱟᱢ { -brand-short-name } ᱮᱢ ᱵᱮᱵᱷᱟᱨᱟ ᱾
+fxa-menu-message-sync-devices-collapsed-text = ᱟᱢᱟᱜ ᱡᱷᱚᱛᱚ ᱥᱟᱫᱷᱚᱱ ᱨᱮ ᱥᱤᱝᱠ ᱢᱮ
+fxa-menu-message-backup-data-primary-text = ᱟᱢᱟᱜ ᱵᱽᱨᱟᱣᱩᱡᱚᱨ ᱰᱟᱴᱟ ᱵᱮᱠᱚᱯ ᱢᱮ
+fxa-menu-message-backup-data-secondary-text = ᱟᱢᱟᱜ ᱡᱷᱚᱛᱚ ᱥᱟᱫᱷᱚᱱ ᱨᱮ ᱟᱡ ᱛᱮ ᱵᱩᱠᱢᱟᱨᱠ, ᱫᱟᱱᱟᱝ ᱥᱟᱵᱟᱫᱽ ᱟᱨ ᱮᱴᱟᱜ ᱵᱟᱯᱟᱰᱟᱭ ᱠᱚ ᱨᱩᱠᱷᱤᱭᱟᱹ ᱫᱚᱦᱚᱭᱟ ᱾
+fxa-menu-message-backup-data-collapsed-text = ᱵᱽᱨᱟᱣᱩᱡᱚᱨ ᱰᱟᱴᱟ ᱵᱮᱠᱚᱯ ᱢᱮ
+fxa-menu-message-backup-sync-primary-text = ᱟᱢᱟᱜ ᱰᱟᱴᱟ ᱨᱩᱠᱷᱤᱭᱟᱹ ᱟᱨ ᱥᱤᱝᱠ ᱫᱚᱦᱚᱭ ᱢᱮ
+fxa-menu-message-backup-sync-secondary-text = ᱥᱤᱝᱠ ᱫᱚ ᱟᱢᱟᱜ ᱵᱟᱹᱲᱛᱤ ᱰᱟᱴᱟ ᱵᱮᱠ ᱟᱯ ᱮᱫᱟᱭ ᱡᱮᱢᱚᱱ ᱟᱢ ᱡᱟᱸᱦᱟ ᱨᱮᱢ ᱵᱮᱵᱷᱟᱨ ᱮᱫᱟ { -brand-short-name } ᱚᱱᱟ ᱟᱫᱮᱨ ᱫᱟᱲᱮᱭᱟᱜᱼᱟᱢ ᱾
+fxa-menu-message-backup-sync-collapsed-text = ᱥᱭᱝᱠ ᱟᱨ ᱰᱟᱴᱟ ᱵᱮᱠᱚᱯᱷ ᱢᱮ
+fxa-menu-message-mobile-primary-text = ᱟᱢᱟᱜ ᱯᱷᱚᱱ ᱨᱮ ᱴᱮᱵᱽ ᱵᱷᱮᱡᱟᱭ ᱢᱮ
+fxa-menu-message-mobile-secondary-text = ᱟᱢ ᱡᱟᱦᱟᱸ ᱨᱮᱢ ᱵᱟᱹᱜᱤ ᱞᱮᱫᱟ ᱚᱱᱰᱮ ᱜᱮ ᱦᱟᱛᱟᱣ ᱢᱮ ᱡᱚᱠᱷᱚᱱ ᱟᱢ ᱟᱢᱟᱜ ᱴᱮᱵᱽ ᱢᱚᱵᱟᱭᱤᱞ ᱥᱟᱫᱷᱚᱱ ᱥᱟᱶ ᱥᱤᱝᱠ ᱢᱮ ᱾
+fxa-menu-message-mobile-collapsed-text = ᱟᱢᱟᱜ ᱯᱷᱚᱱ ᱥᱟᱶ ᱥᱤᱝᱠ ᱢᱮ
+
+## Multi-CTA Fox Doodle Spotlight
+
+multi-cta-fox-doodle-title = ᱟᱢᱟᱜ ᱫᱩᱦᱲᱟᱹ ᱥᱟᱹᱜᱩᱱ ᱫᱟᱨᱟᱢ
+multi-cta-fox-doodle-set-default-checkbox = { -brand-short-name } ᱰᱤᱯᱷᱚᱞᱴ ᱞᱮᱠᱷᱟ ᱥᱮᱴ ᱢᱮ
+multi-cta-fox-doodle-pin-startmenu-checkbox = ᱮᱛᱦᱚᱵᱵᱟᱨ ᱨᱮ { -brand-short-name } ᱞᱟᱴᱷᱟᱭ ᱢᱮ
+multi-cta-fox-doodle-pin-checkbox =
+    { PLATFORM() ->
+        [macos] ᱰᱚᱠ ᱨᱮ { -brand-short-name } ᱫᱚᱦᱚᱭ ᱢᱮ
+       *[other] ᱴᱟᱥᱠᱵᱟᱨ ᱨᱮ { -brand-short-name } ᱞᱟᱴᱷᱟᱭ ᱢᱮ
+    }
+multi-cta-fox-doodle-start-browsing-primary-button-label = ᱵᱽᱨᱟᱣᱩᱡᱤᱝ ᱮᱦᱚᱵᱽ ᱢᱮ
+multi-cta-fox-doodle-main-browser-primary-button-label = { -brand-short-name } ᱫᱚ ᱤᱪᱟᱜ ᱢᱩᱞ ᱵᱽᱨᱟᱣᱡᱚᱨ ᱞᱮᱠᱷᱟ ᱛᱮᱭᱟᱨ ᱢᱮ
+multi-cta-fox-doodle-quick-reminder-subtitle = ᱱᱚᱸᱰᱮ ᱢᱤᱫᱴᱟᱝ ᱞᱟᱹᱠᱛᱤᱭᱟᱱ ᱠᱟᱛᱷᱟ ᱢᱮᱱᱟᱜᱼᱟ ᱡᱟᱦᱟᱸ ᱫᱚ ᱟᱢ ᱟᱢᱟᱜ ᱞᱟᱹᱠᱛᱤᱭᱟᱱ ᱱᱤᱥᱚᱱᱼᱠᱚᱱᱫᱽᱨᱚ ᱵᱽᱨᱟᱣᱡᱟᱨ ᱢᱤᱫ ᱠᱞᱤᱠ ᱥᱟᱺᱜᱤᱧ ᱨᱮ ᱫᱚᱦᱚ ᱫᱟᱲᱮᱭᱟᱜᱼᱟ ᱾
+multi-cta-fox-doodle-privacy-focused-subtitle =
+    { PLATFORM() ->
+        [macos] ᱟᱢᱟᱜ ᱠᱩᱥᱤ ᱱᱤᱥᱚᱱᱼᱠᱚᱱᱫᱽᱨᱚ ᱵᱽᱨᱟᱣᱩᱡᱟᱨ ᱫᱚ ᱢᱤᱫ ᱚᱛᱟ ᱥᱟᱦᱟᱨᱮ ᱫᱚᱦᱚ ᱠᱟᱜ ᱢᱮ ᱾ ᱞᱤᱝᱠ ᱡᱷᱤᱡᱽ ᱞᱟᱹᱜᱤᱫ { -brand-short-name } ᱟᱢᱟᱜ ᱢᱩᱞ ᱵᱽᱨᱟᱣᱩᱡᱟᱨ ᱞᱮᱠᱟᱛᱮ ᱥᱮᱴ ᱢᱮ ᱟᱨ ᱱᱚᱣᱟ ᱟᱢᱟᱜ ᱰᱚᱠ ᱨᱮ ᱫᱚᱦᱚᱭ ᱢᱮ ᱾
+       *[other] ᱟᱢᱟᱜ ᱠᱩᱥᱤ ᱱᱤᱥᱚᱱᱼᱠᱚᱱᱫᱽᱨᱚ ᱵᱽᱨᱟᱣᱩᱡᱟᱨ ᱫᱚ ᱢᱤᱫ ᱚᱛᱟ ᱥᱟᱦᱟᱨᱮ ᱫᱚᱦᱚ ᱠᱟᱜ ᱢᱮ ᱾ ᱞᱤᱝᱠ ᱡᱷᱤᱡᱽ ᱞᱟᱹᱜᱤᱫ { -brand-short-name } ᱟᱢᱟᱜ ᱢᱩᱞ ᱵᱽᱨᱟᱣᱩᱡᱟᱨ ᱞᱮᱠᱟᱛᱮ ᱥᱮᱴ ᱢᱮ ᱟᱨ ᱱᱚᱣᱟ ᱟᱢᱟᱜ ᱴᱟᱥᱠᱵᱨ ᱨᱮ ᱫᱚᱦᱚᱭ ᱢᱮ ᱾
+    }
+multi-cta-fox-doodle-msix-privacy-focused-subtitle = ᱟᱢᱟᱜ ᱠᱩᱥᱤ ᱱᱤᱥᱚᱱᱼᱠᱚᱱᱫᱽᱨᱚ ᱵᱽᱨᱟᱣᱩᱡᱟᱨ ᱫᱚ ᱢᱤᱫ ᱚᱛᱟ ᱥᱟᱦᱟᱨᱮ ᱫᱚᱦᱚ ᱠᱟᱜ ᱢᱮ ᱾ ᱞᱤᱝᱠ ᱡᱷᱤᱡᱽ ᱞᱟᱹᱜᱤᱫ { -brand-short-name } ᱟᱢᱟᱜ ᱢᱩᱞ ᱵᱽᱨᱟᱣᱩᱡᱟᱨ ᱞᱮᱠᱟᱛᱮ ᱥᱮᱴ ᱢᱮ ᱟᱨ ᱱᱚᱣᱟ ᱟᱢᱟᱜ ᱴᱟᱥᱠᱵᱨ ᱟᱨ ᱮᱛᱦᱚᱵ ᱢᱮᱱᱩ ᱨᱮ ᱫᱚᱦᱚᱭ ᱢᱮ ᱾

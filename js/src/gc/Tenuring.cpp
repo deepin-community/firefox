@@ -195,6 +195,7 @@ JS::BigInt* TenuringTracer::promoteOrForward(JS::BigInt* bi) {
   return promoteBigInt(bi);
 }
 
+// Ignore edges to cell kinds that are not allocated in the nursery.
 void TenuringTracer::onSymbolEdge(JS::Symbol** symp, const char* name) {}
 void TenuringTracer::onScriptEdge(BaseScript** scriptp, const char* name) {}
 void TenuringTracer::onShapeEdge(Shape** shapep, const char* name) {}
@@ -205,6 +206,8 @@ void TenuringTracer::onGetterSetterEdge(GetterSetter** gsp, const char* name) {}
 void TenuringTracer::onPropMapEdge(PropMap** mapp, const char* name) {}
 void TenuringTracer::onJitCodeEdge(jit::JitCode** codep, const char* name) {}
 void TenuringTracer::onScopeEdge(Scope** scopep, const char* name) {}
+void TenuringTracer::onSmallBufferEdge(SmallBuffer** sizedp, const char* name) {
+}
 
 void TenuringTracer::traverse(JS::Value* thingp) {
   MOZ_ASSERT(!nursery().inCollectedRegion(thingp));
@@ -477,53 +480,44 @@ bool TenuringTracer::traceBufferedCells<JSString>(Arena* arena,
   return needsSweep;
 }
 
-ArenaCellSet* ArenaCellSet::trace(TenuringTracer& mover) {
-  ArenaCellSet* head = nullptr;
+bool ArenaCellSet::trace(TenuringTracer& mover) {
+  check();
 
-  ArenaCellSet* cells = this;
-  while (cells) {
-    cells->check();
+  arena->bufferedCells() = &ArenaCellSet::Empty;
 
-    Arena* arena = cells->arena;
-    arena->bufferedCells() = &ArenaCellSet::Empty;
-
-    JS::TraceKind kind = MapAllocToTraceKind(arena->getAllocKind());
-    bool needsSweep;
-    switch (kind) {
-      case JS::TraceKind::Object:
-        needsSweep = mover.traceBufferedCells<JSObject>(arena, cells);
-        break;
-      case JS::TraceKind::String:
-        needsSweep = mover.traceBufferedCells<JSString>(arena, cells);
-        break;
-      case JS::TraceKind::Script:
-        needsSweep = mover.traceBufferedCells<BaseScript>(arena, cells);
-        break;
-      case JS::TraceKind::JitCode:
-        needsSweep = mover.traceBufferedCells<jit::JitCode>(arena, cells);
-        break;
-      default:
-        MOZ_CRASH("Unexpected trace kind");
-    }
-
-    ArenaCellSet* next = cells->next;
-    if (needsSweep) {
-      cells->next = head;
-      head = cells;
-    }
-
-    cells = next;
+  JS::TraceKind kind = MapAllocToTraceKind(arena->getAllocKind());
+  switch (kind) {
+    case JS::TraceKind::Object:
+      return mover.traceBufferedCells<JSObject>(arena, this);
+      break;
+    case JS::TraceKind::String:
+      return mover.traceBufferedCells<JSString>(arena, this);
+      break;
+    case JS::TraceKind::Script:
+      return mover.traceBufferedCells<BaseScript>(arena, this);
+      break;
+    case JS::TraceKind::JitCode:
+      return mover.traceBufferedCells<jit::JitCode>(arena, this);
+      break;
+    default:
+      MOZ_CRASH("Unexpected trace kind");
   }
-
-  return head;
 }
 
 void js::gc::StoreBuffer::WholeCellBuffer::trace(TenuringTracer& mover,
                                                  StoreBuffer* owner) {
   MOZ_ASSERT(owner->isEnabled());
 
-  if (head_) {
-    head_ = head_->trace(mover);
+  ArenaCellSet** sweepListTail = &sweepHead_;
+
+  for (LifoAlloc::Enum e(*storage_); !e.empty();) {
+    ArenaCellSet* cellSet = e.read<ArenaCellSet>();
+    bool needsSweep = cellSet->trace(mover);
+    if (needsSweep) {
+      MOZ_ASSERT(!*sweepListTail);
+      *sweepListTail = cellSet;
+      sweepListTail = &cellSet->next;
+    }
   }
 }
 
@@ -582,8 +576,9 @@ static void SweepDependentStrings(Arena* arena, ArenaCellSet* cells) {
   }
 }
 
-void ArenaCellSet::sweepDependentStrings() {
-  for (ArenaCellSet* cells = this; cells; cells = cells->next) {
+/* static */
+void ArenaCellSet::sweepDependentStrings(ArenaCellSet* listHead) {
+  for (ArenaCellSet* cells = listHead; cells; cells = cells->next) {
     Arena* arena = cells->arena;
     arena->bufferedCells() = &ArenaCellSet::Empty;
     MOZ_ASSERT(MapAllocToTraceKind(arena->getAllocKind()) ==
@@ -892,8 +887,8 @@ size_t js::gc::TenuringTracer::moveSlots(NativeObject* dst, NativeObject* src) {
   size_t allocSize = ObjectSlots::allocSize(count);
 
   ObjectSlots* header = src->getSlotsHeader();
-  Nursery::WasBufferMoved result = nursery().maybeMoveBufferOnPromotion(
-      &header, dst, allocSize, MemoryUse::ObjectSlots);
+  Nursery::WasBufferMoved result =
+      nursery().maybeMoveBufferOnPromotion(&header, dst, allocSize);
   if (result == Nursery::BufferNotMoved) {
     return 0;
   }
@@ -934,8 +929,8 @@ size_t js::gc::TenuringTracer::moveElements(NativeObject* dst,
 
   /* TODO Bug 874151: Prefer to put element data inline if we have space. */
 
-  Nursery::WasBufferMoved result = nursery().maybeMoveBufferOnPromotion(
-      &unshiftedHeader, dst, allocSize, MemoryUse::ObjectElements);
+  Nursery::WasBufferMoved result =
+      nursery().maybeMoveBufferOnPromotion(&unshiftedHeader, dst, allocSize);
   if (result == Nursery::BufferNotMoved) {
     return 0;
   }
@@ -1201,8 +1196,9 @@ size_t js::gc::TenuringTracer::moveBigInt(JS::BigInt* dst, JS::BigInt* src,
   size_t length = dst->digitLength();
   size_t nbytes = length * sizeof(JS::BigInt::Digit);
 
-  Nursery::WasBufferMoved result = nursery().maybeMoveBufferOnPromotion(
-      &dst->heapDigits_, dst, nbytes, MemoryUse::BigIntDigits);
+  Nursery::WasBufferMoved result =
+      nursery().maybeMoveNurseryOrMallocBufferOnPromotion(
+          &dst->heapDigits_, dst, nbytes, MemoryUse::BigIntDigits);
   if (result == Nursery::BufferMoved) {
     nursery().setDirectForwardingPointer(src->heapDigits_, dst->heapDigits_);
     size += nbytes;

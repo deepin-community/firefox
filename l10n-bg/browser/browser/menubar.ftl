@@ -134,7 +134,7 @@ menu-view-toolbars-menu =
     .label = Ленти с инструменти
     .accesskey = и
 menu-view-customize-toolbar2 =
-    .label = Персонализиране на лентата…
+    .label = Приспособяване на лентата…
     .accesskey = П
 menu-view-sidebar =
     .label = Странична лента
@@ -254,6 +254,15 @@ menu-bookmarks-other =
 menu-bookmarks-mobile =
     .label = Мобилни отметки
 
+## Profiles Menu
+
+menu-profiles =
+    .label = Профили
+menu-profiles-manage-profiles =
+    .label = Управление на профили
+menu-profiles-new-profile =
+    .label = Нов профил
+
 ## Tools Menu
 
 menu-tools =
@@ -350,4 +359,4 @@ menu-help-not-deceptive =
     .label = Това не е измамническа страница…
     .accesskey = н
 menu-report-broken-site =
-    .label = Съобщаване за неработеща страница
+    .label = Доклад за повредена страница

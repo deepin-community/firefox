@@ -1808,12 +1808,8 @@ void nsGlobalWindowOuter::SetInitialPrincipal(
   }
 }
 
-#define WINDOWSTATEHOLDER_IID                        \
-  {                                                  \
-    0x0b917c3e, 0xbd50, 0x4683, {                    \
-      0xaf, 0xc9, 0xc7, 0x81, 0x07, 0xae, 0x33, 0x26 \
-    }                                                \
-  }
+#define WINDOWSTATEHOLDER_IID \
+  {0x0b917c3e, 0xbd50, 0x4683, {0xaf, 0xc9, 0xc7, 0x81, 0x07, 0xae, 0x33, 0x26}}
 
 class WindowStateHolder final : public nsISupports {
  public:
@@ -2837,35 +2833,6 @@ bool nsGlobalWindowOuter::AreDialogsEnabled() {
   }
 
   return group->GetAreDialogsEnabled();
-}
-
-bool nsGlobalWindowOuter::ConfirmDialogIfNeeded() {
-  NS_ENSURE_TRUE(mDocShell, false);
-  nsCOMPtr<nsIPromptService> promptSvc =
-      do_GetService("@mozilla.org/prompter;1");
-
-  if (!promptSvc) {
-    return true;
-  }
-
-  // Reset popup state while opening a modal dialog, and firing events
-  // about the dialog, to prevent the current state from being active
-  // the whole time a modal dialog is open.
-  AutoPopupStatePusher popupStatePusher(PopupBlocker::openAbused, true);
-
-  bool disableDialog = false;
-  nsAutoString label, title;
-  nsContentUtils::GetLocalizedString(nsContentUtils::eCOMMON_DIALOG_PROPERTIES,
-                                     "ScriptDialogLabel", label);
-  nsContentUtils::GetLocalizedString(nsContentUtils::eCOMMON_DIALOG_PROPERTIES,
-                                     "ScriptDialogPreventTitle", title);
-  promptSvc->Confirm(this, title.get(), label.get(), &disableDialog);
-  if (disableDialog) {
-    DisableDialogs();
-    return false;
-  }
-
-  return true;
 }
 
 void nsGlobalWindowOuter::DisableDialogs() {
@@ -5007,7 +4974,9 @@ void nsGlobalWindowOuter::PrintOuter(ErrorResult& aError) {
     }
   });
 
-  const bool forPreview = !StaticPrefs::print_always_print_silent();
+  const bool forPreview =
+      !StaticPrefs::print_always_print_silent() &&
+      !Preferences::GetBool("print.prefer_system_dialog", false);
   Print(nullptr, nullptr, nullptr, nullptr, IsPreview(forPreview),
         IsForWindowDotPrint::Yes, nullptr, nullptr, aError);
 #endif
@@ -5414,18 +5383,12 @@ void nsGlobalWindowOuter::ResizeByOuter(int32_t aWidthDif, int32_t aHeightDif,
 }
 
 void nsGlobalWindowOuter::SizeToContentOuter(
-    CallerType aCallerType, const SizeToContentConstraints& aConstraints,
-    ErrorResult& aError) {
+    const SizeToContentConstraints& aConstraints, ErrorResult& aError) {
   if (!mDocShell) {
     return;
   }
 
-  /*
-   * If caller is not chrome and the user has not explicitly exempted the site,
-   * prevent window.sizeToContent() by exiting early
-   */
-
-  if (!CanMoveResizeWindows(aCallerType) || mBrowsingContext->IsSubframe()) {
+  if (mBrowsingContext->IsSubframe()) {
     return;
   }
 
@@ -5443,8 +5406,6 @@ void nsGlobalWindowOuter::SizeToContentOuter(
     return aError.Throw(NS_ERROR_FAILURE);
   }
 
-  // Make sure the new size is following the CheckSecurityWidthAndHeight
-  // rules.
   nsCOMPtr<nsIDocShellTreeOwner> treeOwner = GetTreeOwner();
   if (!treeOwner) {
     return aError.Throw(NS_ERROR_FAILURE);
@@ -5459,7 +5420,6 @@ void nsGlobalWindowOuter::SizeToContentOuter(
       presContext,
       "Should be non-nullptr if nsIDocumentViewer::GetContentSize() succeeded");
   CSSIntSize cssSize = *contentSize;
-  CheckSecurityWidthAndHeight(&cssSize.width, &cssSize.height, aCallerType);
 
   LayoutDeviceIntSize newDevSize(
       presContext->CSSPixelsToDevPixels(cssSize.width),
@@ -6686,7 +6646,7 @@ bool nsGlobalWindowOuter::IsSuspended() const {
   if (!mInnerWindow) {
     return true;
   }
-  return mInnerWindow->IsSuspended();
+  return nsGlobalWindowInner::Cast(mInnerWindow)->IsSuspended();
 }
 
 bool nsGlobalWindowOuter::IsFrozen() const {
@@ -6695,7 +6655,7 @@ bool nsGlobalWindowOuter::IsFrozen() const {
   if (!mInnerWindow) {
     return true;
   }
-  return mInnerWindow->IsFrozen();
+  return nsGlobalWindowInner::Cast(mInnerWindow)->IsFrozen();
 }
 
 nsresult nsGlobalWindowOuter::FireDelayedDOMEvents(bool aIncludeSubWindows) {
@@ -6788,16 +6748,8 @@ nsresult nsGlobalWindowOuter::OpenInternal(
   // If noopener is force-enabled for the current document, then set noopener to
   // true, and clear the name to "_blank".
   nsAutoString windowName(aName);
-  if (nsDocShell::Cast(GetDocShell())->NoopenerForceEnabled()) {
-    // FIXME: Eventually bypass force-enabling noopener if `aPrintKind !=
-    // PrintKind::None`, so that we can print pages with noopener force-enabled.
-    // This will require relaxing assertions elsewhere.
-    if (aPrintKind != PrintKind::None) {
-      NS_WARNING(
-          "printing frames with noopener force-enabled isn't supported yet");
-      return NS_ERROR_FAILURE;
-    }
-
+  if (nsDocShell::Cast(GetDocShell())->NoopenerForceEnabled() &&
+      aPrintKind == PrintKind::None) {
     MOZ_DIAGNOSTIC_ASSERT(aNavigate,
                           "cannot OpenNoNavigate if noopener is force-enabled");
 
@@ -6810,10 +6762,19 @@ nsresult nsGlobalWindowOuter::OpenInternal(
   // XXXbz When this gets fixed to not use LegacyIsCallerNativeCode()
   // (indirectly) maybe we can nix the AutoJSAPI usage OnLinkClickEvent::Run.
   // But note that if you change this to GetEntryGlobal(), say, then
-  // OnLinkClickEvent::Run will need a full-blown AutoEntryScript.
-  const bool checkForPopup =
-      !nsContentUtils::LegacyIsCallerChromeOrNativeCode() && !aDialog &&
-      !windowExists;
+  // OnLinkClickEvent::Run will need a full-blown AutoEntryScript. (Bug 1930445)
+  const bool checkForPopup = [&]() {
+    if (aDialog) {
+      return false;
+    }
+    if (windowExists) {
+      return false;
+    }
+    if (aLoadState && aLoadState->IsFormSubmission()) {
+      return true;
+    }
+    return !nsContentUtils::LegacyIsCallerChromeOrNativeCode();
+  }();
 
   nsCOMPtr<nsIURI> uri;
 
@@ -6871,6 +6832,13 @@ nsresult nsGlobalWindowOuter::OpenInternal(
       FireAbuseEvents(aUrl, windowName, aOptions);
       return aDoJSFixups ? NS_OK : NS_ERROR_FAILURE;
     }
+  }
+
+  // Per https://github.com/whatwg/html/pull/10547, we should always consume
+  // user activation when opening a new window, even if the popup blocker is
+  // disabled or the website has popup permission.
+  if (!windowExists && mDoc) {
+    mDoc->ConsumeTransientUserGestureActivation();
   }
 
   RefPtr<BrowsingContext> domReturn;

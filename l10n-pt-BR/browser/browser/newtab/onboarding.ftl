@@ -225,7 +225,9 @@ mr2022-onboarding-set-default-subtitle = Use um navegador respaldado por uma org
 mr2022-onboarding-get-started-primary-subtitle = Nossa versão mais recente foi construída com base em vocês, tornando mais fácil do que nunca passear pela web. Está repleto de recursos que achamos que você vai adorar.
 mr2022-onboarding-get-started-primary-button-label = Configure em segundos
 
-## MR2022 Import Settings screen strings
+## MR2022 Get Started screen strings.
+## These strings will be used on the welcome page
+## when Firefox is already set to default and pinned.
 
 mr2022-onboarding-import-header = Configuração extremamente rápida
 mr2022-onboarding-import-subtitle = Configure o { -brand-short-name } como você quiser. Adicione favoritos, senhas e muito mais do seu navegador antigo.
@@ -356,6 +358,11 @@ onboarding-mobile-download-security-and-privacy-subtitle = Quando você usa a si
 # Gratitude screen
 onboarding-gratitude-security-and-privacy-title = { -brand-short-name } protege você
 onboarding-gratitude-security-and-privacy-subtitle = Obrigado por usar o { -brand-short-name }, respaldado pela Fundação Mozilla. Com seu apoio, estamos trabalhando para tornar a internet mais segura e acessível a todos.
+# Sign up or Sign in screen
+onboarding-sign-up-title = Sincronize seus dados entre dispositivos
+onboarding-sign-up-description = Crie uma conta e todas as suas informações importantes (senhas, favoritos e outros dados) são armazenadas com segurança e ficam disponíveis quando você entra na conta em qualquer dispositivo.
+onboarding-sign-up-button = Entrar na sua conta ou criar uma
+onboarding-sign-up-secondary-button = Iniciar navegação
 
 ## New user time and familiarity survey strings
 
@@ -375,3 +382,90 @@ onboarding-new-user-survey-familiarity-based-option-1 = Acabei de começar
 onboarding-new-user-survey-familiarity-based-option-2 = Já usei um pouco
 onboarding-new-user-survey-familiarity-based-option-3 = Estou muito familiarizado
 onboarding-new-user-survey-familiarity-based-option-4 = Já usei, mas faz um tempo
+
+## UI strings for the sidebar and vertical tabs
+
+# Setup screen for vertical tabs
+onboarding-new-tabs-title = Diga onde você prefere ter suas abas
+# Setup screen for vertical tabs - "Switch it up" refers to switching between horizontal and vertical tabs.
+onboarding-new-tabs-subtitle = Mude quando quiser nas configurações do painel lateral.
+# Setup screen for vertical tabs - too many tabs variation
+onboarding-many-tabs-title = Suas abas, do seu jeito
+# Setup screen for vertical tabs - subtitle for too many tabs variation
+onboarding-many-tabs-subtitle = Mantém muitas abas abertas? Experimente colocar as abas na lateral para ter uma visão mais simplificada. Ou mantenha o clássico com abas na parte superior. Mude quando quiser.
+# Setup screen for vertical tabs - focused variation
+onboarding-focused-tabs-title = Escolha uma disposição de abas
+# Setup screen for vertical tabs - subtitle for focused variation
+onboarding-focused-tabs-subtitle = Para uma visão simplificada que pode ajudar você a manter o foco, experimente suas abas na lateral. Ou mantenha o clássico com abas na parte superior. Mude quando quiser.
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-new-vertical-tabs-label = Abas na lateral
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-new-horizontal-tabs-label = Abas no alto
+# Setup screen for vertical tabs for existing users
+onboarding-existing-tabs-title = Chegou a opção de abas na vertical
+# Setup screen for vertical tabs for existing users
+onboarding-existing-tabs-title2 = Apresentamos abas na vertical
+# Setup screen for vertical tabs for existing users - "Switch it up" refers to switching between horizontal and vertical tabs.
+onboarding-existing-tabs-subtitle = Experimente suas abas na lateral. Mude quando quiser nas configurações do painel lateral.
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-existing-vertical-tabs-label = Experimentar abas na vertical
+onboarding-flair-text = Novidade!
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-existing-horizontal-tabs-label = Manter abas na horizontal
+# Tooltip displayed on hover for vertical tabs image
+onboarding-vertical-tabs-tooltip =
+    .title = Uma janela do navegador com abas ao lado, no painel lateral do { -brand-shorter-name }.
+# Description for vertical tabs image
+onboarding-vertical-tabs-description =
+    .aria-description = Uma janela do navegador com abas ao lado, no painel lateral do { -brand-shorter-name }.
+# Tooltip displayed on hover for horizontal tabs image
+onboarding-horizontal-tabs-tooltip =
+    .title = Uma janela do navegador com abas na parte superior.
+# Description for horizontal tabs image
+onboarding-horizontal-tabs-description =
+    .aria-description = Uma janela do navegador com abas na parte superior.
+# Additional setup card for setting up aichatbot in the sidebar
+onboarding-genai-sidebar-title = Experimente um chatbot de inteligência artificial no painel lateral
+# Setup card for setting up AI chatbot in the sidebar; "Providers" refers to AI chatbot providers (e.g. OpenAI, etc). "Switch anytime" refers to allowing the user to switch to a different chatbot.
+onboarding-genai-sidebar-subtitle = Resuma conteúdo, tenha ideias, rascunhe mensagens, tudo isso enquanto navega. Escolha entre vários provedores. Mude quando quiser. <a data-l10n-name="learn-more">Saiba mais</a>
+onboarding-genai-sidebar-primary-button = Escolha um chatbot
+onboarding-genai-sidebar-secondary-button = Iniciar navegação
+
+## New user onboarding checklist
+
+onboarding-checklist-title = Conclua a configuração do { -brand-short-name }
+onboarding-checklist-subtitle = Complete estas etapas para aproveitar ao máximo sua experiência de navegação.
+onboarding-checklist-set-default = Defina o { -brand-short-name } como navegador padrão
+onboarding-checklist-pin = Fixe o { -brand-short-name } na barra de tarefas
+onboarding-checklist-import = Importe do navegador anterior
+onboarding-checklist-extension = Adicione uma extensão
+onboarding-checklist-sign-up = Entre na sua conta ou crie uma
+
+## Tab Groups feature onboarding strings
+
+tab-groups-onboarding-feature-callout-title = Experimente grupos de abas para reduzir a desordem e aumentar a concentração.
+tab-groups-onboarding-feature-callout-subtitle = Organize-se arrastando uma aba sobre outra para criar seu primeiro grupo.
+tab-groups-onboarding-create-group-title = Encontre seus grupos abertos na barra de abas, ou pesquisando na barra de endereços.
+tab-groups-onboarding-saved-groups-title = Se você fechar um grupo de abas, pode reabrir aqui quando quiser.
+tab-groups-onboarding-saved-groups-no-alltabs-button-title = Encontre seus grupos de abas, abertos ou fechados, quando quiser pesquisando na barra de endereços.
+tab-groups-onboarding-dismiss = OK
+
+## Multi Profiles feature onboarding messages
+
+multi-profile-spotlight-title = Apresentamos perfis do { -brand-product-name }
+multi-profile-spotlight-body = Alterne facilmente entre navegação de trabalho ou diversão. Perfis mantêm suas informações de navegação totalmente separadas, inclusive histórico de pesquisa e senhas, para você se manter organizado.
+multi-profile-spotlight-cta = Criar um perfil
+multi-profile-callout-title = Crie perfis diferentes para trabalho e diversão
+multi-profile-callout-subtitle = Perfis permitem manter suas informações de navegação, como o histórico de pesquisa e as senhas, totalmente separadas.
+multi-profile-callout-cta = Criar perfil
+
+## Desktop to Mobile Adoption feature callout strings
+
+# If translating the headline is challenging, consider using a simplified alternative as a reference: 'Sync your browsing with Firefox for mobile.'
+desktop-to-mobile-headline = Instale, sincronize e pronto!
+# The phrase, 'on the go', is used to describe when people are very busy and are traveling from place to place.
+desktop-to-mobile-subtitle = Capture o código QR para instalar o { -brand-product-name } para dispositivos móveis. Após instalar, selecione “Sincronizar com dispositivos móveis” para acessar suas senhas, favoritos e muito mais em qualquer lugar.
+dismiss-button-label = Descartar
+sync-to-mobile-button-label = Sincronização com dispositivos móveis
+desktop-to-mobile-qr-code-alt =
+    .aria-label = Código QR para baixar o { -brand-product-name } para dispositivos móveis

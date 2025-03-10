@@ -3,7 +3,13 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 menu-view-genai-chat =
-    .label = AI Chatbot
+    .label = UI chatbot
+menu-view-review-checker =
+    .label = Provjera recenzija
+menu-view-contextual-password-manager =
+    .label = Lozinke
+sidebar-options-menu-button =
+    .title = Otvori izbornik
 
 ## Labels for sidebar history panel
 
@@ -46,16 +52,26 @@ sidebar-position-right =
     .label = Prikaži desno
 sidebar-vertical-tabs =
     .label = Okomite kartice
+sidebar-settings =
+    .label = Postavke bočne trake
+sidebar-hide-tabs-and-sidebar =
+    .label = Sakrij kartice i bočnu traku
+sidebar-show-on-the-right =
+    .label = Premjesti bočnu traku na desnu stranu
+sidebar-show-on-the-left =
+    .label = Premjesti bočnu traku na lijevu stranu
 sidebar-horizontal-tabs =
     .label = Vodoravne kartice
 sidebar-customize-tabs-header =
     .label = Postavke kartica
-sidebar-customize-settings-header =
-    .label = Postavke bočne trake
-sidebar-visibility-always-show =
-    .label = Uvijek prikaži
-sidebar-visibility-hide-sidebar =
-    .label = Sakrij bočnu traku
+sidebar-customize-button-header =
+    .label = Gumb bočne trake
+sidebar-customize-position-header =
+    .label = Položaj bočne trake
+sidebar-visibility-setting-always-show =
+    .label = Rasklopi i sklopi bočnu traku
+sidebar-visibility-setting-hide-sidebar =
+    .label = Prikaži i sakrij bočnu traku
 
 ## Labels for sidebar context menu items
 
@@ -73,6 +89,10 @@ sidebar-context-menu-bookmark-tab =
     .label = Zabilježi karticu…
 sidebar-context-menu-copy-link =
     .label = Kopiraj poveznicu
+# Variables:
+#   $deviceName (String) - The name of the device the user is closing a tab for
+sidebar-context-menu-close-remote-tab =
+    .label = Zatvori karticu na { $deviceName }
 
 ## Labels for sidebar history context menu items
 
@@ -82,7 +102,7 @@ sidebar-history-context-menu-delete-page =
 ## Labels for sidebar menu items.
 
 sidebar-menu-genai-chat-label =
-    .label = AI chatbot
+    .label = UI chatbot
 sidebar-menu-history-label =
     .label = Povijest
 sidebar-menu-synced-tabs-label =
@@ -91,6 +111,41 @@ sidebar-menu-bookmarks-label =
     .label = Zabilješke
 sidebar-menu-customize-label =
     .label = Prilagodi bočnu traku
+sidebar-menu-review-checker-label =
+    .label = Provjera recenzija
+sidebar-menu-contextual-password-manager-label =
+    .label = Lozinke
+
+## Tooltips for sidebar menu items.
+
+# The tooltip to show over the history icon, when history is not currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-open-history-tooltip = Otvori povijest ({ $shortcut })
+# The tooltip to show over the history icon, when history is currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-close-history-tooltip = Zatvori povijest ({ $shortcut })
+# The tooltip to show over the bookmarks icon, when bookmarks is not currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-open-bookmarks-tooltip = Otvori zabilješke ({ $shortcut })
+# The tooltip to show over the bookmarks icon, when bookmarks is currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-close-bookmarks-tooltip = Zatvori zabilješke ({ $shortcut })
+sidebar-menu-open-ai-chatbot-tooltip = Otvori UI chatbot
+sidebar-menu-close-ai-chatbot-tooltip = Zatvori UI chatbot
+
+## Tooltips displayed over the AI chatbot icon.
+## Variables:
+##   $shortcut (String) - The OS specific keyboard shortcut.
+##   $provider (String) - The name of the AI chatbot provider (if available).
+
+sidebar-menu-open-ai-chatbot-tooltip-generic = Otvori UI chatbot ({ $shortcut })
+sidebar-menu-open-ai-chatbot-provider-tooltip = Otvori { $provider } ({ $shortcut })
+sidebar-menu-close-ai-chatbot-tooltip-generic = Zatvori UI chatbot ({ $shortcut })
+sidebar-menu-close-ai-chatbot-provider-tooltip = Zatvori { $provider } ({ $shortcut })
 
 ## Headings for sidebar menu panels.
 
@@ -100,3 +155,50 @@ sidebar-menu-history-header =
     .heading = Povijest
 sidebar-menu-syncedtabs-header =
     .heading = Kartice s drugih uređaja
+sidebar-menu-bookmarks-header =
+    .heading = Zabilješke
+sidebar-menu-cpm-header =
+    .heading = Lozinke
+sidebar-panel-header-close-button =
+    .tooltiptext = Zatvori
+
+## Titles for sidebar menu panels.
+
+sidebar-customize-title = Prilagodi bočnu traku
+sidebar-history-title = Povijest
+sidebar-syncedtabs-title = Kartice s drugih uređaja
+
+## Context for closing synced tabs when hovering over the items
+
+# Context for hovering over the close tab button that will
+# send a push to the device to close said tab
+# Variables:
+#   $deviceName (String) - the name of the device the user is closing a tab for
+synced-tabs-context-close-tab-title =
+    .title = Zatvori karticu na { $deviceName }
+show-sidebars =
+    .tooltiptext = Prikaži bočne trake
+    .label = Bočne trake
+
+## Tooltips for the sidebar toolbar widget.
+
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-expand-sidebar2 =
+    .tooltiptext = Rasklopi bočnu traku ({ $shortcut })
+    .label = Bočne trake
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-collapse-sidebar2 =
+    .tooltiptext = Sklopi bočnu traku ({ $shortcut })
+    .label = Bočne trake
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-show-sidebar2 =
+    .tooltiptext = Prikaži bočnu traku ({ $shortcut })
+    .label = Bočne trake
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-hide-sidebar2 =
+    .tooltiptext = Sakrij bočnu traku ({ $shortcut })
+    .label = Bočne trake

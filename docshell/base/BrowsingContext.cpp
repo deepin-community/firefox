@@ -110,6 +110,11 @@ struct ParamTraits<mozilla::dom::PrefersColorSchemeOverride>
           mozilla::dom::PrefersColorSchemeOverride> {};
 
 template <>
+struct ParamTraits<mozilla::dom::ForcedColorsOverride>
+    : public mozilla::dom::WebIDLEnumSerializer<
+          mozilla::dom::ForcedColorsOverride> {};
+
+template <>
 struct ParamTraits<mozilla::dom::ExplicitActiveStatus>
     : public ContiguousEnumSerializer<
           mozilla::dom::ExplicitActiveStatus,
@@ -411,9 +416,14 @@ already_AddRefed<BrowsingContext> BrowsingContext::CreateDetached(
   } else if (aOpener) {
     // They are not same origin
     auto topPolicy = aOpener->Top()->GetOpenerPolicy();
-    MOZ_RELEASE_ASSERT(topPolicy == nsILoadInfo::OPENER_POLICY_UNSAFE_NONE ||
-                       topPolicy ==
-                           nsILoadInfo::OPENER_POLICY_SAME_ORIGIN_ALLOW_POPUPS);
+    MOZ_RELEASE_ASSERT(
+        topPolicy == nsILoadInfo::OPENER_POLICY_UNSAFE_NONE ||
+        topPolicy == nsILoadInfo::OPENER_POLICY_SAME_ORIGIN_ALLOW_POPUPS ||
+        aOptions.isForPrinting);
+    if (aOptions.isForPrinting) {
+      // Ensure our opener policy is consistent for printing for our top.
+      fields.Get<IDX_OpenerPolicy>() = topPolicy;
+    }
   } else if (!aParent && group->IsPotentiallyCrossOriginIsolated()) {
     // If we're creating a brand-new toplevel BC in a potentially cross-origin
     // isolated group, it should start out with a strict opener policy.
@@ -482,6 +492,7 @@ already_AddRefed<BrowsingContext> BrowsingContext::CreateDetached(
         new BrowsingContext(parentWC, group, id, aType, std::move(fields));
   }
 
+  context->mWindowless = aOptions.windowless;
   context->mEmbeddedByThisProcess = XRE_IsParentProcess() || aParent;
   context->mCreatedDynamically = aOptions.createdDynamically;
   if (inherit) {
@@ -505,13 +516,13 @@ already_AddRefed<BrowsingContext> BrowsingContext::CreateDetached(
 }
 
 already_AddRefed<BrowsingContext> BrowsingContext::CreateIndependent(
-    Type aType) {
+    Type aType, bool aWindowless) {
   MOZ_DIAGNOSTIC_ASSERT(XRE_IsParentProcess(),
                         "BCs created in the content process must be related to "
                         "some BrowserChild");
   RefPtr<BrowsingContext> bc(
       CreateDetached(nullptr, nullptr, nullptr, u""_ns, aType, {}));
-  bc->mWindowless = bc->IsContent();
+  bc->mWindowless = aWindowless;
   bc->mEmbeddedByThisProcess = true;
   bc->EnsureAttached();
   return bc.forget();
@@ -788,7 +799,7 @@ void BrowsingContext::SetEmbedderElement(Element* aEmbedder) {
     }
 
     if (IsEmbedderTypeObjectOrEmbed()) {
-      Unused << SetSyntheticDocumentContainer(true);
+      Unused << SetIsSyntheticDocumentContainer(true);
     }
   }
 }
@@ -1553,9 +1564,9 @@ JSObject* BrowsingContext::ReadStructuredClone(JSContext* aCx,
   // Note: Do this check after reading our ID data. Returning null will abort
   // the decode operation anyway, but we should at least be as safe as possible.
   if (NS_WARN_IF(!NS_IsMainThread())) {
-    MOZ_DIAGNOSTIC_ASSERT(false,
-                          "We shouldn't be trying to decode a BrowsingContext "
-                          "on a background thread.");
+    MOZ_DIAGNOSTIC_CRASH(
+        "We shouldn't be trying to decode a BrowsingContext "
+        "on a background thread.");
     return nullptr;
   }
 
@@ -2287,7 +2298,7 @@ PopupBlocker::PopupControlState BrowsingContext::RevisePopupAbuseLevel(
     // PopupBlocker::openBlocked state.
     if ((abuse == PopupBlocker::openAllowed ||
          abuse == PopupBlocker::openControlled) &&
-        StaticPrefs::dom_block_multiple_popups() && !IsPopupAllowed() &&
+        !IsPopupAllowed() &&
         !ConsumeTransientUserActivationForMultiplePopupBlocking()) {
       nsContentUtils::ReportToConsole(nsIScriptError::warningFlag, "DOM"_ns,
                                       doc, nsContentUtils::eDOM_PROPERTIES,
@@ -2740,6 +2751,9 @@ void BrowsingContext::DidSet(FieldIndex<IDX_ExplicitActive>,
 
   PreOrderWalk([&](BrowsingContext* aContext) {
     if (nsCOMPtr<nsIDocShell> ds = aContext->GetDocShell()) {
+      if (auto* bc = BrowserChild::GetFrom(ds)) {
+        bc->UpdateVisibility();
+      }
       nsDocShell::Cast(ds)->ActivenessMaybeChanged();
     }
   });
@@ -2752,6 +2766,20 @@ void BrowsingContext::DidSet(FieldIndex<IDX_InRDMPane>, bool aOldValue) {
     return;
   }
   PresContextAffectingFieldChanged();
+}
+
+void BrowsingContext::DidSet(FieldIndex<IDX_ForceDesktopViewport>,
+                             bool aOldValue) {
+  MOZ_ASSERT(IsTop(), "Should only set in the top-level browsing context");
+  if (ForceDesktopViewport() == aOldValue) {
+    return;
+  }
+  PresContextAffectingFieldChanged();
+  if (nsIDocShell* shell = GetDocShell()) {
+    if (RefPtr ps = shell->GetPresShell()) {
+      ps->MaybeRecreateMobileViewportManager(/* aAfterInitialization= */ true);
+    }
+  }
 }
 
 bool BrowsingContext::CanSet(FieldIndex<IDX_PageAwakeRequestCount>,
@@ -2846,6 +2874,15 @@ void BrowsingContext::DidSet(FieldIndex<IDX_PrefersColorSchemeOverride>,
                              dom::PrefersColorSchemeOverride aOldValue) {
   MOZ_ASSERT(IsTop());
   if (PrefersColorSchemeOverride() == aOldValue) {
+    return;
+  }
+  PresContextAffectingFieldChanged();
+}
+
+void BrowsingContext::DidSet(FieldIndex<IDX_ForcedColorsOverride>,
+                             dom::ForcedColorsOverride aOldValue) {
+  MOZ_ASSERT(IsTop());
+  if (ForcedColorsOverride() == aOldValue) {
     return;
   }
   PresContextAffectingFieldChanged();
@@ -3023,10 +3060,10 @@ void BrowsingContext::DidSet(FieldIndex<IDX_IsInBFCache>) {
   }
 }
 
-void BrowsingContext::DidSet(FieldIndex<IDX_SyntheticDocumentContainer>) {
+void BrowsingContext::DidSet(FieldIndex<IDX_IsSyntheticDocumentContainer>) {
   if (WindowContext* parentWindowContext = GetParentWindowContext()) {
-    parentWindowContext->UpdateChildSynthetic(this,
-                                              GetSyntheticDocumentContainer());
+    parentWindowContext->UpdateChildSynthetic(
+        this, GetIsSyntheticDocumentContainer());
   }
 }
 
@@ -3209,8 +3246,8 @@ bool BrowsingContext::CanSet(FieldIndex<IDX_UseGlobalHistory>,
 }
 
 auto BrowsingContext::CanSet(FieldIndex<IDX_UserAgentOverride>,
-                             const nsString& aUserAgent,
-                             ContentParent* aSource) -> CanSetResult {
+                             const nsString& aUserAgent, ContentParent* aSource)
+    -> CanSetResult {
   if (!IsTop()) {
     return CanSetResult::Deny;
   }
@@ -3219,8 +3256,8 @@ auto BrowsingContext::CanSet(FieldIndex<IDX_UserAgentOverride>,
 }
 
 auto BrowsingContext::CanSet(FieldIndex<IDX_PlatformOverride>,
-                             const nsString& aPlatform,
-                             ContentParent* aSource) -> CanSetResult {
+                             const nsString& aPlatform, ContentParent* aSource)
+    -> CanSetResult {
   if (!IsTop()) {
     return CanSetResult::Deny;
   }
@@ -3254,8 +3291,8 @@ bool BrowsingContext::CanSet(FieldIndex<IDX_EmbedderElementType>,
 }
 
 auto BrowsingContext::CanSet(FieldIndex<IDX_CurrentInnerWindowId>,
-                             const uint64_t& aValue,
-                             ContentParent* aSource) -> CanSetResult {
+                             const uint64_t& aValue, ContentParent* aSource)
+    -> CanSetResult {
   // Generally allow clearing this. We may want to be more precise about this
   // check in the future.
   if (aValue == 0) {
@@ -3796,9 +3833,8 @@ void BrowsingContext::HistoryGo(
     RefPtr<CanonicalBrowsingContext> self = Canonical();
     aResolver(self->HistoryGo(
         aOffset, aHistoryEpoch, aRequireUserInteraction, aUserActivation,
-        Canonical()->GetContentParent()
-            ? Some(Canonical()->GetContentParent()->ChildID())
-            : Nothing()));
+        self->GetContentParent() ? Some(self->GetContentParent()->ChildID())
+                                 : Nothing()));
   }
 }
 
@@ -3816,17 +3852,16 @@ bool BrowsingContext::ShouldUpdateSessionHistory(uint32_t aLoadType) {
           (IsForceReloadType(aLoadType) && IsSubframe()));
 }
 
-nsresult BrowsingContext::CheckLocationChangeRateLimit(CallerType aCallerType) {
+nsresult BrowsingContext::CheckNavigationRateLimit(CallerType aCallerType) {
   // We only rate limit non system callers
   if (aCallerType == CallerType::System) {
     return NS_OK;
   }
 
   // Fetch rate limiting preferences
-  uint32_t limitCount =
-      StaticPrefs::dom_navigation_locationChangeRateLimit_count();
+  uint32_t limitCount = StaticPrefs::dom_navigation_navigationRateLimit_count();
   uint32_t timeSpanSeconds =
-      StaticPrefs::dom_navigation_locationChangeRateLimit_timespan();
+      StaticPrefs::dom_navigation_navigationRateLimit_timespan();
 
   // Disable throttling if either of the preferences is set to 0.
   if (limitCount == 0 || timeSpanSeconds == 0) {
@@ -3835,15 +3870,15 @@ nsresult BrowsingContext::CheckLocationChangeRateLimit(CallerType aCallerType) {
 
   TimeDuration throttleSpan = TimeDuration::FromSeconds(timeSpanSeconds);
 
-  if (mLocationChangeRateLimitSpanStart.IsNull() ||
-      ((TimeStamp::Now() - mLocationChangeRateLimitSpanStart) > throttleSpan)) {
+  if (mNavigationRateLimitSpanStart.IsNull() ||
+      ((TimeStamp::Now() - mNavigationRateLimitSpanStart) > throttleSpan)) {
     // Initial call or timespan exceeded, reset counter and timespan.
-    mLocationChangeRateLimitSpanStart = TimeStamp::Now();
-    mLocationChangeRateLimitCount = 1;
+    mNavigationRateLimitSpanStart = TimeStamp::Now();
+    mNavigationRateLimitCount = 1;
     return NS_OK;
   }
 
-  if (mLocationChangeRateLimitCount >= limitCount) {
+  if (mNavigationRateLimitCount >= limitCount) {
     // Rate limit reached
 
     Document* doc = GetDocument();
@@ -3856,14 +3891,14 @@ nsresult BrowsingContext::CheckLocationChangeRateLimit(CallerType aCallerType) {
     return NS_ERROR_DOM_SECURITY_ERR;
   }
 
-  mLocationChangeRateLimitCount++;
+  mNavigationRateLimitCount++;
   return NS_OK;
 }
 
-void BrowsingContext::ResetLocationChangeRateLimit() {
+void BrowsingContext::ResetNavigationRateLimit() {
   // Resetting the timestamp object will cause the check function to
   // init again and reset the rate limit.
-  mLocationChangeRateLimitSpanStart = TimeStamp();
+  mNavigationRateLimitSpanStart = TimeStamp();
 }
 
 void BrowsingContext::LocationCreated(dom::Location* aLocation) {

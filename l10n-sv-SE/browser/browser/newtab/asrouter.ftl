@@ -246,6 +246,9 @@ device-migration-fxa-spotlight-older-device-primary-button = Skapa ett konto
 device-migration-fxa-spotlight-getting-new-device-header-2 = Tänker du skaffa en ny enhet i framtiden?
 device-migration-fxa-spotlight-getting-new-device-body-2 = Följ några enkla steg för att ta med dig dina bokmärken, historik och lösenord när du kommer igång med en ny enhet.
 device-migration-fxa-spotlight-getting-new-device-primary-button = Hur man säkerhetskopierar mina data
+device-migration-fxa-spotlight-sync-header = Surfa utan att missa något viktigt
+device-migration-fxa-spotlight-sync-body = Synkronisera all din viktiga information med kryptering — som bokmärken och lösenord. Du kan hämta allt var som helst där du använder { -brand-product-name }.
+device-migration-fxa-spotlight-sync-primary-button = Kom igång
 
 ## Set as Default PDF Reader Infobar
 
@@ -282,3 +285,61 @@ tail-fox-spotlight-title = Håll oönskade spårare borta
 tail-fox-spotlight-subtitle = Säg adjö till irriterande annonsspårare och njut av en säkrare, snabb internetupplevelse.
 tail-fox-spotlight-primary-button = Öppna mina länkar med { -brand-short-name }
 tail-fox-spotlight-secondary-button = Inte nu
+
+## Root Certificate Succession Infobar
+
+root-certificate-succession-infobar-january-message = <strong>Äldre versioner av { -brand-short-name } kan börja få problem den 14 januari 2025.</strong>
+root-certificate-succession-infobar-march-message = <strong>Uppdatera för att fortsätta använda { -brand-short-name } efter den 14 mars 2025.</strong>
+root-certificate-succession-infobar-link = Varför behöver jag uppdatera?
+root-certificate-succession-infobar-primary-button =
+    .label = Uppdatera nu
+    .accesskey = U
+root-certificate-succession-infobar-secondary-button =
+    .label = Senare
+    .accesskey = S
+
+## Root Certificate Succession Windows Background Notification
+
+root-certificate-windows-background-notification-title = Du missade en viktig uppdatering av { -brand-short-name }
+root-certificate-windows-background-notification-subtitle = Delar av webbläsaren slutar snart fungera om du inte uppdaterar. Nu är det ett bra tillfälle att få våra senaste skydd och funktioner.
+root-certificate-windows-background-notification-learn-more-button = Läs mer
+root-certificate-windows-background-notification-update-button = Uppdatera { -brand-short-name }
+
+## FxA Menu Message variants
+
+fxa-menu-message-close-button =
+    .title = Stäng
+    .aria-label = Stäng
+fxa-menu-message-sign-up-button = Registrera dig
+fxa-menu-message-sync-devices-primary-text = Synka alla dina enheter
+fxa-menu-message-sync-devices-secondary-text = Få din information direkt — som bokmärken och lösenord — överallt där du använder { -brand-short-name }.
+fxa-menu-message-sync-devices-collapsed-text = Synka alla dina enheter
+fxa-menu-message-backup-data-primary-text = Säkerhetskopiera din webbläsardata
+fxa-menu-message-backup-data-secondary-text = Skydda automatiskt bokmärken, lösenord och annan information på alla dina enheter.
+fxa-menu-message-backup-data-collapsed-text = Säkerhetskopiera webbläsardata
+fxa-menu-message-backup-sync-primary-text = Håll din data säker och synkroniserad
+fxa-menu-message-backup-sync-secondary-text = Synkronisering säkerhetskopierar det mesta av din data så att du kan komma åt den överallt där du använder { -brand-short-name }.
+fxa-menu-message-backup-sync-collapsed-text = Synka och säkerhetskopiera data
+fxa-menu-message-mobile-primary-text = Skicka flikar till din telefon
+fxa-menu-message-mobile-secondary-text = Fortsätt där du slutade direkt när du synkroniserar dina flikar med en mobil enhet.
+fxa-menu-message-mobile-collapsed-text = Synka med din telefon
+
+## Multi-CTA Fox Doodle Spotlight
+
+multi-cta-fox-doodle-title = Välkommen tillbaka
+multi-cta-fox-doodle-set-default-checkbox = Gör { -brand-short-name } till standard
+multi-cta-fox-doodle-pin-startmenu-checkbox = Fäst { -brand-short-name } i startmenyn
+multi-cta-fox-doodle-pin-checkbox =
+    { PLATFORM() ->
+        [macos] Behåll { -brand-short-name } i Dock
+       *[other] Fäst { -brand-short-name } i aktivitetsfältet
+    }
+multi-cta-fox-doodle-start-browsing-primary-button-label = Börja surfa
+multi-cta-fox-doodle-main-browser-primary-button-label = Gör { -brand-short-name } till min huvudwebbläsare
+multi-cta-fox-doodle-quick-reminder-subtitle = Här är en snabb påminnelse om att du kan hålla din integritetsfokuserade favoritwebbläsare bara ett klick bort.
+multi-cta-fox-doodle-privacy-focused-subtitle =
+    { PLATFORM() ->
+        [macos] Håll din favoritwebbläsare med fokus på integritet bara ett klick bort. Ställ in { -brand-short-name } som din standardwebbläsare för att öppna länkar och behåll den i Dock.
+       *[other] Håll din favoritwebbläsare med fokus på integritet bara ett klick bort. Ställ in { -brand-short-name } som din standardwebbläsare för att öppna länkar och fäst den i aktivitetsfältet.
+    }
+multi-cta-fox-doodle-msix-privacy-focused-subtitle = Håll din favoritwebbläsare med fokus på integritet bara ett klick bort. Ställ in { -brand-short-name } som din standardwebbläsare för att öppna länkar och fäst den i aktivitetsfältet och startmenyn.

@@ -30,4 +30,13 @@ webext-perms-description-sessions = Accéder aux onglets récemment fermés
 webext-perms-description-tabs = Accéder aux onglets du navigateur
 webext-perms-description-tabHide = Afficher ou masquer les onglets du navigateur
 webext-perms-description-topSites = Accéder à l’historique de navigation
+webext-perms-description-trialML = Télécharger et exécuter des modèles d’IA sur votre appareil
+webext-perms-description-userScripts = Autoriser les scripts tiers non vérifiés à accéder à vos données
 webext-perms-description-webNavigation = Accéder à l’activité du navigateur pendant la navigation
+
+## The userScripts permission includes an additional explanation that is
+## displayed prominently near the usual permission description.
+
+webext-perms-extra-warning-userScripts-long = Les scripts non vérifiés peuvent présenter des risques pour la sécurité et la confidentialité, comme l’exécution de code dangereux ou le pistage de l’activité sur un site web. N’exécutez que des scripts provenant d’extensions ou de sources auxquelles vous faites confiance.
+# A shorter warning is displayed in UI surfaces with little room, such as a permission prompt.
+webext-perms-extra-warning-userScripts-short = Les scripts non vérifiés peuvent poser des problèmes de sécurité et de confidentialité. N’exécutez que des scripts provenant d’extensions ou de sources auxquelles vous faites confiance.

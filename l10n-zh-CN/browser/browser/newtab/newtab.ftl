@@ -8,11 +8,18 @@
 newtab-page-title = 新标签页
 newtab-settings-button =
     .title = 定制您的新标签页
+newtab-personalize-settings-icon-label =
+    .title = 个性化新标签页
+    .aria-label = 设置
+newtab-settings-dialog-label =
+    .aria-label = 设置
 newtab-personalize-icon-label =
     .title = 个性化标签页
     .aria-label = 个性化标签页
 newtab-personalize-dialog-label =
     .aria-label = 个性化
+newtab-logo-and-wordmark =
+    .aria-label = { -brand-full-name }
 
 ## Search box component.
 
@@ -67,7 +74,7 @@ newtab-topsites-add-button = 添加
 
 ## Top Sites - Delete history confirmation dialog.
 
-newtab-confirm-delete-history-p1 = 确定删除此页面在您的历史记录中的所有记录？
+newtab-confirm-delete-history-p1 = 您确定要删除此页面在您的历史记录中的所有记录吗？
 # "This action" refers to deleting a page from history.
 newtab-confirm-delete-history-p2 = 此操作无法撤销。
 
@@ -109,6 +116,13 @@ newtab-menu-save-to-pocket = 保存到 { -pocket-brand-name }
 newtab-menu-delete-pocket = 从 { -pocket-brand-name } 删除
 newtab-menu-archive-pocket = 在 { -pocket-brand-name } 中存档
 newtab-menu-show-privacy-info = 我们的赞助商＆您的隐私
+newtab-menu-about-fakespot = 关于 { -fakespot-brand-name }
+# Context menu option to personalize New Tab recommended stories by blocking a section of stories,
+# e.g. "Sports". "Block" is a verb here.
+newtab-menu-section-block = 屏蔽
+# "Follow", "unfollow", and "following" are social media terms that refer to subscribing to or unsubscribing from a section of stories.
+# e.g. Following the travel section of stories.
+newtab-menu-section-unfollow = 取消关注主题
 
 ## Message displayed in a modal window to explain privacy and provide context for sponsored content.
 
@@ -229,6 +243,8 @@ newtab-pocket-cta-button = 获取 { -pocket-brand-name }
 newtab-pocket-cta-text = 将您喜爱的故事保存到 { -pocket-brand-name }，用精彩的读物为思想注入活力。
 newtab-pocket-pocket-firefox-family = { -pocket-brand-name } 是 { -brand-product-name } 系列产品的一部分
 # A save to Pocket button that shows over the card thumbnail on hover.
+newtab-pocket-image =
+    .aria-label = { -pocket-brand-name }
 newtab-pocket-save = 保存
 newtab-pocket-saved = 已保存
 
@@ -240,6 +256,9 @@ newtab-pocket-thumbs-up-tooltip =
 # Clicking the thumbs down button for this story informs us that the user does not feel like the story is interesting for them
 newtab-pocket-thumbs-down-tooltip =
     .title = 不感兴趣
+# Used to show the user a message upon clicking the thumbs up or down buttons
+newtab-toast-thumbs-up-or-down2 =
+    .message = 谢谢，您的反馈有助于我们改进为您提供的推送。
 newtab-toast-thumbs-up-or-down = 谢谢，您的反馈有助于我们改进为您提供的推送。
 newtab-toast-dismiss-button =
     .title = 知道了
@@ -292,6 +311,12 @@ newtab-custom-settings = 管理更多设置
 
 newtab-wallpaper-title = 壁纸
 newtab-wallpaper-reset = 重置为默认设置
+newtab-wallpaper-upload-image = 上传图像
+newtab-wallpaper-custom-color = 选择颜色
+# Variables
+#   $file_size (number) - The number of the maximum image file size (in MB) that may be uploaded
+newtab-wallpaper-error-max-file-size = 图像超出文件大小上限（{ $file_size }MB），请尝试上传较小的文件。
+newtab-wallpaper-error-file-type = 无法上传文件，请尝试使用其他文件类型。
 newtab-wallpaper-light-red-panda = 小熊猫
 newtab-wallpaper-light-mountain = 白山山脉
 newtab-wallpaper-light-sky = 漂浮着粉紫色云的天空
@@ -304,6 +329,8 @@ newtab-wallpaper-dark-panda = 躲在森林里的小熊猫
 newtab-wallpaper-dark-sky = 夜空下的城市景观
 newtab-wallpaper-dark-mountain = 山地景观
 newtab-wallpaper-dark-city = 紫色城市景观
+newtab-wallpaper-dark-fox-anniversary = 树林旁边人行道上的狐狸
+newtab-wallpaper-light-fox-anniversary = 迷蒙山景中草地上的狐狸
 
 ## Solid Colors
 
@@ -333,8 +360,12 @@ newtab-wallpaper-abstract-purple = 紫色形状
 newtab-wallpaper-abstract-orange = 橙色形状
 newtab-wallpaper-gradient-orange = 橙粉渐变
 newtab-wallpaper-abstract-blue-purple = 蓝紫渐变
+newtab-wallpaper-abstract-white-curves = 白色带阴影曲线
+newtab-wallpaper-abstract-purple-green = 紫绿光渐变
+newtab-wallpaper-abstract-blue-purple-waves = 蓝色和紫色的波浪形状
+newtab-wallpaper-abstract-black-waves = 黑色波浪形状
 
-## Photographs
+## Celestial
 
 newtab-wallpaper-category-title-photographs = 摄影
 newtab-wallpaper-beach-at-sunrise = 海滩日出
@@ -343,10 +374,16 @@ newtab-wallpaper-storm-sky = 电闪雷鸣
 newtab-wallpaper-sky-with-pink-clouds = 飘着粉色云朵的天空
 newtab-wallpaper-red-panda-yawns-in-a-tree = 在树上打哈欠的小熊猫
 newtab-wallpaper-white-mountains = 皑白山脉
+newtab-wallpaper-hot-air-balloons = 白天各种颜色的热气球
+newtab-wallpaper-starry-canyon = 蓝色星空
+newtab-wallpaper-suspension-bridge = 白天时的灰色全悬索桥照片
+newtab-wallpaper-sand-dunes = 白色沙丘
+newtab-wallpaper-palm-trees = 魔术光下的椰子树侧影
+newtab-wallpaper-forest-trees = 浓雾掩映的树木
 # Variables
 #   $author_string (String) - The name of the creator of the photo.
 #   $webpage_string (String) - The name of the webpage where the photo is located.
-newtab-wallpaper-attribution = 照片由 <a data-l10n-name="name-link">{ $author_string }</a> 在 <a data-l10n-name="webpage-link">{ $webpage_string }</a> 上发布
+newtab-wallpaper-attribution = 照片由 <a data-l10n-name="name-link">{ $author_string }</a> 发布于 <a data-l10n-name="webpage-link">{ $webpage_string }</a>
 newtab-wallpaper-feature-highlight-header = 试用新色彩
 newtab-wallpaper-feature-highlight-content = 选张壁纸，给新标签页加点新鲜感。
 newtab-wallpaper-feature-highlight-button = 知道了
@@ -358,6 +395,19 @@ feature-highlight-wallpaper =
     .title = { -newtab-wallpaper-feature-highlight-header }
     .aria-label = { -newtab-wallpaper-feature-highlight-content }
 
+## Celestial
+
+# “Celestial” referring to astronomy; positioned in or relating to the sky,
+# or outer space as observed in astronomy.
+# Not to be confused with religious definition of the word.
+newtab-wallpaper-category-title-celestial = 天体
+newtab-wallpaper-celestial-lunar-eclipse = 月食
+newtab-wallpaper-celestial-earth-night = 从近地轨道拍摄的夜晚照片
+newtab-wallpaper-celestial-starry-sky = 星空
+newtab-wallpaper-celestial-eclipse-time-lapse = 月食延时照片
+newtab-wallpaper-celestial-black-hole = 黑洞星空图
+newtab-wallpaper-celestial-river = 河流卫星图
+
 ## New Tab Weather
 
 # Variables:
@@ -368,6 +418,9 @@ newtab-weather-see-forecast =
 #   $provider (string) - Service provider for weather data
 newtab-weather-sponsored = { $provider } ∙ 赞助
 newtab-weather-menu-change-location = 更改位置
+newtab-weather-change-location-search-input-placeholder =
+    .placeholder = 搜索位置
+    .aria-label = 搜索位置
 newtab-weather-change-location-search-input = 搜索位置
 newtab-weather-menu-weather-display = 天气信息显示方式
 # Display options are:
@@ -426,3 +479,45 @@ newtab-topic-selection-button-maybe-later = 以后再说
 newtab-topic-selection-privacy-link = 了解我们保护和管理数据的方式
 newtab-topic-selection-button-update-interests = 更新您感兴趣的主题
 newtab-topic-selection-button-pick-interests = 选择您感兴趣的主题
+
+## Content Feed Sections
+## "Follow", "unfollow", and "following" are social media terms that refer to subscribing to or unsubscribing from a section of stories.
+## e.g. Following the travel section of stories.
+
+newtab-section-follow-button = 关注
+newtab-section-following-button = 正在关注
+newtab-section-unfollow-button = 取消关注
+
+## Button to block/unblock listed topics
+## "Block", "unblocked", and "blocked" are social media terms that refer to hiding a section of stories.
+## e.g. Blocked the politics section of stories.
+
+newtab-section-block-button = 屏蔽
+newtab-section-blocked-button = 已屏蔽
+newtab-section-unblock-button = 取消屏蔽
+
+## Confirmation modal for blocking a section
+
+newtab-section-confirm-block-section-p1 = 确定要屏蔽此部分吗？
+newtab-section-confirm-block-section-p2 = 将不再向您推送被屏蔽的部分。
+newtab-section-block-section-button = 屏蔽此部分
+newtab-section-cancel-button = 暂时不要
+newtab-section-confirm-block-topic-p1 = 确定要屏蔽此主题吗？
+newtab-section-confirm-block-topic-p2 = 将不再向您推送被屏蔽的主题。
+# Variables:
+#   $topic (string) - Name of topic that user is blocking
+newtab-section-block-topic-button = 屏蔽“{ $topic }”
+
+## Panel in the Customize menu section to manage followed and blocked topics
+
+newtab-section-mangage-topics-title = 主题
+newtab-section-manage-topics-button-v2 =
+    .label = 管理主题
+newtab-section-mangage-topics-followed-topics = 已关注
+newtab-section-mangage-topics-button =
+    .label = 关注和屏蔽的主题
+newtab-section-mangage-topics-followed-topics-subtitle = 关注的主题
+newtab-section-mangage-topics-followed-topics-empty-state = 没有已关注的主题。
+newtab-section-mangage-topics-blocked-topics = 已屏蔽
+newtab-section-mangage-topics-blocked-topics-subtitle = 屏蔽的主题
+newtab-section-mangage-topics-blocked-topics-empty-state = 没有已屏蔽的主题

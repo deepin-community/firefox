@@ -385,8 +385,7 @@ nsresult NS_NewChannel(nsIChannel** outChannel, nsIURI* aUri,
                        nsIInterfaceRequestor* aCallbacks /* = nullptr */,
                        nsLoadFlags aLoadFlags /* = nsIRequest::LOAD_NORMAL */,
                        nsIIOService* aIoService /* = nullptr */,
-                       uint32_t aSandboxFlags /* = 0 */,
-                       bool aSkipCheckForBrokenURLOrZeroSized /* = false */) {
+                       uint32_t aSandboxFlags /* = 0 */) {
   return NS_NewChannelInternal(
       outChannel, aUri,
       nullptr,  // aLoadingNode,
@@ -394,8 +393,7 @@ nsresult NS_NewChannel(nsIChannel** outChannel, nsIURI* aUri,
       nullptr,  // aTriggeringPrincipal
       Maybe<ClientInfo>(), Maybe<ServiceWorkerDescriptor>(), aSecurityFlags,
       aContentPolicyType, aCookieJarSettings, aPerformanceStorage, aLoadGroup,
-      aCallbacks, aLoadFlags, aIoService, aSandboxFlags,
-      aSkipCheckForBrokenURLOrZeroSized);
+      aCallbacks, aLoadFlags, aIoService, aSandboxFlags);
 }
 
 nsresult NS_NewChannel(nsIChannel** outChannel, nsIURI* aUri,
@@ -410,22 +408,21 @@ nsresult NS_NewChannel(nsIChannel** outChannel, nsIURI* aUri,
                        nsIInterfaceRequestor* aCallbacks /* = nullptr */,
                        nsLoadFlags aLoadFlags /* = nsIRequest::LOAD_NORMAL */,
                        nsIIOService* aIoService /* = nullptr */,
-                       uint32_t aSandboxFlags /* = 0 */,
-                       bool aSkipCheckForBrokenURLOrZeroSized /* = false */) {
+                       uint32_t aSandboxFlags /* = 0 */) {
   AssertLoadingPrincipalAndClientInfoMatch(
       aLoadingPrincipal, aLoadingClientInfo, aContentPolicyType);
 
   Maybe<ClientInfo> loadingClientInfo;
   loadingClientInfo.emplace(aLoadingClientInfo);
 
-  return NS_NewChannelInternal(
-      outChannel, aUri,
-      nullptr,  // aLoadingNode,
-      aLoadingPrincipal,
-      nullptr,  // aTriggeringPrincipal
-      loadingClientInfo, aController, aSecurityFlags, aContentPolicyType,
-      aCookieJarSettings, aPerformanceStorage, aLoadGroup, aCallbacks,
-      aLoadFlags, aIoService, aSandboxFlags, aSkipCheckForBrokenURLOrZeroSized);
+  return NS_NewChannelInternal(outChannel, aUri,
+                               nullptr,  // aLoadingNode,
+                               aLoadingPrincipal,
+                               nullptr,  // aTriggeringPrincipal
+                               loadingClientInfo, aController, aSecurityFlags,
+                               aContentPolicyType, aCookieJarSettings,
+                               aPerformanceStorage, aLoadGroup, aCallbacks,
+                               aLoadFlags, aIoService, aSandboxFlags);
 }
 
 nsresult NS_NewChannelInternal(
@@ -439,8 +436,8 @@ nsresult NS_NewChannelInternal(
     nsILoadGroup* aLoadGroup /* = nullptr */,
     nsIInterfaceRequestor* aCallbacks /* = nullptr */,
     nsLoadFlags aLoadFlags /* = nsIRequest::LOAD_NORMAL */,
-    nsIIOService* aIoService /* = nullptr */, uint32_t aSandboxFlags /* = 0 */,
-    bool aSkipCheckForBrokenURLOrZeroSized /* = false */) {
+    nsIIOService* aIoService /* = nullptr */,
+    uint32_t aSandboxFlags /* = 0 */) {
   NS_ENSURE_ARG_POINTER(outChannel);
 
   nsCOMPtr<nsIIOService> grip;
@@ -451,8 +448,7 @@ nsresult NS_NewChannelInternal(
   rv = aIoService->NewChannelFromURIWithClientAndController(
       aUri, aLoadingNode, aLoadingPrincipal, aTriggeringPrincipal,
       aLoadingClientInfo, aController, aSecurityFlags, aContentPolicyType,
-      aSandboxFlags, aSkipCheckForBrokenURLOrZeroSized,
-      getter_AddRefs(channel));
+      aSandboxFlags, getter_AddRefs(channel));
   if (NS_FAILED(rv)) {
     return rv;
   }
@@ -574,8 +570,7 @@ nsresult NS_NewChannel(nsIChannel** outChannel, nsIURI* aUri,
                        nsIInterfaceRequestor* aCallbacks /* = nullptr */,
                        nsLoadFlags aLoadFlags /* = nsIRequest::LOAD_NORMAL */,
                        nsIIOService* aIoService /* = nullptr */,
-                       uint32_t aSandboxFlags /* = 0 */,
-                       bool aSkipCheckForBrokenURLOrZeroSized /* = false */) {
+                       uint32_t aSandboxFlags /* = 0 */) {
   NS_ASSERTION(aLoadingNode, "Can not create channel without a loading Node!");
   return NS_NewChannelInternal(
       outChannel, aUri, aLoadingNode, aLoadingNode->NodePrincipal(),
@@ -583,7 +578,7 @@ nsresult NS_NewChannel(nsIChannel** outChannel, nsIURI* aUri,
       Maybe<ClientInfo>(), Maybe<ServiceWorkerDescriptor>(), aSecurityFlags,
       aContentPolicyType, aLoadingNode->OwnerDoc()->CookieJarSettings(),
       aPerformanceStorage, aLoadGroup, aCallbacks, aLoadFlags, aIoService,
-      aSandboxFlags, aSkipCheckForBrokenURLOrZeroSized);
+      aSandboxFlags);
 }
 
 nsresult NS_GetIsDocumentChannel(nsIChannel* aChannel, bool* aIsDocument) {
@@ -614,7 +609,9 @@ nsresult NS_GetIsDocumentChannel(nsIChannel* aChannel, bool* aIsDocument) {
   if (NS_FAILED(rv)) {
     return rv;
   }
-  if (nsContentUtils::HtmlObjectContentTypeForMIMEType(mimeType) ==
+  nsCOMPtr<nsILoadInfo> loadInfo = aChannel->LoadInfo();
+  if (nsContentUtils::HtmlObjectContentTypeForMIMEType(
+          mimeType, loadInfo->GetSandboxFlags()) ==
       nsIObjectLoadingContent::TYPE_DOCUMENT) {
     *aIsDocument = true;
     return NS_OK;
@@ -1806,29 +1803,13 @@ class TlsAutoIncrement {
   T& mVar;
 };
 
-static nsTHashSet<nsCString> sSimpleURISchemes;
-static StaticRWLock sSchemeLock;
-
-namespace mozilla::net {
-
-void ParseSimpleURISchemes(const nsACString& schemeList) {
-  StaticAutoWriteLock lock(sSchemeLock);
-
-  sSimpleURISchemes.Clear();
-  for (const auto& scheme : schemeList.Split(',')) {
-    nsAutoCString s(scheme);
-    s.CompressWhitespace();
-    if (!s.IsEmpty()) {
-      sSimpleURISchemes.Insert(s);
-    }
-  }
-}
-
-}  // namespace mozilla::net
-
 nsresult NS_NewURI(nsIURI** aURI, const nsACString& aSpec,
                    const char* aCharset /* = nullptr */,
                    nsIURI* aBaseURI /* = nullptr */) {
+  // we don't expect any other processes than: socket, content or parent
+  // to be able to create a URL
+  MOZ_ASSERT(XRE_IsSocketProcess() || XRE_IsContentProcess() ||
+             XRE_IsParentProcess());
   TlsAutoIncrement<decltype(gTlsURLRecursionCount)> inc(gTlsURLRecursionCount);
   if (inc.value() >= MAX_RECURSION_COUNT) {
     return NS_ERROR_MALFORMED_URI;
@@ -1862,6 +1843,14 @@ nsresult NS_NewURI(nsIURI** aURI, const nsACString& aSpec,
 
     rv = aBaseURI->GetScheme(scheme);
     if (NS_FAILED(rv)) return rv;
+  }
+
+  // If encoding is not UTF-8 and url is not special or url’s scheme is "ws" or
+  // "wss" then set encoding to UTF-8.
+  if (aCharset && !scheme.IsEmpty() &&
+      (scheme.EqualsLiteral("ws") || scheme.EqualsLiteral("wss") ||
+       !SchemeIsSpecial(scheme))) {
+    aCharset = "UTF-8";
   }
 
   if (scheme.EqualsLiteral("http") || scheme.EqualsLiteral("ws")) {
@@ -2014,11 +2003,14 @@ nsresult NS_NewURI(nsIURI** aURI, const nsACString& aSpec,
 #endif
 
   auto mustUseSimpleURI = [](const nsCString& scheme) -> bool {
-    if (!StaticPrefs::network_url_some_schemes_bypass_defaultURI_fallback()) {
+    if (!StaticPrefs::network_url_simple_uri_unknown_schemes_enabled()) {
       return false;
     }
-    StaticAutoReadLock lock(sSchemeLock);
-    return sSimpleURISchemes.Contains(scheme);
+
+    bool res = false;
+    RefPtr<nsIIOService> ios = do_GetIOService();
+    MOZ_ALWAYS_SUCCEEDS(ios->IsSimpleURIUnknownScheme(scheme, &res));
+    return res;
   };
 
   if (aBaseURI) {
@@ -2997,7 +2989,8 @@ static bool ShouldSecureUpgradeNoHSTS(nsIURI* aURI, nsILoadInfo* aLoadInfo) {
   }
   // 4.a Https-First
   if (nsHTTPSOnlyUtils::ShouldUpgradeHttpsFirstRequest(aURI, aLoadInfo)) {
-    if (aLoadInfo->GetWasSchemelessInput()) {
+    if (aLoadInfo->GetSchemelessInput() ==
+        nsILoadInfo::SchemelessInputTypeSchemeless) {
       aLoadInfo->SetHttpsUpgradeTelemetry(
           nsILoadInfo::HTTPS_FIRST_SCHEMELESS_UPGRADE);
     } else {
@@ -3047,6 +3040,14 @@ nsresult NS_ShouldSecureUpgrade(
   }
   // If no loadInfo exist there is nothing to upgrade here.
   if (!aLoadInfo) {
+    aShouldUpgrade = false;
+    return NS_OK;
+  }
+  // The loadInfo indicates no HTTPS upgrade.
+  bool skipHTTPSUpgrade = false;
+  Unused << aLoadInfo->GetSkipHTTPSUpgrade(&skipHTTPSUpgrade);
+  if (skipHTTPSUpgrade) {
+    aLoadInfo->SetHttpsUpgradeTelemetry(nsILoadInfo::SKIP_HTTPS_UPGRADE);
     aShouldUpgrade = false;
     return NS_OK;
   }
@@ -3468,20 +3469,18 @@ already_AddRefed<nsIURI> TryChangeProtocol(nsIURI* aURI,
     return nullptr;
   }
 
-  if (StaticPrefs::network_url_strict_protocol_setter()) {
-    nsAutoCString newScheme;
-    rv = clone->GetScheme(newScheme);
-    if (NS_FAILED(rv) || !net::IsSchemeChangePermitted(aURI, newScheme)) {
-      nsAutoCString url;
-      Unused << clone->GetSpec(url);
-      AutoTArray<nsString, 2> params;
-      params.AppendElement(NS_ConvertUTF8toUTF16(url));
-      params.AppendElement(NS_ConvertUTF8toUTF16(newScheme));
-      nsContentUtils::ReportToConsole(
-          nsIScriptError::warningFlag, "Strict Url Protocol Setter"_ns, nullptr,
-          nsContentUtils::eNECKO_PROPERTIES, "StrictUrlProtocolSetter", params);
-      return nullptr;
-    }
+  nsAutoCString newScheme;
+  rv = clone->GetScheme(newScheme);
+  if (NS_FAILED(rv) || !net::IsSchemeChangePermitted(aURI, newScheme)) {
+    nsAutoCString url;
+    Unused << clone->GetSpec(url);
+    AutoTArray<nsString, 2> params;
+    params.AppendElement(NS_ConvertUTF8toUTF16(url));
+    params.AppendElement(NS_ConvertUTF8toUTF16(newScheme));
+    nsContentUtils::ReportToConsole(
+        nsIScriptError::warningFlag, "Strict Url Protocol Setter"_ns, nullptr,
+        nsContentUtils::eNECKO_PROPERTIES, "StrictUrlProtocolSetter", params);
+    return nullptr;
   }
 
   nsAutoCString href;
@@ -4064,15 +4063,6 @@ void CheckForBrokenChromeURL(nsILoadInfo* aLoadInfo, nsIURI* aURI) {
     return;
   }
 
-  if (aLoadInfo) {
-    bool shouldSkipCheckForBrokenURLOrZeroSized;
-    MOZ_ALWAYS_SUCCEEDS(aLoadInfo->GetShouldSkipCheckForBrokenURLOrZeroSized(
-        &shouldSkipCheckForBrokenURLOrZeroSized));
-    if (shouldSkipCheckForBrokenURLOrZeroSized) {
-      return;
-    }
-  }
-
   nsCString spec;
   aURI->GetSpec(spec);
 
@@ -4122,6 +4112,36 @@ bool IsCoepCredentiallessEnabled(bool aIsOriginTrialCoepCredentiallessEnabled) {
   return StaticPrefs::
              browser_tabs_remote_coep_credentialless_DoNotUseDirectly() ||
          aIsOriginTrialCoepCredentiallessEnabled;
+}
+
+nsresult AddExtraHeaders(nsIHttpChannel* aHttpChannel,
+                         const nsACString& aExtraHeaders,
+                         bool aMerge /* = true */) {
+  nsresult rv;
+  nsAutoCString oneHeader;
+  nsAutoCString headerName;
+  nsAutoCString headerValue;
+  int32_t crlf = 0;
+  int32_t colon = 0;
+  const char* kWhitespace = "\b\t\r\n ";
+  nsAutoCString extraHeaders(aExtraHeaders);
+  while (true) {
+    crlf = extraHeaders.Find("\r\n");
+    if (crlf == -1) break;
+    extraHeaders.Mid(oneHeader, 0, crlf);
+    extraHeaders.Cut(0, crlf + 2);
+    colon = oneHeader.Find(":");
+    if (colon == -1) break;  // Should have a colon.
+    oneHeader.Left(headerName, colon);
+    colon++;
+    oneHeader.Mid(headerValue, colon, oneHeader.Length() - colon);
+    headerName.Trim(kWhitespace);
+    headerValue.Trim(kWhitespace);
+    // Add the header (merging if required).
+    rv = aHttpChannel->SetRequestHeader(headerName, headerValue, aMerge);
+    NS_ENSURE_SUCCESS(rv, rv);
+  }
+  return NS_OK;
 }
 
 }  // namespace net

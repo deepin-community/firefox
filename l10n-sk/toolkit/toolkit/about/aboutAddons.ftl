@@ -298,6 +298,14 @@ find-more-themes = Nájdite ďalšie témy vzhľadu
 # used for screen readers.
 addon-options-button =
     .aria-label = Ďalšie možnosti
+# Explanatory introduction to the list of recommended add-ons. The action word
+# ("recommends") in the final sentence is a link to external documentation.
+discopane-intro2 =
+    Rozšírenia a témy vzhľadu vám umožňujú prispôsobiť { -brand-product-name }. Môžu zlepšiť súkromie,
+    zvýšiť produktivitu, vylepšiť médiá, zmeniť vzhľad { -brand-product-name(case: "gen") } a
+    mnoho ďalšieho. Tieto malé softvérové programy sú často vyvíjaje tretími stranami. Tu je
+    výber { -brand-product-name(case: "ins") } <a data-l10n-name="learn-more-trigger">odporúčaných</a> doplnkov
+    pre výnimočné zabezpečenie, výkon a funkčnosť.
 
 ## Add-on actions
 
@@ -385,6 +393,10 @@ addon-detail-group-label-updates =
     .aria-label = { addon-detail-updates-label }
 # This is the tooltip text for the private browsing badge in about:addons. The
 # badge is the private browsing icon included next to the extension's name.
+addon-badge-private-browsing-allowed3 =
+    .title = Povolené v súkromných oknách
+# This is the tooltip text for the private browsing badge in about:addons. The
+# badge is the private browsing icon included next to the extension's name.
 addon-badge-private-browsing-allowed2 =
     .title = Povolené v súkromných oknách
     .aria-label = { addon-badge-private-browsing-allowed2.title }
@@ -424,6 +436,14 @@ addon-badge-line3 =
 addon-badge-verified2 =
     .title = Toto rozšírenie bolo skontrolované a spĺňa naše štandardy bezpečnosti a výkonu
     .aria-label = { addon-badge-verified2.title }
+addon-badge-recommended3 =
+    .title = { -brand-product-name } odporúča len rozšírenia, ktoré spĺňajú naše štandardy pre bezpečnosť a výkon.
+# We hard code "Mozilla" in the string below because the extensions are built
+# by Mozilla and we don't want forks to display "by Fork".
+addon-badge-line4 =
+    .title = Oficiálne rozšírenie od autorov Firefoxu. Spĺňa bezpečnostné a výkonové štandardy.
+addon-badge-verified3 =
+    .title = Toto rozšírenie bolo skontrolované a spĺňa naše štandardy bezpečnosti a výkonu
 
 ##
 
@@ -431,6 +451,7 @@ available-updates-heading = K dispozícii je aktualizácia
 recent-updates-heading = Naposledy aktualizované
 release-notes-loading = Načítava sa…
 release-notes-error = Pri načítaní poznámok k vydaniu sa vyskytla chyba.
+addon-permissions-empty2 = Toto rozšírenie nevyžaduje žiadne povolenia.
 addon-permissions-empty = Toto rozšírenie nevyžaduje žiadne povolenia
 addon-permissions-required = Nevyhnutné povolenia pre splnenie základných funkcií:
 addon-permissions-optional = Voliteľné povolenia pre splnenie prídavných funkcií:
@@ -480,10 +501,24 @@ details-notification-unsigned-and-disabled-link = Ďalšie informácie
 details-notification-unsigned = Doplnok { $name } nemohol byť overený pre použitie v aplikácii { -brand-short-name }. Pokračujte opatrne.
 details-notification-unsigned2 =
     .message = Doplnok { $name } nemohol byť overený pre použitie v aplikácii { -brand-short-name }. Pokračujte opatrne.
+details-notification-hard-blocked-extension =
+    .message = Toto rozšírenie je zablokované z dôvodu porušenia pravidiel Mozilly a bolo preto zakázané.
+details-notification-hard-blocked-other =
+    .message = Tento doplnok je zablokovaný z dôvodu porušenia pravidiel Mozilly a bol preto zakázaný.
 details-notification-unsigned-link = Ďalšie informácie
 details-notification-blocked = Doplnok { $name } bol zablokovaný kvôli problémom so stabilitou alebo bezpečnosťou.
 details-notification-blocked2 =
     .message = Doplnok { $name } bol zablokovaný kvôli problémom so stabilitou alebo bezpečnosťou.
+details-notification-blocked-link2 = Zobraziť podrobnosti
+details-notification-soft-blocked-extension-disabled =
+    .message = Toto rozšírenie je obmedzené z dôvodu porušovania pravidiel Mozilly a bolo preto zakázané. Môžete ho povoliť, ale môže to byť riskantné.
+details-notification-soft-blocked-extension-enabled =
+    .message = Toto rozšírenie porušuje pravidlá Mozilly. Jeho používanie môže byť riskantné.
+details-notification-soft-blocked-other-disabled =
+    .message = Tento doplnok je obmedzený z dôvodu porušovania pravidiel Mozilly a bol preto zakázaný. Môžete ho povoliť, ale môže to byť riskantné.
+details-notification-soft-blocked-other-enabled =
+    .message = Tento doplnok porušuje pravidlá Mozilly. Jeho používanie môže byť riskantné.
+details-notification-softblocked-link2 = Zobraziť podrobnosti
 details-notification-blocked-link = Ďalšie informácie
 details-notification-softblocked = Doplnok { $name } zapríčiňuje problémy so stabilitou alebo bezpečnosťou.
 details-notification-softblocked2 =

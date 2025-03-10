@@ -7,27 +7,38 @@
 
 autofill-manage-addresses-title = భద్రపరిచిన చిరునామాలు
 autofill-manage-addresses-list-header = చిరునామాలు
-
 autofill-manage-credit-cards-title = భద్రపరిచిన క్రెడిట్ కార్డులు
 autofill-manage-credit-cards-list-header = క్రెడిట్ కార్డులు
-
 autofill-manage-dialog =
     .style = min-width: 560px
 autofill-manage-remove-button = తీసివేయి
 autofill-manage-add-button = చేర్చు…
 autofill-manage-edit-button = సరిచేయు…
 
-##
+## The address capture doorhanger
 
-# The dialog title for creating addresses in browser preferences.
-autofill-add-new-address-title = కొత్త చిరునామా చేర్చండి
+address-capture-save-doorhanger-header = చిరునామా భద్రపరచాలా?
+address-capture-save-button =
+    .label = భద్రపరుచు
+    .accessKey = S
+address-capture-not-now-button =
+    .label = ఇప్పుడు కాదు
+    .accessKey = N
+address-capture-cancel-button =
+    .label = రద్దుచేయి
+    .accessKey = C
+address-capture-manage-address-button =
+    .label = చిరునామా అమరికలు
+address-capture-learn-more-button =
+    .label = ఇంకా తెలుసుకోండి
 # The dialog title for editing addresses in browser preferences.
 autofill-edit-address-title = చిరునామాను సవరించండి
-
 autofill-address-given-name = మొదటి పేరు
 autofill-address-additional-name = మధ్య పేరు
 autofill-address-family-name = చివరి పేరు
+autofill-address-name = పేరు
 autofill-address-organization = సంస్థ
+autofill-address-street-address = వీధి చిరునామా
 autofill-address-street = వీధి చిరునామా
 
 ## address-level-3 (Sublocality) names
@@ -60,18 +71,18 @@ autofill-address-zip = జిప్ కోడు
 
 ##
 
+# The dialog title for creating addresses in browser preferences.
+autofill-add-new-address-title = కొత్త చిరునామా చేర్చండి
 autofill-address-country = దేశం లేదా ప్రాంతం
+autofill-address-country-only = దేశం
 autofill-address-tel = ఫోను
 autofill-address-email = ఇమెయిల్
-
 autofill-cancel-button = రద్దుచేయి
 autofill-save-button = భద్రపరచు
-
 # The dialog title for creating credit cards in browser preferences.
 autofill-add-new-card-title = కొత్త క్రెడిట్ కార్డు చేర్చండి
 # The dialog title for editing credit cards in browser preferences.
 autofill-edit-card-title = క్రెడిట్ కార్డ్ను సవరించండి
-
 autofill-card-number = కార్డ్ సంఖ్య
 autofill-card-invalid-number = దయచేసి సరైన కార్డు నెంబరు ఇవ్వండి
 autofill-card-name-on-card = కార్డుపై పేరు

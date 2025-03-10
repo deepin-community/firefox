@@ -21,6 +21,9 @@ unified-extensions-manage-extensions =
 unified-extensions-item-open-menu =
     .aria-label = { $extensionName } ਲਈ ਮੇਨੂ ਖੋਲ੍ਹੋ
 unified-extensions-item-message-manage = ਇਕਸਟੈਨਸ਼ਨ ਦਾ ਇੰਤਜ਼ਾਮ
+# Variables:
+#   $extensionName (String) - Name of the user-enabled soft-blocked extension.
+unified-extensions-item-messagebar-softblocked = { $extensionName } Mozilla ਦੀਆਂ ਪਾਲਸੀਆਂ ਦਾ ਉਲੰਘਣ ਕਰਦੀ ਹੈ। ਇਸ ਨੂੰ ਵਰਤਣਾ ਖ਼ਤਰਨਾਕ ਹੋ ਸਕਦਾ ਹੈ।
 
 ## Extension's context menu
 
@@ -47,3 +50,36 @@ unified-extensions-mb-quarantined-domain-message-3 =
     .message = ਤੁਹਾਡੇ ਡਾਟੇ ਨੂੰ ਸੁਰੱਖਿਅਤ ਰੱਖਣ ਲਈ ਕੁਝ ਇਕਸਟੈਨਸ਼ਨਾਂ ਇਸ ਸਾਈਟ ਉੱਤੇ ਡਾਟਾ ਪੜ੍ਹ ਜਾਂ ਬਦਲ ਨਹੀਂ ਸਕਦੀਆਂ ਹਨ। ਇਕਸਟੈਨਸ਼ਨ ਦੀ ਸੈਟਿੰਗਾਂ ਨੂੰ { -vendor-short-name } ਵਲੋਂ ਪਾਬੰਦੀ ਲਾਈਆਂ ਸਾਈਟਾਂ ਉੱਤੇ ਮਨਜ਼ੂਰੀ ਦੇਣ ਲਈ ਵਰਤੋਂ।
 unified-extensions-mb-quarantined-domain-learn-more = ਹੋਰ ਜਾਣੋ
     .aria-label = ਹੋਰ ਜਾਣੋ: ਕੁਝ ਇਕਸਟੈਸ਼ਨਾਂ ਦੀ ਇਜਾਜ਼ਤ ਨਹੀਂ ਹੈ
+unified-extensions-mb-about-addons-link = ਇਕਸਟੈਨਸ਼ਨ ਸੈਟਿੰਗਾਂ ਉੱਤੇ ਜਾਓ
+# Variables:
+#   $extensionName (String) - Name of the extension disabled through a soft-block.
+unified-extensions-mb-blocklist-warning-single =
+    .heading = { $extensionName } ਅਸਮਰੱਥ ਹੈ
+    .message =
+        ਇਸ ਇਕਸਟੈਨਸ਼ਨ ਨੇ Mozilla ਦੀਆਂ ਪਾਲਸੀਆਂ ਦੀ ਉਲੰਘਣਾ ਕੀਤੀ ਹੈ ਅਤੇ ਇਸ ਨੂੰ ਅਸਮਰੱਥ ਕੀਤਾ ਗਿਆ ਹੈ।
+        ਤੁਸੀਂ ਇਸ ਨੂੰ ਸੈਟਿੰਗਾਂ ਵਿੱਚ ਸਮਰੱਥ ਕਰ ਸਕਦੇ ਹੋ, ਪਰ ਇਹ ਖ਼ਤਰਨਾਕ ਹੋ ਸਕਦਾ ਹੈ।
+# Variables:
+#   $extensionName (String) - Name of the extension disabled through a hard-block.
+unified-extensions-mb-blocklist-error-single =
+    .heading = { $extensionName } ਅਸਮਰੱਥ ਹੈ
+    .message = ਇਸ ਇਕਸਟੈਨਸ਼ਨ ਨੇ Mozilla ਦੀਆਂ ਪਾਲਸੀਆਂ ਦੀ ਉਲੰਘਣਾ ਕੀਤੀ ਹੈ ਅਤੇ ਇਸ ਨੂੰ ਅਸਮਰੱਥ ਕੀਤਾ ਗਿਆ ਹੈ।
+# Variables:
+#   $extensionsCount (Number) - Number of extensions disabled through both soft and hard-blocks (always going to be greater than 1)
+unified-extensions-mb-blocklist-warning-multiple =
+    .heading =
+        { $extensionsCount ->
+            [one] { $extensionsCount } ਇਕਸਟੈਨਸ਼ਨ ਅਸਮਰੱਥ ਹੈ
+           *[other] { $extensionsCount } ਇਕਸਟੈਨਸ਼ਨਾਂ ਅਸਮਰੱਥ ਹਨ
+        }
+    .message =
+        ਤੁਹਾਡੀਆਂ ਕੁਝ ਇਕਸਟੈਨਸ਼ਨਾਂ ਨੂੰ Mozilla ਦੀਆਂ ਪਾਲਸੀਆਂ ਦੀਆਂ ਉਲੰਘਣਾ ਕਰਨ ਕਰਕੇ ਅਸਮਰੱਥ ਕੀਤਾ ਹੈ।
+        ਤੁਸੀਂ ਇਹਨਾਂ ਨੂੰ ਸੈਟਿੰਗਾਂ ਵਿੱਚ ਸਮਰੱਥ ਕਰ ਸਕਦੇ ਹੋ, ਪਰ ਇਹ ਖ਼ਤਰਨਾਕ ਹੋ ਸਕਦਾ ਹੈ।
+# Variables:
+#   $extensionsCount (Number) - Number of extensions disabled through hard-blocks.
+unified-extensions-mb-blocklist-error-multiple =
+    .heading =
+        { $extensionsCount ->
+            [one] { $extensionsCount } ਇਕਸਟੈਨਸ਼ਨ ਅਸਮਰੱਥ ਹੈ
+           *[other] { $extensionsCount } ਇਕਸਟੈਨਸ਼ਨਾਂ ਅਸਮਰੱਥ ਹਨ
+        }
+    .message = ਤੁਹਾਡੀਆਂ ਕੁਝ ਇਕਸਟੈਨਸ਼ਨਾਂ ਨੂੰ Mozilla ਦੀਆਂ ਪਾਲਸੀਆਂ ਦੀਆਂ ਉਲੰਘਣਾ ਕਰਨ ਕਰਕੇ ਅਸਮਰੱਥ ਕੀਤਾ ਹੈ।

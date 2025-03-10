@@ -244,8 +244,17 @@ appmenu-customizetoolbar =
 appmenu-developer-tools-subheader = පිරික්සුම් මෙවලම්
 appmenu-developer-tools-extensions =
     .label = සංවර්ධකයින් සඳහා දිගු
+appmenuitem-report-broken-site =
+    .label = කැඩුණු අඩවි වාර්තා
 
 ## Panel for privacy and security products
 
+appmenuitem-monitor-title = { -monitor-brand-short-name }
 appmenuitem-monitor-description = දත්ත උල්ලංඝන ඇඟවීම් ලබන්න
+appmenuitem-relay-title = { -relay-brand-short-name }
 appmenuitem-relay-description = සැබෑ වි-තැපෑල හා දුරකථනය ආවරණයට
+appmenuitem-vpn-title = { -mozilla-vpn-brand-name }
+appmenuitem-vpn-description = ඔබගේ මාර්ගගත ක්‍රියාකාරකම් රැකගන්න
+
+## Profiles panel
+

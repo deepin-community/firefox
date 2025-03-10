@@ -223,7 +223,9 @@ mr2022-onboarding-set-default-subtitle = Utilize um navegador apoiado por uma or
 mr2022-onboarding-get-started-primary-subtitle = A nossa versão mais recente foi desenvolvida para si, tornando mais fácil do que nunca a navegação na Web. Ela está repleta de funcionalidades que achamos que vai adorar.
 mr2022-onboarding-get-started-primary-button-label = Configurar em segundos
 
-## MR2022 Import Settings screen strings
+## MR2022 Get Started screen strings.
+## These strings will be used on the welcome page
+## when Firefox is already set to default and pinned.
 
 mr2022-onboarding-import-header = Configuração ultra-rápida
 mr2022-onboarding-import-subtitle = Configure o { -brand-short-name } como preferir. Adicione os seus marcadores, palavras-passe e muito mais, do seu navegador antigo.
@@ -354,6 +356,11 @@ onboarding-mobile-download-security-and-privacy-subtitle = Quando está sincroni
 # Gratitude screen
 onboarding-gratitude-security-and-privacy-title = { -brand-short-name } protege-o
 onboarding-gratitude-security-and-privacy-subtitle = Obrigado por utilizar o { -brand-short-name }, apoiado pela Mozilla Foundation. Com o seu apoio, nós estamos a trabalhar para tornar a Internet segura e mais acessível para todos.
+# Sign up or Sign in screen
+onboarding-sign-up-title = Sincronize os seus dados entre dispositivos
+onboarding-sign-up-description = Registe uma conta e todas as suas informações importantes (palavras-passe, marcadores e muito mais) serão armazenadas em segurança e disponíveis quando iniciar sessão em qualquer dispositivo.
+onboarding-sign-up-button = Criar conta ou iniciar sessão
+onboarding-sign-up-secondary-button = Começar a navegar
 
 ## New user time and familiarity survey strings
 
@@ -373,3 +380,88 @@ onboarding-new-user-survey-familiarity-based-option-1 = Estou a começar
 onboarding-new-user-survey-familiarity-based-option-2 = Eu já o utilizei um pouco
 onboarding-new-user-survey-familiarity-based-option-3 = Eu estou muito familiarizado com o mesmo
 onboarding-new-user-survey-familiarity-based-option-4 = Eu já o utilizei, mas foi há algum tempo
+
+## UI strings for the sidebar and vertical tabs
+
+# Setup screen for vertical tabs
+onboarding-new-tabs-title = Diga-nos onde gostaria de ter os seus separadores
+# Setup screen for vertical tabs - "Switch it up" refers to switching between horizontal and vertical tabs.
+onboarding-new-tabs-subtitle = Pode alterar quando quiser, nas definições da barra lateral.
+# Setup screen for vertical tabs - too many tabs variation
+onboarding-many-tabs-title = Os seus separadores, à sua maneira
+# Setup screen for vertical tabs - subtitle for too many tabs variation
+onboarding-many-tabs-subtitle = Tem muitos separadores abertos? Experimente colocar os seus separadores na lateral para uma vista mais simplificada. Ou mantenha o clássico com os separadores no topo. Pode mudar a qualquer momento.
+# Setup screen for vertical tabs - focused variation
+onboarding-focused-tabs-title = Escolha a disposição dos seus separadores
+# Setup screen for vertical tabs - subtitle for focused variation
+onboarding-focused-tabs-subtitle = Para uma vista simplificada que pode ajudar a manter a sua concentração, experimente colocar os seus separadores na lateral. Ou mantenha-se com o clássico com os separadores no topo. Pode mudar a qualquer momento.
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-new-vertical-tabs-label = Separadores na lateral
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-new-horizontal-tabs-label = Separadores no topo
+# Setup screen for vertical tabs for existing users
+onboarding-existing-tabs-title = Os separadores vertical estão aqui
+# Setup screen for vertical tabs for existing users
+onboarding-existing-tabs-title2 = A apresentar os separadores verticais
+# Setup screen for vertical tabs for existing users - "Switch it up" refers to switching between horizontal and vertical tabs.
+onboarding-existing-tabs-subtitle = Experimente os seus separadores na lateral. Pode alterar quando quiser, nas definições da barra lateral.
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-existing-vertical-tabs-label = Experimente os separadores verticais
+onboarding-flair-text = Novo!
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-existing-horizontal-tabs-label = Manter os separadores horizontais
+# Tooltip displayed on hover for vertical tabs image
+onboarding-vertical-tabs-tooltip =
+    .title = Uma janela de navegador a mostrar separadores na lateral do ecrã como uma parte da barra lateral do { -brand-shorter-name }.
+# Description for vertical tabs image
+onboarding-vertical-tabs-description =
+    .aria-description = Uma janela de navegador a mostrar separadores na lateral do ecrã como uma parte da barra lateral do { -brand-shorter-name }.
+# Tooltip displayed on hover for horizontal tabs image
+onboarding-horizontal-tabs-tooltip =
+    .title = Uma janela de navegador a mostrar separadores no topo.
+# Description for horizontal tabs image
+onboarding-horizontal-tabs-description =
+    .aria-description = Uma janela de navegador a mostrar separadores no topo.
+# Additional setup card for setting up aichatbot in the sidebar
+onboarding-genai-sidebar-title = Experimente um chatbot de IA na barra lateral
+# Setup card for setting up AI chatbot in the sidebar; "Providers" refers to AI chatbot providers (e.g. OpenAI, etc). "Switch anytime" refers to allowing the user to switch to a different chatbot.
+onboarding-genai-sidebar-subtitle = Resuma conteúdos na Internet, prototipe ideias, faça rascunhos de mensagens — tudo enquanto navega. Escolha a partir de múltiplos fornecedores. Mude a qualquer altura. <a data-l10n-name="learn-more">Saber mais</a>
+onboarding-genai-sidebar-primary-button = Escolha um chatbot
+onboarding-genai-sidebar-secondary-button = Começar a navegar
+
+## New user onboarding checklist
+
+onboarding-checklist-title = Concluir a configuração do { -brand-short-name }
+onboarding-checklist-subtitle = Conclua estes passos para tirar o máximo proveito da sua experiência de navegação.
+onboarding-checklist-set-default = Definir o { -brand-short-name } como o seu navegador predefinido
+onboarding-checklist-pin = Fixar o { -brand-short-name } na barra de tarefas
+onboarding-checklist-import = Importar do navegador anterior
+onboarding-checklist-extension = Adicionar uma extensão
+onboarding-checklist-sign-up = Registar ou iniciar sessão na sua conta
+
+## Tab Groups feature onboarding strings
+
+tab-groups-onboarding-feature-callout-title = Grupos de separadores: menos confusão, mais concentração
+tab-groups-onboarding-feature-callout-subtitle = Organize-se arrastando um separador sobre o outro para criar o seu primeiro grupo.
+tab-groups-onboarding-create-group-title = Encontre os seus grupos abertos na barra de separadores ou ao procurar pelos mesmos na barra de endereços.
+tab-groups-onboarding-saved-groups-title = Se fechar um grupo de separadores, pode reabri-lo aqui a qualquer momento.
+tab-groups-onboarding-saved-groups-no-alltabs-button-title = Encontre os seus grupos de separadores abertos ou fechados a qualquer momento, pesquisando na barra de endereços.
+tab-groups-onboarding-dismiss = Ok
+
+## Multi Profiles feature onboarding messages
+
+multi-profile-spotlight-title = Diga olá aos perfis do { -brand-product-name }
+multi-profile-spotlight-body = Permute facilmente entre a navegação para o trabalho e a diversão. Os perfis mantêm a sua informação de navegação totalmente separada, incluindo o histórico de pesquisa e as palavras-passe, para ajudar na organização da informação.
+multi-profile-spotlight-cta = Criar um perfil
+multi-profile-callout-title = Crie perfis diferentes para o trabalho e a diversão
+multi-profile-callout-subtitle = Os perfis permitem-lhe manter as suas informações de navegação, tais como o histórico de pesquisa e as palavras-passe, totalmente separadas.
+multi-profile-callout-cta = Criar um perfil
+
+## Desktop to Mobile Adoption feature callout strings
+
+# If translating the headline is challenging, consider using a simplified alternative as a reference: 'Sync your browsing with Firefox for mobile.'
+desktop-to-mobile-headline = Transferir, sincronizar e pronto!
+# The phrase, 'on the go', is used to describe when people are very busy and are traveling from place to place.
+desktop-to-mobile-subtitle = Digitalize o código QR para transferir o { -brand-product-name } para dispositivos móveis. Depois de instalado, selecione “Sincronizar com o telemóvel” para aceder às suas palavras-passe, marcadores e muito mais, em qualquer lugar.
+dismiss-button-label = Dispensar
+sync-to-mobile-button-label = Sincronizar com o telemóvel

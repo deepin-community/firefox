@@ -79,6 +79,16 @@ tabbrowser-unblock-tab-audio-tooltip =
            *[other] Prehrať { $tabCount } kariet
         }
 
+## Tooltips for tab audio control
+
+tabbrowser-unmute-tab-audio-aria-label =
+    .aria-label = Zapnúť zvuk na tejto karte
+tabbrowser-mute-tab-audio-aria-label =
+    .aria-label = Stlmiť zvuk na tejto karte
+# Used to unblock a tab with audio from autoplaying
+tabbrowser-unblock-tab-audio-aria-label =
+    .aria-label = Prehrať kartu
+
 ## Confirmation dialog when closing a window with more than one tab open,
 ## or when quitting when only one window is open.
 
@@ -92,6 +102,7 @@ tabbrowser-confirm-close-tabs-title =
        *[other] Zavrieť { $tabCount } kariet?
     }
 tabbrowser-confirm-close-tabs-button = Zavrieť karty
+tabbrowser-ask-close-tabs-checkbox = Opýtať sa pred zatvorením viacerých kariet naraz
 tabbrowser-confirm-close-tabs-checkbox = Vyžadovať potvrdenie pred zatvorením viacerých kariet naraz
 
 ## Confirmation dialog when quitting using the menu and multiple windows are open.
@@ -119,7 +130,21 @@ tabbrowser-confirm-close-tabs-with-key-title = Zavrieť okno a ukončiť { -bran
 tabbrowser-confirm-close-tabs-with-key-button = Ukončiť { -brand-short-name }
 # Variables:
 #   $quitKey (String): the text of the keyboard shortcut for quitting.
+tabbrowser-ask-close-tabs-with-key-checkbox = Opýtať sa pred ukončením pomocou skratky { $quitKey }
+# Variables:
+#   $quitKey (String): the text of the keyboard shortcut for quitting.
 tabbrowser-confirm-close-tabs-with-key-checkbox = Vyžadovať potvrdenie pred ukončením pomocou { $quitKey }
+
+## Confirmation dialog when quitting using the keyboard shortcut (Ctrl/Cmd+Q)
+## and browser.warnOnQuitShortcut is true.
+
+tabbrowser-confirm-close-warn-shortcut-title = Ukončiť { -brand-short-name } alebo zatvoriť aktuálnu kartu?
+tabbrowser-confirm-close-windows-warn-shortcut-button =
+    { PLATFORM() ->
+        [windows] Ukončiť { -brand-short-name }
+       *[other] Ukončiť { -brand-short-name }
+    }
+tabbrowser-confirm-close-tab-only-button = Zavrieť aktuálnu kartu
 
 ## Confirmation dialog when opening multiple tabs simultaneously
 
@@ -189,6 +214,9 @@ tabbrowser-ctrl-tab-list-all-tabs =
         }
 
 ## Tab manager menu buttons
+## Variables:
+##  $tabGroupName (String): The name of the tab group. See also tab-group-name-default, which will be
+##                          used when the group's name is empty.
 
 tabbrowser-manager-mute-tab =
     .tooltiptext = Stlmiť zvuk na tejto karte
@@ -196,3 +224,130 @@ tabbrowser-manager-unmute-tab =
     .tooltiptext = Zapnúť zvuk na tejto karte
 tabbrowser-manager-close-tab =
     .tooltiptext = Zavrieť kartu
+# This is for tab groups that have been "saved and closed" (see tab-group-editor-action-save). It does
+# not include "deleted" tab groups (see tab-group-editor-action-delete).
+tabbrowser-manager-closed-tab-group =
+    .label = { $tabGroupName }
+    .tooltiptext = { $tabGroupName } — zatvorená
+tabbrowser-manager-current-window-tab-group =
+    .label = { $tabGroupName }
+    .tooltiptext = { $tabGroupName } — aktuálne okno
+# "Show more" is for showing all open groups from other windows, as well as saved groups. Initially,
+# we only show up to six of these groups.
+tabbrowser-manager-tab-groups-show-more =
+    .label = Zobraziť ďalšie
+
+## Tab Groups
+
+tab-group-editor-title-create = Vytvoriť skupinu kariet
+tab-group-editor-title-edit = Spravovať skupinu kariet
+tab-group-editor-name-label = Názov
+tab-group-editor-name-field =
+    .placeholder = Príklad: Nakupovanie
+tab-group-editor-cancel =
+    .label = Zrušiť
+    .accesskey = Z
+tab-group-editor-color-selector =
+    .aria-label = Farba skupiny kariet
+tab-group-editor-color-selector2-blue = Modrá
+    .title = Modrá
+tab-group-editor-color-selector2-purple = Fialová
+    .title = Fialová
+tab-group-editor-color-selector2-cyan = Azúrová
+    .title = Azúrová
+tab-group-editor-color-selector2-orange = Oranžová
+    .title = Oranžová
+tab-group-editor-color-selector2-yellow = Žltá
+    .title = Žltá
+tab-group-editor-color-selector2-pink = Ružová
+    .title = Ružová
+tab-group-editor-color-selector2-green = Zelená
+    .title = Zelená
+tab-group-editor-color-selector2-gray = Sivá
+    .title = Sivá
+tab-group-editor-color-selector2-red = Červená
+    .title = Červená
+# Variables:
+#  $tabGroupName (String): The name of the tab group. Defaults to the value
+#                          of tab-group-name-default.
+tab-group-description = { $tabGroupName } — Skupina kariet
+tab-group-menu-header = Skupiny kariet
+tab-context-unnamed-group =
+    .label = Nepomenovaná skupina
+tab-group-name-default = Nepomenovaná skupina
+
+## Variables:
+##  $tabCount (Number): the number of tabs that are affected by the action.
+
+tab-context-move-tab-to-new-group =
+    .label =
+        { $tabCount ->
+            [1] Pridať kartu do novej skupiny
+            [one] Pridať kartu do novej skupiny
+            [few] Pridať karty do novej skupiny
+            [many] Pridať karty do novej skupiny
+           *[other] Pridať karty do novej skupiny
+        }
+    .accesskey = r
+tab-context-move-tab-to-group =
+    .label =
+        { $tabCount ->
+            [1] Pridať kartu do skupiny
+            [one] Pridať kartu do skupiny
+            [few] Pridať karty do skupiny
+            [many] Pridať karty do skupiny
+           *[other] Pridať karty do skupiny
+        }
+    .accesskey = r
+tab-group-editor-action-new-tab =
+    .label = Nová karta v skupine
+tab-group-editor-action-new-window =
+    .label = Presunúť skupinu do nového okna
+tab-group-editor-action-save =
+    .label = Uložiť a zatvoriť skupinu
+tab-group-editor-action-ungroup =
+    .label = Zrušiť zoskupenie kariet
+tab-group-editor-action-delete =
+    .label = Odstrániť skupinu
+tab-group-editor-done =
+    .label = Hotovo
+    .accessKey = H
+tab-context-reopen-tab-group =
+    .label = Znova otvoriť skupinu kariet
+# Variables:
+#  $groupCount (Number): the number of tab groups that are affected by the action.
+tab-context-ungroup-tab =
+    .label =
+        { $groupCount ->
+            [1] Odstrániť zo skupiny
+            [one] Odstrániť zo skupiny
+            [few] Odstrániť zo skupín
+            [many] Odstrániť zo skupín
+           *[other] Odstrániť zo skupín
+        }
+    .accesskey = d
+
+## Open/saved tab group context menu
+
+# For a tab group open in any window, clicking this will create a new
+# window and move this tab group to that new window.
+tab-group-context-move-to-new-window =
+    .label = Presunúť skupinu do nového okna
+# For a tab group open in a different window from the one that the
+# user is using to access the tab group menu, move that tab group into the
+# user's current window.
+tab-group-context-move-to-this-window =
+    .label = Presunúť skupinu do tohto okna
+# For a tab group that is open in any window, close the tab group and
+# do not save it. For a tab group that is closed but saved by the user, clicking
+# this will forget the saved tab group.
+tab-group-context-delete =
+    .label = Odstrániť skupinu
+# For a saved tab group that is not open in any window, open the tab group
+# in the user's current window.
+tab-group-context-open-saved-group-in-this-window =
+    .label = Otvoriť skupinu v tomto okne
+# For a saved tab group that is not open in any window, create a new window and
+# open the tab group in that window.
+tab-group-context-open-saved-group-in-new-window =
+    .label = Otvoriť skupinu v novom okne

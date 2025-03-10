@@ -4,6 +4,12 @@
 
 menu-view-genai-chat =
     .label = צ’אט בוט AI
+menu-view-review-checker =
+    .label = בודק הסקירות
+menu-view-contextual-password-manager =
+    .label = ססמאות
+sidebar-options-menu-button =
+    .title = פתיחת תפריט
 
 ## Labels for sidebar history panel
 
@@ -46,16 +52,30 @@ sidebar-position-right =
     .label = להציג בצד ימין
 sidebar-vertical-tabs =
     .label = לשוניות אנוכיות
+sidebar-settings =
+    .label = הגדרות סרגל הצד
+sidebar-hide-tabs-and-sidebar =
+    .label = הסתרת לשוניות וסרגל הכלים
+sidebar-show-on-the-right =
+    .label = העברת סרגל הצד לימין
+sidebar-show-on-the-left =
+    .label = העברת סרגל הצד לשמאל
+# Option to automatically expand the collapsed sidebar when the mouse pointer
+# hovers over it.
+expand-sidebar-on-hover =
+    .label = הרחבת סרגל הצד בעת ריחוף העכבר עליו
 sidebar-horizontal-tabs =
     .label = לשוניות אופקיות
 sidebar-customize-tabs-header =
     .label = הגדרות לשוניות
-sidebar-customize-settings-header =
-    .label = הגדרות סרגל צד
-sidebar-visibility-always-show =
-    .label = תמיד להציג
-sidebar-visibility-hide-sidebar =
-    .label = הסתרת סרגל הצד
+sidebar-customize-button-header =
+    .label = כפתור סרגל הצד
+sidebar-customize-position-header =
+    .label = מיקום סרגל הצד
+sidebar-visibility-setting-always-show =
+    .label = מרחיב ומכווץ את סרגל הצד
+sidebar-visibility-setting-hide-sidebar =
+    .label = מציג ומסתיר את סרגל הצד
 
 ## Labels for sidebar context menu items
 
@@ -95,6 +115,41 @@ sidebar-menu-bookmarks-label =
     .label = סימניות
 sidebar-menu-customize-label =
     .label = התאמה אישית של סרגל הצד
+sidebar-menu-review-checker-label =
+    .label = בודק הסקירות
+sidebar-menu-contextual-password-manager-label =
+    .label = ססמאות
+
+## Tooltips for sidebar menu items.
+
+# The tooltip to show over the history icon, when history is not currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-open-history-tooltip = פתיחת היסטוריה ({ $shortcut })
+# The tooltip to show over the history icon, when history is currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-close-history-tooltip = סגירת היסטוריה ({ $shortcut })
+# The tooltip to show over the bookmarks icon, when bookmarks is not currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-open-bookmarks-tooltip = פתיחת סימניות ({ $shortcut })
+# The tooltip to show over the bookmarks icon, when bookmarks is currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-close-bookmarks-tooltip = סגירת סימניות ({ $shortcut })
+sidebar-menu-open-ai-chatbot-tooltip = פתיחת צ’אט בוט AI
+sidebar-menu-close-ai-chatbot-tooltip = סגירת צ’אט בוט AI
+
+## Tooltips displayed over the AI chatbot icon.
+## Variables:
+##   $shortcut (String) - The OS specific keyboard shortcut.
+##   $provider (String) - The name of the AI chatbot provider (if available).
+
+sidebar-menu-open-ai-chatbot-tooltip-generic = פתיחת צ’אט בוט AI (‏{ $shortcut })
+sidebar-menu-open-ai-chatbot-provider-tooltip = פתיחת { $provider } (‏{ $shortcut })
+sidebar-menu-close-ai-chatbot-tooltip-generic = סגירת צ’אט בוט AI (‏{ $shortcut })
+sidebar-menu-close-ai-chatbot-provider-tooltip = סגירת { $provider } (‏{ $shortcut })
 
 ## Headings for sidebar menu panels.
 
@@ -104,6 +159,18 @@ sidebar-menu-history-header =
     .heading = היסטוריה
 sidebar-menu-syncedtabs-header =
     .heading = לשוניות ממכשירים אחרים
+sidebar-menu-bookmarks-header =
+    .heading = סימניות
+sidebar-menu-cpm-header =
+    .heading = ססמאות
+sidebar-panel-header-close-button =
+    .tooltiptext = סגירה
+
+## Titles for sidebar menu panels.
+
+sidebar-customize-title = התאמה אישית של סרגל הצד
+sidebar-history-title = היסטוריה
+sidebar-syncedtabs-title = לשוניות ממכשירים אחרים
 
 ## Context for closing synced tabs when hovering over the items
 
@@ -113,3 +180,29 @@ sidebar-menu-syncedtabs-header =
 #   $deviceName (String) - the name of the device the user is closing a tab for
 synced-tabs-context-close-tab-title =
     .title = סגירת לשונית ב־{ $deviceName }
+show-sidebars =
+    .tooltiptext = הצגת סרגלי צד
+    .label = סרגלי צד
+
+## Tooltips for the sidebar toolbar widget.
+
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-expand-sidebar2 =
+    .tooltiptext = הרחבת סרגל הצד ({ $shortcut })
+    .label = סרגלי צד
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-collapse-sidebar2 =
+    .tooltiptext = כיווץ סרגל הצד ({ $shortcut })
+    .label = סרגלי צד
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-show-sidebar2 =
+    .tooltiptext = הצגת סרגל הצד ({ $shortcut })
+    .label = סרגלי צד
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-hide-sidebar2 =
+    .tooltiptext = הסתרת סרגל הצד ({ $shortcut })
+    .label = סרגלי צד

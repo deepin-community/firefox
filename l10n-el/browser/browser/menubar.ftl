@@ -37,16 +37,16 @@ menu-quit =
     .label =
         { PLATFORM() ->
             [windows] Έξοδος
-           *[other] Έξοδος
+           *[other] Τερματισμός
         }
     .accesskey =
         { PLATFORM() ->
             [windows] ξ
-           *[other] ξ
+           *[other] Τ
         }
 # This menu-quit-mac string is only used on macOS.
 menu-quit-mac =
-    .label = Έξοδος από το { -brand-shorter-name }
+    .label = Τερματισμός του { -brand-shorter-name }
 menu-about =
     .label = Σχετικά με το { -brand-shorter-name }
     .accesskey = τ
@@ -253,6 +253,15 @@ menu-bookmarks-other =
     .label = Άλλοι σελιδοδείκτες
 menu-bookmarks-mobile =
     .label = Σελιδοδείκτες κινητού
+
+## Profiles Menu
+
+menu-profiles =
+    .label = Προφίλ
+menu-profiles-manage-profiles =
+    .label = Διαχείριση προφίλ
+menu-profiles-new-profile =
+    .label = Νέο προφίλ
 
 ## Tools Menu
 

@@ -256,6 +256,15 @@ menu-bookmarks-other =
 menu-bookmarks-mobile =
     .label = Mobilni zaznamki
 
+## Profiles Menu
+
+menu-profiles =
+    .label = Profili
+menu-profiles-manage-profiles =
+    .label = Upravljanje profilov
+menu-profiles-new-profile =
+    .label = Nov profil
+
 ## Tools Menu
 
 menu-tools =
@@ -341,7 +350,7 @@ menu-help-exit-troubleshoot-mode =
     .label = Izključi način za odpravljanje težav
     .accesskey = I
 menu-help-switch-device =
-    .label = Preklapljanje na novo napravo
+    .label = Prehod na novo napravo
     .accesskey = n
 # Label of the Help menu item. Either this or
 # menu-help-notdeceptive is shown.

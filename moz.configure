@@ -24,7 +24,7 @@ option(
     "--enable-artifact-build-symbols",
     nargs="?",
     choices=("full",),
-    help="Download symbols when artifact builds are enabled.",
+    help="Download symbols when artifact builds are enabled",
 )
 
 
@@ -51,8 +51,8 @@ def imply_disable_compile_environment(value):
 option(
     env="MOZ_BUILD_HOOK",
     nargs=1,
-    help="moz.build file that will be executed as if it were appended to"
-    " every moz.build in the tree.",
+    help="Path to the moz.build file that will be executed as if it were "
+    "appended to every moz.build in the tree",
 )
 
 
@@ -70,7 +70,7 @@ set_config("MOZ_BUILD_HOOK", moz_build_hook)
 option(
     env="MOZ_COPY_PDBS",
     help="For builds that do not support symbols in the normal fashion,"
-    " generate and copy them into the resulting build archive.",
+    " generate and copy them into the resulting build archive",
 )
 
 set_config("MOZ_COPY_PDBS", depends_if("MOZ_COPY_PDBS")(lambda _: True))
@@ -120,11 +120,17 @@ set_define("GTEST_OS_LINUX_ANDROID", linux_gtest_defines.os_linux_android)
 set_define("GTEST_USE_OWN_TR1_TUPLE", linux_gtest_defines.use_own_tr1_tuple)
 set_define("GTEST_HAS_CLONE", linux_gtest_defines.has_clone)
 
+set_define("FMT_API", "MFBT_API")
+set_define("FMT_ENFORCE_COMPILE_STRING", 1)
+set_define("FMT_USE_EXCEPTIONS", 0)
+set_define("FMT_USE_WRITE_CONSOLE", 1)
+set_define("FMT_USE_LOCALE", 0)
+
 option(
     "--enable-debug",
     nargs="?",
     help="Enable building with developer debug info "
-    "(using the given compiler flags).",
+    "(using the given compiler flags)",
 )
 
 
@@ -539,7 +545,7 @@ def build_gtest(build_project, target, automation, enable_tests):
 option(
     "--enable-gtest-in-build",
     default=build_gtest,
-    help="{Enable|Force disable} building the gtest libxul during the build.",
+    help="{Enable|Force disable} building the gtest libxul during the build",
     when="--enable-compile-environment",
 )
 
@@ -889,6 +895,13 @@ pkg_check_modules("MOZ_ZLIB", "zlib >= 1.2.3", when="--with-system-zlib")
 
 set_config("MOZ_SYSTEM_ZLIB", True, when="--with-system-zlib")
 
+option(
+    env="USE_LIBZ_RS",
+    help="Use libz-rs-sys instead of zlib",
+    when=toolkit & ~with_system_zlib_option,
+)
+
+set_config("USE_LIBZ_RS", True, when="USE_LIBZ_RS")
 
 with only_when(cross_compiling):
     option(

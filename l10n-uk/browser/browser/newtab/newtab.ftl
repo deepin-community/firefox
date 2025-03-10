@@ -8,11 +8,18 @@
 newtab-page-title = Нова вкладка
 newtab-settings-button =
     .title = Налаштуйте свою сторінку нової вкладки
+newtab-personalize-settings-icon-label =
+    .title = Персоналізувати нову вкладку
+    .aria-label = Налаштування
+newtab-settings-dialog-label =
+    .aria-label = Налаштування
 newtab-personalize-icon-label =
     .title = Персоналізувати нову вкладку
     .aria-label = Персоналізувати нову вкладку
 newtab-personalize-dialog-label =
     .aria-label = Персоналізувати
+newtab-logo-and-wordmark =
+    .aria-label = { -brand-full-name }
 
 ## Search box component.
 
@@ -109,6 +116,13 @@ newtab-menu-save-to-pocket = Зберегти в { -pocket-brand-name }
 newtab-menu-delete-pocket = Видалити з { -pocket-brand-name }
 newtab-menu-archive-pocket = Архівувати в { -pocket-brand-name }
 newtab-menu-show-privacy-info = Наші спонсори і ваша приватність
+newtab-menu-about-fakespot = Про { -fakespot-brand-name }
+# Context menu option to personalize New Tab recommended stories by blocking a section of stories,
+# e.g. "Sports". "Block" is a verb here.
+newtab-menu-section-block = Блокувати
+# "Follow", "unfollow", and "following" are social media terms that refer to subscribing to or unsubscribing from a section of stories.
+# e.g. Following the travel section of stories.
+newtab-menu-section-unfollow = Відписатися від теми
 
 ## Message displayed in a modal window to explain privacy and provide context for sponsored content.
 
@@ -233,6 +247,8 @@ newtab-pocket-cta-button = Отримати { -pocket-brand-name }
 newtab-pocket-cta-text = Зберігайте улюблені статті в { -pocket-brand-name } і задовольніть себе захопливим читанням.
 newtab-pocket-pocket-firefox-family = { -pocket-brand-name } є частиною родини { -brand-product-name }
 # A save to Pocket button that shows over the card thumbnail on hover.
+newtab-pocket-image =
+    .aria-label = { -pocket-brand-name }
 newtab-pocket-save = Зберегти
 newtab-pocket-saved = Збережено
 
@@ -244,6 +260,9 @@ newtab-pocket-thumbs-up-tooltip =
 # Clicking the thumbs down button for this story informs us that the user does not feel like the story is interesting for them
 newtab-pocket-thumbs-down-tooltip =
     .title = Не для мене
+# Used to show the user a message upon clicking the thumbs up or down buttons
+newtab-toast-thumbs-up-or-down2 =
+    .message = Дякуємо. Ваш відгук допоможе нам покращити вашу стрічку.
 newtab-toast-thumbs-up-or-down = Дякуємо. Ваш відгук допоможе нам покращити вашу стрічку.
 newtab-toast-dismiss-button =
     .title = Відхилити
@@ -310,6 +329,8 @@ newtab-wallpaper-dark-panda = Червона панда, що ховається
 newtab-wallpaper-dark-sky = Міський пейзаж з нічним небом
 newtab-wallpaper-dark-mountain = Гірський краєвид
 newtab-wallpaper-dark-city = Фіолетовий міський пейзаж
+newtab-wallpaper-dark-fox-anniversary = Лисиця на тротуарі біля лісу
+newtab-wallpaper-light-fox-anniversary = Лисиця в трав'янистому полі з туманним гірським ландшафтом
 
 ## Solid Colors
 
@@ -340,7 +361,7 @@ newtab-wallpaper-abstract-orange = Помаранчеві форми
 newtab-wallpaper-gradient-orange = Градієнт помаранчевого і рожевого
 newtab-wallpaper-abstract-blue-purple = Сині та пурпурові форми
 
-## Photographs
+## Celestial
 
 newtab-wallpaper-category-title-photographs = Фотографії
 newtab-wallpaper-beach-at-sunrise = Пляж на сході сонця
@@ -364,6 +385,9 @@ feature-highlight-wallpaper =
     .title = { -newtab-wallpaper-feature-highlight-header }
     .aria-label = { -newtab-wallpaper-feature-highlight-content }
 
+## Celestial
+
+
 ## New Tab Weather
 
 # Variables:
@@ -374,6 +398,9 @@ newtab-weather-see-forecast =
 #   $provider (string) - Service provider for weather data
 newtab-weather-sponsored = { $provider } ∙ Спонсоровано
 newtab-weather-menu-change-location = Змінити розташування
+newtab-weather-change-location-search-input-placeholder =
+    .placeholder = Пошук розташування
+    .aria-label = Пошук розташування
 newtab-weather-change-location-search-input = Пошук розташування
 newtab-weather-menu-weather-display = Подання погоди
 # Display options are:
@@ -432,3 +459,36 @@ newtab-topic-selection-button-maybe-later = Можливо, пізніше
 newtab-topic-selection-privacy-link = Дізнайтеся, як ми захищаємо дані та керуємо ними
 newtab-topic-selection-button-update-interests = Оновіть свої інтереси
 newtab-topic-selection-button-pick-interests = Виберіть свої інтереси
+
+## Content Feed Sections
+## "Follow", "unfollow", and "following" are social media terms that refer to subscribing to or unsubscribing from a section of stories.
+## e.g. Following the travel section of stories.
+
+newtab-section-follow-button = Читати
+newtab-section-following-button = Ви читаєте
+newtab-section-unfollow-button = Відписатися
+
+## Button to block/unblock listed topics
+## "Block", "unblocked", and "blocked" are social media terms that refer to hiding a section of stories.
+## e.g. Blocked the politics section of stories.
+
+newtab-section-block-button = Блокувати
+newtab-section-blocked-button = Заблоковано
+newtab-section-unblock-button = Розблокувати
+
+## Confirmation modal for blocking a section
+
+newtab-section-confirm-block-section-p1 = Ви дійсно хочете заблокувати цей розділ?
+newtab-section-confirm-block-section-p2 = Заблокований розділ більше не з'являтиметься у вашій стрічці.
+newtab-section-block-section-button = Заблокувати цей розділ
+newtab-section-cancel-button = Не зараз
+
+## Panel in the Customize menu section to manage followed and blocked topics
+
+newtab-section-mangage-topics-title = Теми
+newtab-section-mangage-topics-button =
+    .label = Відстежувані та заблоковані теми
+newtab-section-mangage-topics-followed-topics-subtitle = Відстежувані теми
+newtab-section-mangage-topics-followed-topics-empty-state = Ви ще не стежите за жодною темою.
+newtab-section-mangage-topics-blocked-topics-subtitle = Заблоковані теми
+newtab-section-mangage-topics-blocked-topics-empty-state = Ви ще не заблокували жодної теми.

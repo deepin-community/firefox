@@ -8,11 +8,18 @@
 newtab-page-title = Нова картица
 newtab-settings-button =
     .title = Прилагодите страницу нове картице
+newtab-personalize-settings-icon-label =
+    .title = Промените изглед нове картице
+    .aria-label = Подешавања
+newtab-settings-dialog-label =
+    .aria-label = Подешавања
 newtab-personalize-icon-label =
     .title = Промените изглед нове картице
     .aria-label = Промените изглед нове картице
 newtab-personalize-dialog-label =
     .aria-label = Персонализација
+newtab-logo-and-wordmark =
+    .aria-label = { -brand-full-name }
 
 ## Search box component.
 
@@ -45,6 +52,7 @@ newtab-topsites-add-search-engine-header = Додај претраживач
 newtab-topsites-add-shortcut-header = Нова пречица
 newtab-topsites-edit-topsites-header = Уреди популарне сајтове
 newtab-topsites-edit-shortcut-header = Измени пречицу
+newtab-topsites-add-shortcut-label = Додај пречицу
 newtab-topsites-title-label = Наслов
 newtab-topsites-title-input =
     .placeholder = Унесите наслов
@@ -108,6 +116,7 @@ newtab-menu-save-to-pocket = Сачувај у { -pocket-brand-name(case: "loc")
 newtab-menu-delete-pocket = Избриши из { -pocket-brand-name(case: "gen") }
 newtab-menu-archive-pocket = Архивирај у { -pocket-brand-name(case: "loc") }
 newtab-menu-show-privacy-info = Наши спонзори и ваша приватност
+newtab-menu-about-fakespot = О { -fakespot-brand-name }-у
 
 ## Message displayed in a modal window to explain privacy and provide context for sponsored content.
 
@@ -194,6 +203,8 @@ newtab-section-header-recent-activity = Недавна активност
 # Variables:
 #   $provider (string) - Name of the corresponding content provider.
 newtab-section-header-pocket = Предложио { $provider }
+# "picks" refers to recommended articles
+newtab-section-header-todays-picks = Данашњи предлози за вас
 
 ## Empty Section States: These show when there are no more items in a section. Ex. When there are no more Pocket story recommendations, in the space where there would have been stories, this is shown instead.
 
@@ -202,6 +213,8 @@ newtab-empty-section-highlights = Почните да претражујете �
 # Variables:
 #   $provider (string) - Name of the content provider for this section, e.g "Pocket".
 newtab-empty-section-topstories = Вратите се касније за нове вести { $provider }. Не можете дочекати? Изаберите популарну тему да пронађете још занимљивих вести из света.
+# Ex. When there are no more story recommendations, in the space where there would have been stories, this is shown instead.
+newtab-empty-section-topstories-generic = Све сте већ прочитали. Вратите се касније за нове приче. Не можете дочекати? Изаберите популарну тему да пронађете још занимљивих прича са мреже.
 
 ## Empty Section (Content Discovery Experience). These show when there are no more stories or when some stories fail to load.
 
@@ -223,8 +236,26 @@ newtab-pocket-cta-button = Преузми { -pocket-brand-name(case: "acc") }
 newtab-pocket-cta-text = Сачувајте приче које вам се свиђају у { -pocket-brand-name(case: "loc") } и уживајте у врхунском штиву.
 newtab-pocket-pocket-firefox-family = { -pocket-brand-name } је члан { -brand-product-name } породице
 # A save to Pocket button that shows over the card thumbnail on hover.
+newtab-pocket-image =
+    .aria-label = { -pocket-brand-name }
 newtab-pocket-save = Сачувај
 newtab-pocket-saved = Сачувано
+
+## Thumbs up and down buttons that shows over a newtab stories card thumbnail on hover.
+
+# Clicking the thumbs up button for this story will result in more stories like this one being recommended
+newtab-pocket-thumbs-up-tooltip =
+    .title = Више овога
+# Clicking the thumbs down button for this story informs us that the user does not feel like the story is interesting for them
+newtab-pocket-thumbs-down-tooltip =
+    .title = Није за мене
+# Used to show the user a message upon clicking the thumbs up or down buttons
+newtab-toast-thumbs-up-or-down2 =
+    .message = Хвала. Ваше повратне информације помоћи ће нам да побољшамо предлоге.
+newtab-toast-thumbs-up-or-down = Хвала. Ваше повратне информације помоћи ће нам да побољшамо предлоге.
+newtab-toast-dismiss-button =
+    .title = Одбаци
+    .aria-label = Одбаци
 
 ## Pocket content onboarding experience dialog and modal for new users seeing the Pocket section for the first time, shown as the first item in the Pocket section.
 
@@ -255,9 +286,9 @@ newtab-custom-row-selector =
 newtab-custom-sponsored-sites = Спонзорисане пречице
 newtab-custom-pocket-title = Препоруке из { -pocket-brand-name(case: "gen") }
 newtab-custom-pocket-subtitle = Изузетан садржај који уређује { -pocket-brand-name }, део породице { -brand-product-name }
-newtab-custom-pocket-toggle =
-    .label = Препоруке из { -pocket-brand-name(case: "gen") }
-    .description = Изузетан садржај који уређује { -pocket-brand-name }, део породице { -brand-product-name }
+newtab-custom-stories-toggle =
+    .label = Препоручене приче
+    .description = Изузетан садржај који је бирала { -brand-product-name } породица
 newtab-custom-pocket-sponsored = Спонзорисане приче
 newtab-custom-pocket-show-recent-saves = Прикажи недавно сачувано
 newtab-custom-recent-title = Недавна активност
@@ -265,5 +296,171 @@ newtab-custom-recent-subtitle = Избор недавних сајтова и с
 newtab-custom-recent-toggle =
     .label = Недавна активност
     .description = Избор недавних сајтова и садржаја
+newtab-custom-weather-toggle =
+    .label = Време
+    .description = Временска прогноза за данас
 newtab-custom-close-button = Затвори
 newtab-custom-settings = Додатна подешавања
+
+## New Tab Wallpapers
+
+newtab-wallpaper-title = Позадине
+newtab-wallpaper-reset = Врати на подразумевано
+newtab-wallpaper-light-red-panda = Црвена панда
+newtab-wallpaper-light-mountain = Бела гора
+newtab-wallpaper-light-sky = Небо са љубичастим и розим облацима
+newtab-wallpaper-light-color = Плави, рози и жути облици
+newtab-wallpaper-light-landscape = Планински пејзаж у плавој измаглици
+newtab-wallpaper-light-beach = Плажа са палмом
+newtab-wallpaper-dark-aurora = Поларна светлост
+newtab-wallpaper-dark-color = Црвени и плави облици
+newtab-wallpaper-dark-panda = Црвена панда сакривена у шуми
+newtab-wallpaper-dark-sky = Градски призор са ноћним небом
+newtab-wallpaper-dark-mountain = Планински пејзаж
+newtab-wallpaper-dark-city = Љубичасти градски призор
+newtab-wallpaper-dark-fox-anniversary = Лисица на тротоару покрај шуме
+newtab-wallpaper-light-fox-anniversary = Лисица на ливади са планинским пејзажом у измаглици
+
+## Solid Colors
+
+newtab-wallpaper-category-title-colors = Једнобојне
+newtab-wallpaper-blue = Плава
+newtab-wallpaper-light-blue = Светло плава
+newtab-wallpaper-light-purple = Светло љубичаста
+newtab-wallpaper-light-green = Светло зелена
+newtab-wallpaper-green = Зелена
+newtab-wallpaper-beige = Беж
+newtab-wallpaper-yellow = Жута
+newtab-wallpaper-orange = Наранџаста
+newtab-wallpaper-pink = Розе
+newtab-wallpaper-light-pink = Светло розе
+newtab-wallpaper-red = Црвена
+newtab-wallpaper-dark-blue = Тамно плава
+newtab-wallpaper-dark-purple = Тамно љубичаста
+newtab-wallpaper-dark-green = Тамно зелена
+newtab-wallpaper-brown = Смеђа
+
+## Abstract
+
+newtab-wallpaper-category-title-abstract = Абстрактне
+newtab-wallpaper-abstract-green = Зелени облици
+newtab-wallpaper-abstract-blue = Плави облици
+newtab-wallpaper-abstract-purple = Љубичасти облици
+newtab-wallpaper-abstract-orange = Наранџасти облици
+newtab-wallpaper-gradient-orange = Градијент наранџасте и розе
+newtab-wallpaper-abstract-blue-purple = Плави и љубичасти облици
+
+## Celestial
+
+newtab-wallpaper-category-title-photographs = Фотографије
+newtab-wallpaper-beach-at-sunrise = Плажа у изласку сунца
+newtab-wallpaper-beach-at-sunset = Плажа у заласку сунца
+newtab-wallpaper-storm-sky = Олујно небо
+newtab-wallpaper-sky-with-pink-clouds = Небо са розе облацима
+newtab-wallpaper-red-panda-yawns-in-a-tree = Црвена панда зева на дрвету
+newtab-wallpaper-white-mountains = Беле планине
+# Variables
+#   $author_string (String) - The name of the creator of the photo.
+#   $webpage_string (String) - The name of the webpage where the photo is located.
+newtab-wallpaper-attribution = Аутор фотографије <a data-l10n-name="name-link">{ $author_string }</a> на <a data-l10n-name="webpage-link">{ $webpage_string }</a>
+newtab-wallpaper-feature-highlight-header = Пробајте нове боје
+newtab-wallpaper-feature-highlight-content = Дајте вашој новој картици свеж изглед помоћу позадина.
+newtab-wallpaper-feature-highlight-button = Важи
+# Tooltip for dismiss button
+feature-highlight-dismiss-button =
+    .title = Одбаци
+    .aria-label = Затвори искачући прозор
+feature-highlight-wallpaper =
+    .title = { -newtab-wallpaper-feature-highlight-header }
+    .aria-label = { -newtab-wallpaper-feature-highlight-content }
+
+## Celestial
+
+
+## New Tab Weather
+
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-see-forecast =
+    .title = Погледајте прогнозу у { $provider }-у
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-sponsored = { $provider } - Спонзорисано
+newtab-weather-menu-change-location = Промени место
+newtab-weather-change-location-search-input-placeholder =
+    .placeholder = Потражи место
+    .aria-label = Потражи место
+newtab-weather-change-location-search-input = Потражи место
+newtab-weather-menu-weather-display = Приказ времена
+# Display options are:
+# - Simple: Displays a current weather condition icon and the current temperature
+# - Detailed: Include simple information plus a short text summary: e.g. "Mostly cloudy"
+newtab-weather-menu-weather-display-option-simple = Једноставно
+newtab-weather-menu-change-weather-display-simple = Пређи на једноставни приказ
+newtab-weather-menu-weather-display-option-detailed = Детаљно
+newtab-weather-menu-change-weather-display-detailed = Пређи на детаљан приказ
+newtab-weather-menu-temperature-units = Јединице за температуру
+newtab-weather-menu-temperature-option-fahrenheit = Фаренхајт
+newtab-weather-menu-temperature-option-celsius = Целзијус
+newtab-weather-menu-change-temperature-units-fahrenheit = Пребаци на Фаренхајт
+newtab-weather-menu-change-temperature-units-celsius = Пребаци на Целзијус
+newtab-weather-menu-hide-weather = Сакриј временску прогнозу на новој картици
+newtab-weather-menu-learn-more = Сазнајте више
+# This message is shown if user is working offline
+newtab-weather-error-not-available = Временска прогноза тренутно није доступна.
+
+## Topic Labels
+
+newtab-topic-label-business = Посао
+newtab-topic-label-career = Каријера
+newtab-topic-label-education = Образовање
+newtab-topic-label-arts = Забава
+newtab-topic-label-food = Храна
+newtab-topic-label-health = Здравље
+newtab-topic-label-hobbies = Игре
+# ”Money” = “Personal Finance”, refers to articles and stories that help readers better manage
+# and understand their personal finances – from saving money to buying a home. See the
+# “Curated by our editors“ section at the top of https://getpocket.com/explore/personal-finance for more context
+newtab-topic-label-finance = Новац
+newtab-topic-label-society-parenting = Родитељство
+newtab-topic-label-government = Политика
+newtab-topic-label-education-science = Наука
+# ”Life Hacks” = “Self Improvement”, refers to articles and stories aimed at helping readers improve various
+# aspects of their lives – from mental health to  productivity. See the “Curated by our editors“ section
+# at the top of https://getpocket.com/explore/self-improvement for more context.
+newtab-topic-label-society = Животни савети
+newtab-topic-label-sports = Спорт
+newtab-topic-label-tech = Технологија
+newtab-topic-label-travel = Путовањa
+newtab-topic-label-home = Кућа и башта
+
+## Topic Selection Modal
+
+# “fine-tune” refers to the process of making small adjustments to something to get
+# the best or desired experience or performance.
+newtab-topic-selection-title = Одабери теме за боље предлоге
+# “tailored” refers to process of (a tailor) making (clothes) to fit individual customers.
+# In other words, “Our expert curators prioritize stories to fit your selected interests”
+newtab-topic-selection-subtitle = Одаберите две или више тема. Наши стручни сарадници дају првенство причама које су по вашем укусу. Ажурирајте било када.
+newtab-topic-selection-save-button = Сачувај
+newtab-topic-selection-cancel-button = Откажи
+newtab-topic-selection-button-maybe-later = Можда касније
+newtab-topic-selection-privacy-link = Сазнајте како штитимо и управљамо подацима
+newtab-topic-selection-button-update-interests = Ажурирајте ваша интересовања
+newtab-topic-selection-button-pick-interests = Одаберите ваша интересовања
+
+## Content Feed Sections
+## "Follow", "unfollow", and "following" are social media terms that refer to subscribing to or unsubscribing from a section of stories.
+## e.g. Following the travel section of stories.
+
+
+## Button to block/unblock listed topics
+## "Block", "unblocked", and "blocked" are social media terms that refer to hiding a section of stories.
+## e.g. Blocked the politics section of stories.
+
+
+## Confirmation modal for blocking a section
+
+
+## Panel in the Customize menu section to manage followed and blocked topics
+

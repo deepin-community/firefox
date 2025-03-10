@@ -51,6 +51,70 @@ browser-main-window-title = { -brand-full-name }
 # The non-variable portion of this MUST match the translation of
 # "PRIVATE_BROWSING_SHORTCUT_TITLE" in custom.properties
 private-browsing-shortcut-text-2 = Penjelajahan Pribadi { -brand-shortcut-name }
+# These are the default window titles everywhere except macOS.
+# .data-title-default and .data-title-private are used when the web content
+# opened has no title:
+#
+# default - "Mozilla Firefox"
+# private - "Mozilla Firefox (Private Browsing)"
+#
+# .data-content-title-default and .data-content-title-private are for use when
+# there *is* a content title.
+#
+# .data-title-default-with-profile, .data-title-private-with-profile,
+# .data-content-title-default-with-profile,
+# .data-content-title-private-with-profile are used when there a
+# SelectableProfileService.current profile exists.
+#
+# Variables:
+#  $content-title (String): the title of the web content.
+#  $profile-name (String): the name of the current profile.
+browser-main-window-titles =
+    .data-title-default = { -brand-full-name }
+    .data-title-private = Meramban Privat { -brand-full-name }
+    .data-title-default-with-profile = { $profile-name } — { -brand-full-name }
+    .data-title-private-with-profile = { $profile-name } — Meramban Privat { -brand-full-name }
+    .data-content-title-default = { $content-title } — { -brand-full-name }
+    .data-content-title-private = { $content-title } — Meramban Privat { -brand-full-name }
+    .data-content-title-default-with-profile = { $content-title } — { $profile-name } — { -brand-full-name }
+    .data-content-title-private-with-profile = { $content-title } — { $profile-name } — Meramban Privat { -brand-full-name }
+# These are the default window titles on macOS.
+# .data-title-default and .data-title-private are used when the web content
+# opened has no title:
+#
+#
+# "default" - "Mozilla Firefox"
+# "private" - "Mozilla Firefox — (Private Browsing)"
+#
+# .data-content-title-default and .data-content-title-private are for use when
+# there *is* a content title.
+# Do not use the brand name in these, as we do on non-macOS.
+#
+# .data-title-default-with-profile, .data-title-private-with-profile,
+# .data-content-title-default-with-profile,
+# .data-content-title-private-with-profile are used when there a
+# SelectableProfileService.current profile exists.
+#
+# Also note the other subtle difference here: we use a `-` to separate the
+# brand name from `(Private Browsing)`, which does not happen on other OSes.
+#
+# Variables:
+#  $content-title (String): the title of the web content.
+#  $profile-name (String): the name of the current profile.
+browser-main-window-titles-mac =
+    .data-title-default = { -brand-full-name }
+    .data-title-private = { -brand-full-name } — Meramban Privat
+    .data-title-default-with-profile = { $profile-name } — { -brand-full-name }
+    .data-title-private-with-profile = { $profile-name } — Meramban Privat { -brand-full-name }
+    .data-content-title-default = { $content-title }
+    .data-content-title-private = { $content-title } — Meramban Privat
+    .data-content-title-default-with-profile = { $content-title } — { $profile-name }
+    .data-content-title-private-with-profile = { $content-title } — { $profile-name } — Meramban Privat
+# This gets set as the initial title, and is overridden as soon as we start
+# updating the titlebar based on loaded tabs or private browsing state.
+# This should match the `data-title-default` attribute in both
+# `browser-main-window` and `browser-main-window-mac`.
+browser-main-window-default-title = { -brand-full-name }
 
 ##
 
@@ -309,6 +373,10 @@ quickactions-cmd-viewsource = lihat kode sumber, sumber
 # Tooltip text for the help button shown in the result.
 quickactions-learn-more =
     .title = Pelajari lebih lanjut tentang Tindakan Cepat
+# Will be shown to users the first configurable number of times
+# they experience actions giving them instructions on how to
+# select the action shown by pressing the tab key.
+press-tab-label = Tekan tab untuk memilih:
 
 ## Bookmark Panel
 
@@ -543,8 +611,8 @@ urlbar-go-button =
     .tooltiptext = Pindah ke alamat di Bilah Lokasi
 urlbar-page-action-button =
     .tooltiptext = Tindakan laman
-urlbar-show-page-actions-button =
-    .tooltiptext = Tampilkan semua tindakan laman
+urlbar-revert-button =
+    .tooltiptext = Tampilkan alamat di Bilah Lokasi
 
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
@@ -599,12 +667,50 @@ urlbar-result-action-copy-to-clipboard = Salin
 # Variables
 #  $result (String): the string representation for a formula result
 urlbar-result-action-calculator-result = = { $result }
+# The string returned for an undefined calculator result such as when dividing by 0
+urlbar-result-action-undefined-calculator-result = tidak terdefinisi
 
 ## Strings used for buttons in the urlbar
 
 # Label prompting user to search with a particular search engine.
 #  $engine (String): the name of a search engine that searches a specific site
 urlbar-result-search-with = Cari lewat { $engine }
+# Label for the urlbar result row, prompting the user to use a local keyword to enter search mode.
+#  $keywords (String): the restrict keyword to enter search mode.
+#  $localSearchMode (String): the local search mode (history, tabs, bookmarks,
+#  or actions) to search with.
+urlbar-result-search-with-local-search-mode = { $keywords } - Cari { $localSearchMode }
+# Label for the urlbar result row, prompting the user to use engine keywords to enter search mode.
+#  $keywords (String): the default keyword and user's set keyword if available
+#  $engine (String): the name of a search engine
+urlbar-result-search-with-engine-keywords = { $keywords } - Cari dengan { $engine }
+urlbar-searchmode-dropmarker =
+    .tooltiptext = Pilih Mesin Pencari
+urlbar-searchmode-bookmarks =
+    .label = Markah
+urlbar-searchmode-tabs =
+    .label = Tab
+urlbar-searchmode-history =
+    .label = Riwayat
+urlbar-searchmode-actions =
+    .label = Aksi
+urlbar-searchmode-exit-button =
+    .tooltiptext = Tutup
+# Label shown on the top of Searchmode Switcher popup. After this label, the
+# available search engines will be listed.
+urlbar-searchmode-popup-description = Kali ini, cari dengan:
+urlbar-searchmode-popup-search-settings-menuitem =
+    .label = Setelan Pencarian
+urlbar-searchmode-popup-search-settings = Setelan Pencarian
+# Searchmode Switcher button
+# Variables:
+#   $engine (String): the current default search engine.
+urlbar-searchmode-button2 =
+    .label = { $engine }, pilih mesin pencari
+    .tooltiptext = { $engine }, pilih mesin pencari
+urlbar-searchmode-button-no-engine =
+    .label = Tidak ada pintasan yang dipilih, pilih pintasan
+    .tooltiptext = Tidak ada pintasan yang dipilih, pilih pintasan
 
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
@@ -614,6 +720,12 @@ urlbar-result-action-search-bookmarks = Cari Markah
 urlbar-result-action-search-history = Cari di Riwayat
 urlbar-result-action-search-tabs = Cari Tab
 urlbar-result-action-search-actions = Cari Tindakan
+# Label for a quickaction result used to switch to an open tab group.
+#  $group (String): the name of the tab group to switch to
+urlbar-result-action-switch-to-tabgroup = Beralih ke { $group }
+# Label for a quickaction result used to re-opan a saved tab group.
+#  $group (String): the name of the tab group to re-open
+urlbar-result-action-open-saved-tabgroup = Buka { $group }
 
 ## Labels shown above groups of urlbar results
 
@@ -927,6 +1039,9 @@ data-reporting-notification-button =
     .accesskey = P
 # Label for the indicator shown in the private browsing window titlebar.
 private-browsing-indicator-label = Penjelajahan pribadi
+# Tooltip for the indicator shown in the private browsing window titlebar.
+private-browsing-indicator-tooltip =
+    .tooltiptext = Penjelajahan pribadi
 # Tooltip for the indicator shown in the window titlebar when content analysis is active.
 # Variables:
 #   $agentName (String): The name of the DLP agent that is connected
@@ -935,7 +1050,7 @@ content-analysis-indicator-tooltip =
 content-analysis-panel-title = Perlindungan data
 # Variables:
 #   $agentName (String): The name of the DLP agent that is connected
-content-analysis-panel-text = Organisasi Anda menggunakan { $agentName } untuk melindungi dari kehilangan data. <a data-l10n-name="info">Pelajari lebih lanjut</a>
+content-analysis-panel-text-styled = Organisasi Anda menggunakan <b>{ $agentName }</b> untuk melindungi dari kehilangan data. <a data-l10n-name="info">Pelajari lebih lanjut</a>
 
 ## Unified extensions (toolbar) button
 
@@ -958,6 +1073,15 @@ unified-extensions-button-permissions-needed =
 unified-extensions-button-quarantined =
     .label = Ekstensi
     .tooltiptext = Ekstensi
+
+## Unified extensions button when some extensions are disabled (e.g. through add-ons blocklist).
+## Note that the new line is intentionally part of the tooltip.
+
+unified-extensions-button-blocklisted =
+    .label = Ekstensi
+    .tooltiptext =
+        Ekstensi
+        Beberapa ekstensi telah dinonaktifkan
 
 ## Private browsing reset button
 
@@ -998,6 +1122,7 @@ firefox-relay-offer-legal-notice = Dengan mengklik “Gunakan masker surel”, A
 popup-notification-addon-install-unsigned =
     .value = (Belum Diverifikasi)
 popup-notification-xpinstall-prompt-learn-more = Pelajari lebih lanjut tentang memasang pengaya dengan aman
+popup-notification-xpinstall-prompt-block-url = Lihat detail
 # Note: Access key is set to P to match "Private" in the corresponding localized label.
 popup-notification-addon-privatebrowsing-checkbox =
     .label = Jalankan di Jendela Pribadi

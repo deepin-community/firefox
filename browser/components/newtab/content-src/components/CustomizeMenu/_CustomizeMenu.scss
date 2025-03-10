@@ -1,6 +1,8 @@
 .personalizeButtonWrapper {
   margin: 0;
   padding: 0;
+  // z-index note: menu should cover fixed search bar and asrouter dev tools toggle button
+  z-index: 5;
 
   @media (height < 700px) {
     position: absolute;
@@ -12,7 +14,6 @@
     position: fixed;
     inset-block-start: var(--space-xlarge);
     inset-inline-end: var(--space-xlarge);
-    z-index: 1000;
   }
 }
 
@@ -154,11 +155,17 @@
     font-size: inherit;
   }
 
-  .section {
-    moz-toggle {
-      margin-bottom: 10px;
-    }
+  .settings-toggles {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xlarge);
+  }
 
+  [slot='nested'] {
+    margin-block-start: 0;
+  }
+
+  .section {
     .sponsored {
       font-size: 14px;
       margin-inline-start: 5px;
@@ -245,9 +252,21 @@
       }
     }
 
+    .more-info-pocket-wrapper {
+      .more-information {
+        // Note: This is necessary so the follow/block topics panel can
+        // be positioned absolutely across the entire Customize menu
+        position: static;
+      }
+
+      .check-wrapper {
+        margin-block-end: var(--space-small);
+      }
+    }
+
     .more-info-top-wrapper {
       .check-wrapper {
-        margin-top: 10px;
+        margin-block-start: var(--space-large);
       }
     }
   }
@@ -304,11 +323,193 @@
   }
 }
 
-.home-section .section .sponsored-checkbox:focus-visible,
-.selector:focus-visible,
 .external-link:focus-visible,
 .close-button:focus-visible {
   border: 1px solid var(--newtab-primary-action-background);
   outline: 0;
   box-shadow: $shadow-focus;
+}
+
+// Make sure form elements under the "Shortcuts" subsection don't change position on focus
+// by always having a 2px box shadow around them - one that blends in with the background.
+.home-section .section {
+  .sponsored-checkbox, .selector {
+    outline: 0;
+    box-shadow: 0 0 0 2px light-dark(var(--newtab-background-color), var(--newtab-background-color-dark));
+  }
+}
+
+// Move the Shortcuts dropdown slightly down so that the box shadow is not cut off at the top
+// in active & focus states.
+.home-section .section .selector {
+  margin-block-start: var(--space-xxsmall)
+}
+
+// Improve accessibility of shortcuts dropdown and sponsored shortcuts checkbox
+// by setting a bright 2px box shadow in active and focus states.
+.home-section .section
+{
+  .sponsored-checkbox, .selector {
+    &:is(:focus-visible) {
+      box-shadow: 0 0 0 2px var(--color-accent-primary);
+      outline: var(--focus-outline); // For Windows high-contrast mode
+    }
+
+    &:is(:active) {
+      box-shadow: 0 0 0 2px var(--color-accent-primary-active);
+      outline: 0;
+    }
+  }
+}
+
+.sections-mgmt-panel {
+  /* XXXdholbert The 32px subtraction here is to account for our 16px of
+  * margin on top and bottom. Ideally this should change to use
+  * 'height: stretch' when bug 1789477 lands. */
+  height: calc(100% - var(--space-xxlarge));
+  // Width of panel minus the margins
+  inset-inline-start: var(--space-xlarge);
+  position: absolute;
+  top: 0;
+  width: 380px;
+  z-index: 2;
+  transform: translateX(100%);
+  margin-block: var(--space-large) 0;
+  padding: 0;
+  background-color: var(--newtab-background-color-secondary);
+
+  &:dir(rtl) {
+    transform: translateX(-100%);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    &.sections-mgmt-panel-enter,
+    &.sections-mgmt-panel-exit,
+    &.sections-mgmt-panel-enter-done,
+    &.sections-mgmt-panel-exit-done {
+      transition: transform 300ms;
+    }
+  }
+
+  &.sections-mgmt-panel-enter-done,
+  &.sections-mgmt-panel-enter-active {
+    transform: translateX(0);
+  }
+
+  // Typography
+  h3 {
+    font-size: inherit;
+    margin-block: 0 var(--space-small);
+  }
+
+  // List
+  .topic-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-small);
+    margin-block: 0 var(--space-xxlarge);
+    padding-inline: 0;
+    width: 100%;
+
+    li {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+  }
+
+  .topic-list-empty-state {
+    display: block;
+    margin-block-end: var(--space-xxlarge);
+    color: var(--text-color-deemphasized);
+  }
+
+  // Buttons
+  .arrow-button {
+    background: url('chrome://global/skin/icons/arrow-left.svg') no-repeat left center;
+
+    &:dir(rtl) {
+      background: url('chrome://global/skin/icons/arrow-right.svg') no-repeat right center;
+    }
+
+    border: none;
+    cursor: pointer;
+    font-size: var(--font-size-root);
+    margin-block-end: var(--space-xlarge);
+    padding-inline-start: var(--space-xlarge);
+    -moz-context-properties: fill;
+    fill: currentColor;
+    min-height: var(--space-large);
+
+    h1 {
+      font-size: var(--font-size-root);
+      margin-block: 0;
+      font-weight: var(--button-font-weight);
+    }
+
+  }
+
+  // Follow / Unfollow and Block / Unblock Buttons
+  .section-block,
+  .section-follow {
+    .section-button-blocked-text,
+    .section-button-following-text {
+      display: none;
+    }
+
+    .section-button-unblock-text,
+    .section-button-unfollow-text {
+      display: none;
+    }
+
+    &.following {
+      .section-button-follow-text {
+        display: none;
+      }
+
+      .section-button-following-text {
+        display: block;
+      }
+    }
+
+    &.following:not(:hover) {
+      moz-button {
+        --button-background-color-destructive: var(--button-background-color);
+        --button-text-color-destructive: var(--button-text-color);
+        --button-border-color-destructive: var(--button-border-color);
+      }
+    }
+
+    &.following:hover {
+      .section-button-following-text {
+        display: none;
+      }
+
+      .section-button-unfollow-text {
+        display: block;
+      }
+    }
+
+    &.blocked {
+      .section-button-block-text {
+        display: none;
+      }
+
+      .section-button-blocked-text {
+        display: block;
+      }
+    }
+
+    &.blocked:hover {
+      .section-button-blocked-text {
+        display: none;
+      }
+
+      .section-button-unblock-text {
+        display: block;
+      }
+    }
+  }
+
 }

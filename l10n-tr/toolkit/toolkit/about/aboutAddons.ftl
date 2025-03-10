@@ -294,6 +294,9 @@ find-more-themes = Daha fazla tema bul
 # used for screen readers.
 addon-options-button =
     .aria-label = Diğer seçenekler
+# Explanatory introduction to the list of recommended add-ons. The action word
+# ("recommends") in the final sentence is a link to external documentation.
+discopane-intro2 = Uzantılar ve temalar { -brand-product-name } tarayıcınızı özelleştirmenizi sağlar. Gizliliğinizi artırabilir, veriminizi yükseltebilir, multimedya oynatmayı iyileştirebilir, { -brand-product-name } tarayıcısının görünümünü değiştirebilir ve çok daha fazlasını yapabilirler. Bu küçük yazılım programları genellikle üçüncü şahıslar tarafından geliştirilir. Mükemmel güvenlik, performans ve işlevsellik için { -brand-product-name } ekibinin <a data-l10n-name="learn-more-trigger">önerdiği</a> bazı uzantı ve temaları keşfedin.
 
 ## Add-on actions
 
@@ -380,6 +383,10 @@ addon-detail-group-label-updates =
     .aria-label = { addon-detail-updates-label }
 # This is the tooltip text for the private browsing badge in about:addons. The
 # badge is the private browsing icon included next to the extension's name.
+addon-badge-private-browsing-allowed3 =
+    .title = Gizli pencerelerde izinli
+# This is the tooltip text for the private browsing badge in about:addons. The
+# badge is the private browsing icon included next to the extension's name.
 addon-badge-private-browsing-allowed2 =
     .title = Gizli pencerelerde izinli
     .aria-label = { addon-badge-private-browsing-allowed2.title }
@@ -419,6 +426,14 @@ addon-badge-line3 =
 addon-badge-verified2 =
     .title = Bu uzantı incelendi, güvenlik ve performans standartlarımızı karşıladığı onaylandı
     .aria-label = { addon-badge-verified2.title }
+addon-badge-recommended3 =
+    .title = { -brand-product-name } yalnızca güvenlik ve performans standartlarımızı karşılayan uzantıları önerir
+# We hard code "Mozilla" in the string below because the extensions are built
+# by Mozilla and we don't want forks to display "by Fork".
+addon-badge-line4 =
+    .title = Resmi Mozilla uzantısı. Güvenlik ve performans standartlarını karşılar.
+addon-badge-verified3 =
+    .title = Bu uzantı incelendi, güvenlik ve performans standartlarımızı karşıladığı onaylandı
 
 ##
 
@@ -426,6 +441,7 @@ available-updates-heading = Mevcut güncellemeler
 recent-updates-heading = Son güncellenenler
 release-notes-loading = Yükleniyor…
 release-notes-error = Üzgünüz, sürüm notları yüklenirken bir hata meydana geldi.
+addon-permissions-empty2 = Bu uzantı herhangi bir izin gerektirmiyor.
 addon-permissions-empty = Bu uzantı herhangi bir izin gerektirmiyor
 addon-permissions-required = Temel işlevler için gerekli izinler:
 addon-permissions-optional = Ek işlevler için isteğe bağlı izinler:
@@ -475,10 +491,24 @@ details-notification-unsigned-and-disabled-link = Daha fazla bilgi
 details-notification-unsigned = { $name } { -brand-short-name } üzerinde kullanım için doğrulanamadı. Lütfen dikkatli olun.
 details-notification-unsigned2 =
     .message = { $name } { -brand-short-name } üzerinde kullanım için doğrulanamadı. Lütfen dikkatli olun.
+details-notification-hard-blocked-extension =
+    .message = Bu uzantı Mozilla politikalarını ihlal ettiği için engellendi ve devre dışı bırakıldı.
+details-notification-hard-blocked-other =
+    .message = Bu eklenti Mozilla politikalarını ihlal ettiği için engellendi ve devre dışı bırakıldı.
 details-notification-unsigned-link = Daha fazla bilgi
 details-notification-blocked = { $name } güvenlik veya kararlılık gerekçesiyle devre dışı bırakıldı.
 details-notification-blocked2 =
     .message = { $name } güvenlik veya kararlılık gerekçesiyle devre dışı bırakıldı.
+details-notification-blocked-link2 = Ayrıntıları göster
+details-notification-soft-blocked-extension-disabled =
+    .message = Bu uzantı Mozilla’nın politikalarını ihlal ettiği için kısıtlandı ve devre dışı bırakıldı. Uzantıyı etkinleştirebilirsiniz ama bu riskli olabilir.
+details-notification-soft-blocked-extension-enabled =
+    .message = Bu uzantı Mozilla politikalarını ihlal ediyor. Kullanılması riskli olabilir.
+details-notification-soft-blocked-other-disabled =
+    .message = Bu eklenti Mozilla’nın politikalarını ihlal ettiği için kısıtlandı ve devre dışı bırakıldı. Uzantıyı etkinleştirebilirsiniz ama bu riskli olabilir.
+details-notification-soft-blocked-other-enabled =
+    .message = Bu eklenti Mozilla politikalarını ihlal ediyor. Kullanılması riskli olabilir.
+details-notification-softblocked-link2 = Ayrıntıları göster
 details-notification-blocked-link = Daha fazla bilgi
 details-notification-softblocked = { $name } eklentisinin güvenlik veya kararlılık sorunlarına yol açtığı biliniyor.
 details-notification-softblocked2 =

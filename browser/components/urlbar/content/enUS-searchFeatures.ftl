@@ -111,10 +111,23 @@ firefox-suggest-weather-currently = Currently
 #   $unit (String) - The unit for the temperature
 firefox-suggest-weather-temperature = { $value }°{ $unit }
 
-# This string is the title of the weather summary
+# This string is the title of the weather summary used for the "simplest" UI
+# treatment. The temperature and unit substring should be in a <strong> tag. If
+# the temperature and unit are not adjacent in the string, then it's OK to
+# include only the temperature in the tag.
+# Variables:
+#   $temperature (number) - The temperature value
+#   $unit (String) - The unit for the temperature
+#   $city (String) - The name of the city the weather data is for
+#   $region (String) - The name of the region (e.g., U.S. state)
+firefox-suggest-weather-title-simplest = <strong>{ $temperature }°{ $unit }</strong> in { $city }, { $region }
+
+# This string is the title of the weather summary used for the "full" and
+# "simpler" UI treatments.
 # Variables:
 #   $city (String) - The name of the city the weather data is for
-firefox-suggest-weather-title = Weather for { $city }
+#   $region (String) - The name of the region (e.g., U.S. state)
+firefox-suggest-weather-title = Weather for { $city }, { $region }
 
 # This string displays the weather summary
 # Variables:
@@ -400,23 +413,9 @@ urlbar-firefox-suggest-contextual-opt-in-description-2 =
 urlbar-firefox-suggest-contextual-opt-in-allow = Allow suggestions
 urlbar-firefox-suggest-contextual-opt-in-dismiss = Not now
 
-## Searchmode Switcher button
+## Local search mode indicator labels in the urlbar
 
-# Variables:
-#   $engine (String): the current default search engine.
-urlbar-searchmode-button =
-    .label = { $engine }, Pick a Search Engine
-    .tooltiptext = { $engine }, Pick a Search Engine
-urlbar-searchmode-dropmarker =
-    .tooltiptext = Pick a Search Engine
-urlbar-searchmode-bookmarks =
-    .label = Bookmarks
-urlbar-searchmode-tabs =
-    .label = Tabs
-urlbar-searchmode-history =
-    .label = History
-urlbar-searchmode-actions =
-    .label = Actions
-
-urlbar-searchmode-popup-description = This time search with:
-urlbar-searchmode-popup-search-settings = Search Settings
+urlbar-search-mode-bookmarks-en = Bookmarks
+urlbar-search-mode-tabs-en = Tabs
+urlbar-search-mode-history-en = History
+urlbar-search-mode-actions-en = Actions

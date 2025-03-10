@@ -2,6 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+
 ## Generative AI (GenAI) Settings section
 
 genai-settings-chat-description = Aggiunge il tuo chatbot preferito alla barra laterale per un rapido accesso mentre navighi. <a data-l10n-name="connect">Condividi il tuo feedback</a>
@@ -26,11 +27,6 @@ genai-settings-chat-shortcuts =
 ## have character restrictions and being direct reduces the chance for misinterpretation.
 ## When localizing, please be concise and direct, but not at the expense of losing meaning.
 
-# This prompt is added to the beginning of selection prompts sent to a chatbot.
-# $tabTitle (string) - title of the webpage
-# $selection (string) - selected text
-genai-prompt-prefix-selection = Sono nella pagina “{ $tabTitle }” con il seguente testo selezionato: “{ $selection }”.
-
 # Prompt purpose: help users understand what a selection covers at a glance
 genai-prompts-summarize =
     .label = Riassumi
@@ -47,6 +43,14 @@ genai-prompts-quiz =
 genai-prompts-explain =
     .label = Spiega
     .value = Spiega i concetti chiave di questa selezione, usando parole semplici. Utilizza anche degli esempi.
+# Prompt purpose: writing tool that helps users with spelling and grammar mistakes and produce a response that identifies errors and rewrites the inputted text correctly
+genai-prompts-proofread =
+    .label = Revisiona il testo
+    .value = Rileggi la selezione per verificare la presenza di errori di ortografia e grammatica. Individua eventuali errori e fornisci una versione corretta del testo. Mantieni il significato e l’accuratezza dei fatti. Fornisci per prima cosa l’elenco delle correzioni proposte, seguito dalla versione finale e corretta del testo.
+# This prompt is added to the beginning of selection prompts sent to a chatbot.
+# $tabTitle (string) - title of the webpage
+# $selection (string) - selected text
+genai-prompt-prefix-selection = Sono nella pagina “{ $tabTitle }” con il seguente testo selezionato: “{ $selection }”.
 
 ## Chatbot menu shortcuts
 
@@ -55,9 +59,101 @@ genai-menu-ask-generic =
 # $provider (string) - name of the provider
 genai-menu-ask-provider =
     .label = Chiedi a { $provider }
-
+genai-menu-remove-generic =
+    .label = Rimuovi chatbot IA
+# $provider (string) - name of the provider
+genai-menu-remove-provider =
+    .label = Rimuovi { $provider }
 genai-input-ask-generic =
     .placeholder = Chiedi al chatbot IA…
 # $provider (string) - name of the provider
 genai-input-ask-provider =
     .placeholder = Chiedi a { $provider }…
+# $selectionLength (number) - selected text length
+# $maxLength (number) - max length of what can be selected
+genai-shortcuts-selected-warning-generic =
+    .heading = Il chatbot IA non riceverà la selezione completa
+    .message = Hai selezionato circa { $selectionLength } caratteri. Il numero di caratteri che possiamo inviare al chatbot è di circa { $maxLength }.
+# $provider (string) - name of the provider
+# $selectionLength (number) - selected text length
+# $maxLength (number) - max length of what can be selected
+genai-shortcuts-selected-warning =
+    .heading = { $provider } non riceverà la selezione completa
+    .message = Hai selezionato circa { $selectionLength } caratteri. Il numero di caratteri che possiamo inviare a { $provider } è di circa { $maxLength }.
+genai-shortcuts-hide =
+    .label = Nascondi scorciatoia per i chatbot
+
+## Chatbot header
+
+genai-chatbot-title = Chatbot IA
+genai-header-provider-menu =
+    .title = Scegli un chatbot
+genai-header-options-button =
+    .title = Apri menu
+genai-header-close-button =
+    .title = Chiudi
+genai-provider-view-details =
+    .label = Mostra dettagli chatbot
+genai-provider-about-chatbots =
+    .label = Informazioni su questi chatbot
+genai-options-reload-generic =
+    .label = Ricarica chatbot IA
+# $provider (string) - name of the provider
+genai-options-reload-provider =
+    .label = Ricarica { $provider }
+genai-options-show-shortcut =
+    .label = Mostra scorciatoia quando si seleziona del testo
+genai-options-hide-shortcut =
+    .label = Nascondi scorciatoia quando si seleziona del testo
+genai-options-about-chatbot =
+    .label = Informazioni sui chatbot IA in { -brand-short-name }
+
+## Chatbot onboarding
+
+genai-onboarding-header = Riassumi, genera idee e altro ancora mentre navighi
+# "Switch anytime" refers to allowing the user to switch to a different chatbot.
+genai-onboarding-description = Scegli il chatbot IA da utilizzare nella barra laterale di { -brand-short-name }. Ti mostreremo i dettagli relativi a ciascun chatbot quando lo selezioni, e potrai cambiarlo in qualsiasi momento. <a data-l10n-name="learn-more">Ulteriori informazioni</a>
+genai-onboarding-primary = Continua
+genai-onboarding-secondary = Chiudi
+genai-onboarding-claude-tooltip =
+    .title = Anthropic Claude
+genai-onboarding-claude-learn = Ulteriori informazioni su Claude
+genai-onboarding-chatgpt-tooltip =
+    .title = ChatGPT
+genai-onboarding-chatgpt-learn = Ulteriori informazioni su ChatGPT
+genai-onboarding-copilot-tooltip =
+    .title = Copilot
+genai-onboarding-copilot-learn = Ulteriori informazioni su Copilot
+genai-onboarding-gemini-tooltip =
+    .title = Google Gemini
+genai-onboarding-gemini-learn = Ulteriori informazioni su Gemini
+genai-onboarding-huggingchat-tooltip =
+    .title = HuggingChat
+genai-onboarding-huggingchat-learn = Ulteriori informazioni su HuggingChat
+genai-onboarding-lechat-tooltip =
+    .title = Le Chat Mistral
+genai-onboarding-lechat-learn = Ulteriori informazioni su Le Chat
+genai-onboarding-select-header = Seleziona del testo per visualizzare i suggerimenti
+genai-onboarding-select-description = Quando selezioni del testo ti suggeriremo delle richieste (“prompt”) che puoi inviare al chatbot. Puoi anche scrivere una tua versione delle richieste.
+genai-onboarding-select-primary = Avvia la chat
+
+## Chatbot onboarding choices
+## These describe features/capabilities of chatbot providers. These are not buttons/actions.
+
+genai-onboarding-claude-generate = Generazione di testo e codice
+genai-onboarding-claude-analyze = Analisi di documenti e immagini
+genai-onboarding-claude-price = Opzioni gratuite e a pagamento, account obbligatorio
+genai-onboarding-chatgpt-generate = Generazione di testo, immagini e codice
+genai-onboarding-chatgpt-analyze = Analisi di documenti e immagini
+genai-onboarding-chatgpt-price = Opzioni gratuite e a pagamento, account obbligatorio in alcuni Paesi e per alcune attività
+genai-onboarding-copilot-generate = Generazione di testo, immagini e codice
+genai-onboarding-copilot-analyze = Analisi di immagini
+genai-onboarding-copilot-price = Opzioni gratuite e a pagamento, account obbligatorio per alcune attività
+genai-onboarding-gemini-generate = Generazione di testo, immagini e codice
+genai-onboarding-gemini-analyze = Analisi di immagini (gratuita) e documenti (a pagamento)
+genai-onboarding-gemini-price = Opzioni gratuite e a pagamento, account obbligatorio
+genai-onboarding-huggingchat-generate = Generazione di testo e codice
+genai-onboarding-huggingchat-switch = Scegli tra un’ampia gamma di modelli aperti
+genai-onboarding-huggingchat-price-2 = Gratuito, account obbligatorio dopo un certo numero di richieste
+genai-onboarding-lechat-generate = Generazione di testo e codice
+genai-onboarding-lechat-price = Gratuito, account obbligatorio

@@ -30,4 +30,13 @@ webext-perms-description-sessions = Onlangs gesloten tabbladen benaderen
 webext-perms-description-tabs = Browsertabbladen benaderen
 webext-perms-description-tabHide = Browsertabbladen verbergen en tonen
 webext-perms-description-topSites = Browsergeschiedenis benaderen
+webext-perms-description-trialML = AI-modellen downloaden en op uw apparaat uitvoeren
+webext-perms-description-userScripts = Niet-geverifieerde scripts van derden toegang tot uw gegevens geven
 webext-perms-description-webNavigation = Browseractiviteit tijdens navigeren benaderen
+
+## The userScripts permission includes an additional explanation that is
+## displayed prominently near the usual permission description.
+
+webext-perms-extra-warning-userScripts-long = Niet-geverifieerde scripts kunnen beveiligings- en privacyrisico’s met zich meebrengen, zoals het uitvoeren van schadelijke code of het volgen van website-activiteit. Voer alleen scripts uit van extensies of bronnen die u vertrouwt.
+# A shorter warning is displayed in UI surfaces with little room, such as a permission prompt.
+webext-perms-extra-warning-userScripts-short = Niet-geverifieerde scripts kunnen beveiligings- en privacyrisico’s met zich meebrengen. Voer alleen scripts uit van extensies of bronnen die u vertrouwt.

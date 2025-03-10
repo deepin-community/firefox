@@ -30,6 +30,9 @@ appmenu-update-restart2 =
     .secondarybuttonlabel = Ignorieren
     .secondarybuttonaccesskey = g
 appmenu-update-restart-message2 = Installieren Sie die neueste Version von { -brand-shorter-name }. Offene Tabs und Fenster werden wiederhergestellt.
+appmenu-theme-installed =
+    .secondarybuttonlabel = Rückgängig
+    .secondarybuttonaccesskey = R
 appmenu-update-other-instance =
     .label = { -brand-shorter-name } kann nicht automatisch auf die neueste Version aktualisiert werden.
     .buttonlabel = { -brand-shorter-name } trotzdem aktualisieren
@@ -37,7 +40,6 @@ appmenu-update-other-instance =
     .secondarybuttonlabel = Nicht jetzt
     .secondarybuttonaccesskey = N
 appmenu-update-other-instance-message = Ein neues { -brand-shorter-name }-Update ist verfügbar. Es kann aber nicht installiert werden, weil eine andere Kopie von { -brand-shorter-name } ausgeführt wird. Schließen Sie diese, um das Update fortzusetzen, oder führen Sie das Update trotzdem durch (die andere Kopie funktioniert möglicherweise nicht korrekt, bis Sie jene neu starten).
-
 appmenu-addon-private-browsing-installed2 =
     .buttonlabel = OK
     .buttonaccesskey = O
@@ -45,7 +47,6 @@ appmenu-addon-post-install-message3 = Add-ons und Themes können über das Anwen
 appmenu-addon-post-install-incognito-checkbox =
     .label = Ausführen der Erweiterung in privaten Fenstern erlauben
     .accesskey = e
-    
 appmenu-new-tab-controlled-changes =
     .label = Ihre Startseite für neue Tabs hat sich geändert.
     .buttonlabel = Änderungen beibehalten

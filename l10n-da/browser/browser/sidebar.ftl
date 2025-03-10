@@ -4,6 +4,12 @@
 
 menu-view-genai-chat =
     .label = AI-Chatbot
+menu-view-review-checker =
+    .label = Verificering af anmeldelser
+menu-view-contextual-password-manager =
+    .label = Adgangskoder
+sidebar-options-menu-button =
+    .title = Åbn menu
 
 ## Labels for sidebar history panel
 
@@ -46,16 +52,30 @@ sidebar-position-right =
     .label = Vis til højre
 sidebar-vertical-tabs =
     .label = Lodrette faneblade
+sidebar-settings =
+    .label = Sidepanels-indstillinger
+sidebar-hide-tabs-and-sidebar =
+    .label = Skjul faneblade og sidepanel
+sidebar-show-on-the-right =
+    .label = Flyt sidepanelet til højre
+sidebar-show-on-the-left =
+    .label = Flyt sidepanelet til venstre
+# Option to automatically expand the collapsed sidebar when the mouse pointer
+# hovers over it.
+expand-sidebar-on-hover =
+    .label = Udvid sidepanel, når markøren holdes over
 sidebar-horizontal-tabs =
     .label = Vandrette faneblade
 sidebar-customize-tabs-header =
     .label = Fanebladsindstillinger
-sidebar-customize-settings-header =
-    .label = Indstillinger for sidepanel
-sidebar-visibility-always-show =
-    .label = Vis altid
-sidebar-visibility-hide-sidebar =
-    .label = Skjul sidepanel
+sidebar-customize-button-header =
+    .label = Sidepanel-knap
+sidebar-customize-position-header =
+    .label = Sidepanel-placering
+sidebar-visibility-setting-always-show =
+    .label = Udvid og sammenfold sidepanelet
+sidebar-visibility-setting-hide-sidebar =
+    .label = Vis og skjul sidepanelet
 
 ## Labels for sidebar context menu items
 
@@ -73,6 +93,10 @@ sidebar-context-menu-bookmark-tab =
     .label = Bogmærk faneblad…
 sidebar-context-menu-copy-link =
     .label = Kopier link
+# Variables:
+#   $deviceName (String) - The name of the device the user is closing a tab for
+sidebar-context-menu-close-remote-tab =
+    .label = Luk fanebladet på { $deviceName }
 
 ## Labels for sidebar history context menu items
 
@@ -91,6 +115,41 @@ sidebar-menu-bookmarks-label =
     .label = Bogmærker
 sidebar-menu-customize-label =
     .label = Tilpas sidepanel
+sidebar-menu-review-checker-label =
+    .label = Verificering af anmeldelser
+sidebar-menu-contextual-password-manager-label =
+    .label = Adgangskoder
+
+## Tooltips for sidebar menu items.
+
+# The tooltip to show over the history icon, when history is not currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-open-history-tooltip = Åbn historik ({ $shortcut })
+# The tooltip to show over the history icon, when history is currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-close-history-tooltip = Luk historik ({ $shortcut })
+# The tooltip to show over the bookmarks icon, when bookmarks is not currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-open-bookmarks-tooltip = Åbn bogmærker ({ $shortcut })
+# The tooltip to show over the bookmarks icon, when bookmarks is currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-close-bookmarks-tooltip = Luk bogmærker ({ $shortcut })
+sidebar-menu-open-ai-chatbot-tooltip = Åbn AI-chatbot
+sidebar-menu-close-ai-chatbot-tooltip = Luk AI-chatbot
+
+## Tooltips displayed over the AI chatbot icon.
+## Variables:
+##   $shortcut (String) - The OS specific keyboard shortcut.
+##   $provider (String) - The name of the AI chatbot provider (if available).
+
+sidebar-menu-open-ai-chatbot-tooltip-generic = Åbn AI-chatbot ({ $shortcut })
+sidebar-menu-open-ai-chatbot-provider-tooltip = Åbn { $provider } ({ $shortcut })
+sidebar-menu-close-ai-chatbot-tooltip-generic = Luk AI-chatbot ({ $shortcut })
+sidebar-menu-close-ai-chatbot-provider-tooltip = Luk { $provider } ({ $shortcut })
 
 ## Headings for sidebar menu panels.
 
@@ -100,3 +159,50 @@ sidebar-menu-history-header =
     .heading = Historik
 sidebar-menu-syncedtabs-header =
     .heading = Faneblade fra andre enheder
+sidebar-menu-bookmarks-header =
+    .heading = Bogmærker
+sidebar-menu-cpm-header =
+    .heading = Adgangskoder
+sidebar-panel-header-close-button =
+    .tooltiptext = Luk
+
+## Titles for sidebar menu panels.
+
+sidebar-customize-title = Tilpas sidepanel
+sidebar-history-title = Historik
+sidebar-syncedtabs-title = Faneblade fra andre enheder
+
+## Context for closing synced tabs when hovering over the items
+
+# Context for hovering over the close tab button that will
+# send a push to the device to close said tab
+# Variables:
+#   $deviceName (String) - the name of the device the user is closing a tab for
+synced-tabs-context-close-tab-title =
+    .title = Luk fanebladet på { $deviceName }
+show-sidebars =
+    .tooltiptext = Vis sidepaneler
+    .label = Sidepaneler
+
+## Tooltips for the sidebar toolbar widget.
+
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-expand-sidebar2 =
+    .tooltiptext = Udvid sidepanel ({ $shortcut })
+    .label = Sidepaneler
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-collapse-sidebar2 =
+    .tooltiptext = Sammenfold sidepanel ({ $shortcut })
+    .label = Sidepaneler
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-show-sidebar2 =
+    .tooltiptext = Vis sidepanel ({ $shortcut })
+    .label = Sidepaneler
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-hide-sidebar2 =
+    .tooltiptext = Skjul sidepanel ({ $shortcut })
+    .label = Sidepaneler

@@ -246,6 +246,9 @@ device-migration-fxa-spotlight-older-device-primary-button = Hesap oluştur
 device-migration-fxa-spotlight-getting-new-device-header-2 = Yeni bir cihaza geçmeyi düşünüyor musunuz?
 device-migration-fxa-spotlight-getting-new-device-body-2 = Yeni bir cihaza geçerken yer imlerinizi, geçmişinizi ve parolalarınızı yanınızda götürmek isterseniz birkaç basit adımda işe başlayabilirsiniz.
 device-migration-fxa-spotlight-getting-new-device-primary-button = Verilerimi nasıl yedekleyebilirim?
+device-migration-fxa-spotlight-sync-header = Hiçbir şeyi kaçırmadan gezin
+device-migration-fxa-spotlight-sync-body = Yer imleriniz ve parolalarınız gibi tüm önemli bilgilerinizi şifreleyerek eşitleyin. { -brand-product-name } kullandığınız her yerde tüm bilgilerinize ulaşabilirsiniz.
+device-migration-fxa-spotlight-sync-primary-button = Başlayın
 
 ## Set as Default PDF Reader Infobar
 
@@ -282,3 +285,61 @@ tail-fox-spotlight-title = İstenmeyen takip kodlarına izinizi kaybettirin
 tail-fox-spotlight-subtitle = Can sıkıcı reklam takip kodlarını engelleyerek daha güvenli, daha hızlı bir internet deneyimine kavuşun.
 tail-fox-spotlight-primary-button = Bağlantılarımı { -brand-short-name } ile aç
 tail-fox-spotlight-secondary-button = Şimdi değil
+
+## Root Certificate Succession Infobar
+
+root-certificate-succession-infobar-january-message = <strong>{ -brand-short-name } tarayıcısının eski sürümleri 14 Ocak 2025’ten itibaren sorun yaşamaya başlayabilir.</strong>
+root-certificate-succession-infobar-march-message = <strong>{ -brand-short-name } tarayıcınızı 14 Mart 2025’ten sonra da kullanmaya devam etmek için güncelleme yapın.</strong>
+root-certificate-succession-infobar-link = Neden güncellemeliyim?
+root-certificate-succession-infobar-primary-button =
+    .label = Şimdi güncelle
+    .accesskey = m
+root-certificate-succession-infobar-secondary-button =
+    .label = Daha sonra
+    .accesskey = D
+
+## Root Certificate Succession Windows Background Notification
+
+root-certificate-windows-background-notification-title = Önemli bir { -brand-short-name } güncellemesini kaçırdınız
+root-certificate-windows-background-notification-subtitle = Güncelleme yapmazsanız tarayıcınızın bazı kısımları yakında çalışmayacak. En yeni korumalarımızı ve özelliklerimizi edinmenin şimdi tam zamanı.
+root-certificate-windows-background-notification-learn-more-button = Daha fazla bilgi alın
+root-certificate-windows-background-notification-update-button = { -brand-short-name } tarayıcısını güncelle
+
+## FxA Menu Message variants
+
+fxa-menu-message-close-button =
+    .title = Kapat
+    .aria-label = Kapat
+fxa-menu-message-sign-up-button = Kaydol
+fxa-menu-message-sync-devices-primary-text = Tüm cihazlarınızı eşitleyin
+fxa-menu-message-sync-devices-secondary-text = Yer imlerinizi, parolalarınızı ve diğer bilgilerinizi { -brand-short-name } kullandığınız her yere götürün.
+fxa-menu-message-sync-devices-collapsed-text = Tüm cihazlarınızı eşitleyin
+fxa-menu-message-backup-data-primary-text = Tarayıcı verilerinizi yedekleyin
+fxa-menu-message-backup-data-secondary-text = Tüm cihazlarınızdaki yer imlerinizi, parolalarınızı ve diğer bilgileri otomatik olarak koruyun.
+fxa-menu-message-backup-data-collapsed-text = Tarayıcı verilerinizi yedekleyin
+fxa-menu-message-backup-sync-primary-text = Verilerinizi güvende ve eşitlenmiş tutun
+fxa-menu-message-backup-sync-secondary-text = Eşitleme özelliği verilerinizin çoğunu yedekler. Böylece { -brand-short-name } kullandığınız her yerden verilerinize erişebilirsiniz.
+fxa-menu-message-backup-sync-collapsed-text = Verileri eşitleyip yedekleyin
+fxa-menu-message-mobile-primary-text = Sekmeleri telefonunuza gönderin
+fxa-menu-message-mobile-secondary-text = Sekmelerinizi mobil cihazınızla eşitleyerek kaldığınız yerden devam edin.
+fxa-menu-message-mobile-collapsed-text = Telefonunuzla eşitleyin
+
+## Multi-CTA Fox Doodle Spotlight
+
+multi-cta-fox-doodle-title = Yeniden hoş geldiniz
+multi-cta-fox-doodle-set-default-checkbox = { -brand-short-name } tarayıcısını varsayılan tarayıcım yap
+multi-cta-fox-doodle-pin-startmenu-checkbox = { -brand-short-name } tarayıcısını Başlat menüsüne sabitle
+multi-cta-fox-doodle-pin-checkbox =
+    { PLATFORM() ->
+        [macos] { -brand-short-name } tarayıcısını Dock’a sabitle
+       *[other] { -brand-short-name } tarayıcısını görev çubuğuna sabitle
+    }
+multi-cta-fox-doodle-start-browsing-primary-button-label = Gezinmeye başla
+multi-cta-fox-doodle-main-browser-primary-button-label = { -brand-short-name } tarayıcısını ana tarayıcım yap
+multi-cta-fox-doodle-quick-reminder-subtitle = Küçük bir hatırlatma: En sevdiğiniz gizlilik odaklı tarayıcınızı bir tık kadar yakınınızda tutabilirsiniz.
+multi-cta-fox-doodle-privacy-focused-subtitle =
+    { PLATFORM() ->
+        [macos] Gizlilik odaklı favori tarayıcınız bir tık uzağınızda. Bağlantıları açmak için { -brand-short-name } uygulamasını varsayılan tarayıcınız olarak ayarlayın, sonra da Dock’a sabitleyin.
+       *[other] Gizlilik odaklı favori tarayıcınız bir tık uzağınızda. Bağlantıları açmak için { -brand-short-name } uygulamasını varsayılan tarayıcınız olarak ayarlayın, sonra da görev çubuğunuza sabitleyin.
+    }
+multi-cta-fox-doodle-msix-privacy-focused-subtitle = Gizlilik odaklı favori tarayıcınız bir tık uzağınızda. Bağlantıları açmak için { -brand-short-name } uygulamasını varsayılan tarayıcınız olarak ayarlayın, sonra da görev çubuğunuza ve Başlat menünüze sabitleyin.

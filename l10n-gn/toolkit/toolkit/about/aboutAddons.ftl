@@ -373,6 +373,10 @@ addon-detail-group-label-updates =
     .aria-label = { addon-detail-updates-label }
 # This is the tooltip text for the private browsing badge in about:addons. The
 # badge is the private browsing icon included next to the extension's name.
+addon-badge-private-browsing-allowed3 =
+    .title = Ovetã ñemíme moneĩmbyre
+# This is the tooltip text for the private browsing badge in about:addons. The
+# badge is the private browsing icon included next to the extension's name.
 addon-badge-private-browsing-allowed2 =
     .title = Ovetã ñemíme moneĩmbyre
     .aria-label = { addon-badge-private-browsing-allowed2.title }
@@ -412,6 +416,14 @@ addon-badge-line3 =
 addon-badge-verified2 =
     .title = Ko jepysokue ojehechajey oguerekópa tekorosã ha oikoporãpa.
     .aria-label = { addon-badge-verified2.title }
+addon-badge-recommended3 =
+    .title = { -brand-product-name } omoneĩ jepysokue oguerekóva tekorosã ha tembiapokue
+# We hard code "Mozilla" in the string below because the extensions are built
+# by Mozilla and we don't want forks to display "by Fork".
+addon-badge-line4 =
+    .title = Jepysokue Mozilla ojapopyréva. Orekopaite tekorosã ha ha’eve
+addon-badge-verified3 =
+    .title = Ko jepysokue ojehechajey oguerekópa tekorosã ha oikoporãpa.
 
 ##
 
@@ -419,6 +431,7 @@ available-updates-heading = Ñembohekopyahu eiporukuaáva
 recent-updates-heading = Mohekopyahu ramoveguáva
 release-notes-loading = Henyhẽhína…
 release-notes-error = Rombyasy, hákatu oiko jejavy henyhẽnguévo jehaipy rehegua.
+addon-permissions-empty2 = Ko moĩmbaha noikotevẽi ñemoneĩre.
 addon-permissions-empty = Ko jepysokue noikotevẽi ñemoneĩ
 addon-permissions-required = Ñemoneĩ tekotevẽva tembiapoite ha’etévape g̃uarã:
 addon-permissions-optional = Ñemoneĩ potapýva tembiapoite jopoiguápe g̃uarã:
@@ -468,10 +481,24 @@ details-notification-unsigned-and-disabled-link = Maranduve
 details-notification-unsigned = { $name } ndaikatúi ojehechajey ojeporu hag̃ua { -brand-short-name }-pe. Ejesareko porãke hese.
 details-notification-unsigned2 =
     .message = { $name } ndaikatúi ojehechajey ojeporu hag̃ua { -brand-short-name }-pe. Ejesareko porãke hese.
+details-notification-hard-blocked-extension =
+    .message = Ko jepysokue ojejokóma omomarã haguére Mozilla porureko ha upévare ojeipe’áma.
+details-notification-hard-blocked-other =
+    .message = Ko moĩmbaha ojejokóma omomarã haguére Mozilla porureko ha upévare ojeipe’áma.
 details-notification-unsigned-link = Maranduve
 details-notification-blocked = { $name } oñemongéma oguereko rupi apañuái tekorosãrã térã tekopytápe.
 details-notification-blocked2 =
     .message = { $name } oñemongéma oguereko rupi apañuái tekorosãrã térã tekopytápe.
+details-notification-blocked-link2 = Mba’emimi jehechauka
+details-notification-soft-blocked-extension-disabled =
+    .message = Ko jepysokue ojejokóma omomarãre Mozilla porureko ha upévare ojeipe’áma. Ikatu emyandy jey, hákatu iñapañuaikuaa.
+details-notification-soft-blocked-extension-enabled =
+    .message = Ko jepysokue omomarã Mozilla porureko. Eiporúramo ikatu noĩporãi.
+details-notification-soft-blocked-other-disabled =
+    .message = Ko moĩmbaha ojejokóma omomarãre Mozilla porureko ha upévare ojeipe’áma. Ikatu emyandy jey, hákatu iñapañuaikuaa.
+details-notification-soft-blocked-other-enabled =
+    .message = Ko moĩmbaha omomarã Mozilla porureko. Eiporúramo ikatu noĩporãi.
+details-notification-softblocked-link2 = Mba’emimi jehechauka
 details-notification-blocked-link = Maranduve
 details-notification-softblocked = Ojeikuaa { $name } omoapañuaiha tekorosã térã tekoporã.
 details-notification-softblocked2 =

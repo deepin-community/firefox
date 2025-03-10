@@ -12,6 +12,9 @@ const { EngineProcess } = ChromeUtils.importESModule(
 const { TranslationsPanelShared } = ChromeUtils.importESModule(
   "chrome://browser/content/translations/TranslationsPanelShared.sys.mjs"
 );
+const { TranslationsUtils } = ChromeUtils.importESModule(
+  "chrome://global/content/translations/TranslationsUtils.mjs"
+);
 
 // Avoid about:blank's non-standard behavior.
 const BLANK_PAGE =
@@ -37,6 +40,10 @@ const PDF_TEST_PAGE_URL =
   URL_COM_PREFIX + DIR_PATH + "translations-tester-pdf-file.pdf";
 const SELECT_TEST_PAGE_URL =
   URL_COM_PREFIX + DIR_PATH + "translations-tester-select.html";
+const TEXT_CLEANING_URL =
+  URL_COM_PREFIX + DIR_PATH + "translations-text-cleaning.html";
+const SPANISH_BENCHMARK_PAGE_URL =
+  URL_COM_PREFIX + DIR_PATH + "translations-bencher-es.html";
 
 const PIVOT_LANGUAGE = "en";
 const LANGUAGE_PAIRS = [
@@ -53,6 +60,26 @@ const ALWAYS_TRANSLATE_LANGS_PREF =
   "browser.translations.alwaysTranslateLanguages";
 const NEVER_TRANSLATE_LANGS_PREF =
   "browser.translations.neverTranslateLanguages";
+const USE_LEXICAL_SHORTLIST_PREF = "browser.translations.useLexicalShortlist";
+
+/**
+ * Generates a sorted list of Translation model file names for the given language pairs.
+ *
+ * @param {Array<{ fromLang: string, toLang: string }>} languagePairs - An array of language pair objects.
+ *
+ * @returns {string[]} A sorted array of translation model file names.
+ */
+function languageModelNames(languagePairs) {
+  return languagePairs
+    .flatMap(({ fromLang, toLang }) => [
+      `model.${fromLang}${toLang}.intgemm.alphas.bin`,
+      `vocab.${fromLang}${toLang}.spm`,
+      ...(Services.prefs.getBoolPref(USE_LEXICAL_SHORTLIST_PREF)
+        ? [`lex.50.50.${fromLang}${toLang}.s2t.bin`]
+        : []),
+    ])
+    .sort();
+}
 
 /**
  * The mochitest runs in the parent process. This function opens up a new tab,
@@ -98,13 +125,14 @@ async function openAboutTranslations({
   languagePairs = LANGUAGE_PAIRS,
   prefs,
   autoDownloadFromRemoteSettings = false,
-}) {
+} = {}) {
   await SpecialPowers.pushPrefEnv({
     set: [
       // Enabled by default.
       ["browser.translations.enable", !disabled],
       ["browser.translations.logLevel", "All"],
       ["browser.translations.mostRecentTargetLanguages", ""],
+      [USE_LEXICAL_SHORTLIST_PREF, false],
       ...(prefs ?? []),
     ],
   });
@@ -116,6 +144,7 @@ async function openAboutTranslations({
     pageHeader: '[data-l10n-id="about-translations-header"]',
     fromLanguageSelect: "select#language-from",
     toLanguageSelect: "select#language-to",
+    languageSwapButton: "button#language-swap",
     translationTextarea: "textarea#translation-from",
     translationResult: "#translation-to",
     translationResultBlank: "#translation-to-blank",
@@ -149,7 +178,7 @@ async function openAboutTranslations({
   const resolveDownloads = async count => {
     await remoteClients.translationsWasm.resolvePendingDownloads(1);
     await remoteClients.translationModels.resolvePendingDownloads(
-      FILES_PER_LANGUAGE_PAIR * count
+      downloadedFilesPerLanguagePair() * count
     );
   };
 
@@ -159,7 +188,7 @@ async function openAboutTranslations({
   const rejectDownloads = async count => {
     await remoteClients.translationsWasm.rejectPendingDownloads(1);
     await remoteClients.translationModels.rejectPendingDownloads(
-      FILES_PER_LANGUAGE_PAIR * count
+      downloadedFilesPerLanguagePair() * count
     );
   };
 
@@ -179,6 +208,8 @@ async function openAboutTranslations({
       await EngineProcess.destroyTranslationsEngine();
 
       await SpecialPowers.popPrefEnv();
+      TestTranslationsTelemetry.reset();
+      Services.fog.testResetFOG();
     },
     resolveDownloads,
     rejectDownloads,
@@ -272,11 +303,34 @@ function upperCaseNode(node) {
 }
 
 /**
+ * Recursively transforms all child nodes to have diacriticized text. This is useful
+ * to spot multiple translations.
+ *
+ * @param {Node} node
+ */
+function diacriticizeNode(node) {
+  if (typeof node.nodeValue === "string") {
+    let result = "";
+    for (let i = 0; i < node.nodeValue.length; i++) {
+      const ch = node.nodeValue[i];
+      result += ch;
+      if ("abcdefghijklmnopqrstuvwxyz".includes(ch.toLowerCase())) {
+        result += "\u0305";
+      }
+    }
+    node.nodeValue = result;
+  }
+  for (const childNode of node.childNodes) {
+    diacriticizeNode(childNode);
+  }
+}
+
+/**
  * Creates a mocked message port for translations.
  *
  * @returns {MessagePort} This is mocked
  */
-function createMockedTranslatorPort(transformNode = upperCaseNode) {
+function createMockedTranslatorPort(transformNode = upperCaseNode, delay = 0) {
   const parser = new DOMParser();
   const mockedPort = {
     async postMessage(message) {
@@ -293,15 +347,18 @@ function createMockedTranslatorPort(transformNode = upperCaseNode) {
           });
           break;
         case "TranslationsPort:TranslationRequest": {
-          const { messageId, sourceText } = message;
+          const { translationId, sourceText } = message;
 
           const translatedDoc = parser.parseFromString(sourceText, "text/html");
           transformNode(translatedDoc.body);
+          if (delay) {
+            await new Promise(resolve => setTimeout(resolve, delay));
+          }
           mockedPort.onmessage({
             data: {
               type: "TranslationsPort:TranslationResponse",
               targetText: translatedDoc.body.innerHTML,
-              messageId,
+              translationId,
             },
           });
         }
@@ -309,6 +366,199 @@ function createMockedTranslatorPort(transformNode = upperCaseNode) {
     },
   };
   return mockedPort;
+}
+
+class TranslationResolver {
+  resolvers = Promise.withResolvers();
+  resolveCount = 0;
+  getPromise() {
+    return this.resolvers.promise;
+  }
+}
+
+/**
+ * Creates a mocked message port for translations.
+ *
+ * @returns {MessagePort} This is mocked
+ */
+function createControlledTranslatorPort() {
+  const parser = new DOMParser();
+
+  const canceledTranslations = new Set();
+  let resolvers = Promise.withResolvers();
+  let translationCount = 0;
+
+  async function resolveRequests() {
+    info("Resolving all pending translation requests");
+    await TestUtils.waitForTick();
+    resolvers.resolve();
+    resolvers = Promise.withResolvers();
+    await TestUtils.waitForTick();
+    const count = translationCount;
+    translationCount = 0;
+    return count;
+  }
+
+  const mockedTranslatorPort = {
+    async postMessage(message) {
+      switch (message.type) {
+        case "TranslationsPort:CancelSingleTranslation":
+          info("Canceling translation id:" + message.translationId);
+          canceledTranslations.add(message.translationId);
+          break;
+        case "TranslationsPort:GetEngineStatusRequest":
+          mockedTranslatorPort.onmessage({
+            data: {
+              type: "TranslationsPort:GetEngineStatusResponse",
+              status: "ready",
+            },
+          });
+          break;
+        case "TranslationsPort:TranslationRequest": {
+          const { translationId, sourceText } = message;
+
+          // Create a short debug version of the text.
+          let debugText = sourceText.trim().replaceAll("\n", "");
+          if (debugText.length > 50) {
+            debugText = debugText.slice(0, 50) + "...";
+          }
+
+          info(
+            `Translation requested (id:${message.translationId}) "${debugText}"`
+          );
+          await resolvers.promise;
+
+          if (canceledTranslations.has(translationId)) {
+            info("Cancelled translation id:" + translationId);
+          } else {
+            info(
+              "Translation completed, responding id:" + message.translationId
+            );
+            translationCount++;
+            const translatedDoc = parser.parseFromString(
+              sourceText,
+              "text/html"
+            );
+            diacriticizeNode(translatedDoc.body);
+            const targetText =
+              translatedDoc.body.innerHTML.trim() + ` (id:${translationId})`;
+
+            info("Translation response: " + targetText.replaceAll("\n", ""));
+            mockedTranslatorPort.onmessage({
+              data: {
+                type: "TranslationsPort:TranslationResponse",
+                targetText,
+                translationId,
+              },
+            });
+          }
+        }
+      }
+    },
+  };
+
+  return { mockedTranslatorPort, resolveRequests };
+}
+
+/**
+ * @type {typeof import("../../content/translations-document.sys.mjs")}
+ */
+const { TranslationsDocument, LRUCache } = ChromeUtils.importESModule(
+  "chrome://global/content/translations/translations-document.sys.mjs"
+);
+
+/**
+ * @param {string} html
+ * @param {{
+ *  mockedTranslatorPort?: (message: string) => Promise<string>,
+ *  mockedReportVisibleChange?: () => void
+ * }} [options]
+ */
+async function createTranslationsDoc(html, options) {
+  await SpecialPowers.pushPrefEnv({
+    set: [
+      ["browser.translations.enable", true],
+      ["browser.translations.logLevel", "All"],
+      [USE_LEXICAL_SHORTLIST_PREF, false],
+    ],
+  });
+
+  const parser = new DOMParser();
+  const document = parser.parseFromString(html, "text/html");
+
+  // For some reason, the document <body> here from the DOMParser is "display: flex" by
+  // default. Ensure that it is "display: block" instead, otherwise the children of the
+  // <body> will not be "display: inline".
+  document.body.style.display = "block";
+
+  const translate = () => {
+    info("Creating the TranslationsDocument.");
+    return new TranslationsDocument(
+      document,
+      "en",
+      "EN",
+      0, // This is a fake innerWindowID
+      options?.mockedTranslatorPort ?? createMockedTranslatorPort(),
+      () => {
+        throw new Error("Cannot request a new port");
+      },
+      options?.mockedReportVisibleChange ?? (() => {}),
+      performance.now(),
+      () => performance.now(),
+      new LRUCache()
+    );
+  };
+
+  /**
+   * Test utility to check that the document matches the expected markup
+   *
+   * @param {string} message
+   * @param {string} html
+   */
+  async function htmlMatches(message, html, element = document.body) {
+    const expected = naivelyPrettify(html);
+    try {
+      await waitForCondition(
+        () => naivelyPrettify(element.innerHTML) === expected,
+        "Waiting for HTML to match."
+      );
+      ok(true, message);
+    } catch (error) {
+      console.error(error);
+
+      // Provide a nice error message.
+      const actual = naivelyPrettify(element.innerHTML);
+      ok(
+        false,
+        `${message}\n\nExpected HTML:\n\n${expected}\n\nActual HTML:\n\n${actual}\n\n`
+      );
+    }
+  }
+
+  function cleanup() {
+    SpecialPowers.popPrefEnv();
+  }
+
+  return { htmlMatches, cleanup, translate, document };
+}
+
+/**
+ * Perform a double requestAnimationFrame, which is used by the TranslationsDocument
+ * to handle mutations.
+ *
+ * @param {Document} doc
+ */
+function doubleRaf(doc) {
+  return new Promise(resolve => {
+    doc.ownerGlobal.requestAnimationFrame(() => {
+      doc.ownerGlobal.requestAnimationFrame(() => {
+        resolve(
+          // Wait for a tick to be after anything that resolves with a double rAF.
+          TestUtils.waitForTick()
+        );
+      });
+    });
+  });
 }
 
 /**
@@ -381,9 +631,7 @@ function createdReorderingMockedTranslatorPort() {
  * @returns {import("../../actors/TranslationsParent.sys.mjs").TranslationsParent}
  */
 function getTranslationsParent() {
-  return gBrowser.selectedBrowser.browsingContext.currentWindowGlobal.getActor(
-    "Translations"
-  );
+  return TranslationsParent.getTranslationsActor(gBrowser.selectedBrowser);
 }
 
 /**
@@ -486,6 +734,7 @@ async function setupActorTest({
       // Enabled by default.
       ["browser.translations.enable", true],
       ["browser.translations.logLevel", "All"],
+      [USE_LEXICAL_SHORTLIST_PREF, false],
       ...(prefs ?? []),
     ],
   });
@@ -518,10 +767,28 @@ async function setupActorTest({
   };
 }
 
+/**
+ * Creates and mocks remote settings for translations.
+ *
+ * @param {object} options - The options for creating and mocking remote settings.
+ * @param {Array<{fromLang: string, toLang: string}>} [options.languagePairs=LANGUAGE_PAIRS]
+ *  - The language pairs to be used.
+ * @param {boolean} [options.useMockedTranslator=true]
+ *  - Whether to use a mocked translator.
+ * @param {boolean} [options.autoDownloadFromRemoteSettings=false]
+ *  - Whether to automatically download from remote settings.
+ *
+ * @returns {Promise<object>} - An object containing the removeMocks function and remoteClients.
+ */
 async function createAndMockRemoteSettings({
   languagePairs = LANGUAGE_PAIRS,
+  useMockedTranslator = true,
   autoDownloadFromRemoteSettings = false,
 }) {
+  if (TranslationsParent.isTranslationsEngineMocked()) {
+    info("Attempt to mock the Translations Engine when it is already mocked.");
+  }
+
   const remoteClients = {
     translationModels: await createTranslationModelsRemoteClient(
       autoDownloadFromRemoteSettings,
@@ -537,10 +804,11 @@ async function createAndMockRemoteSettings({
   TranslationsParent.clearCache();
   TranslationsPanelShared.clearLanguageListsCache();
 
-  TranslationsParent.mockTranslationsEngine(
-    remoteClients.translationModels.client,
-    remoteClients.translationsWasm.client
-  );
+  TranslationsParent.applyTestingMocks({
+    useMockedTranslator,
+    translationModelsRemoteClient: remoteClients.translationModels.client,
+    translationsWasmRemoteClient: remoteClients.translationsWasm.client,
+  });
 
   return {
     async removeMocks() {
@@ -548,10 +816,110 @@ async function createAndMockRemoteSettings({
       await remoteClients.translationModels.client.db.clear();
       await remoteClients.translationsWasm.client.db.clear();
 
-      TranslationsParent.unmockTranslationsEngine();
+      TranslationsParent.removeTestingMocks();
       TranslationsParent.clearCache();
       TranslationsPanelShared.clearLanguageListsCache();
     },
+    remoteClients,
+  };
+}
+
+/**
+ * Normalizes the backslashes or forward slashes in the given path
+ * to be correct for the current operating system.
+ *
+ * @param {string} path - The path to normalize.
+ *
+ * @returns {string} - The normalized path.
+ */
+function normalizePathForOS(path) {
+  if (Services.appinfo.OS === "WINNT") {
+    // On Windows, replace forward slashes with backslashes
+    return path.replace(/\//g, "\\");
+  }
+
+  // On Unix-like systems, replace backslashes with forward slashes
+  return path.replace(/\\/g, "/");
+}
+
+/**
+ * Returns true if the given path exists, otherwise false.
+ *
+ * @param {string} path - The path to check.
+ *
+ * @returns {Promise<boolean>}
+ */
+async function pathExists(path) {
+  try {
+    return await IOUtils.exists(path);
+  } catch (e) {
+    return false;
+  }
+}
+
+/**
+ * Creates remote settings for the file system.
+ *
+ * @param {Array<{fromLang: string, toLang: string}>} languagePairs - The language pairs to be used.
+ *
+ * @returns {Promise<object>} - An object containing the removeMocks function and remoteClients.
+ */
+async function createFileSystemRemoteSettings(languagePairs) {
+  const { removeMocks, remoteClients } = await createAndMockRemoteSettings({
+    languagePairs,
+    useMockedTranslator: false,
+    autoDownloadFromRemoteSettings: true,
+  });
+
+  const artifactDirectory = normalizePathForOS(
+    `${Services.env.get("MOZ_FETCHES_DIR")}`
+  );
+
+  if (!artifactDirectory) {
+    await removeMocks();
+    throw new Error(`
+
+      🚨 The MOZ_FETCHES_DIR environment variable is not set 🚨
+
+      If you are running a Translations end-to-end test locally, you will need to download the required artifacts to MOZ_FETCHES_DIR.
+      To configure MOZ_FETCHES_DIR to run Translations end-to-end tests locally, please run the following script:
+
+      ❯ python3 toolkit/components/translations/tests/scripts/download-translations-artifacts.py
+
+    `);
+  }
+
+  if (!PathUtils.isAbsolute(artifactDirectory)) {
+    await removeMocks();
+    throw new Error(`
+      The path exported to MOZ_FETCHES_DIR environment variable is a relative path.
+      Please export an absolute path to MOZ_FETCHES_DIR.
+    `);
+  }
+
+  const download = async record => {
+    const recordPath = normalizePathForOS(
+      `${artifactDirectory}/${record.name}`
+    );
+
+    if (!(await pathExists(recordPath))) {
+      throw new Error(`
+        The record ${record.name} was not found in ${artifactDirectory} specified by MOZ_FETCHES_DIR.
+        If you are running a Translations end-to-end test locally, you will need to download the required artifacts to MOZ_FETCHES_DIR.
+        To configure MOZ_FETCHES_DIR to run Translations end-to-end tests locally, please run toolkit/components/translations/tests/scripts/download-translations-artifacts.py
+      `);
+    }
+
+    return {
+      buffer: (await IOUtils.read(recordPath)).buffer,
+    };
+  };
+
+  remoteClients.translationsWasm.client.attachments.download = download;
+  remoteClients.translationModels.client.attachments.download = download;
+
+  return {
+    removeMocks,
     remoteClients,
   };
 }
@@ -630,11 +998,15 @@ class MockedA11yUtils {
 
 async function loadTestPage({
   languagePairs,
+  endToEndTest = false,
   autoDownloadFromRemoteSettings = false,
   page,
   prefs,
   autoOffer,
   permissionsUrls,
+  systemLocales = ["en"],
+  appLocales,
+  webLanguages,
   win = window,
 }) {
   info(`Loading test page starting at url: ${page}`);
@@ -662,6 +1034,7 @@ async function loadTestPage({
         ["browser.translations.alwaysTranslateLanguages", ""],
         ["browser.translations.neverTranslateLanguages", ""],
         ["browser.translations.mostRecentTargetLanguages", ""],
+        [USE_LEXICAL_SHORTLIST_PREF, false],
         // Bug 1893100 - This is needed to ensure that switching focus
         // with tab works in tests independent of macOS settings that
         // would otherwise disable keyboard navigation at the OS level.
@@ -685,16 +1058,27 @@ async function loadTestPage({
       }))
     );
 
-    const result = await createAndMockRemoteSettings({
-      languagePairs,
-      autoDownloadFromRemoteSettings,
-    });
+    const result = endToEndTest
+      ? await createFileSystemRemoteSettings(languagePairs)
+      : await createAndMockRemoteSettings({
+          languagePairs,
+          autoDownloadFromRemoteSettings,
+        });
     remoteClients = result.remoteClients;
     removeMocks = result.removeMocks;
   }
 
   if (autoOffer) {
     TranslationsParent.testAutomaticPopup = true;
+  }
+
+  let cleanupLocales;
+  if (systemLocales || appLocales || webLanguages) {
+    cleanupLocales = await mockLocales({
+      systemLocales,
+      appLocales,
+      webLanguages,
+    });
   }
 
   // Start the tab at a blank page.
@@ -730,7 +1114,7 @@ async function loadTestPage({
     async resolveDownloads(count) {
       await remoteClients.translationsWasm.resolvePendingDownloads(1);
       await remoteClients.translationModels.resolvePendingDownloads(
-        FILES_PER_LANGUAGE_PAIR * count
+        downloadedFilesPerLanguagePair() * count
       );
     },
 
@@ -745,7 +1129,7 @@ async function loadTestPage({
     async rejectDownloads(count) {
       await remoteClients.translationsWasm.rejectPendingDownloads(1);
       await remoteClients.translationModels.rejectPendingDownloads(
-        FILES_PER_LANGUAGE_PAIR * count
+        downloadedFilesPerLanguagePair() * count
       );
     },
 
@@ -768,7 +1152,7 @@ async function loadTestPage({
         expectedWasmDownloads
       );
       await remoteClients.translationModels.resolvePendingDownloads(
-        FILES_PER_LANGUAGE_PAIR * expectedLanguagePairDownloads
+        downloadedFilesPerLanguagePair() * expectedLanguagePairDownloads
       );
     },
 
@@ -791,7 +1175,7 @@ async function loadTestPage({
         expectedWasmDownloads
       );
       await remoteClients.translationModels.rejectPendingDownloads(
-        FILES_PER_LANGUAGE_PAIR * expectedLanguagePairDownloads
+        downloadedFilesPerLanguagePair() * expectedLanguagePairDownloads
       );
     },
 
@@ -803,6 +1187,9 @@ async function loadTestPage({
       await loadBlankPage();
       await EngineProcess.destroyTranslationsEngine();
       await removeMocks();
+      if (cleanupLocales) {
+        await cleanupLocales();
+      }
       restoreA11yUtils();
       Services.fog.testResetFOG();
       TranslationsParent.testAutomaticPopup = false;
@@ -994,17 +1381,26 @@ function createAttachmentMock(
 }
 
 /**
- * The amount of files that are generated per mocked language pair.
+ * The count of records per mocked language pair in Remote Settings.
  */
-const FILES_PER_LANGUAGE_PAIR = 3;
+const RECORDS_PER_LANGUAGE_PAIR = 3;
+
+/**
+ * The count of files that are downloaded for a mocked language pair in Remote Settings.
+ */
+function downloadedFilesPerLanguagePair() {
+  return Services.prefs.getBoolPref(USE_LEXICAL_SHORTLIST_PREF)
+    ? RECORDS_PER_LANGUAGE_PAIR
+    : RECORDS_PER_LANGUAGE_PAIR - 1;
+}
 
 function createRecordsForLanguagePair(fromLang, toLang) {
   const records = [];
   const lang = fromLang + toLang;
   const models = [
     { fileType: "model", name: `model.${lang}.intgemm.alphas.bin` },
-    { fileType: "lex", name: `lex.50.50.${lang}.s2t.bin` },
     { fileType: "vocab", name: `vocab.${lang}.spm` },
+    { fileType: "lex", name: `lex.50.50.${lang}.s2t.bin` },
   ];
 
   const attachment = {
@@ -1016,7 +1412,7 @@ function createRecordsForLanguagePair(fromLang, toLang) {
     isDownloaded: false,
   };
 
-  if (models.length !== FILES_PER_LANGUAGE_PAIR) {
+  if (models.length !== RECORDS_PER_LANGUAGE_PAIR) {
     throw new Error("Files per language pair was wrong.");
   }
 
@@ -1027,7 +1423,7 @@ function createRecordsForLanguagePair(fromLang, toLang) {
       fromLang,
       toLang,
       fileType,
-      version: TranslationsParent.LANGUAGE_MODEL_MAJOR_VERSION + ".0",
+      version: TranslationsParent.LANGUAGE_MODEL_MAJOR_VERSION_MAX + ".0",
       last_modified: Date.now(),
       schema: Date.now(),
       attachment: JSON.parse(JSON.stringify(attachment)), // Making a deep copy.
@@ -1376,6 +1772,7 @@ async function setupAboutPreferences(
       // Enabled by default.
       ["browser.translations.enable", true],
       ["browser.translations.logLevel", "All"],
+      [USE_LEXICAL_SHORTLIST_PREF, false],
       ...prefs,
     ],
   });
@@ -1417,6 +1814,9 @@ async function setupAboutPreferences(
   }
 
   async function cleanup() {
+    Services.prefs.setCharPref(NEVER_TRANSLATE_LANGS_PREF, "");
+    Services.prefs.setCharPref(ALWAYS_TRANSLATE_LANGS_PREF, "");
+    Services.perms.removeAll();
     await closeAllOpenPanelsAndMenus();
     await loadBlankPage();
     await EngineProcess.destroyTranslationsEngine();
@@ -1431,6 +1831,44 @@ async function setupAboutPreferences(
     remoteClients,
     elements,
   };
+}
+
+/**
+ * Tests a callback function with the lexical shortlist preference enabled and disabled.
+ *
+ * @param {Function} callback - An async function to execute, receiving the preference settings as an argument.
+ */
+async function testWithAndWithoutLexicalShortlist(callback) {
+  for (const prefs of [
+    [[USE_LEXICAL_SHORTLIST_PREF, true]],
+    [[USE_LEXICAL_SHORTLIST_PREF, false]],
+  ]) {
+    await callback(prefs);
+  }
+}
+
+/**
+ * Waits for the "translations:pref-changed" observer event to occur.
+ *
+ * @param {Function} [callback]
+ *   - An optional function to execute before waiting for the "translations:pref-changed" observer event.
+ * @returns {Promise<void>}
+ *   - A promise that resolves when the "translations:pref-changed" event is observed.
+ */
+async function waitForTranslationsPrefChanged(callback) {
+  const { promise, resolve } = Promise.withResolvers();
+
+  function onChange() {
+    Services.obs.removeObserver(onChange, "translations:pref-changed");
+    resolve();
+  }
+  Services.obs.addObserver(onChange, "translations:pref-changed");
+
+  if (callback) {
+    await callback();
+  }
+
+  await promise;
 }
 
 function waitForAppLocaleChanged() {
@@ -1541,9 +1979,9 @@ class TestTranslationsTelemetry {
    * @param {object} expectations - The test expectations.
    * @param {number} expectations.expectedEventCount - The expected count of events.
    * @param {boolean} expectations.expectNewFlowId
-   * @param {Record<string, string | boolean | number>} [expectations.assertForAllEvents]
+   * @param {Record<string, string | boolean | number | Function>} [expectations.assertForAllEvents]
    * - A record of key-value pairs to assert against all events in this category.
-   * @param {Record<string, string | boolean | number>} [expectations.assertForMostRecentEvent]
+   * @param {Record<string, string | boolean | number | Function>} [expectations.assertForMostRecentEvent]
    * - A record of key-value pairs to assert against the most recently recorded event in this category.
    */
   static async assertEvent(
@@ -1603,15 +2041,20 @@ class TestTranslationsTelemetry {
         true,
         `Telemetry event ${name} should contain values if assertForMostRecentEvent are specified`
       );
-      for (const [key, expectedEntry] of Object.entries(
-        assertForMostRecentEvent
-      )) {
+      for (const [key, expected] of Object.entries(assertForAllEvents)) {
         for (const event of events) {
-          is(
-            event.extra[key],
-            String(expectedEntry),
-            `Telemetry event ${name} value for ${key} should match the expected entry`
-          );
+          if (typeof expected === "function") {
+            ok(
+              expected(event.extra[key]),
+              `Telemetry event ${name} value for ${key} should match the expected predicate`
+            );
+          } else {
+            is(
+              event.extra[key],
+              String(expected),
+              `Telemetry event ${name} value for ${key} should match the expected entry`
+            );
+          }
         }
       }
     }
@@ -1622,14 +2065,19 @@ class TestTranslationsTelemetry {
         true,
         `Telemetry event ${name} should contain values if assertForMostRecentEvent are specified`
       );
-      for (const [key, expectedEntry] of Object.entries(
-        assertForMostRecentEvent
-      )) {
-        is(
-          events[eventCount - 1].extra[key],
-          String(expectedEntry),
-          `Telemetry event ${name} value for ${key} should match the expected entry`
-        );
+      for (const [key, expected] of Object.entries(assertForMostRecentEvent)) {
+        if (typeof expected === "function") {
+          ok(
+            expected(events[eventCount - 1].extra[key]),
+            `Telemetry event ${name} value for ${key} should match the expected predicate`
+          );
+        } else {
+          is(
+            events[eventCount - 1].extra[key],
+            String(expected),
+            `Telemetry event ${name} value for ${key} should match the expected entry`
+          );
+        }
       }
     }
   }
@@ -1661,6 +2109,41 @@ class TestTranslationsTelemetry {
       denominator,
       expectedDenominator,
       `Telemetry rate ${name} should have expected denominator`
+    );
+  }
+
+  /**
+   * Asserts that all TranslationsEngine performance events are expected and have valid data.
+   *
+   * @param {object} expectations - The test expectations.
+   * @param {number} expectations.expectedEventCount - The expected count of engine performance events.
+   */
+  static async assertTranslationsEnginePerformance({ expectedEventCount }) {
+    info("Destroying the TranslationsEngine.");
+    await EngineProcess.destroyTranslationsEngine();
+
+    const isNotEmptyString = entry => typeof entry === "string" && entry !== "";
+    const isGreaterThanZero = entry => parseFloat(entry) > 0;
+
+    const assertForAllEvents =
+      expectedEventCount === 0
+        ? {}
+        : {
+            from_language: isNotEmptyString,
+            to_language: isNotEmptyString,
+            average_words_per_request: isGreaterThanZero,
+            average_words_per_second: isGreaterThanZero,
+            total_completed_requests: isGreaterThanZero,
+            total_inference_seconds: isGreaterThanZero,
+            total_translated_words: isGreaterThanZero,
+          };
+
+    await TestTranslationsTelemetry.assertEvent(
+      Glean.translations.enginePerformance,
+      {
+        expectedEventCount,
+        assertForAllEvents,
+      }
     );
   }
 }

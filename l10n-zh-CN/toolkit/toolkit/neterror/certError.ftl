@@ -7,7 +7,7 @@
 cert-error-intro = { $hostname } 使用了无效的安全证书。
 cert-error-mitm-intro = 各个网站通过证书证明自己的身份，而证书由受信任的数字证书颁发机构颁发。
 cert-error-mitm-mozilla = { -brand-short-name } 由非营利的 Mozilla 提供支持。Mozilla 管理一组完全开放的数字证书认证机构（CA）存储库。该存储库帮助确保这些数字证书认证机构遵循最佳实践，以保障用户的安全。
-cert-error-mitm-connection = { -brand-short-name } 使用 Mozilla 的数字证书认证机构存储库来验证连接是否安全，而非用户操作系统所提供的证书库。因此，如果您的防病毒软件或网络使用不在 Mozilla 数字证书认证机构列表中的机构所签发的证书来拦截网络流量，该连接被视为不安全。
+cert-error-mitm-connection = { -brand-short-name } 使用 Mozilla 的数字证书认证机构存储库来验证连接是否安全，而非用户操作系统所提供的证书库。因此，如果您的防病毒软件或网络使用不在 Mozilla 数字证书认证机构列表中的机构所颁发的证书来拦截网络流量，该连接被视为不安全。
 cert-error-trust-unknown-issuer-intro = 可能有人试图冒充该网站，您不应该继续访问。
 # Variables:
 #   $hostname (string) - Hostname of the website with cert error.
@@ -18,6 +18,9 @@ cert-error-trust-signature-algorithm-disabled = 该证书不被信任，因为�
 cert-error-trust-expired-issuer = 该证书因为其颁发者证书已过期而不被信任。
 cert-error-trust-self-signed = 该证书因为其自签名而不被信任。
 cert-error-trust-symantec = 由 GeoTrust、RapidSSL、Symantec、Thawte 以及 VeriSign 颁发的证书已不再被认为安全，因为这些证书颁发机构过往未遵循安全准则。
+# Variables:
+#   $hostname (string) - Hostname of the website with cert error.
+cert-error-trust-certificate-transparency = { -brand-short-name } 无法信任 { $hostname }，因其无法证明自己符合公开证书透明度要求。
 cert-error-untrusted-default = 该证书出自不受信任的来源。
 # Variables:
 #   $hostname (string) - Hostname of the website with cert error.
@@ -68,6 +71,45 @@ open-in-new-window-for-csp-or-xfo-error = 在新窗口中打开网站
 # Variables:
 #   $hostname (string) - Hostname of the website blocked by csp or xfo error.
 csp-xfo-blocked-long-desc = 为了保护您的安全，{ $hostname } 将不允许 { -brand-short-name } 显示嵌入了其他网站的页面。要查看此页面，请在新窗口中打开。
+fp-certerror-view-certificate-link = 查看此网站的证书
+fp-certerror-return-to-previous-page-recommended-button = 返回（推荐）
+# This string appears after the following string: "What makes the site look dangerous?" (fp-certerror-why-site-dangerous)
+# Variables:
+#   $hostname (String) - Hostname of the website to which the user was trying to connect.
+#   $validHosts (String) - Valid hostnames.
+fp-certerror-bad-domain-why-dangerous-body = 此网站已被设置为仅允许安全连接，但其证书存在问题，可能有恶意人士正试图冒充此网站。各个网站通过证书授权机构颁发的证书证明自己声称的身份。{ -brand-short-name } 不能信任此网站，它使用的证书对 { $hostname } 无效。此证书仅对以下网站有效：{ $validHosts }
+# This string appears after the following string: "What can you do about it?" (fp-certerror-what-can-you-do)
+fp-certerror-bad-domain-what-can-you-do-body = 这很可能是网站自身存在问题，无法通过您的操作解决。各个网站通过证书授权机构颁发的证书证明自己声称的身份。但如果您使用的是企业网络，则您的支持团队可能可以提供更多信息。如果您使用了反病毒软件，请尝试搜索可能存在的冲突和已知问题。
+# This string appears after the following string: "What makes the site look dangerous?" (fp-certerror-why-site-dangerous)
+fp-certerror-unknown-issuer-why-dangerous-body = 此网站的证书存在问题，可能有恶意人士正试图冒充此网站。各个网站通过证书授权机构颁发的证书证明自己声称的身份。{ -brand-short-name } 不能信任此网站，可能是因为无法识别证书的颁发者、证书通过自签名得来，或者网站未发送我们信任的中间证书。
+# This string appears after the following string: "What can you do about it?" (fp-certerror-what-can-you-do)
+fp-certerror-unknown-issuer-what-can-you-do-body = 这很可能是网站自身存在问题，无法通过您的操作解决。但如果您使用的是企业网络，则您的支持团队可能可以提供更多信息。如果您使用了反病毒软件，则可能需要进行配置以与 { -brand-short-name } 兼容。
+# This string appears after the following string: "What makes the site look dangerous?" (fp-certerror-why-site-dangerous)
+fp-certerror-self-signed-why-dangerous-body = 因为此网站的证书存在问题。各个网站通过证书授权机构颁发的证书证明自己声称的身份。此网站的证书通过自签名得来，而非由受认可的证书授权机构颁发。默认设置下，我们不信任此证书。
+# This string appears after the following string: "What can you do about it?" (fp-certerror-what-can-you-do)
+fp-certerror-self-signed-what-can-you-do-body = 这很可能是网站自身存在问题，您能进行的操作有限。
+fp-certerror-self-signed-important-note = 【重要提示】如果您正尝试通过企业内网访问此网站，则您所在组织的 IT 职员可能使用了自签名证书。他们可为您检查证书的真实性。
+# This string appears after the following string: "What makes the site look dangerous?" (fp-certerror-why-site-dangerous)
+# Variables:
+#   $date (Date) - Certificate expiration date.
+fp-certerror-expired-why-dangerous-body = 各个网站通过证书授权机构颁发的证书证明自己声称的身份。{ -brand-short-name } 不能信任此网站，因为其证书似乎已于 { DATETIME($date, month: "numeric", day: "numeric", year: "numeric") } 过期。
+# This string appears after the following string: "What makes the site look dangerous?" (fp-certerror-why-site-dangerous)
+# Variables:
+#   $date (Date) - Certificate start date.
+fp-certerror-not-yet-valid-why-dangerous-body = 各个网站通过证书授权机构颁发的证书证明自己声称的身份。{ -brand-short-name } 不能信任此网站，因为其证书需到 { DATETIME($date, month: "numeric", day: "numeric", year: "numeric") } 才开始生效。
+# This string appears after the following string: "What can you do about it?" (fp-certerror-what-can-you-do)
+# Variables:
+#   $date (Date) - Clock date.
+fp-certerror-expired-what-can-you-do-body = 您的设备时间为 { DATETIME($date, month: "numeric", day: "numeric", year: "numeric") }。若无误，则这可能是网站自身的安全问题。若有误，可在设备的系统设置中更改。
+# Variables:
+#   $error (string) - NSS error code string that specifies type of cert error. e.g. unknown issuer, invalid cert, etc.
+fp-cert-error-code = 错误代码：{ $error }
+# Variables:
+#   $datetime (Date) - Current datetime.
+fp-datetime = { DATETIME($datetime, month: "short", year: "numeric", day: "numeric") } { DATETIME($datetime, timeStyle: "long") }
+fp-learn-more-about-secure-connection-failures = 详细了解安全连接失败
+fp-learn-more-about-cert-issues = 详细了解此类证书问题
+fp-learn-more-about-time-related-errors = 详细了解时间相关错误的解决办法
 
 ## Messages used for certificate error titles
 
@@ -92,7 +134,8 @@ contentEncodingError-title = 内容编码错误
 unsafeContentType-title = 不安全的文件类型
 netReset-title = 连接被重置
 netTimeout-title = 连接超时
-serverError-title = 此网站似乎出了点问题
+httpErrorPage-title = 此网站似乎存在问题
+serverError-title = 此网站似乎存在问题
 unknownProtocolFound-title = 无法理解该网址
 proxyConnectFailure-title = 代理服务器拒绝连接
 proxyResolveFailure-title = 无法找到代理服务器
@@ -109,3 +152,20 @@ networkProtocolError-title = 网络协议错误
 nssBadCert-title = 警告：面临潜在的安全风险
 nssBadCert-sts-title = 未连接：有潜在的安全问题
 certerror-mitm-title = 有软件正在阻止 { -brand-short-name } 安全地连接至此网站
+
+## Felt Privacy V1 Strings
+
+fp-certerror-page-title = 警告：存在安全风险
+fp-certerror-body-title = 当心，看来有异常情况。
+fp-certerror-why-site-dangerous = 为什么此网站可能危险？
+fp-certerror-what-can-you-do = 您可以做什么？
+fp-certerror-advanced-title = 高级
+fp-certerror-advanced-button = 高级
+fp-certerror-hide-advanced-button = 隐藏高级选项
+
+## Variables:
+##   $hostname (String) - Hostname of the website to which the user was trying to connect.
+
+fp-certerror-override-exception-button = 继续前往 { $hostname }（存在风险）
+fp-certerror-intro = { -brand-short-name } 发现 <strong>{ $hostname }</strong> 存在严重的安全隐患。若有人冒充此网站，其可试图窃取您的信用卡信息、密码、邮箱地址等信息。
+fp-certerror-expired-into = { -brand-short-name } 发现 <strong>{ $hostname }</strong> 存在安全问题。此网站可能未正确设置，或者您设备的日期/时间有误。

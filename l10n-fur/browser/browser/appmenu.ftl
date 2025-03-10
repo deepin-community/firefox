@@ -108,8 +108,11 @@ appmenu-fxa-sync-and-save-data2 = Sincronize e salve i dâts
 appmenu-fxa-signed-in-label = Jentre
 appmenu-fxa-setup-sync =
     .label = Ative la sincronizazion…
+appmenu-fxa-setup-sync-new = Ative
 appmenuitem-save-page =
     .label = Salve pagjine come…
+appmenuitem-fxa-sync-off-title = La sincronizazion e je disativade
+appmenuitem-fxa-sync-off-description = Protêç e dopre i tiei segnelibris, lis passwords e altris dâts dapardut là che tu ti cjatis.
 
 ## What's New panel in App menu.
 
@@ -277,5 +280,21 @@ appmenuitem-monitor-title = { -monitor-brand-short-name }
 appmenuitem-monitor-description = Oten i avîs su lis violazions di dâts
 appmenuitem-relay-title = { -relay-brand-short-name }
 appmenuitem-relay-description = Mascare la tô direzion e-mail e il telefon
+appmenuitem-services-relay-description = Vierç il cruscot pes mascaris di pueste eletroniche
 appmenuitem-vpn-title = { -mozilla-vpn-brand-name }
 appmenuitem-vpn-description = Protêç la tô ativitât in linie
+appmenu-services-header = I miei servizis
+appmenu-other-protection-header = Prove altris struments di protezion di { -vendor-short-name }:
+
+## Profiles panel
+
+appmenu-profiles = Profîi
+appmenu-other-profiles = Altris profîi
+appmenu-manage-profiles =
+    .label = Gjestìs i profîi
+appmenu-create-profile =
+    .label = Gnûf profîl
+appmenu-edit-profile =
+    .aria-label = Modifiche profîl
+appmenu-profiles-2 =
+    .label = Profîi

@@ -137,13 +137,9 @@ const TEST_GLOBAL = {
     defineLazyGetter(object, name, f) {
       updateGlobalOrObject(object)[name] = f();
     },
-    defineModuleGetter: updateGlobalOrObject,
     defineESModuleGetters: updateGlobalOrObject,
     generateQI() {
       return {};
-    },
-    import() {
-      return global;
     },
     importESModule() {
       return global;
@@ -199,17 +195,6 @@ const TEST_GLOBAL = {
     "@mozilla.org/io/string-input-stream;1": {
       createInstance() {
         return {};
-      },
-    },
-    "@mozilla.org/security/hash;1": {
-      createInstance() {
-        return {
-          init() {},
-          updateFromStream() {},
-          finish() {
-            return "0";
-          },
-        };
       },
     },
     "@mozilla.org/updates/update-checker;1": { createInstance() {} },
@@ -303,6 +288,7 @@ const TEST_GLOBAL = {
       getTopFrecentSites: () => [],
       executePlacesQuery: async (sql, options) => ({ sql, options }),
     },
+    shortHostname() {},
   },
   OS: {
     File: {
@@ -393,12 +379,6 @@ const TEST_GLOBAL = {
       removeObserver() {},
       notifyObservers() {},
     },
-    telemetry: {
-      setEventRecordingEnabled: () => {},
-      recordEvent: _eventDetails => {},
-      scalarSet: () => {},
-      keyedScalarAdd: () => {},
-    },
     uuid: {
       generateUUID() {
         return "{foo-123-foo}";
@@ -426,6 +406,7 @@ const TEST_GLOBAL = {
             finalize: () => ({
               ref,
               spec,
+              schemeIs: scheme => spec.startsWith(scheme),
             }),
           }),
         }),
@@ -474,7 +455,6 @@ const TEST_GLOBAL = {
   },
   XPCOMUtils: {
     defineLazyGlobalGetters: updateGlobalOrObject,
-    defineLazyModuleGetters: updateGlobalOrObject,
     defineLazyServiceGetter: updateGlobalOrObject,
     defineLazyServiceGetters: updateGlobalOrObject,
     defineLazyPreferenceGetter(object, name) {
@@ -572,9 +552,20 @@ const TEST_GLOBAL = {
     removeExpirationFilter() {},
   },
   Logger: FakeLogger,
+  LinksCache: class {},
+  FaviconFeed: class {},
+
   getFxAccountsSingleton() {},
   AboutNewTab: {},
   Glean: {
+    activityStream: {
+      eventClick: {
+        record() {},
+      },
+      endSession: {
+        record() {},
+      },
+    },
     newtab: {
       opened: {
         record() {},

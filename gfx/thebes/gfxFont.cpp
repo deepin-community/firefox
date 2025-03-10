@@ -44,7 +44,7 @@
 #include "mozilla/MemoryReporting.h"
 #include "mozilla/Preferences.h"
 #include "mozilla/Services.h"
-#include "mozilla/Telemetry.h"
+#include "mozilla/glean/GfxMetrics.h"
 #include "gfxMathTable.h"
 #include "gfxSVGGlyphs.h"
 #include "gfx2DGlue.h"
@@ -235,7 +235,10 @@ already_AddRefed<gfxFont> gfxFontCache::Lookup(
   Key key(aFontEntry, aStyle, aUnicodeRangeMap);
   HashEntry* entry = mFonts.GetEntry(key);
 
-  Telemetry::Accumulate(Telemetry::FONT_CACHE_HIT, entry != nullptr);
+  glean::fontlist::font_cache_hit
+      .EnumGet(
+          static_cast<glean::fontlist::FontCacheHitLabel>(entry != nullptr))
+      .Add();
 
   if (!entry) {
     return nullptr;
@@ -1136,14 +1139,14 @@ static void CollectLookupsByFeature(hb_face_t* aFace, hb_tag_t aTableTag,
 
   offset = 0;
   do {
-    len = ArrayLength(lookups);
+    len = std::size(lookups);
     hb_ot_layout_feature_get_lookups(aFace, aTableTag, aFeatureIndex, offset,
                                      &len, lookups);
     for (i = 0; i < len; i++) {
       hb_set_add(aLookups, lookups[i]);
     }
     offset += len;
-  } while (len == ArrayLength(lookups));
+  } while (len == std::size(lookups));
 }
 
 static void CollectLookupsByLanguage(
@@ -1162,7 +1165,7 @@ static void CollectLookupsByLanguage(
 
   offset = 0;
   do {
-    len = ArrayLength(featureIndexes);
+    len = std::size(featureIndexes);
     hb_ot_layout_language_get_feature_indexes(aFace, aTableTag, aScriptIndex,
                                               aLangIndex, offset, &len,
                                               featureIndexes);
@@ -1184,7 +1187,7 @@ static void CollectLookupsByLanguage(
       CollectLookupsByFeature(aFace, aTableTag, featureIndex, lookups);
     }
     offset += len;
-  } while (len == ArrayLength(featureIndexes));
+  } while (len == std::size(featureIndexes));
 }
 
 static bool HasLookupRuleWithGlyphByScript(
@@ -1389,7 +1392,7 @@ void gfxFont::CheckForFeaturesInvolvingSpace() const {
 
     // Set up the default-features hashset on first use.
     if (!sDefaultFeatures) {
-      uint32_t numDefaultFeatures = ArrayLength(defaultFeatures);
+      uint32_t numDefaultFeatures = std::size(defaultFeatures);
       auto* set = new nsTHashSet<uint32_t>(numDefaultFeatures);
       for (uint32_t i = 0; i < numDefaultFeatures; i++) {
         set->Insert(defaultFeatures[i]);
@@ -1404,7 +1407,7 @@ void gfxFont::CheckForFeaturesInvolvingSpace() const {
 
     uint32_t len, offset = 0;
     do {
-      len = ArrayLength(scriptTags);
+      len = std::size(scriptTags);
       hb_ot_layout_table_get_script_tags(face, HB_OT_TAG_GSUB, offset, &len,
                                          scriptTags);
       for (uint32_t i = 0; i < len; i++) {
@@ -1426,7 +1429,7 @@ void gfxFont::CheckForFeaturesInvolvingSpace() const {
         }
       }
       offset += len;
-    } while (len == ArrayLength(scriptTags));
+    } while (len == std::size(scriptTags));
   }
 
   // spaces in default features of default script?
@@ -2723,14 +2726,18 @@ bool gfxFont::RenderColorGlyph(DrawTarget* aDrawTarget, gfxContext* aContext,
       }
     }
 
+    const int kScale = 2;
     if (!snapshot) {
       // Create a temporary DrawTarget and render the glyph to it.
       IntSize size(int(bounds.width), int(bounds.height));
       SurfaceFormat format = SurfaceFormat::B8G8R8A8;
       RefPtr target =
-          Factory::CreateDrawTarget(BackendType::SKIA, size, format);
+          Factory::CreateDrawTarget(BackendType::SKIA, size * kScale, format);
       if (target) {
         // Use OP_OVER and opaque alpha to create the glyph snapshot.
+        Matrix m;
+        m.PreScale(kScale, kScale);
+        target->SetTransform(m);
         DrawOptions drawOptions(aFontParams.drawOptions);
         drawOptions.mCompositionOp = CompositionOp::OP_OVER;
         drawOptions.mAlpha = 1.0f;
@@ -2761,10 +2768,11 @@ bool gfxFont::RenderColorGlyph(DrawTarget* aDrawTarget, gfxContext* aContext,
     }
     if (snapshot) {
       // Paint the snapshot using the appropriate composition op.
-      aDrawTarget->DrawSurface(snapshot,
-                               Rect(aPoint + bounds.TopLeft(), bounds.Size()),
-                               Rect(Point(), bounds.Size()),
-                               DrawSurfaceOptions(), aFontParams.drawOptions);
+      Point snappedPoint = Point(roundf(aPoint.x), roundf(aPoint.y));
+      aDrawTarget->DrawSurface(
+          snapshot, Rect(snappedPoint + bounds.TopLeft(), bounds.Size()),
+          Rect(Point(), bounds.Size() * kScale), DrawSurfaceOptions(),
+          aFontParams.drawOptions);
       return true;
     }
   }
@@ -4752,17 +4760,25 @@ gfxFontStyle::gfxFontStyle()
       sizeAdjustBasis(uint8_t(FontSizeAdjust::Tag::None)),
       systemFont(true),
       printerFont(false),
+#ifdef XP_WIN
+      allowForceGDIClassic(true),
+#endif
       useGrayscaleAntialiasing(false),
       allowSyntheticWeight(true),
       allowSyntheticStyle(true),
       allowSyntheticSmallCaps(true),
       useSyntheticPosition(true),
-      noFallbackVariantFeatures(true) {}
+      noFallbackVariantFeatures(true) {
+}
 
 gfxFontStyle::gfxFontStyle(FontSlantStyle aStyle, FontWeight aWeight,
                            FontStretch aStretch, gfxFloat aSize,
                            const FontSizeAdjust& aSizeAdjust, bool aSystemFont,
-                           bool aPrinterFont, bool aAllowWeightSynthesis,
+                           bool aPrinterFont,
+#ifdef XP_WIN
+                           bool aAllowForceGDIClassic,
+#endif
+                           bool aAllowWeightSynthesis,
                            bool aAllowStyleSynthesis,
                            bool aAllowSmallCapsSynthesis,
                            bool aUsePositionSynthesis,
@@ -4777,6 +4793,9 @@ gfxFontStyle::gfxFontStyle(FontSlantStyle aStyle, FontWeight aWeight,
       variantSubSuper(NS_FONT_VARIANT_POSITION_NORMAL),
       systemFont(aSystemFont),
       printerFont(aPrinterFont),
+#ifdef XP_WIN
+      allowForceGDIClassic(aAllowForceGDIClassic),
+#endif
       useGrayscaleAntialiasing(false),
       allowSyntheticWeight(aAllowWeightSynthesis),
       allowSyntheticStyle(aAllowStyleSynthesis),

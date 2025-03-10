@@ -13,6 +13,7 @@
 #include "nsStyleConsts.h"
 #include "mozilla/Assertions.h"
 #include "mozilla/EnumSet.h"
+#include "mozilla/LayoutStructs.h"
 #include "mozilla/Maybe.h"
 #include "mozilla/WritingModes.h"
 #include "LayoutConstants.h"
@@ -32,51 +33,11 @@ namespace mozilla {
 enum class LayoutFrameType : uint8_t;
 
 /**
- * A set of StyleSizes used as an input parameter to various functions that
- * compute sizes like nsIFrame::ComputeSize(). If any of the member fields has a
- * value, the function may use the value instead of retrieving it from the
- * frame's style.
- *
- * The logical sizes are assumed to be in the associated frame's writing-mode.
- */
-struct StyleSizeOverrides {
-  Maybe<StyleSize> mStyleISize;
-  Maybe<StyleSize> mStyleBSize;
-  Maybe<AspectRatio> mAspectRatio;
-
-  bool HasAnyOverrides() const { return mStyleISize || mStyleBSize; }
-  bool HasAnyLengthOverrides() const {
-    return (mStyleISize && mStyleISize->ConvertsToLength()) ||
-           (mStyleBSize && mStyleBSize->ConvertsToLength());
-  }
-
-  // By default, table wrapper frame considers the size overrides applied to
-  // itself, so it creates any length size overrides for inner table frame by
-  // subtracting the area occupied by the caption and border & padding according
-  // to box-sizing.
-  //
-  // When this flag is true, table wrapper frame is required to apply the size
-  // overrides to the inner table frame directly, without any modification,
-  // which is useful for flex container to override the inner table frame's
-  // preferred main size with 'flex-basis'.
-  //
-  // Note: if mStyleISize is a LengthPercentage, the inner table frame will
-  // comply with the inline-size override without enforcing its min-content
-  // inline-size in nsTableFrame::ComputeSize(). This is necessary so that small
-  // flex-basis values like 'flex-basis:1%' can be resolved correctly; the
-  // flexbox layout algorithm does still explicitly clamp to min-sizes *at a
-  // later step*, after the flex-basis has been resolved -- so this flag won't
-  // actually produce any user-visible tables whose final inline size is smaller
-  // than their min-content inline size.
-  bool mApplyOverridesVerbatim = false;
-};
-
-/**
  * @return aValue clamped to [aMinValue, aMaxValue].
  *
  * @note This function needs to handle aMinValue > aMaxValue. In that case,
- *       aMinValue is returned. That's why we cannot use std::clamp() and
- *       mozilla::clamped() since they both assert max >= min.
+ *       aMinValue is returned. That's why we cannot use std::clamp()
+ *       since it asserts max >= min.
  * @note If aMinValue and aMaxValue are computed min block-size and max
  *       block-size, it is simpler to use ReflowInput::ApplyMinMaxBSize().
  *       Similarly, there is ReflowInput::ApplyMinMaxISize() for clamping an
@@ -208,7 +169,7 @@ struct SizeComputationInput {
                    const Maybe<LogicalMargin>& aPadding,
                    const nsStyleDisplay* aDisplay = nullptr);
 
-  /*
+  /**
    * Convert StyleSize or StyleMaxSize to nscoord when percentages depend on the
    * inline size of the containing block, and enumerated values are for inline
    * size, min-inline-size, or max-inline-size.  Does not handle auto inline
@@ -219,16 +180,27 @@ struct SizeComputationInput {
                                    StyleBoxSizing aBoxSizing,
                                    const SizeOrMaxSize&) const;
 
+  /**
+   * Wrapper for SizeComputationInput::ComputeBSizeValue (defined below, which
+   * itself is a wrapper for nsLayoutUtils::ComputeBSizeValue). This one just
+   * handles 'stretch' sizes first.
+   */
+  template <typename SizeOrMaxSize>
+  inline nscoord ComputeBSizeValueHandlingStretch(
+      nscoord aContainingBlockBSize, StyleBoxSizing aBoxSizing,
+      const SizeOrMaxSize& aSize) const;
+
+  /**
+   * Wrapper for nsLayoutUtils::ComputeBSizeValue, which automatically figures
+   * out the value to pass for its aContentEdgeToBoxSizingBoxEdge param.
+   */
   nscoord ComputeBSizeValue(nscoord aContainingBlockBSize,
                             StyleBoxSizing aBoxSizing,
                             const LengthPercentage& aCoord) const;
 };
 
 /**
- * State passed to a frame during reflow or intrinsic size calculation.
- *
- * XXX Refactor so only a base class (nsSizingState?) is used for intrinsic
- * size calculation.
+ * State passed to a frame during reflow.
  *
  * @see nsIFrame#Reflow()
  */
@@ -399,6 +371,10 @@ struct ReflowInput : public SizeComputationInput {
   // Return ReflowInput's computed size including border-padding, with
   // unconstrained dimensions replaced by zero.
   nsSize ComputedSizeAsContainerIfConstrained() const;
+
+  // Get the writing mode of the containing block, to resolve float/clear
+  // logical sides appropriately.
+  WritingMode GetCBWritingMode() const;
 
   // Our saved containing block dimensions.
   LogicalSize mContainingBlockSize{mWritingMode};
@@ -907,18 +883,6 @@ struct ReflowInput : public SizeComputationInput {
   void CalculateHypotheticalPosition(
       nsPlaceholderFrame* aPlaceholderFrame, const ReflowInput* aCBReflowInput,
       nsHypotheticalPosition& aHypotheticalPos) const;
-
-  // Check if we can use the resolved auto block size (by insets) to compute
-  // the inline size through aspect-ratio on absolute-positioned elements.
-  // This is only needed for non-replaced elements.
-  // https://drafts.csswg.org/css-position/#abspos-auto-size
-  bool IsInlineSizeComputableByBlockSizeAndAspectRatio(
-      nscoord aBlockSize) const;
-
-  // This calculates the size by using the resolved auto block size (from
-  // non-auto block insets), according to the writing mode of current block.
-  LogicalSize CalculateAbsoluteSizeWithResolvedAutoBlockSize(
-      nscoord aAutoBSize, const LogicalSize& aTentativeComputedSize);
 
   void InitAbsoluteConstraints(const ReflowInput* aCBReflowInput,
                                const LogicalSize& aCBSize);

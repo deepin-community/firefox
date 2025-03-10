@@ -15,12 +15,18 @@
 #include "mozilla/gfx/gfxVars.h"
 #include "mozilla/StaticPrefs_dom.h"
 
+#ifdef RELEASE_OR_BETA
+#  include "mozilla/dom/WorkerPrivate.h"
+#endif
+
 #include <optional>
 #include <string_view>
 
 namespace mozilla::webgpu {
 
-GPU_IMPL_CYCLE_COLLECTION(Instance, mOwner)
+GPU_IMPL_CYCLE_COLLECTION(WGSLLanguageFeatures, mParent)
+
+GPU_IMPL_CYCLE_COLLECTION(Instance, mOwner, mWgslLanguageFeatures)
 
 static inline nsDependentCString ToCString(const std::string_view s) {
   return {s.data(), s.length()};
@@ -44,7 +50,8 @@ already_AddRefed<Instance> Instance::Create(nsIGlobalObject* aOwner) {
   return result.forget();
 }
 
-Instance::Instance(nsIGlobalObject* aOwner) : mOwner(aOwner) {}
+Instance::Instance(nsIGlobalObject* aOwner)
+    : mOwner(aOwner), mWgslLanguageFeatures(new WGSLLanguageFeatures(this)) {}
 
 Instance::~Instance() { Cleanup(); }
 
@@ -69,6 +76,20 @@ already_AddRefed<dom::Promise> Instance::RequestAdapter(
 #ifdef RELEASE_OR_BETA
     if (true) {
       return "WebGPU is not yet available in Release or Beta builds.";
+    }
+
+    // NOTE: Deliberately left after the above check so that we only enter
+    // here if it's removed. Above is a more informative diagnostic, while the
+    // check is still present.
+    //
+    // Follow-up to remove this check:
+    // <https://bugzilla.mozilla.org/show_bug.cgi?id=1942431>
+    if (dom::WorkerPrivate* wp = dom::GetCurrentThreadWorkerPrivate()) {
+      if (wp->IsServiceWorker()) {
+        return "WebGPU in service workers is not yet available in Release or "
+               "Beta builds; see "
+               "<https://bugzilla.mozilla.org/show_bug.cgi?id=1942431>.";
+      }
     }
 #endif
     if (!gfx::gfxVars::AllowWebGPU()) {

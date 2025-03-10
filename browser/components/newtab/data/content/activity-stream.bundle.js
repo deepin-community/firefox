@@ -102,15 +102,21 @@ for (const type of [
   "ABOUT_SPONSORED_TOP_SITES",
   "ADDONS_INFO_REQUEST",
   "ADDONS_INFO_RESPONSE",
+  "ADS_FEED_UPDATE",
+  "ADS_INIT",
+  "ADS_UPDATE_DATA",
   "ARCHIVE_FROM_POCKET",
+  "BLOCK_SECTION",
   "BLOCK_URL",
   "BOOKMARK_URL",
+  "CARD_SECTION_IMPRESSION",
   "CLEAR_PREF",
   "COPY_DOWNLOAD_LINK",
   "DELETE_BOOKMARK_BY_ID",
   "DELETE_FROM_POCKET",
   "DELETE_HISTORY_URL",
   "DIALOG_CANCEL",
+  "DIALOG_CLOSE",
   "DIALOG_OPEN",
   "DISABLE_SEARCH",
   "DISCOVERY_STREAM_COLLECTION_DISMISSIBLE_TOGGLE",
@@ -119,8 +125,11 @@ for (const type of [
   "DISCOVERY_STREAM_CONFIG_RESET_DEFAULTS",
   "DISCOVERY_STREAM_CONFIG_SETUP",
   "DISCOVERY_STREAM_CONFIG_SET_VALUE",
+  "DISCOVERY_STREAM_DEV_BLOCKS",
+  "DISCOVERY_STREAM_DEV_BLOCKS_RESET",
   "DISCOVERY_STREAM_DEV_EXPIRE_CACHE",
   "DISCOVERY_STREAM_DEV_IDLE_DAILY",
+  "DISCOVERY_STREAM_DEV_IMPRESSIONS",
   "DISCOVERY_STREAM_DEV_SHOW_PLACEHOLDER",
   "DISCOVERY_STREAM_DEV_SYNC_RS",
   "DISCOVERY_STREAM_DEV_SYSTEM_TICK",
@@ -152,8 +161,11 @@ for (const type of [
   "DISCOVERY_STREAM_TOPICS_LOADING",
   "DISCOVERY_STREAM_USER_EVENT",
   "DOWNLOAD_CHANGED",
+  "FAKESPOT_CTA_CLICK",
+  "FAKESPOT_DISMISS",
   "FAKE_FOCUS_SEARCH",
   "FILL_SEARCH_TERM",
+  "FOLLOW_SECTION",
   "HANDOFF_SEARCH_TO_AWESOMEBAR",
   "HIDE_PERSONALIZE",
   "HIDE_PRIVACY_INFO",
@@ -165,6 +177,7 @@ for (const type of [
   "NEW_TAB_REHYDRATED",
   "NEW_TAB_STATE_REQUEST",
   "NEW_TAB_UNLOAD",
+  "OPEN_ABOUT_FAKESPOT",
   "OPEN_DOWNLOAD_FILE",
   "OPEN_LINK",
   "OPEN_NEW_WINDOW",
@@ -197,7 +210,6 @@ for (const type of [
   "SECTION_DEREGISTER",
   "SECTION_DISABLE",
   "SECTION_ENABLE",
-  "SECTION_MOVE",
   "SECTION_OPTIONS_CHANGED",
   "SECTION_REGISTER",
   "SECTION_UPDATE",
@@ -238,10 +250,11 @@ for (const type of [
   "TOP_SITES_UPDATED",
   "TOTAL_BOOKMARKS_REQUEST",
   "TOTAL_BOOKMARKS_RESPONSE",
+  "UNBLOCK_SECTION",
+  "UNFOLLOW_SECTION",
   "UNINIT",
   "UPDATE_PINNED_SEARCH_SHORTCUTS",
   "UPDATE_SEARCH_SHORTCUTS",
-  "UPDATE_SECTION_PREFS",
   "WALLPAPERS_CATEGORY_SET",
   "WALLPAPERS_FEATURE_HIGHLIGHT_COUNTER_INCREMENT",
   "WALLPAPERS_FEATURE_HIGHLIGHT_CTA_CLICKED",
@@ -688,18 +701,22 @@ class DiscoveryStreamAdminUI extends (external_React_default()).PureComponent {
     this.onStoryToggle = this.onStoryToggle.bind(this);
     this.handleWeatherSubmit = this.handleWeatherSubmit.bind(this);
     this.handleWeatherUpdate = this.handleWeatherUpdate.bind(this);
+    this.resetBlocks = this.resetBlocks.bind(this);
     this.refreshTopicSelectionCache = this.refreshTopicSelectionCache.bind(this);
+    this.toggleTBRFeed = this.toggleTBRFeed.bind(this);
+    this.handleSectionsToggle = this.handleSectionsToggle.bind(this);
+    this.toggleIABBanners = this.toggleIABBanners.bind(this);
     this.state = {
       toggledStories: {},
       weatherQuery: ""
     };
   }
-  setConfigValue(name, value) {
+  setConfigValue(configName, configValue) {
     this.props.dispatch(actionCreators.OnlyToMain({
       type: actionTypes.DISCOVERY_STREAM_CONFIG_SET_VALUE,
       data: {
-        name,
-        value
+        name: configName,
+        value: configValue
       }
     }));
   }
@@ -726,6 +743,11 @@ class DiscoveryStreamAdminUI extends (external_React_default()).PureComponent {
       type
     }));
   }
+  resetBlocks() {
+    this.props.dispatch(actionCreators.OnlyToMain({
+      type: actionTypes.DISCOVERY_STREAM_DEV_BLOCKS_RESET
+    }));
+  }
   systemTick() {
     this.dispatchSimpleAction(actionTypes.DISCOVERY_STREAM_DEV_SYSTEM_TICK);
   }
@@ -734,6 +756,11 @@ class DiscoveryStreamAdminUI extends (external_React_default()).PureComponent {
   }
   showPlaceholder() {
     this.dispatchSimpleAction(actionTypes.DISCOVERY_STREAM_DEV_SHOW_PLACEHOLDER);
+  }
+  toggleTBRFeed(e) {
+    const feed = e.target.value;
+    const selectedFeed = "discoverystream.contextualContent.selectedFeed";
+    this.props.dispatch(actionCreators.SetPref(selectedFeed, feed));
   }
   idleDaily() {
     this.dispatchSimpleAction(actionTypes.DISCOVERY_STREAM_DEV_IDLE_DAILY);
@@ -752,6 +779,45 @@ class DiscoveryStreamAdminUI extends (external_React_default()).PureComponent {
       weatherQuery
     } = this.state;
     this.props.dispatch(actionCreators.SetPref("weather.query", weatherQuery));
+  }
+  toggleIABBanners(e) {
+    const {
+      pressed,
+      id
+    } = e.target;
+    const billboardEnabled = this.props.otherPrefs["newtabAdSize.billboard"];
+    const leaderboardEnabled = this.props.otherPrefs["newtabAdSize.leaderboard"];
+    let spocValue;
+    let spocCount;
+    if (id === "billboard") {
+      this.props.dispatch(actionCreators.SetPref("newtabAdSize.billboard", pressed));
+      if (pressed) {
+        spocValue = `newtab_spocs, newtab_billboard${leaderboardEnabled ? ", newtab_leaderboard" : ""}`;
+        spocCount = `6,1${leaderboardEnabled ? ",1" : ""}`;
+      } else {
+        spocValue = `newtab_spocs${leaderboardEnabled ? ", newtab_leaderboard" : ""}`;
+        spocCount = `6${leaderboardEnabled ? ",1" : ""}`;
+      }
+    } else if (id === "leaderboard") {
+      this.props.dispatch(actionCreators.SetPref("newtabAdSize.leaderboard", pressed));
+      if (pressed) {
+        spocValue = `newtab_spocs, newtab_leaderboard${billboardEnabled ? ", newtab_billboard" : ""}`;
+        spocCount = `6,1${billboardEnabled ? ",1" : ""}`;
+      } else {
+        spocValue = `newtab_spocs${billboardEnabled ? ", newtab_billboard" : ""}`;
+        spocCount = `6${billboardEnabled ? ",1" : ""}`;
+      }
+    }
+    this.props.dispatch(actionCreators.SetPref("discoverystream.placements.spocs", spocValue));
+    this.props.dispatch(actionCreators.SetPref("discoverystream.placements.spocs.counts", spocCount));
+  }
+  handleSectionsToggle(e) {
+    const {
+      pressed
+    } = e.target;
+    this.props.dispatch(actionCreators.SetPref("discoverystream.sections.enabled", pressed));
+    this.props.dispatch(actionCreators.SetPref("discoverystream.sections.cards.enabled", pressed));
+    this.props.dispatch(actionCreators.SetPref("discoverystream.sections.cards.thumbsUpDown.enabled", pressed));
   }
   renderComponent(width, component) {
     return /*#__PURE__*/external_React_default().createElement("table", null, /*#__PURE__*/external_React_default().createElement("tbody", null, /*#__PURE__*/external_React_default().createElement(Row, null, /*#__PURE__*/external_React_default().createElement("td", {
@@ -805,17 +871,46 @@ class DiscoveryStreamAdminUI extends (external_React_default()).PureComponent {
     } = this.props.state.DiscoveryStream;
     return /*#__PURE__*/external_React_default().createElement((external_React_default()).Fragment, null, Object.keys(feeds.data).map(url => this.renderFeedData(url)));
   }
+  renderImpressionsData() {
+    const {
+      impressions
+    } = this.props.state.DiscoveryStream;
+    return /*#__PURE__*/external_React_default().createElement((external_React_default()).Fragment, null, /*#__PURE__*/external_React_default().createElement("h4", null, "Feed Impressions"), /*#__PURE__*/external_React_default().createElement("table", null, /*#__PURE__*/external_React_default().createElement("tbody", null, Object.keys(impressions.feed).map(key => {
+      return /*#__PURE__*/external_React_default().createElement(Row, {
+        key: key
+      }, /*#__PURE__*/external_React_default().createElement("td", {
+        className: "min"
+      }, key), /*#__PURE__*/external_React_default().createElement("td", null, relativeTime(impressions.feed[key]) || "(no data)"));
+    }))));
+  }
+  renderBlocksData() {
+    const {
+      blocks
+    } = this.props.state.DiscoveryStream;
+    return /*#__PURE__*/external_React_default().createElement((external_React_default()).Fragment, null, /*#__PURE__*/external_React_default().createElement("h4", null, "Blocks"), /*#__PURE__*/external_React_default().createElement("button", {
+      className: "button",
+      onClick: this.resetBlocks
+    }, "Reset Blocks"), " ", /*#__PURE__*/external_React_default().createElement("table", null, /*#__PURE__*/external_React_default().createElement("tbody", null, Object.keys(blocks).map(key => {
+      return /*#__PURE__*/external_React_default().createElement(Row, {
+        key: key
+      }, /*#__PURE__*/external_React_default().createElement("td", {
+        className: "min"
+      }, key));
+    }))));
+  }
   renderSpocs() {
     const {
       spocs
     } = this.props.state.DiscoveryStream;
+    const unifiedAdsSpocsEnabled = this.props.otherPrefs["unifiedAds.spocs.enabled"];
+    const unifiedAdsEndpoint = this.props.otherPrefs["unifiedAds.endpoint"];
     let spocsData = [];
-    if (spocs.data && spocs.data.spocs && spocs.data.spocs.items) {
-      spocsData = spocs.data.spocs.items || [];
+    if (spocs.data && spocs.data.newtab_spocs && spocs.data.newtab_spocs.items) {
+      spocsData = spocs.data.newtab_spocs.items || [];
     }
     return /*#__PURE__*/external_React_default().createElement((external_React_default()).Fragment, null, /*#__PURE__*/external_React_default().createElement("table", null, /*#__PURE__*/external_React_default().createElement("tbody", null, /*#__PURE__*/external_React_default().createElement(Row, null, /*#__PURE__*/external_React_default().createElement("td", {
       className: "min"
-    }, "spocs_endpoint"), /*#__PURE__*/external_React_default().createElement("td", null, spocs.spocs_endpoint)), /*#__PURE__*/external_React_default().createElement(Row, null, /*#__PURE__*/external_React_default().createElement("td", {
+    }, "spocs_endpoint"), /*#__PURE__*/external_React_default().createElement("td", null, unifiedAdsSpocsEnabled ? unifiedAdsEndpoint : spocs.spocs_endpoint)), /*#__PURE__*/external_React_default().createElement(Row, null, /*#__PURE__*/external_React_default().createElement("td", {
       className: "min"
     }, "Data last fetched"), /*#__PURE__*/external_React_default().createElement("td", null, relativeTime(spocs.lastUpdated))))), /*#__PURE__*/external_React_default().createElement("h4", null, "Spoc data"), /*#__PURE__*/external_React_default().createElement("table", null, /*#__PURE__*/external_React_default().createElement("tbody", null, spocsData.map(spoc => this.renderStoryData(spoc)))), /*#__PURE__*/external_React_default().createElement("h4", null, "Spoc frequency caps"), /*#__PURE__*/external_React_default().createElement("table", null, /*#__PURE__*/external_React_default().createElement("tbody", null, spocs.frequency_caps.map(spoc => this.renderStoryData(spoc)))));
   }
@@ -867,6 +962,16 @@ class DiscoveryStreamAdminUI extends (external_React_default()).PureComponent {
       layout
     } = this.props.state.DiscoveryStream;
     const personalized = this.props.otherPrefs["discoverystream.personalization.enabled"];
+    const selectedFeed = this.props.otherPrefs["discoverystream.contextualContent.selectedFeed"];
+    const sectionsEnabled = this.props.otherPrefs["discoverystream.sections.enabled"];
+    const TBRFeeds = this.props.otherPrefs["discoverystream.contextualContent.feeds"].split(",").map(s => s.trim()).filter(item => item);
+
+    // Prefs for IAB Banners
+    const billboardsEnabled = this.props.otherPrefs["newtabAdSize.billboard"];
+    const leaderboardEnabled = this.props.otherPrefs["newtabAdSize.leaderboard"];
+    const spocPlacements = this.props.otherPrefs["discoverystream.placements.spocs"];
+    const billboardPressed = billboardsEnabled && spocPlacements.includes("newtab_billboard");
+    const leaderboardPressed = leaderboardEnabled && spocPlacements.includes("newtab_leaderboard");
     return /*#__PURE__*/external_React_default().createElement("div", null, /*#__PURE__*/external_React_default().createElement("button", {
       className: "button",
       onClick: this.restorePrefDefaults
@@ -891,7 +996,37 @@ class DiscoveryStreamAdminUI extends (external_React_default()).PureComponent {
     }, "Refresh Topic selection count"), /*#__PURE__*/external_React_default().createElement("br", null), /*#__PURE__*/external_React_default().createElement("button", {
       className: "button",
       onClick: this.showPlaceholder
-    }, "Show Placeholder Cards"), /*#__PURE__*/external_React_default().createElement("table", null, /*#__PURE__*/external_React_default().createElement("tbody", null, prefToggles.map(pref => /*#__PURE__*/external_React_default().createElement(Row, {
+    }, "Show Placeholder Cards"), " ", /*#__PURE__*/external_React_default().createElement("select", {
+      className: "button",
+      onChange: this.toggleTBRFeed,
+      value: selectedFeed
+    }, TBRFeeds.map(feed => /*#__PURE__*/external_React_default().createElement("option", {
+      key: feed,
+      value: feed
+    }, feed))), /*#__PURE__*/external_React_default().createElement("div", {
+      className: "toggle-wrapper"
+    }, /*#__PURE__*/external_React_default().createElement("moz-toggle", {
+      id: "sections-toggle",
+      pressed: sectionsEnabled || null,
+      onToggle: this.handleSectionsToggle,
+      label: "Toggle DS Sections"
+    })), /*#__PURE__*/external_React_default().createElement("details", {
+      className: "details-section"
+    }, /*#__PURE__*/external_React_default().createElement("summary", null, "IAB Banner Ad Sizes"), /*#__PURE__*/external_React_default().createElement("div", {
+      className: "toggle-wrapper"
+    }, /*#__PURE__*/external_React_default().createElement("moz-toggle", {
+      id: "leaderboard",
+      pressed: leaderboardPressed || null,
+      onToggle: this.toggleIABBanners,
+      label: "Enable IAB Leaderboard"
+    })), /*#__PURE__*/external_React_default().createElement("div", {
+      className: "toggle-wrapper"
+    }, /*#__PURE__*/external_React_default().createElement("moz-toggle", {
+      id: "billboard",
+      pressed: billboardPressed || null,
+      onToggle: this.toggleIABBanners,
+      label: "Enable IAB Billboard"
+    }))), /*#__PURE__*/external_React_default().createElement("table", null, /*#__PURE__*/external_React_default().createElement("tbody", null, prefToggles.map(pref => /*#__PURE__*/external_React_default().createElement(Row, {
       key: pref
     }, /*#__PURE__*/external_React_default().createElement("td", null, /*#__PURE__*/external_React_default().createElement(TogglePrefCheckbox, {
       checked: config[pref],
@@ -908,7 +1043,13 @@ class DiscoveryStreamAdminUI extends (external_React_default()).PureComponent {
       state: {
         Personalization: this.props.state.Personalization
       }
-    }), /*#__PURE__*/external_React_default().createElement("h3", null, "Spocs"), this.renderSpocs(), /*#__PURE__*/external_React_default().createElement("h3", null, "Feeds Data"), this.renderFeedsData(), /*#__PURE__*/external_React_default().createElement("h3", null, "Weather Data"), this.renderWeatherData());
+    }), /*#__PURE__*/external_React_default().createElement("h3", null, "Spocs"), this.renderSpocs(), /*#__PURE__*/external_React_default().createElement("h3", null, "Feeds Data"), /*#__PURE__*/external_React_default().createElement("div", {
+      className: "large-data-container"
+    }, this.renderFeedsData()), /*#__PURE__*/external_React_default().createElement("h3", null, "Impressions Data"), /*#__PURE__*/external_React_default().createElement("div", {
+      className: "large-data-container"
+    }, this.renderImpressionsData()), /*#__PURE__*/external_React_default().createElement("h3", null, "Blocked Data"), /*#__PURE__*/external_React_default().createElement("div", {
+      className: "large-data-container"
+    }, this.renderBlocksData()), /*#__PURE__*/external_React_default().createElement("h3", null, "Weather Data"), this.renderWeatherData());
   }
 }
 class DiscoveryStreamAdminInner extends (external_React_default()).PureComponent {
@@ -1401,15 +1542,17 @@ class _ContextMenuItem extends (external_React_default()).PureComponent {
 
   // This selects the correct node based on the key pressed
   focusSibling(target, key) {
-    const parent = target.parentNode;
+    const {
+      parentNode
+    } = target;
     const closestSiblingSelector = key === "ArrowUp" ? "previousSibling" : "nextSibling";
-    if (!parent[closestSiblingSelector]) {
+    if (!parentNode[closestSiblingSelector]) {
       return;
     }
-    if (parent[closestSiblingSelector].firstElementChild) {
-      parent[closestSiblingSelector].firstElementChild.focus();
+    if (parentNode[closestSiblingSelector].firstElementChild) {
+      parentNode[closestSiblingSelector].firstElementChild.focus();
     } else {
-      parent[closestSiblingSelector][closestSiblingSelector].firstElementChild.focus();
+      parentNode[closestSiblingSelector][closestSiblingSelector].firstElementChild.focus();
     }
   }
   onKeyDown(event) {
@@ -1453,12 +1596,13 @@ class _ContextMenuItem extends (external_React_default()).PureComponent {
     const {
       option
     } = this.props;
+    const className = [option.disabled ? "disabled" : ""].join(" ");
     return /*#__PURE__*/external_React_default().createElement("li", {
       role: "presentation",
       className: "context-menu-item"
     }, /*#__PURE__*/external_React_default().createElement("button", {
-      className: option.disabled ? "disabled" : "",
       role: "menuitem",
+      className: className,
       onClick: this.onClick,
       onKeyDown: this.onKeyDown,
       onKeyUp: this.onKeyUp,
@@ -1514,6 +1658,7 @@ const LinkMenuOptions = {
         advertiser_name: (site.label || site.hostname).toLocaleLowerCase(),
         position: site.sponsored_position,
         tile_id: site.sponsored_tile_id,
+        block_key: site.block_key,
       },
     }),
     userEvent: "TOPSITE_SPONSOR_INFO",
@@ -1546,6 +1691,13 @@ const LinkMenuOptions = {
         typedBonus: site.typedBonus,
         url: site.url,
         sponsored_tile_id: site.sponsored_tile_id,
+        ...(site.section
+          ? {
+              section: site.section,
+              section_position: site.section_position,
+              is_secton_followed: site.is_secton_followed,
+            }
+          : {}),
       },
     }),
     userEvent: "OPEN_NEW_WINDOW",
@@ -1568,8 +1720,10 @@ const LinkMenuOptions = {
         // pocket_id is only for pocket stories being in highlights, and then dismissed.
         pocket_id: site.pocket_id,
         tile_id: site.tile_id,
+        ...(site.block_key ? { block_key: site.block_key } : {}),
         recommendation_id: site.recommendation_id,
         scheduled_corpus_item_id: site.scheduled_corpus_item_id,
+        corpus_item_id: site.corpus_item_id,
         received_rank: site.received_rank,
         recommended_at: site.recommended_at,
         // used by PlacesFeed and TopSitesFeed for sponsored top sites blocking.
@@ -1590,6 +1744,15 @@ const LinkMenuOptions = {
         position: pos,
         ...(site.sponsored_tile_id ? { tile_id: site.sponsored_tile_id } : {}),
         is_pocket_card: site.type === "CardGrid",
+        is_list_card: site.is_list_card,
+        ...(site.format ? { format: site.format } : {}),
+        ...(site.section
+          ? {
+              section: site.section,
+              section_position: site.section_position,
+              is_secton_followed: site.is_secton_followed,
+            }
+          : {}),
       })),
     }),
     impression: actionCreators.ImpressionStats({
@@ -1637,6 +1800,11 @@ const LinkMenuOptions = {
               siteInfo
             )
           ),
+          // Also broadcast that this url has been deleted so that
+          // the confirmation dialog knows it needs to disappear now.
+          actionCreators.AlsoToMain({
+            type: actionTypes.DIALOG_CLOSE,
+          }),
         ],
         eventSource,
         body_string_id: [
@@ -1850,6 +2018,93 @@ const LinkMenuOptions = {
       data: { url: site.url },
     }),
   }),
+  FakespotDismiss: () => ({
+    id: "newtab-menu-dismiss",
+    action: actionCreators.OnlyToMain({
+      type: actionTypes.SET_PREF,
+      data: {
+        name: "discoverystream.contextualContent.fakespot.enabled",
+        value: false,
+      },
+    }),
+    impression: actionCreators.OnlyToMain({
+      type: actionTypes.FAKESPOT_DISMISS,
+    }),
+  }),
+  AboutFakespot: site => ({
+    id: "newtab-menu-about-fakespot",
+    action: actionCreators.OnlyToMain({
+      type: actionTypes.OPEN_LINK,
+      data: { url: site.url },
+    }),
+    impression: actionCreators.OnlyToMain({
+      type: actionTypes.OPEN_ABOUT_FAKESPOT,
+    }),
+  }),
+  SectionBlock: ({ blockedSections, sectionKey, sectionPosition }) => ({
+    id: "newtab-menu-section-block",
+    icon: "delete",
+    action: {
+      // Open the confirmation dialog to block a section.
+      type: actionTypes.DIALOG_OPEN,
+      data: {
+        onConfirm: [
+          // Once the user confirmed their intention to block this section,
+          // update their preferences.
+          actionCreators.AlsoToMain({
+            type: actionTypes.SET_PREF,
+            data: {
+              name: "discoverystream.sections.blocked",
+              value: [...blockedSections, sectionKey].join(", "),
+            },
+          }),
+          // Telemetry
+          actionCreators.OnlyToMain({
+            type: actionTypes.BLOCK_SECTION,
+            data: {
+              section: sectionKey,
+              section_position: sectionPosition,
+              event_source: "CONTEXT_MENU",
+            },
+          }),
+          // Also broadcast that this section has been blocked so that
+          // the confirmation dialog knows it needs to disappear now.
+          actionCreators.AlsoToMain({
+            type: actionTypes.DIALOG_CLOSE,
+          }),
+        ],
+        // Pass Fluent strings to ConfirmDialog component for the copy
+        // of the prompt to block sections.
+        body_string_id: [
+          "newtab-section-confirm-block-section-p1",
+          "newtab-section-confirm-block-section-p2",
+        ],
+        confirm_button_string_id: "newtab-section-block-section-button",
+        cancel_button_string_id: "newtab-section-cancel-button",
+      },
+    },
+    userEvent: "DIALOG_OPEN",
+  }),
+  SectionUnfollow: ({ followedSections, sectionKey, sectionPosition }) => ({
+    id: "newtab-menu-section-unfollow",
+    action: actionCreators.AlsoToMain({
+      type: actionTypes.SET_PREF,
+      data: {
+        name: "discoverystream.sections.following",
+        value: [...followedSections.filter(item => item !== sectionKey)].join(
+          ", "
+        ),
+      },
+    }),
+    impression: actionCreators.OnlyToMain({
+      type: actionTypes.UNFOLLOW_SECTION,
+      data: {
+        section: sectionKey,
+        section_position: sectionPosition,
+        event_source: "CONTEXT_MENU",
+      },
+    }),
+  }),
 };
 
 ;// CONCATENATED MODULE: ./content-src/components/LinkMenu/LinkMenu.jsx
@@ -2035,8 +2290,10 @@ class DSLinkMenu extends (external_React_default()).PureComponent {
     let pocketMenuOptions = [];
     let TOP_STORIES_CONTEXT_MENU_OPTIONS = ["OpenInNewWindow", "OpenInPrivateWindow"];
     if (!this.props.isRecentSave) {
-      if (this.props.pocket_button_enabled) {
-        pocketMenuOptions = this.props.saveToPocketCard ? ["CheckDeleteFromPocket"] : ["CheckSavedToPocket"];
+      // Show Pocket context menu options if applicable.
+      // Additionally, show these menu options for all section cards.
+      if (this.props.pocket_button_enabled && (this.props.saveToPocketCard || this.props.isSectionsCard)) {
+        pocketMenuOptions = ["CheckSavedToPocket"];
       }
       TOP_STORIES_CONTEXT_MENU_OPTIONS = ["CheckBookmark", "CheckArchiveFromPocket", ...pocketMenuOptions, "Separator", "OpenInNewWindow", "OpenInPrivateWindow", "Separator", "BlockUrl", ...(this.props.showPrivacyInfo ? ["ShowPrivacyInfo"] : [])];
     }
@@ -2071,9 +2328,19 @@ class DSLinkMenu extends (external_React_default()).PureComponent {
         flight_id: this.props.flightId,
         tile_id: this.props.tile_id,
         recommendation_id: this.props.recommendation_id,
+        corpus_item_id: this.props.corpus_item_id,
         scheduled_corpus_item_id: this.props.scheduled_corpus_item_id,
         recommended_at: this.props.recommended_at,
-        received_rank: this.props.received_rank
+        received_rank: this.props.received_rank,
+        is_list_card: this.props.is_list_card,
+        ...(this.props.format ? {
+          format: this.props.format
+        } : {}),
+        ...(this.props.section ? {
+          section: this.props.section,
+          section_position: this.props.section_position,
+          is_secton_followed: this.props.is_secton_followed
+        } : {})
       }
     })));
   }
@@ -2140,7 +2407,7 @@ const INTERSECTION_RATIO = 0.5;
 /**
  * Impression wrapper for Discovery Stream related React components.
  *
- * It makses use of the Intersection Observer API to detect the visibility,
+ * It makes use of the Intersection Observer API to detect the visibility,
  * and relies on page visibility to ensure the impression is reported
  * only when the component is visible on the page.
  *
@@ -2171,6 +2438,9 @@ class ImpressionStats_ImpressionStats extends (external_React_default()).PureCom
     const {
       props
     } = this;
+    const {
+      isFakespot
+    } = props;
     const cards = props.rows;
     if (this.props.flightId) {
       this.props.dispatch(actionCreators.OnlyToMain({
@@ -2199,27 +2469,50 @@ class ImpressionStats_ImpressionStats extends (external_React_default()).PureCom
       }
     }
     if (this._needsImpressionStats(cards)) {
-      props.dispatch(actionCreators.DiscoveryStreamImpressionStats({
-        source: props.source.toUpperCase(),
-        window_inner_width: window.innerWidth,
-        window_inner_height: window.innerHeight,
-        tiles: cards.map(link => ({
-          id: link.id,
-          pos: link.pos,
-          type: this.props.flightId ? "spoc" : "organic",
-          ...(link.shim ? {
-            shim: link.shim
-          } : {}),
-          recommendation_id: link.recommendation_id,
-          fetchTimestamp: link.fetchTimestamp,
-          scheduled_corpus_item_id: link.scheduled_corpus_item_id,
-          recommended_at: link.recommended_at,
-          received_rank: link.received_rank,
-          topic: link.topic
-        })),
-        firstVisibleTimestamp: this.props.firstVisibleTimestamp
-      }));
-      this.impressionCardGuids = cards.map(link => link.id);
+      if (isFakespot) {
+        props.dispatch(actionCreators.DiscoveryStreamImpressionStats({
+          source: props.source.toUpperCase(),
+          window_inner_width: window.innerWidth,
+          window_inner_height: window.innerHeight,
+          tiles: cards.map(link => ({
+            id: link.id,
+            type: "fakespot",
+            category: link.category
+          }))
+        }));
+      } else {
+        props.dispatch(actionCreators.DiscoveryStreamImpressionStats({
+          source: props.source.toUpperCase(),
+          window_inner_width: window.innerWidth,
+          window_inner_height: window.innerHeight,
+          tiles: cards.map(link => ({
+            id: link.id,
+            pos: link.pos,
+            type: this.props.flightId ? "spoc" : "organic",
+            ...(link.shim ? {
+              shim: link.shim
+            } : {}),
+            recommendation_id: link.recommendation_id,
+            fetchTimestamp: link.fetchTimestamp,
+            corpus_item_id: link.corpus_item_id,
+            scheduled_corpus_item_id: link.scheduled_corpus_item_id,
+            recommended_at: link.recommended_at,
+            received_rank: link.received_rank,
+            topic: link.topic,
+            is_list_card: link.is_list_card,
+            ...(link.format ? {
+              format: link.format
+            } : {}),
+            ...(link.section ? {
+              section: link.section,
+              section_position: link.section_position,
+              is_secton_followed: link.is_secton_followed
+            } : {})
+          })),
+          firstVisibleTimestamp: this.props.firstVisibleTimestamp
+        }));
+        this.impressionCardGuids = cards.map(link => link.id);
+      }
     }
   }
 
@@ -2367,7 +2660,7 @@ class SafeAnchor extends (external_React_default()).PureComponent {
             metaKey,
             shiftKey
           },
-          referrer: "https://getpocket.com/recommendations",
+          referrer: this.props.referrer || "https://getpocket.com/recommendations",
           // Use the anchor's url, which could have been cleaned up
           url: event.currentTarget.href
         }
@@ -2593,6 +2886,7 @@ class FluentOrText extends (external_React_default()).PureComponent {
 
 
 
+// eslint-disable-next-line no-shadow
 
 
 
@@ -2602,13 +2896,14 @@ const ANIMATION_DURATION = 3000;
 const DSMessageLabel = props => {
   const {
     context,
-    context_type
+    context_type,
+    mayHaveSectionsCards
   } = props;
   const {
     icon,
     fluentID
   } = cardContextTypes[context_type] || {};
-  if (!context && context_type) {
+  if (!context && context_type && !mayHaveSectionsCards) {
     return /*#__PURE__*/external_React_default().createElement(external_ReactTransitionGroup_namespaceObject.TransitionGroup, {
       component: null
     }, /*#__PURE__*/external_React_default().createElement(external_ReactTransitionGroup_namespaceObject.CSSTransition, {
@@ -2679,7 +2974,8 @@ class DSContextFooter extends (external_React_default()).PureComponent {
       cta_button_variant,
       source,
       spocMessageVariant,
-      dispatch
+      dispatch,
+      mayHaveSectionsCards
     } = this.props;
     const sponsorLabel = SponsorLabel({
       sponsored_by_override,
@@ -2688,7 +2984,8 @@ class DSContextFooter extends (external_React_default()).PureComponent {
     });
     const dsMessageLabel = DSMessageLabel({
       context,
-      context_type
+      context_type,
+      mayHaveSectionsCards
     });
     if (cta_button_variant === "variant-a") {
       return /*#__PURE__*/external_React_default().createElement("div", {
@@ -2705,7 +3002,7 @@ class DSContextFooter extends (external_React_default()).PureComponent {
         className: "source clamp cta-footer-source"
       }, source));
     }
-    if (sponsorLabel || dsMessageLabel) {
+    if (sponsorLabel || dsMessageLabel && context_type !== "pocket") {
       return /*#__PURE__*/external_React_default().createElement("div", {
         className: "story-footer"
       }, sponsorLabel, sponsorLabel && spocMessageVariant === "variant-b" && /*#__PURE__*/external_React_default().createElement(SponsoredContentHighlight, {
@@ -2847,51 +3144,76 @@ const DefaultMeta = ({
   ctaButtonVariant,
   dispatch,
   spocMessageVariant,
+  mayHaveSectionsCards,
   mayHaveThumbsUpDown,
   onThumbsUpClick,
   onThumbsDownClick,
-  state
-}) => /*#__PURE__*/external_React_default().createElement("div", {
-  className: "meta"
-}, /*#__PURE__*/external_React_default().createElement("div", {
-  className: "info-wrap"
-}, ctaButtonVariant !== "variant-b" && /*#__PURE__*/external_React_default().createElement(DSSource, {
-  source: source,
-  timeToRead: timeToRead,
-  newSponsoredLabel: newSponsoredLabel,
-  context: context,
-  sponsor: sponsor,
-  sponsored_by_override: sponsored_by_override
-}), /*#__PURE__*/external_React_default().createElement("header", {
-  className: "title clamp"
-}, title), excerpt && /*#__PURE__*/external_React_default().createElement("p", {
-  className: "excerpt clamp"
-}, excerpt)), mayHaveThumbsUpDown && /*#__PURE__*/external_React_default().createElement(DSThumbsUpDownButtons, {
-  onThumbsDownClick: onThumbsDownClick,
-  onThumbsUpClick: onThumbsUpClick,
-  sponsor: sponsor,
-  isThumbsDownActive: state.isThumbsDownActive,
-  isThumbsUpActive: state.isThumbsUpActive
-}), !newSponsoredLabel && /*#__PURE__*/external_React_default().createElement(DSContextFooter, {
-  context_type: context_type,
-  context: context,
-  sponsor: sponsor,
-  sponsored_by_override: sponsored_by_override,
-  cta_button_variant: ctaButtonVariant,
-  source: source,
-  dispatch: dispatch,
-  spocMessageVariant: spocMessageVariant
-}), newSponsoredLabel && /*#__PURE__*/external_React_default().createElement(DSMessageFooter, {
-  context_type: context_type,
-  context: null,
-  saveToPocketCard: saveToPocketCard
-}));
+  isListCard,
+  state,
+  format,
+  topic,
+  isSectionsCard,
+  showTopics
+}) => {
+  const shouldHaveThumbs = !isListCard && format !== "rectangle" && mayHaveSectionsCards && mayHaveThumbsUpDown;
+  const shouldHaveFooterSection = isSectionsCard && (shouldHaveThumbs || showTopics);
+  return /*#__PURE__*/external_React_default().createElement("div", {
+    className: "meta"
+  }, /*#__PURE__*/external_React_default().createElement("div", {
+    className: "info-wrap"
+  }, ctaButtonVariant !== "variant-b" && format !== "rectangle" && /*#__PURE__*/external_React_default().createElement(DSSource, {
+    source: source,
+    timeToRead: timeToRead,
+    newSponsoredLabel: newSponsoredLabel,
+    context: context,
+    sponsor: sponsor,
+    sponsored_by_override: sponsored_by_override
+  }), format !== "rectangle" && /*#__PURE__*/external_React_default().createElement((external_React_default()).Fragment, null, /*#__PURE__*/external_React_default().createElement("h3", {
+    className: "title clamp"
+  }, title), excerpt && /*#__PURE__*/external_React_default().createElement("p", {
+    className: "excerpt clamp"
+  }, excerpt)), format === "rectangle" && /*#__PURE__*/external_React_default().createElement((external_React_default()).Fragment, null, /*#__PURE__*/external_React_default().createElement("h3", {
+    className: "title clamp"
+  }, "Sponsored"), /*#__PURE__*/external_React_default().createElement("p", {
+    className: "excerpt clamp"
+  }, "Sponsored content supports our mission to build a better web."))), !isListCard && format !== "rectangle" && !mayHaveSectionsCards && mayHaveThumbsUpDown && /*#__PURE__*/external_React_default().createElement(DSThumbsUpDownButtons, {
+    onThumbsDownClick: onThumbsDownClick,
+    onThumbsUpClick: onThumbsUpClick,
+    sponsor: sponsor,
+    isThumbsDownActive: state.isThumbsDownActive,
+    isThumbsUpActive: state.isThumbsUpActive
+  }), shouldHaveFooterSection && /*#__PURE__*/external_React_default().createElement("div", {
+    className: "sections-card-footer"
+  }, shouldHaveThumbs && /*#__PURE__*/external_React_default().createElement(DSThumbsUpDownButtons, {
+    onThumbsDownClick: onThumbsDownClick,
+    onThumbsUpClick: onThumbsUpClick,
+    sponsor: sponsor,
+    isThumbsDownActive: state.isThumbsDownActive,
+    isThumbsUpActive: state.isThumbsUpActive
+  }), showTopics && /*#__PURE__*/external_React_default().createElement("span", {
+    className: "ds-card-topic",
+    "data-l10n-id": `newtab-topic-label-${topic}`
+  })), !newSponsoredLabel && /*#__PURE__*/external_React_default().createElement(DSContextFooter, {
+    context_type: context_type,
+    context: context,
+    sponsor: sponsor,
+    sponsored_by_override: sponsored_by_override,
+    cta_button_variant: ctaButtonVariant,
+    source: source,
+    dispatch: dispatch,
+    spocMessageVariant: spocMessageVariant,
+    mayHaveSectionsCards: mayHaveSectionsCards
+  }), newSponsoredLabel && /*#__PURE__*/external_React_default().createElement(DSMessageFooter, {
+    context_type: context_type,
+    context: null,
+    saveToPocketCard: saveToPocketCard
+  }));
+};
 class _DSCard extends (external_React_default()).PureComponent {
   constructor(props) {
     super(props);
     this.onLinkClick = this.onLinkClick.bind(this);
     this.doesLinkTopicMatchSelectedTopic = this.doesLinkTopicMatchSelectedTopic.bind(this);
-    this.onSaveClick = this.onSaveClick.bind(this);
     this.onMenuUpdate = this.onMenuUpdate.bind(this);
     this.onMenuShow = this.onMenuShow.bind(this);
     this.onThumbsUpClick = this.onThumbsUpClick.bind(this);
@@ -2935,10 +3257,32 @@ class _DSCard extends (external_React_default()).PureComponent {
       width: 202,
       height: 101
     }];
+    this.largeCardImageSizes = [{
+      mediaMatcher: "(min-width: 1122px)",
+      width: 220,
+      height: 220
+    }, {
+      mediaMatcher: "(min-width: 866px)",
+      width: 218,
+      height: 109
+    }, {
+      mediaMatcher: "(max-width: 610px)",
+      width: 202,
+      height: 101
+    }];
+    this.listCardImageSizes = [{
+      mediaMatcher: "(min-width: 1122px)",
+      width: 75,
+      height: 75
+    }, {
+      mediaMatcher: "default",
+      width: 50,
+      height: 50
+    }];
   }
   doesLinkTopicMatchSelectedTopic() {
     // Edge case for clicking on a card when topic selections have not be set
-    if (this.props.selectedTopics === "") {
+    if (!this.props.selectedTopics) {
       return "not-set";
     }
 
@@ -2954,96 +3298,79 @@ class _DSCard extends (external_React_default()).PureComponent {
   onLinkClick() {
     const matchesSelectedTopic = this.doesLinkTopicMatchSelectedTopic();
     if (this.props.dispatch) {
-      this.props.dispatch(actionCreators.DiscoveryStreamUserEvent({
-        event: "CLICK",
-        source: this.props.type.toUpperCase(),
-        action_position: this.props.pos,
-        value: {
-          card_type: this.props.flightId ? "spoc" : "organic",
-          recommendation_id: this.props.recommendation_id,
-          tile_id: this.props.id,
-          ...(this.props.shim && this.props.shim.click ? {
-            shim: this.props.shim.click
-          } : {}),
-          fetchTimestamp: this.props.fetchTimestamp,
-          firstVisibleTimestamp: this.props.firstVisibleTimestamp,
-          scheduled_corpus_item_id: this.props.scheduled_corpus_item_id,
-          recommended_at: this.props.recommended_at,
-          received_rank: this.props.received_rank,
-          topic: this.props.topic,
-          matches_selected_topic: matchesSelectedTopic,
-          selected_topics: this.props.selectedTopics
-        }
-      }));
-      this.props.dispatch(actionCreators.ImpressionStats({
-        source: this.props.type.toUpperCase(),
-        click: 0,
-        window_inner_width: this.props.windowObj.innerWidth,
-        window_inner_height: this.props.windowObj.innerHeight,
-        tiles: [{
-          id: this.props.id,
-          pos: this.props.pos,
-          ...(this.props.shim && this.props.shim.click ? {
-            shim: this.props.shim.click
-          } : {}),
-          type: this.props.flightId ? "spoc" : "organic",
-          recommendation_id: this.props.recommendation_id,
-          topic: this.props.topic,
-          selected_topics: this.props.selectedTopics
-        }]
-      }));
-    }
-  }
-  onSaveClick() {
-    const matchesSelectedTopic = this.doesLinkTopicMatchSelectedTopic();
-    if (this.props.dispatch) {
-      this.props.dispatch(actionCreators.AlsoToMain({
-        type: actionTypes.SAVE_TO_POCKET,
-        data: {
-          site: {
-            url: this.props.url,
-            title: this.props.title
+      if (this.props.isFakespot) {
+        this.props.dispatch(actionCreators.DiscoveryStreamUserEvent({
+          event: "FAKESPOT_CLICK",
+          value: {
+            product_id: this.props.id,
+            category: this.props.category || ""
           }
-        }
-      }));
-      this.props.dispatch(actionCreators.DiscoveryStreamUserEvent({
-        event: "SAVE_TO_POCKET",
-        source: "CARDGRID_HOVER",
-        action_position: this.props.pos,
-        value: {
-          card_type: this.props.flightId ? "spoc" : "organic",
-          recommendation_id: this.props.recommendation_id,
-          tile_id: this.props.id,
-          ...(this.props.shim && this.props.shim.save ? {
-            shim: this.props.shim.save
-          } : {}),
-          fetchTimestamp: this.props.fetchTimestamp,
-          firstVisibleTimestamp: this.props.firstVisibleTimestamp,
-          scheduled_corpus_item_id: this.props.scheduled_corpus_item_id,
-          recommended_at: this.props.recommended_at,
-          received_rank: this.props.received_rank,
-          topic: this.props.topic,
-          matches_selected_topic: matchesSelectedTopic,
-          selected_topics: this.props.selectedTopics
-        }
-      }));
-      this.props.dispatch(actionCreators.ImpressionStats({
-        source: "CARDGRID_HOVER",
-        pocket: 0,
-        tiles: [{
-          id: this.props.id,
-          pos: this.props.pos,
-          ...(this.props.shim && this.props.shim.save ? {
-            shim: this.props.shim.save
-          } : {}),
-          recommendation_id: this.props.recommendation_id,
-          topic: this.props.topic,
-          selected_topics: this.props.selectedTopics
-        }]
-      }));
+        }));
+      } else {
+        this.props.dispatch(actionCreators.DiscoveryStreamUserEvent({
+          event: "CLICK",
+          source: this.props.type.toUpperCase(),
+          action_position: this.props.pos,
+          value: {
+            card_type: this.props.flightId ? "spoc" : "organic",
+            recommendation_id: this.props.recommendation_id,
+            tile_id: this.props.id,
+            ...(this.props.shim && this.props.shim.click ? {
+              shim: this.props.shim.click
+            } : {}),
+            fetchTimestamp: this.props.fetchTimestamp,
+            firstVisibleTimestamp: this.props.firstVisibleTimestamp,
+            corpus_item_id: this.props.corpus_item_id,
+            scheduled_corpus_item_id: this.props.scheduled_corpus_item_id,
+            recommended_at: this.props.recommended_at,
+            received_rank: this.props.received_rank,
+            topic: this.props.topic,
+            matches_selected_topic: matchesSelectedTopic,
+            selected_topics: this.props.selectedTopics,
+            is_list_card: this.props.isListCard,
+            ...(this.props.format ? {
+              format: this.props.format
+            } : {}),
+            ...(this.props.section ? {
+              section: this.props.section,
+              section_position: this.props.sectionPosition,
+              is_secton_followed: this.props.sectionFollowed
+            } : {})
+          }
+        }));
+        this.props.dispatch(actionCreators.ImpressionStats({
+          source: this.props.type.toUpperCase(),
+          click: 0,
+          window_inner_width: this.props.windowObj.innerWidth,
+          window_inner_height: this.props.windowObj.innerHeight,
+          tiles: [{
+            id: this.props.id,
+            pos: this.props.pos,
+            ...(this.props.shim && this.props.shim.click ? {
+              shim: this.props.shim.click
+            } : {}),
+            type: this.props.flightId ? "spoc" : "organic",
+            recommendation_id: this.props.recommendation_id,
+            topic: this.props.topic,
+            selected_topics: this.props.selectedTopics,
+            is_list_card: this.props.isListCard,
+            ...(this.props.format ? {
+              format: this.props.format
+            } : {}),
+            ...(this.props.section ? {
+              section: this.props.section,
+              section_position: this.props.sectionPosition,
+              is_secton_followed: this.props.sectionFollowed
+            } : {})
+          }]
+        }));
+      }
     }
   }
-  onThumbsUpClick() {
+  onThumbsUpClick(event) {
+    event.stopPropagation();
+    event.preventDefault();
+
     // Toggle active state for thumbs up button to show CSS animation
     const currentState = this.state.isThumbsUpActive;
 
@@ -3062,12 +3389,18 @@ class _DSCard extends (external_React_default()).PureComponent {
       value: {
         recommendation_id: this.props.recommendation_id,
         tile_id: this.props.id,
+        corpus_item_id: this.props.corpus_item_id,
         scheduled_corpus_item_id: this.props.scheduled_corpus_item_id,
         recommended_at: this.props.recommended_at,
         received_rank: this.props.received_rank,
         thumbs_up: true,
         thumbs_down: false,
-        topic: this.props.topic
+        topic: this.props.topic,
+        ...(this.props.section ? {
+          section: this.props.section,
+          section_position: this.props.sectionPosition,
+          is_secton_followed: this.props.sectionFollowed
+        } : {})
       }
     }));
 
@@ -3080,7 +3413,10 @@ class _DSCard extends (external_React_default()).PureComponent {
       }
     }, "ActivityStream:Content"));
   }
-  onThumbsDownClick() {
+  onThumbsDownClick(event) {
+    event.stopPropagation();
+    event.preventDefault();
+
     // Toggle active state for thumbs down button to show CSS animation
     const currentState = this.state.isThumbsDownActive;
     this.setState({
@@ -3098,6 +3434,7 @@ class _DSCard extends (external_React_default()).PureComponent {
         card_type: "organic",
         recommendation_id: this.props.recommendation_id,
         tile_id: this.props.id,
+        corpus_item_id: this.props.corpus_item_id,
         scheduled_corpus_item_id: this.props.scheduled_corpus_item_id,
         recommended_at: this.props.recommended_at,
         received_rank: this.props.received_rank
@@ -3127,12 +3464,18 @@ class _DSCard extends (external_React_default()).PureComponent {
         value: {
           recommendation_id: this.props.recommendation_id,
           tile_id: this.props.id,
+          corpus_item_id: this.props.corpus_item_id,
           scheduled_corpus_item_id: this.props.scheduled_corpus_item_id,
           recommended_at: this.props.recommended_at,
           received_rank: this.props.received_rank,
           thumbs_up: false,
           thumbs_down: true,
-          topic: this.props.topic
+          topic: this.props.topic,
+          ...(this.props.section ? {
+            section: this.props.section,
+            section_position: this.props.sectionPosition,
+            is_secton_followed: this.props.sectionFollowed
+          } : {})
         }
       }));
 
@@ -3207,11 +3550,21 @@ class _DSCard extends (external_React_default()).PureComponent {
     }
   }
   render() {
+    const {
+      isRecentSave,
+      DiscoveryStream,
+      saveToPocketCard,
+      isListCard,
+      isFakespot,
+      mayHaveSectionsCards,
+      format,
+      alt_text
+    } = this.props;
     if (this.props.placeholder || !this.state.isSeen) {
       // placeholder-seen is used to ensure the loading animation is only used if the card is visible.
       const placeholderClassName = this.state.isSeen ? `placeholder-seen` : ``;
       return /*#__PURE__*/external_React_default().createElement("div", {
-        className: `ds-card placeholder ${placeholderClassName}`,
+        className: `ds-card placeholder ${placeholderClassName} ${isListCard ? "list-card-placeholder" : ""}`,
         ref: this.setPlaceholderRef
       }, /*#__PURE__*/external_React_default().createElement("div", {
         className: "placeholder-image placeholder-fill"
@@ -3223,11 +3576,6 @@ class _DSCard extends (external_React_default()).PureComponent {
         className: "placeholder-description placeholder-fill"
       }));
     }
-    const {
-      isRecentSave,
-      DiscoveryStream,
-      saveToPocketCard
-    } = this.props;
     let source = this.props.source || this.props.publisher;
     if (!source) {
       try {
@@ -3258,26 +3606,34 @@ class _DSCard extends (external_React_default()).PureComponent {
     const ctaButtonClassName = ctaButtonEnabled ? `ds-card-cta-button` : ``;
     const compactImagesClassName = compactImages ? `ds-card-compact-image` : ``;
     const imageGradientClassName = imageGradient ? `ds-card-image-gradient` : ``;
+    const listCardClassName = isListCard ? `list-feed-card` : ``;
+    const fakespotClassName = isFakespot ? `fakespot` : ``;
+    const sectionsCardsClassName = [mayHaveSectionsCards ? `sections-card-ui` : ``, this.props.sectionsClassNames].join(" ");
     const titleLinesName = `ds-card-title-lines-${titleLines}`;
     const descLinesClassName = `ds-card-desc-lines-${descLines}`;
-    let stpButton = () => {
-      return /*#__PURE__*/external_React_default().createElement("button", {
-        className: "card-stp-button",
-        onClick: this.onSaveClick
-      }, this.props.context_type === "pocket" ? /*#__PURE__*/external_React_default().createElement((external_React_default()).Fragment, null, /*#__PURE__*/external_React_default().createElement("span", {
-        className: "story-badge-icon icon icon-pocket"
-      }), /*#__PURE__*/external_React_default().createElement("span", {
-        "data-l10n-id": "newtab-pocket-saved"
-      })) : /*#__PURE__*/external_React_default().createElement((external_React_default()).Fragment, null, /*#__PURE__*/external_React_default().createElement("span", {
-        className: "story-badge-icon icon icon-pocket-save"
-      }), /*#__PURE__*/external_React_default().createElement("span", {
-        "data-l10n-id": "newtab-pocket-save"
-      })));
-    };
+    const isMediumRectangle = format === "rectangle";
+    const spocFormatClassName = isMediumRectangle ? `ds-spoc-rectangle` : ``;
+    let sizes = [];
+    if (!isMediumRectangle) {
+      sizes = isListCard ? this.listCardImageSizes : this.dsImageSizes;
+    }
+
+    // TODO: Add logic to assign this.largeCardImageSizes
+
     return /*#__PURE__*/external_React_default().createElement("article", {
-      className: `ds-card ${compactImagesClassName} ${imageGradientClassName} ${titleLinesName} ${descLinesClassName} ${ctaButtonClassName} ${ctaButtonVariantClassName}`,
-      ref: this.setContextMenuButtonHostRef
-    }, this.props.showTopics && this.props.topic && /*#__PURE__*/external_React_default().createElement("span", {
+      className: `ds-card ${listCardClassName} ${fakespotClassName} ${sectionsCardsClassName} ${compactImagesClassName} ${imageGradientClassName} ${titleLinesName} ${descLinesClassName} ${spocFormatClassName} ${ctaButtonClassName} ${ctaButtonVariantClassName}`,
+      ref: this.setContextMenuButtonHostRef,
+      "data-position-one": this.props["data-position-one"],
+      "data-position-two": this.props["data-position-one"],
+      "data-position-three": this.props["data-position-one"],
+      "data-position-four": this.props["data-position-one"]
+    }, /*#__PURE__*/external_React_default().createElement(SafeAnchor, {
+      className: "ds-card-link",
+      dispatch: this.props.dispatch,
+      onLinkClick: !this.props.placeholder ? this.onLinkClick : undefined,
+      url: this.props.url,
+      title: this.props.title
+    }, this.props.showTopics && !this.props.mayHaveSectionsCards && this.props.topic && !isListCard && /*#__PURE__*/external_React_default().createElement("span", {
       className: "ds-card-topic",
       "data-l10n-id": `newtab-topic-label-${this.props.topic}`
     }), /*#__PURE__*/external_React_default().createElement("div", {
@@ -3286,17 +3642,12 @@ class _DSCard extends (external_React_default()).PureComponent {
       extraClassNames: "img",
       source: this.props.image_src,
       rawSource: this.props.raw_image_src,
-      sizes: this.dsImageSizes,
+      sizes: sizes,
       url: this.props.url,
       title: this.props.title,
-      isRecentSave: isRecentSave
-    })), /*#__PURE__*/external_React_default().createElement(SafeAnchor, {
-      className: "ds-card-link",
-      dispatch: this.props.dispatch,
-      onLinkClick: !this.props.placeholder ? this.onLinkClick : undefined,
-      url: this.props.url,
-      title: this.props.title
-    }, /*#__PURE__*/external_React_default().createElement(ImpressionStats_ImpressionStats, {
+      isRecentSave: isRecentSave,
+      alt_text: alt_text
+    })), /*#__PURE__*/external_React_default().createElement(ImpressionStats_ImpressionStats, {
       flightId: this.props.flightId,
       rows: [{
         id: this.props.id,
@@ -3306,17 +3657,36 @@ class _DSCard extends (external_React_default()).PureComponent {
         } : {}),
         recommendation_id: this.props.recommendation_id,
         fetchTimestamp: this.props.fetchTimestamp,
+        corpus_item_id: this.props.corpus_item_id,
         scheduled_corpus_item_id: this.props.scheduled_corpus_item_id,
         recommended_at: this.props.recommended_at,
         received_rank: this.props.received_rank,
-        topic: this.props.topic
+        topic: this.props.topic,
+        is_list_card: isListCard,
+        ...(format ? {
+          format
+        } : {}),
+        isFakespot,
+        category: this.props.category,
+        ...(this.props.section ? {
+          section: this.props.section,
+          section_position: this.props.sectionPosition,
+          is_secton_followed: this.props.sectionFollowed
+        } : {})
       }],
       dispatch: this.props.dispatch,
+      isFakespot: isFakespot,
       source: this.props.type,
       firstVisibleTimestamp: this.props.firstVisibleTimestamp
-    })), ctaButtonVariant === "variant-b" && /*#__PURE__*/external_React_default().createElement("div", {
+    }), ctaButtonVariant === "variant-b" && /*#__PURE__*/external_React_default().createElement("div", {
       className: "cta-header"
-    }, "Shop Now"), /*#__PURE__*/external_React_default().createElement(DefaultMeta, {
+    }, "Shop Now"), isFakespot ? /*#__PURE__*/external_React_default().createElement("div", {
+      className: "meta"
+    }, /*#__PURE__*/external_React_default().createElement("div", {
+      className: "info-wrap"
+    }, /*#__PURE__*/external_React_default().createElement("h3", {
+      className: "title clamp"
+    }, this.props.title))) : /*#__PURE__*/external_React_default().createElement(DefaultMeta, {
       source: source,
       title: this.props.title,
       excerpt: excerpt,
@@ -3331,14 +3701,20 @@ class _DSCard extends (external_React_default()).PureComponent {
       dispatch: this.props.dispatch,
       spocMessageVariant: this.props.spocMessageVariant,
       mayHaveThumbsUpDown: this.props.mayHaveThumbsUpDown,
+      mayHaveSectionsCards: this.props.mayHaveSectionsCards,
       onThumbsUpClick: this.onThumbsUpClick,
       onThumbsDownClick: this.onThumbsDownClick,
-      state: this.state
-    }), /*#__PURE__*/external_React_default().createElement("div", {
+      state: this.state,
+      isListCard: isListCard,
+      showTopics: this.props.showTopics,
+      isSectionsCard: this.props.mayHaveSectionsCards && this.props.topic && !isListCard,
+      format: format,
+      topic: this.props.topic
+    })), /*#__PURE__*/external_React_default().createElement("div", {
       className: "card-stp-button-hover-background"
     }, /*#__PURE__*/external_React_default().createElement("div", {
       className: "card-stp-button-position-wrapper"
-    }, saveToPocketCard && /*#__PURE__*/external_React_default().createElement((external_React_default()).Fragment, null, !this.props.flightId && stpButton()), /*#__PURE__*/external_React_default().createElement(DSLinkMenu, {
+    }, !isFakespot && /*#__PURE__*/external_React_default().createElement(DSLinkMenu, {
       id: this.props.id,
       index: this.props.pos,
       dispatch: this.props.dispatch,
@@ -3359,9 +3735,17 @@ class _DSCard extends (external_React_default()).PureComponent {
       isRecentSave: isRecentSave,
       recommendation_id: this.props.recommendation_id,
       tile_id: this.props.id,
+      block_key: this.props.id,
+      corpus_item_id: this.props.corpus_item_id,
       scheduled_corpus_item_id: this.props.scheduled_corpus_item_id,
       recommended_at: this.props.recommended_at,
-      received_rank: this.props.received_rank
+      received_rank: this.props.received_rank,
+      is_list_card: this.props.isListCard,
+      section: this.props.section,
+      section_position: this.props.sectionPosition,
+      is_secton_followed: this.props.sectionFollowed,
+      format: format,
+      isSectionsCard: this.props.mayHaveSectionsCards
     }))));
   }
 }
@@ -3630,6 +4014,283 @@ _TopicsWidget.defaultProps = {
 const TopicsWidget = (0,external_ReactRedux_namespaceObject.connect)(state => ({
   DiscoveryStream: state.DiscoveryStream
 }))(_TopicsWidget);
+;// CONCATENATED MODULE: ./content-src/components/DiscoveryStreamComponents/ListFeed/ListFeed.jsx
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this file,
+ * You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+
+
+
+
+
+
+
+const PREF_LISTFEED_TITLE = "discoverystream.contextualContent.listFeedTitle";
+const PREF_FAKESPOT_CATEGROY = "discoverystream.contextualContent.fakespot.defaultCategoryTitle";
+const PREF_FAKESPOT_FOOTER = "discoverystream.contextualContent.fakespot.footerCopy";
+const PREF_FAKESPOT_CTA_COPY = "discoverystream.contextualContent.fakespot.ctaCopy";
+const PREF_FAKESPOT_CTA_URL = "discoverystream.contextualContent.fakespot.ctaUrl";
+const PREF_CONTEXTUAL_CONTENT_SELECTED_FEED = "discoverystream.contextualContent.selectedFeed";
+function ListFeed({
+  type,
+  firstVisibleTimestamp,
+  recs,
+  categories,
+  dispatch
+}) {
+  const [selectedFakespotFeed, setSelectedFakespotFeed] = (0,external_React_namespaceObject.useState)("");
+  const prefs = (0,external_ReactRedux_namespaceObject.useSelector)(state => state.Prefs.values);
+  const listFeedTitle = prefs[PREF_LISTFEED_TITLE];
+  const categoryTitle = prefs[PREF_FAKESPOT_CATEGROY];
+  const footerCopy = prefs[PREF_FAKESPOT_FOOTER];
+  const ctaCopy = prefs[PREF_FAKESPOT_CTA_COPY];
+  const ctaUrl = prefs[PREF_FAKESPOT_CTA_URL];
+  const isFakespot = prefs[PREF_CONTEXTUAL_CONTENT_SELECTED_FEED] === "fakespot";
+  // Todo: need to remove ads while using default recommendations, remove this line once API has been updated.
+  let listFeedRecs = selectedFakespotFeed ? recs.filter(rec => rec.category === selectedFakespotFeed) : recs;
+  function handleCtaClick() {
+    dispatch(actionCreators.OnlyToMain({
+      type: "FAKESPOT_CTA_CLICK"
+    }));
+  }
+  function handleChange(e) {
+    setSelectedFakespotFeed(e.target.value);
+    dispatch(actionCreators.DiscoveryStreamUserEvent({
+      event: "FAKESPOT_CATEGORY",
+      value: {
+        category: e.target.value || ""
+      }
+    }));
+  }
+  const contextMenuOptions = ["FakespotDismiss", "AboutFakespot"];
+  const {
+    length: listLength
+  } = listFeedRecs;
+  // determine if the list should take up all availible height or not
+  const fullList = listLength >= 5;
+  return listLength > 0 && /*#__PURE__*/external_React_default().createElement("div", {
+    className: `list-feed ${fullList ? "full-height" : ""} ${listLength > 2 ? "span-2" : "span-1"}`
+  }, /*#__PURE__*/external_React_default().createElement("div", {
+    className: "list-feed-inner-wrapper"
+  }, isFakespot ? /*#__PURE__*/external_React_default().createElement("div", {
+    className: "fakespot-heading"
+  }, /*#__PURE__*/external_React_default().createElement("div", {
+    className: "dropdown-wrapper"
+  }, /*#__PURE__*/external_React_default().createElement("select", {
+    className: "fakespot-dropdown",
+    name: "fakespot-categories",
+    value: selectedFakespotFeed,
+    onChange: handleChange
+  }, /*#__PURE__*/external_React_default().createElement("option", {
+    value: ""
+  }, categoryTitle || "Holiday Gift Guide"), categories.map(category => /*#__PURE__*/external_React_default().createElement("option", {
+    key: category,
+    value: category
+  }, category))), /*#__PURE__*/external_React_default().createElement("div", {
+    className: "context-menu-wrapper"
+  }, /*#__PURE__*/external_React_default().createElement(ContextMenuButton, null, /*#__PURE__*/external_React_default().createElement(LinkMenu, {
+    dispatch: dispatch,
+    options: contextMenuOptions,
+    shouldSendImpressionStats: true,
+    site: {
+      url: "https://www.fakespot.com"
+    }
+  })))), /*#__PURE__*/external_React_default().createElement("p", {
+    className: "fakespot-desc"
+  }, listFeedTitle)) : /*#__PURE__*/external_React_default().createElement("h1", {
+    className: "list-feed-title",
+    id: "list-feed-title"
+  }, /*#__PURE__*/external_React_default().createElement("span", {
+    className: "icon icon-newsfeed"
+  }), listFeedTitle), /*#__PURE__*/external_React_default().createElement("div", {
+    className: "list-feed-content",
+    role: "menu",
+    "aria-labelledby": "list-feed-title"
+  }, listFeedRecs.slice(0, 5).map((rec, index) => {
+    if (!rec || rec.placeholder) {
+      return /*#__PURE__*/external_React_default().createElement(DSCard, {
+        key: `list-card-${index}`,
+        placeholder: true,
+        isListCard: true
+      });
+    }
+    return /*#__PURE__*/external_React_default().createElement(DSCard, {
+      key: `list-card-${index}`,
+      pos: index,
+      flightId: rec.flight_id,
+      image_src: rec.image_src,
+      raw_image_src: rec.raw_image_src,
+      word_count: rec.word_count,
+      time_to_read: rec.time_to_read,
+      title: rec.title,
+      topic: rec.topic,
+      excerpt: rec.excerpt,
+      url: rec.url,
+      id: rec.id,
+      shim: rec.shim,
+      type: type,
+      context: rec.context,
+      sponsor: rec.sponsor,
+      sponsored_by_override: rec.sponsored_by_override,
+      dispatch: dispatch,
+      source: rec.domain,
+      publisher: rec.publisher,
+      pocket_id: rec.pocket_id,
+      context_type: rec.context_type,
+      bookmarkGuid: rec.bookmarkGuid,
+      firstVisibleTimestamp: firstVisibleTimestamp,
+      corpus_item_id: rec.corpus_item_id,
+      scheduled_corpus_item_id: rec.scheduled_corpus_item_id,
+      recommended_at: rec.recommended_at,
+      received_rank: rec.received_rank,
+      isListCard: true,
+      isFakespot: isFakespot,
+      category: rec.category
+    });
+  }), isFakespot && /*#__PURE__*/external_React_default().createElement("div", {
+    className: "fakespot-footer"
+  }, /*#__PURE__*/external_React_default().createElement("p", null, footerCopy), /*#__PURE__*/external_React_default().createElement(SafeAnchor, {
+    className: "fakespot-cta",
+    url: ctaUrl,
+    referrer: "",
+    onLinkClick: handleCtaClick,
+    dispatch: dispatch
+  }, ctaCopy)))));
+}
+
+;// CONCATENATED MODULE: ./content-src/components/DiscoveryStreamComponents/AdBanner/AdBanner.jsx
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this file,
+ * You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+
+
+
+
+const AdBanner = ({
+  spoc,
+  dispatch,
+  firstVisibleTimestamp,
+  row,
+  type
+}) => {
+  const getDimensions = format => {
+    switch (format) {
+      case "leaderboard":
+        return {
+          width: "728",
+          height: "90"
+        };
+      case "billboard":
+        return {
+          width: "970",
+          height: "250"
+        };
+    }
+    return {
+      // image will still render with default values
+      width: undefined,
+      height: undefined
+    };
+  };
+  const {
+    width: imgWidth,
+    height: imgHeight
+  } = getDimensions(spoc.format);
+  const handleDismissClick = () => {
+    dispatch(actionCreators.AlsoToMain({
+      type: actionTypes.BLOCK_URL,
+      data: [{
+        block_key: spoc.block_key,
+        fetchTimestamp: spoc.fetchTimestamp,
+        flight_id: spoc.flight_id,
+        format: spoc.format,
+        id: spoc.id,
+        card_type: "spoc",
+        is_pocket_card: true,
+        position: row,
+        sponsor: spoc.sponsor,
+        title: spoc.title,
+        url: spoc.url || spoc.shim.url,
+        personalization_models: spoc.personalization_models,
+        priority: spoc.priority,
+        score: spoc.score,
+        alt_text: spoc.alt_text
+      }]
+    }));
+  };
+  const onLinkClick = () => {
+    dispatch(actionCreators.DiscoveryStreamUserEvent({
+      event: "CLICK",
+      source: type.toUpperCase(),
+      // Banner ads dont have a position, but a row number
+      action_position: row,
+      value: {
+        card_type: "spoc",
+        tile_id: spoc.id,
+        ...(spoc.shim?.click ? {
+          shim: spoc.shim.click
+        } : {}),
+        fetchTimestamp: spoc.fetchTimestamp,
+        firstVisibleTimestamp,
+        format: spoc.format
+      }
+    }));
+  };
+
+  // in the default card grid 1 would come before the 1st row of cards and 9 comes after the last row
+  // using clamp to make sure its between valid values (1-9)
+  const clampedRow = Math.max(1, Math.min(9, row));
+  return /*#__PURE__*/external_React_default().createElement("aside", {
+    className: "ad-banner-wrapper",
+    style: {
+      gridRow: clampedRow
+    }
+  }, /*#__PURE__*/external_React_default().createElement("div", {
+    className: `ad-banner-inner ${spoc.format}`
+  }, /*#__PURE__*/external_React_default().createElement("div", {
+    className: "ad-banner-dismiss"
+  }, /*#__PURE__*/external_React_default().createElement("button", {
+    className: "icon icon-dismiss",
+    onClick: handleDismissClick,
+    "data-l10n-id": "newtab-toast-dismiss-button"
+  })), /*#__PURE__*/external_React_default().createElement(SafeAnchor, {
+    className: "ad-banner-link",
+    url: spoc.url,
+    title: spoc.title,
+    onLinkClick: onLinkClick,
+    dispatch: dispatch
+  }, /*#__PURE__*/external_React_default().createElement(ImpressionStats_ImpressionStats, {
+    flightId: spoc.flight_id,
+    rows: [{
+      id: spoc.id,
+      card_type: "spoc",
+      pos: row,
+      recommended_at: spoc.recommended_at,
+      received_rank: spoc.received_rank,
+      format: spoc.format,
+      ...(spoc.shim?.impression ? {
+        shim: spoc.shim.impression
+      } : {})
+    }],
+    dispatch: dispatch,
+    firstVisibleTimestamp: firstVisibleTimestamp
+  }), /*#__PURE__*/external_React_default().createElement("div", {
+    className: "ad-banner-content"
+  }, /*#__PURE__*/external_React_default().createElement("img", {
+    src: spoc.raw_image_src,
+    alt: spoc.alt_text,
+    loading: "eager",
+    width: imgWidth,
+    height: imgHeight
+  }))), /*#__PURE__*/external_React_default().createElement("div", {
+    className: "ad-banner-sponsored"
+  }, /*#__PURE__*/external_React_default().createElement("span", {
+    className: "ad-banner-sponsored-label",
+    "data-l10n-id": "newtab-topsite-sponsored"
+  }))));
+};
 ;// CONCATENATED MODULE: ./content-src/components/DiscoveryStreamComponents/CardGrid/CardGrid.jsx
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
@@ -3644,12 +4305,22 @@ const TopicsWidget = (0,external_ReactRedux_namespaceObject.connect)(state => ({
 
 
 
+
+
 const PREF_ONBOARDING_EXPERIENCE_DISMISSED = "discoverystream.onboardingExperience.dismissed";
+const PREF_SECTIONS_CARDS_ENABLED = "discoverystream.sections.cards.enabled";
 const PREF_THUMBS_UP_DOWN_ENABLED = "discoverystream.thumbsUpDown.enabled";
 const PREF_TOPICS_ENABLED = "discoverystream.topicLabels.enabled";
 const PREF_TOPICS_SELECTED = "discoverystream.topicSelection.selectedTopics";
 const PREF_TOPICS_AVAILABLE = "discoverystream.topicSelection.topics";
 const PREF_SPOCS_STARTUPCACHE_ENABLED = "discoverystream.spocs.startupCache.enabled";
+const PREF_LIST_FEED_ENABLED = "discoverystream.contextualContent.enabled";
+const PREF_LIST_FEED_SELECTED_FEED = "discoverystream.contextualContent.selectedFeed";
+const PREF_FAKESPOT_ENABLED = "discoverystream.contextualContent.fakespot.enabled";
+const PREF_BILLBOARD_ENABLED = "newtabAdSize.billboard";
+const PREF_LEADERBOARD_ENABLED = "newtabAdSize.leaderboard";
+const PREF_LEADERBOARD_POSITION = "newtabAdSize.leaderboard.position";
+const PREF_BILLBOARD_POSITION = "newtabAdSize.billboard.position";
 const CardGrid_INTERSECTION_RATIO = 0.5;
 const CardGrid_VISIBLE = "visible";
 const CardGrid_VISIBILITY_CHANGE_EVENT = "visibilitychange";
@@ -3754,6 +4425,8 @@ function OnboardingExperience({
     className: "ds-onboarding-graphic"
   })))));
 }
+
+// eslint-disable-next-line no-shadow
 function CardGrid_IntersectionObserver({
   children,
   windowObj = window,
@@ -3898,14 +4571,12 @@ function RecentSavesContainer({
   }, recentSavesCards));
 }
 class _CardGrid extends (external_React_default()).PureComponent {
+  // eslint-disable-next-line max-statements
   renderCards() {
     const prefs = this.props.Prefs.values;
     const {
       items,
-      hybridLayout,
-      hideCardBackground,
       fourCardLayout,
-      compactGrid,
       essentialReadsHeader,
       editorsPicksHeader,
       onboardingExperience,
@@ -3914,7 +4585,6 @@ class _CardGrid extends (external_React_default()).PureComponent {
       spocMessageVariant,
       widgets,
       recentSavesEnabled,
-      hideDescriptions,
       DiscoveryStream
     } = this.props;
     const {
@@ -3923,12 +4593,18 @@ class _CardGrid extends (external_React_default()).PureComponent {
     } = DiscoveryStream;
     const showRecentSaves = prefs.showRecentSaves && recentSavesEnabled;
     const isOnboardingExperienceDismissed = prefs[PREF_ONBOARDING_EXPERIENCE_DISMISSED];
+    const mayHaveSectionsCards = prefs[PREF_SECTIONS_CARDS_ENABLED];
     const mayHaveThumbsUpDown = prefs[PREF_THUMBS_UP_DOWN_ENABLED];
     const showTopics = prefs[PREF_TOPICS_ENABLED];
     const selectedTopics = prefs[PREF_TOPICS_SELECTED];
     const availableTopics = prefs[PREF_TOPICS_AVAILABLE];
     const spocsStartupCacheEnabled = prefs[PREF_SPOCS_STARTUPCACHE_ENABLED];
-    const recs = this.props.data.recommendations.slice(0, items);
+    const listFeedEnabled = prefs[PREF_LIST_FEED_ENABLED];
+    const listFeedSelectedFeed = prefs[PREF_LIST_FEED_SELECTED_FEED];
+    const billboardEnabled = prefs[PREF_BILLBOARD_ENABLED];
+    const leaderboardEnabled = prefs[PREF_LEADERBOARD_ENABLED];
+    // filter out recs that should be in ListFeed
+    const recs = this.props.data.recommendations.filter(item => !item.feedName).slice(0, items);
     const cards = [];
     let essentialReadsCards = [];
     let editorsPicksCards = [];
@@ -3972,9 +4648,13 @@ class _CardGrid extends (external_React_default()).PureComponent {
         recommendation_id: rec.recommendation_id,
         firstVisibleTimestamp: this.props.firstVisibleTimestamp,
         mayHaveThumbsUpDown: mayHaveThumbsUpDown,
+        mayHaveSectionsCards: mayHaveSectionsCards,
+        corpus_item_id: rec.corpus_item_id,
         scheduled_corpus_item_id: rec.scheduled_corpus_item_id,
         recommended_at: rec.recommended_at,
-        received_rank: rec.received_rank
+        received_rank: rec.received_rank,
+        format: rec.format,
+        alt_text: rec.alt_text
       }));
     }
     if (widgets?.positions?.length && widgets?.data?.length) {
@@ -4006,6 +4686,63 @@ class _CardGrid extends (external_React_default()).PureComponent {
         }
       }
     }
+    if (listFeedEnabled) {
+      const isFakespot = listFeedSelectedFeed === "fakespot";
+      const fakespotEnabled = prefs[PREF_FAKESPOT_ENABLED];
+      if (!isFakespot || isFakespot && fakespotEnabled) {
+        // Place the list feed as the 3rd element in the card grid
+        cards.splice(2, 1, this.renderListFeed(this.props.data.recommendations, listFeedSelectedFeed));
+      }
+    }
+
+    // if a banner ad is enabled and we have any available, place them in the grid
+    const {
+      spocs
+    } = this.props.DiscoveryStream;
+    if ((billboardEnabled || leaderboardEnabled) && spocs.data.newtab_spocs) {
+      // Only render one AdBanner in the grid -
+      // Prioritize rendering a leaderboard if it exists,
+      // otherwise render a billboard
+      const spocToRender = spocs.data.newtab_spocs.items.find(({
+        format
+      }) => format === "leaderboard" && leaderboardEnabled) || spocs.data.newtab_spocs.items.find(({
+        format
+      }) => format === "billboard" && billboardEnabled);
+      if (spocToRender && !spocs.blocked.includes(spocToRender.url)) {
+        const row = spocToRender.format === "leaderboard" ? prefs[PREF_LEADERBOARD_POSITION] : prefs[PREF_BILLBOARD_POSITION];
+        function displayCardsPerRow() {
+          // Determines the number of cards per row based on the window width:
+          // width <= 1122px: 2 cards per row
+          // width 1123px to 1697px: 3 cards per row
+          // width >= 1698px: 4 cards per row
+          if (window.innerWidth <= 1122) {
+            return 2;
+          } else if (window.innerWidth > 1122 && window.innerWidth < 1698) {
+            return 3;
+          }
+          return 4;
+        }
+        const injectAdBanner = bannerIndex => {
+          // .splice() inserts the AdBanner at the desired index, ensuring correct DOM order for accessibility and keyboard navigation.
+          // .push() would place it at the end, which is visually incorrect even if adjusted with CSS.
+          cards.splice(bannerIndex, 0, /*#__PURE__*/external_React_default().createElement(AdBanner, {
+            spoc: spocToRender,
+            key: `dscard-${spocToRender.id}`,
+            dispatch: this.props.dispatch,
+            type: this.props.type,
+            firstVisibleTimestamp: this.props.firstVisibleTimestamp,
+            row: row
+          }));
+        };
+        const getBannerIndex = () => {
+          // Calculate the index for where the AdBanner should be added, depending on number of cards per row on the grid
+          const cardsPerRow = displayCardsPerRow();
+          let bannerIndex = (row - 1) * cardsPerRow;
+          return bannerIndex;
+        };
+        injectAdBanner(getBannerIndex());
+      }
+    }
     let moreRecsHeader = "";
     // For now this is English only.
     if (showRecentSaves || essentialReadsHeader && editorsPicksHeader) {
@@ -4023,12 +4760,7 @@ class _CardGrid extends (external_React_default()).PureComponent {
         editorsPicksCards = [...cards.splice(0, cards.length)];
       }
     }
-    const hideCardBackgroundClass = hideCardBackground ? `ds-card-grid-hide-background` : ``;
-    const fourCardLayoutClass = fourCardLayout ? `ds-card-grid-four-card-variant` : ``;
-    const hideDescriptionsClassName = !hideDescriptions ? `ds-card-grid-include-descriptions` : ``;
-    const compactGridClassName = compactGrid ? `ds-card-grid-compact` : ``;
-    const hybridLayoutClassName = hybridLayout ? `ds-card-grid-hybrid-layout` : ``;
-    const gridClassName = `ds-card-grid ${hybridLayoutClassName} ${hideCardBackgroundClass} ${fourCardLayoutClass} ${hideDescriptionsClassName} ${compactGridClassName}`;
+    const gridClassName = this.renderGridClassName();
     return /*#__PURE__*/external_React_default().createElement((external_React_default()).Fragment, null, !isOnboardingExperienceDismissed && onboardingExperience && /*#__PURE__*/external_React_default().createElement(OnboardingExperience, {
       dispatch: this.props.dispatch
     }), essentialReadsCards?.length > 0 && /*#__PURE__*/external_React_default().createElement("div", {
@@ -4049,6 +4781,49 @@ class _CardGrid extends (external_React_default()).PureComponent {
     }))), /*#__PURE__*/external_React_default().createElement("div", {
       className: gridClassName
     }, cards)));
+  }
+  renderListFeed(recommendations, selectedFeed) {
+    const recs = recommendations.filter(item => item.feedName === selectedFeed);
+    const isFakespot = selectedFeed === "fakespot";
+    // remove duplicates from category list
+    const categories = [...new Set(recs.map(({
+      category
+    }) => category))];
+    const listFeed = /*#__PURE__*/external_React_default().createElement(ListFeed
+    // only display recs that match selectedFeed for ListFeed
+    , {
+      recs: recs,
+      categories: isFakespot ? categories : [],
+      firstVisibleTimestamp: this.props.firstVisibleTimestamp,
+      type: this.props.type,
+      dispatch: this.props.dispatch
+    });
+    return listFeed;
+  }
+  renderGridClassName() {
+    const prefs = this.props.Prefs.values;
+    const {
+      hybridLayout,
+      hideCardBackground,
+      fourCardLayout,
+      compactGrid,
+      hideDescriptions
+    } = this.props;
+    const adSizingVariantAEnabled = prefs["newtabAdSize.variant-a"];
+    const adSizingVariantBEnabled = prefs["newtabAdSize.variant-b"];
+    const adSizingVariantEnabled = adSizingVariantAEnabled || adSizingVariantBEnabled;
+    let adSizingVariantClassName = "";
+    if (adSizingVariantEnabled) {
+      // Ad sizing experiment variant, we want to ensure only 1 of these is ever enabled.
+      adSizingVariantClassName = adSizingVariantAEnabled ? `ad-sizing-variant-a` : `ad-sizing-variant-b`;
+    }
+    const hideCardBackgroundClass = hideCardBackground ? `ds-card-grid-hide-background` : ``;
+    const fourCardLayoutClass = fourCardLayout ? `ds-card-grid-four-card-variant` : ``;
+    const hideDescriptionsClassName = !hideDescriptions ? `ds-card-grid-include-descriptions` : ``;
+    const compactGridClassName = compactGrid ? `ds-card-grid-compact` : ``;
+    const hybridLayoutClassName = hybridLayout ? `ds-card-grid-hybrid-layout` : ``;
+    const gridClassName = `ds-card-grid ${hybridLayoutClassName} ${hideCardBackgroundClass} ${fourCardLayoutClass} ${hideDescriptionsClassName} ${compactGridClassName} ${adSizingVariantClassName}`;
+    return gridClassName;
   }
   render() {
     const {
@@ -4391,7 +5166,8 @@ class _CollapsibleSection extends (external_React_default()).PureComponent {
       title,
       subTitle,
       mayHaveSponsoredStories,
-      mayHaveTopicsSelection
+      mayHaveTopicsSelection,
+      sectionsEnabled
     } = this.props;
     const active = menuButtonHover || showContextMenu;
     let bodyStyle;
@@ -4419,9 +5195,9 @@ class _CollapsibleSection extends (external_React_default()).PureComponent {
       // Note: data-section-id is used for web extension api tests in mozilla central
       ,
       "data-section-id": id
-    }, /*#__PURE__*/external_React_default().createElement("div", {
+    }, !sectionsEnabled && /*#__PURE__*/external_React_default().createElement("div", {
       className: "section-top-bar"
-    }, /*#__PURE__*/external_React_default().createElement("h3", {
+    }, /*#__PURE__*/external_React_default().createElement("h2", {
       className: `section-title-container ${hasSubtitleClassName}`,
       style: titleStyle
     }, /*#__PURE__*/external_React_default().createElement("span", {
@@ -4497,6 +5273,7 @@ class DSMessage extends (external_React_default()).PureComponent {
 
 
 function ModalOverlayWrapper({
+  // eslint-disable-next-line no-shadow
   document = globalThis.document,
   unstyled,
   innerClassName,
@@ -4993,7 +5770,7 @@ class _Card extends (external_React_default()).PureComponent {
 
         // Save and remove the promise only while it's pending
         gImageLoading.set(imageUrl, loaderPromise);
-        loaderPromise.catch(ex => ex).then(() => gImageLoading.delete(imageUrl)).catch();
+        loaderPromise.catch(ex => ex).then(() => gImageLoading.delete(imageUrl));
       }
 
       // Wait for the image whether just started loading or reused promise
@@ -5568,40 +6345,6 @@ class _PocketLoggedInCta extends (external_React_default()).PureComponent {
 const PocketLoggedInCta = (0,external_ReactRedux_namespaceObject.connect)(state => ({
   Pocket: state.Pocket
 }))(_PocketLoggedInCta);
-;// CONCATENATED MODULE: ./content-src/components/Topics/Topics.jsx
-/* This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this file,
- * You can obtain one at http://mozilla.org/MPL/2.0/. */
-
-
-class Topic extends (external_React_default()).PureComponent {
-  render() {
-    const {
-      url,
-      name
-    } = this.props;
-    return /*#__PURE__*/external_React_default().createElement("li", null, /*#__PURE__*/external_React_default().createElement("a", {
-      key: name,
-      href: url
-    }, name));
-  }
-}
-class Topics extends (external_React_default()).PureComponent {
-  render() {
-    const {
-      topics
-    } = this.props;
-    return /*#__PURE__*/external_React_default().createElement("span", {
-      className: "topics"
-    }, /*#__PURE__*/external_React_default().createElement("span", {
-      "data-l10n-id": "newtab-pocket-read-more"
-    }), /*#__PURE__*/external_React_default().createElement("ul", null, topics && topics.map(t => /*#__PURE__*/external_React_default().createElement(Topic, {
-      key: t.name,
-      url: t.url,
-      name: t.name
-    }))));
-  }
-}
 ;// CONCATENATED MODULE: ./content-src/components/TopSites/SearchShortcutsForm.jsx
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
@@ -5674,14 +6417,14 @@ class SearchShortcutsForm extends (external_React_default()).PureComponent {
       target
     } = event;
     const {
-      name,
+      name: targetName,
       checked
     } = target;
     this.setState(prevState => {
       const shortcuts = prevState.shortcuts.slice();
       let shortcut = shortcuts.find(({
         keyword
-      }) => keyword === name);
+      }) => keyword === targetName);
       shortcut.isSelected = checked;
       return {
         shortcuts
@@ -5779,7 +6522,7 @@ class SearchShortcutsForm extends (external_React_default()).PureComponent {
     })));
   }
 }
-;// CONCATENATED MODULE: ./common/Dedupe.sys.mjs
+;// CONCATENATED MODULE: ../../modules/Dedupe.sys.mjs
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -5817,6 +6560,14 @@ class Dedupe {
   }
 }
 
+;// CONCATENATED MODULE: ../topsites/constants.mjs
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+const TOP_SITES_DEFAULT_ROWS = 1;
+const TOP_SITES_MAX_SITES_PER_ROW = 8;
+
 ;// CONCATENATED MODULE: ./common/Reducers.sys.mjs
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -5825,8 +6576,8 @@ class Dedupe {
 
 
 
-const TOP_SITES_DEFAULT_ROWS = 1;
-const TOP_SITES_MAX_SITES_PER_ROW = 8;
+
+
 const PREF_COLLECTION_DISMISSIBLE = "discoverystream.isCollectionDismissible";
 
 const dedupe = new Dedupe(site => site && site.url);
@@ -5838,6 +6589,11 @@ const INITIAL_STATE = {
     locale: "",
     isForStartupCache: false,
     customizeMenuVisible: false,
+  },
+  Ads: {
+    initialized: false,
+    lastUpdated: null,
+    topsites: {},
   },
   TopSites: {
     // Have we received real data from history yet?
@@ -5887,6 +6643,12 @@ const INITIAL_STATE = {
       },
       loaded: false,
     },
+    // Used to show impressions in newtab devtools.
+    impressions: {
+      feed: {},
+    },
+    // Used to show blocks in newtab devtools.
+    blocks: {},
     spocs: {
       spocs_endpoint: "",
       lastUpdated: null,
@@ -5981,43 +6743,6 @@ function App(prevState = INITIAL_STATE.App, action) {
     default:
       return prevState;
   }
-}
-
-/**
- * insertPinned - Inserts pinned links in their specified slots
- *
- * @param {array} a list of links
- * @param {array} a list of pinned links
- * @return {array} resulting list of links with pinned links inserted
- */
-function insertPinned(links, pinned) {
-  // Remove any pinned links
-  const pinnedUrls = pinned.map(link => link && link.url);
-  let newLinks = links.filter(link =>
-    link ? !pinnedUrls.includes(link.url) : false
-  );
-  newLinks = newLinks.map(link => {
-    if (link && link.isPinned) {
-      delete link.isPinned;
-      delete link.pinIndex;
-    }
-    return link;
-  });
-
-  // Then insert them in their specified location
-  pinned.forEach((val, index) => {
-    if (!val) {
-      return;
-    }
-    let link = Object.assign({}, val, { isPinned: true, pinIndex: index });
-    if (index > newLinks.length) {
-      newLinks[index] = link;
-    } else {
-      newLinks.splice(index, 0, link);
-    }
-  });
-
-  return newLinks;
 }
 
 function TopSites(prevState = INITIAL_STATE.TopSites, action) {
@@ -6154,7 +6879,8 @@ function Dialog(prevState = INITIAL_STATE.Dialog, action) {
       return Object.assign({}, prevState, { visible: true, data: action.data });
     case actionTypes.DIALOG_CANCEL:
       return Object.assign({}, prevState, { visible: false });
-    case actionTypes.DELETE_HISTORY_URL:
+    case actionTypes.DIALOG_CLOSE:
+      // Reset and hide the confirmation dialog once the action is complete.
       return Object.assign({}, INITIAL_STATE.Dialog);
     default:
       return prevState;
@@ -6555,6 +7281,19 @@ function DiscoveryStream(prevState = INITIAL_STATE.DiscoveryStream, action) {
         },
       };
     }
+    case actionTypes.DISCOVERY_STREAM_DEV_IMPRESSIONS:
+      return {
+        ...prevState,
+        impressions: {
+          ...prevState.impressions,
+          feed: action.data,
+        },
+      };
+    case actionTypes.DISCOVERY_STREAM_DEV_BLOCKS:
+      return {
+        ...prevState,
+        blocks: action.data,
+      };
     case actionTypes.DISCOVERY_STREAM_SPOCS_CAPS:
       return {
         ...prevState,
@@ -6687,6 +7426,12 @@ function DiscoveryStream(prevState = INITIAL_STATE.DiscoveryStream, action) {
         ...prevState,
         showTopicSelection: false,
       };
+    case actionTypes.SECTION_BLOCKED:
+      return {
+        ...prevState,
+        showBlockSectionConfirmation: true,
+        sectionData: action.data,
+      };
     default:
       return prevState;
   }
@@ -6734,11 +7479,19 @@ function Notifications(prevState = INITIAL_STATE.Notifications, action) {
         toastId: action.data.toastId,
         toastQueue: [action.data.toastId],
       };
-    case actionTypes.HIDE_TOAST_MESSAGE:
+    case actionTypes.HIDE_TOAST_MESSAGE: {
+      const { showNotifications, toastId: hiddenToastId } = action.data;
+      const queuedToasts = [...prevState.toastQueue].filter(
+        toastId => toastId !== hiddenToastId
+      );
       return {
         ...prevState,
-        showNotifications: action.data.showNotifications,
+        toastCounter: queuedToasts.length,
+        toastQueue: queuedToasts,
+        toastId: "",
+        showNotifications,
       };
+    }
     default:
       return prevState;
   }
@@ -6767,9 +7520,27 @@ function Weather(prevState = INITIAL_STATE.Weather, action) {
   }
 }
 
+function Ads(prevState = INITIAL_STATE.Ads, action) {
+  switch (action.type) {
+    case actionTypes.ADS_INIT:
+      return {
+        ...prevState,
+        initialized: true,
+      };
+    case actionTypes.ADS_UPDATE_DATA:
+      return {
+        ...prevState,
+        topsites: action.data,
+      };
+    default:
+      return prevState;
+  }
+}
+
 const reducers = {
   TopSites,
   App,
+  Ads,
   Prefs,
   Dialog,
   Sections,
@@ -7238,7 +8009,8 @@ class TopSiteLink extends (external_React_default()).PureComponent {
       link,
       onClick,
       title,
-      isAddButton
+      isAddButton,
+      shortcutsRefresh
     } = this.props;
     const topSiteOuterClassName = `top-site-outer${className ? ` ${className}` : ""}${link.isDragged ? " dragged" : ""}${link.searchTopSite ? " search-shortcut" : ""}`;
     const [letterFallback] = title;
@@ -7322,7 +8094,8 @@ class TopSiteLink extends (external_React_default()).PureComponent {
       onKeyPress: this.onKeyPress,
       onClick: onClick,
       draggable: true,
-      "data-is-sponsored-link": !!link.sponsored_tile_id
+      "data-is-sponsored-link": !!link.sponsored_tile_id,
+      title: title
     }, /*#__PURE__*/external_React_default().createElement("div", {
       className: "tile",
       "aria-hidden": true
@@ -7339,16 +8112,21 @@ class TopSiteLink extends (external_React_default()).PureComponent {
       className: "top-site-icon default-icon",
       "data-fallback": smallFaviconStyle ? "" : letterFallback,
       style: smallFaviconStyle
-    })), link.searchTopSite && /*#__PURE__*/external_React_default().createElement("div", {
+    })), shortcutsRefresh && link.isPinned && /*#__PURE__*/external_React_default().createElement("div", {
+      className: "icon icon-pin-small"
+    }), !shortcutsRefresh && link.searchTopSite && /*#__PURE__*/external_React_default().createElement("div", {
       className: "top-site-icon search-topsite"
     })), /*#__PURE__*/external_React_default().createElement("div", {
       className: `title${link.isPinned ? " has-icon pinned" : ""}${link.type === SPOC_TYPE || link.show_sponsored_label ? " sponsored" : ""}`
     }, /*#__PURE__*/external_React_default().createElement("span", TopSite_extends({
+      className: "title-label",
       dir: "auto"
     }, isAddButton && {
       ...addButtonl10n
-    }), link.isPinned && /*#__PURE__*/external_React_default().createElement("div", {
+    }), !shortcutsRefresh && link.isPinned && /*#__PURE__*/external_React_default().createElement("div", {
       className: "icon icon-pin-small"
+    }), shortcutsRefresh && link.searchTopSite && /*#__PURE__*/external_React_default().createElement("div", {
+      className: "top-site-icon search-topsite"
     }), title || /*#__PURE__*/external_React_default().createElement("br", null)), /*#__PURE__*/external_React_default().createElement("span", {
       className: "sponsored-label",
       "data-l10n-id": "newtab-topsite-sponsored"
@@ -7522,7 +8300,7 @@ class TopSite extends (external_React_default()).PureComponent {
       link
     } = props;
     const isContextMenuOpen = props.activeIndex === props.index;
-    const title = link.label || link.hostname;
+    const title = link.label || link.title || link.hostname;
     let menuOptions;
     if (link.sponsored_position) {
       menuOptions = TOP_SITES_SPONSORED_POSITION_CONTEXT_MENU_OPTIONS;
@@ -7749,6 +8527,8 @@ class _TopSiteList extends (external_React_default()).PureComponent {
     const {
       props
     } = this;
+    const prefs = props.Prefs.values;
+    const shortcutsRefresh = prefs["newtabShortcuts.refresh"];
     const topSites = this.state.topSitesPreview || this._getTopSites();
     const topSitesUI = [];
     const commonProps = {
@@ -7790,18 +8570,22 @@ class _TopSiteList extends (external_React_default()).PureComponent {
           activeIndex: this.state.activeIndex,
           onActivate: this.onActivate
         }, slotProps, commonProps, {
-          colors: props.colors
+          colors: props.colors,
+          shortcutsRefresh: shortcutsRefresh
         }));
       }
       topSitesUI.push(topSiteLink);
     }
-    return /*#__PURE__*/external_React_default().createElement("ul", {
+    return /*#__PURE__*/external_React_default().createElement("div", {
+      className: "top-sites-list-wrapper"
+    }, /*#__PURE__*/external_React_default().createElement("ul", {
       className: `top-sites-list${this.state.draggedSite ? " dnd-active" : ""}`
-    }, topSitesUI);
+    }, topSitesUI));
   }
 }
 const TopSiteList = (0,external_ReactRedux_namespaceObject.connect)(state => ({
-  App: state.App
+  App: state.App,
+  Prefs: state.Prefs
 }))(_TopSiteList);
 ;// CONCATENATED MODULE: ./content-src/components/TopSites/TopSiteForm.jsx
 /* This Source Code Form is subject to the terms of the Mozilla Public
@@ -8264,7 +9048,6 @@ function Sections_extends() { Sections_extends = Object.assign ? Object.assign.b
 
 
 
-
 const Sections_VISIBLE = "visible";
 const Sections_VISIBILITY_CHANGE_EVENT = "visibilitychange";
 const CARDS_PER_ROW_DEFAULT = 3;
@@ -8397,7 +9180,6 @@ class Section extends (external_React_default()).PureComponent {
       title,
       rows,
       Pocket,
-      topics,
       emptyState,
       dispatch,
       compactCards,
@@ -8424,19 +9206,8 @@ class Section extends (external_React_default()).PureComponent {
     const {
       useCta
     } = pocketCta || {};
-
-    // Don't display anything until we have a definitve result from Pocket,
-    // to avoid a flash of logged out state while we render.
-    const isPocketLoggedInDefined = isUserLoggedIn === true || isUserLoggedIn === false;
-    const hasTopics = topics && !!topics.length;
     const shouldShowPocketCta = id === "topstories" && useCta && isUserLoggedIn === false;
-
-    // Show topics only for top stories and if it has loaded with topics.
-    // The classs .top-stories-bottom-container ensures content doesn't shift as things load.
-    const shouldShowTopics = id === "topstories" && hasTopics && (useCta && isUserLoggedIn === true || !useCta && isPocketLoggedInDefined);
-
-    // We use topics to determine language support for read more.
-    const shouldShowReadMore = read_more_endpoint && hasTopics;
+    const shouldShowReadMore = read_more_endpoint;
     const realRows = rows.slice(0, maxCards);
 
     // The empty state should only be shown after we have initialized and there is no content.
@@ -8505,11 +9276,7 @@ class Section extends (external_React_default()).PureComponent {
       className: "empty-state-message"
     })))), id === "topstories" && /*#__PURE__*/external_React_default().createElement("div", {
       className: "top-stories-bottom-container"
-    }, shouldShowTopics && /*#__PURE__*/external_React_default().createElement("div", {
-      className: "wrapper-topics"
-    }, /*#__PURE__*/external_React_default().createElement(Topics, {
-      topics: this.props.topics
-    })), shouldShowPocketCta && /*#__PURE__*/external_React_default().createElement("div", {
+    }, shouldShowPocketCta && /*#__PURE__*/external_React_default().createElement("div", {
       className: "wrapper-cta"
     }, /*#__PURE__*/external_React_default().createElement(PocketLoggedInCta, null)), /*#__PURE__*/external_React_default().createElement("div", {
       className: "wrapper-more-recommendations"
@@ -8613,7 +9380,7 @@ class HorizontalRule extends (external_React_default()).PureComponent {
 
 
 
-class Navigation_Topic extends (external_React_default()).PureComponent {
+class Topic extends (external_React_default()).PureComponent {
   constructor(props) {
     super(props);
     this.onLinkClick = this.onLinkClick.bind(this);
@@ -8633,13 +9400,13 @@ class Navigation_Topic extends (external_React_default()).PureComponent {
   render() {
     const {
       url,
-      name
+      name: topicName
     } = this.props;
     return /*#__PURE__*/external_React_default().createElement(SafeAnchor, {
       onLinkClick: this.onLinkClick,
       className: this.props.className,
       url: url
-    }, name);
+    }, topicName);
   }
 }
 class Navigation extends (external_React_default()).PureComponent {
@@ -8672,7 +9439,7 @@ class Navigation extends (external_React_default()).PureComponent {
       className: "ds-navigation-header"
     })) : null, english ? /*#__PURE__*/external_React_default().createElement("ul", null, links && links.map(t => /*#__PURE__*/external_React_default().createElement("li", {
       key: t.name
-    }, /*#__PURE__*/external_React_default().createElement(Navigation_Topic, {
+    }, /*#__PURE__*/external_React_default().createElement(Topic, {
       url: t.url,
       name: t.name,
       dispatch: this.props.dispatch
@@ -8755,7 +9522,7 @@ const selectLayoutRender = ({ state = {}, prefs = {} }) => {
    */
   function fillSpocPositionsForPlacement(
     data,
-    spocsConfig,
+    spocsPositions,
     spocsData,
     placementName
   ) {
@@ -8766,7 +9533,7 @@ const selectLayoutRender = ({ state = {}, prefs = {} }) => {
       spocIndexPlacementMap[placementName] = 0;
     }
     const results = [...data];
-    for (let position of spocsConfig.positions) {
+    for (let position of spocsPositions) {
       const spoc = spocsData[spocIndexPlacementMap[placementName]];
       // If there are no spocs left, we can stop filling positions.
       if (!spoc) {
@@ -8814,6 +9581,21 @@ const selectLayoutRender = ({ state = {}, prefs = {} }) => {
     filterArray.push(...DS_COMPONENTS);
   }
 
+  // function to determine amount of tiles shown per section per viewport
+  function getMaxTiles(responsiveLayouts) {
+    return responsiveLayouts
+      .flatMap(responsiveLayout => responsiveLayout)
+      .reduce((acc, t) => {
+        acc[t.columnCount] = t.tiles.length;
+
+        // Update maxTile if current tile count is greater
+        if (!acc.maxTile || t.tiles.length > acc.maxTile) {
+          acc.maxTile = t.tiles.length;
+        }
+        return acc;
+      }, {});
+  }
+
   const placeholderComponent = component => {
     if (!component.feed) {
       // TODO we now need a placeholder for topsites and textPromo.
@@ -8826,6 +9608,14 @@ const selectLayoutRender = ({ state = {}, prefs = {} }) => {
     }
     const data = {
       recommendations: [],
+      sections: [
+        {
+          layout: {
+            responsiveLayouts: [],
+          },
+          data: [],
+        },
+      ],
     };
 
     let items = 0;
@@ -8836,32 +9626,37 @@ const selectLayoutRender = ({ state = {}, prefs = {} }) => {
       data.recommendations.push({ placeholder: true });
     }
 
+    const sectionsEnabled = prefs["discoverystream.sections.enabled"];
+    if (sectionsEnabled) {
+      for (let i = 0; i < items; i++) {
+        data.sections[0].data.push({ placeholder: true });
+      }
+    }
+
     return { ...component, data };
   };
 
   // TODO update devtools to show placements
-  const handleSpocs = (data, component) => {
+  const handleSpocs = (data = [], spocsPositions, spocsPlacement) => {
     let result = [...data];
     // Do we ever expect to possibly have a spoc.
-    if (
-      component.spocs &&
-      component.spocs.positions &&
-      component.spocs.positions.length
-    ) {
-      const placement = component.placement || {};
-      const placementName = placement.name || "spocs";
+    if (spocsPositions?.length) {
+      const placement = spocsPlacement || {};
+      const placementName = placement.name || "newtab_spocs";
       const spocsData = spocs.data[placementName];
+
       // We expect a spoc, spocs are loaded, and the server returned spocs.
-      if (
-        spocs.loaded &&
-        spocsData &&
-        spocsData.items &&
-        spocsData.items.length
-      ) {
+      if (spocs.loaded && spocsData?.items?.length) {
+        // Since banner-type ads are placed by row and don't use the normal spoc position,
+        // dont combine with content
+        const excludedSpocs = ["billboard", "leaderboard"];
+        const filteredSpocs = spocsData?.items?.filter(
+          item => !excludedSpocs.includes(item.format)
+        );
         result = fillSpocPositionsForPlacement(
           result,
-          component.spocs,
-          spocsData.items,
+          spocsPositions,
+          filteredSpocs,
           placementName
         );
       }
@@ -8869,21 +9664,30 @@ const selectLayoutRender = ({ state = {}, prefs = {} }) => {
     return result;
   };
 
+  const handleSections = (sections = [], recommendations = []) => {
+    let result = sections.sort((a, b) => a.receivedRank - b.receivedRank);
+
+    const sectionsMap = recommendations.reduce((acc, recommendation) => {
+      const { section } = recommendation;
+      acc[section] = acc[section] || [];
+      acc[section].push(recommendation);
+      return acc;
+    }, {});
+
+    result.forEach(section => {
+      const { sectionKey } = section;
+      section.data = sectionsMap[sectionKey];
+    });
+
+    return result;
+  };
+
   const handleComponent = component => {
-    if (
-      component.spocs &&
-      component.spocs.positions &&
-      component.spocs.positions.length
-    ) {
+    if (component?.spocs?.positions?.length) {
       const placement = component.placement || {};
-      const placementName = placement.name || "spocs";
+      const placementName = placement.name || "newtab_spocs";
       const spocsData = spocs.data[placementName];
-      if (
-        spocs.loaded &&
-        spocsData &&
-        spocsData.items &&
-        spocsData.items.length
-      ) {
+      if (spocs.loaded && spocsData?.items?.length) {
         return {
           ...component,
           data: {
@@ -8909,13 +9713,15 @@ const selectLayoutRender = ({ state = {}, prefs = {} }) => {
     positions[component.type] = positions[component.type] || 0;
     let data = {
       recommendations: [],
+      sections: [],
     };
 
     const feed = feeds.data[component.feed.url];
-    if (feed && feed.data) {
+    if (feed?.data) {
       data = {
         ...feed.data,
         recommendations: [...(feed.data.recommendations || [])],
+        sections: [...(feed.data.sections || [])],
       };
     }
 
@@ -8927,10 +9733,47 @@ const selectLayoutRender = ({ state = {}, prefs = {} }) => {
         ),
       };
     }
+    const spocsPositions = component?.spocs?.positions;
+    const spocsPlacement = component?.placement;
 
+    const sectionsEnabled = prefs["discoverystream.sections.enabled"];
     data = {
       ...data,
-      recommendations: handleSpocs(data.recommendations, component),
+      ...(sectionsEnabled
+        ? {
+            sections: handleSections(data.sections, data.recommendations).map(
+              section => {
+                const sectionsSpocsPositions = [];
+                section.layout.responsiveLayouts
+                  // Initial position for spocs is going to be for the smallest breakpoint.
+                  // We can then move it from there via breakpoints.
+                  .find(item => item.columnCount === 1)
+                  .tiles.forEach(tile => {
+                    if (tile.hasAd) {
+                      sectionsSpocsPositions.push({ index: tile.position });
+                    }
+                  });
+                return {
+                  ...section,
+                  data: handleSpocs(
+                    section.data,
+                    sectionsSpocsPositions,
+                    spocsPlacement
+                  ),
+                };
+              }
+            ),
+            // We don't fill spocs in recs if sections are enabled,
+            // because recs are not going to be seen.
+            recommendations: data.recommendations,
+          }
+        : {
+            recommendations: handleSpocs(
+              data.recommendations,
+              spocsPositions,
+              spocsPlacement
+            ),
+          }),
     };
 
     let items = 0;
@@ -8946,6 +9789,23 @@ const selectLayoutRender = ({ state = {}, prefs = {} }) => {
         ...data.recommendations[i],
         pos: positions[component.type]++,
       };
+    }
+
+    // Setup absolute positions for sections layout.
+    if (sectionsEnabled) {
+      let currentPosition = 0;
+      data.sections.forEach(section => {
+        // We assume the count for the breakpoint with the most tiles.
+        const { maxTile } = getMaxTiles(section?.layout?.responsiveLayouts);
+        for (let i = 0; i < maxTile; i++) {
+          if (section.data[i]) {
+            section.data[i] = {
+              ...section.data[i],
+              pos: currentPosition++,
+            };
+          }
+        }
+      });
     }
 
     return { ...component, data };
@@ -8992,10 +9852,420 @@ const selectLayoutRender = ({ state = {}, prefs = {} }) => {
   return { layoutRender };
 };
 
+;// CONCATENATED MODULE: ./content-src/lib/hooks.jsx
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
+
+/**
+ * A custom react hook that sets up an IntersectionObserver to observe a single
+ * or list of elements and triggers a callback when the element comes into the viewport
+ * Note: The refs used should be an array type
+ * @function useIntersectionObserver
+ * @param {function} callback - The function to call when an element comes into the viewport
+ * @param {Object} options - Options object passed to Intersection Observer:
+ * https://developer.mozilla.org/en-US/docs/Web/API/IntersectionObserver/IntersectionObserver#options
+ * @param {Boolean} [isSingle = false] Boolean if the elements are an array or single element
+ *
+ * @returns {React.MutableRefObject} a ref containing an array of elements or single element
+ *
+ *
+ *
+ */
+function useIntersectionObserver(callback, threshold = 0.3) {
+  const elementsRef = (0,external_React_namespaceObject.useRef)([]);
+  (0,external_React_namespaceObject.useEffect)(() => {
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          callback(entry.target);
+          observer.unobserve(entry.target);
+        }
+      });
+    }, {
+      threshold
+    });
+    elementsRef.current.forEach(el => {
+      if (el) {
+        observer.observe(el);
+      }
+    });
+  }, [callback, threshold]);
+  return elementsRef;
+}
+
+;// CONCATENATED MODULE: ./content-src/components/DiscoveryStreamComponents/SectionContextMenu/SectionContextMenu.jsx
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
+
+
+
+/**
+ * A context menu for blocking, following and unfollowing sections.
+ *
+ * @param props
+ * @returns {React.FunctionComponent}
+ */
+function SectionContextMenu({
+  type = "DISCOVERY_STREAM",
+  title,
+  source,
+  index,
+  dispatch,
+  sectionKey,
+  following,
+  followedSections,
+  blockedSections,
+  sectionPosition
+}) {
+  // Initial context menu options: block this section only.
+  const SECTIONS_CONTEXT_MENU_OPTIONS = ["SectionBlock"];
+  const [showContextMenu, setShowContextMenu] = (0,external_React_namespaceObject.useState)(false);
+  if (following) {
+    SECTIONS_CONTEXT_MENU_OPTIONS.push("SectionUnfollow");
+  }
+  const onClick = e => {
+    e.preventDefault();
+    setShowContextMenu(!showContextMenu);
+  };
+  const onUpdate = () => {
+    setShowContextMenu(!showContextMenu);
+  };
+  return /*#__PURE__*/external_React_default().createElement("div", {
+    className: "section-context-menu"
+  }, /*#__PURE__*/external_React_default().createElement("moz-button", {
+    type: "icon",
+    size: "default",
+    iconsrc: "chrome://global/skin/icons/more.svg",
+    title: title || source,
+    onClick: onClick
+  }), showContextMenu && /*#__PURE__*/external_React_default().createElement(LinkMenu, {
+    onUpdate: onUpdate,
+    dispatch: dispatch,
+    index: index,
+    source: type.toUpperCase(),
+    options: SECTIONS_CONTEXT_MENU_OPTIONS,
+    shouldSendImpressionStats: true,
+    site: {
+      followedSections,
+      blockedSections,
+      sectionKey,
+      sectionPosition
+    }
+  }));
+}
+;// CONCATENATED MODULE: ./content-src/components/DiscoveryStreamComponents/CardSections/CardSections.jsx
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
+
+
+
+
+
+
+
+
+// Prefs
+const CardSections_PREF_SECTIONS_CARDS_ENABLED = "discoverystream.sections.cards.enabled";
+const PREF_SECTIONS_CARDS_THUMBS_UP_DOWN_ENABLED = "discoverystream.sections.cards.thumbsUpDown.enabled";
+const PREF_SECTIONS_PERSONALIZATION_ENABLED = "discoverystream.sections.personalization.enabled";
+const CardSections_PREF_TOPICS_ENABLED = "discoverystream.topicLabels.enabled";
+const CardSections_PREF_TOPICS_SELECTED = "discoverystream.topicSelection.selectedTopics";
+const PREF_FOLLOWED_SECTIONS = "discoverystream.sections.following";
+const PREF_BLOCKED_SECTIONS = "discoverystream.sections.blocked";
+const CardSections_PREF_TOPICS_AVAILABLE = "discoverystream.topicSelection.topics";
+const CardSections_PREF_THUMBS_UP_DOWN_ENABLED = "discoverystream.thumbsUpDown.enabled";
+function getLayoutData(responsiveLayouts, index) {
+  let layoutData = {
+    classNames: []
+  };
+  responsiveLayouts.forEach(layout => {
+    layout.tiles.forEach((tile, tileIndex) => {
+      if (tile.position === index) {
+        layoutData.classNames.push(`col-${layout.columnCount}-${tile.size}`);
+        layoutData.classNames.push(`col-${layout.columnCount}-position-${tileIndex}`);
+
+        // The API tells us whether the tile should show the excerpt or not.
+        // Apply extra styles accordingly.
+        if (tile.hasExcerpt) {
+          layoutData.classNames.push(`col-${layout.columnCount}-show-excerpt`);
+        } else {
+          layoutData.classNames.push(`col-${layout.columnCount}-hide-excerpt`);
+        }
+      }
+    });
+  });
+  return layoutData;
+}
+
+// function to determine amount of tiles shown per section per viewport
+function getMaxTiles(responsiveLayouts) {
+  return responsiveLayouts.flatMap(responsiveLayout => responsiveLayout).reduce((acc, t) => {
+    acc[t.columnCount] = t.tiles.length;
+
+    // Update maxTile if current tile count is greater
+    if (!acc.maxTile || t.tiles.length > acc.maxTile) {
+      acc.maxTile = t.tiles.length;
+    }
+    return acc;
+  }, {});
+}
+
+/**
+ * Transforms a comma-separated string of topics in user preferences
+ * into a cleaned-up array.
+ *
+ * @param pref
+ * @returns string[]
+ */
+const getTopics = pref => {
+  return pref.split(",").map(item => item.trim()).filter(item => item);
+};
+function CardSection({
+  sectionPosition,
+  section,
+  dispatch,
+  type,
+  firstVisibleTimestamp,
+  is_collection,
+  spocMessageVariant,
+  ctaButtonVariant,
+  ctaButtonSponsors
+}) {
+  const prefs = (0,external_ReactRedux_namespaceObject.useSelector)(state => state.Prefs.values);
+  const showTopics = prefs[CardSections_PREF_TOPICS_ENABLED];
+  const mayHaveSectionsCards = prefs[CardSections_PREF_SECTIONS_CARDS_ENABLED];
+  const mayHaveSectionsCardsThumbsUpDown = prefs[PREF_SECTIONS_CARDS_THUMBS_UP_DOWN_ENABLED];
+  const mayHaveThumbsUpDown = prefs[CardSections_PREF_THUMBS_UP_DOWN_ENABLED];
+  const selectedTopics = prefs[CardSections_PREF_TOPICS_SELECTED];
+  const availableTopics = prefs[CardSections_PREF_TOPICS_AVAILABLE];
+  const followedSectionsPref = prefs[PREF_FOLLOWED_SECTIONS] || "";
+  const blockedSectionsPref = prefs[PREF_BLOCKED_SECTIONS] || "";
+  const {
+    saveToPocketCard
+  } = (0,external_ReactRedux_namespaceObject.useSelector)(state => state.DiscoveryStream);
+  const mayHaveSectionsPersonalization = prefs[PREF_SECTIONS_PERSONALIZATION_ENABLED];
+  const {
+    sectionKey,
+    title,
+    subtitle
+  } = section;
+  const {
+    responsiveLayouts
+  } = section.layout;
+  const followedSections = getTopics(followedSectionsPref);
+  const following = followedSections.includes(sectionKey);
+  const blockedSections = getTopics(blockedSectionsPref);
+  const handleIntersection = (0,external_React_namespaceObject.useCallback)(() => {
+    dispatch(actionCreators.AlsoToMain({
+      type: actionTypes.CARD_SECTION_IMPRESSION,
+      data: {
+        section: sectionKey,
+        section_position: sectionPosition,
+        is_secton_followed: following
+      }
+    }));
+  }, [dispatch, sectionKey, sectionPosition, following]);
+
+  // Ref to hold the section element
+  const sectionRefs = useIntersectionObserver(handleIntersection);
+
+  // Only show thumbs up/down buttons if both default thumbs and sections thumbs prefs are enabled
+  const mayHaveCombinedThumbsUpDown = mayHaveSectionsCardsThumbsUpDown && mayHaveThumbsUpDown;
+  const onFollowClick = (0,external_React_namespaceObject.useCallback)(() => {
+    dispatch(actionCreators.SetPref(PREF_FOLLOWED_SECTIONS, [...followedSections, sectionKey].join(", ")));
+    // Telemetry Event Dispatch
+    dispatch(actionCreators.OnlyToMain({
+      type: "FOLLOW_SECTION",
+      data: {
+        section: sectionKey,
+        section_position: sectionPosition,
+        event_source: "MOZ_BUTTON"
+      }
+    }));
+  }, [dispatch, followedSections, sectionKey, sectionPosition]);
+  const onUnfollowClick = (0,external_React_namespaceObject.useCallback)(() => {
+    dispatch(actionCreators.SetPref(PREF_FOLLOWED_SECTIONS, [...followedSections.filter(item => item !== sectionKey)].join(", ")));
+    // Telemetry Event Dispatch
+    dispatch(actionCreators.OnlyToMain({
+      type: "UNFOLLOW_SECTION",
+      data: {
+        section: sectionKey,
+        section_position: sectionPosition,
+        event_source: "MOZ_BUTTON"
+      }
+    }));
+  }, [dispatch, followedSections, sectionKey, sectionPosition]);
+  const {
+    maxTile
+  } = getMaxTiles(responsiveLayouts);
+  const displaySections = section.data.slice(0, maxTile);
+  const isSectionEmpty = !displaySections?.length;
+  const shouldShowLabels = sectionKey === "top_stories_section" && showTopics;
+  if (isSectionEmpty) {
+    return null;
+  }
+  const sectionContextWrapper = /*#__PURE__*/external_React_default().createElement("div", {
+    className: "section-context-wrapper"
+  }, /*#__PURE__*/external_React_default().createElement("div", {
+    className: following ? "section-follow following" : "section-follow"
+  }, /*#__PURE__*/external_React_default().createElement("moz-button", {
+    onClick: following ? onUnfollowClick : onFollowClick,
+    type: "default",
+    index: sectionPosition,
+    section: sectionKey
+  }, /*#__PURE__*/external_React_default().createElement("span", {
+    className: "section-button-follow-text",
+    "data-l10n-id": "newtab-section-follow-button"
+  }), /*#__PURE__*/external_React_default().createElement("span", {
+    className: "section-button-following-text",
+    "data-l10n-id": "newtab-section-following-button"
+  }), /*#__PURE__*/external_React_default().createElement("span", {
+    className: "section-button-unfollow-text",
+    "data-l10n-id": "newtab-section-unfollow-button"
+  }))), /*#__PURE__*/external_React_default().createElement(SectionContextMenu, {
+    dispatch: dispatch,
+    index: sectionPosition,
+    following: following,
+    followedSections: followedSections,
+    blockedSections: blockedSections,
+    sectionKey: sectionKey,
+    title: title,
+    type: type,
+    sectionPosition: sectionPosition
+  }));
+  return /*#__PURE__*/external_React_default().createElement("section", {
+    className: "ds-section",
+    ref: el => {
+      sectionRefs.current[0] = el;
+    }
+  }, /*#__PURE__*/external_React_default().createElement("div", {
+    className: "section-heading"
+  }, /*#__PURE__*/external_React_default().createElement("div", {
+    className: "section-title-wrapper"
+  }, /*#__PURE__*/external_React_default().createElement("h2", {
+    className: "section-title"
+  }, title), subtitle && /*#__PURE__*/external_React_default().createElement("p", {
+    className: "section-subtitle"
+  }, subtitle)), mayHaveSectionsPersonalization ? sectionContextWrapper : null), /*#__PURE__*/external_React_default().createElement("div", {
+    className: "ds-section-grid ds-card-grid"
+  }, section.data.slice(0, maxTile).map((rec, index) => {
+    const {
+      classNames
+    } = getLayoutData(responsiveLayouts, index);
+    if (!rec || rec.placeholder) {
+      return /*#__PURE__*/external_React_default().createElement(PlaceholderDSCard, {
+        key: `dscard-${index}`
+      });
+    }
+    return /*#__PURE__*/external_React_default().createElement(DSCard, {
+      key: `dscard-${rec.id}`,
+      pos: rec.pos,
+      flightId: rec.flight_id,
+      image_src: rec.image_src,
+      raw_image_src: rec.raw_image_src,
+      word_count: rec.word_count,
+      time_to_read: rec.time_to_read,
+      title: rec.title,
+      topic: rec.topic,
+      excerpt: rec.excerpt,
+      url: rec.url,
+      id: rec.id,
+      shim: rec.shim,
+      fetchTimestamp: rec.fetchTimestamp,
+      type: type,
+      context: rec.context,
+      sponsor: rec.sponsor,
+      sponsored_by_override: rec.sponsored_by_override,
+      dispatch: dispatch,
+      source: rec.domain,
+      publisher: rec.publisher,
+      pocket_id: rec.pocket_id,
+      context_type: rec.context_type,
+      bookmarkGuid: rec.bookmarkGuid,
+      recommendation_id: rec.recommendation_id,
+      firstVisibleTimestamp: firstVisibleTimestamp,
+      corpus_item_id: rec.corpus_item_id,
+      scheduled_corpus_item_id: rec.scheduled_corpus_item_id,
+      recommended_at: rec.recommended_at,
+      received_rank: rec.received_rank,
+      format: rec.format,
+      alt_text: rec.alt_text,
+      mayHaveThumbsUpDown: mayHaveCombinedThumbsUpDown,
+      mayHaveSectionsCards: mayHaveSectionsCards,
+      showTopics: shouldShowLabels,
+      selectedTopics: selectedTopics,
+      availableTopics: availableTopics,
+      is_collection: is_collection,
+      saveToPocketCard: saveToPocketCard,
+      ctaButtonSponsors: ctaButtonSponsors,
+      ctaButtonVariant: ctaButtonVariant,
+      spocMessageVariant: spocMessageVariant,
+      sectionsClassNames: classNames.join(" "),
+      section: sectionKey,
+      sectionPosition: sectionPosition,
+      sectionFollowed: following
+    });
+  })));
+}
+function CardSections({
+  data,
+  feed,
+  dispatch,
+  type,
+  firstVisibleTimestamp,
+  is_collection,
+  spocMessageVariant,
+  ctaButtonVariant,
+  ctaButtonSponsors
+}) {
+  const prefs = (0,external_ReactRedux_namespaceObject.useSelector)(state => state.Prefs.values);
+
+  // Handle a render before feed has been fetched by displaying nothing
+  if (!data) {
+    return null;
+  }
+
+  // Retrieve blocked sections
+  const blockedSections = getTopics(prefs[PREF_BLOCKED_SECTIONS] || "");
+
+  // Only show sections that haven't been blocked by the user
+  const sections = data.sections.filter(section => !blockedSections.includes(section.sectionKey));
+  const isEmpty = sections.length === 0;
+  return isEmpty ? /*#__PURE__*/external_React_default().createElement("div", {
+    className: "ds-card-grid empty"
+  }, /*#__PURE__*/external_React_default().createElement(DSEmptyState, {
+    status: data.status,
+    dispatch: dispatch,
+    feed: feed
+  })) : /*#__PURE__*/external_React_default().createElement("div", {
+    className: "ds-section-wrapper"
+  }, sections.map((section, sectionPosition) => {
+    return /*#__PURE__*/external_React_default().createElement(CardSection, {
+      key: `section-${section.sectionKey}`,
+      sectionPosition: sectionPosition,
+      section: section,
+      dispatch: dispatch,
+      type: type,
+      firstVisibleTimestamp: firstVisibleTimestamp,
+      is_collection: is_collection,
+      spocMessageVariant: spocMessageVariant,
+      ctaButtonVariant: ctaButtonVariant,
+      ctaButtonSponsors: ctaButtonSponsors
+    });
+  }));
+}
+
 ;// CONCATENATED MODULE: ./content-src/components/DiscoveryStreamBase/DiscoveryStreamBase.jsx
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
+
 
 
 
@@ -9149,28 +10419,44 @@ class _DiscoveryStreamBase extends (external_React_default()).PureComponent {
           });
         }
       case "CardGrid":
-        return /*#__PURE__*/external_React_default().createElement(CardGrid, {
-          title: component.header && component.header.title,
-          data: component.data,
-          feed: component.feed,
-          widgets: component.widgets,
-          type: component.type,
-          dispatch: this.props.dispatch,
-          items: component.properties.items,
-          hybridLayout: component.properties.hybridLayout,
-          hideCardBackground: component.properties.hideCardBackground,
-          fourCardLayout: component.properties.fourCardLayout,
-          compactGrid: component.properties.compactGrid,
-          essentialReadsHeader: component.properties.essentialReadsHeader,
-          onboardingExperience: component.properties.onboardingExperience,
-          ctaButtonSponsors: component.properties.ctaButtonSponsors,
-          ctaButtonVariant: component.properties.ctaButtonVariant,
-          spocMessageVariant: component.properties.spocMessageVariant,
-          editorsPicksHeader: component.properties.editorsPicksHeader,
-          recentSavesEnabled: this.props.DiscoveryStream.recentSavesEnabled,
-          hideDescriptions: this.props.DiscoveryStream.hideDescriptions,
-          firstVisibleTimestamp: this.props.firstVisibleTimestamp
-        });
+        {
+          const sectionsEnabled = this.props.Prefs.values["discoverystream.sections.enabled"];
+          if (sectionsEnabled) {
+            return /*#__PURE__*/external_React_default().createElement(CardSections, {
+              feed: component.feed,
+              data: component.data,
+              dispatch: this.props.dispatch,
+              type: component.type,
+              firstVisibleTimestamp: this.props.firstVisibleTimestamp,
+              is_collection: true,
+              ctaButtonSponsors: component.properties.ctaButtonSponsors,
+              ctaButtonVariant: component.properties.ctaButtonVariant,
+              spocMessageVariant: component.properties.spocMessageVariant
+            });
+          }
+          return /*#__PURE__*/external_React_default().createElement(CardGrid, {
+            title: component.header && component.header.title,
+            data: component.data,
+            feed: component.feed,
+            widgets: component.widgets,
+            type: component.type,
+            dispatch: this.props.dispatch,
+            items: component.properties.items,
+            hybridLayout: component.properties.hybridLayout,
+            hideCardBackground: component.properties.hideCardBackground,
+            fourCardLayout: component.properties.fourCardLayout,
+            compactGrid: component.properties.compactGrid,
+            essentialReadsHeader: component.properties.essentialReadsHeader,
+            onboardingExperience: component.properties.onboardingExperience,
+            ctaButtonSponsors: component.properties.ctaButtonSponsors,
+            ctaButtonVariant: component.properties.ctaButtonVariant,
+            spocMessageVariant: component.properties.spocMessageVariant,
+            editorsPicksHeader: component.properties.editorsPicksHeader,
+            recentSavesEnabled: this.props.DiscoveryStream.recentSavesEnabled,
+            hideDescriptions: this.props.DiscoveryStream.hideDescriptions,
+            firstVisibleTimestamp: this.props.firstVisibleTimestamp
+          });
+        }
       case "HorizontalRule":
         return /*#__PURE__*/external_React_default().createElement(HorizontalRule, null);
       case "PrivacyLink":
@@ -9204,6 +10490,7 @@ class _DiscoveryStreamBase extends (external_React_default()).PureComponent {
       prefs: this.props.Prefs.values,
       locale
     });
+    const sectionsEnabled = this.props.Prefs.values["discoverystream.sections.enabled"];
     const {
       config
     } = this.props.DiscoveryStream;
@@ -9275,7 +10562,8 @@ class _DiscoveryStreamBase extends (external_React_default()).PureComponent {
       dispatch: this.props.dispatch
     }), topSites && this.renderLayout([{
       width: 12,
-      components: [topSites]
+      components: [topSites],
+      sectionType: "topsites"
     }]), sponsoredCollection && this.renderLayout([{
       width: 12,
       components: [sponsoredCollection]
@@ -9292,6 +10580,7 @@ class _DiscoveryStreamBase extends (external_React_default()).PureComponent {
       subTitle: subTitle,
       mayHaveSponsoredStories: mayHaveSponsoredStories,
       mayHaveTopicsSelection: topicSelectionEnabled,
+      sectionsEnabled: sectionsEnabled,
       spocMessageVariant: message?.properties?.spocMessageVariant,
       eventSource: "CARDGRID"
     }, this.renderLayout(layoutRender)), this.renderLayout([{
@@ -9306,8 +10595,11 @@ class _DiscoveryStreamBase extends (external_React_default()).PureComponent {
   }
   renderLayout(layoutRender) {
     const styles = [];
+    let [data] = layoutRender;
+    // Add helper class for topsites
+    const topsitesClass = data.sectionType ? "ds-layout-topsites" : "";
     return /*#__PURE__*/external_React_default().createElement("div", {
-      className: "discovery-stream ds-layout"
+      className: `discovery-stream ds-layout ${topsitesClass}`
     }, layoutRender.map((row, rowIndex) => /*#__PURE__*/external_React_default().createElement("div", {
       key: `row-${rowIndex}`,
       className: `ds-column ds-column-${row.width}`
@@ -9331,6 +10623,219 @@ const DiscoveryStreamBase = (0,external_ReactRedux_namespaceObject.connect)(stat
   document: globalThis.document,
   App: state.App
 }))(_DiscoveryStreamBase);
+;// CONCATENATED MODULE: ./content-src/components/CustomizeMenu/SectionsMgmtPanel/SectionsMgmtPanel.jsx
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this file,
+ * You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+
+
+
+// eslint-disable-next-line no-shadow
+
+const SectionsMgmtPanel_PREF_FOLLOWED_SECTIONS = "discoverystream.sections.following";
+const SectionsMgmtPanel_PREF_BLOCKED_SECTIONS = "discoverystream.sections.blocked";
+
+/**
+ * Transforms a comma-separated string of topics in user preferences
+ * into a cleaned-up array.
+ *
+ * @param pref
+ * @returns string[]
+ */
+// TODO: DRY Issue: Import function from CardSections.jsx?
+const SectionsMgmtPanel_getTopics = pref => {
+  return pref.split(",").map(item => item.trim()).filter(item => item);
+};
+function SectionsMgmtPanel({
+  exitEventFired
+}) {
+  const [showPanel, setShowPanel] = (0,external_React_namespaceObject.useState)(false); // State management with useState
+  const prefs = (0,external_ReactRedux_namespaceObject.useSelector)(state => state.Prefs.values);
+  const layoutComponents = (0,external_ReactRedux_namespaceObject.useSelector)(state => state.DiscoveryStream.layout[0].components);
+  const sections = (0,external_ReactRedux_namespaceObject.useSelector)(state => state.DiscoveryStream.feeds.data);
+  const dispatch = (0,external_ReactRedux_namespaceObject.useDispatch)();
+
+  // TODO: Wrap sectionsFeedName -> sectionsList logic in try...catch?
+  let sectionsFeedName;
+  const cardGridEntry = layoutComponents.find(item => item.type === "CardGrid");
+  if (cardGridEntry) {
+    sectionsFeedName = cardGridEntry.feed.url;
+  }
+  let sectionsList;
+  if (sectionsFeedName) {
+    sectionsList = sections[sectionsFeedName].data.sections;
+  }
+  const followedSectionsPref = prefs[SectionsMgmtPanel_PREF_FOLLOWED_SECTIONS] || "";
+  const blockedSectionsPref = prefs[SectionsMgmtPanel_PREF_BLOCKED_SECTIONS] || "";
+  const followedSections = SectionsMgmtPanel_getTopics(followedSectionsPref);
+  const blockedSections = SectionsMgmtPanel_getTopics(blockedSectionsPref);
+  const [followedSectionsState, setFollowedSectionsState] = (0,external_React_namespaceObject.useState)(followedSectionsPref); // State management with useState
+  const [blockedSectionsState, setBlockedSectionsState] = (0,external_React_namespaceObject.useState)(blockedSectionsPref); // State management with useState
+
+  let followedSectionsData = sectionsList.filter(item => followedSectionsState.includes(item.sectionKey));
+  let blockedSectionsData = sectionsList.filter(item => blockedSectionsState.includes(item.sectionKey));
+  function updateCachedData() {
+    // Reset cached followed/blocked list data while panel is open
+    setFollowedSectionsState(followedSectionsPref);
+    setBlockedSectionsState(blockedSectionsPref);
+    followedSectionsData = sectionsList.filter(item => followedSectionsState.includes(item.sectionKey));
+    blockedSectionsData = sectionsList.filter(item => blockedSectionsState.includes(item.sectionKey));
+  }
+  const onFollowClick = (0,external_React_namespaceObject.useCallback)((sectionKey, receivedRank) => {
+    dispatch(actionCreators.SetPref(SectionsMgmtPanel_PREF_FOLLOWED_SECTIONS, [...followedSections, sectionKey].join(", ")));
+    // Telemetry Event Dispatch
+    dispatch(actionCreators.OnlyToMain({
+      type: "FOLLOW_SECTION",
+      data: {
+        section: sectionKey,
+        section_position: receivedRank,
+        event_source: "CUSTOMIZE_PANEL"
+      }
+    }));
+  }, [dispatch, followedSections]);
+  const onBlockClick = (0,external_React_namespaceObject.useCallback)((sectionKey, receivedRank) => {
+    dispatch(actionCreators.SetPref(SectionsMgmtPanel_PREF_BLOCKED_SECTIONS, [...blockedSections, sectionKey].join(", ")));
+
+    // Telemetry Event Dispatch
+    dispatch(actionCreators.OnlyToMain({
+      type: "BLOCK_SECTION",
+      data: {
+        section: sectionKey,
+        section_position: receivedRank,
+        event_source: "CUSTOMIZE_PANEL"
+      }
+    }));
+  }, [dispatch, blockedSections]);
+  const onUnblockClick = (0,external_React_namespaceObject.useCallback)((sectionKey, receivedRank) => {
+    dispatch(actionCreators.SetPref(SectionsMgmtPanel_PREF_BLOCKED_SECTIONS, [...blockedSections.filter(item => item !== sectionKey)].join(", ")));
+    // Telemetry Event Dispatch
+    dispatch(actionCreators.OnlyToMain({
+      type: "UNBLOCK_SECTION",
+      data: {
+        section: sectionKey,
+        section_position: receivedRank,
+        event_source: "CUSTOMIZE_PANEL"
+      }
+    }));
+  }, [dispatch, blockedSections]);
+  const onUnfollowClick = (0,external_React_namespaceObject.useCallback)((sectionKey, receivedRank) => {
+    dispatch(actionCreators.SetPref(SectionsMgmtPanel_PREF_FOLLOWED_SECTIONS, [...followedSections.filter(item => item !== sectionKey)].join(", ")));
+    // Telemetry Event Dispatch
+    dispatch(actionCreators.OnlyToMain({
+      type: "UNFOLLOW_SECTION",
+      data: {
+        section: sectionKey,
+        section_position: receivedRank,
+        event_source: "CUSTOMIZE_PANEL"
+      }
+    }));
+  }, [dispatch, followedSections]);
+
+  // Close followed/blocked topic subpanel when parent menu is closed
+  (0,external_React_namespaceObject.useEffect)(() => {
+    if (exitEventFired) {
+      setShowPanel(false);
+    }
+  }, [exitEventFired]);
+  const togglePanel = () => {
+    setShowPanel(prevShowPanel => !prevShowPanel);
+
+    // Fire when the panel is open
+    if (!showPanel) {
+      updateCachedData();
+    }
+  };
+  const followedSectionsList = followedSectionsData.map(({
+    sectionKey,
+    title,
+    receivedRank
+  }) => {
+    const following = followedSections.includes(sectionKey);
+    return /*#__PURE__*/external_React_default().createElement("li", {
+      key: sectionKey
+    }, /*#__PURE__*/external_React_default().createElement("label", {
+      htmlFor: `follow-topic-${sectionKey}`
+    }, title), /*#__PURE__*/external_React_default().createElement("div", {
+      className: following ? "section-follow following" : "section-follow"
+    }, /*#__PURE__*/external_React_default().createElement("moz-button", {
+      onClick: () => following ? onUnfollowClick(sectionKey, receivedRank) : onFollowClick(sectionKey, receivedRank),
+      type: "default",
+      index: receivedRank,
+      section: sectionKey,
+      id: `follow-topic-${sectionKey}`
+    }, /*#__PURE__*/external_React_default().createElement("span", {
+      className: "section-button-follow-text",
+      "data-l10n-id": "newtab-section-follow-button"
+    }), /*#__PURE__*/external_React_default().createElement("span", {
+      className: "section-button-following-text",
+      "data-l10n-id": "newtab-section-following-button"
+    }), /*#__PURE__*/external_React_default().createElement("span", {
+      className: "section-button-unfollow-text",
+      "data-l10n-id": "newtab-section-unfollow-button"
+    }))));
+  });
+  const blockedSectionsList = blockedSectionsData.map(({
+    sectionKey,
+    title,
+    receivedRank
+  }) => {
+    const blocked = blockedSections.includes(sectionKey);
+    return /*#__PURE__*/external_React_default().createElement("li", {
+      key: sectionKey
+    }, /*#__PURE__*/external_React_default().createElement("label", {
+      htmlFor: `blocked-topic-${sectionKey}`
+    }, title), /*#__PURE__*/external_React_default().createElement("div", {
+      className: blocked ? "section-block blocked" : "section-block"
+    }, /*#__PURE__*/external_React_default().createElement("moz-button", {
+      onClick: () => blocked ? onUnblockClick(sectionKey, receivedRank) : onBlockClick(sectionKey, receivedRank),
+      type: "default",
+      index: receivedRank,
+      section: sectionKey,
+      id: `blocked-topic-${sectionKey}`
+    }, /*#__PURE__*/external_React_default().createElement("span", {
+      className: "section-button-block-text",
+      "data-l10n-id": "newtab-section-block-button"
+    }), /*#__PURE__*/external_React_default().createElement("span", {
+      className: "section-button-blocked-text",
+      "data-l10n-id": "newtab-section-blocked-button"
+    }), /*#__PURE__*/external_React_default().createElement("span", {
+      className: "section-button-unblock-text",
+      "data-l10n-id": "newtab-section-unblock-button"
+    }))));
+  });
+  return /*#__PURE__*/external_React_default().createElement("div", null, /*#__PURE__*/external_React_default().createElement("moz-box-button", {
+    onClick: togglePanel,
+    "data-l10n-id": "newtab-section-mangage-topics-button"
+  }), /*#__PURE__*/external_React_default().createElement(external_ReactTransitionGroup_namespaceObject.CSSTransition, {
+    in: showPanel,
+    timeout: 300,
+    classNames: "sections-mgmt-panel",
+    unmountOnExit: true
+  }, /*#__PURE__*/external_React_default().createElement("div", {
+    className: "sections-mgmt-panel"
+  }, /*#__PURE__*/external_React_default().createElement("button", {
+    className: "arrow-button",
+    onClick: togglePanel
+  }, /*#__PURE__*/external_React_default().createElement("h1", {
+    "data-l10n-id": "newtab-section-mangage-topics-title"
+  })), /*#__PURE__*/external_React_default().createElement("h3", {
+    "data-l10n-id": "newtab-section-mangage-topics-followed-topics-subtitle"
+  }), followedSectionsData.length ? /*#__PURE__*/external_React_default().createElement("ul", {
+    className: "topic-list"
+  }, followedSectionsList) : /*#__PURE__*/external_React_default().createElement("span", {
+    className: "topic-list-empty-state",
+    "data-l10n-id": "newtab-section-mangage-topics-followed-topics-empty-state"
+  }), /*#__PURE__*/external_React_default().createElement("h3", {
+    "data-l10n-id": "newtab-section-mangage-topics-blocked-topics-subtitle"
+  }), blockedSectionsData.length ? /*#__PURE__*/external_React_default().createElement("ul", {
+    className: "topic-list"
+  }, blockedSectionsList) : /*#__PURE__*/external_React_default().createElement("span", {
+    className: "topic-list-empty-state",
+    "data-l10n-id": "newtab-section-mangage-topics-blocked-topics-empty-state"
+  }))));
+}
+
 ;// CONCATENATED MODULE: ./content-src/components/WallpapersSection/WallpapersSection.jsx
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
@@ -9451,6 +10956,7 @@ const WallpapersSection = (0,external_ReactRedux_namespaceObject.connect)(state 
 
 
 
+// eslint-disable-next-line no-shadow
 
 class _WallpaperCategories extends (external_React_default()).PureComponent {
   constructor(props) {
@@ -9459,27 +10965,40 @@ class _WallpaperCategories extends (external_React_default()).PureComponent {
     this.handleReset = this.handleReset.bind(this);
     this.handleCategory = this.handleCategory.bind(this);
     this.handleBack = this.handleBack.bind(this);
+    this.getRGBColors = this.getRGBColors.bind(this);
     this.prefersHighContrastQuery = null;
     this.prefersDarkQuery = null;
     this.state = {
       activeCategory: null,
-      activeCategoryFluentID: null
+      activeCategoryFluentID: null,
+      showColorPicker: false,
+      inputType: "radio",
+      activeId: null
     };
   }
   componentDidMount() {
     this.prefersDarkQuery = globalThis.matchMedia("(prefers-color-scheme: dark)");
   }
   handleChange(event) {
-    const {
+    let {
       id
     } = event.target;
+    if (id === "solid-color-picker") {
+      id = `solid-color-picker-${event.target.value}`;
+      const rgbColors = this.getRGBColors(event.target.value);
+      event.target.style.backgroundColor = `rgb(${rgbColors.toString()})`;
+      event.target.checked = true;
+      this.setState({
+        customHexValue: event.target.style.backgroundColor
+      });
+    }
     this.props.setPref("newtabWallpapers.wallpaper-light", id);
     this.props.setPref("newtabWallpapers.wallpaper-dark", id);
     // Setting this now so when we remove v1 we don't have to migrate v1 values.
     this.props.setPref("newtabWallpapers.wallpaper", id);
     this.handleUserEvent(actionTypes.WALLPAPER_CLICK, {
       selected_wallpaper: id,
-      hadPreviousWallpaper: !!this.props.activeWallpaper
+      had_previous_wallpaper: !!this.props.activeWallpaper
     });
   }
   handleReset() {
@@ -9489,7 +11008,7 @@ class _WallpaperCategories extends (external_React_default()).PureComponent {
     this.props.setPref("newtabWallpapers.wallpaper", "");
     this.handleUserEvent(actionTypes.WALLPAPER_CLICK, {
       selected_wallpaper: "none",
-      hadPreviousWallpaper: !!this.props.activeWallpaper
+      had_previous_wallpaper: !!this.props.activeWallpaper
     });
   }
   handleCategory = event => {
@@ -9525,6 +11044,20 @@ class _WallpaperCategories extends (external_React_default()).PureComponent {
       data
     }));
   }
+  setActiveId = id => {
+    this.setState({
+      activeId: id
+    }); // Set the active ID
+  };
+  getRGBColors(input) {
+    if (input.length !== 7) {
+      return [];
+    }
+    const r = parseInt(input.substr(1, 2), 16);
+    const g = parseInt(input.substr(3, 2), 16);
+    const b = parseInt(input.substr(5, 2), 16);
+    return [r, g, b];
+  }
   render() {
     const prefs = this.props.Prefs.values;
     const {
@@ -9535,7 +11068,8 @@ class _WallpaperCategories extends (external_React_default()).PureComponent {
       activeWallpaper
     } = this.props;
     const {
-      activeCategory
+      activeCategory,
+      showColorPicker
     } = this.state;
     const {
       activeCategoryFluentID
@@ -9545,6 +11079,46 @@ class _WallpaperCategories extends (external_React_default()).PureComponent {
     if (prefs["newtabWallpapers.v2.enabled"]) {
       categorySectionClassname += " ignore-color-mode";
     }
+    let wallpaperCustomSolidColorHex = null;
+    const wallpaperLight = prefs["newtabWallpapers.wallpaper-light"];
+    const wallpaperDark = prefs["newtabWallpapers.wallpaper-dark"];
+
+    // User has previous selected a custom color
+    if (wallpaperLight.includes("solid-color-picker") && wallpaperDark.includes("solid-color-picker")) {
+      this.setState({
+        showColorPicker: true
+      });
+      const regex = /#([a-fA-F0-9]{6})/;
+      [wallpaperCustomSolidColorHex] = wallpaperLight.match(regex);
+    }
+
+    // Enable custom color select if preffed on
+    if (prefs["newtabWallpapers.customColor.enabled"]) {
+      this.setState({
+        showColorPicker: true
+      });
+    }
+    let colorPickerInput = showColorPicker && activeCategory === "solid-colors" ? /*#__PURE__*/external_React_default().createElement((external_React_default()).Fragment, null, /*#__PURE__*/external_React_default().createElement("input", {
+      onChange: this.handleChange,
+      onClick: () => this.setActiveId("solid-color-picker") //
+      ,
+      type: "color",
+      name: `wallpaper-solid-color-picker`,
+      id: "solid-color-picker"
+      // aria-checked is not applicable for input[type="color"] elements
+      ,
+      "aria-current": this.state.activeId === "solid-color-picker"
+      // If nothing selected, default to Zilla Green
+      ,
+      value: wallpaperCustomSolidColorHex || "#00d230",
+      className: `wallpaper-input theme-solid-color-picker 
+              ${this.state.activeId === "solid-color-picker" ? "active" : ""}`
+    }), /*#__PURE__*/external_React_default().createElement("label", {
+      htmlFor: "solid-color-picker",
+      className: "sr-only"
+      // TODO: Add Fluent string
+      // data-l10n-id={fluent_id}
+    }, "Solid Color Picker")) : "";
     return /*#__PURE__*/external_React_default().createElement("div", null, /*#__PURE__*/external_React_default().createElement("div", {
       className: "category-header"
     }, /*#__PURE__*/external_React_default().createElement("h2", {
@@ -9581,6 +11155,7 @@ class _WallpaperCategories extends (external_React_default()).PureComponent {
       }, /*#__PURE__*/external_React_default().createElement("input", {
         id: category,
         style: style,
+        type: "radio",
         onClick: this.handleCategory,
         className: "wallpaper-input"
       }), /*#__PURE__*/external_React_default().createElement("label", {
@@ -9620,13 +11195,14 @@ class _WallpaperCategories extends (external_React_default()).PureComponent {
         value: title,
         checked: title === activeWallpaper,
         "aria-checked": title === activeWallpaper,
-        className: `wallpaper-input theme-${theme}`
+        className: `wallpaper-input theme-${theme} ${this.state.activeId === title ? "active" : ""}`,
+        onClick: () => this.setActiveId(title) //
       }), /*#__PURE__*/external_React_default().createElement("label", {
         htmlFor: title,
         className: "sr-only",
         "data-l10n-id": fluent_id
       }, fluent_id));
-    })))));
+    }), colorPickerInput))));
   }
 }
 const WallpaperCategories = (0,external_ReactRedux_namespaceObject.connect)(state => {
@@ -9645,6 +11221,7 @@ const WallpaperCategories = (0,external_ReactRedux_namespaceObject.connect)(stat
 
 
 
+
 class ContentSection extends (external_React_default()).PureComponent {
   constructor(props) {
     super(props);
@@ -9654,12 +11231,12 @@ class ContentSection extends (external_React_default()).PureComponent {
     this.topSitesDrawerRef = /*#__PURE__*/external_React_default().createRef();
     this.pocketDrawerRef = /*#__PURE__*/external_React_default().createRef();
   }
-  inputUserEvent(eventSource, status) {
+  inputUserEvent(eventSource, eventValue) {
     this.props.dispatch(actionCreators.UserEvent({
       event: "PREF_CHANGED",
       source: eventSource,
       value: {
-        status,
+        status: eventValue,
         menu_source: "CUSTOMIZE_MENU"
       }
     }));
@@ -9705,11 +11282,10 @@ class ContentSection extends (external_React_default()).PureComponent {
     } else {
       return;
     }
-    let drawerHeight;
     if (drawerRef) {
-      drawerHeight = parseFloat(window.getComputedStyle(drawerRef)?.height);
+      let drawerHeight = parseFloat(window.getComputedStyle(drawerRef)?.height) || 0;
       if (isOpen) {
-        drawerRef.style.marginTop = `0`;
+        drawerRef.style.marginTop = "var(--space-large)";
       } else {
         drawerRef.style.marginTop = `-${drawerHeight}px`;
       }
@@ -9728,7 +11304,9 @@ class ContentSection extends (external_React_default()).PureComponent {
       wallpapersEnabled,
       wallpapersV2Enabled,
       activeWallpaper,
-      setPref
+      setPref,
+      mayHaveTopicSections,
+      exitEventFired
     } = this.props;
     const {
       topSitesEnabled,
@@ -9753,6 +11331,8 @@ class ContentSection extends (external_React_default()).PureComponent {
       setPref: setPref,
       activeWallpaper: activeWallpaper
     })), /*#__PURE__*/external_React_default().createElement("div", {
+      className: "settings-toggles"
+    }, /*#__PURE__*/external_React_default().createElement("div", {
       id: "shortcuts-section",
       className: "section"
     }, /*#__PURE__*/external_React_default().createElement("moz-toggle", {
@@ -9761,9 +11341,10 @@ class ContentSection extends (external_React_default()).PureComponent {
       onToggle: this.onPreferenceSelect,
       "data-preference": "feeds.topsites",
       "data-eventSource": "TOP_SITES",
-      "data-l10n-id": "newtab-custom-shortcuts-toggle",
-      "data-l10n-attrs": "label, description"
-    }), /*#__PURE__*/external_React_default().createElement("div", null, /*#__PURE__*/external_React_default().createElement("div", {
+      "data-l10n-id": "newtab-custom-shortcuts-toggle"
+    }, /*#__PURE__*/external_React_default().createElement("div", {
+      slot: "nested"
+    }, /*#__PURE__*/external_React_default().createElement("div", {
       className: "more-info-top-wrapper"
     }, /*#__PURE__*/external_React_default().createElement("div", {
       className: "more-information",
@@ -9809,11 +11390,9 @@ class ContentSection extends (external_React_default()).PureComponent {
       className: "sponsored",
       htmlFor: "sponsored-shortcuts",
       "data-l10n-id": "newtab-custom-sponsored-sites"
-    })))))), pocketRegion && /*#__PURE__*/external_React_default().createElement("div", {
+    }))))))), pocketRegion && /*#__PURE__*/external_React_default().createElement("div", {
       id: "pocket-section",
       className: "section"
-    }, /*#__PURE__*/external_React_default().createElement("label", {
-      className: "switch"
     }, /*#__PURE__*/external_React_default().createElement("moz-toggle", {
       id: "pocket-toggle",
       pressed: pocketEnabled || null,
@@ -9821,9 +11400,10 @@ class ContentSection extends (external_React_default()).PureComponent {
       "aria-describedby": "custom-pocket-subtitle",
       "data-preference": "feeds.section.topstories",
       "data-eventSource": "TOP_STORIES",
-      "data-l10n-id": "newtab-custom-stories-toggle",
-      "data-l10n-attrs": "label, description"
-    })), /*#__PURE__*/external_React_default().createElement("div", null, (mayHaveSponsoredStories || mayHaveRecentSaves) && /*#__PURE__*/external_React_default().createElement("div", {
+      "data-l10n-id": "newtab-custom-stories-toggle"
+    }, /*#__PURE__*/external_React_default().createElement("div", {
+      slot: "nested"
+    }, (mayHaveSponsoredStories || mayHaveRecentSaves) && /*#__PURE__*/external_React_default().createElement("div", {
       className: "more-info-pocket-wrapper"
     }, /*#__PURE__*/external_React_default().createElement("div", {
       className: "more-information",
@@ -9844,7 +11424,9 @@ class ContentSection extends (external_React_default()).PureComponent {
       className: "sponsored",
       htmlFor: "sponsored-pocket",
       "data-l10n-id": "newtab-custom-pocket-sponsored"
-    })), mayHaveRecentSaves && /*#__PURE__*/external_React_default().createElement("div", {
+    })), mayHaveTopicSections && /*#__PURE__*/external_React_default().createElement(SectionsMgmtPanel, {
+      exitEventFired: exitEventFired
+    }), mayHaveRecentSaves && /*#__PURE__*/external_React_default().createElement("div", {
       className: "check-wrapper",
       role: "presentation"
     }, /*#__PURE__*/external_React_default().createElement("input", {
@@ -9860,40 +11442,34 @@ class ContentSection extends (external_React_default()).PureComponent {
       className: "sponsored",
       htmlFor: "recent-saves-pocket",
       "data-l10n-id": "newtab-custom-pocket-show-recent-saves"
-    })))))), /*#__PURE__*/external_React_default().createElement("div", {
+    }))))))), /*#__PURE__*/external_React_default().createElement("div", {
       id: "recent-section",
       className: "section"
-    }, /*#__PURE__*/external_React_default().createElement("label", {
-      className: "switch"
     }, /*#__PURE__*/external_React_default().createElement("moz-toggle", {
       id: "highlights-toggle",
       pressed: highlightsEnabled || null,
       onToggle: this.onPreferenceSelect,
       "data-preference": "feeds.section.highlights",
       "data-eventSource": "HIGHLIGHTS",
-      "data-l10n-id": "newtab-custom-recent-toggle",
-      "data-l10n-attrs": "label, description"
-    }))), mayHaveWeather && /*#__PURE__*/external_React_default().createElement("div", {
+      "data-l10n-id": "newtab-custom-recent-toggle"
+    })), mayHaveWeather && /*#__PURE__*/external_React_default().createElement("div", {
       id: "weather-section",
       className: "section"
-    }, /*#__PURE__*/external_React_default().createElement("label", {
-      className: "switch"
     }, /*#__PURE__*/external_React_default().createElement("moz-toggle", {
       id: "weather-toggle",
       pressed: weatherEnabled || null,
       onToggle: this.onPreferenceSelect,
       "data-preference": "showWeather",
       "data-eventSource": "WEATHER",
-      "data-l10n-id": "newtab-custom-weather-toggle",
-      "data-l10n-attrs": "label, description"
-    }))), pocketRegion && mayHaveSponsoredStories && spocMessageVariant === "variant-c" && /*#__PURE__*/external_React_default().createElement("div", {
+      "data-l10n-id": "newtab-custom-weather-toggle"
+    })), pocketRegion && mayHaveSponsoredStories && spocMessageVariant === "variant-c" && /*#__PURE__*/external_React_default().createElement("div", {
       className: "sponsored-content-info"
     }, /*#__PURE__*/external_React_default().createElement("div", {
       className: "icon icon-help"
     }), /*#__PURE__*/external_React_default().createElement("div", null, "Sponsored content supports our mission to build a better web.", " ", /*#__PURE__*/external_React_default().createElement(SafeAnchor, {
       dispatch: this.props.dispatch,
       url: "https://support.mozilla.org/kb/pocket-sponsored-stories-new-tabs"
-    }, "Find out how"))), /*#__PURE__*/external_React_default().createElement("span", {
+    }, "Find out how")))), /*#__PURE__*/external_React_default().createElement("span", {
       className: "divider",
       role: "separator"
     }), /*#__PURE__*/external_React_default().createElement("div", null, /*#__PURE__*/external_React_default().createElement("button", {
@@ -9912,19 +11488,29 @@ class ContentSection extends (external_React_default()).PureComponent {
 
 
 
+// eslint-disable-next-line no-shadow
 
 class _CustomizeMenu extends (external_React_default()).PureComponent {
   constructor(props) {
     super(props);
     this.onEntered = this.onEntered.bind(this);
     this.onExited = this.onExited.bind(this);
+    this.state = {
+      exitEventFired: false
+    };
   }
   onEntered() {
+    this.setState({
+      exitEventFired: false
+    });
     if (this.closeButton) {
       this.closeButton.focus();
     }
   }
   onExited() {
+    this.setState({
+      exitEventFired: true
+    });
     if (this.openButton) {
       this.openButton.focus();
     }
@@ -9938,7 +11524,12 @@ class _CustomizeMenu extends (external_React_default()).PureComponent {
     }, /*#__PURE__*/external_React_default().createElement("button", {
       className: "icon icon-settings personalize-button",
       onClick: () => this.props.onOpen(),
-      "data-l10n-id": "newtab-personalize-icon-label",
+      onKeyDown: e => {
+        if (e.key === "Enter") {
+          this.props.onOpen();
+        }
+      },
+      "data-l10n-id": "newtab-personalize-settings-icon-label",
       ref: c => this.openButton = c
     })), /*#__PURE__*/external_React_default().createElement(external_ReactTransitionGroup_namespaceObject.CSSTransition, {
       timeout: 250,
@@ -9950,7 +11541,7 @@ class _CustomizeMenu extends (external_React_default()).PureComponent {
     }, /*#__PURE__*/external_React_default().createElement("div", {
       className: "customize-menu",
       role: "dialog",
-      "data-l10n-id": "newtab-personalize-dialog-label"
+      "data-l10n-id": "newtab-settings-dialog-label"
     }, /*#__PURE__*/external_React_default().createElement("div", {
       className: "close-button-wrapper"
     }, /*#__PURE__*/external_React_default().createElement("button", {
@@ -9966,12 +11557,14 @@ class _CustomizeMenu extends (external_React_default()).PureComponent {
       wallpapersV2Enabled: this.props.wallpapersV2Enabled,
       activeWallpaper: this.props.activeWallpaper,
       pocketRegion: this.props.pocketRegion,
+      mayHaveTopicSections: this.props.mayHaveTopicSections,
       mayHaveSponsoredTopSites: this.props.mayHaveSponsoredTopSites,
       mayHaveSponsoredStories: this.props.mayHaveSponsoredStories,
       mayHaveRecentSaves: this.props.DiscoveryStream.recentSavesEnabled,
       mayHaveWeather: this.props.mayHaveWeather,
       spocMessageVariant: this.props.spocMessageVariant,
-      dispatch: this.props.dispatch
+      dispatch: this.props.dispatch,
+      exitEventFired: this.state.exitEventFired
     }))));
   }
 }
@@ -10024,14 +11617,20 @@ const NEWTAB_DARK_THEME = {
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 
-function Logo() {
-  return /*#__PURE__*/external_React_default().createElement("div", {
-    className: "logo-and-wordmark"
+function Logo({
+  isAprilFoolsLogo
+}) {
+  return /*#__PURE__*/external_React_default().createElement("h1", {
+    className: "logo-and-wordmark-wrapper"
   }, /*#__PURE__*/external_React_default().createElement("div", {
-    className: "logo"
+    className: `logo-and-wordmark ${isAprilFoolsLogo ? "april-fools" : ""}`,
+    role: "img",
+    "data-l10n-id": "newtab-logo-and-wordmark"
+  }, /*#__PURE__*/external_React_default().createElement("div", {
+    className: `logo ${isAprilFoolsLogo ? "april-fools" : ""}`
   }), /*#__PURE__*/external_React_default().createElement("div", {
     className: "wordmark"
-  }));
+  })));
 }
 
 ;// CONCATENATED MODULE: ./content-src/components/Search/Search.jsx
@@ -10156,7 +11755,9 @@ class _Search extends (external_React_default()).PureComponent {
     const wrapperClassName = ["search-wrapper", this.props.disable && "search-disabled", this.props.fakeFocus && "fake-focus"].filter(v => v).join(" ");
     return /*#__PURE__*/external_React_default().createElement("div", {
       className: wrapperClassName
-    }, this.props.showLogo && /*#__PURE__*/external_React_default().createElement(Logo, null), !this.props.handoffEnabled && /*#__PURE__*/external_React_default().createElement("div", {
+    }, this.props.showLogo && /*#__PURE__*/external_React_default().createElement(Logo, {
+      isAprilFoolsLogo: this.props.Prefs.values["newtabLogo.aprilfools"]
+    }), !this.props.handoffEnabled && /*#__PURE__*/external_React_default().createElement("div", {
       className: "search-inner-wrapper"
     }, /*#__PURE__*/external_React_default().createElement("input", {
       id: "newtab-search-text",
@@ -10283,19 +11884,22 @@ function LocationSearch({
     ref: inputRef,
     list: "merino-location-list",
     type: "text",
-    placeholder: "Search location",
+    "data-l10n-id": "newtab-weather-change-location-search-input-placeholder",
     onChange: handleChange,
     value: userInput,
     onKeyDown: handleKeyDown
-  }), /*#__PURE__*/external_React_default().createElement("button", {
-    className: "close-icon",
+  }), /*#__PURE__*/external_React_default().createElement("moz-button", {
+    class: "close-icon",
+    type: "icon ghost",
+    size: "small",
+    iconSrc: "chrome://global/skin/icons/close.svg",
     onClick: handleCloseSearch
   }), /*#__PURE__*/external_React_default().createElement("datalist", {
     id: "merino-location-list"
-  }, (suggestedLocations || []).map(location => /*#__PURE__*/external_React_default().createElement("option", {
-    value: location.key,
-    key: location.key
-  }, location.localized_name, ",", " ", location.administrative_area.localized_name)))));
+  }, (suggestedLocations || []).map(merinoLcation => /*#__PURE__*/external_React_default().createElement("option", {
+    value: merinoLcation.key,
+    key: merinoLcation.key
+  }, merinoLcation.localized_name, ",", " ", merinoLcation.administrative_area.localized_name)))));
 }
 
 ;// CONCATENATED MODULE: ./content-src/components/Weather/Weather.jsx
@@ -10560,50 +12164,36 @@ const Weather_Weather = (0,external_ReactRedux_namespaceObject.connect)(state =>
   IntersectionObserver: globalThis.IntersectionObserver,
   document: globalThis.document
 }))(_Weather);
-;// CONCATENATED MODULE: ./content-src/components/Notifications/Toasts/ThumbsUpToast.jsx
+;// CONCATENATED MODULE: ./content-src/components/Notifications/Toasts/ThumbUpThumbDownToast.jsx
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 
-function ThumbsUpToast({
-  onDismissClick
+function ThumbUpThumbDownToast({
+  onDismissClick,
+  onAnimationEnd
 }) {
-  return /*#__PURE__*/external_React_default().createElement("div", {
-    className: "notification-feed-item is-success"
-  }, /*#__PURE__*/external_React_default().createElement("div", {
-    className: "icon icon-check-filled icon-themed"
-  }), /*#__PURE__*/external_React_default().createElement("div", {
-    className: "notification-feed-item-text",
-    "data-l10n-id": "newtab-toast-thumbs-up-or-down"
-  }), /*#__PURE__*/external_React_default().createElement("button", {
-    onClick: onDismissClick,
-    className: "icon icon-dismiss",
-    "data-l10n-id": "newtab-toast-dismiss-button"
-  }));
-}
-
-;// CONCATENATED MODULE: ./content-src/components/Notifications/Toasts/ThumbsDownToast.jsx
-/* This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this file,
- * You can obtain one at http://mozilla.org/MPL/2.0/. */
-
-
-function ThumbsDownToast({
-  onDismissClick
-}) {
-  return /*#__PURE__*/external_React_default().createElement("div", {
-    className: "notification-feed-item is-success"
-  }, /*#__PURE__*/external_React_default().createElement("div", {
-    className: "icon icon-check-filled icon-themed"
-  }), /*#__PURE__*/external_React_default().createElement("div", {
-    className: "notification-feed-item-text",
-    "data-l10n-id": "newtab-toast-thumbs-up-or-down"
-  }), /*#__PURE__*/external_React_default().createElement("button", {
-    onClick: onDismissClick,
-    className: "icon icon-dismiss",
-    "data-l10n-id": "newtab-toast-dismiss-button"
-  }));
+  const mozMessageBarRef = (0,external_React_namespaceObject.useRef)(null);
+  (0,external_React_namespaceObject.useEffect)(() => {
+    const {
+      current: mozMessageBarElement
+    } = mozMessageBarRef;
+    mozMessageBarElement.addEventListener("message-bar:user-dismissed", onDismissClick, {
+      once: true
+    });
+    return () => {
+      mozMessageBarElement.removeEventListener("message-bar:user-dismissed", onDismissClick);
+    };
+  }, [onDismissClick]);
+  return /*#__PURE__*/external_React_default().createElement("moz-message-bar", {
+    type: "success",
+    class: "notification-feed-item",
+    dismissable: true,
+    "data-l10n-id": "newtab-toast-thumbs-up-or-down2",
+    ref: mozMessageBarRef,
+    onAnimationEnd: onAnimationEnd
+  });
 }
 
 ;// CONCATENATED MODULE: ./content-src/components/Notifications/Notifications.jsx
@@ -10615,46 +12205,48 @@ function ThumbsDownToast({
 
 
 
-
 function Notifications_Notifications({
   dispatch
 }) {
   const toastQueue = (0,external_ReactRedux_namespaceObject.useSelector)(state => state.Notifications.toastQueue);
   const toastCounter = (0,external_ReactRedux_namespaceObject.useSelector)(state => state.Notifications.toastCounter);
-  const onDismissClick = (0,external_React_namespaceObject.useCallback)(() => {
+
+  /**
+   * Syncs {@link toastQueue} array so it can be used to
+   * remove the toasts wrapper if there are none after a
+   * toast is auto-hidden (animated out) via CSS.
+   */
+  const syncHiddenToastData = (0,external_React_namespaceObject.useCallback)(() => {
+    const toastId = toastQueue[toastQueue.length - 1];
+    const queuedToasts = [...toastQueue].slice(1);
     dispatch(actionCreators.OnlyToOneContent({
       type: actionTypes.HIDE_TOAST_MESSAGE,
       data: {
+        toastQueue: queuedToasts,
+        toastCounter: queuedToasts.length,
+        toastId,
         showNotifications: false
       }
     }, "ActivityStream:Content"));
-  }, [dispatch]);
+  }, [dispatch, toastQueue]);
   const getToast = (0,external_React_namespaceObject.useCallback)(() => {
     // Note: This architecture could expand to support multiple toast notifications at once
     const latestToastItem = toastQueue[toastQueue.length - 1];
-    switch (latestToastItem) {
-      case "thumbsDownToast":
-        return /*#__PURE__*/external_React_default().createElement(ThumbsDownToast, {
-          onDismissClick: onDismissClick,
-          key: toastCounter
-        });
-      case "thumbsUpToast":
-        return /*#__PURE__*/external_React_default().createElement(ThumbsUpToast, {
-          onDismissClick: onDismissClick,
-          key: toastCounter
-        });
-      default:
-        throw new Error("No toast found");
+    if (!latestToastItem) {
+      throw new Error("No toast found");
     }
-  }, [onDismissClick, toastCounter, toastQueue]);
+    return /*#__PURE__*/external_React_default().createElement(ThumbUpThumbDownToast, {
+      onDismissClick: syncHiddenToastData,
+      onAnimationEnd: syncHiddenToastData,
+      key: toastCounter
+    });
+  }, [syncHiddenToastData, toastCounter, toastQueue]);
   (0,external_React_namespaceObject.useEffect)(() => {
     getToast();
   }, [toastQueue, getToast]);
-  return /*#__PURE__*/external_React_default().createElement("div", {
+  return toastQueue.length ? /*#__PURE__*/external_React_default().createElement("div", {
     className: "notification-wrapper"
-  }, /*#__PURE__*/external_React_default().createElement("ul", {
-    className: "notification-feed"
-  }, getToast()));
+  }, getToast()) : "";
 }
 
 ;// CONCATENATED MODULE: ./content-src/components/DiscoveryStreamComponents/TopicSelection/TopicSelection.jsx
@@ -11053,6 +12645,8 @@ function Base_extends() { Base_extends = Object.assign ? Object.assign.bind() : 
 const Base_VISIBLE = "visible";
 const Base_VISIBILITY_CHANGE_EVENT = "visibilitychange";
 const Base_WALLPAPER_HIGHLIGHT_DISMISSED_PREF = "newtabWallpapers.highlightDismissed";
+const Base_PREF_THUMBS_UP_DOWN_ENABLED = "discoverystream.thumbsUpDown.enabled";
+const PREF_THUMBS_UP_DOWN_LAYOUT_ENABLED = "discoverystream.thumbsUpDown.searchTopsitesCompact";
 const PrefsButton = ({
   onClick,
   icon
@@ -11140,7 +12734,8 @@ class BaseContent extends (external_React_default()).PureComponent {
     this.state = {
       fixedSearch: false,
       firstVisibleTimestamp: null,
-      colorMode: ""
+      colorMode: "",
+      fixedNavStyle: {}
     };
   }
   setFirstVisibleTimestamp() {
@@ -11187,15 +12782,105 @@ class BaseContent extends (external_React_default()).PureComponent {
     }
   }
   onWindowScroll() {
+    if (window.innerHeight <= 700) {
+      // Bug 1937296: Only apply fixed-search logic
+      // if the page is tall enough to support it.
+      return;
+    }
     const prefs = this.props.Prefs.values;
-    const SCROLL_THRESHOLD = prefs["logowordmark.alwaysVisible"] ? 179 : 34;
+    const {
+      showSearch
+    } = prefs;
+    if (!showSearch) {
+      // Bug 1944718: Only apply fixed-search logic
+      // if search is visible.
+      return;
+    }
+    const logoAlwaysVisible = prefs["logowordmark.alwaysVisible"];
+    const layoutsVariantAEnabled = prefs["newtabLayouts.variant-a"];
+    const layoutsVariantBEnabled = prefs["newtabLayouts.variant-b"];
+    const layoutsVariantAorB = layoutsVariantAEnabled || layoutsVariantBEnabled;
+    const thumbsUpDownEnabled = prefs[Base_PREF_THUMBS_UP_DOWN_ENABLED];
+    // For the compact layout to be active,
+    // thumbs also has to be enabled until Bug 1932242 is fixed
+    const thumbsUpDownLayoutEnabled = prefs[PREF_THUMBS_UP_DOWN_LAYOUT_ENABLED] && thumbsUpDownEnabled;
+
+    /* Bug 1917937: The logic presented below is fragile but accurate to the pixel. As new tab experiments with layouts, we have a tech debt of competing styles and classes the slightly modify where the search bar sits on the page. The larger solution for this is to replace everything with an intersection observer, but would require a larger refactor of this file. In the interim, we can programmatically calculate when to fire the fixed-scroll event and account for the moved elements so that topsites/etc stays in the same place. The CSS this references has been flagged to reference this logic so (hopefully) keep them in sync. */
+
+    let SCROLL_THRESHOLD = 0; // When the fixed-scroll event fires
+    let MAIN_OFFSET_PADDING = 0; // The padding to compensate for the moved elements
+
+    let layout = {
+      outerWrapperPaddingTop: 30,
+      searchWrapperPaddingTop: 34,
+      searchWrapperPaddingBottom: 38,
+      searchWrapperFixedScrollPaddingTop: 27,
+      searchWrapperFixedScrollPaddingBottom: 27,
+      searchInnerWrapperMinHeight: 52,
+      logoAndWordmarkWrapperHeight: 64,
+      logoAndWordmarkWrapperMarginBottom: 48
+    };
+    const CSS_VAR_SPACE_XXLARGE = 34.2; // Custom Acorn themed variable (8 * 0.267rem);
+
+    // Experimental layouts
+    // (Note these if statements are ordered to match the CSS cascade)
+    if (thumbsUpDownLayoutEnabled || layoutsVariantAorB) {
+      // Thumbs Compact View Layout
+      if (thumbsUpDownLayoutEnabled) {
+        layout.logoAndWordmarkWrapperMarginBottom = CSS_VAR_SPACE_XXLARGE;
+        if (!logoAlwaysVisible) {
+          layout.searchWrapperPaddingTop = CSS_VAR_SPACE_XXLARGE;
+          layout.searchWrapperPaddingBottom = CSS_VAR_SPACE_XXLARGE;
+        }
+      }
+
+      // Variant B Layout
+      if (layoutsVariantAEnabled) {
+        layout.outerWrapperPaddingTop = 24;
+        if (!thumbsUpDownLayoutEnabled) {
+          layout.searchWrapperPaddingTop = 0;
+          layout.searchWrapperPaddingBottom = 32;
+          layout.logoAndWordmarkWrapperMarginBottom = 32;
+        }
+      }
+
+      // Variant B Layout
+      if (layoutsVariantBEnabled) {
+        layout.outerWrapperPaddingTop = 24;
+        // Logo is positioned absolute, so remove it
+        layout.logoAndWordmarkWrapperHeight = 0;
+        layout.logoAndWordmarkWrapperMarginBottom = 0;
+        layout.searchWrapperPaddingTop = 16;
+        layout.searchWrapperPaddingBottom = CSS_VAR_SPACE_XXLARGE;
+        if (!thumbsUpDownLayoutEnabled) {
+          layout.searchWrapperPaddingBottom = 32;
+        }
+      }
+    }
+
+    // Logo visibility applies to all layouts
+    if (!logoAlwaysVisible) {
+      layout.logoAndWordmarkWrapperHeight = 0;
+      layout.logoAndWordmarkWrapperMarginBottom = 0;
+    }
+    SCROLL_THRESHOLD = layout.outerWrapperPaddingTop + layout.searchWrapperPaddingTop + layout.logoAndWordmarkWrapperHeight + layout.logoAndWordmarkWrapperMarginBottom - layout.searchWrapperFixedScrollPaddingTop;
+    MAIN_OFFSET_PADDING = layout.searchWrapperPaddingTop + layout.searchWrapperPaddingBottom + layout.searchInnerWrapperMinHeight + layout.logoAndWordmarkWrapperHeight + layout.logoAndWordmarkWrapperMarginBottom;
+
+    // Edge case if logo and thums are turned off, but Var A is enabled
+    if (SCROLL_THRESHOLD < 1) {
+      SCROLL_THRESHOLD = 1;
+    }
     if (__webpack_require__.g.scrollY > SCROLL_THRESHOLD && !this.state.fixedSearch) {
       this.setState({
-        fixedSearch: true
+        fixedSearch: true,
+        fixedNavStyle: {
+          paddingBlockStart: `${MAIN_OFFSET_PADDING}px`
+        }
       });
     } else if (__webpack_require__.g.scrollY <= SCROLL_THRESHOLD && this.state.fixedSearch) {
       this.setState({
-        fixedSearch: false
+        fixedSearch: false,
+        fixedNavStyle: {}
       });
     }
   }
@@ -11244,24 +12929,24 @@ class BaseContent extends (external_React_default()).PureComponent {
       return null;
     }
     const {
-      name,
+      name: authorDetails,
       webpage
     } = selected.attribution;
-    if (activeWallpaper && wallpaperList && name.url) {
+    if (activeWallpaper && wallpaperList && authorDetails.url) {
       return /*#__PURE__*/external_React_default().createElement("p", {
         className: `wallpaper-attribution`,
-        key: name.string,
+        key: authorDetails.string,
         "data-l10n-id": "newtab-wallpaper-attribution",
         "data-l10n-args": JSON.stringify({
-          author_string: name.string,
-          author_url: name.url,
+          author_string: authorDetails.string,
+          author_url: authorDetails.url,
           webpage_string: webpage.string,
           webpage_url: webpage.url
         })
       }, /*#__PURE__*/external_React_default().createElement("a", {
         "data-l10n-name": "name-link",
-        href: name.url
-      }, name.string), /*#__PURE__*/external_React_default().createElement("a", {
+        href: authorDetails.url
+      }, authorDetails.string), /*#__PURE__*/external_React_default().createElement("a", {
         "data-l10n-name": "webpage-link",
         href: webpage.url
       }, webpage.string));
@@ -11272,12 +12957,44 @@ class BaseContent extends (external_React_default()).PureComponent {
     const prefs = this.props.Prefs.values;
     const wallpaperLight = prefs["newtabWallpapers.wallpaper-light"];
     const wallpaperDark = prefs["newtabWallpapers.wallpaper-dark"];
+    // selected wallpaper is used for v2 of wallpapers
+    const selectedWallpaper = prefs["newtabWallpapers.wallpaper"];
     const {
       wallpaperList
     } = this.props.Wallpapers;
     if (wallpaperList) {
-      const lightWallpaper = wallpaperList.find(wp => wp.title === wallpaperLight) || "";
-      const darkWallpaper = wallpaperList.find(wp => wp.title === wallpaperDark) || "";
+      let lightWallpaper;
+      let darkWallpaper;
+      if (selectedWallpaper) {
+        // if selectedWallpaper exists - we override what light and dark prefs are to match that
+        const wallpaper = wallpaperList.find(wp => wp.title === selectedWallpaper);
+        lightWallpaper = wallpaper;
+        darkWallpaper = wallpaper;
+      } else {
+        lightWallpaper = wallpaperList.find(wp => wp.title === wallpaperLight) || "";
+        darkWallpaper = wallpaperList.find(wp => wp.title === wallpaperDark) || "";
+      }
+
+      // solid-color-picker-#00d100
+      const regexRGB = /#([a-fA-F0-9]{6})/;
+
+      // Override Remote Settings to set custom HEX bg color
+      if (wallpaperLight.includes("solid-color-picker")) {
+        lightWallpaper = {
+          theme: "light",
+          title: "solid-color-picker",
+          category: "solid-colors",
+          solid_color: wallpaperLight.match(regexRGB)[0]
+        };
+      }
+      if (wallpaperDark.includes("solid-color-picker")) {
+        darkWallpaper = {
+          theme: "dark",
+          title: "solid-color-picker",
+          category: "solid-colors",
+          solid_color: wallpaperDark.match(regexRGB)[0]
+        };
+      }
       const wallpaperColor = darkWallpaper?.solid_color || lightWallpaper?.solid_color || "";
       __webpack_require__.g.document?.body.style.setProperty(`--newtab-wallpaper-light`, `url(${lightWallpaper?.wallpaperUrl || ""})`);
       __webpack_require__.g.document?.body.style.setProperty(`--newtab-wallpaper-dark`, `url(${darkWallpaper?.wallpaperUrl || ""})`);
@@ -11404,6 +13121,7 @@ class BaseContent extends (external_React_default()).PureComponent {
     const prefs = props.Prefs.values;
     const layoutsVariantAEnabled = prefs["newtabLayouts.variant-a"];
     const layoutsVariantBEnabled = prefs["newtabLayouts.variant-b"];
+    const shortcutsRefresh = prefs["newtabShortcuts.refresh"];
     const layoutsVariantAorB = layoutsVariantAEnabled || layoutsVariantBEnabled;
     const activeWallpaper = prefs[`newtabWallpapers.wallpaper-${this.state.colorMode}`];
     const wallpapersEnabled = prefs["newtabWallpapers.enabled"];
@@ -11444,13 +13162,20 @@ class BaseContent extends (external_React_default()).PureComponent {
     const supportUrl = prefs["support.url"];
     const hasThumbsUpDownLayout = prefs["discoverystream.thumbsUpDown.searchTopsitesCompact"];
     const hasThumbsUpDown = prefs["discoverystream.thumbsUpDown.enabled"];
+    const sectionsEnabled = prefs["discoverystream.sections.enabled"];
+    const topicLabelsEnabled = prefs["discoverystream.topicLabels.enabled"];
+    const sectionsCustomizeMenuPanelEnabled = prefs["discoverystream.sections.customizeMenuPanel.enabled"];
+    // Logic to show follow/block topic mgmt panel in Customize panel
+    const mayHaveTopicSections = topicLabelsEnabled && sectionsEnabled && sectionsCustomizeMenuPanelEnabled && DiscoveryStream.feeds.loaded;
     const featureClassName = [weatherEnabled && mayHaveWeather && "has-weather",
     // Show is weather is enabled/visible
     prefs.showSearch ? "has-search" : "no-search", layoutsVariantAEnabled ? "layout-variant-a" : "",
     // Layout experiment variant A
     layoutsVariantBEnabled ? "layout-variant-b" : "",
     // Layout experiment variant B
-    pocketEnabled ? "has-recommended-stories" : "no-recommended-stories"].filter(v => v).join(" ");
+    shortcutsRefresh ? "shortcuts-refresh" : "",
+    // Shortcuts refresh experiment
+    pocketEnabled ? "has-recommended-stories" : "no-recommended-stories", sectionsEnabled ? "has-sections-grid" : ""].filter(v => v).join(" ");
     const outerClassName = ["outer-wrapper", isDiscoveryStream && pocketEnabled && "ds-outer-wrapper-search-alignment", isDiscoveryStream && "ds-outer-wrapper-breakpoint-override", prefs.showSearch && this.state.fixedSearch && !noSectionsEnabled && "fixed-search", prefs.showSearch && noSectionsEnabled && "only-search", prefs["feeds.topsites"] && !pocketEnabled && !prefs.showSearch && "only-topsites", noSectionsEnabled && "no-sections", prefs["logowordmark.alwaysVisible"] && "visible-logo", hasThumbsUpDownLayout && hasThumbsUpDown && "thumbs-ui-compact"].filter(v => v).join(" ");
     if (wallpapersEnabled || wallpapersV2Enabled) {
       this.updateWallpaper();
@@ -11469,6 +13194,7 @@ class BaseContent extends (external_React_default()).PureComponent {
       wallpapersV2Enabled: wallpapersV2Enabled,
       activeWallpaper: activeWallpaper,
       pocketRegion: pocketRegion,
+      mayHaveTopicSections: mayHaveTopicSections,
       mayHaveSponsoredTopSites: mayHaveSponsoredTopSites,
       mayHaveSponsoredStories: mayHaveSponsoredStories,
       mayHaveWeather: mayHaveWeather,
@@ -11482,12 +13208,17 @@ class BaseContent extends (external_React_default()).PureComponent {
     }, weatherEnabled && /*#__PURE__*/external_React_default().createElement(ErrorBoundary, null, /*#__PURE__*/external_React_default().createElement(Weather_Weather, null))), /*#__PURE__*/external_React_default().createElement("div", {
       className: outerClassName,
       onClick: this.closeCustomizationMenu
-    }, /*#__PURE__*/external_React_default().createElement("main", null, prefs.showSearch && /*#__PURE__*/external_React_default().createElement("div", {
+    }, /*#__PURE__*/external_React_default().createElement("main", {
+      className: "newtab-main",
+      style: this.state.fixedNavStyle
+    }, prefs.showSearch && /*#__PURE__*/external_React_default().createElement("div", {
       className: "non-collapsible-section"
     }, /*#__PURE__*/external_React_default().createElement(ErrorBoundary, null, /*#__PURE__*/external_React_default().createElement(Search_Search, Base_extends({
       showLogo: noSectionsEnabled || prefs["logowordmark.alwaysVisible"],
       handoffEnabled: searchHandoffEnabled
-    }, props.Search)))), !prefs.showSearch && layoutsVariantAorB && !noSectionsEnabled && /*#__PURE__*/external_React_default().createElement(Logo, null), /*#__PURE__*/external_React_default().createElement("div", {
+    }, props.Search)))), !prefs.showSearch && layoutsVariantAorB && !noSectionsEnabled && /*#__PURE__*/external_React_default().createElement(Logo, {
+      isAprilFoolsLogo: this.props.Prefs.values["newtabLogo.aprilfools"]
+    }), /*#__PURE__*/external_React_default().createElement("div", {
       className: `body-wrapper${initialized ? " on" : ""}`
     }, isDiscoveryStream ? /*#__PURE__*/external_React_default().createElement(ErrorBoundary, {
       className: "borderless-error"

@@ -21,7 +21,7 @@
 #include "mozilla/PresShell.h"
 #include "mozilla/ProfilerMarkers.h"
 #include "nsAccessibilityService.h"
-#include "mozilla/Telemetry.h"
+#include "mozilla/glean/AccessibleMetrics.h"
 
 using namespace mozilla;
 using namespace mozilla::a11y;
@@ -203,6 +203,20 @@ bool NotificationController::QueueMutationEvent(AccTreeMutationEvent* aEvent) {
     }
   }
 
+  if (aEvent->GetEventType() == nsIAccessibleEvent::EVENT_HIDE ||
+      aEvent->GetEventType() == nsIAccessibleEvent::EVENT_SHOW) {
+    LocalAccessible* target = aEvent->GetAccessible();
+    // We need to do this here while the relation is still intact. During the
+    // tick, where we we call PushNameOrDescriptionChange, it will be too late
+    // since we will already have unparented the label and severed the relation.
+    if (PushNameOrDescriptionChangeToRelations(target,
+                                               RelationType::LABEL_FOR) ||
+        PushNameOrDescriptionChangeToRelations(target,
+                                               RelationType::DESCRIPTION_FOR)) {
+      ScheduleProcessing();
+    }
+  }
+
   // We need to fire a reorder event after all of the events targeted at shown
   // or hidden children of a container.  So either queue a new one, or move an
   // existing one to the end of the queue if the container already has a
@@ -213,12 +227,6 @@ bool NotificationController::QueueMutationEvent(AccTreeMutationEvent* aEvent) {
     reorder = new AccReorderEvent(container);
     container->SetReorderEventTarget(true);
     mMutationMap.PutEvent(reorder);
-
-    // Since this is the first child of container that is changing, the name
-    // and/or description of dependent Accessibles may be changing.
-    if (PushNameOrDescriptionChange(aEvent)) {
-      ScheduleProcessing();
-    }
   } else {
     AccReorderEvent* event = downcast_accEvent(
         mMutationMap.GetEvent(container, EventMap::ReorderEvent));
@@ -587,23 +595,6 @@ void NotificationController::ProcessMutationEvents() {
       }
     }
 
-    // Fire menupopup end event before a hide event if a menu goes away.
-
-    // XXX: We don't look into children of hidden subtree to find hiding
-    // menupopup (as we did prior bug 570275) because we don't do that when
-    // menu is showing (and that's impossible until bug 606924 is fixed).
-    // Nevertheless we should do this at least because layout coalesces
-    // the changes before our processing and we may miss some menupopup
-    // events. Now we just want to be consistent in content insertion/removal
-    // handling.
-    if (event->mAccessible->ARIARole() == roles::MENUPOPUP) {
-      nsEventShell::FireEvent(nsIAccessibleEvent::EVENT_MENUPOPUP_END,
-                              event->mAccessible);
-      if (!mDocument) {
-        return;
-      }
-    }
-
     AccHideEvent* hideEvent = downcast_accEvent(event);
     if (hideEvent->NeedsShutdown()) {
       mDocument->ShutdownChildrenInSubtree(event->mAccessible);
@@ -651,6 +642,13 @@ void NotificationController::ProcessMutationEvents() {
         return;
       }
 
+      // The mutation in the container can change its name, or an ancestor's
+      // name. A labelled/described by relation would also need to be notified
+      // if this is the case.
+      if (PushNameOrDescriptionChange(event)) {
+        ScheduleProcessing();
+      }
+
       LocalAccessible* target = event->GetAccessible();
       target->Document()->MaybeNotifyOfValueChange(target);
       if (!mDocument) {
@@ -681,7 +679,7 @@ void NotificationController::ProcessMutationEvents() {
 void NotificationController::WillRefresh(mozilla::TimeStamp aTime) {
   AUTO_PROFILER_MARKER_TEXT("NotificationController::WillRefresh", A11Y, {},
                             ""_ns);
-  Telemetry::AutoTimer<Telemetry::A11Y_TREE_UPDATE_TIMING_MS> timer;
+  auto timer = glean::a11y::tree_update_timing.Measure();
   // DO NOT ADD CODE ABOVE THIS BLOCK: THIS CODE IS MEASURING TIMINGS.
 
   AUTO_PROFILER_LABEL("NotificationController::WillRefresh", A11Y);
@@ -992,6 +990,12 @@ void NotificationController::WillRefresh(mozilla::TimeStamp aTime) {
   CoalesceMutationEvents();
   ProcessMutationEvents();
 
+  // ProcessMutationEvents for content process documents merely queues mutation
+  // events. Send those events in a batch now if applicable.
+  if (mDocument && mDocument->IPCDoc()) {
+    mDocument->IPCDoc()->SendQueuedMutationEvents();
+  }
+
   // When firing mutation events, mObservingState is set to
   // eRefreshProcessing. Any calls to ScheduleProcessing() that
   // occur before mObservingState is reset will be dropped because we only
@@ -1012,6 +1016,13 @@ void NotificationController::WillRefresh(mozilla::TimeStamp aTime) {
   }
 
   ProcessEventQueue();
+
+  // There should not be any more mutation events in the mutation event queue.
+  // ProcessEventQueue should have sent all of them.
+  if (mDocument && mDocument->IPCDoc()) {
+    MOZ_ASSERT(mDocument->IPCDoc()->MutationEventQueueLength() == 0,
+               "Mutation event queue is non-empty.");
+  }
 
   if (IPCAccessibilityActive()) {
     size_t newDocCount = newChildDocs.Length();

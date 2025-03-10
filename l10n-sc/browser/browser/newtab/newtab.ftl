@@ -8,11 +8,18 @@
 newtab-page-title = Ischeda noa
 newtab-settings-button =
     .title = Personaliza sa pàgina de s'ischeda noa
+newtab-personalize-settings-icon-label =
+    .title = Personaliza s’ischeda noa
+    .aria-label = Cunfiguratziones
+newtab-settings-dialog-label =
+    .aria-label = Cunfiguratzione
 newtab-personalize-icon-label =
     .title = Personaliza s'ischeda noa
     .aria-label = Personaliza s'ischeda noa
 newtab-personalize-dialog-label =
     .aria-label = Personaliza
+newtab-logo-and-wordmark =
+    .aria-label = { -brand-full-name }
 
 ## Search box component.
 
@@ -109,6 +116,13 @@ newtab-menu-save-to-pocket = Sarva in { -pocket-brand-name }
 newtab-menu-delete-pocket = Cantzella dae { -pocket-brand-name }
 newtab-menu-archive-pocket = Archìvia in { -pocket-brand-name }
 newtab-menu-show-privacy-info = Is patrotzinadores nostros e sa riservadesa tua
+newtab-menu-about-fakespot = Informatziones in pitzus de { -fakespot-brand-name }
+# Context menu option to personalize New Tab recommended stories by blocking a section of stories,
+# e.g. "Sports". "Block" is a verb here.
+newtab-menu-section-block = Bloca
+# "Follow", "unfollow", and "following" are social media terms that refer to subscribing to or unsubscribing from a section of stories.
+# e.g. Following the travel section of stories.
+newtab-menu-section-unfollow = Non sigas prus s’argumentu
 
 ## Message displayed in a modal window to explain privacy and provide context for sponsored content.
 
@@ -199,6 +213,8 @@ newtab-section-header-recent-activity = Atividade reghente
 #   $provider (string) - Name of the corresponding content provider.
 newtab-section-header-pocket = Cussigiados dae { $provider }
 newtab-section-header-stories = Istòrias chi faghent pensare
+# "picks" refers to recommended articles
+newtab-section-header-todays-picks = Is cussìgios de sa die
 
 ## Empty Section States: These show when there are no more items in a section. Ex. When there are no more Pocket story recommendations, in the space where there would have been stories, this is shown instead.
 
@@ -230,6 +246,8 @@ newtab-pocket-cta-button = Otene { -pocket-brand-name }
 newtab-pocket-cta-text = Sarva is istòrias tuas preferidas in { -pocket-brand-name }, e ispàssia·ti cun leturas incantadoras.
 newtab-pocket-pocket-firefox-family = { -pocket-brand-name } est parte de sa famìlia de { -brand-product-name }
 # A save to Pocket button that shows over the card thumbnail on hover.
+newtab-pocket-image =
+    .aria-label = { -pocket-brand-name }
 newtab-pocket-save = Sarva
 newtab-pocket-saved = Sarvadu
 
@@ -241,6 +259,9 @@ newtab-pocket-thumbs-up-tooltip =
 # Clicking the thumbs down button for this story informs us that the user does not feel like the story is interesting for them
 newtab-pocket-thumbs-down-tooltip =
     .title = Non pro mene
+# Used to show the user a message upon clicking the thumbs up or down buttons
+newtab-toast-thumbs-up-or-down2 =
+    .message = Gràtzias. Torrende·nos cumprou nos agiudas a megiorare su feed tuo.
 newtab-toast-thumbs-up-or-down = Gràtzias. Torrende·nos cumprou nos agiudas a megiorare su feed tuo.
 newtab-toast-dismiss-button =
     .title = Iscarta
@@ -333,9 +354,10 @@ newtab-wallpaper-abstract-green = Formas birdes
 newtab-wallpaper-abstract-blue = Formas asulas
 newtab-wallpaper-abstract-purple = Formas tanadas
 newtab-wallpaper-abstract-orange = Formas arantzu
+newtab-wallpaper-gradient-orange = Gradatzione dae arantzu a rosa
 newtab-wallpaper-abstract-blue-purple = Formas asulas e tanadas
 
-## Photographs
+## Celestial
 
 newtab-wallpaper-category-title-photographs = Fotografias
 newtab-wallpaper-beach-at-sunrise = Ispiàgia in s'arbeschidòrgiu
@@ -359,6 +381,9 @@ feature-highlight-wallpaper =
     .title = { -newtab-wallpaper-feature-highlight-header }
     .aria-label = { -newtab-wallpaper-feature-highlight-content }
 
+## Celestial
+
+
 ## New Tab Weather
 
 # Variables:
@@ -369,6 +394,9 @@ newtab-weather-see-forecast =
 #   $provider (string) - Service provider for weather data
 newtab-weather-sponsored = { $provider } ∙ Isponsorizadu
 newtab-weather-menu-change-location = Càmbia positzione
+newtab-weather-change-location-search-input-placeholder =
+    .placeholder = Chirca positzione
+    .aria-label = Chirca positzione
 newtab-weather-change-location-search-input = Chirca positzione
 newtab-weather-menu-weather-display = Vista de su tempus
 # Display options are:
@@ -390,10 +418,69 @@ newtab-weather-error-not-available = Is datos de su tempus non sunt a disponimen
 
 ## Topic Labels
 
+newtab-topic-label-business = Economia
+newtab-topic-label-career = Carriera
+newtab-topic-label-education = Formatzione
+newtab-topic-label-arts = Ispàssiu
+newtab-topic-label-food = Cosa de papare
+newtab-topic-label-health = Salude
+newtab-topic-label-hobbies = Giogos
 # ”Money” = “Personal Finance”, refers to articles and stories that help readers better manage
 # and understand their personal finances – from saving money to buying a home. See the
 # “Curated by our editors“ section at the top of https://getpocket.com/explore/personal-finance for more context
 newtab-topic-label-finance = Dinare
+newtab-topic-label-government = Polìtica
+newtab-topic-label-education-science = Sièntzia
+# ”Life Hacks” = “Self Improvement”, refers to articles and stories aimed at helping readers improve various
+# aspects of their lives – from mental health to  productivity. See the “Curated by our editors“ section
+# at the top of https://getpocket.com/explore/self-improvement for more context.
+newtab-topic-label-society = Cussìgios pro sa vida
+newtab-topic-label-sports = Isport
+newtab-topic-label-tech = Tecnologia
+newtab-topic-label-travel = Biàgios
+newtab-topic-label-home = Domo e giardinu
 
 ## Topic Selection Modal
 
+# “fine-tune” refers to the process of making small adjustments to something to get
+# the best or desired experience or performance.
+newtab-topic-selection-title = Seletziona un’argumentu pro personalizare su feed tuo
+newtab-topic-selection-save-button = Sarva
+newtab-topic-selection-cancel-button = Annulla
+newtab-topic-selection-button-maybe-later = Forsis prus tardu
+newtab-topic-selection-privacy-link = Iscoberi comente amparamus is datos tuos e sa riservadesa tua
+newtab-topic-selection-button-update-interests = Atualiza is interessos tuos
+newtab-topic-selection-button-pick-interests = Sèbera is interessos tuos
+
+## Content Feed Sections
+## "Follow", "unfollow", and "following" are social media terms that refer to subscribing to or unsubscribing from a section of stories.
+## e.g. Following the travel section of stories.
+
+newtab-section-follow-button = Sighi
+newtab-section-following-button = Sighende
+newtab-section-unfollow-button = Non sigas prus
+
+## Button to block/unblock listed topics
+## "Block", "unblocked", and "blocked" are social media terms that refer to hiding a section of stories.
+## e.g. Blocked the politics section of stories.
+
+newtab-section-block-button = Bloca
+newtab-section-blocked-button = Blocadu
+newtab-section-unblock-button = Isbloca
+
+## Confirmation modal for blocking a section
+
+newtab-section-confirm-block-section-p1 = Seguru chi boles blocare custa setzione?
+newtab-section-confirm-block-section-p2 = Sa setzione blocada no at apàrrere prus in sa lìnia de tempus tua.
+newtab-section-block-section-button = Bloca custa setzione
+newtab-section-cancel-button = Immoe nono
+
+## Panel in the Customize menu section to manage followed and blocked topics
+
+newtab-section-mangage-topics-title = Argumentos
+newtab-section-mangage-topics-button =
+    .label = Argumentos sighidos e blocados
+newtab-section-mangage-topics-followed-topics-subtitle = Argumentos sighidos
+newtab-section-mangage-topics-followed-topics-empty-state = Non ses ancora sighende nissunu argumentu
+newtab-section-mangage-topics-blocked-topics-subtitle = Argumentu blocadu
+newtab-section-mangage-topics-blocked-topics-empty-state = No as ancora blocadu nissunu argumentu

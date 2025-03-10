@@ -13,12 +13,15 @@ cert-error-trust-unknown-issuer-intro = Κάποιος ενδέχεται να �
 #   $hostname (string) - Hostname of the website with cert error.
 cert-error-trust-unknown-issuer = Οι ιστότοποι αποδεικνύουν την ταυτότητά τους μέσω πιστοποιητικών. Το { -brand-short-name } δεν εμπιστεύεται το { $hostname }, επειδή ο εκδότης του πιστοποιητικού του είναι άγνωστος, το πιστοποιητικό είναι αυτοϋπογραφόμενο ή ο διακομιστής δεν στέλνει τα σωστά, ενδιάμεσα πιστοποιητικά.
 cert-error-trust-cert-invalid = Το πιστοποιητικό δεν είναι αξιόπιστο επειδή δεν έχει εκδοθεί από έγκυρη αρχή πιστοποίησης.
-cert-error-trust-untrusted-issuer = Το πιστοποιητικό δεν είναι αξιόπιστο επειδή το πιστοποιητικό του εκδότη δεν είναι αξιόπιστο.
+cert-error-trust-untrusted-issuer = Το πιστοποιητικό δεν είναι έμπιστο επειδή το πιστοποιητικό εκδότη δεν είναι έμπιστο.
 cert-error-trust-signature-algorithm-disabled = Το πιστοποιητικό δεν είναι αξιόπιστο επειδή υπογράφτηκε με έναν αλγόριθμό υπογραφής που έχει απενεργοποιηθεί, καθώς δεν είναι ασφαλής.
-cert-error-trust-expired-issuer = Το πιστοποιητικό δεν είναι αξιόπιστο επειδή το πιστοποιητικό του εκδότη έχει λήξει.
-cert-error-trust-self-signed = Το πιστοποιητικό δεν είναι αξιόπιστο επειδή είναι αυτοϋπογεγραμμένο.
+cert-error-trust-expired-issuer = Το πιστοποιητικό δεν είναι έμπιστο επειδή το πιστοποιητικό εκδότη έχει λήξει.
+cert-error-trust-self-signed = Το πιστοποιητικό δεν είναι έμπιστο επειδή είναι αυτοϋπογεγραμμένο.
 cert-error-trust-symantec = Τα πιστοποιητικά που εκδίδονται από τις GeoTrust, RapidSSL, Symantec, Thawte και VeriSign δεν θεωρούνται πλέον ασφαλή επειδή αυτές οι αρχές πιστοποιητικών δεν ακολούθησαν πρακτικές ασφαλείας στο παρελθόν.
-cert-error-untrusted-default = Το πιστοποιητικό δεν προέρχεται από αξιόπιστη πηγή.
+# Variables:
+#   $hostname (string) - Hostname of the website with cert error.
+cert-error-trust-certificate-transparency = Το { -brand-short-name } δεν εμπιστεύεται το { $hostname }, επειδή δεν μπόρεσε να αποδείξει ότι πληροί τις απαιτήσεις διαφάνειας του δημόσιου πιστοποιητικού.
+cert-error-untrusted-default = Το πιστοποιητικό δεν προέρχεται από έμπιστη πηγή.
 # Variables:
 #   $hostname (string) - Hostname of the website with cert error.
 cert-error-domain-mismatch = Οι ιστότοποι αποδεικνύουν την ταυτότητά τους μέσω πιστοποιητικών. Το { -brand-short-name } δεν εμπιστεύεται αυτόν τον ιστότοπο, επειδή χρησιμοποιεί ένα πιστοποιητικό που δεν είναι έγκυρο για το { $hostname }.
@@ -67,7 +70,46 @@ cert-error-details-cert-chain-label = Ακολουθία πιστοποιητι�
 open-in-new-window-for-csp-or-xfo-error = Άνοιγμα ιστοτόπου σε νέο παράθυρο
 # Variables:
 #   $hostname (string) - Hostname of the website blocked by csp or xfo error.
-csp-xfo-blocked-long-desc = Για τη δική σας ασφάλεια, το { $hostname } δεν θα επιτρέψει στο { -brand-short-name } την εμφάνιση της σελίδας αν κάποιος άλλος ιστότοπος την έχει ενσωματώσει. Για να δείτε αυτήν τη σελίδα, θα πρέπει να την ανοίξετε σε νέο παράθυρο.
+csp-xfo-blocked-long-desc = Για την ασφάλειά σας, το { $hostname } δεν επιτρέπει στο { -brand-short-name } την προβολή της σελίδας αν κάποιος άλλος ιστότοπος την έχει ενσωματώσει. Για να δείτε αυτήν τη σελίδα, θα πρέπει να την ανοίξετε σε νέο παράθυρο.
+fp-certerror-view-certificate-link = Προβολή πιστοποιητικού ιστοτόπου
+fp-certerror-return-to-previous-page-recommended-button = Επιστροφή (Προτείνεται)
+# This string appears after the following string: "What makes the site look dangerous?" (fp-certerror-why-site-dangerous)
+# Variables:
+#   $hostname (String) - Hostname of the website to which the user was trying to connect.
+#   $validHosts (String) - Valid hostnames.
+fp-certerror-bad-domain-why-dangerous-body = Ο ιστότοπος έχει ρυθμιστεί ώστε να επιτρέπει μόνο ασφαλείς συνδέσεις, αλλά υπάρχει πρόβλημα με το πιστοποιητικό του. Είναι πιθανό ένας κακόβουλος να προσπαθεί να μιμηθεί την ιστοσελίδα. Οι ιστότοποι χρησιμοποιούν πιστοποιητικά που έχουν εκδοθεί από μια αρχή πιστοποιητικών για να αποδείξουν ότι είναι πράγματι αυτό που λένε. Το { -brand-short-name } δεν εμπιστεύεται αυτόν τον ιστότοπο, επειδή το πιστοποιητικό του δεν είναι έγκυρο για το { $hostname }. Το πιστοποιητικό είναι έγκυρο μόνο για: { $validHosts }.
+# This string appears after the following string: "What can you do about it?" (fp-certerror-what-can-you-do)
+fp-certerror-bad-domain-what-can-you-do-body = Ίσως τίποτα, αφού είναι πιθανό να υπάρχει πρόβλημα με τον ίδιο τον ιστότοπο. Οι ιστότοποι χρησιμοποιούν πιστοποιητικά που έχουν εκδοθεί από μια αρχή πιστοποιητικών για να αποδείξουν ότι είναι πράγματι αυτό που δηλώνουν. Αν είστε συνδεμένοι σε εταιρικό δίκτυο, η ομάδα υποστήριξής σας ενδέχεται να έχει περισσότερες πληροφορίες. Αν χρησιμοποιείτε λογισμικό προστασίας από ιούς, δοκιμάστε να αναζητήσετε πιθανές διενέξεις ή γνωστά ζητήματα.
+# This string appears after the following string: "What makes the site look dangerous?" (fp-certerror-why-site-dangerous)
+fp-certerror-unknown-issuer-why-dangerous-body = Υπάρχει πρόβλημα με το πιστοποιητικό της ιστοσελίδας. Είναι πιθανό ένας κακόβουλος να προσπαθεί να μιμηθεί την ιστοσελίδα. Οι ιστότοποι χρησιμοποιούν πιστοποιητικά που έχουν εκδοθεί από μια αρχή πιστοποιητικών για να αποδείξουν ότι είναι πράγματι αυτό που δηλώνουν. Το { -brand-short-name } δεν εμπιστεύεται αυτόν τον ιστότοπο, επειδή δεν μπορούμε να γνωρίζουμε ποιος εξέδωσε το πιστοποιητικό, επειδή το υπογράφει ο ίδιος ή επειδή δεν στέλνει αξιόπιστα ενδιάμεσα πιστοποιητικά.
+# This string appears after the following string: "What can you do about it?" (fp-certerror-what-can-you-do)
+fp-certerror-unknown-issuer-what-can-you-do-body = Ίσως τίποτα, αφού είναι πιθανό να υπάρχει πρόβλημα με τον ίδιο τον ιστότοπο. Αλλά αν είστε συνδεμένοι σε εταιρικό δίκτυο, η ομάδα υποστήριξής σας ενδέχεται να έχει περισσότερες πληροφορίες. Αν χρησιμοποιείτε λογισμικό προστασίας από ιούς, ίσως χρειάζεται να ρυθμιστεί ώστε να λειτουργεί με το { -brand-short-name }.
+# This string appears after the following string: "What makes the site look dangerous?" (fp-certerror-why-site-dangerous)
+fp-certerror-self-signed-why-dangerous-body = Επειδή υπάρχει πρόβλημα με το πιστοποιητικό του ιστοτόπου. Οι ιστότοποι χρησιμοποιούν πιστοποιητικά που έχουν εκδοθεί από μια αρχή πιστοποιητικών για να αποδείξουν ότι είναι πράγματι αυτό που δηλώνουν. Το πιστοποιητικό αυτού του ιστοτόπου είναι υπογεγραμμένο από τον ίδιο ιστότοπο. Δεν εκδόθηκε από μια αναγνωρισμένη αρχή πιστοποιητικών, επομένως δεν το εμπιστευόμαστε από προεπιλογή.
+# This string appears after the following string: "What can you do about it?" (fp-certerror-what-can-you-do)
+fp-certerror-self-signed-what-can-you-do-body = Δεν μπορείτε να κάνετε και πολλά. Το πρόβλημα οφείλεται πιθανότατα στον ίδιο τον ιστότοπο.
+fp-certerror-self-signed-important-note = ΣΗΜΑΝΤΙΚΗ ΣΗΜΕΙΩΣΗ: Εάν προσπαθείτε να επισκεφτείτε αυτόν τον ιστότοπο σε ένα εταιρικό ενδοδίκτυο, οι υπάλληλοι του τμήματος IT ενδέχεται να χρησιμοποιούν αυτοϋπογεγραμμένα πιστοποιητικά. Μπορούν να σας βοηθήσουν να ελέγξετε την αυθεντικότητά τους.
+# This string appears after the following string: "What makes the site look dangerous?" (fp-certerror-why-site-dangerous)
+# Variables:
+#   $date (Date) - Certificate expiration date.
+fp-certerror-expired-why-dangerous-body = Οι ιστότοποι χρησιμοποιούν πιστοποιητικά που έχουν εκδοθεί από μια αρχή πιστοποιητικών για να αποδείξουν ότι είναι πράγματι αυτό που δηλώνουν. Το { -brand-short-name } δεν εμπιστεύεται αυτόν τον ιστότοπο, επειδή φαίνεται ότι το πιστοποιητικό έληξε στις { DATETIME($date, month: "numeric", day: "numeric", year: "numeric") } .
+# This string appears after the following string: "What makes the site look dangerous?" (fp-certerror-why-site-dangerous)
+# Variables:
+#   $date (Date) - Certificate start date.
+fp-certerror-not-yet-valid-why-dangerous-body = Οι ιστότοποι χρησιμοποιούν πιστοποιητικά που έχουν εκδοθεί από μια αρχή πιστοποιητικών για να αποδείξουν ότι είναι πράγματι αυτό που δηλώνουν. Το { -brand-short-name } δεν εμπιστεύεται αυτόν τον ιστότοπο, επειδή φαίνεται ότι το πιστοποιητικό δεν θα είναι έγκυρο μέχρι τις { DATETIME($date, month: "numeric", day: "numeric", year: "numeric") } .
+# This string appears after the following string: "What can you do about it?" (fp-certerror-what-can-you-do)
+# Variables:
+#   $date (Date) - Clock date.
+fp-certerror-expired-what-can-you-do-body = Το ρολόι της συσκευής σας έχει οριστεί σε { DATETIME($date, month: "numeric", day: "numeric", year: "numeric") }. Εάν είναι σωστό, το ζήτημα ασφαλείας οφείλεται μάλλον στον ίδιο τον ιστότοπο. Εάν είναι λάθος, μπορείτε να το αλλάξετε από τις ρυθμίσεις συστήματος της συσκευής σας.
+# Variables:
+#   $error (string) - NSS error code string that specifies type of cert error. e.g. unknown issuer, invalid cert, etc.
+fp-cert-error-code = Κωδικός σφάλματος: { $error }
+# Variables:
+#   $datetime (Date) - Current datetime.
+fp-datetime = { DATETIME($datetime, month: "short", year: "numeric", day: "numeric") } { DATETIME($datetime, timeStyle: "long") }
+fp-learn-more-about-secure-connection-failures = Μάθετε περισσότερα σχετικά με τις αποτυχίες ασφαλούς σύνδεσης
+fp-learn-more-about-cert-issues = Μάθετε περισσότερα σχετικά με τα ζητήματα πιστοποιητικών αυτού του είδους
+fp-learn-more-about-time-related-errors = Μάθετε περισσότερα σχετικά με την επίλυση προβλημάτων που σχετίζονται με τον χρόνο
 
 ## Messages used for certificate error titles
 
@@ -92,6 +134,7 @@ contentEncodingError-title = Σφάλμα κωδικοποίησης περιε�
 unsafeContentType-title = Επισφαλής τύπος αρχείου
 netReset-title = Έγινε επαναφορά της σύνδεσης
 netTimeout-title = Το χρονικό όριο σύνδεσης έληξε
+httpErrorPage-title = Φαίνεται ότι υπάρχει κάποιο πρόβλημα με αυτόν τον ιστότοπο
 serverError-title = Φαίνεται ότι υπάρχει κάποιο πρόβλημα με αυτόν τον ιστότοπο
 unknownProtocolFound-title = Η διεύθυνση δεν έγινε κατανοητή
 proxyConnectFailure-title = Ο διακομιστής μεσολάβησης αρνείται συνδέσεις
@@ -109,3 +152,20 @@ networkProtocolError-title = Σφάλμα πρωτοκόλλου δικτύου
 nssBadCert-title = Προειδοποίηση: Πιθανός κίνδυνος ασφαλείας
 nssBadCert-sts-title = Δεν έγινε σύνδεση: Πιθανό ζήτημα ασφαλείας
 certerror-mitm-title = Κάποιο λογισμικό εμποδίζει την ασφαλή σύνδεση του { -brand-short-name } με αυτόν τον ιστότοπο
+
+## Felt Privacy V1 Strings
+
+fp-certerror-page-title = Προειδοποίηση: Κίνδυνος ασφαλείας
+fp-certerror-body-title = Να προσέχετε. Κάτι δεν πάει καλά.
+fp-certerror-why-site-dangerous = Τι είναι αυτό που κάνει τον ιστότοπο να φαίνεται επικίνδυνος;
+fp-certerror-what-can-you-do = Τι μπορείτε να κάνετε για αυτό;
+fp-certerror-advanced-title = Σύνθετες επιλογές
+fp-certerror-advanced-button = Σύνθετες επιλογές
+fp-certerror-hide-advanced-button = Απόκρυψη σύνθετων επιλογών
+
+## Variables:
+##   $hostname (String) - Hostname of the website to which the user was trying to connect.
+
+fp-certerror-override-exception-button = Συνέχεια στο { $hostname } (Επικίνδυνο)
+fp-certerror-intro = Το { -brand-short-name } εντόπισε ένα σοβαρό ζήτημα ασφαλείας με το <strong>{ $hostname }</strong>. Κάποιος που προσποιείται ότι είναι ο ιστότοπος μπορεί να προσπαθήσει να υποκλέψει δεδομένα, όπως στοιχεία πιστωτικών καρτών, κωδικούς πρόσβασης ή email.
+fp-certerror-expired-into = Το { -brand-short-name } εντόπισε ένα ζήτημα ασφαλείας με το <strong>{ $hostname }</strong>. Είτε ο ιστότοπος δεν έχει ρυθμιστεί σωστά είτε το ρολόι της συσκευής σας έχει ρυθμιστεί σε λανθασμένη ημερομηνία/ώρα.

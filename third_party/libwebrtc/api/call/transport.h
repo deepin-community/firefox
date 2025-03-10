@@ -11,7 +11,6 @@
 #ifndef API_CALL_TRANSPORT_H_
 #define API_CALL_TRANSPORT_H_
 
-#include <stddef.h>
 #include <stdint.h>
 
 #include "api/array_view.h"
@@ -28,8 +27,8 @@ struct PacketOptions {
   // Negative ids are invalid and should be interpreted
   // as packet_id not being set.
   int64_t packet_id = -1;
-  // Whether this is a retransmission of an earlier packet.
-  bool is_retransmit = false;
+  // Whether this is an audio or video packet, excluding retransmissions.
+  bool is_media = true;
   bool included_in_feedback = false;
   bool included_in_allocation = false;
   // Whether this packet can be part of a packet batch at lower levels.

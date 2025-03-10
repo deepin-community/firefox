@@ -30,6 +30,9 @@ appmenu-update-restart2 =
     .secondarybuttonlabel = Ignorar
     .secondarybuttonaccesskey = m
 appmenu-update-restart-message2 = Obtén la última versión de { -brand-shorter-name }. Se restaurarán las pestañas y ventanas abiertas.
+appmenu-theme-installed =
+    .secondarybuttonlabel = Deshacer
+    .secondarybuttonaccesskey = U
 appmenu-update-other-instance =
     .label = { -brand-shorter-name } no se puede actualizar automáticamente a la última versión.
     .buttonlabel = Actualizar { -brand-shorter-name } de todas formas
@@ -37,7 +40,6 @@ appmenu-update-other-instance =
     .secondarybuttonlabel = Ahora no
     .secondarybuttonaccesskey = N
 appmenu-update-other-instance-message = Hay una nueva actualización de { -brand-shorter-name } disponible, pero no se puede instalar porque se está ejecutando otra copia de { -brand-shorter-name }. Ciérrala para continuar con la actualización o elige actualizar de todos modos (es posible que la otra copia no funcione correctamente hasta que la reinicies).
-
 appmenu-addon-private-browsing-installed2 =
     .buttonlabel = Confirmar
     .buttonaccesskey = O
@@ -45,7 +47,6 @@ appmenu-addon-post-install-message3 = Administra tus complementos y temas a trav
 appmenu-addon-post-install-incognito-checkbox =
     .label = Permitir a esta extensión ejecutarse en ventanas privadas
     .accesskey = A
-    
 appmenu-new-tab-controlled-changes =
     .label = Tu pestaña nueva ha cambiado.
     .buttonlabel = Mantener cambios

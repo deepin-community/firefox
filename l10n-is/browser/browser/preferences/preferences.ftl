@@ -3,10 +3,11 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 do-not-track-description = Senda vefsvæðum “Do Not Track” merki um að þú viljir ekki láta fylgjast með þér
+do-not-track-removal = Við styðjum ekki lengur „Ekki rekja“ merkinguna
 do-not-track-description2 =
     .label = Senda vefsvæðum „Ekki rekja“ beiðni
     .accesskey = d
-do-not-track-learn-more = Fræðast meira
+do-not-track-learn-more = Kanna nánar
 do-not-track-option-default-content-blocking-known =
     .label = Aðeins þegar { -brand-short-name } er stillt til að loka fyrir þekkta rekjara
 do-not-track-option-always =
@@ -137,6 +138,7 @@ windows-launch-on-login =
     .label = Opna { -brand-short-name } sjálfkrafa þegar tölvan þín ræsir
     .accesskey = O
 windows-launch-on-login-disabled = Þessi kjörstilling hefur verið gerð óvirk í Windows. Til að breyta því, skaltu fara í <a data-l10n-name="startup-link">Ræsiforrit / Startup Apps</a> í kerfisstillingunum.
+windows-launch-on-login-profile-disabled = Virkjaðu þessa stillingu með því að merkja við „{ profile-manager-use-selected.label }“ í glugganum „Veldu notandasnið“.
 startup-restore-warn-on-quit =
     .label = Aðvara þegar vafra er lokað
 disable-extension =
@@ -146,6 +148,11 @@ preferences-data-migration-description = Flyttu inn bókamerki, lykilorð, feril
 preferences-data-migration-button =
     .label = Flytja inn gögn
     .accesskey = F
+preferences-profiles-header = Notkunarsnið
+preferences-manage-profiles-description = Hvert snið hefur aðskilin vafurgögn og stillingar, þar á meðal feril, lykilorð og fleira.
+preferences-manage-profiles-learn-more = Kanna nánar
+preferences-manage-profiles-button =
+    .label = Sýsla með notkunarsnið
 tabs-group-header = Flipar
 ctrl-tab-recently-used-order =
     .label = Ctrl+Tab skiptir á milli flipa í notkunarröð
@@ -153,6 +160,17 @@ ctrl-tab-recently-used-order =
 open-new-link-as-tabs =
     .label = Opna tengla sem flipa í staðinn fyrir nýja glugga
     .accesskey = g
+ask-on-close-multiple-tabs =
+    .label = Staðfesta áður en mörgum flipum er lokað
+    .accesskey = m
+# This string is used for the confirm before quitting preference.
+# Variables:
+#   $quitKey (string) - the quit keyboard shortcut, and formatted
+#                       in the same manner as it would appear,
+#                       for example, in the File menu.
+ask-on-quit-with-key =
+    .label = Staðfesta áður en þú hættir með { $quitKey }
+    .accesskey = f
 confirm-on-close-multiple-tabs =
     .label = Staðfesta áður en mörgum flipum er lokað
     .accesskey = m
@@ -176,7 +194,7 @@ show-tabs-in-taskbar =
 browser-containers-enabled =
     .label = Virkja sérefnislipa
     .accesskey = n
-browser-containers-learn-more = Fræðast meira
+browser-containers-learn-more = Kanna nánar
 browser-containers-settings =
     .label = Stillingar…
     .accesskey = i
@@ -212,6 +230,16 @@ containers-remove-cancel-button = Ekki fjarlægja þetta sérefni
 settings-tabs-show-image-in-preview =
     .label = Sýna forskoðun mynda þegar þú lætur bendilinn svífa yfir flipa
     .accessKey = h
+browser-layout-header = Framsetning vafra
+browser-layout-horizontal-tabs =
+    .label = Láréttir flipar
+browser-layout-horizontal-tabs-desc = Birtast efst í vafranum
+browser-layout-vertical-tabs =
+    .label = Lóðréttir flipar
+browser-layout-vertical-tabs-desc = Birtast til hliðar, í hliðarstikunni
+browser-layout-show-sidebar =
+    .label = Sýna hliðarstiku
+browser-layout-show-sidebar-desc = Fáðu einfaldan aðgang að bókamerkjum, flipum úr símanum þínum, spjallforritum og fleiru án þess að fara úr aðalskjánum þínum.
 
 ## General Section - Language & Appearance
 
@@ -456,7 +484,7 @@ performance-use-recommended-settings-checkbox =
     .label = Nota afkastastillingar sem er mælt með
     .accesskey = N
 performance-use-recommended-settings-desc = Þessar stillingar eru sérsniðnar fyrir þinn vélbúnað og stýrikerfi.
-performance-settings-learn-more = Fræðast meira
+performance-settings-learn-more = Kanna nánar
 performance-allow-hw-accel =
     .label = Nota vélbúnaðarhröðun ef mögulegt
     .accesskey = b
@@ -499,24 +527,24 @@ browsing-search-on-start-typing =
 browsing-picture-in-picture-toggle-enabled =
     .label = Virkja mynd-í-mynd myndskeiðsstýringar
     .accesskey = y
-browsing-picture-in-picture-learn-more = Fræðast meira
+browsing-picture-in-picture-learn-more = Kanna nánar
 browsing-media-control =
     .label = Stýra miðlum með lyklaborði, heyrnartólum eða sýndarviðmóti
     .accesskey = v
-browsing-media-control-learn-more = Fræðast meira
+browsing-media-control-learn-more = Kanna nánar
 browsing-cfr-recommendations =
     .label = Mæltu með forritsaukum um leið og þú vafrar
     .accesskey = r
 browsing-cfr-features =
     .label = Stinga uppá virkni er þú vafrar
     .accesskey = S
-browsing-cfr-recommendations-learn-more = Fræðast meira
+browsing-cfr-recommendations-learn-more = Kanna nánar
 
 ## General Section - Proxy
 
 network-settings-title = Stillingar netkerfis
 network-proxy-connection-description = Stilla hvernig { -brand-short-name } tengist við internetið.
-network-proxy-connection-learn-more = Fræðast meira
+network-proxy-connection-learn-more = Kanna nánar
 network-proxy-connection-settings =
     .label = Stillingar…
     .accesskey = S
@@ -568,8 +596,7 @@ home-prefs-shortcuts-description = Vefsvæði sem þú vistar eða heimsækir
 home-prefs-shortcuts-by-option-sponsored =
     .label = Kostaðar flýtileiðir
 
-## Variables:
-##  $provider (string) - Name of the corresponding content provider, e.g "Pocket".
+## Home Section - Firefox Home Content Customization
 
 home-prefs-recommended-by-header =
     .label = Með þessu mælir { $provider }
@@ -640,6 +667,10 @@ search-show-suggestions-option =
 search-show-suggestions-url-bar-option =
     .label = Sýna leitartillögur í niðurstöðum veffangastikunnar
     .accesskey = l
+# With this option enabled, on the search results page
+# the URL will be replaced by the search terms in the address bar.
+search-show-search-term-option-2 =
+    .label = Sýna leitarorð í veffangastikunni á niðurstöðusíðum
 # With this option enabled, on the search results page
 # the URL will be replaced by the search terms in the address bar
 # when using the current default search engine.
@@ -783,6 +814,9 @@ sync-currently-syncing-creditcards = Greiðslukort
 sync-currently-syncing-payment-methods = Greiðslumátar
 sync-currently-syncing-addons = Viðbætur
 sync-currently-syncing-settings = Stillingar
+sync-manage-options =
+    .label = Stjórna samstillingu...
+    .accesskey = m
 sync-change-options =
     .label = Breyta…
     .accesskey = B
@@ -835,6 +869,13 @@ sync-engine-settings =
     .label = Stillingar
     .tooltiptext = Almennar, Friðhelgi og Öryggisstillingar sem þú hefur breytt
     .accesskey = S
+sync-choose-what-to-sync-dialog4 =
+    .title = Stjórnaðu því sem samstillist á öllum tengdum tækjum þínum
+    .style = min-width: 36em;
+    .buttonlabelaccept = Vista
+    .buttonaccesskeyaccept = S
+    .buttonlabelextra2 = Aftengja…
+    .buttonaccesskeyextra2 = g
 
 ## The device name controls.
 
@@ -1029,7 +1070,7 @@ sitedata-total-size-calculating = Reikna gagnastærð vefsvæðis og stærð sky
 #   $value (number) - Value of the unit (for example: 4.6, 500)
 #   $unit (string) - Name of the unit (for example: "bytes", "KB")
 sitedata-total-size = Geymdar vefkökur, gögn fyrir vefsvæði og skyndiminni eru að nota { $value } { $unit } af diskplássi.
-sitedata-learn-more = Fræðast meira
+sitedata-learn-more = Kanna nánar
 sitedata-delete-on-close =
     .label = Eyða vefkökum og síðugögnum þegar { -brand-short-name } er lokað
     .accesskey = k
@@ -1281,20 +1322,43 @@ permissions-addon-exceptions =
 collection-header = Söfnun og notkun gagna í { -brand-short-name }
 collection-header2 = Söfnun og notkun gagna í { -brand-short-name }
     .searchkeywords = gagnasöfnun
+preferences-collection-description = Við kappkostum að veita þér valkosti og söfnum aðeins þeim lágmarksgögnum sem nauðsynleg eru til að bæta { -brand-product-name } fyrir alla.
+preferences-collection-privacy-notice = Skoða upplýsingar um meðferð persónuupplýsinga
 collection-description = Við reynum alltaf að bjóða upp á valkosti og söfnum aðeins þeim upplýsingum sem við þurfum til að endurbæta { -brand-short-name } fyrir alla. Við spyrjum alltaf um leyfi áður en við söfnum persónulegum upplýsingum.
 collection-privacy-notice = Meðferð persónuupplýsinga
 collection-health-report-telemetry-disabled = Þú leyfir { -vendor-short-name } ekki lengur að safna tækni- og samskiptagögnum. Öllum fyrri gögnum verður eytt innan 30 daga.
 collection-health-report-telemetry-disabled-link = Frekari upplýsingar
+collection-usage-ping =
+    .label = Senda upplýsingar um daglega notkun til { -vendor-short-name }
+    .accesskey = u
+collection-usage-ping-description = Þetta hjálpar { -vendor-short-name } að áætla virka notendur.
+collection-health-report2 =
+    .label = Senda tækni- og samskiptagögn til { -vendor-short-name }
+    .accesskey = n
 collection-health-report =
     .label = Leyfa { -brand-short-name } að senda sjálkrafa tæknilegar og notkunar upplýsingar til { -vendor-short-name }
     .accesskey = r
-collection-health-report-link = Fræðast meira
+collection-health-report-link = Kanna nánar
+collection-health-report-description = Þetta hjálpar okkur að bæta eiginleika, afköst og stöðugleika í { -brand-product-name }.
+collection-studies2 =
+    .label = Settu upp og keyrðu rannsóknir
+collection-studies-description = Prófaðu eiginleika og hugmyndir áður en þær eru settar í dreifingu.
 collection-studies =
     .label = Leyfa { -brand-short-name } að setja upp og keyra rannsóknir
 collection-studies-link = Skoða rannsóknir frá { -brand-short-name }
+addon-recommendations2 =
+    .label = Leyfa persónusniðnar ráðleggingar um forritsauka
+addon-recommendations-description = Fáðu ráðleggingar um forritsauka til að bæta notkun þína við vafur.
+# This message is displayed above disabled data sharing options in developer builds
+# or builds with no Telemetry support available.
+collection-health-report-disabled2 = Gagna skýrsla er óvirk í þessari útgáfu.
+collection-backlogged-crash-reports2 =
+    .label = Senda hrunskýrslur inn sjálfkrafa
+    .accesskey = h
+collection-backlogged-crash-reports-description = Þetta gerir { -vendor-short-name } kleift að greina og laga vandamál með vafrann. Slíkar skýrslur geta innihaldið persónuleg eða viðkvæm gögn.
 addon-recommendations =
     .label = Leyfa { -brand-short-name } að gera sérsniðnar tillögur um viðbætur.
-addon-recommendations-link = Fræðast meira
+addon-recommendations-link = Kanna nánar
 # This message is displayed above disabled data sharing options in developer builds
 # or builds with no Telemetry support available.
 collection-health-report-disabled = Gagnaskýrslur eru óvirkar í þessari útgáfu
@@ -1323,11 +1387,11 @@ website-advertising-private-attribution-description = Þetta hjálpar vefsvæðu
 ## https://developers.google.com/safe-browsing/developers_guide_v2#AcceptableUsage
 
 security-header = Öryggi
-security-browsing-protection = Vörn gegn svika innihaldi og hættulegum hugbúnaði
+security-browsing-protection = Vörn gegn svikaefni og hættulegum hugbúnaði
 security-enable-safe-browsing =
     .label = Loka fyrir hættulegt og villandi efni
     .accesskey = L
-security-enable-safe-browsing-link = Fræðast meira
+security-enable-safe-browsing-link = Kanna nánar
 security-block-downloads =
     .label = Loka á hættuleg niðurhöl
     .accesskey = ö
@@ -1359,15 +1423,20 @@ space-alert-under-5gb-message2 = <strong>{ -brand-short-name } er að verða upp
 ## Privacy Section - HTTPS-Only
 
 httpsonly-header = Einungis-HTTPS-hamur
+httpsonly-description3 = Leyfir aðeins öruggar tengingar við vefsvæði. { -brand-short-name } mun spyrja áður en þú tengist á óöruggan hátt.
+httpsonly-learn-more2 = Hvernig virkar Einungis-HTTPS
 httpsonly-description = HTTPS veitir örugga, dulkóðaða tengingu milli { -brand-short-name } og vefsvæðanna sem þú heimsækir. Flest vefsvæði styðja HTTPS og ef Einungis-HTTPS-hamur er virkt mun { -brand-short-name } verða allar tengingar uppfærðar í HTTPS.
-httpsonly-description2 = { -brand-short-name } skapar öruggar og dulritaðar tengingar við vefsvæði sem þú skoðar. { -brand-short-name } mun vara þig við ef tenging er ekki örugg þegar kveikt er á Einungis-HTTPS.
-httpsonly-learn-more = Fræðast meira
+httpsonly-description2 = { -brand-short-name } útbýr öruggar og dulritaðar tengingar við vefsvæði sem þú skoðar. { -brand-short-name } mun vara þig við ef tenging er ekki örugg þegar kveikt er á Einungis-HTTPS.
+httpsonly-learn-more = Kanna nánar
 httpsonly-radio-enabled =
     .label = Virkja Einungis-HTTPS-ham í öllum gluggum
 httpsonly-radio-enabled2 =
     .label = Nota einungis HTTPS í öllum gluggum
 httpsonly-radio-enabled-pbm =
     .label = Virkja Einungis-HTTPS-ham aðeins í huliðsgluggum
+httpsonly-radio-disabled3 =
+    .label = Ekki virkja Einungis-HTTPS-ham
+    .description = { -brand-short-name } gæti samt uppfært sumar tengingar
 httpsonly-radio-enabled-pbm2 =
     .label = Nota einungis HTTPS í huliðsgluggum
 httpsonly-radio-disabled =

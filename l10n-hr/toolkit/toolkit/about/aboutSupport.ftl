@@ -13,7 +13,7 @@ support-addons-title = Dodaci
 support-addons-name = Ime
 support-addons-type = Vrsta
 support-addons-enabled = Aktivirano
-support-addons-version = Inačica
+support-addons-version = Verzija
 support-addons-id = ID
 legacy-user-stylesheets-enabled = Aktivno
 security-software-title = Sigurnosni softver
@@ -24,14 +24,14 @@ security-software-antispyware = Antispyware
 security-software-firewall = Vatrozid
 features-title = { -brand-short-name } funkcije
 features-name = Ime
-features-version = Inačica
+features-version = Verzija
 features-id = ID
 processes-title = Udaljeni procesi
 processes-type = Vrsta
 processes-count = Broj
 app-basics-title = Osnove aplikacije
 app-basics-name = Ime
-app-basics-version = Inačica
+app-basics-version = Verzija
 app-basics-build-id = Build ID
 app-basics-distribution-id = ID distribucije
 app-basics-update-channel = Kanal nadogradnje
@@ -61,7 +61,7 @@ app-basics-os-theme = Tema OS-a
 app-basics-rosetta = Prevedeno Rosettom
 app-basics-memory-use = Upotreba memorije
 app-basics-performance = Performansa
-app-basics-service-workers = Registrirani radni procesi usluge
+app-basics-service-workers = Registrirani service workeri
 app-basics-profiles = Profili
 app-basics-launcher-process-status = Pokretački proces
 app-basics-multi-process-support = Višeprocesni prozori
@@ -71,7 +71,12 @@ app-basics-location-service-key-google = Google ključ za usluge lokacije
 app-basics-safebrowsing-key-google = Google ključ za sigurno pregledavanje
 app-basics-key-mozilla = Mozilla ključ za usluge lokacije
 app-basics-safe-mode = Sigurni modus
+app-basics-memory-size = Veličina memorije (RAM)
 app-basics-disk-available = Dostupna memorija na disku
+# Variables:
+#   $value (number) - Amount of data being stored
+#   $unit (string) - The unit of data being stored (e.g. MB)
+app-basics-data-size = { $value } { $unit }
 show-dir-label =
     { PLATFORM() ->
         [macos] Prikaži u Finderu
@@ -106,7 +111,13 @@ graphics-window-protocol = Protokol prozora
 # Desktop environment in use on Linux (e.g. GNOME, KDE, XFCE, etc).
 graphics-desktop-environment = Radno okruženje
 place-database-title = Baza podataka mjesta
+place-database-stats = Statistika
 place-database-stats-show = Prikaži statistiku
+place-database-stats-hide = Sakrij statistiku
+place-database-stats-size-kib = Veličina (KiB)
+place-database-stats-size-perc = Veličina (%)
+place-database-stats-efficiency-perc = Učinkovitost (%)
+place-database-stats-sequentiality-perc = Sekvencijalnost (%)
 place-database-integrity = Cjelovitost
 place-database-verify-integrity = Provjeri cjelovitost
 a11y-title = Pristupačnost
@@ -114,7 +125,7 @@ a11y-activated = Aktivirano
 a11y-force-disabled = Sprečavanje pristupačnosti
 a11y-handler-used = Korišteni upravljač pristupačnosti
 a11y-instantiator = Pokretač pristupačnosti
-library-version-title = Inačice biblioteke
+library-version-title = Verzije biblioteka
 copy-text-to-clipboard-label = Kopiraj tekst u međuspremnik
 copy-raw-data-to-clipboard-label = Kopiraj neobrađene podatke u međuspremnik
 sandbox-title = Odvojeno pokretanje
@@ -157,6 +168,9 @@ media-capabilities-enumerate = Popis unosa baze podataka
 
 ## Codec support table
 
+media-codec-support-codec-name = Ime kodeka
+media-codec-support-supported = Podržano
+media-codec-support-unsupported = Nepodržano
 media-codec-support-lack-of-extension = Instaliraj proširenje
 
 ## Media Content Decryption Modules (CDM)
@@ -236,10 +250,10 @@ text-copied = Tekst kopiran u međuspremnik
 
 ## The verb "blocked" here refers to a graphics feature such as "Direct2D" or "OpenGL layers".
 
-blocked-driver = Blokirano zbog inačice upravljačkog programa grafičke kartice.
+blocked-driver = Blokirano zbog verzije upravljačkog programa grafičke kartice.
 blocked-gfx-card = Blokirano za tvoju grafičku karticu zbog neriješenih problema s upravljačkim programom.
-blocked-os-version = Blokirano za inačicu vašeg operativnog sustava.
-blocked-mismatched-version = Blokiran jer se inačice upravljačkog programa vaše grafičke kartice ne podudaraju u registru i DLL-u.
+blocked-os-version = Blokirano za verziju tvog operacijskog sustava.
+blocked-mismatched-version = Blokirano zbog nepodudaranja verzije upravljačkog programa grafičke kartice u registru i DLL-u.
 # Variables
 # $driverVersion - The graphics driver version string
 try-newer-driver = Blokirano za verziju upravljačkog programa grafičke kartice. Pokušaj nadograditi upravljački program grafičke kartice na verziju { $driverVersion } ili noviju.
@@ -269,12 +283,12 @@ gpu-subsys-id = Subsys ID
 gpu-drivers = Upravljački programi
 gpu-ram = RAM
 gpu-driver-vendor = Izdavatelj upravljačkog programa
-gpu-driver-version = Inačica upravljačkog programa
+gpu-driver-version = Verzija upravljačkog programa
 gpu-driver-date = Datum upravljačkog programa
 gpu-active = Aktivan
 webgl1-wsiinfo = WSI informacije upravljačkog programa WebGL 1
 webgl1-renderer = Iscrtavač upravljačkog programa WebGL 1
-webgl1-version = WebGL 1 inačica upravljačkog programa
+webgl1-version = Verzija upravljačkog programa WebGL 1
 webgl1-driver-extensions = Dodaci upravljačkog programa WebGL 1
 webgl1-extensions = WebGL 1 dodaci
 webgl2-wsiinfo = WSI informacije upravljačkog programa WebGL 2
@@ -298,7 +312,7 @@ off-main-thread-paint-enabled = Aktivirano iscrtavanje izvan glavnog procesa
 off-main-thread-paint-worker-count = Broj radnih procesa za iscrtavanje izvan glavne niti
 target-frame-rate = Ciljani broj sličica
 min-lib-versions = Očekivana najmanja verzija
-loaded-lib-versions = Korištena inačica
+loaded-lib-versions = Korištena verzija
 has-seccomp-bpf = Seccomp-BPF (filtriranje sistemskih poziva)
 has-seccomp-tsync = Seccomp Thread sinkronizacija
 has-user-namespaces = Korisnički imenski prostori
@@ -324,6 +338,10 @@ launcher-process-status-unknown = Nepoznato stanje
 # $remoteWindows (integer) - Number of remote windows
 # $totalWindows (integer) - Number of total windows
 multi-process-windows = { $remoteWindows }/{ $totalWindows }
+# Variables
+# $fissionWindows (integer) - Number of remote windows
+# $totalWindows (integer) - Number of total windows
+fission-windows = { $fissionWindows }/{ $totalWindows }
 fission-status-experiment-control = Onemogućio eksperiment
 fission-status-experiment-treatment = Aktivirano od eksperimenta
 fission-status-disabled-by-e10s-env = Onemogućilo okruženje
@@ -389,6 +407,10 @@ pointing-device-touchscreen = Ekran na dodir
 
 ## Content Analysis (DLP)
 
+# DLP stands for Data Loss Prevention, an industry term for external software
+# that enterprises can set up to prevent sensitive data from being transferred
+# to external websites.
+content-analysis-title = Analiza sadržaja (DLP)
 content-analysis-active = Aktivno
 content-analysis-connected-to-agent = Povezano s agentom
 content-analysis-agent-path = Putanja agenta

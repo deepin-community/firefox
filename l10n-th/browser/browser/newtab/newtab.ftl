@@ -8,11 +8,18 @@
 newtab-page-title = แท็บใหม่
 newtab-settings-button =
     .title = ปรับแต่งหน้าแท็บใหม่ของคุณ
+newtab-personalize-settings-icon-label =
+    .title = ปรับแต่งแท็บใหม่
+    .aria-label = การตั้งค่า
+newtab-settings-dialog-label =
+    .aria-label = การตั้งค่า
 newtab-personalize-icon-label =
     .title = ปรับแท็บใหม่ให้เป็นส่วนตัว
     .aria-label = ปรับแท็บใหม่ให้เป็นส่วนตัว
 newtab-personalize-dialog-label =
     .aria-label = ปรับให้เป็นแบบส่วนตัว
+newtab-logo-and-wordmark =
+    .aria-label = { -brand-full-name }
 
 ## Search box component.
 
@@ -109,6 +116,13 @@ newtab-menu-save-to-pocket = บันทึกไปยัง { -pocket-brand-n
 newtab-menu-delete-pocket = ลบจาก { -pocket-brand-name }
 newtab-menu-archive-pocket = เก็บถาวรใน { -pocket-brand-name }
 newtab-menu-show-privacy-info = สปอนเซอร์ของเราและความเป็นส่วนตัวของคุณ
+newtab-menu-about-fakespot = เกี่ยวกับ { -fakespot-brand-name }
+# Context menu option to personalize New Tab recommended stories by blocking a section of stories,
+# e.g. "Sports". "Block" is a verb here.
+newtab-menu-section-block = ปิดกั้น
+# "Follow", "unfollow", and "following" are social media terms that refer to subscribing to or unsubscribing from a section of stories.
+# e.g. Following the travel section of stories.
+newtab-menu-section-unfollow = เลิกติดตามหัวข้อ
 
 ## Message displayed in a modal window to explain privacy and provide context for sponsored content.
 
@@ -233,6 +247,8 @@ newtab-pocket-cta-button = รับ { -pocket-brand-name }
 newtab-pocket-cta-text = บันทึกเรื่องราวที่คุณรักลงใน { -pocket-brand-name } และเติมเต็มสมองของคุณด้วยบทความที่น่าหลงใหล
 newtab-pocket-pocket-firefox-family = { -pocket-brand-name } เป็นส่วนหนึ่งของตระกูล { -brand-product-name }
 # A save to Pocket button that shows over the card thumbnail on hover.
+newtab-pocket-image =
+    .aria-label = { -pocket-brand-name }
 newtab-pocket-save = บันทึก
 newtab-pocket-saved = บันทึกแล้ว
 
@@ -244,6 +260,9 @@ newtab-pocket-thumbs-up-tooltip =
 # Clicking the thumbs down button for this story informs us that the user does not feel like the story is interesting for them
 newtab-pocket-thumbs-down-tooltip =
     .title = ฉันไม่สนใจ
+# Used to show the user a message upon clicking the thumbs up or down buttons
+newtab-toast-thumbs-up-or-down2 =
+    .message = ขอบคุณ ความคิดเห็นของคุณจะช่วยเราปรับปรุงฟีดของคุณให้ดีขึ้น
 newtab-toast-thumbs-up-or-down = ขอบคุณ ความคิดเห็นของคุณจะช่วยเราปรับปรุงฟีดของคุณให้ดีขึ้น
 newtab-toast-dismiss-button =
     .title = ปิด
@@ -308,6 +327,8 @@ newtab-wallpaper-dark-panda = แพนด้าแดงที่ซ่อน�
 newtab-wallpaper-dark-sky = วิวเมืองใต้ท้องฟ้ายามค่ำคืน
 newtab-wallpaper-dark-mountain = วิวภูเขา
 newtab-wallpaper-dark-city = วิวเมืองสีม่วง
+newtab-wallpaper-dark-fox-anniversary = สุนัขจิ้งจอกอยู่บนทางเท้าใกล้ป่าแห่งหนึ่ง
+newtab-wallpaper-light-fox-anniversary = สุนัขจิ้งจอกอยู่ในทุ่งหญ้าที่มีทิวทัศน์ภูเขาซึ่งเต็มไปด้วยหมอก
 
 ## Solid Colors
 
@@ -338,7 +359,7 @@ newtab-wallpaper-abstract-orange = รูปร่างสีส้ม
 newtab-wallpaper-gradient-orange = ไล่ระดับสีส้มและชมพู
 newtab-wallpaper-abstract-blue-purple = รูปร่างสีน้ำเงินและสีม่วง
 
-## Photographs
+## Celestial
 
 newtab-wallpaper-category-title-photographs = ภาพถ่าย
 newtab-wallpaper-beach-at-sunrise = ชายหาดตอนพระอาทิตย์ขึ้น
@@ -362,6 +383,9 @@ feature-highlight-wallpaper =
     .title = { -newtab-wallpaper-feature-highlight-header }
     .aria-label = { -newtab-wallpaper-feature-highlight-content }
 
+## Celestial
+
+
 ## New Tab Weather
 
 # Variables:
@@ -372,6 +396,9 @@ newtab-weather-see-forecast =
 #   $provider (string) - Service provider for weather data
 newtab-weather-sponsored = สนับสนุนโดย { $provider }
 newtab-weather-menu-change-location = เปลี่ยนตำแหน่งที่ตั้ง
+newtab-weather-change-location-search-input-placeholder =
+    .placeholder = ค้นหาตำแหน่งที่ตั้ง
+    .aria-label = ค้นหาตำแหน่งที่ตั้ง
 newtab-weather-change-location-search-input = ค้นหาตำแหน่งที่ตั้ง
 newtab-weather-menu-weather-display = การแสดงผลพยากรณ์อากาศ
 # Display options are:
@@ -430,3 +457,36 @@ newtab-topic-selection-button-maybe-later = ไว้ภายหลัง
 newtab-topic-selection-privacy-link = เรียนรู้ว่าเราปกป้องและจัดการข้อมูลอย่างไร
 newtab-topic-selection-button-update-interests = ปรับเปลี่ยนความสนใจของคุณ
 newtab-topic-selection-button-pick-interests = เลือกความสนใจของคุณ
+
+## Content Feed Sections
+## "Follow", "unfollow", and "following" are social media terms that refer to subscribing to or unsubscribing from a section of stories.
+## e.g. Following the travel section of stories.
+
+newtab-section-follow-button = ติดตาม
+newtab-section-following-button = ติดตามอยู่
+newtab-section-unfollow-button = เลิกติดตาม
+
+## Button to block/unblock listed topics
+## "Block", "unblocked", and "blocked" are social media terms that refer to hiding a section of stories.
+## e.g. Blocked the politics section of stories.
+
+newtab-section-block-button = ปิดกั้น
+newtab-section-blocked-button = ปิดกั้นแล้ว
+newtab-section-unblock-button = เลิกปิดกั้น
+
+## Confirmation modal for blocking a section
+
+newtab-section-confirm-block-section-p1 = คุณแน่ใจหรือไม่ว่าต้องการปิดกั้นส่วนนี้?
+newtab-section-confirm-block-section-p2 = ส่วนที่ถูกปิดกั้นจะไม่ปรากฏในฟีดของคุณอีกต่อไป
+newtab-section-block-section-button = ปิดกั้นส่วนนี้
+newtab-section-cancel-button = ยังไม่ทำตอนนี้
+
+## Panel in the Customize menu section to manage followed and blocked topics
+
+newtab-section-mangage-topics-title = หัวข้อ
+newtab-section-mangage-topics-button =
+    .label = หัวข้อที่ติดตามและปิดกั้น
+newtab-section-mangage-topics-followed-topics-subtitle = หัวข้อที่ติดตาม
+newtab-section-mangage-topics-followed-topics-empty-state = คุณยังไม่ได้ติดตามหัวข้อใดๆ
+newtab-section-mangage-topics-blocked-topics-subtitle = หัวข้อที่ปิดกั้น
+newtab-section-mangage-topics-blocked-topics-empty-state = คุณยังไม่ได้ปิดกั้นหัวข้อใดๆ

@@ -295,6 +295,14 @@ find-more-themes = Etsi lisää teemoja
 # used for screen readers.
 addon-options-button =
     .aria-label = Lisää valintoja
+# Explanatory introduction to the list of recommended add-ons. The action word
+# ("recommends") in the final sentence is a link to external documentation.
+discopane-intro2 =
+    Laajennusten ja teemojen avulla voit muokata { -brand-product-name }ia. Ne voivat lisätä yksityisyyttä,
+    tehostaa tuottavuutta, parantaa mediaa, muuttaa { -brand-product-name }in ulkoasua ja
+    niin paljon muuta. Nämä pienet ohjelmistot ovat usein kolmannen osapuolen kehittämiä. Tässä
+    valikoima { -brand-product-name }in <a data-l10n-name="learn-more-trigger">suosittelemia</a>
+    turvallisuuden, suorituskyvyn ja toiminnallisuuden takaamiseksi.
 
 ## Add-on actions
 
@@ -377,6 +385,10 @@ addon-detail-group-label-updates =
     .aria-label = { addon-detail-updates-label }
 # This is the tooltip text for the private browsing badge in about:addons. The
 # badge is the private browsing icon included next to the extension's name.
+addon-badge-private-browsing-allowed3 =
+    .title = Sallittu yksityisissä ikkunnoissa
+# This is the tooltip text for the private browsing badge in about:addons. The
+# badge is the private browsing icon included next to the extension's name.
 addon-badge-private-browsing-allowed2 =
     .title = Sallittu yksityisissä ikkunnoissa
     .aria-label = { addon-badge-private-browsing-allowed2.title }
@@ -416,6 +428,14 @@ addon-badge-line3 =
 addon-badge-verified2 =
     .title = Tämä laajennnus on katselmoitu, ja se täyttää standardimme turvallisuuden ja suorituskyvyn suhteen.
     .aria-label = { addon-badge-verified2.title }
+addon-badge-recommended3 =
+    .title = { -brand-product-name } suosittelee vain laajennuksia, jotka täyttävät standardimme turvallisuuden ja suorituskyvyn suhteen
+# We hard code "Mozilla" in the string below because the extensions are built
+# by Mozilla and we don't want forks to display "by Fork".
+addon-badge-line4 =
+    .title = Virallinen laajennus, jonka on toteuttanut Mozilla. Täyttää turvallisuus- ja suorituskykystandardit.
+addon-badge-verified3 =
+    .title = Tämä laajennnus on katselmoitu, ja se täyttää standardimme turvallisuuden ja suorituskyvyn suhteen.
 
 ##
 
@@ -423,6 +443,7 @@ available-updates-heading = Saatavilla olevat päivitykset
 recent-updates-heading = Tuoreet päivitykset
 release-notes-loading = Ladataan…
 release-notes-error = Julkaisutietojen lataaminen epäonnistui.
+addon-permissions-empty2 = Tämä laajennus ei vaadi mitään oikeuksia.
 addon-permissions-empty = Tämä laajennus ei vaadi mitään oikeuksia
 addon-permissions-required = Vaaditut käyttöoikeudet ydintoiminnoille:
 addon-permissions-optional = Valinnaiset käyttöoikeudet lisätoiminnoille:
@@ -472,10 +493,24 @@ details-notification-unsigned-and-disabled-link = Lisätietoja
 details-notification-unsigned = Lisäosaa { $name } ei ole varmennettu käytettäväksi { -brand-short-name }issa. Ole varovainen.
 details-notification-unsigned2 =
     .message = Lisäosaa { $name } ei ole varmennettu käytettäväksi { -brand-short-name }issa. Ole varovainen.
+details-notification-hard-blocked-extension =
+    .message = Tämä laajennus on estetty Mozillan käytäntöjen rikkomisen vuoksi, ja se on poistettu käytöstä.
+details-notification-hard-blocked-other =
+    .message = Tämä lisäosa on estetty Mozillan käytäntöjen rikkomisen vuoksi, ja se on poistettu käytöstä.
 details-notification-unsigned-link = Lisätietoja
 details-notification-blocked = Lisäosa { $name } poistettiin käytöstä turvallisuus- tai vakausongelmien takia.
 details-notification-blocked2 =
     .message = Lisäosa { $name } poistettiin käytöstä turvallisuus- tai vakausongelmien takia.
+details-notification-blocked-link2 = Näytä yksityiskohdat
+details-notification-soft-blocked-extension-disabled =
+    .message = Tämä laajennus on rajoitettu Mozillan käytäntöjen rikkomisen vuoksi, ja se on poistettu käytöstä. Voit ottaa laajennuksen käyttöön, mutta se voi olla riskialtista.
+details-notification-soft-blocked-extension-enabled =
+    .message = Tämä laajennus rikkoo Mozillan käytäntöjä. Sen käyttö voi olla riskialtista.
+details-notification-soft-blocked-other-disabled =
+    .message = Tämä lisäosa on rajoitettu Mozillan käytäntöjen rikkomisen vuoksi, ja se on poistettu käytöstä. Voit ottaa lisäosan käyttöön, mutta se voi olla riskialtista.
+details-notification-soft-blocked-other-enabled =
+    .message = Tämä lisäosa rikkoo Mozillan käytäntöjä. Sen käyttö voi olla riskialtista.
+details-notification-softblocked-link2 = Näytä yksityiskohdat
 details-notification-blocked-link = Lisätietoja
 details-notification-softblocked = Lisäosa { $name } aiheuttaa tunnetusti turvallisuus- tai vakausongelmia.
 details-notification-softblocked2 =

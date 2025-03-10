@@ -192,11 +192,11 @@ menu-view-full-screen =
 
 # This should match reader-view-enter-button in browser.ftl
 menu-view-enter-readerview =
-    .label = 進入閱讀模式
+    .label = 進入閱讀畫面
     .accesskey = R
 # This should match reader-view-close-button in browser.ftl
 menu-view-close-readerview =
-    .label = 關閉閱讀模式
+    .label = 關閉閱讀畫面
     .accesskey = R
 
 ##
@@ -253,6 +253,15 @@ menu-bookmarks-other =
     .label = 其他書籤
 menu-bookmarks-mobile =
     .label = 行動書籤
+
+## Profiles Menu
+
+menu-profiles =
+    .label = 設定檔
+menu-profiles-manage-profiles =
+    .label = 管理設定檔
+menu-profiles-new-profile =
+    .label = 新增設定檔
 
 ## Tools Menu
 

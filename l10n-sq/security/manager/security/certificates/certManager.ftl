@@ -147,7 +147,7 @@ send-no-client-certificate = Mos dërgo dëshmi klienti
 # Used when no cert is stored for an override
 no-cert-stored-for-override = (E Paruajtur)
 # When a certificate is unavailable (for example, it has been deleted or the token it exists on has been removed).
-certificate-not-available = (Jo e passhme)
+certificate-not-available = (S’mund të kihet)
 
 ## Used to show whether an override is temporary or permanent
 
@@ -163,12 +163,12 @@ add-exception-domain-mismatch-long = Dëshmia i përket një sajti tjetër, çka
 add-exception-expired-short = Të dhëna të Vjetruara
 add-exception-expired-long = Dëshmia nuk është e vlefshme hëpërhë. Mund të jetë vjedhur ose humbur dhe mund të përdoret nga dikush për ta bërë një sajt të vetin të duket si i juaji.
 add-exception-unverified-or-bad-signature-short = Identitet i Panjohur
-add-exception-unverified-or-bad-signature-long = Dëshmia nuk u besua, ngaqë s’është vërtetuar si e lëshuar nga një autoritet i besuar që përdor nënshkrim të sigurt.
+add-exception-unverified-or-bad-signature-long = Dëshmia s’besohet, ngaqë s’është vërtetuar si e lëshuar nga një autoritet i besuar që përdor nënshkrim të siguruar.
 add-exception-valid-short = Dëshmi e Vlefshme
 add-exception-valid-long = Ky sajt furnizon identifikim të vlefshëm, të vërtetuar. Nuk ka nevojë të shtohet përjashtim.
-add-exception-checking-short = Po Kontrollohen Të dhënat
+add-exception-checking-short = Po Kontrollohen të Dhënat
 add-exception-checking-long = Përpjekje për identifikimin e këtij sajti…
-add-exception-no-cert-short = Pa të Dhëna të Passhme
+add-exception-no-cert-short = S’ka Informacion
 add-exception-no-cert-long = S’arrihet të merret gjendje identifikimi për këtë sajt.
 
 ## Certificate export "Save as" and error dialogs

@@ -28,10 +28,16 @@ duplicate-tabs =
 close-tabs-to-the-start =
     .label = Затваряне на разделите отляво
     .accesskey = л
+close-tabs-to-the-start-vertical =
+    .label = Затваряне на разделите отгоре
+    .accesskey = г
 # The following string is displayed on a menuitem that will close the tabs from the end of the tabstrip to the currently targeted tab (excluding the currently targeted and any other selected tabs).
 # In left-to-right languages this should use "Right" and in right-to-left languages this should use "Left".
 close-tabs-to-the-end =
     .label = Затваряне на разделите отдясно
+    .accesskey = д
+close-tabs-to-the-end-vertical =
+    .label = Затваряне на разделите отдолу
     .accesskey = д
 close-other-tabs =
     .label = Затваряне на другите раздели
@@ -72,9 +78,22 @@ move-to-new-window =
 tab-context-close-multiple-tabs =
     .label = Затваряне на няколко раздела
     .accesskey = н
+tab-context-close-duplicate-tabs =
+    .label = Затваряне на дублиращите се раздели
+    .accesskey = д
 tab-context-share-url =
     .label = Споделяне
     .accesskey = С
+# In left-to-right languages this should use "Right" and in right-to-left languages this should use "Left" to indicate the direction a new tab will open.
+tab-context-new-tab-open =
+    .label = Нов раздел вдясно
+    .accesskey = н
+tab-context-new-tab-open-vertical =
+    .label = Нов раздел отдолу
+    .accesskey = д
+tab-context-new-group =
+    .label = Нова група
+    .accesskey = г
 
 ## Variables:
 ##  $tabCount (Number): the number of tabs that are affected by the action.
@@ -100,7 +119,6 @@ tab-context-move-tabs =
            *[other] Преместване на раздели
         }
     .accesskey = П
-
 tab-context-send-tabs-to-device =
     .label =
         { $tabCount ->

@@ -12,6 +12,7 @@ neterror-blocked-by-policy-page-title = Blokkolt oldal
 neterror-captive-portal-page-title = Bejelentkezés a hálózatba
 neterror-dns-not-found-title = A kiszolgáló nem található
 neterror-malformed-uri-page-title = Érvénytelen webcím
+general-body-title = Legyen óvatos. Úgy tűnik, hogy valami nincs rendben.
 
 ## Error page actions
 
@@ -41,6 +42,9 @@ neterror-generic-error = A { -brand-short-name } nem tudja betölteni az oldalt 
 neterror-load-error-try-again = A webhely ideiglenesen nem érhető el vagy túlterhelt. Próbálja újra pár perc múlva.
 neterror-load-error-connection = Ha semmilyen oldalt nem tud letölteni, ellenőrizze a számítógépe hálózati kapcsolatát.
 neterror-load-error-firewall = Ha a számítógépet vagy a hálózatot tűzfal vagy proxy védi, ellenőrizze, hogy a { -brand-short-name } számára engedélyezett-e a webhozzáférés.
+# This warning is only shown on macOS Sequoia and later (see bug 1929377)
+neterror-load-osx-permission = Ha egy helyi hálózati oldalt próbál betölteni, akkor ellenőrizze, hogy a { -brand-short-name } megkapta-e a helyi hálózati engedélyeket a macOS adatvédelmi és biztonsági beállításaiban.
+neterror-http-error-page = Ellenőrizze, hogy helyesen írta-e be a webhely címét.
 neterror-captive-portal = Az internet elérése előtt be kell jelentkezni a hálózatra.
 # Variables:
 # $hostAndPath (String) - a suggested site (e.g. "www.example.com") that the user may have meant instead.
@@ -96,6 +100,9 @@ neterror-proxy-connect-failure-settings = Ellenőrizze a proxybeállításokat, 
 neterror-proxy-connect-failure-contact-admin = Kérdezze meg a hálózati rendszergazdától, hogy a proxykiszolgáló működik-e.
 neterror-content-encoding-error = Értesítse a webhely tulajdonosait erről a problémáról.
 neterror-unsafe-content-type = Értesítse a webhely tulajdonosait erről a problémáról.
+# Variables:
+# $hostname (String) - Hostname of the website to which the user was trying to connect.
+neterror-basic-http-auth = A { -brand-short-name } nem bízik a(z) { $hostname } webhelyben, mert a kapcsolat nem biztonságos. Próbálja meg HTTPS-re változtatni a webcímet.
 neterror-nss-failure-not-verified = A megtekinteni kívánt oldal nem jeleníthető meg, mert a kapott adatok hitelessége nem ellenőrizhető.
 neterror-nss-failure-contact-website = Lépjen kapcsolatba a webhely üzemeltetőjével, és értesítse a problémáról.
 # Variables:
@@ -148,3 +155,11 @@ certerror-mitm-what-can-you-do-about-it-attack-sts = Ha nem tudja mi az a <b>{ $
 # Variables:
 # $hostname (String) - Hostname of the website to which the user was trying to connect.
 certerror-what-should-i-do-bad-sts-cert-explanation = A(z) <b>{ $hostname }</b> oldal a HTTP Strict Transport Security (HSTS) nevű biztonsági házirendet használja, amely azt jelenti, hogy a { -brand-short-name } csak biztonságosan kapcsolódhat hozzá. Nem adhat hozzá kivételt, hogy felkeresse ezt az oldalt.
+cert-error-trust-certificate-transparency-what-can-you-do-about-it = Valószínűleg semmit, mert jó eséllyel magával a webhellyel van a probléma.
+certerror-blocked-by-corp-headers-description = A webhelyek néha védelmet állítanak be saját maguk és az Önhöz hasonló emberek számára a más webhelyekkel történő nem kívánt interakciók ellen.
+certerror-coop-learn-more = Tudjon meg többet az eredetek közti megnyitási házirendekről (COOP)
+certerror-coep-learn-more = Tudjon meg többet az eredetek közti beágyazási házirendekről (COOP)
+# Variables:
+#   $responsestatus (string) - HTTP response status code (e.g., 500).
+#   $responsestatustext (string) - HTTP response status text (e.g., "Internal Server Error").
+neterror-response-status-code = Hibakód: { $responsestatus } { $responsestatustext }

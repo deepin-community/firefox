@@ -22,6 +22,12 @@ text-action-copy =
     .accesskey = ს
 text-action-copy-shortcut =
     .key = C
+# "Copy Clean Link" means that Firefox will remove things from the link you
+# copied, like items that identify you for advertising purposes, and other items
+# sites add into URLs to help them deliver a certain browsing experience.
+text-action-copy-clean-link =
+    .label = ბმულის სუფთა ასლი
+    .accesskey = ფ
 # This command copies the link, removing additional
 # query parameters used to track users across sites.
 text-action-strip-on-share =
@@ -38,6 +44,9 @@ text-action-paste-shortcut =
 text-action-delete =
     .label = წაშლა
     .accesskey = წ
+text-action-reveal-password =
+    .label = პაროლის გამოჩენა
+    .accesskey = ნ
 text-action-select-all =
     .label = ყველაფრის მონიშვნა
     .accesskey = ყ
@@ -62,3 +71,5 @@ text-action-spell-dictionaries =
     .accesskey = ე
 text-action-search-text-box-clear =
     .title = გასუფთავება
+text-action-highlight-selection =
+    .label = მონიშნულის გამორჩევა

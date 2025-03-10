@@ -12,6 +12,7 @@ neterror-blocked-by-policy-page-title = Zablokowana strona
 neterror-captive-portal-page-title = Logowanie do sieci
 neterror-dns-not-found-title = Nie odnaleziono serwera
 neterror-malformed-uri-page-title = Nieprawidłowy adres URL
+general-body-title = Zachowaj ostrożność. Coś tu nie gra.
 
 ## Error page actions
 
@@ -41,6 +42,9 @@ neterror-generic-error = { -brand-short-name } nie jest w stanie otworzyć tej 
 neterror-load-error-try-again = Witryna może być tymczasowo niedostępna lub przeciążona. Spróbuj ponownie za pewien czas.
 neterror-load-error-connection = Jeśli nie możesz otworzyć żadnej strony, sprawdź swoje połączenie sieciowe.
 neterror-load-error-firewall = Jeśli ten komputer jest chroniony przez zaporę sieciową lub serwer proxy, należy sprawdzić, czy { -brand-short-name } jest uprawniony do łączenia się z Internetem.
+# This warning is only shown on macOS Sequoia and later (see bug 1929377)
+neterror-load-osx-permission = Jeśli próbujesz wczytać stronę w sieci lokalnej, sprawdź, czy { -brand-short-name } ma uprawnienia „Sieć lokalna” w ustawieniach prywatności i bezpieczeństwa systemu macOS.
+neterror-http-error-page = Należy sprawdzić, czy poprawnie wpisano adres witryny.
 neterror-captive-portal = Ta sieć wymaga zalogowania, aby uzyskać dostęp do Internetu.
 # Variables:
 # $hostAndPath (String) - a suggested site (e.g. "www.example.com") that the user may have meant instead.
@@ -96,6 +100,9 @@ neterror-proxy-connect-failure-settings = Należy sprawdzić, czy ustawienia ser
 neterror-proxy-connect-failure-contact-admin = Należy zapytać administratora sieci, czy serwer proxy funkcjonuje prawidłowo.
 neterror-content-encoding-error = Proszę poinformować właścicieli witryny o tym problemie.
 neterror-unsafe-content-type = Proszę poinformować właścicieli witryny o tym problemie.
+# Variables:
+# $hostname (String) - Hostname of the website to which the user was trying to connect.
+neterror-basic-http-auth = { -brand-short-name } nie ufa witrynie „{ $hostname }”, ponieważ połączenie nie jest zabezpieczone. Spróbuj zmienić adres na HTTPS.
 neterror-nss-failure-not-verified = Otwierana strona nie może zostać wyświetlona, ponieważ nie udało się potwierdzić autentyczności otrzymanych danych.
 neterror-nss-failure-contact-website = Proszę poinformować właścicieli witryny o tym problemie.
 # Variables:
@@ -148,3 +155,11 @@ certerror-mitm-what-can-you-do-about-it-attack-sts = Jeśli nie rozpoznajesz naz
 # Variables:
 # $hostname (String) - Hostname of the website to which the user was trying to connect.
 certerror-what-should-i-do-bad-sts-cert-explanation = Witryna „<b>{ $hostname }</b>” określa poprzez HSTS (HTTP Strict Transport Security), że { -brand-short-name } ma się z nią łączyć jedynie w sposób zabezpieczony. Dodanie wyjątku w celu odwiedzenia tej witryny jest niemożliwe.
+cert-error-trust-certificate-transparency-what-can-you-do-about-it = Prawdopodobnie nic, ponieważ problem najpewniej dotyczy samej witryny.
+certerror-blocked-by-corp-headers-description = Czasami witryny stosują zabezpieczenia chroniące siebie i inne osoby przed niepożądanymi interakcjami z innymi witrynami.
+certerror-coop-learn-more = Więcej informacji o COOP (Cross-Origin-Opener-Policy)
+certerror-coep-learn-more = Więcej informacji o COEP (Cross-Origin-Embedder-Policy)
+# Variables:
+#   $responsestatus (string) - HTTP response status code (e.g., 500).
+#   $responsestatustext (string) - HTTP response status text (e.g., "Internal Server Error").
+neterror-response-status-code = Kod błędu: { $responsestatus } { $responsestatustext }

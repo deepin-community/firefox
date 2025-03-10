@@ -43,6 +43,10 @@ genai-prompts-quiz =
 genai-prompts-explain =
     .label = Klarigi tion ĉi
     .value = Bonvolu klarigi la ĉefajn nociojn en la elektitaĵo, pero simplaj vortoj. Kaj uzu ekzemplojn.
+# Prompt purpose: writing tool that helps users with spelling and grammar mistakes and produce a response that identifies errors and rewrites the inputted text correctly
+genai-prompts-proofread =
+    .label = Korekti
+    .value = Bonvolu korekti la elektaĵon por kontroli ĉu estas literumaj aŭ gramatikaj eraroj. Identigu ilin kaj provizi korektitan version de la teksto. Gardu la signifon kaj faktan akuratecon kaj listigu unue la liston de proponitaj korektoj kaj poste la korektitan finan version de la teksto.
 # This prompt is added to the beginning of selection prompts sent to a chatbot.
 # $tabTitle (string) - title of the webpage
 # $selection (string) - selected text
@@ -55,8 +59,107 @@ genai-menu-ask-generic =
 # $provider (string) - name of the provider
 genai-menu-ask-provider =
     .label = Demandi al { $provider }
+genai-menu-remove-generic =
+    .label = Forigi dialoganton A.I.
+# $provider (string) - name of the provider
+genai-menu-remove-provider =
+    .label = Forigi { $provider }
 genai-input-ask-generic =
     .placeholder = Demandi al dialoganto A.I. …
 # $provider (string) - name of the provider
 genai-input-ask-provider =
     .placeholder = Demandi al { $provider }…
+# $selectionLength (number) - selected text length
+# $maxLength (number) - max length of what can be selected
+genai-shortcuts-selected-warning-generic =
+    .heading = La dialoganto A.I. ne povos pritrakti la tutan elektaĵon
+    .message =
+        { $selectionLength ->
+           *[other] Vi elektis ĉirkaŭ { $selectionLength } signojn. La nombro de signoj kiun ni povas sendi al la dialoganto A.I. estas plimapli { $maxLength }.
+        }
+# $provider (string) - name of the provider
+# $selectionLength (number) - selected text length
+# $maxLength (number) - max length of what can be selected
+genai-shortcuts-selected-warning =
+    .heading = { $provider } ne povos pritrakti la tutan elektaĵon
+    .message =
+        { $selectionLength ->
+           *[other] Vi elektis ĉirkaŭ { $selectionLength } signojn. La nombro de signoj kiun ni povas sendi al la { $provider } estas plimapli { $maxLength }.
+        }
+genai-shortcuts-hide =
+    .label = Kaŝi ŝparvojon al dialoganto
+
+## Chatbot header
+
+genai-chatbot-title = A.I. dialoganto
+genai-header-provider-menu =
+    .title = Elekti dialoganton
+genai-header-options-button =
+    .title = Malfermi menuon
+genai-header-close-button =
+    .title = Fermi
+genai-provider-view-details =
+    .label = Montri detalojn de la dialoganto
+genai-provider-about-chatbots =
+    .label = Informoj pri tiuj ĉi dialogantoj
+genai-options-reload-generic =
+    .label = Reŝargi A.I. dialoganton
+# $provider (string) - name of the provider
+genai-options-reload-provider =
+    .label = Reŝargi { $provider }
+genai-options-show-shortcut =
+    .label = Montri ŝparvojon dum elekto de teksto
+genai-options-hide-shortcut =
+    .label = Kaŝi ŝparvojon dum elekto de teksto
+genai-options-about-chatbot =
+    .label = Informoj pri A.I. dialogantoj en { -brand-short-name }
+
+## Chatbot onboarding
+
+genai-onboarding-header = Resumu, trovu ideojn kaj pli, dum vi retumas
+# "Switch anytime" refers to allowing the user to switch to a different chatbot.
+genai-onboarding-description = Elektu A.I. dialoganton por uzi en la flanka strio de { -brand-short-name }. Ni montros detalojn pri ĉiu dialoganto kiam vi elektas ĝin. Ŝanĝu la dialoganton iam ajn. <a data-l10n-name="learn-more">Pli da informo</a>
+genai-onboarding-primary = Daŭrigi
+genai-onboarding-secondary = Fermi
+genai-onboarding-claude-tooltip =
+    .title = Anthropic Claude
+genai-onboarding-claude-learn = Pli da informo pri Claude
+genai-onboarding-chatgpt-tooltip =
+    .title = ChatGPT
+genai-onboarding-chatgpt-learn = Pli da informo pri ChatGPT
+genai-onboarding-copilot-tooltip =
+    .title = Copilot
+genai-onboarding-copilot-learn = Pli da informo pri Copilot
+genai-onboarding-gemini-tooltip =
+    .title = Google Gemini
+genai-onboarding-gemini-learn = Pli da informo pri Gemini
+genai-onboarding-huggingchat-tooltip =
+    .title = HuggingChat
+genai-onboarding-huggingchat-learn = Pli da informo pri HuggingChat
+genai-onboarding-lechat-tooltip =
+    .title = Le Chat Mistral
+genai-onboarding-lechat-learn = Pli da informo pri Le Chat
+genai-onboarding-select-header = Elektu tekston por vidi sugestojn
+genai-onboarding-select-description = Kiam vi elektas tekston, ni sugestos mesaĝojn, kiujn vi povos sendi al la dialoganto. Vi povas ankaŭ skribi viajn proprajn mesaĝojn.
+genai-onboarding-select-primary = Komenci dialogi
+
+## Chatbot onboarding choices
+## These describe features/capabilities of chatbot providers. These are not buttons/actions.
+
+genai-onboarding-claude-generate = Krei tekston kaj kodon
+genai-onboarding-claude-analyze = Analizi dokumentojn kaj bildojn
+genai-onboarding-claude-price = Senpagaj kaj pagendaj ebloj; konto postulata
+genai-onboarding-chatgpt-generate = Krei tekston, bildojn kaj kodon
+genai-onboarding-chatgpt-analyze = Analizi dokumentojn kaj bildojn
+genai-onboarding-chatgpt-price = Senpagaj kaj pagendaj ebloj; konto postulata por kelkaj landoj kaj taskoj
+genai-onboarding-copilot-generate = Krei tekston, bildojn kaj kodon
+genai-onboarding-copilot-analyze = Analizi bildojn
+genai-onboarding-copilot-price = Senpagaj kaj pagendaj ebloj; konto postulata por kelkaj taskoj
+genai-onboarding-gemini-generate = Krei tekston, bildojn kaj kodon
+genai-onboarding-gemini-analyze = Analizi bildojn (senpage) kaj dokumentojn (pagende)
+genai-onboarding-gemini-price = Senpagaj kaj pagendaj ebloj; konto postulata
+genai-onboarding-huggingchat-generate = Krei tekston kaj kodon
+genai-onboarding-huggingchat-switch = Iri de unu modelo al alia inter diversa aro de malfermitaj modeloj
+genai-onboarding-huggingchat-price-2 = Senpaga; konto postulata post iu nombro de petoj
+genai-onboarding-lechat-generate = Krei tekston kaj kodon
+genai-onboarding-lechat-price = Senpage; konto postulata

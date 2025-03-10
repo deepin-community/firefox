@@ -54,6 +54,14 @@ void MacroAssembler::move32To64SignExtend(Register src, Register64 dest) {
   movslq(src, dest.reg);
 }
 
+void MacroAssembler::move8SignExtendToPtr(Register src, Register dest) {
+  movsbq(Operand(src), dest);
+}
+
+void MacroAssembler::move16SignExtendToPtr(Register src, Register dest) {
+  movswq(Operand(src), dest);
+}
+
 void MacroAssembler::move32SignExtendToPtr(Register src, Register dest) {
   movslq(src, dest);
 }
@@ -333,6 +341,21 @@ void MacroAssembler::lshiftPtr(Register shift, Register srcDest) {
   shlq_cl(srcDest);
 }
 
+void MacroAssembler::flexibleLshiftPtr(Register shift, Register srcDest) {
+  if (HasBMI2()) {
+    shlxq(srcDest, shift, srcDest);
+    return;
+  }
+  if (shift == rcx) {
+    shlq_cl(srcDest);
+  } else {
+    // Shift amount must be in rcx.
+    xchg(shift, rcx);
+    shlq_cl(shift == srcDest ? rcx : srcDest == rcx ? shift : srcDest);
+    xchg(shift, rcx);
+  }
+}
+
 void MacroAssembler::lshift64(Imm32 imm, Register64 dest) {
   MOZ_ASSERT(0 <= imm.value && imm.value < 64);
   lshiftPtr(imm, dest.reg);
@@ -361,6 +384,21 @@ void MacroAssembler::rshiftPtr(Register shift, Register srcDest) {
   shrq_cl(srcDest);
 }
 
+void MacroAssembler::flexibleRshiftPtr(Register shift, Register srcDest) {
+  if (HasBMI2()) {
+    shrxq(srcDest, shift, srcDest);
+    return;
+  }
+  if (shift == rcx) {
+    shrq_cl(srcDest);
+  } else {
+    // Shift amount must be in rcx.
+    xchg(shift, rcx);
+    shrq_cl(shift == srcDest ? rcx : srcDest == rcx ? shift : srcDest);
+    xchg(shift, rcx);
+  }
+}
+
 void MacroAssembler::rshift64(Imm32 imm, Register64 dest) {
   rshiftPtr(imm, dest.reg);
 }
@@ -377,6 +415,31 @@ void MacroAssembler::rshift64(Register shift, Register64 srcDest) {
 void MacroAssembler::rshiftPtrArithmetic(Imm32 imm, Register dest) {
   MOZ_ASSERT(0 <= imm.value && imm.value < 64);
   sarq(imm, dest);
+}
+
+void MacroAssembler::rshiftPtrArithmetic(Register shift, Register srcDest) {
+  if (Assembler::HasBMI2()) {
+    sarxq(srcDest, shift, srcDest);
+    return;
+  }
+  MOZ_ASSERT(shift == rcx);
+  sarq_cl(srcDest);
+}
+
+void MacroAssembler::flexibleRshiftPtrArithmetic(Register shift,
+                                                 Register srcDest) {
+  if (HasBMI2()) {
+    sarxq(srcDest, shift, srcDest);
+    return;
+  }
+  if (shift == rcx) {
+    sarq_cl(srcDest);
+  } else {
+    // Shift amount must be in rcx.
+    xchg(shift, rcx);
+    sarq_cl(shift == srcDest ? rcx : srcDest == rcx ? shift : srcDest);
+    xchg(shift, rcx);
+  }
 }
 
 void MacroAssembler::rshift64Arithmetic(Imm32 imm, Register64 dest) {
@@ -473,8 +536,9 @@ void MacroAssembler::cmp64Set(Condition cond, Address lhs, Imm64 rhs,
 
 template <typename T1, typename T2>
 void MacroAssembler::cmpPtrSet(Condition cond, T1 lhs, T2 rhs, Register dest) {
+  bool destIsZero = maybeEmitSetZeroByteRegister(lhs, rhs, dest);
   cmpPtr(lhs, rhs);
-  emitSet(cond, dest);
+  emitSet(cond, dest, destIsZero);
 }
 
 // ===============================================================
@@ -715,8 +779,8 @@ void MacroAssembler::branchTruncateFloat32ToPtr(FloatRegister src,
 void MacroAssembler::branchTruncateFloat32MaybeModUint32(FloatRegister src,
                                                          Register dest,
                                                          Label* fail) {
-  branchTruncateFloat32ToPtr(src, dest, fail);
-  movl(dest, dest);  // Zero upper 32-bits.
+  // Infallible operation on x64.
+  truncateFloat32ModUint32(src, dest);
 }
 
 void MacroAssembler::branchTruncateFloat32ToInt32(FloatRegister src,
@@ -725,7 +789,7 @@ void MacroAssembler::branchTruncateFloat32ToInt32(FloatRegister src,
 
   // Check that the result is in the int32_t range.
   ScratchRegisterScope scratch(*this);
-  move32To64SignExtend(dest, Register64(scratch));
+  move32SignExtendToPtr(dest, scratch);
   cmpPtr(dest, scratch);
   j(Assembler::NotEqual, fail);
 
@@ -756,11 +820,19 @@ void MacroAssembler::branchTruncateDoubleToInt32(FloatRegister src,
 
   // Check that the result is in the int32_t range.
   ScratchRegisterScope scratch(*this);
-  move32To64SignExtend(dest, Register64(scratch));
+  move32SignExtendToPtr(dest, scratch);
   cmpPtr(dest, scratch);
   j(Assembler::NotEqual, fail);
 
   movl(dest, dest);  // Zero upper 32-bits.
+}
+
+void MacroAssembler::branchInt64NotInPtrRange(Register64 src, Label* label) {
+  // No-op on 64-bit platforms.
+}
+
+void MacroAssembler::branchUInt64NotInPtrRange(Register64 src, Label* label) {
+  branchTest64(Assembler::Signed, src, src, label);
 }
 
 void MacroAssembler::branchTest32(Condition cond, const AbsoluteAddress& lhs,
@@ -812,7 +884,8 @@ void MacroAssembler::branchTestMagic(Condition cond, const Address& valaddr,
   j(cond, label);
 }
 
-void MacroAssembler::branchTestValue(Condition cond, const BaseIndex& lhs,
+template <typename T>
+void MacroAssembler::branchTestValue(Condition cond, const T& lhs,
                                      const ValueOperand& rhs, Label* label) {
   MOZ_ASSERT(cond == Assembler::Equal || cond == Assembler::NotEqual);
   branchPtr(cond, lhs, rhs.valueReg(), label);
@@ -820,6 +893,12 @@ void MacroAssembler::branchTestValue(Condition cond, const BaseIndex& lhs,
 
 void MacroAssembler::branchToComputedAddress(const BaseIndex& address) {
   jmp(Operand(address));
+}
+
+void MacroAssembler::cmpPtrMovePtr(Condition cond, Register lhs, Imm32 rhs,
+                                   Register src, Register dest) {
+  cmpPtr(lhs, rhs);
+  cmovCCq(cond, src, dest);
 }
 
 void MacroAssembler::cmpPtrMovePtr(Condition cond, Register lhs, Register rhs,
@@ -852,6 +931,13 @@ void MacroAssembler::test32LoadPtr(Condition cond, const Address& addr,
                                    Register dest) {
   MOZ_ASSERT(cond == Assembler::Zero || cond == Assembler::NonZero);
   test32(addr, mask);
+  cmovCCq(cond, Operand(src), dest);
+}
+
+void MacroAssembler::test32MovePtr(Condition cond, Register operand, Imm32 mask,
+                                   Register src, Register dest) {
+  MOZ_ASSERT(cond == Assembler::Zero || cond == Assembler::NonZero);
+  test32(operand, mask);
   cmovCCq(cond, Operand(src), dest);
 }
 
@@ -1064,7 +1150,7 @@ void MacroAssemblerX64::fallibleUnboxPtrImpl(const Operand& src, Register dest,
   //
   // Note: src and dest can be the same register.
   ScratchRegisterScope scratch(asMasm());
-  mov(ImmWord(JSVAL_TYPE_TO_SHIFTED_TAG(type)), scratch);
+  mov(ImmShiftedTag(type), scratch);
   xorq(src, scratch);
   mov(scratch, dest);
   shrq(Imm32(JSVAL_TAG_SHIFT), scratch);

@@ -11,6 +11,7 @@ more-from-moz-category =
 more-from-moz-subtitle = Pozrite si ďalšie produkty od spoločnosti { -vendor-short-name }, ktoré podporujú zdravý internet.
 more-from-moz-firefox-mobile-title = { -brand-product-name } pre mobilné zariadenia
 more-from-moz-firefox-mobile-description = Mobilný prehliadač, pre ktorý je vaše súkromie na prvom mieste.
+more-from-moz-firefox-mobile-title-1 = { -brand-product-name } pre mobilné zariadenia
 more-from-moz-mozilla-vpn-title = { -mozilla-vpn-brand-name }
 more-from-moz-mozilla-vpn-description = Objavte ďalšiu vrstvu anonymného prehliadania a ochrany.
 more-from-moz-qr-code-box-firefox-mobile-title = Stiahnite si ho pomocou mobilného zariadenia. Namierte fotoaparát na QR kód. Keď sa zobrazí odkaz, ťuknite naň.
@@ -32,3 +33,9 @@ more-from-moz-mozilla-monitor-title = { -mozmonitor-brand-name }
 more-from-moz-mozilla-monitor-us-description = Automaticky si vezmite späť svoje odhalené osobné údaje.
 more-from-moz-mozilla-monitor-global-description = Dostávajte upozornenia, keď dôjde k narušeniu bezpečnosti vašich údajov.
 more-from-moz-mozilla-monitor-button = Získajte { -monitor-brand-short-name }
+
+## These strings are for the Solo card in about:preferences moreFromMozilla page
+
+more-from-moz-solo-title = { -solo-ai-brand-name } AI
+more-from-moz-solo-description = Okamžite vytvorte svoju webovú stránku a pripojte svoju vlastnú doménu zadarmo.
+more-from-moz-solo-button = Vyskúšajte { -solo-ai-brand-name }

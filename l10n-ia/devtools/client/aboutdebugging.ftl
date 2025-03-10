@@ -119,13 +119,13 @@ about-debugging-setup-usb-step-enable-debug-firefox2 = Activar le Depuration USB
 about-debugging-setup-usb-step-plug-device = Connecte le apparato Android a tu computator.
 # Text shown in the USB section of the setup page with a link to troubleshoot connection errors.
 # The link goes to https://firefox-source-docs.mozilla.org/devtools-user/about_colon_debugging/index.html#connecting-to-a-remote-device
-about-debugging-setup-usb-troubleshoot = Problemas de connexion al apparato USB?  <a>Remediar</a>
+about-debugging-setup-usb-troubleshoot = Problemas de connexion al apparato USB?  <a>Solver</a>
 # Network section of the Setup page
 about-debugging-setup-network =
     .title = Position del rete
 # Text shown in the Network section of the setup page with a link to troubleshoot connection errors.
 # The link goes to https://firefox-source-docs.mozilla.org/devtools-user/about_colon_debugging/index.html#connecting-over-the-network
-about-debugging-setup-network-troubleshoot = Problemas de connexion via un loco de rete?  <a>Remediar</a>
+about-debugging-setup-network-troubleshoot = Problemas de connexion via un loco de rete?  <a>Solver</a>
 # Text of a button displayed after the network locations "Host" input.
 # Clicking on it will add the new network location to the list.
 about-debugging-network-locations-add-button = Adder
@@ -313,6 +313,9 @@ about-debugging-worker-scope =
 # of a worker
 about-debugging-worker-push-service =
     .label = Servicio de pulsata
+# Displayed for service workers in runtime pages, to label the origin of a worker.
+about-debugging-worker-origin =
+    .label = Origine
 # Displayed as title of the inspect button when service worker debugging is disabled.
 about-debugging-worker-inspect-action-disabled =
     .title = Le inspection de obreros de servicio es actualmente disactivate pro le modo multiprocesso de { -brand-shorter-name }

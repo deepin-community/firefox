@@ -358,7 +358,7 @@ nsresult CryptoKey::AddPublicKeyData(SECKEYPublicKey* aPublicKey) {
   };
 
   mPrivateKey =
-      PrivateKeyFromPrivateKeyTemplate(keyTemplate, ArrayLength(keyTemplate));
+      PrivateKeyFromPrivateKeyTemplate(keyTemplate, std::size(keyTemplate));
   NS_ENSURE_TRUE(mPrivateKey, NS_ERROR_DOM_OPERATION_ERR);
 
   return NS_OK;
@@ -716,7 +716,7 @@ UniqueSECKEYPrivateKey CryptoKey::PrivateKeyFromJwk(const JsonWebKey& aJwk) {
     };
 
     return PrivateKeyFromPrivateKeyTemplate(keyTemplate,
-                                            ArrayLength(keyTemplate));
+                                            std::size(keyTemplate));
   }
 
   if (aJwk.mKty.EqualsLiteral(JWK_TYPE_RSA)) {
@@ -757,7 +757,7 @@ UniqueSECKEYPrivateKey CryptoKey::PrivateKeyFromJwk(const JsonWebKey& aJwk) {
     };
 
     return PrivateKeyFromPrivateKeyTemplate(keyTemplate,
-                                            ArrayLength(keyTemplate));
+                                            std::size(keyTemplate));
   }
 
   if (aJwk.mKty.EqualsLiteral(JWK_TYPE_OKP)) {
@@ -823,7 +823,7 @@ UniqueSECKEYPrivateKey CryptoKey::PrivateKeyFromJwk(const JsonWebKey& aJwk) {
     };
 
     return PrivateKeyFromPrivateKeyTemplate(keyTemplate,
-                                            ArrayLength(keyTemplate));
+                                            std::size(keyTemplate));
   }
 
   return nullptr;
@@ -1056,9 +1056,10 @@ KeyType KeyTypeFromCurveName(const nsAString& aNamedCurve) {
       aNamedCurve.EqualsLiteral(WEBCRYPTO_NAMED_CURVE_P384) ||
       aNamedCurve.EqualsLiteral(WEBCRYPTO_NAMED_CURVE_P521)) {
     t = ecKey;
-  } else if (aNamedCurve.EqualsLiteral(WEBCRYPTO_NAMED_CURVE_ED25519) ||
-             aNamedCurve.EqualsLiteral(WEBCRYPTO_NAMED_CURVE_CURVE25519)) {
+  } else if (aNamedCurve.EqualsLiteral(WEBCRYPTO_NAMED_CURVE_ED25519)) {
     t = edKey;
+  } else if (aNamedCurve.EqualsLiteral(WEBCRYPTO_NAMED_CURVE_CURVE25519)) {
+    t = ecMontKey;
   }
   return t;
 }
@@ -1087,7 +1088,8 @@ UniqueSECKEYPublicKey CreateECPublicKey(const SECItem* aKeyData,
   // Transfer arena ownership to the key.
   key->arena = arena.release();
   key->keyType = KeyTypeFromCurveName(aNamedCurve);
-  if (key->keyType != ecKey && key->keyType != edKey) {
+  if (key->keyType != ecKey && key->keyType != edKey &&
+      key->keyType != ecMontKey) {
     return nullptr;
   }
 

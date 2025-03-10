@@ -4,6 +4,12 @@
 
 menu-view-genai-chat =
     .label = Chatbot IA
+menu-view-review-checker =
+    .label = Verificator de recension
+menu-view-contextual-password-manager =
+    .label = Contrasignos
+sidebar-options-menu-button =
+    .title = Aperir menu
 
 ## Labels for sidebar history panel
 
@@ -46,16 +52,30 @@ sidebar-position-right =
     .label = Monstrar al dextra
 sidebar-vertical-tabs =
     .label = Schedas vertical
+sidebar-settings =
+    .label = Configurationes del barra lateral
+sidebar-hide-tabs-and-sidebar =
+    .label = Celar schedas e barra lateral
+sidebar-show-on-the-right =
+    .label = Mover le barra lateral a dextra
+sidebar-show-on-the-left =
+    .label = Mover le barra lateral a sinistra
+# Option to automatically expand the collapsed sidebar when the mouse pointer
+# hovers over it.
+expand-sidebar-on-hover =
+    .label = Expander barra lateral al survolo
 sidebar-horizontal-tabs =
     .label = Schedas horizontal
 sidebar-customize-tabs-header =
     .label = Configurationes del schedas
-sidebar-customize-settings-header =
-    .label = Configurationes del barra lateral
-sidebar-visibility-always-show =
-    .label = Sempre monstrar
-sidebar-visibility-hide-sidebar =
-    .label = Celar le barra lateral
+sidebar-customize-button-header =
+    .label = Button barra lateral
+sidebar-customize-position-header =
+    .label = Position barra lateral
+sidebar-visibility-setting-always-show =
+    .label = Expander e collaber barra lateral
+sidebar-visibility-setting-hide-sidebar =
+    .label = Monstrar e celar le barra lateral
 
 ## Labels for sidebar context menu items
 
@@ -95,6 +115,41 @@ sidebar-menu-bookmarks-label =
     .label = Marcapaginas
 sidebar-menu-customize-label =
     .label = Personalisar le barra lateral
+sidebar-menu-review-checker-label =
+    .label = Verificator de recension
+sidebar-menu-contextual-password-manager-label =
+    .label = Contrasignos
+
+## Tooltips for sidebar menu items.
+
+# The tooltip to show over the history icon, when history is not currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-open-history-tooltip = Aperir chronologia ({ $shortcut })
+# The tooltip to show over the history icon, when history is currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-close-history-tooltip = Clauder chronologia ({ $shortcut })
+# The tooltip to show over the bookmarks icon, when bookmarks is not currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-open-bookmarks-tooltip = Aperir marcapaginas ({ $shortcut })
+# The tooltip to show over the bookmarks icon, when bookmarks is currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-close-bookmarks-tooltip = Clauder marcapaginas ({ $shortcut })
+sidebar-menu-open-ai-chatbot-tooltip = Aperir AI chatbot
+sidebar-menu-close-ai-chatbot-tooltip = Clauder AI chatbot
+
+## Tooltips displayed over the AI chatbot icon.
+## Variables:
+##   $shortcut (String) - The OS specific keyboard shortcut.
+##   $provider (String) - The name of the AI chatbot provider (if available).
+
+sidebar-menu-open-ai-chatbot-tooltip-generic = Aperir robot confabulator IA ({ $shortcut })
+sidebar-menu-open-ai-chatbot-provider-tooltip = Aperir { $provider } ({ $shortcut })
+sidebar-menu-close-ai-chatbot-tooltip-generic = Clauder robot confabulator IA ({ $shortcut })
+sidebar-menu-close-ai-chatbot-provider-tooltip = Clauder { $provider } ({ $shortcut })
 
 ## Headings for sidebar menu panels.
 
@@ -104,6 +159,18 @@ sidebar-menu-history-header =
     .heading = Chronologia
 sidebar-menu-syncedtabs-header =
     .heading = Schedas ab altere apparatos
+sidebar-menu-bookmarks-header =
+    .heading = Marcapaginas
+sidebar-menu-cpm-header =
+    .heading = Contrasignos
+sidebar-panel-header-close-button =
+    .tooltiptext = Clauder
+
+## Titles for sidebar menu panels.
+
+sidebar-customize-title = Personalisar le barra lateral
+sidebar-history-title = Chronologia
+sidebar-syncedtabs-title = Schedas de altere apparatos
 
 ## Context for closing synced tabs when hovering over the items
 
@@ -113,3 +180,29 @@ sidebar-menu-syncedtabs-header =
 #   $deviceName (String) - the name of the device the user is closing a tab for
 synced-tabs-context-close-tab-title =
     .title = Clauder schedas in { $deviceName }
+show-sidebars =
+    .tooltiptext = Monstrar le barras lateral
+    .label = Barras lateral
+
+## Tooltips for the sidebar toolbar widget.
+
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-expand-sidebar2 =
+    .tooltiptext = Expander barra lateral ({ $shortcut })
+    .label = Barras lateral
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-collapse-sidebar2 =
+    .tooltiptext = Collaber barra lateral ({ $shortcut })
+    .label = Barras lateral
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-show-sidebar2 =
+    .tooltiptext = Monstrar barra lateral ({ $shortcut })
+    .label = Barras lateral
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-hide-sidebar2 =
+    .tooltiptext = Celar barra lateral ({ $shortcut })
+    .label = Barras lateral

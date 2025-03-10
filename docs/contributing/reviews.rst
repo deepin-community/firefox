@@ -83,6 +83,9 @@ Review groups
    * - Name
      - Owns
      - Members
+   * - #anchor-positioning-reviewers
+     - Anchor positioning - related style and layout code
+     - `Member list <https://phabricator.services.mozilla.com/project/members/216/>`__
    * - #anti-tracking
      - `Core: Anti-Tracking </mots/index.html#core-anti-tracking>`__
      - `Member list <https://phabricator.services.mozilla.com/project/members/157/>`__
@@ -101,6 +104,9 @@ Review groups
    * - #devtools-reviewers
      - Firefox DevTools
      - `Member list <https://phabricator.services.mozilla.com/project/members/153/>`__
+   * - #dom-core
+     - `Core: DOM <https://firefox-source-docs.mozilla.org/mots/index.html#core-document-object-model>`__
+     - `Member list <https://phabricator.services.mozilla.com/project/members/178/>`__
    * - #dom-worker-reviewers
      - DOM Workers
      - `Member list <https://phabricator.services.mozilla.com/project/members/146/>`__
@@ -134,9 +140,15 @@ Review groups
    * - #intermittent-reviewers
      - Test manifest changes
      - `Member list <https://phabricator.services.mozilla.com/project/members/110/>`__
+   * - #ipc-reviewers
+     - `Core: IPC <https://firefox-source-docs.mozilla.org/mots/index.html#core-ipc>`__
+     - `Member list <https://phabricator.services.mozilla.com/project/members/145/>`__
    * - #layout-reviewers
      - Layout
      - `Member list <https://phabricator.services.mozilla.com/project/members/126/>`__
+   * - #layout-grid-reviewers
+     - layout/grid
+     - `Member list <https://phabricator.services.mozilla.com/project/members/215/>`__
    * - #linter-reviewers
      - tools/lint/*
      - `Member list <https://phabricator.services.mozilla.com/project/members/119/>`__
@@ -173,6 +185,9 @@ Review groups
    * - #preferences-reviewers
      - Firefox for Desktop Preferences (Options) user interface
      - `Member list <https://phabricator.services.mozilla.com/project/members/132/>`__
+   * - #recomp-reviewers or #reusable-components-reviewers
+     - UI Widgets, Design Tokens, Storybook
+     - `Member list <https://phabricator.services.mozilla.com/project/members/185/>`__
    * - #remote-debugging-reviewers
      - Remote Debugging UI & tools
      - `Member list <https://phabricator.services.mozilla.com/project/members/108/>`__
@@ -200,9 +215,15 @@ Review groups
    * - #theme or #desktop-theme-reviewers
      - `Firefox: Theme and Toolkit: Themes </mots/index.html#desktop-theme>`__
      - `Member list <https://phabricator.services.mozilla.com/project/members/141/>`__
+   * - #translations-reviewers
+     - `Firefox: Translation <https://firefox-source-docs.mozilla.org/mots/index.html#translation>`__
+     - `Member list <https://phabricator.services.mozilla.com/project/members/192/>`__
    * - #urlbar-reviewers
      - `Urlbar (Address Bar) </mots/index.html#address-bar>`__
      - `Member list <https://phabricator.services.mozilla.com/project/members/211/>`__
+   * - #view-transitions-reviewers or #view-transitions or #vt
+     - View Transitions (dom/view-transitions, and the relevant style / layout / gfx code).
+     - `Member list <https://phabricator.services.mozilla.com/project/members/217/>`__
    * - #webcompat-reviewers
      - System addons maintained by the Web Compatibility team
      - `Member list <https://phabricator.services.mozilla.com/project/members/124/>`__

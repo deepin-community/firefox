@@ -30,4 +30,12 @@ webext-perms-description-sessions = Dostęp do ostatnio zamkniętych kart
 webext-perms-description-tabs = Dostęp do kart przeglądarki
 webext-perms-description-tabHide = Ukrywanie i wyświetlanie kart przeglądarki
 webext-perms-description-topSites = Dostęp do historii przeglądania
+webext-perms-description-userScripts = Zezwalaj niezweryfikowanym skryptom zewnętrznym na dostęp do danych użytownika
 webext-perms-description-webNavigation = Dostęp do aktywności przeglądarki podczas nawigacji
+
+## The userScripts permission includes an additional explanation that is
+## displayed prominently near the usual permission description.
+
+webext-perms-extra-warning-userScripts-long = Niezweryfikowane skrypty mogą stwarzać zagrożenia bezpieczeństwa i prywatności, na przykład wykonując szkodliwy kod albo śledząc działania użytkownika w Internecie. Uruchamiaj skrypty wyłącznie z rozszerzeń i innych źródeł, którym ufasz.
+# A shorter warning is displayed in UI surfaces with little room, such as a permission prompt.
+webext-perms-extra-warning-userScripts-short = Niezweryfikowane skrypty mogą stwarzać zagrożenia bezpieczeństwa i prywatności. Uruchamiaj skrypty wyłącznie z rozszerzeń i innych źródeł, którym ufasz.

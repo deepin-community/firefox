@@ -138,7 +138,7 @@ menu-view-customize-toolbar2 =
     .label = Sérsníða verkfærastiku…
     .accesskey = v
 menu-view-sidebar =
-    .label = Hliðarspjald
+    .label = Hliðarstika
     .accesskey = H
 menu-view-bookmarks =
     .label = Bókamerki
@@ -254,6 +254,15 @@ menu-bookmarks-other =
     .label = Önnur bókamerki
 menu-bookmarks-mobile =
     .label = Bókamerki farsíma
+
+## Profiles Menu
+
+menu-profiles =
+    .label = Notkunarsnið
+menu-profiles-manage-profiles =
+    .label = Sýsla með notkunarsnið
+menu-profiles-new-profile =
+    .label = Nýtt notkunarsnið
 
 ## Tools Menu
 

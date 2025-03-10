@@ -12,6 +12,7 @@ const {
 } = require("resource://devtools/shared/indentation.js");
 
 const { debounce } = require("resource://devtools/shared/debounce.js");
+const nodeConstants = require("resource://devtools/shared/dom-node-constants.js");
 
 const ENABLE_CODE_FOLDING = "devtools.editor.enableCodeFolding";
 const KEYMAP_PREF = "devtools.editor.keymap";
@@ -163,12 +164,15 @@ class Editor extends EventEmitter {
   searchState = {
     cursors: [],
     currentCursorIndex: -1,
-    query: null,
+    query: "",
   };
 
+  #abortController;
   // The id for the current source in the editor (selected source). This
-  // is used to cache the scroll snapshot for tracking scroll positions.
+  // is used to cache the scroll snapshot for tracking scroll positions and the
+  // symbols.
   #currentDocumentId = null;
+  #currentDocument = null;
   #CodeMirror6;
   #compartments;
   #effects;
@@ -181,6 +185,7 @@ class Editor extends EventEmitter {
   #lineContentMarkers = new Map();
   #posContentMarkers = new Map();
   #editorDOMEventHandlers = {};
+  #gutterDOMEventHandlers = {};
   // A cache of all the scroll snapshots for the all the sources that
   // are currently open in the editor. The keys for the Map are the id's
   // for the source and the values are the scroll snapshots for the sources.
@@ -246,6 +251,11 @@ class Editor extends EventEmitter {
         el.append(doc.createTextNode(`\\u${char.codePointAt(0).toString(16)}`));
         return el;
       },
+      // In CodeMirror 5, adds a `CodeMirror-selectedtext` class on selected text that
+      // can be used to set the selected text color, which isn't possible by default.
+      // This is especially useful for High Contrast Mode where we do need to adjust the
+      // selection text color
+      styleSelectedText: true,
     };
 
     // Additional shortcuts.
@@ -418,7 +428,11 @@ class Editor extends EventEmitter {
       };
 
       env.style.visibility = "hidden";
-      env.addEventListener("load", onLoad, { capture: true, once: true });
+      env.addEventListener("load", onLoad, {
+        capture: true,
+        once: true,
+        signal: this.#abortController?.signal,
+      });
       env.src = CM_IFRAME;
       el.appendChild(env);
 
@@ -427,6 +441,8 @@ class Editor extends EventEmitter {
   }
 
   appendToLocalElement(el) {
+    const win = el.ownerDocument.defaultView;
+    this.#abortController = new win.AbortController();
     if (this.config.cm6) {
       this.#setupCm6(el);
     } else {
@@ -485,42 +501,50 @@ class Editor extends EventEmitter {
     // Disable APZ for source editors. It currently causes the line numbers to
     // "tear off" and swim around on top of the content. Bug 1160601 tracks
     // finding a solution that allows APZ to work with CodeMirror.
-    cm.getScrollerElement().addEventListener("wheel", ev => {
-      // By handling the wheel events ourselves, we force the platform to
-      // scroll synchronously, like it did before APZ. However, we lose smooth
-      // scrolling for users with mouse wheels. This seems acceptible vs.
-      // doing nothing and letting the gutter slide around.
-      ev.preventDefault();
+    cm.getScrollerElement().addEventListener(
+      "wheel",
+      ev => {
+        // By handling the wheel events ourselves, we force the platform to
+        // scroll synchronously, like it did before APZ. However, we lose smooth
+        // scrolling for users with mouse wheels. This seems acceptible vs.
+        // doing nothing and letting the gutter slide around.
+        ev.preventDefault();
 
-      let { deltaX, deltaY } = ev;
+        let { deltaX, deltaY } = ev;
 
-      if (ev.deltaMode == ev.DOM_DELTA_LINE) {
-        deltaX *= cm.defaultCharWidth();
-        deltaY *= cm.defaultTextHeight();
-      } else if (ev.deltaMode == ev.DOM_DELTA_PAGE) {
-        deltaX *= cm.getWrapperElement().clientWidth;
-        deltaY *= cm.getWrapperElement().clientHeight;
-      }
+        if (ev.deltaMode == ev.DOM_DELTA_LINE) {
+          deltaX *= cm.defaultCharWidth();
+          deltaY *= cm.defaultTextHeight();
+        } else if (ev.deltaMode == ev.DOM_DELTA_PAGE) {
+          deltaX *= cm.getWrapperElement().clientWidth;
+          deltaY *= cm.getWrapperElement().clientHeight;
+        }
 
-      cm.getScrollerElement().scrollBy(deltaX, deltaY);
-    });
+        cm.getScrollerElement().scrollBy(deltaX, deltaY);
+      },
+      { signal: this.#abortController?.signal }
+    );
 
-    cm.getWrapperElement().addEventListener("contextmenu", ev => {
-      if (!this.config.contextMenu) {
-        return;
-      }
+    cm.getWrapperElement().addEventListener(
+      "contextmenu",
+      ev => {
+        if (!this.config.contextMenu) {
+          return;
+        }
 
-      ev.stopPropagation();
-      ev.preventDefault();
+        ev.stopPropagation();
+        ev.preventDefault();
 
-      let popup = this.config.contextMenu;
-      if (typeof popup == "string") {
-        popup = this.#ownerDoc.getElementById(this.config.contextMenu);
-      }
+        let popup = this.config.contextMenu;
+        if (typeof popup == "string") {
+          popup = this.#ownerDoc.getElementById(this.config.contextMenu);
+        }
 
-      this.emit("popupOpen", ev, popup);
-      popup.openPopupAtScreen(ev.screenX, ev.screenY, true);
-    });
+        this.emit("popupOpen", ev, popup);
+        popup.openPopupAtScreen(ev.screenX, ev.screenY, true);
+      },
+      { signal: this.#abortController?.signal }
+    );
 
     const pipedEvents = [
       "beforeChange",
@@ -632,8 +656,14 @@ class Editor extends EventEmitter {
 
     const {
       codemirror,
-      codemirrorView: { EditorView, lineNumbers, drawSelection },
-      codemirrorState: { EditorState, Compartment },
+      codemirrorView: {
+        drawSelection,
+        EditorView,
+        keymap,
+        lineNumbers,
+        placeholder,
+      },
+      codemirrorState: { EditorState, Compartment, Prec },
       codemirrorSearch: { highlightSelectionMatches },
       codemirrorLanguage: {
         syntaxTreeAvailable,
@@ -680,7 +710,7 @@ class Editor extends EventEmitter {
 
     // Track the scroll snapshot for the current document at the end of the scroll
     this.#editorDOMEventHandlers.scroll = [
-      debounce(this.cacheScrollSnapshot, 250),
+      debounce(this.#cacheScrollSnapshot, 250),
     ];
 
     const extensions = [
@@ -735,6 +765,14 @@ class Editor extends EventEmitter {
       extensions.push(codemirrorLangJavascript.javascript());
     }
 
+    if (this.config.placeholder) {
+      extensions.push(placeholder(this.config.placeholder));
+    }
+
+    if (this.config.keyMap) {
+      extensions.push(Prec.highest(keymap.of(this.config.keyMap)));
+    }
+
     if (Services.prefs.prefHasUserValue(CARET_BLINK_TIME)) {
       // We need to multiply the preference value by 2 to match Firefox cursor rate
       const cursorBlinkRate = Services.prefs.getIntPref(CARET_BLINK_TIME) * 2;
@@ -751,8 +789,12 @@ class Editor extends EventEmitter {
     });
 
     cm.isDocumentLoadComplete = false;
-    this.#ownerDoc.sourceEditor = { editor: this, cm };
     editors.set(this, cm);
+
+    // For now, we only need to pipe the blur event
+    cm.contentDOM.addEventListener("blur", e => this.emit("blur", e), {
+      signal: this.#abortController?.signal,
+    });
   }
 
   /**
@@ -813,7 +855,7 @@ class Editor extends EventEmitter {
       let decorationLines;
       if (marker.shouldMarkAllLines) {
         decorationLines = [];
-        for (let i = vStartLine.number; i < vEndLine.number; i++) {
+        for (let i = vStartLine.number; i <= vEndLine.number; i++) {
           decorationLines.push({ line: i });
         }
       } else {
@@ -971,14 +1013,6 @@ class Editor extends EventEmitter {
   }
 
   #createEventHandlers() {
-    function posToLineColumn(pos, view) {
-      if (!pos) {
-        return { line: null, column: null };
-      }
-      const cursor = view.state.doc.lineAt(pos);
-      const column = pos - cursor.from;
-      return { line: cursor.number, column };
-    }
     const eventHandlers = {};
     for (const eventName in this.#editorDOMEventHandlers) {
       const handlers = this.#editorDOMEventHandlers[eventName];
@@ -992,9 +1026,8 @@ class Editor extends EventEmitter {
           // investigate further Bug 1890895.
           event.target.ownerGlobal.setTimeout(() => {
             const view = editor.viewState;
-            const cursorPos = posToLineColumn(
-              view.state.selection.main.head,
-              view
+            const cursorPos = this.#posToLineColumn(
+              view.state.selection.main.head
             );
             handler(event, view, cursorPos.line, cursorPos.column);
           }, 0);
@@ -1038,12 +1071,13 @@ class Editor extends EventEmitter {
     });
   }
 
-  cacheScrollSnapshot = () => {
+  #cacheScrollSnapshot = () => {
     const cm = editors.get(this);
-    if (this.#currentDocumentId) {
+    if (!this.#currentDocumentId) {
       return;
     }
     this.#scrollSnapshots.set(this.#currentDocumentId, cm.scrollSnapshot());
+    this.emitForTests("cm-editor-scrolled");
   };
 
   /**
@@ -1085,6 +1119,7 @@ class Editor extends EventEmitter {
     } = this.#CodeMirror6;
 
     this.#editorDOMEventHandlers = {};
+    this.#gutterDOMEventHandlers = {};
     cm.dispatch({
       effects: this.#compartments.domEventHandlersCompartment.reconfigure(
         EditorView.domEventHandlers({})
@@ -1109,7 +1144,9 @@ class Editor extends EventEmitter {
    *   @property {Function}           marker.createLineElementNode
    *                                  This should return the DOM element which is used for the marker. The line number is passed as a parameter.
    *                                  This is optional.
-
+   *   @property {Function}           marker.getMarkerEqualityValue
+   *                                  Custom equality function. The line and column will be passed as arguments when this is called.
+   *                                  This should return a value used for an equality check. This is optional.
    */
   setLineContentMarker(marker) {
     const cm = editors.get(this);
@@ -1152,11 +1189,20 @@ class Editor extends EventEmitter {
     const cachedPositionContentMarkers = this.#posContentMarkers;
 
     class NodeWidget extends WidgetType {
-      constructor(line, column, markerId, createElementNode) {
+      constructor({
+        line,
+        column,
+        markerId,
+        createElementNode,
+        getMarkerEqualityValue,
+      }) {
         super();
         this.line = line;
         this.column = column;
         this.markerId = markerId;
+        this.equalityValue = getMarkerEqualityValue
+          ? getMarkerEqualityValue(line, column)
+          : {};
         this.toDOM = () => createElementNode(line, column);
       }
 
@@ -1164,7 +1210,16 @@ class Editor extends EventEmitter {
         return (
           this.line == widget.line &&
           this.column == widget.column &&
-          this.markerId == widget.markerId
+          this.markerId == widget.markerId &&
+          this.#isCustomValueEqual(widget)
+        );
+      }
+
+      #isCustomValueEqual(widget) {
+        return Object.keys(this.equalityValue).every(
+          key =>
+            widget.equalityValue.hasOwnProperty(key) &&
+            widget.equalityValue[key] === this.equalityValue[key]
         );
       }
     }
@@ -1223,12 +1278,13 @@ class Editor extends EventEmitter {
             // Markers used:
             // 1. column-breakpoint-marker
             const nodeDecoration = Decoration.widget({
-              widget: new NodeWidget(
-                position.line,
-                position.column,
-                marker.id,
-                marker.createPositionElementNode
-              ),
+              widget: new NodeWidget({
+                line: position.line,
+                column: position.column,
+                markerId: marker.id,
+                createElementNode: marker.createPositionElementNode,
+                getMarkerEqualityValue: marker.getMarkerEqualityValue,
+              }),
               // Make sure the widget is rendered after the cursor
               // see https://codemirror.net/docs/ref/#view.Decoration^widget^spec.side for details.
               side: 1,
@@ -1241,6 +1297,13 @@ class Editor extends EventEmitter {
             // 1. exception-position-marker
             // 2. debug-position-marker
             const tokenAtPos = syntaxTree(transaction.state).resolve(pos, 1);
+            // While trying to update the markers, during content changes, the syntax tree is not
+            // guaranteed to be complete, so there is the possibility of getting wrong `from` and `to` values for the token.
+            // To make sure we are handling a valid token, let's check that the `from` value (which is the start position of the retrieved token)
+            // matches the position we want.
+            if (tokenAtPos.from !== pos) {
+              continue;
+            }
             const tokenString = line.text.slice(
               position.column,
               tokenAtPos.to - line.from
@@ -1422,7 +1485,7 @@ class Editor extends EventEmitter {
 
     for (const eventName in domEventHandlers) {
       const handler = domEventHandlers[eventName];
-      domEventHandlers[eventName] = (view, line, event) => {
+      this.#gutterDOMEventHandlers[eventName] = (view, line, event) => {
         line = view.state.doc.lineAt(line.from);
         handler(event, view, line.number);
       };
@@ -1431,7 +1494,7 @@ class Editor extends EventEmitter {
     cm.dispatch({
       effects: [
         this.#compartments.lineNumberCompartment.reconfigure(
-          lineNumbers({ domEventHandlers })
+          lineNumbers({ domEventHandlers: this.#gutterDOMEventHandlers })
         ),
         this.#compartments.foldGutterCompartment.reconfigure(
           foldGutter({
@@ -1445,7 +1508,7 @@ class Editor extends EventEmitter {
               button.setAttribute("aria-expanded", open);
               return button;
             },
-            domEventHandlers,
+            domEventHandlers: this.#gutterDOMEventHandlers,
           })
         ),
       ],
@@ -1672,6 +1735,9 @@ class Editor extends EventEmitter {
    * @returns {Object}  - The location information for the current viewport
    */
   getLocationsInViewport() {
+    if (this.isDestroyed()) {
+      return null;
+    }
     const cm = editors.get(this);
     if (this.config.cm6) {
       const { from, to } = cm.viewport;
@@ -2000,11 +2066,22 @@ class Editor extends EventEmitter {
 
   getDoc() {
     const cm = editors.get(this);
+    if (this.config.cm6) {
+      if (!this.#currentDocument) {
+        // A key for caching the WASM content in the WeakMap
+        this.#currentDocument = { id: this.#currentDocumentId };
+      }
+      return this.#currentDocument;
+    }
     return cm.getDoc();
   }
 
   get isWasm() {
     return wasm.isWasm(this.getDoc());
+  }
+
+  getWasmLineNumberFormatter() {
+    return wasm.getWasmLineNumberFormatter(this.getDoc());
   }
 
   wasmOffsetToLine(offset) {
@@ -2022,24 +2099,45 @@ class Editor extends EventEmitter {
     return this.wasmOffsetToLine(maybeOffset);
   }
 
-  lineInfo(lineOrOffset) {
-    const line = this.toLineIfWasmOffset(lineOrOffset);
-    if (line == undefined) {
-      return null;
-    }
-    const cm = editors.get(this);
+  renderWasmText(content) {
+    return wasm.renderWasmText(this.getDoc(), content);
+  }
 
+  /**
+   * Gets details about the line
+   *
+   * @param {Number} line
+   * @returns {Object} line info object
+   */
+  lineInfo(line) {
+    const cm = editors.get(this);
     if (this.config.cm6) {
+      const el = this.getElementAtLine(line);
+      // Filter out SPAN which do not contain user-defined classes.
+      // Classes currently are "debug-expression" and "debug-expression-error"
+      const markedSpans = [...el.querySelectorAll("span")].filter(span =>
+        span.className.includes("debug-expression")
+      );
+
       return {
-        // cm6 lines are 1-based, while cm5 are 0-based
-        text: cm.state.doc.lineAt(line + 1)?.text,
+        text: el.innerText,
         // TODO: Expose those, or see usage for those and do things differently
         line: null,
-        handle: null,
+        handle: {
+          markedSpans: markedSpans
+            ? markedSpans.map(span => {
+                const { column } = this.#posToLineColumn(cm.posAtDOM(span));
+                return {
+                  marker: { className: span.className },
+                  from: column,
+                };
+              })
+            : null,
+        },
         gutterMarkers: null,
         textClass: null,
         bgClass: null,
-        wrapClass: null,
+        wrapClass: el.className,
         widgets: null,
       };
     }
@@ -2047,8 +2145,83 @@ class Editor extends EventEmitter {
     return cm.lineInfo(line);
   }
 
-  getLineOrOffset(line) {
-    return this.isWasm ? this.lineToWasmOffset(line) : line;
+  /**
+   * Traverse the syntaxTree and return expressions
+   * which best match the specified token location is on our
+   * list of accepted symbol types.
+   *
+   * @param {Object} tokenLocation
+   * @returns {Array} Member expression matches
+   */
+  async findBestMatchExpressions(tokenLocation) {
+    const cm = editors.get(this);
+    const {
+      codemirrorLanguage: { syntaxTree },
+    } = this.#CodeMirror6;
+
+    function matchPosition(node, position) {
+      return node.from <= position && node.to >= position;
+    }
+    const expressions = [];
+    const symbolTypes = new Set([
+      "MemberExpression",
+      "VariableDefinition",
+      "VariableName",
+      "this",
+      "PropertyName",
+    ]);
+
+    const line = cm.state.doc.line(tokenLocation.line);
+    const tokPos = line.from + tokenLocation.column;
+
+    await syntaxTree(cm.state).iterate({
+      enter: node => {
+        if (symbolTypes.has(node.name) && matchPosition(node, tokPos)) {
+          expressions.push({
+            type: node.name,
+            // Computed member expressions not currently supported
+            computed: false,
+            expression: cm.state.doc.sliceString(node.from, node.to),
+            location: {
+              start: this.#posToLineColumn(node.from),
+              end: this.#posToLineColumn(node.to),
+            },
+            from: node.from,
+            to: node.to,
+          });
+        }
+      },
+      from: line.from,
+      to: line.to,
+    });
+
+    // There might be multiple expressions which are within the locations.
+    // We want to match expressions based on dots before the desired token.
+    //
+    // ========================== EXAMPLE 1 ================================
+    // Full Expression: `this.myProperty.x`
+    // Hovered Token: `myProperty`
+    // Found Expressions:
+    // { name: "MemberExpression", expression: "this.myProperty.x", from: 1715, to: 1732 }
+    // { name: "MemberExpression", expression: "this.myProperty" from: 1715, to: 1730 } *
+    // { name: "PropertyName", expression: "myProperty" from: 1720, to: 1730 }
+    //
+    // ========================== EXAMPLE 2 ==================================
+    // Full Expression: `a(b).catch`
+    // Hovered Token: `b`
+    // Found Expressions:
+    // { name: "MemberExpression", expression: "a(b).catch", from: 1921  to: 1931 }
+    // { name: "VariableName", expression: "b", from: 1923  to: 1924 } *
+    //
+    // We sort based on the `to` make sure we return the correct property
+    return expressions.sort((a, b) => {
+      if (a.to < b.to) {
+        return -1;
+      } else if (a.to > b.to) {
+        return 1;
+      }
+      return 0;
+    });
   }
 
   /**
@@ -2059,8 +2232,13 @@ class Editor extends EventEmitter {
    */
   async setText(value, documentId) {
     const cm = editors.get(this);
+    const isWasm = typeof value !== "string" && "binary" in value;
 
-    if (typeof value !== "string" && "binary" in value) {
+    if (documentId) {
+      this.#currentDocumentId = documentId;
+    }
+
+    if (isWasm) {
       // wasm?
       // binary does not survive as Uint8Array, converting from string
       const binary = value.binary;
@@ -2068,6 +2246,7 @@ class Editor extends EventEmitter {
       for (let i = 0; i < data.length; i++) {
         data[i] = binary.charCodeAt(i);
       }
+
       const { lines, done } = wasm.getWasmText(this.getDoc(), data);
       const MAX_LINES = 10000000;
       if (lines.length > MAX_LINES) {
@@ -2077,8 +2256,13 @@ class Editor extends EventEmitter {
       if (!done) {
         lines.push(";; .... possible error during wast conversion");
       }
-      // cm will try to split into lines anyway, saving memory
-      value = { split: () => lines };
+
+      if (this.config.cm6) {
+        value = lines.join("\n");
+      } else {
+        // cm will try to split into lines anyway, saving memory
+        value = { split: () => lines };
+      }
     }
 
     if (this.config.cm6) {
@@ -2086,28 +2270,48 @@ class Editor extends EventEmitter {
         return;
       }
 
+      const {
+        codemirrorView: { EditorView, lineNumbers },
+      } = this.#CodeMirror6;
+
       await cm.dispatch({
         changes: { from: 0, to: cm.state.doc.length, insert: value },
         selection: { anchor: 0 },
       });
 
-      const {
-        codemirrorView: { EditorView },
-      } = this.#CodeMirror6;
+      const effects = [];
+      if (this.config?.lineNumbers) {
+        const lineNumbersConfig = {
+          domEventHandlers: this.#gutterDOMEventHandlers,
+        };
+        if (isWasm) {
+          lineNumbersConfig.formatNumber = this.getWasmLineNumberFormatter();
+        }
+        effects.push(
+          this.#compartments.lineNumberCompartment.reconfigure(
+            lineNumbers(lineNumbersConfig)
+          )
+        );
+      }
       // Get the cached scroll snapshot for this source and restore
       // the scroll position. Note: The scroll has to be done in a seperate dispatch
       // (after the previous dispatch has set the document), this is because
       // it is required that the document the scroll snapshot is applied to
       // is the exact document it was saved on.
       const scrollSnapshot = this.#scrollSnapshots.get(documentId);
-      await cm.dispatch({
-        effects: scrollSnapshot
-          ? [scrollSnapshot]
-          : [EditorView.scrollIntoView(0)],
-      });
 
-      if (documentId) {
-        this.#currentDocumentId = documentId;
+      effects.push(
+        scrollSnapshot ? scrollSnapshot : EditorView.scrollIntoView(0)
+      );
+
+      await cm.dispatch({ effects });
+
+      if (this.currentDocumentId) {
+        // If there is no scroll snapshot explicitly cache the snapshot set as no scroll
+        // is triggered.
+        if (!scrollSnapshot) {
+          this.#cacheScrollSnapshot();
+        }
       }
     } else {
       cm.setValue(value);
@@ -2164,10 +2368,15 @@ class Editor extends EventEmitter {
    * re-detect indentation if we should.
    */
   resetIndentUnit() {
+    if (this.isDestroyed()) {
+      return;
+    }
     const cm = editors.get(this);
-
     const iterFn = (start, maxEnd, callback) => {
       if (!this.config.cm6) {
+        if (this.isDestroyed()) {
+          return;
+        }
         cm.eachLine(start, maxEnd, line => {
           return callback(line.text);
         });
@@ -2449,7 +2658,9 @@ class Editor extends EventEmitter {
 
     for (const name in eventsArg) {
       const listener = eventsArg[name].bind(this, line, marker, data);
-      marker.addEventListener(name, listener);
+      marker.addEventListener(name, listener, {
+        signal: this.#abortController?.signal,
+      });
     }
   }
 
@@ -2535,15 +2746,6 @@ class Editor extends EventEmitter {
   getPositionFromCoords({ left, top }) {
     const cm = editors.get(this);
     return cm.coordsChar({ left, top });
-  }
-
-  /**
-   * The reverse of getPositionFromCoords. Similarly, returns a {left, top}
-   * object that corresponds to the specified line and character number.
-   */
-  getCoordsFromPosition({ line, ch }) {
-    const cm = editors.get(this);
-    return cm.charCoords({ line: ~~line, ch: ~~ch });
   }
 
   /**
@@ -2891,14 +3093,33 @@ class Editor extends EventEmitter {
   }
 
   /**
+   * Gets the element at the specified codemirror offset
+   * @param {Number} offset
+   * @return {Element|null}
+   */
+  #getElementAtOffset(offset) {
+    const cm = editors.get(this);
+    const el = cm.domAtPos(offset).node;
+    if (!el) {
+      return null;
+    }
+    // Text nodes do not have offset* properties, so lets use its
+    // parent element;
+    if (el.nodeType == nodeConstants.TEXT_NODE) {
+      return el.parentElement;
+    }
+    return el;
+  }
+
+  /**
    * This checks if the specified position (line/column) is within the current viewport
    * bounds. it helps determine if scrolling should happen.
-   * @param {Object} cm - The codemirror instance
    * @param {Number} line - The line in the source
    * @param {Number} column - The column in the source
    * @returns {Boolean}
    */
-  #isPositionVisible(cm, line, column) {
+  isPositionVisible(line, column) {
+    const cm = editors.get(this);
     let inXView, inYView;
 
     function withinBounds(x, min, max) {
@@ -2906,8 +3127,11 @@ class Editor extends EventEmitter {
     }
 
     if (this.config.cm6) {
-      const pos = this.#posToOffset(cm.state.doc, line, column);
-      const coords = pos && cm.coordsAtPos(pos);
+      const pos = this.#positionToOffset(line, column);
+      if (pos == null) {
+        return false;
+      }
+      const coords = cm.coordsAtPos(pos);
       if (!coords) {
         return false;
       }
@@ -2948,18 +3172,36 @@ class Editor extends EventEmitter {
   }
 
   /**
+   * Determines the line and column values the map to the codemirror offset specified.
+   * Used only for CM6
+   * @param {Number} pos - Codemirror offset
+   * @returns {Object} - Line column related to the position
+   */
+  #posToLineColumn(pos) {
+    const cm = editors.get(this);
+    if (!pos) {
+      return {
+        line: null,
+        column: null,
+      };
+    }
+    const line = cm.state.doc.lineAt(pos);
+    return {
+      line: line.number,
+      column: pos - line.from,
+    };
+  }
+
+  /**
    * Converts  line/col to CM6 offset position
-   * @param {Object} doc - the codemirror document
    * @param {Number} line - The line in the source
    * @param {Number} col - The column in the source
    * @returns {Number}
    */
-  #posToOffset(doc, line, col) {
-    if (!this.config.cm6) {
-      throw new Error("This function is only compatible with CM6");
-    }
+  #positionToOffset(line, col = 0) {
+    const cm = editors.get(this);
     try {
-      const offset = doc.line(line);
+      const offset = cm.state.doc.line(line);
       return offset.from + col;
     } catch (e) {
       // Line likey does not exist in viewport yet
@@ -2996,7 +3238,7 @@ class Editor extends EventEmitter {
     const {
       codemirrorView: { EditorView },
     } = this.#CodeMirror6;
-    cm.dispatch({
+    return cm.dispatch({
       effects: EditorView.scrollIntoView(position, {
         x: "nearest",
         y: "center",
@@ -3010,15 +3252,18 @@ class Editor extends EventEmitter {
    * @param {Number} column - The column in the source
    */
   scrollTo(line, column) {
+    if (this.isDestroyed()) {
+      return;
+    }
     const cm = editors.get(this);
     if (this.config.cm6) {
       const {
         codemirrorView: { EditorView },
       } = this.#CodeMirror6;
 
-      if (!this.#isPositionVisible(cm, line, column)) {
-        const offset = this.#posToOffset(cm.state.doc, line, column);
-        if (!offset) {
+      if (!this.isPositionVisible(line, column)) {
+        const offset = this.#positionToOffset(line, column);
+        if (offset == null) {
           return;
         }
         cm.dispatch({
@@ -3038,7 +3283,7 @@ class Editor extends EventEmitter {
 
       const { top, left } = cm.charCoords({ line, ch: column }, "local");
 
-      if (!this.#isPositionVisible(cm, line, column)) {
+      if (!this.isPositionVisible(line, column)) {
         const scroller = cm.getScrollerElement();
         const centeredX = Math.max(left - scroller.offsetWidth / 2, 0);
         const centeredY = Math.max(top - scroller.offsetHeight / 2, 0);
@@ -3046,6 +3291,135 @@ class Editor extends EventEmitter {
         cm.scrollTo(centeredX, centeredY);
       }
     }
+  }
+
+  // Used only in tests
+  setSelectionAt(start, end) {
+    const cm = editors.get(this);
+    if (this.config.cm6) {
+      const from = this.#positionToOffset(start.line, start.column);
+      const to = this.#positionToOffset(end.line, end.column);
+      if (from == null || to == null) {
+        return;
+      }
+      cm.dispatch({ selection: { anchor: from, head: to } });
+    } else {
+      cm.setSelection(
+        { line: start.line - 1, ch: start.column },
+        { line: end.line - 1, ch: end.column }
+      );
+    }
+  }
+
+  // Used only in tests
+  setCursorAt(line, column) {
+    const cm = editors.get(this);
+    if (this.config.cm6) {
+      const position = cm.state.doc.line(line + 1).from + column;
+      return cm.dispatch({ selection: { anchor: position, head: position } });
+    }
+    return cm.setCursor({ line, ch: column });
+  }
+
+  // Used only in tests
+  getEditorFileMode() {
+    const cm = editors.get(this);
+    if (this.config.cm6) {
+      return cm.contentDOM.dataset.language;
+    }
+    return cm.getOption("mode").name;
+  }
+
+  // Used only in tests
+  getEditorContent() {
+    const cm = editors.get(this);
+    if (this.config.cm6) {
+      return cm.state.doc.toString();
+    }
+    return cm.getValue();
+  }
+
+  isSearchStateReady() {
+    const cm = editors.get(this);
+    if (this.config.cm6) {
+      return !!this.searchState.cursors;
+    }
+    return !!cm.state.search;
+  }
+
+  // Used only in tests
+  getCoords(line, column = 0) {
+    const cm = editors.get(this);
+    if (this.config.cm6) {
+      const offset = this.#positionToOffset(line, column);
+      if (offset == null) {
+        return null;
+      }
+      return cm.coordsAtPos(offset);
+    }
+    // CodeMirror is 0-based while line and column arguments are 1-based.
+    // Pass "column=-1" when there is no column argument passed.
+    return cm.charCoords({ line: ~~line, ch: ~~column });
+  }
+
+  // Used only in tests
+  // Only used for CM6
+  getElementAtLine(line) {
+    const offset = this.#positionToOffset(line);
+    const el = this.#getElementAtOffset(offset);
+    return el.closest(".cm-line");
+  }
+
+  // Used only in tests
+  getSearchQuery() {
+    const cm = editors.get(this);
+    if (this.config.cm6) {
+      return this.searchState.query.toString();
+    }
+    return cm.state.search.query;
+  }
+
+  // Used only in tests
+  // Gets currently selected search term
+  getSearchSelection() {
+    const cm = editors.get(this);
+    if (this.config.cm6) {
+      const cursor =
+        this.searchState.cursors[this.searchState.currentCursorIndex];
+      if (!cursor) {
+        return { text: "", line: -1, column: -1 };
+      }
+
+      const cursorPosition = this.#posToLineColumn(cursor.to);
+      // The lines in CM6 are 1 based while CM5 is  0 based
+      return {
+        text: cursor.match[0],
+        line: cursorPosition.line - 1,
+        column: cursorPosition.column,
+      };
+    }
+    const cursor = cm.getCursor();
+    return {
+      text: cm.getSelection(),
+      line: cursor.line,
+      column: cursor.ch,
+    };
+  }
+
+  // Only used for CM6
+  getElementAtPos(line, column) {
+    const offset = this.#positionToOffset(line, column);
+    const el = this.#getElementAtOffset(offset);
+    return el;
+  }
+
+  // Used only in tests
+  getLineCount() {
+    const cm = editors.get(this);
+    if (this.config.cm6) {
+      return cm.state.doc.lines;
+    }
+    return cm.lineCount();
   }
 
   /**
@@ -3080,12 +3454,16 @@ class Editor extends EventEmitter {
   }
 
   isDestroyed() {
-    return !editors.get(this);
+    return !this.config || !editors.get(this);
   }
 
   destroy() {
     if (this.config.cm6 && this.#CodeMirror6) {
       this.#clearEditorDOMEventListeners();
+    }
+    if (this.#abortController) {
+      this.#abortController.abort();
+      this.#abortController = null;
     }
     this.container = null;
     this.config = null;
@@ -3113,6 +3491,10 @@ class Editor extends EventEmitter {
       cm.doc.cm = null;
     }
 
+    // Destroy the CM6 view
+    if (cm?.destroy) {
+      cm.destroy();
+    }
     this.emit("destroy");
   }
 
@@ -3262,6 +3644,29 @@ class Editor extends EventEmitter {
       );
     }
     return outputNode.innerHTML;
+  }
+
+  /**
+   * Focus the CodeMirror editor
+   */
+  focus() {
+    const cm = editors.get(this);
+    cm.focus();
+  }
+
+  /**
+   * Select the whole document
+   */
+  selectAll() {
+    const cm = editors.get(this);
+    if (this.config.cm6) {
+      cm.dispatch({
+        selection: { anchor: 0, head: cm.state.doc.length },
+        userEvent: "select",
+      });
+    } else {
+      cm.execCommand("selectAll");
+    }
   }
 }
 

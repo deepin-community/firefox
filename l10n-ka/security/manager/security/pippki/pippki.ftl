@@ -40,7 +40,7 @@ download-cert-window2 =
     .style = min-width: 46em
 download-cert-message = თქვენგან მოითხოვეს სერტიფიკატების ახალი გამცემისთვის (CA) ნდობის გამოცხადება.
 download-cert-trust-ssl =
-    .label = ვებსაიტების დამოწმების მინდობა ამ CA-სთვის.
+    .label = ამ გამომცემის ნდობა ვებსაიტების დამოწმებისთვის.
 download-cert-trust-email =
     .label = სერტიფიკატის გამომცემლობისთვის ნდობის გამოცხადება, ელფოსტის მომხმარებელთა ამოსაცნობად.
 download-cert-message-desc = სანამ CA-ს ნდობას გამოუცხადებთ, ჯერ შეამოწმეთ მისი სერტიფიკატი, დებულება და თანმიმდევრულობა (თუ გააჩნია).
@@ -103,4 +103,4 @@ set-password-reminder = მნიშვნელოვანია: თუ ს�
 
 # Variables:
 # $tokenName (String) - The name of the token to authenticate to (for example, "OS Client Cert Token (Modern)")
-protected-auth-alert = გთხოვთ, დაადასტუროთ საცნობი „{ $tokenName }“. თუ როგორ, ეს დამოკიდებულია თავად საცნობზე (მაგალითად, თითის ანაბეჭდის წამკითხველის ან კოდის შემტანი კლავიატურის მეშვეობით).
+protected-auth-alert = გთხოვთ, დაადასტუროთ საშვი „{ $tokenName }“. თუ როგორ, ეს დამოკიდებულია თავად საშვზე (მაგალითად, თითის ანაბეჭდის წამკითხველით ან კოდის ამკრეფით).

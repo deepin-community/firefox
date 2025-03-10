@@ -383,6 +383,10 @@ addon-detail-group-label-updates =
     .aria-label = { addon-detail-updates-label }
 # This is the tooltip text for the private browsing badge in about:addons. The
 # badge is the private browsing icon included next to the extension's name.
+addon-badge-private-browsing-allowed3 =
+    .title = Tillatt i private vinduer
+# This is the tooltip text for the private browsing badge in about:addons. The
+# badge is the private browsing icon included next to the extension's name.
 addon-badge-private-browsing-allowed2 =
     .title = Tillatt i private vinduer
     .aria-label = { addon-badge-private-browsing-allowed2.title }
@@ -422,6 +426,14 @@ addon-badge-line3 =
 addon-badge-verified2 =
     .title = Denne utvidelsen er gjennomgått for å oppfylle våre standarder for sikkerhet og ytelse.
     .aria-label = { addon-badge-verified2.title }
+addon-badge-recommended3 =
+    .title = { -brand-product-name } anbefaler bare utvidelser som oppfyller våre standarder for sikkerhet og ytelse
+# We hard code "Mozilla" in the string below because the extensions are built
+# by Mozilla and we don't want forks to display "by Fork".
+addon-badge-line4 =
+    .title = Offisiell utvidelse utviklet av Mozilla. Oppfyller sikkerhets- og ytelsesstandarder.
+addon-badge-verified3 =
+    .title = Denne utvidelsen er gjennomgått for å oppfylle våre standarder for sikkerhet og ytelse.
 
 ##
 
@@ -429,6 +441,7 @@ available-updates-heading = Tilgjengelige oppdateringer
 recent-updates-heading = Nylig oppdatert
 release-notes-loading = Laster…
 release-notes-error = Beklager, men en feil oppstod under lasting av versjonsnotatet.
+addon-permissions-empty2 = Denne utvidelsen krever ingen tillatelser.
 addon-permissions-empty = Denne utvidelsen krever ingen tillatelser
 addon-permissions-required = Nødvendige tillatelser for kjernefunksjonalitet:
 addon-permissions-optional = Valgfrie tillatelser for ekstra funksjonalitet:
@@ -478,10 +491,24 @@ details-notification-unsigned-and-disabled-link = Mer informasjon
 details-notification-unsigned = { $name } har ikke blitt bekreftet for bruk i { -brand-short-name }. Fortsett med varsomhet.
 details-notification-unsigned2 =
     .message = { $name } har ikke blitt bekreftet for bruk i { -brand-short-name }. Fortsett med varsomhet.
+details-notification-hard-blocked-extension =
+    .message = Denne utvidelsen er blokkert for brudd på Mozillas retningslinjer og har blitt deaktivert.
+details-notification-hard-blocked-other =
+    .message = Dette tillegget er blokkert for brudd på Mozillas retningslinjer og har blitt deaktivert.
 details-notification-unsigned-link = Mer informasjon
 details-notification-blocked = { $name } er avslått av sikkerhets- eller stabilitetshensyn .
 details-notification-blocked2 =
     .message = { $name } er avslått av sikkerhets- eller stabilitetshensyn .
+details-notification-blocked-link2 = Se detaljer
+details-notification-soft-blocked-extension-disabled =
+    .message = Denne utvidelsen har blitt begrenset for brudd på Mozillas retningslinjer og har blitt deaktivert. Du kan aktivere den, men dette kan være risikabelt.
+details-notification-soft-blocked-extension-enabled =
+    .message = Denne utvidelsen bryter Mozillas retningslinjer. Å bruke det kan være risikabelt.
+details-notification-soft-blocked-other-disabled =
+    .message = Dette tillegget har blitt begrenset for brudd på Mozillas retningslinjer og har blitt deaktivert. Du kan aktivere den, men dette kan være risikabelt.
+details-notification-soft-blocked-other-enabled =
+    .message = Dette tillegget bryter Mozillas retningslinjer. Å bruke det kan være risikabelt.
+details-notification-softblocked-link2 = Se detaljer
 details-notification-blocked-link = Mer informasjon
 details-notification-softblocked = { $name } er kjent for å skape sikkerhets- eller stabilitetsproblemer.
 details-notification-softblocked2 =

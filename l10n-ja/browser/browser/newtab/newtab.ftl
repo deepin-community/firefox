@@ -8,11 +8,18 @@
 newtab-page-title = 新しいタブ
 newtab-settings-button =
     .title = 新しいタブページをカスタマイズ
+newtab-personalize-settings-icon-label =
+    .title = 新しいタブをパーソナライズ
+    .aria-label = 設定
+newtab-settings-dialog-label =
+    .aria-label = 設定
 newtab-personalize-icon-label =
     .title = 新しいタブをパーソナライズ
     .aria-label = 新しいタブをパーソナライズ
 newtab-personalize-dialog-label =
     .aria-label = パーソナライズ
+newtab-logo-and-wordmark =
+    .aria-label = { -brand-full-name }
 
 ## Search box component.
 
@@ -109,6 +116,13 @@ newtab-menu-save-to-pocket = { -pocket-brand-name } に保存
 newtab-menu-delete-pocket = { -pocket-brand-name } から削除
 newtab-menu-archive-pocket = { -pocket-brand-name } にアーカイブ
 newtab-menu-show-privacy-info = 私たちのスポンサーとあなたのプライバシー
+newtab-menu-about-fakespot = { -fakespot-brand-name } について
+# Context menu option to personalize New Tab recommended stories by blocking a section of stories,
+# e.g. "Sports". "Block" is a verb here.
+newtab-menu-section-block = ブロック
+# "Follow", "unfollow", and "following" are social media terms that refer to subscribing to or unsubscribing from a section of stories.
+# e.g. Following the travel section of stories.
+newtab-menu-section-unfollow = トピックのフォローを解除
 
 ## Message displayed in a modal window to explain privacy and provide context for sponsored content.
 
@@ -231,6 +245,8 @@ newtab-pocket-cta-button = { -pocket-brand-name } を入手
 newtab-pocket-cta-text = お気に入りに記事を { -pocket-brand-name } に保存して、魅力的な読み物を思う存分楽しみましょう。
 newtab-pocket-pocket-firefox-family = { -pocket-brand-name } は { -brand-product-name } ファミリーの一員です
 # A save to Pocket button that shows over the card thumbnail on hover.
+newtab-pocket-image =
+    .aria-label = { -pocket-brand-name }
 newtab-pocket-save = 保存
 newtab-pocket-saved = 保存しました
 
@@ -242,6 +258,9 @@ newtab-pocket-thumbs-up-tooltip =
 # Clicking the thumbs down button for this story informs us that the user does not feel like the story is interesting for them
 newtab-pocket-thumbs-down-tooltip =
     .title = 興味なし
+# Used to show the user a message upon clicking the thumbs up or down buttons
+newtab-toast-thumbs-up-or-down2 =
+    .message = ありがとうございます。あなたのフィードバックがフィードを改善する助けになります。
 newtab-toast-thumbs-up-or-down = ありがとうございます。あなたのフィードバックがフィードを改善する助けになります。
 newtab-toast-dismiss-button =
     .title = 閉じる
@@ -291,6 +310,12 @@ newtab-custom-settings = 他の設定を管理
 
 newtab-wallpaper-title = 壁紙
 newtab-wallpaper-reset = 既定値にリセット
+newtab-wallpaper-upload-image = 画像をアップロード
+newtab-wallpaper-custom-color = 色を選択
+# Variables
+#   $file_size (number) - The number of the maximum image file size (in MB) that may be uploaded
+newtab-wallpaper-error-max-file-size = 画像がファイルサイズの上限を超えています。{ $file_size } MB より小さなファイルをアップロードしてください。
+newtab-wallpaper-error-file-type = ファイルをアップロードできませんでした。別のファイル形式で再度試してください。
 newtab-wallpaper-light-red-panda = レッサーパンダ
 newtab-wallpaper-light-mountain = 白い雪山
 newtab-wallpaper-light-sky = 紫色の雲と空
@@ -303,6 +328,8 @@ newtab-wallpaper-dark-panda = 森に隠れるレッサーパンダ
 newtab-wallpaper-dark-sky = 夜空と街の景色
 newtab-wallpaper-dark-mountain = 山の景色
 newtab-wallpaper-dark-city = 紫色の街の景色
+newtab-wallpaper-dark-fox-anniversary = 森林の道路に座るキツネ
+newtab-wallpaper-light-fox-anniversary = 霧がかかった山を背景に草原にたたずむキツネ
 
 ## Solid Colors
 
@@ -332,6 +359,10 @@ newtab-wallpaper-abstract-purple = 紫色の形状
 newtab-wallpaper-abstract-orange = オレンジ色の形状
 newtab-wallpaper-gradient-orange = オレンジとピンクのグラデーション
 newtab-wallpaper-abstract-blue-purple = 青色と紫色の形状
+newtab-wallpaper-abstract-white-curves = 影のついた白色の曲線
+newtab-wallpaper-abstract-purple-green = 紫色と緑色の明るいグラデーション
+newtab-wallpaper-abstract-blue-purple-waves = 青色と紫色の波形の形状
+newtab-wallpaper-abstract-black-waves = 黒色の波形の形状
 
 ## Photographs
 
@@ -342,6 +373,12 @@ newtab-wallpaper-storm-sky = 嵐の空
 newtab-wallpaper-sky-with-pink-clouds = ピンク色に染まる雲
 newtab-wallpaper-red-panda-yawns-in-a-tree = あくびをするレッサーパンダ
 newtab-wallpaper-white-mountains = 白い雪山
+newtab-wallpaper-hot-air-balloons = 昼空に浮かぶさまざまな色の熱気球
+newtab-wallpaper-starry-canyon = 青い星夜
+newtab-wallpaper-suspension-bridge = 昼の灰色の吊橋
+newtab-wallpaper-sand-dunes = 白砂の砂丘
+newtab-wallpaper-palm-trees = 朝焼けに照らされたココヤシの木々のシルエット
+newtab-wallpaper-forest-trees = 霧に覆われた木々
 # Variables
 #   $author_string (String) - The name of the creator of the photo.
 #   $webpage_string (String) - The name of the webpage where the photo is located.
@@ -357,6 +394,19 @@ feature-highlight-wallpaper =
     .title = { -newtab-wallpaper-feature-highlight-header }
     .aria-label = { -newtab-wallpaper-feature-highlight-content }
 
+## Celestial
+
+# “Celestial” referring to astronomy; positioned in or relating to the sky,
+# or outer space as observed in astronomy.
+# Not to be confused with religious definition of the word.
+newtab-wallpaper-category-title-celestial = 宇宙
+newtab-wallpaper-celestial-lunar-eclipse = 月食
+newtab-wallpaper-celestial-earth-night = 地球低軌道からの夜景
+newtab-wallpaper-celestial-starry-sky = 星空
+newtab-wallpaper-celestial-eclipse-time-lapse = 月食のタイムラプス
+newtab-wallpaper-celestial-black-hole = ブラックホール銀河のイラスト
+newtab-wallpaper-celestial-river = 河川の衛星画像
+
 ## New Tab Weather
 
 # Variables:
@@ -367,6 +417,9 @@ newtab-weather-see-forecast =
 #   $provider (string) - Service provider for weather data
 newtab-weather-sponsored = 提供: { $provider }
 newtab-weather-menu-change-location = 予報地点を変更
+newtab-weather-change-location-search-input-placeholder =
+    .placeholder = 場所を検索
+    .aria-label = 場所を検索
 newtab-weather-change-location-search-input = 場所を検索
 newtab-weather-menu-weather-display = 天気表示
 # Display options are:
@@ -425,3 +478,50 @@ newtab-topic-selection-button-maybe-later = 後で選ぶ
 newtab-topic-selection-privacy-link = ユーザーデータの保護と管理について
 newtab-topic-selection-button-update-interests = 関心事を更新
 newtab-topic-selection-button-pick-interests = 関心事を選ぶ
+
+## Button to block/unblock listed topics
+## "Block", "unblocked", and "blocked" are social media terms that refer to hiding a section of stories.
+## e.g. Blocked the politics section of stories.
+
+
+## Content Feed Sections
+## "Follow", "unfollow", and "following" are social media terms that refer to subscribing to or unsubscribing from a section of stories.
+## e.g. Following the travel section of stories.
+
+newtab-section-follow-button = フォローする
+newtab-section-following-button = フォロー中
+newtab-section-unfollow-button = フォロー解除
+
+## Button to block/unblock listed topics
+## "Block", "unblocked", and "blocked" are social media terms that refer to hiding a section of stories.
+## e.g. Blocked the politics section of stories.
+
+newtab-section-block-button = ブロックする
+newtab-section-blocked-button = ブロック中
+newtab-section-unblock-button = ブロック解除
+
+## Confirmation modal for blocking a section
+
+newtab-section-confirm-block-section-p1 = このセクションをブロックしてもよろしいですか？
+newtab-section-confirm-block-section-p2 = ブロックされたセクションは今後フィードに表示されなくなります。
+newtab-section-block-section-button = このセクションをブロック
+newtab-section-cancel-button = 後で
+newtab-section-confirm-block-topic-p1 = 本当にこのトピックをブロックしますか？
+newtab-section-confirm-block-topic-p2 = ブロックしたトピックはフィードに表示されません。
+# Variables:
+#   $topic (string) - Name of topic that user is blocking
+newtab-section-block-topic-button = { $topic } をブロック
+
+## Panel in the Customize menu section to manage followed and blocked topics
+
+newtab-section-mangage-topics-title = トピック
+newtab-section-manage-topics-button-v2 =
+    .label = トピックを管理
+newtab-section-mangage-topics-followed-topics = フォロー中
+newtab-section-mangage-topics-button =
+    .label = フォロー中およびブロック中のトピック
+newtab-section-mangage-topics-followed-topics-subtitle = フォロー中のトピック
+newtab-section-mangage-topics-followed-topics-empty-state = フォローしているトピックはありません。
+newtab-section-mangage-topics-blocked-topics = ブロック中
+newtab-section-mangage-topics-blocked-topics-subtitle = ブロック中のトピック
+newtab-section-mangage-topics-blocked-topics-empty-state = ブロックしているトピックはありません。

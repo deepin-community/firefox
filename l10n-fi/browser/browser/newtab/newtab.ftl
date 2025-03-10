@@ -8,11 +8,18 @@
 newtab-page-title = Uusi välilehti
 newtab-settings-button =
     .title = Muokkaa Uusi välilehti -sivua
+newtab-personalize-settings-icon-label =
+    .title = Mukauta uutta välilehteä
+    .aria-label = Asetukset
+newtab-settings-dialog-label =
+    .aria-label = Asetukset
 newtab-personalize-icon-label =
     .title = Muokkaa uutta välilehteä
     .aria-label = Muokkaa uutta välilehteä
 newtab-personalize-dialog-label =
     .aria-label = Muokkaa
+newtab-logo-and-wordmark =
+    .aria-label = { -brand-full-name }
 
 ## Search box component.
 
@@ -109,6 +116,13 @@ newtab-menu-save-to-pocket = Tallenna { -pocket-brand-name }-palveluun
 newtab-menu-delete-pocket = Poista { -pocket-brand-name }-palvelusta
 newtab-menu-archive-pocket = Arkistoi { -pocket-brand-name }-palveluun
 newtab-menu-show-privacy-info = Tukijamme ja yksityisyytesi
+newtab-menu-about-fakespot = Tietoja { -fakespot-brand-name }ista
+# Context menu option to personalize New Tab recommended stories by blocking a section of stories,
+# e.g. "Sports". "Block" is a verb here.
+newtab-menu-section-block = Estä
+# "Follow", "unfollow", and "following" are social media terms that refer to subscribing to or unsubscribing from a section of stories.
+# e.g. Following the travel section of stories.
+newtab-menu-section-unfollow = Lopeta aiheen seuraaminen
 
 ## Message displayed in a modal window to explain privacy and provide context for sponsored content.
 
@@ -233,6 +247,8 @@ newtab-pocket-cta-button = Hanki { -pocket-brand-name }
 newtab-pocket-cta-text = Tallenna tykkäämäsi tekstit { -pocket-brand-name }iin ja ravitse mieltäsi kiinnostavilla teksteillä.
 newtab-pocket-pocket-firefox-family = { -pocket-brand-name } on osa { -brand-product-name }-perhettä
 # A save to Pocket button that shows over the card thumbnail on hover.
+newtab-pocket-image =
+    .aria-label = { -pocket-brand-name }
 newtab-pocket-save = Tallenna
 newtab-pocket-saved = Tallennettu
 
@@ -244,6 +260,9 @@ newtab-pocket-thumbs-up-tooltip =
 # Clicking the thumbs down button for this story informs us that the user does not feel like the story is interesting for them
 newtab-pocket-thumbs-down-tooltip =
     .title = Ei minulle
+# Used to show the user a message upon clicking the thumbs up or down buttons
+newtab-toast-thumbs-up-or-down2 =
+    .message = Kiitos. Palautteesi auttaa meitä parantamaan syötettäsi.
 newtab-toast-thumbs-up-or-down = Kiitos. Palautteesi auttaa meitä parantamaan syötettäsi.
 newtab-toast-dismiss-button =
     .title = Hylkää
@@ -297,6 +316,12 @@ newtab-custom-settings = Muokkaa lisää asetuksia
 
 newtab-wallpaper-title = Taustakuvat
 newtab-wallpaper-reset = Palauta oletusarvo
+newtab-wallpaper-upload-image = Lähetä kuva
+newtab-wallpaper-custom-color = Valitse väri
+# Variables
+#   $file_size (number) - The number of the maximum image file size (in MB) that may be uploaded
+newtab-wallpaper-error-max-file-size = Kuvan koko ylitti tiedostokokorajan { $file_size } Mt. Yritä ladata pienempi tiedosto.
+newtab-wallpaper-error-file-type = Tiedostoa ei voitu lähettää. Yritä uudelleen toisella tiedostotyypillä.
 newtab-wallpaper-light-red-panda = Kultapanda
 newtab-wallpaper-light-mountain = Valkoinen vuori
 newtab-wallpaper-light-sky = Taivas violettien ja vaaleanpunaisten pilvien kera
@@ -309,6 +334,8 @@ newtab-wallpaper-dark-panda = Kultapanda metsän piilossa
 newtab-wallpaper-dark-sky = Kaupunkimaisema ja yötaivas
 newtab-wallpaper-dark-mountain = Vuorimaisema
 newtab-wallpaper-dark-city = Purppura kaupunkimaisema
+newtab-wallpaper-dark-fox-anniversary = Kettu jalkakäytävällä lähellä metsää
+newtab-wallpaper-light-fox-anniversary = Kettu ruohopellolla ja sumuinen vuoristomaisema
 
 ## Solid Colors
 
@@ -338,8 +365,12 @@ newtab-wallpaper-abstract-purple = Violetit muodot
 newtab-wallpaper-abstract-orange = Oranssit muodot
 newtab-wallpaper-gradient-orange = Oranssi ja pinkki liukuväreissä
 newtab-wallpaper-abstract-blue-purple = Sinisiä ja violetteja muotoja
+newtab-wallpaper-abstract-white-curves = Valkoista ja varjostettuja kaaria
+newtab-wallpaper-abstract-purple-green = Violetin ja vihreän valon liukuväriä
+newtab-wallpaper-abstract-blue-purple-waves = Sinisiä ja violetteja aaltoilevia muotoja
+newtab-wallpaper-abstract-black-waves = Mustia aaltoilevia muotoja
 
-## Photographs
+## Celestial
 
 newtab-wallpaper-category-title-photographs = Valokuvat
 newtab-wallpaper-beach-at-sunrise = Ranta auringonnousun aikaan
@@ -348,6 +379,12 @@ newtab-wallpaper-storm-sky = Myrskyinen taivas
 newtab-wallpaper-sky-with-pink-clouds = Taivas ja vaaleanpunaiset pilvet
 newtab-wallpaper-red-panda-yawns-in-a-tree = Kultapanda haukottelee puussa
 newtab-wallpaper-white-mountains = Valkoiset vuoret
+newtab-wallpaper-hot-air-balloons = Värikkäitä kuumailmapalloja päiväsaikaan
+newtab-wallpaper-starry-canyon = Sininen tähtiyö
+newtab-wallpaper-suspension-bridge = Harmaa riippusilta päiväsaikaan
+newtab-wallpaper-sand-dunes = Valkoiset hiekkadyynit
+newtab-wallpaper-palm-trees = Kookospalmujen siluetti auringonnousun aikana
+newtab-wallpaper-forest-trees = Puut sumun peitossa
 # Variables
 #   $author_string (String) - The name of the creator of the photo.
 #   $webpage_string (String) - The name of the webpage where the photo is located.
@@ -363,6 +400,19 @@ feature-highlight-wallpaper =
     .title = { -newtab-wallpaper-feature-highlight-header }
     .aria-label = { -newtab-wallpaper-feature-highlight-content }
 
+## Celestial
+
+# “Celestial” referring to astronomy; positioned in or relating to the sky,
+# or outer space as observed in astronomy.
+# Not to be confused with religious definition of the word.
+newtab-wallpaper-category-title-celestial = Taivaallinen
+newtab-wallpaper-celestial-lunar-eclipse = Kuunpimennys
+newtab-wallpaper-celestial-earth-night = Yökuva matalalta Maan kiertoradalta
+newtab-wallpaper-celestial-starry-sky = Tähtitaivas
+newtab-wallpaper-celestial-eclipse-time-lapse = Kuunpimennyksen kuvasarja
+newtab-wallpaper-celestial-black-hole = Mustan aukon galaksikuvitus
+newtab-wallpaper-celestial-river = Satelliittikuva joesta
+
 ## New Tab Weather
 
 # Variables:
@@ -373,6 +423,9 @@ newtab-weather-see-forecast =
 #   $provider (string) - Service provider for weather data
 newtab-weather-sponsored = { $provider } ∙ Sponsoroitu
 newtab-weather-menu-change-location = Vaihda sijaintia
+newtab-weather-change-location-search-input-placeholder =
+    .placeholder = Hae sijaintia
+    .aria-label = Hae sijaintia
 newtab-weather-change-location-search-input = Hae sijaintia
 newtab-weather-menu-weather-display = Sään näkymä
 # Display options are:
@@ -431,3 +484,45 @@ newtab-topic-selection-button-maybe-later = Ehkä myöhemmin
 newtab-topic-selection-privacy-link = Lue lisää, kuinka suojaamme ja hallitsemme tietoja
 newtab-topic-selection-button-update-interests = Päivitä kiinnostuksen kohteesi
 newtab-topic-selection-button-pick-interests = Valitse kiinnostuksen kohteesi
+
+## Content Feed Sections
+## "Follow", "unfollow", and "following" are social media terms that refer to subscribing to or unsubscribing from a section of stories.
+## e.g. Following the travel section of stories.
+
+newtab-section-follow-button = Seuraa
+newtab-section-following-button = Seurataan
+newtab-section-unfollow-button = Lopeta seuraaminen
+
+## Button to block/unblock listed topics
+## "Block", "unblocked", and "blocked" are social media terms that refer to hiding a section of stories.
+## e.g. Blocked the politics section of stories.
+
+newtab-section-block-button = Estä
+newtab-section-blocked-button = Estetty
+newtab-section-unblock-button = Poista esto
+
+## Confirmation modal for blocking a section
+
+newtab-section-confirm-block-section-p1 = Haluatko varmasti estää tämän osion?
+newtab-section-confirm-block-section-p2 = Estetty osio ei enää näy syötteessäsi.
+newtab-section-block-section-button = Estä tämä osio
+newtab-section-cancel-button = Ei nyt
+newtab-section-confirm-block-topic-p1 = Haluatko varmasti estää tämän aiheen?
+newtab-section-confirm-block-topic-p2 = Estetyt aiheet eivät enää näy syötteessäsi.
+# Variables:
+#   $topic (string) - Name of topic that user is blocking
+newtab-section-block-topic-button = Estä { $topic }
+
+## Panel in the Customize menu section to manage followed and blocked topics
+
+newtab-section-mangage-topics-title = Aiheet
+newtab-section-manage-topics-button-v2 =
+    .label = Hallinnoi aiheita
+newtab-section-mangage-topics-followed-topics = Seurattu
+newtab-section-mangage-topics-button =
+    .label = Seuratut ja estetyt aiheet
+newtab-section-mangage-topics-followed-topics-subtitle = Seuratut aiheet
+newtab-section-mangage-topics-followed-topics-empty-state = Et ole vielä seurannut yhtäkään aihetta.
+newtab-section-mangage-topics-blocked-topics = Estetty
+newtab-section-mangage-topics-blocked-topics-subtitle = Estetyt aiheet
+newtab-section-mangage-topics-blocked-topics-empty-state = Et ole vielä estänyt yhtäkään aihetta.

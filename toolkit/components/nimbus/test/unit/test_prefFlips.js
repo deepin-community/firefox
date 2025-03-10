@@ -12,9 +12,6 @@ const { JsonSchema } = ChromeUtils.importESModule(
 const { TelemetryTestUtils } = ChromeUtils.importESModule(
   "resource://testing-common/TelemetryTestUtils.sys.mjs"
 );
-const { TelemetryEvents } = ChromeUtils.importESModule(
-  "resource://normandy/lib/TelemetryEvents.sys.mjs"
-);
 
 const USER = "user";
 const DEFAULT = "default";
@@ -148,7 +145,6 @@ function checkExpectedPrefBranches(prefs) {
 add_setup(function setup() {
   do_get_profile();
   Services.fog.initializeFOG();
-  TelemetryEvents.init();
 
   const cleanupFeatures = ExperimentTestUtils.addTestFeatures(
     PREF_FEATURES[USER],
@@ -2030,7 +2026,7 @@ add_task(async function test_prefFlip_setPref_restore() {
       }
     );
     Assert.deepEqual(
-      Glean.nimbusEvents.unenrollment.testGetValue().map(event => ({
+      Glean.nimbusEvents.unenrollment.testGetValue("events").map(event => ({
         reason: event.extra.reason,
         experiment: event.extra.experiment,
         conflicting_slug: event.extra.conflicting_slug,
@@ -2285,7 +2281,7 @@ add_task(async function test_prefFlips_failed() {
     }
   );
   Assert.deepEqual(
-    Glean.nimbusEvents.unenrollment.testGetValue().map(event => ({
+    Glean.nimbusEvents.unenrollment.testGetValue("events").map(event => ({
       reason: event.extra.reason,
       experiment: event.extra.experiment,
       pref_name: event.extra.pref_name,

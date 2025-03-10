@@ -288,7 +288,7 @@ created-by-author = szerző: <a data-l10n-name="author">{ $author }</a>
 # Variables:
 #   $dailyUsers (number) - The number of daily users.
 user-count = Felhasználók: { $dailyUsers }
-install-extension-button = Hozzáadás a { -brand-product-name }hoz
+install-extension-button = Hozzáadás a { -brand-product-name(case: "allative") }
 install-theme-button = Téma telepítése
 # The label of the button that appears after installing an add-on. Upon click,
 # the detailed add-on view is opened, from where the add-on can be managed.
@@ -299,6 +299,9 @@ find-more-themes = További témák keresése
 # used for screen readers.
 addon-options-button =
     .aria-label = További beállítások
+# Explanatory introduction to the list of recommended add-ons. The action word
+# ("recommends") in the final sentence is a link to external documentation.
+discopane-intro2 = A kiegészítők és témák lehetővé teszik a { -brand-product-name } testreszabását. Elősegíthetik az adatvédelmet, növelhetik a hatékonyságot, jobbá tehetik a médiatartalmakat, módosíthatják a { -brand-product-name } megjelenését, és még sok másra képesek. Ezeket a kis szoftvereket gyakran harmadik felek fejlesztik. Itt egy válogatás, melyet a { -brand-product-name } <a data-l10n-name="learn-more-trigger">ajánl</a> a kivételes biztonság, teljesítmény és funkcionalitás érdekében.
 
 ## Add-on actions
 
@@ -333,7 +336,7 @@ locale-disabled-heading = Tiltva
 sitepermission-enabled-heading = Engedélyezve
 sitepermission-disabled-heading = Tiltva
 always-activate-button = Mindig aktiválja
-never-activate-button = Soha ne aktiválja
+never-activate-button = Sose aktiválja
 addon-detail-author-label = Szerző
 addon-detail-version-label = Verzió
 addon-detail-last-updated-label = Utoljára frissítve
@@ -385,6 +388,10 @@ addon-detail-group-label-updates =
     .aria-label = { addon-detail-updates-label }
 # This is the tooltip text for the private browsing badge in about:addons. The
 # badge is the private browsing icon included next to the extension's name.
+addon-badge-private-browsing-allowed3 =
+    .title = Engedélyezett privát ablakokban
+# This is the tooltip text for the private browsing badge in about:addons. The
+# badge is the private browsing icon included next to the extension's name.
 addon-badge-private-browsing-allowed2 =
     .title = Engedélyezett privát ablakokban
     .aria-label = { addon-badge-private-browsing-allowed2.title }
@@ -424,6 +431,14 @@ addon-badge-line3 =
 addon-badge-verified2 =
     .title = Megvizsgáltuk ezt a kiegészítőt, és megfelelt a biztonsági és a teljesítménybeli követelményeinknek.
     .aria-label = { addon-badge-verified2.title }
+addon-badge-recommended3 =
+    .title = A { -brand-product-name } csak olyan kiegészítőket ajánl, amelyek megfelelnek a biztonsági és a teljesítménybeli követelményeinknek.
+# We hard code "Mozilla" in the string below because the extensions are built
+# by Mozilla and we don't want forks to display "by Fork".
+addon-badge-line4 =
+    .title = Hivatalos, a Mozilla által készített kiegészítő. Megfelel a biztonsági és teljesítményi előírásoknak.
+addon-badge-verified3 =
+    .title = Megvizsgáltuk ezt a kiegészítőt, és megfelelt a biztonsági és a teljesítménybeli követelményeinknek.
 
 ##
 
@@ -431,6 +446,7 @@ available-updates-heading = Elérhető frissítések
 recent-updates-heading = Legutóbbi frissítések
 release-notes-loading = Betöltés…
 release-notes-error = Sajnáljuk, de hiba történt a kiadási megjegyzések betöltésekor.
+addon-permissions-empty2 = Ez a kiegészítő nem igényel semmilyen engedélyt.
 addon-permissions-empty = Ez a kiegészítő nem igényel semmilyen engedélyt
 addon-permissions-required = Az alapvető funkciókhoz szükséges engedélyek:
 addon-permissions-optional = A további funkciókhoz szükséges engedélyek:
@@ -480,10 +496,24 @@ details-notification-unsigned-and-disabled-link = További információ
 details-notification-unsigned = { $name } használhatósága nem ellenőrizhető a { -brand-short-name } programban. Legyen óvatos.
 details-notification-unsigned2 =
     .message = { $name } használhatósága nem ellenőrizhető a { -brand-short-name } programban. Legyen óvatos.
+details-notification-hard-blocked-extension =
+    .message = Ez a kiegészítő a Mozilla irányelveinek megsértése miatt blokkolva lett, és le lett tiltva.
+details-notification-hard-blocked-other =
+    .message = Ez a kiegészítő a Mozilla irányelveinek megsértése miatt blokkolva lett, és le lett tiltva.
 details-notification-unsigned-link = További információ
 details-notification-blocked = A(z) { $name } le lett tiltva biztonsági vagy stabilitási problémák miatt.
 details-notification-blocked2 =
     .message = A(z) { $name } le lett tiltva biztonsági vagy stabilitási problémák miatt.
+details-notification-blocked-link2 = Részletek megtekintése
+details-notification-soft-blocked-extension-disabled =
+    .message = Ez a kiegészítő a Mozilla irányelveinek megsértése miatt korlátozva lett, és le lett tiltva. Engedélyezheti, de ez kockázatos lehet.
+details-notification-soft-blocked-extension-enabled =
+    .message = Ez a kiegészítő megsérti a Mozilla irányelveit. A használata kockázatos lehet.
+details-notification-soft-blocked-other-disabled =
+    .message = Ez a kiegészítő a Mozilla irányelveinek megsértése miatt korlátozva lett, és le lett tiltva. Engedélyezheti, de ez kockázatos lehet.
+details-notification-soft-blocked-other-enabled =
+    .message = Ez a kiegészítő megsérti a Mozilla irányelveit. A használata kockázatos lehet.
+details-notification-softblocked-link2 = Részletek megtekintése
 details-notification-blocked-link = További információ
 details-notification-softblocked = A(z) { $name } biztonsági vagy stabilitási problémát okoz.
 details-notification-softblocked2 =

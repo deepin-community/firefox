@@ -240,12 +240,15 @@ fxa-sync-cfr-secondary = Figyelmeztetés később
 device-migration-fxa-spotlight-heavy-user-header = Ne felejtsen el biztonsági mentést készíteni az adatairól
 device-migration-fxa-spotlight-heavy-user-body = Győződjön meg arról, hogy a fontos információk – mint a könyvjelzők és jelszavak – legyenek naprakészek és védettek az összes eszközén.
 device-migration-fxa-spotlight-heavy-user-primary-button = Első lépések
-device-migration-fxa-spotlight-older-device-header = Nyugalom, a { -brand-product-name }tól
+device-migration-fxa-spotlight-older-device-header = Nyugalom, a { -brand-product-name(case: "ablative") }
 device-migration-fxa-spotlight-older-device-body = Egy fiók naprakészen tartja a fontos információit, és védi őket az összes csatlakoztatott eszközén.
 device-migration-fxa-spotlight-older-device-primary-button = Fiók létrehozása
 device-migration-fxa-spotlight-getting-new-device-header-2 = Új eszköz a jövőben?
 device-migration-fxa-spotlight-getting-new-device-body-2 = Kövessen néhány egyszerű lépést, hogy magával vigye a könyvjelzőit, előzményeit és jelszavait, amikor új eszközt kezd használni.
 device-migration-fxa-spotlight-getting-new-device-primary-button = Hogyan kell biztonsági mentést készíteni az adatokról
+device-migration-fxa-spotlight-sync-header = Böngésszen zökkenőmentesen
+device-migration-fxa-spotlight-sync-body = Szinkronizálja az összes fontos adatát titkosítással – például a könyvjelzőket és a jelszavakat. Bárhol elér mindent, ahol a { -brand-product-name(case: "accusative") } használja.
+device-migration-fxa-spotlight-sync-primary-button = Kezdő lépések
 
 ## Set as Default PDF Reader Infobar
 
@@ -282,3 +285,61 @@ tail-fox-spotlight-title = Rázza le a bosszantó nyomkövetőket
 tail-fox-spotlight-subtitle = Mondjon búcsút a bosszantó hirdetéskövetőknek, és élvezze a biztonságosabb, gyorsabb internetezést.
 tail-fox-spotlight-primary-button = Saját hivatkozások megnyitása a { -brand-short-name(case: "instrumental") }
 tail-fox-spotlight-secondary-button = Most nem
+
+## Root Certificate Succession Infobar
+
+root-certificate-succession-infobar-january-message = <strong>A { -brand-short-name } régebbi verzióiban 2025. január 14-én problémák léphetnek fel.</strong>
+root-certificate-succession-infobar-march-message = <strong>Frissítsen, hogy 2025. március 14. után is használja a { -brand-short-name(case: "accusative") }.</strong>
+root-certificate-succession-infobar-link = Miért van szükségem a frissítésre?
+root-certificate-succession-infobar-primary-button =
+    .label = Frissítés most
+    .accesskey = F
+root-certificate-succession-infobar-secondary-button =
+    .label = Később
+    .accesskey = K
+
+## Root Certificate Succession Windows Background Notification
+
+root-certificate-windows-background-notification-title = Lemaradt egy fontos { -brand-short-name } frissítésről
+root-certificate-windows-background-notification-subtitle = A böngésző egyes részei hamarosan nem fognak működni, ha nem frissít. Itt az alkalom, hogy megszerezze a legújabb védelmeket és funkciókat.
+root-certificate-windows-background-notification-learn-more-button = További tudnivalók
+root-certificate-windows-background-notification-update-button = A { -brand-short-name } frissítése
+
+## FxA Menu Message variants
+
+fxa-menu-message-close-button =
+    .title = Bezárás
+    .aria-label = Bezárás
+fxa-menu-message-sign-up-button = Regisztráció
+fxa-menu-message-sync-devices-primary-text = Szinkronizálja az összes eszközét
+fxa-menu-message-sync-devices-secondary-text = Azonnal kapja meg az adatait – mint a könyvjelzők és a jelszavak – mindenhol, ahol a { -brand-short-name(case: "accusative") } használja.
+fxa-menu-message-sync-devices-collapsed-text = Szinkronizálja az összes eszközét
+fxa-menu-message-backup-data-primary-text = Készítsen biztonsági mentést a böngészési adatairól
+fxa-menu-message-backup-data-secondary-text = Automatikusan védje meg a könyvjelzőket, jelszavakat és egyéb információkat az összes eszközén.
+fxa-menu-message-backup-data-collapsed-text = Biztonsági mentés készítése a böngészési adatokról
+fxa-menu-message-backup-sync-primary-text = Tartsa adatait biztonságban és szinkronizálva
+fxa-menu-message-backup-sync-secondary-text = A Sync biztonsági mentést készít az adatai nagy részéről, így bárhol elérheti őket, ahol { -brand-short-name(case: "accusative") } használ.
+fxa-menu-message-backup-sync-collapsed-text = Adatok szinkronizálása és biztonsági mentése
+fxa-menu-message-mobile-primary-text = Lapokat küld a telefonjára
+fxa-menu-message-mobile-secondary-text = Folytassa ott, ahol abbahagyta, ha szinkronizálja a lapjait egy mobileszközzel.
+fxa-menu-message-mobile-collapsed-text = Szinkronizáljon a telefonjával
+
+## Multi-CTA Fox Doodle Spotlight
+
+multi-cta-fox-doodle-title = Üdvözöljük újra
+multi-cta-fox-doodle-set-default-checkbox = A { -brand-short-name } beállítása alapértelmezettként
+multi-cta-fox-doodle-pin-startmenu-checkbox = A { -brand-short-name } rögzítése a Start menüben
+multi-cta-fox-doodle-pin-checkbox =
+    { PLATFORM() ->
+        [macos] A { -brand-short-name } dokkban tartása
+       *[other] A { -brand-short-name } rögzítése a tálcára
+    }
+multi-cta-fox-doodle-start-browsing-primary-button-label = Böngészés megkezdése
+multi-cta-fox-doodle-main-browser-primary-button-label = A { -brand-short-name } elsődleges böngészővé tétele
+multi-cta-fox-doodle-quick-reminder-subtitle = Itt egy gyors emlékeztető, hogy egyetlen kattintásnyira tudhatja kedvenc adatvédelem-központú böngészőjét.
+multi-cta-fox-doodle-privacy-focused-subtitle =
+    { PLATFORM() ->
+        [macos] Tartsa egyetlen kattintásra a kedvenc adatvédelmi fókuszú böngészőjét. Állítsa be a { -brand-short-name(case: "accusative") } alapértelmezett böngészőnek a hivatkozások megnyitásához, és tartsa a dokkban.
+       *[other] Tartsa egyetlen kattintásra a kedvenc adatvédelmi fókuszú böngészőjét. Állítsa be a { -brand-short-name(case: "accusative") } alapértelmezett böngészőnek a hivatkozások megnyitásához, és rögzítse a tálcára.
+    }
+multi-cta-fox-doodle-msix-privacy-focused-subtitle = Tartsa egyetlen kattintásra a kedvenc adatvédelmi fókuszú böngészőjét. Állítsa be a { -brand-short-name(case: "accusative") } alapértelmezett böngészőnek a hivatkozások megnyitásához, és rögzítse a tálcára és a Start menübe.

@@ -525,11 +525,17 @@ class ChromeActions {
     if (typeof data.rawQuery === "string") {
       rawQuery = data.rawQuery;
     }
+    // Same for the `entireWord` property.
+    let entireWord = false;
+    if (typeof data.entireWord === "boolean") {
+      entireWord = data.entireWord;
+    }
 
     let actor = getActor(this.domWindow);
     actor?.sendAsyncMessage("PDFJS:Parent:updateControlState", {
       result,
       findPrevious,
+      entireWord,
       matchesCount,
       rawQuery,
     });
@@ -1086,6 +1092,15 @@ PdfStreamConverter.prototype = {
       if (triggeringPrincipal?.schemeIs("file") && alwaysAskBeforeHandling) {
         return HTML;
       }
+    }
+
+    // If we're loading this PDF with an object/embed element, we always want to
+    // try to render it inline, as we can't fall back to an external handler.
+    if (
+      aChannel.loadInfo?.externalContentPolicyType ==
+      Ci.nsIContentPolicy.TYPE_OBJECT
+    ) {
+      return HTML;
     }
 
     throw new Components.Exception("Can't use PDF.js", Cr.NS_ERROR_FAILURE);

@@ -108,8 +108,11 @@ appmenu-fxa-sync-and-save-data2 = Sincronitza i desa les dades
 appmenu-fxa-signed-in-label = Inicia la sessió
 appmenu-fxa-setup-sync =
     .label = Activa la sincronització…
+appmenu-fxa-setup-sync-new = Activa
 appmenuitem-save-page =
     .label = Anomena i desa la pàgina…
+appmenuitem-fxa-sync-off-title = La sincronització està desactivada
+appmenuitem-fxa-sync-off-description = Protegiu i accediu a les vostres adreces d'interès, contrasenyes i més des de qualsevol dispositiu.
 
 ## What's New panel in App menu.
 
@@ -196,6 +199,7 @@ profiler-popup-presets-power-description = Preconfiguració recomanada per a inv
 # "Power" is used in the sense of energy (electricity used by the computer).
 profiler-popup-presets-power-label =
     .label = Energia
+profiler-popup-presets-debug-description = Preconfiguració recomanada per a la depuració del { -brand-shorter-name }. Té una gran sobrecàrrega; per tant, no l'utilitzeu per a fer feines que requereixin un alt rendiment, sinó per a centrar-vos en comprendre el comportament del navegador.
 profiler-popup-presets-debug-label =
     .label = Depuració
 profiler-popup-presets-custom-label =
@@ -273,6 +277,24 @@ appmenuitem-report-broken-site =
 
 appmenuitem-sign-in-account = Inicieu la sessió al vostre compte
 appmenuitem-monitor-title = { -monitor-brand-short-name }
+appmenuitem-monitor-description = Obteniu alertes sobre filtracions de dades
 appmenuitem-relay-title = { -relay-brand-short-name }
+appmenuitem-relay-description = Emmascareu el vostre correu electrònic i telèfon reals
+appmenuitem-services-relay-description = Obre el tauler de màscares d’adreça electrònica
 appmenuitem-vpn-title = { -mozilla-vpn-brand-name }
 appmenuitem-vpn-description = Protegiu la vostra activitat a la xarxa
+appmenu-services-header = Els meus serveis
+appmenu-other-protection-header = Proveu altres eines de protecció de { -vendor-short-name }:
+
+## Profiles panel
+
+appmenu-profiles = Perfils
+appmenu-other-profiles = Altres perfils
+appmenu-manage-profiles =
+    .label = Gestiona els perfils
+appmenu-create-profile =
+    .label = Perfil nou
+appmenu-edit-profile =
+    .aria-label = Edita el perfil
+appmenu-profiles-2 =
+    .label = Perfils

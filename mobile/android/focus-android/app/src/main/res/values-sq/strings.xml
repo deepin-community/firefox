@@ -84,7 +84,6 @@
     <string name="share_dialog_title">Ndajeni përmes</string>
 
     <string name="notification_erase_title_android_14">Të fshihet historik shfletimesh?</string>
-    <string name="notification_erase_text_android_14" moz:RemovedIn="124" tools:ignore="UnusedResources">Që të fshihet në mënyrë të siguruar historiku juaj i shfletimit, prekeni, ose spastrojeni këtë njoftim.</string>
 
     <!-- Text shown in the notification description that pops up to remind the user that a browsing session is active
     for Android 14+. -->
@@ -352,6 +351,11 @@
     <!-- %1$s will be replaced with the name of the app (e.g. Firefox Focus) -->
     <string name="preference_mozilla_telemetry_summary2">Mozilla rreket të grumbullojë vetëm sa na duhen për të ofruar dhe përmirësuar %1$s-un për këdo.</string>
 
+    <!-- Preference switch for daily usage ping data collection -->
+    <string name="preference_daily_usage_ping_title">Ping i përditshëm përdorimi</string>
+    <string name="preference_daily_usage_ping_description">Kjo e ndihmon Mozilla-n të hamendësojë numrin e përdoruesve aktivë.</string>
+    <string name="preference_daily_usage_ping_learn_more">Mësoni më tepër</string>
+
     <!-- In-app link (in settings) to Focus privacy notice. -->
     <string name="preference_privacy_notice">Shënim Privatësie</string>
 
@@ -360,6 +364,9 @@
 
     <!-- Link to Focus licensing information from other libraries that we use. -->
     <string name="preference_libraries_we_use">Biblioteka që përdorim</string>
+
+    <!-- Link to Focus Crash reports list. -->
+    <string name="preference_crashes">Vithisje</string>
 
     <!-- Open Source Licenses page title. The first parameter is the app name -->
     <string name="open_source_licenses_title">%s | Biblioteka OSS</string>
@@ -425,7 +432,7 @@
 
     <!-- Content description (not visible, for screen readers etc.): Lock icon showed in the URL bar for
      https pages.. -->
-    <string name="content_description_lock">Lidhje e sigurt</string>
+    <string name="content_description_lock">Lidhje e siguruar</string>
 
     <!-- This text is not visible. Instead it will be read by the accessibility service once we start
      loading a website -->
@@ -516,10 +523,7 @@
 
 
 
-  <!-- Content description (not visible, for screen readers etc.): This is the description for the close button from the new onboarding flow screen one and two -->
-    <string name="onboarding_close_button_content_description">Mbylle</string>
-
-    <!-- New Onboarding flow first screen title -->
+  <!-- New Onboarding flow first screen title -->
     <!-- %1$s will be replaced by the app name and build variant(e.g. Firefox Focus, Firefox Klar Nightly) -->
     <string name="onboarding_first_screen_title">Mirë se vini te %1$s</string>
 
@@ -618,7 +622,7 @@
 
     <!-- Text shown in the "Your rights" screen.
     %1$s will be replaced with the name of the app (e.g. Firefox Focus)-->
-    <string name="your_rights_content1"><![CDATA[%1$s është software i lirë dhe me burim të hapur, i krijuar nga Mozilla dhe kontribues të tjerë.]]></string>
+    <string name="your_rights_content1"><![CDATA[%1$s është <em>software</em> i lirë dhe me burim të hapët, i krijuar nga Mozilla dhe kontribues të tjerë.]]></string>
 
 
 
@@ -839,7 +843,7 @@
     <string name="studies_learn_more">Mësoni më tepër</string>
 
     <!-- Dialog message shown when some changes are made on studies -->
-    <string name="studies_restart_app">Aplikacioni do të mbyllet, që të vihen në fuqi ndryshimet</string>
+    <string name="studies_restart_app" moz:removedIn="135">Aplikacioni do të mbyllet, që të vihen në fuqi ndryshimet</string>
 
     <!-- Title of the remove studies button -->
     <string name="studies_remove">Hiqe</string>
@@ -934,9 +938,6 @@
 
     <!-- Label for the button in the snackbar that switches to the newly opened tab -->
     <string name="open_new_tab_snackbar">Kalo në të</string>
-
-    <!-- Text displayed in a notification when the user enters full screen mode -->
-    <string name="full_screen_notification" moz:removedIn="130" tools:ignore="UnusedResources">Po hyhet në mënyrën “Sa krejt ekrani”</string>
 
     <!-- Preference for switching to a new tab immediately after opening -->
     <string name="preference_open_new_tab">Kalo menjëherë te lidhja në skedën e re</string>
@@ -1050,7 +1051,7 @@
      Ndryshojeni këtë rregullim te Rregullime > Privatësi &amp; Siguri > Siguri.]]></string>
 
     <!-- The document title and heading of the error page shown when a website has an invalid or expired SSL certificate. -->
-    <string name="mozac_browser_errorpages_security_bad_cert_title">Lidhje jo e sigurt</string>
+    <string name="mozac_browser_errorpages_security_bad_cert_title">Lidhje jo e siguruar</string>
 
     <!-- The error message shown when a website has an invalid or expired SSL certificate. -->
     <string name="mozac_browser_errorpages_security_bad_cert_message"><![CDATA[
@@ -1129,8 +1130,10 @@
     <string name="promote_search_widget_snackbar_message">Widget-i u shtua te skena e kreut</string>
 
     <!-- Messages explaining how to exit fullscreen mode -->
-    <!-- Message shown to explain how to exit fullscreen mode when gesture navigation is enabled -->
-    <string name="exit_fullscreen_with_gesture">Që të dilet nga mënyra “sa krejt ekrani”, tërhiqeni që nga kreu dhe përdorni gjestin për mbrapsht</string>
-    <!-- Message shown to explain how to exit fullscreen mode when using back button navigation -->
-    <string name="exit_fullscreen_with_back_button">Që të dilet nga mënyra “sa krejt ekrani”, tërhiqeni që nga kreu dhe shtypni tastin për mbrapsht</string>
+    <!-- Message shown to explain how to exit fullscreen mode when gesture navigation is enabled. -->
+    <!-- Localisation note: this text should be as short as possible, max 68 chars -->
+    <string name="exit_fullscreen_with_gesture_short">Që të dilet, tërhiqni që nga sipër &amp; përdorni gjestin për mbrapsht</string>
+    <!-- Message shown to explain how to exit fullscreen mode when using back button navigation. -->
+    <!-- Localisation note: this text should be as short as possible, max 68 chars -->
+    <string name="exit_fullscreen_with_back_button_short">Që të dilet, tërhiqni që nga sipër &amp; shtypni për mbrapsht</string>
 </resources>

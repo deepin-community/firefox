@@ -10,9 +10,16 @@ all-tabs-menu-new-user-context =
 all-tabs-menu-hidden-tabs =
     .label = แท็บที่ซ่อนอยู่
 all-tabs-menu-manage-user-context =
-    .label = จัดการการแยกข้อมูล
+    .label = จัดการที่แยกข้อมูล
     .accesskey = จ
 all-tabs-menu-close-duplicate-tabs =
     .label = ปิดแท็บที่ซ้ำกัน
 all-tabs-menu-close-all-duplicate-tabs =
     .label = ปิดแท็บที่ซ้ำกันทั้งหมด
+all-tabs-menu-synced-tabs =
+    .label = แท็บจากอุปกรณ์อื่น ๆ
+all-tabs-menu-current-window-header = หน้าต่างปัจจุบัน
+# "Show all" is for showing all open groups as well as saved groups. Initially,
+# we only show up to five of these groups.
+all-tabs-menu-tab-groups-show-all =
+    .label = แสดงทั้งหมด

@@ -30,6 +30,9 @@ appmenu-update-restart2 =
     .secondarybuttonlabel = Skrij
     .secondarybuttonaccesskey = k
 appmenu-update-restart-message2 = Namestite najnovejšo različico { -brand-shorter-name(sklon: "rodilnik") }. Odprta okna in zavihki bodo obnovljeni.
+appmenu-theme-installed =
+    .secondarybuttonlabel = Razveljavi
+    .secondarybuttonaccesskey = R
 appmenu-update-other-instance =
     .label = { -brand-shorter-name }a ni mogoče samodejno posodobiti na najnovejšo različico.
     .buttonlabel = Vseeno posodobi { -brand-shorter-name }
@@ -37,7 +40,6 @@ appmenu-update-other-instance =
     .secondarybuttonlabel = Ne zdaj
     .secondarybuttonaccesskey = N
 appmenu-update-other-instance-message = Na voljo je nova posodobitev za { -brand-shorter-name }, vendar je ni mogoče namestiti, ker se izvaja drug izvod { -brand-shorter-name }a. Za nadaljevanje posodobitve ga zaprite, lahko pa jo vseeno namestite, pri čemer drugi izvod morda ne bo deloval pravilno, dokler ga ne zaženete znova.
-
 appmenu-addon-private-browsing-installed2 =
     .buttonlabel = V redu
     .buttonaccesskey = V
@@ -45,7 +47,6 @@ appmenu-addon-post-install-message3 = Upravljajte dodatke in teme v meniju aplik
 appmenu-addon-post-install-incognito-checkbox =
     .label = Dovoli, da se ta razširitev izvaja v zasebnih oknih
     .accesskey = D
-    
 appmenu-new-tab-controlled-changes =
     .label = Stran novega zavihka se je spremenila.
     .buttonlabel = Obdrži spremembe

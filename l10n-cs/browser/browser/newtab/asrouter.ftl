@@ -319,6 +319,13 @@ device-migration-fxa-spotlight-older-device-primary-button = Vytvořit účet
 device-migration-fxa-spotlight-getting-new-device-header-2 = Plánujete v blízké budoucnosti nové zařízení?
 device-migration-fxa-spotlight-getting-new-device-body-2 = Když začínáte používat nové zařízení, přeneste si s sebou své záložky, historii a hesla pomocí několika jednoduchých kroků.
 device-migration-fxa-spotlight-getting-new-device-primary-button = Jak zálohovat moje data
+device-migration-fxa-spotlight-sync-header = Prohlížejte bez ztráty kytičky
+device-migration-fxa-spotlight-sync-body =
+    { -brand-product-name.case-status ->
+        [with-cases] Synchronizujte všechny důležité informace se šifrováním - například záložky a hesla. Vše můžete vytáhnout odkudkoli, kde použijete { -brand-product-name(case: "acc") }.
+       *[no-cases] Synchronizujte všechny důležité informace se šifrováním - například záložky a hesla. Vše můžete vytáhnout odkudkoli, kde použijete aplikaci { -brand-product-name }.
+    }
+device-migration-fxa-spotlight-sync-primary-button = Začít
 
 ## Set as Default PDF Reader Infobar
 
@@ -377,3 +384,105 @@ tail-fox-spotlight-primary-button =
        *[no-cases] Otevírat mé odkazy pomocí aplikace { -brand-short-name }
     }
 tail-fox-spotlight-secondary-button = Teď ne
+
+## Root Certificate Succession Infobar
+
+root-certificate-succession-infobar-january-message =
+    { -brand-short-name.case-status ->
+        [with-cases] <strong>Starší verze { -brand-short-name(case: "gen") } mohou začít mít 14. ledna 2025 problémy.</strong>
+       *[no-cases] <strong>Starší verze aplikace { -brand-short-name } mohou začít mít 14. ledna 2025 problémy.</strong>
+    }
+root-certificate-succession-infobar-march-message =
+    { -brand-short-name.case-status ->
+        [with-cases] <strong>Proveďte aktualizaci, abyste mohli { -brand-short-name(case: "acc") } nadále používat i po 14. březnu 2025.</strong>
+       *[no-cases] <strong>Proveďte aktualizaci, abyste mohli aplikaci { -brand-short-name } nadále používat i po 14. březnu 2025.</strong>
+    }
+root-certificate-succession-infobar-link = Proč potřebuji aktualizaci?
+root-certificate-succession-infobar-primary-button =
+    .label = Aktualizovat
+    .accesskey = A
+root-certificate-succession-infobar-secondary-button =
+    .label = Později
+    .accesskey = P
+
+## Root Certificate Succession Windows Background Notification
+
+root-certificate-windows-background-notification-title =
+    { -brand-full-name.case-status ->
+        [with-cases] Zmeškali jste důležitou aktualizaci { -brand-short-name(case: "gen") }
+       *[no-cases] Zmeškali jste důležitou aktualizaci aplikace { -brand-short-name }
+    }
+root-certificate-windows-background-notification-subtitle = Pokud prohlížeč neaktualizujete, přestanou jeho části brzy fungovat. Nyní je vhodná doba pro získání našich nejnovějších ochran a funkcí.
+root-certificate-windows-background-notification-learn-more-button = Zjistit více
+root-certificate-windows-background-notification-update-button =
+    { -brand-full-name.case-status ->
+        [with-cases] Aktualizovat { -brand-short-name(case: "acc") }
+       *[no-cases] Aktualizovat aplikaci { -brand-short-name }
+    }
+
+## FxA Menu Message variants
+
+fxa-menu-message-close-button =
+    .title = Zavřít
+    .aria-label = Zavřít
+fxa-menu-message-sign-up-button = Přihlásit se
+fxa-menu-message-sync-devices-primary-text = Synchronizace všech zařízení
+fxa-menu-message-sync-devices-secondary-text =
+    { -brand-short-name.case-status ->
+        [with-cases] Okamžitě získáte své informace — například záložky a hesla — všude tam, kde použijete { -brand-short-name(case: "acc") }.
+       *[no-cases] Okamžitě získáte své informace — například záložky a hesla — všude tam, kde použijete aplikaci { -brand-short-name }.
+    }
+fxa-menu-message-sync-devices-collapsed-text = Synchronizace všech zařízení
+fxa-menu-message-backup-data-primary-text = Zálohujte si údaje prohlížeče
+fxa-menu-message-backup-data-secondary-text = Automaticky chraňte záložky, hesla a další informace na všech svých zařízeních.
+fxa-menu-message-backup-data-collapsed-text = Zálohujte údaje prohlížeče
+fxa-menu-message-backup-sync-primary-text = Udržujte své údaje v bezpečí a synchronizované
+fxa-menu-message-backup-sync-secondary-text =
+    { -brand-short-name.case-status ->
+        [with-cases] Synchronizace zálohuje většinu vašich dat, takže k nim máte přístup všude, kde používáte { -brand-short-name(case: "acc") }.
+       *[no-cases] Synchronizace zálohuje většinu vašich dat, takže k nim máte přístup všude, kde používáte aplikaci { -brand-short-name }.
+    }
+fxa-menu-message-backup-sync-collapsed-text = Synchronizujte a zálohujte data
+fxa-menu-message-mobile-primary-text = Odešlete panely do telefonu
+fxa-menu-message-mobile-secondary-text = Po synchronizaci panelů s mobilním zařízením můžete okamžitě pokračovat tam, kde jste skončili.
+fxa-menu-message-mobile-collapsed-text = Synchronizujte s telefonem
+
+## Multi-CTA Fox Doodle Spotlight
+
+multi-cta-fox-doodle-title = Vítejte zpět
+multi-cta-fox-doodle-set-default-checkbox =
+    { -brand-short-name.case-status ->
+        [with-cases] Nastavit { -brand-short-name(case: "acc") } jako výchozí
+       *[no-cases] Nastavit aplikaci { -brand-short-name } jako výchozí
+    }
+multi-cta-fox-doodle-pin-startmenu-checkbox =
+    { -brand-short-name.case-status ->
+        [with-cases] Připnout { -brand-short-name(case: "acc") } do nabídky Start
+       *[no-cases] Připnout aplikaci { -brand-short-name } do nabídky Start
+    }
+multi-cta-fox-doodle-pin-checkbox =
+    { PLATFORM() ->
+        [macos] Ponechat { -brand-short-name } v Docku
+       *[other] Připnout { -brand-short-name } na hlavní panel
+    }
+multi-cta-fox-doodle-start-browsing-primary-button-label = Začít prohlížet
+multi-cta-fox-doodle-main-browser-primary-button-label =
+    { -brand-short-name.case-status ->
+        [with-cases] Nastavit { -brand-short-name(case: "acc") } jako můj hlavní prohlížeč
+       *[no-cases] Nastavit aplikaci { -brand-short-name }  jako můj hlavní prohlížeč
+    }
+multi-cta-fox-doodle-quick-reminder-subtitle = Připomínáme vám, že svůj oblíbený prohlížeč zaměřený na ochranu soukromí můžete mít jen na jedno klepnutí.
+multi-cta-fox-doodle-privacy-focused-subtitle =
+    { PLATFORM() ->
+        [macos]
+            { -brand-short-name.case-status ->
+                [with-cases] Svůj oblíbený prohlížeč zaměřený na ochranu soukromí můžete mít na dosah jediného klepnutí. Nastavte { -brand-short-name(case: "acc") } jako výchozí prohlížeč pro otevírání odkazů a mějte ho v Docku.
+               *[no-cases] Svůj oblíbený prohlížeč zaměřený na ochranu soukromí můžete mít na dosah jediného klepnutí. Nastavte aplikaci { -brand-short-name } jako výchozí prohlížeč pro otevírání odkazů a mějte ho v Docku.
+            }
+       *[other]
+            { -brand-short-name.case-status ->
+                [with-cases] Svůj oblíbený prohlížeč zaměřený na ochranu soukromí můžete mít na dosah jediného klepnutí. Nastavte { -brand-short-name(case: "acc") } jako výchozí prohlížeč pro otevírání odkazů a připněte jej na hlavní panel.
+               *[no-cases] Svůj oblíbený prohlížeč zaměřený na ochranu soukromí můžete mít na dosah jediného klepnutí. Nastavte aplikaci { -brand-short-name } jako výchozí prohlížeč pro otevírání odkazů a připněte jej na hlavní panel.
+            }
+    }
+multi-cta-fox-doodle-msix-privacy-focused-subtitle = Svůj oblíbený prohlížeč zaměřený na ochranu soukromí můžete mít na dosah jediného klepnutí. Nastavte { -brand-short-name } jako výchozí prohlížeč pro otevírání odkazů a připněte jej na hlavní panel a do nabídky Start.

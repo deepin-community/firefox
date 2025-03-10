@@ -77,10 +77,10 @@ class CodeGeneratorARM : public CodeGeneratorShared {
   void emitTableSwitchDispatch(MTableSwitch* mir, Register index,
                                Register base);
 
-  void emitBigIntDiv(LBigIntDiv* ins, Register dividend, Register divisor,
-                     Register output, Label* fail);
-  void emitBigIntMod(LBigIntMod* ins, Register dividend, Register divisor,
-                     Register output, Label* fail);
+  void emitBigIntPtrDiv(LBigIntPtrDiv* ins, Register dividend, Register divisor,
+                        Register output);
+  void emitBigIntPtrMod(LBigIntPtrMod* ins, Register dividend, Register divisor,
+                        Register output);
 
   template <typename T>
   void emitWasmLoad(T* ins);
@@ -91,13 +91,7 @@ class CodeGeneratorARM : public CodeGeneratorShared {
   template <typename T>
   void emitWasmUnalignedStore(T* ins);
 
-  ValueOperand ToValue(LInstruction* ins, size_t pos);
-  ValueOperand ToTempValue(LInstruction* ins, size_t pos);
-
-  Register64 ToOperandOrRegister64(const LInt64Allocation input);
-
-  // Functions for LTestVAndBranch.
-  void splitTagForTest(const ValueOperand& value, ScratchTagScope& tag);
+  Register64 ToOperandOrRegister64(const LInt64Allocation& input);
 
   void divICommon(MDiv* mir, Register lhs, Register rhs, Register output,
                   LSnapshot* snapshot, Label& done);

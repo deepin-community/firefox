@@ -77,6 +77,10 @@ appmenu-remote-tabs-turn-on-sync =
 appmenu-remote-tabs-showmore =
     .label = Diskouez muioc'h a ivinelloù
     .tooltiptext = Diskouez muioc'h a ivinelloù eus an trevnad-mañ
+# This is shown as the label for an element to show inactive tabs from this device.
+appmenu-remote-tabs-show-inactive-tabs =
+    .label = Ivinelloù dioberiant
+    .tooltiptext = Diskouez an ivinelloù dioberiant war an trevnad-mañ
 # This is shown beneath the name of a device when that device has no open tabs
 appmenu-remote-tabs-notabs = Ivinell digor ebet
 # This is shown when Sync is configured but syncing tabs is disabled.
@@ -104,8 +108,10 @@ appmenu-fxa-sync-and-save-data2 = Goubredañ hag enrollañ ar roadennoù
 appmenu-fxa-signed-in-label = Kennaskañ
 appmenu-fxa-setup-sync =
     .label = Gweredekaat ar goubredañ…
+appmenu-fxa-setup-sync-new = Gweredekaat
 appmenuitem-save-page =
     .label = Enrollañ ar bajenn evel…
+appmenuitem-fxa-sync-off-title = Diweredekaet eo ar goubredañ
 
 ## What's New panel in App menu.
 
@@ -271,3 +277,16 @@ appmenuitem-relay-title = { -relay-brand-short-name }
 appmenuitem-relay-description = Kuzhit ho chomlec’h postel hag ho niverenn bellgomz gwirion
 appmenuitem-vpn-title = { -mozilla-vpn-brand-name }
 appmenuitem-vpn-description = Gwarezit hoc’h oberiantiz enlinenn
+
+## Profiles panel
+
+appmenu-profiles = Profiloù
+appmenu-other-profiles = Profiloù all
+appmenu-manage-profiles =
+    .label = Merañ ar profiloù
+appmenu-create-profile =
+    .label = Profil nevez
+appmenu-edit-profile =
+    .aria-label = Kemmañ ar profil
+appmenu-profiles-2 =
+    .label = Profiloù

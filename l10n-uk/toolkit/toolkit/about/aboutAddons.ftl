@@ -77,7 +77,7 @@ detail-home =
 detail-home-value =
     .value = { detail-home.label }
 detail-repository =
-    .label = Профіль додатку
+    .label = Профіль додатка
 detail-repository-value =
     .value = { detail-repository.label }
 detail-check-for-updates =
@@ -294,6 +294,14 @@ find-more-themes = Знайти інші теми
 # used for screen readers.
 addon-options-button =
     .aria-label = Інші варіанти
+# Explanatory introduction to the list of recommended add-ons. The action word
+# ("recommends") in the final sentence is a link to external documentation.
+discopane-intro2 =
+    Розширення й теми дозволяють налаштувати { -brand-product-name }. Вони можуть покращити приватність,
+    підвищити продуктивність, вдосконалити медіа, змінити вигляд { -brand-product-name }, і
+    ще багато іншого. Ці невеликі програми часто розробляються третіми особами. Ось
+    перелік <a data-l10n-name="learn-more-trigger">рекомендованих розширень</a> { -brand-product-name }
+    для виняткової безпеки, продуктивності та функціональності.
 
 ## Add-on actions
 
@@ -381,6 +389,10 @@ addon-detail-group-label-updates =
     .aria-label = { addon-detail-updates-label }
 # This is the tooltip text for the private browsing badge in about:addons. The
 # badge is the private browsing icon included next to the extension's name.
+addon-badge-private-browsing-allowed3 =
+    .title = Дозволено в приватних вікнах
+# This is the tooltip text for the private browsing badge in about:addons. The
+# badge is the private browsing icon included next to the extension's name.
 addon-badge-private-browsing-allowed2 =
     .title = Дозволено в приватних вікнах
     .aria-label = { addon-badge-private-browsing-allowed2.title }
@@ -420,6 +432,14 @@ addon-badge-line3 =
 addon-badge-verified2 =
     .title = Це розширення перевірено на відповідність нашим стандартам безпеки та швидкодії.
     .aria-label = { addon-badge-verified2.title }
+addon-badge-recommended3 =
+    .title = { -brand-product-name } рекомендує лише розширення, що задовольняють наші стандарти безпеки та швидкодії
+# We hard code "Mozilla" in the string below because the extensions are built
+# by Mozilla and we don't want forks to display "by Fork".
+addon-badge-line4 =
+    .title = Офіційне розширення, створене Mozilla. Відповідає стандартам безпеки та продуктивності.
+addon-badge-verified3 =
+    .title = Це розширення перевірено на відповідність нашим стандартам безпеки та швидкодії.
 
 ##
 
@@ -427,6 +447,7 @@ available-updates-heading = Доступні оновлення
 recent-updates-heading = Недавні оновлення
 release-notes-loading = Завантаження…
 release-notes-error = На жаль, під час завантаження приміток до випуску сталася помилка.
+addon-permissions-empty2 = Це розширення не вимагає жодних дозволів.
 addon-permissions-empty = Це розширення не потребує дозволів
 addon-permissions-required = Необхідні дозволи для роботи основних функцій:
 addon-permissions-optional = Необов'язкові дозволи для додаткових функцій:
@@ -476,10 +497,24 @@ details-notification-unsigned-and-disabled-link = Докладніше
 details-notification-unsigned = Додаток { $name } не був перевірений для використання в { -brand-short-name }. Продовжуйте з обережністю.
 details-notification-unsigned2 =
     .message = Додаток { $name } не був перевірений для використання в { -brand-short-name }. Продовжуйте з обережністю.
+details-notification-hard-blocked-extension =
+    .message = Це розширення заблоковано за порушення політик Mozilla, тому його було вимкнено.
+details-notification-hard-blocked-other =
+    .message = Цей додаток заблоковано за порушення політик Mozilla, тому його було вимкнено.
 details-notification-unsigned-link = Докладніше
 details-notification-blocked = { $name } було вимкнено, у зв'язку з проблемами безпеки чи стабільності.
 details-notification-blocked2 =
     .message = { $name } було вимкнено, у зв'язку з проблемами безпеки чи стабільності.
+details-notification-blocked-link2 = Переглянути подробиці
+details-notification-soft-blocked-extension-disabled =
+    .message = Це розширення обмежено через порушення політик Mozilla, тому його було вимкнено. Ви можете ввімкнути його, розуміючи можливі наслідки ризику.
+details-notification-soft-blocked-extension-enabled =
+    .message = Це розширення порушує політики Mozilla. Користуватися ним може бути ризиковано.
+details-notification-soft-blocked-other-disabled =
+    .message = Цей додаток обмежено через порушення політик Mozilla, тому його було вимкнено. Ви можете ввімкнути його, розуміючи можливі наслідки ризику.
+details-notification-soft-blocked-other-enabled =
+    .message = Цей додаток порушує політики Mozilla. Користуватися ним може бути ризиковано.
+details-notification-softblocked-link2 = Переглянути подробиці
 details-notification-blocked-link = Докладніше
 details-notification-softblocked = В { $name } є відомі проблеми з безпекою та стабільністю.
 details-notification-softblocked2 =

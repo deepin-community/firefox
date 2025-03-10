@@ -2,6 +2,21 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+# Shown in the new migration wizard's dropdown selector for choosing the browser
+# to import from. This variant is shown when the selected browser doesn't support
+# user profiles, and so we only show the browser name.
+#
+# Variables:
+#  $sourceBrowser (String): the name of the browser to import from.
+migration-wizard-selection-option-without-profile = { $sourceBrowser }
+# Shown in the new migration wizard's dropdown selector for choosing the browser
+# and user profile to import from. This variant is shown when the selected browser
+# supports user profiles.
+#
+# Variables:
+#  $sourceBrowser (String): the name of the browser to import from.
+#  $profileName (String): the name of the user profile to import from.
+migration-wizard-selection-option-with-profile = { $sourceBrowser } — { $profileName }
 
 # Each migrator is expected to include a display name string, and that display
 # name string should have a key with "migration-wizard-migrator-display-name-"
@@ -55,6 +70,9 @@ migration-passwords-from-file-tsv-filter-title =
        *[other] TSV దస్త్రం
     }
 migration-bookmarks-from-file = ఇష్టాంశాలు
+migration-cancel-button-label = రద్దుచేయి
+migration-done-button-label = పూర్తయింది
+migration-continue-button-label = కొనసాగించు
 
 ## These strings will be used to create a dynamic list of items that can be
 ## imported. The list will be created using Intl.ListFormat(), so it will
@@ -62,9 +80,17 @@ migration-bookmarks-from-file = ఇష్టాంశాలు
 ## When applicable, the resources should be in their plural form.
 ## For example, a possible list could be "Bookmarks, passwords and autofill data".
 
+migration-list-password-label = సంకేతపదాలు
+migration-list-history-label = చరిత్ర
+migration-list-extensions-label = పొడగింతలు
+migration-list-payment-methods-label = చెల్లింపు పద్ధతులు
 
 ##
 
+migration-wizard-progress-icon-in-progress =
+    .aria-label = దిగుమతవుతున్నది…
+migration-wizard-progress-icon-completed =
+    .aria-label = పూర్తయింది
 migration-safari-password-import-skip-button = దాటవేయి
 
 ## The import process identifies extensions installed in other supported
@@ -74,3 +100,13 @@ migration-safari-password-import-skip-button = దాటవేయి
 
 ##
 
+# Shown in the migration wizard after importing passwords from another
+# browser has completed.
+#
+# Variables:
+#  $quantity (Number): the number of successfully imported passwords
+migration-wizard-progress-success-passwords =
+    { $quantity ->
+        [one] { $quantity } సంకేతపదం
+       *[other] { $quantity } సంకేతపదాలు
+    }

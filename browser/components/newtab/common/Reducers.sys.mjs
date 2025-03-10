@@ -3,10 +3,13 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import { actionTypes as at } from "resource://activity-stream/common/Actions.mjs";
-import { Dedupe } from "resource://activity-stream/common/Dedupe.sys.mjs";
+import { Dedupe } from "resource:///modules/Dedupe.sys.mjs";
 
-export const TOP_SITES_DEFAULT_ROWS = 1;
-export const TOP_SITES_MAX_SITES_PER_ROW = 8;
+export {
+  TOP_SITES_DEFAULT_ROWS,
+  TOP_SITES_MAX_SITES_PER_ROW,
+} from "resource:///modules/topsites/constants.mjs";
+
 const PREF_COLLECTION_DISMISSIBLE = "discoverystream.isCollectionDismissible";
 
 const dedupe = new Dedupe(site => site && site.url);
@@ -18,6 +21,11 @@ export const INITIAL_STATE = {
     locale: "",
     isForStartupCache: false,
     customizeMenuVisible: false,
+  },
+  Ads: {
+    initialized: false,
+    lastUpdated: null,
+    topsites: {},
   },
   TopSites: {
     // Have we received real data from history yet?
@@ -67,6 +75,12 @@ export const INITIAL_STATE = {
       },
       loaded: false,
     },
+    // Used to show impressions in newtab devtools.
+    impressions: {
+      feed: {},
+    },
+    // Used to show blocks in newtab devtools.
+    blocks: {},
     spocs: {
       spocs_endpoint: "",
       lastUpdated: null,
@@ -161,43 +175,6 @@ function App(prevState = INITIAL_STATE.App, action) {
     default:
       return prevState;
   }
-}
-
-/**
- * insertPinned - Inserts pinned links in their specified slots
- *
- * @param {array} a list of links
- * @param {array} a list of pinned links
- * @return {array} resulting list of links with pinned links inserted
- */
-export function insertPinned(links, pinned) {
-  // Remove any pinned links
-  const pinnedUrls = pinned.map(link => link && link.url);
-  let newLinks = links.filter(link =>
-    link ? !pinnedUrls.includes(link.url) : false
-  );
-  newLinks = newLinks.map(link => {
-    if (link && link.isPinned) {
-      delete link.isPinned;
-      delete link.pinIndex;
-    }
-    return link;
-  });
-
-  // Then insert them in their specified location
-  pinned.forEach((val, index) => {
-    if (!val) {
-      return;
-    }
-    let link = Object.assign({}, val, { isPinned: true, pinIndex: index });
-    if (index > newLinks.length) {
-      newLinks[index] = link;
-    } else {
-      newLinks.splice(index, 0, link);
-    }
-  });
-
-  return newLinks;
 }
 
 function TopSites(prevState = INITIAL_STATE.TopSites, action) {
@@ -334,7 +311,8 @@ function Dialog(prevState = INITIAL_STATE.Dialog, action) {
       return Object.assign({}, prevState, { visible: true, data: action.data });
     case at.DIALOG_CANCEL:
       return Object.assign({}, prevState, { visible: false });
-    case at.DELETE_HISTORY_URL:
+    case at.DIALOG_CLOSE:
+      // Reset and hide the confirmation dialog once the action is complete.
       return Object.assign({}, INITIAL_STATE.Dialog);
     default:
       return prevState;
@@ -735,6 +713,19 @@ function DiscoveryStream(prevState = INITIAL_STATE.DiscoveryStream, action) {
         },
       };
     }
+    case at.DISCOVERY_STREAM_DEV_IMPRESSIONS:
+      return {
+        ...prevState,
+        impressions: {
+          ...prevState.impressions,
+          feed: action.data,
+        },
+      };
+    case at.DISCOVERY_STREAM_DEV_BLOCKS:
+      return {
+        ...prevState,
+        blocks: action.data,
+      };
     case at.DISCOVERY_STREAM_SPOCS_CAPS:
       return {
         ...prevState,
@@ -867,6 +858,12 @@ function DiscoveryStream(prevState = INITIAL_STATE.DiscoveryStream, action) {
         ...prevState,
         showTopicSelection: false,
       };
+    case at.SECTION_BLOCKED:
+      return {
+        ...prevState,
+        showBlockSectionConfirmation: true,
+        sectionData: action.data,
+      };
     default:
       return prevState;
   }
@@ -914,11 +911,19 @@ function Notifications(prevState = INITIAL_STATE.Notifications, action) {
         toastId: action.data.toastId,
         toastQueue: [action.data.toastId],
       };
-    case at.HIDE_TOAST_MESSAGE:
+    case at.HIDE_TOAST_MESSAGE: {
+      const { showNotifications, toastId: hiddenToastId } = action.data;
+      const queuedToasts = [...prevState.toastQueue].filter(
+        toastId => toastId !== hiddenToastId
+      );
       return {
         ...prevState,
-        showNotifications: action.data.showNotifications,
+        toastCounter: queuedToasts.length,
+        toastQueue: queuedToasts,
+        toastId: "",
+        showNotifications,
       };
+    }
     default:
       return prevState;
   }
@@ -947,9 +952,27 @@ function Weather(prevState = INITIAL_STATE.Weather, action) {
   }
 }
 
+function Ads(prevState = INITIAL_STATE.Ads, action) {
+  switch (action.type) {
+    case at.ADS_INIT:
+      return {
+        ...prevState,
+        initialized: true,
+      };
+    case at.ADS_UPDATE_DATA:
+      return {
+        ...prevState,
+        topsites: action.data,
+      };
+    default:
+      return prevState;
+  }
+}
+
 export const reducers = {
   TopSites,
   App,
+  Ads,
   Prefs,
   Dialog,
   Sections,

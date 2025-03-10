@@ -3,20 +3,15 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 @import url("chrome://global/skin/global.css");
+@import url("chrome://browser/skin/browser-colors.css");
 
 :root {
-  --sidebar-background-color: -moz-sidebar;
-  --sidebar-text-color: -moz-sidebartext;
-  --sidebar-border-color: -moz-sidebarborder;
-
-  /* stylelint-disable-next-line media-query-no-invalid */
-  @media ((-moz-bool-pref: "browser.theme.macos.native-theme") and (-moz-platform: macOS) and (not (prefers-contrast)) and (prefers-color-scheme: light)) {
-    &:not([lwtheme]) {
-      --toolbar-non-lwt-bgcolor: white;
-    }
-  }
-
+  --sidebar-box-border-color: light-dark(color-mix(in srgb, currentColor 10%, transparent), var(--border-color-deemphasized));
+  --sidebar-box-border: 0.5px solid var(--sidebar-box-border-color);
+  --sidebar-box-background: light-dark(rgba(0, 0, 0, .03), rgba(255, 255, 255, .05));
+  --sidebar-box-color: currentColor;
   background-color: transparent;
+  color: var(--sidebar-text-color);
   height: 100%;
 }
 
@@ -26,11 +21,15 @@ body {
 }
 
 moz-card {
+  --card-gap: var(--space-small);
+  --card-padding: 8px;
+  --card-heading-padding-inline: 12px;
+
   margin-block-start: var(--space-medium);
-  background-color: var(--toolbar-bgcolor);
-  color: var(--toolbar-color);
   box-shadow: none;
-  border: 0.5px solid var(--panel-separator-color);
+  background-color: var(--sidebar-box-background);
+  color: var(--sidebar-box-color);
+  border: var(--sidebar-box-border);
   border-radius: var(--border-radius-medium);
 
   &::part(summary) {
@@ -58,8 +57,6 @@ moz-card {
 }
 
 .sidebar-panel {
-  background-color: var(--sidebar-background-color);
-  color: var(--sidebar-text-color);
   padding: var(--space-large);
   height: 100%;
   box-sizing: border-box;
@@ -69,34 +66,43 @@ moz-card {
 
 fxview-search-textbox {
   &::part(input) {
-    background-color: var(--toolbar-field-background-color);
-    color: var(--toolbar-field-color);
-    border-radius: 2em;
-    border: none;
+    background-color: var(--sidebar-box-background);
+    color: var(--sidebar-box-color);
+    border: var(--sidebar-box-border);
+    border-radius: var(--border-radius-medium);
   }
 
   &::part(container) {
     width: 100%;
+    height: var(--size-item-large)
   }
 }
 
 fxview-empty-state {
   &::part(container) {
     margin-block-start: var(--space-medium);
-    background-color: var(--toolbar-bgcolor);
-    color: var(--toolbar-color);
-    border: 0.5px solid var(--panel-separator-color);
-    border-radius: var(--border-radius-medium);
     padding-block: 83px;
     padding-inline: var(--space-medium);
+    background-color: var(--sidebar-box-background);
+    color: var(--sidebar-box-color);
+    border: var(--sidebar-box-border);
+    border-radius: var(--border-radius-medium);
   }
 
   &::part(header) {
     font-size: var(--font-size-large);
   }
 
-  &::part(image) {
-    fill: var(--toolbar-bgcolor);
-    stroke: var(--toolbar-color);
+  &::part(image-container) {
+    min-width: auto;
+    width: 100%;
+    max-width: 250px;
+  }
+
+  /* these illustrations need a larger width otherwise they look too small */
+  &.synced-tabs::part(image-container) {
+    min-width: auto;
+    width: 100%;
+    max-width: 350px;
   }
 }

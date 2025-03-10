@@ -254,6 +254,15 @@ menu-bookmarks-other =
 menu-bookmarks-mobile =
     .label = Faqerojtës Celulari
 
+## Profiles Menu
+
+menu-profiles =
+    .label = Profile
+menu-profiles-manage-profiles =
+    .label = Administroni profile
+menu-profiles-new-profile =
+    .label = Profil i ri
+
 ## Tools Menu
 
 menu-tools =
@@ -325,7 +334,7 @@ menu-get-help =
     .label = Merrni Ndihmë
     .accesskey = M
 menu-help-more-troubleshooting-info =
-    .label = Më Tepër të Dhëna Diagnostikimi
+    .label = Më Tepër Hollësi Diagnostikimi
     .accesskey = M
 menu-help-report-site-issue =
     .label = Njoftoni Problem Sajti…

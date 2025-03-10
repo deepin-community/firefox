@@ -299,7 +299,9 @@ mr2022-onboarding-set-default-subtitle = Používejte prohlížeč podporovaný 
 mr2022-onboarding-get-started-primary-subtitle = Naše nejnovější verze je postavená podle vás, díky čemuž je procházení webu snazší než kdykoli předtím. Je nabitá funkcemi, které si podle nás zamilujete.
 mr2022-onboarding-get-started-primary-button-label = Nastavení během okamžiku
 
-## MR2022 Import Settings screen strings
+## MR2022 Get Started screen strings.
+## These strings will be used on the welcome page
+## when Firefox is already set to default and pinned.
 
 mr2022-onboarding-import-header = Bleskové nastaveni
 mr2022-onboarding-import-subtitle =
@@ -508,6 +510,11 @@ onboarding-gratitude-security-and-privacy-subtitle =
         [with-cases] Děkujeme, že používáte { -brand-short-name(case: "acc") }, za kterým stojí nadace Mozilla Foundation. S vaší podporou pracujeme na tom, aby byl internet bezpečnější a přístupnější pro všechny.
        *[no-cases] Děkujeme, že používáte aplikaci { -brand-short-name }, za kterým stojí nadace Mozilla Foundation. S vaší podporou pracujeme na tom, aby byl internet bezpečnější a přístupnější pro všechny.
     }
+# Sign up or Sign in screen
+onboarding-sign-up-title = Synchronizujte svoje údaje mezi zařízeními
+onboarding-sign-up-description = Zaregistrujte si účet a všechny vaše důležité informace — hesla, záložky a další — budou bezpečně uloženy a dostupné při přihlášení na jakémkoli zařízení.
+onboarding-sign-up-button = Přihlásit nebo registrovat
+onboarding-sign-up-secondary-button = Začít pohlížet
 
 ## New user time and familiarity survey strings
 
@@ -539,3 +546,118 @@ onboarding-new-user-survey-familiarity-based-option-1 = Jsem nováček
 onboarding-new-user-survey-familiarity-based-option-2 = Několikrát jsem ho použil
 onboarding-new-user-survey-familiarity-based-option-3 = Znám jej velmi dobře
 onboarding-new-user-survey-familiarity-based-option-4 = V minulosti jsem jej používal, ale už je to nějaký čas
+
+## UI strings for the sidebar and vertical tabs
+
+# Setup screen for vertical tabs
+onboarding-new-tabs-title = Sdělte nám, kde chcete mít své panely
+# Setup screen for vertical tabs - "Switch it up" refers to switching between horizontal and vertical tabs.
+onboarding-new-tabs-subtitle = Přepněte si ho kdykoliv chcete v nastavení postranní lišty.
+# Setup screen for vertical tabs - too many tabs variation
+onboarding-many-tabs-title = Vaše panely, vaše volba
+# Setup screen for vertical tabs - subtitle for too many tabs variation
+onboarding-many-tabs-subtitle = Máte otevřeno mnoho panelů? Vyzkoušejte panely na boční straně a získejte tak přehlednější zobrazení. Nebo si zachovejte klasický vzhled s panely nahoře. Přepnout můžete kdykoliv.
+# Setup screen for vertical tabs - focused variation
+onboarding-focused-tabs-title = Vyberte si rozložení panelů
+# Setup screen for vertical tabs - subtitle for focused variation
+onboarding-focused-tabs-subtitle = Chcete-li mít přehlednější zobrazení, které vám pomůže udržet pozornost, zkuste vertikální panely. Nebo si zachovejte klasický vzhled s panely nahoře. Přepnout můžete kdykoliv.
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-new-vertical-tabs-label = Panely na straně
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-new-horizontal-tabs-label = Panely v horní části
+# Setup screen for vertical tabs for existing users
+onboarding-existing-tabs-title = Svislé panely jsou tady
+# Setup screen for vertical tabs for existing users
+onboarding-existing-tabs-title2 = Představujeme svislé panely
+# Setup screen for vertical tabs for existing users - "Switch it up" refers to switching between horizontal and vertical tabs.
+onboarding-existing-tabs-subtitle = Vyzkoušejte panely nalevo. Zobrazení panelů můžete kdykoliv přepnout v nastavení postranní lišty.
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-existing-vertical-tabs-label = Vyzkoušet svislé panely
+onboarding-flair-text = Novinka!
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-existing-horizontal-tabs-label = Ponechat panely vodorovně
+# Tooltip displayed on hover for vertical tabs image
+onboarding-vertical-tabs-tooltip =
+    .title =
+        { -brand-shorter-name.case-status ->
+            [with-cases] Okno prohlížeče zobrazující panely podél obrazovky jako součást postranní lišty { -brand-shorter-name(case: "gen") }.
+           *[no-cases] Okno prohlížeče zobrazující panely podél obrazovky jako součást postranní lišty aplikace { -brand-shorter-name }.
+        }
+# Description for vertical tabs image
+onboarding-vertical-tabs-description =
+    .aria-description =
+        { -brand-shorter-name.case-status ->
+            [with-cases] Okno prohlížeče zobrazující panely podél obrazovky jako součást postranní lišty { -brand-shorter-name(case: "gen") }.
+           *[no-cases] Okno prohlížeče zobrazující panely podél obrazovky jako součást postranní lišty aplikace { -brand-shorter-name }.
+        }
+# Tooltip displayed on hover for horizontal tabs image
+onboarding-horizontal-tabs-tooltip =
+    .title = Okno prohlížeče s panely v horní části.
+# Description for horizontal tabs image
+onboarding-horizontal-tabs-description =
+    .aria-description = Okno prohlížeče s panely v horní části.
+# Additional setup card for setting up aichatbot in the sidebar
+onboarding-genai-sidebar-title = Vyzkoušejte AI chatbota v postranní liště
+# Setup card for setting up AI chatbot in the sidebar; "Providers" refers to AI chatbot providers (e.g. OpenAI, etc). "Switch anytime" refers to allowing the user to switch to a different chatbot.
+onboarding-genai-sidebar-subtitle = Shrnujte webový obsah, využívejte nové nápady, koncepty zpráv – to vše během prohlížení. Vyberte si z více poskytovatelů. Přepnout můžete kdykoli. <a data-l10n-name="learn-more">Zjistit více</a>
+onboarding-genai-sidebar-primary-button = Vyberte si chatbota
+onboarding-genai-sidebar-secondary-button = Začít prohlížet
+
+## New user onboarding checklist
+
+onboarding-checklist-title =
+    { -brand-short-name.case-status ->
+        [with-cases] Dokončení nastavení { -brand-short-name(case: "gen") }
+       *[no-cases] Dokončení nastavení aplikace { -brand-short-name }
+    }
+onboarding-checklist-subtitle = Dokončete tyto kroky a využijte tak své prohlížení na maximum.
+onboarding-checklist-set-default =
+    { -brand-short-name.case-status ->
+        [with-cases] Nastavit { -brand-short-name(case: "acc") } jako výchozí prohlížeč
+       *[no-cases] Nastavit aplikaci { -brand-short-name } jako výchozí prohlížeč
+    }
+onboarding-checklist-pin =
+    { -brand-short-name.case-status ->
+        [with-cases] Připnout { -brand-short-name(case: "acc") } na hlavní panel
+       *[no-cases] Připnout aplikaci { -brand-short-name } na hlavní panel
+    }
+onboarding-checklist-import = Importovat z dříve používaného prohlížeče
+onboarding-checklist-extension = Přidat rozšíření
+onboarding-checklist-sign-up = Zaregistrujte se nebo se přihlaste ke svému účtu
+
+## Tab Groups feature onboarding strings
+
+tab-groups-onboarding-feature-callout-title = Vyzkoušejte skupiny karet, abyste měli méně nepořádku a více se soustředili.
+tab-groups-onboarding-feature-callout-subtitle = Vytvořte si pořádek přesunutím jednoho panelu na druhý, čímž vytvoříte svoji první skupinu.
+tab-groups-onboarding-create-group-title = Otevřené skupiny najdete na liště panelů nebo je vyhledáte v adresním řádku.
+tab-groups-onboarding-saved-groups-title = Pokud skupinu panelů zavřete, můžete ji zde kdykoli znovu otevřít.
+tab-groups-onboarding-saved-groups-no-alltabs-button-title = Vyhledáním v adresním řádku můžete kdykoli najít otevřené nebo zavřené skupiny panelů.
+tab-groups-onboarding-dismiss = OK
+
+## Multi Profiles feature onboarding messages
+
+multi-profile-spotlight-title =
+    { -brand-product-name.case-status ->
+        [with-cases] Pozdravte profily { -brand-product-name(case: "gen") }
+       *[no-cases] Pozdravte profily aplikace { -brand-product-name }
+    }
+multi-profile-spotlight-body = Snadno přepínejte mezi prohlížením pro práci a zábavu. Profily uchovávají informace o procházení, včetně historie vyhledávání a hesel, zcela odděleně, takže si můžete udržet pořádek.
+multi-profile-spotlight-cta = Vytvořit profil
+multi-profile-callout-title = Vytvořte si různé profily pro práci a zábavu
+multi-profile-callout-subtitle = Profily umožňují uchovávat informace o procházení, jako je historie vyhledávání a hesla, zcela odděleně.
+multi-profile-callout-cta = Vytvořit profil
+
+## Desktop to Mobile Adoption feature callout strings
+
+# If translating the headline is challenging, consider using a simplified alternative as a reference: 'Sync your browsing with Firefox for mobile.'
+desktop-to-mobile-headline = Stáhněte, synchronizujte a vyrazte na cesty!
+# The phrase, 'on the go', is used to describe when people are very busy and are traveling from place to place.
+desktop-to-mobile-subtitle = Naskenujte QR kód a stáhněte si { -brand-product-name } pro mobilní zařízení. Po instalaci vyberte možnost "Synchronizovat s mobilním telefonem" a získejte přístup ke svým heslům, záložkám a dalším údajům na cestách.
+dismiss-button-label = Zavřít
+sync-to-mobile-button-label = Synchronizace s mobilem
+desktop-to-mobile-qr-code-alt =
+    .aria-label =
+        { -brand-product-name.case-status ->
+            [with-cases] QR kód pro stažení { -brand-product-name(case: "gen") } pro mobilní zařízení
+           *[no-cases] QR kód pro stažení aplikace { -brand-product-name } pro mobilní zařízení
+        }

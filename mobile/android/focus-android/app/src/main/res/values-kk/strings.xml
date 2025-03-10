@@ -85,8 +85,6 @@
 
     <string name="notification_erase_title_android_14">Шолу тарихын өшіру керек пе?</string>
 
-    <string name="notification_erase_text_android_14" moz:RemovedIn="124" tools:ignore="UnusedResources">Шолу журналын қауіпсіз түрде өшіру үшін осы хабарландыруды шертіңіз немесе тазартыңыз.</string>
-
     <!-- Text shown in the notification description that pops up to remind the user that a browsing session is active
     for Android 14+. -->
     <string name="notification_erase_text_android_14_1">Шолу журналын қауіпсіз түрде өшіру үшін осы хабарландыруды шертіңіз немесе сырғытыңыз.</string>
@@ -352,6 +350,11 @@
     <!-- %1$s will be replaced with the name of the app (e.g. Firefox Focus) -->
     <string name="preference_mozilla_telemetry_summary2">Mozilla тек %1$s әркім үшін ұсыну және жақсарту мақсатында керек деректерді жинауға тырысады.</string>
 
+    <!-- Preference switch for daily usage ping data collection -->
+    <string name="preference_daily_usage_ping_title">Күнделікті пайдалану пингі</string>
+    <string name="preference_daily_usage_ping_description">Бұл Mozilla-ға белсенді пайдаланушылар санын бағалауға көмектеседі.</string>
+    <string name="preference_daily_usage_ping_learn_more">Көбірек білу</string>
+
     <!-- In-app link (in settings) to Focus privacy notice. -->
     <string name="preference_privacy_notice">Жекелік ескертуі</string>
 
@@ -360,6 +363,9 @@
 
     <!-- Link to Focus licensing information from other libraries that we use. -->
     <string name="preference_libraries_we_use">Біз пайдаланатын библиотекалар</string>
+
+    <!-- Link to Focus Crash reports list. -->
+    <string name="preference_crashes">Құлаулар</string>
 
     <!-- Open Source Licenses page title. The first parameter is the app name -->
     <string name="open_source_licenses_title">%s | Ашық библиотекалар</string>
@@ -515,10 +521,7 @@
 
 
 
-  <!-- Content description (not visible, for screen readers etc.): This is the description for the close button from the new onboarding flow screen one and two -->
-    <string name="onboarding_close_button_content_description">Жабу</string>
-
-    <!-- New Onboarding flow first screen title -->
+  <!-- New Onboarding flow first screen title -->
     <!-- %1$s will be replaced by the app name and build variant(e.g. Firefox Focus, Firefox Klar Nightly) -->
     <string name="onboarding_first_screen_title">%1$s өніміне қош келдіңіз</string>
 
@@ -837,7 +840,7 @@
     <string name="studies_learn_more">Көбірек білу</string>
 
     <!-- Dialog message shown when some changes are made on studies -->
-    <string name="studies_restart_app">Қолданба өзгерістерді іске асыру үшін жабылады</string>
+    <string name="studies_restart_app" moz:removedIn="135">Қолданба өзгерістерді іске асыру үшін жабылады</string>
 
     <!-- Title of the remove studies button -->
     <string name="studies_remove">Өшіру</string>
@@ -925,9 +928,6 @@
 
     <!-- Label for the button in the snackbar that switches to the newly opened tab -->
     <string name="open_new_tab_snackbar">Ауысу</string>
-
-    <!-- Text displayed in a notification when the user enters full screen mode -->
-    <string name="full_screen_notification" moz:removedIn="130" tools:ignore="UnusedResources">Толық экран режиміне өту</string>
 
     <!-- Preference for switching to a new tab immediately after opening -->
     <string name="preference_open_new_tab">Жаңа бетке тура ауысу</string>
@@ -1119,8 +1119,10 @@
     <string name="promote_search_widget_snackbar_message">Виджетті үй экранына қосылды</string>
 
     <!-- Messages explaining how to exit fullscreen mode -->
-    <!-- Message shown to explain how to exit fullscreen mode when gesture navigation is enabled -->
-    <string name="exit_fullscreen_with_gesture">Толық экраннан шығу үшін, экранды жоғарыдан тартып, артқа оралу ым қимылын қолданыңыз</string>
-    <!-- Message shown to explain how to exit fullscreen mode when using back button navigation -->
-    <string name="exit_fullscreen_with_back_button">Толық экраннан шығу үшін, экранды жоғарыдан тартып, артқа оралуды басыңыз</string>
+    <!-- Message shown to explain how to exit fullscreen mode when gesture navigation is enabled. -->
+    <!-- Localisation note: this text should be as short as possible, max 68 chars -->
+    <string name="exit_fullscreen_with_gesture_short">Жоғарыдан тартып әкеліңіз және шығу үшін артқа ым қимылын пайдаланыңыз</string>
+    <!-- Message shown to explain how to exit fullscreen mode when using back button navigation. -->
+    <!-- Localisation note: this text should be as short as possible, max 68 chars -->
+    <string name="exit_fullscreen_with_back_button_short">Жоғарыдан тартып әкеліңіз және шығу үшін артқа басыңыз</string>
 </resources>

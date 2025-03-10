@@ -4,7 +4,17 @@
 # NOTE: New strings should use the about-logins- prefix.
 
 about-logins-page-title = ప్రవేశాలు & సంకేతపదాలు
+about-logins-login-filter =
+    .placeholder = ప్రవేశాలను వెతకండి
+    .key = F
+create-new-login-button =
+    .title = కొత్త ప్రవేశాన్ని సృష్టించు
 about-logins-page-title-name = సంకేతపదాలు
+about-logins-login-filter2 =
+    .placeholder = సంకేతపదాలను వెతుకు
+    .key = F
+create-login-button =
+    .title = సంకేతపదం జోడించు
 fxaccounts-sign-in-text = మీ సంకేతపదాలను ఇతర పరికరాల్లో పొందండి
 fxaccounts-sign-in-sync-button = Sync లోనికి ప్రవేశించండి
 fxaccounts-avatar-button =
@@ -19,6 +29,8 @@ about-logins-menu-menuitem-import-from-another-browser = మరో విహా�
 about-logins-menu-menuitem-import-from-a-file = ఒక దస్త్రం నుండి దిగుమతించు…
 about-logins-menu-menuitem-export-logins = ప్రవేశాలను ఎగుమతించు…
 about-logins-menu-menuitem-remove-all-logins = ప్రవేశాలన్నిటినీ తొలగించు…
+about-logins-menu-menuitem-export-logins2 = సంకేతపదాలను ఎగుమతి చేయండి…
+about-logins-menu-menuitem-remove-all-logins2 = సంకేతపదాలన్నిటినీ తొలగించు…
 menu-menuitem-preferences =
     { PLATFORM() ->
         [windows] ఎంపికలు
@@ -37,6 +49,29 @@ login-list-count =
         [one] { $count } ప్రవేశం
        *[other] { $count } ప్రవేశాలు
     }
+# Variables
+#   $count (number) - Number of filtered logins
+#   $total (number) - Total number of logins
+login-list-filtered-count =
+    { $total ->
+        [one] మొత్తం { $total }లో { $count } ప్రవేశం
+       *[other] మొత్తం { $total }లో { $count } ప్రవేశాలు
+    }
+# Variables
+#   $count (number) - Number of logins
+login-list-count2 =
+    { $count ->
+        [one] { $count } సంకేతపదం
+       *[other] { $count } సంకేతపదాలు
+    }
+# Variables
+#   $count (number) - Number of filtered logins
+#   $total (number) - Total number of logins
+login-list-filtered-count2 =
+    { $total ->
+        [one] మొత్తం { $total }లో { $count } సంకేతపదం
+       *[other] మొత్తం { $total }లో { $count } సంకేతపదాలు
+    }
 login-list-sort-label-text = క్రమం:
 login-list-name-option = పేరు (A-Z)
 login-list-name-reverse-option = పేరు (Z-A)
@@ -46,11 +81,14 @@ about-logins-login-list-alerts-option = హెచ్చరికలు
 login-list-last-changed-option = చివరి మార్పు
 login-list-last-used-option = చివరగా వాడినది
 login-list-intro-title = ప్రవేశాలేమీ కనబడలేదు
+login-list-intro-title2 = సంకేతపదాలు ఏవీ భద్రపరచలేదు
 login-list-intro-description = మీరు { -brand-product-name }‌లో సంకేతపదాలను భద్రపరచినపుడు, అవి ఇక్కడ కనిపిస్తాయి.
 about-logins-login-list-empty-search-title = ప్రవేశాలేమీ కనబడలేదు
+about-logins-login-list-empty-search-title2 = సంకేతపదాలేమీ కనబడలేదు
 about-logins-login-list-empty-search-description = మీ వెతుకుడుకు సరిపోయే ఫలితాలు లేవు.
 login-list-item-title-new-login = కొత్త ప్రవేశం
 login-list-item-subtitle-new-login = మీ ప్రవేశ వివరాలు ఇవ్వండి
+login-list-item-title-new-login2 = సంకేతపదం జోడించండి
 login-list-item-subtitle-missing-username = (వాడుకరి పేరు లేదు)
 about-logins-list-item-breach-icon =
     .title = ఉల్లంఘిత వెబ్‌సైటు
@@ -68,11 +106,15 @@ about-logins-list-section-week = గత 7 రోజులు
 about-logins-login-intro-heading-logged-out2 = మీరు భద్రపరచుకున్న ప్రవేశాల కోసం చూస్తున్నారా? వాటిని దిగుమతి చేసుకోండి లేదా సింక్‌ను చేతనం చేసుకోండి.
 about-logins-login-intro-heading-logged-in = సింక్రనిత ప్రవేశాలేమీ కనబడలేదు.
 login-intro-description = మరో పరికరంలో మీ ప్రవేశాలను { -brand-product-name }‌లో భద్రపరచుకొని ఉంటే, వాటిని ఇక్కడకు తెచ్చుకోవడం ఇలా:
+login-intro-instructions-fxa = మీ ప్రవేశాలు ఉన్న పరికరంలో { -fxaccount-brand-name } సృష్టించుకోండి లేదా మీ ఖాతా లోనికి ప్రవేశించండి.
+about-logins-login-intro-heading-message = మీ సంకేతపదాలను ఒక సురక్షిత ప్రదేశంలో భద్రపరచండి
 login-intro-instructions-fxa-passwords-help = మరింత సహాయం కోసం <a data-l10n-name="passwords-help-link">సంకేతపదాల తోడ్పాటు</a>ను చూడండి.
 
 ## Login
 
 login-item-new-login-title = కొత్త ప్రవేశాన్ని సృష్టించు
+# Header for adding a password
+about-logins-login-item-new-login-title = సంకేతపదం చేర్పు
 login-item-edit-button = మార్చు
 about-logins-login-item-remove-button = తొలగించు
 login-item-origin-label = వెబ్‌సైటు చిరునామా
@@ -87,6 +129,8 @@ login-item-copied-username-button-text = కాపీ అయ్యింది!
 login-item-password-label = సంకేతపదం
 login-item-password-reveal-checkbox =
     .aria-label = సంకేతపదాన్ని చూపించు
+login-item-password-conceal-checkbox =
+    .aria-label = సంకేతపదాన్ని దాచు
 login-item-copy-password-button-text = కాపీచేయి
 login-item-copied-password-button-text = కాపీ అయ్యింది!
 login-item-save-changes-button = మార్పులను భద్రపరుచు
@@ -98,6 +142,12 @@ login-item-cancel-button = రద్దుచేయి
 ## A label is displayed under the date to describe the type of change.
 ## (e.g. updated, created, etc.)
 
+# Variables
+#   $datetime (date) - Event date
+login-item-timeline-point-date = { DATETIME($datetime, day: "numeric", month: "short", year: "numeric") }
+login-item-timeline-action-created = సృష్టితం
+login-item-timeline-action-updated = మార్పు
+login-item-timeline-action-used = వాడుక
 
 ## OS Authentication dialog
 
@@ -112,6 +162,11 @@ about-logins-edit-login-os-auth-dialog-message-win = మీ ప్రవేశ �
 # This message can be seen when attempting to edit a login in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-edit-login-os-auth-dialog-message-macosx = భద్రపరచిన ప్రవేశాన్ని సవరించు
+# This message can be seen when attempting to edit a login in about:logins
+# On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
+about-logins-edit-login-os-auth-dialog-message2-macosx = భద్రపరచిన సంకేతపదాన్ని సవరించు
+# This message can be seen when attempting to reveal a password in about:logins on Windows.
+about-logins-reveal-password-os-auth-dialog-message-win = మీ సంకేతపదాన్ని చూడడానికి, మీ విండోస్ ప్రవేశ వివరాలను ఇవ్వండి. ఇది మీ ఖాతాల భద్రతను సంరక్షించడానికి తోడ్పడుతుంది.
 # This message can be seen when attempting to reveal a password in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-reveal-password-os-auth-dialog-message-macosx = భద్రపరచిన సంకేతపదాన్ని చూపించడానికి
@@ -120,6 +175,8 @@ about-logins-copy-password-os-auth-dialog-message-win = మీ సంకేత�
 # This message can be seen when attempting to copy a password in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-copy-password-os-auth-dialog-message-macosx = భద్రపరచిన సంకేతపదాన్ని కాపీచేయడానికి
+# This message can be seen when attempting to export a password in about:logins on Windows.
+about-logins-export-password-os-auth-dialog-message-win = మీ ప్రవేశ వివరాలను ఎగుమతి చేసుకోడానికి, మీ విండోస్ ప్రవేశ వివరాలను ఇవ్వండి. ఇది మీ ఖాతాల భద్రతను సంరక్షించడానికి తోడ్పడుతుంది.
 # This message can be seen when attempting to export a password in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-export-password-os-auth-dialog-message-macosx = భద్రపరచిన ప్రవేశాలను, సంకేతపదాలను ఎగుమతిచేయి
@@ -138,6 +195,10 @@ confirmation-dialog-dismiss-button =
     .title = రద్దుచేయి
 about-logins-confirm-remove-dialog-title = ఈ ప్రవేశాన్ని తొలగించాలా?
 confirm-delete-dialog-message = ఈ చర్యను రద్దు చేయలేరు.
+# Title for modal to confirm the removal of one saved password
+about-logins-confirm-delete-dialog-title = సంకేతపదం తొలగించాలా?
+# Message for modal to confirm the removal of one saved password
+about-logins-confirm-delete-dialog-message = ఈ చర్యను మీరు రద్దు చేయలేరు.
 about-logins-confirm-remove-dialog-confirm-button = తొలగించు
 
 ## Variables
@@ -165,11 +226,26 @@ about-logins-confirm-remove-all-sync-dialog-title =
         [one] { $count } ప్రవేశాన్ని అన్ని పరికరాల నుండి తొలగించాలా?
        *[other] { $count } ప్రవేశాలనూ అన్ని పరికరాల నుండి తొలగించాలా?
     }
+# Checkbox for modal to confirm the removal of saved passwords
+about-logins-confirm-remove-all-dialog-checkbox-label2 =
+    { $count ->
+        [1] అవును, సంకేతపదాన్ని తొలగించు
+        [one] అవును, సంకేతపదాన్ని తొలగించు
+       *[other] అవును, సంకేతపదాలను తొలగించు
+    }
+# Title for modal to confirm the removal of all saved passwords when user is NOT synced
+about-logins-confirm-remove-all-dialog-title2 =
+    { $count ->
+        [one] { $count } సంకేతపదాన్ని తొలగించాలా?
+       *[other] { $count } సంకేతపదాలనూ తొలగించాలా?
+    }
 
 ##
 
 about-logins-confirm-export-dialog-title = ప్రవేశాలను, సంకేతపదాలను ఎగుమతిచేయి
 about-logins-confirm-export-dialog-confirm-button = ఎగుమతించు…
+about-logins-confirm-export-dialog-title2 = సంకేతపదాల ఎగుమతి గురించి ఒక గమనిక
+about-logins-confirm-export-dialog-confirm-button2 = ఎగుమతిని కొనసాగించు
 about-logins-alert-import-title = దిగుమతి పూర్తయింది
 about-logins-alert-import-message = వివరణాత్మక దిగుమతి సారాంశాన్ని చూడండి
 confirm-discard-changes-dialog-title = భద్రపరచని మార్పులను విస్మరించాలా?
@@ -203,6 +279,9 @@ about-logins-export-file-picker-title = ప్రవేశాల ఎగుమత
 # The default file name shown in the file picker when exporting saved logins.
 # This must end in .csv
 about-logins-export-file-picker-default-filename = logins.csv
+# The default file name shown in the file picker when exporting saved logins.
+# This must end in .csv
+about-logins-export-file-picker-default-filename2 = passwords.csv
 about-logins-export-file-picker-export-button = ఎగుమతించు
 # A description for the .csv file format that may be shown as the file type
 # filter by the operating system.
@@ -216,6 +295,8 @@ about-logins-export-file-picker-csv-filter-title =
 
 # Title of the file picker dialog
 about-logins-import-file-picker-title = ప్రవేశాల దిగుమతి దస్త్రం
+# Title of the file picker dialog
+about-logins-import-file-picker-title2 = సంకేతపదాలను { -brand-short-name }కి దిగుమతి చేయండి
 about-logins-import-file-picker-import-button = దిగుమతించు
 # A description for the .csv file format that may be shown as the file type
 # filter by the operating system.
@@ -252,6 +333,7 @@ about-logins-import-report-title = దిగుమతి సారాంశం
 #  $number (number) - The number of the row
 about-logins-import-report-row-index = అడ్డువరుస{ $number }
 about-logins-import-report-row-description-added = కొత్త ప్రవేశం చేర్చబడింది
+about-logins-import-report-row-description-added2 = కొత్త సంకేతపదం చేర్చబడింది
 
 ##
 ## Variables:

@@ -246,6 +246,9 @@ device-migration-fxa-spotlight-older-device-primary-button = Crea un conto
 device-migration-fxa-spotlight-getting-new-device-header-2 = Nove apparato in tu futuro?
 device-migration-fxa-spotlight-getting-new-device-body-2 = Seque alcun simple passos pro portar con te marcapaginas, chronologia e contrasignos quando tu initia usar un nove apparato.
 device-migration-fxa-spotlight-getting-new-device-primary-button = Como facer un copia de securitate de mi datos
+device-migration-fxa-spotlight-sync-header = Naviga sin perder un pulsation
+device-migration-fxa-spotlight-sync-body = Synchronisa tote tu info importante con cryptation, como LE marcapaginas e LE contrasignos. Tu poter acceder a omne cosa ubique tu usa { -brand-product-name }.
+device-migration-fxa-spotlight-sync-primary-button = Comenciar
 
 ## Set as Default PDF Reader Infobar
 
@@ -282,3 +285,61 @@ tail-fox-spotlight-title = Libera te del spias que tracia tu datos
 tail-fox-spotlight-subtitle = Dice adeo al enoiose traciatores publicitari e opta pro un experientia internet plus rapide e plus secur.
 tail-fox-spotlight-primary-button = Aperir mi ligamines con { -brand-short-name }
 tail-fox-spotlight-secondary-button = Non ora
+
+## Root Certificate Succession Infobar
+
+root-certificate-succession-infobar-january-message = <strong>Le versiones plus vetere de { -brand-short-name } poterea haber problemas desde le 14 de januario 2025.</strong>
+root-certificate-succession-infobar-march-message = <strong>Actualisa pro continuar a utilisar { -brand-short-name } post le 14 de martio 2025.</strong>
+root-certificate-succession-infobar-link = Perque debe io actualisar?
+root-certificate-succession-infobar-primary-button =
+    .label = Actualisar ora
+    .accesskey = A
+root-certificate-succession-infobar-secondary-button =
+    .label = Plus tarde
+    .accesskey = t
+
+## Root Certificate Succession Windows Background Notification
+
+root-certificate-windows-background-notification-title = Tu perdeva un importante actualisation de { -brand-short-name }
+root-certificate-windows-background-notification-subtitle = Partes del browser cessara tosto de functionar si tu non lo actualisa. Ora es un bon tempore pro obtener nostre ultime protectiones e functiones.
+root-certificate-windows-background-notification-learn-more-button = Pro saper plus
+root-certificate-windows-background-notification-update-button = Actualisar { -brand-short-name }
+
+## FxA Menu Message variants
+
+fxa-menu-message-close-button =
+    .title = Clauder
+    .aria-label = Clauder
+fxa-menu-message-sign-up-button = Inscriber se
+fxa-menu-message-sync-devices-primary-text = Synchronisa tote tu apparatos
+fxa-menu-message-sync-devices-secondary-text = Instantaneemente obtene tu info, como marcapaginas e contrasignos, ubique tu usa { -brand-short-name }.
+fxa-menu-message-sync-devices-collapsed-text = Synchronisa tote tu apparatos
+fxa-menu-message-backup-data-primary-text = Preserva le datos de tu navigator
+fxa-menu-message-backup-data-secondary-text = Automaticamente protege marcapaginas, contrasignos, e altere info sur tote tu apparatos.
+fxa-menu-message-backup-data-collapsed-text = Preserva le datos de tu navigator
+fxa-menu-message-backup-sync-primary-text = Mantene tu datos secur e synchronisate
+fxa-menu-message-backup-sync-secondary-text = Synchronisar preserva le majoritate de tu datos assi que tu pote acceder los ubique tu usa { -brand-short-name }.
+fxa-menu-message-backup-sync-collapsed-text = Synchronisa e preserva tu datos
+fxa-menu-message-mobile-primary-text = Invia schedas a tu telephono
+fxa-menu-message-mobile-secondary-text = Instantaneemente  reprende de ubi tu ha lassate quando tu synchronisa tu schedas con un apparato mobile.
+fxa-menu-message-mobile-collapsed-text = Synchronisa con tu telephono
+
+## Multi-CTA Fox Doodle Spotlight
+
+multi-cta-fox-doodle-title = Bentornate
+multi-cta-fox-doodle-set-default-checkbox = Facer de { -brand-short-name } mi predefinite
+multi-cta-fox-doodle-pin-startmenu-checkbox = Fixar { -brand-short-name } a menu Initiar
+multi-cta-fox-doodle-pin-checkbox =
+    { PLATFORM() ->
+        [macos] Retener { -brand-short-name } in Dock
+       *[other] Fixar { -brand-short-name } a barra de apps
+    }
+multi-cta-fox-doodle-start-browsing-primary-button-label = Comenciar a navigar
+multi-cta-fox-doodle-main-browser-primary-button-label = Facer de { -brand-short-name } mi navigator principal
+multi-cta-fox-doodle-quick-reminder-subtitle = Memora que tu pote tener tu navigator preferite, e attente al confidentialitate, justo a portata de clic.
+multi-cta-fox-doodle-privacy-focused-subtitle =
+    { PLATFORM() ->
+        [macos] Tene tu navigator preferite, e attente al confidentialitate, justo a portata de clic. Pone { -brand-short-name } como tu navigator predefinite pro aperir ligamines e tene lo in tu Dock.
+       *[other] Tene tu navigator preferite, e attente al confidentialitate, justo a portata de clic. Pone { -brand-short-name } como tu navigator predefinite pro aperir ligamines e fixa lo a tu barra de apps.
+    }
+multi-cta-fox-doodle-msix-privacy-focused-subtitle = Tene a portata de clic tu navigator preferite, attente al confidentialitate. Pone { -brand-short-name } como navigator predefinite pro le apertura del ligamines, fixa lo al barra del apps.

@@ -51,6 +51,70 @@ browser-main-window-title = { -brand-full-name }
 # The non-variable portion of this MUST match the translation of
 # "PRIVATE_BROWSING_SHORTCUT_TITLE" in custom.properties
 private-browsing-shortcut-text-2 = { -brand-shortcut-name } nabigatze pribatua
+# These are the default window titles everywhere except macOS.
+# .data-title-default and .data-title-private are used when the web content
+# opened has no title:
+#
+# default - "Mozilla Firefox"
+# private - "Mozilla Firefox (Private Browsing)"
+#
+# .data-content-title-default and .data-content-title-private are for use when
+# there *is* a content title.
+#
+# .data-title-default-with-profile, .data-title-private-with-profile,
+# .data-content-title-default-with-profile,
+# .data-content-title-private-with-profile are used when there a
+# SelectableProfileService.current profile exists.
+#
+# Variables:
+#  $content-title (String): the title of the web content.
+#  $profile-name (String): the name of the current profile.
+browser-main-window-titles =
+    .data-title-default = { -brand-full-name }
+    .data-title-private = { -brand-full-name } Nabigatze Pribatua
+    .data-title-default-with-profile = { $profile-name } — { -brand-full-name }
+    .data-title-private-with-profile = { $profile-name } — { -brand-full-name } Nabigatze Pribatua
+    .data-content-title-default = { $content-title } — { -brand-full-name }
+    .data-content-title-private = { $content-title } — { -brand-full-name } Nabigatze Pribatua
+    .data-content-title-default-with-profile = { $content-title } — { $profile-name } — { -brand-full-name }
+    .data-content-title-private-with-profile = { $content-title } — { $profile-name } — { -brand-full-name } Nabigatze Pribatua
+# These are the default window titles on macOS.
+# .data-title-default and .data-title-private are used when the web content
+# opened has no title:
+#
+#
+# "default" - "Mozilla Firefox"
+# "private" - "Mozilla Firefox — (Private Browsing)"
+#
+# .data-content-title-default and .data-content-title-private are for use when
+# there *is* a content title.
+# Do not use the brand name in these, as we do on non-macOS.
+#
+# .data-title-default-with-profile, .data-title-private-with-profile,
+# .data-content-title-default-with-profile,
+# .data-content-title-private-with-profile are used when there a
+# SelectableProfileService.current profile exists.
+#
+# Also note the other subtle difference here: we use a `-` to separate the
+# brand name from `(Private Browsing)`, which does not happen on other OSes.
+#
+# Variables:
+#  $content-title (String): the title of the web content.
+#  $profile-name (String): the name of the current profile.
+browser-main-window-titles-mac =
+    .data-title-default = { -brand-full-name }
+    .data-title-private = { -brand-full-name } — Nabigatze Pribatua
+    .data-title-default-with-profile = { $profile-name } — { -brand-full-name }
+    .data-title-private-with-profile = { $profile-name } — { -brand-full-name } Nabigatze Pribatua
+    .data-content-title-default = { $content-title }
+    .data-content-title-private = { $content-title } — Nabigatze Pribatua
+    .data-content-title-default-with-profile = { $content-title } — { $profile-name }
+    .data-content-title-private-with-profile = { $content-title } — { $profile-name } — Nabigatze Pribatua
+# This gets set as the initial title, and is overridden as soon as we start
+# updating the titlebar based on loaded tabs or private browsing state.
+# This should match the `data-title-default` attribute in both
+# `browser-main-window` and `browser-main-window-mac`.
+browser-main-window-default-title = { -brand-full-name }
 
 ##
 
@@ -412,7 +476,7 @@ browser-window-minimize-button =
 browser-window-maximize-button =
     .tooltiptext = Maximizatu
 browser-window-restore-down-button =
-    .tooltiptext = Leheneratu txikira
+    .tooltiptext = Leheneratu tamaina
 browser-window-close-button =
     .tooltiptext = Itxi
 
@@ -547,6 +611,8 @@ urlbar-go-button =
     .tooltiptext = Joan kokapen-barrako helbidera
 urlbar-page-action-button =
     .tooltiptext = Orri-ekintzak
+urlbar-revert-button =
+    .tooltiptext = Erakutsi helbidea helbide-barran
 
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
@@ -607,6 +673,42 @@ urlbar-result-action-calculator-result = = { $result }
 # Label prompting user to search with a particular search engine.
 #  $engine (String): the name of a search engine that searches a specific site
 urlbar-result-search-with = Bilatu { $engine } erabiliz
+# Label for the urlbar result row, prompting the user to use a local keyword to enter search mode.
+#  $keywords (String): the restrict keyword to enter search mode.
+#  $localSearchMode (String): the local search mode (history, tabs, bookmarks,
+#  or actions) to search with.
+urlbar-result-search-with-local-search-mode = { $keywords } - Bilatu { $localSearchMode }
+# Label for the urlbar result row, prompting the user to use engine keywords to enter search mode.
+#  $keywords (String): the default keyword and user's set keyword if available
+#  $engine (String): the name of a search engine
+urlbar-result-search-with-engine-keywords = { $keywords } - Bilatu { $engine } erabiliz
+urlbar-searchmode-dropmarker =
+    .tooltiptext = Hautatu bilaketa-motorra
+urlbar-searchmode-bookmarks =
+    .label = Laster-markak
+urlbar-searchmode-tabs =
+    .label = Fitxak
+urlbar-searchmode-history =
+    .label = Historia
+urlbar-searchmode-actions =
+    .label = Ekintzak
+urlbar-searchmode-exit-button =
+    .tooltiptext = Itxi
+# Label shown on the top of Searchmode Switcher popup. After this label, the
+# available search engines will be listed.
+urlbar-searchmode-popup-description = Oraingoan, bilatu honekin:
+urlbar-searchmode-popup-search-settings-menuitem =
+    .label = Bilaketa-ezarpenak
+urlbar-searchmode-popup-search-settings = Bilaketa-ezarpenak
+# Searchmode Switcher button
+# Variables:
+#   $engine (String): the current default search engine.
+urlbar-searchmode-button2 =
+    .label = { $engine }, hautatu bilaketa-motorra
+    .tooltiptext = { $engine }, hautatu bilaketa-motorra
+urlbar-searchmode-button-no-engine =
+    .label = Ez da lasterbiderik hautatu, hautatu lasterbidea
+    .tooltiptext = Ez da lasterbiderik hautatu, hautatu lasterbidea
 
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
@@ -616,6 +718,12 @@ urlbar-result-action-search-bookmarks = Bilatu laster-markak
 urlbar-result-action-search-history = Bilatu historia
 urlbar-result-action-search-tabs = Bilatu fitxak
 urlbar-result-action-search-actions = Bilaketa-ekintzak
+# Label for a quickaction result used to switch to an open tab group.
+#  $group (String): the name of the tab group to switch to
+urlbar-result-action-switch-to-tabgroup = Aldatu { $group } taldera
+# Label for a quickaction result used to re-opan a saved tab group.
+#  $group (String): the name of the tab group to re-open
+urlbar-result-action-open-saved-tabgroup = Ireki { $group } taldera
 
 ## Labels shown above groups of urlbar results
 
@@ -637,9 +745,21 @@ urlbar-group-quickactions =
 #  $engine (String): the name of the search engine used to search.
 urlbar-group-recent-searches =
     .label = Azken bilaketak
+# The header shown above trending results.
+# Variables:
+#  $engine (String): the name of the search engine providing the trending suggestions
+urlbar-group-trending =
+    .label = { $engine } bilatzaileko joerak
+# The result menu labels shown next to trending results.
+urlbar-result-menu-trending-dont-show =
+    .label = Ez erakutsi bilaketa-joerak
+    .accesskey = z
 urlbar-result-menu-trending-why =
     .label = Zergatik agertu zait hau?
     .accesskey = Z
+# A message that replaces a result when the user dismisses all suggestions of a
+# particular type.
+urlbar-trending-dismissal-acknowledgment = Eskerrik asko zure iritziagatik. Hemendik aurrera ez duzu bilaketa-joerarik ikusiko.
 
 ## Reader View toolbar buttons
 
@@ -917,7 +1037,18 @@ data-reporting-notification-button =
     .accesskey = A
 # Label for the indicator shown in the private browsing window titlebar.
 private-browsing-indicator-label = Nabigatze pribatua
+# Tooltip for the indicator shown in the private browsing window titlebar.
+private-browsing-indicator-tooltip =
+    .tooltiptext = Nabigatze pribatua
+# Tooltip for the indicator shown in the window titlebar when content analysis is active.
+# Variables:
+#   $agentName (String): The name of the DLP agent that is connected
+content-analysis-indicator-tooltip =
+    .tooltiptext = Datu-galeren eragozpena (DLP) { $agentName } bidez. Egin klik argibide gehiagorako.
 content-analysis-panel-title = Datuen babesa
+# Variables:
+#   $agentName (String): The name of the DLP agent that is connected
+content-analysis-panel-text-styled = Zure erakundeak <b>{ $agentName }</b> darabil datu-galeren aurka babesteko. <a data-l10n-name="info">Argibide gehiago</a>
 
 ## Unified extensions (toolbar) button
 
@@ -942,6 +1073,15 @@ unified-extensions-button-quarantined =
     .tooltiptext =
         Hedapenak
         Zenbait hedapen ez dira onartzen
+
+## Unified extensions button when some extensions are disabled (e.g. through add-ons blocklist).
+## Note that the new line is intentionally part of the tooltip.
+
+unified-extensions-button-blocklisted =
+    .label = Hedapenak
+    .tooltiptext =
+        Hedapenak
+        Zenbait hedapen desgaituta daude
 
 ## Private browsing reset button
 
@@ -982,6 +1122,7 @@ firefox-relay-offer-legal-notice = "Erabili posta-maskara" aukeratzean, <label d
 popup-notification-addon-install-unsigned =
     .value = (Egiaztatu gabea)
 popup-notification-xpinstall-prompt-learn-more = Gehigarriak modu seguruan instalatzeko argibide gehiago
+popup-notification-xpinstall-prompt-block-url = Ikusi xehetasunak
 # Note: Access key is set to P to match "Private" in the corresponding localized label.
 popup-notification-addon-privatebrowsing-checkbox =
     .label = Exekutatu leiho pribatuetan
@@ -1018,6 +1159,14 @@ popup-show-popup-menuitem =
 
 ## File-picker crash notification ("FilePickerCrashed.sys.mjs")
 
+file-picker-failed-open = Ezin da ireki Windowsen fitxategien elkarrizketa-koadroa. Ezin da fitxategi edo karpetarik hautatu.
+#   $path (string): The full path to which the file will be saved (e.g., 'C:\Users\Default User\Downloads\readme.txt').
+file-picker-failed-save-somewhere = Ezin da ireki Windowsen fitxategien elkarrizketa-koadroa. Fitxategia { $path } bidean gordeko da.
+file-picker-failed-save-nowhere = Ezin da ireki Windowsen fitxategien elkarrizketa-koadroa. Ezin da karpeta lehenetsirik aurkitu; fitxategia ez da gordeko.
+file-picker-crashed-open = Windowsen fitxategien elkarrizketa-koadroak huts egin du. Ezin da fitxategi edo karpetarik hautatu.
+#   $path (string): The full path to which the file will be saved (e.g., 'C:\Users\Default User\Downloads\readme.txt').
+file-picker-crashed-save-somewhere = Windowsen fitxategien elkarrizketa-koadroak huts egin du. Fitxategia { $path } bidean gordeko da.
+file-picker-crashed-save-nowhere = Windowsen fitxategien elkarrizketa-koadroak huts egin du. Ezin da karpeta lehenetsirik aurkitu; fitxategia ez da gordeko.
 
 # Button used with file-picker-crashed-save-default. Opens the folder in Windows
 # Explorer, with the saved file selected and in focus.

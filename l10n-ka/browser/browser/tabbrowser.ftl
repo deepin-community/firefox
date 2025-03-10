@@ -72,6 +72,16 @@ tabbrowser-unblock-tab-audio-tooltip =
            *[other] { $tabCount } ჩანართში ხმის გაშვება
         }
 
+## Tooltips for tab audio control
+
+tabbrowser-unmute-tab-audio-aria-label =
+    .aria-label = ჩანართის ახმოვანება
+tabbrowser-mute-tab-audio-aria-label =
+    .aria-label = ჩანართის დადუმება
+# Used to unblock a tab with audio from autoplaying
+tabbrowser-unblock-tab-audio-aria-label =
+    .aria-label = ჩანართში გაშვება
+
 ## Confirmation dialog when closing a window with more than one tab open,
 ## or when quitting when only one window is open.
 
@@ -80,6 +90,7 @@ tabbrowser-unblock-tab-audio-tooltip =
 #   $tabCount (Number): The number of tabs that will be closed.
 tabbrowser-confirm-close-tabs-title = დაიხუროს { $tabCount } ჩანართი?
 tabbrowser-confirm-close-tabs-button = ჩანართების დახურვა
+tabbrowser-ask-close-tabs-checkbox = შეკითხვა რამდენიმე ჩანართის დახურვისას
 tabbrowser-confirm-close-tabs-checkbox = გაფრთხილება რამდენიმე ჩანართის დახურვისას
 
 ## Confirmation dialog when quitting using the menu and multiple windows are open.
@@ -102,7 +113,21 @@ tabbrowser-confirm-close-tabs-with-key-title = დაიხუროს ფა�
 tabbrowser-confirm-close-tabs-with-key-button = გამოირთოს { -brand-short-name }
 # Variables:
 #   $quitKey (String): the text of the keyboard shortcut for quitting.
+tabbrowser-ask-close-tabs-with-key-checkbox = შეკითხვა დახურვისას ღილაკებით { $quitKey }
+# Variables:
+#   $quitKey (String): the text of the keyboard shortcut for quitting.
 tabbrowser-confirm-close-tabs-with-key-checkbox = გაფრთხილება, სანამ დაიხურება { $quitKey }
+
+## Confirmation dialog when quitting using the keyboard shortcut (Ctrl/Cmd+Q)
+## and browser.warnOnQuitShortcut is true.
+
+tabbrowser-confirm-close-warn-shortcut-title = დაიხუროს { -brand-short-name }, თუ ეს ჩანართი დაიხუროს?
+tabbrowser-confirm-close-windows-warn-shortcut-button =
+    { PLATFORM() ->
+        [windows] დაიხუროს { -brand-short-name }
+       *[other] დაიხუროს { -brand-short-name }
+    }
+tabbrowser-confirm-close-tab-only-button = მიმდინარე ჩანართის დახურვა
 
 ## Confirmation dialog when opening multiple tabs simultaneously
 
@@ -124,6 +149,13 @@ tabbrowser-confirm-caretbrowsing-checkbox = აღარ გამოჩნდ�
 
 ## Confirmation dialog for closing all duplicate tabs
 
+tabbrowser-confirm-close-duplicate-tabs-title = ყურადღება!
+tabbrowser-confirm-close-duplicate-tabs-text = გახსნილი დარჩება ბოლოს მოქმედი ჩანართი
+tabbrowser-confirm-close-all-duplicate-tabs-title = დაიხუროს გამეორებული ჩანართები?
+tabbrowser-confirm-close-all-duplicate-tabs-text =
+    ამ ფანჯარაში დაიხურება გაორებული ჩანართები. ბოლო მოქმედი
+    ჩანართი დარჩება გახსნილი.
+tabbrowser-confirm-close-all-duplicate-tabs-button-closetabs = ჩანართების დახურვა
 
 ##
 
@@ -160,6 +192,9 @@ tabbrowser-ctrl-tab-list-all-tabs =
     .label = ყველა ({ $tabCount }) ჩანართი
 
 ## Tab manager menu buttons
+## Variables:
+##  $tabGroupName (String): The name of the tab group. See also tab-group-name-default, which will be
+##                          used when the group's name is empty.
 
 tabbrowser-manager-mute-tab =
     .tooltiptext = ჩანართის დადუმება
@@ -167,3 +202,121 @@ tabbrowser-manager-unmute-tab =
     .tooltiptext = ჩანართის ახმოვანება
 tabbrowser-manager-close-tab =
     .tooltiptext = ჩანართის დახურვა
+# This is for tab groups that have been "saved and closed" (see tab-group-editor-action-save). It does
+# not include "deleted" tab groups (see tab-group-editor-action-delete).
+tabbrowser-manager-closed-tab-group =
+    .label = { $tabGroupName }
+    .tooltiptext = { $tabGroupName } — დაიხურა
+tabbrowser-manager-current-window-tab-group =
+    .label = { $tabGroupName }
+    .tooltiptext = { $tabGroupName } — მიმდინარე ფანჯარა
+# "Show more" is for showing all open groups from other windows, as well as saved groups. Initially,
+# we only show up to six of these groups.
+tabbrowser-manager-tab-groups-show-more =
+    .label = ვრცლად
+
+## Tab Groups
+
+tab-group-editor-title-create = ჩანართების ჯგუფის შექმნა
+tab-group-editor-title-edit = ჩანართების ჯგუფის მართვა
+tab-group-editor-name-label = სახელი
+tab-group-editor-name-field =
+    .placeholder = მაგალითი: საყიდლები
+tab-group-editor-cancel =
+    .label = გაუქმება
+    .accesskey = ქ
+tab-group-editor-color-selector =
+    .aria-label = ჩანართის ჯგუფის ფერი
+tab-group-editor-color-selector2-blue = ლურჯი
+    .title = ლურჯი
+tab-group-editor-color-selector2-purple = იისფერი
+    .title = იისფერი
+tab-group-editor-color-selector2-cyan = მოცისფრო
+    .title = მოცისფრო
+tab-group-editor-color-selector2-orange = ნარინჯისფერი
+    .title = ნარინჯისფერი
+tab-group-editor-color-selector2-yellow = ყვითელი
+    .title = ყვითელი
+tab-group-editor-color-selector2-pink = ვარდისფერი
+    .title = ვარდისფერი
+tab-group-editor-color-selector2-green = მწვანე
+    .title = მწვანე
+tab-group-editor-color-selector2-gray = რუხი
+    .title = რუხი
+tab-group-editor-color-selector2-red = წითელი
+    .title = წითელი
+# Variables:
+#  $tabGroupName (String): The name of the tab group. Defaults to the value
+#                          of tab-group-name-default.
+tab-group-description = { $tabGroupName } — ჩანართების ჯგუფი
+tab-group-menu-header = ჩანართის ჯგუფები
+tab-context-unnamed-group =
+    .label = უსახელო ჯგუფი
+tab-group-name-default = უსახელო ჯგუფი
+
+## Variables:
+##  $tabCount (Number): the number of tabs that are affected by the action.
+
+tab-context-move-tab-to-new-group =
+    .label =
+        { $tabCount ->
+            [one] ჩანართის დამატება ახალ ჯგუფში
+           *[other] ჩანართების დამატება ახალ ჯგუფში
+        }
+    .accesskey = ჯ
+tab-context-move-tab-to-group =
+    .label =
+        { $tabCount ->
+            [one] ჩანართის დამატება ჯგუფში
+           *[other] ჩანართების დამატება ჯგუფში
+        }
+    .accesskey = ჯ
+tab-group-editor-action-new-tab =
+    .label = ახალი ჩანართი ჯგუფში
+tab-group-editor-action-new-window =
+    .label = ჯგუფის ახალ ფანჯარაში გადატანა
+tab-group-editor-action-save =
+    .label = შენახვა და ჯგუფის დახურვა
+tab-group-editor-action-ungroup =
+    .label = ჩანართების განჯგუფება
+tab-group-editor-action-delete =
+    .label = ჯგუფის წაშლა
+tab-group-editor-done =
+    .label = მზადაა
+    .accessKey = ზ
+tab-context-reopen-tab-group =
+    .label = ჩანართების ჯგუფის კვლავ გახსნა
+# Variables:
+#  $groupCount (Number): the number of tab groups that are affected by the action.
+tab-context-ungroup-tab =
+    .label =
+        { $groupCount ->
+            [one] ჯგუფიდან მოცილება
+           *[other] ჯგუფებიდან მოცილება
+        }
+    .accesskey = ც
+
+## Open/saved tab group context menu
+
+# For a tab group open in any window, clicking this will create a new
+# window and move this tab group to that new window.
+tab-group-context-move-to-new-window =
+    .label = ჯგუფის ახალ ფანჯარაში გადატანა
+# For a tab group open in a different window from the one that the
+# user is using to access the tab group menu, move that tab group into the
+# user's current window.
+tab-group-context-move-to-this-window =
+    .label = ჯგუფის ამ ფანჯარაში გადატანა
+# For a tab group that is open in any window, close the tab group and
+# do not save it. For a tab group that is closed but saved by the user, clicking
+# this will forget the saved tab group.
+tab-group-context-delete =
+    .label = ჯგუფის წაშლა
+# For a saved tab group that is not open in any window, open the tab group
+# in the user's current window.
+tab-group-context-open-saved-group-in-this-window =
+    .label = ჯგუფის გახსნა ამ ფანჯარაში
+# For a saved tab group that is not open in any window, create a new window and
+# open the tab group in that window.
+tab-group-context-open-saved-group-in-new-window =
+    .label = ჯგუფის გახსნა ახალ ფანჯარაში

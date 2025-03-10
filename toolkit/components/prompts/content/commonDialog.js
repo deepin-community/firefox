@@ -18,8 +18,15 @@ XPCOMUtils.defineLazyServiceGetter(
   Ci.nsIContentAnalysis
 );
 
+XPCOMUtils.defineLazyPreferenceGetter(
+  lazy,
+  "_contentAnalysisClipboardEnabled",
+  "browser.contentanalysis.interception_point.clipboard.enabled",
+  true
+);
+
 // imported by adjustableTitle.js loaded in the same context:
-/* globals PromptUtils */
+/* globals PromptUtils, goDoCommand, goUpdateCommand */
 
 var propBag, args, Dialog;
 
@@ -104,6 +111,10 @@ function commonDialogOnLoad() {
     focusTarget: window,
   };
 
+  if (args.isExtra1Secondary) {
+    dialog.setAttribute("extra1-is-secondary", true);
+  }
+
   Dialog = new CommonDialog(args, ui);
   window.addEventListener("dialogclosing", function (aEvent) {
     if (aEvent.detail?.abort) {
@@ -128,6 +139,22 @@ function commonDialogOnLoad() {
     Dialog.setDefaultFocus(isInitialFocus);
   Dialog.onLoad(dialog);
 
+  document.addEventListener("command", event => {
+    switch (event.target.id) {
+      case "cmd_copy":
+      case "cmd_selectAll":
+        goDoCommand(event.target.id);
+        break;
+      case "checkbox":
+        Dialog.onCheckbox();
+        break;
+    }
+  });
+
+  document
+    .getElementById("contentAreaContextMenu")
+    .addEventListener("popupshowing", () => goUpdateCommand("cmd_copy"));
+
   // resize the window to the content
   window.sizeToContent();
 
@@ -137,7 +164,7 @@ function commonDialogOnLoad() {
   if (lazy.gContentAnalysis.isActive && args.owningBrowsingContext?.isContent) {
     ui.loginTextbox?.addEventListener("paste", async event => {
       let data = event.clipboardData.getData("text/plain");
-      if (data?.length > 0) {
+      if (data?.length > 0 && lazy._contentAnalysisClipboardEnabled) {
         // Prevent the paste from happening until content analysis returns a response
         event.preventDefault();
         // Selections can be forward or backward, so use min/max
@@ -157,8 +184,11 @@ function commonDialogOnLoad() {
               requestToken: Services.uuid.generateUUID().toString(),
               resources: [],
               analysisType: Ci.nsIContentAnalysisRequest.eBulkDataEntry,
+              reason: Ci.nsIContentAnalysisRequest.eClipboardPaste,
               operationTypeForDisplay: Ci.nsIContentAnalysisRequest.eClipboard,
-              url: args.owningBrowsingContext.currentURI,
+              url: lazy.gContentAnalysis.getURIForBrowsingContext(
+                args.owningBrowsingContext
+              ),
               textContent: data,
               windowGlobalParent:
                 args.owningBrowsingContext.currentWindowContext,
@@ -196,3 +226,6 @@ function commonDialogOnUnload() {
     propBag.setProperty(propName, args[propName]);
   }
 }
+
+document.addEventListener("DOMContentLoaded", commonDialogOnLoad);
+window.addEventListener("unload", commonDialogOnUnload);

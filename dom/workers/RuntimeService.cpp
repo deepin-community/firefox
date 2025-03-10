@@ -26,8 +26,10 @@
 #include "jsfriendapi.h"
 #include "js/friend/ErrorMessages.h"  // js::GetErrorMessage, JSMSG_*
 #include "js/ContextOptions.h"
+#include "js/GCVector.h"
 #include "js/Initialization.h"
 #include "js/LocaleSensitive.h"
+#include "js/Value.h"
 #include "js/WasmFeatures.h"
 #include "mozilla/ArrayUtils.h"
 #include "mozilla/Atomics.h"
@@ -48,6 +50,7 @@
 #include "mozilla/dom/WorkerBinding.h"
 #include "mozilla/dom/ScriptSettings.h"
 #include "mozilla/dom/ShadowRealmGlobalScope.h"
+#include "mozilla/dom/TrustedTypeUtils.h"
 #include "mozilla/dom/IndexedDatabaseManager.h"
 #include "mozilla/DebugOnly.h"
 #include "mozilla/Preferences.h"
@@ -364,7 +367,6 @@ void LoadJSGCMemoryOptions(const char* aPrefName, void* /* aClosure */) {
       PREF("gc_urgent_threshold_mb", JSGC_URGENT_THRESHOLD_MB),
       PREF("gc_incremental_slice_ms", JSGC_SLICE_TIME_BUDGET_MS),
       PREF("gc_min_empty_chunk_count", JSGC_MIN_EMPTY_CHUNK_COUNT),
-      PREF("gc_max_empty_chunk_count", JSGC_MAX_EMPTY_CHUNK_COUNT),
       PREF("gc_compacting", JSGC_COMPACTING_ENABLED),
       PREF("gc_parallel_marking", JSGC_PARALLEL_MARKING_ENABLED),
       PREF("gc_parallel_marking_threshold_mb",
@@ -382,7 +384,7 @@ void LoadJSGCMemoryOptions(const char* aPrefName, void* /* aClosure */) {
 #undef PREF
 
   auto pref = kWorkerPrefs;
-  auto end = kWorkerPrefs + ArrayLength(kWorkerPrefs);
+  auto end = kWorkerPrefs + std::size(kWorkerPrefs);
 
   if (gRuntimeServiceDuringInit) {
     // During init, we want to update every pref in kWorkerPrefs.
@@ -449,7 +451,6 @@ void LoadJSGCMemoryOptions(const char* aPrefName, void* /* aClosure */) {
       case JSGC_LARGE_HEAP_INCREMENTAL_LIMIT:
       case JSGC_URGENT_THRESHOLD_MB:
       case JSGC_MIN_EMPTY_CHUNK_COUNT:
-      case JSGC_MAX_EMPTY_CHUNK_COUNT:
       case JSGC_HEAP_GROWTH_FACTOR:
       case JSGC_PARALLEL_MARKING_THRESHOLD_MB:
       case JSGC_MAX_MARKING_THREADS:
@@ -501,8 +502,13 @@ class LogViolationDetailsRunnable final : public WorkerMainThreadRunnable {
   ~LogViolationDetailsRunnable() = default;
 };
 
-bool ContentSecurityPolicyAllows(JSContext* aCx, JS::RuntimeCode aKind,
-                                 JS::Handle<JSString*> aCode) {
+MOZ_CAN_RUN_SCRIPT_FOR_DEFINITION bool ContentSecurityPolicyAllows(
+    JSContext* aCx, JS::RuntimeCode aKind, JS::Handle<JSString*> aCodeString,
+    JS::CompilationType aCompilationType,
+    JS::Handle<JS::StackGCVector<JSString*>> aParameterStrings,
+    JS::Handle<JSString*> aBodyString,
+    JS::Handle<JS::StackGCVector<JS::Value>> aParameterArgs,
+    JS::Handle<JS::Value> aBodyArg, bool* aOutCanCompileStrings) {
   WorkerPrivate* worker = GetWorkerPrivateFromContext(aCx);
   worker->AssertIsOnWorkerThread();
 
@@ -511,14 +517,27 @@ bool ContentSecurityPolicyAllows(JSContext* aCx, JS::RuntimeCode aKind,
   uint16_t violationType;
   nsAutoJSString scriptSample;
   if (aKind == JS::RuntimeCode::JS) {
-    if (NS_WARN_IF(!scriptSample.init(aCx, aCode))) {
-      JS_ClearPendingException(aCx);
+    ErrorResult error;
+    bool areArgumentsTrusted = TrustedTypeUtils::
+        AreArgumentsTrustedForEnsureCSPDoesNotBlockStringCompilation(
+            aCx, aCodeString, aCompilationType, aParameterStrings, aBodyString,
+            aParameterArgs, aBodyArg, error);
+    if (error.MaybeSetPendingException(aCx)) {
+      return false;
+    }
+    if (!areArgumentsTrusted) {
+      *aOutCanCompileStrings = false;
+      return true;
+    }
+
+    if (NS_WARN_IF(!scriptSample.init(aCx, aCodeString))) {
       return false;
     }
 
     if (!nsContentSecurityUtils::IsEvalAllowed(
             aCx, worker->UsesSystemPrincipal(), scriptSample)) {
-      return false;
+      *aOutCanCompileStrings = false;
+      return true;
     }
 
     evalOK = worker->IsEvalAllowed();
@@ -544,7 +563,8 @@ bool ContentSecurityPolicyAllows(JSContext* aCx, JS::RuntimeCode aKind,
     }
   }
 
-  return evalOK;
+  *aOutCanCompileStrings = evalOK;
+  return true;
 }
 
 void CTypesActivityCallback(JSContext* aCx, JS::CTypesActivityType aType) {
@@ -690,7 +710,7 @@ bool InitJSContextForWorker(WorkerPrivate* aWorkerPrivate,
 
   // Security policy:
   static const JSSecurityCallbacks securityCallbacks = {
-      ContentSecurityPolicyAllows};
+      ContentSecurityPolicyAllows, TrustedTypeUtils::HostGetCodeForEval};
   JS_SetSecurityCallbacks(aWorkerCx, &securityCallbacks);
 
   // A WorkerPrivate lives strictly longer than its JSRuntime so we can safely
@@ -1156,7 +1176,9 @@ bool RuntimeService::RegisterWorker(WorkerPrivate& aWorkerPrivate) {
 
       // Worker spawn gets queued due to hitting max workers per domain
       // limit so let's log a warning.
-      WorkerPrivate::ReportErrorToConsole("HittingMaxWorkersPerDomain2");
+      WorkerPrivate::ReportErrorToConsole(nsIScriptError::warningFlag, "DOM"_ns,
+                                          nsContentUtils::eDOM_PROPERTIES,
+                                          "HittingMaxWorkersPerDomain2"_ns);
 
       if (isServiceWorker) {
         Telemetry::Accumulate(Telemetry::SERVICE_WORKER_SPAWN_GETS_QUEUED, 1);
@@ -1546,7 +1568,7 @@ class DumpCrashInfoRunnable final : public WorkerControlRunnable {
 };
 
 struct ActiveWorkerStats {
-  template <uint32_t ActiveWorkerStats::*Category>
+  template <uint32_t ActiveWorkerStats::* Category>
   void Update(const nsTArray<WorkerPrivate*>& aWorkers) {
     for (const auto worker : aWorkers) {
       RefPtr<DumpCrashInfoRunnable> runnable =
@@ -2144,7 +2166,7 @@ WorkerThreadPrimaryRunnable::Run() {
       runLoopRan = true;
 
       {
-        PROFILER_SET_JS_CONTEXT(cx);
+        PROFILER_SET_JS_CONTEXT(context.get());
 
         {
           // We're on the worker thread here, and WorkerPrivate's refcounting is

@@ -54,6 +54,10 @@ add_setup(async function () {
   consoleAllowList.push("Invalid content signature (abc)");
   // We also test returning an empty configuration.
   consoleAllowList.push("Received empty search configuration");
+
+  registerCleanupFunction(async () => {
+    sinon.restore();
+  });
 });
 
 add_task(async function test_selector_basic_get() {
@@ -156,7 +160,7 @@ add_task(async function test_selector_config_update() {
     },
     {
       recordType: "defaultEngines",
-      globalDefault: "lycos",
+      globalDefault: "askjeeves",
       specificDefaults: [],
     },
     {

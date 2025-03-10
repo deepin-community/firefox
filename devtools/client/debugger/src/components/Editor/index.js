@@ -12,7 +12,6 @@ import { connect } from "devtools/client/shared/vendor/react-redux";
 import { getLineText, isLineBlackboxed } from "./../../utils/source";
 import { createLocation } from "./../../utils/location";
 import { getIndentation } from "../../utils/indentation";
-import { isWasm } from "../../utils/wasm";
 import { features } from "../../utils/prefs";
 import { markerTypes } from "../../constants";
 import { asSettled, isFulfilled, isRejected } from "../../utils/async-value";
@@ -24,7 +23,6 @@ import {
   getSelectedSourceTextContent,
   getSelectedBreakableLines,
   getConditionalPanelLocation,
-  getSymbols,
   getIsCurrentThreadPaused,
   getSkipPausing,
   getInlinePreview,
@@ -113,7 +111,6 @@ class Editor extends PureComponent {
       updateCursorPosition: PropTypes.func.isRequired,
       jumpToMappedLocation: PropTypes.func.isRequired,
       selectedLocation: PropTypes.object,
-      symbols: PropTypes.object,
       startPanelSize: PropTypes.number.isRequired,
       endPanelSize: PropTypes.number.isRequired,
       searchInFileEnabled: PropTypes.bool.isRequired,
@@ -140,6 +137,7 @@ class Editor extends PureComponent {
   // FIXME: https://bugzilla.mozilla.org/show_bug.cgi?id=1774507
   UNSAFE_componentWillReceiveProps(nextProps) {
     let { editor } = this.state;
+    const prevEditor = editor;
 
     if (!editor) {
       // See Bug 1913061
@@ -158,7 +156,7 @@ class Editor extends PureComponent {
       if (shouldUpdateSize) {
         editor.codeMirror.setSize();
       }
-      this.setTextContent(nextProps, editor);
+      this.setTextContent(nextProps, editor, prevEditor);
       endOperation();
 
       if (this.props.selectedSource != nextProps.selectedSource) {
@@ -168,16 +166,17 @@ class Editor extends PureComponent {
       }
     } else {
       // For codemirror 6
-      this.setTextContent(nextProps, editor);
+      this.setTextContent(nextProps, editor, prevEditor);
     }
   }
 
-  async setTextContent(nextProps, editor) {
+  async setTextContent(nextProps, editor, prevEditor) {
     const shouldUpdateText =
       nextProps.selectedSource !== this.props.selectedSource ||
       nextProps.selectedSourceTextContent?.value !==
         this.props.selectedSourceTextContent?.value ||
-      nextProps.symbols !== this.props.symbols;
+      // If the selectedSource gets set before the editor get selected, make sure we update the text
+      prevEditor !== editor;
 
     const shouldScroll =
       nextProps.selectedLocation &&
@@ -211,8 +210,9 @@ class Editor extends PureComponent {
     editor._initShortcuts = () => {};
 
     const node = ReactDOM.findDOMNode(this);
+    const mountEl = node.querySelector(".editor-mount");
     if (node instanceof HTMLElement) {
-      editor.appendToLocalElement(node.querySelector(".editor-mount"));
+      editor.appendToLocalElement(mountEl);
     }
 
     if (!features.codemirrorNext) {
@@ -273,6 +273,12 @@ class Editor extends PureComponent {
       });
     }
     this.setState({ editor });
+    // Used for tests
+    Object.defineProperty(window, "codeMirrorSourceEditorTestInstance", {
+      get() {
+        return editor;
+      },
+    });
     return editor;
   }
 
@@ -325,19 +331,13 @@ class Editor extends PureComponent {
         // Make sure we update after the editor has loaded
         (!prevState.editor && !!editor);
 
-      const isSourceWasm = isWasm(selectedSource.id);
-
       if (shouldUpdateBreakableLines) {
         editor.setLineGutterMarkers([
           {
             id: markerTypes.EMPTY_LINE_MARKER,
             lineClassName: "empty-line",
             condition: line => {
-              const lineNumber = fromEditorLine(
-                selectedSource.id,
-                line,
-                isSourceWasm
-              );
+              const lineNumber = fromEditorLine(selectedSource, line);
               return !breakableLines.has(lineNumber);
             },
           },
@@ -349,7 +349,7 @@ class Editor extends PureComponent {
           id: markerTypes.BLACKBOX_LINE_GUTTER_MARKER,
           lineClassName: "blackboxed-line",
           condition: line => {
-            const lineNumber = fromEditorLine(selectedSource.id, line);
+            const lineNumber = fromEditorLine(selectedSource, line);
             return isLineBlackboxed(
               blackboxedRanges[selectedSource.url],
               lineNumber,
@@ -412,17 +412,18 @@ class Editor extends PureComponent {
 
   getCurrentPosition() {
     const { editor } = this.state;
-    const { selectedSource } = this.props;
-    if (!selectedSource) {
+    const { selectedLocation } = this.props;
+    if (!selectedLocation) {
       return null;
     }
-
-    const selectionCursor = editor.getSelectionCursor();
-    return {
-      line: toSourceLine(selectedSource.id, selectionCursor.from.line),
-      // Add one to column for correct position in editor.
-      column: selectionCursor.from.ch + 1,
-    };
+    let { line, column } = selectedLocation;
+    // When no specific line has been selected, fallback to the current cursor posiiton
+    if (line == 0) {
+      const selectionCursor = editor.getSelectionCursor();
+      line = toSourceLine(selectedLocation.source, selectionCursor.from.line);
+      column = selectionCursor.from.ch + 1;
+    }
+    return { line, column };
   }
 
   onToggleBreakpoint = e => {
@@ -498,8 +499,7 @@ class Editor extends PureComponent {
       }
     }
   };
-  // Note: The line is optional, if not passed (as is likely for codemirror 6)
-  // it fallsback to lineAtHeight.
+  // Note: The line is optional, if not passed it fallsback to lineAtHeight.
   openMenu(event, line, ch) {
     event.stopPropagation();
     event.preventDefault();
@@ -524,7 +524,9 @@ class Editor extends PureComponent {
 
     const target = event.target;
     const { id: sourceId } = selectedSource;
-    line = line ?? lineAtHeight(editor, sourceId, event);
+    if (!features.codemirrorNext) {
+      line = line ?? lineAtHeight(editor, selectedSource, event);
+    }
 
     if (typeof line != "number") {
       return;
@@ -568,12 +570,8 @@ class Editor extends PureComponent {
     if (features.codemirrorNext) {
       location = createLocation({
         source: selectedSource,
-        line: fromEditorLine(
-          selectedSource.id,
-          line,
-          isWasm(selectedSource.id)
-        ),
-        column: isWasm(selectedSource.id) ? 0 : ch + 1,
+        line: fromEditorLine(selectedSource, line),
+        column: editor.isWasm ? 0 : ch + 1,
       });
     } else {
       location = getSourceLocationFromMouseEvent(editor, selectedSource, event);
@@ -589,12 +587,15 @@ class Editor extends PureComponent {
    */
   onCursorChange = () => {
     const { editor } = this.state;
+    if (!editor || !this.props.selectedSource) {
+      return;
+    }
     const selectionCursor = editor.getSelectionCursor();
     const { line, ch } = selectionCursor.to;
     this.props.selectLocation(
       createLocation({
         source: this.props.selectedSource,
-        line: toSourceLine(this.props.selectedSource.id, line),
+        line: toSourceLine(this.props.selectedSource, line),
         column: ch,
       }),
       {
@@ -637,7 +638,7 @@ class Editor extends PureComponent {
       return;
     }
 
-    const sourceLine = toSourceLine(selectedSource.id, line);
+    const sourceLine = toSourceLine(selectedSource, line);
     if (typeof sourceLine !== "number") {
       return;
     }
@@ -673,18 +674,15 @@ class Editor extends PureComponent {
   onClick(e, line, ch) {
     const { selectedSource, updateCursorPosition, jumpToMappedLocation } =
       this.props;
+    const { editor } = this.state;
 
     if (selectedSource) {
       let sourceLocation;
       if (features.codemirrorNext) {
         sourceLocation = createLocation({
           source: selectedSource,
-          line: fromEditorLine(
-            selectedSource.id,
-            line,
-            isWasm(selectedSource.id)
-          ),
-          column: isWasm(selectedSource.id) ? 0 : ch + 1,
+          line: fromEditorLine(selectedSource, line),
+          column: editor.isWasm ? 0 : ch + 1,
         });
       } else {
         sourceLocation = getSourceLocationFromMouseEvent(
@@ -715,9 +713,8 @@ class Editor extends PureComponent {
       !selectedSourceTextContent?.value &&
       nextProps.selectedSourceTextContent?.value;
     const locationChanged = selectedLocation !== nextProps.selectedLocation;
-    const symbolsChanged = nextProps.symbols != this.props.symbols;
 
-    return contentChanged || locationChanged || symbolsChanged;
+    return contentChanged || locationChanged;
   }
 
   scrollToLocation(nextProps, editor) {
@@ -734,7 +731,7 @@ class Editor extends PureComponent {
   }
 
   async setText(props, editor) {
-    const { selectedSource, selectedSourceTextContent, symbols } = props;
+    const { selectedSource, selectedSourceTextContent } = props;
 
     if (!editor) {
       return;
@@ -764,12 +761,7 @@ class Editor extends PureComponent {
     }
 
     if (!features.codemirrorNext) {
-      showSourceText(
-        editor,
-        selectedSource,
-        selectedSourceTextContent,
-        symbols
-      );
+      showSourceText(editor, selectedSource, selectedSourceTextContent);
     } else {
       await editor.setText(
         selectedSourceTextContent.value.value,
@@ -876,7 +868,7 @@ class Editor extends PureComponent {
         React.Fragment,
         null,
         React.createElement(Breakpoints, { editor }),
-        isPaused &&
+        (isPaused || isTraceSelected) &&
           selectedSource.isOriginal &&
           !selectedSource.isPrettyPrinted &&
           !mapScopesEnabled
@@ -901,7 +893,6 @@ class Editor extends PureComponent {
             mapScopesEnabled)
           ? React.createElement(InlinePreviews, {
               editor,
-              selectedSource,
             })
           : null,
         highlightedLineRange
@@ -929,7 +920,7 @@ class Editor extends PureComponent {
       React.createElement(Breakpoints, {
         editor,
       }),
-      isPaused &&
+      (isPaused || isTraceSelected) &&
         selectedSource.isOriginal &&
         !selectedSource.isPrettyPrinted &&
         !mapScopesEnabled
@@ -969,7 +960,6 @@ class Editor extends PureComponent {
           (selectedSource.isOriginal && mapScopesEnabled))
         ? React.createElement(InlinePreviews, {
             editor,
-            selectedSource,
           })
         : null
     );
@@ -1028,7 +1018,6 @@ const mapStateToProps = state => {
       isSourceOnSourceMapIgnoreList(state, selectedSource),
     searchInFileEnabled: getActiveSearch(state) === "file",
     conditionalPanelLocation: getConditionalPanelLocation(state),
-    symbols: getSymbols(state, selectedLocation),
     isPaused: getIsCurrentThreadPaused(state),
     isTraceSelected: getSelectedTraceIndex(state) != null,
     skipPausing: getSkipPausing(state),

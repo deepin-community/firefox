@@ -129,6 +129,7 @@ startup-restore-warn-on-quit =
 disable-extension =
     .label = Diweredekaat an askouezh
 preferences-data-migration-header = Enporzhiañ roadennoù ar merdeer
+preferences-data-migration-description = Enporzhiañ sinedoù, gerioù-tremen, ar roll istor, hag ar roadennoù leuniañ emgefreek e-barzh { -brand-short-name }.
 preferences-data-migration-button =
     .label = Enporzhiañ roadennoù
     .accesskey = E
@@ -531,8 +532,7 @@ home-prefs-shortcuts-description = Lec’hiennoù a enrollit pe a weladennit
 home-prefs-shortcuts-by-option-sponsored =
     .label = Berradennoù paeroniet
 
-## Variables:
-##  $provider (string) - Name of the corresponding content provider, e.g "Pocket".
+## Home Section - Firefox Home Content Customization
 
 home-prefs-recommended-by-header =
     .label = Erbedet gant { $provider }

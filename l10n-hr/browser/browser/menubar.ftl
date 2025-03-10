@@ -48,7 +48,7 @@ menu-quit =
 menu-quit-mac =
     .label = Zatvori { -brand-shorter-name }
 menu-about =
-    .label = O { -brand-shorter-name }u
+    .label = O { -brand-shorter-name(case: "loc") }
     .accesskey = O
 
 ## File Menu
@@ -118,8 +118,8 @@ menu-edit =
     .label = Uredi
     .accesskey = e
 menu-edit-find-in-page =
-    .label = Pronađi na stranici… (F)
-    .accesskey = F
+    .label = Pronađi na stranici …
+    .accesskey = P
 menu-edit-find-again =
     .label = Pronađi ponovo
     .accesskey = P
@@ -256,6 +256,15 @@ menu-bookmarks-other =
 menu-bookmarks-mobile =
     .label = Mobilne zabilješke
 
+## Profiles Menu
+
+menu-profiles =
+    .label = Profili
+menu-profiles-manage-profiles =
+    .label = Upravljaj profilima
+menu-profiles-new-profile =
+    .label = Novi profil
+
 ## Tools Menu
 
 menu-tools =
@@ -268,8 +277,8 @@ menu-tools-addons-and-themes =
     .label = Dodaci i teme
     .accesskey = a
 menu-tools-fxa-sign-in2 =
-    .label = Prijavi se (g)
-    .accesskey = g
+    .label = Prijavi se
+    .accesskey = P
 menu-tools-turn-on-sync2 =
     .label = Uključi sinkronizaciju…
     .accesskey = n
@@ -307,7 +316,7 @@ menu-tools-layout-debugger =
 menu-window-menu =
     .label = Prozor
 menu-window-bring-all-to-front =
-    .label = Postavi sve na vrh
+    .label = Postavi sve naprijed
 
 ## Help Menu
 
@@ -332,7 +341,7 @@ menu-help-more-troubleshooting-info =
 menu-help-report-site-issue =
     .label = Prijavi problem sa stranicom …
 menu-help-share-ideas =
-    .label = Dijeli ideje i povratne informcije …
+    .label = Dijeli ideje i povratne informacije …
     .accesskey = i
 menu-help-enter-troubleshoot-mode2 =
     .label = Modus za rješavanje problema …

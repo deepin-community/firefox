@@ -226,7 +226,9 @@ mr2022-onboarding-set-default-subtitle = Gebruik een browser die wordt ondersteu
 mr2022-onboarding-get-started-primary-subtitle = Onze nieuwste versie is rondom u gebouwd, waardoor het eenvoudiger dan ooit is om over het internet te surfen. Het zit boordevol functies waarvan we denken dat u er dol op zult zijn.
 mr2022-onboarding-get-started-primary-button-label = Binnen enkele seconden opgezet
 
-## MR2022 Import Settings screen strings
+## MR2022 Get Started screen strings.
+## These strings will be used on the welcome page
+## when Firefox is already set to default and pinned.
 
 mr2022-onboarding-import-header = Razendsnelle installatie
 mr2022-onboarding-import-subtitle = Stel { -brand-short-name } in zoals u het wilt. Voeg uw bladwijzers, wachtwoorden en meer toe vanuit uw oude browser.
@@ -357,6 +359,11 @@ onboarding-mobile-download-security-and-privacy-subtitle = Wanneer u bent gesync
 # Gratitude screen
 onboarding-gratitude-security-and-privacy-title = { -brand-short-name } is er voor u
 onboarding-gratitude-security-and-privacy-subtitle = Bedankt voor het gebruik van { -brand-short-name }, ondersteund door de Mozilla Foundation. Met uw steun werken we eraan om het internet voor iedereen veiliger en meer toegankelijk te maken.
+# Sign up or Sign in screen
+onboarding-sign-up-title = Uw gegevens tussen apparaten synchroniseren
+onboarding-sign-up-description = Schrijf u in voor een account en al uw belangrijke gegevens – wachtwoorden, bladwijzers en meer – worden veilig opgeslagen en zijn beschikbaar wanneer u zich aanmeldt op een apparaat.
+onboarding-sign-up-button = Registreren of aanmelden
+onboarding-sign-up-secondary-button = Beginnen met browsen
 
 ## New user time and familiarity survey strings
 
@@ -376,3 +383,88 @@ onboarding-new-user-survey-familiarity-based-option-1 = Ik ben helemaal nieuw
 onboarding-new-user-survey-familiarity-based-option-2 = Ik heb het wat gebruikt
 onboarding-new-user-survey-familiarity-based-option-3 = Ik ben er heel bekend mee
 onboarding-new-user-survey-familiarity-based-option-4 = Ik heb het in het verleden gebruikt, maar het is een poosje geleden
+
+## UI strings for the sidebar and vertical tabs
+
+# Setup screen for vertical tabs
+onboarding-new-tabs-title = Vertel ons waar u uw tabbladen wilt hebben
+# Setup screen for vertical tabs - "Switch it up" refers to switching between horizontal and vertical tabs.
+onboarding-new-tabs-subtitle = Wijzig het wanneer u maar wilt in de zijbalkinstellingen.
+# Setup screen for vertical tabs - too many tabs variation
+onboarding-many-tabs-title = Uw tabbladen, op uw manier
+# Setup screen for vertical tabs - subtitle for too many tabs variation
+onboarding-many-tabs-subtitle = Veel tabbladen open houden? Probeer uw tabbladen aan de zijkant voor een meer gestroomlijnde weergave. Of houd het klassiek met tabbladen bovenaan. Wissel op elk gewenst moment.
+# Setup screen for vertical tabs - focused variation
+onboarding-focused-tabs-title = Kies uw tabbladindeling
+# Setup screen for vertical tabs - subtitle for focused variation
+onboarding-focused-tabs-subtitle = Probeer uw tabbladen aan de zijkant voor een gestroomlijnde weergave die u kan helpen gefocust te blijven. Of houd het klassiek met tabbladen bovenaan. Wissel op elk gewenst moment.
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-new-vertical-tabs-label = Tabbladen aan de zijkant
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-new-horizontal-tabs-label = Tabbladen bovenaan
+# Setup screen for vertical tabs for existing users
+onboarding-existing-tabs-title = Er zijn verticale tabbladen
+# Setup screen for vertical tabs for existing users
+onboarding-existing-tabs-title2 = Nieuw: verticale tabbladen
+# Setup screen for vertical tabs for existing users - "Switch it up" refers to switching between horizontal and vertical tabs.
+onboarding-existing-tabs-subtitle = Probeer uw tabbladen aan de zijkant. Wijzig het wanneer u maar wilt in de zijbalkinstellingen.
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-existing-vertical-tabs-label = Verticale tabbladen proberen
+onboarding-flair-text = Nieuw!
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-existing-horizontal-tabs-label = Horizontale tabbladen behouden
+# Tooltip displayed on hover for vertical tabs image
+onboarding-vertical-tabs-tooltip =
+    .title = Een browservenster dat tabbladen langs de zijkant van het scherm toont als onderdeel van de { -brand-shorter-name }-zijbalk.
+# Description for vertical tabs image
+onboarding-vertical-tabs-description =
+    .aria-description = Een browservenster dat tabbladen langs de zijkant van het scherm toont als onderdeel van de { -brand-shorter-name }-zijbalk.
+# Tooltip displayed on hover for horizontal tabs image
+onboarding-horizontal-tabs-tooltip =
+    .title = Een browservenster met bovenaan tabbladen.
+# Description for horizontal tabs image
+onboarding-horizontal-tabs-description =
+    .aria-description = Een browservenster met bovenaan tabbladen.
+# Additional setup card for setting up aichatbot in the sidebar
+onboarding-genai-sidebar-title = Probeer een AI-chatbot in de zijbalk
+# Setup card for setting up AI chatbot in the sidebar; "Providers" refers to AI chatbot providers (e.g. OpenAI, etc). "Switch anytime" refers to allowing the user to switch to a different chatbot.
+onboarding-genai-sidebar-subtitle = Vat webinhoud samen, brainstorm over ideeën, stel berichten op – allemaal terwijl u surft. Kies uit meerdere providers. Wissel op elk gewenst moment. <a data-l10n-name="learn-more">Meer info</a>
+onboarding-genai-sidebar-primary-button = Kies een chatbot
+onboarding-genai-sidebar-secondary-button = Beginnen met surfen
+
+## New user onboarding checklist
+
+onboarding-checklist-title = Instellen van { -brand-short-name } voltooien
+onboarding-checklist-subtitle = Voltooi deze stappen om het meeste uit uw surfervaring te halen.
+onboarding-checklist-set-default = { -brand-short-name } instellen als standaardbrowser
+onboarding-checklist-pin = { -brand-short-name } aan de taakbalk vastmaken
+onboarding-checklist-import = Importeren uit vorige browser
+onboarding-checklist-extension = Een extensie toevoegen
+onboarding-checklist-sign-up = Registreren of aanmelden bij uw account
+
+## Tab Groups feature onboarding strings
+
+tab-groups-onboarding-feature-callout-title = Probeer tabbladgroepen voor minder rommel, meer focus
+tab-groups-onboarding-feature-callout-subtitle = Orden door het ene tabblad op het andere te slepen om uw eerste groep aan te maken.
+tab-groups-onboarding-create-group-title = Vind uw open groepen op de tabbladenbalk of door ernaar te zoeken in de adresbalk.
+tab-groups-onboarding-saved-groups-title = Als u een tabbladgroep sluit, kunt u deze hier altijd opnieuw openen.
+tab-groups-onboarding-saved-groups-no-alltabs-button-title = Vind op elk gewenst moment uw open of gesloten tabbladgroepen door in de adresbalk te zoeken.
+tab-groups-onboarding-dismiss = OK
+
+## Multi Profiles feature onboarding messages
+
+multi-profile-spotlight-title = Hartelijk welkom bij { -brand-product-name }-profielen
+multi-profile-spotlight-body = Wissel eenvoudig tussen browsen voor werk en plezier. Profielen houden uw navigatiegegevens, waaronder zoekgeschiedenis en wachtwoorden, volledig gescheiden, zodat u geordend kunt blijven.
+multi-profile-spotlight-cta = Een profiel aanmaken
+multi-profile-callout-title = Maak verschillende profielen voor werk en plezier
+multi-profile-callout-subtitle = Met profielen kunt u uw navigatiegegevens, zoals zoekgeschiedenis en wachtwoorden, volledig gescheiden houden.
+multi-profile-callout-cta = Een profiel aanmaken
+
+## Desktop to Mobile Adoption feature callout strings
+
+# If translating the headline is challenging, consider using a simplified alternative as a reference: 'Sync your browsing with Firefox for mobile.'
+desktop-to-mobile-headline = Downloaden, synchroniseren en gaan!
+# The phrase, 'on the go', is used to describe when people are very busy and are traveling from place to place.
+desktop-to-mobile-subtitle = Scan de QR-code om { -brand-product-name } voor mobiel te downloaden. Selecteer na installatie ‘Synchroniseren met mobiel’ om onderweg toegang tot uw wachtwoorden, bladwijzers en meer te krijgen.
+dismiss-button-label = Sluiten
+sync-to-mobile-button-label = Synchroniseren met mobiel

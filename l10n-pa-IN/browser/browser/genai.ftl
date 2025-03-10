@@ -43,6 +43,10 @@ genai-prompts-quiz =
 genai-prompts-explain =
     .label = ਇਸ ਬਾਰੇ ਸਮਝਾਓ
     .value = ਇਸ ਚੋਣ ਵਿੱਚ ਮੁੱਖ ਵਿਚਾਰਾਂ ਨੂੰ ਸੌਖੇ ਸ਼ਬਦਾਂ ਵਿੱਚ ਸਮਝਾਓ। ਉਦਾਹਰਨਾਂ ਵੀ ਦਿਓ।
+# Prompt purpose: writing tool that helps users with spelling and grammar mistakes and produce a response that identifies errors and rewrites the inputted text correctly
+genai-prompts-proofread =
+    .label = ਪਰੂਫ਼-ਰੀਡ
+    .value = ਸ਼ਬਦ-ਜੋੜ ਅਤੇ ਵਿਆਕਰਣ ਗਲਤੀਆਂ ਲਈ ਚੋਣ ਲਈ ਪਰੂਫ਼-ਰੀਡ ਕਰੋ। ਕਿਸੇ ਵੀ ਗਲਤੀ ਦੀ ਪਛਾਣ ਕਰਕੇ ਲਿਖਤ ਦੇ ਸੋਧਿਆ ਹੋਇਆ ਵਰਜ਼ਨ ਦਿੰਦਾ ਹੈ। ਅਰਥ ਅਤੇ ਤੱਥਾਂ ਨੂੰ ਦਰੁਸਤ ਕਰਕੇ ਅਤੇ ਸੁਝਾਅ ਦਿੱਤੀਆਂ ਸੋਧਾਂ ਦੀ ਸੂਚੀ ਦਿੰਦਾ ਹੈ, ਜਿਸ ਦੇ ਬਾਅਦ ਲਿਖਤ ਦਾ ਮੁਕੰਮਲ, ਸੋਧ ਕੀਤਾ ਵਰਜ਼ਨ ਤਿਆਰ ਦਿੰਦਾ ਹੈ।
 # This prompt is added to the beginning of selection prompts sent to a chatbot.
 # $tabTitle (string) - title of the webpage
 # $selection (string) - selected text
@@ -55,8 +59,107 @@ genai-menu-ask-generic =
 # $provider (string) - name of the provider
 genai-menu-ask-provider =
     .label = { $provider } ਨੂੰ ਪੁੱਛੋ
+genai-menu-remove-generic =
+    .label = AI ਚੈਟ-ਬੋਟ ਨੂੰ ਹਟਾਓ
+# $provider (string) - name of the provider
+genai-menu-remove-provider =
+    .label = { $provider } ਨੂੰ ਹਟਾਓ
 genai-input-ask-generic =
     .placeholder = …AI ਚੈਟ-ਬੋਟ ਨੂੰ ਪੁੱਛੋ
 # $provider (string) - name of the provider
 genai-input-ask-provider =
     .placeholder = …{ $provider } ਨੂੰ ਪੁੱਛੋ
+# $selectionLength (number) - selected text length
+# $maxLength (number) - max length of what can be selected
+genai-shortcuts-selected-warning-generic =
+    .heading = AI ਚੈਟ-ਬੋਟ ਪੂਰੀ ਚੋਣ ਨੂੰ ਪ੍ਰਾਪਤ ਨਹੀਂ ਕਰ ਸਕੇਗਾ
+    .message =
+        { $selectionLength ->
+           *[other] ਤੁਸੀਂ { $selectionLength } ਅੱਖਰ ਚੁਣੇ ਹਨ। ਅਸੀਂ AI ਚੈੱਟ-ਬੋਟ ਨੂੰ ਲਗਭਗ { $maxLength } ਹੀ ਅੱਖਰ ਭੇਜ ਸਕਦੇ ਹਾਂ।
+        }
+# $provider (string) - name of the provider
+# $selectionLength (number) - selected text length
+# $maxLength (number) - max length of what can be selected
+genai-shortcuts-selected-warning =
+    .heading = { $provider } ਤੁਹਾਡੀ ਪੂਰੀ ਚੋਣ ਨੂੰ ਪ੍ਰਾਪਤ ਨਹੀਂ ਕਰ ਸਕੇਗਾ।
+    .message =
+        { $selectionLength ->
+           *[other] ਤੁਸੀਂ { $selectionLength } ਅੱਖਰ ਚੁਣੇ ਹਨ। ਅਸੀਂ { $provider } ਨੂੰ ਲਗਭਗ { $maxLength } ਹੀ ਅੱਖਰ ਭੇਜ ਸਕਦੇ ਹਾਂ।
+        }
+genai-shortcuts-hide =
+    .label = ਚੈਟਬੋਟ ਸ਼ਾਰਟਕੱਟ ਨੂੰ ਓਹਲੇ ਕਰੋ
+
+## Chatbot header
+
+genai-chatbot-title = AI ਚੈਟਬੋਟ
+genai-header-provider-menu =
+    .title = ਕੋਈ ਚੈਟ-ਬੋਟ ਚੁਣੋ
+genai-header-options-button =
+    .title = ਮੇਨੂ ਨੂੰ ਖੋਲ੍ਹੋ
+genai-header-close-button =
+    .title = ਬੰਦ ਕਰੋ
+genai-provider-view-details =
+    .label = ਚੈਟ-ਬੋਟ ਵੇਰਵਿਆਂ ਨੂੰ ਵੇਖੋ
+genai-provider-about-chatbots =
+    .label = ਇਹਨਾਂ ਚੈਟ-ਬੋਟ ਬਾਰੇ
+genai-options-reload-generic =
+    .label = AI ਚੈਟ-ਬੋਟ ਨੂੰ ਮੁੜ-ਲੋਡ ਕਰੋ
+# $provider (string) - name of the provider
+genai-options-reload-provider =
+    .label = { $provider } ਨੂੰ ਮੁੜ-ਲੋਡ ਕਰੋ
+genai-options-show-shortcut =
+    .label = ਜਦੋਂ ਲਿਖਤ ਚੁਣਨਾ ਹੋਵੇ ਤਾਂ ਸ਼ਾਰਟਕੱਟ ਨੂੰ ਦਿਖਾਓ
+genai-options-hide-shortcut =
+    .label = ਜਦੋਂ ਲਿਖਤ ਚੁਣਨਾ ਹੋਵੇ ਤਾਂ ਸ਼ਾਰਟਕੱਟ ਨੂੰ ਓਹਲੇ ਕਰੋ
+genai-options-about-chatbot =
+    .label = { -brand-short-name } ਵਿੱਚ AI ਚੈਟ-ਬੋਟ ਬਾਰੇ
+
+## Chatbot onboarding
+
+genai-onboarding-header = ਬਰਾਊਜ਼ ਕਰਦੇ ਸਮੇਂ ਹੀ ਸਾਰ ਵੇਖੋ, ਦਿਮਾਗ ਲੜਾਓ ਤੇ ਹੋਰ ਕਈ ਕੁਝ ਕਰੋ
+# "Switch anytime" refers to allowing the user to switch to a different chatbot.
+genai-onboarding-description = { -brand-short-name } ਬਾਹੀ ਵਿੱਚ ਵਰਤਣ ਵਾਸਤੇ AI ਚੈਟ-ਬੋਟ ਚੁਣੋ। ਜਦੋਂ ਵੀ ਤੁਸੀਂ ਚੈਟ-ਬੋਟ ਚੁਣੋਗੇ ਤਾਂ ਅਸੀਂ ਹਰ ਉਸ ਦੇ ਵੇਰਵੇ ਦਿਖਾਵਾਂਗੇ। ਕਿਸੇ ਵੇਲੇ ਵੀ ਬਦਲੋ। <a data-l10n-name="learn-more">ਹੋਰ ਜਾਣੋ</a>
+genai-onboarding-primary = ਜਾਰੀ ਰੱਖੋ
+genai-onboarding-secondary = ਬੰਦ ਕਰੋ
+genai-onboarding-claude-tooltip =
+    .title = Anthropic Claude
+genai-onboarding-claude-learn = Claude ਬਾਰੇ ਹੋਰ ਸਿਖੋ
+genai-onboarding-chatgpt-tooltip =
+    .title = ChatGPT
+genai-onboarding-chatgpt-learn = ChatGPT ਬਾਰੇ ਹੋਰ ਸਿੱਖੋ
+genai-onboarding-copilot-tooltip =
+    .title = Copilot
+genai-onboarding-copilot-learn = Copilot ਬਾਰੇ ਹੋਰ ਸਿੱਖੋ
+genai-onboarding-gemini-tooltip =
+    .title = Google Gemini
+genai-onboarding-gemini-learn = Gemini ਬਾਰੇ ਹੋਰ ਜਾਣੋ
+genai-onboarding-huggingchat-tooltip =
+    .title = HuggingChat
+genai-onboarding-huggingchat-learn = HuggingChat ਬਾਰੇ ਹੋਰ ਜਾਣੋ
+genai-onboarding-lechat-tooltip =
+    .title = Le Chat Mistral
+genai-onboarding-lechat-learn = Le Chat ਬਾਰੇ ਹੋਰ ਸਿੱਖੋ
+genai-onboarding-select-header = ਸੁਝਾਅ ਵੇਖਣ ਲਈ ਲਿਖਤ ਨੂੰ ਚੁਣੋ
+genai-onboarding-select-description = ਜਦੋਂ ਵੀ ਤੁਸੀਂ ਲਿਖਤ ਨੂੰ ਚੁਣਦੇ ਹੋ ਤਾਂ ਅਸੀਂ ਤੁਹਾਨੂੰ ਚੈਟ-ਬੋਟ ਨੂੰ ਭੇਜਣ ਲਈ ਪਰੌਂਟ ਦਾ ਸੁਝਾਅ ਦੇਵਾਂਗੇ। ਤੁਸੀਂ ਖੁਦ ਵੀ ਆਪਣੇ ਪਰੌਂਟ ਲਿਖ ਸਕਦੇ ਹੋ।
+genai-onboarding-select-primary = ਚੈਟ ਕਰਨੀ ਸ਼ੁਰੂ ਕਰੋ
+
+## Chatbot onboarding choices
+## These describe features/capabilities of chatbot providers. These are not buttons/actions.
+
+genai-onboarding-claude-generate = ਲਿਖਤ ਅਤੇ ਕੋਡ ਤਿਆਰ ਕਰੋ
+genai-onboarding-claude-analyze = ਦਸਤਾਵੇਜ਼ ਅਤੇ ਚਿੱਤਰਾਂ ਦੀ ਜਾਂਚ ਪੜਤਾਲ
+genai-onboarding-claude-price = ਮੁਫ਼ਤ ਅਤੇ ਭੁਗਤਾਨ ਦੀਆਂ ਚੋਣਾਂ; ਖਾਤਾ ਚਾਹੀਦਾ ਹੈ
+genai-onboarding-chatgpt-generate = ਲਿਖਤ, ਚਿੱਤਰ ਅਤੇ ਕੋਡ ਤਿਆਰ ਕਰੋ
+genai-onboarding-chatgpt-analyze = ਦਸਤਾਵੇਜ਼ ਅਤੇ ਚਿੱਤਰਾਂ ਦੀ ਜਾਂਚ ਪੜਤਾਲ
+genai-onboarding-chatgpt-price = ਮੁਫ਼ਤ ਅਤੇ ਭੁਗਤਾਨ ਦੀਆਂ ਚੋਣਾਂ; ਕੁਝ ਦੇਸ਼ਾਂ ਤੇ ਕੰਮਾਂ ਲਈ ਖਾਤਾ ਚਾਹੀਦਾ ਹੈ
+genai-onboarding-copilot-generate = ਲਿਖਤ, ਚਿੱਤਰ ਅਤੇ ਕੋਡ ਤਿਆਰ ਕਰੋ
+genai-onboarding-copilot-analyze = ਚਿੱਤਰਾਂ ਦੀ ਪੜਤਾਲ ਕਰੋ
+genai-onboarding-copilot-price = ਮੁਫ਼ਤ ਅਤੇ ਭੁਗਤਾਨ ਦੀਆਂ ਚੋਣਾਂ; ਕੁਝ ਕੰਮਾਂ ਲਈ ਖਾਤਾ ਚਾਹੀਦਾ ਹੈ
+genai-onboarding-gemini-generate = ਲਿਖਤ, ਚਿੱਤਰ ਅਤੇ ਕੋਡ ਤਿਆਰ ਕਰੋ
+genai-onboarding-gemini-analyze = ਚਿੱਤਰਾਂ (ਮੁਫ਼ਤ) ਅਤੇ ਦਸਤਾਵੇਜ਼ਾਂ (ਭੁਗਤਾਨ) ਦੀ ਜਾਂਚ ਪੜਤਾਲ
+genai-onboarding-gemini-price = ਮੁਫ਼ਤ ਅਤੇ ਭੁਗਤਾਨ ਦੀਆਂ ਚੋਣਾਂ; ਖਾਤਾ ਚਾਹੀਦਾ ਹੈ
+genai-onboarding-huggingchat-generate = ਲਿਖਤ ਅਤੇ ਕੋਡ ਤਿਆਰ ਕਰੋ
+genai-onboarding-huggingchat-switch = ਵੱਖ-ਵੱਖ ਮਾਡਲਾਂ ਦੇ ਵਿਲੱਖਣ ਸੈਟ ਵਿੱਚ ਬਦਲੋ
+genai-onboarding-huggingchat-price-2 = ਮੁਫ਼ਤ; ਕੁਝ ਬੇਨਤੀਆਂ ਦੇ ਬਾਅਦ ਖਾਤਾ ਚਾਹੀਦਾ ਹੈ
+genai-onboarding-lechat-generate = ਲਿਖਤ ਅਤੇ ਕੋਡ ਤਿਆਰ ਕਰੋ
+genai-onboarding-lechat-price = ਮੁਫ਼ਤ; ਖਾਤਾ ਚਾਹੀਦਾ ਹੈ

@@ -47,6 +47,10 @@ genai-prompts-quiz =
 genai-prompts-explain =
     .label = Vysvětlit
     .value = Vysvětli jednoduchými slovy klíčové pojmy tohoto vybraného textu. Použij také příklady.
+# Prompt purpose: writing tool that helps users with spelling and grammar mistakes and produce a response that identifies errors and rewrites the inputted text correctly
+genai-prompts-proofread =
+    .label = Zkontrolovat text
+    .value = Zkontroluj prosím označený text na pravopisné a gramatické chyby. Uveď případné chyby a poskytni opravenou verzi textu. Zachovej významovou a věcnou správnost a nejprve poskytni seznam navrhovaných oprav a poté konečnou, opravenou verzi textu.
 # This prompt is added to the beginning of selection prompts sent to a chatbot.
 # $tabTitle (string) - title of the webpage
 # $selection (string) - selected text
@@ -59,8 +63,121 @@ genai-menu-ask-generic =
 # $provider (string) - name of the provider
 genai-menu-ask-provider =
     .label = Zeptat se { $provider }
+genai-menu-remove-generic =
+    .label = Odebrat AI chatbota
+# $provider (string) - name of the provider
+genai-menu-remove-provider =
+    .label = Odebrat { $provider }
 genai-input-ask-generic =
     .placeholder = Zeptat se AI chatbota…
 # $provider (string) - name of the provider
 genai-input-ask-provider =
     .placeholder = Zeptat se { $provider }…
+# $selectionLength (number) - selected text length
+# $maxLength (number) - max length of what can be selected
+genai-shortcuts-selected-warning-generic =
+    .heading = AI chatbot nedostane celý označený text
+    .message =
+        { $selectionLength ->
+            [one] Vybrali jste asi { $selectionLength } znak. Počet znaků, které můžeme chatbotu s umělou inteligencí poslat, je přibližně { $maxLength }.
+            [few] Vybrali jste asi { $selectionLength } znaky. Počet znaků, které můžeme chatbotu s umělou inteligencí poslat, je přibližně { $maxLength }.
+            [many] Vybrali jste asi { $selectionLength } znaků. Počet znaků, které můžeme chatbotu s umělou inteligencí poslat, je přibližně { $maxLength }.
+           *[other] Vybrali jste asi { $selectionLength } znaků. Počet znaků, které můžeme chatbotu s umělou inteligencí poslat, je přibližně { $maxLength }.
+        }
+# $provider (string) - name of the provider
+# $selectionLength (number) - selected text length
+# $maxLength (number) - max length of what can be selected
+genai-shortcuts-selected-warning =
+    .heading = { $provider } neobdrží váš celý výběr
+    .message =
+        { $selectionLength ->
+            [one] Vybrali jste asi { $selectionLength } znak. Počet znaků, které můžeme poslat službě { $provider }, je asi { $maxLength }.
+            [few] Vybrali jste asi { $selectionLength } znaky. Počet znaků, které můžeme poslat službě { $provider }, je asi { $maxLength }.
+            [many] Vybrali jste asi { $selectionLength } znaků. Počet znaků, které můžeme poslat službě { $provider }, je asi { $maxLength }.
+           *[other] Vybrali jste asi { $selectionLength } znaků. Počet znaků, které můžeme poslat službě { $provider }, je asi { $maxLength }.
+        }
+genai-shortcuts-hide =
+    .label = Skrýt zkratku chatbota
+
+## Chatbot header
+
+genai-chatbot-title = AI chatbot
+genai-header-provider-menu =
+    .title = Vyberte si chatbota
+genai-header-options-button =
+    .title = Otevřít nabídku
+genai-header-close-button =
+    .title = Zavřít
+genai-provider-view-details =
+    .label = Zobrazit podrobnosti o chatbotovi
+genai-provider-about-chatbots =
+    .label = O těchto chatbotech
+genai-options-reload-generic =
+    .label = Znovu načíst AI chatbota
+# $provider (string) - name of the provider
+genai-options-reload-provider =
+    .label = Znovu načíst { $provider }
+genai-options-show-shortcut =
+    .label = Zobrazit zkratku při označení textu
+genai-options-hide-shortcut =
+    .label = Skrýt zkratku při označení textu
+genai-options-about-chatbot =
+    .label =
+        { -brand-short-name.case-status ->
+            [with-cases] O AI chatbotech ve { -brand-short-name(case: "loc") }
+           *[no-cases] O AI chatbotech v aplikaci { -brand-short-name }
+        }
+
+## Chatbot onboarding
+
+genai-onboarding-header = Shrnutí, brainstorming a mnohem více při procházení webu
+# "Switch anytime" refers to allowing the user to switch to a different chatbot.
+genai-onboarding-description =
+    { -brand-short-name.case-status ->
+        [with-cases] Zvolte chatbota AI, kterého chcete používat v postranním panelu  { -brand-short-name(case: "gen") }. Podrobnosti o každém chatbotovi zobrazíte po jeho výběru. Změnit chatbota můžete kdykoliv. <a data-l10n-name="learn-more">Dozvědět se více</a>
+       *[no-cases] Zvolte chatbota AI, kterého chcete používat v postranním panelu aplikace  { -brand-short-name }. Podrobnosti o každém chatbotovi zobrazíte po jeho výběru. Změnit chatbota můžete kdykoliv. <a data-l10n-name="learn-more">Dozvědět se více</a>
+    }
+genai-onboarding-primary = Pokračovat
+genai-onboarding-secondary = Zavřít
+genai-onboarding-claude-tooltip =
+    .title = Anthropic Claude
+genai-onboarding-claude-learn = Zjistit více o Claude
+genai-onboarding-chatgpt-tooltip =
+    .title = ChatGPT
+genai-onboarding-chatgpt-learn = Zjistit více o ChatGPT
+genai-onboarding-copilot-tooltip =
+    .title = Copilot
+genai-onboarding-copilot-learn = Další informace o Copilotu
+genai-onboarding-gemini-tooltip =
+    .title = Google Gemini
+genai-onboarding-gemini-learn = Zjistit více o Gemini
+genai-onboarding-huggingchat-tooltip =
+    .title = HuggingChat
+genai-onboarding-huggingchat-learn = Zjistit více o HuggingChat
+genai-onboarding-lechat-tooltip =
+    .title = Le Chat Mistral
+genai-onboarding-lechat-learn = Zjistit více o Le Chat
+genai-onboarding-select-header = Výběrem textu zobrazíte návrhy
+genai-onboarding-select-description = Když vyberete text, nabídneme vám vstupy, které můžete chatbotovi odeslat. Můžete také napsat své vlastní vstupy.
+genai-onboarding-select-primary = Začněte chatovat
+
+## Chatbot onboarding choices
+## These describe features/capabilities of chatbot providers. These are not buttons/actions.
+
+genai-onboarding-claude-generate = Generování textu a kódu
+genai-onboarding-claude-analyze = Analýza dokumentů a obrázků
+genai-onboarding-claude-price = Bezplatné a placené možnosti; je vyžadován účet
+genai-onboarding-chatgpt-generate = Generování textu, obrázků a kódu
+genai-onboarding-chatgpt-analyze = Analýza dokumentů a obrázků
+genai-onboarding-chatgpt-price = Bezplatné a placené možnosti; pro některé země a úkoly je vyžadován účet
+genai-onboarding-copilot-generate = Generování textu, obrázků a kódu
+genai-onboarding-copilot-analyze = Analýza obrázků
+genai-onboarding-copilot-price = Bezplatné a placené možnosti; pro některé úlohy je vyžadován účet
+genai-onboarding-gemini-generate = Generování textu, obrázků a kódu
+genai-onboarding-gemini-analyze = Analýza obrázků (zdarma) a dokumentů (placené)
+genai-onboarding-gemini-price = Bezplatné a placené možnosti; je vyžadován účet
+genai-onboarding-huggingchat-generate = Generování textu a kódu
+genai-onboarding-huggingchat-switch = Přepínejte mezi rozmanitou sadou otevřených modelů
+genai-onboarding-huggingchat-price-2 = Zdarma; po určitém počtu požadavků je vyžadován účet
+genai-onboarding-lechat-generate = Generování textu a kódu
+genai-onboarding-lechat-price = Zdarma; je vyžadován účet

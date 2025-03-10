@@ -80,6 +80,9 @@ toolbar-button-fxaccount =
 
 ## Account toolbar Button
 
+toolbar-button-account =
+    .label = Račun
+    .tooltiptext = Račun
 
 ## Save Page
 
@@ -89,6 +92,38 @@ main-context-menu-page-save =
 
 ## Simple menu items
 
+main-context-menu-bookmark-page =
+    .aria-label = Označi stranicu…
+    .accesskey = m
+    .tooltiptext = Označi stranicu…
+# This menuitem is only visible on macOS
+# Cannot be shown at the same time as main-context-menu-edit-bookmark-mac,
+# so should probably have the same access key if possible.
+main-context-menu-bookmark-page-mac =
+    .label = Označi stranicu…
+    .accesskey = m
+# This menuitem is only visible on macOS
+# Cannot be shown at the same time as main-context-menu-bookmark-page-mac,
+# so should probably have the same access key if possible.
+main-context-menu-edit-bookmark-mac =
+    .label = Uredi oznaku…
+    .accesskey = m
+# Variables
+#   $shortcut (String) - A keyboard shortcut for the add bookmark command.
+main-context-menu-bookmark-page-with-shortcut =
+    .aria-label = Označi stranicu…
+    .accesskey = m
+    .tooltiptext = Označi stranicu ({ $shortcut })
+main-context-menu-edit-bookmark =
+    .aria-label = Uredi oznaku…
+    .accesskey = m
+    .tooltiptext = Uredi oznaku
+# Variables
+#   $shortcut (String) - A keyboard shortcut for the edit bookmark command.
+main-context-menu-edit-bookmark-with-shortcut =
+    .aria-label = Uredi oznaku…
+    .accesskey = m
+    .tooltiptext = Uredi oznaku ({ $shortcut })
 main-context-menu-open-link =
     .label = Otvori link
     .accesskey = O
@@ -104,6 +139,9 @@ main-context-menu-open-link-new-window =
 main-context-menu-open-link-new-private-window =
     .label = Otvori link u novom privatnom prozoru
     .accesskey = p
+main-context-menu-bookmark-link-2 =
+    .label = Označi link…
+    .accesskey = B
 main-context-menu-save-link =
     .label = Spasi link kao…
     .accesskey = k
@@ -118,6 +156,23 @@ main-context-menu-save-link-to-pocket =
 main-context-menu-copy-email =
     .label = Kopiraj Email adresu
     .accesskey = E
+main-context-menu-copy-phone =
+    .label = Kopiraj broj telefona
+    .accesskey = o
+main-context-menu-copy-link-simple =
+    .label = Kopiraj link
+    .accesskey = L
+# "Copy Clean Link" means that Firefox will remove things from the link you
+# copied, like items that identify you for advertising purposes, and other items
+# sites add into URLs to help them deliver a certain browsing experience.
+main-context-menu-copy-clean-link =
+    .label = Kopiraj čistu vezu
+    .accesskey = u
+# This command copies the link, removing additional
+# query parameters used to track users across sites.
+main-context-menu-strip-on-share-link =
+    .label = Kopiraj link bez praćenja stranice
+    .accesskey = u
 
 ## Media (video/audio) controls
 ##
@@ -140,6 +195,9 @@ main-context-menu-media-mute =
 main-context-menu-media-unmute =
     .label = Sa zvukom
     .accesskey = m
+main-context-menu-media-play-speed-2 =
+    .label = Brzina
+    .accesskey = d
 main-context-menu-media-play-speed-slow-2 =
     .label = 0,5×
 main-context-menu-media-play-speed-normal-2 =
@@ -172,18 +230,44 @@ main-context-menu-media-video-fullscreen =
 main-context-menu-media-video-leave-fullscreen =
     .label = Izađi iz prikaza preko cijelog ekrana
     .accesskey = u
+# This is used when right-clicking on a video in the
+# content area when the Picture-in-Picture feature is enabled.
+main-context-menu-media-watch-pip =
+    .label = Gledaj u prikazu Slika-u-slici
+    .accesskey = u
 main-context-menu-image-reload =
     .label = Ponovo učitaj sliku
     .accesskey = P
+main-context-menu-image-view-new-tab =
+    .label = Otvori sliku u novom tabu
+    .accesskey = I
+main-context-menu-video-view-new-tab =
+    .label = Otvori video u novom tabu
+    .accesskey = i
 main-context-menu-image-copy =
     .label = Kopiraj sliku
     .accesskey = K
+main-context-menu-image-copy-link =
+    .label = Kopiraj link slike
+    .accesskey = o
+main-context-menu-video-copy-link =
+    .label = Kopiraj link videa
+    .accesskey = o
+main-context-menu-audio-copy-link =
+    .label = Kopiraj link audio zapisa
+    .accesskey = o
 main-context-menu-image-save-as =
     .label = Spasi sliku kao…
     .accesskey = S
 main-context-menu-image-email =
     .label = Pošalji sliku emailom…
     .accesskey = a
+main-context-menu-image-set-image-as-background =
+    .label = Postavi sliku kao pozadinu radne površine…
+    .accesskey = S
+main-context-menu-image-copy-text =
+    .label = Kopiraj tekst sa slike
+    .accesskey = x
 main-context-menu-image-info =
     .label = Prikaži informacije o slici
     .accesskey = f
@@ -195,6 +279,9 @@ main-context-menu-video-save-as =
     .accesskey = v
 main-context-menu-audio-save-as =
     .label = Spasi audio kao…
+    .accesskey = S
+main-context-menu-video-take-snapshot =
+    .label = Napravi snimak…
     .accesskey = S
 main-context-menu-video-email =
     .label = Pošalji video emailom…
@@ -209,13 +296,30 @@ main-context-menu-send-to-device =
     .label = Pošalji stranicu na uređaj
     .accesskey = u
 
-## The access keys for "Use Saved Login" and "Use Saved Password"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
+##
 
+main-context-menu-use-saved-login =
+    .label = Koristi sačuvanu prijavu
+    .accesskey = o
+# Displayed when there are saved passwords and the user clicks inside a username or password field
+main-context-menu-use-saved-password =
+    .label = Koristi sačuvanu lozinku
+    .accesskey = o
 
 ##
 
+main-context-menu-use-relay-mask =
+    .label = Koristi { -relay-brand-short-name } email masku
+    .accesskey = E
+main-context-menu-suggest-strong-password =
+    .label = Predloži jaku lozinku…
+    .accesskey = S
+main-context-menu-manage-logins2 =
+    .label = Upravljaj prijavama
+    .accesskey = M
+main-context-menu-manage-passwords =
+    .label = Upravljaj lozinkama
+    .accesskey = M
 main-context-menu-keyword =
     .label = Dodaj ključnu riječ za ovu pretragu…
     .accesskey = k
@@ -237,6 +341,9 @@ main-context-menu-frame-open-window =
 main-context-menu-frame-reload =
     .label = Obnovi okvir
     .accesskey = r
+main-context-menu-frame-add-bookmark =
+    .label = Okvir oznake…
+    .accesskey = m
 main-context-menu-frame-save-as =
     .label = Spasi okvir kao…
     .accesskey = S
@@ -249,9 +356,18 @@ main-context-menu-frame-view-source =
 main-context-menu-frame-view-info =
     .label = Prikaži podatke o okviru
     .accesskey = i
+main-context-menu-print-selection-2 =
+    .label = Štampaj selekciju…
+    .accesskey = r
 main-context-menu-view-selection-source =
     .label = Pregled izvornog koda selekcije
     .accesskey = e
+main-context-menu-take-screenshot =
+    .label = Napravi snimak ekrana
+    .accesskey = T
+main-context-menu-take-frame-screenshot =
+    .label = Napravi snimak ekrana
+    .accesskey = o
 main-context-menu-view-page-source =
     .label = Pregled izvornog koda stranice
     .accesskey = v
@@ -261,8 +377,19 @@ main-context-menu-bidi-switch-text =
 main-context-menu-bidi-switch-page =
     .label = Promijeni smjer stranice
     .accesskey = P
+main-context-menu-inspect =
+    .label = Pregledaj
+    .accesskey = Q
 main-context-menu-inspect-a11y-properties =
     .label = Provjerite svojstva pristupačnosti
 main-context-menu-eme-learn-more =
     .label = Saznajte više o DRM-u…
     .accesskey = D
+# Variables
+#   $containerName (String): The name of the current container
+main-context-menu-open-link-in-container-tab =
+    .label = Otvori link u novom { $containerName } tabu
+    .accesskey = T
+main-context-menu-reveal-password =
+    .label = Otkrij lozinku
+    .accesskey = v

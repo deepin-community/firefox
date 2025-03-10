@@ -8,11 +8,18 @@
 newtab-page-title = Fitxa berria
 newtab-settings-button =
     .title = Pertsonalizatu fitxa berriaren orria
+newtab-personalize-settings-icon-label =
+    .title = Pertsonalizatu fitxa berria
+    .aria-label = Ezarpenak
+newtab-settings-dialog-label =
+    .aria-label = Ezarpenak
 newtab-personalize-icon-label =
     .title = Pertsonalizatu fitxa berria
     .aria-label = Pertsonalizatu fitxa berria
 newtab-personalize-dialog-label =
     .aria-label = Pertsonalizatu
+newtab-logo-and-wordmark =
+    .aria-label = { -brand-full-name }
 
 ## Search box component.
 
@@ -109,6 +116,13 @@ newtab-menu-save-to-pocket = Gorde { -pocket-brand-name }-en
 newtab-menu-delete-pocket = Ezabatu { -pocket-brand-name }-etik
 newtab-menu-archive-pocket = Artxibatu { -pocket-brand-name }-en
 newtab-menu-show-privacy-info = Gure babesleak eta zure pribatutasuna
+newtab-menu-about-fakespot = { -fakespot-brand-name }(r)i buruz
+# Context menu option to personalize New Tab recommended stories by blocking a section of stories,
+# e.g. "Sports". "Block" is a verb here.
+newtab-menu-section-block = Blokeatu
+# "Follow", "unfollow", and "following" are social media terms that refer to subscribing to or unsubscribing from a section of stories.
+# e.g. Following the travel section of stories.
+newtab-menu-section-unfollow = Ez jarraitu gaia
 
 ## Message displayed in a modal window to explain privacy and provide context for sponsored content.
 
@@ -228,11 +242,23 @@ newtab-pocket-cta-button = Eskuratu { -pocket-brand-name }
 newtab-pocket-cta-text = Gorde gogoko dituzun istorioak { -pocket-brand-name }-en eta piztu zure gogoa irakurgai erakargarriekin.
 newtab-pocket-pocket-firefox-family = { -brand-product-name }(r)en familiakoa da { -pocket-brand-name }
 # A save to Pocket button that shows over the card thumbnail on hover.
+newtab-pocket-image =
+    .aria-label = { -pocket-brand-name }
 newtab-pocket-save = Gorde
 newtab-pocket-saved = Gordeta
 
 ## Thumbs up and down buttons that shows over a newtab stories card thumbnail on hover.
 
+# Clicking the thumbs up button for this story will result in more stories like this one being recommended
+newtab-pocket-thumbs-up-tooltip =
+    .title = Horrelako gehiago
+# Clicking the thumbs down button for this story informs us that the user does not feel like the story is interesting for them
+newtab-pocket-thumbs-down-tooltip =
+    .title = Ez zait interesatzen
+# Used to show the user a message upon clicking the thumbs up or down buttons
+newtab-toast-thumbs-up-or-down2 =
+    .message = Eskerrik asko. Zure iritziak jarioa hobetzen lagunduko digu.
+newtab-toast-thumbs-up-or-down = Eskerrik asko. Zure iritziak jarioa hobetzen lagunduko digu.
 newtab-toast-dismiss-button =
     .title = Baztertu
     .aria-label = Baztertu
@@ -283,15 +309,28 @@ newtab-wallpaper-title = Horma-paperak
 newtab-wallpaper-reset = Berrezarri lehenespenera
 newtab-wallpaper-light-red-panda = Panda gorria
 newtab-wallpaper-light-mountain = Mendi zuria
+newtab-wallpaper-light-sky = Hodei more eta arrosadun zerua
+newtab-wallpaper-light-color = Forma urdin, arrosa eta horiak
+newtab-wallpaper-light-landscape = Lanbro urdindun mendiko paisaia
+newtab-wallpaper-light-beach = Palmondoa duen hondartza
 newtab-wallpaper-dark-aurora = Aurora boreala
+newtab-wallpaper-dark-color = Forma gorri eta urdinak
+newtab-wallpaper-dark-panda = Basoan ezkutatutako panda gorria
+newtab-wallpaper-dark-sky = Gaueko zerudun hiriko paisaia
+newtab-wallpaper-dark-mountain = Paisaia mendia
+newtab-wallpaper-dark-city = Hiriko paisaia morea
+newtab-wallpaper-dark-fox-anniversary = Azeria espaloian baso batetik gertu
+newtab-wallpaper-light-fox-anniversary = Azeria belardi batean mendiko paisaia lanbrotsuarekin
 
 ## Solid Colors
 
+newtab-wallpaper-category-title-colors = Kolore solidoak
 newtab-wallpaper-blue = Urdina
 newtab-wallpaper-light-blue = Urdin argia
 newtab-wallpaper-light-purple = More argia
 newtab-wallpaper-light-green = Berde argia
 newtab-wallpaper-green = Berdea
+newtab-wallpaper-beige = Beixa
 newtab-wallpaper-yellow = Horia
 newtab-wallpaper-orange = Laranja
 newtab-wallpaper-pink = Arrosa
@@ -305,19 +344,46 @@ newtab-wallpaper-brown = Marroia
 ## Abstract
 
 newtab-wallpaper-category-title-abstract = Abstraktua
+newtab-wallpaper-abstract-green = Forma berdeak
+newtab-wallpaper-abstract-blue = Forma urdinak
+newtab-wallpaper-abstract-purple = Forma moreak
+newtab-wallpaper-abstract-orange = Forma laranjak
+newtab-wallpaper-gradient-orange = Gradiente laranja eta arrosa
+newtab-wallpaper-abstract-blue-purple = Forma urdin eta moreak
 
-## Photographs
+## Celestial
 
 newtab-wallpaper-category-title-photographs = Argazkiak
+newtab-wallpaper-beach-at-sunrise = Hondartza egunsentian
+newtab-wallpaper-beach-at-sunset = Hondartza ilunabarrean
+newtab-wallpaper-storm-sky = Ekaitz zerua
+newtab-wallpaper-sky-with-pink-clouds = Hodei arrosadun zerua
+newtab-wallpaper-red-panda-yawns-in-a-tree = Panda gorria zuhaitzean aharrausika
+newtab-wallpaper-white-mountains = Mendi zuriak
+# Variables
+#   $author_string (String) - The name of the creator of the photo.
+#   $webpage_string (String) - The name of the webpage where the photo is located.
+newtab-wallpaper-attribution = Argazkiaren egilea: <a data-l10n-name="name-link">{ $author_string }</a>, <a data-l10n-name="webpage-link">{ $webpage_string }</a> webgunean
 newtab-wallpaper-feature-highlight-header = Probatu kolore ukitu bat
+newtab-wallpaper-feature-highlight-content = Emaiozu itxura berria zure fitxa berriari horma-paperekin.
+newtab-wallpaper-feature-highlight-button = Ulertuta
 # Tooltip for dismiss button
 feature-highlight-dismiss-button =
     .title = Utzi
     .aria-label = Itxi laster-lehioa
+feature-highlight-wallpaper =
+    .title = { -newtab-wallpaper-feature-highlight-header }
+    .aria-label = { -newtab-wallpaper-feature-highlight-content }
+
+## Celestial
+
 
 ## New Tab Weather
 
 newtab-weather-menu-change-location = Aldatu kokapena
+newtab-weather-change-location-search-input-placeholder =
+    .placeholder = Bilatu kokapena
+    .aria-label = Bilatu kokapena
 newtab-weather-change-location-search-input = Bilatu kokapena
 newtab-weather-menu-weather-display = Eguraldia bistaratzea
 # Display options are:
@@ -350,6 +416,7 @@ newtab-topic-label-hobbies = Jokoak
 # and understand their personal finances – from saving money to buying a home. See the
 # “Curated by our editors“ section at the top of https://getpocket.com/explore/personal-finance for more context
 newtab-topic-label-finance = Finantzak
+newtab-topic-label-government = Politika
 newtab-topic-label-education-science = Zientzia
 newtab-topic-label-sports = Kirolak
 newtab-topic-label-tech = Teknologia
@@ -362,3 +429,20 @@ newtab-topic-selection-cancel-button = Utzi
 newtab-topic-selection-button-maybe-later = Geroago agian
 newtab-topic-selection-button-update-interests = Eguneratu zure interesak
 newtab-topic-selection-button-pick-interests = Hautatu zure interesak
+
+## Content Feed Sections
+## "Follow", "unfollow", and "following" are social media terms that refer to subscribing to or unsubscribing from a section of stories.
+## e.g. Following the travel section of stories.
+
+
+## Button to block/unblock listed topics
+## "Block", "unblocked", and "blocked" are social media terms that refer to hiding a section of stories.
+## e.g. Blocked the politics section of stories.
+
+
+## Confirmation modal for blocking a section
+
+newtab-section-cancel-button = Une honetan ez
+
+## Panel in the Customize menu section to manage followed and blocked topics
+

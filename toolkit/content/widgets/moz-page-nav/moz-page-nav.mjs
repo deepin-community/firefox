@@ -2,7 +2,11 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { html } from "chrome://global/content/vendor/lit.all.mjs";
+import {
+  html,
+  when,
+  classMap,
+} from "chrome://global/content/vendor/lit.all.mjs";
 import { MozLitElement } from "chrome://global/content/lit-utils.mjs";
 // eslint-disable-next-line import/no-unassigned-import
 import "chrome://global/content/elements/moz-support-link.mjs";
@@ -20,7 +24,7 @@ import "chrome://global/content/elements/moz-support-link.mjs";
 export default class MozPageNav extends MozLitElement {
   static properties = {
     currentView: { type: String },
-    heading: { type: String },
+    heading: { type: String, fluent: true },
   };
 
   static queries = {
@@ -31,7 +35,7 @@ export default class MozPageNav extends MozLitElement {
 
   get pageNavButtons() {
     return this.primaryNavGroupSlot
-      .assignedNodes()
+      ?.assignedNodes()
       .filter(
         node => node?.localName === "moz-page-nav-button" && !node.hidden
       );
@@ -39,7 +43,7 @@ export default class MozPageNav extends MozLitElement {
 
   get secondaryNavButtons() {
     return this.secondaryNavGroupSlot
-      .assignedNodes()
+      ?.assignedNodes()
       .filter(
         node => node?.localName === "moz-page-nav-button" && !node.hidden
       );
@@ -79,20 +83,29 @@ export default class MozPageNav extends MozLitElement {
     }
   }
 
-  onSecondaryNavChange() {
-    this.secondaryNavGroupSlot.assignedElements()?.forEach(el => {
+  onSecondaryNavChange(event) {
+    let secondaryNavElements = event.target.assignedElements();
+    this.hasSecondaryNav = !!secondaryNavElements.length;
+    secondaryNavElements?.forEach(el => {
       el.classList.add("secondary-nav-item");
     });
   }
 
   render() {
+    let hasNavIcons = [
+      ...(this.pageNavButtons ?? []),
+      ...(this.secondaryNavButtons ?? []),
+    ].some(button => button.iconSrc);
     return html`
       <link
         rel="stylesheet"
         href="chrome://global/content/elements/moz-page-nav.css"
       />
-      <nav>
-        <h1 class="page-nav-header" id="page-nav-header">${this.heading}</h1>
+      <nav class=${classMap({ "has-nav-icons": hasNavIcons })}>
+        <div class="page-nav-header-wrapper">
+          <div class="logo"></div>
+          <h1 class="page-nav-header" id="page-nav-header">${this.heading}</h1>
+        </div>
         <div
           class="primary-nav-group"
           role="tablist"
@@ -104,6 +117,7 @@ export default class MozPageNav extends MozLitElement {
             @keydown=${this.handleFocus}
           ></slot>
         </div>
+        ${when(this.hasSecondaryNav, () => html`<hr />`)}
         <div id="secondary-nav-group" role="group">
           <slot
             name="secondary-nav"
@@ -141,7 +155,7 @@ customElements.define("moz-page-nav", MozPageNav);
  */
 export class MozPageNavButton extends MozLitElement {
   static properties = {
-    iconSrc: { type: String },
+    iconSrc: { type: String, reflect: true },
     href: { type: String },
     selected: { type: Boolean },
     supportPage: { type: String, attribute: "support-page" },

@@ -72,6 +72,16 @@ tabbrowser-unblock-tab-audio-tooltip =
            *[other] { $tabCount } ljepblêden ôfspylje
         }
 
+## Tooltips for tab audio control
+
+tabbrowser-unmute-tab-audio-aria-label =
+    .aria-label = Ljepblêd dempe opheffe
+tabbrowser-mute-tab-audio-aria-label =
+    .aria-label = Ljepblêd dempe
+# Used to unblock a tab with audio from autoplaying
+tabbrowser-unblock-tab-audio-aria-label =
+    .aria-label = Ljepblêd ôfspylje
+
 ## Confirmation dialog when closing a window with more than one tab open,
 ## or when quitting when only one window is open.
 
@@ -80,6 +90,7 @@ tabbrowser-unblock-tab-audio-tooltip =
 #   $tabCount (Number): The number of tabs that will be closed.
 tabbrowser-confirm-close-tabs-title = { $tabCount } ljepblêden slute?
 tabbrowser-confirm-close-tabs-button = Ljepblêden slute
+tabbrowser-ask-close-tabs-checkbox = Freegje foar it sluten fan meardere ljepblêden
 tabbrowser-confirm-close-tabs-checkbox = Warskôgje by it sluten fan meardere ljepblêden
 
 ## Confirmation dialog when quitting using the menu and multiple windows are open.
@@ -102,7 +113,21 @@ tabbrowser-confirm-close-tabs-with-key-title = Finster slute en { -brand-short-n
 tabbrowser-confirm-close-tabs-with-key-button = { -brand-short-name } ôfslute
 # Variables:
 #   $quitKey (String): the text of the keyboard shortcut for quitting.
+tabbrowser-ask-close-tabs-with-key-checkbox = Freegje foar ôfsluten mei { $quitKey }
+# Variables:
+#   $quitKey (String): the text of the keyboard shortcut for quitting.
 tabbrowser-confirm-close-tabs-with-key-checkbox = Befêstigje foardat jo stopje mei { $quitKey }
+
+## Confirmation dialog when quitting using the keyboard shortcut (Ctrl/Cmd+Q)
+## and browser.warnOnQuitShortcut is true.
+
+tabbrowser-confirm-close-warn-shortcut-title = { -brand-short-name } ôfslute of aktuele ljepblêd slute?
+tabbrowser-confirm-close-windows-warn-shortcut-button =
+    { PLATFORM() ->
+        [windows] { -brand-short-name } ôfslute
+       *[other] { -brand-short-name } ôfslute
+    }
+tabbrowser-confirm-close-tab-only-button = Aktuele ljepblêd slute
 
 ## Confirmation dialog when opening multiple tabs simultaneously
 
@@ -167,6 +192,9 @@ tabbrowser-ctrl-tab-list-all-tabs =
     .label = Alle { $tabCount } ljepblêdtitels toane
 
 ## Tab manager menu buttons
+## Variables:
+##  $tabGroupName (String): The name of the tab group. See also tab-group-name-default, which will be
+##                          used when the group's name is empty.
 
 tabbrowser-manager-mute-tab =
     .tooltiptext = Ljepblêd dôvje
@@ -174,3 +202,124 @@ tabbrowser-manager-unmute-tab =
     .tooltiptext = Ljepblêd dôvje opheffe
 tabbrowser-manager-close-tab =
     .tooltiptext = Ljepblêd slute
+# This is for tab groups that have been "saved and closed" (see tab-group-editor-action-save). It does
+# not include "deleted" tab groups (see tab-group-editor-action-delete).
+tabbrowser-manager-closed-tab-group =
+    .label = { $tabGroupName }
+    .tooltiptext = { $tabGroupName } – Sluten
+tabbrowser-manager-current-window-tab-group =
+    .label = { $tabGroupName }
+    .tooltiptext = { $tabGroupName } – Aktueel finster
+# "Show more" is for showing all open groups from other windows, as well as saved groups. Initially,
+# we only show up to six of these groups.
+tabbrowser-manager-tab-groups-show-more =
+    .label = Mear toane
+
+## Tab Groups
+
+tab-group-editor-title-create = Ljepblêdgroep meitsje
+tab-group-editor-title-edit = Ljepblêdgroep beheare
+tab-group-editor-name-label = Namme
+tab-group-editor-name-field =
+    .placeholder = Foarbyld: winkelje
+tab-group-editor-cancel =
+    .label = Annulearje
+    .accesskey = A
+tab-group-editor-color-selector =
+    .aria-label = Ljepblêdgroepkleur
+tab-group-editor-color-selector2-blue = Blau
+    .title = Blau
+tab-group-editor-color-selector2-purple = Pears
+    .title = Pears
+tab-group-editor-color-selector2-cyan = Syaan
+    .title = Syaan
+tab-group-editor-color-selector2-orange = Oranje
+    .title = Oranje
+tab-group-editor-color-selector2-yellow = Giel
+    .title = Giel
+tab-group-editor-color-selector2-pink = Roze
+    .title = Roze
+tab-group-editor-color-selector2-green = Grien
+    .title = Grien
+tab-group-editor-color-selector2-gray = Griis
+    .title = Griis
+tab-group-editor-color-selector2-red = Read
+    .title = Read
+# Variables:
+#  $tabGroupName (String): The name of the tab group. Defaults to the value
+#                          of tab-group-name-default.
+tab-group-description = { $tabGroupName } – Ljepblêdgroep
+tab-group-menu-header = Ljepblêdgroepen
+tab-context-unnamed-group =
+    .label = Nammeleaze groep
+tab-group-name-default = Nammeleaze groep
+
+## Variables:
+##  $tabCount (Number): the number of tabs that are affected by the action.
+
+tab-context-move-tab-to-new-group =
+    .label =
+        { $tabCount ->
+            [1] Ljepblêd oan nije groep tafoegje
+            [one] Ljepblêd oan nije groep tafoegje
+           *[other] Ljepblêden oan nije groep tafoegje
+        }
+    .accesskey = g
+tab-context-move-tab-to-group =
+    .label =
+        { $tabCount ->
+            [1] Ljepblêd oan groep tafoegje
+            [one] Ljepblêd oan groep tafoegje
+           *[other] Ljepblêden oan groep tafoegje
+        }
+    .accesskey = g
+tab-group-editor-action-new-tab =
+    .label = Nij ljepblêd yn groep
+tab-group-editor-action-new-window =
+    .label = Groep nei nij finster ferpleatse
+tab-group-editor-action-save =
+    .label = Groep bewarje en slute
+tab-group-editor-action-ungroup =
+    .label = Ljepblêdgroepearring opheffe
+tab-group-editor-action-delete =
+    .label = Groep fuortsmite
+tab-group-editor-done =
+    .label = Dien
+    .accessKey = D
+tab-context-reopen-tab-group =
+    .label = Ljepblêdgroep opnij iepenje
+# Variables:
+#  $groupCount (Number): the number of tab groups that are affected by the action.
+tab-context-ungroup-tab =
+    .label =
+        { $groupCount ->
+            [1] Fuortsmite út groep
+            [one] Fuortsmite út groep
+           *[other] Fuortsmite út groepen
+        }
+    .accesskey = F
+
+## Open/saved tab group context menu
+
+# For a tab group open in any window, clicking this will create a new
+# window and move this tab group to that new window.
+tab-group-context-move-to-new-window =
+    .label = Groep nei nij finster ferpleatse
+# For a tab group open in a different window from the one that the
+# user is using to access the tab group menu, move that tab group into the
+# user's current window.
+tab-group-context-move-to-this-window =
+    .label = Groep nei dit finster ferpleatse
+# For a tab group that is open in any window, close the tab group and
+# do not save it. For a tab group that is closed but saved by the user, clicking
+# this will forget the saved tab group.
+tab-group-context-delete =
+    .label = Groep fuortsmite
+# For a saved tab group that is not open in any window, open the tab group
+# in the user's current window.
+tab-group-context-open-saved-group-in-this-window =
+    .label = Groep yn dit finster iepenje
+# For a saved tab group that is not open in any window, create a new window and
+# open the tab group in that window.
+tab-group-context-open-saved-group-in-new-window =
+    .label = Groep yn nij finster iepenje

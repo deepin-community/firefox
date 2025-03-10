@@ -15,6 +15,7 @@
 #include "mozilla/glean/bindings/jog/jog_ffi_generated.h"
 #include "mozilla/glean/fog_ffi_generated.h"
 #include "mozilla/glean/GleanMetrics.h"
+#include "mozilla/HelperMacros.h"
 #include "mozilla/Logging.h"
 #include "mozilla/MozPromise.h"
 #include "mozilla/ShutdownPhase.h"
@@ -144,6 +145,11 @@ FOG::InitializeFOG(const nsACString& aDataPathOverride,
 
   return glean::impl::fog_init(&aDataPathOverride, &aAppIdOverride,
                                aDisableInternalPings);
+}
+
+// Expose MOZ_APP_VERSION_DISPLAY to Rust
+extern "C" const char* FOG_MozAppVersionDisplay(void) {
+  return MOZ_STRINGIFY(MOZ_APP_VERSION_DISPLAY);
 }
 
 NS_IMETHODIMP
@@ -416,11 +422,13 @@ FOG::TestRegisterRuntimePing(
     const bool aSendIfEmpty, const bool aPreciseTimestamps,
     const bool aIncludeInfoSections, const bool aEnabled,
     const nsTArray<nsCString>& aSchedulesPings,
-    const nsTArray<nsCString>& aReasonCodes, uint32_t* aPingIdOut) {
+    const nsTArray<nsCString>& aReasonCodes,
+    const bool aFollowsCollectionEnabled, uint32_t* aPingIdOut) {
   *aPingIdOut = 0;
   *aPingIdOut = glean::jog::jog_test_register_ping(
       &aName, aIncludeClientId, aSendIfEmpty, aPreciseTimestamps,
-      aIncludeInfoSections, aEnabled, &aSchedulesPings, &aReasonCodes);
+      aIncludeInfoSections, aEnabled, &aSchedulesPings, &aReasonCodes,
+      aFollowsCollectionEnabled);
   return NS_OK;
 }
 

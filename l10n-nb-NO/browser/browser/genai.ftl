@@ -51,3 +51,53 @@ genai-input-ask-generic =
 # $provider (string) - name of the provider
 genai-input-ask-provider =
     .placeholder = Spør { $provider }…
+
+## Chatbot header
+
+genai-header-options-button =
+    .title = Åpne meny
+genai-header-close-button =
+    .title = Lukk
+genai-provider-view-details =
+    .label = Vis samtalerobot-detaljer
+genai-provider-about-chatbots =
+    .label = Om disse samtalerobotene
+genai-options-show-shortcut =
+    .label = Vis snarvei når du velger tekst
+genai-options-hide-shortcut =
+    .label = Skjul snarvei når du velger tekst
+
+## Chatbot onboarding
+
+genai-onboarding-primary = Fortsett
+genai-onboarding-secondary = Lukk
+genai-onboarding-claude-tooltip =
+    .title = Anthropic Claude
+genai-onboarding-claude-learn = Les mer om Claude
+genai-onboarding-chatgpt-tooltip =
+    .title = ChatGPT
+genai-onboarding-chatgpt-learn = Les mer om ChatGPT
+genai-onboarding-copilot-tooltip =
+    .title = Copilot
+genai-onboarding-copilot-learn = Les mer om Copilot
+genai-onboarding-gemini-tooltip =
+    .title = Google Gemini
+genai-onboarding-gemini-learn = Les mer om Gemini
+genai-onboarding-huggingchat-tooltip =
+    .title = HuggingChat
+genai-onboarding-huggingchat-learn = Les mer om HuggingChat
+genai-onboarding-lechat-tooltip =
+    .title = Le Chat Mistral
+genai-onboarding-lechat-learn = Les mer om Le Chat
+genai-onboarding-select-header = Marker tekst for å se forslag
+
+## Chatbot onboarding choices
+## These describe features/capabilities of chatbot providers. These are not buttons/actions.
+
+genai-onboarding-claude-analyze = Analyser dokumenter og bilder
+genai-onboarding-copilot-analyze = Analyser bilder
+genai-onboarding-copilot-price = Gratis og betalte alternativer; konto kreves for enkelte oppgaver
+genai-onboarding-gemini-generate = Generer tekst, bilder og kode
+genai-onboarding-huggingchat-generate = Generer tekst og kode
+genai-onboarding-lechat-generate = Generer tekst og kode
+genai-onboarding-lechat-price = Gratis; konto kreves

@@ -25,9 +25,18 @@ webext-perms-description-nativeMessaging = Üzenetváltás a { -brand-short-name
 webext-perms-description-notifications = Értesítések megjelenítése
 webext-perms-description-pkcs11 = Kriptográfiai hitelesítési szolgáltatások biztosítása
 webext-perms-description-privacy = Adatvédelmi beállítások olvasása és módosítása
-webext-perms-description-proxy = Böngésző proxy beállítások vezérlése
+webext-perms-description-proxy = Böngésző proxybeállításainak vezérlése
 webext-perms-description-sessions = Nemrég bezárt lapok elérése
 webext-perms-description-tabs = Böngészőlapok elérése
 webext-perms-description-tabHide = Böngészőlapok elrejtése és megjelenítése
 webext-perms-description-topSites = Böngészés előzményeinek elérése
+webext-perms-description-trialML = MI modellek letöltése és futtatása az eszközön
+webext-perms-description-userScripts = Engedélyezés, hogy nem ellenőrzött harmadik féltől származó parancsfájlok hozzáférjenek az adataihoz
 webext-perms-description-webNavigation = Böngészőtevékenység elérése navigáláskor
+
+## The userScripts permission includes an additional explanation that is
+## displayed prominently near the usual permission description.
+
+webext-perms-extra-warning-userScripts-long = A nem ellenőrzött parancsfájlok biztonsági és adatvédelmi kockázatot jelenthetnek, például ártalmas kódot futtathatnak, vagy követhetik a webes tevékenységet. Csak olyan kiegészítőkből vagy forrásokból futtasson parancsfájlokat, melyekben megbízik.
+# A shorter warning is displayed in UI surfaces with little room, such as a permission prompt.
+webext-perms-extra-warning-userScripts-short = A nem ellenőrzött parancsfájlok biztonsági és adatvédelmi kockázatot jelenthetnek. Csak olyan kiegészítőkből vagy forrásokból futtasson parancsfájlokat, melyekben megbízik.

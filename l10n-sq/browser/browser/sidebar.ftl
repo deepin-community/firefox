@@ -4,6 +4,12 @@
 
 menu-view-genai-chat =
     .label = Robot IA Fjalosjesh
+menu-view-review-checker =
+    .label = Kontrollor Shqyrtimesh
+menu-view-contextual-password-manager =
+    .label = Fjalëkalime
+sidebar-options-menu-button =
+    .title = Hape menunë
 
 ## Labels for sidebar history panel
 
@@ -46,16 +52,30 @@ sidebar-position-right =
     .label = Shfaqe djathtas
 sidebar-vertical-tabs =
     .label = Skeda vertikale
+sidebar-settings =
+    .label = Rregullime anështylle
+sidebar-hide-tabs-and-sidebar =
+    .label = Fshih skeda dhe anështyllë
+sidebar-show-on-the-right =
+    .label = Shpjere anështyllën djathtas
+sidebar-show-on-the-left =
+    .label = Shpjere anështyllën majtas
+# Option to automatically expand the collapsed sidebar when the mouse pointer
+# hovers over it.
+expand-sidebar-on-hover =
+    .label = Zgjeroje anështyllën, kur i kalohet kursori përsipër
 sidebar-horizontal-tabs =
     .label = Skeda horizontale
 sidebar-customize-tabs-header =
     .label = Rregullime skedash
-sidebar-customize-settings-header =
-    .label = Rregullime anështylle
-sidebar-visibility-always-show =
-    .label = Shfaqe përherë
-sidebar-visibility-hide-sidebar =
-    .label = Fshihe anështyllën
+sidebar-customize-button-header =
+    .label = Buton anështylle
+sidebar-customize-position-header =
+    .label = Pozicion anështylle
+sidebar-visibility-setting-always-show =
+    .label = Zgjeroni dhe tkurrni anështyllën
+sidebar-visibility-setting-hide-sidebar =
+    .label = Shfaqni dhe fshihni anështyllën
 
 ## Labels for sidebar context menu items
 
@@ -73,6 +93,10 @@ sidebar-context-menu-bookmark-tab =
     .label = Faqeruaje Skedën…
 sidebar-context-menu-copy-link =
     .label = Kopjoji Lidhjen
+# Variables:
+#   $deviceName (String) - The name of the device the user is closing a tab for
+sidebar-context-menu-close-remote-tab =
+    .label = Mbylle skedën te { $deviceName }
 
 ## Labels for sidebar history context menu items
 
@@ -91,6 +115,41 @@ sidebar-menu-bookmarks-label =
     .label = Faqerojtës
 sidebar-menu-customize-label =
     .label = Përshtatni anështyllën
+sidebar-menu-review-checker-label =
+    .label = Kontrollor Shqyrtimesh
+sidebar-menu-contextual-password-manager-label =
+    .label = Fjalëkalime
+
+## Tooltips for sidebar menu items.
+
+# The tooltip to show over the history icon, when history is not currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-open-history-tooltip = Hapni historikun ({ $shortcut })
+# The tooltip to show over the history icon, when history is currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-close-history-tooltip = Mbylleni historikun ({ $shortcut })
+# The tooltip to show over the bookmarks icon, when bookmarks is not currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-open-bookmarks-tooltip = Hapni faqerojtësit ({ $shortcut })
+# The tooltip to show over the bookmarks icon, when bookmarks is currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-close-bookmarks-tooltip = Mbyllni faqerojtësit ({ $shortcut })
+sidebar-menu-open-ai-chatbot-tooltip = Hapni robot IA
+sidebar-menu-close-ai-chatbot-tooltip = Mbyllni robot IA
+
+## Tooltips displayed over the AI chatbot icon.
+## Variables:
+##   $shortcut (String) - The OS specific keyboard shortcut.
+##   $provider (String) - The name of the AI chatbot provider (if available).
+
+sidebar-menu-open-ai-chatbot-tooltip-generic = Hapni robot IA fjalosjeje ({ $shortcut })
+sidebar-menu-open-ai-chatbot-provider-tooltip = Hapni { $provider } ({ $shortcut })
+sidebar-menu-close-ai-chatbot-tooltip-generic = Mbylleni robotin IA të fjalosjes ({ $shortcut })
+sidebar-menu-close-ai-chatbot-provider-tooltip = Mbylleni { $provider } ({ $shortcut })
 
 ## Headings for sidebar menu panels.
 
@@ -100,3 +159,50 @@ sidebar-menu-history-header =
     .heading = Historik
 sidebar-menu-syncedtabs-header =
     .heading = Skeda prej pajisjesh të tjera
+sidebar-menu-bookmarks-header =
+    .heading = Faqerojtës
+sidebar-menu-cpm-header =
+    .heading = Fjalëkalime
+sidebar-panel-header-close-button =
+    .tooltiptext = Mbylle
+
+## Titles for sidebar menu panels.
+
+sidebar-customize-title = Përshtatni anështyllën
+sidebar-history-title = Historik
+sidebar-syncedtabs-title = Skeda prej pajisjesh të tjera
+
+## Context for closing synced tabs when hovering over the items
+
+# Context for hovering over the close tab button that will
+# send a push to the device to close said tab
+# Variables:
+#   $deviceName (String) - the name of the device the user is closing a tab for
+synced-tabs-context-close-tab-title =
+    .title = Mbylle skedën te { $deviceName }
+show-sidebars =
+    .tooltiptext = Shfaqni anështylla
+    .label = Anështylla
+
+## Tooltips for the sidebar toolbar widget.
+
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-expand-sidebar2 =
+    .tooltiptext = Zgjeroje anështyllën ({ $shortcut })
+    .label = Anështylla
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-collapse-sidebar2 =
+    .tooltiptext = Tkurre anështyllën ({ $shortcut })
+    .label = Anështylla
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-show-sidebar2 =
+    .tooltiptext = Shfaqe anështyllën ({ $shortcut })
+    .label = Anështylla
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-hide-sidebar2 =
+    .tooltiptext = Fshihe anështyllën ({ $shortcut })
+    .label = Anështylla

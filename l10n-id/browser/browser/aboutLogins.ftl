@@ -41,7 +41,7 @@ about-logins-menu-menuitem-help = Bantuan
 ## Login List
 
 login-list =
-    .aria-label = Info masuk yang cocok dengan permintaan pencarian
+    .aria-label = Info masuk yang cocok dengan kueri pencarian
 # Variables
 #   $count (number) - Number of logins
 login-list-count =
@@ -127,6 +127,8 @@ login-item-copied-username-button-text = Tersalin!
 login-item-password-label = Sandi
 login-item-password-reveal-checkbox =
     .aria-label = Tampilkan sandi
+login-item-password-conceal-checkbox =
+    .aria-label = Sembunyikan sandi
 login-item-copy-password-button-text = Salin
 login-item-copied-password-button-text = Tersalin!
 login-item-save-changes-button = Simpan Perubahan
@@ -162,7 +164,7 @@ about-logins-edit-login-os-auth-dialog-message-macosx = mengedit info masuk ters
 # This message can be seen when attempting to disable osauth in about:preferences.
 about-logins-os-auth-dialog-message =
     { PLATFORM() ->
-        [macos] ubah setelan sandi
+        [macos] mengubah setelan sandi
        *[other] { -brand-short-name } mencoba mengubah setelan sandi. Gunakan perangkat masuk Anda untuk mengizinkan ini.
     }
 # This message can be seen when attempting to edit a login in about:logins on Windows.

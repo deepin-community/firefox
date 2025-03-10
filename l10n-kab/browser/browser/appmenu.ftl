@@ -108,8 +108,10 @@ appmenu-fxa-sync-and-save-data2 = Mtawi sakin sekles isefka
 appmenu-fxa-signed-in-label = Kcem
 appmenu-fxa-setup-sync =
     .label = Rmed amtawi…
+appmenu-fxa-setup-sync-new = Rmed
 appmenuitem-save-page =
     .label = Sekles asebter di...
+appmenuitem-fxa-sync-off-title = Amtawi yensa
 
 ## What's New panel in App menu.
 
@@ -278,3 +280,16 @@ appmenuitem-relay-title = { -relay-brand-short-name }
 appmenuitem-relay-description = Ffer imayl-ik d wuṭṭun n tiliɣri n tidet
 appmenuitem-vpn-title = { -mozilla-vpn-brand-name }
 appmenuitem-vpn-description = Mmesten armud-ik srid
+
+## Profiles panel
+
+appmenu-profiles = Imeɣna
+appmenu-other-profiles = Imaɣunen niḍen
+appmenu-manage-profiles =
+    .label = Sefrek imaɣunen
+appmenu-create-profile =
+    .label = Amaɣnu amaynut
+appmenu-edit-profile =
+    .aria-label = Ẓreg amaɣnu
+appmenu-profiles-2 =
+    .label = Imeɣna

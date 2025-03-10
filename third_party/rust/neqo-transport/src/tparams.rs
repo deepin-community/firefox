@@ -139,7 +139,7 @@ pub enum TransportParameter {
 
 impl TransportParameter {
     fn encode(&self, enc: &mut Encoder, tp: TransportParameterId) {
-        qdebug!("TP encoded; type 0x{:02x} val {:?}", tp, self);
+        qtrace!("TP encoded; type 0x{:02x} val {:?}", tp, self);
         enc.encode_varint(tp);
         match self {
             Self::Bytes(a) => {
@@ -309,7 +309,7 @@ impl TransportParameter {
         if d.remaining() > 0 {
             return Err(Error::TooMuchData);
         }
-        qdebug!("TP decoded; type 0x{:02x} val {:?}", tp, value);
+        qtrace!("TP decoded; type 0x{:02x} val {:?}", tp, value);
         Ok(Some((tp, value)))
     }
 }
@@ -519,7 +519,7 @@ impl TransportParameters {
             let ok = self
                 .params
                 .get(k)
-                .map_or(false, |v_self| match (v_self, v_rem) {
+                .is_some_and(|v_self| match (v_self, v_rem) {
                     (TransportParameter::Integer(i_self), TransportParameter::Integer(i_rem)) => {
                         if *k == MIN_ACK_DELAY {
                             // MIN_ACK_DELAY is backwards:

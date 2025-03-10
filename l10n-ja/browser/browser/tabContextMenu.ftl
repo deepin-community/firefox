@@ -28,10 +28,16 @@ duplicate-tabs =
 close-tabs-to-the-start =
     .label = 左側のタブをすべて閉じる
     .accesskey = l
+close-tabs-to-the-start-vertical =
+    .label = 上側のタブをすべて閉じる
+    .accesskey = l
 # The following string is displayed on a menuitem that will close the tabs from the end of the tabstrip to the currently targeted tab (excluding the currently targeted and any other selected tabs).
 # In left-to-right languages this should use "Right" and in right-to-left languages this should use "Left".
 close-tabs-to-the-end =
     .label = 右側のタブをすべて閉じる
+    .accesskey = i
+close-tabs-to-the-end-vertical =
+    .label = 下側のタブをすべて閉じる
     .accesskey = i
 close-other-tabs =
     .label = 他のタブをすべて閉じる
@@ -78,6 +84,16 @@ tab-context-close-duplicate-tabs =
 tab-context-share-url =
     .label = 共有
     .accesskey = h
+# In left-to-right languages this should use "Right" and in right-to-left languages this should use "Left" to indicate the direction a new tab will open.
+tab-context-new-tab-open =
+    .label = 新しいタブを右隣に開く
+    .accesskey = w
+tab-context-new-tab-open-vertical =
+    .label = 新しいタブを下隣に開く
+    .accesskey = w
+tab-context-new-group =
+    .label = 新しいグループ
+    .accesskey = G
 
 ## Variables:
 ##  $tabCount (Number): the number of tabs that are affected by the action.
@@ -87,7 +103,7 @@ tab-context-reopen-closed-tabs =
     .accesskey = o
 tab-context-close-n-tabs =
     .label =
-        { NUMBER($tabCount) ->
+        { $tabCount ->
             [1] タブを閉じる
            *[other] { $tabCount } 個のタブを閉じる
         }
@@ -97,7 +113,7 @@ tab-context-move-tabs =
     .accesskey = v
 tab-context-send-tabs-to-device =
     .label =
-        { NUMBER($tabCount) ->
+        { $tabCount ->
             [1] タブを端末へ送信
            *[other] { $tabCount } 個のタブを端末へ送信
         }

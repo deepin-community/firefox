@@ -283,6 +283,9 @@ find-more-themes = Buscar más temas
 # used for screen readers.
 addon-options-button =
     .aria-label = Más opciones
+# Explanatory introduction to the list of recommended add-ons. The action word
+# ("recommends") in the final sentence is a link to external documentation.
+discopane-intro2 = Las extensiones y los temas te permiten personalizar { -brand-product-name }. Pueden mejorar la privacidad, mejorar la productividad, mejorar los medios, cambiar la apariencia de { -brand-product-name } y mucho más. Estos pequeños programas de software usualmente son desarrollados por terceros. A continuación, se incluye una selección que { -brand-product-name } <a data-l10n-name="learn-more-trigger">recomienda</a> para lograr una seguridad, un rendimiento y una funcionalidad excepcionales.
 
 ## Add-on actions
 
@@ -369,6 +372,10 @@ addon-detail-group-label-updates =
     .aria-label = { addon-detail-updates-label }
 # This is the tooltip text for the private browsing badge in about:addons. The
 # badge is the private browsing icon included next to the extension's name.
+addon-badge-private-browsing-allowed3 =
+    .title = Permitido en ventanas privadas
+# This is the tooltip text for the private browsing badge in about:addons. The
+# badge is the private browsing icon included next to the extension's name.
 addon-badge-private-browsing-allowed2 =
     .title = Permitido en ventanas privadas
     .aria-label = { addon-badge-private-browsing-allowed2.title }
@@ -408,6 +415,14 @@ addon-badge-line3 =
 addon-badge-verified2 =
     .title = Esta extensión ha sido revisada para cumplir con nuestros estándares de seguridad y rendimiento.
     .aria-label = { addon-badge-verified2.title }
+addon-badge-recommended3 =
+    .title = { -brand-product-name } solo recomienda extensiones que cumplan con nuestros estándares de seguridad y rendimiento
+# We hard code "Mozilla" in the string below because the extensions are built
+# by Mozilla and we don't want forks to display "by Fork".
+addon-badge-line4 =
+    .title = Extensión oficial desarrollada por Mozilla. Cumple con los estándares de seguridad y rendimiento
+addon-badge-verified3 =
+    .title = Esta extensión ha sido revisada para cumplir con nuestros estándares de seguridad y rendimiento.
 
 ##
 
@@ -415,6 +430,7 @@ available-updates-heading = Actualizaciones disponibles
 recent-updates-heading = Actualizaciones recientes
 release-notes-loading = Cargando…
 release-notes-error = Lo sentimos, hubo un error al cargar las notas de lanzamiento.
+addon-permissions-empty2 = Esta extensión no requiere de ningún permiso.
 addon-permissions-empty = Esta extensión no requiere de ningún permiso.
 addon-permissions-required = Permisos requeridos para funcionalidad básica:
 addon-permissions-optional = Permisos opcionales para funcionalidad básica:
@@ -464,10 +480,24 @@ details-notification-unsigned-and-disabled-link = Más información
 details-notification-unsigned = { $name } no pudo ser verificado para su uso en { -brand-short-name }. Procede con precaución.
 details-notification-unsigned2 =
     .message = { $name } no pudo ser verificado para su uso en { -brand-short-name }. Procede con precaución.
+details-notification-hard-blocked-extension =
+    .message = Esta extensión está bloqueada por violar las políticas de Mozilla y ha sido deshabilitada.
+details-notification-hard-blocked-other =
+    .message = Este complemento está bloqueado por violar las políticas de Mozilla y ha sido deshabilitado.
 details-notification-unsigned-link = Más información
 details-notification-blocked = { $name } ha sido deshabilitado debido a problemas de seguridad o estabilidad.
 details-notification-blocked2 =
     .message = { $name } ha sido deshabilitado debido a problemas de seguridad o estabilidad.
+details-notification-blocked-link2 = Ver detalles
+details-notification-soft-blocked-extension-disabled =
+    .message = Esta extensión está restringida por violar las políticas de Mozilla y ha sido deshabilitada. La puedes habilitar, pero podría ser riesgoso.
+details-notification-soft-blocked-extension-enabled =
+    .message = Esta extensión viola las políticas de Mozilla. Usarla podría ser riesgoso.
+details-notification-soft-blocked-other-disabled =
+    .message = Este complemento está restringido por violar las políticas de Mozilla y ha sido deshabilitado. Lo puedes habilitar, pero podría ser riesgoso.
+details-notification-soft-blocked-other-enabled =
+    .message = Este complemento viola las políticas de Mozilla. Usarla podría ser riesgoso.
+details-notification-softblocked-link2 = Ver detalles
 details-notification-blocked-link = Más información
 details-notification-softblocked = { $name } es conocido por causar problemas de seguridad o de estabilidad
 details-notification-softblocked2 =

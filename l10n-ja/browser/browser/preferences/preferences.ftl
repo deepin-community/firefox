@@ -3,6 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 do-not-track-description = ウェブサイトに “Do Not Track” 信号を送り、追跡されたくないことを知らせます。
+do-not-track-removal = “Do Not Track” 信号のサポートを終了します
 do-not-track-description2 =
     .label = ウェブサイトに “Do Not Track” 要求を送る
     .accesskey = d
@@ -137,6 +138,7 @@ windows-launch-on-login =
     .label = コンピューターの起動時に { -brand-short-name } を自動的に開く
     .accesskey = O
 windows-launch-on-login-disabled = この設定は Windows で無効化されています。変更するには、システム設定の <a data-l10n-name="startup-link">スタートアップ アプリ</a> から設定してください。
+windows-launch-on-login-profile-disabled = この設定を有効にするには、[ユーザープロファイルの選択] ウィンドウで [{ profile-manager-use-selected.label }] にチェックを入れてください。
 startup-restore-warn-on-quit =
     .label = ブラウザーを終了するときは確認する
 disable-extension =
@@ -146,6 +148,11 @@ preferences-data-migration-description = ブックマークやパスワード、
 preferences-data-migration-button =
     .label = データをインポート
     .accesskey = m
+preferences-profiles-header = プロファイル
+preferences-manage-profiles-description = 各プロファイルには、閲覧履歴やパスワードなど個別の閲覧データと設定が保持されています。
+preferences-manage-profiles-learn-more = 詳細情報
+preferences-manage-profiles-button =
+    .label = プロファイルを管理
 tabs-group-header = タブグループ
 ctrl-tab-recently-used-order =
     .label = Ctrl+Tab で最近使用した順にタブを切り替える
@@ -153,6 +160,17 @@ ctrl-tab-recently-used-order =
 open-new-link-as-tabs =
     .label = 新しいウィンドウではなく新しいタブに開く
     .accesskey = w
+ask-on-close-multiple-tabs =
+    .label = 同時に複数のタブを閉じる前に確認する
+    .accesskey = m
+# This string is used for the confirm before quitting preference.
+# Variables:
+#   $quitKey (string) - the quit keyboard shortcut, and formatted
+#                       in the same manner as it would appear,
+#                       for example, in the File menu.
+ask-on-quit-with-key =
+    .label = { $quitKey } キーで終了する前に確認する
+    .accesskey = b
 confirm-on-close-multiple-tabs =
     .label = 同時に複数のタブを閉じる前に確認する
     .accesskey = m
@@ -200,6 +218,16 @@ containers-remove-cancel-button = 削除しない
 settings-tabs-show-image-in-preview =
     .label = タブにカーソルを合わせた時にプレビュー画像を表示する
     .accessKey = h
+browser-layout-header = ブラウザーレイアウト
+browser-layout-horizontal-tabs =
+    .label = 水平タブ
+browser-layout-horizontal-tabs-desc = ブラウザー上部に表示します
+browser-layout-vertical-tabs =
+    .label = 垂直タブ
+browser-layout-vertical-tabs-desc = サイドバー内に表示します
+browser-layout-show-sidebar =
+    .label = サイドバーを表示
+browser-layout-show-sidebar-desc = ブックマーク、同期したタブ、AI チャットボットなど、メインビューを切り替えずにすばやくアクセスできます。
 
 ## General Section - Language & Appearance
 
@@ -232,7 +260,7 @@ preferences-web-appearance-override-warning2 =
 # to adapt to your language, but should not be changed.
 preferences-web-appearance-footer = <a data-l10n-name="themes-link">アドオンとテーマ</a> で { -brand-short-name } のテーマを管理する
 preferences-colors-header = 配色
-preferences-colors-description = ウェブサイトのテキスト、背景、リンクを、{ -brand-short-name } の既定の配色で上書きする。
+preferences-colors-description = ウェブサイトのテキスト、背景、リンクを、{ -brand-short-name } の既定の配色で上書きします。
 preferences-colors-manage-button =
     .label = 配色の管理...
     .accesskey = C
@@ -253,7 +281,7 @@ preferences-default-zoom = 既定のズーム
 preferences-default-zoom-value =
     .label = { $percentage }%
 preferences-zoom-text-only =
-    .label = 文字サイズのみ変更
+    .label = 文字サイズのみ変更する
     .accesskey = t
 preferences-text-zoom-override-warning =
     .message = 警告: [文字サイズのみ変更] を選択し、既定のズームが 100% でない場合、一部のサイトやコンテンツが正しく表示されない可能性があります。
@@ -281,7 +309,7 @@ translate-exceptions =
 # Variables:
 #    $localeName (string) - Localized name of the locale to be used.
 use-system-locale =
-    .label = 日付、時刻、数値、寸法の書式に、OS の “{ $localeName }” の設定を使う。
+    .label = 日付、時刻、数値、寸法の書式に、OS の “{ $localeName }” の設定を使う
 check-user-spelling =
     .label = 自動スペルチェック機能を使用する
     .accesskey = t
@@ -390,7 +418,7 @@ applications-ask-before-handling =
     .accesskey = A
 drm-content-header = デジタル著作権管理 (DRM) コンテンツ
 play-drm-content =
-    .label = DRM 制御のコンテンツを再生
+    .label = DRM 制御のコンテンツを再生する
     .accesskey = P
 play-drm-content-learn-more = 詳細情報
 update-application-title = { -brand-short-name } の更新
@@ -535,7 +563,7 @@ home-homepage-custom-url =
 # be identical.
 use-current-pages =
     .label =
-        { NUMBER($tabCount) ->
+        { $tabCount ->
             [1] 現在のページを使用
            *[other] 現在のタブグループを使用
         }
@@ -547,7 +575,7 @@ choose-bookmark =
 ## Home Section - Firefox Home Content Customization
 
 home-prefs-content-header2 = { -firefox-home-brand-name } コンテンツ
-home-prefs-content-description2 = { -firefox-home-brand-name } に表示するコンテンツを選びましょう。
+home-prefs-content-description2 = { -firefox-home-brand-name } に表示するコンテンツを選んでください。
 home-prefs-search-header =
     .label = ウェブ検索
 home-prefs-shortcuts-header =
@@ -556,8 +584,7 @@ home-prefs-shortcuts-description = 保存または訪問したサイト
 home-prefs-shortcuts-by-option-sponsored =
     .label = 広告ショートカット
 
-## Variables:
-##  $provider (string) - Name of the corresponding content provider, e.g "Pocket".
+## Home Section - Firefox Home Content Customization
 
 home-prefs-recommended-by-header =
     .label = { $provider } のおすすめ
@@ -624,6 +651,10 @@ search-show-suggestions-option =
 search-show-suggestions-url-bar-option =
     .label = アドレスバーに検索候補を表示する
     .accesskey = l
+# With this option enabled, on the search results page
+# the URL will be replaced by the search terms in the address bar.
+search-show-search-term-option-2 =
+    .label = 検索結果ページのアドレスバーに検索語句を表示する
 # With this option enabled, on the search results page
 # the URL will be replaced by the search terms in the address bar
 # when using the current default search engine.
@@ -767,6 +798,9 @@ sync-currently-syncing-creditcards = クレジットカード情報
 sync-currently-syncing-payment-methods = 支払い方法
 sync-currently-syncing-addons = アドオン
 sync-currently-syncing-settings = 個人設定
+sync-manage-options =
+    .label = 同期の管理...
+    .accesskey = M
 sync-change-options =
     .label = 変更...
     .accesskey = C
@@ -819,6 +853,13 @@ sync-engine-settings =
     .label = 個人設定
     .tooltiptext = 変更した一般設定、プライバシー設定、セキュリティ設定です
     .accesskey = s
+sync-choose-what-to-sync-dialog4 =
+    .title = 接続したすべての端末で同期するものを管理します
+    .style = min-width: 36em;
+    .buttonlabelaccept = 保存
+    .buttonaccesskeyaccept = S
+    .buttonlabelextra2 = 接続を解除...
+    .buttonaccesskeyextra2 = D
 
 ## The device name controls.
 
@@ -855,7 +896,7 @@ pane-privacy-logins-and-passwords-header = ログインとパスワード
     .searchkeywords = { -lockwise-brand-short-name }
 # Checkbox to control whether UI is shown to users to save or fill logins/passwords.
 forms-ask-to-save-logins =
-    .label = ウェブサイトのログイン情報とパスワードを保存する
+    .label = ウェブサイトのログイン情報とパスワードを保存するか確認する
     .accesskey = r
 
 ## Privacy Section - Passwords
@@ -866,7 +907,7 @@ pane-privacy-passwords-header = パスワード
     .searchkeywords = ログイン情報
 # Checkbox to control whether UI is shown to users to save or fill logins/passwords.
 forms-ask-to-save-passwords =
-    .label = パスワードの保存を尋ねる
+    .label = パスワードを保存するか確認する
     .accesskey = A
 forms-exceptions =
     .label = 例外サイト...
@@ -1214,7 +1255,7 @@ permissions-location = 位置情報
 permissions-location-settings =
     .label = 設定...
     .accesskey = t
-permissions-xr = バーチャルリアリティ
+permissions-xr = VR デバイス
 permissions-xr-settings =
     .label = 設定...
     .accesskey = t
@@ -1264,17 +1305,40 @@ permissions-addon-exceptions =
 collection-header = { -brand-short-name } のデータ収集と利用について
 collection-header2 = { -brand-short-name } のデータ収集と利用について
     .searchkeywords = テレメトリー
+preferences-collection-description = 私たちはユーザーに選択肢を提供し、{ -brand-product-name } の改善に必要な最小限のデータだけを収集するよう努力しています。
+preferences-collection-privacy-notice = プライバシー通知を表示
 collection-description = 私たちはユーザーに選択肢を提供し、{ -brand-short-name } をすべての人に提供し改善するために必要なものだけを収集するよう努力しています。私たちは、個人情報を受け取る前に、常にユーザーの許可を求めます。
 collection-privacy-notice = 個人情報保護方針
-collection-health-report-telemetry-disabled = { -vendor-short-name } への技術的な対話データの送信の許可を取り消しました。過去のデータは 30 日以内にすべて削除されます。
+collection-health-report-telemetry-disabled = { -vendor-short-name } への技術データと対話データの送信の許可を取り消しました。過去のデータは 30 日以内にすべて削除されます。
 collection-health-report-telemetry-disabled-link = 詳細情報
+collection-usage-ping =
+    .label = 毎日の使用頻度を { -vendor-short-name } に送信する
+    .accesskey = u
+collection-usage-ping-description = これは { -vendor-short-name } がアクティブユーザー数を推定するのに役立てられます。
+collection-health-report2 =
+    .label = 技術データと対話データを { -vendor-short-name } に送信する
+    .accesskey = r
 collection-health-report =
-    .label = { -brand-short-name } が技術的な対話データを { -vendor-short-name } へ送信することを許可する
+    .label = { -brand-short-name } が技術データと対話データを { -vendor-short-name } へ送信することを許可する
     .accesskey = r
 collection-health-report-link = 詳細情報
+collection-health-report-description = これは { -brand-product-name } の機能やパフォーマンス、安定性の向上に役立てられます。
+collection-studies2 =
+    .label = 調査のインストールと実行
+collection-studies-description = 機能やアイデアを一般公開される前に試してみましょう。
 collection-studies =
     .label = { -brand-short-name } に調査のインストールと実行を許可する
 collection-studies-link = { -brand-short-name } 調査を確認する
+addon-recommendations2 =
+    .label = パーソナライズされた拡張機能のおすすめを許可する
+addon-recommendations-description = おすすめの拡張機能を試してブラウジング体験を向上させましょう。
+# This message is displayed above disabled data sharing options in developer builds
+# or builds with no Telemetry support available.
+collection-health-report-disabled2 = このビルド設定ではデータ報告が無効化されています。
+collection-backlogged-crash-reports2 =
+    .label = クラッシュレポートを自動的に送信する
+    .accesskey = c
+collection-backlogged-crash-reports-description = これは { -vendor-short-name } がブラウザーの問題を診断し修正するのに役立てられます。レポートには個人情報や機密性の高い情報が含まれる場合があります。
 addon-recommendations =
     .label = { -brand-short-name } にパーソナライズされた拡張機能のおすすめを許可する
 addon-recommendations-link = 詳細情報
@@ -1342,6 +1406,8 @@ space-alert-under-5gb-message2 = <strong>{ -brand-short-name } を実行する�
 ## Privacy Section - HTTPS-Only
 
 httpsonly-header = HTTPS-Only モード
+httpsonly-description3 = 安全な接続だけをウェブサイトに許可します。接続が安全でない場合は { -brand-short-name } に確認を求められます。
+httpsonly-learn-more2 = HTTPS-Only モードの動作について
 httpsonly-description = HTTPS は { -brand-short-name } とあなたが訪れるウェブサイトとの間に、暗号化された安全な接続を提供します。多くのウェブサイトは HTTPS に対応しており、HTTPS-Only モードを有効にすると { -brand-short-name } はすべての接続を HTTPS に切り替えます。
 httpsonly-description2 = あなたが訪れたサイトとの間で { -brand-short-name } が暗号化された安全な接続を確立します。HTTPS-Only モードが有効のときに接続が安全でない場合は { -brand-short-name } が警告します。
 httpsonly-learn-more = 詳細
@@ -1351,6 +1417,9 @@ httpsonly-radio-enabled2 =
     .label = すべてのウィンドウで HTTPS のみを使用する
 httpsonly-radio-enabled-pbm =
     .label = プライベートウィンドウのみ HTTPS-Only モードを有効にする
+httpsonly-radio-disabled3 =
+    .label = HTTPS-Only モードを有効にしない
+    .description = 設定に関わらず { -brand-short-name } は一部の通信を安全な接続にアップグレードすることがあります。
 httpsonly-radio-enabled-pbm2 =
     .label = プライベートウィンドウで HTTPS のみを使用する
 httpsonly-radio-disabled =

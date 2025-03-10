@@ -252,6 +252,9 @@ device-migration-fxa-spotlight-older-device-primary-button = Ustvarite račun
 device-migration-fxa-spotlight-getting-new-device-header-2 = Se vam obeta nov računalnik?
 device-migration-fxa-spotlight-getting-new-device-body-2 = Z nekaj preprostimi koraki si preselite zaznamke, zgodovino in gesla s seboj, ko začnete uporabljati novo napravo.
 device-migration-fxa-spotlight-getting-new-device-primary-button = Kako varnostno kopirati podatke
+device-migration-fxa-spotlight-sync-header = Brskajte brez zamujenih trenutkov
+device-migration-fxa-spotlight-sync-body = Varno sinhronizirajte vse svoje pomembne podatke, kot so zaznamki in gesla. Do vseh lahko dostopate, kjerkoli uporabljate { -brand-product-name }.
+device-migration-fxa-spotlight-sync-primary-button = Začnite
 
 ## Set as Default PDF Reader Infobar
 
@@ -288,3 +291,61 @@ tail-fox-spotlight-title = Spravite nadležne sledilce s svoje sledi
 tail-fox-spotlight-subtitle = Poslovite se od nadležnega sledenja oglasov in se prepustite varnejšemu in hitrejšemu internetu.
 tail-fox-spotlight-primary-button = Odpiraj povezave v { -brand-short-name(sklon: "mestnik") }
 tail-fox-spotlight-secondary-button = Ne zdaj
+
+## Root Certificate Succession Infobar
+
+root-certificate-succession-infobar-january-message = <strong>V starejših različicah { -brand-short-name(sklon: "rodilnik") } se bodo po 14. januarju 2025 morda pojavile težave.</strong>
+root-certificate-succession-infobar-march-message = <strong>Posodobite za nemoteno uporabo { -brand-short-name(sklon: "rodilnik") } tudi po 14. marcu 2025.</strong>
+root-certificate-succession-infobar-link = Zakaj moram izvesti posodobitev?
+root-certificate-succession-infobar-primary-button =
+    .label = Posodobi zdaj
+    .accesskey = P
+root-certificate-succession-infobar-secondary-button =
+    .label = Pozneje
+    .accesskey = n
+
+## Root Certificate Succession Windows Background Notification
+
+root-certificate-windows-background-notification-title = Zamudili ste pomembno posodobitev za { -brand-short-name(sklon: "tozilnik") }
+root-certificate-windows-background-notification-subtitle = Deli brskalnika bodo kmalu nehali delovati, če ga ne boste posodobili. Zdaj je pravšnji čas, da prejmete najnovejše zaščite in zmožnosti.
+root-certificate-windows-background-notification-learn-more-button = Več o tem
+root-certificate-windows-background-notification-update-button = Posodobi { -brand-short-name }
+
+## FxA Menu Message variants
+
+fxa-menu-message-close-button =
+    .title = Zapri
+    .aria-label = Zapri
+fxa-menu-message-sign-up-button = Registracija
+fxa-menu-message-sync-devices-primary-text = Sinhronizirajte vse svoje naprave
+fxa-menu-message-sync-devices-secondary-text = Imejte svoje podatke – kot so zaznamki in gesla – pri roki, kjerkoli uporabljate { -brand-short-name(sklon: "tozilnik") }.
+fxa-menu-message-sync-devices-collapsed-text = Sinhronizirajte vse svoje naprave
+fxa-menu-message-backup-data-primary-text = Varnostno kopirajte podatke brskalnika
+fxa-menu-message-backup-data-secondary-text = Samodejno zavarujte zaznamke, gesla in druge podatke z vseh svojih naprav.
+fxa-menu-message-backup-data-collapsed-text = Varnostno kopirajte podatke brskalnika
+fxa-menu-message-backup-sync-primary-text = Imejte svoje podatke na varnem in sinhronizirane
+fxa-menu-message-backup-sync-secondary-text = Sync varnostno kopira večino vaših podatkov, tako da lahko do njih dostopate povsod, kjer uporabljate { -brand-short-name }.
+fxa-menu-message-backup-sync-collapsed-text = Sinhronizirajte in varnostno kopirajte podatke
+fxa-menu-message-mobile-primary-text = Pošljite si zavihke na telefon
+fxa-menu-message-mobile-secondary-text = Takoj nadaljujte, kjer ste končali, ko sinhronizirate zavihke z mobilno napravo.
+fxa-menu-message-mobile-collapsed-text = Sinhronizirajte s telefonom
+
+## Multi-CTA Fox Doodle Spotlight
+
+multi-cta-fox-doodle-title = Dobrodošli nazaj
+multi-cta-fox-doodle-set-default-checkbox = Nastavi { -brand-short-name(sklon: "tozilnik") } kot privzeti brskalnik
+multi-cta-fox-doodle-pin-startmenu-checkbox = Pripni { -brand-short-name(sklon: "tozilnik") } v začetni meni
+multi-cta-fox-doodle-pin-checkbox =
+    { PLATFORM() ->
+        [macos] Obdrži { -brand-short-name(sklon: "tozilnik") } v Docku
+       *[other] Pripni { -brand-short-name(sklon: "tozilnik") } v opravilno vrstico
+    }
+multi-cta-fox-doodle-start-browsing-primary-button-label = Začni z brskanjem
+multi-cta-fox-doodle-main-browser-primary-button-label = Nastavi { -brand-short-name } kot glavni brskalnik
+multi-cta-fox-doodle-quick-reminder-subtitle = Kratek opomnik, da je lahko vaš najljubši brskalnik, osredotočen na zasebnost, le klik stran.
+multi-cta-fox-doodle-privacy-focused-subtitle =
+    { PLATFORM() ->
+        [macos] Naj bo vaš najljubši brskalnik, osredotočen na zasebnost, oddaljen le en klik. Nastavite { -brand-short-name } kot privzet brskalnik za odpiranje povezav ter ga zasidrajte v Dock.
+       *[other] Naj bo vaš najljubši brskalnik, osredotočen na zasebnost, oddaljen le en klik. Nastavite { -brand-short-name } kot privzet brskalnik za odpiranje povezav ter ga pripnite v opravilno vrstico.
+    }
+multi-cta-fox-doodle-msix-privacy-focused-subtitle = Naj bo vaš najljubši brskalnik, osredotočen na zasebnost, oddaljen le en klik. Nastavite { -brand-short-name } kot privzet brskalnik za odpiranje povezav ter ga pripnite v opravilno vrstico in v meni Start.

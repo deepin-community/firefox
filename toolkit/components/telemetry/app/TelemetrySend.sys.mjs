@@ -123,12 +123,34 @@ function isDeletionRequestPing(aPing) {
 }
 
 /**
+ * Generate a string suitable for including in a profiler marker as a ping description.
+ * @param {Object} aPing The ping to describe.
+ */
+function getPingMarkerString(aPing) {
+  let markerString = aPing.type;
+  let reason = aPing.payload?.info?.reason || aPing.payload?.reason;
+  if (reason) {
+    markerString += ", reason: " + reason;
+  }
+  return markerString;
+}
+
+/**
  * Save the provided ping as a pending ping.
  * @param {Object} aPing The ping to save.
  * @return {Promise} A promise resolved when the ping is saved.
  */
 function savePing(aPing) {
-  return lazy.TelemetryStorage.savePendingPing(aPing);
+  let startTime = Cu.now();
+  let promise = lazy.TelemetryStorage.savePendingPing(aPing);
+  promise.then(() => {
+    ChromeUtils.addProfilerMarker(
+      "Ping Save",
+      { category: "Telemetry", startTime },
+      getPingMarkerString(aPing)
+    );
+  });
+  return promise;
 }
 
 function arrayToString(array) {
@@ -167,7 +189,7 @@ export function gzipCompressString(string) {
   let stringStream = Cc["@mozilla.org/io/string-input-stream;1"].createInstance(
     Ci.nsIStringInputStream
   );
-  stringStream.data = string;
+  stringStream.setByteStringData(string);
   converter.onStartRequest(null, null);
   converter.onDataAvailable(null, stringStream, 0, string.length);
   converter.onStopRequest(null, null, null);
@@ -208,7 +230,9 @@ export function sendStandalonePing(endpoint, payload, extraHeaders = {}) {
 
     const utf8Payload = new TextEncoder().encode(payload);
 
-    payloadStream.data = gzipCompressString(arrayToString(utf8Payload));
+    payloadStream.setByteStringData(
+      gzipCompressString(arrayToString(utf8Payload))
+    );
     request.sendInputStream(payloadStream);
   });
 }
@@ -638,9 +662,8 @@ export var SendScheduler = {
           nextSendDelay
       );
       this._sendTaskState = "wait on next send opportunity";
-      const cancelled = await CancellableTimeout.promiseWaitOnTimeout(
-        nextSendDelay
-      );
+      const cancelled =
+        await CancellableTimeout.promiseWaitOnTimeout(nextSendDelay);
       if (cancelled) {
         this._log.trace(
           "_doSendTask - batch send wait was cancelled, resetting backoff timer"
@@ -1034,6 +1057,11 @@ export var TelemetrySendImpl = {
   },
 
   submitPing(ping, options) {
+    ChromeUtils.addProfilerMarker(
+      "Ping Submit",
+      { category: "Telemetry" },
+      getPingMarkerString(ping) + `, options: ${JSON.stringify(options)}`
+    );
     this._log.trace(
       "submitPing - ping id: " +
         ping.id +
@@ -1234,12 +1262,13 @@ export var TelemetrySendImpl = {
         isPersisted
     );
 
-    let sendId = success ? "TELEMETRY_SEND_SUCCESS" : "TELEMETRY_SEND_FAILURE";
-    let hsend = Services.telemetry.getHistogramById(sendId);
-    let hsuccess = Services.telemetry.getHistogramById("TELEMETRY_SUCCESS");
-
-    hsend.add(Utils.monotonicNow() - startTime);
-    hsuccess.add(success);
+    let time = Utils.monotonicNow() - startTime;
+    if (success) {
+      Services.telemetry.getHistogramById("TELEMETRY_SEND_SUCCESS").add(time);
+    } else {
+      Services.telemetry.getHistogramById("TELEMETRY_SEND_FAILURE").add(time);
+    }
+    Services.telemetry.getHistogramById("TELEMETRY_SUCCESS").add(success);
 
     if (!success) {
       // Let the scheduler know about send failures for triggering backoff timeouts.
@@ -1337,10 +1366,13 @@ export var TelemetrySendImpl = {
       "@mozilla.org/io/string-input-stream;1"
     ].createInstance(Ci.nsIStringInputStream);
     startTime = Utils.monotonicNow();
-    payloadStream.data = Policy.gzipCompressString(arrayToString(utf8Payload));
+    const compressedPing = Policy.gzipCompressString(
+      arrayToString(utf8Payload)
+    );
+    payloadStream.setByteStringData(compressedPing);
 
     // Check the size and drop pings which are too big.
-    const compressedPingSizeBytes = payloadStream.data.length;
+    const compressedPingSizeBytes = compressedPing.length;
     if (compressedPingSizeBytes > lazy.TelemetryStorage.MAXIMUM_PING_SIZE) {
       this._log.error(
         "_doPing - submitted ping exceeds the size limit, size: " +
@@ -1368,6 +1400,8 @@ export var TelemetrySendImpl = {
   },
 
   _doPing(ping, id, isPersisted) {
+    let startTime = Cu.now();
+
     if (!this.sendingEnabled(ping)) {
       // We can't send the pings to the server, so don't try to.
       this._log.trace("_doPing - Can't send ping " + ping.id);
@@ -1403,6 +1437,11 @@ export var TelemetrySendImpl = {
     let onRequestFinished = (success, event) => {
       let onCompletion = () => {
         if (success) {
+          ChromeUtils.addProfilerMarker(
+            "Ping Send",
+            { category: "Telemetry", startTime },
+            getPingMarkerString(ping)
+          );
           deferred.resolve();
         } else {
           deferred.reject(event);

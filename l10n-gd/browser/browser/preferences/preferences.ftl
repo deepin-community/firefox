@@ -545,8 +545,7 @@ home-prefs-shortcuts-description = Làraichean a shàbhail thu no a thadhail thu
 home-prefs-shortcuts-by-option-sponsored =
     .label = Ath-ghoiridean sponsairichte
 
-## Variables:
-##  $provider (string) - Name of the corresponding content provider, e.g "Pocket".
+## Home Section - Firefox Home Content Customization
 
 home-prefs-recommended-by-header =
     .label = ’Ga mholadh le { $provider }
@@ -1048,7 +1047,7 @@ content-blocking-unvisited-cookies = Briosgaidean o làraichean air nach deach t
 content-blocking-all-windows-tracking-content = Susbaint tracaidh air uinneag sam bith
 content-blocking-all-cross-site-cookies = Gach briosgaid thar-làraich
 content-blocking-cryptominers = Criopto-mhèinneadairean
-content-blocking-fingerprinters = Lorgaichean-meur
+content-blocking-fingerprinters = Lorgairean-meòir
 
 # The tcp-rollout strings are no longer used for the rollout but for tcp-by-default in the standard section
 
@@ -1085,7 +1084,7 @@ content-blocking-cryptominers-label =
 # Browser fingerprinting is a method of tracking users by the configuration and settings information (their "digital fingerprint")
 # that is visible to websites they browse, rather than traditional tracking methods such as IP addresses and unique cookies.
 content-blocking-fingerprinters-label =
-    .label = Lorgaichean-meur
+    .label = Lorgairean-meòir
     .accesskey = L
 
 ## Privacy Section - Tracking

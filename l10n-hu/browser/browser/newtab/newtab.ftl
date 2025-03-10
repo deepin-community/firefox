@@ -8,11 +8,18 @@
 newtab-page-title = Új lap
 newtab-settings-button =
     .title = Az Új lap oldal személyre szabása
+newtab-personalize-settings-icon-label =
+    .title = Új lap testreszabása
+    .aria-label = Beállítások
+newtab-settings-dialog-label =
+    .aria-label = Beállítások
 newtab-personalize-icon-label =
     .title = Új lap testreszabása
     .aria-label = Új lap testreszabása
 newtab-personalize-dialog-label =
     .aria-label = Testreszabás
+newtab-logo-and-wordmark =
+    .aria-label = { -brand-full-name }
 
 ## Search box component.
 
@@ -109,6 +116,13 @@ newtab-menu-save-to-pocket = Mentés a { -pocket-brand-name }be
 newtab-menu-delete-pocket = Törlés a { -pocket-brand-name }ből
 newtab-menu-archive-pocket = Archiválás a { -pocket-brand-name }ben
 newtab-menu-show-privacy-info = Támogatóink és az Ön adatvédelme
+newtab-menu-about-fakespot = A { -fakespot-brand-name } névjegye
+# Context menu option to personalize New Tab recommended stories by blocking a section of stories,
+# e.g. "Sports". "Block" is a verb here.
+newtab-menu-section-block = Tiltás
+# "Follow", "unfollow", and "following" are social media terms that refer to subscribing to or unsubscribing from a section of stories.
+# e.g. Following the travel section of stories.
+newtab-menu-section-unfollow = Téma követésének megszüntetése
 
 ## Message displayed in a modal window to explain privacy and provide context for sponsored content.
 
@@ -233,6 +247,8 @@ newtab-pocket-cta-button = { -pocket-brand-name } beszerzése
 newtab-pocket-cta-text = Mentse az Ön által kedvelt történeteket a { -pocket-brand-name }be, és töltse fel elméjét lebilincselő olvasnivalókkal.
 newtab-pocket-pocket-firefox-family = A { -pocket-brand-name } a { -brand-product-name } család része
 # A save to Pocket button that shows over the card thumbnail on hover.
+newtab-pocket-image =
+    .aria-label = { -pocket-brand-name }
 newtab-pocket-save = Mentés
 newtab-pocket-saved = Mentve
 
@@ -244,6 +260,9 @@ newtab-pocket-thumbs-up-tooltip =
 # Clicking the thumbs down button for this story informs us that the user does not feel like the story is interesting for them
 newtab-pocket-thumbs-down-tooltip =
     .title = Nem nekem való
+# Used to show the user a message upon clicking the thumbs up or down buttons
+newtab-toast-thumbs-up-or-down2 =
+    .message = Köszönjük. Visszajelzése segít nekünk a hírforrás fejlesztésében.
 newtab-toast-thumbs-up-or-down = Köszönjük. Visszajelzése segít nekünk a hírforrás fejlesztésében.
 newtab-toast-dismiss-button =
     .title = Eltüntetés
@@ -297,6 +316,12 @@ newtab-custom-settings = További beállítások kezelése
 
 newtab-wallpaper-title = Háttérképek
 newtab-wallpaper-reset = Visszaállítás az alapértelmezésre
+newtab-wallpaper-upload-image = Kép feltöltése
+newtab-wallpaper-custom-color = Válasszon színt
+# Variables
+#   $file_size (number) - The number of the maximum image file size (in MB) that may be uploaded
+newtab-wallpaper-error-max-file-size = A kép túllépte a { $file_size } MB-os fájlméretkorlátot. Próbáljon meg egy kisebb fájlt feltölteni.
+newtab-wallpaper-error-file-type = Nem tudtuk feltölteni a fájlt. Próbálja meg újra egy másik fájltípussal.
 newtab-wallpaper-light-red-panda = Vörös panda
 newtab-wallpaper-light-mountain = Fehér hegy
 newtab-wallpaper-light-sky = Ég, lila és rózsaszín felhőkkel
@@ -309,6 +334,8 @@ newtab-wallpaper-dark-panda = Vörös panda elrejtve az erdőben
 newtab-wallpaper-dark-sky = Városi táj éjszakai égbolttal
 newtab-wallpaper-dark-mountain = Hegyvidéki táj
 newtab-wallpaper-dark-city = Lila városi táj
+newtab-wallpaper-dark-fox-anniversary = Egy róka a járdán, közel egy erdőhöz
+newtab-wallpaper-light-fox-anniversary = Egy róka egy füves mezőben, ködös hegyi tájjal
 
 ## Solid Colors
 
@@ -338,8 +365,12 @@ newtab-wallpaper-abstract-purple = Lila alakzatok
 newtab-wallpaper-abstract-orange = Narancssárga alakzatok
 newtab-wallpaper-gradient-orange = Narancssárga és rózsaszín átmenet
 newtab-wallpaper-abstract-blue-purple = Kék és lila alakzatok
+newtab-wallpaper-abstract-white-curves = Fehér, árnyalt ívekkel
+newtab-wallpaper-abstract-purple-green = Lila és zöld fényátmenet
+newtab-wallpaper-abstract-blue-purple-waves = Kék és lila hullámos alakzatok
+newtab-wallpaper-abstract-black-waves = Fekete hullámos alakzatok
 
-## Photographs
+## Celestial
 
 newtab-wallpaper-category-title-photographs = Fényképek
 newtab-wallpaper-beach-at-sunrise = Strand napkeltekor
@@ -348,6 +379,12 @@ newtab-wallpaper-storm-sky = Viharos égbolt
 newtab-wallpaper-sky-with-pink-clouds = Égbolt rózsaszín felhőkkel
 newtab-wallpaper-red-panda-yawns-in-a-tree = Vörös panda ásít egy fán
 newtab-wallpaper-white-mountains = Fehér hegyek
+newtab-wallpaper-hot-air-balloons = Különböző színű hőlégballonok napközben
+newtab-wallpaper-starry-canyon = Kék csillagos éjszaka
+newtab-wallpaper-suspension-bridge = Fénykép egy szürke függőhídról, napközben
+newtab-wallpaper-sand-dunes = Fehér homokdűnék
+newtab-wallpaper-palm-trees = Kókuszpálmák sziluettje alkonyatkor
+newtab-wallpaper-forest-trees = Fák ködben
 # Variables
 #   $author_string (String) - The name of the creator of the photo.
 #   $webpage_string (String) - The name of the webpage where the photo is located.
@@ -363,6 +400,17 @@ feature-highlight-wallpaper =
     .title = { -newtab-wallpaper-feature-highlight-header }
     .aria-label = { -newtab-wallpaper-feature-highlight-content }
 
+## Celestial
+
+# “Celestial” referring to astronomy; positioned in or relating to the sky,
+# or outer space as observed in astronomy.
+# Not to be confused with religious definition of the word.
+newtab-wallpaper-category-title-celestial = Mennyei
+newtab-wallpaper-celestial-lunar-eclipse = Holdfogyatkozás
+newtab-wallpaper-celestial-earth-night = Éjszakai fénykép alacsony Föld körüli pályáról
+newtab-wallpaper-celestial-starry-sky = Csillagos égbolt
+newtab-wallpaper-celestial-river = Folyó műholdképe
+
 ## New Tab Weather
 
 # Variables:
@@ -373,6 +421,9 @@ newtab-weather-see-forecast =
 #   $provider (string) - Service provider for weather data
 newtab-weather-sponsored = { $provider } ∙ Szponzorálva
 newtab-weather-menu-change-location = Hely módosítása
+newtab-weather-change-location-search-input-placeholder =
+    .placeholder = Keresési hely
+    .aria-label = Keresési hely
 newtab-weather-change-location-search-input = Keresési hely
 newtab-weather-menu-weather-display = Időjárás-kijelző
 # Display options are:
@@ -431,3 +482,45 @@ newtab-topic-selection-button-maybe-later = Talán később
 newtab-topic-selection-privacy-link = Tudja meg, hogyan védjük és kezeljük az adatait
 newtab-topic-selection-button-update-interests = Frissítse az érdeklődési köreit
 newtab-topic-selection-button-pick-interests = Válassza ki az érdeklődési köreit
+
+## Content Feed Sections
+## "Follow", "unfollow", and "following" are social media terms that refer to subscribing to or unsubscribing from a section of stories.
+## e.g. Following the travel section of stories.
+
+newtab-section-follow-button = Követés
+newtab-section-following-button = Követés
+newtab-section-unfollow-button = Követés megszüntetése
+
+## Button to block/unblock listed topics
+## "Block", "unblocked", and "blocked" are social media terms that refer to hiding a section of stories.
+## e.g. Blocked the politics section of stories.
+
+newtab-section-block-button = Blokkolás
+newtab-section-blocked-button = Blokkolva
+newtab-section-unblock-button = Blokkolás feloldása
+
+## Confirmation modal for blocking a section
+
+newtab-section-confirm-block-section-p1 = Biztos, hogy blokkolja ezt a szakaszt?
+newtab-section-confirm-block-section-p2 = A blokkolt szakasz nem fog megjelenni a hírfolyamában.
+newtab-section-block-section-button = Szakasz blokkolása
+newtab-section-cancel-button = Most nem
+newtab-section-confirm-block-topic-p1 = Biztos, hogy blokkolja ezt a témát?
+newtab-section-confirm-block-topic-p2 = A blokkolt témák többé nem fognak megjelenni a hírfolyamában.
+# Variables:
+#   $topic (string) - Name of topic that user is blocking
+newtab-section-block-topic-button = { $topic } blokkolása
+
+## Panel in the Customize menu section to manage followed and blocked topics
+
+newtab-section-mangage-topics-title = Témák
+newtab-section-manage-topics-button-v2 =
+    .label = Témák kezelése
+newtab-section-mangage-topics-followed-topics = Követve
+newtab-section-mangage-topics-button =
+    .label = Követett és blokkolt témák
+newtab-section-mangage-topics-followed-topics-subtitle = Követett témák
+newtab-section-mangage-topics-followed-topics-empty-state = Még nem követ egyetlen témát sem.
+newtab-section-mangage-topics-blocked-topics = Blokkolva
+newtab-section-mangage-topics-blocked-topics-subtitle = Blokkolt témák
+newtab-section-mangage-topics-blocked-topics-empty-state = Még nem blokkol egyetlen témát sem.

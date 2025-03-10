@@ -12,7 +12,7 @@ webext-perms-description-browserSettings = branje in spreminjanje nastavitev brs
 webext-perms-description-browsingData = brisanje nedavne zgodovine, piškotkov in povezanih podatkov
 webext-perms-description-clipboardRead = dostop do podatkov z odložišča
 webext-perms-description-clipboardWrite = shranjevanje podatkov na odložišče
-webext-perms-description-declarativeNetRequest = Zavrni vsebino na katerikoli strani
+webext-perms-description-declarativeNetRequest = zavrnitev vsebine na katerikoli strani
 webext-perms-description-declarativeNetRequestFeedback = branje zgodovine brskanja
 webext-perms-description-devtools = razširjanje razvojnih orodij za dostop do vaših podatkov v odprtih zavihkih
 webext-perms-description-downloads = prenašanje datotek ter branje in spreminjanje zgodovine prenosov
@@ -23,11 +23,20 @@ webext-perms-description-history = dostop do zgodovine brskanja
 webext-perms-description-management = spremljanje rabe razširitev in upravljanje tem
 webext-perms-description-nativeMessaging = izmenjevanje sporočil z vsemi programi, razen { -brand-short-name }
 webext-perms-description-notifications = prikazovanje obvestil
-webext-perms-description-pkcs11 = Zagotovi kriptografske storitve overjanja
+webext-perms-description-pkcs11 = zagotavljanje kriptografskih storitev overjanja
 webext-perms-description-privacy = branje in spreminjanje nastavitev zasebnosti
 webext-perms-description-proxy = nadzor nad nastavitvami posrednika
 webext-perms-description-sessions = dostop do nedavno zaprtih zavihkov
 webext-perms-description-tabs = dostop do zavihkov brskalnika
-webext-perms-description-tabHide = Skrij in prikaži zavihke brskalnika
+webext-perms-description-tabHide = skrivanje in prikazovanje zavihkov brskalnika
 webext-perms-description-topSites = dostop do zgodovine brskanja
+webext-perms-description-trialML = prenos in uporabo modelov umetne inteligence na napravi
+webext-perms-description-userScripts = dovoljevanje dostopa do vaših podatkov nepotrjenim skriptom tretjih strani
 webext-perms-description-webNavigation = dostop do dejavnosti brskalnika
+
+## The userScripts permission includes an additional explanation that is
+## displayed prominently near the usual permission description.
+
+webext-perms-extra-warning-userScripts-long = Nepreverjeni skripti lahko predstavljajo tveganje za varnost in zasebnost: lahko vsebujejo škodljivo kodo ali sledijo dejavnosti strani. Zaženite samo skripte razširitev ali virov, ki jim zaupate.
+# A shorter warning is displayed in UI surfaces with little room, such as a permission prompt.
+webext-perms-extra-warning-userScripts-short = Nepreverjeni skripti lahko predstavljajo tveganje za varnost in zasebnost. Zaženite samo skripte razširitev ali virov, ki jim zaupate.

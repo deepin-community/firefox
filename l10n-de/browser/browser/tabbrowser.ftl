@@ -50,8 +50,8 @@ tabbrowser-mute-tab-audio-tooltip =
 tabbrowser-unmute-tab-audio-tooltip =
     .label =
         { $tabCount ->
-            [one] Stummschaltung für Tab beenden ({ $shortcut })
-           *[other] Stummschaltung { $tabCount } für Tabs beenden ({ $shortcut })
+            [one] Stummschaltung für Tab aufheben ({ $shortcut })
+           *[other] Stummschaltung { $tabCount } für Tabs aufheben ({ $shortcut })
         }
 tabbrowser-mute-tab-audio-background-tooltip =
     .label =
@@ -62,8 +62,8 @@ tabbrowser-mute-tab-audio-background-tooltip =
 tabbrowser-unmute-tab-audio-background-tooltip =
     .label =
         { $tabCount ->
-            [one] Stummschaltung für Tab beenden
-           *[other] Stummschaltung { $tabCount } für Tabs beenden
+            [one] Stummschaltung für Tab aufheben
+           *[other] Stummschaltung { $tabCount } für Tabs aufheben
         }
 tabbrowser-unblock-tab-audio-tooltip =
     .label =
@@ -71,6 +71,16 @@ tabbrowser-unblock-tab-audio-tooltip =
             [one] Audio des Tabs wiedergeben
            *[other] Audio der { $tabCount } Tabs wiedergeben
         }
+
+## Tooltips for tab audio control
+
+tabbrowser-unmute-tab-audio-aria-label =
+    .aria-label = Stummschaltung für Tab aufheben
+tabbrowser-mute-tab-audio-aria-label =
+    .aria-label = Tab stummschalten
+# Used to unblock a tab with audio from autoplaying
+tabbrowser-unblock-tab-audio-aria-label =
+    .aria-label = Tab wiedergeben
 
 ## Confirmation dialog when closing a window with more than one tab open,
 ## or when quitting when only one window is open.
@@ -80,6 +90,7 @@ tabbrowser-unblock-tab-audio-tooltip =
 #   $tabCount (Number): The number of tabs that will be closed.
 tabbrowser-confirm-close-tabs-title = { $tabCount } Tabs schließen?
 tabbrowser-confirm-close-tabs-button = Tabs schließen
+tabbrowser-ask-close-tabs-checkbox = Fragen, bevor mehrere Tabs geschlossen werden
 tabbrowser-confirm-close-tabs-checkbox = Bestätigen, bevor mehrere Tabs geschlossen werden
 
 ## Confirmation dialog when quitting using the menu and multiple windows are open.
@@ -102,7 +113,21 @@ tabbrowser-confirm-close-tabs-with-key-title = Fenster schließen und { -brand-s
 tabbrowser-confirm-close-tabs-with-key-button = { -brand-short-name } beenden
 # Variables:
 #   $quitKey (String): the text of the keyboard shortcut for quitting.
+tabbrowser-ask-close-tabs-with-key-checkbox = Fragen, bevor mit { $quitKey } beendet wird
+# Variables:
+#   $quitKey (String): the text of the keyboard shortcut for quitting.
 tabbrowser-confirm-close-tabs-with-key-checkbox = Bestätigen, bevor mit { $quitKey } beendet wird
+
+## Confirmation dialog when quitting using the keyboard shortcut (Ctrl/Cmd+Q)
+## and browser.warnOnQuitShortcut is true.
+
+tabbrowser-confirm-close-warn-shortcut-title = { -brand-short-name } beenden oder aktuellen Tab schließen?
+tabbrowser-confirm-close-windows-warn-shortcut-button =
+    { PLATFORM() ->
+        [windows] { -brand-short-name } beenden
+       *[other] { -brand-short-name } beenden
+    }
+tabbrowser-confirm-close-tab-only-button = Aktuellen Tab schließen
 
 ## Confirmation dialog when opening multiple tabs simultaneously
 
@@ -167,6 +192,9 @@ tabbrowser-ctrl-tab-list-all-tabs =
     .label = Alle { $tabCount } Tabs anzeigen
 
 ## Tab manager menu buttons
+## Variables:
+##  $tabGroupName (String): The name of the tab group. See also tab-group-name-default, which will be
+##                          used when the group's name is empty.
 
 tabbrowser-manager-mute-tab =
     .tooltiptext = Tab stummschalten
@@ -174,3 +202,121 @@ tabbrowser-manager-unmute-tab =
     .tooltiptext = Stummschaltung für Tab aufheben
 tabbrowser-manager-close-tab =
     .tooltiptext = Tab schließen
+# This is for tab groups that have been "saved and closed" (see tab-group-editor-action-save). It does
+# not include "deleted" tab groups (see tab-group-editor-action-delete).
+tabbrowser-manager-closed-tab-group =
+    .label = { $tabGroupName }
+    .tooltiptext = { $tabGroupName } - geschlossen
+tabbrowser-manager-current-window-tab-group =
+    .label = { $tabGroupName }
+    .tooltiptext = { $tabGroupName } - aktuelles Fenster
+# "Show more" is for showing all open groups from other windows, as well as saved groups. Initially,
+# we only show up to six of these groups.
+tabbrowser-manager-tab-groups-show-more =
+    .label = Mehr anzeigen
+
+## Tab Groups
+
+tab-group-editor-title-create = Tab-Gruppe erstellen
+tab-group-editor-title-edit = Tab-Gruppe verwalten
+tab-group-editor-name-label = Name
+tab-group-editor-name-field =
+    .placeholder = Beispiel: Einkaufen
+tab-group-editor-cancel =
+    .label = Abbrechen
+    .accesskey = A
+tab-group-editor-color-selector =
+    .aria-label = Farbe der Tap-Gruppe
+tab-group-editor-color-selector2-blue = Blau
+    .title = Blau
+tab-group-editor-color-selector2-purple = Lila
+    .title = Lila
+tab-group-editor-color-selector2-cyan = Cyan
+    .title = Cyan
+tab-group-editor-color-selector2-orange = Orange
+    .title = Orange
+tab-group-editor-color-selector2-yellow = Gelb
+    .title = Gelb
+tab-group-editor-color-selector2-pink = Pink
+    .title = Pink
+tab-group-editor-color-selector2-green = Grün
+    .title = Grün
+tab-group-editor-color-selector2-gray = Grau
+    .title = Grau
+tab-group-editor-color-selector2-red = Rot
+    .title = Rot
+# Variables:
+#  $tabGroupName (String): The name of the tab group. Defaults to the value
+#                          of tab-group-name-default.
+tab-group-description = { $tabGroupName } – Tab-Gruppe
+tab-group-menu-header = Tab-Gruppen
+tab-context-unnamed-group =
+    .label = Unbenannte Gruppe
+tab-group-name-default = Unbenannte Gruppe
+
+## Variables:
+##  $tabCount (Number): the number of tabs that are affected by the action.
+
+tab-context-move-tab-to-new-group =
+    .label =
+        { $tabCount ->
+            [one] Tab zu neuer Gruppe hinzufügen
+           *[other] Tabs zu neuer Gruppe hinzufügen
+        }
+    .accesskey = G
+tab-context-move-tab-to-group =
+    .label =
+        { $tabCount ->
+            [one] Tab zu Gruppe hinzufügen
+           *[other] Tabs zu Gruppe hinzufügen
+        }
+    .accesskey = G
+tab-group-editor-action-new-tab =
+    .label = Neuer Tab in Gruppe
+tab-group-editor-action-new-window =
+    .label = Gruppe in neues Fenster verschieben
+tab-group-editor-action-save =
+    .label = Gruppe speichern und schließen
+tab-group-editor-action-ungroup =
+    .label = Gruppierung der Tabs aufheben
+tab-group-editor-action-delete =
+    .label = Gruppe löschen
+tab-group-editor-done =
+    .label = Fertig
+    .accessKey = F
+tab-context-reopen-tab-group =
+    .label = Tab-Gruppe wieder öffnen
+# Variables:
+#  $groupCount (Number): the number of tab groups that are affected by the action.
+tab-context-ungroup-tab =
+    .label =
+        { $groupCount ->
+            [one] Aus Gruppe entfernen
+           *[other] Aus Gruppen entfernen
+        }
+    .accesskey = e
+
+## Open/saved tab group context menu
+
+# For a tab group open in any window, clicking this will create a new
+# window and move this tab group to that new window.
+tab-group-context-move-to-new-window =
+    .label = Gruppe in neues Fenster verschieben
+# For a tab group open in a different window from the one that the
+# user is using to access the tab group menu, move that tab group into the
+# user's current window.
+tab-group-context-move-to-this-window =
+    .label = Gruppe in dieses Fenster verschieben
+# For a tab group that is open in any window, close the tab group and
+# do not save it. For a tab group that is closed but saved by the user, clicking
+# this will forget the saved tab group.
+tab-group-context-delete =
+    .label = Gruppe löschen
+# For a saved tab group that is not open in any window, open the tab group
+# in the user's current window.
+tab-group-context-open-saved-group-in-this-window =
+    .label = Gruppe in diesem Fenster öffnen
+# For a saved tab group that is not open in any window, create a new window and
+# open the tab group in that window.
+tab-group-context-open-saved-group-in-new-window =
+    .label = Gruppe in neuem Fenster öffnen

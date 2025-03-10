@@ -59,7 +59,8 @@ class nsDisplayCanvas final : public nsPaintedDisplayItem {
       : nsPaintedDisplayItem(aBuilder, aFrame) {
     MOZ_COUNT_CTOR(nsDisplayCanvas);
   }
-  MOZ_COUNTED_DTOR_OVERRIDE(nsDisplayCanvas)
+
+  MOZ_COUNTED_DTOR_FINAL(nsDisplayCanvas)
 
   NS_DISPLAY_DECL_NAME("nsDisplayCanvas", TYPE_CANVAS)
 
@@ -365,10 +366,8 @@ CSSIntSize nsHTMLCanvasFrame::GetCanvasSize() const {
   return size;
 }
 
-nscoord nsHTMLCanvasFrame::IntrinsicISize(gfxContext* aContext,
+nscoord nsHTMLCanvasFrame::IntrinsicISize(const IntrinsicSizeInput& aInput,
                                           IntrinsicISizeType aType) {
-  // XXX The caller doesn't account for constraints of the height,
-  // min-height, and max-height properties.
   if (Maybe<nscoord> containISize = ContainIntrinsicISize()) {
     return *containISize;
   }
@@ -456,7 +455,9 @@ bool nsHTMLCanvasFrame::UpdateWebRenderCanvasData(
 
 void nsHTMLCanvasFrame::BuildDisplayList(nsDisplayListBuilder* aBuilder,
                                          const nsDisplayListSet& aLists) {
-  if (!IsVisibleForPainting()) return;
+  if (!IsVisibleForPainting()) {
+    return;
+  }
 
   DisplayBorderBackgroundOutline(aBuilder, aLists);
 

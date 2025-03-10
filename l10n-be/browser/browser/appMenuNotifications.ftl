@@ -30,6 +30,9 @@ appmenu-update-restart2 =
     .secondarybuttonlabel = Адхіліць
     .secondarybuttonaccesskey = ь
 appmenu-update-restart-message2 = Атрымайце найноўшую версію { -brand-shorter-name }. Адкрытыя карткі і вокны будуць адноўленыя.
+appmenu-theme-installed =
+    .secondarybuttonlabel = Адмяніць
+    .secondarybuttonaccesskey = д
 appmenu-update-other-instance =
     .label = { -brand-shorter-name } не можа аўтаматычна абнавіцца да апошняй версіі.
     .buttonlabel = Усё роўна абнавіць { -brand-shorter-name }
@@ -37,7 +40,6 @@ appmenu-update-other-instance =
     .secondarybuttonlabel = Не зараз
     .secondarybuttonaccesskey = Н
 appmenu-update-other-instance-message = Даступна абнаўленне для { -brand-shorter-name }, але яго нельга ўсталяваць, бо запушчана іншая копія { -brand-shorter-name }. Закрыйце яе, каб працягнуць абнаўленне, або выберыце абнаўленне ў любым выпадку (іншая копія можа не працаваць належным чынам, пакуль вы не перазапусціце яе).
-
 appmenu-addon-private-browsing-installed2 =
     .buttonlabel = Добра
     .buttonaccesskey = Д
@@ -45,7 +47,6 @@ appmenu-addon-post-install-message3 = Кіруйце сваімі дадатка
 appmenu-addon-post-install-incognito-checkbox =
     .label = Дазволіць гэтаму пашырэнню дзейнічаць у прыватных вокнах
     .accesskey = в
-    
 appmenu-new-tab-controlled-changes =
     .label = Ваша новая картка была зменена.
     .buttonlabel = Захаваць змены

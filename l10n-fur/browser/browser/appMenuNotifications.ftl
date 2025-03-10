@@ -30,6 +30,9 @@ appmenu-update-restart2 =
     .secondarybuttonlabel = Ignore
     .secondarybuttonaccesskey = n
 appmenu-update-restart-message2 = Oten la ultime version di { -brand-shorter-name }. Lis schedis e i barcons vierts a vignaran ripristinâts.
+appmenu-theme-installed =
+    .secondarybuttonlabel = Anule
+    .secondarybuttonaccesskey = u
 appmenu-update-other-instance =
     .label = { -brand-shorter-name } nol rive a inzornâsi in automatic ae ultime version.
     .buttonlabel = Inzorne { -brand-shorter-name } distès
@@ -37,7 +40,6 @@ appmenu-update-other-instance =
     .secondarybuttonlabel = No cumò
     .secondarybuttonaccesskey = N
 appmenu-update-other-instance-message = Al è disponibil un gnûf inzornament di { -brand-shorter-name }, ma no si pues instalâ par vie che e je in esecuzion une altre copie di { -brand-shorter-name }. Sierile par continuâ l'inzornament, o sielç di inzornâ distès (chê altre copie  e podarès no lavorâ ben fintremai che no tu le tornis a inviâ).
-
 appmenu-addon-private-browsing-installed2 =
     .buttonlabel = Va ben
     .buttonaccesskey = V
@@ -45,7 +47,6 @@ appmenu-addon-post-install-message3 = Gjestìs i tiei components adizionâi e i 
 appmenu-addon-post-install-incognito-checkbox =
     .label = Permet a cheste estension di zirâ tai barcons privâts
     .accesskey = P
-
 appmenu-new-tab-controlled-changes =
     .label = La tô gnove schede e je cambiade.
     .buttonlabel = Ten lis modifichis

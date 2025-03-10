@@ -225,7 +225,9 @@ mr2022-onboarding-set-default-subtitle = Bruk en nettleser støttet av en ideell
 mr2022-onboarding-get-started-primary-subtitle = Vår nyeste versjon er laget for å møte dine behov og gjøre det enklere å navigere på nettet. Den er fullpakket med funksjoner vi tror du vil elske.
 mr2022-onboarding-get-started-primary-button-label = Hurtig konfigurering
 
-## MR2022 Import Settings screen strings
+## MR2022 Get Started screen strings.
+## These strings will be used on the welcome page
+## when Firefox is already set to default and pinned.
 
 mr2022-onboarding-import-header = Lynrask konfigurering
 mr2022-onboarding-import-subtitle = Konfiguer { -brand-short-name } slik du liker det. Legg til bokmerker, passord og mer fra den gamle nettleseren din.
@@ -356,6 +358,10 @@ onboarding-mobile-download-security-and-privacy-subtitle = Når du er synkronise
 # Gratitude screen
 onboarding-gratitude-security-and-privacy-title = { -brand-short-name } passer på deg
 onboarding-gratitude-security-and-privacy-subtitle = Takk for at du bruker { -brand-short-name }, støttet av Mozilla Foundation. Med din støtte jobber vi for å gjøre internett tryggere og mer tilgjengelig for alle.
+# Sign up or Sign in screen
+onboarding-sign-up-title = Synkroniser dine data på tvers av enheter
+onboarding-sign-up-button = Registrer deg eller logg inn
+onboarding-sign-up-secondary-button = Begynn å surfe
 
 ## New user time and familiarity survey strings
 
@@ -375,3 +381,51 @@ onboarding-new-user-survey-familiarity-based-option-1 = Jeg er helt ny
 onboarding-new-user-survey-familiarity-based-option-2 = Jeg har brukt den en del
 onboarding-new-user-survey-familiarity-based-option-3 = Jeg er veldig kjent med den
 onboarding-new-user-survey-familiarity-based-option-4 = Jeg brukte den tidligere, men det er en stund siden
+
+## UI strings for the sidebar and vertical tabs
+
+# Setup screen for vertical tabs
+onboarding-new-tabs-title = Fortell oss hvor du vil ha fanene dine
+# Setup screen for vertical tabs - "Switch it up" refers to switching between horizontal and vertical tabs.
+onboarding-new-tabs-subtitle = Slå den opp når du vil i sidestolpeinnstillingene.
+# Setup screen for vertical tabs - too many tabs variation
+onboarding-many-tabs-title = Dine faner, på din måte
+# Setup screen for vertical tabs - focused variation
+onboarding-focused-tabs-title = Velg faneoppsett
+# Setup screen for vertical tabs - subtitle for focused variation
+onboarding-focused-tabs-subtitle = For en strømlinjeformet visning som kan hjelpe deg å holde fokus, prøv faner på siden. Eller behold det klassiske med faner på toppen. Bytt når som helst.
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-new-vertical-tabs-label = Faner på siden
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-new-horizontal-tabs-label = Faner på toppen
+# Setup screen for vertical tabs for existing users
+onboarding-existing-tabs-title = Vertikale faner er her
+# Setup screen for vertical tabs for existing users
+onboarding-existing-tabs-title2 = Introduserer vertikale faner
+# Setup screen for vertical tabs for existing users - "Switch it up" refers to switching between horizontal and vertical tabs.
+onboarding-existing-tabs-subtitle = Prøv fanene på siden. Endre når du vil i innstillinger for sidestolpe.
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-existing-vertical-tabs-label = Prøv vertikale faner
+onboarding-flair-text = Nyhet!
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-existing-horizontal-tabs-label = Behold horisontale faner
+onboarding-genai-sidebar-primary-button = Velg en samtalerobot
+onboarding-genai-sidebar-secondary-button = Begynn å surfe
+
+## New user onboarding checklist
+
+onboarding-checklist-set-default = Gjør { -brand-short-name } til standardnettleser
+onboarding-checklist-pin = Fest { -brand-short-name } til oppgavelinjen
+onboarding-checklist-import = Importer fra tidligere nettleser
+onboarding-checklist-extension = Legg til en utvidelse
+onboarding-checklist-sign-up = Registrer deg eller logg inn på kontoen din
+
+## Tab Groups feature onboarding strings
+
+tab-groups-onboarding-feature-callout-title = Prøv fanegrupper for mindre rot, mer fokus
+
+## Multi Profiles feature onboarding messages
+
+
+## Desktop to Mobile Adoption feature callout strings
+

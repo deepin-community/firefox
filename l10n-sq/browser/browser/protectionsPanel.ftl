@@ -20,9 +20,14 @@ protections-popup-footer-protection-label-standard = Standarde
 
 # The text a screen reader speaks when focused on the info button.
 protections-panel-etp-more-info =
-    .aria-label = Më tepër të dhëna rreth Mbrojtjes së Thelluar Nga Gjurmimet
+    .aria-label = Më tepër hollësi rreth Mbrojtjes së Thelluar Nga Gjurmimet
 protections-panel-etp-on-header = Mbrojtja e Thelluar Nga Gjurmimet është ON për këtë sajt
 protections-panel-etp-off-header = Mbrojtja e Thelluar Nga Gjurmimet është OFF për këtë sajt
+# The link to be clicked to open the sub-panel view
+protections-panel-site-not-working = S'funksionon sajti?
+# The heading/title of the sub-panel view
+protections-panel-site-not-working-view =
+    .title = S'funksionon Sajti?
 
 ## Text for the toggles shown when ETP is enabled/disabled for a given site.
 ## .description is transferred into a separate paragraph by the moz-toggle
@@ -37,11 +42,6 @@ protections-panel-etp-toggle-off =
     .label = Mbrojtje e Thelluar Nga Gjurmimi
     .description = Off për këtë sajt
     .aria-label = Mbrojtje e Thelluar Nga Gjurmimet: Off për { $host }
-# The link to be clicked to open the sub-panel view
-protections-panel-site-not-working = S'funksionon sajti?
-# The heading/title of the sub-panel view
-protections-panel-site-not-working-view =
-    .title = S'funksionon Sajti?
 
 ## The "Allowed" header also includes a "Why?" link that, when hovered, shows
 ## a tooltip explaining why these items were not blocked in the page.
@@ -71,6 +71,19 @@ protections-panel-content-blocking-fingerprinters-label = Krijues shenjash gisht
 protections-panel-blocking-label = Të bllokuara
 protections-panel-not-blocking-label = Të lejuara
 protections-panel-not-found-label = S'u Pikas Ndonjë
+
+## Smartblock strings
+
+protections-panel-smartblock-desc-label = { -brand-short-name }-i bllokon lëndë ndjekjeje, teksa gjendeni në këtë sajt, veç në e lejofshi ju.
+# Variables
+#  $trackername (String): the name of the tracker that is currently being blocked.
+protections-panel-smartblock-blocking-toggle =
+    .label = Lejoje { $trackername }
+#  $trackername (String): the name of the tracker that is currently being blocked.
+smartblock-placeholder-title = U bllokuan gjurmues dhe lëndë { $trackername }
+smartblock-placeholder-desc = Rregullimet tuaja për { -brand-short-name } e bllokuan këtë lëndë t’ju ndjekë nëpër sajte, apo që të përdoret për rekklama.
+#  $websitehost (String): host of website with blocked content.
+smartblock-placeholder-button-text = Lejoje në { $websitehost }
 
 ##
 
@@ -108,7 +121,6 @@ protections-panel-content-blocking-manage-settings =
 protections-panel-content-blocking-breakage-report-view =
     .title = Njoftoni një Sajt të Dëmtuar
 protections-panel-content-blocking-breakage-report-view-description = Bllokimi i disa gjurmuesve mund të shkaktojë probleme me disa sajte. Raportimi i këtyre problemeve ndihmon për ta bërë { -brand-short-name }-in më të mirë për këdo. Dërgimi i këtij raporti do të shkaktojë dërgimin te Mozilla të një URL-je dhe të të dhënave mbi rregullimet tuaja të shfletuesit <label data-l10n-name="learn-more">Mësoni më tepër</label>
-protections-panel-content-blocking-breakage-report-view-description2 = Bllokimi i disa gjurmuesve mund të shkaktojë probleme me disa sajte. Raportimi i këtyre problemeve ndihmon për ta bërë { -brand-short-name }-in më të mirë për këdo. Dërgimi i këtij raporti do të shkaktojë dërgimin te { -vendor-short-name } të një URL-je dhe të të dhënave mbi rregullimet tuaja të shfletuesit
 protections-panel-content-blocking-breakage-report-view-collection-url = URL
 protections-panel-content-blocking-breakage-report-view-collection-url-label =
     .aria-label = URL

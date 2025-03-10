@@ -108,8 +108,11 @@ appmenu-fxa-sync-and-save-data2 = Sinkronizatu eta gorde datuak
 appmenu-fxa-signed-in-label = Hasi saioa
 appmenu-fxa-setup-sync =
     .label = Gaitu sinkronizazioa…
+appmenu-fxa-setup-sync-new = Aktibatu
 appmenuitem-save-page =
     .label = Gorde orria honela…
+appmenuitem-fxa-sync-off-title = Sinkronizazioa desaktibatuta dago
+appmenuitem-fxa-sync-off-description = Babestu eta izan eskura edonon zure laster-markak, pasahitzak eta gehiago.
 
 ## What's New panel in App menu.
 
@@ -196,6 +199,7 @@ profiler-popup-presets-power-description = { -brand-shorter-name }(r)en energia-
 # "Power" is used in the sense of energy (electricity used by the computer).
 profiler-popup-presets-power-label =
     .label = Energia
+profiler-popup-presets-debug-description = { -brand-shorter-name }(r)en arazketarako aurrezarpena. Eragin negatibo handia du, ez erabili errendimenduarekin lotutako lanerako, bai ordea nabigatzailearen portaera ulertzeko.
 profiler-popup-presets-debug-label =
     .label = Araztu
 profiler-popup-presets-custom-label =
@@ -273,7 +277,23 @@ appmenuitem-report-broken-site =
 
 appmenuitem-sign-in-account = Hasi saioa zure kontuan
 appmenuitem-monitor-title = { -monitor-brand-short-name }
+appmenuitem-monitor-description = Eskuratu datu-urratzeei buruzko alertak
 appmenuitem-relay-title = { -relay-brand-short-name }
 appmenuitem-relay-description = Maskaratu zure benetako helbide elektronikoa eta telefonoa
 appmenuitem-vpn-title = { -mozilla-vpn-brand-name }
 appmenuitem-vpn-description = Babestu lineako zure jarduera
+appmenu-services-header = Nire zerbitzuak
+appmenu-other-protection-header = Probatu { -vendor-short-name }(r)en bestelako babes-tresnak:
+
+## Profiles panel
+
+appmenu-profiles = Profilak
+appmenu-other-profiles = Beste profilak
+appmenu-manage-profiles =
+    .label = Kudeatu profilak
+appmenu-create-profile =
+    .label = Profil berria
+appmenu-edit-profile =
+    .aria-label = Editatu profila
+appmenu-profiles-2 =
+    .label = Profilak

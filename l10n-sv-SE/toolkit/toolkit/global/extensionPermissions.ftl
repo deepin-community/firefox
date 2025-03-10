@@ -30,4 +30,13 @@ webext-perms-description-sessions = Åtkomst till webbläsarens nyligen stängda
 webext-perms-description-tabs = Åtkomst till webbläsarens flikar
 webext-perms-description-tabHide = Dölj och visa webbläsarens flikar
 webext-perms-description-topSites = Åtkomst till webbhistoriken
+webext-perms-description-trialML = Ladda ner och kör AI-modeller på din enhet
+webext-perms-description-userScripts = Tillåt overifierade skript från tredje part att komma åt dina uppgifter
 webext-perms-description-webNavigation = Åtkomst till webbläsarens aktivitet under navigering
+
+## The userScripts permission includes an additional explanation that is
+## displayed prominently near the usual permission description.
+
+webext-perms-extra-warning-userScripts-long = Overifierade skript kan utgöra säkerhets- och integritetsrisker, som att köra skadlig kod eller spåra webbplatsaktivitet. Kör bara skript från tillägg eller källor som du litar på.
+# A shorter warning is displayed in UI surfaces with little room, such as a permission prompt.
+webext-perms-extra-warning-userScripts-short = Overifierade skript kan utgöra säkerhets- och integritetsrisker. Kör bara skript från tillägg eller källor som du litar på.

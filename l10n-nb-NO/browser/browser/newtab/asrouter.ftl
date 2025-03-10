@@ -245,6 +245,9 @@ device-migration-fxa-spotlight-older-device-primary-button = Opprett en konto
 device-migration-fxa-spotlight-getting-new-device-header-2 = Planlegger du å kjøpe en ny enhet i fremtiden?
 device-migration-fxa-spotlight-getting-new-device-body-2 = Følg noen få enkle trinn for å ta med deg bokmerkene, historikken og passordene dine når du tar i bruk en ny enhet.
 device-migration-fxa-spotlight-getting-new-device-primary-button = Hvordan sikkerhetskopiere mine data
+device-migration-fxa-spotlight-sync-header = Surf uten å gå glipp av noe viktig
+device-migration-fxa-spotlight-sync-body = Synkroniser all viktig informasjon med kryptering — som bokmerker og passord. Du kan hente alt hvor som helst du bruker { -brand-product-name }.
+device-migration-fxa-spotlight-sync-primary-button = Kom i gang
 
 ## Set as Default PDF Reader Infobar
 
@@ -281,3 +284,55 @@ tail-fox-spotlight-title = Hold irriterende sporings-tjenester på avstand
 tail-fox-spotlight-subtitle = Si farvel til irriterende annonse-sporere og opplev en sikrere, raskere internettopplevelse.
 tail-fox-spotlight-primary-button = Åpne lenkene mine med { -brand-short-name }
 tail-fox-spotlight-secondary-button = Ikke nå
+
+## Root Certificate Succession Infobar
+
+root-certificate-succession-infobar-january-message = <strong>Eldre versjoner av { -brand-short-name } kan begynne å få problemer 14. januar 2025.</strong>
+root-certificate-succession-infobar-march-message = <strong>Oppdater for å fortsette å bruke { -brand-short-name } etter 14. mars 2025.</strong>
+root-certificate-succession-infobar-link = Hvorfor må jeg oppdatere?
+root-certificate-succession-infobar-primary-button =
+    .label = Oppdater nå
+    .accesskey = O
+root-certificate-succession-infobar-secondary-button =
+    .label = Senere
+    .accesskey = S
+
+## Root Certificate Succession Windows Background Notification
+
+root-certificate-windows-background-notification-title = Du gikk glipp av en viktig { -brand-short-name }-oppdatering
+root-certificate-windows-background-notification-subtitle = Deler av nettleseren slutter snart å fungere hvis du ikke oppdaterer. Nå er en flott tid for å få de nyeste beskyttelsene og funksjonene våre.
+root-certificate-windows-background-notification-learn-more-button = Les mer
+root-certificate-windows-background-notification-update-button = Oppdater { -brand-short-name }
+
+## FxA Menu Message variants
+
+fxa-menu-message-close-button =
+    .title = Lukk
+    .aria-label = Lukk
+fxa-menu-message-sign-up-button = Registrer deg
+fxa-menu-message-sync-devices-primary-text = Synkroniser alle dine enheter
+fxa-menu-message-sync-devices-secondary-text = Få informasjonen din umiddelbart — som bokmerker og passord — overalt hvor du bruker { -brand-short-name }.
+fxa-menu-message-sync-devices-collapsed-text = Synkroniser alle dine enheter
+fxa-menu-message-backup-data-primary-text = Sikkerhetskopier din nettleserdata
+fxa-menu-message-backup-data-secondary-text = Beskytt bokmerker, passord og annen informasjon automatisk på alle enhetene dine.
+fxa-menu-message-backup-data-collapsed-text = Sikkerhetskopier nettleserdata
+fxa-menu-message-backup-sync-primary-text = Hold dine data trygg og synkronisert
+fxa-menu-message-backup-sync-secondary-text = Synkronisering sikkerhetskopierer de fleste dataene dine slik at du kan få tilgang til dem overalt hvor du bruker { -brand-short-name }.
+fxa-menu-message-backup-sync-collapsed-text = Synkroniser og sikkerhetskopier data
+fxa-menu-message-mobile-primary-text = Send faner til telefonen din
+fxa-menu-message-mobile-secondary-text = Fortsett der du sluttet umiddelbart når du synkroniserer fanene dine med en mobilenhet.
+fxa-menu-message-mobile-collapsed-text = Synkroniser med telefonen din
+
+## Multi-CTA Fox Doodle Spotlight
+
+multi-cta-fox-doodle-title = Velkommen tilbake
+multi-cta-fox-doodle-set-default-checkbox = Gjør { -brand-short-name } til standard
+multi-cta-fox-doodle-pin-startmenu-checkbox = Fest { -brand-short-name } til Start-menyen
+multi-cta-fox-doodle-pin-checkbox =
+    { PLATFORM() ->
+        [macos] Behold { -brand-short-name } i Dock
+       *[other] Fest { -brand-short-name } til oppgavelinjen
+    }
+multi-cta-fox-doodle-start-browsing-primary-button-label = Begynn å surfe
+multi-cta-fox-doodle-main-browser-primary-button-label = Gjør { -brand-short-name } til min hovednettleser
+multi-cta-fox-doodle-quick-reminder-subtitle = Her er en rask påminnelse om at du kan ha din favorittnettleser med fokus på personvern kun ett klikk unna.

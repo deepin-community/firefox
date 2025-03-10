@@ -30,6 +30,9 @@ appmenu-update-restart2 =
     .secondarybuttonlabel = Rexeitar
     .secondarybuttonaccesskey = m
 appmenu-update-restart-message2 = Obteña a versión máis recente do { -brand-shorter-name }. As lapelas e xanelas abertas restauraranse despois.
+appmenu-theme-installed =
+    .secondarybuttonlabel = Desfacer
+    .secondarybuttonaccesskey = D
 appmenu-update-other-instance =
     .label = { -brand-shorter-name } non pode actualizarse automaticamente para a versión máis recente.
     .buttonlabel = Actualizar { -brand-shorter-name } igualmente
@@ -37,7 +40,6 @@ appmenu-update-other-instance =
     .secondarybuttonlabel = Agora non
     .secondarybuttonaccesskey = N
 appmenu-update-other-instance-message = Está dispoñíbel unha nova actualización de { -brand-shorter-name }, pero non se pode instalar porque se está a executar outra copia de { -brand-shorter-name }. Pécheo para continuar coa actualización ou escolla actualizalo de calquera xeito (é posíbel que a outra copia non funcione correctamente até que o reinicie).
-
 appmenu-addon-private-browsing-installed2 =
     .buttonlabel = Aceptar
     .buttonaccesskey = A
@@ -45,7 +47,6 @@ appmenu-addon-post-install-message3 = Xestione os seus complementos e temas a tr
 appmenu-addon-post-install-incognito-checkbox =
     .label = Permitir que esta extensión se execute en xanelas privadas
     .accesskey = A
-    
 appmenu-new-tab-controlled-changes =
     .label = Cambiouse a súa nova lapela.
     .buttonlabel = Manter cambios

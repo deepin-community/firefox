@@ -265,6 +265,9 @@ class SourcesManager extends EventEmitter {
    *        boxed or not.
    */
   isBlackBoxed(url, line, column) {
+    if (this.blackBoxedSources.size == 0) {
+      return false;
+    }
     if (!this.blackBoxedSources.has(url)) {
       return false;
     }
@@ -281,6 +284,9 @@ class SourcesManager extends EventEmitter {
   }
 
   isFrameBlackBoxed(frame) {
+    if (this.blackBoxedSources.size == 0) {
+      return false;
+    }
     const { url, line, column } = this.getFrameLocation(frame);
     return this.isBlackBoxed(url, line, column);
   }
@@ -447,7 +453,7 @@ class SourcesManager extends EventEmitter {
     const win = this._thread.targetActor.window;
     let principal, cacheKey;
     // On xpcshell, we don't have a window but a Sandbox
-    if (!isWorker && win instanceof Ci.nsIDOMWindow) {
+    if (!isWorker && win instanceof Ci.nsIDOMWindow && win.docShell) {
       const docShell = win.docShell;
       const channel = docShell.currentDocumentChannel;
       principal = channel.loadInfo.loadingPrincipal;

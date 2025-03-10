@@ -258,6 +258,9 @@ device-migration-fxa-spotlight-older-device-primary-button = Crëwch gyfrif
 device-migration-fxa-spotlight-getting-new-device-header-2 = Dyfais newydd yn eich dyfodol?
 device-migration-fxa-spotlight-getting-new-device-body-2 = Dilynwch ychydig o gamau syml i ddod â'ch nodau tudalen, hanes, a chyfrineiriau gyda chi pan fyddwch chi'n dechrau ar ddyfais newydd.
 device-migration-fxa-spotlight-getting-new-device-primary-button = Sut i wneud copi wrth gefn o fy nata
+device-migration-fxa-spotlight-sync-header = Pori'n ddi-lol
+device-migration-fxa-spotlight-sync-body = Cydweddwch eich holl fanylion pwysig gydag amgryptio - fel nodau tudalen a chyfrineiriau. Gallwch amlygu popeth lle bynnag rydych yn defnyddio { -brand-product-name }.
+device-migration-fxa-spotlight-sync-primary-button = Cychwyn arni
 
 ## Set as Default PDF Reader Infobar
 
@@ -294,3 +297,61 @@ tail-fox-spotlight-title = Cadw tracwyr blin oddi ar eich cefn
 tail-fox-spotlight-subtitle = Ffarweliwch â thracwyr hysbysebion annifyr a symud i brofiad rhyngrwyd mwy diogel a chyflym.
 tail-fox-spotlight-primary-button = Agor fy nolenni gyda { -brand-short-name }
 tail-fox-spotlight-secondary-button = Nid nawr
+
+## Root Certificate Succession Infobar
+
+root-certificate-succession-infobar-january-message = <strong>Mae'n bosib y bydd fersiynau hŷn o { -brand-short-name } yn dechrau cael problemau ar Ionawr 14, 2025.</strong>
+root-certificate-succession-infobar-march-message = <strong>Diweddarwch i barhau i ddefnyddio { -brand-short-name } ar ôl Mawrth 14, 2025.</strong>
+root-certificate-succession-infobar-link = Pam fod angen i mi ddiweddaru?
+root-certificate-succession-infobar-primary-button =
+    .label = Diweddarwch nawr
+    .accesskey = D
+root-certificate-succession-infobar-secondary-button =
+    .label = Yn hwyrach
+    .accesskey = Y
+
+## Root Certificate Succession Windows Background Notification
+
+root-certificate-windows-background-notification-title = Rydych wedi methu diweddariad { -brand-short-name } pwysig
+root-certificate-windows-background-notification-subtitle = Bydd rhannau o'r porwr yn peidio â gweithio cyn hir os fyddwch chi ddim yn diweddaru. Mae nawr yn amser gwych i gael ein hamddiffyniadau a'n nodweddion diweddaraf.
+root-certificate-windows-background-notification-learn-more-button = Darllen rhagor
+root-certificate-windows-background-notification-update-button = Diweddaru { -brand-short-name }
+
+## FxA Menu Message variants
+
+fxa-menu-message-close-button =
+    .title = Cau
+    .aria-label = Cau
+fxa-menu-message-sign-up-button = Cofrestru
+fxa-menu-message-sync-devices-primary-text = Cydweddwch eich holl ddyfeisiau
+fxa-menu-message-sync-devices-secondary-text = Cael eich gwybodaeth ar unwaith — fel nodau tudalen a chyfrineiriau — ym mhob man rydych yn defnyddio { -brand-short-name }.
+fxa-menu-message-sync-devices-collapsed-text = Cydweddwch eich holl ddyfeisiau
+fxa-menu-message-backup-data-primary-text = Gwnewch gopi wrth gefn o ddata eich porwr
+fxa-menu-message-backup-data-secondary-text = Diogelwch nodau tudalen, cyfrineiriau a gwybodaeth arall yn awtomatig ar eich holl ddyfeisiau.
+fxa-menu-message-backup-data-collapsed-text = Gwnewch gopi wrth gefn o ddata eich porwr
+fxa-menu-message-backup-sync-primary-text = Cadwch eich data'n ddiogel ac wedi'i gydweddu
+fxa-menu-message-backup-sync-secondary-text = Mae cydweddu'n gwneud copi wrth gefn o'r rhan fwyaf o'ch data fel y gallwch gael mynediad ato ym mhob man rydych yn defnyddio { -brand-short-name }.
+fxa-menu-message-backup-sync-collapsed-text = Cydweddu a chadw data
+fxa-menu-message-mobile-primary-text = Anfon tabiau i'ch ffôn
+fxa-menu-message-mobile-secondary-text = Dechreuwch eto'n union lle'r oeddech chi wedi gorffen pan fyddwch yn cydweddu'ch tabiau â dyfais symudol.
+fxa-menu-message-mobile-collapsed-text = Cydweddwch gyda'ch ffôn
+
+## Multi-CTA Fox Doodle Spotlight
+
+multi-cta-fox-doodle-title = Croeso nôl
+multi-cta-fox-doodle-set-default-checkbox = Gosod { -brand-short-name } i'r rhagosodedig
+multi-cta-fox-doodle-pin-startmenu-checkbox = Pinio { -brand-short-name } i'ch dewislen Cychwyn
+multi-cta-fox-doodle-pin-checkbox =
+    { PLATFORM() ->
+        [macos] Caddw { -brand-short-name } yn y Doc
+       *[other] Pinio { -brand-short-name } i'r bar tasgau
+    }
+multi-cta-fox-doodle-start-browsing-primary-button-label = Cychwyn pori
+multi-cta-fox-doodle-main-browser-primary-button-label = Gwneud { -brand-short-name } fy mrhif borwr
+multi-cta-fox-doodle-quick-reminder-subtitle = Dyma neges atgoffa cyflym y gallwch chi gadw'ch hoff borwr annibynnol dim ond un clic i ffwrdd.
+multi-cta-fox-doodle-privacy-focused-subtitle =
+    { PLATFORM() ->
+        [macos] Cadwch eich hoff borwr sy'n canolbwyntio ar breifatrwydd dim ond un clic i ffwrdd. Gosod { -brand-short-name } fel eich porwr rhagosodedig ar gyfer agor dolenni a'i binio i'ch Doc
+       *[other] Cadwch eich hoff borwr sy'n canolbwyntio ar breifatrwydd dim ond un clic i ffwrdd. Gosod { -brand-short-name } fel eich porwr rhagosodedig ar gyfer agor dolenni a'i binio i'ch bar tasgau.
+    }
+multi-cta-fox-doodle-msix-privacy-focused-subtitle = Cadwch eich hoff borwr sy'n canolbwyntio ar breifatrwydd dim ond un clic i ffwrdd. Gosodwch { -brand-short-name } fel eich porwr rhagosodedig ar gyfer agor dolenni a'i binio i'ch dewislen Cychwyn.

@@ -11,6 +11,7 @@
 #include "mozilla/HoldDropJSObjects.h"
 #include "mozilla/Telemetry.h"
 
+#include "MockNetworkLayer.h"
 #include "nsQueryObject.h"
 #include "nsSocketTransport2.h"
 #include "nsUDPSocket.h"
@@ -194,9 +195,7 @@ NS_IMPL_CYCLE_COLLECTION_UNLINK_END
 
 nsUDPMessage::nsUDPMessage(NetAddr* aAddr, nsIOutputStream* aOutputStream,
                            FallibleTArray<uint8_t>&& aData)
-    : mOutputStream(aOutputStream), mData(std::move(aData)) {
-  memcpy(&mAddr, aAddr, sizeof(NetAddr));
-}
+    : mAddr(*aAddr), mOutputStream(aOutputStream), mData(std::move(aData)) {}
 
 nsUDPMessage::~nsUDPMessage() { DropJSObjects(this); }
 
@@ -351,9 +350,7 @@ class UDPMessageProxy final : public nsIUDPMessage {
  public:
   UDPMessageProxy(NetAddr* aAddr, nsIOutputStream* aOutputStream,
                   FallibleTArray<uint8_t>&& aData)
-      : mOutputStream(aOutputStream), mData(std::move(aData)) {
-    memcpy(&mAddr, aAddr, sizeof(mAddr));
-  }
+      : mAddr(*aAddr), mOutputStream(aOutputStream), mData(std::move(aData)) {}
 
   NS_DECL_THREADSAFE_ISUPPORTS
   NS_DECL_NSIUDPMESSAGE
@@ -645,6 +642,16 @@ nsUDPSocket::InitWithAddress(const NetAddr* aAddr, nsIPrincipal* aPrincipal,
 
   PRNetAddrToNetAddr(&addr, &mAddr);
 
+  if (StaticPrefs::network_socket_attach_mock_network_layer() &&
+      xpc::AreNonLocalConnectionsDisabled()) {
+    if (NS_FAILED(AttachMockNetworkLayer(mFD))) {
+      UDPSOCKET_LOG(
+          ("nsSocketTransport::InitiateSocket "
+           "AttachMockNetworkLayer failed [this=%p]\n",
+           this));
+    }
+  }
+
   // wait until AsyncListen is called before polling the socket for
   // client connections.
   return NS_OK;
@@ -787,7 +794,7 @@ void nsUDPSocket::CloseSocket() {
 NS_IMETHODIMP
 nsUDPSocket::GetAddress(NetAddr* aResult) {
   // no need to enter the lock here
-  memcpy(aResult, &mAddr, sizeof(mAddr));
+  *aResult = mAddr;
   return NS_OK;
 }
 

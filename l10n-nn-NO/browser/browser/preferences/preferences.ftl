@@ -3,6 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 do-not-track-description = Send nettsider eit «Ikkje spor»-signal om at du ikkje vil bli spora
+do-not-track-removal = Vi støtter ikkje lenger «Ikkje spor»-signalet
 do-not-track-description2 =
     .label = Send nettstadar ein «Ikkje spor»-førespurnad
     .accesskey = d
@@ -136,7 +137,8 @@ startup-restore-windows-and-tabs =
 windows-launch-on-login =
     .label = Opne { -brand-short-name } automatisk når datamaskina di startar opp
     .accesskey = O
-windows-launch-on-login-disabled = Denne innstillinga er deaktivert i Windows. For å endre, gå til <a data-l10n-name="startup-link">Oppstartsapper</a> i Systeminnstillingar.
+windows-launch-on-login-disabled = Denne innstillinga er deaktivert i Windows. For å endre, gå til <a data-l10n-name="startup-link">Appar > Oppstart</a> i Systeminnstillingar.
+windows-launch-on-login-profile-disabled = Aktiver denne innstillinga ved å merke av for «{ profile-manager-use-selected.label }» i «Vel brukarprofil»-vindauget.
 startup-restore-warn-on-quit =
     .label = Åtvar meg når eg avsluttar nettlesaren
 disable-extension =
@@ -146,6 +148,10 @@ preferences-data-migration-description = Importer bokmerke, passord, historikk o
 preferences-data-migration-button =
     .label = Importer data
     .accesskey = m
+preferences-profiles-header = Profilar
+preferences-manage-profiles-learn-more = Les meir
+preferences-manage-profiles-button =
+    .label = Handsam profilar
 tabs-group-header = Faner
 ctrl-tab-recently-used-order =
     .label = Ctrl+Tab vekslar mellom faner i nyleg brukt-rekkjefølgje
@@ -153,6 +159,17 @@ ctrl-tab-recently-used-order =
 open-new-link-as-tabs =
     .label = Opne lenker i faner i staden for nye vindauge
     .accesskey = l
+ask-on-close-multiple-tabs =
+    .label = Spør før attlating av fleire faner
+    .accesskey = S
+# This string is used for the confirm before quitting preference.
+# Variables:
+#   $quitKey (string) - the quit keyboard shortcut, and formatted
+#                       in the same manner as it would appear,
+#                       for example, in the File menu.
+ask-on-quit-with-key =
+    .label = Spør før du avsluttar med { $quitKey }
+    .accesskey = a
 confirm-on-close-multiple-tabs =
     .label = Stadfest før attlating av fleire faner
     .accesskey = S
@@ -212,6 +229,12 @@ containers-remove-cancel-button = Ikkje fjern denne behaldaren
 settings-tabs-show-image-in-preview =
     .label = Vis ei førehandsvising når du held musepeikaren over ei fane
     .accessKey = f
+browser-layout-horizontal-tabs =
+    .label = Horisontale faner
+browser-layout-vertical-tabs =
+    .label = Vertikale faner
+browser-layout-show-sidebar =
+    .label = Vis sidestolpe
 
 ## General Section - Language & Appearance
 
@@ -568,8 +591,7 @@ home-prefs-shortcuts-description = Nettstadar du lagrar eller besøkjer
 home-prefs-shortcuts-by-option-sponsored =
     .label = Sponsa snarvegar
 
-## Variables:
-##  $provider (string) - Name of the corresponding content provider, e.g "Pocket".
+## Home Section - Firefox Home Content Customization
 
 home-prefs-recommended-by-header =
     .label = Tilrådd av { $provider }
@@ -640,6 +662,10 @@ search-show-suggestions-option =
 search-show-suggestions-url-bar-option =
     .label = Vis søkjeforslag i adresselinja
     .accesskey = l
+# With this option enabled, on the search results page
+# the URL will be replaced by the search terms in the address bar.
+search-show-search-term-option-2 =
+    .label = Vis søkjeord i adressefeltet på resultatsidene
 # With this option enabled, on the search results page
 # the URL will be replaced by the search terms in the address bar
 # when using the current default search engine.
@@ -783,6 +809,9 @@ sync-currently-syncing-creditcards = Kredittkort
 sync-currently-syncing-payment-methods = Betalingsmåtar
 sync-currently-syncing-addons = Tillegg
 sync-currently-syncing-settings = Innstillingar
+sync-manage-options =
+    .label = Handsam synkronisering…
+    .accesskey = H
 sync-change-options =
     .label = Endre…
     .accesskey = E
@@ -835,6 +864,13 @@ sync-engine-settings =
     .label = Innstillingar
     .tooltiptext = Generelle, personvern- og sikkerheitsinnstillingar du har endra
     .accesskey = n
+sync-choose-what-to-sync-dialog4 =
+    .title = Handsam kva som skal synkroniserast på dei tilkopla einingane dine
+    .style = min-width: 36em;
+    .buttonlabelaccept = Lagre
+    .buttonaccesskeyaccept = L
+    .buttonlabelextra2 = Kople frå…
+    .buttonaccesskeyextra2 = f
 
 ## The device name controls.
 
@@ -1281,6 +1317,7 @@ permissions-addon-exceptions =
 collection-header = Datainnsamling og bruk for { -brand-short-name }
 collection-header2 = Datainnsamling og bruk for { -brand-short-name }
     .searchkeywords = telemetri
+preferences-collection-privacy-notice = Vis personvernerklæring
 collection-description = Vi prøver alltid å gje deg val og samlar inn berre det vi treng for å levere og forbetre { -brand-short-name } for alle. Vi ber alltid om løyve før vi får personopplysningar.
 collection-privacy-notice = Personvernpraksis
 collection-health-report-telemetry-disabled = Du tillèt ikkje lenger { -vendor-short-name } å samle inn teknisk- og interaksjonsdata. Alle tidlegare data vil bli sletta innan 30 dagar.
@@ -1289,6 +1326,8 @@ collection-health-report =
     .label = Tillat { -brand-short-name } å sende tekniske data og data for bruk til { -vendor-short-name }
     .accesskey = r
 collection-health-report-link = Les meir
+collection-studies2 =
+    .label = Installer og køyr studium
 collection-studies =
     .label = Tillat { -brand-short-name } å installere og køyre studium
 collection-studies-link = Vis { -brand-short-name }-studium
@@ -1359,6 +1398,7 @@ space-alert-under-5gb-message2 = <strong>{ -brand-short-name } er i ferd med å 
 ## Privacy Section - HTTPS-Only
 
 httpsonly-header = Berre HTTPS-modus
+httpsonly-learn-more2 = Korleis Berre-HTTPS fungerer
 httpsonly-description = HTTPS gir eit trygt, kryptert samband mellom { -brand-short-name } og nettstadane du besøkjer. Dei fleste nettstadar støttar HTTPS, og dersom berre HTTPS-modus er slått på, vil { -brand-short-name } oppgradere alle tilkoplingar til HTTPS.
 httpsonly-description2 = { -brand-short-name } opprettar sikre og krypterte tilkoplingar til nettstadar du besøkjer. { -brand-short-name } vil åtvare deg dersom ei tilkopling ikkje er sikker når Berre-HTTPS er på.
 httpsonly-learn-more = Les meir
@@ -1368,6 +1408,9 @@ httpsonly-radio-enabled2 =
     .label = Bruk berre HTTPS i alle vindauge
 httpsonly-radio-enabled-pbm =
     .label = Slå på berre HTTPS-modus kun i private vindauge
+httpsonly-radio-disabled3 =
+    .label = Ikkje slå på Berre-HTTPS-modus
+    .description = { -brand-short-name } kan framleis oppgradere nokre tilkoplingar
 httpsonly-radio-enabled-pbm2 =
     .label = Bruk berre HTTPS i private vindauge
 httpsonly-radio-disabled =

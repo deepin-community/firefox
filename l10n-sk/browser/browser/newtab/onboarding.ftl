@@ -225,7 +225,9 @@ mr2022-onboarding-set-default-subtitle = Použite prehliadač podporovaný nezis
 mr2022-onboarding-get-started-primary-subtitle = Naša najnovšia verzia je postavená okolo vás, vďaka čomu je prehliadanie webu jednoduchšie ako kedykoľvek predtým. Je nabitá funkciami, o ktorých si myslíme, že si ich zamilujete.
 mr2022-onboarding-get-started-primary-button-label = Nastavte si ju za pár sekúnd
 
-## MR2022 Import Settings screen strings
+## MR2022 Get Started screen strings.
+## These strings will be used on the welcome page
+## when Firefox is already set to default and pinned.
 
 mr2022-onboarding-import-header = Bleskové nastavenie
 mr2022-onboarding-import-subtitle = Nastavte si { -brand-short-name } podľa seba. Pridajte si záložky, heslá a ďalšie položky zo starého prehliadača.
@@ -356,6 +358,11 @@ onboarding-mobile-download-security-and-privacy-subtitle = Počas synchronizáci
 # Gratitude screen
 onboarding-gratitude-security-and-privacy-title = { -brand-short-name } vám kryje chrbát
 onboarding-gratitude-security-and-privacy-subtitle = Ďakujeme, že používate { -brand-short-name } podporovaný Mozilla Foundation. S vašou podporou pracujeme na tom, aby bol internet bezpečnejší a prístupnejší pre každého.
+# Sign up or Sign in screen
+onboarding-sign-up-title = Synchronizujte svoje údaje medzi zariadeniami
+onboarding-sign-up-description = Zaregistrujte si účet a všetky vaše dôležité informácie – heslá, záložky a ďalšie – budú bezpečne uložené a dostupné, keď sa prihlásite do akéhokoľvek zariadenia.
+onboarding-sign-up-button = Zaregistrujte sa alebo sa prihláste
+onboarding-sign-up-secondary-button = Začať prehliadať
 
 ## New user time and familiarity survey strings
 
@@ -375,3 +382,90 @@ onboarding-new-user-survey-familiarity-based-option-1 = Som úplný nováčik
 onboarding-new-user-survey-familiarity-based-option-2 = Už som ho trochu používal
 onboarding-new-user-survey-familiarity-based-option-3 = Poznám ho dobre
 onboarding-new-user-survey-familiarity-based-option-4 = Používal som ho v minulosti, ale už je to dávno
+
+## UI strings for the sidebar and vertical tabs
+
+# Setup screen for vertical tabs
+onboarding-new-tabs-title = Povedzte nám, kde by ste chceli mať svoje karty
+# Setup screen for vertical tabs - "Switch it up" refers to switching between horizontal and vertical tabs.
+onboarding-new-tabs-subtitle = V nastaveniach bočného panela voľbu kedykoľvek zmeníte.
+# Setup screen for vertical tabs - too many tabs variation
+onboarding-many-tabs-title = Vaše karty, vaša cesta
+# Setup screen for vertical tabs - subtitle for too many tabs variation
+onboarding-many-tabs-subtitle = Nechať otvorených veľa kariet? Vyskúšajte svoje karty na bočnej strane, aby ste získali efektívnejšie zobrazenie. Alebo to ponechajte klasické so záložkami navrchu. Prepnúť môžete kedykoľvek.
+# Setup screen for vertical tabs - focused variation
+onboarding-focused-tabs-title = Vyberte rozloženie kariet
+# Setup screen for vertical tabs - subtitle for focused variation
+onboarding-focused-tabs-subtitle = Ak chcete získať efektívnejší pohľad, ktorý vám pomôže sústrediť sa, vyskúšajte karty na boku. Alebo to ponechajte klasické so záložkami navrchu. Prepnúť to môžete kedykoľvek.
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-new-vertical-tabs-label = Karty na bočnej strane
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-new-horizontal-tabs-label = Karty v hornej časti
+# Setup screen for vertical tabs for existing users
+onboarding-existing-tabs-title = Prichádzajú vertikálne karty
+# Setup screen for vertical tabs for existing users
+onboarding-existing-tabs-title2 = Predstavujeme vertikálne karty
+# Setup screen for vertical tabs for existing users - "Switch it up" refers to switching between horizontal and vertical tabs.
+onboarding-existing-tabs-subtitle = Vyskúšajte karty na bočnej strane. Túto možnosť nájdete v nastaveniach bočného panela.
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-existing-vertical-tabs-label = Vyskúšajte vertikálne karty
+onboarding-flair-text = Novinka!
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-existing-horizontal-tabs-label = Ponechať karty v hornej časti
+# Tooltip displayed on hover for vertical tabs image
+onboarding-vertical-tabs-tooltip =
+    .title = Okno prehliadača zobrazujúce karty pozdĺž okraja obrazovky ako súčasť bočného panela { -brand-shorter-name(case: "gen") }.
+# Description for vertical tabs image
+onboarding-vertical-tabs-description =
+    .aria-description = Okno prehliadača zobrazujúce karty pozdĺž okraja obrazovky ako súčasť bočného panela { -brand-shorter-name(case: "gen") }.
+# Tooltip displayed on hover for horizontal tabs image
+onboarding-horizontal-tabs-tooltip =
+    .title = Okno prehliadača s kartami v hornej časti.
+# Description for horizontal tabs image
+onboarding-horizontal-tabs-description =
+    .aria-description = Okno prehliadača s kartami v hornej časti.
+# Additional setup card for setting up aichatbot in the sidebar
+onboarding-genai-sidebar-title = Vyskúšajte AI chatbota na bočnom paneli
+# Setup card for setting up AI chatbot in the sidebar; "Providers" refers to AI chatbot providers (e.g. OpenAI, etc). "Switch anytime" refers to allowing the user to switch to a different chatbot.
+onboarding-genai-sidebar-subtitle = Získajte súhrn obsahu na stránkach, poraďte sa ohľadom vašich nápadov či píšte správy – to všetko počas prehliadania. Vyberte si z viacerých poskytovateľov. Meniť ich môžete kedykoľvek. <a data-l10n-name="learn-more">Ďalšie informácie</a>
+onboarding-genai-sidebar-primary-button = Vyberte si chatbota
+onboarding-genai-sidebar-secondary-button = Začať prehliadať
+
+## New user onboarding checklist
+
+onboarding-checklist-title = Dokončite nastavenie { -brand-short-name(case: "gen") }
+onboarding-checklist-subtitle = Vykonajte tieto kroky, aby ste z prehliadania vyťažili maximum.
+onboarding-checklist-set-default = Nastaviť { -brand-short-name } ako predvolený prehliadač
+onboarding-checklist-pin = Pripnúť { -brand-short-name } na hlavný panel úloh
+onboarding-checklist-import = Importovať z predchádzajúceho prehliadača
+onboarding-checklist-extension = Pridať rozšírenie
+onboarding-checklist-sign-up = Zaregistrujte sa alebo sa prihláste do svojho účtu
+
+## Tab Groups feature onboarding strings
+
+tab-groups-onboarding-feature-callout-title = Vyskúšajte skupiny kariet a získate menej neporiadku a viac pozornosti
+tab-groups-onboarding-feature-callout-subtitle = Urobte si poriadok presunutím jednej karty na druhú, čím vytvoríte svoju prvú skupinu.
+tab-groups-onboarding-create-group-title = Svoje otvorené skupiny nájdete na paneli kariet alebo ich vyhľadaním v paneli s adresou.
+tab-groups-onboarding-saved-groups-title = Ak zatvoríte skupinu kariet, môžete ju tu kedykoľvek znova otvoriť.
+tab-groups-onboarding-saved-groups-no-alltabs-button-title = Svoje otvorené alebo zatvorené skupiny kariet môžete kedykoľvek nájsť vyhľadávaním v paneli s adresou.
+tab-groups-onboarding-dismiss = OK
+
+## Multi Profiles feature onboarding messages
+
+multi-profile-spotlight-title = Pozdravte profily { -brand-product-name(case: "gen") }
+multi-profile-spotlight-body = Jednoducho prepínajte medzi pracovným a zábavným prehliadaním. Profily uchovávajú vaše informácie o prehliadaní vrátane histórie vyhľadávania a hesiel úplne oddelené, aby ste mali prehľad.
+multi-profile-spotlight-cta = Vytvoriť profil
+multi-profile-callout-title = Vytvorte si rôzne profily pre prácu a zábavu
+multi-profile-callout-subtitle = Profily vám umožňujú uchovávať informácie o prehliadaní, ako je história vyhľadávania a heslá, úplne oddelené.
+multi-profile-callout-cta = Vytvoriť profil
+
+## Desktop to Mobile Adoption feature callout strings
+
+# If translating the headline is challenging, consider using a simplified alternative as a reference: 'Sync your browsing with Firefox for mobile.'
+desktop-to-mobile-headline = Stiahnite, synchronizujte a vyrazte na cesty.
+# The phrase, 'on the go', is used to describe when people are very busy and are traveling from place to place.
+desktop-to-mobile-subtitle = Naskenujte QR kód a stiahnite si { -brand-product-name } pre mobilné zariadenia. Po nainštalovaní vyberte možnosť „Synchronizácia s mobilným telefónom“, aby ste mali prístup k svojim heslám, záložkám a ďalším informáciám na cestách.
+dismiss-button-label = Zavrieť
+sync-to-mobile-button-label = Synchronizácia s mobilným telefónom
+desktop-to-mobile-qr-code-alt =
+    .aria-label = QR kód na stiahnutie { -brand-product-name(case: "gen") } pre mobilné zariadenia

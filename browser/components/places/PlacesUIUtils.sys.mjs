@@ -353,6 +353,8 @@ export var PlacesUIUtils = {
 
   lastContextMenuTriggerNode: null,
 
+  lastContextMenuCommand: null,
+
   // This allows to await for all the relevant bookmark changes to be applied
   // when a bookmark dialog is closed. It is resolved to the bookmark guid,
   // if a bookmark was created or modified.
@@ -561,6 +563,7 @@ export var PlacesUIUtils = {
   doCommand(win, command) {
     let controller = this.getControllerForCommand(win, command);
     if (controller && controller.isCommandEnabled(command)) {
+      PlacesUIUtils.lastContextMenuCommand = command;
       controller.doCommand(command);
     }
   },
@@ -1299,6 +1302,40 @@ export var PlacesUIUtils = {
     }
   },
 
+  /**
+   * Determines whether the given "placesContext" menu item would open a link
+   * under some special conditions, but those special conditions cannot be met.
+   *
+   * @param {Element} item The menu or menu item to decide for.
+   *
+   * @returns {boolean} Whether the item is an "open" item that should be
+   *   hidden.
+   */
+  shouldHideOpenMenuItem(item) {
+    if (
+      item.hasAttribute("hide-if-disabled-private-browsing") &&
+      !lazy.PrivateBrowsingUtils.enabled
+    ) {
+      return true;
+    }
+
+    if (
+      item.hasAttribute("hide-if-private-browsing") &&
+      lazy.PrivateBrowsingUtils.isWindowPrivate(item.ownerGlobal)
+    ) {
+      return true;
+    }
+
+    if (
+      item.hasAttribute("hide-if-usercontext-disabled") &&
+      !Services.prefs.getBoolPref("privacy.userContext.enabled", false)
+    ) {
+      return true;
+    }
+
+    return false;
+  },
+
   async managedPlacesContextShowing(event) {
     let menupopup = event.target;
     let document = menupopup.ownerDocument;
@@ -1313,12 +1350,6 @@ export var PlacesUIUtils = {
         menupopup.triggerNode.menupopup
       );
     }
-    let linkItems = [
-      "placesContext_open:newtab",
-      "placesContext_open:newwindow",
-      "placesContext_openSeparator",
-      "placesContext_copy",
-    ];
     // Hide everything. We'll unhide the things we need.
     Array.from(menupopup.children).forEach(function (child) {
       child.hidden = true;
@@ -1340,12 +1371,18 @@ export var PlacesUIUtils = {
       openContainerInTabs_menuitem.disabled = !openContainerInTabs;
       openContainerInTabs_menuitem.hidden = false;
     } else {
-      linkItems.forEach(id => (document.getElementById(id).hidden = false));
-      document.getElementById("placesContext_open:newprivatewindow").hidden =
-        lazy.PrivateBrowsingUtils.isWindowPrivate(window) ||
-        !lazy.PrivateBrowsingUtils.enabled;
-      document.getElementById("placesContext_open:newcontainertab").hidden =
-        !Services.prefs.getBoolPref("privacy.userContext.enabled", false);
+      for (let id of [
+        "placesContext_open:newtab",
+        "placesContext_open:newcontainertab",
+        "placesContext_open:newwindow",
+        "placesContext_open:newprivatewindow",
+      ]) {
+        let item = document.getElementById(id);
+        item.hidden = this.shouldHideOpenMenuItem(item);
+      }
+      for (let id of ["placesContext_openSeparator", "placesContext_copy"]) {
+        document.getElementById(id).hidden = false;
+      }
     }
 
     event.target.ownerGlobal.updateCommands("places");
@@ -1355,7 +1392,7 @@ export var PlacesUIUtils = {
     let menupopup = event.target;
     if (menupopup.id != "placesContext") {
       // Ignore any popupshowing events from submenus
-      return true;
+      return;
     }
 
     PlacesUIUtils.lastContextMenuTriggerNode = menupopup.triggerNode;
@@ -1380,21 +1417,23 @@ export var PlacesUIUtils = {
     let isManaged = !!menupopup.triggerNode.closest("#managed-bookmarks");
     if (isManaged) {
       this.managedPlacesContextShowing(event);
-      return true;
+      return;
     }
     menupopup._view = this.getViewForNode(menupopup.triggerNode);
     if (!menupopup._view) {
       // This can happen if we try to invoke the context menu on
       // an uninitialized places toolbar. Just bail out:
       event.preventDefault();
-      return false;
+      return;
     }
     if (!this.openInTabClosesMenu) {
       menupopup.ownerDocument
         .getElementById("placesContext_open:newtab")
         .setAttribute("closemenu", "single");
     }
-    return menupopup._view.buildContextMenu(menupopup);
+    if (!menupopup._view.buildContextMenu(menupopup)) {
+      event.preventDefault();
+    }
   },
 
   placesContextHiding(event) {
@@ -1405,6 +1444,7 @@ export var PlacesUIUtils = {
 
     if (menupopup.id == "placesContext") {
       PlacesUIUtils.lastContextMenuTriggerNode = null;
+      PlacesUIUtils.lastContextMenuCommand = null;
     }
   },
 
@@ -1414,6 +1454,7 @@ export var PlacesUIUtils = {
   },
 
   openInContainerTab(event) {
+    PlacesUIUtils.lastContextMenuCommand = "placesCmd_open:newcontainertab";
     let userContextId = parseInt(
       event.target.getAttribute("data-usercontextid")
     );
@@ -1628,6 +1669,25 @@ export var PlacesUIUtils = {
       );
     } catch (ex) {
       // Can't setup speculative connection for this url, just ignore it.
+    }
+  },
+
+  /**
+   * Sets up a speculative connection to the target of a
+   * clicked places DOM node on left and middle click.
+   *
+   * @param {event} event the mousedown event.
+   */
+  maybeSpeculativeConnectOnMouseDown(event) {
+    if (
+      event.type == "mousedown" &&
+      event.target._placesNode?.uri &&
+      event.button != 2
+    ) {
+      PlacesUIUtils.setupSpeculativeConnection(
+        event.target._placesNode.uri,
+        event.target.ownerGlobal
+      );
     }
   },
 

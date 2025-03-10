@@ -20,17 +20,21 @@ import android.content.Intent.EXTRA_TEXT
 import android.content.Intent.FLAG_ACTIVITY_NEW_DOCUMENT
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION
+import android.content.pm.PackageManager
 import android.content.pm.PackageManager.PERMISSION_GRANTED
 import android.hardware.camera2.CameraManager
 import android.net.Uri
 import android.os.Build
 import android.os.Build.VERSION.SDK_INT
+import android.os.Build.VERSION_CODES
 import android.os.Process
 import android.provider.ContactsContract
+import android.util.TypedValue
 import android.view.accessibility.AccessibilityManager
 import androidx.annotation.AttrRes
 import androidx.annotation.ColorInt
 import androidx.annotation.DrawableRes
+import androidx.annotation.RequiresApi
 import androidx.annotation.VisibleForTesting
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.content.ContextCompat
@@ -338,7 +342,7 @@ fun Context.getColorFromAttr(@AttrRes attr: Int) =
  */
 @ColorInt
 fun Context.getStatusBarColor() =
-    if (SDK_INT < Build.VERSION_CODES.VANILLA_ICE_CREAM) {
+    if (isEdgeToEdgeDisabled()) {
         @Suppress("DEPRECATION")
         ContextCompat.getColor(this, theme.resolveAttribute(android.R.attr.statusBarColor))
     } else {
@@ -355,3 +359,37 @@ fun Context.getDrawableWithTint(@DrawableRes resId: Int, @ColorInt tint: Int) =
         mutate()
         setTint(tint)
     }
+
+/**
+ * Checks if the current theme has the `windowOptOutEdgeToEdgeEnforcement` attribute enabled.
+ *
+ * @return `true` if the `windowOptOutEdgeToEdgeEnforcement` attribute is set tu true, `false` otherwise.
+ */
+@RequiresApi(VERSION_CODES.VANILLA_ICE_CREAM)
+private fun Context.isEdgeToEdgeOptOutEnabled(): Boolean {
+    val typedValue = TypedValue()
+    val attribute = android.R.attr.windowOptOutEdgeToEdgeEnforcement
+
+    return if (theme.resolveAttribute(attribute, typedValue, true)) {
+        typedValue.data != 0
+    } else {
+        false
+    }
+}
+
+/**
+ * Checks if the edge-to-edge behaviour is disabled.
+ *
+ * @return `true` if the edge-to-edge behaviour is disabled.
+ */
+fun Context.isEdgeToEdgeDisabled(): Boolean =
+    SDK_INT < VERSION_CODES.VANILLA_ICE_CREAM ||
+        applicationInfo.targetSdkVersion < VERSION_CODES.VANILLA_ICE_CREAM ||
+        isEdgeToEdgeOptOutEnabled()
+
+/**
+ * Check if the device has a hinge sensor.
+ */
+fun Context.doesDeviceHaveHinge(): Boolean =
+    SDK_INT >= VERSION_CODES.R &&
+        packageManager.hasSystemFeature(PackageManager.FEATURE_SENSOR_HINGE_ANGLE)

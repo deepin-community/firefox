@@ -7,7 +7,9 @@
 //! [calc]: https://drafts.csswg.org/css-values/#calc-notation
 
 use crate::color::parsing::ChannelKeyword;
-use crate::parser::ParserContext;
+use crate::parser::{ParserContext, Parse};
+use crate::values::generics::position::{AnchorSide, AnchorSideKeyword, GenericAnchorFunction};
+use crate::values::generics::length::GenericAnchorSizeFunction;
 use crate::values::generics::calc::{
     self as generic, CalcNodeLeaf, CalcUnits, MinMaxOp, ModRemOp, PositivePercentageBasis,
     RoundingStrategy, SortKey,
@@ -15,7 +17,7 @@ use crate::values::generics::calc::{
 use crate::values::specified::length::{AbsoluteLength, FontRelativeLength, NoCalcLength};
 use crate::values::specified::length::{ContainerRelativeLength, ViewportPercentageLength};
 use crate::values::specified::{self, Angle, Resolution, Time};
-use crate::values::{serialize_number, serialize_percentage, CSSFloat, CSSInteger};
+use crate::values::{serialize_number, serialize_percentage, CSSFloat, CSSInteger, DashedIdent};
 use cssparser::{CowRcStr, Parser, Token};
 use smallvec::SmallVec;
 use std::cmp;
@@ -72,6 +74,7 @@ pub enum MathFunction {
 
 /// A leaf node inside a `Calc` expression's AST.
 #[derive(Clone, Debug, MallocSizeOf, PartialEq, ToShmem)]
+#[repr(u8)]
 pub enum Leaf {
     /// `<length>`
     Length(NoCalcLength),
@@ -126,6 +129,11 @@ impl ToCss for Leaf {
 pub struct CalcLengthPercentage {
     #[css(skip)]
     pub clamping_mode: AllowedNumericType,
+    /// Flag indicating if any anchor function is part of this node.
+    /// This can be used to skip the traversal of calc node tree for
+    /// math functions not using any anchor function.
+    #[css(skip)]
+    pub has_anchor_function: bool,
     pub node: CalcNode,
 }
 
@@ -148,6 +156,59 @@ impl CalcLengthPercentage {
 }
 
 impl SpecifiedValueInfo for CalcLengthPercentage {}
+
+/// Should parsing anchor-positioning functions in `calc()` be allowed?
+#[derive(Clone, Copy, PartialEq)]
+pub enum AllowAnchorPositioningFunctions {
+    /// Don't allow any anchor positioning function.
+    No,
+    /// Allow `anchor-size()` to be parsed.
+    AllowAnchorSize,
+    /// Allow `anchor()` and `anchor-size()` to be parsed.
+    AllowAnchorAndAnchorSize,
+}
+
+bitflags! {
+    /// Additional functions within math functions that are permitted to be parsed depending on
+    /// the context of parsing (e.g. Parsing `inset` allows use of `anchor()` within `calc()`).
+    #[derive(Clone, Copy, PartialEq, Eq)]
+    struct AdditionalFunctions: u8 {
+        /// `anchor()` function.
+        const ANCHOR = 1 << 0;
+        /// `anchor-size()` function.
+        const ANCHOR_SIZE = 1 << 1;
+    }
+}
+
+/// What is allowed to be parsed for math functions within in this context?
+#[derive(Clone, Copy)]
+pub struct AllowParse {
+    /// Units allowed to be parsed.
+    units: CalcUnits,
+    /// Additional functions allowed to be parsed in this context.
+    additional_functions: AdditionalFunctions,
+}
+
+impl AllowParse {
+    /// Allow only specified units to be parsed, without any additional functions.
+    pub fn new(units: CalcUnits) -> Self {
+        Self {
+            units,
+            additional_functions: AdditionalFunctions::empty(),
+        }
+    }
+
+    /// Add new units to the allowed units to be parsed.
+    fn new_including(mut self, units: CalcUnits) -> Self {
+        self.units |= units;
+        self
+    }
+
+    /// Should given unit be allowed to parse?
+    fn includes(&self, unit: CalcUnits) -> bool {
+        self.units.intersects(unit)
+    }
+}
 
 impl generic::CalcNodeLeaf for Leaf {
     fn unit(&self) -> CalcUnits {
@@ -231,7 +292,7 @@ impl generic::CalcNodeLeaf for Leaf {
 
     fn sort_key(&self) -> SortKey {
         match *self {
-            Self::Number(..) | Self::ColorComponent(..) => SortKey::Number,
+            Self::Number(..) => SortKey::Number,
             Self::Percentage(..) => SortKey::Percentage,
             Self::Time(..) => SortKey::Sec,
             Self::Resolution(..) => SortKey::Dppx,
@@ -284,6 +345,7 @@ impl generic::CalcNodeLeaf for Leaf {
                 },
                 NoCalcLength::ServoCharacterWidth(..) => unreachable!(),
             },
+            Self::ColorComponent(..) => SortKey::ColorComponent,
         }
     }
 
@@ -424,8 +486,145 @@ impl generic::CalcNodeLeaf for Leaf {
     }
 }
 
+impl AnchorSide<Box<CalcNode>> {
+    fn parse_in_calc<'i, 't>(
+        context: &ParserContext,
+        input: &mut Parser<'i, 't>,
+    ) -> Result<Self, ParseError<'i>> {
+        if let Ok(k) = input.try_parse(|i| AnchorSideKeyword::parse(i)) {
+            return Ok(Self::Keyword(k));
+        }
+        Ok(Self::Percentage(Box::new(
+            CalcNode::parse_argument(context, input, AllowParse::new(CalcUnits::PERCENTAGE))?.node,
+        )))
+    }
+}
+
+impl GenericAnchorFunction<Box<CalcNode>, Box<CalcNode>> {
+    fn parse_in_calc<'i, 't>(
+        context: &ParserContext,
+        input: &mut Parser<'i, 't>,
+    ) -> Result<Self, ParseError<'i>> {
+        if !static_prefs::pref!("layout.css.anchor-positioning.enabled") {
+            return Err(input.new_custom_error(StyleParseErrorKind::UnspecifiedError));
+        }
+        input.parse_nested_block(|i| {
+            let target_element = i.try_parse(|i| DashedIdent::parse(context, i)).ok();
+            let side = AnchorSide::parse_in_calc(context, i)?;
+            let target_element = if target_element.is_none() {
+                i.try_parse(|i| DashedIdent::parse(context, i)).ok()
+            } else {
+                target_element
+            };
+            let fallback = i
+                .try_parse(|i| {
+                    i.expect_comma()?;
+                    let node = CalcNode::parse_argument(
+                        context,
+                        i,
+                        AllowParse::new(CalcUnits::LENGTH_PERCENTAGE),
+                    )?
+                    .node;
+                    Ok::<Box<CalcNode>, ParseError<'i>>(Box::new(node))
+                })
+                .ok();
+            Ok(Self {
+                target_element: target_element.unwrap_or_else(DashedIdent::empty),
+                side,
+                fallback: fallback.into(),
+            })
+        })
+    }
+}
+
+impl GenericAnchorSizeFunction<Box<CalcNode>> {
+    fn parse_in_calc<'i, 't>(
+        context: &ParserContext,
+        input: &mut Parser<'i, 't>,
+    ) -> Result<Self, ParseError<'i>> {
+        if !static_prefs::pref!("layout.css.anchor-positioning.enabled") {
+            return Err(input.new_custom_error(StyleParseErrorKind::UnspecifiedError));
+        }
+        GenericAnchorSizeFunction::parse_inner(context, input, |i| {
+            CalcNode::parse_argument(context, i, AllowParse::new(CalcUnits::LENGTH_PERCENTAGE))
+                .map(|r| Box::new(r.node))
+        })
+    }
+}
+
+/// Specified `anchor()` function in math functions.
+pub type CalcAnchorFunction = generic::GenericCalcAnchorFunction<Leaf>;
+/// Specified `anchor-size()` function in math functions.
+pub type CalcAnchorSizeFunction = generic::GenericCalcAnchorSizeFunction<Leaf>;
+
 /// A calc node representation for specified values.
 pub type CalcNode = generic::GenericCalcNode<Leaf>;
+
+/// Result of parsing the calc node.
+pub struct ParsedCalcNode {
+    /// The parsed calc node.
+    pub node: CalcNode,
+    /// See documentation for the field of the same name in `CalcLengthPercentage`.
+    pub has_anchor_function: bool,
+}
+
+impl ParsedCalcNode {
+    #[inline]
+    fn new(node: CalcNode, has_anchor_function: bool) -> Self {
+        Self {
+            node,
+            has_anchor_function,
+        }
+    }
+
+    #[inline]
+    fn into_length_or_percentage(
+        self,
+        clamping_mode: AllowedNumericType,
+    ) -> Result<CalcLengthPercentage, ()> {
+        self.node
+            .into_length_or_percentage(clamping_mode, self.has_anchor_function)
+    }
+
+    #[inline]
+    fn to_time(&self, clamping_mode: Option<AllowedNumericType>) -> Result<Time, ()> {
+        debug_assert!(!self.has_anchor_function, "Anchor function used for time?");
+        self.node.to_time(clamping_mode)
+    }
+
+    #[inline]
+    fn to_resolution(&self) -> Result<Resolution, ()> {
+        debug_assert!(
+            !self.has_anchor_function,
+            "Anchor function used for resolution?"
+        );
+        self.node.to_resolution()
+    }
+
+    #[inline]
+    fn to_angle(&self) -> Result<Angle, ()> {
+        debug_assert!(!self.has_anchor_function, "Anchor function used for angle?");
+        self.node.to_angle()
+    }
+
+    #[inline]
+    fn to_number(&self) -> Result<CSSFloat, ()> {
+        debug_assert!(
+            !self.has_anchor_function,
+            "Anchor function used for number?"
+        );
+        self.node.to_number()
+    }
+
+    #[inline]
+    fn to_percentage(&self) -> Result<CSSFloat, ()> {
+        debug_assert!(
+            !self.has_anchor_function,
+            "Anchor function used for percentage?"
+        );
+        self.node.to_percentage()
+    }
+}
 
 impl CalcNode {
     /// Tries to parse a single element in the expression, that is, a
@@ -436,47 +635,76 @@ impl CalcNode {
     fn parse_one<'i, 't>(
         context: &ParserContext,
         input: &mut Parser<'i, 't>,
-        allowed_units: CalcUnits,
-    ) -> Result<Self, ParseError<'i>> {
+        allowed: AllowParse,
+    ) -> Result<ParsedCalcNode, ParseError<'i>> {
         let location = input.current_source_location();
         match input.next()? {
-            &Token::Number { value, .. } => Ok(CalcNode::Leaf(Leaf::Number(value))),
+            &Token::Number { value, .. } => Ok(ParsedCalcNode::new(
+                CalcNode::Leaf(Leaf::Number(value)),
+                false,
+            )),
             &Token::Dimension {
                 value, ref unit, ..
             } => {
-                if allowed_units.intersects(CalcUnits::LENGTH) {
+                if allowed.includes(CalcUnits::LENGTH) {
                     if let Ok(l) = NoCalcLength::parse_dimension(context, value, unit) {
-                        return Ok(CalcNode::Leaf(Leaf::Length(l)));
+                        return Ok(ParsedCalcNode::new(CalcNode::Leaf(Leaf::Length(l)), false));
                     }
                 }
-                if allowed_units.intersects(CalcUnits::ANGLE) {
+                if allowed.includes(CalcUnits::ANGLE) {
                     if let Ok(a) = Angle::parse_dimension(value, unit, /* from_calc = */ true) {
-                        return Ok(CalcNode::Leaf(Leaf::Angle(a)));
+                        return Ok(ParsedCalcNode::new(CalcNode::Leaf(Leaf::Angle(a)), false));
                     }
                 }
-                if allowed_units.intersects(CalcUnits::TIME) {
+                if allowed.includes(CalcUnits::TIME) {
                     if let Ok(t) = Time::parse_dimension(value, unit) {
-                        return Ok(CalcNode::Leaf(Leaf::Time(t)));
+                        return Ok(ParsedCalcNode::new(CalcNode::Leaf(Leaf::Time(t)), false));
                     }
                 }
-                if allowed_units.intersects(CalcUnits::RESOLUTION) {
+                if allowed.includes(CalcUnits::RESOLUTION) {
                     if let Ok(t) = Resolution::parse_dimension(value, unit) {
-                        return Ok(CalcNode::Leaf(Leaf::Resolution(t)));
+                        return Ok(ParsedCalcNode::new(
+                            CalcNode::Leaf(Leaf::Resolution(t)),
+                            false,
+                        ));
                     }
                 }
                 return Err(location.new_custom_error(StyleParseErrorKind::UnspecifiedError));
             },
-            &Token::Percentage { unit_value, .. }
-                if allowed_units.intersects(CalcUnits::PERCENTAGE) =>
-            {
-                Ok(CalcNode::Leaf(Leaf::Percentage(unit_value)))
+            &Token::Percentage { unit_value, .. } if allowed.includes(CalcUnits::PERCENTAGE) => Ok(
+                ParsedCalcNode::new(CalcNode::Leaf(Leaf::Percentage(unit_value)), false),
+            ),
+            &Token::ParenthesisBlock => {
+                input.parse_nested_block(|input| CalcNode::parse_argument(context, input, allowed))
             },
-            &Token::ParenthesisBlock => input.parse_nested_block(|input| {
-                CalcNode::parse_argument(context, input, allowed_units)
-            }),
+            &Token::Function(ref name)
+                if allowed
+                    .additional_functions
+                    .intersects(AdditionalFunctions::ANCHOR) &&
+                    name.eq_ignore_ascii_case("anchor") =>
+            {
+                let anchor_function = GenericAnchorFunction::parse_in_calc(context, input)?;
+                Ok(ParsedCalcNode::new(
+                    CalcNode::Anchor(Box::new(anchor_function)),
+                    true,
+                ))
+            },
+            &Token::Function(ref name)
+                if allowed
+                    .additional_functions
+                    .intersects(AdditionalFunctions::ANCHOR_SIZE) &&
+                    name.eq_ignore_ascii_case("anchor-size") =>
+            {
+                let anchor_size_function =
+                    GenericAnchorSizeFunction::parse_in_calc(context, input)?;
+                Ok(ParsedCalcNode::new(
+                    CalcNode::AnchorSize(Box::new(anchor_size_function)),
+                    true,
+                ))
+            },
             &Token::Function(ref name) => {
                 let function = CalcNode::math_function(context, name, location)?;
-                CalcNode::parse(context, input, function, allowed_units)
+                CalcNode::parse(context, input, function, allowed)
             },
             &Token::Ident(ref ident) => {
                 let leaf = match_ignore_ascii_case! { &**ident,
@@ -487,7 +715,7 @@ impl CalcNode {
                     "nan" => Leaf::Number(f32::NAN),
                     _ => {
                         if crate::color::parsing::rcs_enabled() &&
-                            allowed_units.intersects(CalcUnits::COLOR_COMPONENT)
+                            allowed.includes(CalcUnits::COLOR_COMPONENT)
                         {
                             if let Ok(channel_keyword) = ChannelKeyword::from_ident(&ident) {
                                 Leaf::ColorComponent(channel_keyword)
@@ -502,7 +730,7 @@ impl CalcNode {
                         }
                     },
                 };
-                Ok(CalcNode::Leaf(leaf))
+                Ok(ParsedCalcNode::new(CalcNode::Leaf(leaf), false))
             },
             t => Err(location.new_unexpected_token_error(t.clone())),
         }
@@ -515,21 +743,26 @@ impl CalcNode {
         context: &ParserContext,
         input: &mut Parser<'i, 't>,
         function: MathFunction,
-        allowed_units: CalcUnits,
-    ) -> Result<Self, ParseError<'i>> {
+        allowed: AllowParse,
+    ) -> Result<ParsedCalcNode, ParseError<'i>> {
         input.parse_nested_block(|input| {
             match function {
-                MathFunction::Calc => Self::parse_argument(context, input, allowed_units),
+                MathFunction::Calc => Self::parse_argument(context, input, allowed),
                 MathFunction::Clamp => {
-                    let min = Self::parse_argument(context, input, allowed_units)?;
+                    let min = Self::parse_argument(context, input, allowed)?;
                     input.expect_comma()?;
-                    let center = Self::parse_argument(context, input, allowed_units)?;
+                    let center = Self::parse_argument(context, input, allowed)?;
                     input.expect_comma()?;
-                    let max = Self::parse_argument(context, input, allowed_units)?;
-                    Ok(Self::Clamp {
-                        min: Box::new(min),
-                        center: Box::new(center),
-                        max: Box::new(max),
+                    let max = Self::parse_argument(context, input, allowed)?;
+                    Ok(ParsedCalcNode {
+                        node: Self::Clamp {
+                            min: Box::new(min.node),
+                            center: Box::new(center.node),
+                            max: Box::new(max.node),
+                        },
+                        has_anchor_function: min.has_anchor_function ||
+                            center.has_anchor_function ||
+                            max.has_anchor_function,
                     })
                 },
                 MathFunction::Round => {
@@ -552,35 +785,46 @@ impl CalcNode {
                         input.expect_comma()?;
                     }
 
-                    let value = Self::parse_argument(context, input, allowed_units)?;
+                    let value = Self::parse_argument(context, input, allowed)?;
 
                     // <step> defaults to the number 1 if not provided
                     // https://drafts.csswg.org/css-values-4/#funcdef-round
                     let step = input.try_parse(|input| {
                         input.expect_comma()?;
-                        Self::parse_argument(context, input, allowed_units)
+                        Self::parse_argument(context, input, allowed)
                     });
 
-                    Ok(Self::Round {
-                        strategy: strategy.unwrap_or(RoundingStrategy::Nearest),
-                        value: Box::new(value),
-                        step: Box::new(step.unwrap_or(Self::Leaf(Leaf::Number(1.0)))),
+                    let (step, step_has_anchor_function) = step
+                        .map(|s| (s.node, s.has_anchor_function))
+                        .unwrap_or((Self::Leaf(Leaf::Number(1.0)), false));
+
+                    Ok(ParsedCalcNode {
+                        node: Self::Round {
+                            strategy: strategy.unwrap_or(RoundingStrategy::Nearest),
+                            value: Box::new(value.node),
+                            step: Box::new(step),
+                        },
+                        has_anchor_function: value.has_anchor_function || step_has_anchor_function,
                     })
                 },
                 MathFunction::Mod | MathFunction::Rem => {
-                    let dividend = Self::parse_argument(context, input, allowed_units)?;
+                    let dividend = Self::parse_argument(context, input, allowed)?;
                     input.expect_comma()?;
-                    let divisor = Self::parse_argument(context, input, allowed_units)?;
+                    let divisor = Self::parse_argument(context, input, allowed)?;
 
                     let op = match function {
                         MathFunction::Mod => ModRemOp::Mod,
                         MathFunction::Rem => ModRemOp::Rem,
                         _ => unreachable!(),
                     };
-                    Ok(Self::ModRem {
-                        dividend: Box::new(dividend),
-                        divisor: Box::new(divisor),
-                        op,
+                    Ok(ParsedCalcNode {
+                        node: Self::ModRem {
+                            dividend: Box::new(dividend.node),
+                            divisor: Box::new(divisor.node),
+                            op,
+                        },
+                        has_anchor_function: dividend.has_anchor_function ||
+                            divisor.has_anchor_function,
                     })
                 },
                 MathFunction::Min | MathFunction::Max => {
@@ -589,8 +833,11 @@ impl CalcNode {
                     //
                     // Consider adding an API to cssparser to specify the
                     // initial vector capacity?
+                    let mut has_anchor_function = false;
                     let arguments = input.parse_comma_separated(|input| {
-                        Self::parse_argument(context, input, allowed_units)
+                        let result = Self::parse_argument(context, input, allowed)?;
+                        has_anchor_function |= result.has_anchor_function;
+                        Ok(result.node)
                     })?;
 
                     let op = match function {
@@ -599,7 +846,10 @@ impl CalcNode {
                         _ => unreachable!(),
                     };
 
-                    Ok(Self::MinMax(arguments.into(), op))
+                    Ok(ParsedCalcNode {
+                        node: Self::MinMax(arguments.into(), op),
+                        has_anchor_function,
+                    })
                 },
                 MathFunction::Sin | MathFunction::Cos | MathFunction::Tan => {
                     let a = Self::parse_angle_argument(context, input)?;
@@ -613,7 +863,10 @@ impl CalcNode {
                         },
                     };
 
-                    Ok(Self::Leaf(Leaf::Number(number)))
+                    Ok(ParsedCalcNode {
+                        node: Self::Leaf(Leaf::Number(number)),
+                        has_anchor_function: false,
+                    })
                 },
                 MathFunction::Asin | MathFunction::Acos | MathFunction::Atan => {
                     let a = Self::parse_number_argument(context, input)?;
@@ -627,12 +880,18 @@ impl CalcNode {
                         },
                     };
 
-                    Ok(Self::Leaf(Leaf::Angle(Angle::from_radians(radians))))
+                    Ok(ParsedCalcNode {
+                        node: Self::Leaf(Leaf::Angle(Angle::from_radians(radians))),
+                        has_anchor_function: false,
+                    })
                 },
                 MathFunction::Atan2 => {
-                    let a = Self::parse_argument(context, input, CalcUnits::ALL)?;
+                    let allow_all = allowed.new_including(CalcUnits::ALL);
+                    let a = Self::parse_argument(context, input, allow_all)?;
+                    let (a, a_has_anchor_function) = (a.node, a.has_anchor_function);
                     input.expect_comma()?;
-                    let b = Self::parse_argument(context, input, CalcUnits::ALL)?;
+                    let b = Self::parse_argument(context, input, allow_all)?;
+                    let (b, b_has_anchor_function) = (b.node, b.has_anchor_function);
 
                     let radians = Self::try_resolve(input, || {
                         if let Ok(a) = a.to_number() {
@@ -660,14 +919,23 @@ impl CalcNode {
                             return Ok(a.dppx().atan2(b.dppx()));
                         }
 
-                        let a = a.into_length_or_percentage(AllowedNumericType::All)?;
-                        let b = b.into_length_or_percentage(AllowedNumericType::All)?;
+                        let a = a.into_length_or_percentage(
+                            AllowedNumericType::All,
+                            a_has_anchor_function,
+                        )?;
+                        let b = b.into_length_or_percentage(
+                            AllowedNumericType::All,
+                            b_has_anchor_function,
+                        )?;
                         let (a, b) = CalcLengthPercentage::same_unit_length_as(&a, &b).ok_or(())?;
 
                         Ok(a.atan2(b))
                     })?;
 
-                    Ok(Self::Leaf(Leaf::Angle(Angle::from_radians(radians))))
+                    Ok(ParsedCalcNode {
+                        node: Self::Leaf(Leaf::Angle(Angle::from_radians(radians))),
+                        has_anchor_function: a_has_anchor_function || b_has_anchor_function,
+                    })
                 },
                 MathFunction::Pow => {
                     let a = Self::parse_number_argument(context, input)?;
@@ -676,21 +944,33 @@ impl CalcNode {
 
                     let number = a.powf(b);
 
-                    Ok(Self::Leaf(Leaf::Number(number)))
+                    Ok(ParsedCalcNode {
+                        node: Self::Leaf(Leaf::Number(number)),
+                        has_anchor_function: false,
+                    })
                 },
                 MathFunction::Sqrt => {
                     let a = Self::parse_number_argument(context, input)?;
 
                     let number = a.sqrt();
 
-                    Ok(Self::Leaf(Leaf::Number(number)))
+                    Ok(ParsedCalcNode {
+                        node: Self::Leaf(Leaf::Number(number)),
+                        has_anchor_function: false,
+                    })
                 },
                 MathFunction::Hypot => {
+                    let mut has_anchor_function = false;
                     let arguments = input.parse_comma_separated(|input| {
-                        Self::parse_argument(context, input, allowed_units)
+                        let result = Self::parse_argument(context, input, allowed)?;
+                        has_anchor_function |= result.has_anchor_function;
+                        Ok(result.node)
                     })?;
 
-                    Ok(Self::Hypot(arguments.into()))
+                    Ok(ParsedCalcNode {
+                        node: Self::Hypot(arguments.into()),
+                        has_anchor_function,
+                    })
                 },
                 MathFunction::Log => {
                     let a = Self::parse_number_argument(context, input)?;
@@ -706,24 +986,39 @@ impl CalcNode {
                         None => a.ln(),
                     };
 
-                    Ok(Self::Leaf(Leaf::Number(number)))
+                    Ok(ParsedCalcNode {
+                        node: Self::Leaf(Leaf::Number(number)),
+                        has_anchor_function: false,
+                    })
                 },
                 MathFunction::Exp => {
                     let a = Self::parse_number_argument(context, input)?;
                     let number = a.exp();
-                    Ok(Self::Leaf(Leaf::Number(number)))
+                    Ok(ParsedCalcNode {
+                        node: Self::Leaf(Leaf::Number(number)),
+                        has_anchor_function: false,
+                    })
                 },
                 MathFunction::Abs => {
-                    let node = Self::parse_argument(context, input, allowed_units)?;
-                    Ok(Self::Abs(Box::new(node)))
+                    let node = Self::parse_argument(context, input, allowed)?;
+                    Ok(ParsedCalcNode {
+                        node: Self::Abs(Box::new(node.node)),
+                        has_anchor_function: node.has_anchor_function,
+                    })
                 },
                 MathFunction::Sign => {
                     // The sign of a percentage is dependent on the percentage basis, so if
                     // percentages aren't allowed (so there's no basis) we shouldn't allow them in
                     // sign(). The rest of the units are safe tho.
-                    let sign_units = allowed_units | (CalcUnits::ALL - CalcUnits::PERCENTAGE);
-                    let node = Self::parse_argument(context, input, sign_units)?;
-                    Ok(Self::Sign(Box::new(node)))
+                    let node = Self::parse_argument(
+                        context,
+                        input,
+                        allowed.new_including(CalcUnits::ALL - CalcUnits::PERCENTAGE),
+                    )?;
+                    Ok(ParsedCalcNode {
+                        node: Self::Sign(Box::new(node.node)),
+                        has_anchor_function: node.has_anchor_function,
+                    })
                 },
             }
         })
@@ -733,7 +1028,8 @@ impl CalcNode {
         context: &ParserContext,
         input: &mut Parser<'i, 't>,
     ) -> Result<CSSFloat, ParseError<'i>> {
-        let argument = Self::parse_argument(context, input, CalcUnits::ANGLE)?;
+        let argument =
+            Self::parse_argument(context, input, AllowParse::new(CalcUnits::ANGLE))?.node;
         argument
             .to_number()
             .or_else(|()| Ok(argument.to_angle()?.radians()))
@@ -744,7 +1040,8 @@ impl CalcNode {
         context: &ParserContext,
         input: &mut Parser<'i, 't>,
     ) -> Result<CSSFloat, ParseError<'i>> {
-        Self::parse_argument(context, input, CalcUnits::empty())?
+        Self::parse_argument(context, input, AllowParse::new(CalcUnits::empty()))?
+            .node
             .to_number()
             .map_err(|()| input.new_custom_error(StyleParseErrorKind::UnspecifiedError))
     }
@@ -752,11 +1049,12 @@ impl CalcNode {
     fn parse_argument<'i, 't>(
         context: &ParserContext,
         input: &mut Parser<'i, 't>,
-        allowed_units: CalcUnits,
-    ) -> Result<Self, ParseError<'i>> {
+        allowed: AllowParse,
+    ) -> Result<ParsedCalcNode, ParseError<'i>> {
         let mut sum = SmallVec::<[CalcNode; 1]>::new();
-        sum.push(Self::parse_product(context, input, allowed_units)?);
-
+        let first = Self::parse_product(context, input, allowed)?;
+        sum.push(first.node);
+        let mut has_anchor_function = first.has_anchor_function;
         loop {
             let start = input.state();
             match input.next_including_whitespace() {
@@ -766,12 +1064,20 @@ impl CalcNode {
                     }
                     match *input.next()? {
                         Token::Delim('+') => {
-                            sum.push(Self::parse_product(context, input, allowed_units)?);
+                            let rhs = Self::parse_product(context, input, allowed)?;
+                            has_anchor_function |= rhs.has_anchor_function;
+                            if sum.last_mut().unwrap().try_sum_in_place(&rhs.node).is_err() {
+                                // TODO(dshin): need to combine
+                                sum.push(rhs.node);
+                            }
                         },
                         Token::Delim('-') => {
-                            let mut rhs = Self::parse_product(context, input, allowed_units)?;
-                            rhs.negate();
-                            sum.push(rhs);
+                            let mut rhs = Self::parse_product(context, input, allowed)?;
+                            has_anchor_function |= rhs.has_anchor_function;
+                            rhs.node.negate();
+                            if sum.last_mut().unwrap().try_sum_in_place(&rhs.node).is_err() {
+                                sum.push(rhs.node);
+                            }
                         },
                         _ => {
                             input.reset(&start);
@@ -786,10 +1092,13 @@ impl CalcNode {
             }
         }
 
-        Ok(if sum.len() == 1 {
-            sum.drain(..).next().unwrap()
-        } else {
-            Self::Sum(sum.into_boxed_slice().into())
+        Ok(ParsedCalcNode {
+            node: if sum.len() == 1 {
+                sum.drain(..).next().unwrap()
+            } else {
+                Self::Sum(sum.into_boxed_slice().into())
+            },
+            has_anchor_function,
         })
     }
 
@@ -805,25 +1114,34 @@ impl CalcNode {
     fn parse_product<'i, 't>(
         context: &ParserContext,
         input: &mut Parser<'i, 't>,
-        allowed_units: CalcUnits,
-    ) -> Result<Self, ParseError<'i>> {
+        allowed: AllowParse,
+    ) -> Result<ParsedCalcNode, ParseError<'i>> {
         let mut product = SmallVec::<[CalcNode; 1]>::new();
-        product.push(Self::parse_one(context, input, allowed_units)?);
+        let first = Self::parse_one(context, input, allowed)?;
+        product.push(first.node);
+        let mut has_anchor_function = first.has_anchor_function;
 
         loop {
             let start = input.state();
             match input.next() {
                 Ok(&Token::Delim('*')) => {
-                    let mut rhs = Self::parse_one(context, input, allowed_units)?;
+                    let mut rhs = Self::parse_one(context, input, allowed)?;
+                    has_anchor_function |= rhs.has_anchor_function;
 
                     // We can unwrap here, becuase we start the function by adding a node to
                     // the list.
-                    if !product.last_mut().unwrap().try_product_in_place(&mut rhs) {
-                        product.push(rhs);
+                    if !product
+                        .last_mut()
+                        .unwrap()
+                        .try_product_in_place(&mut rhs.node)
+                    {
+                        // TODO(dshin): need to combine
+                        product.push(rhs.node);
                     }
                 },
                 Ok(&Token::Delim('/')) => {
-                    let rhs = Self::parse_one(context, input, allowed_units)?;
+                    let rhs = Self::parse_one(context, input, allowed)?;
+                    has_anchor_function |= rhs.has_anchor_function;
 
                     enum InPlaceDivisionResult {
                         /// The right was merged into the left.
@@ -849,7 +1167,13 @@ impl CalcNode {
                                     return InPlaceDivisionResult::Merged;
                                 }
                             } else {
-                                return InPlaceDivisionResult::Invalid;
+                                // Color components are valid denominators, but they can't resolve
+                                // at parse time.
+                                return if resolved.unit().contains(CalcUnits::COLOR_COMPONENT) {
+                                    InPlaceDivisionResult::Unchanged
+                                } else {
+                                    InPlaceDivisionResult::Invalid
+                                };
                             }
                         }
                         InPlaceDivisionResult::Unchanged
@@ -859,10 +1183,10 @@ impl CalcNode {
                     // already resolve it, then merge it with the last node on the product list.
                     // We can unwrap here, becuase we start the function by adding a node to
                     // the list.
-                    match try_division_in_place(product.last_mut().unwrap(), &rhs) {
+                    match try_division_in_place(&mut product.last_mut().unwrap(), &rhs.node) {
                         InPlaceDivisionResult::Merged => {},
                         InPlaceDivisionResult::Unchanged => {
-                            product.push(Self::Invert(Box::new(rhs)))
+                            product.push(Self::Invert(Box::new(rhs.node)))
                         },
                         InPlaceDivisionResult::Invalid => {
                             return Err(
@@ -878,10 +1202,13 @@ impl CalcNode {
             }
         }
 
-        Ok(if product.len() == 1 {
-            product.drain(..).next().unwrap()
-        } else {
-            Self::Product(product.into_boxed_slice().into())
+        Ok(ParsedCalcNode {
+            node: if product.len() == 1 {
+                product.drain(..).next().unwrap()
+            } else {
+                Self::Product(product.into_boxed_slice().into())
+            },
+            has_anchor_function,
         })
     }
 
@@ -900,6 +1227,7 @@ impl CalcNode {
     pub fn into_length_or_percentage(
         mut self,
         clamping_mode: AllowedNumericType,
+        has_anchor_function: bool,
     ) -> Result<CalcLengthPercentage, ()> {
         self.simplify_and_sort();
 
@@ -912,6 +1240,7 @@ impl CalcNode {
             Ok(CalcLengthPercentage {
                 clamping_mode,
                 node: self,
+                has_anchor_function,
             })
         }
     }
@@ -1002,14 +1331,27 @@ impl CalcNode {
         Self::parse_number(context, input, function).map(|n| (n + 0.5).floor() as CSSInteger)
     }
 
-    /// Convenience parsing function for `<length> | <percentage>`.
+    /// Convenience parsing function for `<length> | <percentage>`, and, optionally, `anchor()`.
     pub fn parse_length_or_percentage<'i, 't>(
         context: &ParserContext,
         input: &mut Parser<'i, 't>,
         clamping_mode: AllowedNumericType,
         function: MathFunction,
+        allow_anchor: AllowAnchorPositioningFunctions
     ) -> Result<CalcLengthPercentage, ParseError<'i>> {
-        Self::parse(context, input, function, CalcUnits::LENGTH_PERCENTAGE)?
+        let allowed = if allow_anchor == AllowAnchorPositioningFunctions::No {
+            AllowParse::new(CalcUnits::LENGTH_PERCENTAGE)
+        } else {
+            AllowParse {
+                units: CalcUnits::LENGTH_PERCENTAGE,
+                additional_functions: match allow_anchor {
+                    AllowAnchorPositioningFunctions::No => unreachable!(),
+                    AllowAnchorPositioningFunctions::AllowAnchorSize => AdditionalFunctions::ANCHOR_SIZE,
+                    AllowAnchorPositioningFunctions::AllowAnchorAndAnchorSize => AdditionalFunctions::ANCHOR | AdditionalFunctions::ANCHOR_SIZE,
+                },
+            }
+        };
+        Self::parse(context, input, function, allowed)?
             .into_length_or_percentage(clamping_mode)
             .map_err(|()| input.new_custom_error(StyleParseErrorKind::UnspecifiedError))
     }
@@ -1020,7 +1362,7 @@ impl CalcNode {
         input: &mut Parser<'i, 't>,
         function: MathFunction,
     ) -> Result<CSSFloat, ParseError<'i>> {
-        Self::parse(context, input, function, CalcUnits::PERCENTAGE)?
+        Self::parse(context, input, function, AllowParse::new(CalcUnits::PERCENTAGE))?
             .to_percentage()
             .map(crate::values::normalize)
             .map_err(|()| input.new_custom_error(StyleParseErrorKind::UnspecifiedError))
@@ -1033,7 +1375,7 @@ impl CalcNode {
         clamping_mode: AllowedNumericType,
         function: MathFunction,
     ) -> Result<CalcLengthPercentage, ParseError<'i>> {
-        Self::parse(context, input, function, CalcUnits::LENGTH)?
+        Self::parse(context, input, function, AllowParse::new(CalcUnits::LENGTH))?
             .into_length_or_percentage(clamping_mode)
             .map_err(|()| input.new_custom_error(StyleParseErrorKind::UnspecifiedError))
     }
@@ -1044,7 +1386,7 @@ impl CalcNode {
         input: &mut Parser<'i, 't>,
         function: MathFunction,
     ) -> Result<CSSFloat, ParseError<'i>> {
-        Self::parse(context, input, function, CalcUnits::empty())?
+        Self::parse(context, input, function, AllowParse::new(CalcUnits::empty()))?
             .to_number()
             .map_err(|()| input.new_custom_error(StyleParseErrorKind::UnspecifiedError))
     }
@@ -1055,7 +1397,7 @@ impl CalcNode {
         input: &mut Parser<'i, 't>,
         function: MathFunction,
     ) -> Result<Angle, ParseError<'i>> {
-        Self::parse(context, input, function, CalcUnits::ANGLE)?
+        Self::parse(context, input, function, AllowParse::new(CalcUnits::ANGLE))?
             .to_angle()
             .map_err(|()| input.new_custom_error(StyleParseErrorKind::UnspecifiedError))
     }
@@ -1067,7 +1409,7 @@ impl CalcNode {
         clamping_mode: AllowedNumericType,
         function: MathFunction,
     ) -> Result<Time, ParseError<'i>> {
-        Self::parse(context, input, function, CalcUnits::TIME)?
+        Self::parse(context, input, function, AllowParse::new(CalcUnits::TIME))?
             .to_time(Some(clamping_mode))
             .map_err(|()| input.new_custom_error(StyleParseErrorKind::UnspecifiedError))
     }
@@ -1078,7 +1420,7 @@ impl CalcNode {
         input: &mut Parser<'i, 't>,
         function: MathFunction,
     ) -> Result<Resolution, ParseError<'i>> {
-        Self::parse(context, input, function, CalcUnits::RESOLUTION)?
+        Self::parse(context, input, function, AllowParse::new(CalcUnits::RESOLUTION))?
             .to_resolution()
             .map_err(|()| input.new_custom_error(StyleParseErrorKind::UnspecifiedError))
     }

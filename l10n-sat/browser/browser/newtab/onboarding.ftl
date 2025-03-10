@@ -53,6 +53,9 @@ mr1-onboarding-import-primary-button-label-attribution = { $previous } ᱠᱷᱚ
 mr1-onboarding-theme-header = ᱟᱢᱟᱜ ᱞᱮᱠᱷᱟ ᱛᱮᱭᱟᱨ ᱢᱮ
 mr1-onboarding-theme-subtitle = ᱢᱤᱫᱴᱟᱝ ᱛᱷᱤᱢ ᱥᱟᱞᱟᱜ ᱛᱮ { -brand-short-name } ᱥᱟᱡᱟᱣ ᱢᱮ ᱾
 mr1-onboarding-theme-secondary-button-label = ᱱᱤᱛᱚᱜ ᱫᱚ ᱵᱟᱝᱟ
+newtab-wallpaper-onboarding-title = ᱨᱚᱝ ᱨᱮᱭᱟᱜ ᱟᱨᱮᱡ ᱧᱮᱞ ᱵᱤᱲᱟᱹᱣ ᱢᱮ
+newtab-wallpaper-onboarding-subtitle = ᱟᱢᱟᱜ ᱱᱟᱶᱟ ᱴᱮᱵᱽ ᱢᱤᱫ ᱛᱟᱜᱽᱲᱟ ᱧᱮᱞ ᱮᱢ ᱞᱟᱹᱜᱤᱫ ᱢᱤᱫ ᱣᱟᱞᱯᱮᱯᱟᱨ ᱵᱟᱪᱷᱟᱣ ᱢᱮ ᱾
+newtab-wallpaper-onboarding-primary-button-label = ᱣᱟᱞᱯᱮᱯᱟᱨ ᱥᱮᱴ ᱢᱮ
 # System theme uses operating system color settings
 mr1-onboarding-theme-label-system = ᱥᱭᱥᱴᱟᱹᱢ ᱛᱷᱮᱢ
 mr1-onboarding-theme-label-light = ᱢᱟᱨᱥᱟᱞ
@@ -186,6 +189,8 @@ mr2022-onboarding-pin-primary-button-label =
         [macos] ᱰᱚᱠ ᱨᱮ { -brand-short-name } ᱫᱚᱦᱚᱭ ᱢᱮ
        *[other] ᱴᱟᱥᱠᱵᱟᱨ ᱨᱮ { -brand-short-name } ᱞᱟᱴᱷᱟᱭ ᱢᱮ
     }
+# Primary button string used on welcome page for when Firefox is not pinned on MSIX
+mr2022-onboarding-pin-primary-button-label-msix = ᱴᱟᱥᱠᱵᱟᱨ ᱟᱨ ᱮᱛᱦᱚᱵ ᱢᱮᱱᱩ ᱨᱮ { -brand-short-name } ᱞᱟᱴᱷᱟᱭ ᱢᱮ
 # Subtitle will be used when user already has Firefox pinned, but
 # has not set it as their default browser.
 # When translating "zip", please feel free to pick a verb that signifies movement and/or exploration
@@ -221,7 +226,9 @@ mr2022-onboarding-set-default-subtitle = ᱢᱤᱫᱴᱟᱝ ᱵᱟᱝ ᱞᱟᱵ�
 mr2022-onboarding-get-started-primary-subtitle = ᱟᱞᱮᱭᱟᱜ ᱦᱟᱹᱞᱤᱭᱟᱹᱠ ᱫᱚ ᱟᱢ ᱤᱫᱤᱭᱟᱛᱮ ᱛᱮᱭᱟᱨ ᱠᱟᱱᱟ, ᱡᱟᱦᱟᱸ ᱛᱮ ᱟᱢ ᱫᱚ ᱣᱮᱵᱽ ᱨᱮ ᱟᱹᱰᱤ ᱟᱞᱜᱟ ᱛᱮ ᱫᱟᱬᱟ ᱫᱟᱲᱮᱭᱟᱜᱼᱟᱢ ᱾ ᱱᱚᱶᱟ ᱫᱚ ᱱᱮᱠᱟ ᱯᱷᱤᱪᱚᱨ ᱛᱮ ᱯᱮᱨᱮᱡ ᱠᱟᱱᱟ ᱡᱟᱦᱟᱸ ᱫᱚ ᱟᱢ ᱠᱩᱥᱤᱭᱟᱜᱼᱟᱢ ᱾
 mr2022-onboarding-get-started-primary-button-label = ᱢᱤᱫᱴᱟᱝ ᱴᱤᱡ ᱨᱮ ᱥᱮᱛ ᱢᱮ
 
-## MR2022 Import Settings screen strings
+## MR2022 Get Started screen strings.
+## These strings will be used on the welcome page
+## when Firefox is already set to default and pinned.
 
 mr2022-onboarding-import-header = ᱟᱹᱰᱤ ᱪᱚᱴᱠᱟᱨ ᱥᱮᱴᱚᱯ
 mr2022-onboarding-import-subtitle = { -brand-short-name } ᱫᱚ ᱟᱢᱟᱜ ᱠᱩᱥᱤ ᱦᱤᱥᱟᱹᱵ ᱛᱮ ᱥᱮᱴ ᱢᱮ ᱾ ᱟᱢᱟᱜ ᱯᱟᱹᱦᱤᱞ ᱵᱽᱨᱟᱣᱡᱚᱨ ᱠᱷᱚᱱ ᱟᱢᱟᱜ ᱵᱩᱠᱢᱟᱨᱠ, ᱫᱟᱱᱟᱝ ᱥᱟᱵᱟᱫ, ᱟᱨ ᱟᱭᱢᱟ ᱡᱤᱱᱤᱥ ᱠᱚ ᱥᱮᱞᱮᱫ ᱢᱮ ᱾
@@ -330,4 +337,108 @@ onboarding-device-migration-image-alt =
     .aria-label = ᱢᱤᱫ ᱞᱮᱯᱴᱚᱯ ᱠᱚᱢᱯᱩᱴᱚᱨ ᱨᱮᱭᱟᱜ ᱥᱠᱨᱤᱱ ᱨᱮ ᱢᱤᱫ ᱯᱷᱚᱠᱥ ᱟᱸᱡᱚᱢᱟ ᱱᱚᱶᱟ ᱞᱚᱯᱴᱚᱯ ᱨᱮ ᱢᱤᱫ ᱢᱟᱣᱩᱥ ᱢᱮᱱᱟᱜᱼᱟ ᱾
 onboarding-device-migration-title = ᱟᱢᱟᱜ ᱫᱩᱦᱲᱟᱹ ᱥᱟᱹᱜᱩᱱ ᱫᱟᱨᱟᱢ!
 onboarding-device-migration-subtitle = ᱟᱢᱟᱜ ᱱᱟᱶᱟ ᱥᱟᱫᱷᱚ ᱨᱮ ᱵᱩᱠᱢᱟᱨᱠ, ᱫᱟᱱᱟᱝ ᱥᱟᱵᱟᱫ ᱟᱨ ᱱᱟᱜᱟᱢ ᱟᱹᱜᱩ ᱪᱷᱚ ᱞᱟᱹᱜᱤᱫ  { -fxaccount-brand-name(capitalization: "sentence") } ᱨᱮ ᱥᱩᱦᱤ ᱮᱢᱚᱜ ᱢᱮ ᱾
+onboarding-device-migration-subtitle2 = ᱟᱢᱟᱜ ᱱᱟᱶᱟ ᱥᱟᱫᱷᱚᱱ ᱨᱮ ᱟᱢᱟᱜ ᱵᱩᱠᱢᱟᱨᱠ, ᱫᱟᱱᱟᱝ ᱥᱟᱵᱟᱫᱠᱚ ᱟᱨ ᱱᱟᱜᱟᱢ ᱟᱹᱜᱩ ᱞᱟᱹᱜᱤᱫ ᱟᱢᱟᱜ ᱠᱷᱟᱛᱟ ᱨᱮ ᱥᱩᱦᱤ ᱮᱢ ᱢᱮ ᱾
 onboarding-device-migration-primary-button-label = ᱵᱚᱞᱚᱱ ᱥᱩᱦᱤ
+
+## Add-ons Picker screen
+
+amo-picker-title = { -brand-short-name } ᱠᱩᱥᱤᱞᱮᱠᱷᱟ ᱵᱚᱫᱚᱞ ᱢᱮ
+amo-picker-subtitle = ᱮᱠᱥᱴᱮᱱᱥᱚᱱ ᱫᱚ ᱟᱢᱟᱜ ᱵᱽᱨᱟᱣᱩᱡᱟᱨ ᱞᱟᱹᱜᱤᱫ ᱮᱯᱥ ᱞᱮᱠᱟ ᱜᱮᱭᱟ, ᱟᱨ ᱚᱱᱟ ᱫᱚ ᱟᱢ ᱫᱟᱱᱟᱝ ᱥᱟᱵᱟᱫ ᱨᱩᱠᱷᱤᱭᱟᱹ, ᱵᱷᱤᱰᱤᱭᱚ ᱰᱟᱩᱱᱞᱳᱰ, ᱰᱤᱞ ᱯᱟᱱᱛᱮ, ᱦᱟᱨᱠᱮᱛ ᱵᱤᱜᱽᱭᱟᱯ ᱵᱞᱚᱠ, ᱟᱢᱟᱜ ᱵᱽᱨᱟᱣᱩᱡᱟᱨ ᱧᱮᱞᱚᱜ ᱵᱚᱫᱚᱞ ᱟᱨ ᱟᱭᱢᱟ ᱡᱤᱱᱤᱥ ᱠᱚ ᱮᱢᱟᱢᱟ ᱾
+amo-picker-install-button-label = { -brand-short-name } ᱨᱮ ᱥᱮᱞᱮᱫ ᱢᱮ
+amo-picker-install-complete-label = ᱵᱚᱦᱟᱞᱮᱱᱟ
+amo-picker-collection-link = ᱟᱨᱦᱚᱸ ᱮᱰ-ᱚᱱ ᱯᱟᱱᱛᱮ ᱢᱮ
+
+## The following screens have been updated to use security and privacy focused strings:
+
+# Easy setup screen
+onboarding-easy-setup-security-and-privacy-title = ᱟᱢ ᱴᱷᱤᱠ ᱨᱮ ᱫᱚᱦᱚᱢᱮᱪᱷᱚ ᱞᱟᱹᱜᱤᱫ ᱠᱩᱥᱤᱭᱟᱜᱼᱟ ᱞᱮ
+onboarding-easy-setup-security-and-privacy-subtitle = ᱟᱞᱮᱭᱟᱜ ᱵᱮᱼᱯᱷᱟᱭᱫᱟ ᱵᱽᱨᱟᱣᱡᱚᱨ ᱫᱚ ᱵᱟᱦᱨᱮ ᱠᱚᱢᱯᱟᱱᱤ ᱠᱚ ᱣᱮᱵᱽ ᱨᱮ ᱟᱢ ᱯᱟᱸᱡᱟ ᱠᱚ ᱵᱚᱸᱫᱚᱜᱼᱟ ᱾
+# Mobile download screen
+onboarding-mobile-download-security-and-privacy-title = ᱮᱴᱟᱜ ᱥᱟᱫᱷᱟᱱ ᱛᱮ ᱫᱚᱱ ᱡᱷᱚᱜ ᱫᱟᱱᱟᱝ ᱨᱮ ᱛᱟᱦᱮᱸᱱ ᱢᱮ
+onboarding-mobile-download-security-and-privacy-subtitle = ᱡᱚᱠᱷᱚᱱ ᱟᱢ ᱟᱹᱭᱩᱨᱢᱤᱫ ᱮᱢ ᱛᱟᱦᱮᱱᱟ, { -brand-short-name } ᱟᱢᱟᱜ ᱫᱟᱱᱟᱝ ᱥᱟᱵᱟᱫᱽ, ᱵᱩᱠᱢᱟᱨᱠ ᱟᱨ ᱟᱭᱢᱟ ᱠᱚ ᱮᱱᱠᱨᱤᱯᱴ ᱮᱫᱟᱭ ᱾ ᱥᱟᱶᱛᱮ ᱟᱢ ᱟᱢᱟᱜ ᱮᱴᱟᱜ ᱥᱟᱫᱷᱚᱱ ᱠᱷᱚᱱ ᱴᱮᱵᱽ ᱠᱚᱢ ᱦᱟᱛᱟᱣ ᱫᱟᱲᱮᱭᱟᱜᱼᱟ ᱾
+# Gratitude screen
+onboarding-gratitude-security-and-privacy-title = { -brand-short-name } ᱟᱢᱟᱜ ᱫᱮᱭᱟ ᱨᱮ ᱢᱮᱱᱟᱭᱟ
+onboarding-gratitude-security-and-privacy-subtitle = Mozilla Foundation ᱦᱚᱛᱮᱛᱮ ᱜᱚᱲᱚ ᱧᱟᱢ ᱟᱠᱟᱱ { -brand-short-name } ᱵᱮᱵᱷᱟᱨ ᱞᱟᱹᱜᱤᱫ ᱟᱭᱢᱟ ᱥᱟᱨᱦᱟᱣ ᱾ ᱟᱢᱟᱜ ᱜᱚᱲᱚ ᱛᱮ, ᱟᱞᱮ ᱤᱱᱴᱟᱨᱱᱮᱴ ᱡᱷᱚᱛᱚ ᱦᱚᱲ ᱞᱟᱹᱜᱤᱫ ᱨᱩᱠᱷᱤᱭᱟᱹ ᱟᱨ ᱵᱟᱹᱲᱛᱤ ᱥᱮᱴᱮᱨᱚᱜ ᱞᱟᱹᱜᱤᱫ ᱞᱮ ᱠᱟᱹᱢᱤ ᱠᱟᱱᱟ ᱾
+# Sign up or Sign in screen
+onboarding-sign-up-title = ᱥᱟᱱᱟᱢ ᱰᱤᱵᱷᱟᱭᱤᱥ ᱨᱮ ᱟᱢᱟᱜ ᱰᱟᱴᱟ ᱥᱤᱝᱠ ᱢᱮ
+onboarding-sign-up-description = ᱢᱤᱫ ᱠᱷᱟᱛᱟ ᱞᱟᱹᱜᱤᱫ ᱧᱩᱛᱩᱢᱚᱞ ᱢᱮ ᱟᱨ ᱟᱢᱟᱜ ᱡᱷᱚᱛᱚ ᱞᱟᱹᱠᱛᱤᱭᱟᱱ ᱵᱟᱰᱟᱭ — ᱫᱟᱱᱟᱝ ᱥᱟᱵᱟᱫ, ᱵᱩᱠᱢᱟᱨᱠ, ᱟᱨ ᱟᱭᱢᱟ — ᱟᱢ ᱡᱟᱦᱟᱱ ᱥᱟᱫᱷᱚᱱ ᱨᱮ ᱥᱩᱦᱤ ᱮᱢ ᱠᱟᱛᱮ ᱨᱩᱠᱷᱤᱭᱟᱹ ᱛᱮ ᱫᱚᱦᱚ ᱟᱨ ᱧᱟᱢᱚᱜ-ᱟ ᱾
+onboarding-sign-up-button = ᱧᱩᱛᱩᱢ ᱚᱞ ᱥᱮ ᱥᱩᱦᱤ ᱮᱢ ᱦᱚᱪᱚᱭ ᱢᱮ
+onboarding-sign-up-secondary-button = ᱵᱽᱨᱟᱣᱩᱡᱤᱝ ᱮᱦᱚᱵᱽ ᱢᱮ
+
+## New user time and familiarity survey strings
+
+onboarding-new-user-time-based-survey-title = ᱟᱢ ᱛᱤᱱᱟᱹᱜ ᱜᱷᱟᱹᱲᱤᱡ ᱠᱷᱚᱱ { -brand-short-name } ᱮᱢ ᱵᱮᱵᱷᱟᱨ ᱮᱫᱟ?
+onboarding-new-user-familiarity-based-survey-title = ᱟᱢ { -brand-short-name } ᱥᱟᱶ ᱛᱤᱱᱟᱹᱜ ᱵᱟᱰᱟᱭ ᱮᱫᱟᱢ ?
+onboarding-new-user-survey-subtitle = ᱟᱢᱟᱜ ᱢᱚᱱᱚᱛ { -brand-short-name } ᱟᱨᱦᱚᱸ ᱵᱮᱥ ᱞᱟᱹᱜᱤᱫ ᱜᱚᱲᱚ ᱮᱢᱟᱭᱟ ᱾
+# When translating "next" it means the next screen in onboarding.
+onboarding-new-user-survey-next-button-label = ᱤᱱᱟᱹ ᱛᱟᱭᱚᱢ
+onboarding-new-user-survey-legal-link-label = ᱵᱟᱪᱷᱟᱣ ᱠᱟᱛᱮ “{ onboarding-new-user-survey-next-button-label },” ᱟᱢ { -brand-product-name } ᱨᱮᱭᱟᱜ <a data-l10n-name="privacy_notice">ᱯᱨᱟᱭᱣᱮᱥᱤ ᱱᱚᱴᱤᱥ</a> ᱥᱟᱞᱟᱜ ᱦᱮᱥᱤᱭᱟᱹᱨᱟᱹᱜ ᱟᱢ
+# When translating "brand new" it means completely new.
+onboarding-new-user-survey-time-based-option-1 = ᱤᱧ ᱫᱚ ᱢᱤᱫ ᱵᱨᱟᱱᱰ ᱱᱟᱶᱟ ᱜᱮᱭᱟᱹᱧ
+onboarding-new-user-survey-time-based-option-2 = 1 ᱪᱟᱸᱫᱚ ᱠᱷᱚᱱ ᱠᱚᱢ
+onboarding-new-user-survey-time-based-option-3 = 1 ᱪᱟᱸᱫᱚ ᱠᱷᱚᱱ ᱵᱟᱹᱲᱛᱤ, ᱞᱮᱛᱟᱲ ᱜᱮ
+onboarding-new-user-survey-time-based-option-4 = 1 ᱪᱟᱸᱫᱚ ᱠᱷᱚᱱ ᱵᱟᱹᱲᱛᱤ, ᱚᱝᱠᱟ ᱜᱮ
+# When translating "brand new" it means completely new.
+onboarding-new-user-survey-familiarity-based-option-1 = ᱤᱧ ᱫᱚ ᱢᱤᱫ ᱵᱨᱟᱱᱰ ᱱᱟᱶᱟ ᱜᱮᱭᱟᱹᱧ
+onboarding-new-user-survey-familiarity-based-option-2 = ᱤᱧ ᱱᱚᱣᱟ ᱛᱤᱱᱟᱹᱜ ᱜᱟᱱ ᱵᱮᱵᱷᱟᱨ ᱟᱠᱟᱫᱟᱹᱧ
+onboarding-new-user-survey-familiarity-based-option-3 = ᱤᱧ ᱱᱚᱣᱟ ᱥᱟᱶ ᱟᱹᱰᱤ ᱵᱟᱥ ᱞᱮᱠᱷᱟ ᱵᱟᱰᱟᱭ ᱢᱮᱱᱟᱜᱼᱟ
+onboarding-new-user-survey-familiarity-based-option-4 = ᱤᱧ ᱱᱚᱣᱟ ᱞᱟᱦᱟ ᱨᱮᱧ ᱵᱮᱵᱷᱟᱨ ᱞᱮᱫᱟ, ᱢᱮᱱᱠᱷᱟᱱ ᱱᱚᱣᱟ ᱫᱚ ᱛᱤᱱᱟᱹᱜ ᱜᱟᱱ ᱚᱠᱛᱚ ᱦᱩᱭ ᱮᱱᱟ
+
+## UI strings for the sidebar and vertical tabs
+
+# Setup screen for vertical tabs
+onboarding-new-tabs-title = ᱟᱞᱮ ᱞᱟᱹᱭ ᱞᱮᱢ ᱟᱢᱟᱜ ᱴᱮᱵᱽ ᱚᱠᱟᱨᱮᱢ ᱠᱩᱥᱤᱭᱟᱜ ᱠᱟᱱᱟ
+# Setup screen for vertical tabs - "Switch it up" refers to switching between horizontal and vertical tabs.
+onboarding-new-tabs-subtitle = ᱥᱟᱭᱤᱰᱵᱟᱨ ᱥᱮᱴᱤᱝ ᱨᱮ ᱡᱟᱦᱟᱸ ᱛᱤᱱ ᱨᱮᱢ ᱠᱷᱚᱡᱚᱜ ᱠᱟᱱᱟ ᱱᱚᱣᱟ ᱵᱚᱫᱚᱞ ᱢᱮ ᱾
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-new-vertical-tabs-label = ᱥᱟᱢᱟᱝ ᱨᱮ ᱴᱮᱵᱽ
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-new-horizontal-tabs-label = ᱪᱮᱛᱟᱱ ᱨᱮ ᱴᱮᱵᱽ
+# Setup screen for vertical tabs for existing users
+onboarding-existing-tabs-title = ᱥᱤᱫᱷ ᱴᱮᱵᱽ ᱠᱚ ᱱᱚᱸᱰᱮ ᱢᱮᱱᱟᱜᱼᱟ
+# Setup screen for vertical tabs for existing users
+onboarding-existing-tabs-title2 = ᱥᱤᱫᱷ ᱴᱮᱵᱽ ᱮᱦᱚᱵᱚᱜ ᱠᱟᱱᱟ
+# Setup screen for vertical tabs for existing users - "Switch it up" refers to switching between horizontal and vertical tabs.
+onboarding-existing-tabs-subtitle = ᱟᱢᱟᱜ ᱴᱮᱵᱽ ᱥᱟᱭᱤᱰ ᱨᱮ ᱪᱮᱥᱴᱟᱭ ᱢᱮ ᱾ ᱥᱟᱭᱤᱰᱵᱟᱨ ᱥᱮᱴᱤᱝ ᱨᱮ ᱡᱟᱦᱟᱸ ᱛᱤᱱ ᱨᱮᱢ ᱠᱷᱚᱡᱚᱜ ᱠᱟᱱᱟ ᱱᱚᱣᱟ ᱵᱚᱫᱚᱞ ᱢᱮ ᱾
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-existing-vertical-tabs-label = ᱥᱤᱫᱷ ᱴᱮᱵᱽ ᱠᱚ ᱪᱮᱥᱴᱟᱭ ᱢᱮ
+onboarding-flair-text = ᱱᱟᱶᱟ!
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-existing-horizontal-tabs-label = ᱜᱤᱛᱤᱡ ᱴᱮᱵᱽ ᱫᱚᱦᱚᱭ ᱢᱮ
+# Tooltip displayed on hover for vertical tabs image
+onboarding-vertical-tabs-tooltip =
+    .title = ᱢᱤᱫ ᱵᱽᱨᱟᱣᱩᱡᱟᱨ ᱣᱤᱱᱰᱚ ᱫᱚ { -brand-shorter-name } ᱥᱟᱭᱤᱰᱵᱟᱨ ᱨᱮᱭᱟᱜ ᱦᱟᱹᱴᱤᱧ ᱞᱮᱠᱟᱛᱮ ᱥᱠᱨᱤᱱ ᱥᱟᱢᱟᱝ ᱨᱮ ᱴᱮᱵᱽ ᱩᱫᱩᱜ ᱮᱫᱟᱭ ᱾
+# Description for vertical tabs image
+onboarding-vertical-tabs-description =
+    .aria-description = ᱢᱤᱫ ᱵᱽᱨᱟᱣᱩᱡᱟᱨ ᱣᱤᱱᱰᱚ ᱫᱚ { -brand-shorter-name } ᱥᱟᱭᱤᱰᱵᱟᱨ ᱨᱮᱭᱟᱜ ᱦᱟᱹᱴᱤᱧ ᱞᱮᱠᱟᱛᱮ ᱥᱠᱨᱤᱱ ᱥᱟᱢᱟᱝ ᱨᱮ ᱴᱮᱵᱽ ᱩᱫᱩᱜ ᱮᱫᱟᱭ ᱾
+# Tooltip displayed on hover for horizontal tabs image
+onboarding-horizontal-tabs-tooltip =
+    .title = ᱢᱤᱫ ᱵᱽᱨᱟᱣᱩᱡᱟᱨ ᱣᱤᱱᱰᱚ ᱪᱮᱛᱟᱱ ᱥᱟᱶ ᱴᱮᱵᱽ ᱩᱫᱩᱜ ᱮᱫᱟᱭ ᱾
+# Description for horizontal tabs image
+onboarding-horizontal-tabs-description =
+    .aria-description = ᱢᱤᱫ ᱵᱽᱨᱟᱣᱩᱡᱟᱨ ᱣᱤᱱᱰᱚ ᱪᱮᱛᱟᱱ ᱥᱟᱶ ᱴᱮᱵᱽ ᱩᱫᱩᱜ ᱮᱫᱟᱭ ᱾
+# Additional setup card for setting up aichatbot in the sidebar
+onboarding-genai-sidebar-title = ᱥᱟᱭᱤᱰᱵᱟᱨ ᱨᱮ ᱢᱤᱫ AI ᱪᱟᱴᱵᱚᱴ ᱪᱮᱥᱴᱟᱭ ᱢᱮ
+# Setup card for setting up AI chatbot in the sidebar; "Providers" refers to AI chatbot providers (e.g. OpenAI, etc). "Switch anytime" refers to allowing the user to switch to a different chatbot.
+onboarding-genai-sidebar-subtitle = ᱣᱮᱵᱽ ᱡᱤᱱᱤᱥ ᱠᱚ ᱩᱥᱟᱹᱨ ᱢᱮ, ᱵᱤᱪᱟᱹᱨ ᱦᱚᱨᱟ, ᱰᱨᱟᱯᱷᱴ ᱥᱟᱱᱫᱮᱥ ᱠᱚ — ᱡᱚᱛᱚ ᱟᱢ ᱵᱽᱨᱟᱣᱩᱡᱽ ᱞᱮᱠᱟ ᱜᱮ ᱾ ᱵᱟᱹᱲᱛᱤ ᱯᱨᱚᱣᱟᱭᱤᱰᱟᱨ ᱠᱷᱚᱱ ᱵᱟᱪᱷᱟᱣ ᱢᱮ ᱾  ᱡᱟᱦᱟᱸ ᱚᱠᱛᱚ ᱨᱮᱜᱮ ᱵᱚᱫᱚᱞ ᱢᱮ᱾  <a data-l10n-name="learn-more">ᱵᱟᱲᱛᱤ ᱵᱟᱲᱟᱭ ᱢᱮ</a>
+onboarding-genai-sidebar-primary-button = ᱢᱤᱫᱴᱟᱝ ᱪᱟᱴᱵᱚᱴ ᱵᱟᱪᱷᱟᱣ ᱢᱮ
+onboarding-genai-sidebar-secondary-button = ᱵᱽᱨᱟᱣᱩᱡᱤᱝ ᱮᱦᱚᱵᱽ ᱢᱮ
+
+## New user onboarding checklist
+
+onboarding-checklist-title = ᱥᱟᱡᱟᱣ ᱪᱟᱵᱟᱭ ᱢᱮ { -brand-short-name }
+onboarding-checklist-subtitle = ᱟᱢᱟᱜ ᱵᱽᱨᱟᱣᱩᱡᱤᱝ ᱟᱹᱱᱟᱹᱭᱠᱟᱹᱣ ᱠᱷᱚᱱ ᱵᱟᱹᱲᱛᱤ ᱞᱟᱵᱷ ᱧᱟᱢ ᱞᱟᱹᱜᱤᱫ ᱱᱚᱶᱟ ᱫᱷᱟᱯ ᱠᱚ ᱯᱩᱨᱟᱹᱣ ᱢᱮ᱾
+onboarding-checklist-set-default = { -brand-short-name } ᱫᱚ ᱟᱢᱟᱜ ᱢᱩᱞ ᱵᱽᱨᱟᱣᱡᱚᱨ ᱞᱮᱠᱷᱟ ᱥᱮᱴ ᱢᱮ
+onboarding-checklist-pin = ᱴᱟᱥᱠᱵᱟᱨ ᱨᱮ { -brand-short-name } ᱞᱟᱴᱷᱟᱭ ᱢᱮ
+onboarding-checklist-import = ᱢᱟᱲᱟᱝᱟᱜ ᱵᱽᱨᱟᱣᱡᱚᱨ ᱠᱷᱚᱱ ᱟᱹᱜᱩᱭ ᱢᱮ
+onboarding-checklist-extension = ᱢᱤᱫ ᱮᱠᱥᱴᱮᱱᱥᱚᱱ ᱥᱮᱞᱮᱫ ᱢᱮ
+onboarding-checklist-sign-up = ᱟᱢᱟᱜ ᱠᱷᱟᱛᱟ ᱨᱮ ᱧᱩᱛᱩᱢ ᱚᱞ ᱥᱮ ᱥᱩᱦᱤ ᱮᱢ ᱢᱮ
+
+## Tab Groups feature onboarding strings
+
+
+## Multi Profiles feature onboarding messages
+
+
+## Desktop to Mobile Adoption feature callout strings
+

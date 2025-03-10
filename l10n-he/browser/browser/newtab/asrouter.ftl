@@ -240,6 +240,9 @@ device-migration-fxa-spotlight-older-device-primary-button = יצירת חשבו
 device-migration-fxa-spotlight-getting-new-device-header-2 = יהיה לך מכשיר חדש בעתיד?
 device-migration-fxa-spotlight-getting-new-device-body-2 = בכמה צעדים פשוטים ניתן להביא איתך את הסימניות, ההיסטוריה והססמאות שלך בעת תחילת שימוש במכשיר חדש.
 device-migration-fxa-spotlight-getting-new-device-primary-button = כיצד לגבות את הנתונים שלי
+device-migration-fxa-spotlight-sync-header = גלישה בלי להחמיץ פעימה
+device-migration-fxa-spotlight-sync-body = סנכרון כל המידע החשוב לך עם הצפנה - כמו סימניות וססמאות. באפשרותך לשלוף הכל בכל מקום בו יש לך את { -brand-product-name }.
+device-migration-fxa-spotlight-sync-primary-button = תחילת עבודה
 
 ## Set as Default PDF Reader Infobar
 
@@ -268,5 +271,68 @@ launch-on-login-infobar-final-reject-button = לא תודה
 
 ## Tail Fox Set Default Spotlight
 
+# This title is displayed together with the picture of a running fox with a long tail.
+# In English, this is a figure of speech meaning 'stop something from following you'.
+# If the localization of this message is challenging, consider using a simplified
+# alternative as a reference for translation: 'Keep unwanted trackers away'.
+tail-fox-spotlight-title = הורידו רכיבי מעקב טורדניים מהגב שלכם
 tail-fox-spotlight-primary-button = פתיחת הקישורים שלי באמצעות { -brand-short-name }
 tail-fox-spotlight-secondary-button = לא כעת
+
+## Root Certificate Succession Infobar
+
+root-certificate-succession-infobar-january-message = <strong>ייתכן שגרסאות ישנות יותר של { -brand-short-name } יתחילו להיתקל בבעיות ב־14 בינואר, 2025.</strong>
+root-certificate-succession-infobar-march-message = <strong>יש לעדכן כדי להמשיך להשתמש ב־{ -brand-short-name } אחרי ה־14 במרץ, 2025.</strong>
+root-certificate-succession-infobar-link = למה צריך לעדכן?
+root-certificate-succession-infobar-primary-button =
+    .label = עדכון כעת
+    .accesskey = ע
+root-certificate-succession-infobar-secondary-button =
+    .label = מאוחר יותר
+    .accesskey = מ
+
+## Root Certificate Succession Windows Background Notification
+
+root-certificate-windows-background-notification-title = פספסת עדכון חשוב של { -brand-short-name }
+root-certificate-windows-background-notification-subtitle = חלקים מהדפדפן יפסיקו לעבוד בקרוב אם לא יבוצע עדכון. עכשיו זה זמן מצוין לקבל את ההגנות והיכולות העדכניות ביותר שלנו.
+root-certificate-windows-background-notification-learn-more-button = מידע נוסף
+root-certificate-windows-background-notification-update-button = עדכון { -brand-short-name }
+
+## FxA Menu Message variants
+
+fxa-menu-message-close-button =
+    .title = סגירה
+    .aria-label = סגירה
+fxa-menu-message-sign-up-button = הרשמה
+fxa-menu-message-sync-devices-primary-text = סנכרון כל המכשירים שלך
+fxa-menu-message-sync-devices-secondary-text = קבלה מיידית של כל המידע שלך - כמו סימניות וססמאות - בכל מקום בו יש לך את { -brand-short-name }.
+fxa-menu-message-sync-devices-collapsed-text = סנכרון כל המכשירים שלך
+fxa-menu-message-backup-data-primary-text = גיבוי נתוני הדפדפן שלך
+fxa-menu-message-backup-data-secondary-text = הגנה אוטומטית על סימניות, ססמאות ונתונים אחרים בכל המכשירים שלך.
+fxa-menu-message-backup-data-collapsed-text = גיבוי נתוני הדפדפן
+fxa-menu-message-backup-sync-primary-text = הגנה וסנכרון הנתונים שלך
+fxa-menu-message-backup-sync-secondary-text = הסנכרון מגבה את רוב הנתונים שלך כך שיהיה באפשרותך לגשת אליהם בכל מקום בו יש לך את { -brand-short-name }.
+fxa-menu-message-backup-sync-collapsed-text = סנכרון וגיבוי נתונים
+fxa-menu-message-mobile-primary-text = שליחת לשוניות לטלפון שלך
+fxa-menu-message-mobile-secondary-text = להמשיך מאיפה שהפסקת באופן מיידי בעת סנכרון הלשוניות שלך עם מכשיר נייד.
+fxa-menu-message-mobile-collapsed-text = סנכרון עם הטלפון שלך
+
+## Multi-CTA Fox Doodle Spotlight
+
+multi-cta-fox-doodle-title = ברוכים השבים
+multi-cta-fox-doodle-set-default-checkbox = הגדרת { -brand-short-name } כברירת מחדל
+multi-cta-fox-doodle-pin-startmenu-checkbox = הצמדת { -brand-short-name } לתפריט ההתחל
+multi-cta-fox-doodle-pin-checkbox =
+    { PLATFORM() ->
+        [macos] שמירת { -brand-short-name } ב־Dock
+       *[other] הצמדת { -brand-short-name } לשורת המשימות
+    }
+multi-cta-fox-doodle-start-browsing-primary-button-label = התחלת גלישה
+multi-cta-fox-doodle-main-browser-primary-button-label = הגדרת { -brand-short-name } כדפדפן הראשי שלי
+multi-cta-fox-doodle-quick-reminder-subtitle = רק תזכורת קטנה שבאפשרותך לשמור את הדפדפן ממוקד הפרטיות האהוב עליך במרחק לחיצה אחת בלבד.
+multi-cta-fox-doodle-privacy-focused-subtitle =
+    { PLATFORM() ->
+        [macos] באפשרותך לשמור את הדפדפן ממוקד הפרטיות האהוב עליך במרחק לחיצה אחת בלבד. כדאי להגדיר את { -brand-short-name } כדפדפן ברירת המחדל שלך לפתיחת קישורים ולשמור אותו ב־Dock.
+       *[other] באפשרותך לשמור את הדפדפן ממוקד הפרטיות האהוב עליך במרחק לחיצה אחת בלבד. כדאי להגדיר את { -brand-short-name } כדפדפן ברירת המחדל שלך לפתיחת קישורים ולהצמיד אותו לשורת המשימות שלך.
+    }
+multi-cta-fox-doodle-msix-privacy-focused-subtitle = באפשרותך לשמור את הדפדפן ממוקד הפרטיות האהוב עליך במרחק לחיצה אחת בלבד. כדאי להגדיר את { -brand-short-name } כדפדפן ברירת המחדל שלך לפתיחת קישורים ולהצמיד אותו לשורת המשימות ותפריט ההתחל שלך.

@@ -76,8 +76,8 @@ void LIRGenerator::visitUnbox(MUnbox* unbox) {
   ensureDefined(inner);
 
   if (IsFloatingPointType(unbox->type())) {
-    LUnboxFloatingPoint* lir =
-        new (alloc()) LUnboxFloatingPoint(useBox(inner), unbox->type());
+    MOZ_ASSERT(unbox->type() == MIRType::Double);
+    auto* lir = new (alloc()) LUnboxFloatingPoint(useBox(inner));
     if (unbox->fallible()) {
       assignSnapshot(lir, unbox->bailoutKind());
     }
@@ -214,20 +214,6 @@ void LIRGeneratorMIPS::lowerUModI64(MMod* mod) {
   LUDivOrModI64* lir = new (alloc()) LUDivOrModI64(
       useInt64RegisterAtStart(mod->lhs()), useInt64RegisterAtStart(mod->rhs()));
   defineReturn(lir, mod);
-}
-
-void LIRGeneratorMIPS::lowerBigIntDiv(MBigIntDiv* ins) {
-  auto* lir = new (alloc()) LBigIntDiv(useRegister(ins->lhs()),
-                                       useRegister(ins->rhs()), temp(), temp());
-  define(lir, ins);
-  assignSafepoint(lir, ins);
-}
-
-void LIRGeneratorMIPS::lowerBigIntMod(MBigIntMod* ins) {
-  auto* lir = new (alloc()) LBigIntMod(useRegister(ins->lhs()),
-                                       useRegister(ins->rhs()), temp(), temp());
-  define(lir, ins);
-  assignSafepoint(lir, ins);
 }
 
 void LIRGenerator::visitWasmTruncateToInt64(MWasmTruncateToInt64* ins) {

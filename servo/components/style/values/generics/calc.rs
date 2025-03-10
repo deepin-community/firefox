@@ -6,6 +6,10 @@
 //!
 //! [calc]: https://drafts.csswg.org/css-values/#calc-notation
 
+use crate::logical_geometry::PhysicalSide;
+use crate::values::generics::box_::PositionProperty;
+use crate::values::generics::length::GenericAnchorSizeFunction;
+use crate::values::generics::position::{AnchorSide, GenericAnchorFunction};
 use num_traits::Zero;
 use smallvec::SmallVec;
 use std::fmt::{self, Write};
@@ -158,8 +162,15 @@ pub enum SortKey {
     Vmax,
     Vmin,
     Vw,
+    ColorComponent,
     Other,
 }
+
+/// `anchor()` function used in math functions.
+pub type GenericCalcAnchorFunction<L> =
+    GenericAnchorFunction<Box<GenericCalcNode<L>>, Box<GenericCalcNode<L>>>;
+/// `anchor-size()` function used in math functions.
+pub type GenericCalcAnchorSizeFunction<L> = GenericAnchorSizeFunction<Box<GenericCalcNode<L>>>;
 
 /// A generic node in a calc expression.
 ///
@@ -233,6 +244,10 @@ pub enum GenericCalcNode<L> {
     Abs(Box<GenericCalcNode<L>>),
     /// A `sign()` function.
     Sign(Box<GenericCalcNode<L>>),
+    /// An `anchor()` function.
+    Anchor(Box<GenericCalcAnchorFunction<L>>),
+    /// An `anchor-size()` function.
+    AnchorSize(Box<GenericCalcAnchorSizeFunction<L>>),
 }
 
 pub use self::GenericCalcNode as CalcNode;
@@ -427,6 +442,24 @@ enum ArgumentLevel {
     Nested,
 }
 
+/// Trait for resolving anchor positioning functions in math functions.
+pub trait AnchorPositioningResolver<L: CalcNodeLeaf> {
+    /// Resolve `anchor()` function to a value.
+    fn resolve_anchor(
+        &self,
+        f: &GenericCalcAnchorFunction<L>,
+        side: PhysicalSide,
+        position: PositionProperty,
+    ) -> Result<GenericCalcNode<L>, ()>;
+
+    /// Resolve `anchor-size()` function to a value.
+    fn resolve_anchor_size(
+        &self,
+        f: &GenericCalcAnchorSizeFunction<L>,
+        position: PositionProperty,
+    ) -> Result<GenericCalcNode<L>, ()>;
+}
+
 impl<L: CalcNodeLeaf> CalcNode<L> {
     /// Create a dummy CalcNode that can be used to do replacements of other nodes.
     fn dummy() -> Self {
@@ -543,6 +576,9 @@ impl<L: CalcNodeLeaf> CalcNode<L> {
                 let _ = child.unit()?;
                 CalcUnits::empty()
             },
+            CalcNode::Anchor(..) | CalcNode::AnchorSize(..) => {
+                CalcUnits::LENGTH_PERCENTAGE
+            }
         })
     }
 
@@ -645,12 +681,16 @@ impl<L: CalcNodeLeaf> CalcNode<L> {
             CalcNode::Sign(ref mut child) => {
                 child.negate();
             },
+            CalcNode::Anchor(_) | CalcNode::AnchorSize(_) => {
+                wrap_self_in_negate(self);
+            },
         }
     }
 
     fn sort_key(&self) -> SortKey {
         match *self {
             Self::Leaf(ref l) => l.sort_key(),
+            Self::Anchor(..) | Self::AnchorSize(..) => SortKey::Px,
             _ => SortKey::Other,
         }
     }
@@ -664,7 +704,7 @@ impl<L: CalcNodeLeaf> CalcNode<L> {
     }
 
     /// Tries to merge one node into another using the sum, that is, perform `x` + `y`.
-    fn try_sum_in_place(&mut self, other: &Self) -> Result<(), ()> {
+    pub fn try_sum_in_place(&mut self, other: &Self) -> Result<(), ()> {
         match (self, other) {
             (&mut CalcNode::Leaf(ref mut one), &CalcNode::Leaf(ref other)) => {
                 one.try_sum_in_place(other)
@@ -766,6 +806,9 @@ impl<L: CalcNodeLeaf> CalcNode<L> {
                     Ok(())
                 },
                 CalcNode::Abs(child) | CalcNode::Sign(child) => map_internal(child, op),
+                // It is invalid to treat inner `CalcNode`s here - `anchor(--foo 50%) / 2` != `anchor(--foo 25%)`.
+                // Same applies to fallback, as we don't know if it will be used. Similar reasoning applies to `anchor-size()`.
+                CalcNode::Anchor(_) | CalcNode::AnchorSize(_) => Err(())
             }
         }
 
@@ -847,43 +890,63 @@ impl<L: CalcNodeLeaf> CalcNode<L> {
             Self::Hypot(ref c) => CalcNode::Hypot(map_children(c, map)),
             Self::Abs(ref c) => CalcNode::Abs(Box::new(c.map_leaves_internal(map))),
             Self::Sign(ref c) => CalcNode::Sign(Box::new(c.map_leaves_internal(map))),
+            Self::Anchor(ref f) => CalcNode::Anchor(Box::new(
+                GenericAnchorFunction {
+                    target_element: f.target_element.clone(),
+                    side: match &f.side {
+                        AnchorSide::Keyword(k) => AnchorSide::Keyword(*k),
+                        AnchorSide::Percentage(p) => AnchorSide::Percentage(Box::new(p.map_leaves_internal(map))),
+                    },
+                    fallback: f.fallback.as_ref().map(|fb| Box::new(fb.map_leaves_internal(map))).into(),
+                }
+            )),
+            Self::AnchorSize(ref f) => CalcNode::AnchorSize(Box::new(
+                GenericAnchorSizeFunction {
+                    target_element: f.target_element.clone(),
+                    size: f.size,
+                    fallback: f.fallback.as_ref().map(|fb| Box::new(fb.map_leaves_internal(map))).into(),
+                }
+            )),
         }
     }
 
     /// Resolve this node into a value.
     pub fn resolve(&self) -> Result<L, ()> {
-        self.resolve_map(|l| Ok(l.clone()))
+        self.resolve_map(|l| Ok(l.clone()), |_| Err(()))
     }
 
     /// Resolve this node into a value, given a function that maps the leaf values.
-    pub fn resolve_map<F>(&self, mut leaf_to_output_fn: F) -> Result<L, ()>
+    pub fn resolve_map<F, NF>(&self, mut leaf_to_output_fn: F, mut node_mapping_fn: NF) -> Result<L, ()>
     where
         F: FnMut(&L) -> Result<L, ()>,
+        NF: FnMut(&CalcNode<L>) -> Result<CalcNode<L>, ()>,
     {
-        self.resolve_internal(&mut leaf_to_output_fn)
+        self.resolve_internal(&mut leaf_to_output_fn, &mut node_mapping_fn)
     }
 
-    fn resolve_internal<F>(&self, leaf_to_output_fn: &mut F) -> Result<L, ()>
+    fn resolve_internal<F, NF>(&self, leaf_to_output_fn: &mut F, node_mapping_fn: &mut NF) -> Result<L, ()>
     where
         F: FnMut(&L) -> Result<L, ()>,
+        NF: FnMut(&CalcNode<L>) -> Result<CalcNode<L>, ()>,
     {
-        match self {
+        let node = node_mapping_fn(self).ok();
+        match node.as_ref().unwrap_or(self) {
             Self::Leaf(l) => leaf_to_output_fn(l),
             Self::Negate(child) => {
-                let mut result = child.resolve_internal(leaf_to_output_fn)?;
+                let mut result = child.resolve_internal(leaf_to_output_fn, node_mapping_fn)?;
                 result.map(|v| v.neg())?;
                 Ok(result)
             },
             Self::Invert(child) => {
-                let mut result = child.resolve_internal(leaf_to_output_fn)?;
+                let mut result = child.resolve_internal(leaf_to_output_fn, node_mapping_fn)?;
                 result.map(|v| 1.0 / v)?;
                 Ok(result)
             },
             Self::Sum(children) => {
-                let mut result = children[0].resolve_internal(leaf_to_output_fn)?;
+                let mut result = children[0].resolve_internal(leaf_to_output_fn, node_mapping_fn)?;
 
                 for child in children.iter().skip(1) {
-                    let right = child.resolve_internal(leaf_to_output_fn)?;
+                    let right = child.resolve_internal(leaf_to_output_fn, node_mapping_fn)?;
                     // try_op will make sure we only sum leaves with the same type.
                     result = result.try_op(&right, |left, right| left + right)?;
                 }
@@ -891,10 +954,10 @@ impl<L: CalcNodeLeaf> CalcNode<L> {
                 Ok(result)
             },
             Self::Product(children) => {
-                let mut result = children[0].resolve_internal(leaf_to_output_fn)?;
+                let mut result = children[0].resolve_internal(leaf_to_output_fn, node_mapping_fn)?;
 
                 for child in children.iter().skip(1) {
-                    let right = child.resolve_internal(leaf_to_output_fn)?;
+                    let right = child.resolve_internal(leaf_to_output_fn, node_mapping_fn)?;
                     // Mutliply only allowed when either side is a number.
                     match result.as_number() {
                         Some(left) => {
@@ -920,14 +983,14 @@ impl<L: CalcNodeLeaf> CalcNode<L> {
                 Ok(result)
             },
             Self::MinMax(children, op) => {
-                let mut result = children[0].resolve_internal(leaf_to_output_fn)?;
+                let mut result = children[0].resolve_internal(leaf_to_output_fn, node_mapping_fn)?;
 
                 if result.is_nan()? {
                     return Ok(result);
                 }
 
                 for child in children.iter().skip(1) {
-                    let candidate = child.resolve_internal(leaf_to_output_fn)?;
+                    let candidate = child.resolve_internal(leaf_to_output_fn, node_mapping_fn)?;
 
                     // Leaf types must match for each child.
                     if !result.is_same_unit_as(&candidate) {
@@ -952,9 +1015,9 @@ impl<L: CalcNodeLeaf> CalcNode<L> {
                 Ok(result)
             },
             Self::Clamp { min, center, max } => {
-                let min = min.resolve_internal(leaf_to_output_fn)?;
-                let center = center.resolve_internal(leaf_to_output_fn)?;
-                let max = max.resolve_internal(leaf_to_output_fn)?;
+                let min = min.resolve_internal(leaf_to_output_fn, node_mapping_fn)?;
+                let center = center.resolve_internal(leaf_to_output_fn, node_mapping_fn)?;
+                let max = max.resolve_internal(leaf_to_output_fn, node_mapping_fn)?;
 
                 if !min.is_same_unit_as(&center) || !max.is_same_unit_as(&center) {
                     return Err(());
@@ -987,8 +1050,8 @@ impl<L: CalcNodeLeaf> CalcNode<L> {
                 value,
                 step,
             } => {
-                let mut value = value.resolve_internal(leaf_to_output_fn)?;
-                let step = step.resolve_internal(leaf_to_output_fn)?;
+                let mut value = value.resolve_internal(leaf_to_output_fn, node_mapping_fn)?;
+                let step = step.resolve_internal(leaf_to_output_fn, node_mapping_fn)?;
 
                 if !value.is_same_unit_as(&step) {
                     return Err(());
@@ -1073,8 +1136,8 @@ impl<L: CalcNodeLeaf> CalcNode<L> {
                 divisor,
                 op,
             } => {
-                let mut dividend = dividend.resolve_internal(leaf_to_output_fn)?;
-                let divisor = divisor.resolve_internal(leaf_to_output_fn)?;
+                let mut dividend = dividend.resolve_internal(leaf_to_output_fn, node_mapping_fn)?;
+                let divisor = divisor.resolve_internal(leaf_to_output_fn, node_mapping_fn)?;
 
                 if !dividend.is_same_unit_as(&divisor) {
                     return Err(());
@@ -1087,11 +1150,11 @@ impl<L: CalcNodeLeaf> CalcNode<L> {
                 Ok(dividend)
             },
             Self::Hypot(children) => {
-                let mut result = children[0].resolve_internal(leaf_to_output_fn)?;
+                let mut result = children[0].resolve_internal(leaf_to_output_fn, node_mapping_fn)?;
                 result.map(|v| v.powi(2))?;
 
                 for child in children.iter().skip(1) {
-                    let child_value = child.resolve_internal(leaf_to_output_fn)?;
+                    let child_value = child.resolve_internal(leaf_to_output_fn, node_mapping_fn)?;
 
                     if !result.is_same_unit_as(&child_value) {
                         return Err(());
@@ -1107,17 +1170,147 @@ impl<L: CalcNodeLeaf> CalcNode<L> {
                 Ok(result)
             },
             Self::Abs(ref c) => {
-                let mut result = c.resolve_internal(leaf_to_output_fn)?;
+                let mut result = c.resolve_internal(leaf_to_output_fn, node_mapping_fn)?;
 
                 result.map(|v| v.abs())?;
 
                 Ok(result)
             },
             Self::Sign(ref c) => {
-                let result = c.resolve_internal(leaf_to_output_fn)?;
+                let result = c.resolve_internal(leaf_to_output_fn, node_mapping_fn)?;
                 Ok(L::sign_from(&result)?)
             },
+            Self::Anchor(_) | Self::AnchorSize(_) => Err(()),
         }
+    }
+
+    /// Resolve anchor functions, returning the reduced node as a result of it.
+    /// This returns a cloned node, so callers should ideally keep track of
+    /// the node's usage of anchor functions and skip calling this.
+    /// Returns `Err(())` if the anchor function used resolves to an invalid
+    /// anchor and there is no fallback available.
+    pub fn resolve_anchor<R>(
+        &self,
+        side: PhysicalSide,
+        position_property: PositionProperty,
+        anchor_function_resolver: &R,
+    ) -> Result<Self, ()>
+    where
+        R: AnchorPositioningResolver<L>,
+    {
+        fn resolve_anchor_internal<L: CalcNodeLeaf, R>(
+            node: &mut CalcNode<L>,
+            side: PhysicalSide,
+            position_property: PositionProperty,
+            anchor_positioning_resolver: &R,
+        ) -> Result<(), ()>
+        where
+            R: AnchorPositioningResolver<L>,
+        {
+            match node {
+                CalcNode::Leaf(_) => Ok(()),
+                CalcNode::Negate(child) |
+                CalcNode::Invert(child) |
+                CalcNode::Abs(child) |
+                CalcNode::Sign(child) => resolve_anchor_internal(
+                    child,
+                    side,
+                    position_property,
+                    anchor_positioning_resolver,
+                ),
+                CalcNode::Sum(children) |
+                CalcNode::Product(children) |
+                CalcNode::MinMax(children, _) |
+                CalcNode::Hypot(children) => {
+                    for child in children.iter_mut() {
+                        resolve_anchor_internal(
+                            child,
+                            side,
+                            position_property,
+                            anchor_positioning_resolver,
+                        )?;
+                    }
+                    Ok(())
+                },
+                CalcNode::Clamp { min, center, max } => {
+                    resolve_anchor_internal(
+                        min,
+                        side,
+                        position_property,
+                        anchor_positioning_resolver,
+                    )?;
+                    resolve_anchor_internal(
+                        center,
+                        side,
+                        position_property,
+                        anchor_positioning_resolver,
+                    )?;
+                    resolve_anchor_internal(
+                        max,
+                        side,
+                        position_property,
+                        anchor_positioning_resolver,
+                    )
+                },
+                CalcNode::Round {
+                    value,
+                    step,
+                    ..
+                } => {
+                    resolve_anchor_internal(
+                        value,
+                        side,
+                        position_property,
+                        anchor_positioning_resolver,
+                    )?;
+                    resolve_anchor_internal(
+                        step,
+                        side,
+                        position_property,
+                        anchor_positioning_resolver,
+                    )
+                },
+                CalcNode::ModRem {
+                    dividend,
+                    divisor,
+                    op: _,
+                } => {
+                    resolve_anchor_internal(
+                        dividend,
+                        side,
+                        position_property,
+                        anchor_positioning_resolver,
+                    )?;
+                    resolve_anchor_internal(
+                        divisor,
+                        side,
+                        position_property,
+                        anchor_positioning_resolver,
+                    )
+                },
+                CalcNode::Anchor(f) => {
+                    *node =
+                        anchor_positioning_resolver.resolve_anchor(f, side, position_property)?;
+                    Ok(())
+                },
+                CalcNode::AnchorSize(f) => {
+                    *node =
+                        anchor_positioning_resolver.resolve_anchor_size(f, position_property)?;
+                    Ok(())
+                },
+            }
+        }
+
+        // TODO(dshin, Bug 1924225): When interleaving for anchor positioning happens, we can
+        // mutate the node in place.
+        let mut cloned = self.clone();
+        resolve_anchor_internal(
+            &mut cloned,
+            side,
+            position_property,
+            anchor_function_resolver,
+        )?;
+        Ok(cloned)
     }
 
     fn is_negative_leaf(&self) -> Result<bool, ()> {
@@ -1198,7 +1391,7 @@ impl<L: CalcNodeLeaf> CalcNode<L> {
             Self::Abs(ref mut value) | Self::Sign(ref mut value) => {
                 value.visit_depth_first_internal(f);
             },
-            Self::Leaf(..) => {},
+            Self::Leaf(..) | Self::Anchor(..) | Self::AnchorSize(..) => {},
         }
         f(self);
     }
@@ -1429,14 +1622,14 @@ impl<L: CalcNodeLeaf> CalcNode<L> {
 
                 if value_or_stop!(children[0].is_nan_leaf()) {
                     replace_self_with!(&mut children[0]);
-                    return
+                    return;
                 }
 
                 let mut result = 0;
                 for i in 1..children.len() {
                     if value_or_stop!(children[i].is_nan_leaf()) {
                         replace_self_with!(&mut children[i]);
-                        return
+                        return;
                     }
                     let o = match children[i]
                         .compare(&children[result], PositivePercentageBasis::Unknown)
@@ -1549,6 +1742,9 @@ impl<L: CalcNodeLeaf> CalcNode<L> {
 
                 debug_assert!(children.len() >= 2, "Should still have multiple kids!");
 
+                // Sort by spec order.
+                children.sort_unstable_by_key(|c| c.sort_key());
+
                 // NOTE: if the function returns true, by the docs of dedup_by,
                 // a is removed.
                 children.dedup_by(|right, left| left.try_product_in_place(right));
@@ -1626,6 +1822,19 @@ impl<L: CalcNodeLeaf> CalcNode<L> {
             Self::Leaf(ref mut l) => {
                 l.simplify();
             },
+            Self::Anchor(ref mut f) => {
+                if let AnchorSide::Percentage(ref mut n) =  f.side {
+                    n.simplify_and_sort();
+                }
+                if let Some(fallback) = f.fallback.as_mut() {
+                    fallback.simplify_and_sort();
+                }
+            },
+            Self::AnchorSize(ref mut f) => {
+                if let Some(fallback) = f.fallback.as_mut() {
+                    fallback.simplify_and_sort();
+                }
+            }
         }
     }
 
@@ -1692,6 +1901,9 @@ impl<L: CalcNodeLeaf> CalcNode<L> {
                 true
             },
             Self::Invert(_) => {
+                if matches!(level, ArgumentLevel::CalculationRoot) {
+                    dest.write_str("calc")?;
+                }
                 dest.write_str("(1 / ")?;
                 true
             },
@@ -1706,7 +1918,7 @@ impl<L: CalcNodeLeaf> CalcNode<L> {
                     true
                 },
             },
-            Self::Leaf(_) => match level {
+            Self::Leaf(_) | Self::Anchor(_) | Self::AnchorSize(_) => match level {
                 ArgumentLevel::CalculationRoot => {
                     dest.write_str("calc(")?;
                     true
@@ -1815,6 +2027,8 @@ impl<L: CalcNodeLeaf> CalcNode<L> {
                 v.to_css_impl(dest, ArgumentLevel::ArgumentRoot)?
             },
             Self::Leaf(ref l) => l.to_css(dest)?,
+            Self::Anchor(ref f) => f.to_css(dest)?,
+            Self::AnchorSize(ref f) => f.to_css(dest)?,
         }
 
         if write_closing_paren {

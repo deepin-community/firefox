@@ -3,7 +3,11 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 menu-view-genai-chat =
-    .label = บอตสนทนา AI
+    .label = แชทบอต AI
+menu-view-review-checker =
+    .label = เครื่องมือตรวจสอบบทวิจารณ์
+sidebar-options-menu-button =
+    .title = เปิดเมนู
 
 ## Labels for sidebar history panel
 
@@ -46,16 +50,30 @@ sidebar-position-right =
     .label = แสดงทางด้านขวา
 sidebar-vertical-tabs =
     .label = แท็บแนวตั้ง
+sidebar-settings =
+    .label = การตั้งค่าแถบข้าง
+sidebar-hide-tabs-and-sidebar =
+    .label = ซ่อนแท็บและแถบข้าง
+sidebar-show-on-the-right =
+    .label = ย้ายแถบข้างไปด้านขวา
+sidebar-show-on-the-left =
+    .label = ย้ายแถบข้างไปด้านซ้าย
+# Option to automatically expand the collapsed sidebar when the mouse pointer
+# hovers over it.
+expand-sidebar-on-hover =
+    .label = ขยายแถบข้างเมื่อเลื่อนเมาส์ไปวางแช่
 sidebar-horizontal-tabs =
     .label = แท็บแนวนอน
 sidebar-customize-tabs-header =
     .label = การตั้งค่าแท็บ
-sidebar-customize-settings-header =
-    .label = การตั้งค่าแถบข้าง
-sidebar-visibility-always-show =
-    .label = แสดงเสมอ
-sidebar-visibility-hide-sidebar =
-    .label = ซ่อนแถบข้าง
+sidebar-customize-button-header =
+    .label = ปุ่มแถบข้าง
+sidebar-customize-position-header =
+    .label = ตำแหน่งแถบข้าง
+sidebar-visibility-setting-always-show =
+    .label = ขยายและยุบแถบข้าง
+sidebar-visibility-setting-hide-sidebar =
+    .label = แสดงและซ่อนแถบข้าง
 
 ## Labels for sidebar context menu items
 
@@ -86,7 +104,7 @@ sidebar-history-context-menu-delete-page =
 ## Labels for sidebar menu items.
 
 sidebar-menu-genai-chat-label =
-    .label = บอตสนทนา AI
+    .label = แชทบอต AI
 sidebar-menu-history-label =
     .label = ประวัติ
 sidebar-menu-synced-tabs-label =
@@ -95,6 +113,39 @@ sidebar-menu-bookmarks-label =
     .label = ที่คั่นหน้า
 sidebar-menu-customize-label =
     .label = ปรับแต่งแถบข้าง
+sidebar-menu-review-checker-label =
+    .label = เครื่องมือตรวจสอบบทวิจารณ์
+
+## Tooltips for sidebar menu items.
+
+# The tooltip to show over the history icon, when history is not currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-open-history-tooltip = เปิดประวัติ ({ $shortcut })
+# The tooltip to show over the history icon, when history is currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-close-history-tooltip = ปิดประวัติ ({ $shortcut })
+# The tooltip to show over the bookmarks icon, when bookmarks is not currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-open-bookmarks-tooltip = เปิดที่คั่นหน้า ({ $shortcut })
+# The tooltip to show over the bookmarks icon, when bookmarks is currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-close-bookmarks-tooltip = ปิดที่คั่นหน้า ({ $shortcut })
+sidebar-menu-open-ai-chatbot-tooltip = เปิดแชทบอต AI
+sidebar-menu-close-ai-chatbot-tooltip = ปิดแชทบอต AI
+
+## Tooltips displayed over the AI chatbot icon.
+## Variables:
+##   $shortcut (String) - The OS specific keyboard shortcut.
+##   $provider (String) - The name of the AI chatbot provider (if available).
+
+sidebar-menu-open-ai-chatbot-tooltip-generic = เปิดแชทบอต AI ({ $shortcut })
+sidebar-menu-open-ai-chatbot-provider-tooltip = เปิด { $provider } ({ $shortcut })
+sidebar-menu-close-ai-chatbot-tooltip-generic = ปิดแชทบอต AI ({ $shortcut })
+sidebar-menu-close-ai-chatbot-provider-tooltip = ปิด { $provider } ({ $shortcut })
 
 ## Headings for sidebar menu panels.
 
@@ -104,6 +155,16 @@ sidebar-menu-history-header =
     .heading = ประวัติ
 sidebar-menu-syncedtabs-header =
     .heading = แท็บจากอุปกรณ์อื่น ๆ
+sidebar-menu-bookmarks-header =
+    .heading = ที่คั่นหน้า
+sidebar-panel-header-close-button =
+    .tooltiptext = ปิด
+
+## Titles for sidebar menu panels.
+
+sidebar-customize-title = ปรับแต่งแถบข้าง
+sidebar-history-title = ประวัติ
+sidebar-syncedtabs-title = แท็บจากอุปกรณ์อื่น ๆ
 
 ## Context for closing synced tabs when hovering over the items
 
@@ -113,3 +174,29 @@ sidebar-menu-syncedtabs-header =
 #   $deviceName (String) - the name of the device the user is closing a tab for
 synced-tabs-context-close-tab-title =
     .title = ปิดแท็บบน { $deviceName }
+show-sidebars =
+    .tooltiptext = แสดงแถบข้าง
+    .label = แถบข้าง
+
+## Tooltips for the sidebar toolbar widget.
+
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-expand-sidebar2 =
+    .tooltiptext = ขยายแถบข้าง ({ $shortcut })
+    .label = แถบข้าง
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-collapse-sidebar2 =
+    .tooltiptext = ยุบแถบข้าง ({ $shortcut })
+    .label = แถบข้าง
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-show-sidebar2 =
+    .tooltiptext = แสดงแถบข้าง ({ $shortcut })
+    .label = แถบข้าง
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-hide-sidebar2 =
+    .tooltiptext = ซ่อนแถบข้าง ({ $shortcut })
+    .label = แถบข้าง

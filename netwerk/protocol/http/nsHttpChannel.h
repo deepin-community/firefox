@@ -55,12 +55,8 @@ using DNSPromise = MozPromise<nsCOMPtr<nsIDNSRecord>, nsresult, false>;
 //-----------------------------------------------------------------------------
 
 // Use to support QI nsIChannel to nsHttpChannel
-#define NS_HTTPCHANNEL_IID                           \
-  {                                                  \
-    0x301bf95b, 0x7bb3, 0x4ae1, {                    \
-      0xa9, 0x71, 0x40, 0xbc, 0xfa, 0x81, 0xde, 0x12 \
-    }                                                \
-  }
+#define NS_HTTPCHANNEL_IID \
+  {0x301bf95b, 0x7bb3, 0x4ae1, {0xa9, 0x71, 0x40, 0xbc, 0xfa, 0x81, 0xde, 0x12}}
 
 class nsHttpChannel final : public HttpBaseChannel,
                             public HttpAsyncAborter<nsHttpChannel>,
@@ -309,23 +305,11 @@ class nsHttpChannel final : public HttpBaseChannel,
   // Connections will only be established in this function.
   // (including DNS prefetch and speculative connection.)
   void MaybeResolveProxyAndBeginConnect();
-  nsresult MaybeStartDNSPrefetch();
-
-  // Tells the channel to resolve the origin of the end server we are connecting
-  // to.
-  static uint16_t const DNS_PREFETCH_ORIGIN = 1 << 0;
-  // Tells the channel to resolve the host name of the proxy.
-  static uint16_t const DNS_PREFETCH_PROXY = 1 << 1;
-  // Will be set if the current channel uses an HTTP/HTTPS proxy.
-  static uint16_t const DNS_PROXY_IS_HTTP = 1 << 2;
-  // Tells the channel to wait for the result of the origin server resolution
-  // before any connection attempts are made.
-  static uint16_t const DNS_BLOCK_ON_ORIGIN_RESOLVE = 1 << 3;
+  void MaybeStartDNSPrefetch();
 
   // Based on the proxy configuration determine the strategy for resolving the
   // end server host name.
-  // Returns a combination of the above flags.
-  uint16_t GetProxyDNSStrategy();
+  ProxyDNSStrategy GetProxyDNSStrategy();
 
   // We might synchronously or asynchronously call BeginConnect,
   // which includes DNS prefetch and speculative connection, according to
@@ -638,7 +622,6 @@ class nsHttpChannel final : public HttpBaseChannel,
   bool mCacheOpenWithPriority{false};
   uint32_t mCacheQueueSizeWhenOpen{0};
 
-  Atomic<bool, Relaxed> mCachedContentIsValid{false};
   Atomic<bool> mIsAuthChannel{false};
   Atomic<bool> mAuthRetryPending{false};
 
@@ -713,6 +696,10 @@ class nsHttpChannel final : public HttpBaseChannel,
   // Broken up into two bitfields to avoid alignment requirements of uint64_t.
   // (Too many bits used for one uint32_t.)
   MOZ_ATOMIC_BITFIELDS(mAtomicBitfields6, 32, (
+    // True if network request gets to OnStart before we get a response from the cache
+    (uint32_t, NetworkWonRace, 1),
+    // Valid values are CachedContentValid
+    (uint32_t, CachedContentIsValid, 2),
     // Only set to true when we receive an HTTPSSVC record before the
     // transaction is created.
     (uint32_t, HTTPSSVCTelemetryReported, 1),
@@ -720,6 +707,11 @@ class nsHttpChannel final : public HttpBaseChannel,
     (uint32_t, AuthRedirectedChannel, 1)
   ))
   // clang-format on
+  enum CachedContentValidity : uint8_t { Unset = 0, Invalid = 1, Valid = 2 };
+
+  bool CachedContentIsValid() {
+    return LoadCachedContentIsValid() == CachedContentValidity::Valid;
+  }
 
   nsTArray<nsContinueRedirectionFunc> mRedirectFuncStack;
 
@@ -832,6 +824,7 @@ class nsHttpChannel final : public HttpBaseChannel,
   // SetupTransaction removed conditional headers and decisions made in
   // OnCacheEntryCheck are no longer valid.
   bool mIgnoreCacheEntry{false};
+  bool mAllowRCWN{true};
   // Lock preventing SetupTransaction/MaybeCreateCacheEntryWhenRCWN and
   // OnCacheEntryCheck being called at the same time.
   mozilla::Mutex mRCWNLock MOZ_UNANNOTATED{"nsHttpChannel.mRCWNLock"};

@@ -21,9 +21,9 @@ import mozilla.components.lib.crash.CrashReporter
 import org.mozilla.fenix.BuildConfig
 import org.mozilla.fenix.Config
 import org.mozilla.fenix.GleanMetrics.FirstSession
+import org.mozilla.fenix.ext.components
 import org.mozilla.fenix.ext.settings
 
-@Deprecated("Adjust is disabled", level = DeprecationLevel.ERROR)
 class AdjustMetricsService(
     private val application: Application,
     private val storage: MetricsStorage,
@@ -53,7 +53,7 @@ class AdjustMetricsService(
         )
         config.setPreinstallTrackingEnabled(true)
 
-        val installationPing = FirstSessionPing(application)
+        val installationPing = FirstSessionPing(application, application.components.core.store)
 
         FirstSession.adjustAttributionTimespan.start()
         val timerId = FirstSession.adjustAttributionTime.start()

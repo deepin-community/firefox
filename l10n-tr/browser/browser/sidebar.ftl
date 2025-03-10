@@ -4,6 +4,12 @@
 
 menu-view-genai-chat =
     .label = Yapay zekâ sohbet botu
+menu-view-review-checker =
+    .label = Değerlendirme kontrolcüsü
+menu-view-contextual-password-manager =
+    .label = Parolalar
+sidebar-options-menu-button =
+    .title = Menüyü aç
 
 ## Labels for sidebar history panel
 
@@ -46,16 +52,30 @@ sidebar-position-right =
     .label = Sağda göster
 sidebar-vertical-tabs =
     .label = Dikey sekmeler
+sidebar-settings =
+    .label = Kenar çubuğu ayarları
+sidebar-hide-tabs-and-sidebar =
+    .label = Sekmeleri ve kenar çubuğunu gizle
+sidebar-show-on-the-right =
+    .label = Kenar çubuğunu sağa taşı
+sidebar-show-on-the-left =
+    .label = Kenar çubuğunu sola taşı
+# Option to automatically expand the collapsed sidebar when the mouse pointer
+# hovers over it.
+expand-sidebar-on-hover =
+    .label = Üzerine gelince kenar çubuğunu genişlet
 sidebar-horizontal-tabs =
     .label = Yatay sekmeler
 sidebar-customize-tabs-header =
     .label = Sekme ayarları
-sidebar-customize-settings-header =
-    .label = Kenar çubuğu ayarları
-sidebar-visibility-always-show =
-    .label = Her zaman göster
-sidebar-visibility-hide-sidebar =
-    .label = Kenar çubuğunu gizle
+sidebar-customize-button-header =
+    .label = Kenar çubuğu düğmesi
+sidebar-customize-position-header =
+    .label = Kenar çubuğu konumu
+sidebar-visibility-setting-always-show =
+    .label = Kenar çubuğunu genişlet ve daralt
+sidebar-visibility-setting-hide-sidebar =
+    .label = Kenar çubuğunu göster ve gizle
 
 ## Labels for sidebar context menu items
 
@@ -73,6 +93,10 @@ sidebar-context-menu-bookmark-tab =
     .label = Sekmeyi yer imlerine ekle…
 sidebar-context-menu-copy-link =
     .label = Bağlantıyı kopyala
+# Variables:
+#   $deviceName (String) - The name of the device the user is closing a tab for
+sidebar-context-menu-close-remote-tab =
+    .label = { $deviceName } cihazındaki sekmeyi kapat
 
 ## Labels for sidebar history context menu items
 
@@ -91,6 +115,41 @@ sidebar-menu-bookmarks-label =
     .label = Yer imleri
 sidebar-menu-customize-label =
     .label = Kenar çubuğunu özelleştir
+sidebar-menu-review-checker-label =
+    .label = Değerlendirme kontrolcüsü
+sidebar-menu-contextual-password-manager-label =
+    .label = Parolalar
+
+## Tooltips for sidebar menu items.
+
+# The tooltip to show over the history icon, when history is not currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-open-history-tooltip = Geçmişi aç ({ $shortcut })
+# The tooltip to show over the history icon, when history is currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-close-history-tooltip = Geçmişi kapat ({ $shortcut })
+# The tooltip to show over the bookmarks icon, when bookmarks is not currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-open-bookmarks-tooltip = Yer imlerini aç ({ $shortcut })
+# The tooltip to show over the bookmarks icon, when bookmarks is currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-close-bookmarks-tooltip = Yer imlerini kapat ({ $shortcut })
+sidebar-menu-open-ai-chatbot-tooltip = Yapay zekâ sohbet botunu aç
+sidebar-menu-close-ai-chatbot-tooltip = Yapay zekâ sohbet botunu kapat
+
+## Tooltips displayed over the AI chatbot icon.
+## Variables:
+##   $shortcut (String) - The OS specific keyboard shortcut.
+##   $provider (String) - The name of the AI chatbot provider (if available).
+
+sidebar-menu-open-ai-chatbot-tooltip-generic = YZ sohbet botunu aç ({ $shortcut })
+sidebar-menu-open-ai-chatbot-provider-tooltip = { $provider } servisini aç ({ $shortcut })
+sidebar-menu-close-ai-chatbot-tooltip-generic = YZ sohbet botunu kapat ({ $shortcut })
+sidebar-menu-close-ai-chatbot-provider-tooltip = { $provider } servisini kapat ({ $shortcut })
 
 ## Headings for sidebar menu panels.
 
@@ -100,3 +159,50 @@ sidebar-menu-history-header =
     .heading = Geçmiş
 sidebar-menu-syncedtabs-header =
     .heading = Diğer cihazlardaki sekmeler
+sidebar-menu-bookmarks-header =
+    .heading = Yer imleri
+sidebar-menu-cpm-header =
+    .heading = Parolalar
+sidebar-panel-header-close-button =
+    .tooltiptext = Kapat
+
+## Titles for sidebar menu panels.
+
+sidebar-customize-title = Kenar çubuğunu özelleştir
+sidebar-history-title = Geçmiş
+sidebar-syncedtabs-title = Diğer cihazlardaki sekmeler
+
+## Context for closing synced tabs when hovering over the items
+
+# Context for hovering over the close tab button that will
+# send a push to the device to close said tab
+# Variables:
+#   $deviceName (String) - the name of the device the user is closing a tab for
+synced-tabs-context-close-tab-title =
+    .title = { $deviceName } cihazındaki sekmeyi kapat
+show-sidebars =
+    .tooltiptext = Kenar çubuklarını göster
+    .label = Kenar çubukları
+
+## Tooltips for the sidebar toolbar widget.
+
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-expand-sidebar2 =
+    .tooltiptext = Kenar çubuğunu genişlet ({ $shortcut })
+    .label = Kenar çubukları
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-collapse-sidebar2 =
+    .tooltiptext = Kenar çubuğunu daralt ({ $shortcut })
+    .label = Kenar çubukları
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-show-sidebar2 =
+    .tooltiptext = Kenar çubuğunu göster ({ $shortcut })
+    .label = Kenar çubukları
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-hide-sidebar2 =
+    .tooltiptext = Kenar çubuğunu gizle ({ $shortcut })
+    .label = Kenar çubukları

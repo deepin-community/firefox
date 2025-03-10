@@ -13,10 +13,17 @@
 edition = "2021"
 rust-version = "1.76"
 name = "wgpu-core"
-version = "22.0.0"
+version = "23.0.1"
 authors = ["gfx-rs developers"]
-description = "WebGPU core logic on wgpu-hal"
+build = "build.rs"
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+description = "Core implementation logic of wgpu, the cross-platform, safe, pure-rust graphics API"
 homepage = "https://wgpu.rs/"
+readme = false
 keywords = ["graphics"]
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/gfx-rs/wgpu"
@@ -38,34 +45,46 @@ targets = [
 ]
 
 [lib]
+name = "wgpu_core"
+path = "src/lib.rs"
 
-[dependencies]
-arrayvec = "0.7"
-bit-vec = "0.8"
-bitflags = "2.6"
-document-features = "0.2.10"
-indexmap = "2"
-log = "0.4"
-once_cell = "1.19.0"
-parking_lot = ">=0.11, <0.13"
-rustc-hash = "1.1.0"
-smallvec = "1"
-thiserror = "1.0.63"
+[dependencies.arrayvec]
+version = "0.7"
+
+[dependencies.bit-vec]
+version = "0.8"
+
+[dependencies.bitflags]
+version = "2.7"
 
 [dependencies.bytemuck]
-version = "1.17"
-features = ["derive"]
+version = "1.21"
 optional = true
 
+[dependencies.document-features]
+version = "0.2.10"
+
 [dependencies.hal]
-version = "22.0.0"
+version = "23.0.0"
 path = "../wgpu-hal"
 default-features = false
 package = "wgpu-hal"
 
+[dependencies.indexmap]
+version = "2"
+
+[dependencies.log]
+version = "0.4"
+
 [dependencies.naga]
-version = "22.0.0"
+version = "23.0.0"
 path = "../naga"
+
+[dependencies.once_cell]
+version = "1.20.2"
+
+[dependencies.parking_lot]
+version = "0.12.1"
 
 [dependencies.profiling]
 version = "1"
@@ -79,18 +98,31 @@ optional = true
 version = "0.8"
 optional = true
 
+[dependencies.rustc-hash]
+version = "1"
+
 [dependencies.serde]
 version = "1"
-features = ["derive"]
+features = [
+    "default",
+    "derive",
+]
 optional = true
+default-features = false
+
+[dependencies.smallvec]
+version = "1"
+
+[dependencies.thiserror]
+version = "2"
 
 [dependencies.wgt]
-version = "22.0.0"
+version = "23.0.0"
 path = "../wgpu-types"
 package = "wgpu-types"
 
-[build-dependencies]
-cfg_aliases = "0.1"
+[build-dependencies.cfg_aliases]
+version = "0.2.1"
 
 [features]
 api_log_info = []
@@ -102,6 +134,7 @@ fragile-send-sync-non-atomic-wasm = [
 ]
 gles = ["hal/gles"]
 glsl = ["naga/glsl-in"]
+indirect-validation = ["naga/wgsl-in"]
 metal = ["hal/metal"]
 observe_locks = [
     "dep:ron",
@@ -131,3 +164,8 @@ trace = [
 ]
 vulkan = ["hal/vulkan"]
 wgsl = ["naga/wgsl-in"]
+
+[lints.rust.unexpected_cfgs]
+level = "warn"
+priority = 0
+check-cfg = ["cfg(wgpu_validate_locks)"]

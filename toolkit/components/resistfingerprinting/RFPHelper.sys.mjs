@@ -340,17 +340,32 @@ class _RFPHelper {
     });
   }
 
-  _addOrClearContentMargin(aBrowser) {
-    let tab = aBrowser.getTabBrowser().getTabForBrowser(aBrowser);
+  _noLetterBoxingFor({ contentPrincipal, currentURI }) {
+    // we don't want letterboxing on...
+    return (
+      // ... privileged pages
+      contentPrincipal.isSystemPrincipal ||
+      // pdf.js
+      contentPrincipal.origin.startsWith("resource://pdf.js") ||
+      // ... about: URIs EXCEPT about:blank and about:srcdoc
+      // (see IsContentAccessibleAboutURI)
+      (currentURI.schemeIs("about") &&
+        currentURI.filePath != "blank" &&
+        currentURI.filePath != "srcdoc") ||
+      // ... source code
+      currentURI.schemeIs("view-source") ||
+      // ... browser extensions
+      contentPrincipal.addonPolicy
+    );
+  }
 
+  _addOrClearContentMargin(aBrowser) {
     // We won't do anything for lazy browsers.
     if (!aBrowser.isConnected) {
       return;
     }
-
-    // We should apply no margin around an empty tab or a tab with system
-    // principal.
-    if (tab.isEmpty || aBrowser.contentPrincipal.isSystemPrincipal) {
+    if (this._noLetterBoxingFor(aBrowser)) {
+      // this tab doesn't need letterboxing
       this._clearContentViewMargin(aBrowser);
     } else {
       this._roundContentView(aBrowser);
@@ -360,14 +375,14 @@ class _RFPHelper {
   /**
    * Given a width or height, returns the appropriate margin to apply.
    */
-  steppedRange(aDimension) {
+  steppedRange(aDimension, aIsWidth = false) {
     let stepping;
     if (aDimension <= 50) {
       return 0;
     } else if (aDimension <= 500) {
       stepping = 50;
     } else if (aDimension <= 1600) {
-      stepping = 100;
+      stepping = aIsWidth ? 200 : 100;
     } else {
       stepping = 200;
     }
@@ -443,7 +458,7 @@ class _RFPHelper {
       // stepping size.
       if (!this._letterboxingDimensions.length) {
         result = {
-          width: this.steppedRange(aWidth),
+          width: this.steppedRange(aWidth, true),
           height: this.steppedRange(aHeight),
         };
         log(
@@ -546,6 +561,14 @@ class _RFPHelper {
       // An initial attempt to use a border instead of a margin resulted
       // in offset event dispatching; so for now we use a colorless margin.
       aBrowser.style.margin = `${margins.height}px ${margins.width}px`;
+      if (this._isLetterboxingTesting) {
+        win.promiseDocumentFlushed(() => {
+          Services.obs.notifyObservers(
+            null,
+            "test:letterboxing:update-margin-finish"
+          );
+        });
+      }
     });
   }
 

@@ -15,6 +15,11 @@ about-glean-interface-description =
     <a data-l10n-name="glean-sdk-doc-link">{ glean-sdk-brand-name }</a>
     es un bibliotheca pro collection de datos usate in projectos { -vendor-short-name }.
     Iste interfacie es designate pro esser usate per disveloppatores e probatores pro <a data-l10n-name="fog-link">testar instrumentation</a> manualmente.
+about-glean-category-about-glean = Re { -glean-brand-name }
+about-glean-category-manual-testing = Test manual
+about-glean-category-adhoc-testing = Test ad hoc
+about-glean-category-profiler = Usar le Profilator
+about-glean-category-about-data = Re datos
 about-glean-upload-enabled = Le cargamento datos es activate.
 about-glean-upload-disabled = Le cargamento datos es disactivate.
 about-glean-upload-enabled-local = Datos carga es activate solo pro invio a un servitor local.
@@ -42,6 +47,7 @@ about-glean-glean-android = <code>MOZ_GLEAN_ANDROID</code>: { $glean-android-def
 #   $moz-official-define-value (Boolean): the value of the MOZILLA_OFFICIAL define.
 # Do not translate strings between <code> </code> tags.
 about-glean-moz-official = <code>MOZILLA_OFFICIAL</code>: { $moz-official-define-value }
+about-glean-additional-links = Pro un explication de altere manieras pro registrar e trovar datos, per favor refere te al scheda <strong>Re datos</strong>.
 about-glean-about-testing-header = Re testes
 # This message is followed by a numbered list.
 about-glean-manual-testing =
@@ -96,6 +102,34 @@ about-glean-adhoc-explanation2 =
     pro un metrica denominate <code>metric.category.metric_name</code>.
 # Do not translate strings between <code> </code> tags.
 about-glean-adhoc-note = Nota que que on usa le API de Glean JS per le consola del utensiles de disveloppamento. Isto significa que le categoria e le nomine metric es formattate in <code>camelCase</code> diversemente del APIs in le Rust e C++.
+about-glean-profiler-explanation =
+    Pro haber un vision plen de tote le indicatores registrate, tu pote usar le { -profiler-brand-name }.
+    Primo tu debe <a data-l10n-name="firefox-profiler-link">capturar un profilo de prestation</a>.
+    Un vice que tu captura le profilo, selige <q>Diagramma a marcator</q> e reguarda le marcatores sub <q>Telemetria</q>.
+about-glean-profiler-explanation-profiler =
+    In le profilo de prestation tu pote vider tote le indicatores colligite, quando illos era
+    colligite, e exactemente que valores era colligite. Per passage sur cata marcatores,
+    tu pote verificar que valor correcte era colligite e que collection eveniva al momento juste.
 controls-button-label-verbose = Applicar parametros e inviar ping
+about-glean-feedback-settings-only =
+    .message = Parametros applicate!
+about-glean-feedback-settings-and-ping =
+    .message = Parametros applicate e ping inviate!
 about-glean-about-data-header = Re datos
+about-glean-about-data-description =
+    Il ha poc differente utensiles que tu pote usar pro vider tu datos, secundo
+    lo que tu cerca.
+about-glean-about-data-description-list-intro =
+    Refere te al lista infra pro casos de uso
+    specific pro cata utensile:
+about-glean-about-data-list-item-dictionary =
+    Pro navigar per le lista de datos colligite per { -glean-brand-name } per application, consulta le
+    <a data-l10n-name="glean-dictionary-link">{ -glean-brand-name } Dictionario</a>.
+about-glean-about-data-list-item-about-telemetry =
+    Pro navigar per le lista de datos colligite per telemetria de legato, consulta
+    <a data-l10n-name="about-telemetry-link">about:telemetry</a>.
+about-glean-about-data-list-item-debug-ping-viewer = Pro navigar per le placas de depuration, vide le pings de diffusion directe del evento, o vide le visualisationes de indicator, consulta le <a data-l10n-name="glean-debug-ping-viewer">{ glean-debug-ping-viewer-brand-name }</a>.
+about-glean-about-data-list-item-firefox-profiler =
+    Pro registrar un profilo de prestationes e vider tote le metricas registrate, usa
+    <a data-l10n-name="about-glean-firefox-profiler">{ -profiler-brand-name }</a>.
 about-glean-about-data-explanation = Pro navigar per le lista de datos colligite, per favor consultar le <a data-l10n-name="glean-dictionary-link">{ -glean-brand-name } Dictionario</a>.

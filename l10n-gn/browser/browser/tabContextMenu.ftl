@@ -28,10 +28,16 @@ duplicate-tabs =
 close-tabs-to-the-start =
     .label = Emboty tendayke asu gotyo
     .accesskey = I
+close-tabs-to-the-start-vertical =
+    .label = Emboty tendayke yvategua
+    .accesskey = I
 # The following string is displayed on a menuitem that will close the tabs from the end of the tabstrip to the currently targeted tab (excluding the currently targeted and any other selected tabs).
 # In left-to-right languages this should use "Right" and in right-to-left languages this should use "Left".
 close-tabs-to-the-end =
     .label = Tendayke mboty akatúa gotyo
+    .accesskey = i
+close-tabs-to-the-end-vertical =
+    .label = Emboty tendayke yvygotyogua
     .accesskey = i
 close-other-tabs =
     .label = Ambue togue pyahu ñemboty
@@ -78,6 +84,16 @@ tab-context-close-duplicate-tabs =
 tab-context-share-url =
     .label = Moherakuã
     .accesskey = h
+# In left-to-right languages this should use "Right" and in right-to-left languages this should use "Left" to indicate the direction a new tab will open.
+tab-context-new-tab-open =
+    .label = Tendayke pyahu akatuagua
+    .accesskey = w
+tab-context-new-tab-open-vertical =
+    .label = Tendayke pyahu yvygotyogua
+    .accesskey = w
+tab-context-new-group =
+    .label = Aty pyahu
+    .accesskey = G
 
 ## Variables:
 ##  $tabCount (Number): the number of tabs that are affected by the action.

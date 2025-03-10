@@ -4,6 +4,7 @@
 
 about-networking-title = ქსელის შესახებ
 about-networking-http = HTTP
+about-networking-http-clear-cache-button = HTTP-მარაგის გასუფთავება
 about-networking-sockets = სოკეტები:
 about-networking-dns = DNS
 about-networking-dns-clear-cache-button = DNS-მარაგის გასუფთავება
@@ -44,11 +45,11 @@ about-networking-rcwn-status = RCWN-მდგომარეობა
 about-networking-rcwn-cache-won-count = მარაგის გამოყენება
 about-networking-rcwn-net-won-count = ქსელით მარაგის ჩანაცვლება
 about-networking-total-network-requests = ქსელის მოთხოვნები სულ
-about-networking-rcwn-operation = ოპერაცია ქეშზე
+about-networking-rcwn-operation = მოქმედება მარაგზე
 about-networking-rcwn-perf-open = გახსნა
 about-networking-rcwn-perf-read = წაკითხვა
 about-networking-rcwn-perf-write = ჩაწერა
-about-networking-rcwn-perf-entry-open = შესაყვანის გახსნა
+about-networking-rcwn-perf-entry-open = ჩანაწერის გახსნა
 about-networking-rcwn-avg-short = მოკლე საშუალო
 about-networking-rcwn-avg-long = გრძელი საშუალო
 about-networking-rcwn-std-dev-long = გრძელი სტანდარტული გადახრა

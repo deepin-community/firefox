@@ -241,6 +241,7 @@ device-migration-fxa-spotlight-older-device-body = Kontuak zure informazio garra
 device-migration-fxa-spotlight-older-device-primary-button = Sortu kontua
 device-migration-fxa-spotlight-getting-new-device-header-2 = Gailu berririk ba al da zure etorkizunean?
 device-migration-fxa-spotlight-getting-new-device-primary-button = Nola egin nire datuen babeskopia
+device-migration-fxa-spotlight-sync-primary-button = Hasi erabiltzen
 
 ## Set as Default PDF Reader Infobar
 
@@ -269,4 +270,59 @@ launch-on-login-infobar-final-reject-button = Ez, eskerrik asko
 
 ## Tail Fox Set Default Spotlight
 
+# This title is displayed together with the picture of a running fox with a long tail.
+# In English, this is a figure of speech meaning 'stop something from following you'.
+# If the localization of this message is challenging, consider using a simplified
+# alternative as a reference for translation: 'Keep unwanted trackers away'.
+tail-fox-spotlight-title = Kendu gainetik jarraipen-elementu gogaikarriak
+tail-fox-spotlight-subtitle = Esan agur iragarkien jarraipen-elementu nekagarriei eta egonkortu Internet-esperientzia seguru eta azkarrago batean.
+tail-fox-spotlight-primary-button = Ireki nire loturak { -brand-short-name } erabiliz
 tail-fox-spotlight-secondary-button = Une honetan ez
+
+## Root Certificate Succession Infobar
+
+root-certificate-succession-infobar-january-message = <strong>{ -brand-short-name }(r)en bertsio zaharragoak arazoak izaten has litezke 2025eko urtarrilaren 14tik aurrera.</strong>
+root-certificate-succession-infobar-march-message = <strong>Eguneratu { -brand-short-name } erabiltzen jarraitzeko 2025eko martxoaren 14aren ondoren.</strong>
+root-certificate-succession-infobar-link = Zergatik eguneratu behar dut?
+root-certificate-succession-infobar-primary-button =
+    .label = Eguneratu orain
+    .accesskey = E
+root-certificate-succession-infobar-secondary-button =
+    .label = Geroago
+    .accesskey = g
+
+## Root Certificate Succession Windows Background Notification
+
+root-certificate-windows-background-notification-learn-more-button = Argibide gehiago
+root-certificate-windows-background-notification-update-button = Eguneratu { -brand-short-name }
+
+## FxA Menu Message variants
+
+fxa-menu-message-close-button =
+    .title = Itxi
+    .aria-label = Itxi
+fxa-menu-message-sign-up-button = Eman izena
+fxa-menu-message-sync-devices-primary-text = Sinkronizatu zure gailu guztiak
+fxa-menu-message-sync-devices-collapsed-text = Sinkronizatu zure gailu guztiak
+fxa-menu-message-mobile-primary-text = Bidali fitxak zure telefonora
+fxa-menu-message-mobile-collapsed-text = Sinkronizatu zure telefonoarekin
+
+## Multi-CTA Fox Doodle Spotlight
+
+multi-cta-fox-doodle-title = Ongi etorri berriro
+multi-cta-fox-doodle-set-default-checkbox = Ezarri { -brand-short-name } lehenetsi gisa
+multi-cta-fox-doodle-pin-startmenu-checkbox = Ainguratu { -brand-short-name } Hasi menuan
+multi-cta-fox-doodle-pin-checkbox =
+    { PLATFORM() ->
+        [macos] Mantendu { -brand-short-name } Dock-ean
+       *[other] Ainguratu { -brand-short-name } ataza-barran
+    }
+multi-cta-fox-doodle-start-browsing-primary-button-label = Hasi nabigatzen
+multi-cta-fox-doodle-main-browser-primary-button-label = Egin { -brand-short-name } nire nabigatzaile nagusia
+multi-cta-fox-doodle-quick-reminder-subtitle = Hona hemen abisua gogorarazteko pribatutasunari zuzendutako zure nabigatzaile gogokoena klik bakarrera manten dezakezula.
+multi-cta-fox-doodle-privacy-focused-subtitle =
+    { PLATFORM() ->
+        [macos] Mantendu pribatutasunari zuzendutako zure nabigatzaile gogokoena klik bakarrera. Egizu { -brand-short-name } loturak irekitzeko zure nabigatzaile lehenetsia eta manten ezazu Dock-ean.
+       *[other] Mantendu pribatutasunari zuzendutako zure nabigatzaile gogokoena klik bakarrera. Egizu { -brand-short-name } loturak irekitzeko zure nabigatzaile lehenetsia eta manten ezazu ataza-barran.
+    }
+multi-cta-fox-doodle-msix-privacy-focused-subtitle = Mantendu pribatutasunari zuzendutako zure nabigatzaile gogokoena klik bakarrera. Egizu { -brand-short-name } loturak irekitzeko zure nabigatzaile lehenetsia eta manten ezazu ataza-barran eta Hasi menuan.

@@ -30,4 +30,13 @@ webext-perms-description-sessions = Auf kürzlich geschlossene Tabs zugreifen
 webext-perms-description-tabs = Auf Browsertabs zugreifen
 webext-perms-description-tabHide = Browsertabs ausblenden und anzeigen
 webext-perms-description-topSites = Auf Chronik zugreifen
+webext-perms-description-trialML = KI-Modelle herunterladen und auf Ihrem Gerät ausführen
+webext-perms-description-userScripts = Nicht verifizierten Skripten von Drittanbietern den Zugriff auf Ihre Daten erlauben
 webext-perms-description-webNavigation = Auf Browseraktivität während Seitenwechsel zugreifen
+
+## The userScripts permission includes an additional explanation that is
+## displayed prominently near the usual permission description.
+
+webext-perms-extra-warning-userScripts-long = Nicht verifizierte Skripte können ein Risiko für Sicherheit und Datenschutz darstellen, z.B. schädlichen Quelltext ausführen oder Website-Aktivitäten verfolgen. Führen Sie nur Skripte von Erweiterungen oder Quellen aus, denen Sie vertrauen.
+# A shorter warning is displayed in UI surfaces with little room, such as a permission prompt.
+webext-perms-extra-warning-userScripts-short = Nicht verifizierte Skripte können Risiken für Sicherheit und Datenschutz darstellen. Führen Sie nur Skripte von Erweiterungen oder Quellen aus, denen Sie vertrauen.

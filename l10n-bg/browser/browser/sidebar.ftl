@@ -4,6 +4,10 @@
 
 menu-view-genai-chat =
     .label = AI Чатбот
+menu-view-review-checker =
+    .label = Проверка на отзиви
+sidebar-options-menu-button =
+    .title = Отваряне на меню
 
 ## Labels for sidebar history panel
 
@@ -19,12 +23,24 @@ sidebar-history-date-prev-month =
     .heading = { DATETIME($date, month: "long", year: "numeric") }
 sidebar-history-delete =
     .title = Изтриване от историята
+sidebar-history-sort-by-date =
+    .label = Сортиране по дата
+sidebar-history-sort-by-site =
+    .label = Сортиране по страница
+sidebar-history-clear =
+    .label = Изчистване на историята
 
 ## Labels for sidebar search
 
+# "Search" is a noun (as in "Results of the search for")
+# Variables:
+#   $query (String) - The search query used for searching through browser history.
+sidebar-search-results-header =
+    .heading = Резултати за „{ $query }“
 
 ## Labels for sidebar customize panel
 
+sidebar-customize-extensions-header = Разширения за странична лента
 sidebar-customize-firefox-tools-header =
     .label = Инструменти на { -brand-product-name }
 sidebar-customize-firefox-settings = Управление на настройките на { -brand-short-name }
@@ -38,12 +54,14 @@ sidebar-horizontal-tabs =
     .label = Хоризонтални раздели
 sidebar-customize-tabs-header =
     .label = Настройки на разделите
-sidebar-customize-settings-header =
-    .label = Настройки на страничната лента
-sidebar-visibility-always-show =
-    .label = Да се показва винаги
-sidebar-visibility-hide-sidebar =
-    .label = Скриване на страничната лента
+sidebar-customize-button-header =
+    .label = Бутон на страничната лента
+sidebar-customize-position-header =
+    .label = Място на страничната лента
+sidebar-visibility-setting-always-show =
+    .label = Разгъване и свиване на страничната лента
+sidebar-visibility-setting-hide-sidebar =
+    .label = Показване и скриване на страничната лента
 
 ## Labels for sidebar context menu items
 
@@ -53,6 +71,23 @@ sidebar-context-menu-remove-extension =
     .label = Премахване на разширението
 sidebar-context-menu-report-extension =
     .label = Докладване на разширението
+sidebar-context-menu-open-in-window =
+    .label = Отваряне в прозорец
+sidebar-context-menu-open-in-private-window =
+    .label = Отваряне в поверителен прозорец
+sidebar-context-menu-bookmark-tab =
+    .label = Отмятане на раздела…
+sidebar-context-menu-copy-link =
+    .label = Копиране на препратката
+# Variables:
+#   $deviceName (String) - The name of the device the user is closing a tab for
+sidebar-context-menu-close-remote-tab =
+    .label = Затваряне на раздела на { $deviceName }
+
+## Labels for sidebar history context menu items
+
+sidebar-history-context-menu-delete-page =
+    .label = Изтриване от историята
 
 ## Labels for sidebar menu items.
 
@@ -65,13 +100,85 @@ sidebar-menu-synced-tabs-label =
 sidebar-menu-bookmarks-label =
     .label = Отметки
 sidebar-menu-customize-label =
-    .label = Персонализиране на страничната лента
+    .label = Приспособяване на страничната лента
+sidebar-menu-review-checker-label =
+    .label = Проверка на отзиви
+
+## Tooltips for sidebar menu items.
+
+# The tooltip to show over the history icon, when history is not currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-open-history-tooltip = Отваряне на историята ({ $shortcut })
+# The tooltip to show over the history icon, when history is currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-close-history-tooltip = Затваряне на историята ({ $shortcut })
+# The tooltip to show over the bookmarks icon, when bookmarks is not currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-open-bookmarks-tooltip = Отваряне на отметките ({ $shortcut })
+# The tooltip to show over the bookmarks icon, when bookmarks is currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-close-bookmarks-tooltip = Затваряне на отметките ({ $shortcut })
+sidebar-menu-open-ai-chatbot-tooltip = Отваряне на AI чатбот
+sidebar-menu-close-ai-chatbot-tooltip = Затваряне на AI чатбот
+
+## Tooltips displayed over the AI chatbot icon.
+## Variables:
+##   $shortcut (String) - The OS specific keyboard shortcut.
+##   $provider (String) - The name of the AI chatbot provider (if available).
+
 
 ## Headings for sidebar menu panels.
 
 sidebar-menu-customize-header =
-    .heading = Персонализиране на страничната лента
+    .heading = Приспособяване на страничната лента
 sidebar-menu-history-header =
     .heading = История
 sidebar-menu-syncedtabs-header =
     .heading = Раздели от други устройства
+sidebar-panel-header-close-button =
+    .tooltiptext = Затваряне
+
+## Titles for sidebar menu panels.
+
+sidebar-customize-title = Приспособяване на страничната лента
+sidebar-history-title = История
+sidebar-syncedtabs-title = Раздели от други устройства
+
+## Context for closing synced tabs when hovering over the items
+
+# Context for hovering over the close tab button that will
+# send a push to the device to close said tab
+# Variables:
+#   $deviceName (String) - the name of the device the user is closing a tab for
+synced-tabs-context-close-tab-title =
+    .title = Затваряне на раздела на { $deviceName }
+show-sidebars =
+    .tooltiptext = Показване на странични ленти
+    .label = Странични ленти
+
+## Tooltips for the sidebar toolbar widget.
+
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-expand-sidebar2 =
+    .tooltiptext = Разгъване на страничната лента ({ $shortcut })
+    .label = Странични ленти
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-collapse-sidebar2 =
+    .tooltiptext = Свиване на страничната лента ({ $shortcut })
+    .label = Странични ленти
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-show-sidebar2 =
+    .tooltiptext = Показване на страничната лента ({ $shortcut })
+    .label = Странични ленти
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-hide-sidebar2 =
+    .tooltiptext = Скриване на страничната лента ({ $shortcut })
+    .label = Странични ленти

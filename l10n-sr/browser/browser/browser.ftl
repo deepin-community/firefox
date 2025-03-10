@@ -279,6 +279,9 @@ quickactions-cmd-plugins = прикључци
 # Opens the print dialog
 quickactions-print2 = Штампај страницу
 quickactions-cmd-print = штампај
+# Opens the print dialog at the save to PDF option
+quickactions-savepdf = Сачувај страницу као PDF
+quickactions-cmd-savepdf = pdf
 # Opens a new private browsing window
 quickactions-private2 = Отвори приватни прозор
 quickactions-cmd-private = приватно прегледање
@@ -355,6 +358,7 @@ identity-connection-internal =
        *[other] програма { -brand-short-name }
     }.
 identity-connection-file = Ова страница је сачувана на рачунару.
+identity-connection-associated = Ова страница је учитана из друге странице.
 identity-extension-page = Ову страницу је отворио додатак.
 identity-active-blocked =
     { -brand-short-name.gender ->
@@ -370,6 +374,7 @@ identity-weak-encryption = Ова страница користи слабо ш�
 identity-insecure-login-forms = Пријаве које су унесене на овој страници су можда угрожене.
 identity-https-only-connection-upgraded = (надограђено на HTTPS)
 identity-https-only-label = Режим „Само HTTPS”
+identity-https-only-label2 = Аутоматски надоградите ову страницу на безбедну везу
 identity-https-only-dropdown-on =
     .label = Укључено
 identity-https-only-dropdown-off =
@@ -378,6 +383,8 @@ identity-https-only-dropdown-off-temporarily =
     .label = Привремено искључено
 identity-https-only-info-turn-on2 = Укључите режим „Само HTTPS” за овај сајт ако желите да { -brand-short-name } надогради везу кад је то могуће.
 identity-https-only-info-turn-off2 = Ако страница делује неисправно, можете искључити режим „Само HTTPS” и поново је учитати преко небезбедног HTTP-а.
+identity-https-only-info-turn-on3 = Укључите HTTPS надоградње за ову страницу ако желите да { -brand-short-name } надогради везу кад год је могуће.
+identity-https-only-info-turn-off3 = Ако страница делује неисправно, можете искључити HTTPS надоградње и поново је учитати преко небезбедног HTTP-а.
 identity-https-only-info-no-upgrade = Није могуће надоградити HTTP везу.
 identity-permissions-storage-access-header = Колачићи трећих страна
 identity-permissions-storage-access-hint = Ове стране могу користити колачиће трећих страна и страничне податке током ваше посете страници.
@@ -579,6 +586,11 @@ urlbar-result-action-search-w-engine = Претражи у претражива�
 urlbar-result-action-sponsored = Спонзорисано
 urlbar-result-action-switch-tab = Пређи на картицу
 urlbar-result-action-visit = Посети
+# "Switch to tab with container" is used when the target tab is located in a
+# different container.
+# Variables
+# $container (String): the name of the target container
+urlbar-result-action-switch-tab-with-container = Пребаци на картицу · <span>{ $container }</span>
 # Directs a user to press the Tab key to perform a search with the specified
 # engine.
 # Variables
@@ -607,6 +619,48 @@ urlbar-result-action-copy-to-clipboard = Копирај
 #  $result (String): the string representation for a formula result
 urlbar-result-action-calculator-result = = { $result }
 
+## Strings used for buttons in the urlbar
+
+# Label prompting user to search with a particular search engine.
+#  $engine (String): the name of a search engine that searches a specific site
+urlbar-result-search-with = Претражи у { $engine }
+# Label for the urlbar result row, prompting the user to use a local keyword to enter search mode.
+#  $keywords (String): the restrict keyword to enter search mode.
+#  $localSearchMode (String): the local search mode (history, tabs, bookmarks,
+#  or actions) to search with.
+urlbar-result-search-with-local-search-mode = { $keywords } - претражи { $localSearchMode }
+# Label for the urlbar result row, prompting the user to use engine keywords to enter search mode.
+#  $keywords (String): the default keyword and user's set keyword if available
+#  $engine (String): the name of a search engine
+urlbar-result-search-with-engine-keywords = { $keywords } - претражи у { $engine }
+urlbar-searchmode-dropmarker =
+    .tooltiptext = Изаберите претраживач
+urlbar-searchmode-bookmarks =
+    .label = Обележивачи
+urlbar-searchmode-tabs =
+    .label = Картице
+urlbar-searchmode-history =
+    .label = Историја
+urlbar-searchmode-actions =
+    .label = Радње
+urlbar-searchmode-exit-button =
+    .tooltiptext = Затвори
+# Label shown on the top of Searchmode Switcher popup. After this label, the
+# available search engines will be listed.
+urlbar-searchmode-popup-description = Овај пут претражи користећи:
+urlbar-searchmode-popup-search-settings-menuitem =
+    .label = Подешавање претраге
+urlbar-searchmode-popup-search-settings = Подешавање претраге
+# Searchmode Switcher button
+# Variables:
+#   $engine (String): the current default search engine.
+urlbar-searchmode-button2 =
+    .label = { $engine }, изабери претраживач
+    .tooltiptext = { $engine }, изабери претраживач
+urlbar-searchmode-button-no-engine =
+    .label = Није изабрана пречица, изабери пречицу
+    .tooltiptext = Није изабрана пречица, изабери пречицу
+
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
 ## In these actions "Search" is a verb, followed by where the search is performed.
@@ -631,6 +685,26 @@ urlbar-group-search-suggestions =
 # A label shown above Quick Actions in the urlbar results.
 urlbar-group-quickactions =
     .label = Брзе радње
+# A label shown above the recent searches group in the urlbar results.
+# Variables
+#  $engine (String): the name of the search engine used to search.
+urlbar-group-recent-searches =
+    .label = Недавне претраге
+# The header shown above trending results.
+# Variables:
+#  $engine (String): the name of the search engine providing the trending suggestions
+urlbar-group-trending =
+    .label = У { $engine } тренду
+# The result menu labels shown next to trending results.
+urlbar-result-menu-trending-dont-show =
+    .label = Не приказуј претраге у тренду
+    .accesskey = Н
+urlbar-result-menu-trending-why =
+    .label = Зашто ми се ово приказује?
+    .accesskey = З
+# A message that replaces a result when the user dismisses all suggestions of a
+# particular type.
+urlbar-trending-dismissal-acknowledgment = Хвала на повратним информацијама. Више нећете видети претраге у тренду.
 
 ## Reader View toolbar buttons
 
@@ -896,6 +970,10 @@ tabs-toolbar-list-all-tabs =
 restore-session-startup-suggestion-message = <strong>Отворити претходне картице?</strong> Можете повратити претходну сесију из менија програма { -brand-short-name } <img data-l10n-name="icon"/>, у одељку Историја.
 restore-session-startup-suggestion-button = Покажи ми како
 
+## Infobar shown when the user tries to open a file picker and file pickers are blocked by enterprise policy
+
+filepicker-blocked-infobar = Ваша организација је блокирала приступ локалним датотекама на овом рачунару
+
 ## Mozilla data reporting notification (Telemetry, Firefox Health Report, etc)
 
 data-reporting-notification-message = { -brand-short-name } аутоматски шаље податке { -vendor-short-name } да бисмо побољшали корисничко искуство.
@@ -904,6 +982,13 @@ data-reporting-notification-button =
     .accesskey = И
 # Label for the indicator shown in the private browsing window titlebar.
 private-browsing-indicator-label = Приватно прегледање
+# Tooltip for the indicator shown in the private browsing window titlebar.
+private-browsing-indicator-tooltip =
+    .tooltiptext = Приватно прегледање
+content-analysis-panel-title = Заштита података
+# Variables:
+#   $agentName (String): The name of the DLP agent that is connected
+content-analysis-panel-text-styled = Ваша организација користи <b>{ $agentName }</b> за заштиту од губитка података. <a data-l10n-name="info">Сазнајте више</a>
 
 ## Unified extensions (toolbar) button
 
@@ -929,8 +1014,27 @@ unified-extensions-button-quarantined =
         Додаци
         Неки додаци нису дозвољени
 
+## Unified extensions button when some extensions are disabled (e.g. through add-ons blocklist).
+## Note that the new line is intentionally part of the tooltip.
+
+
 ## Private browsing reset button
 
+reset-pbm-toolbar-button =
+    .label = Заврши приватну сесију
+    .tooltiptext = Заврши приватну сесију
+reset-pbm-panel-heading = Заврши приватну сесију?
+reset-pbm-panel-description = Затвори све приватне картице и обриши историју, колачиће и све остале податке.
+reset-pbm-panel-always-ask-checkbox =
+    .label = Увек ме питај
+    .accesskey = У
+reset-pbm-panel-cancel-button =
+    .label = Откажи
+    .accesskey = О
+reset-pbm-panel-confirm-button =
+    .label = Обриши податке сесије
+    .accesskey = п
+reset-pbm-panel-complete = Подаци приватне сесије су обрисани
 
 ## Autorefresh blocker
 
@@ -953,6 +1057,7 @@ firefox-relay-offer-legal-notice = Кликом на „Користи маск�
 popup-notification-addon-install-unsigned =
     .value = (неверефиковано)
 popup-notification-xpinstall-prompt-learn-more = Сазнајте више о безбедном инсталирању додатака
+popup-notification-xpinstall-prompt-block-url = Прикажи детаље
 
 ## Pop-up warning
 
@@ -987,4 +1092,22 @@ popup-warning-button =
 # Variables:
 #   $popupURI (String): the URI for the pop-up window
 popup-show-popup-menuitem =
-    .label = Прикажи „{ $popupURI }‟
+    .label = Прикажи „{ $popupURI }”
+
+## File-picker crash notification ("FilePickerCrashed.sys.mjs")
+
+file-picker-failed-open = Није могуће отворити Windows дијалошки оквир за избор датотеке. Није могуће изабрати ни датотеку ни фасциклу.
+#   $path (string): The full path to which the file will be saved (e.g., 'C:\Users\Default User\Downloads\readme.txt').
+file-picker-failed-save-somewhere = Није могуће отворити Windows дијалошки оквир за избор датотеке. Датотека ће бити сачувана у { $path }.
+file-picker-failed-save-nowhere = Није могуће отворити Windows дијалошки оквир за избор датотеке. Подразумевана фасцикла за чување није пронађена, те датотека неће бити сачувана.
+file-picker-crashed-open = Windows дијалошки оквир за избор датотеке је пао. Није могуће изабрати датотеку ни фасциклу.
+#   $path (string): The full path to which the file will be saved (e.g., 'C:\Users\Default User\Downloads\readme.txt').
+file-picker-crashed-save-somewhere = Windows дијалошки оквир за избор датотеке је пао. Датотека ће бити сачувана у { $path }.
+file-picker-crashed-save-nowhere = Windows дијалошки оквир за избор датотеке је пао. Подразумевана фасцикла за чување није пронађена, те датотека неће бити сачувана.
+
+# Button used with file-picker-crashed-save-default. Opens the folder in Windows
+# Explorer, with the saved file selected and in focus.
+#
+# The wording here should be consistent with the Windows variant of
+# `downloads-cmd-show-menuitem-2` and similar messages.
+

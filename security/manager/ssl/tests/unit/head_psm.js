@@ -111,6 +111,10 @@ const MOZILLA_PKIX_ERROR_ADDITIONAL_POLICY_CONSTRAINT_FAILED =
   MOZILLA_PKIX_ERROR_BASE + 13;
 const MOZILLA_PKIX_ERROR_SELF_SIGNED_CERT = MOZILLA_PKIX_ERROR_BASE + 14;
 const MOZILLA_PKIX_ERROR_MITM_DETECTED = MOZILLA_PKIX_ERROR_BASE + 15;
+const MOZILLA_PKIX_ERROR_INSUFFICIENT_CERTIFICATE_TRANSPARENCY =
+  MOZILLA_PKIX_ERROR_BASE + 16;
+const MOZILLA_PKIX_ERROR_ISSUER_NO_LONGER_TRUSTED =
+  MOZILLA_PKIX_ERROR_BASE + 17;
 
 // Supported Certificate Usages
 const certificateUsageSSLClient = 0x0001;
@@ -818,15 +822,15 @@ function startOCSPResponder(
   expectedResponseTypes,
   responseHeaderPairs = []
 ) {
-  let ocspResponseGenerationArgs = expectedCertNames.map(function (
-    expectedNick
-  ) {
-    let responseType = "good";
-    if (expectedResponseTypes && expectedResponseTypes.length >= 1) {
-      responseType = expectedResponseTypes.shift();
+  let ocspResponseGenerationArgs = expectedCertNames.map(
+    function (expectedNick) {
+      let responseType = "good";
+      if (expectedResponseTypes && expectedResponseTypes.length >= 1) {
+        responseType = expectedResponseTypes.shift();
+      }
+      return [responseType, expectedNick, "unused", 0];
     }
-    return [responseType, expectedNick, "unused", 0];
-  });
+  );
   let ocspResponses = generateOCSPResponses(
     ocspResponseGenerationArgs,
     nssDBLocation
@@ -1104,7 +1108,7 @@ function writeLinesAndClose(lines, outputStream) {
  *        A unique substring of name of the dynamic library file of the module
  *        that should not be loaded.
  */
-function checkPKCS11ModuleNotPresent(moduleName, libraryName) {
+function checkPKCS11ModuleNotPresent(moduleName, libraryName = "undefined") {
   let moduleDB = Cc["@mozilla.org/security/pkcs11moduledb;1"].getService(
     Ci.nsIPKCS11ModuleDB
   );
@@ -1119,10 +1123,12 @@ function checkPKCS11ModuleNotPresent(moduleName, libraryName) {
       moduleName,
       `Non-test module name shouldn't equal '${moduleName}'`
     );
-    ok(
-      !(module.libName && module.libName.includes(libraryName)),
-      `Non-test module lib name should not include '${libraryName}'`
-    );
+    if (libraryName != "undefined") {
+      ok(
+        !(module.libName && module.libName.includes(libraryName)),
+        `Non-test module lib name should not include '${libraryName}'`
+      );
+    }
   }
 }
 
@@ -1138,7 +1144,7 @@ function checkPKCS11ModuleNotPresent(moduleName, libraryName) {
  * @returns {nsIPKCS11Module}
  *          The test module.
  */
-function checkPKCS11ModuleExists(moduleName, libraryName) {
+function checkPKCS11ModuleExists(moduleName, libraryName = "undefined") {
   let moduleDB = Cc["@mozilla.org/security/pkcs11moduledb;1"].getService(
     Ci.nsIPKCS11ModuleDB
   );
@@ -1155,11 +1161,17 @@ function checkPKCS11ModuleExists(moduleName, libraryName) {
     }
   }
   notEqual(testModule, null, "Test module should have been found");
-  notEqual(testModule.libName, null, "Test module lib name should not be null");
-  ok(
-    testModule.libName.includes(ctypes.libraryName(libraryName)),
-    `Test module lib name should include lib name of '${libraryName}'`
-  );
+  if (libraryName != "undefined") {
+    notEqual(
+      testModule.libName,
+      null,
+      "Test module lib name should not be null"
+    );
+    ok(
+      testModule.libName.includes(ctypes.libraryName(libraryName)),
+      `Test module lib name should include lib name of '${libraryName}'`
+    );
+  }
 
   return testModule;
 }
@@ -1246,6 +1258,10 @@ function append_line_to_data_storage_file(
   outputStream.write(line, line.length);
 }
 
+// Helper constants for setting security.pki.certificate_transparency.mode.
+const CT_MODE_COLLECT_TELEMETRY = 1;
+const CT_MODE_ENFORCE = 2;
+
 // Helper function for add_ct_test. Returns a function that checks that the
 // nsITransportSecurityInfo of the connection has the expected CT and resumed
 // statuses.
@@ -1269,18 +1285,23 @@ function expectCT(expectedCTValue, expectedResumed) {
 // Additionally, if an additional connection is made, it is expected that TLS
 // resumption is used and that the CT status is the same with the resumed
 // connection.
-function add_ct_test(host, expectedCTValue) {
+function add_ct_test(host, expectedCTValue, expectConnectionSuccess) {
   add_connection_test(
     host,
-    PRErrorCodeSuccess,
+    expectConnectionSuccess
+      ? PRErrorCodeSuccess
+      : MOZILLA_PKIX_ERROR_INSUFFICIENT_CERTIFICATE_TRANSPARENCY,
     null,
     expectCT(expectedCTValue, false)
   );
-  // Test that session resumption results in the same expected CT status.
-  add_connection_test(
-    host,
-    PRErrorCodeSuccess,
-    null,
-    expectCT(expectedCTValue, true)
-  );
+  // Test that session resumption results in the same expected CT status for
+  // successful connections.
+  if (expectConnectionSuccess) {
+    add_connection_test(
+      host,
+      PRErrorCodeSuccess,
+      null,
+      expectCT(expectedCTValue, true)
+    );
+  }
 }

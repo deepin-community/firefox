@@ -225,7 +225,9 @@ mr2022-onboarding-set-default-subtitle = Używaj przeglądarki wspieranej przez 
 mr2022-onboarding-get-started-primary-subtitle = Nasza najnowsza wersja jest tworzona z myślą o Tobie, dzięki czemu śmiganie po sieci jest łatwiejsze niż kiedykolwiek. Jest wypełniona funkcjami, które naszym zdaniem pokochasz.
 mr2022-onboarding-get-started-primary-button-label = Skonfiguruj w kilka sekund
 
-## MR2022 Import Settings screen strings
+## MR2022 Get Started screen strings.
+## These strings will be used on the welcome page
+## when Firefox is already set to default and pinned.
 
 mr2022-onboarding-import-header = Błyskawiczna konfiguracja
 mr2022-onboarding-import-subtitle = Skonfiguruj { -brand-short-name(case: "acc") } tak, jak lubisz. Dodaj zakładki, hasła i nie tylko ze starej przeglądarki.
@@ -356,6 +358,11 @@ onboarding-mobile-download-security-and-privacy-subtitle = Po synchronizacji { -
 # Gratitude screen
 onboarding-gratitude-security-and-privacy-title = { -brand-short-name } jest po Twojej stronie
 onboarding-gratitude-security-and-privacy-subtitle = Dziękujemy za używanie { -brand-short-name(case: "gen") }, wspieranego przez Mozilla Foundation. Z waszą pomocą pracujemy nad tym, aby Internet był bezpieczniejszy i bardziej dostępny dla wszystkich.
+# Sign up or Sign in screen
+onboarding-sign-up-title = Synchronizuj dane między urządzeniami
+onboarding-sign-up-description = Załóż konto, a wszystkie Twoje ważne informacje — hasła, zakładki i nie tylko — będą bezpiecznie przechowywane i dostępne po zalogowaniu na każdym urządzeniu.
+onboarding-sign-up-button = Zaloguj się lub utwórz konto
+onboarding-sign-up-secondary-button = Zacznij przeglądać Internet
 
 ## New user time and familiarity survey strings
 
@@ -375,3 +382,84 @@ onboarding-new-user-survey-familiarity-based-option-1 = Dopiero zaczynam go uży
 onboarding-new-user-survey-familiarity-based-option-2 = Trochę go znam
 onboarding-new-user-survey-familiarity-based-option-3 = Bardzo dobrze go znam
 onboarding-new-user-survey-familiarity-based-option-4 = Znam go z przeszłości, ale minęło trochę czasu
+
+## UI strings for the sidebar and vertical tabs
+
+# Setup screen for vertical tabs
+onboarding-new-tabs-title = Powiedz nam, gdzie chcesz mieć swoje karty
+# Setup screen for vertical tabs - "Switch it up" refers to switching between horizontal and vertical tabs.
+onboarding-new-tabs-subtitle = Możesz to zmienić w dowolnej chwili w ustawieniach panelu bocznego.
+# Setup screen for vertical tabs - too many tabs variation
+onboarding-many-tabs-title = Używaj kart po swojemu
+# Setup screen for vertical tabs - subtitle for too many tabs variation
+onboarding-many-tabs-subtitle = Masz dużo otwartych kart? Wypróbuj karty z boku, aby wprowadzić więcej porządku. Albo trzymaj się klasyki z kartami na górze. Przełączaj, kiedy chcesz.
+# Setup screen for vertical tabs - focused variation
+onboarding-focused-tabs-title = Wybierz układ kart
+# Setup screen for vertical tabs - subtitle for focused variation
+onboarding-focused-tabs-subtitle = Aby wprowadzić więcej porządku, wypróbuj karty z boku. Albo trzymaj się klasyki z kartami na górze. Przełączaj, kiedy chcesz.
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-new-vertical-tabs-label = Karty z boku
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-new-horizontal-tabs-label = Karty na górze
+# Setup screen for vertical tabs for existing users
+onboarding-existing-tabs-title = Pionowe karty już są dostępne
+# Setup screen for vertical tabs for existing users
+onboarding-existing-tabs-title2 = Przedstawiamy pionowe karty
+# Setup screen for vertical tabs for existing users - "Switch it up" refers to switching between horizontal and vertical tabs.
+onboarding-existing-tabs-subtitle = Wypróbuj karty z boku. Możesz to cofnąć w dowolnej chwili w ustawieniach panelu bocznego.
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-existing-vertical-tabs-label = Wypróbuj pionowe karty
+onboarding-flair-text = Nowość!
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-existing-horizontal-tabs-label = Nadal używaj kart poziomych
+# Tooltip displayed on hover for vertical tabs image
+onboarding-vertical-tabs-tooltip =
+    .title = Okno przeglądarki wyświetlające karty na boku ekranu jako część panelu bocznego { -brand-shorter-name(case: "gen") }.
+# Description for vertical tabs image
+onboarding-vertical-tabs-description =
+    .aria-description = Okno przeglądarki wyświetlające karty na boku ekranu jako część panelu bocznego { -brand-shorter-name(case: "gen") }.
+# Tooltip displayed on hover for horizontal tabs image
+onboarding-horizontal-tabs-tooltip =
+    .title = Okno przeglądarki wyświetlające karty na górze.
+# Description for horizontal tabs image
+onboarding-horizontal-tabs-description =
+    .aria-description = Okno przeglądarki wyświetlające karty na górze.
+
+## New user onboarding checklist
+
+onboarding-checklist-title = Dokończ konfigurację { -brand-short-name(case: "gen") }
+onboarding-checklist-subtitle = Wykonaj poniższe czynności, aby przeglądać Internet na najwyższych obrotach.
+onboarding-checklist-set-default = Ustaw przeglądarkę { -brand-short-name } jako domyślną
+onboarding-checklist-pin = Przypnij { -brand-short-name(case: "acc") } do paska zadań
+onboarding-checklist-import = Importuj z poprzedniej przeglądarki
+onboarding-checklist-extension = Dodaj rozszerzenie
+onboarding-checklist-sign-up = Zaloguj się lub utwórz konto
+
+## Tab Groups feature onboarding strings
+
+tab-groups-onboarding-feature-callout-title = Wypróbuj grupy kart, aby zmniejszyć bałagan i zwiększyć koncentrację
+tab-groups-onboarding-feature-callout-subtitle = Wprowadź porządek, przeciągając jedną kartę na drugą, aby utworzyć pierwszą grupę.
+tab-groups-onboarding-create-group-title = Znajdź otwarte grupy na pasku kart lub wyszukując je na pasku adresu.
+tab-groups-onboarding-saved-groups-title = Jeśli zamkniesz grupę kart, tutaj możesz ją w każdej chwili przywrócić.
+tab-groups-onboarding-saved-groups-no-alltabs-button-title = W każdej chwili znajdź otwarte lub zamknięte grupy kart, wyszukując je na pasku adresu.
+tab-groups-onboarding-dismiss = OK
+
+## Multi Profiles feature onboarding messages
+
+multi-profile-spotlight-title = Poznaj profile { -brand-product-name(case: "gen") }
+multi-profile-spotlight-body = Łatwo przełączaj się między przeglądarką do pracy i do zabawy. Profile przechowują Twoje dane przeglądania, w tym historię wyszukiwań i hasła, całkowicie oddzielnie, dzięki czemu możesz zachować porządek.
+multi-profile-spotlight-cta = Utwórz profil
+multi-profile-callout-title = Utwórz różne profile do pracy i do zabawy
+multi-profile-callout-subtitle = Profile umożliwiają całkowite oddzielenie danych przeglądania, takich jak historia wyszukiwania i hasła.
+multi-profile-callout-cta = Utwórz profil
+
+## Desktop to Mobile Adoption feature callout strings
+
+# If translating the headline is challenging, consider using a simplified alternative as a reference: 'Sync your browsing with Firefox for mobile.'
+desktop-to-mobile-headline = Pobierz, zsynchronizuj i ruszaj!
+# The phrase, 'on the go', is used to describe when people are very busy and are traveling from place to place.
+desktop-to-mobile-subtitle = Zeskanuj kod QR, aby pobrać { -brand-product-name(case: "acc") } na telefon. Po instalacji kliknij „Synchronizuj z telefonem”, aby mieć dostęp do haseł, zakładek i nie tylko wszędzie tam, gdzie jesteś.
+dismiss-button-label = Zamknij
+sync-to-mobile-button-label = Synchronizuj z telefonem
+desktop-to-mobile-qr-code-alt =
+    .aria-label = Kod QR do pobrania { -brand-product-name(case: "gen") } na telefon

@@ -26,6 +26,7 @@ import mozilla.components.concept.engine.window.WindowRequest
 import mozilla.components.concept.fetch.Response
 import mozilla.components.support.base.observer.Observable
 import mozilla.components.support.base.observer.ObserverRegistry
+import org.json.JSONObject
 
 /**
  * Class representing a single engine session.
@@ -782,12 +783,15 @@ abstract class EngineSession(
      * triggered creating this one.
      * @param flags the [LoadUrlFlags] to use when loading the provided url.
      * @param additionalHeaders the extra headers to use when loading the provided url.
+     * @param originalInput If the user entered a URL, this is the original
+     * user input before any fixups were applied to it.
      */
     abstract fun loadUrl(
         url: String,
         parent: EngineSession? = null,
         flags: LoadUrlFlags = LoadUrlFlags.none(),
         additionalHeaders: Map<String, String>? = null,
+        originalInput: String? = null,
     )
 
     /**
@@ -900,6 +904,14 @@ abstract class EngineSession(
      * @param onError callback invoked if there was an error getting the response.
      */
     abstract fun checkForPdfViewer(onResult: (Boolean) -> Unit, onException: (Throwable) -> Unit)
+
+    /**
+     * Gets the web compat info.
+     *
+     * @param onResult callback invoked if the engine API returned a valid response.
+     * @param onException callback invoked if there was an error getting the response.
+     */
+    abstract fun getWebCompatInfo(onResult: (JSONObject) -> Unit, onException: (Throwable) -> Unit)
 
     /**
      * Requests product recommendations given a specific product url.

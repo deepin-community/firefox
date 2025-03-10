@@ -409,6 +409,16 @@
     "dark": "#ff9aa2ff",
     "forcedColors": "CanvasText"
   },
+  "table/row/background/color": {
+    "light": "#ffffffff",
+    "dark": "#1c1b22ff",
+    "forcedColors": "Canvas"
+  },
+  "table/row/background/color/alternate": {
+    "light": "#f0f0f4ff",
+    "dark": "#23222bff",
+    "forcedColors": "Canvas"
+  },
   "text/color": {
     "light": "#15141aff",
     "dark": "#fbfbfeff",
@@ -418,6 +428,11 @@
     "light": "color-mix(in srgb, currentColor 69%, transparent)",
     "dark": "color-mix(in srgb, currentColor 69%, transparent)",
     "forcedColors": "inherit"
+  },
+  "text/color/disabled": {
+    "light": "color-mix(in srgb, currentColor 40%, transparent)",
+    "dark": "color-mix(in srgb, currentColor 40%, transparent)",
+    "forcedColors": "GrayText"
   },
   "text/color/error": {
     "light": "#d7264cff",

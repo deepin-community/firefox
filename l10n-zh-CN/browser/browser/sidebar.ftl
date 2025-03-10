@@ -4,6 +4,12 @@
 
 menu-view-genai-chat =
     .label = AI 聊天机器人
+menu-view-review-checker =
+    .label = 核查评价
+menu-view-contextual-password-manager =
+    .label = 密码
+sidebar-options-menu-button =
+    .title = 打开菜单
 
 ## Labels for sidebar history panel
 
@@ -46,16 +52,30 @@ sidebar-position-right =
     .label = 在右侧显示
 sidebar-vertical-tabs =
     .label = 垂直标签页
+sidebar-settings =
+    .label = 侧栏设置
+sidebar-hide-tabs-and-sidebar =
+    .label = 隐藏标签页和侧栏
+sidebar-show-on-the-right =
+    .label = 移动侧栏到右侧
+sidebar-show-on-the-left =
+    .label = 移动侧栏到左侧
+# Option to automatically expand the collapsed sidebar when the mouse pointer
+# hovers over it.
+expand-sidebar-on-hover =
+    .label = 悬停时展开侧栏
 sidebar-horizontal-tabs =
     .label = 水平标签页
 sidebar-customize-tabs-header =
     .label = 标签页设置
-sidebar-customize-settings-header =
-    .label = 侧栏设置
-sidebar-visibility-always-show =
-    .label = 始终显示
-sidebar-visibility-hide-sidebar =
-    .label = 隐藏侧栏
+sidebar-customize-button-header =
+    .label = 侧栏按钮
+sidebar-customize-position-header =
+    .label = 侧栏位置
+sidebar-visibility-setting-always-show =
+    .label = 展开和收起侧栏
+sidebar-visibility-setting-hide-sidebar =
+    .label = 显示和隐藏侧栏
 
 ## Labels for sidebar context menu items
 
@@ -90,11 +110,46 @@ sidebar-menu-genai-chat-label =
 sidebar-menu-history-label =
     .label = 历史记录
 sidebar-menu-synced-tabs-label =
-    .label = 其他设备上的标签页
+    .label = 其他设备标签页
 sidebar-menu-bookmarks-label =
     .label = 书签
 sidebar-menu-customize-label =
     .label = 定制侧栏
+sidebar-menu-review-checker-label =
+    .label = 核查评价
+sidebar-menu-contextual-password-manager-label =
+    .label = 密码
+
+## Tooltips for sidebar menu items.
+
+# The tooltip to show over the history icon, when history is not currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-open-history-tooltip = 打开历史记录 ({ $shortcut })
+# The tooltip to show over the history icon, when history is currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-close-history-tooltip = 关闭历史记录 ({ $shortcut })
+# The tooltip to show over the bookmarks icon, when bookmarks is not currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-open-bookmarks-tooltip = 打开书签 ({ $shortcut })
+# The tooltip to show over the bookmarks icon, when bookmarks is currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-close-bookmarks-tooltip = 关闭书签 ({ $shortcut })
+sidebar-menu-open-ai-chatbot-tooltip = 打开 AI 聊天机器人
+sidebar-menu-close-ai-chatbot-tooltip = 关闭 AI 聊天机器人
+
+## Tooltips displayed over the AI chatbot icon.
+## Variables:
+##   $shortcut (String) - The OS specific keyboard shortcut.
+##   $provider (String) - The name of the AI chatbot provider (if available).
+
+sidebar-menu-open-ai-chatbot-tooltip-generic = 打开 AI 聊天机器人 ({ $shortcut })
+sidebar-menu-open-ai-chatbot-provider-tooltip = 打开 { $provider } ({ $shortcut })
+sidebar-menu-close-ai-chatbot-tooltip-generic = 关闭 AI 聊天机器人 ({ $shortcut })
+sidebar-menu-close-ai-chatbot-provider-tooltip = 关闭 { $provider } ({ $shortcut })
 
 ## Headings for sidebar menu panels.
 
@@ -104,6 +159,18 @@ sidebar-menu-history-header =
     .heading = 历史记录
 sidebar-menu-syncedtabs-header =
     .heading = 其他设备上的标签页
+sidebar-menu-bookmarks-header =
+    .heading = 书签
+sidebar-menu-cpm-header =
+    .heading = 密码
+sidebar-panel-header-close-button =
+    .tooltiptext = 关闭
+
+## Titles for sidebar menu panels.
+
+sidebar-customize-title = 定制侧栏
+sidebar-history-title = 历史记录
+sidebar-syncedtabs-title = 其他设备标签页
 
 ## Context for closing synced tabs when hovering over the items
 
@@ -113,3 +180,29 @@ sidebar-menu-syncedtabs-header =
 #   $deviceName (String) - the name of the device the user is closing a tab for
 synced-tabs-context-close-tab-title =
     .title = 关闭 { $deviceName } 中的标签页
+show-sidebars =
+    .tooltiptext = 显示侧栏
+    .label = 侧栏
+
+## Tooltips for the sidebar toolbar widget.
+
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-expand-sidebar2 =
+    .tooltiptext = 展开侧栏 ({ $shortcut })
+    .label = 侧栏
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-collapse-sidebar2 =
+    .tooltiptext = 收起侧栏 ({ $shortcut })
+    .label = 侧栏
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-show-sidebar2 =
+    .tooltiptext = 显示侧栏 ({ $shortcut })
+    .label = 侧栏
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-hide-sidebar2 =
+    .tooltiptext = 隐藏侧栏 ({ $shortcut })
+    .label = 侧栏

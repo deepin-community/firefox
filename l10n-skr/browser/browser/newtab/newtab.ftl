@@ -8,11 +8,15 @@
 newtab-page-title = نواں ٹیب
 newtab-settings-button =
     .title = اپݨے نویں ٹیب دے صفحہ دی تخصیص کرو
+newtab-settings-dialog-label =
+    .aria-label = ترتیباں
 newtab-personalize-icon-label =
     .title = نویں ٹیب کوں ذاتی بݨاؤ
     .aria-label = نویں ٹیب کوں ذاتی بݨاؤ
 newtab-personalize-dialog-label =
     .aria-label = ‏‏تخصیص کرو
+newtab-logo-and-wordmark =
+    .aria-label = { -brand-full-name }
 
 ## Search box component.
 
@@ -109,6 +113,7 @@ newtab-menu-save-to-pocket = { -pocket-brand-name } تے ہتھیکڑا کرو
 newtab-menu-delete-pocket = { -pocket-brand-name } کنوں مٹاؤ
 newtab-menu-archive-pocket = { -pocket-brand-name } وِچ سوگھا کرو
 newtab-menu-show-privacy-info = ساݙے سپانسر تے تہاݙی رازداری
+newtab-menu-about-fakespot = { -fakespot-brand-name } بارے
 
 ## Message displayed in a modal window to explain privacy and provide context for sponsored content.
 
@@ -233,6 +238,8 @@ newtab-pocket-cta-button = { -pocket-brand-name } گھنو
 newtab-pocket-cta-text = اپݨیاں من بھاندیاں کہانیاں { -pocket-brand-name } اِچ ہتھیکڑیاں کرو، تے شاندار پڑھݨ نال اپݨے چیتے کوں تکڑا کرو۔
 newtab-pocket-pocket-firefox-family = { -pocket-brand-name } حصہ ہے { -brand-product-name } ٹٻر دا
 # A save to Pocket button that shows over the card thumbnail on hover.
+newtab-pocket-image =
+    .aria-label = { -pocket-brand-name }
 newtab-pocket-save = محفوظ
 newtab-pocket-saved = محفوظ تھیا
 
@@ -244,6 +251,9 @@ newtab-pocket-thumbs-up-tooltip =
 # Clicking the thumbs down button for this story informs us that the user does not feel like the story is interesting for them
 newtab-pocket-thumbs-down-tooltip =
     .title = میݙے کیتے کائنی
+# Used to show the user a message upon clicking the thumbs up or down buttons
+newtab-toast-thumbs-up-or-down2 =
+    .message = شکریہ،  تہاݙی فیڈبیک تہاݙی فیڈ کوں چنگا بݨاوݨ کیتے ساݙی مدد کریسی۔
 newtab-toast-thumbs-up-or-down = شکریہ،  تہاݙی فیڈبیک تہاݙی فیڈ کوں چنگا بݨاوݨ کیتے ساݙی مدد کریسی۔
 newtab-toast-dismiss-button =
     .title = فارغ کرو
@@ -339,7 +349,7 @@ newtab-wallpaper-abstract-orange = مالٹا شکلاں
 newtab-wallpaper-gradient-orange = میلان نارنجی تے غلابی
 newtab-wallpaper-abstract-blue-purple = نیلے تے جامنی رنگ دیاں شکلاں
 
-## Photographs
+## Celestial
 
 newtab-wallpaper-category-title-photographs = فوٹو
 newtab-wallpaper-beach-at-sunrise = ݙین٘ہ ابھرݨ ویلے ساحل
@@ -363,6 +373,9 @@ feature-highlight-wallpaper =
     .title = { -newtab-wallpaper-feature-highlight-header }
     .aria-label = { -newtab-wallpaper-feature-highlight-content }
 
+## Celestial
+
+
 ## New Tab Weather
 
 # Variables:
@@ -373,6 +386,9 @@ newtab-weather-see-forecast =
 #   $provider (string) - Service provider for weather data
 newtab-weather-sponsored = { $provider } ∙سپانسر تھیا
 newtab-weather-menu-change-location = مقام وٹاؤ
+newtab-weather-change-location-search-input-placeholder =
+    .placeholder = مقام ڳولو
+    .aria-label = مقام ڳولو
 newtab-weather-change-location-search-input = مقام ڳولو
 newtab-weather-menu-weather-display = موسم دا ڈسپلے
 # Display options are:
@@ -428,3 +444,19 @@ newtab-topic-selection-button-maybe-later = شاید بعد وچ
 newtab-topic-selection-privacy-link = سکھو جو اساں ڈیٹا دی حفاظت تے منیج کین٘ویں کریندے ہیں۔
 newtab-topic-selection-button-update-interests = آپݨیاں دلچسپیاں اپ ڈیٹ کرو
 newtab-topic-selection-button-pick-interests = آپݨیاں دلچسپیاں چݨو
+
+## Content Feed Sections
+## "Follow", "unfollow", and "following" are social media terms that refer to subscribing to or unsubscribing from a section of stories.
+## e.g. Following the travel section of stories.
+
+
+## Button to block/unblock listed topics
+## "Block", "unblocked", and "blocked" are social media terms that refer to hiding a section of stories.
+## e.g. Blocked the politics section of stories.
+
+
+## Confirmation modal for blocking a section
+
+
+## Panel in the Customize menu section to manage followed and blocked topics
+

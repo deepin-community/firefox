@@ -8,11 +8,18 @@
 newtab-page-title = Ny fane
 newtab-settings-button =
     .title = Tilpass sida for Ny fane
+newtab-personalize-settings-icon-label =
+    .title = Tilpass ny fane
+    .aria-label = Innstillingar
+newtab-settings-dialog-label =
+    .aria-label = Innstillingar
 newtab-personalize-icon-label =
     .title = Tilpass ny fane-side
     .aria-label = Tilpass ny fane-side
 newtab-personalize-dialog-label =
     .aria-label = Tilpass
+newtab-logo-and-wordmark =
+    .aria-label = { -brand-full-name }
 
 ## Search box component.
 
@@ -109,6 +116,13 @@ newtab-menu-save-to-pocket = Lagre til { -pocket-brand-name }
 newtab-menu-delete-pocket = Slett frå { -pocket-brand-name }
 newtab-menu-archive-pocket = Arkiver i { -pocket-brand-name }
 newtab-menu-show-privacy-info = Våre sponsorar og ditt personvern
+newtab-menu-about-fakespot = Om { -fakespot-brand-name }
+# Context menu option to personalize New Tab recommended stories by blocking a section of stories,
+# e.g. "Sports". "Block" is a verb here.
+newtab-menu-section-block = Blokker
+# "Follow", "unfollow", and "following" are social media terms that refer to subscribing to or unsubscribing from a section of stories.
+# e.g. Following the travel section of stories.
+newtab-menu-section-unfollow = Slutt å følgje emnet
 
 ## Message displayed in a modal window to explain privacy and provide context for sponsored content.
 
@@ -232,6 +246,8 @@ newtab-pocket-cta-button = Last ned { -pocket-brand-name }
 newtab-pocket-cta-text = Lagre artiklane du synest er interessante i { -pocket-brand-name }, og stimuler tankane dine med fasinerande lesemateriell.
 newtab-pocket-pocket-firefox-family = { -pocket-brand-name } er ein del av { -brand-product-name }-familien.
 # A save to Pocket button that shows over the card thumbnail on hover.
+newtab-pocket-image =
+    .aria-label = { -pocket-brand-name }
 newtab-pocket-save = Lagre
 newtab-pocket-saved = Lagra
 
@@ -243,6 +259,9 @@ newtab-pocket-thumbs-up-tooltip =
 # Clicking the thumbs down button for this story informs us that the user does not feel like the story is interesting for them
 newtab-pocket-thumbs-down-tooltip =
     .title = Ikkje for meg
+# Used to show the user a message upon clicking the thumbs up or down buttons
+newtab-toast-thumbs-up-or-down2 =
+    .message = Takk. Tilbakemeldinga di  vil hjelpe oss med å gjere kjelda di betre.
 newtab-toast-thumbs-up-or-down = Takk. Tilbakemeldinga di  vil hjelpe oss med å gjere kjelda di betre.
 newtab-toast-dismiss-button =
     .title = Avvis
@@ -296,6 +315,7 @@ newtab-custom-settings = Handsam fleire innstillingar
 
 newtab-wallpaper-title = Bakgrunnsbilde
 newtab-wallpaper-reset = Still tilbake til standard
+newtab-wallpaper-custom-color = Vel ein farge
 newtab-wallpaper-light-red-panda = Raudpanda
 newtab-wallpaper-light-mountain = Kvitt fjell
 newtab-wallpaper-light-sky = Himmel med lilla og rosa skyer
@@ -308,6 +328,8 @@ newtab-wallpaper-dark-panda = Raudpanda gøymt i skogen
 newtab-wallpaper-dark-sky = Bylandskap med nattehimmel
 newtab-wallpaper-dark-mountain = Fjellandskap
 newtab-wallpaper-dark-city = Lilla bylandskap
+newtab-wallpaper-dark-fox-anniversary = Ein rev på fortauet nær ein skog
+newtab-wallpaper-light-fox-anniversary = Ein rev i ei graskledd mark med eit tåkete fjellandskap
 
 ## Solid Colors
 
@@ -338,7 +360,7 @@ newtab-wallpaper-abstract-orange = Oransje former
 newtab-wallpaper-gradient-orange = Fargeovergang oransje og rosa
 newtab-wallpaper-abstract-blue-purple = Blå og lilla former
 
-## Photographs
+## Celestial
 
 newtab-wallpaper-category-title-photographs = Fotografi
 newtab-wallpaper-beach-at-sunrise = Strand ved soloppgang
@@ -362,6 +384,9 @@ feature-highlight-wallpaper =
     .title = { -newtab-wallpaper-feature-highlight-header }
     .aria-label = { -newtab-wallpaper-feature-highlight-content }
 
+## Celestial
+
+
 ## New Tab Weather
 
 # Variables:
@@ -372,6 +397,9 @@ newtab-weather-see-forecast =
 #   $provider (string) - Service provider for weather data
 newtab-weather-sponsored = { $provider } ∙ Sponsa
 newtab-weather-menu-change-location = Endre plassering
+newtab-weather-change-location-search-input-placeholder =
+    .placeholder = Søk plassering
+    .aria-label = Søk plassering
 newtab-weather-change-location-search-input = Søk plassering
 newtab-weather-menu-weather-display = Vêrvising
 # Display options are:
@@ -430,3 +458,43 @@ newtab-topic-selection-button-maybe-later = Kanskje seinare
 newtab-topic-selection-privacy-link = FInn ut korleis vi vernar og handsamar data
 newtab-topic-selection-button-update-interests = Oppdater interessene dine
 newtab-topic-selection-button-pick-interests = Vel interessene dine
+
+## Content Feed Sections
+## "Follow", "unfollow", and "following" are social media terms that refer to subscribing to or unsubscribing from a section of stories.
+## e.g. Following the travel section of stories.
+
+newtab-section-follow-button = Følg
+newtab-section-following-button = Følgjer
+newtab-section-unfollow-button = Slutt å følgje
+
+## Button to block/unblock listed topics
+## "Block", "unblocked", and "blocked" are social media terms that refer to hiding a section of stories.
+## e.g. Blocked the politics section of stories.
+
+newtab-section-block-button = Blokker
+newtab-section-blocked-button = Blokkert
+newtab-section-unblock-button = Opphev blokkeringa
+
+## Confirmation modal for blocking a section
+
+newtab-section-confirm-block-section-p1 = Er du sikker på at du vil blokkere denne delen?
+newtab-section-confirm-block-section-p2 = Blokkert del vil ikkje lenger visast i kjelda di.
+newtab-section-block-section-button = Blokker denne delen
+newtab-section-cancel-button = Ikkje no
+# Variables:
+#   $topic (string) - Name of topic that user is blocking
+newtab-section-block-topic-button = Blokker { $topic }
+
+## Panel in the Customize menu section to manage followed and blocked topics
+
+newtab-section-mangage-topics-title = Emne
+newtab-section-manage-topics-button-v2 =
+    .label = Handsam emne
+newtab-section-mangage-topics-followed-topics = Følgt
+newtab-section-mangage-topics-button =
+    .label = Følgde og blokkerte emne
+newtab-section-mangage-topics-followed-topics-subtitle = Følgde emne
+newtab-section-mangage-topics-followed-topics-empty-state = Du har ikkje følgt nokon emne enno.
+newtab-section-mangage-topics-blocked-topics = Blokkert
+newtab-section-mangage-topics-blocked-topics-subtitle = Blokkerte emne
+newtab-section-mangage-topics-blocked-topics-empty-state = Du har ikkje blokkert nokon emne enno.

@@ -9,7 +9,6 @@
 #include "frontend/IfEmitter.h"
 #include "frontend/TryEmitter.h"
 #include "frontend/WhileEmitter.h"
-#include "vm/CompletionKind.h"
 
 using namespace js;
 using namespace js::frontend;
@@ -96,90 +95,98 @@ bool UsingEmitter::emitThrowIfException() {
   return true;
 }
 
+bool DisposalEmitter::emitResourcePropertyAccess(TaggedParserAtomIndex prop,
+                                                 unsigned resourcesFromTop) {
+  // [stack] # if resourcesFromTop == 1
+  // [stack] RESOURCES INDEX
+  // [stack] # if resourcesFromTop > 1
+  // [stack] RESOURCES INDEX ... (resourcesFromTop - 1 values)
+  MOZ_ASSERT(resourcesFromTop >= 1);
+
+  if (!bce_->emitDupAt(resourcesFromTop, 2)) {
+    // [stack] RESOURCES INDEX ... RESOURCES INDEX
+    return false;
+  }
+
+  if (!bce_->emit1(JSOp::GetElem)) {
+    // [stack] RESOURCES INDEX ... RESOURCE
+    return false;
+  }
+
+  if (!bce_->emitAtomOp(JSOp::GetProp, prop)) {
+    // [stack] RESOURCES INDEX ... VALUE
+    return false;
+  }
+
+  return true;
+}
+
 // Explicit Resource Management Proposal
 // DisposeResources ( disposeCapability, completion )
 // https://arai-a.github.io/ecma262-compare/?pr=3000&id=sec-disposeresources
-bool UsingEmitter::emitDisposeLoop(EmitterScope& es,
-                                   CompletionKind initialCompletion) {
-  MOZ_ASSERT(initialCompletion != CompletionKind::Return);
+// Steps 1-2.
+bool DisposalEmitter::prepareForDisposeCapability() {
+  MOZ_ASSERT(state_ == State::Start);
 
-  // [stack] # if CompletionKind::Throw
-  // [stack] EXC
-  // [stack] # otherwise (CompletionKind::Normal)
-  // [stack]
+  // [stack] THROWING EXC
 
-  if (hasAwaitUsing_) {
-    // Awaits can cause suspension of the current frame and
-    // the erasure of the frame's return value, thus we preserve
-    // the frame's return value on the value stack.
-    if (!bce_->emit1(JSOp::GetRval)) {
-      // [stack] EXC? RVAL
-      return false;
-    }
-
+  if (hasAsyncDisposables_) {
     // Step 1. Let needsAwait be false.
     if (!bce_->emit1(JSOp::False)) {
-      // [stack] EXC? RVAL NEEDS-AWAIT
+      // [stack] THROWING EXC NEEDS-AWAIT
       return false;
     }
 
     // Step 2. Let hasAwaited be false.
     if (!bce_->emit1(JSOp::False)) {
-      // [stack] EXC? RVAL NEEDS-AWAIT HAS-AWAITED
+      // [stack] THROWING EXC NEEDS-AWAIT HAS-AWAITED
+      return false;
+    }
+
+    if (!bce_->emitPickN(3)) {
+      // [stack] EXC NEEDS-AWAIT HAS-AWAITED THROWING
+      return false;
+    }
+
+    if (!bce_->emitPickN(3)) {
+      // [stack] NEEDS-AWAIT HAS-AWAITED THROWING EXC
       return false;
     }
   }
 
-  // corresponds to completion parameter
-  if (initialCompletion == CompletionKind::Throw) {
-    if (!bce_->emit1(JSOp::True)) {
-      // [stack] EXC RVAL? NEEDS-AWAIT? HAS-AWAITED? THROWING
-      return false;
-    }
+  // [stack] NEEDS-AWAIT? HAS-AWAITED? THROWING EXC
 
-    if (hasAwaitUsing_) {
-      // [stack] EXC RVAL NEEDS-AWAIT HAS-AWAITED THROWING
-      if (!bce_->emitPickN(4)) {
-        // [stack] RVAL NEEDS-AWAIT HAS-AWAITED THROWING EXC
-        return false;
-      }
-    } else {
-      // [stack] EXC THROWING
-      if (!bce_->emit1(JSOp::Swap)) {
-        // [stack] THROWING EXC
-        return false;
-      }
-    }
-  } else {
-    if (!bce_->emit1(JSOp::False)) {
-      // [stack] RVAL? NEEDS-AWAIT? HAS-AWAITED? THROWING
-      return false;
-    }
+#ifdef DEBUG
+  state_ = State::DisposeCapability;
+#endif
+  return true;
+}
 
-    if (!bce_->emit1(JSOp::Undefined)) {
-      // [stack] RVAL? NEEDS-AWAIT? HAS-AWAITED? THROWING UNDEF
-      return false;
-    }
-  }
+// Explicit Resource Management Proposal
+// DisposeResources ( disposeCapability, completion )
+// https://arai-a.github.io/ecma262-compare/?pr=3000&id=sec-disposeresources
+// Steps 3-5, 7.
+//
+// This implementation of DisposeResources is designed for using and await using
+// syntax as well as for disposals in DisposableStack and AsyncDisposableStack,
+// it covers the complete algorithm as defined in the spec for both sync and
+// async disposals as necessary in bytecode.
+bool DisposalEmitter::emitEnd(EmitterScope& es) {
+  MOZ_ASSERT(state_ == State::DisposeCapability);
 
-  // [stack] ...
+  // [stack] NEEDS-AWAIT? HAS-AWAITED? THROWING EXC RESOURCES COUNT
 
-  // For the purpose of readbility RVAL has been omitted from
-  // the stack comments below and is assumed to be present,
-  // we mention it again below at the completion steps when we
-  // use it.
+  // For the purpose of readbility some values are omitted from
+  // the stack comments and are assumed to be present,
+  // we mention the values in the comments as and when they are being
+  // operated upon.
+
+  // [stack] ... RESOURCES COUNT
 
   // We do the iteration in reverse order as per spec,
   // there can be the case when count is 0 and hence index
   // below becomes -1 but the loop condition will ensure
   // no code is executed in that case.
-  // Step 6. Set disposeCapability.[[DisposableResourceStack]] to a new empty
-  // List.
-  if (!emitTakeDisposeCapability()) {
-    // [stack] ... RESOURCES COUNT
-    return false;
-  }
-
   if (!bce_->emit1(JSOp::Dec)) {
     // [stack] ... RESOURCES INDEX
     return false;
@@ -214,61 +221,17 @@ bool UsingEmitter::emitDisposeLoop(EmitterScope& es,
     return false;
   }
 
-  if (!bce_->emit1(JSOp::Dup2)) {
-    // [stack] ... RESOURCES INDEX RESOURCES INDEX
-    return false;
-  }
+  // [stack] NEEDS-AWAIT? HAS-AWAITED? THROWING EXC RESOURCES INDEX
 
-  if (!bce_->emit1(JSOp::GetElem)) {
-    // [stack] ... RESOURCES INDEX RESOURCE
-    return false;
-  }
+  if (hasAsyncDisposables_) {
+    // [stack] NEEDS-AWAIT HAS-AWAITED THROWING EXC RESOURCES INDEX
 
-  // Step 3.a. Let value be resource.[[ResourceValue]].
-  // Step 3.b. Let hint be resource.[[Hint]].
-  // Step 3.c. Let method be resource.[[DisposeMethod]].
-  // TODO: Defer property accesses until they are actually
-  // needed. (Bug 1913432)
-  if (!bce_->emit1(JSOp::Dup)) {
-    // [stack] ... RESOURCES INDEX RESOURCE RESOURCE
-    return false;
-  }
-
-  if (!bce_->emitAtomOp(JSOp::GetProp,
-                        TaggedParserAtomIndex::WellKnown::hint())) {
-    // [stack] ... RESOURCES INDEX RESOURCE HINT
-    return false;
-  }
-
-  if (!bce_->emitDupAt(1)) {
-    // [stack] ... RESOURCES INDEX RESOURCE HINT RESOURCE
-    return false;
-  }
-
-  if (!bce_->emitAtomOp(JSOp::GetProp,
-                        TaggedParserAtomIndex::WellKnown::method())) {
-    // [stack] ... RESOURCES INDEX RESOURCE HINT METHOD
-    return false;
-  }
-
-  if (!bce_->emitPickN(2)) {
-    // [stack] ... RESOURCES INDEX HINT METHOD RESOURCE
-    return false;
-  }
-
-  if (!bce_->emitAtomOp(JSOp::GetProp,
-                        TaggedParserAtomIndex::WellKnown::value())) {
-    // [stack] ... RESOURCES INDEX HINT METHOD VALUE
-    return false;
-  }
-
-  if (hasAwaitUsing_) {
-    // [stack] NEEDS-AWAIT HAS-AWAITED ... HINT METHOD VALUE
-
+    // Step 3.b. Let hint be resource.[[Hint]].
+    // (reordered)
     // Step 3.d. If hint is sync-dispose and needsAwait is true and hasAwaited
     // is false, then
-    if (!bce_->emitDupAt(2)) {
-      // [stack] NEEDS-AWAIT HAS-AWAITED ... HINT METHOD VALUE HINT
+    if (!emitResourcePropertyAccess(TaggedParserAtomIndex::WellKnown::hint())) {
+      // [stack] NEEDS-AWAIT HAS-AWAITED THROWING EXC RESOURCES INDEX HINT
       return false;
     }
 
@@ -281,12 +244,7 @@ bool UsingEmitter::emitDisposeLoop(EmitterScope& es,
       return false;
     }
 
-    if (!bce_->emitDupAt(9)) {
-      // [stack] NEEDS-AWAIT HAS-AWAITED ... IS-SYNC NEEDS-AWAIT
-      return false;
-    }
-
-    if (!bce_->emitDupAt(9)) {
+    if (!bce_->emitDupAt(6, 2)) {
       // [stack] NEEDS-AWAIT HAS-AWAITED ... IS-SYNC NEEDS-AWAIT HAS-AWAITED
       return false;
     }
@@ -314,75 +272,77 @@ bool UsingEmitter::emitDisposeLoop(EmitterScope& es,
       return false;
     }
 
-    // [stack] NEEDS-AWAIT HAS-AWAITED ... UNDEF-AWAIT-NEEDED
+    // [stack] NEEDS-AWAIT HAS-AWAITED THROWING EXC RESOURCES INDEX AWAIT-NEEDED
 
     InternalIfEmitter ifNeedsSyncDisposeUndefinedAwaited(bce_);
 
     if (!ifNeedsSyncDisposeUndefinedAwaited.emitThen()) {
-      // [stack] NEEDS-AWAIT HAS-AWAITED ...
+      // [stack] NEEDS-AWAIT HAS-AWAITED THROWING EXC RESOURCES INDEX
       return false;
     }
 
     // Step 3.d.i. Perform ! Await(undefined).
     if (!bce_->emit1(JSOp::Undefined)) {
-      // [stack] NEEDS-AWAIT HAS-AWAITED ... UNDEF
+      // [stack] NEEDS-AWAIT HAS-AWAITED THROWING EXC RESOURCES INDEX UNDEF
       return false;
     }
 
     if (!bce_->emitAwaitInScope(es)) {
-      // [stack] NEEDS-AWAIT HAS-AWAITED ... RESOLVED
+      // [stack] NEEDS-AWAIT HAS-AWAITED THROWING EXC RESOURCES INDEX RESOLVED
       return false;
     }
 
     // Step 3.d.ii. Set needsAwait to false.
-    if (!bce_->emitPickN(9)) {
-      // [stack] HAS-AWAITED ... RESOLVED NEEDS-AWAIT
+    if (!bce_->emitPickN(6)) {
+      // [stack] HAS-AWAITED THROWING EXC RESOURCES INDEX RESOLVED NEEDS-AWAIT
       return false;
     }
 
     if (!bce_->emitPopN(2)) {
-      // [stack] HAS-AWAITED ...
+      // [stack] HAS-AWAITED THROWING EXC RESOURCES INDEX
       return false;
     }
 
     if (!bce_->emit1(JSOp::False)) {
-      // [stack] HAS-AWAITED ... NEEDS-AWAIT
+      // [stack] HAS-AWAITED THROWING EXC RESOURCES INDEX NEEDS-AWAIT
       return false;
     }
 
-    if (!bce_->emitUnpickN(8)) {
-      // [stack] NEEDS-AWAIT HAS-AWAITED ...
+    if (!bce_->emitUnpickN(5)) {
+      // [stack] NEEDS-AWAIT HAS-AWAITED THROWING EXC RESOURCES INDEX
       return false;
     }
 
     if (!ifNeedsSyncDisposeUndefinedAwaited.emitEnd()) {
-      // [stack] NEEDS-AWAIT HAS-AWAITED ...
+      // [stack] NEEDS-AWAIT HAS-AWAITED THROWING EXC RESOURCES INDEX
       return false;
     }
   }
 
-  // [stack] ... HINT METHOD VALUE
+  // [stack] ... RESOURCES INDEX
 
+  // Step 3.c. Let method be resource.[[DisposeMethod]].
+  // (reordered)
   // Step 3.e. If method is not undefined, then
-  if (!bce_->emitDupAt(1)) {
-    // [stack] ... HINT METHOD VALUE METHOD
+  if (!emitResourcePropertyAccess(TaggedParserAtomIndex::WellKnown::method())) {
+    // [stack] ... RESOURCES INDEX METHOD
     return false;
   }
 
   if (!bce_->emit1(JSOp::IsNullOrUndefined)) {
-    // [stack] ... HINT METHOD VALUE METHOD IS-UNDEF
+    // [stack] ... RESOURCES INDEX METHOD IS-UNDEF
     return false;
   }
 
   InternalIfEmitter ifMethodNotUndefined(bce_);
 
   if (!ifMethodNotUndefined.emitThenElse(IfEmitter::ConditionKind::Negative)) {
-    // [stack] ... HINT METHOD VALUE METHOD
+    // [stack] ... RESOURCES INDEX METHOD
     return false;
   }
 
   if (!bce_->emit1(JSOp::Pop)) {
-    // [stack] ... HINT METHOD VALUE
+    // [stack] ... RESOURCES INDEX
     return false;
   }
 
@@ -390,95 +350,107 @@ bool UsingEmitter::emitDisposeLoop(EmitterScope& es,
                      TryEmitter::ControlKind::NonSyntactic);
 
   if (!tryCall.emitTry()) {
-    // [stack] ... HINT METHOD VALUE
+    // [stack] ... RESOURCES INDEX
     return false;
   }
 
-  if (!bce_->emit1(JSOp::Dup2)) {
-    // [stack] ... HINT METHOD VALUE METHOD VALUE
+  // Step 3.c. Let method be resource.[[DisposeMethod]].
+  // (reordered)
+  if (!emitResourcePropertyAccess(TaggedParserAtomIndex::WellKnown::method())) {
+    // [stack] ... RESOURCES INDEX METHOD
+    return false;
+  }
+
+  // Step 3.a. Let value be resource.[[ResourceValue]].
+  // (reordered)
+  if (!emitResourcePropertyAccess(TaggedParserAtomIndex::WellKnown::value(),
+                                  2)) {
+    // [stack] ... RESOURCES INDEX METHOD VALUE
     return false;
   }
 
   // Step 3.e.i. Let result be Completion(Call(method, value)).
   if (!bce_->emitCall(JSOp::Call, 0)) {
-    // [stack] ... HINT METHOD VALUE RESULT
+    // [stack] ... RESOURCES INDEX RESULT
     return false;
   }
 
-  if (hasAwaitUsing_) {
+  if (hasAsyncDisposables_) {
     // Step 3.e.ii. If result is a normal completion and hint is async-dispose,
     // then
-    if (!bce_->emitDupAt(3)) {
-      // [stack] ... HINT METHOD VALUE RESULT HINT
+    if (!emitResourcePropertyAccess(TaggedParserAtomIndex::WellKnown::hint(),
+                                    2)) {
+      // [stack] ... RESOURCES INDEX RESULT HINT
       return false;
     }
 
     // Hint value is either 0 or 1, which can be consumed by the IfEmitter,
     // see static_assert above.
-    // [stack] NEEDS-AWAIT HAS-AWAITED ... RESULT IS-ASYNC
+    // [stack] ... RESOURCES INDEX RESULT IS-ASYNC
 
     InternalIfEmitter ifAsyncDispose(bce_);
 
     if (!ifAsyncDispose.emitThen()) {
-      // [stack] NEEDS-AWAIT HAS-AWAITED ... RESULT
+      // [stack] ... RESOURCES INDEX RESULT
       return false;
     }
 
+    // [stack] NEEDS-AWAIT THROWING EXC RESOURCES INDEX RESULT HAS-AWAITED
+
     // Step 3.e.ii.2. Set hasAwaited to true. (reordered)
-    if (!bce_->emitPickN(8)) {
-      // [stack] NEEDS-AWAIT ... RESULT HAS-AWAITED
+    if (!bce_->emitPickN(5)) {
+      // [stack] NEEDS-AWAIT THROWING EXC RESOURCES INDEX RESULT HAS-AWAITED
       return false;
     }
 
     if (!bce_->emit1(JSOp::Pop)) {
-      // [stack] NEEDS-AWAIT ... RESULT
+      // [stack] NEEDS-AWAIT THROWING EXC RESOURCES INDEX RESULT
       return false;
     }
 
     if (!bce_->emit1(JSOp::True)) {
-      // [stack] NEEDS-AWAIT ... RESULT HAS-AWAITED
+      // [stack] NEEDS-AWAIT THROWING EXC RESOURCES INDEX RESULT HAS-AWAITED
       return false;
     }
 
-    if (!bce_->emitUnpickN(8)) {
-      // [stack] NEEDS-AWAIT HAS-AWAITED ... RESULT
+    if (!bce_->emitUnpickN(5)) {
+      // [stack] NEEDS-AWAIT HAS-AWAITED THROWING EXC RESOURCES INDEX RESULT
       return false;
     }
 
     // Step 3.e.ii.1. Set result to Completion(Await(result.[[Value]])).
     if (!bce_->emitAwaitInScope(es)) {
-      // [stack] NEEDS-AWAIT HAS-AWAITED ... RESOLVED
+      // [stack] NEEDS-AWAIT HAS-AWAITED THROWING EXC RESOURCES INDEX RESOLVED
       return false;
     }
 
     if (!ifAsyncDispose.emitEnd()) {
-      // [stack] NEEDS-AWAIT HAS-AWAITED ... RESULT
+      // [stack] NEEDS-AWAIT HAS-AWAITED THROWING EXC RESOURCES INDEX RESULT
       return false;
     }
   }
 
-  // [stack] ... THROWING EXC RESOURCES INDEX HINT METHOD VALUE RESULT
+  // [stack] ... THROWING EXC RESOURCES INDEX RESULT
 
   if (!bce_->emit1(JSOp::Pop)) {
-    // [stack] ... THROWING EXC RESOURCES INDEX HINT METHOD VALUE
+    // [stack] ... THROWING EXC RESOURCES INDEX
     return false;
   }
 
   // Step 3.e.iii. If result is a throw completion, then
   if (!tryCall.emitCatch()) {
-    // [stack] ... THROWING EXC RESOURCES INDEX HINT METHOD VALUE EXC2
+    // [stack] ... THROWING EXC RESOURCES INDEX EXC2
     return false;
   }
 
-  if (!bce_->emitPickN(6)) {
-    // [stack] .. THROWING RESOURCES INDEX HINT METHOD VALUE EXC2 EXC
+  if (!bce_->emitPickN(3)) {
+    // [stack] ... THROWING RESOURCES INDEX EXC2 EXC
     return false;
   }
 
-  if (initialCompletion == CompletionKind::Throw &&
-      bce_->sc->isSuspendableContext() &&
+  if (bce_->sc->isSuspendableContext() &&
       bce_->sc->asSuspendableContext()->isGenerator()) {
-    // [stack] ... EXC2 EXC
+    // [stack] ... THROWING RESOURCES INDEX EXC2 EXC
 
     // Generator closure is implemented by throwing a magic value
     // thus when we have a throw completion we must check whether
@@ -486,120 +458,115 @@ bool UsingEmitter::emitDisposeLoop(EmitterScope& es,
     // it with the normal exception here or else we will end up exposing
     // the magic value to user program.
     if (!bce_->emit1(JSOp::IsGenClosing)) {
-      // [stack] ... EXC2 EXC GEN-CLOSING
+      // [stack] ... THROWING RESOURCES INDEX EXC2 EXC GEN-CLOSING
       return false;
     }
 
     if (!bce_->emit1(JSOp::Not)) {
-      // [stack] ... EXC2 EXC !GEN-CLOSING
+      // [stack] ... THROWING RESOURCES INDEX EXC2 EXC !GEN-CLOSING
       return false;
     }
 
-    if (!bce_->emitPickN(8)) {
-      // [stack] ... EXC2 EXC (!GEN-CLOSING) THROWING
+    if (!bce_->emitPickN(5)) {
+      // [stack] ... RESOURCES INDEX EXC2 EXC (!GEN-CLOSING) THROWING
       return false;
     }
 
     if (!bce_->emit1(JSOp::BitAnd)) {
-      // [stack] ... EXC2 EXC (!GEN-CLOSING & THROWING)
+      // [stack] ... RESOURCES INDEX EXC2 EXC (!GEN-CLOSING & THROWING)
       return false;
     }
   } else {
-    if (!bce_->emitPickN(7)) {
-      // [stack] ... RESOURCES INDEX HINT METHOD VALUE EXC2 EXC THROWING
+    if (!bce_->emitPickN(4)) {
+      // [stack] ... RESOURCES INDEX EXC2 EXC THROWING
       return false;
     }
   }
 
-  // [stack] NEEDS-AWAIT? HAS-AWAITED? ... EXC2 EXC THROWING
+  // [stack] NEEDS-AWAIT? HAS-AWAITED? RESOURCES INDEX EXC2 EXC THROWING
 
   InternalIfEmitter ifException(bce_);
 
   // Step 3.e.iii.1. If completion is a throw completion, then
   if (!ifException.emitThenElse()) {
-    // [stack] NEEDS-AWAIT? HAS-AWAITED? ... EXC2 EXC
+    // [stack] NEEDS-AWAIT? HAS-AWAITED? RESOURCES INDEX EXC2 EXC
     return false;
   }
 
   // Step 3.e.iii.1.a-f
   if (!bce_->emit1(JSOp::CreateSuppressedError)) {
-    // [stack] NEEDS-AWAIT? HAS-AWAITED? ... SUPPRESSED
+    // [stack] NEEDS-AWAIT? HAS-AWAITED? RESOURCES INDEX SUPPRESSED
     return false;
   }
 
-  if (!bce_->emitUnpickN(5)) {
-    // [stack] NEEDS-AWAIT? HAS-AWAITED? SUPPRESSED ...
+  if (!bce_->emitUnpickN(2)) {
+    // [stack] NEEDS-AWAIT? HAS-AWAITED? SUPPRESSED RESOURCED INDEX
     return false;
   }
 
   if (!bce_->emit1(JSOp::True)) {
-    // [stack] NEEDS-AWAIT? HAS-AWAITED? SUPPRESSED ... THROWING
+    // [stack] NEEDS-AWAIT? HAS-AWAITED? SUPPRESSED RESOURCED INDEX THROWING
     return false;
   }
 
-  if (!bce_->emitUnpickN(6)) {
-    // [stack] NEEDS-AWAIT? HAS-AWAITED? THROWING SUPPRESSED ...
+  if (!bce_->emitUnpickN(3)) {
+    // [stack] NEEDS-AWAIT? HAS-AWAITED? THROWING SUPPRESSED RESOURCED INDEX
     return false;
   }
 
   // Step 3.e.iii.2. Else,
   // Step 3.e.iii.2.a. Set completion to result.
   if (!ifException.emitElse()) {
-    // [stack] NEEDS-AWAIT? HAS-AWAITED? ... EXC2 EXC
+    // [stack] NEEDS-AWAIT? HAS-AWAITED? RESOURCES INDEX EXC2 EXC
     return false;
   }
 
   if (!bce_->emit1(JSOp::Pop)) {
-    // [stack] NEEDS-AWAIT? HAS-AWAITED? ... EXC2
+    // [stack] NEEDS-AWAIT? HAS-AWAITED? RESOURCES INDEX EXC2
     return false;
   }
 
-  if (!bce_->emitUnpickN(5)) {
-    // [stack] NEEDS-AWAIT? HAS-AWAITED? EXC2 ...
+  if (!bce_->emitUnpickN(2)) {
+    // [stack] NEEDS-AWAIT? HAS-AWAITED? EXC2 RESOURCES INDEX
     return false;
   }
 
   if (!bce_->emit1(JSOp::True)) {
-    // [stack] NEEDS-AWAIT? HAS-AWAITED? EXC2 ... THROWING
+    // [stack] NEEDS-AWAIT? HAS-AWAITED? EXC2 RESOURCES INDEX THROWING
     return false;
   }
 
-  if (!bce_->emitUnpickN(6)) {
-    // [stack] NEEDS-AWAIT? HAS-AWAITED? THROWING EXC2 ...
+  if (!bce_->emitUnpickN(3)) {
+    // [stack] NEEDS-AWAIT? HAS-AWAITED? THROWING EXC2 RESOURCES INDEX
     return false;
   }
 
   if (!ifException.emitEnd()) {
-    // [stack] NEEDS-AWAIT? HAS-AWAITED? THROWING EXC ...
+    // [stack] NEEDS-AWAIT? HAS-AWAITED? THROWING EXC RESOURCES INDEX
     return false;
   }
 
   if (!tryCall.emitEnd()) {
-    // [stack] NEEDS-AWAIT? HAS-AWAITED? THROWING EXC ...
+    // [stack] NEEDS-AWAIT? HAS-AWAITED? THROWING EXC RESOURCES INDEX
     return false;
   }
 
-  // [stack] ... THROWING EXC RESOURCES INDEX HINT METHOD VALUE
-
-  if (!bce_->emitPopN(3)) {
-    // [stack] ... THROWING EXC RESOURCES INDEX
-    return false;
-  }
+  // [stack] ... THROWING EXC RESOURCES INDEX
 
   // Step 3.f. Else,
   // Step 3.f.i. Assert: hint is async-dispose.
   // (implicit)
   if (!ifMethodNotUndefined.emitElse()) {
-    // [stack] ... THROWING EXC RESOURCES INDEX HINT METHOD VALUE METHOD
+    // [stack] ... THROWING EXC RESOURCES INDEX METHOD
     return false;
   }
 
-  if (!bce_->emitPopN(4)) {
+  if (!bce_->emit1(JSOp::Pop)) {
     // [stack] ... THROWING EXC RESOURCES INDEX
     return false;
   }
 
-  if (hasAwaitUsing_) {
+  if (hasAsyncDisposables_) {
     // [stack] NEEDS-AWAIT HAS-AWAITED THROWING EXC RESOURCES INDEX
 
     // Step 3.f.ii. Set needsAwait to true.
@@ -644,7 +611,7 @@ bool UsingEmitter::emitDisposeLoop(EmitterScope& es,
     return false;
   }
 
-  if (hasAwaitUsing_) {
+  if (hasAsyncDisposables_) {
     // Step 4. If needsAwait is true and hasAwaited is false, then
     if (!bce_->emitPickN(3)) {
       // [stack] HAS-AWAITED THROWING EXC NEEDS-AWAIT
@@ -700,27 +667,58 @@ bool UsingEmitter::emitDisposeLoop(EmitterScope& es,
     return false;
   }
 
-  if (hasAwaitUsing_) {
-    // [stack] RVAL EXC THROWING
+#ifdef DEBUG
+  state_ = State::End;
+#endif
+  return true;
+}
 
-    if (!bce_->emitPickN(2)) {
-      // [stack] EXC THROWING RVAL
-      return false;
-    }
+bool UsingEmitter::emitDisposeResourcesForEnvironment(EmitterScope& es) {
+  // [stack] THROWING EXC
 
-    if (!bce_->emit1(JSOp::SetRval)) {
-      // [stack] EXC THROWING
-      return false;
-    }
+  DisposalEmitter de(bce_, hasAwaitUsing_);
+  if (!de.prepareForDisposeCapability()) {
+    // [stack] NEEDS-AWAIT? HAS-AWAITED? THROWING EXC
+    return false;
+  }
+
+  // Explicit Resource Management Proposal
+  // DisposeResources ( disposeCapability, completion )
+  // https://arai-a.github.io/ecma262-compare/?pr=3000&id=sec-disposeresources
+  //
+  // Step 6. Set disposeCapability.[[DisposableResourceStack]] to a new empty
+  // List.
+  if (!emitTakeDisposeCapability()) {
+    // [stack] NEEDS-AWAIT? HAS-AWAITED? THROWING EXC RESOURCES COUNT
+    return false;
+  }
+
+  if (!de.emitEnd(es)) {
+    // [stack] EXC THROWING
+    return false;
   }
 
   return true;
 }
 
-bool UsingEmitter::prepareForDisposableScopeBody() {
-  tryEmitter_.emplace(bce_, TryEmitter::Kind::TryFinally,
-                      TryEmitter::ControlKind::NonSyntactic);
-  return tryEmitter_->emitTry();
+bool UsingEmitter::prepareForDisposableScopeBody(BlockKind blockKind) {
+  MOZ_ASSERT(state_ == State::Start);
+
+  // For-of loops are already wrapped in try-catch and have special case
+  // handling for the same.
+  // See ForOfLoopControl::emitEndCodeNeedingIteratorClose.
+  if (blockKind != BlockKind::ForOf) {
+    tryEmitter_.emplace(bce_, TryEmitter::Kind::TryFinally,
+                        TryEmitter::ControlKind::Disposal);
+    if (!tryEmitter_->emitTry()) {
+      return false;
+    }
+  }
+
+#ifdef DEBUG
+  state_ = State::DisposableScopeBody;
+#endif
+  return true;
 }
 
 // Explicit Resource Management Proposal
@@ -950,10 +948,11 @@ bool UsingEmitter::emitCreateDisposableResource(UsingHint hint) {
 // https://arai-a.github.io/ecma262-compare/?pr=3000&id=sec-adddisposableresource
 // Steps 1, 3-4.
 bool UsingEmitter::prepareForAssignment(UsingHint hint) {
+  MOZ_ASSERT(state_ == State::DisposableScopeBody);
   MOZ_ASSERT(bce_->innermostEmitterScope()->hasDisposables());
 
   if (hint == UsingHint::Async) {
-    hasAwaitUsing_ = true;
+    setHasAwaitUsing(true);
   }
 
   // [stack] VAL
@@ -1009,19 +1008,39 @@ bool UsingEmitter::prepareForAssignment(UsingHint hint) {
   return true;
 }
 
-bool UsingEmitter::prepareForForOfLoopIteration() {
+bool ForOfDisposalEmitter::prepareForForOfLoopIteration() {
+  MOZ_ASSERT(state_ == State::Start);
   EmitterScope* es = bce_->innermostEmitterScopeNoCheck();
   MOZ_ASSERT(es->hasDisposables());
 
-  if (!emitDisposeLoop(*es)) {
+  if (!bce_->emit1(JSOp::False)) {
+    // [stack] THROWING
+    return false;
+  }
+
+  if (!bce_->emit1(JSOp::Undefined)) {
+    // [stack] THROWING UNDEF
+    return false;
+  }
+
+  if (!emitDisposeResourcesForEnvironment(*es)) {
     // [stack] EXC THROWING
     return false;
   }
 
-  return emitThrowIfException();
+  if (!emitThrowIfException()) {
+    // [stack]
+    return false;
+  }
+
+#ifdef DEBUG
+  state_ = State::Iteration;
+#endif
+  return true;
 }
 
-bool UsingEmitter::prepareForForOfIteratorCloseOnThrow() {
+bool ForOfDisposalEmitter::emitEnd() {
+  MOZ_ASSERT(state_ == State::Iteration);
   EmitterScope* es = bce_->innermostEmitterScopeNoCheck();
   MOZ_ASSERT(es->hasDisposables());
 
@@ -1032,7 +1051,17 @@ bool UsingEmitter::prepareForForOfIteratorCloseOnThrow() {
     return false;
   }
 
-  if (!emitDisposeLoop(*es, CompletionKind::Throw)) {
+  if (!bce_->emit1(JSOp::True)) {
+    // [stack] STACK EXC THROWING
+    return false;
+  }
+
+  if (!bce_->emit1(JSOp::Swap)) {
+    // [stack] STACK THROWING EXC
+    return false;
+  }
+
+  if (!emitDisposeResourcesForEnvironment(*es)) {
     // [stack] STACK EXC THROWING
     return false;
   }
@@ -1042,75 +1071,338 @@ bool UsingEmitter::prepareForForOfIteratorCloseOnThrow() {
     return false;
   }
 
-  return bce_->emit1(JSOp::Swap);
-  // [stack] EXC STACK
-}
-
-bool UsingEmitter::emitNonLocalJump(EmitterScope* present) {
-  MOZ_ASSERT(present->hasDisposables());
-
-  if (!emitDisposeLoop(*present)) {
-    // [stack] EXC THROWING
-    return false;
-  }
-
-  return emitThrowIfException();
-}
-
-bool UsingEmitter::emitEnd() {
-  EmitterScope* es = bce_->innermostEmitterScopeNoCheck();
-  MOZ_ASSERT(es->hasDisposables());
-  MOZ_ASSERT(tryEmitter_.isSome());
-
-  // Given that we are using NonSyntactic TryEmitter we do
-  // not have fallthrough behaviour in the normal completion case
-  // see comment on controlInfo_ in TryEmitter.h
-  if (!emitDisposeLoop(*es)) {
-    //     [stack] EXC THROWING
-    return false;
-  }
-
-  if (!emitThrowIfException()) {
-    //     [stack]
+  if (!bce_->emit1(JSOp::Swap)) {
+    // [stack] EXC STACK
     return false;
   }
 
 #ifdef DEBUG
-  // We want to ensure that we have EXC and STACK on the stack
-  // and not RESUME_INDEX, non-existence of control info
-  // confirms the same.
-  MOZ_ASSERT(!tryEmitter_->hasControlInfo());
+  state_ = State::End;
 #endif
+  return true;
+}
+
+bool UsingEmitter::emitEnd() {
+  MOZ_ASSERT(state_ == State::DisposableScopeBody);
+  EmitterScope* es = bce_->innermostEmitterScopeNoCheck();
+  MOZ_ASSERT(es->hasDisposables());
+  MOZ_ASSERT(tryEmitter_.isSome());
 
   if (!tryEmitter_->emitFinally()) {
-    //     [stack] EXC STACK THROWING
+    // [stack] EXC-OR-RESUME STACK THROWING RVAL?
     return false;
   }
 
-  if (!bce_->emitPickN(2)) {
-    //    [stack] STACK THROWING EXC
+  if (!bce_->emitDupAt(tryEmitter_->shouldUpdateRval() ? 1 : 0)) {
+    // [stack] EXC-OR-RESUME STACK THROWING RVAL? THROWING
     return false;
   }
 
-  if (!emitDisposeLoop(*es, CompletionKind::Throw)) {
-    //     [stack] STACK THROWING EXC THROWING
+  InternalIfEmitter ifThrowing(bce_);
+
+  if (!ifThrowing.emitThenElse()) {
+    // [stack] EXC STACK THROWING RVAL?
     return false;
   }
 
-  if (!bce_->emit1(JSOp::Pop)) {
-    //     [stack] STACK THROWING EXC
+  if (!bce_->emit1(JSOp::True)) {
+    // [stack] EXC STACK THROWING RVAL? THROWING
     return false;
   }
 
-  if (!bce_->emitUnpickN(2)) {
-    //    [stack] EXC STACK THROWING
+  if (!bce_->emitDupAt(tryEmitter_->shouldUpdateRval() ? 4 : 3)) {
+    // [stack] EXC STACK THROWING RVAL? THROWING EXC
+    return false;
+  }
+
+  if (!ifThrowing.emitElse()) {
+    // [stack] RESUME STACK THROWING RVAL?
+    return false;
+  }
+
+  if (!bce_->emit1(JSOp::False)) {
+    // [stack] RESUME STACK THROWING RVAL? THROWING
+    return false;
+  }
+
+  if (!bce_->emit1(JSOp::Undefined)) {
+    // [stack] RESUME STACK THROWING RVAL? THROWING UNDEF
+    return false;
+  }
+
+  if (!ifThrowing.emitEnd()) {
+    // [stack] EXC-OR-RESUME STACK THROWING RVAL? THROWING EXC-OR-UNDEF
+    return false;
+  }
+
+  if (!emitDisposeResourcesForEnvironment(*es)) {
+    // [stack] EXC-OR-RESUME STACK THROWING RVAL? DISPOSAL-EXC DISPOSAL-THROWING
+    return false;
+  }
+
+  if (bce_->sc->isSuspendableContext() &&
+      bce_->sc->asSuspendableContext()->isGenerator()) {
+    // [stack] ... DISP-EXC DISP-THROWING
+
+    if (!bce_->emit1(JSOp::Swap)) {
+      // [stack] ... DISP-THROWING DISP-EXC
+      return false;
+    }
+
+    if (!bce_->emit1(JSOp::IsGenClosing)) {
+      // [stack] ... DISP-THROWING DISP-EXC GEN-CLOSING
+      return false;
+    }
+
+    if (!bce_->emit1(JSOp::Not)) {
+      // [stack] ... DISP-THROWING DISP-EXC !GEN-CLOSING
+      return false;
+    }
+
+    if (!bce_->emitPickN(2)) {
+      // [stack] ... DISP-EXC !GEN-CLOSING DISP-THROWING
+      return false;
+    }
+
+    if (!bce_->emit1(JSOp::BitAnd)) {
+      // [stack] ... DISP-EXC (DISP-THROWING & !GEN-CLOSING)
+      return false;
+    }
+  }
+
+  if (!emitThrowIfException()) {
+    // [stack] EXC-OR-RESUME STACK THROWING RVAL?
     return false;
   }
 
   if (!tryEmitter_->emitEnd()) {
-    //     [stack]
+    // [stack]
     return false;
   }
 
+#ifdef DEBUG
+  state_ = State::End;
+#endif
+  return true;
+}
+
+// Explicit Resource Management Proposal
+// https://arai-a.github.io/ecma262-compare/?pr=3000&id=sec-runtime-semantics-forin-div-ofbodyevaluation-lhs-stmt-iterator-lhskind-labelset
+// Step 9.k.i.
+bool NonLocalIteratorCloseUsingEmitter::prepareForIteratorClose(
+    EmitterScope& es) {
+  MOZ_ASSERT(state_ == State::Start);
+  // In this function we prepare for the closure of the iterator but first
+  // emitting the dispose loop and preseving exceptions on the stack and after
+  // that emitting a try to wrap the iterator closure code that shall come after
+  // this.
+  if (!es.hasDisposables()) {
+#ifdef DEBUG
+    state_ = State::IteratorClose;
+#endif
+    return true;
+  }
+
+  setHasAwaitUsing(es.hasAsyncDisposables());
+
+  // [stack] ITER
+
+  if (!bce_->emit1(JSOp::False)) {
+    // [stack] THROWING
+    return false;
+  }
+
+  if (!bce_->emit1(JSOp::Undefined)) {
+    // [stack] THROWING UNDEF
+    return false;
+  }
+
+  if (!emitDisposeResourcesForEnvironment(es)) {
+    // [stack] ITER EXC-DISPOSE DISPOSE-THROWING
+    return false;
+  }
+
+  if (!bce_->emitPickN(2)) {
+    // [stack] EXC-DISPOSE DISPOSE-THROWING ITER
+    return false;
+  }
+
+  tryClosingIterator_.emplace(bce_, TryEmitter::Kind::TryCatch,
+                              TryEmitter::ControlKind::NonSyntactic);
+
+  if (!tryClosingIterator_->emitTry()) {
+    // [stack] EXC-DISPOSE DISPOSE-THROWING ITER
+    return false;
+  }
+
+#ifdef DEBUG
+  state_ = State::IteratorClose;
+#endif
+  return true;
+}
+
+// Explicit Resource Management Proposal
+// 7.4.9 IteratorClose ( iteratorRecord, completion )
+// https://arai-a.github.io/ecma262-compare/?pr=3000&id=sec-iteratorclose&secAll=true
+// Steps 5-6.
+//
+// 7.4.11 AsyncIteratorClose ( iteratorRecord, completion )
+// https://arai-a.github.io/ecma262-compare/?pr=3000&id=sec-asynciteratorclose&secAll=true
+// Steps 5-6.
+bool NonLocalIteratorCloseUsingEmitter::emitEnd() {
+  // This function handles the steps after the iterator close operation which
+  // may or may not have thrown. note that prepareForIteratorClose would have
+  // already wrapped the iterator closure with a try and have preserved any
+  // exception by the disposal operation on the stack now this function does the
+  // equivalent of the following pseudocode (consider excDispose and
+  // disposeThrowing and iter equal to corresponding values left on stack by
+  // prepareForIteratorClose):
+  //
+  //
+  // let excToThrow, throwing = disposeThrowing;
+  // try {
+  //   IteratorClose(iter);
+  // } catch (excIterClose) {
+  //   throwing = true;
+  //   if (disposeThrowing) {
+  //     excToThrow = excDispose;
+  //   } else {
+  //     excToThrow = excIterClose;
+  //   }
+  // }
+  // if (throwing) {
+  //   throw excToThrow;
+  // }
+  //
+  MOZ_ASSERT(state_ == State::IteratorClose);
+
+  if (!tryClosingIterator_.isSome()) {
+#ifdef DEBUG
+    state_ = State::End;
+#endif
+    return true;
+  }
+
+  // [stack] EXC-DISPOSE DISPOSE-THROWING ITER
+
+  if (!tryClosingIterator_->emitCatch()) {
+    // [stack] EXC-DISPOSE DISPOSE-THROWING ITER EXC-ITER-CLOSE
+    return false;
+  }
+
+  if (!bce_->emitPickN(2)) {
+    // [stack] EXC-DISPOSE ITER EXC-ITER-CLOSE DISPOSE-THROWING
+    return false;
+  }
+
+  InternalIfEmitter ifDisposeWasThrowing(bce_);
+
+  if (!ifDisposeWasThrowing.emitThenElse()) {
+    // [stack] EXC-DISPOSE ITER EXC-ITER-CLOSE
+    return false;
+  }
+
+  if (!bce_->emit1(JSOp::Pop)) {
+    // [stack] EXC-DISPOSE ITER
+    return false;
+  }
+
+  if (!bce_->emit1(JSOp::True)) {
+    // [stack] EXC-DISPOSE ITER THROWING
+    return false;
+  }
+
+  // This swap operation is to make the stack state consistent with the
+  // the non-throwing case.
+  if (!bce_->emit1(JSOp::Swap)) {
+    // [stack] EXC-DISPOSE THROWING ITER
+    return false;
+  }
+
+  if (!ifDisposeWasThrowing.emitElse()) {
+    // [stack] EXC-DISPOSE ITER EXC-ITER-CLOSE
+    return false;
+  }
+
+  if (!bce_->emitPickN(2)) {
+    // [stack] ITER EXC-ITER-CLOSE EXC-DISPOSE
+    return false;
+  }
+
+  if (!bce_->emit1(JSOp::Pop)) {
+    // [stack] ITER EXC-ITER-CLOSE
+    return false;
+  }
+
+  if (!bce_->emit1(JSOp::Swap)) {
+    // [stack] EXC-ITER-CLOSE ITER
+    return false;
+  }
+
+  if (!bce_->emit1(JSOp::True)) {
+    // [stack] EXC-ITER-CLOSE ITER THROWING
+    return false;
+  }
+
+  if (!bce_->emit1(JSOp::Swap)) {
+    // [stack] EXC-ITER-CLOSE THROWING ITER
+    return false;
+  }
+
+  if (!ifDisposeWasThrowing.emitEnd()) {
+    // [stack] EXC THROWING ITER
+    return false;
+  }
+
+  if (!tryClosingIterator_->emitEnd()) {
+    // [stack] EXC THROWING ITER
+    return false;
+  }
+
+  if (!bce_->emit1(JSOp::Swap)) {
+    // [stack] EXC ITER THROWING
+    return false;
+  }
+
+  InternalIfEmitter ifThrowing(bce_);
+
+  if (!ifThrowing.emitThenElse()) {
+    // [stack] EXC ITER
+    return false;
+  }
+
+  if (!bce_->emit1(JSOp::Swap)) {
+    // [stack] ITER EXC
+    return false;
+  }
+
+  if (!bce_->emit1(JSOp::Throw)) {
+    // [stack] ITER
+    return false;
+  }
+
+  if (!ifThrowing.emitElse()) {
+    // [stack] EXC ITER
+    return false;
+  }
+
+  if (!bce_->emit1(JSOp::Swap)) {
+    // [stack] ITER EXC
+    return false;
+  }
+
+  if (!bce_->emit1(JSOp::Pop)) {
+    // [stack] ITER
+    return false;
+  }
+
+  if (!ifThrowing.emitEnd()) {
+    // [stack] ITER
+    return false;
+  }
+
+#ifdef DEBUG
+  state_ = State::End;
+#endif
   return true;
 }

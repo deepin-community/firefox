@@ -12,6 +12,7 @@ neterror-blocked-by-policy-page-title = 차단된 페이지
 neterror-captive-portal-page-title = 네트워크에 로그인
 neterror-dns-not-found-title = 서버를 찾을 수 없음
 neterror-malformed-uri-page-title = 잘못된 URL
+general-body-title = 조심하세요. 뭔가 문제가 있습니다.
 
 ## Error page actions
 
@@ -41,6 +42,9 @@ neterror-generic-error = { -brand-short-name }가 어떠한 이유로 인하여 
 neterror-load-error-try-again = 서버가 일시적으로 사용할 수 없거나 사용자가 너무 많은 상태일 수 있습니다. 잠시 후에 다시 시도해 보세요.
 neterror-load-error-connection = 어떤 페이지도 열 수 없다면, 컴퓨터의 네트워크 연결을 확인해 보세요.
 neterror-load-error-firewall = 사용자의 컴퓨터나 네트워크가 방화벽 또는 프록시로 보호되고 있다면, { -brand-short-name }가 웹에 접근할 수 있도록 허용되어 있는지 확인해 보세요.
+# This warning is only shown on macOS Sequoia and later (see bug 1929377)
+neterror-load-osx-permission = 로컬 네트워크 페이지를 로드하려고 하는 경우, macOS 개인정보 보호 및 보안 설정에서 { -brand-short-name }에 로컬 네트워크 권한이 부여되었는지 확인하세요.
+neterror-http-error-page = 웹 사이트 주소를 올바르게 입력했는지 확인하세요.
 neterror-captive-portal = 인터넷을 사용하기 위해서 반드시 이 네트워크에 로그인해야 합니다.
 # Variables:
 # $hostAndPath (String) - a suggested site (e.g. "www.example.com") that the user may have meant instead.
@@ -96,6 +100,9 @@ neterror-proxy-connect-failure-settings = 프록시 설정이 올바로 되어�
 neterror-proxy-connect-failure-contact-admin = 프록시 서버가 확실히 작동 중인지 네트워크 관리자에게 문의하세요.
 neterror-content-encoding-error = 웹 사이트 관리자에게 연락하여 이 문제를 알려주실 수 있습니다.
 neterror-unsafe-content-type = 웹 사이트 관리자에게 연락하여 이 문제를 알려주실 수 있습니다.
+# Variables:
+# $hostname (String) - Hostname of the website to which the user was trying to connect.
+neterror-basic-http-auth = 연결이 안전하지 않아 { -brand-short-name }는 { $hostname } 사이트를 신뢰하지 않습니다. URL을 HTTPS로 변경해 보세요.
 neterror-nss-failure-not-verified = 받은 데이터의 신뢰성을 확인할 수 없으므로 보시려는 페이지를 표시할 수 없습니다.
 neterror-nss-failure-contact-website = 웹 사이트 관리자에게 연락하여 이 문제를 알려주실 수 있습니다.
 # Variables:
@@ -148,3 +155,11 @@ certerror-mitm-what-can-you-do-about-it-attack-sts = <b>{ $mitm }</b>에 익숙�
 # Variables:
 # $hostname (String) - Hostname of the website to which the user was trying to connect.
 certerror-what-should-i-do-bad-sts-cert-explanation = <b>{ $hostname }</b> 사이트는 HTTP Strict Transport Security (HSTS)라는 보안 정책을 가지고 있어서 { -brand-short-name }가 보안 연결만 할 수 있습니다. 이 사이트를 방문하기 위해 예외를 추가 할 수 없습니다.
+cert-error-trust-certificate-transparency-what-can-you-do-about-it = 사이트 자체에 문제가 있을 수 있기 때문에 별것 아닙니다.
+certerror-blocked-by-corp-headers-description = 때때로 웹 사이트는 다른 사이트와의 원치 않는 상호 작용으로부터 사용자와 웹 사이트를 보호합니다.
+certerror-coop-learn-more = COOP(Cross Origin Opener Policy)에 대해 더 알아보기
+certerror-coep-learn-more = COEP(Cross Origin Embedder Policy)에 대해 더 알아보기
+# Variables:
+#   $responsestatus (string) - HTTP response status code (e.g., 500).
+#   $responsestatustext (string) - HTTP response status text (e.g., "Internal Server Error").
+neterror-response-status-code = 오류 코드: { $responsestatus } { $responsestatustext }

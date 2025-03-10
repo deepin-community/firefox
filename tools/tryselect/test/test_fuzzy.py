@@ -92,6 +92,7 @@ def test_query_paths_variants(run_mach, capfd, variant):
         expected = [
             "test-linux1804-64-qr/debug-mochitest-browser-chrome-spi-nw-*",
             "test-linux1804-64-qr/debug-mochitest-browser-chrome-swr-*",
+            "test-linux1804-64-qr/debug-mochitest-browser-chrome-vt",
         ]
 
     delim = "Calculated try_task_config.json:"
@@ -131,7 +132,7 @@ def test_query_tags(run_mach, capfd, tag):
         "--tag",
         tag,
         "-q",
-        "^test-linux '64-qr/debug- !http !spi !swr !nofis !headless !xorig",
+        "^test-linux '64-qr/debug- !http !spi !swr !nofis !headless !xorig !async !ioi",
     ]
     if tag == "not_a_valid_tag":
         assert run_mach(cmd) == 1
@@ -142,6 +143,7 @@ def test_query_tags(run_mach, capfd, tag):
         print(output)
 
         expected = [
+            "test-linux1804-64-qr/debug-mochitest-browser-chrome-vt",
             "test-linux1804-64-qr/debug-mochitest-devtools-chrome-*",
             "test-linux1804-64-qr/debug-mochitest-chrome-1proc-*",
             "test-linux1804-64-qr/debug-mochitest-chrome-gpu-1proc",

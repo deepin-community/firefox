@@ -144,6 +144,9 @@ pref("browser.translations.enable", true);
 // Used for mocking data for GeckoView Translations tests, should use in addition with an automation check.
 pref("browser.translations.geckoview.enableAllTestMocks", false);
 
+// Used for mocking data for GeckoView WebCompat tests, should use in addition with an automation check.
+pref("browser.webcompat.geckoview.enableAllTestMocks", false);
+
 // SSL error page behaviour (bug 437372)
 pref("browser.xul.error_pages.expert_bad_cert", false);
 
@@ -255,6 +258,9 @@ pref("extensions.webextOptionalPermissionPrompts", true);
 // of waiting until the first browser window has opened. This is needed because
 // GeckoView can trigger requests without opening geckoview.xhtml.
 pref("extensions.webextensions.early_background_wakeup_on_request", true);
+
+// Disable userScripts until double-confirmation is implemented (bug 1931556).
+pref("extensions.userScripts.mv3.enabled", false);
 
 // Scroll and zoom into editable form fields (bug 834613)
 pref("formhelper.autozoom", true);
@@ -371,13 +377,22 @@ pref("network.protocol-handler.warn-external.vnd.youtube", false);
 // (bug 888268)
 pref("network.tickle-wifi.enabled", true);
 
+// Complete the page load progress bar at different places according to this pref.
+// See the possible values below:
+// 0 no change
+// 1 complete progressbar at DOMContentLoaded
+// 2 complete progressbar at first MozAfterPaint after DOMContentLoaded
+#ifdef NIGHTLY_BUILD
+  pref("page_load.progressbar_completion", 2);
+#else
+  pref("page_load.progressbar_completion", 0);
+#endif
+
 // Try to convert PDFs sent as octet-stream (bug 1754499)
 pref("pdfjs.handleOctetStream", true);
 
 // Disable tracking protection in PBM for GeckoView (bug 1436887)
 pref("privacy.trackingprotection.pbmode.enabled", false);
-
-pref("privacy.fingerprintingProtection.pbmode", true);
 
 // Relay integration is not supported on mobile
 pref("signon.firefoxRelay.feature", "not available");

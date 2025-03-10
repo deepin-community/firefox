@@ -226,9 +226,11 @@ newtab-pocket-learn-more = Barrachd fiosrachaidh
 newtab-pocket-cta-button = Faigh { -pocket-brand-name }
 newtab-pocket-cta-text = Sàbhail na sgeulachdan as fhearr leat ann am { -pocket-brand-name } is faigh toileachas inntinn san leughadh.
 newtab-pocket-pocket-firefox-family = Tha { -pocket-brand-name } ’na phàirt de theaghlach bathar { -brand-product-name }
-# A save to Pocket button that shows over the card thumbnail on hover.
 newtab-pocket-save = Sàbhail
 newtab-pocket-saved = Air a shàbhaladh
+
+## Thumbs up and down buttons that shows over a newtab stories card thumbnail on hover.
+
 
 ## Pocket content onboarding experience dialog and modal for new users seeing the Pocket section for the first time, shown as the first item in the Pocket section.
 
@@ -260,9 +262,6 @@ newtab-custom-row-selector =
 newtab-custom-sponsored-sites = Ath-ghoiridean sponsairichte
 newtab-custom-pocket-title = ’Ga mholadh le { -pocket-brand-name }
 newtab-custom-pocket-subtitle = Sàr-shusbaint ’ga thasgadh le { -pocket-brand-name } mar phàirt de theaghlach { -brand-product-name }
-newtab-custom-pocket-toggle =
-    .label = ’Ga mholadh le { -pocket-brand-name }
-    .description = Sàr-shusbaint ’ga thasgadh le { -pocket-brand-name } mar phàirt de theaghlach { -brand-product-name }
 newtab-custom-pocket-sponsored = Sgeulachdan sponsairichte
 newtab-custom-pocket-show-recent-saves = Seall na chaidh a shàbhaladh o chionn goird
 newtab-custom-recent-title = Gnìomhachd o chionn goirid
@@ -272,3 +271,43 @@ newtab-custom-recent-toggle =
     .description = Roghainn de làraichean is susbaint faisg ort
 newtab-custom-close-button = Dùin
 newtab-custom-settings = Stiùirich barrachd roghainnean
+
+## New Tab Wallpapers
+
+
+## Solid Colors
+
+
+## Abstract
+
+
+## Celestial
+
+
+## Celestial
+
+
+## New Tab Weather
+
+
+## Topic Labels
+
+
+## Topic Selection Modal
+
+
+## Content Feed Sections
+## "Follow", "unfollow", and "following" are social media terms that refer to subscribing to or unsubscribing from a section of stories.
+## e.g. Following the travel section of stories.
+
+
+## Button to block/unblock listed topics
+## "Block", "unblocked", and "blocked" are social media terms that refer to hiding a section of stories.
+## e.g. Blocked the politics section of stories.
+
+
+## Confirmation modal for blocking a section
+
+
+## Panel in the Customize menu section to manage followed and blocked topics
+

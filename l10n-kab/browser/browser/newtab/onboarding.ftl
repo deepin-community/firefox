@@ -189,6 +189,8 @@ mr2022-onboarding-pin-primary-button-label =
         [macos] Eǧǧ { -brand-short-name } deg Dock
        *[other] Senteḍ { -brand-short-name } deg ufeggag n tiwuriwin
     }
+# Primary button string used on welcome page for when Firefox is not pinned on MSIX
+mr2022-onboarding-pin-primary-button-label-msix = Senteḍ { -brand-short-name } deg ufeggag n tiwuriwin akked wumuɣ n usenker
 # Subtitle will be used when user already has Firefox pinned, but
 # has not set it as their default browser.
 # When translating "zip", please feel free to pick a verb that signifies movement and/or exploration
@@ -224,7 +226,9 @@ mr2022-onboarding-set-default-subtitle = Seqdec iminig ur nettnadi ara ɣef tedr
 mr2022-onboarding-get-started-primary-subtitle = Lqem-nneɣ aneggaru yettwafeṣṣel almend n wakken i tḥemmleḍ, err-it fessus ugarqef wayen iɛeddan mi ara tettinigeḍ deg web. Yeččur d timahilin i neẓra ad awint leɛqel-ik·im.
 mr2022-onboarding-get-started-primary-button-label = Asesteb deg kra n tesdatin
 
-## MR2022 Import Settings screen strings
+## MR2022 Get Started screen strings.
+## These strings will be used on the welcome page
+## when Firefox is already set to default and pinned.
 
 mr2022-onboarding-import-header = Asesteb s zzerb ugar
 mr2022-onboarding-import-subtitle = Sesteb { -brand-short-name } akken i t-tebɣiḍ. Rnu ticraḍ-ik·im n yisebtar, awalen uffiren d wayen-nniḍen seg yiminig-ik·im aqbur.
@@ -317,6 +321,13 @@ mr2022-onboarding-default-image-alt =
 onboarding-device-migration-title = Ansuf tikkelt niḍen!
 onboarding-device-migration-primary-button-label = Kcem
 
+## Add-ons Picker screen
+
+amo-picker-title = Sagen { -brand-short-name }
+amo-picker-install-button-label = Rnu ɣer { -brand-short-name }
+amo-picker-install-complete-label = ibded
+amo-picker-collection-link = Snirem akk izegrar
+
 ## The following screens have been updated to use security and privacy focused strings:
 
 # Easy setup screen
@@ -326,6 +337,10 @@ onboarding-easy-setup-security-and-privacy-subtitle = Iminig-nneɣ tettallit yiw
 onboarding-mobile-download-security-and-privacy-title = Mmesten iman-ik s ttawil n uwgelhen mi ara tɛeddiḍ seg yibenk ɣer wayeḍ
 # Gratitude screen
 onboarding-gratitude-security-and-privacy-title = { -brand-short-name } mazal-it ɣer tama-k
+# Sign up or Sign in screen
+onboarding-sign-up-title = Mtawi isefka-k gar yibenkan
+onboarding-sign-up-button = Kcem neɣ qqen
+onboarding-sign-up-secondary-button = Bdu tunigin
 
 ## New user time and familiarity survey strings
 
@@ -341,3 +356,44 @@ onboarding-new-user-survey-familiarity-based-option-1 = Ad bduɣ kan
 onboarding-new-user-survey-familiarity-based-option-2 = Sqedceɣ-t cwiṭ
 onboarding-new-user-survey-familiarity-based-option-3 = Ssneɣ-t akken ilaq
 onboarding-new-user-survey-familiarity-based-option-4 = Sqedceɣ-t yakan, maca ddeqs aya.
+
+## UI strings for the sidebar and vertical tabs
+
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-new-vertical-tabs-label = Accaren ɣef yidis
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-new-horizontal-tabs-label = Accaren ufella
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-existing-vertical-tabs-label = Ԑreḍ accaren d ubdiden
+onboarding-flair-text = Amaynut!
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-existing-horizontal-tabs-label = Eǧǧ accaren d iglawanen
+# Tooltip displayed on hover for horizontal tabs image
+onboarding-horizontal-tabs-tooltip =
+    .title = Asfaylu n yiminig i d-yeskanen accaren nnig ugdil.
+# Description for horizontal tabs image
+onboarding-horizontal-tabs-description =
+    .aria-description = Asfaylu n yiminig i d-yeskanen accaren nnig ugdil.
+# Additional setup card for setting up aichatbot in the sidebar
+onboarding-genai-sidebar-title = Sekyed chatbot IA deg ugalis adisan
+onboarding-genai-sidebar-primary-button = Fren chatbot
+onboarding-genai-sidebar-secondary-button = Bdu tunigin
+
+## New user onboarding checklist
+
+onboarding-checklist-title = Fakk asesteb n { -brand-short-name }
+onboarding-checklist-subtitle = Smed takkayin akken ad tfarseḍ ugar deg yiminig.
+onboarding-checklist-set-default = Sbadu { -brand-short-name } d iminig amezwer
+onboarding-checklist-pin = Senteḍ { -brand-short-name } deg ufeggag n tiwuriwin
+onboarding-checklist-import = Kter seg yiminig yezrin
+onboarding-checklist-extension = Rnu asiɣzef
+onboarding-checklist-sign-up = Kcem neɣ qqen ɣer umiḍan-ik
+
+## Tab Groups feature onboarding strings
+
+
+## Multi Profiles feature onboarding messages
+
+
+## Desktop to Mobile Adoption feature callout strings
+

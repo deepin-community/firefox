@@ -62,7 +62,7 @@ addon-install-domain-blocked-by-policy = Tvoja je organizacija spriječila ovu s
 addon-install-full-screen-blocked = Instaliranje dodatka nije dopušteno za vrijeme ili prije ulaska u cjeloekranski prikaz.
 # Variables:
 #   $addonName (String): the localized name of the sideloaded add-on.
-webext-perms-sideload-menu-item = Dodatak je { $addonName } dodan u { -brand-short-name }
+webext-perms-sideload-menu-item = Dodatak { $addonName } je dodan u { -brand-short-name }
 # Variables:
 #   $addonName (String): the localized name of the extension which has been updated.
 webext-perms-update-menu-item = { $addonName } zahtijeva nove dozvole
@@ -78,7 +78,7 @@ webext-imported-addons = Završi instaliranje proširenja uvezenih u { -brand-sh
 addon-removal-title = Ukloniti { $name }?
 # Variables:
 #   $name (String): the name of the extension which is about to be removed.
-addon-removal-message = Ukloni { $name } iz { -brand-shorter-name }?
+addon-removal-message = Ukloniti { $name } iz { -brand-shorter-name(case: "gen") }?
 addon-removal-button = Ukloni
 addon-removal-abuse-report-checkbox = Prijavi ovaj dodatak prodavaču { -vendor-short-name }
 # Variables:
@@ -138,7 +138,9 @@ addon-local-install-error-file-access = { $addonName } nije moguće instalirati 
 addon-local-install-error-not-signed = Ovaj dodatak nije moguće instalirati jer nije verificiran.
 # Variables:
 #   $appVersion (String): the application version.
-addon-install-error-incompatible = { $addonName } nije moguće instalirati jer nije kompatibilan s { -brand-short-name } { $appVersion }.
+addon-install-error-incompatible = { $addonName } nije moguće instalirati jer nije kompatibilan s { -brand-short-name(case: "ins") } { $appVersion }.
+addon-install-error-hard-blocked = { $addonName } krši Mozillina pravila i ne može se instalirati na { -brand-short-name(case: "acc") }.
 addon-install-error-blocklisted = { $addonName } nije moguće instalirati zbog prevelikog rizika nastanka mogućih problema sa sigurnošću i stabilnošću.
+addon-install-error-soft-blocked = { $addonName } krši Mozillina pravila i ne može se instalirati na { -brand-short-name(case: "acc") }.
 # Enterprise policies is a feature aimed at system administrators who want to deploy custom settings for Firefox.
 addon-install-error-admin-install-only = Ne možete instalirati { $addonName } kao krajnji korisnik, može ga instalirati samo organizacija koristeći koristi pravila poduzeća.

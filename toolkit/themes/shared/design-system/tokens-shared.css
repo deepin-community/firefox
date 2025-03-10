@@ -64,6 +64,8 @@
     --button-font-size: var(--font-size-root);
     --button-font-size-small: var(--font-size-small);
     --button-font-weight: var(--font-weight-bold);
+    --button-icon-fill: currentColor;
+    --button-icon-stroke: var(--button-icon-fill);
     --button-min-height: var(--size-item-large);
     --button-min-height-small: var(--size-item-medium);
     --button-opacity-disabled: 0.5;
@@ -177,7 +179,11 @@
     --space-xlarge: calc(6 * var(--space-xsmall));
     --space-xxlarge: calc(8 * var(--space-xsmall));
 
+    /** Table Row **/
+    --table-row-background-color: var(--background-color-canvas);
+
     /** Text **/
+    --text-color-disabled: color-mix(in srgb, currentColor 40%, transparent);
     --text-color-deemphasized: color-mix(in srgb, currentColor 69%, transparent);
     --text-color-error: light-dark(var(--color-red-50), var(--color-red-20));
   }
@@ -288,6 +294,12 @@
 
       /** Focus Outline **/
       --focus-outline-color: var(--text-color);
+
+      /** Table Row **/
+      --table-row-background-color-alternate: var(--background-color-canvas); /* TODO Bug 1821203 - Gray use needs to be consolidated */
+
+      /** Text **/
+      --text-color-disabled: GrayText;
     }
   }
 }

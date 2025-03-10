@@ -15,6 +15,11 @@ about-glean-interface-description =
     «<a data-l10n-name="glean-sdk-doc-link">{ glean-sdk-brand-name }</a>»
     китобхонаи ҷамъоварии маълумотест, ки дар лоиҳаҳои «{ -vendor-short-name }» истифода мешавад.
     Интерфейси мазкур барои таҳиягарон ва озмоишгарон барномарезӣ шудааст, то ки онҳо барои ба таври дастӣ <a data-l10n-name="fog-link">санҷидани абзорҳо</a> аз он истифода баранд.
+about-glean-category-about-glean = Дар бораи «{ -glean-brand-name }»
+about-glean-category-manual-testing = Санҷиши дастӣ
+about-glean-category-adhoc-testing = Санҷиши махсус
+about-glean-category-profiler = Истифодаи профилсоз
+about-glean-category-about-data = Дар бораи «Маълумот»
 about-glean-upload-enabled = Боркунии маълумот фаъол аст.
 about-glean-upload-disabled = Боркунии маълумот ғайрифаъол аст.
 about-glean-upload-enabled-local = Боркунии маълумот танҳо барои интиқол ба сервери маҳаллӣ фаъол аст.
@@ -41,6 +46,9 @@ about-glean-glean-android = <code>MOZ_GLEAN_ANDROID</code>: { $glean-android-def
 #   $moz-official-define-value (Boolean): the value of the MOZILLA_OFFICIAL define.
 # Do not translate strings between <code> </code> tags.
 about-glean-moz-official = <code>MOZILLA_OFFICIAL</code>: { $moz-official-define-value }
+about-glean-additional-links =
+    Барои гирифтани машварати муфассал дар бораи роҳҳои гуногун ҷиҳати сабт ё пайдо кардани маълумот, лутфан, ба варақаи
+    <strong>«Дар бораи маълумот»</strong> муроҷиат намоед.
 about-glean-about-testing-header = Дар бораи «Санҷиш»
 # This message is followed by a numbered list.
 about-glean-manual-testing =
@@ -82,6 +90,32 @@ about-glean-adhoc-note =
     Лутфан, таваҷҷуҳ намоед, ки шумо аз «Glean JS API» тавассути консоли «devtools» истифода мебаред.
     Ин маънои онро дорад, ки категорияи андозагирӣ ва номи андозагирӣ дар
     <code>camelCase</code> бар хилофи «API»-ҳои «Rust» ва «C++»  шаклбандӣ карда шудааст.
+about-glean-profiler-explanation =
+    Барои дидани шакли пурраи ҳамаи нишондиҳандаҳои сабтшуда, шумо метавонед аз «{ -profiler-brand-name }» истифода баред.
+    Аввал шумо бояд <a data-l10n-name="firefox-profiler-link">профили самаранокиро сабт кунед</a>.
+    Пас аз сабт кардани профил, <q>«Диаграммаи маркерҳо»</q>-ро интихоб кунед ва ба маркерҳо дар зери <q>«Телеметрия»</q> нигаред.
+about-glean-profiler-explanation-profiler =
+    Дар профили самаранокӣ шумо метавонед ҳамаи нишондиҳандаҳои ҷамъшударо, аз он ҷумла, санаи ҷамъоварӣ ва қиматҳои ҳақиқии ҷамъшуда, аз назар гузаронед. Вақте ки шумо ба маркерҳо курсори мушро алоҳида равона мекунед,
+    шумо метавонед тафтиш кунед, ки қимати дуруст ҷамъоварӣ шудааст ва ин ҷамъоварӣ дар вақти лозима рӯй додааст.
 controls-button-label-verbose = Татбиқ кардани танзимот ва фиристодани пинг
+about-glean-feedback-settings-only =
+    .message = Танзимот татбиқ карда шуд!
+about-glean-feedback-settings-and-ping =
+    .message = Танзимот татбиқ карда шуд ва дархост фиристода шуд!
 about-glean-about-data-header = Дар бораи «Маълумот»
+about-glean-about-data-description = Якчанд абзори гуногун мавҷуданд, ки шумо метавонед барои дидани маълумоти шахсии худ, вобаста аз он, ки шумо чиро ҷустуҷӯ мекунед, истифода баред.
+about-glean-about-data-description-list-intro =
+    Лутфан, барои истифода кардан аз ҳар як абзори мушаххас
+    ба рӯйхати дар поён овардашуда муроҷиат кунед:
+about-glean-about-data-list-item-dictionary =
+    Барои дидани маълумоти ҷамъшуда аз ҷониби «{ -glean-brand-name }» дар ҳар як барнома, лутфан, ба
+    <a data-l10n-name="glean-dictionary-link">Луғати «{ -glean-brand-name }»</a> муроҷиат кунед.
+about-glean-about-data-list-item-about-telemetry =
+    Барои дидани маълумоти ҷамъшуда аз тарафи телеметрияи соқит, лутфан, ба
+    <a data-l10n-name="about-telemetry-link">about:telemetry</a> муроҷиат кунед.
+about-glean-about-data-list-item-debug-ping-viewer =
+    Барои дидани барчаспҳои ислоҳи хатоҳо, дидани пингҳои пурра, дидани ҷараёнҳои рӯйдодҳои 
+    зинда ё дидани нишондиҳандаҳои намоишӣ, лутфан, ба 
+    <a data-l10n-name="glean-debug-ping-viewer">{ glean-debug-ping-viewer-brand-name }</a> муроҷиат кунед.
+about-glean-about-data-list-item-firefox-profiler = Барои сабт кардани профили самаранокӣ ва дидани ҳамаи нишондиҳандаҳои сабтшуда, лутфан, аз <a data-l10n-name="about-glean-firefox-profiler">{ -profiler-brand-name }</a> истифода баред.
 about-glean-about-data-explanation = Барои дидани маълумоти ҷамъшуда, лутфан, ба <a data-l10n-name="glean-dictionary-link">Луғати «{ -glean-brand-name }»</a> муроҷиат кунед.

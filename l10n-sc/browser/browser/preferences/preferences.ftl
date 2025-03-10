@@ -3,6 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 do-not-track-description = Imbia a is sitos web su sinnale "Non mi sigas" pro ddi nàrrere chi non boles a ti sighire
+do-not-track-removal = Non suportamus prus su sinnale "non mi sigas"
 do-not-track-description2 =
     .label = Imbia a is sitos web rechestas de “non sighidura”
     .accesskey = I
@@ -60,6 +61,7 @@ pane-experimental-description2 = Sa modìfica de is paràmetros de cunfiguratzio
 settings-pane-labs-title = { -firefoxlabs-brand-name }
 settings-category-labs =
     .tooltiptext = { -firefoxlabs-brand-name }
+pane-experimental-description3 = Proa is funtziones nostras isperimentales. Sunt in isvilupu e evolutzione, e custu diat pòdere cambiare su funtzionamentu de { -brand-short-name }.
 pane-experimental-reset =
     .label = Recùpera valores predefinidos
     .accesskey = R
@@ -136,6 +138,7 @@ windows-launch-on-login =
     .label = Aberi { -brand-short-name } in automàticu a s’aviu de s’elaboradore
     .accesskey = A
 windows-launch-on-login-disabled = Custa preferèntzia est disativada in Windows. Pro dda modificare, bae a <a data-l10n-name="startup-link">Aplicatziones de aviu</a> in cunfiguratziones de su sistema.
+windows-launch-on-login-profile-disabled = Ativa custa preferèntzia ativende “{ profile-manager-use-selected.label }” in sa ventana “Sèbera unu profilu de utente”.
 startup-restore-warn-on-quit =
     .label = Faghe ischire cando essis dae su navigadore
 disable-extension =
@@ -152,6 +155,17 @@ ctrl-tab-recently-used-order =
 open-new-link-as-tabs =
     .label = Aberi ligòngios in ischedas imbetzes de ventanas noas
     .accesskey = A
+ask-on-close-multiple-tabs =
+    .label = Pregunta in antis de serrare prus ischedas
+    .accesskey = P
+# This string is used for the confirm before quitting preference.
+# Variables:
+#   $quitKey (string) - the quit keyboard shortcut, and formatted
+#                       in the same manner as it would appear,
+#                       for example, in the File menu.
+ask-on-quit-with-key =
+    .label = Pregunta in antis de essire cun { $quitKey }
+    .accesskey = P
 confirm-on-close-multiple-tabs =
     .label = Cunfirma prima de serrare prus ischedas
     .accesskey = C
@@ -211,6 +225,16 @@ containers-remove-cancel-button = Non boghes custu cuntenidore
 settings-tabs-show-image-in-preview =
     .label = Ammustra un’anteprima de immàgine cando su puntadore est subra de un’ischeda.
     .accessKey = m
+browser-layout-header = Dispositzione de su navigadore
+browser-layout-horizontal-tabs =
+    .label = Ischedas orizontales
+browser-layout-horizontal-tabs-desc = Ammustra in sa parte de susu de su navigadore
+browser-layout-vertical-tabs =
+    .label = Ischedas verticales
+browser-layout-vertical-tabs-desc = Ammustra a un'ala, in sa barra laterale
+browser-layout-show-sidebar =
+    .label = Ammustra sa barra laterale
+browser-layout-show-sidebar-desc = Atzede a sa lestra a sinnalibros, ischedas dae su telefoneddu tuo, chatbot IA e àteru chene lassare s’ischermu printzipale.
 
 ## General Section - Language & Appearance
 
@@ -568,8 +592,7 @@ home-prefs-shortcuts-description = Sitos chi as sarvadu o bisitadu
 home-prefs-shortcuts-by-option-sponsored =
     .label = Curtzadòrgios patrotzinados
 
-## Variables:
-##  $provider (string) - Name of the corresponding content provider, e.g "Pocket".
+## Home Section - Firefox Home Content Customization
 
 home-prefs-recommended-by-header =
     .label = Cussigiados dae { $provider }
@@ -605,6 +628,7 @@ home-prefs-snippets-header =
 home-prefs-snippets-description-new = Cussìgios e noas dae { -vendor-short-name } e { -brand-product-name }
 home-prefs-weather-header =
     .label = Tempus
+home-prefs-weather-description = Sa previsione de oe
 home-prefs-weather-learn-more-link = Àteras informatziones
 # Variables:
 #   $num (number) - Number of rows displayed
@@ -639,6 +663,10 @@ search-show-suggestions-option =
 search-show-suggestions-url-bar-option =
     .label = Ammustra cussìgios de chirca in is resurtados de sa barra de indiritzos
     .accesskey = i
+# With this option enabled, on the search results page
+# the URL will be replaced by the search terms in the address bar.
+search-show-search-term-option-2 =
+    .label = Ammustra is tèrmines de chirca in sa barra de indiritzos de is pàginas de resurtados
 # With this option enabled, on the search results page
 # the URL will be replaced by the search terms in the address bar
 # when using the current default search engine.
@@ -782,6 +810,9 @@ sync-currently-syncing-creditcards = Cartas de crèditu
 sync-currently-syncing-payment-methods = Mètodos de pagamentu
 sync-currently-syncing-addons = Cumplementos
 sync-currently-syncing-settings = Cunfiguratzione
+sync-manage-options =
+    .label = Gesti sa sincronizatzione…
+    .accesskey = G
 sync-change-options =
     .label = Modìfica…
     .accesskey = M
@@ -834,6 +865,13 @@ sync-engine-settings =
     .label = Cunfiguratzione
     .tooltiptext = Cunfiguratzione generale, de riservadesa e de seguresa chi apas modificadu
     .accesskey = n
+sync-choose-what-to-sync-dialog4 =
+    .title = Sèbera elementos de sincronizare
+    .style = min-width: 36em;
+    .buttonlabelaccept = Sarva
+    .buttonaccesskeyaccept = S
+    .buttonlabelextra2 = Disconnete…
+    .buttonaccesskeyextra2 = D
 
 ## The device name controls.
 
@@ -919,6 +957,9 @@ forms-saved-passwords =
 forms-primary-pw-use =
     .label = Imprea una crae printzipale
     .accesskey = u
+# This operation requires the user to authenticate with the operating system (device sign-in)
+forms-os-reauth =
+    .label = Rechede s’identificatzione in su dispositivu pro compilare in automàticu e gestire is craes
 forms-primary-pw-learn-more-link = Àteras informatziones
 # This string uses the former name of the Primary Password feature
 # ("Master Password" in English) so that the preferences can be found
@@ -951,6 +992,12 @@ primary-password-os-auth-dialog-message-win = Pro creare una crae printzipale, i
 # notes are only valid for English. Please test in your locale.
 primary-password-os-auth-dialog-message-macosx = crea una crae printzipale
 master-password-os-auth-dialog-caption = { -brand-full-name }
+# The macOS string is preceded by the operating system with "Firefox is trying to ".
+autofill-creditcard-os-dialog-message =
+    { PLATFORM() ->
+        [macos] modifica sa cunfiguratzione de is mètodos de pagamentu
+       *[other] { -brand-short-name } est proende a modificare is cunfiguratziones de is mètodos de pagamentu. Imprea s’identificatzione de su dispositivu tuo pro ddu permìtere.
+    }
 autofill-creditcard-os-auth-dialog-caption = { -brand-full-name }
 
 ## Privacy section - Autofill
@@ -966,6 +1013,9 @@ autofill-payment-methods-checkbox-submessage = Includet cartas de crèditu e de 
     .accesskey = I
 autofill-saved-payment-methods-button = Mètodos de pagamentu sarvados
     .accesskey = t
+# This operation requires the user to authenticate with the operating system (device sign-in)
+autofill-reauth-payment-methods-checkbox = Rechede s’identificatzione in su dispositivu pro compilare in automàticu e gestire is mètodos de pagamentu
+    .accesskey = R
 
 ## Privacy Section - History
 
@@ -1102,6 +1152,9 @@ addressbar-suggestions-settings = Muda sa cunfiguratzione de cussìgios de motor
 addressbar-locbar-showrecentsearches-option =
     .label = Ammustra chircas reghentes
     .accesskey = r
+addressbar-locbar-showtrendingsuggestions-option =
+    .label = Ammustra cussìgios de chirca in tendèntzia
+    .accesskey = A
 addressbar-quickactions-learn-more = Àteras informatziones
 
 ## Privacy Section - Content Blocking
@@ -1265,17 +1318,40 @@ permissions-addon-exceptions =
 collection-header = Impreu e còllida de datos dae { -brand-short-name }
 collection-header2 = Impreu e collida de datos dae { -brand-short-name }
     .searchkeywords = telemetria
+preferences-collection-description = Nos impinnamus a ti donare sa possibilidade de seberare e regollimus isceti is datos mìnimos pro megiorare { -brand-product-name } pro totus.
+preferences-collection-privacy-notice = Bide s'avisu de riservadesa
 collection-description = Chircamus de ti garantire sèberos e de regòllere isceti su chi nos serbit pro sa frunidura e su megioru de { -brand-short-name } pro chie chi siat. Pedimus semper su permissu in antis de retzire informatziones personales.
 collection-privacy-notice = Avisu de riservadesa
 collection-health-report-telemetry-disabled = Non permitas prus a { -vendor-short-name } de caturare datos tècnicos e de interatzione. Totu is datos betzos ant a èssere cantzellados intro de 30 dies.
 collection-health-report-telemetry-disabled-link = Àteras informatziones
+collection-usage-ping =
+    .label = Imbia unu ping de impreu diàriu a { -vendor-short-name }
+    .accesskey = I
+collection-usage-ping-description = Custu permitit a { -vendor-short-name } de istimare su nùmeru de utentes ativos.
+collection-health-report2 =
+    .label = Imbia datos tècnicos e de interatzione a { -vendor-short-name }
+    .accesskey = r
 collection-health-report =
     .label = Permite chi { -brand-short-name } imbiet datos tècnicos e de interatzione a { -vendor-short-name }
     .accesskey = r
 collection-health-report-link = Àteras informatziones
+collection-health-report-description = Custu nos agiudat a megiorare is funtziones, su rendimentu e s’istabilidade de { -brand-product-name }.
+collection-studies2 =
+    .label = Installa e faghe istùdios
+collection-studies-description = Proa funtziones e ideas in antis chi siant publicadas pro totus.
 collection-studies =
     .label = Permite a { -brand-short-name } de installare e aviare istùdios
 collection-studies-link = Ammustra is istùdios de { -brand-short-name }
+addon-recommendations2 =
+    .label = Permite cussìgios personalizados de estensiones
+addon-recommendations-description = Retzi cussìgios de estensiones pro megiorare s’esperièntzia tua de navigatzione.
+# This message is displayed above disabled data sharing options in developer builds
+# or builds with no Telemetry support available.
+collection-health-report-disabled2 = S’imbiu de datos est disativadu is sa cunfiguratzione de custa versione.
+collection-backlogged-crash-reports2 =
+    .label = Imbia sinnalatziones de faddina in automàticu
+    .accesskey = I
+collection-backlogged-crash-reports-description = Custu agiudat { -vendor-short-name } a agatare e arrangiare is faddinas de su navigadore. Is informes podent incluire datos personale o sensìbiles.
 addon-recommendations =
     .label = Permite chi { -brand-short-name } cussiget estensiones personalizadas
 addon-recommendations-link = Àteras informatziones
@@ -1296,6 +1372,9 @@ privacy-segmentation-radio-on =
 ## Privacy Section - Website Advertising Preferences
 
 website-advertising-header = Preferèntzias de publitzidade de su situ
+website-advertising-private-attribution =
+    .label = Permite a is sitos de fàghere mesuras pro publitzidade respetende sa riservadesa.
+    .accesskey = P
 
 ## Privacy Section - Security
 ##
@@ -1339,14 +1418,24 @@ space-alert-under-5gb-message2 = <strong>Est acabbende s'ispàtziu in su discu p
 ## Privacy Section - HTTPS-Only
 
 httpsonly-header = Modalidade HTTPS ebbia
+httpsonly-learn-more2 = Comente funtzionat sa modalidade «isceti HTTPS»
 httpsonly-description = HTTPS garantit una connessione segura e tzifrada intre { -brand-short-name } e is sitos web chi ses bisitende. Sa majoria de is sitos sunt cumpatìbiles cun HTTPS; si sa Modalidade HTTPS ebbia est ativada, { -brand-short-name } at a impreare HTTPS in totu is connessiones.
 httpsonly-learn-more = Àteras informatziones
 httpsonly-radio-enabled =
     .label = Ativa sa modalidade HTTPS ebbia in totu is ventanas
+httpsonly-radio-enabled2 =
+    .label = Imprea isceti HTTPS in totu is ventanas
 httpsonly-radio-enabled-pbm =
     .label = Ativa sa modalidade HTTPS ebbia isceti in is ventanas privadas
+httpsonly-radio-disabled3 =
+    .label = No atives sa modalidade «isceti HTTPS»
+    .description = { -brand-short-name } diat pòdere ancora atualizare unas cantas connessiones
+httpsonly-radio-enabled-pbm2 =
+    .label = Imprea isceti HTTPS in is ventanas privadas
 httpsonly-radio-disabled =
     .label = No atives sa modalidade HTTPS ebbia
+httpsonly-radio-disabled2 =
+    .label = Proa HTTPS prima, però permite connessiones chi non siant seguras
 
 ## DoH Section
 

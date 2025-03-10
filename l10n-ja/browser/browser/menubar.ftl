@@ -80,7 +80,7 @@ menu-file-open-file =
 #  $tabCount (Number): the number of tabs that are affected by the action.
 menu-file-close-tab =
     .label =
-        { NUMBER($tabCount) ->
+        { $tabCount ->
             [1] タブを閉じる
            *[other] { $tabCount } 個のタブを閉じる
         }
@@ -253,6 +253,15 @@ menu-bookmarks-other =
     .label = 他のブックマーク
 menu-bookmarks-mobile =
     .label = モバイルのブックマーク
+
+## Profiles Menu
+
+menu-profiles =
+    .label = プロファイル
+menu-profiles-manage-profiles =
+    .label = プロファイルを管理
+menu-profiles-new-profile =
+    .label = 新しいプロファイル
 
 ## Tools Menu
 

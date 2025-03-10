@@ -298,6 +298,14 @@ find-more-themes = Найти другие темы
 # used for screen readers.
 addon-options-button =
     .aria-label = Другие настройки
+# Explanatory introduction to the list of recommended add-ons. The action word
+# ("recommends") in the final sentence is a link to external documentation.
+discopane-intro2 =
+    Расширения и темы позволяют вам настроить { -brand-product-name }. Они могут повысить приватность,
+    повысить производительность, улучшить мультимедиа, изменить внешний вид { -brand-product-name } и
+    ещё много чего. Эти небольшие программы часто разрабатываются сторонними разработчиками. Вот
+    выборка <a data-l10n-name="learn-more-trigger">рекомендуемого</a> { -brand-product-name }
+    для исключительной безопасности, производительности и функциональности.
 
 ## Add-on actions
 
@@ -385,6 +393,10 @@ addon-detail-group-label-updates =
     .aria-label = { addon-detail-updates-label }
 # This is the tooltip text for the private browsing badge in about:addons. The
 # badge is the private browsing icon included next to the extension's name.
+addon-badge-private-browsing-allowed3 =
+    .title = Разрешено в приватных окнах
+# This is the tooltip text for the private browsing badge in about:addons. The
+# badge is the private browsing icon included next to the extension's name.
 addon-badge-private-browsing-allowed2 =
     .title = Разрешено в приватных окнах
     .aria-label = { addon-badge-private-browsing-allowed2.title }
@@ -424,6 +436,14 @@ addon-badge-line3 =
 addon-badge-verified2 =
     .title = Это расширение было проверено на соответствие нашим стандартам безопасности и производительности
     .aria-label = { addon-badge-verified2.title }
+addon-badge-recommended3 =
+    .title = { -brand-product-name } рекомендует только те расширения, которые соответствуют нашим стандартам по безопасности и производительности
+# We hard code "Mozilla" in the string below because the extensions are built
+# by Mozilla and we don't want forks to display "by Fork".
+addon-badge-line4 =
+    .title = Официальное расширение, созданное Mozilla. Соответствует стандартам безопасности и производительности.
+addon-badge-verified3 =
+    .title = Это расширение было проверено на соответствие нашим стандартам безопасности и производительности
 
 ##
 
@@ -431,6 +451,7 @@ available-updates-heading = Доступные обновления
 recent-updates-heading = Недавно обновлённые
 release-notes-loading = Загрузка…
 release-notes-error = При загрузке примечаний к выпуску возникли проблемы.
+addon-permissions-empty2 = Это расширение не требует никаких разрешений.
 addon-permissions-empty = Это расширение не требует дополнительных разрешений
 addon-permissions-required = Необходимые разрешения для основных функций:
 addon-permissions-optional = Необязательные разрешения для дополнительных функций:
@@ -480,10 +501,24 @@ details-notification-unsigned-and-disabled-link = Подробная инфор�
 details-notification-unsigned = Работа { $name } в { -brand-short-name } не была проверена. Действуйте с осторожностью.
 details-notification-unsigned2 =
     .message = Работа { $name } в { -brand-short-name } не была проверена. Действуйте с осторожностью.
+details-notification-hard-blocked-extension =
+    .message = Это расширение заблокировано за нарушение политик Mozilla и было отключено.
+details-notification-hard-blocked-other =
+    .message = Это дополнение заблокировано за нарушение политик Mozilla, и было отключено.
 details-notification-unsigned-link = Подробная информация
 details-notification-blocked = { $name } было отключено из-за проблем со стабильностью или безопасностью.
 details-notification-blocked2 =
     .message = { $name } было отключено из-за проблем со стабильностью или безопасностью.
+details-notification-blocked-link2 = Узнать подробнее
+details-notification-soft-blocked-extension-disabled =
+    .message = Это расширение ограничено за нарушение политик Mozilla и было отключено. Вы можете включить его, но это может быть рискованно.
+details-notification-soft-blocked-extension-enabled =
+    .message = Это расширение нарушает политики Mozilla. Его использование может быть рискованным.
+details-notification-soft-blocked-other-disabled =
+    .message = Это дополнение ограничено за нарушение политик Mozilla и было отключено. Вы можете включить его, но это может быть рискованно.
+details-notification-soft-blocked-other-enabled =
+    .message = Это дополнение нарушает политики Mozilla. Его использование может быть рискованным.
+details-notification-softblocked-link2 = Узнать подробнее
 details-notification-blocked-link = Подробная информация
 details-notification-softblocked = { $name } вызывает проблемы со стабильностью или безопасностью.
 details-notification-softblocked2 =

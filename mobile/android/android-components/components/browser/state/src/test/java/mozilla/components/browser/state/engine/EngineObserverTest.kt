@@ -50,6 +50,7 @@ import mozilla.components.support.test.libstate.ext.waitUntilIdle
 import mozilla.components.support.test.middleware.CaptureActionsMiddleware
 import mozilla.components.support.test.mock
 import mozilla.components.support.test.whenever
+import org.json.JSONObject
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
@@ -85,12 +86,15 @@ class EngineObserverTest {
                 onResult: (Boolean) -> Unit,
                 onException: (Throwable) -> Unit,
             ) {}
+            override fun getWebCompatInfo(
+                onResult: (JSONObject) -> Unit,
+                onException: (Throwable) -> Unit,
+            ) {}
             override fun requestProductAnalysis(
                 url: String,
                 onResult: (ProductAnalysis) -> Unit,
                 onException: (Throwable) -> Unit,
             ) {}
-
             override fun requestProductRecommendations(
                 url: String,
                 onResult: (List<ProductRecommendation>) -> Unit,
@@ -159,6 +163,7 @@ class EngineObserverTest {
                 parent: EngineSession?,
                 flags: LoadUrlFlags,
                 additionalHeaders: Map<String, String>?,
+                originalInput: String?,
             ) {
                 notifyObservers { onLocationChange(url, false) }
                 notifyObservers { onProgress(100) }
@@ -206,12 +211,15 @@ class EngineObserverTest {
                 onResult: (Boolean) -> Unit,
                 onException: (Throwable) -> Unit,
             ) {}
+            override fun getWebCompatInfo(
+                onResult: (JSONObject) -> Unit,
+                onException: (Throwable) -> Unit,
+            ) {}
             override fun requestProductAnalysis(
                 url: String,
                 onResult: (ProductAnalysis) -> Unit,
                 onException: (Throwable) -> Unit,
             ) {}
-
             override fun requestProductRecommendations(
                 url: String,
                 onResult: (List<ProductRecommendation>) -> Unit,
@@ -275,6 +283,7 @@ class EngineObserverTest {
                 parent: EngineSession?,
                 flags: LoadUrlFlags,
                 additionalHeaders: Map<String, String>?,
+                originalInput: String?,
             ) {
                 if (url.startsWith("https://")) {
                     notifyObservers { onSecurityChange(true, "host", "issuer") }
@@ -323,13 +332,15 @@ class EngineObserverTest {
                 onResult: (Boolean) -> Unit,
                 onException: (Throwable) -> Unit,
             ) {}
-
+            override fun getWebCompatInfo(
+                onResult: (JSONObject) -> Unit,
+                onException: (Throwable) -> Unit,
+            ) {}
             override fun requestProductRecommendations(
                 url: String,
                 onResult: (List<ProductRecommendation>) -> Unit,
                 onException: (Throwable) -> Unit,
             ) {}
-
             override fun requestProductAnalysis(
                 url: String,
                 onResult: (ProductAnalysis) -> Unit,
@@ -385,6 +396,7 @@ class EngineObserverTest {
                 parent: EngineSession?,
                 flags: LoadUrlFlags,
                 additionalHeaders: Map<String, String>?,
+                originalInput: String?,
             ) {}
             override fun loadData(data: String, mimeType: String, encoding: String) {}
             override fun requestPdfToDownload() = Unit
@@ -985,14 +997,14 @@ class EngineObserverTest {
 
         observer.onDesktopModeChange(true)
         store.waitUntilIdle()
-        middleware.assertFirstAction(ContentAction.UpdateDesktopModeAction::class) { action ->
+        middleware.assertFirstAction(ContentAction.UpdateTabDesktopMode::class) { action ->
             assertEquals("tab-id", action.sessionId)
             assertTrue(action.enabled)
         }
 
         observer.onDesktopModeChange(false)
         store.waitUntilIdle()
-        middleware.assertLastAction(ContentAction.UpdateDesktopModeAction::class) { action ->
+        middleware.assertLastAction(ContentAction.UpdateTabDesktopMode::class) { action ->
             assertEquals("tab-id", action.sessionId)
             assertFalse(action.enabled)
         }

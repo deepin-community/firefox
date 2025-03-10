@@ -225,7 +225,9 @@ mr2022-onboarding-set-default-subtitle = Sử dụng trình duyệt được h�
 mr2022-onboarding-get-started-primary-subtitle = Phiên bản mới nhất của chúng tôi được xây dựng xung quanh bạn, giúp bạn truy cập trên web dễ dàng hơn bao giờ hết. Nó được đóng gói với các tính năng mà chúng tôi nghĩ rằng bạn sẽ yêu thích.
 mr2022-onboarding-get-started-primary-button-label = Thiết lập trong vài giây
 
-## MR2022 Import Settings screen strings
+## MR2022 Get Started screen strings.
+## These strings will be used on the welcome page
+## when Firefox is already set to default and pinned.
 
 mr2022-onboarding-import-header = Thiết lập nhanh như chớp
 mr2022-onboarding-import-subtitle = Thiết lập { -brand-short-name } theo cách bạn thích. Thêm dấu trang, mật khẩu và hơn thế nữa từ trình duyệt cũ của bạn.
@@ -356,6 +358,11 @@ onboarding-mobile-download-security-and-privacy-subtitle = Khi bạn đồng b�
 # Gratitude screen
 onboarding-gratitude-security-and-privacy-title = { -brand-short-name } luôn ủng hộ bạn
 onboarding-gratitude-security-and-privacy-subtitle = Cảm ơn bạn đã sử dụng { -brand-short-name }, được hỗ trợ bởi Mozilla Foundation. Với sự hỗ trợ của bạn, chúng tôi đang nỗ lực làm cho Internet an toàn hơn và dễ truy cập hơn cho mọi người.
+# Sign up or Sign in screen
+onboarding-sign-up-title = Đồng bộ hóa dữ liệu của bạn giữa các thiết bị
+onboarding-sign-up-description = Đăng ký tài khoản và tất cả thông tin quan trọng của bạn — mật khẩu, dấu trang, v.v. — sẽ được lưu trữ an toàn và khả dụng khi bạn đăng nhập vào bất kỳ thiết bị nào.
+onboarding-sign-up-button = Đăng ký hoặc đăng nhập
+onboarding-sign-up-secondary-button = Bắt đầu duyệt web
 
 ## New user time and familiarity survey strings
 
@@ -375,3 +382,90 @@ onboarding-new-user-survey-familiarity-based-option-1 = Tôi là người mới
 onboarding-new-user-survey-familiarity-based-option-2 = Tôi đã sử dụng nó nhiều lúc
 onboarding-new-user-survey-familiarity-based-option-3 = Tôi rất quen thuộc với nó
 onboarding-new-user-survey-familiarity-based-option-4 = Tôi có dùng nó trước đây, nhưng đã rất lâu rồi
+
+## UI strings for the sidebar and vertical tabs
+
+# Setup screen for vertical tabs
+onboarding-new-tabs-title = Hãy cho chúng tôi biết bạn muốn đặt thẻ ở đâu
+# Setup screen for vertical tabs - "Switch it up" refers to switching between horizontal and vertical tabs.
+onboarding-new-tabs-subtitle = Chuyển sang thẻ ở trên cùng bất cứ khi nào bạn muốn trong cài đặt thanh lề.
+# Setup screen for vertical tabs - too many tabs variation
+onboarding-many-tabs-title = Thẻ của bạn, theo cách của bạn
+# Setup screen for vertical tabs - subtitle for too many tabs variation
+onboarding-many-tabs-subtitle = Giữ nhiều thẻ đang mở? Hãy thử chế độ thẻ dọc để có chế độ xem hợp lý hơn. Hoặc giữ mặc định với thẻ ở trên cùng. Có thể chuyển bất cứ lúc nào.
+# Setup screen for vertical tabs - focused variation
+onboarding-focused-tabs-title = Chọn bố cục thẻ của bạn
+# Setup screen for vertical tabs - subtitle for focused variation
+onboarding-focused-tabs-subtitle = Để có chế độ xem hợp lý có thể giúp bạn tập trung, hãy thử chế độ thẻ dọc. Hoặc giữ mặc định với thẻ ở trên cùng. Có thể chuyển bất cứ lúc nào.
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-new-vertical-tabs-label = Thẻ ở bên cạnh
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-new-horizontal-tabs-label = Thẻ ở trên cùng
+# Setup screen for vertical tabs for existing users
+onboarding-existing-tabs-title = Các thẻ dọc ở đây
+# Setup screen for vertical tabs for existing users
+onboarding-existing-tabs-title2 = Giới thiệu thẻ dọc
+# Setup screen for vertical tabs for existing users - "Switch it up" refers to switching between horizontal and vertical tabs.
+onboarding-existing-tabs-subtitle = Hãy thử thẻ của bạn ở bên cạnh. Chuyển sang thẻ ở trên cùng bất cứ khi nào bạn muốn trong cài đặt thanh lề.
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-existing-vertical-tabs-label = Hãy thử thẻ dọc (Vertical tabs)
+onboarding-flair-text = Mới!
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-existing-horizontal-tabs-label = Giữ thẻ ở trên cùng
+# Tooltip displayed on hover for vertical tabs image
+onboarding-vertical-tabs-tooltip =
+    .title = Cửa sổ trình duyệt hiển thị các thẻ dọc theo cạnh màn hình như một phần của thanh lề { -brand-shorter-name }.
+# Description for vertical tabs image
+onboarding-vertical-tabs-description =
+    .aria-description = Cửa sổ trình duyệt hiển thị các thẻ dọc theo cạnh màn hình như một phần của thanh lề { -brand-shorter-name }.
+# Tooltip displayed on hover for horizontal tabs image
+onboarding-horizontal-tabs-tooltip =
+    .title = Một cửa sổ trình duyệt hiển thị các thẻ dọc theo phía trên.
+# Description for horizontal tabs image
+onboarding-horizontal-tabs-description =
+    .aria-description = Một cửa sổ trình duyệt hiển thị các thẻ dọc theo phía trên.
+# Additional setup card for setting up aichatbot in the sidebar
+onboarding-genai-sidebar-title = Hãy thử chatbot AI trong thanh lề
+# Setup card for setting up AI chatbot in the sidebar; "Providers" refers to AI chatbot providers (e.g. OpenAI, etc). "Switch anytime" refers to allowing the user to switch to a different chatbot.
+onboarding-genai-sidebar-subtitle = Tổng hợp nội dung web, lên ý tưởng, soạn thảo tin nhắn — tất cả khi bạn duyệt. Chọn từ nhiều nhà cung cấp. Chuyển đổi bất kỳ lúc nào. <a data-l10n-name="learn-more">Tìm hiểu thêm</a>
+onboarding-genai-sidebar-primary-button = Chọn một chatbot
+onboarding-genai-sidebar-secondary-button = Bắt đầu duyệt web
+
+## New user onboarding checklist
+
+onboarding-checklist-title = Hoàn tất thiết lập { -brand-short-name }
+onboarding-checklist-subtitle = Hãy hoàn thành các bước này để có trải nghiệm duyệt web tốt nhất cho bạn.
+onboarding-checklist-set-default = Đặt { -brand-short-name } làm trình duyệt mặc định
+onboarding-checklist-pin = Ghim { -brand-short-name } vào thanh tác vụ
+onboarding-checklist-import = Nhập từ trình duyệt trước
+onboarding-checklist-extension = Thêm tiện ích
+onboarding-checklist-sign-up = Đăng ký hoặc đăng nhập vào tài khoản của bạn
+
+## Tab Groups feature onboarding strings
+
+tab-groups-onboarding-feature-callout-title = Hãy thử nhóm thẻ để bớt lộn xộn hơn, tập trung hơn
+tab-groups-onboarding-feature-callout-subtitle = Sắp xếp gọn gàng bằng cách kéo thẻ này lên trên thẻ khác để tạo nhóm đầu tiên của bạn.
+tab-groups-onboarding-create-group-title = Tìm các nhóm đang mở của bạn trên thanh thẻ hoặc bằng cách tìm kiếm chúng trong thanh địa chỉ.
+tab-groups-onboarding-saved-groups-title = Nếu bạn đóng một nhóm thẻ, bạn có thể mở lại nó ở đây bất cứ lúc nào.
+tab-groups-onboarding-saved-groups-no-alltabs-button-title = Tìm các nhóm thẻ đang mở hoặc đóng của bạn bất cứ lúc nào bằng cách tìm kiếm trong thanh địa chỉ.
+tab-groups-onboarding-dismiss = OK
+
+## Multi Profiles feature onboarding messages
+
+multi-profile-spotlight-title = Hãy thử chế độ hồ sơ của { -brand-product-name }
+multi-profile-spotlight-body = Dễ dàng chuyển đổi giữa duyệt web để làm việc và giải trí. Hồ sơ giữ thông tin duyệt web của bạn, bao gồm cả lịch sử tìm kiếm và mật khẩu, hoàn toàn riêng biệt giúp bạn có thể sắp xếp hợp lý.
+multi-profile-spotlight-cta = Tạo hồ sơ
+multi-profile-callout-title = Tạo các hồ sơ khác nhau cho công việc và giải trí
+multi-profile-callout-subtitle = Hồ sơ cho phép bạn giữ thông tin duyệt web của mình, như lịch sử tìm kiếm và mật khẩu, hoàn toàn riêng biệt.
+multi-profile-callout-cta = Tạo hồ sơ
+
+## Desktop to Mobile Adoption feature callout strings
+
+# If translating the headline is challenging, consider using a simplified alternative as a reference: 'Sync your browsing with Firefox for mobile.'
+desktop-to-mobile-headline = Tải xuống, đồng bộ hoá và sử dụng!
+# The phrase, 'on the go', is used to describe when people are very busy and are traveling from place to place.
+desktop-to-mobile-subtitle = Quét mã QR để tải xuống { -brand-product-name } cho di động. Sau khi cài đặt, chọn “Đồng bộ trên di động” để truy cập mật khẩu, dấu trang của bạn và nhiều hơn nữa để sử dụng.
+dismiss-button-label = Bỏ qua
+sync-to-mobile-button-label = Đồng bộ trên di động
+desktop-to-mobile-qr-code-alt =
+    .aria-label = Mã QR để tải xuống { -brand-product-name } dành cho di động

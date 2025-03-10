@@ -12,6 +12,7 @@ neterror-blocked-by-policy-page-title = Саҳифаи манъшуда
 neterror-captive-portal-page-title = Ворид шудан ба шабака
 neterror-dns-not-found-title = Сервер ёфт нашуд
 neterror-malformed-uri-page-title = Нишонии URL беэътибор аст
+general-body-title = Эҳтиёт шавед. Чизе нодуруст ба назар мерасад.
 
 ## Error page actions
 
@@ -41,6 +42,9 @@ neterror-generic-error = Ба сабаби номаълум, «{ -brand-short-na
 neterror-load-error-try-again = Эҳтимол аст, ки сомона муваққатан дастнорас аст ё хеле машғул мебошад. Пас аз чанд лаҳза аз нав кӯшиш кунед.
 neterror-load-error-connection = Агар шумо ягон саҳифаро бор карда натавонед, пайвастшавии шабакаи компютери худро санҷед.
 neterror-load-error-firewall = Агар компютер ё шабакаи шумо тавассути девори оташ (firewall) ё прокси муҳофизат шуда бошад, мутмаин шавед, ки ба «{ -brand-short-name }» барои пайдо кардани дастрасӣ ба Интернет иҷозат дода шудааст.
+# This warning is only shown on macOS Sequoia and later (see bug 1929377)
+neterror-load-osx-permission = Агар шумо кӯшиш кунед, ки саҳифаи шабакаи маҳаллиро бор кунед, лутфан, тафтиш кунед, ки ба «{ -brand-short-name }» дар танзимоти махфият ва амнияти «macOS» иҷозатҳои шабакаи маҳаллӣ ба таври мувофиқ таъмин шудаанд.
+neterror-http-error-page = Тафтиш кунед, ки шумо нишонии сомонаро ба таври дуруст ва бехато ворид кардед.
 neterror-captive-portal = Пеш аз пайдо кардани дастрасӣ ба Интернет, шумо бояд ба ин шабака ворид шавед.
 # Variables:
 # $hostAndPath (String) - a suggested site (e.g. "www.example.com") that the user may have meant instead.
@@ -64,6 +68,7 @@ neterror-dns-not-found-trr-offline = Шумо ба Интернет пайвас
 neterror-dns-not-found-trr-unknown-host2 = Ин сомона аз тарафи «{ $trrDomain }» ёфт нашуд.
 neterror-dns-not-found-trr-server-problem = Мушкилии { $trrDomain } ба миён омад.
 neterror-dns-not-found-bad-trr-url = Нишонии URL беэътибор аст.
+neterror-dns-not-found-system-sleep = Низом дар реҷаи хоб қарор дорад.
 neterror-dns-not-found-trr-unknown-problem = Мушкилии ногаҳон.
 
 ## Native fallback specific messages
@@ -95,6 +100,9 @@ neterror-proxy-connect-failure-settings = Танзимоти сервери пр
 neterror-proxy-connect-failure-contact-admin = Бо маъмури сомона дар тамос шуда, мутмаин шавед, ки сервери прокси дар реҷаи корӣ мебошад.
 neterror-content-encoding-error = Лутфан, бо соҳибони сомона дар тамос шавед ва дар бораи ин мушкилӣ ба онҳо хабар диҳед.
 neterror-unsafe-content-type = Лутфан, бо соҳибони сомона дар тамос шавед ва дар бораи ин мушкилӣ ба онҳо хабар диҳед.
+# Variables:
+# $hostname (String) - Hostname of the website to which the user was trying to connect.
+neterror-basic-http-auth = «{ -brand-short-name }» ба { $hostname } эътимод надорад, зеро пайвастшавӣ бехатар нест. Кӯшиш кунед, ки нишонии URL-ро ба «HTTPS» иваз намоед.
 neterror-nss-failure-not-verified = Саҳифае, ки шумо дидан мехоҳед, нишон дода намешавад, зеро ки эътиборнокии маълумоти гирифташуда тасдиқ карда нашуд.
 neterror-nss-failure-contact-website = Лутфан, бо соҳибони сомона дар тамос шавед ва ба онҳо дар бораи ин мушкилӣ хабар диҳед.
 # Variables:
@@ -147,3 +155,11 @@ certerror-mitm-what-can-you-do-about-it-attack-sts = Агар шумо бо <b>{
 # Variables:
 # $hostname (String) - Hostname of the website to which the user was trying to connect.
 certerror-what-should-i-do-bad-sts-cert-explanation = <b>{ $hostname }</b> дорои сиёсати амниятӣ бо номи «Амнияти интиқоли қатъии HTTP» (HSTS) мебошад, ва ин маънои онро дорад, ки «{ -brand-short-name }» метавонад ба он танҳо тавассути алоқаи бехатар пайваст шавад. Шумо барои ворид шудан ба ин сомона истисноро илова карда наметавонед.
+cert-error-trust-certificate-transparency-what-can-you-do-about-it = Эҳтимол аст, ки ҳеҷ чиз, зеро чунин ба назар мерасад, ки худи сомона дорои мушкилӣ мебошад.
+certerror-blocked-by-corp-headers-description = Дар баъзе мавридҳо, сомонаҳо барои худ ва одамоне, ки ба шумо монанданд, муҳофизати махсусро бар зидди муоширати номатлуб бо сомонаҳои дигар таъмин мекунанд.
+certerror-coop-learn-more = Маълумоти бештар дар бораи сиёсатҳои кушоиши сомонаҳо аз манбаъҳои гуногун (COOP)
+certerror-coep-learn-more = Маълумоти бештар дар бораи сиёсатҳои дарунсохти сомонаҳо аз манбаъҳои гуногун (COEP)
+# Variables:
+#   $responsestatus (string) - HTTP response status code (e.g., 500).
+#   $responsestatustext (string) - HTTP response status text (e.g., "Internal Server Error").
+neterror-response-status-code = Рамзи хато: { $responsestatus } { $responsestatustext }

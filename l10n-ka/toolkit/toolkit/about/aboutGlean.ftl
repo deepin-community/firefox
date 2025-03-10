@@ -16,6 +16,11 @@ about-glean-interface-description =
     მონაცემთა აღმრიცხველი ბიბლიოთეკაა { -vendor-short-name }-პროექტებში.
     ეს გვერდი შემმუშავებლებისა და შემმოწმებლებისთვისაა სხვადასხვა
     <a data-l10n-name="fog-link">ხელსაწყოს ხელით გამოსაცდელად</a>.
+about-glean-category-about-glean = { -glean-brand-name } – შესახებ
+about-glean-category-manual-testing = ხელით შემოწმება
+about-glean-category-adhoc-testing = საგანგებო შემოწმება
+about-glean-category-profiler = დაიხმარეთ Profilier
+about-glean-category-about-data = მონაცემთა შესახებ
 about-glean-upload-enabled = მონაცემთა ატვირთვა ჩართულია.
 about-glean-upload-disabled = მონაცემთა ატვირთვა გამორთულია.
 about-glean-upload-enabled-local = მონაცემთა ატვირთვა ჩართულია მხოლოდ ადგილობრივ სერვერზე გასაგზავნად.
@@ -43,6 +48,9 @@ about-glean-glean-android = <code>MOZ_GLEAN_ANDROID</code>: { $glean-android-def
 #   $moz-official-define-value (Boolean): the value of the MOZILLA_OFFICIAL define.
 # Do not translate strings between <code> </code> tags.
 about-glean-moz-official = <code>MOZILLA_OFFICIAL</code>: { $moz-official-define-value }
+about-glean-additional-links =
+    მონაცემების ჩაწერისა და მოძიების სხვადასხვა გზების ასახსნელად გთხოვთ იხილოთ
+    <strong>მონაცემთა შესახებ</strong> ჩანართი.
 about-glean-about-testing-header = შემოწმების შესახებ
 # This message is followed by a numbered list.
 about-glean-manual-testing =
@@ -54,6 +62,8 @@ about-glean-manual-testing =
 about-glean-no-ping-label = (არ გაიგზავნოს არცერთი კრებული)
 # An in-line text input field precedes this string.
 about-glean-label-for-tag-pings = წინამდებარე ველში მიუთითეთ გამართვის ადვილად დასახსომი ჭდე, მოგვიანებით რომ შეძლოთ თქვენი კრებულების ამოცნობა.
+# An in-line text input field precedes this string.
+about-glean-label-for-tag-pings-with-requirements = მიუთითეთ დასამახსოვრებელი ჭდე გამართვისთვის <span>(არაუმეტეს 20 სიმბოლო, ასოციფრული და - მხოლოდ),</span> რათა მოგვიანებით შეძლოთ თქვენი კრებულების ამოცნობა.
 # An in-line drop down list precedes this string.
 # Do not translate strings between <code> </code> tags.
 about-glean-label-for-ping-names =
@@ -86,12 +96,51 @@ about-glean-adhoc-explanation =
     გვერდზე და <code>testGetValue()</code> API-ის მეშვეობით, მაგალითად
     <code>Glean.metricCategory.metricName.testGetValue()</code>.
 # Do not translate strings between <code> </code> tags.
+about-glean-adhoc-explanation2 =
+    დამატებითი <i>საგანგებო</i> შემოწმებისთვის
+    ასევე შეგიძლიათ გაარკვიოთ ცალკეული მახასიათებლების მიმდინარე მნიშვნელობა
+    შემმუშავებელთა ხელსაწყოების გახსნით <code>about:glean</code>
+    გვერდზე და <code>testGetValue()</code> API-ის მეშვეობით, მაგალითად
+    <code>Glean.metricCategory.metricName.testGetValue()</code>
+    გაზომვის დასახელებისთვის <code>metric.category.metric_name</code>.
+# Do not translate strings between <code> </code> tags.
 about-glean-adhoc-note =
     გაითვალისწინეთ, რომ Glean JS API გამოყენება devtools-ის ბრძანებებისას.
     ეს ნიშნავს, რომ აზომვების ჯგუფისა და აზომვების დასახელების გაფორმებაა
     <code>camelCase</code> განსხვავებით Rust და C++ API-ებისგან.
+about-glean-profiler-explanation =
+    ყველა ჩაწერილი მაჩვენებლის სრულად სანახავად შეგიძლიათ გამოიყენოთ { -profiler-brand-name }.
+    ჯერ უნდა <a data-l10n-name="firefox-profiler-link">ჩაიწეროთ წარმადობის პროფილი</a>.
+    პროფილის ჩაწერის შემდეგ კი აირჩიოთ <q>ნიშნულების გრაფიკი</q> და გადახედოთ ნიშნულებს <q>აზომვების</q> ქვეშ.
+about-glean-profiler-explanation-profiler =
+    წარმადობის პროფილში შეგიძლიათ იხილოთ ყველა აღრიცხული მაჩვენებელი, როდის
+    აღირიცხა და ზუსტად რა მნიშვნელობები აღირიცხა. ცალკეულ ნიშნულზე გადატარებით
+    შეგიძლიათ გადაამოწმოთ, მართებული მნიშვნელობა თუ აღირიცხა სათანადო დროს.
 controls-button-label-verbose = პარამეტრების ასახვა და კრებულის გადაგზავნა
+about-glean-feedback-settings-only =
+    .message = პარამეტრები მიღებულია!
+about-glean-feedback-settings-and-ping =
+    .message = პარამეტრები მიღებულია და კრებული გაგზავნილია!
 about-glean-about-data-header = მონაცემთა შესახებ
+about-glean-about-data-description =
+    რამდენიმე განსხვავებული ხელსაწყოა მონაცემების სანახავად იმისდა მიხედვით,
+    თუ რისი მონახვა გსურთ.
+about-glean-about-data-description-list-intro =
+    გთხოვთ გაითვალისწინოთ ქვემოთ სია, რომელი ცალკეული
+    შემთხვევისთვისაა შესაბამისი ხელსაწყო:
+about-glean-about-data-list-item-dictionary =
+    სიის სანახავად მონაცემებისა, რომელთაც { -glean-brand-name } აგროვებს ცალკეული პროგრამაში, დაიხმარეთ
+    <a data-l10n-name="glean-dictionary-link">{ -glean-brand-name }-ცნობარი</a>.
+about-glean-about-data-list-item-about-telemetry =
+    მოძველებული აზომვების შედეგად აღრიცხული მონაცემებისთვის, გთხოვთ იხილოთ
+    <a data-l10n-name="about-telemetry-link">about:telemetry</a>.
+about-glean-about-data-list-item-debug-ping-viewer =
+    გამართვის ჭდეების, სრული კრებულის, პირდაპირი ღონისძიებების ნაკადის ან აზომვების გამოსახულების
+    სანახავად გამოგადგებათ
+    <a data-l10n-name="glean-debug-ping-viewer">{ glean-debug-ping-viewer-brand-name }</a>.
+about-glean-about-data-list-item-firefox-profiler =
+    წარმადობის პროფილის ჩასაწერად და ყველა ჩაწერილი ანაზომის სანახავად, გთხოვთ გამოიყენოთ
+    <a data-l10n-name="about-glean-firefox-profiler">{ -profiler-brand-name }</a>.
 about-glean-about-data-explanation =
     შეგროვებულ მონაცემთა ჩამონათვალის სანახავად დაიხმარეთ
     <a data-l10n-name="glean-dictionary-link">{ -glean-brand-name }-ცნობარი</a>.

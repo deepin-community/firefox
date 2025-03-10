@@ -2,6 +2,14 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+menu-view-genai-chat =
+    .label = Чат-боти зеҳни сунъӣ «AI»
+menu-view-review-checker =
+    .label = Абзори тафтиши тақризҳо
+menu-view-contextual-password-manager =
+    .label = Ниҳонвожаҳо
+sidebar-options-menu-button =
+    .title = Кушодани меню
 
 ## Labels for sidebar history panel
 
@@ -44,16 +52,30 @@ sidebar-position-right =
     .label = Намоиш додан аз тарафи рост
 sidebar-vertical-tabs =
     .label = Варақаҳои амудӣ
+sidebar-settings =
+    .label = Танзимоти навори ҷонибӣ
+sidebar-hide-tabs-and-sidebar =
+    .label = Пинҳон кардани варақаҳо ва навори ҷонибӣ
+sidebar-show-on-the-right =
+    .label = Ҷойгир кардани навори ҷонибӣ аз тарафи рост
+sidebar-show-on-the-left =
+    .label = Ҷойгир кардани навори ҷонибӣ аз тарафи чап
+# Option to automatically expand the collapsed sidebar when the mouse pointer
+# hovers over it.
+expand-sidebar-on-hover =
+    .label = Баркушодани навори ҷонибӣ ҳангоми гузоштани нишондиҳандаи муш ба болои он
 sidebar-horizontal-tabs =
     .label = Варақаҳои уфуқӣ
 sidebar-customize-tabs-header =
     .label = Танзимоти варақа
-sidebar-customize-settings-header =
-    .label = Танзимоти навори ҷонибӣ
-sidebar-visibility-always-show =
-    .label = Ҳамеша нигоҳ дошта шавад
-sidebar-visibility-hide-sidebar =
-    .label = Пинҳон кардани навори ҷонибӣ
+sidebar-customize-button-header =
+    .label = Тугмаи навори ҷонибӣ
+sidebar-customize-position-header =
+    .label = Ҷойгиршавии навори ҷонибӣ
+sidebar-visibility-setting-always-show =
+    .label = Баркушодан ва пеҷондани навори ҷонибӣ
+sidebar-visibility-setting-hide-sidebar =
+    .label = Намоиш ва пинҳон кардани навори ҷонибӣ
 
 ## Labels for sidebar context menu items
 
@@ -83,6 +105,8 @@ sidebar-history-context-menu-delete-page =
 
 ## Labels for sidebar menu items.
 
+sidebar-menu-genai-chat-label =
+    .label = Чат-боти зеҳни сунъӣ «AI»
 sidebar-menu-history-label =
     .label = Таърих
 sidebar-menu-synced-tabs-label =
@@ -91,6 +115,41 @@ sidebar-menu-bookmarks-label =
     .label = Хатбаракҳо
 sidebar-menu-customize-label =
     .label = Фармоишдиҳии навори ҷонибӣ
+sidebar-menu-review-checker-label =
+    .label = Абзори тафтиши тақризҳо
+sidebar-menu-contextual-password-manager-label =
+    .label = Ниҳонвожаҳо
+
+## Tooltips for sidebar menu items.
+
+# The tooltip to show over the history icon, when history is not currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-open-history-tooltip = Кушодани таърих ({ $shortcut })
+# The tooltip to show over the history icon, when history is currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-close-history-tooltip = Пӯшидани таърих ({ $shortcut })
+# The tooltip to show over the bookmarks icon, when bookmarks is not currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-open-bookmarks-tooltip = Кушодани хатбаракҳо ({ $shortcut })
+# The tooltip to show over the bookmarks icon, when bookmarks is currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-close-bookmarks-tooltip = Пӯшидани хатбаракҳо ({ $shortcut })
+sidebar-menu-open-ai-chatbot-tooltip = Кушодани чат-боти зеҳни сунъӣ «AI»
+sidebar-menu-close-ai-chatbot-tooltip = Пӯшидани чат-боти зеҳни сунъӣ «AI»
+
+## Tooltips displayed over the AI chatbot icon.
+## Variables:
+##   $shortcut (String) - The OS specific keyboard shortcut.
+##   $provider (String) - The name of the AI chatbot provider (if available).
+
+sidebar-menu-open-ai-chatbot-tooltip-generic = Кушодани чат-боти зеҳни сунъӣ «AI» ({ $shortcut })
+sidebar-menu-open-ai-chatbot-provider-tooltip = Кушодани «{ $provider }» ({ $shortcut })
+sidebar-menu-close-ai-chatbot-tooltip-generic = Пӯшидани чат-боти зеҳни сунъӣ «AI» ({ $shortcut })
+sidebar-menu-close-ai-chatbot-provider-tooltip = Пӯшидани «{ $provider }» ({ $shortcut })
 
 ## Headings for sidebar menu panels.
 
@@ -100,6 +159,18 @@ sidebar-menu-history-header =
     .heading = Таърих
 sidebar-menu-syncedtabs-header =
     .heading = Варақаҳо аз дастгоҳҳои дигар
+sidebar-menu-bookmarks-header =
+    .heading = Хатбаракҳо
+sidebar-menu-cpm-header =
+    .heading = Ниҳонвожаҳо
+sidebar-panel-header-close-button =
+    .tooltiptext = Пӯшидан
+
+## Titles for sidebar menu panels.
+
+sidebar-customize-title = Фармоишдиҳии навори ҷонибӣ
+sidebar-history-title = Таърих
+sidebar-syncedtabs-title = Варақаҳо аз дастгоҳҳои дигар
 
 ## Context for closing synced tabs when hovering over the items
 
@@ -109,3 +180,29 @@ sidebar-menu-syncedtabs-header =
 #   $deviceName (String) - the name of the device the user is closing a tab for
 synced-tabs-context-close-tab-title =
     .title = Пӯшидани варақа дар «{ $deviceName }»
+show-sidebars =
+    .tooltiptext = Намоиш додани наворҳои ҷонибӣ
+    .label = Наворҳои ҷонибӣ
+
+## Tooltips for the sidebar toolbar widget.
+
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-expand-sidebar2 =
+    .tooltiptext = Баркушодани навори ҷонибӣ ({ $shortcut })
+    .label = Наворҳои ҷонибӣ
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-collapse-sidebar2 =
+    .tooltiptext = Печондани навори ҷонибӣ ({ $shortcut })
+    .label = Наворҳои ҷонибӣ
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-show-sidebar2 =
+    .tooltiptext = Намоиш додани навори ҷонибӣ ({ $shortcut })
+    .label = Наворҳои ҷонибӣ
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-hide-sidebar2 =
+    .tooltiptext = Пинҳон кардани навори ҷонибӣ ({ $shortcut })
+    .label = Наворҳои ҷонибӣ

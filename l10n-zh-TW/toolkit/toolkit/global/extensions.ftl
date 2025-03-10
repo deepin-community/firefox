@@ -11,7 +11,7 @@
 ##   $extension (String): replaced with the localized name of the extension.
 
 webext-perms-header = 要安裝 { $extension } 嗎？
-webext-perms-header-with-perms = 要安裝 { $extension } 嗎？此擴充套件將有下列權限:
+webext-perms-header-with-perms = 要安裝 { $extension } 嗎？此擴充套件將有下列權限：
 webext-perms-header-unsigned = 要安裝 { $extension } 嗎？此擴充套件尚未經過驗證。惡意的擴充套件可偷走您的個人資訊，或讓您的電腦成為有害軟體散布的溫床。請只在信任此套件的來源時才安裝。
 webext-perms-header-unsigned-with-perms = 要安裝 { $extension } 嗎？此擴充套件尚未經過驗證。惡意的擴充套件可偷走您的個人資訊，或讓您的電腦成為有害軟體散布的溫床。請只在信任此元件的來源時才安裝。此擴充套件將有下列權限：
 webext-perms-sideload-header = 已安裝 { $extension }
@@ -35,7 +35,7 @@ webext-perms-sideload-cancel =
     .accesskey = C
 # Variables:
 #   $extension (String): replaced with the localized name of the extension.
-webext-perms-update-text = { $extension } 已有更新。您必須允許新版套件所要求的權限，才會安裝。點擊「取消」可繼續使用目前版本的擴充套件。此擴充套件將有下列權限:
+webext-perms-update-text = { $extension } 已有更新。您必須允許新版套件所要求的權限，才會安裝。點擊「取消」可繼續使用目前版本的擴充套件。此擴充套件將有下列權限：
 webext-perms-update-accept =
     .label = 更新
     .accesskey = U
@@ -61,6 +61,17 @@ webext-perms-host-description-one-site = 存取您在 { $domain } 的資料
 #   $domainCount (Number): Integer indicating the number of additional
 #     hosts for which this webextension is requesting permission.
 webext-perms-host-description-too-many-sites = 存取您在其他 { $domainCount } 個網站中的資料
+# Variables:
+#   $domain (String): will be replaced by the DNS host name for which a webextension is requesting access (e.g., mozilla.org),
+#     $domain should be treated as plural (because it may also include all subdomains, e.g www.mozilla.org, ftp.mozilla.org).
+webext-perms-host-description-one-domain = 存取您在 { $domain } 網域中的資料
+# Permission string used for webextensions requesting access to 2 or more domains (and so $domainCount is expected to always
+# be >= 2, for webextensions requesting access to only one domain the `webext-perms-host-description-one-domain` string is
+# used instead).
+# Variables:
+#   $domainCount (Number): Integer indicating the number of websites domains for which this webextension is requesting permission
+#     (the list of domains will follow this string).
+webext-perms-host-description-multiple-domains = 存取您在 { $domainCount } 個網域中的資料
 
 ## Headers used in the webextension permissions dialog for synthetic add-ons.
 ## The part of the string describing what privileges the extension gives should be consistent

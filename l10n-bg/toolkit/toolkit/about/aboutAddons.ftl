@@ -310,7 +310,7 @@ release-notes-addon-button = Бележки към изданието
 permissions-addon-button = Права
 extension-enabled-heading = Включени
 extension-disabled-heading = Изключени
-theme-enabled-heading = Активна
+theme-enabled-heading = Включена
 theme-disabled-heading2 = Запазени теми
 plugin-enabled-heading = Активни
 plugin-disabled-heading = Изключени
@@ -355,11 +355,11 @@ addon-detail-reviews-link =
 
 # Variables:
 #   $addon (string) - Name of the add-on
-pending-uninstall-description = <span data-l10n-name="addon-name">{ $addon }</span> е премахнато.
+pending-uninstall-description = Разширението <span data-l10n-name="addon-name">{ $addon }</span> е премахнато.
 # Variables:
 #   $addon (string) - Name of the add-on
 pending-uninstall-description2 =
-    .message = { $addon } е премахнато.
+    .message = Разширението { $addon } е премахнато.
 pending-uninstall-undo-button = Отменяне
 addon-detail-updates-label = Автоматично обновяване
 addon-detail-updates-radio-default = Стандартно
@@ -371,6 +371,10 @@ install-update-button = Обновяване
 # of input controls being entered.
 addon-detail-group-label-updates =
     .aria-label = { addon-detail-updates-label }
+# This is the tooltip text for the private browsing badge in about:addons. The
+# badge is the private browsing icon included next to the extension's name.
+addon-badge-private-browsing-allowed3 =
+    .title = Разрешено в поверителни прозорци
 # This is the tooltip text for the private browsing badge in about:addons. The
 # badge is the private browsing icon included next to the extension's name.
 addon-badge-private-browsing-allowed2 =
@@ -402,6 +406,14 @@ addon-badge-line3 =
 addon-badge-verified2 =
     .title = Това разширение е прегледано и отговаря на нашите стандарти за сигурност и производителност
     .aria-label = { addon-badge-verified2.title }
+addon-badge-recommended3 =
+    .title = { -brand-product-name } препоръчва само разширения, които отговарят на нашите стандарти за сигурност и производителност
+# We hard code "Mozilla" in the string below because the extensions are built
+# by Mozilla and we don't want forks to display "by Fork".
+addon-badge-line4 =
+    .title = Официално разширение то Mozilla. Отговаря на стандартите за сигурност и производителност
+addon-badge-verified3 =
+    .title = Това разширение е прегледано и отговаря на нашите стандарти за сигурност и производителност
 
 ##
 
@@ -424,7 +436,7 @@ recommended-theme-1 = Чувствате се креативни? <a data-l10n-n
 
 ## Page headings
 
-extension-heading = Управлявайте вашите разширения
+extension-heading = Управление на разширения
 theme-heading = Управление на теми
 plugin-heading = Управление на приставки
 dictionary-heading = Управление на речници
@@ -477,5 +489,5 @@ plugins-gmp-license-info = Лицензна информация
 plugins-gmp-privacy-info = Информация за личните данни
 plugins-openh264-name = Видео кодек OpenH264, доставен от Cisco Systems, Inc.
 plugins-openh264-description = Тази приставка се инсталира автоматично от Mozilla за съвместимост със спецификацията на WebRTC, и за да направи възможни обаждания към устройства изискващи видео кодек H.264. Посетете http://www.openh264.org/, за да разгледате изходния код и да научите повече за реализацията.
-plugins-widevine-name = Дешифриращият модул на съдържание Widevine е предоставен от Google Inc.
+plugins-widevine-name = Модул за декриптиране на съдържание Widevine, предоставен от Google Inc.
 plugins-widevine-description = Тази приставка позволява възпроизвеждане на шифрована медия в съответствие със съответната спецификация. Шифровани (кодирани) медии обикновено се използват от сайтовете за защита срещу копиране на платено медийно съдържание. Посетете https://www.w3.org/TR/encrypted-media/ за повече информация относно разширенията за шифровани медии.

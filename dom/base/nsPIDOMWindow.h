@@ -51,6 +51,7 @@ class BrowsingContextGroup;
 class ClientInfo;
 class ClientState;
 class ContentFrameMessageManager;
+class CloseWatcherManager;
 class DocGroup;
 class Document;
 class Element;
@@ -82,20 +83,12 @@ enum class FullscreenReason {
 };
 
 // Must be kept in sync with xpcom/rust/xpcom/src/interfaces/nonidl.rs
-#define NS_PIDOMWINDOWINNER_IID                      \
-  {                                                  \
-    0x775dabc9, 0x8f43, 0x4277, {                    \
-      0x9a, 0xdb, 0xf1, 0x99, 0x0d, 0x77, 0xcf, 0xfb \
-    }                                                \
-  }
+#define NS_PIDOMWINDOWINNER_IID \
+  {0x775dabc9, 0x8f43, 0x4277, {0x9a, 0xdb, 0xf1, 0x99, 0x0d, 0x77, 0xcf, 0xfb}}
 
 // Must be kept in sync with xpcom/rust/xpcom/src/interfaces/nonidl.rs
-#define NS_PIDOMWINDOWOUTER_IID                      \
-  {                                                  \
-    0x769693d4, 0xb009, 0x4fe2, {                    \
-      0xaf, 0x18, 0x7d, 0xc8, 0xdf, 0x74, 0x96, 0xdf \
-    }                                                \
-  }
+#define NS_PIDOMWINDOWOUTER_IID \
+  {0x769693d4, 0xb009, 0x4fe2, {0xaf, 0x18, 0x7d, 0xc8, 0xdf, 0x74, 0x96, 0xdf}}
 
 class nsPIDOMWindowInner : public mozIDOMWindow {
  protected:
@@ -340,13 +333,6 @@ class nsPIDOMWindowInner : public mozIDOMWindow {
    */
   void RemovePeerConnection();
 
-  /**
-   * Check whether the active peer connection count is non-zero.
-   */
-  bool HasActivePeerConnections();
-
-  bool IsPlayingAudio();
-
   bool IsDocumentLoaded() const;
 
   // To cache top inner-window if available after constructed for tab-wised
@@ -357,16 +343,8 @@ class nsPIDOMWindowInner : public mozIDOMWindow {
   // decision making of timeout-throttling.
   void UpdateActiveIndexedDBDatabaseCount(int32_t aDelta);
 
-  // Return true if there is any active IndexedDB databases which could block
-  // timeout-throttling.
-  bool HasActiveIndexedDBDatabases();
-
   // Increase/Decrease the number of open WebSockets.
   void UpdateWebSocketCount(int32_t aDelta);
-
-  // Return true if there are any open WebSockets that could block
-  // timeout-throttling.
-  bool HasOpenWebSockets() const;
 
   mozilla::Maybe<mozilla::dom::ClientInfo> GetClientInfo() const;
   mozilla::Maybe<mozilla::dom::ClientState> GetClientState() const;
@@ -419,13 +397,6 @@ class nsPIDOMWindowInner : public mozIDOMWindow {
   // Removes this inner window from the BFCache, if it is cached, and returns
   // true if it was.
   bool RemoveFromBFCacheSync();
-
-  // Determine if the window is suspended or frozen.  Outer windows
-  // will forward this call to the inner window for convenience.  If
-  // there is no inner window then the outer window is considered
-  // suspended and frozen by default.
-  virtual bool IsSuspended() const = 0;
-  virtual bool IsFrozen() const = 0;
 
   // Fire any DOM notification events related to things that happened while
   // the window was frozen.
@@ -658,6 +629,8 @@ class nsPIDOMWindowInner : public mozIDOMWindow {
   };
   bool HasActiveWebTransports() { return mWebTransportCount > 0; }
 
+  mozilla::dom::CloseWatcherManager* EnsureCloseWatcherManager();
+
  protected:
   void CreatePerformanceObjectIfNeeded();
 
@@ -781,6 +754,9 @@ class nsPIDOMWindowInner : public mozIDOMWindow {
    * workers.
    */
   uint32_t mWebTransportCount = 0;
+
+  // The CloseWatcherManager for this window.
+  RefPtr<mozilla::dom::CloseWatcherManager> mCloseWatcherManager;
 };
 
 NS_DEFINE_STATIC_IID_ACCESSOR(nsPIDOMWindowInner, NS_PIDOMWINDOWINNER_IID)
@@ -914,13 +890,6 @@ class nsPIDOMWindowOuter : public mozIDOMWindowProxy {
 
   // Restore the window state from aState.
   virtual nsresult RestoreWindowState(nsISupports* aState) = 0;
-
-  // Determine if the window is suspended or frozen.  Outer windows
-  // will forward this call to the inner window for convenience.  If
-  // there is no inner window then the outer window is considered
-  // suspended and frozen by default.
-  virtual bool IsSuspended() const = 0;
-  virtual bool IsFrozen() const = 0;
 
   // Fire any DOM notification events related to things that happened while
   // the window was frozen.

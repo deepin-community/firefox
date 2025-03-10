@@ -43,6 +43,10 @@ genai-prompts-quiz =
 genai-prompts-explain =
     .label = Патлумачыць гэта
     .value = Калі ласка, растлумачце ключавыя паняцці ў гэтым вылучэнні простымі словамі. Таксама выкарыстоўвайце прыклады.
+# Prompt purpose: writing tool that helps users with spelling and grammar mistakes and produce a response that identifies errors and rewrites the inputted text correctly
+genai-prompts-proofread =
+    .label = Карэктура
+    .value = Калі ласка, вычытайце вылучэнне на прадмет арфаграфічных і граматычных памылак. Вызначце памылкі і дайце выпраўлены варыянт тэксту. Захоўвайце сэнс і фактычную дакладнасць і выведзіце спачатку пералік прапанаваных выпраўленняў, а затым канчатковы, выпраўлены варыянт тэксту.
 # This prompt is added to the beginning of selection prompts sent to a chatbot.
 # $tabTitle (string) - title of the webpage
 # $selection (string) - selected text
@@ -55,8 +59,111 @@ genai-menu-ask-generic =
 # $provider (string) - name of the provider
 genai-menu-ask-provider =
     .label = Спытаць { $provider }
+genai-menu-remove-generic =
+    .label = Выдаліць чат-бота ШІ
+# $provider (string) - name of the provider
+genai-menu-remove-provider =
+    .label = Выдаліць { $provider }
 genai-input-ask-generic =
     .placeholder = Спытаць чат-бота ШІ…
 # $provider (string) - name of the provider
 genai-input-ask-provider =
     .placeholder = Спытаць { $provider }…
+# $selectionLength (number) - selected text length
+# $maxLength (number) - max length of what can be selected
+genai-shortcuts-selected-warning-generic =
+    .heading = Чат-бот ШІ не атрымае поўнага вылучэння
+    .message =
+        { $selectionLength ->
+            [one] Вы выбралі каля { $selectionLength } знака. Колькасць знакаў, якія мы можам адправіць чат-боту ШІ, складае каля { $maxLength }.
+            [few] Вы выбралі каля { $selectionLength } знакаў. Колькасць знакаў, якія мы можам адправіць чат-боту ШІ, складае каля { $maxLength }.
+           *[many] Вы выбралі каля { $selectionLength } знакаў. Колькасць знакаў, якія мы можам адправіць чат-боту ШІ, складае каля { $maxLength }.
+        }
+# $provider (string) - name of the provider
+# $selectionLength (number) - selected text length
+# $maxLength (number) - max length of what can be selected
+genai-shortcuts-selected-warning =
+    .heading = { $provider } не атрымае поўнага вылучэння
+    .message =
+        { $selectionLength ->
+            [one] Вы выбралі каля { $selectionLength } знакаў. Колькасць знакаў, якія мы можам адправіць { $provider }, складае каля { $maxLength }.
+            [few] Вы выбралі каля { $selectionLength } знакаў. Колькасць знакаў, якія мы можам адправіць { $provider }, складае каля { $maxLength }.
+           *[many] Вы выбралі каля { $selectionLength } знакаў. Колькасць знакаў, якія мы можам адправіць { $provider }, складае каля { $maxLength }.
+        }
+genai-shortcuts-hide =
+    .label = Схаваць ярлык чат-бота
+
+## Chatbot header
+
+genai-chatbot-title = Чат-бот ШІ
+genai-header-provider-menu =
+    .title = Выберыце чат-бота
+genai-header-options-button =
+    .title = Адкрыць меню
+genai-header-close-button =
+    .title = Закрыць
+genai-provider-view-details =
+    .label = Паказаць падрабязнасці чат-бота
+genai-provider-about-chatbots =
+    .label = Пра гэтыя чат-боты
+genai-options-reload-generic =
+    .label = Абнавіць чат-бота ШІ
+# $provider (string) - name of the provider
+genai-options-reload-provider =
+    .label = Абнавіць { $provider }
+genai-options-show-shortcut =
+    .label = Паказваць ярлык пры выбары тэксту
+genai-options-hide-shortcut =
+    .label = Схаваць ярлык пры выбары тэксту
+genai-options-about-chatbot =
+    .label = Пра чат-боты ШІ ў { -brand-short-name }
+
+## Chatbot onboarding
+
+genai-onboarding-header = Рэзюмуйце, разважайце і многае іншае ў часе аглядання
+# "Switch anytime" refers to allowing the user to switch to a different chatbot.
+genai-onboarding-description = Выберыце чат-бота ШІ для выкарыстання ў бакавой панэлі { -brand-short-name }. Мы пакажам падрабязную інфармацыю аб кожным чат-боце, калі вы яго выберыце. Пераключайце ў любы час. <a data-l10n-name="learn-more">Падрабязней</a>
+genai-onboarding-primary = Працягнуць
+genai-onboarding-secondary = Закрыць
+genai-onboarding-claude-tooltip =
+    .title = Anthropic Claude
+genai-onboarding-claude-learn = Даведацца больш пра Claude
+genai-onboarding-chatgpt-tooltip =
+    .title = ChatGPT
+genai-onboarding-chatgpt-learn = Даведацца больш пра ChatGPT
+genai-onboarding-copilot-tooltip =
+    .title = Copilot
+genai-onboarding-copilot-learn = Даведацца больш пра Copilot
+genai-onboarding-gemini-tooltip =
+    .title = Google Gemini
+genai-onboarding-gemini-learn = Даведацца больш пра Gemini
+genai-onboarding-huggingchat-tooltip =
+    .title = HuggingChat
+genai-onboarding-huggingchat-learn = Даведацца больш пра HuggingChat
+genai-onboarding-lechat-tooltip =
+    .title = Le Chat Mistral
+genai-onboarding-lechat-learn = Даведацца больш пра Le Chat
+genai-onboarding-select-header = Вылучыце тэкст, каб убачыць прапановы
+genai-onboarding-select-description = Калі вы вылучыце тэкст, мы прапануем запрашэнні, якія вы можаце адправіць чат-боту. Вы таксама можаце напісаць уласныя запрашэнні.
+genai-onboarding-select-primary = Пачаць чат
+
+## Chatbot onboarding choices
+## These describe features/capabilities of chatbot providers. These are not buttons/actions.
+
+genai-onboarding-claude-generate = Стварэнне тэксту і коду
+genai-onboarding-claude-analyze = Аналіз дакументаў і відарысаў
+genai-onboarding-claude-price = Бясплатныя і платныя варыянты; патрэбен уліковы запіс
+genai-onboarding-chatgpt-generate = Стварэнне тэксту, малюнкаў і коду
+genai-onboarding-chatgpt-analyze = Аналіз дакументаў і відарысаў
+genai-onboarding-chatgpt-price = Бясплатныя і платныя варыянты; уліковы запіс патрэбен для некаторых краін і задач
+genai-onboarding-copilot-generate = Стварэнне тэксту, малюнкаў і коду
+genai-onboarding-copilot-analyze = Аналіз відарысаў
+genai-onboarding-copilot-price = Бясплатныя і платныя варыянты; уліковы запіс патрэбен для некаторых задач
+genai-onboarding-gemini-generate = Стварэнне тэксту, малюнкаў і коду
+genai-onboarding-gemini-analyze = Аналіз відарысаў (бясплатна) і дакументаў (платна)
+genai-onboarding-gemini-price = Бясплатныя і платныя варыянты; патрэбен уліковы запіс
+genai-onboarding-huggingchat-generate = Стварэнне тэксту і коду
+genai-onboarding-huggingchat-switch = Пераключайцеся паміж разнастайным наборам адкрытых мадэляў
+genai-onboarding-huggingchat-price-2 = Бясплатна; уліковы запіс патрэбен пасля пэўнай колькасці запытаў
+genai-onboarding-lechat-generate = Стварэнне тэксту і коду
+genai-onboarding-lechat-price = Бясплатна; патрэбен уліковы запіс

@@ -249,6 +249,9 @@ device-migration-fxa-spotlight-older-device-primary-button = Создать ак
 device-migration-fxa-spotlight-getting-new-device-header-2 = Собираетесь перейти на новое устройство?
 device-migration-fxa-spotlight-getting-new-device-body-2 = Выполните несколько простых шагов, чтобы перенести свои закладки, историю и пароли, когда начнете работу на новом устройстве.
 device-migration-fxa-spotlight-getting-new-device-primary-button = Как сделать резервную копию моих данных
+device-migration-fxa-spotlight-sync-header = Сёрфите, не пропуская ни секунды
+device-migration-fxa-spotlight-sync-body = Синхронизируйте всю важную информацию, такую как закладки и пароли, с помощью шифрования. Вы можете просматривать всё, где бы вы ни использовали { -brand-product-name }.
+device-migration-fxa-spotlight-sync-primary-button = Начало работы
 
 ## Set as Default PDF Reader Infobar
 
@@ -285,3 +288,61 @@ tail-fox-spotlight-title = Держите надоедливые трекеры 
 tail-fox-spotlight-subtitle = Попрощайтесь с надоедливыми рекламными трекерами и переключитесь на более безопасный и быстрый Интернет.
 tail-fox-spotlight-primary-button = Открывать мои ссылки с помощью { -brand-short-name }
 tail-fox-spotlight-secondary-button = Не сейчас
+
+## Root Certificate Succession Infobar
+
+root-certificate-succession-infobar-january-message = <strong>14 января 2025 г. в более старых версиях { -brand-short-name } могут начаться проблемы.</strong>
+root-certificate-succession-infobar-march-message = <strong>Обновите, чтобы продолжить использовать { -brand-short-name } после 14 марта 2025 г.</strong>
+root-certificate-succession-infobar-link = Почему мне необходимо обновление?
+root-certificate-succession-infobar-primary-button =
+    .label = Обновить сейчас
+    .accesskey = Г
+root-certificate-succession-infobar-secondary-button =
+    .label = Позже
+    .accesskey = Д
+
+## Root Certificate Succession Windows Background Notification
+
+root-certificate-windows-background-notification-title = Вы пропустили важное обновление { -brand-short-name }
+root-certificate-windows-background-notification-subtitle = Если вы не обновитесь, некоторые части браузера скоро перестанут работать. Самое время получить доступ к нашим новейшим защитам и функциям.
+root-certificate-windows-background-notification-learn-more-button = Подробнее
+root-certificate-windows-background-notification-update-button = Обновить { -brand-short-name }
+
+## FxA Menu Message variants
+
+fxa-menu-message-close-button =
+    .title = Закрыть
+    .aria-label = Закрыть
+fxa-menu-message-sign-up-button = Зарегистрироваться
+fxa-menu-message-sync-devices-primary-text = Синхронизируйте все свои устройства
+fxa-menu-message-sync-devices-secondary-text = Мгновенно получайте доступ к вашей информации — закладкам и паролям — везде, где бы вы ни использовали { -brand-short-name }.
+fxa-menu-message-sync-devices-collapsed-text = Синхронизируйте все свои устройства
+fxa-menu-message-backup-data-primary-text = Создайте резервную копию данных браузера
+fxa-menu-message-backup-data-secondary-text = Автоматически защищайте закладки, пароли и другую информацию на всех ваших устройствах.
+fxa-menu-message-backup-data-collapsed-text = Создайте резервную копию данных браузера
+fxa-menu-message-backup-sync-primary-text = Обеспечьте безопасность и синхронизацию своих данных
+fxa-menu-message-backup-sync-secondary-text = Синхронизация создает резервные копии большей части ваших данных, чтобы вы могли получить к ним доступ, где бы вы ни использовали { -brand-short-name }.
+fxa-menu-message-backup-sync-collapsed-text = Синхронизация и резервное копирование данных
+fxa-menu-message-mobile-primary-text = Отправляйте вкладки на телефон
+fxa-menu-message-mobile-secondary-text = Мгновенно продолжайте с того места, на котором остановились, когда вы синхронизируете вкладки с мобильным устройством.
+fxa-menu-message-mobile-collapsed-text = Синхронизируйтесь со своим телефоном
+
+## Multi-CTA Fox Doodle Spotlight
+
+multi-cta-fox-doodle-title = С возвращением
+multi-cta-fox-doodle-set-default-checkbox = Установить { -brand-short-name } по умолчанию
+multi-cta-fox-doodle-pin-startmenu-checkbox = Закрепить { -brand-short-name } в меню «Пуск»
+multi-cta-fox-doodle-pin-checkbox =
+    { PLATFORM() ->
+        [macos] Сохранить { -brand-short-name } в Dock
+       *[other] Закрепить { -brand-short-name } на панели задач
+    }
+multi-cta-fox-doodle-start-browsing-primary-button-label = Начать веб-сёрфинг
+multi-cta-fox-doodle-main-browser-primary-button-label = Сделать { -brand-short-name } моим основным браузером
+multi-cta-fox-doodle-quick-reminder-subtitle = Небольшое напоминание о том, что вы всегда можете держать под рукой свой любимый, ориентированный на приватность браузер.
+multi-cta-fox-doodle-privacy-focused-subtitle =
+    { PLATFORM() ->
+        [macos] Держите под рукой свой любимый, ориентированный на приватность браузер. Установите { -brand-short-name } в качестве браузера по умолчанию для открытия ссылок и сохраните его в Dock.
+       *[other] Держите под рукой свой любимый, ориентированный на приватность браузер. Установите { -brand-short-name } в качестве браузера по умолчанию для открытия ссылок и закрепите его на панели задач.
+    }
+multi-cta-fox-doodle-msix-privacy-focused-subtitle = Держите под рукой свой любимый, ориентированный на приватность браузер. Установите { -brand-short-name } в качестве браузера по умолчанию для открытия ссылок и закрепите его на панели задач и в меню «Пуск».

@@ -228,7 +228,6 @@ newtab-pocket-learn-more = Máis información
 newtab-pocket-cta-button = Obter { -pocket-brand-name }
 newtab-pocket-cta-text = Garde no { -pocket-brand-name } as historias que lle gusten, e alimente a súa imaxinación con lecturas fascinantes.
 newtab-pocket-pocket-firefox-family = { -pocket-brand-name } forma parte da familia { -brand-product-name }
-# A save to Pocket button that shows over the card thumbnail on hover.
 newtab-pocket-save = Gardar
 newtab-pocket-saved = Gardado
 
@@ -297,9 +296,12 @@ newtab-wallpaper-dark-green = Verde escuro
 ## Abstract
 
 
-## Photographs
+## Celestial
 
 newtab-wallpaper-feature-highlight-button = Entendido
+
+## Celestial
+
 
 ## New Tab Weather
 
@@ -311,6 +313,9 @@ newtab-weather-see-forecast =
 #   $provider (string) - Service provider for weather data
 newtab-weather-sponsored = { $provider } ∙ Patrocinado
 newtab-weather-menu-change-location = Cambiar localización
+newtab-weather-change-location-search-input-placeholder =
+    .placeholder = Busca localización
+    .aria-label = Busca localización
 newtab-weather-change-location-search-input = Busca localización
 newtab-weather-menu-weather-display = Pantalla do tempo
 # Display options are:
@@ -369,3 +374,19 @@ newtab-topic-selection-button-maybe-later = Quizais máis tarde
 newtab-topic-selection-privacy-link = Aprender como protexemos e xestionamos os datos
 newtab-topic-selection-button-update-interests = Actualizar os seus intereses
 newtab-topic-selection-button-pick-interests = Seleccionar os seus intereses
+
+## Content Feed Sections
+## "Follow", "unfollow", and "following" are social media terms that refer to subscribing to or unsubscribing from a section of stories.
+## e.g. Following the travel section of stories.
+
+
+## Button to block/unblock listed topics
+## "Block", "unblocked", and "blocked" are social media terms that refer to hiding a section of stories.
+## e.g. Blocked the politics section of stories.
+
+
+## Confirmation modal for blocking a section
+
+
+## Panel in the Customize menu section to manage followed and blocked topics
+

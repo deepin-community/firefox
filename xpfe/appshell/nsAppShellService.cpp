@@ -50,16 +50,12 @@ using namespace mozilla;
 using mozilla::dom::BrowsingContext;
 using mozilla::intl::LocaleService;
 
-// Default URL for the hidden window, can be overridden by a pref on Mac
-#define DEFAULT_HIDDENWINDOW_URL "resource://gre-resources/hiddenWindow.html"
-
 class nsIAppShell;
 
 nsAppShellService::nsAppShellService()
     : mXPCOMWillShutDown(false),
       mXPCOMShuttingDown(false),
       mModalWindowCount(0),
-      mApplicationProvidedHiddenWindow(false),
       mScreenId(0) {
   nsCOMPtr<nsIObserverService> obs = services::GetObserverService();
 
@@ -82,14 +78,9 @@ nsAppShellService::SetScreenId(uint32_t aScreenId) {
   return NS_OK;
 }
 
-void nsAppShellService::EnsureHiddenWindow() {
-  if (!mHiddenWindow) {
-    (void)CreateHiddenWindow();
-  }
-}
-
 NS_IMETHODIMP
 nsAppShellService::CreateHiddenWindow() {
+#if defined(XP_MACOSX)
   if (!XRE_IsParentProcess()) {
     return NS_ERROR_NOT_IMPLEMENTED;
   }
@@ -113,17 +104,13 @@ nsAppShellService::CreateHiddenWindow() {
   nsresult rv;
   int32_t initialHeight = 100, initialWidth = 100;
 
-#ifdef XP_MACOSX
   uint32_t chromeMask = 0;
   nsAutoCString prefVal;
   rv = Preferences::GetCString("browser.hiddenWindowChromeURL", prefVal);
-  const char* hiddenWindowURL =
-      NS_SUCCEEDED(rv) ? prefVal.get() : DEFAULT_HIDDENWINDOW_URL;
-  mApplicationProvidedHiddenWindow = prefVal.get() ? true : false;
-#else
-  static const char hiddenWindowURL[] = DEFAULT_HIDDENWINDOW_URL;
-  uint32_t chromeMask = nsIWebBrowserChrome::CHROME_ALL;
-#endif
+  if (NS_FAILED(rv)) {
+    return NS_OK;
+  }
+  const char* hiddenWindowURL = prefVal.get();
 
   nsCOMPtr<nsIURI> url;
   rv = NS_NewURI(getter_AddRefs(url), hiddenWindowURL);
@@ -142,6 +129,7 @@ nsAppShellService::CreateHiddenWindow() {
   }
 
   mHiddenWindow.swap(newWindow);
+#endif
 
   return NS_OK;
 }
@@ -320,7 +308,7 @@ class WindowlessBrowser final : public nsIWindowlessBrowser,
   }
   NS_DECL_ISUPPORTS
   NS_DECL_NSIWINDOWLESSBROWSER
-  NS_FORWARD_SAFE_NSIWEBNAVIGATION(mWebNavigation)
+  NS_FORWARD_SAFE_NSIWEBNAVIGATION(RefPtr{mWebNavigation.get()})
   NS_FORWARD_SAFE_NSIINTERFACEREQUESTOR(mInterfaceRequestor)
 
  private:
@@ -420,13 +408,14 @@ nsAppShellService::CreateWindowlessBrowser(bool aIsChrome, uint32_t aChromeMask,
   }
 
   nsresult rv =
-      widget->Create(nullptr, 0, LayoutDeviceIntRect(0, 0, 0, 0), nullptr);
+      widget->Create(nullptr, LayoutDeviceIntRect(0, 0, 0, 0), nullptr);
   NS_ENSURE_SUCCESS(rv, rv);
 
   // Create a BrowsingContext for our windowless browser.
   RefPtr<BrowsingContext> browsingContext = BrowsingContext::CreateIndependent(
       aIsChrome ? BrowsingContext::Type::Chrome
-                : BrowsingContext::Type::Content);
+                : BrowsingContext::Type::Content,
+      true);
 
   if (aChromeMask & nsIWebBrowserChrome::CHROME_REMOTE_WINDOW) {
     browsingContext->SetRemoteTabs(true);
@@ -677,8 +666,6 @@ NS_IMETHODIMP
 nsAppShellService::GetHiddenWindow(nsIAppWindow** aWindow) {
   NS_ENSURE_ARG_POINTER(aWindow);
 
-  EnsureHiddenWindow();
-
   *aWindow = mHiddenWindow;
   NS_IF_ADDREF(*aWindow);
   return *aWindow ? NS_OK : NS_ERROR_FAILURE;
@@ -687,8 +674,6 @@ nsAppShellService::GetHiddenWindow(nsIAppWindow** aWindow) {
 NS_IMETHODIMP
 nsAppShellService::GetHiddenDOMWindow(mozIDOMWindowProxy** aWindow) {
   NS_ENSURE_ARG_POINTER(aWindow);
-
-  EnsureHiddenWindow();
 
   nsresult rv;
   nsCOMPtr<nsIDocShell> docShell;
@@ -708,12 +693,6 @@ nsAppShellService::GetHasHiddenWindow(bool* aHasHiddenWindow) {
   NS_ENSURE_ARG_POINTER(aHasHiddenWindow);
 
   *aHasHiddenWindow = !!mHiddenWindow;
-  return NS_OK;
-}
-
-NS_IMETHODIMP
-nsAppShellService::GetApplicationProvidedHiddenWindow(bool* aAPHW) {
-  *aAPHW = mApplicationProvidedHiddenWindow;
   return NS_OK;
 }
 

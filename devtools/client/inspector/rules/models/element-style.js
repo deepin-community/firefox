@@ -193,8 +193,7 @@ class ElementStyle {
   /**
    * Get the font families in use by the element.
    *
-   * Returns a promise that will be resolved to a list of CSS family
-   * names. The list might have duplicates.
+   * Returns a promise that will be resolved to a Set of lowercased CSS family names.
    */
   getUsedFontFamilies() {
     return new Promise((resolve, reject) => {
@@ -207,7 +206,20 @@ class ElementStyle {
           const fonts = await this.pageStyle.getUsedFontFaces(this.element, {
             includePreviews: false,
           });
-          resolve(fonts.map(font => font.CSSFamilyName));
+          const familyNames = new Set();
+          for (const font of fonts) {
+            if (font.CSSFamilyName) {
+              familyNames.add(font.CSSFamilyName.toLowerCase());
+            }
+
+            // CSSGeneric is the font generic name (e.g. system-ui), which is different
+            // from the CSSFamilyName but can also be used as a font-family (e.g. for
+            // system-ui, the actual font name is ".SF NS" on OSX 14.6).
+            if (font.CSSGeneric) {
+              familyNames.add(font.CSSGeneric.toLowerCase());
+            }
+          }
+          resolve(familyNames);
         } catch (e) {
           reject(e);
         }
@@ -569,6 +581,8 @@ class ElementStyle {
         continue;
       }
 
+      const isNestedDeclarations = rule.domRule.isNestedDeclarations;
+
       // Style rules must be considered only when they have selectors that match the node.
       // When renaming a selector, the unmatched rule lingers in the Rule view, but it no
       // longer matches the node. This strict check avoids accidentally causing
@@ -589,7 +603,8 @@ class ElementStyle {
       const isElementStyle = rule.domRule.type === ELEMENT_STYLE;
 
       const filterCondition =
-        pseudo === "" ? isStyleRule || isElementStyle : isPseudoElementRule;
+        isNestedDeclarations ||
+        (pseudo === "" ? isStyleRule || isElementStyle : isPseudoElementRule);
 
       // Collect all relevant CSS declarations (aka TextProperty instances).
       if (filterCondition) {

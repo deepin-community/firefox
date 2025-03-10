@@ -72,6 +72,16 @@ tabbrowser-unblock-tab-audio-tooltip =
            *[other] Emboheta { $tabCount } tendayke
         }
 
+## Tooltips for tab audio control
+
+tabbrowser-unmute-tab-audio-aria-label =
+    .aria-label = Erujey ñe’ẽpu tendayképe
+tabbrowser-mute-tab-audio-aria-label =
+    .aria-label = Emokirirĩ tendayke
+# Used to unblock a tab with audio from autoplaying
+tabbrowser-unblock-tab-audio-aria-label =
+    .aria-label = Emoñe’ẽpu tendayke
+
 ## Confirmation dialog when closing a window with more than one tab open,
 ## or when quitting when only one window is open.
 
@@ -80,6 +90,7 @@ tabbrowser-unblock-tab-audio-tooltip =
 #   $tabCount (Number): The number of tabs that will be closed.
 tabbrowser-confirm-close-tabs-title = ¿Emboty { $tabCount } tendayke?
 tabbrowser-confirm-close-tabs-button = Tendayke mboty
+tabbrowser-ask-close-tabs-checkbox = Eporandu emboty mboyve heta tendayke
 tabbrowser-confirm-close-tabs-checkbox = Emoneĩ emboty mboyve heta tendayke
 
 ## Confirmation dialog when quitting using the menu and multiple windows are open.
@@ -102,7 +113,21 @@ tabbrowser-confirm-close-tabs-with-key-title = ¿Emboty ovetã ha esẽ { -brand
 tabbrowser-confirm-close-tabs-with-key-button = Mboty { -brand-short-name }
 # Variables:
 #   $quitKey (String): the text of the keyboard shortcut for quitting.
+tabbrowser-ask-close-tabs-with-key-checkbox = Eporandu esẽ mboyve { $quitKey } ndive
+# Variables:
+#   $quitKey (String): the text of the keyboard shortcut for quitting.
 tabbrowser-confirm-close-tabs-with-key-checkbox = Emoneĩ esẽ mboyve { $quitKey } ndive
+
+## Confirmation dialog when quitting using the keyboard shortcut (Ctrl/Cmd+Q)
+## and browser.warnOnQuitShortcut is true.
+
+tabbrowser-confirm-close-warn-shortcut-title = ¿Esẽ { -brand-short-name }-gui térã emboty tendayke ag̃agua?
+tabbrowser-confirm-close-windows-warn-shortcut-button =
+    { PLATFORM() ->
+        [windows] Emboty { -brand-short-name }
+       *[other] Esẽ { -brand-short-name }-gui
+    }
+tabbrowser-confirm-close-tab-only-button = Emboty tendayke ag̃agua
 
 ## Confirmation dialog when opening multiple tabs simultaneously
 
@@ -127,6 +152,9 @@ tabbrowser-confirm-caretbrowsing-checkbox = Anive ehechaukajey ko ñomongeta.
 tabbrowser-confirm-close-duplicate-tabs-title = Ema’ẽmi
 tabbrowser-confirm-close-duplicate-tabs-text = Rombojurujáta tendayke paha hendyhápe
 tabbrowser-confirm-close-all-duplicate-tabs-title = ¿Emboty tendayke ikõiva?
+tabbrowser-confirm-close-all-duplicate-tabs-text =
+    Ñambotýta umi tendayke ikõiva ko ovetãme. Tendayke paha oikóva
+    opytáta jurujápe.
 tabbrowser-confirm-close-all-duplicate-tabs-button-closetabs = Emboty tendayke
 
 ##
@@ -164,6 +192,9 @@ tabbrowser-ctrl-tab-list-all-tabs =
     .label = Tysyipa { $tabCount } ápe
 
 ## Tab manager menu buttons
+## Variables:
+##  $tabGroupName (String): The name of the tab group. See also tab-group-name-default, which will be
+##                          used when the group's name is empty.
 
 tabbrowser-manager-mute-tab =
     .tooltiptext = Tendayke mokirirĩ
@@ -171,3 +202,123 @@ tabbrowser-manager-unmute-tab =
     .tooltiptext = Tendayke ñe’ẽpu moĩporã
 tabbrowser-manager-close-tab =
     .tooltiptext = Emboty tendayke
+# This is for tab groups that have been "saved and closed" (see tab-group-editor-action-save). It does
+# not include "deleted" tab groups (see tab-group-editor-action-delete).
+tabbrowser-manager-closed-tab-group =
+    .label = { $tabGroupName }
+    .tooltiptext = { $tabGroupName } — Mboty
+tabbrowser-manager-current-window-tab-group =
+    .label = { $tabGroupName }
+    .tooltiptext = { $tabGroupName } — Ovetã ag̃agua
+# "Show more" is for showing all open groups from other windows, as well as saved groups. Initially,
+# we only show up to six of these groups.
+tabbrowser-manager-tab-groups-show-more =
+    .label = Ehechaukave
+
+## Tab Groups
+
+tab-group-editor-title-create = Emoheñói tendayke aty
+tab-group-editor-title-edit = Eñangareko tendayke aty
+tab-group-editor-name-label = Téra
+tab-group-editor-name-field =
+    .placeholder = Techapyrã: Jejogua
+tab-group-editor-cancel =
+    .label = Heja
+    .accesskey = C
+tab-group-editor-color-selector =
+    .aria-label = Tendayke aty sa’y
+tab-group-editor-color-selector2-blue = Hovy
+    .title = Hovy
+tab-group-editor-color-selector2-purple = Pytãũ
+    .title = Pytãũ
+tab-group-editor-color-selector2-cyan = Hovyũ
+    .title = Hovyũ
+tab-group-editor-color-selector2-orange = Narã
+    .title = Narã
+tab-group-editor-color-selector2-yellow = Sa’yju
+    .title = Sa’yju
+tab-group-editor-color-selector2-pink = Pytãngy
+    .title = Pytãngy
+tab-group-editor-color-selector2-green = Hovyũ
+    .title = Hovyũ
+tab-group-editor-color-selector2-gray = Hũngy
+    .title = Hũngy
+tab-group-editor-color-selector2-red = Ñanduti
+    .title = Ñanduti
+# Variables:
+#  $tabGroupName (String): The name of the tab group. Defaults to the value
+#                          of tab-group-name-default.
+tab-group-description = { $tabGroupName } — Tendayke aty
+tab-group-menu-header = Tendayke aty
+tab-context-unnamed-group =
+    .label = Aty hera’ỹva
+tab-group-name-default = Aty hera’ỹva
+
+## Variables:
+##  $tabCount (Number): the number of tabs that are affected by the action.
+
+tab-context-move-tab-to-new-group =
+    .label =
+        { $tabCount ->
+            [1] Embojuapy tendayke aty pyahúpe
+           *[other] Add Tabs to New Group
+        }
+    .accesskey = G
+tab-context-move-tab-to-group =
+    .label =
+        { $tabCount ->
+            [1] Embojuapy tendayke atýpe
+            [one] Embojuapy tendaykekuéra atýpe
+           *[other] Embojuapy tendaykekuéra atýpe
+        }
+    .accesskey = G
+tab-group-editor-action-new-tab =
+    .label = Tendayke pyahu atýpe
+tab-group-editor-action-new-window =
+    .label = Eguerova aty ovetã pyahúpe
+tab-group-editor-action-save =
+    .label = Eñongatu ha emboty aty
+tab-group-editor-action-ungroup =
+    .label = Eipe’a atýgui tendayke
+tab-group-editor-action-delete =
+    .label = Emboguete aty
+tab-group-editor-done =
+    .label = Japopyre
+    .accessKey = D
+tab-context-reopen-tab-group =
+    .label = Embojurujajey tendayke aty
+# Variables:
+#  $groupCount (Number): the number of tab groups that are affected by the action.
+tab-context-ungroup-tab =
+    .label =
+        { $groupCount ->
+            [1] Emboguete atýgui
+            [one] Emboguete atýgui
+           *[other] Emboguete atykuéragui
+        }
+    .accesskey = R
+
+## Open/saved tab group context menu
+
+# For a tab group open in any window, clicking this will create a new
+# window and move this tab group to that new window.
+tab-group-context-move-to-new-window =
+    .label = Eguerova aty ovetã pyahúpe
+# For a tab group open in a different window from the one that the
+# user is using to access the tab group menu, move that tab group into the
+# user's current window.
+tab-group-context-move-to-this-window =
+    .label = Eguerova aty ko ovetãme
+# For a tab group that is open in any window, close the tab group and
+# do not save it. For a tab group that is closed but saved by the user, clicking
+# this will forget the saved tab group.
+tab-group-context-delete =
+    .label = Emboguete aty
+# For a saved tab group that is not open in any window, open the tab group
+# in the user's current window.
+tab-group-context-open-saved-group-in-this-window =
+    .label = Embojuruja aty ko ovetãme
+# For a saved tab group that is not open in any window, create a new window and
+# open the tab group in that window.
+tab-group-context-open-saved-group-in-new-window =
+    .label = Embojuruja aty ovetã pyahúpe

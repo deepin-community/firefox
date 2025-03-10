@@ -380,6 +380,10 @@ addon-detail-group-label-updates =
     .aria-label = { addon-detail-updates-label }
 # This is the tooltip text for the private browsing badge in about:addons. The
 # badge is the private browsing icon included next to the extension's name.
+addon-badge-private-browsing-allowed3 =
+    .title = Autorizat en navegacion privada
+# This is the tooltip text for the private browsing badge in about:addons. The
+# badge is the private browsing icon included next to the extension's name.
 addon-badge-private-browsing-allowed2 =
     .title = Autorizat en navegacion privada
     .aria-label = { addon-badge-private-browsing-allowed2.title }
@@ -417,6 +421,14 @@ addon-badge-line3 =
 addon-badge-verified2 =
     .title = Aquesta extension foguèt repassada per complir los estandards de seguretat e performança.
     .aria-label = { addon-badge-verified2.title }
+addon-badge-recommended3 =
+    .title = { -brand-product-name } recomanda pas que las extensions que respèctan nòstres estandards de seguretat e performança
+# We hard code "Mozilla" in the string below because the extensions are built
+# by Mozilla and we don't want forks to display "by Fork".
+addon-badge-line4 =
+    .title = Extension oficiala creada per Mozilla. Seguís los estandards de seguretat e de performança.
+addon-badge-verified3 =
+    .title = Aquesta extension foguèt repassada per complir los estandards de seguretat e performança.
 
 ##
 
@@ -473,10 +485,21 @@ details-notification-unsigned-and-disabled-link = Mai d'informacions
 details-notification-unsigned = { $name } a pas pogut èsser verificat per son utilizacion dins { -brand-short-name }. Fasètz atencion.
 details-notification-unsigned2 =
     .message = { $name } a pas pogut èsser verificat per son utilizacion dins { -brand-short-name }. Fasètz atencion.
+details-notification-hard-blocked-extension =
+    .message = Aquesta extension es blocada, per enfranh las politicas de Mozilla e foguèt desactivada.
+details-notification-hard-blocked-other =
+    .message = Aqueste modul es blocat, per enfranh las politicas de Mozilla e foguèt desactivat.
 details-notification-unsigned-link = Mai d'informacions
 details-notification-blocked = { $name } es estat desactivat en seguida de problèmas de seguretat o d'estabilitat.
 details-notification-blocked2 =
     .message = { $name } es estat desactivat en seguida de problèmas de seguretat o d'estabilitat.
+details-notification-blocked-link2 = Afichar los detalhs
+details-notification-soft-blocked-extension-disabled =
+    .message = Aquesta extension es restrencha a causa de violacion de las politicas de Mozilla e foguèt desactivada. La podètz activar, mas pòt èsser perilhós.
+details-notification-soft-blocked-extension-enabled =
+    .message = Aquesta extension viola las politicas de Mozilla. Son usatge es perilhós.
+details-notification-soft-blocked-other-disabled =
+    .message = Aqueste modul complementari es restrench a causa de violacion de las politicas de Mozilla e foguèt desactivat. Lo podètz activar, mas pòt èsser perilhós.
 details-notification-blocked-link = Mai d'informacions
 details-notification-softblocked = { $name } es conegut per provocar de problèmas de seguretat o d'estabilitat.
 details-notification-softblocked2 =

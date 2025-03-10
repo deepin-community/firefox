@@ -89,13 +89,12 @@ shopping-show-less-button = Nascondi dettagli
 
 shopping-settings-label =
     .label = Impostazioni
+shopping-settings-recommendations-toggle2 =
+    .label = Mostra consigli e contenuti sponsorizzati
+shopping-settings-recommendations-learn-more3 = { -brand-product-name } non condivide i tuoi dati personali, per cui questi consigli non ti seguiranno su Internet. <a data-l10n-name="review-quality-url">Ulteriori informazioni</a>
 shopping-settings-recommendations-toggle =
     .label = Mostra annunci in Verifica recensioni
 shopping-settings-recommendations-learn-more2 = Promuoviamo solo prodotti con recensioni affidabili. <a data-l10n-name="review-quality-url">Ulteriori informazioni</a>
-shopping-settings-recommendations-toggle2 =
-  .label = Mostra consigli e contenuti sponsorizzati
-shopping-settings-recommendations-learn-more3 =
-  { -brand-product-name } non condivide i tuoi dati personali, per cui questi consigli non ti seguiranno su Internet. <a data-l10n-name="review-quality-url">Ulteriori informazioni</a>
 shopping-settings-opt-out-button = Disattiva Verifica recensioni
 powered-by-fakespot = Verifica recensioni con tecnologia <a data-l10n-name="fakespot-link">{ -fakespot-brand-full-name }</a>.
 shopping-settings-auto-open-toggle =
@@ -166,8 +165,8 @@ shopping-unanalyzed-product-analyze-button = Verifica qualità recensioni
 
 more-to-consider-ad-label =
     .label = Altri prodotti da valutare
-ad-by-fakespot = Annuncio di { -fakespot-brand-name }
 shopping-sponsored-label = Sponsorizzato
+ad-by-fakespot = Annuncio di { -fakespot-brand-name }
 
 ## Shopping survey strings.
 
@@ -187,6 +186,18 @@ shopping-survey-submit-button-label = Invia
 shopping-survey-terms-link = Condizioni di utilizzo del servizio
 shopping-survey-thanks =
     .heading = Grazie per aver condiviso la tua opinione.
+
+## Shopping opted-out survey strings
+## Opt-out survey options are displayed as checkboxes and the user can select one or many.
+
+shopping-survey-opted-out-multiselect-label = Facci sapere perché hai disattivato Verifica recensioni. Puoi scegliere più risposte.
+shopping-survey-thanks-title = Grazie per aver condiviso la tua opinione.
+shopping-survey-opted-out-hard-to-understand = È difficile da capire
+shopping-survey-opted-out-too-slow = È troppo lento
+shopping-survey-opted-out-not-accurate = Non è accurato
+shopping-survey-opted-out-not-helpful = Non è utile per me
+shopping-survey-opted-out-check-myself = Preferisco controllare personalmente le recensioni
+shopping-survey-opted-out-other = Altro
 
 ## Shopping Feature Callout strings.
 ## "price tag" refers to the price tag icon displayed in the address bar to

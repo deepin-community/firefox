@@ -164,12 +164,27 @@ add_task(async function test_fog_event_works() {
   };
   Assert.deepEqual(expectedExtra, events[1].extra);
 
+  // Passing `null` works.
+  Glean.testOnlyIpc.eventWithExtra.record(null);
+  events = Glean.testOnlyIpc.eventWithExtra.testGetValue();
+  Assert.equal(3, events.length, "Recorded another event.");
+  Assert.equal(events[2].extra, null);
+
   // Invalid extra keys don't crash, the event is not recorded,
   // but an error is recorded.
   let extra3 = {
     extra1_nonexistent_extra: "this does not crash",
   };
   Glean.testOnlyIpc.eventWithExtra.record(extra3);
+  Assert.throws(
+    () => Glean.testOnlyIpc.eventWithExtra.testGetValue(),
+    /DataError/,
+    "Should throw because of a recording error."
+  );
+
+  // Supplying extras when there aren't any defined results in the event not
+  // being recorded, but an error is.
+  Glean.testOnlyIpc.noExtraEvent.record(extra3);
   Assert.throws(
     () => Glean.testOnlyIpc.eventWithExtra.testGetValue(),
     /DataError/,
@@ -196,7 +211,7 @@ add_task(async function test_fog_memory_distribution_works() {
 add_task(async function test_fog_custom_distribution_works() {
   Glean.testOnlyIpc.aCustomDist.accumulateSamples([7, 268435458]);
 
-  let data = Glean.testOnlyIpc.aCustomDist.testGetValue("store1");
+  let data = Glean.testOnlyIpc.aCustomDist.testGetValue("test-ping");
   Assert.equal(2, data.count, "Count of entries is correct");
   Assert.equal(7 + 268435458, data.sum, "Sum's correct");
   for (let [bucket, count] of Object.entries(data.values)) {
@@ -255,25 +270,28 @@ add_task(async function test_fog_timing_distribution_works() {
 
   Glean.testOnly.whatTimeIsIt.stopAndAccumulate(t2); // 10ms
   Glean.testOnly.whatTimeIsIt.stopAndAccumulate(t3); // 5ms
+  // samples are measured in microseconds, since that's the unit listed in metrics.yaml
+  Glean.testOnly.whatTimeIsIt.accumulateSingleSample(5000); // 5ms
+  Glean.testOnly.whatTimeIsIt.accumulateSamples([2000, 8000]); // 10ms
 
   let data = Glean.testOnly.whatTimeIsIt.testGetValue();
 
   // Cancelled timers should not be counted.
-  Assert.equal(2, data.count, "Count of entries is correct");
+  Assert.equal(5, data.count, "Count of entries is correct");
 
   const NANOS_IN_MILLIS = 1e6;
   // bug 1701949 - Sleep gets close, but sometimes doesn't wait long enough.
   const EPSILON = 40000;
 
   // Variance in timing makes getting the sum impossible to know.
-  Assert.greater(data.sum, 15 * NANOS_IN_MILLIS - EPSILON);
+  Assert.greater(data.sum, 30 * NANOS_IN_MILLIS - EPSILON);
 
   // No guarantees from timers means no guarantees on buckets.
-  // But we can guarantee it's only two samples.
+  // But we can guarantee it's only five samples.
   Assert.equal(
-    2,
+    5,
     Object.entries(data.values).reduce((acc, [, count]) => acc + count, 0),
-    "Only two buckets with samples"
+    "Only five buckets with samples"
   );
 });
 
@@ -433,7 +451,7 @@ add_task(async function test_fog_url_works() {
   const value = "https://www.example.com/fog";
   Glean.testOnlyIpc.aUrl.set(value);
 
-  Assert.equal(value, Glean.testOnlyIpc.aUrl.testGetValue("store1"));
+  Assert.equal(value, Glean.testOnlyIpc.aUrl.testGetValue("test-ping"));
 });
 
 add_task(async function test_fog_text_works() {
@@ -747,5 +765,68 @@ add_task(async function test_labeled_timing_distribution_works() {
     2,
     Object.entries(data.values).reduce((acc, [, count]) => acc + count, 0),
     "Only two buckets with samples"
+  );
+});
+
+add_task(async function test_fog_labeled_quantity_works() {
+  Assert.equal(
+    undefined,
+    Glean.testOnly.buttonJars.up.testGetValue(),
+    "New labels with no values should return undefined"
+  );
+  Glean.testOnly.buttonJars.up.set(2);
+  Glean.testOnly.buttonJars.curling.set(0);
+  Assert.equal(2, Glean.testOnly.buttonJars.up.testGetValue());
+  Assert.equal(0, Glean.testOnly.buttonJars.curling.testGetValue());
+  // What about invalid/__other__?
+  Assert.equal(undefined, Glean.testOnly.buttonJars.__other__.testGetValue());
+  Glean.testOnly.buttonJars["1".repeat(72)].set(0);
+  Assert.throws(
+    () => Glean.testOnly.buttonJars.__other__.testGetValue(),
+    /DataError/,
+    "Should throw because of a recording error."
+  );
+});
+
+add_task(async function test_submit_throws() {
+  GleanPings.onePingOnly.testBeforeNextSubmit(() => {
+    throw new Error("inside callback");
+  });
+
+  Assert.throws(
+    () => GleanPings.onePingOnly.submit(),
+    /inside callback/,
+    "Should throw inside callback"
+  );
+});
+
+add_task(function test_collection_disabled_pings_work() {
+  // This test should work equally for full builds and artifact builds.
+
+  Assert.ok("collectionDisabledPing" in GleanPings);
+
+  // collection-enabled=false pings are disabled by default.
+  // No data is collected for metrics going into that ping.
+  Glean.testOnly.collectionDisabledCounter.add(1);
+  Assert.equal(
+    undefined,
+    Glean.testOnly.collectionDisabledCounter.testGetValue()
+  );
+
+  // After enabling a ping we can record data into it
+  GleanPings.collectionDisabledPing.setEnabled(true);
+  Glean.testOnly.collectionDisabledCounter.add(2);
+  Assert.equal(2, Glean.testOnly.collectionDisabledCounter.testGetValue());
+
+  let submitted = false;
+  GleanPings.collectionDisabledPing.testBeforeNextSubmit(() => {
+    submitted = true;
+    Assert.equal(2, Glean.testOnly.collectionDisabledCounter.testGetValue());
+  });
+  GleanPings.collectionDisabledPing.submit();
+  Assert.ok(submitted, "Ping was submitted, callback was called.");
+  Assert.equal(
+    undefined,
+    Glean.testOnly.collectionDisabledCounter.testGetValue()
   );
 });
